@@ -1,0 +1,66 @@
+name: Nightly debug build
+
+# Builds the debug APK every night and pushes it to the `nightly` branch,
+# where the latest APK is always downloadable at:
+#   https://github.com/Sanuu7/AndroidHarness/raw/nightly/AndroidHarness-nightly-debug.apk
+# Also runs on demand from the Actions tab ("Run workflow").
+
+on:
+  schedule:
+    - cron: "0 2 * * *" # 02:00 UTC nightly
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: nightly-build
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle (caching)
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
+
+      - name: Stamp APK with date + commit
+        id: apk
+        run: |
+          STAMP=$(date -u +%Y%m%d-%H%M)
+          SHA=$(git rev-parse --short HEAD)
+          NAME="AndroidHarness-${STAMP}-${SHA}-debug.apk"
+          mkdir dist && cp app/build/outputs/apk/debug/app-debug.apk "dist/${NAME}"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+
+      - name: Upload artifact (Actions tab, kept 30 days)
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.apk.outputs.name }}
+          path: dist/*.apk
+          retention-days: 30
+
+      # Replaces the `nightly` branch with a single commit holding only the
+      # newest APK, so the branch never bloats and the raw link stays stable.
+      - name: Commit APK to the nightly branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan nightly
+          git reset --hard
+          cp "dist/${{ steps.apk.outputs.name }}" AndroidHarness-nightly-debug.apk
+          git add AndroidHarness-nightly-debug.apk
+          git commit -m "nightly debug build ${{ steps.apk.outputs.name }}"
+          git push --force origin nightly
