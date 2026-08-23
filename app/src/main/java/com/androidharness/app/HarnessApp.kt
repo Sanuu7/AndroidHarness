@@ -1,0 +1,100 @@
+package com.androidharness.app
+
+import android.app.Application
+import android.content.Context
+import androidx.room.Room
+import com.androidharness.app.agent.AgentEngine
+import com.androidharness.app.agent.TodoStore
+import com.androidharness.app.data.CheckpointStore
+import com.androidharness.app.data.ImageStore
+import com.androidharness.app.data.KeyStoreManager
+import com.androidharness.app.data.ProviderRepository
+import com.androidharness.app.data.SessionRepository
+import com.androidharness.app.data.SettingsRepository
+import com.androidharness.app.data.db.AppDatabase
+import com.androidharness.app.llm.ProviderFactory
+import com.androidharness.app.tools.ToolRegistry
+import com.androidharness.app.workspace.WorkspaceManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.launch
+import okhttp3.OkHttpClient
+
+class HarnessApp : Application() {
+    lateinit var container: AppContainer
+        private set
+
+    override fun onCreate() {
+        super.onCreate()
+        container = AppContainer(this)
+    }
+}
+
+class AppContainer(val appContext: Context) {
+    /** Deep-link channel: run-result notifications deliver a session id here. */
+    val pendingSessionId = kotlinx.coroutines.flow.MutableSharedFlow<String>(extraBufferCapacity = 1)
+
+    val keys = KeyStoreManager(appContext)
+    val settings = SettingsRepository(appContext)
+    val providers = ProviderRepository(appContext, keys)
+
+    private val db = Room.databaseBuilder(appContext, AppDatabase::class.java, "harness.db")
+        .addMigrations(AppDatabase.MIGRATION_4_5)
+        // Only kicks in when no migration path exists (pre-v4 databases);
+        // the v4→v5 path above preserves sessions and usage totals.
+        .fallbackToDestructiveMigration(true)
+        .build()
+    val sessions = SessionRepository(db)
+    val snippets = com.androidharness.app.data.SnippetRepository(db.dao())
+
+    val workspace = WorkspaceManager(appContext, db.dao())
+    val checkpoints = CheckpointStore(db.dao())
+    val images = ImageStore(appContext)
+
+    val todoStore = TodoStore()
+    private val fetchClient = OkHttpClient()
+    val linuxEnv = com.androidharness.app.data.env.LinuxEnvironmentManager(appContext)
+    val shizuku = com.androidharness.app.data.env.ShizukuManager(appContext)
+    val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv)
+    val backgroundProcesses = com.androidharness.app.data.BgProcessStore(
+        appContext, linuxEnv, shizuku, workspaceRoot = workspace.appPrivateRoot,
+    )
+    val registry = ToolRegistry.default(fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter)
+    val engine = AgentEngine(
+        providerFactory = { config -> ProviderFactory.create(config.type) },
+        registry = registry,
+        checkpointer = checkpoints,
+        imageStore = images,
+        linuxEnv = linuxEnv,
+        shizuku = shizuku,
+    )
+    val runManager = com.androidharness.app.agent.RunManager(
+        context = appContext,
+        engine = engine,
+        sessions = sessions,
+        checkpoints = checkpoints,
+        workspace = workspace,
+        linuxEnv = linuxEnv,
+        settings = settings,
+    )
+    val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
+
+    init {
+        // Eagerly deploy the shell-user toolchain copy the moment both the
+        // Linux environment and Shizuku are ready, so every tier works from
+        // the first command (foreground shell, background spawn, terminal).
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            // include serviceState so a retry fires once the user service binds
+            combine(linuxEnv.state, shizuku.state, shizuku.serviceState) { e, s, v -> Triple(e, s, v) }
+                .collect { (e, s, v) ->
+                    if (e is com.androidharness.app.data.env.EnvState.Ready &&
+                        s == com.androidharness.app.data.env.ShizukuState.GRANTED &&
+                        v == com.androidharness.app.data.env.UserServiceState.BOUND_READY
+                    ) {
+                        linuxEnv.ensureShellDeploy(shizuku)
+                    }
+                }
+        }
+    }
+}

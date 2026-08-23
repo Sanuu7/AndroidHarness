@@ -1,0 +1,239 @@
+package com.androidharness.app.workspace
+
+import android.content.Context
+import android.net.Uri
+import androidx.documentfile.provider.DocumentFile
+import com.androidharness.app.tools.ToolFailure
+import java.io.File
+
+/**
+ * Abstraction over the agent workspace so tools work identically on a real
+ * directory (app-private storage) and on a user-picked SAF document tree.
+ */
+interface WorkspaceFs {
+    /** Human-readable location shown in the UI and the system prompt. */
+    val displayPath: String
+
+    /** Real directory usable as a shell cwd, or null for SAF workspaces. */
+    val shellRoot: File?
+
+    val isSaf: Boolean
+
+    /** Resolve [path] (relative to the root) into a node. Throws on escape. */
+    fun resolve(path: String): FsNode
+
+    fun walk(path: String): Sequence<FsNode>
+}
+
+interface FsNode {
+    val relPath: String
+    val name: String
+    val exists: Boolean
+    val isDirectory: Boolean
+    val isFile: Boolean
+    val length: Long
+
+    fun list(): List<FsNode>
+    fun readText(): String
+    /** Writes content, creating the file and parent directories as needed. */
+    fun writeText(content: String)
+
+    /** Creates a directory at this node (including parents). */
+    fun mkdirs()
+
+    /** Deletes this node (recursively for directories). Returns success. */
+    fun delete(): Boolean
+
+    /** Renames/moves this node to [newName] within the same parent. */
+    fun renameTo(newName: String): Boolean
+}
+
+// ---------------------------------------------------------------------------
+// Real-filesystem implementation (app-private storage)
+// ---------------------------------------------------------------------------
+
+class FileFs(private val root: File) : WorkspaceFs {
+    override val displayPath: String = root.absolutePath
+    override val shellRoot: File = root
+    override val isSaf = false
+
+    init {
+        root.mkdirs()
+    }
+
+    override fun resolve(path: String): FsNode {
+        val rootPath = root.canonicalFile.toPath()
+        val resolved = rootPath.resolve(path).normalize()
+        if (!resolved.startsWith(rootPath)) {
+            throw ToolFailure("Path is outside the workspace and was blocked: $path")
+        }
+        return FileFsNode(resolved.toFile(), rootPath)
+    }
+
+    override fun walk(path: String): Sequence<FsNode> {
+        val node = resolve(path)
+        if (!node.exists) throw ToolFailure("Path does not exist: $path")
+        if (node.isFile) return sequenceOf(node)
+        val rootPath = root.canonicalFile.toPath()
+        return (node as FileFsNode).file.walkTopDown().map { FileFsNode(it, rootPath) }
+    }
+}
+
+class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsNode {
+    override val relPath: String
+        get() = rootPath.relativize(file.canonicalFile.toPath()).toString().ifBlank { "." }
+    override val name: String get() = file.name
+    override val exists: Boolean get() = file.exists()
+    override val isDirectory: Boolean get() = file.isDirectory
+    override val isFile: Boolean get() = file.isFile
+    override val length: Long get() = file.length()
+
+    override fun list(): List<FsNode> =
+        file.listFiles().orEmpty().map { FileFsNode(it, rootPath) }
+
+    override fun readText(): String = file.readText()
+
+    override fun writeText(content: String) {
+        file.parentFile?.mkdirs()
+        file.writeText(content)
+    }
+
+    override fun mkdirs() {
+        file.mkdirs()
+    }
+
+    override fun delete(): Boolean =
+        if (file.isDirectory) file.deleteRecursively() else file.delete()
+
+    override fun renameTo(newName: String): Boolean =
+        file.renameTo(File(file.parentFile, newName))
+}
+
+// ---------------------------------------------------------------------------
+// SAF (user-picked folder) implementation
+// ---------------------------------------------------------------------------
+
+class SafFs(
+    private val context: Context,
+    treeUri: Uri,
+) : WorkspaceFs {
+    private val root: DocumentFile? = DocumentFile.fromTreeUri(context, treeUri)
+
+    override val displayPath: String =
+        root?.name?.let { "$it (picked folder)" } ?: treeUri.lastPathSegment ?: "picked folder"
+    override val shellRoot: File? = null
+    override val isSaf = true
+
+    private fun requireRoot(): DocumentFile =
+        root?.takeIf { it.canWrite() }
+            ?: throw ToolFailure("The picked workspace folder is no longer accessible. Choose it again in Settings.")
+
+    override fun resolve(path: String): FsNode {
+        val rootDoc = requireRoot()
+        val segments = path.split('/', '\\')
+            .filter { it.isNotBlank() && it != "." }
+        if (segments.any { it == ".." }) {
+            throw ToolFailure("Path is outside the workspace and was blocked: $path")
+        }
+        var current = rootDoc
+        var consumed = 0
+        for (segment in segments) {
+            val next = current.findFile(segment)
+            if (next == null) break
+            current = next
+            consumed++
+        }
+        return SafFsNode(context, current, segments.drop(consumed), segments)
+    }
+
+    override fun walk(path: String): Sequence<FsNode> {
+        val node = resolve(path)
+        if (!node.exists) throw ToolFailure("Path does not exist: $path")
+        if (node.isFile) return sequenceOf(node)
+        return sequence {
+            val stack = ArrayDeque<FsNode>()
+            stack.add(node)
+            while (stack.isNotEmpty()) {
+                val n = stack.removeFirst()
+                if (n.isDirectory) n.list().forEach { stack.add(it) } else yield(n)
+            }
+        }
+    }
+}
+
+/**
+ * A node in a SAF tree. [missingSegments] are the trailing path segments that
+ * do not exist yet (for write_text creating nested paths).
+ */
+class SafFsNode(
+    private val context: Context,
+    private val doc: DocumentFile,
+    private val missingSegments: List<String>,
+    private val allSegments: List<String>,
+) : FsNode {
+    override val relPath: String =
+        if (allSegments.isEmpty()) "." else allSegments.joinToString("/")
+    override val name: String get() = doc.name ?: allSegments.lastOrNull() ?: "."
+    override val exists: Boolean get() = missingSegments.isEmpty() && doc.exists()
+    override val isDirectory: Boolean get() = exists && doc.isDirectory
+    override val isFile: Boolean get() = exists && doc.isFile
+    override val length: Long get() = doc.length()
+
+    override fun list(): List<FsNode> {
+        if (!isDirectory) return emptyList()
+        return doc.listFiles().map { child ->
+            SafFsNode(context, child, emptyList(), allSegments + (child.name ?: "?"))
+        }
+    }
+
+    override fun readText(): String {
+        if (!isFile) throw ToolFailure("Not a file: $relPath")
+        return context.contentResolver.openInputStream(doc.uri)?.use { input ->
+            input.bufferedReader().readText()
+        } ?: throw ToolFailure("Could not open $relPath")
+    }
+
+    override fun writeText(content: String) {
+        val target = when {
+            // existing file resolved directly
+            missingSegments.isEmpty() && doc.isFile -> doc
+            // path resolved to a directory — nothing to write
+            missingSegments.isEmpty() -> throw ToolFailure("Not a file: $relPath")
+            else -> {
+                var dir = doc
+                for (segment in missingSegments.dropLast(1)) {
+                    dir = dir.findFile(segment)?.takeIf { it.isDirectory }
+                        ?: dir.createDirectory(segment)
+                        ?: throw ToolFailure("Could not create folder $segment")
+                }
+                val fileName = missingSegments.last()
+                dir.findFile(fileName)?.takeIf { it.isFile }
+                    ?: dir.createFile(mimeFor(fileName), fileName)
+                    ?: throw ToolFailure("Could not create file $relPath")
+            }
+        }
+        context.contentResolver.openOutputStream(target.uri, "wt")?.use { out ->
+            out.write(content.toByteArray())
+        } ?: throw ToolFailure("Could not write $relPath")
+    }
+
+    override fun mkdirs() {
+        var dir = doc
+        for (segment in missingSegments) {
+            dir = dir.findFile(segment)?.takeIf { it.isDirectory }
+                ?: dir.createDirectory(segment)
+                ?: throw ToolFailure("Could not create folder $segment")
+        }
+    }
+
+    override fun delete(): Boolean = exists && doc.delete()
+
+    override fun renameTo(newName: String): Boolean = exists && doc.renameTo(newName)
+
+    private fun mimeFor(fileName: String): String = when (fileName.substringAfterLast('.', "")) {
+        "kt", "java", "py", "js", "ts", "c", "cpp", "h", "md", "txt", "json", "xml", "yml", "yaml", "toml", "gradle", "kts" -> "text/plain"
+        "html", "htm" -> "text/html"
+        "css" -> "text/css"
+        else -> "application/octet-stream"
+    }
+}

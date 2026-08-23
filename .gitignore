@@ -1,0 +1,34 @@
+# --- Build outputs / local machine ---
+build/
+.gradle/
+.kotlin/
+local.properties
+*.apk
+*.aab
+*.ap_
+captures/
+
+# --- IDE ---
+.idea/
+*.iml
+.vscode/
+.run/
+
+# --- AI assistant working files ---
+.zcode/
+.claude/
+.agents/
+.codegraph/
+.cursor/
+skills/
+graphify-out/
+
+# --- Not part of the published source tree ---
+docs/
+screenshots/
+mock-server.js
+README.full.md
+
+# --- OS noise ---
+.DS_Store
+Thumbs.db
