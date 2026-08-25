@@ -18,10 +18,13 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
@@ -35,6 +38,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -48,6 +52,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.TodoItem
 import com.androidharness.app.ui.chat.ChatUiState
+import com.androidharness.app.ui.chat.SlashCommands
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastSpatialSpec
@@ -129,7 +134,7 @@ internal fun TodoCard(todos: List<TodoItem>) {
                 )
                 Spacer(Modifier.width(8.dp))
                 Text(
-                    "Tasks · $done/${todos.size}" + (active?.let { " — ${it.content}" } ?: ""),
+                    "Tasks · $done/${todos.size}" + (active?.let { " · ${it.content}" } ?: ""),
                     style = MaterialTheme.typography.labelMedium,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -178,18 +183,21 @@ internal fun TodoCard(todos: List<TodoItem>) {
     }
 }
 
-/** "Send when done" queued-message pill; tap anywhere to cancel. */
+/**
+ * Queued mid-run message. Default is wait for the next iteration.
+ * Steer stops the agent and sends this text as a new turn.
+ */
 @Composable
 internal fun QueuedMessageChip(
     text: String,
     onCancel: () -> Unit,
+    onSteer: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     Surface(
         color = scheme.surface,
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        onClick = onCancel,
         modifier = Modifier
             .fillMaxWidth()
             .padding(horizontal = 12.dp),
@@ -198,19 +206,29 @@ internal fun QueuedMessageChip(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 12.dp, vertical = 6.dp),
+                .padding(start = 12.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
         ) {
             DotLoading(dotSize = 3.dp, color = scheme.onSurfaceVariant)
             Spacer(Modifier.width(8.dp))
-            Text(
-                "Queued: ${text.take(60)}",
-                style = MaterialTheme.typography.labelMedium,
-                color = scheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.weight(1f),
-            )
-            IconButton(onClick = onCancel, modifier = Modifier.size(24.dp)) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text.take(80),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "Sends after this turn",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+            TextButton(onClick = onSteer) {
+                Text("Steer")
+            }
+            IconButton(onClick = onCancel, modifier = Modifier.size(28.dp)) {
                 Icon(Icons.Filled.Close, contentDescription = "Cancel queue", modifier = Modifier.size(15.dp))
             }
         }
@@ -250,51 +268,114 @@ internal fun AttachmentChips(
     }
 }
 
-/** The "/" command suggestions that appear above the composer while typing. */
+private data class SlashEntry(
+    val command: String,
+    val title: String,
+    val subtitle: String,
+    val kind: SlashCommands.Kind,
+)
+
+/** "/" menu: a short filtered list over the messages, never covering the composer. */
 @Composable
 internal fun SlashSuggestions(
     state: ChatUiState,
+    query: String,
     expanded: Boolean,
-    onPick: (String) -> Unit,
+    onPick: (command: String, kind: SlashCommands.Kind) -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val typed = remember(query) { query.removePrefix("/").trim().lowercase() }
+    val entries = remember(state.skills, state.snippets) {
+        buildList {
+            add(SlashEntry("/clear", "New chat", "Start a fresh conversation", SlashCommands.Kind.CLEAR))
+            add(SlashEntry("/compact", "Compact", "Summarize older context", SlashCommands.Kind.COMPACT))
+            add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
+            add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
+            add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
+            state.skills.filter { it.enabled }.forEach { skill ->
+                add(SlashEntry("/${skill.name}", skill.name, skill.description, SlashCommands.Kind.SKILL))
+            }
+            state.snippets.forEach { snippet ->
+                add(SlashEntry("/${snippet.name}", snippet.name, "Saved prompt snippet", SlashCommands.Kind.SNIPPET))
+            }
+        }
+    }
+    val filtered = remember(entries, typed) {
+        if (typed.isEmpty()) entries
+        else entries.filter { entry ->
+            entry.command.removePrefix("/").contains(typed) ||
+                entry.title.lowercase().contains(typed) ||
+                entry.subtitle.lowercase().contains(typed)
+        }
+    }.take(8)
+
     AnimatedVisibility(
-        visible = expanded && !state.busy,
+        visible = expanded,
         enter = fadeIn(tween(150)) + expandVertically(animationSpec = tween(200)),
         exit = fadeOut(tween(120)) + shrinkVertically(animationSpec = tween(150)),
+        modifier = modifier.fillMaxWidth(),
     ) {
-        Row(
+        Surface(
+            color = scheme.surfaceContainerLow,
+            shape = MaterialTheme.shapes.large,
+            border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp),
-            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                .padding(horizontal = 12.dp, vertical = 4.dp),
         ) {
-            listOf("/clear", "/compact", "/cost", "/init").forEach { cmd ->
-                Surface(
-                    color = scheme.surfaceContainerLow,
-                    shape = MaterialTheme.shapes.small,
-                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-                    onClick = { onPick(cmd) },
-                ) {
+            Column(
+                Modifier
+                    .padding(vertical = 4.dp)
+                    .heightIn(max = 280.dp)
+                    .verticalScroll(rememberScrollState()),
+            ) {
+                if (filtered.isEmpty()) {
                     Text(
-                        cmd,
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelMedium,
+                        "No matches for /$typed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
                     )
-                }
-            }
-            state.snippets.take(5).forEach { snippet ->
-                Surface(
-                    color = scheme.surfaceContainerLow,
-                    shape = MaterialTheme.shapes.small,
-                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-                    onClick = { onPick("/${snippet.name}") },
-                ) {
-                    Text(
-                        "/${snippet.name}",
-                        modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
-                        style = MaterialTheme.typography.labelMedium,
-                    )
+                } else {
+                    filtered.forEach { entry ->
+                        Surface(
+                            onClick = { onPick(entry.command, entry.kind) },
+                            color = scheme.surfaceContainerLow,
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 9.dp),
+                            ) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(
+                                        entry.command,
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                    Text(
+                                        entry.subtitle,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = scheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                                Spacer(Modifier.width(8.dp))
+                                Text(
+                                    when (entry.kind) {
+                                        SlashCommands.Kind.SKILL -> "Skill"
+                                        SlashCommands.Kind.SNIPPET -> "Snippet"
+                                        else -> "Command"
+                                    },
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = scheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }

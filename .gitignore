@@ -32,3 +32,6 @@ README.full.md
 # --- OS noise ---
 .DS_Store
 Thumbs.db
+
+# --- AI assistant working files --- (continued)
+.hermes/

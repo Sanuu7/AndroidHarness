@@ -13,6 +13,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Article
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.Build
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.CreateNewFolder
@@ -57,6 +58,7 @@ internal fun toolIcon(name: String): ImageVector = when (name) {
     "todo_write" -> Icons.Outlined.Checklist
     "memory_write" -> Icons.Outlined.EditNote
     "bg_list", "bg_kill" -> Icons.Outlined.Terminal
+    "skill_view", "skills_list", "skill_manage" -> Icons.Outlined.AutoStories
     else -> Icons.Outlined.Build
 }
 

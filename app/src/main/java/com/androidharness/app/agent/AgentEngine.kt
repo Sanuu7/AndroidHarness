@@ -158,6 +158,7 @@ class AgentEngine(
     private val imageStore: ImageStore,
     private val linuxEnv: com.androidharness.app.data.env.LinuxEnvironmentManager,
     private val shizuku: com.androidharness.app.data.env.ShizukuManager,
+    private val skills: com.androidharness.app.skills.SkillStore,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -1077,6 +1078,8 @@ Rules:
                     "- Explore what is needed, then finish with a clear, concrete, step-by-step plan the user can approve.\n"
             )
         }
+        val catalog = skills.catalog()
+        if (catalog.isNotBlank()) sb.append('\n').append(catalog).append('\n')
         agentsFile?.let {
             sb.append("\n# AGENTS.md (project instructions)\n").append(it).append('\n')
         }

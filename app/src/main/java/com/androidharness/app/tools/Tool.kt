@@ -47,6 +47,7 @@ class ToolRegistry(tools: List<Tool>) {
             linuxEnv: com.androidharness.app.data.env.LinuxEnvironmentManager,
             shizuku: com.androidharness.app.data.env.ShizukuManager,
             shellRouter: com.androidharness.app.data.env.ShellTierRouter,
+            skills: com.androidharness.app.skills.SkillStore,
         ): ToolRegistry = ToolRegistry(
             listOf(
                 ListDirTool(),
@@ -75,6 +76,9 @@ class ToolRegistry(tools: List<Tool>) {
                 TaskTool(),
                 MemoryWriteTool(),
                 TodoWriteTool(todoStore),
+                SkillViewTool(skills),
+                SkillsListTool(skills),
+                SkillManageTool(skills),
             )
         )
     }

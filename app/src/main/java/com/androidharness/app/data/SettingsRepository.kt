@@ -38,6 +38,8 @@ data class AppSettings(
      * provider entry's saved default model.
      */
     val activeModel: String? = null,
+    /** Skill names hidden from the catalog and slash picker. */
+    val disabledSkills: Set<String> = emptySet(),
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -62,6 +64,7 @@ class SettingsRepository(private val context: Context) {
         val ARCHIVED = stringSetPreferencesKey("archived_sessions")
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val ACTIVE_MODEL = stringPreferencesKey("active_model")
+        val DISABLED_SKILLS = stringSetPreferencesKey("disabled_skills")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -85,6 +88,7 @@ class SettingsRepository(private val context: Context) {
             archivedSessions = prefs[Keys.ARCHIVED] ?: emptySet(),
             onboardingDone = prefs[Keys.ONBOARDING_DONE] ?: false,
             activeModel = prefs[Keys.ACTIVE_MODEL],
+            disabledSkills = prefs[Keys.DISABLED_SKILLS] ?: emptySet(),
         )
     }
 
@@ -143,6 +147,13 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setOnboardingDone(done: Boolean) {
         context.settingsStore.edit { it[Keys.ONBOARDING_DONE] = done }
+    }
+
+    suspend fun setSkillEnabled(name: String, enabled: Boolean) {
+        context.settingsStore.edit { prefs ->
+            val current = prefs[Keys.DISABLED_SKILLS] ?: emptySet()
+            prefs[Keys.DISABLED_SKILLS] = if (enabled) current - name else current + name
+        }
     }
 
     /** Model override for the ACTIVE provider; null falls back to its saved default. */

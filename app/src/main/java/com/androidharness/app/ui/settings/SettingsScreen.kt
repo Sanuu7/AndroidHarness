@@ -30,6 +30,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
@@ -92,6 +93,7 @@ fun SettingsScreen(
     onBack: () -> Unit,
     onOpenStats: () -> Unit = {},
     onRunSetup: () -> Unit = {},
+    onOpenSkills: () -> Unit = {},
 ) {
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -138,6 +140,7 @@ fun SettingsScreen(
                 scope = scope,
                 onOpenStats = onOpenStats,
                 onRunSetup = onRunSetup,
+                onOpenSkills = onOpenSkills,
             )
 
             WorkspaceSection(
@@ -573,6 +576,7 @@ private fun AgentSection(
     scope: kotlinx.coroutines.CoroutineScope,
     onOpenStats: () -> Unit,
     onRunSetup: () -> Unit = {},
+    onOpenSkills: () -> Unit = {},
 ) {
     SettingsHeader("Agent")
     var showAgentsDialog by remember { mutableStateOf(false) }
@@ -613,6 +617,14 @@ private fun AgentSection(
                 title = "Project instructions (AGENTS.md)",
                 subtitle = "Injected into every run for this workspace",
                 onClick = { showAgentsDialog = true },
+                divider = true,
+            )
+
+            SettingRow(
+                icon = Icons.Outlined.AutoStories,
+                title = "Skills",
+                subtitle = "Catalog, toggles, add your own playbooks",
+                onClick = onOpenSkills,
                 divider = true,
             )
 

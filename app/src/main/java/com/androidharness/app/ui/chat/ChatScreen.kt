@@ -78,6 +78,8 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ChatMessage
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import com.androidharness.app.ui.chat.components.AgentStatusBar
 import com.androidharness.app.ui.chat.components.ApprovalCard
 import com.androidharness.app.ui.chat.components.AssistantText
@@ -91,6 +93,10 @@ import com.androidharness.app.ui.chat.components.PlanApprovalCard
 import com.androidharness.app.ui.chat.components.QuestionCard
 import com.androidharness.app.ui.chat.components.QueuedMessageChip
 import com.androidharness.app.ui.chat.components.RewindButton
+import com.androidharness.app.skills.slashInvokedSkillName
+import com.androidharness.app.skills.slashSkillInstruction
+import com.androidharness.app.ui.chat.components.SkillsPickerSheet
+import com.androidharness.app.ui.chat.components.SkillUsedBadge
 import com.androidharness.app.ui.chat.components.SlashSuggestions
 import com.androidharness.app.ui.chat.components.SubagentCard
 import com.androidharness.app.ui.chat.components.SubagentPagerCard
@@ -131,6 +137,8 @@ fun ChatScreen(
     var showWorkspaceSwitcher by remember { mutableStateOf(false) }
     var showAddWorkspace by remember { mutableStateOf(false) }
     var slashExpanded by remember { mutableStateOf(false) }
+    var composerText by remember { mutableStateOf("") }
+    var attachedSkill by remember { mutableStateOf<String?>(null) }
 
     val clipboard = LocalClipboardManager.current
     var actionsMessage by remember { mutableStateOf<ChatMessage?>(null) }
@@ -171,6 +179,18 @@ fun ChatScreen(
             onSetThinking = viewModel::setThinkingLevel,
             // Provider management stays in-conversation: a sheet, not a screen.
             onManageProviders = { showProviderManager = true },
+        )
+    }
+    if (state.showSkillsSheet) {
+        SkillsPickerSheet(
+            skills = state.skills,
+            onDismiss = viewModel::dismissSkillsSheet,
+            onPick = { skill ->
+                viewModel.dismissSkillsSheet()
+                attachedSkill = skill.name
+                composerText = ""
+                slashExpanded = false
+            },
         )
     }
     if (showProviderManager) {
@@ -594,8 +614,13 @@ fun ChatScreen(
                             Role.USER -> item(key = "message-$messageKey-user") {
                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                     Column(horizontalAlignment = Alignment.End) {
+                                        slashInvokedSkillName(message.text)?.let { skillName ->
+                                            SkillUsedBadge(skillName)
+                                        }
                                         UserBubble(
-                                            message.text,
+                                            slashSkillInstruction(message.text)
+                                                ?.ifBlank { "/${slashInvokedSkillName(message.text)}" }
+                                                ?: message.text,
                                             message.images,
                                             onLongPress = { actionsMessage = message },
                                         )
@@ -622,6 +647,23 @@ fun ChatScreen(
                                     item(key = "message-$messageKey-text") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             Column {
+                                                val used = message.toolCalls
+                                                    .filter { it.name == "skill_view" }
+                                                    .mapNotNull { call ->
+                                                        runCatching {
+                                                            kotlinx.serialization.json.Json.parseToJsonElement(call.argumentsJson)
+                                                                .jsonObject["name"]?.jsonPrimitive?.content
+                                                        }.getOrNull()
+                                                    }
+                                                    .distinct()
+                                                if (used.isNotEmpty()) {
+                                                    Row(
+                                                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                                        modifier = Modifier.padding(bottom = 4.dp),
+                                                    ) {
+                                                        used.forEach { SkillUsedBadge(it) }
+                                                    }
+                                                }
                                                 AssistantText(message.text)
                                                 // Turn-final extras: diff chips + how
                                                 // long the whole turn took.
@@ -797,6 +839,33 @@ fun ChatScreen(
 
                 // Floating jump-to-latest button while detached from the
                 // bottom; pulses when new content lands while away.
+                SlashSuggestions(
+                    state = state,
+                    query = composerText,
+                    expanded = slashExpanded && attachedSkill == null,
+                    onPick = { cmd, kind ->
+                        when (val action = SlashCommands.pickAction(cmd, composerText, kind)) {
+                            is SlashCommands.Pick.AttachSkill -> {
+                                attachedSkill = action.name
+                                composerText = action.leftover
+                                slashExpanded = false
+                            }
+                            is SlashCommands.Pick.Insert -> {
+                                composerText = action.text
+                                slashExpanded = true
+                            }
+                            is SlashCommands.Pick.Send -> {
+                                viewModel.send(action.text)
+                                composerText = ""
+                                attachedSkill = null
+                                slashExpanded = false
+                            }
+                        }
+                    },
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(bottom = 8.dp),
+                )
                 ScrollToBottomFab(
                     visible = !pinnedToBottom,
                     unread = unreadWhileAway,
@@ -833,14 +902,12 @@ fun ChatScreen(
                     TodoCard(state.todos)
                 }
 
-                SlashSuggestions(
-                    state = state,
-                    expanded = slashExpanded,
-                    onPick = { cmd -> viewModel.send(cmd) },
-                )
-
                 state.queuedMessage?.let { queued ->
-                    QueuedMessageChip(text = queued, onCancel = viewModel::cancelQueuedMessage)
+                    QueuedMessageChip(
+                        text = queued,
+                        onCancel = viewModel::cancelQueuedMessage,
+                        onSteer = viewModel::steerQueuedMessage,
+                    )
                 }
 
                 if (state.attachments.isNotEmpty()) {
@@ -853,12 +920,24 @@ fun ChatScreen(
                 AgentStatusBar(action = state.currentAction, busy = state.busy)
                 MessageComposer(
                     busy = state.busy,
-                    onSend = { text -> viewModel.send(text); slashExpanded = false },
+                    text = composerText,
+                    attachedSkill = attachedSkill,
+                    onTextChange = { input ->
+                        composerText = input
+                        slashExpanded = attachedSkill == null && input.startsWith("/")
+                    },
+                    onClearSkill = { attachedSkill = null },
+                    onSend = {
+                        val payload = SlashCommands.composeSend(attachedSkill, composerText)
+                        if (payload.isNotBlank()) {
+                            viewModel.send(payload)
+                            composerText = ""
+                            attachedSkill = null
+                            slashExpanded = false
+                        }
+                    },
                     onStop = viewModel::stop,
                     onAttach = { galleryLauncher.launch("image/*") },
-                    onTextChange = { input ->
-                        slashExpanded = input.startsWith("/")
-                    },
                 )
             }
         }
@@ -904,7 +983,7 @@ private fun UndoIconButton(onClick: () -> Unit) {
     }
 }
 
-/** "+N −M" chips per edited file, for the turn-final assistant message. */
+/** "+N −M" chips per edited file, merged across every edit in the turn. */
 @Composable
 private fun FileEditChips(
     edits: List<com.androidharness.app.data.db.FileEditEntity>,
@@ -912,11 +991,17 @@ private fun FileEditChips(
 ) {
     val scheme = MaterialTheme.colorScheme
     val statusColors = com.androidharness.app.ui.theme.LocalStatusColors.current
+    val merged = remember(edits) {
+        edits.groupBy { it.relPath }.map { (path, group) ->
+            path to Pair(group.sumOf { it.added }, group.sumOf { it.removed })
+        }
+    }
     Row(
         modifier = modifier.horizontalScroll(rememberScrollState()),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        edits.forEach { edit ->
+        merged.forEach { (path, counts) ->
+            val (added, removed) = counts
             Surface(
                 shape = MaterialTheme.shapes.small,
                 color = scheme.surfaceContainerLow,
@@ -928,24 +1013,24 @@ private fun FileEditChips(
                     modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
                 ) {
                     Text(
-                        edit.relPath.substringAfterLast('/'),
+                        path.substringAfterLast('/'),
                         style = MaterialTheme.typography.labelSmall,
                         fontFamily = FontFamily.Monospace,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                         modifier = Modifier.widthIn(max = 140.dp),
                     )
-                    if (edit.added > 0) {
+                    if (added > 0) {
                         Text(
-                            "+${edit.added}",
+                            "+$added",
                             style = MaterialTheme.typography.labelSmall,
                             fontFamily = FontFamily.Monospace,
                             color = statusColors.success,
                         )
                     }
-                    if (edit.removed > 0) {
+                    if (removed > 0) {
                         Text(
-                            "−${edit.removed}",
+                            "-$removed",
                             style = MaterialTheme.typography.labelSmall,
                             fontFamily = FontFamily.Monospace,
                             color = scheme.error,

@@ -17,11 +17,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material3.Icon
@@ -31,9 +33,6 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -46,37 +45,43 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
 /**
  * Message composer: a flat hairline-outlined pill.
  *
- * The circular action button is the one strong accent on the screen —
- * accent when there's text to send, red while the agent runs (tap = stop),
- * neutral when empty. Send ↔ stop morphs with a fast crossfade+scale.
+ * While the agent is idle the circular action is send. While it is running
+ * with an empty field the circle is stop. Type while it is running and send
+ * stays send (queues for the next iteration) with a smaller stop next to it.
  */
 @Composable
 internal fun MessageComposer(
     busy: Boolean,
-    onSend: (String) -> Unit,
+    text: String,
+    attachedSkill: String?,
+    onTextChange: (String) -> Unit,
+    onClearSkill: () -> Unit,
+    onSend: () -> Unit,
     onStop: () -> Unit,
     onAttach: () -> Unit,
-    onTextChange: (String) -> Unit,
 ) {
-    var text by remember { mutableStateOf("") }
     val scheme = MaterialTheme.colorScheme
     val fxSpec = defaultEffectsSpec<Float>()
+    val hasText = text.isNotBlank()
+    val canSend = hasText || !attachedSkill.isNullOrBlank()
+    val showQueueSend = busy && canSend
+    val showStopOnly = busy && !canSend
     val actionColor by animateColorAsState(
         targetValue = when {
-            busy -> scheme.error
-            text.isNotBlank() -> scheme.primary
+            showStopOnly -> scheme.error
+            canSend -> scheme.primary
             else -> scheme.surfaceContainerHighest
         },
         animationSpec = fastEffectsSpec(),
         label = "composer action color",
     )
     val actionContentColor = when {
-        busy -> scheme.onError
-        text.isNotBlank() -> scheme.onPrimary
+        showStopOnly -> scheme.onError
+        canSend -> scheme.onPrimary
         else -> scheme.onSurfaceVariant
     }
     val actionScale by animateFloatAsState(
-        targetValue = if (busy || text.isNotBlank()) 1f else 0.94f,
+        targetValue = if (busy || canSend) 1f else 0.94f,
         animationSpec = fastEffectsSpec(),
         label = "composer action scale",
     )
@@ -102,12 +107,36 @@ internal fun MessageComposer(
                         modifier = Modifier.size(19.dp),
                     )
                 }
+                if (!attachedSkill.isNullOrBlank()) {
+                    Surface(
+                        shape = RoundedCornerShape(14.dp),
+                        color = scheme.secondaryContainer,
+                        contentColor = scheme.onSecondaryContainer,
+                        onClick = onClearSkill,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(start = 10.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                        ) {
+                            Text(
+                                attachedSkill,
+                                style = MaterialTheme.typography.labelMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.widthIn(max = 120.dp),
+                            )
+                            Icon(
+                                Icons.Filled.Close,
+                                contentDescription = "Remove skill",
+                                modifier = Modifier.size(14.dp),
+                            )
+                        }
+                    }
+                    Spacer(Modifier.width(6.dp))
+                }
                 BasicTextField(
                     value = text,
-                    onValueChange = {
-                        text = it
-                        onTextChange(it)
-                    },
+                    onValueChange = onTextChange,
                     modifier = Modifier
                         .weight(1f)
                         .padding(vertical = 10.dp),
@@ -115,7 +144,11 @@ internal fun MessageComposer(
                         Box(contentAlignment = Alignment.CenterStart) {
                             if (text.isEmpty()) {
                                 Text(
-                                    "Message your agent…",
+                                    when {
+                                        !attachedSkill.isNullOrBlank() -> "Add a note, or send…"
+                                        busy -> "Queue a message, or stop…"
+                                        else -> "Message your agent…"
+                                    },
                                     style = MaterialTheme.typography.bodyLarge,
                                     color = scheme.onSurfaceVariant,
                                     maxLines = 1,
@@ -130,6 +163,28 @@ internal fun MessageComposer(
                     maxLines = 5,
                 )
                 Spacer(Modifier.width(6.dp))
+                if (showQueueSend) {
+                    Surface(
+                        shape = CircleShape,
+                        color = scheme.errorContainer,
+                        contentColor = scheme.onErrorContainer,
+                        modifier = Modifier.size(36.dp),
+                    ) {
+                        Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
+                            IconButton(
+                                onClick = onStop,
+                                modifier = Modifier.fillMaxSize(),
+                            ) {
+                                Icon(
+                                    Icons.Filled.Stop,
+                                    contentDescription = "Stop",
+                                    modifier = Modifier.size(16.dp),
+                                )
+                            }
+                        }
+                    }
+                    Spacer(Modifier.width(6.dp))
+                }
                 Surface(
                     shape = CircleShape,
                     color = actionColor,
@@ -140,27 +195,30 @@ internal fun MessageComposer(
                 ) {
                     Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
                         IconButton(
-                            enabled = busy || text.isNotBlank(),
+                            enabled = busy || canSend,
                             onClick = {
-                                if (busy) onStop()
-                                else if (text.isNotBlank()) {
-                                    onSend(text)
-                                    text = ""
+                                when {
+                                    showQueueSend || canSend -> onSend()
+                                    showStopOnly -> onStop()
                                 }
                             },
                             modifier = Modifier.fillMaxSize(),
                         ) {
                             AnimatedContent(
-                                targetState = busy,
+                                targetState = showStopOnly,
                                 transitionSpec = {
                                     (fadeIn(fxSpec) + scaleIn(fxSpec, initialScale = 0.7f))
                                         .togetherWith(fadeOut(fxSpec) + scaleOut(fxSpec, targetScale = 0.7f))
                                 },
                                 label = "composer action",
-                            ) { running ->
+                            ) { stopOnly ->
                                 Icon(
-                                    if (running) Icons.Filled.Stop else Icons.AutoMirrored.Filled.Send,
-                                    contentDescription = if (running) "Stop" else "Send",
+                                    if (stopOnly) Icons.Filled.Stop else Icons.AutoMirrored.Filled.Send,
+                                    contentDescription = when {
+                                        stopOnly -> "Stop"
+                                        busy -> "Queue message"
+                                        else -> "Send"
+                                    },
                                     modifier = Modifier.size(18.dp),
                                 )
                             }

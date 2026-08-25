@@ -91,6 +91,8 @@ data class ChatUiState(
     val todos: List<TodoItem> = emptyList(),
     val turnsWithCheckpoints: Set<String> = emptySet(),
     val snippets: List<SnippetEntity> = emptyList(),
+    val skills: List<com.androidharness.app.skills.SkillMeta> = emptyList(),
+    val showSkillsSheet: Boolean = false,
     val showCostDialog: Boolean = false,
     val workspaceName: String = "",
     val currentToolAction: String? = null,
@@ -144,6 +146,7 @@ class ChatViewModel(
     private var sessionId: String? = initialSessionId
     private val sessionIdFlow = MutableStateFlow(initialSessionId)
     private var pendingAttachments = mutableListOf<ImageRef>()
+    private var steering = false
 
     /**
      * Streaming content kept on screen while waiting for the committed row to
@@ -213,8 +216,13 @@ class ChatViewModel(
             }
         }
         viewModelScope.launch {
+            c.settings.settings.collect {
+                _state.update { st -> st.copy(skills = c.skills.list()) }
+            }
+        }
+        viewModelScope.launch {
             c.workspace.currentProject.collect { project ->
-                _state.update { it.copy(workspaceName = project.name) }
+                _state.update { it.copy(workspaceName = project.name, skills = c.skills.list()) }
             }
         }
         viewModelScope.launch {
@@ -424,67 +432,80 @@ class ChatViewModel(
         val trimmed = rawText.trim()
         if (trimmed.isEmpty()) return
 
-        if (trimmed.startsWith("/")) {
-            if (!handleSlashCommand(trimmed)) return
+        val resolved = if (trimmed.startsWith("/")) {
+            SlashCommands.resolve(
+                input = trimmed,
+                skillNames = c.skills.slashNames(),
+                snippetBodies = _state.value.snippets.associate { it.name to it.body },
+                skillContent = { name -> c.skills.view(name).getOrNull()?.content },
+            )
+        } else {
+            SlashCommands.Result(SlashCommands.Kind.PLAIN, agentText = trimmed)
         }
 
+        when (resolved.kind) {
+            SlashCommands.Kind.CLEAR -> {
+                _navEvents.tryEmit(NavEvent.NewChat)
+                return
+            }
+            SlashCommands.Kind.COMPACT -> {
+                viewModelScope.launch { forceCompact() }
+                return
+            }
+            SlashCommands.Kind.COST -> {
+                _state.update { it.copy(showCostDialog = true) }
+                return
+            }
+            SlashCommands.Kind.SKILLS -> {
+                _state.update { it.copy(showSkillsSheet = true, skills = c.skills.list()) }
+                return
+            }
+            SlashCommands.Kind.UNKNOWN -> {
+                _state.update { it.copy(error = resolved.error) }
+                return
+            }
+            SlashCommands.Kind.PLAIN,
+            SlashCommands.Kind.INIT,
+            SlashCommands.Kind.SKILL,
+            SlashCommands.Kind.SNIPPET,
+            -> Unit
+        }
+
+        val agentText = resolved.agentText ?: return
         val sid = sessionId
         if (sid != null && c.runManager.isRunning(sid)) {
-            // Queue the message; the engine picks it up before its next turn.
-            c.runManager.inject(sid, trimmed)
+            // Queue the expanded text; the engine picks it up before its next turn.
+            // Local slash commands never reach here, so /cost /skills /clear keep working mid-run.
+            val target = SlashCommands.dispatchTarget(isRunning = true, agentText = agentText)
+            c.runManager.inject(sid, target.text)
             return
         }
-        startRun(trimmed)
-    }
-
-    /** Returns true if the command triggered a normal agent run. */
-    private fun handleSlashCommand(input: String): Boolean {
-        val parts = input.split(" ", limit = 2)
-        val command = parts[0].lowercase()
-        val argument = parts.getOrNull(1).orEmpty()
-
-        when (command) {
-            "/clear" -> {
-                _navEvents.tryEmit(NavEvent.NewChat)
-                return false
-            }
-            "/compact" -> {
-                viewModelScope.launch { forceCompact() }
-                return false
-            }
-            "/cost" -> {
-                _state.update { it.copy(showCostDialog = true) }
-                return false
-            }
-            "/init" -> {
-                startRun(
-                    "Explore this workspace thoroughly (files, structure, conventions), then write " +
-                        "an AGENTS.md at the workspace root describing the project, how to build/run it, " +
-                        "and the coding conventions future agent sessions should follow. " +
-                        "If an AGENTS.md already exists, improve it.",
-                )
-                return false
-            }
-            else -> {
-                val snippet = _state.value.snippets.firstOrNull {
-                    "/" + it.name.lowercase() == command
-                }
-                if (snippet != null) {
-                    val body = if (argument.isNotBlank()) {
-                        snippet.body.replace("\$ARG", argument)
-                    } else snippet.body
-                    startRun(body)
-                    return false
-                }
-                _state.update { it.copy(error = "Unknown command: $command") }
-                return false
-            }
-        }
+        startRun(agentText)
     }
 
     fun cancelQueuedMessage() {
         val sid = sessionId ?: return
         c.runManager.cancelQueued(sid)
+    }
+
+    /**
+     * Stops the in-flight run, then sends the queued text as a new turn.
+     * Default send-while-busy only injects at the next iteration.
+     */
+    fun steerQueuedMessage() {
+        val sid = sessionId ?: return
+        val text = _state.value.queuedMessage?.trim().orEmpty()
+        if (text.isEmpty() || steering) return
+        steering = true
+        c.runManager.cancelQueued(sid)
+        viewModelScope.launch {
+            try {
+                c.runManager.stopAndJoin(sid)
+                startRun(text)
+            } finally {
+                steering = false
+            }
+        }
     }
 
     fun addSnippet(name: String, body: String) {
@@ -497,6 +518,14 @@ class ChatViewModel(
 
     fun dismissCostDialog() {
         _state.update { it.copy(showCostDialog = false) }
+    }
+
+    fun dismissSkillsSheet() {
+        _state.update { it.copy(showSkillsSheet = false) }
+    }
+
+    fun openSkillsSheet() {
+        _state.update { it.copy(showSkillsSheet = true, skills = c.skills.list()) }
     }
 
     // ------------------------------------------------------------------

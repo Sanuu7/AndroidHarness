@@ -3,6 +3,8 @@ package com.androidharness.app.ui.chat.components
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -53,7 +55,7 @@ import kotlinx.coroutines.launch
  * a deliberate hop ("Switch provider" → manager sheet), never an accidental
  * scroll into another provider's models.
  */
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun ModelPickerSheet(
     providers: List<ProviderConfig>,
@@ -158,7 +160,11 @@ fun ModelPickerSheet(
                     color = scheme.onSurfaceVariant,
                     modifier = Modifier.padding(bottom = 6.dp),
                 )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
                     visible.forEach { level ->
                         FilterChip(
                             selected = thinkingLevel == level,
@@ -171,8 +177,8 @@ fun ModelPickerSheet(
                 }
                 if (thinkingLevel != ThinkingLevel.OFF && thinkingLevel !in visible) {
                     Text(
-                        "“${thinkingLevel.label}” isn't native to this model — " +
-                            "requests clamp to the nearest supported tier",
+                        "“${thinkingLevel.label}” isn't native to this model. " +
+                            "Requests clamp to the nearest supported tier",
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
                     )

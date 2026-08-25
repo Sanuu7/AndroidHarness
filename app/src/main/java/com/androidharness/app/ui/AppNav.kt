@@ -83,6 +83,7 @@ import com.androidharness.app.ui.files.CodeViewerScreen
 import com.androidharness.app.ui.files.FilesScreen
 import com.androidharness.app.ui.settings.ProvidersScreen
 import com.androidharness.app.ui.settings.SettingsScreen
+import com.androidharness.app.ui.settings.SkillsScreen
 import com.androidharness.app.ui.setup.SetupScreen
 import com.androidharness.app.ui.terminal.TerminalScreen
 import com.androidharness.app.ui.theme.fastEffectsSpec
@@ -127,7 +128,10 @@ fun AppNav(container: AppContainer) {
         Box(Modifier.fillMaxSize())
         return
     }
-    val needsSetup = !settings.onboardingDone && settings.activeProviderId == null
+    // Stay on setup until Skip or Start harness. Connecting a provider used
+    // to flip this and remount NavHost onto chat mid-flow.
+    val needsSetup = !settings.onboardingDone
+    val startDestination = remember { if (needsSetup) "setup" else "chat" }
 
     // Keyboard belongs to manual taps only. Two mechanisms fought this:
     // (1) the composer's focus survives the drawer opening, and (2) the
@@ -379,7 +383,7 @@ fun AppNav(container: AppContainer) {
     ) {
         NavHost(
             navController = nav,
-            startDestination = if (needsSetup) "setup" else "chat",
+            startDestination = startDestination,
             // Quiet transitions: a short fade with a small rise. No shared-element
             // theatrics — screens should feel instant.
             enterTransition = {
@@ -484,7 +488,11 @@ fun AppNav(container: AppContainer) {
                     onBack = { nav.popBackStack() },
                     onOpenStats = { nav.navigate("stats") },
                     onRunSetup = { nav.navigate("setup") },
+                    onOpenSkills = { nav.navigate("skills") },
                 )
+            }
+            composable("skills") {
+                SkillsScreen(container = container, onBack = { nav.popBackStack() })
             }
             composable("stats") {
                 com.androidharness.app.ui.stats.StatsScreen(

@@ -68,6 +68,9 @@ fun describeToolCall(call: ToolCallData): String {
         "task" -> "Delegating: ${arg("title") ?: "research subagent"}…"
         "memory_write" -> "Saving to memory…"
         "todo_write" -> "Updating task list…"
+        "skill_view" -> "Loading skill ${arg("name") ?: "…"}…"
+        "skills_list" -> "Listing skills…"
+        "skill_manage" -> "Updating skill ${arg("name") ?: ""}…".trim()
         else -> "Running ${call.name}…"
     }
 }
@@ -228,6 +231,10 @@ class RunManager(
             text.take(48),
             projectId = workspace.currentProjectOnce().id,
         )
+        synchronized(lock) { jobs[sid] }?.let { previous ->
+            previous.cancel()
+            previous.join()
+        }
         val turnId = UUID.randomUUID().toString()
         val channel = Channel<String>(Channel.UNLIMITED)
         synchronized(lock) {
@@ -560,14 +567,25 @@ class RunManager(
         synchronized(lock) { jobs[sessionId]?.cancel() }
     }
 
+    /**
+     * Cancels the run and suspends until its cleanup has finished, so a follow-up
+     * [startRun] cannot race the old job's finally block.
+     */
+    suspend fun stopAndJoin(sessionId: String) {
+        val job = synchronized(lock) { jobs[sessionId] } ?: return
+        job.cancel()
+        job.join()
+    }
+
     /** Dismisses the pending PLAN-mode plan card without executing it. */
     fun clearPendingPlan(sessionId: String) {
         stateOf(sessionId).update { it.copy(pendingPlan = null) }
     }
 
-    /** Queue a steering message for the running agent. */
+    /** Queue a steering message for the running agent. Replaces any previous queued text. */
     fun inject(sessionId: String, text: String) {
         val channel = synchronized(lock) { injections[sessionId] } ?: return
+        while (channel.tryReceive().isSuccess) { /* replace */ }
         channel.trySend(text)
         stateOf(sessionId).update { it.copy(queuedMessage = text) }
     }

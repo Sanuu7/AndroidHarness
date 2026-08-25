@@ -20,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import java.util.concurrent.atomic.AtomicReference
 
 class HarnessApp : Application() {
     lateinit var container: AppContainer
@@ -60,7 +61,18 @@ class AppContainer(val appContext: Context) {
     val backgroundProcesses = com.androidharness.app.data.BgProcessStore(
         appContext, linuxEnv, shizuku, workspaceRoot = workspace.appPrivateRoot,
     )
-    val registry = ToolRegistry.default(fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter)
+
+    @Volatile
+    private var projectSkillsDir: java.io.File? = null
+    private val disabledSkills = AtomicReference<Set<String>>(emptySet())
+
+    val skills = com.androidharness.app.skills.SkillStore(
+        bundled = com.androidharness.app.skills.SkillAssets.load(appContext.assets),
+        userDir = java.io.File(appContext.filesDir, "skills").apply { mkdirs() },
+        projectDir = { projectSkillsDir },
+        disabled = { disabledSkills.get() },
+    )
+    val registry = ToolRegistry.default(fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills)
     val engine = AgentEngine(
         providerFactory = { config -> ProviderFactory.create(config.type) },
         registry = registry,
@@ -68,6 +80,7 @@ class AppContainer(val appContext: Context) {
         imageStore = images,
         linuxEnv = linuxEnv,
         shizuku = shizuku,
+        skills = skills,
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -87,6 +100,14 @@ class AppContainer(val appContext: Context) {
         com.androidharness.app.llm.ModelsDev.load(appContext)
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             com.androidharness.app.llm.ModelsDev.refresh(appContext)
+        }
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            settings.settings.collect { disabledSkills.set(it.disabledSkills) }
+        }
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            workspace.current.collect { fs ->
+                projectSkillsDir = fs.shellRoot?.resolve(".harness/skills")
+            }
         }
         // Eagerly deploy the shell-user toolchain copy the moment both the
         // Linux environment and Shizuku are ready, so every tier works from
