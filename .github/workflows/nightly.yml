@@ -1,9 +1,8 @@
-name: Nightly debug build
+name: Debug build
 
-# Builds the debug APK every night and pushes it to the `nightly` branch,
-# where the latest APK is always downloadable at:
-#   https://github.com/Sanuu7/AndroidHarness/raw/nightly/AndroidHarness-nightly-debug.apk
-# Also runs on demand from the Actions tab ("Run workflow").
+# Builds the debug APK on every push to main (app/ changes), nightly at
+# 02:00 UTC, or on demand from the Actions tab. The APK is uploaded as a
+# workflow artifact (Actions tab, kept 30 days).
 
 on:
   schedule:
@@ -57,16 +56,3 @@ jobs:
           name: ${{ steps.apk.outputs.name }}
           path: dist/*.apk
           retention-days: 30
-
-      # Replaces the `nightly` branch with a single commit holding only the
-      # newest APK, so the branch never bloats and the raw link stays stable.
-      - name: Commit APK to the nightly branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git checkout --orphan nightly
-          git reset --hard
-          cp "dist/${{ steps.apk.outputs.name }}" AndroidHarness-nightly-debug.apk
-          git add AndroidHarness-nightly-debug.apk
-          git commit -m "nightly debug build ${{ steps.apk.outputs.name }}"
-          git push --force origin nightly
