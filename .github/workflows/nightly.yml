@@ -9,6 +9,12 @@ on:
   schedule:
     - cron: "0 2 * * *" # 02:00 UTC nightly
   workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - ".github/workflows/nightly.yml"
 
 permissions:
   contents: write
