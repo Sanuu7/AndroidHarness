@@ -20,7 +20,7 @@ captures/
 .agents/
 .codegraph/
 .cursor/
-skills/
+/skills/
 graphify-out/
 
 # --- Not part of the published source tree ---
