@@ -73,55 +73,28 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.AppContainer
 import com.androidharness.app.agent.PermissionMode
-import com.androidharness.app.agent.ThinkingLevel
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.data.db.ProjectEntity
-import com.androidharness.app.data.env.PathClassifier
 import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.data.env.UserServiceState
 import com.androidharness.app.ui.chat.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.common.AddWorkspaceDialog
+import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.theme.LocalStatusColors
-import com.androidharness.app.workspace.PathAssessment
 import kotlinx.coroutines.launch
 
 private val CONTEXT_PRESETS = listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000)
-private val OUTPUT_PRESETS = listOf(4_096, 8_192, 16_384, 32_768, 65_536, 131_072)
-private val FOLDER_PRESETS = listOf(
-    "/storage/emulated/0/Download",
-    "/storage/emulated/0/Documents",
-    "/storage/emulated/0/Pictures",
-    "/storage/emulated/0/Projects",
-)
-
-/**
- * Opens the OS "All files access" page for this app. Samsung/OEM builds often
- * ignore the plain ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION + package URI, so
- * we walk a few known intents and fall back to the app details screen.
- */
-private fun openAllFilesAccess(context: Context) {
-    val pkg = context.packageName
-    val candidates = listOf(
-        Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$pkg")),
-        Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
-        Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg")),
-    )
-    for (intent in candidates) {
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        if (intent.resolveActivity(context.packageManager) != null) {
-            if (runCatching { context.startActivity(intent) }.isSuccess) return
-        }
-    }
-}
-
 @Composable
 fun SettingsScreen(
     container: AppContainer,
     onBack: () -> Unit,
     onOpenStats: () -> Unit = {},
+    onRunSetup: () -> Unit = {},
 ) {
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
+    val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val workspace by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
     val projects by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
     val currentProject by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
@@ -136,13 +109,17 @@ fun SettingsScreen(
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
     ) { uri ->
-        if (uri != null) scope.launch { container.workspace.addSafProject(uri) }
+        if (uri != null) scope.launch { container.workspace.addPickedFolder(uri) }
     }
 
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            AppHeader(title = "Settings", onBack = onBack)
+            AppHeader(
+                title = "Settings",
+                subtitle = "Agent, workspace, environment, appearance",
+                onBack = onBack,
+            )
         },
     ) { padding ->
         Column(
@@ -153,6 +130,16 @@ fun SettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            CurrentSetupCard(settings = settings, providers = providers)
+
+            AgentSection(
+                container = container,
+                settings = settings,
+                scope = scope,
+                onOpenStats = onOpenStats,
+                onRunSetup = onRunSetup,
+            )
+
             WorkspaceSection(
                 container = container,
                 projects = projects,
@@ -171,12 +158,6 @@ fun SettingsScreen(
                 serviceState = serviceState,
             )
 
-            AgentSection(
-                container = container,
-                settings = settings,
-                scope = scope,
-                onOpenStats = onOpenStats,
-            )
             AppearanceSection(container = container, settings = settings, scope = scope)
             SlashCommandsSection(container = container)
 
@@ -342,7 +323,7 @@ private fun TerminalSection(
                 icon = Icons.Outlined.SdStorage,
                 title = "Shared storage",
                 subtitle = "Read/write any folder on the device",
-                onClick = { openAllFilesAccess(context) },
+                onClick = { SystemGrants.openAllFilesAccess(context) },
                 divider = true,
                 trailing = {
                     Row(verticalAlignment = Alignment.CenterVertically) {
@@ -361,7 +342,7 @@ private fun TerminalSection(
         }
     }
 
-    StorageAccessCard(allFiles = allFiles, onGrant = { openAllFilesAccess(context) })
+    StorageAccessCard(allFiles = allFiles, onGrant = { SystemGrants.openAllFilesAccess(context) })
     ShizukuCard(
         state = shizukuState,
         serviceState = serviceState,
@@ -531,12 +512,67 @@ private fun LinuxEnvironmentCard(
 // Agent / Appearance / slash commands
 // ---------------------------------------------------------------------------
 
+/**
+ * Read-only snapshot of what's actually driving requests right now. Model and
+ * thinking changed from the chat header (picker + overflow), so they show
+ * here as status, not settings — keeps this screen single-purpose.
+ */
+@Composable
+private fun CurrentSetupCard(
+    settings: AppSettings,
+    providers: List<com.androidharness.app.llm.ProviderConfig>,
+) {
+    val active = providers.firstOrNull { it.id == settings.activeProviderId }
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(
+            Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp),
+        ) {
+            Text("Current configuration", style = MaterialTheme.typography.titleSmallEmphasized)
+            SetupLine(
+                "Model",
+                if (active == null) "No provider connected"
+                else "${active.name} · ${settings.activeModel?.takeIf { it.isNotBlank() } ?: active.model}",
+            )
+            SetupLine("Thinking", settings.thinkingLevel.label)
+            SetupLine("Context window", formatTokenCount(settings.maxContextTokens.toLong()))
+            SetupLine("Default permission", settings.permissionMode.label)
+            Text(
+                "Model and thinking change from the chat header.",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(top = 2.dp),
+            )
+        }
+    }
+}
+
+@Composable
+private fun SetupLine(label: String, value: String) {
+    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+        Text(
+            label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(132.dp),
+        )
+        Text(
+            value,
+            style = MaterialTheme.typography.bodySmall,
+            maxLines = 1,
+            overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+        )
+    }
+}
+
+
 @Composable
 private fun AgentSection(
     container: AppContainer,
     settings: AppSettings,
     scope: kotlinx.coroutines.CoroutineScope,
     onOpenStats: () -> Unit,
+    onRunSetup: () -> Unit = {},
 ) {
     SettingsHeader("Agent")
     var showAgentsDialog by remember { mutableStateOf(false) }
@@ -550,24 +586,10 @@ private fun AgentSection(
                 divider = true,
             )
             DropdownSetting(
-                label = "Thinking level",
-                current = settings.thinkingLevel.label,
-                entries = ThinkingLevel.entries.map { it.name to it.label },
-                onSelect = { scope.launch { container.settings.setThinkingLevel(ThinkingLevel.valueOf(it)) } },
-                divider = true,
-            )
-            DropdownSetting(
                 label = "Max context window",
                 current = formatTokenCount(settings.maxContextTokens.toLong()),
                 entries = CONTEXT_PRESETS.map { it.toString() to formatTokenCount(it.toLong()) },
                 onSelect = { scope.launch { container.settings.setMaxContextTokens(it.toInt()) } },
-                divider = true,
-            )
-            DropdownSetting(
-                label = "Max output tokens",
-                current = formatTokenCount(settings.maxOutputTokens.toLong()),
-                entries = OUTPUT_PRESETS.map { it.toString() to formatTokenCount(it.toLong()) },
-                onSelect = { scope.launch { container.settings.setMaxOutputTokens(it.toInt()) } },
                 divider = true,
             )
 
@@ -599,6 +621,14 @@ private fun AgentSection(
                 title = "Stats",
                 subtitle = "Tokens, cache hit rates, usage over time",
                 onClick = onOpenStats,
+                divider = true,
+            )
+
+            SettingRow(
+                icon = Icons.Outlined.Shield,
+                title = "Run setup again",
+                subtitle = "Provider, Shizuku, Linux environment, notifications",
+                onClick = onRunSetup,
             )
         }
     }
@@ -834,24 +864,10 @@ private fun BatteryCard(container: AppContainer) {
 }
 
 private fun isIgnoringBatteryOptimizations(context: android.content.Context): Boolean =
-    runCatching {
-        val pm = context.getSystemService(android.content.Context.POWER_SERVICE) as android.os.PowerManager
-        pm.isIgnoringBatteryOptimizations(context.packageName)
-    }.getOrDefault(false)
+    com.androidharness.app.ui.common.SystemGrants.isIgnoringBatteryOptimizations(context)
 
-private fun requestBatteryExemption(context: android.content.Context) {
-    val pkg = context.packageName
-    val candidates = listOf(
-        Intent(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS, Uri.parse("package:" + pkg)),
-        Intent(Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS),
-    )
-    for (intent in candidates) {
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-        if (intent.resolveActivity(context.packageManager) != null) {
-            if (runCatching { context.startActivity(intent) }.isSuccess) return
-        }
-    }
-}
+private fun requestBatteryExemption(context: android.content.Context) =
+    com.androidharness.app.ui.common.SystemGrants.requestBatteryExemption(context)
 
 // ---------------------------------------------------------------------------
 // Shared building blocks
@@ -959,125 +975,3 @@ private fun DropdownSetting(
         }
     }
 }
-
-@Composable
-private fun AddWorkspaceDialog(
-    container: AppContainer,
-    onDismiss: () -> Unit,
-    onPickSaf: () -> Unit,
-) {
-    val scope = rememberCoroutineScope()
-    val programs = container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
-    val appProject = programs.value.firstOrNull { it.kind == "APP" }
-    var path by remember { mutableStateOf("") }
-    var assessment by remember { mutableStateOf<PathAssessment?>(null) }
-    var error by remember { mutableStateOf<String?>(null) }
-
-    fun assess() {
-        error = null
-        val a = container.workspace.assessPath(path.trim())
-        assessment = a
-        if (!a.directoryExists) {
-            error = "That folder doesn't exist. Check the path."
-        } else when (a.region) {
-            PathClassifier.Region.APP_DATA -> error = "That's the app's internal storage — use the App workspace instead."
-            PathClassifier.Region.SHARED_STORAGE -> {
-                val allFiles = container.shellRouter.isAllFilesAccess()
-                if (!allFiles && !container.shizuku.isGranted()) {
-                    error = "Shell here needs \"All files access\" or Shizuku. You can still add it, but shell may be denied."
-                }
-            }
-            PathClassifier.Region.SYSTEM -> {
-                if (!container.shizuku.isGranted()) {
-                    error = "System paths need Shizuku to be running and granted."
-                }
-            }
-            null -> Unit
-        }
-    }
-
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text("Add a workspace") },
-        text = {
-            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(
-                    "The workspace is where the agent reads and writes files.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-
-                Text("App workspace (most private)", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "A folder only this app can see. Shell always works here.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Button(
-                    onClick = {
-                        if (appProject != null) scope.launch { container.workspace.setActiveProject(appProject.id) }
-                        onDismiss()
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) { Text("Use app workspace") }
-
-                HorizontalDivider()
-
-                Text("Device folder (full shell)", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "Any folder on the device. Needs \"All files access\" or Shizuku.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    FOLDER_PRESETS.forEach { preset ->
-                        OutlinedButton(onClick = { path = preset; assess() }, modifier = Modifier.weight(1f)) {
-                            Text(preset.substringAfterLast('/'), maxLines = 1)
-                        }
-                    }
-                }
-                OutlinedTextField(
-                    value = path,
-                    onValueChange = { path = it; error = null; assessment = null },
-                    label = { Text("Folder path") },
-                    placeholder = { Text("/storage/emulated/0/Projects/my-app") },
-                    singleLine = true,
-                    isError = error != null,
-                    supportingText = error?.let { { Text(it) } },
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                if (error == null && assessment != null && assessment!!.directoryExists) {
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                container.workspace.addShellProject(path.trim())
-                                onDismiss()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Add this folder") }
-                } else if (path.isNotBlank()) {
-                    OutlinedButton(onClick = { assess() }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Check path")
-                    }
-                }
-
-                HorizontalDivider()
-
-                Text("Pick a folder (file tools only)", style = MaterialTheme.typography.titleSmall)
-                Text(
-                    "Uses the system picker; shell doesn't run here.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedButton(onClick = onPickSaf, modifier = Modifier.fillMaxWidth()) {
-                    Text("Open folder picker…")
-                }
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
-        },
-    )
-}
-

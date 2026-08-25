@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Shield
@@ -66,26 +67,26 @@ internal fun MainHeader(
     sessionTitle: String,
     busy: Boolean,
     statusText: String,
-    providers: List<ProviderConfig>,
-    activeProviderId: String?,
+    pickerLabel: String,
     mode: AgentMode,
     thinkingLevel: ThinkingLevel,
+    /** Native tiers for the active model — non-native ones are hidden, not dimmed. */
+    thinkingLevels: List<ThinkingLevel>,
     permissionMode: PermissionMode,
     canUndo: Boolean,
     onOpenDrawer: () -> Unit,
-    onManageProviders: () -> Unit,
-    onSelectProvider: (String) -> Unit,
+    onPickModel: () -> Unit,
     onOpenTerminal: () -> Unit,
     onSetThinking: (ThinkingLevel) -> Unit,
     onSetPermission: (PermissionMode) -> Unit,
     onSetMode: (AgentMode) -> Unit,
     onOpenContext: () -> Unit,
     onOpenUndo: () -> Unit,
+    onSwitchWorkspace: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
     var thinkingMenu by remember { mutableStateOf(false) }
     var permissionMenu by remember { mutableStateOf(false) }
-    var providerMenu by remember { mutableStateOf(false) }
     val scheme = MaterialTheme.colorScheme
 
     Column(
@@ -114,67 +115,34 @@ internal fun MainHeader(
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleMediumEmphasized,
                 )
-                Box {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(6.dp))
-                            .clickable { providerMenu = true },
-                    ) {
-                        Crossfade(
-                            targetState = statusText,
-                            animationSpec = fastEffectsSpec(),
-                            label = "header status",
-                            modifier = Modifier.weight(1f, fill = false),
-                        ) { currentStatus ->
-                            Text(
-                                currentStatus,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                                style = MaterialTheme.typography.labelSmall,
-                                color = if (busy) scheme.primary else scheme.onSurfaceVariant,
-                            )
-                        }
-                        if (!busy) {
-                            Icon(
-                                Icons.Filled.KeyboardArrowDown,
-                                contentDescription = "Switch provider",
-                                tint = scheme.onSurfaceVariant,
-                                modifier = Modifier.size(14.dp),
-                            )
-                        }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(6.dp))
+                        .clickable(enabled = !busy) { onPickModel() },
+                ) {
+                    // Idle: the active provider · model (tap to switch). Busy:
+                    // what the agent is doing right now.
+                    Crossfade(
+                        targetState = if (busy) statusText else pickerLabel,
+                        animationSpec = fastEffectsSpec(),
+                        label = "header status",
+                        modifier = Modifier.weight(1f, fill = false),
+                    ) { currentStatus ->
+                        Text(
+                            currentStatus,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (busy) scheme.primary else scheme.onSurfaceVariant,
+                        )
                     }
-                    DropdownMenu(expanded = providerMenu, onDismissRequest = { providerMenu = false }) {
-                        providers.forEach { provider ->
-                            DropdownMenuItem(
-                                text = {
-                                    Row(verticalAlignment = Alignment.CenterVertically) {
-                                        Column(Modifier.weight(1f)) {
-                                            Text(provider.name)
-                                            Text(
-                                                "${provider.type.label} · ${provider.model}",
-                                                style = MaterialTheme.typography.labelSmall,
-                                                color = scheme.onSurfaceVariant,
-                                            )
-                                        }
-                                        if (provider.id == activeProviderId) {
-                                            Icon(
-                                                Icons.Filled.Check,
-                                                contentDescription = "Active",
-                                                tint = scheme.primary,
-                                            )
-                                        }
-                                    }
-                                },
-                                onClick = { onSelectProvider(provider.id); providerMenu = false },
-                            )
-                        }
-                        if (providers.isNotEmpty()) {
-                            HorizontalDivider(Modifier.padding(vertical = 6.dp))
-                        }
-                        DropdownMenuItem(
-                            text = { Text("Manage providers…") },
-                            onClick = { providerMenu = false; onManageProviders() },
+                    if (!busy) {
+                        Icon(
+                            Icons.Filled.KeyboardArrowDown,
+                            contentDescription = "Switch model",
+                            tint = scheme.onSurfaceVariant,
+                            modifier = Modifier.size(14.dp),
                         )
                     }
                 }
@@ -258,6 +226,13 @@ internal fun MainHeader(
                         },
                         onClick = { menu = false; permissionMenu = true },
                     )
+                    DropdownMenuItem(
+                        text = { Text("Workspace") },
+                        leadingIcon = {
+                            Icon(Icons.Outlined.Folder, contentDescription = null, tint = scheme.onSurfaceVariant)
+                        },
+                        onClick = { menu = false; onSwitchWorkspace() },
+                    )
                     HorizontalDivider(Modifier.padding(vertical = 6.dp))
                     DropdownMenuItem(
                         text = { Text("Terminal") },
@@ -283,7 +258,7 @@ internal fun MainHeader(
                         onClick = {},
                         enabled = false,
                     )
-                    ThinkingLevel.entries.forEach { entry ->
+                    thinkingLevels.forEach { entry ->
                         DropdownMenuItem(text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(entry.label, Modifier.weight(1f))

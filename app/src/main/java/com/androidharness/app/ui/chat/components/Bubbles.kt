@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.Icon
@@ -74,21 +75,18 @@ internal fun UserBubble(
     }
 }
 
+/**
+ * Agent text is directly selectable: hold and drag to mark a range, copy via
+ * the system toolbar — no dialogs between the user and the content.
+ */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun AssistantText(
     text: String,
     streaming: Boolean = false,
     modifier: Modifier = Modifier,
-    onLongPress: (() -> Unit)? = null,
 ) {
-    Column(
-        modifier = modifier.let { m ->
-            if (onLongPress != null) {
-                m.combinedClickable(onClick = {}, onLongClick = onLongPress)
-            } else m
-        },
-    ) {
+    Column(modifier = modifier) {
         if (text.isBlank() && streaming) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 DotLoading()
@@ -101,7 +99,9 @@ internal fun AssistantText(
             }
         } else {
             Row(verticalAlignment = Alignment.Top) {
-                Box(Modifier.weight(1f)) { MarkdownText(text, streaming = streaming) }
+                Box(Modifier.weight(1f)) {
+                    SelectionContainer { MarkdownText(text, streaming = streaming) }
+                }
                 if (streaming) {
                     Spacer(Modifier.width(4.dp))
                     BlinkingCursor()

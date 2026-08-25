@@ -18,3 +18,11 @@ fun formatRelativeTime(epochMillis: Long): String {
             .format(java.util.Date(epochMillis))
     }
 }
+
+/** Compact elapsed time: "43s", "2m 13s", "1h 4m". */
+fun formatDuration(ms: Long): String = when {
+    ms <= 0 -> ""
+    ms < 60_000 -> "${ms / 1000}s"
+    ms < 3_600_000 -> "${ms / 60_000}m ${(ms % 60_000) / 1000}s"
+    else -> "${ms / 3_600_000}h ${(ms % 3_600_000) / 60_000}m"
+}

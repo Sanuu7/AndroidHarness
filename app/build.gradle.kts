@@ -14,12 +14,16 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = 2
+        versionName = "0.01-alpha"
     }
 
     buildTypes {
         release {
+            // Local alpha distribution: signed with the debug keystore so the
+            // APK installs without a release keystore. Swap to a dedicated
+            // signing config before any public/Play distribution.
+            signingConfig = signingConfigs.getByName("debug")
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }

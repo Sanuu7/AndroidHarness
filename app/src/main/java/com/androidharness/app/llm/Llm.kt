@@ -9,6 +9,7 @@ import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonObject
 import okhttp3.Call
@@ -22,9 +23,19 @@ import java.util.concurrent.TimeUnit
 @Serializable
 enum class ProviderType(val label: String, val defaultBaseUrl: String) {
     OPENAI_COMPAT("OpenAI-compatible", "https://api.openai.com/v1"),
+    OPENAI_RESPONSES("OpenAI Responses", "https://api.openai.com/v1"),
     ANTHROPIC("Anthropic", "https://api.anthropic.com"),
     GEMINI("Gemini", "https://generativelanguage.googleapis.com/v1beta"),
 }
+
+/** Wire-endpoint naming for the protocol picker (what the API actually speaks). */
+val ProviderType.endpointPath: String
+    get() = when (this) {
+        ProviderType.OPENAI_COMPAT -> "/chat/completions"
+        ProviderType.OPENAI_RESPONSES -> "/v1/responses"
+        ProviderType.ANTHROPIC -> "/v1/messages"
+        ProviderType.GEMINI -> ":streamGenerateContent"
+    }
 
 @Serializable
 data class ProviderConfig(
@@ -92,6 +103,16 @@ sealed interface StreamEvent {
 
 class ApiException(val code: Int, message: String) : IOException("HTTP $code: $message")
 
+/**
+ * [JsonObject] accessor that treats an explicit JSON `null` exactly like an
+ * absent field. Several gateways emit `"usage": null`, `"delta": null`, etc.;
+ * the strict `.jsonObject` throws on those and kills the stream.
+ */
+fun JsonElement?.jsonObjectOrAbsent(): JsonObject? = this as? JsonObject
+
+/** [JsonArray] accessor treating an explicit JSON `null` like an absent field. */
+fun JsonElement?.jsonArrayOrAbsent(): JsonArray? = this as? JsonArray
+
 interface LlmProvider {
     fun streamChat(
         config: ProviderConfig,
@@ -114,6 +135,7 @@ object ProviderFactory {
 
     fun create(type: ProviderType): LlmProvider = when (type) {
         ProviderType.OPENAI_COMPAT -> OpenAiCompatProvider(client, json)
+        ProviderType.OPENAI_RESPONSES -> OpenAiResponsesProvider(client, json)
         ProviderType.ANTHROPIC -> AnthropicProvider(client, json)
         ProviderType.GEMINI -> GeminiProvider(client, json)
     }

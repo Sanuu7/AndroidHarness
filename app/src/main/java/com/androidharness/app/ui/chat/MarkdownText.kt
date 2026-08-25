@@ -261,18 +261,19 @@ private fun MarkdownBlocks(text: String, plain: Boolean = false) {
             is Block.Code -> CodeBlock(block.text.trimEnd('\n'), block.language)
             is Block.Heading -> Text(
                 block.content,
+                // Calmer than a type-scale ladder: mobile summaries read best
+                // when headings stay close to body size and lean on weight.
                 style = when (block.level) {
-                    1 -> MaterialTheme.typography.titleLarge
-                    2 -> MaterialTheme.typography.titleMedium
-                    3 -> MaterialTheme.typography.titleSmall
+                    1 -> MaterialTheme.typography.titleMedium
+                    2 -> MaterialTheme.typography.titleSmall
                     else -> MaterialTheme.typography.labelLarge
                 },
-                modifier = Modifier.padding(top = if (index == 0) 0.dp else 4.dp),
+                modifier = Modifier.padding(top = if (index == 0) 0.dp else 6.dp),
             )
             is Block.Quote -> QuoteBlock(block.lines)
             is Block.Rule -> HorizontalDivider(
                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-                modifier = Modifier.padding(vertical = 6.dp),
+                modifier = Modifier.padding(vertical = 4.dp),
             )
             is Block.Bullets -> ListBlock(block.items, plain = plain)
             is Block.Paragraph -> if (plain) {
@@ -281,7 +282,7 @@ private fun MarkdownBlocks(text: String, plain: Boolean = false) {
                 ParagraphText(block.text)
             }
         }
-        if (index != blocks.lastIndex) Spacer(Modifier.height(7.dp))
+        if (index != blocks.lastIndex) Spacer(Modifier.height(5.dp))
     }
 }
 
@@ -294,7 +295,7 @@ private fun ListBlock(items: List<ListItem>, plain: Boolean) {
                     if (item.marker.length == 1 && item.marker[0].isDigit()) "${item.marker}." else "•",
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.width(20.dp),
+                    modifier = Modifier.width(16.dp),
                 )
                 Column(Modifier.weight(1f)) {
                     if (plain) {
@@ -527,7 +528,9 @@ private fun styledText(text: String): AnnotatedString {
                                     color = codeColor,
                                 )
                             )
-                            append(text.substring(i + 1, end))
+                            // Hair spaces pad the chip visually — spans can't
+                            // take real padding inside a Text.
+                            append(" " + text.substring(i + 1, end) + " ")
                             pop()
                             i = end + 1
                         } else {

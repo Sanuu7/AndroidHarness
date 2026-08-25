@@ -31,6 +31,13 @@ data class AppSettings(
     /** Drawer: pinned / archived session ids (DataStore — no DB migration). */
     val pinnedSessions: Set<String> = emptySet(),
     val archivedSessions: Set<String> = emptySet(),
+    /** First-run setup was finished or skipped; stops the setup gate. */
+    val onboardingDone: Boolean = false,
+    /**
+     * Model selected from the active provider's catalog. Null = use the
+     * provider entry's saved default model.
+     */
+    val activeModel: String? = null,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -53,6 +60,8 @@ class SettingsRepository(private val context: Context) {
         val KEEP_ALIVE = booleanPreferencesKey("keep_alive")
         val PINNED = stringSetPreferencesKey("pinned_sessions")
         val ARCHIVED = stringSetPreferencesKey("archived_sessions")
+        val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
+        val ACTIVE_MODEL = stringPreferencesKey("active_model")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -74,6 +83,8 @@ class SettingsRepository(private val context: Context) {
             keepAlive = prefs[Keys.KEEP_ALIVE] ?: true,
             pinnedSessions = prefs[Keys.PINNED] ?: emptySet(),
             archivedSessions = prefs[Keys.ARCHIVED] ?: emptySet(),
+            onboardingDone = prefs[Keys.ONBOARDING_DONE] ?: false,
+            activeModel = prefs[Keys.ACTIVE_MODEL],
         )
     }
 
@@ -127,6 +138,18 @@ class SettingsRepository(private val context: Context) {
         context.settingsStore.edit { prefs ->
             val current = prefs[Keys.ARCHIVED] ?: emptySet()
             prefs[Keys.ARCHIVED] = if (archived) current + sessionId else current - sessionId
+        }
+    }
+
+    suspend fun setOnboardingDone(done: Boolean) {
+        context.settingsStore.edit { it[Keys.ONBOARDING_DONE] = done }
+    }
+
+    /** Model override for the ACTIVE provider; null falls back to its saved default. */
+    suspend fun setActiveModel(model: String?) {
+        context.settingsStore.edit { prefs ->
+            if (model.isNullOrBlank()) prefs.remove(Keys.ACTIVE_MODEL)
+            else prefs[Keys.ACTIVE_MODEL] = model
         }
     }
 }

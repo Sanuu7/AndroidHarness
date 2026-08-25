@@ -46,6 +46,31 @@ class SessionRepository(
         db.dao().messages(sessionId).map { it.toChatMessageCached() }
 
     /**
+     * Model-facing history must exclude subagent inner turns: inner assistant
+     * rows are marked with toolCallId = their parent task call id, and their
+     * tool results carry the inner call ids. Without this the main model would
+     * receive subagent chatter as if it were its own history.
+     */
+    fun List<ChatMessage>.withoutSubagentTurns(): List<ChatMessage> {
+        val innerCallIds = HashSet<String>()
+        for (m in this) {
+            if (m.role == Role.ASSISTANT && m.toolCallId != null) {
+                m.toolCalls.forEach { innerCallIds += it.id }
+            }
+        }
+        if (innerCallIds.isEmpty() && none { it.role == Role.ASSISTANT && it.toolCallId != null }) {
+            return this
+        }
+        return filter { m ->
+            when {
+                m.role == Role.ASSISTANT && m.toolCallId != null -> false
+                m.role == Role.TOOL && m.toolCallId in innerCallIds -> false
+                else -> true
+            }
+        }
+    }
+
+    /**
      * History for the model: [compaction summary (may be empty)] plus messages
      * after the compaction point.
      */
@@ -79,6 +104,7 @@ class SessionRepository(
                 toolName = message.toolName,
                 isError = message.isError,
                 thinking = message.thinking,
+                thinkingMs = message.thinkingMs,
                 imagesJson = json.encodeToString(imageList, message.images),
                 turnId = turnId,
                 createdAt = System.currentTimeMillis(),
@@ -95,6 +121,59 @@ class SessionRepository(
     suspend fun addUsage(id: String, input: Long, output: Long, cached: Long, cacheWrite: Long = 0) {
         db.dao().addUsage(id, input, output, cached, cacheWrite)
     }
+
+    /** Per-model per-request usage row (powers the stats "By model" card). */
+    suspend fun recordUsage(
+        sessionId: String,
+        providerName: String,
+        model: String,
+        input: Long,
+        output: Long,
+        cached: Long,
+        cacheWrite: Long,
+    ) {
+        if (model.isBlank()) return
+        db.dao().insertUsageEvent(
+            com.androidharness.app.data.db.UsageEventEntity(
+                sessionId = sessionId,
+                providerName = providerName,
+                model = model,
+                inputTokens = input,
+                outputTokens = output,
+                cachedTokens = cached,
+                cacheWriteTokens = cacheWrite,
+                createdAt = System.currentTimeMillis(),
+            )
+        )
+    }
+
+    /** Per-file line-change stat from one editing tool call (chat "+N −M" chips). */
+    suspend fun recordFileEdit(
+        sessionId: String,
+        turnId: String,
+        relPath: String,
+        added: Long,
+        removed: Long,
+    ) {
+        db.dao().insertFileEdit(
+            com.androidharness.app.data.db.FileEditEntity(
+                sessionId = sessionId,
+                turnId = turnId,
+                relPath = relPath,
+                added = added,
+                removed = removed,
+                createdAt = System.currentTimeMillis(),
+            )
+        )
+    }
+
+    /** Per-turn file-edit stats for one session, oldest first. */
+    fun fileEditsFor(sessionId: String): Flow<List<com.androidharness.app.data.db.FileEditEntity>> =
+        db.dao().fileEditsFlow(sessionId)
+
+    /** Per-(provider, model) token totals since [since] (epoch ms; 0 = lifetime). */
+    fun usageByModelSince(since: Long): Flow<List<com.androidharness.app.data.db.ModelUsagePojo>> =
+        db.dao().usageByModelSince(since)
 
     suspend fun setCompaction(sessionId: String, summary: String, before: Long) {
         db.dao().setCompaction(sessionId, summary, before)
@@ -119,6 +198,8 @@ class SessionRepository(
     suspend fun deleteSession(session: SessionEntity) {
         db.dao().deleteMessages(session.id)
         db.dao().deleteCheckpoints(session.id)
+        db.dao().deleteUsageEvents(session.id)
+        db.dao().deleteFileEdits(session.id)
         db.dao().deleteSession(session)
     }
 
@@ -135,6 +216,7 @@ class SessionRepository(
         toolName = toolName,
         isError = isError,
         thinking = thinking,
+        thinkingMs = thinkingMs,
         images = runCatching {
             json.decodeFromString(imageList, imagesJson)
         }.getOrDefault(emptyList()),

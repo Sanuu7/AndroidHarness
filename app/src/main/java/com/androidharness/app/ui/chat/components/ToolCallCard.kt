@@ -36,6 +36,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -68,7 +69,7 @@ internal fun ToolCallCard(
     running: Boolean,
     onOpenFile: (String, Int?) -> Unit,
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable(call.id) { mutableStateOf(false) }
     val chevronRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = fastEffectsSpec(),
@@ -205,7 +206,7 @@ internal fun ToolGroupCard(
     onOpenFile: (String, Int?) -> Unit,
     subagentSteps: Map<String, List<String>> = emptyMap(),
 ) {
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by rememberSaveable(calls.joinToString(",") { it.id }) { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         animationSpec = fastEffectsSpec(),

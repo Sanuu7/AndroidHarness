@@ -15,8 +15,6 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -43,7 +41,11 @@ class AnthropicProvider(
     ): Flow<StreamEvent> {
         val body = buildJsonObject {
             put("model", config.model)
+            // models.dev knows the model's true budget ceiling; clamp to it
+            // when present so X-High/Max never exceeds what the model accepts.
+            val catalogMax = ModelsDev.entry("anthropic", config.model)?.budgetMax
             val budget = options.thinking.budgetTokens(options.maxOutputTokens)
+                .let { if (catalogMax != null) minOf(it, catalogMax) else it }
             // Anthropic requires max_tokens > thinking budget
             put("max_tokens", maxOf(options.maxOutputTokens, budget + 8_192))
             put("stream", true)
@@ -104,14 +106,14 @@ class AnthropicProvider(
             val event = el as? JsonObject ?: return@mapNotNull null
             when (event["type"]?.jsonPrimitive?.contentOrNull) {
                 "message_start" -> {
-                    val usage = event["message"]?.jsonObject?.get("usage")?.jsonObject
+                    val usage = event["message"]?.jsonObjectOrAbsent()?.get("usage")?.jsonObjectOrAbsent()
                     // Anthropic's input_tokens EXCLUDES cache reads and writes;
                     // normalize to the total prompt size so hit-rate math is
                     // provider-agnostic (cached + write + uncached = total).
                     val uncached = usage?.get("input_tokens")?.jsonPrimitive?.intOrNull ?: 0
                     cachedTokens = usage?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull ?: 0
                     cacheWriteTokens = usage?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
-                        ?: usage?.get("cache_creation")?.jsonObject?.let { cc ->
+                        ?: usage?.get("cache_creation")?.jsonObjectOrAbsent()?.let { cc ->
                             (cc["ephemeral_5m_input_tokens"]?.jsonPrimitive?.intOrNull ?: 0) +
                                 (cc["ephemeral_1h_input_tokens"]?.jsonPrimitive?.intOrNull ?: 0)
                         } ?: 0
@@ -121,7 +123,7 @@ class AnthropicProvider(
 
                 "content_block_start" -> {
                     val index = event["index"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null
-                    val block = event["content_block"]?.jsonObject ?: return@mapNotNull null
+                    val block = event["content_block"]?.jsonObjectOrAbsent() ?: return@mapNotNull null
                     if (block["type"]?.jsonPrimitive?.contentOrNull == "tool_use") {
                         val id = block["id"]?.jsonPrimitive?.contentOrNull.orEmpty()
                         val name = block["name"]?.jsonPrimitive?.contentOrNull.orEmpty()
@@ -132,7 +134,7 @@ class AnthropicProvider(
 
                 "content_block_delta" -> {
                     val index = event["index"]?.jsonPrimitive?.intOrNull ?: return@mapNotNull null
-                    val delta = event["delta"]?.jsonObject ?: return@mapNotNull null
+                    val delta = event["delta"]?.jsonObjectOrAbsent() ?: return@mapNotNull null
                     when (delta["type"]?.jsonPrimitive?.contentOrNull) {
                         "text_delta" -> delta["text"]?.jsonPrimitive?.contentOrNull
                             ?.let { StreamEvent.TextDelta(it) }
@@ -165,9 +167,9 @@ class AnthropicProvider(
                 }
 
                 "message_delta" -> {
-                    event["delta"]?.jsonObject?.get("stop_reason")
+                    event["delta"]?.jsonObjectOrAbsent()?.get("stop_reason")
                         ?.jsonPrimitive?.contentOrNull?.let { stopReason = it }
-                    val output = event["usage"]?.jsonObject
+                    val output = event["usage"]?.jsonObjectOrAbsent()
                         ?.get("output_tokens")?.jsonPrimitive?.intOrNull
                     output?.let {
                         StreamEvent.Usage(inputTokens, it, cachedTokens, cacheWriteTokens)
@@ -177,7 +179,7 @@ class AnthropicProvider(
                 "message_stop" -> StreamEvent.Done(stopReason)
 
                 "error" -> StreamEvent.Failure(
-                    event["error"]?.jsonObject?.get("message")?.jsonPrimitive?.contentOrNull
+                    event["error"]?.jsonObjectOrAbsent()?.get("message")?.jsonPrimitive?.contentOrNull
                         ?: "Anthropic stream error"
                 )
 

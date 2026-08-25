@@ -17,6 +17,8 @@ import com.androidharness.app.tools.ToolResult
 import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
@@ -26,9 +28,11 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.timeout
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -94,6 +98,10 @@ sealed interface AgentEvent {
         val outputTokens: Int,
         val cachedInputTokens: Int,
         val cacheWriteTokens: Int = 0,
+        /** Which model burned these tokens (config-effective id) — for per-model stats. */
+        val model: String = "",
+        /** Display name of the provider that served them. */
+        val providerName: String = "",
     ) : AgentEvent
     /** A transient provider failure will be retried after [delayMs]. */
     data class Retrying(val attempt: Int, val delayMs: Long, val reason: String) : AgentEvent
@@ -104,6 +112,22 @@ sealed interface AgentEvent {
 
     /** One progress line from inside a running subagent (the task tool). */
     data class SubagentStep(val toolCallId: String, val line: String) : AgentEvent
+
+    /**
+     * An inner subagent turn (assistant message or tool result) committed
+     * durably, linked to its parent task call so the subagent page can replay
+     * it as a chat. RunManager owns persistence; the main chat hides these
+     * (assistant rows with a non-null toolCallId are inner turns).
+     */
+    data class SubagentMessageCommitted(val parentCallId: String, val message: ChatMessage) : AgentEvent
+
+    /** Line-change stats from one successful editing tool call ("+N −M" chips). */
+    data class FileEdited(
+        val turnId: String,
+        val relPath: String,
+        val added: Long,
+        val removed: Long,
+    ) : AgentEvent
 
     /**
      * The run ended. [reason] explains an abnormal end (the model produced no
@@ -117,6 +141,16 @@ sealed interface AgentEvent {
  * The harness loop: stream the model, execute requested tool calls (gated by
  * the permission mode), feed results back, repeat until the model stops.
  */
+/**
+ * Fails a silent stream instead of hanging forever: the SSE client's read
+ * timeout is infinite by design, so a dead gateway that keeps the socket open
+ * would stall a run (or subagent) indefinitely. Throws
+ * [kotlinx.coroutines.TimeoutCancellationException] when no event arrives in
+ * [timeoutMs]; the loops catch it and route into the normal retry policy.
+ */
+@OptIn(ExperimentalCoroutinesApi::class)
+private fun <T> Flow<T>.stallGuard(timeoutMs: Long = 90_000): Flow<T> = timeout(timeoutMs.toDouble().milliseconds)
+
 class AgentEngine(
     private val providerFactory: (ProviderConfig) -> LlmProvider,
     private val registry: ToolRegistry,
@@ -213,7 +247,7 @@ class AgentEngine(
                 var cause: Throwable? = null
 
                 try {
-                    provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
+                    provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions).stallGuard()
                         .collect { event ->
                             when (event) {
                                 is StreamEvent.TextDelta -> {
@@ -245,12 +279,17 @@ class AgentEngine(
                                     AgentEvent.Usage(
                                         event.inputTokens, event.outputTokens,
                                         event.cachedInputTokens, event.cacheWriteTokens,
+                                        config.model, config.name,
                                     )
                                 )
                                 is StreamEvent.Failure -> failure = event.message
                                 is StreamEvent.Done -> lastFinishReason = event.finishReason
                             }
                         }
+                } catch (te: TimeoutCancellationException) {
+                    // stallGuard: a silent gateway kept the socket open — treat
+                    // like any transient failure so retries can kick in.
+                    failure = "Stream stalled - no data received for 90s (timed out)"
                 } catch (ce: CancellationException) {
                     throw ce
                 } catch (e: Exception) {
@@ -318,14 +357,21 @@ class AgentEngine(
                     emitLock.withLock { emit(event) }
                 }
                 subagentCalls.forEach { call -> emit(AgentEvent.ToolStarted(call)) }
+                android.util.Log.d(
+                    "HarnessSpawn",
+                    "batch of ${subagentCalls.size} task call(s): ${subagentCalls.map { it.id }}",
+                )
                 coroutineScope {
                     subagentCalls.map { call ->
                         async {
-                            call.id to executeWithPermission(
+                            android.util.Log.d("HarnessSpawn", "task ${call.id} START ${System.currentTimeMillis()}")
+                            val result = executeWithPermission(
                                 call, permissionMode(), sessionAllowedTools, workspace,
                                 sessionId, turnId, mode, requestOptions, config, apiKey,
                                 serialEmit,
                             )
+                            android.util.Log.d("HarnessSpawn", "task ${call.id} END ${System.currentTimeMillis()}")
+                            call.id to result
                         }
                     }.awaitAll().forEach { (id, result) -> results[id] = result }
                 }
@@ -476,18 +522,43 @@ class AgentEngine(
             return ToolResult(false, "Invalid tool arguments: ${e.message}")
         }
 
-        // Snapshot everything this tool might touch before it runs.
+        // Snapshot everything this tool might touch before it runs, and keep
+        // the before-text for "+N −M" diff stats.
+        val beforeTexts = LinkedHashMap<String, String?>()
         checkpointTargets(call.name, args).forEach { path ->
             runCatching { checkpointer.snapshot(sessionId, turnId, workspace, path) }
+            runCatching {
+                val node = workspace.resolve(path)
+                beforeTexts[path] =
+                    if (node.exists && node.isFile && node.length <= 512_000) node.readText() else null
+            }
         }
 
-        return try {
+        val result = try {
             tool.execute(args, ToolContext(workspace))
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
             ToolResult(false, e.message ?: "${call.name} failed")
         }
+
+        // Diff stats: only when the tool succeeded and actually changed lines.
+        if (result.ok && beforeTexts.isNotEmpty()) {
+            for ((path, before) in beforeTexts) {
+                runCatching {
+                    val node = workspace.resolve(path)
+                    val after =
+                        if (node.exists && node.isFile && node.length <= 512_000) node.readText() else ""
+                    val (added, removed) = com.androidharness.app.core.Diff.lineCounts(
+                        before ?: "", after,
+                    )
+                    if (added > 0 || removed > 0) {
+                        emitEvent(AgentEvent.FileEdited(turnId, path, added.toLong(), removed.toLong()))
+                    }
+                }
+            }
+        }
+        return result
     }
 
     /** Files a tool call is about to touch, for pre-execution snapshots. */
@@ -497,11 +568,30 @@ class AgentEngine(
             "write_file", "edit_file", "multi_edit", "delete_file", "create_dir" ->
                 listOfNotNull(str("path"))
             "move_file" -> listOfNotNull(str("source"), str("destination"))
-            "apply_patch" -> str("patch")?.let { patch ->
-                Regex("\\+\\+\\+ (?!/dev/null)([^\n]+)").findAll(patch)
-                    .map { it.groupValues[1].trim().removePrefix("b/") }
-                    .distinct().toList()
-            } ?: emptyList()
+        "apply_patch" -> str("patch")?.let { patch ->
+            // Mirror ApplyPatchTool's own path cleanup (a/ b/ prefixes, tab
+            // suffixes) and also capture DELETED files ("--- x" + "+++ /dev/null"),
+            // which the old regex silently dropped — those were unrecoverable.
+            val targets = LinkedHashSet<String>()
+            var oldPath: String? = null
+            patch.lines().forEach { line ->
+                when {
+                    line.startsWith("--- ") ->
+                        oldPath = line.removePrefix("--- ").trim()
+                            .removePrefix("a/").substringBefore('\t').ifBlank { null }
+                    line.startsWith("+++ ") -> {
+                        val newPath = line.removePrefix("+++ ").trim()
+                        if (newPath == "/dev/null") {
+                            oldPath?.let { targets += it }
+                        } else {
+                            targets += newPath.removePrefix("b/").substringBefore('\t')
+                        }
+                        oldPath = null
+                    }
+                }
+            }
+            targets.filter { it.isNotBlank() }.toList()
+        } ?: emptyList()
             else -> emptyList()
         }
     }
@@ -605,7 +695,10 @@ class AgentEngine(
 
         var iteration = 0
         var nudged = false
-        while (iteration < SUBAGENT_MAX_ITERATIONS) {
+        // No step cap (user decision): a subagent runs until it answers, fails
+        // structurally, or its provider stops responding — long research
+        // passes are legitimate, and the parent sees real failures only.
+        while (true) {
             iteration++
             val text = StringBuilder()
             val calls = mutableListOf<ToolCallData>()
@@ -621,7 +714,7 @@ class AgentEngine(
                 failure = null
                 var cause: Throwable? = null
                 try {
-                    provider.streamChat(config, apiKey, system, history, subTools, requestOptions)
+                    provider.streamChat(config, apiKey, system, history, subTools, requestOptions).stallGuard()
                         .collect { event ->
                             when (event) {
                                 is StreamEvent.TextDelta -> text.append(event.text)
@@ -641,12 +734,17 @@ class AgentEngine(
                                     AgentEvent.Usage(
                                         event.inputTokens, event.outputTokens,
                                         event.cachedInputTokens, event.cacheWriteTokens,
+                                        config.model, config.name,
                                     )
                                 )
                                 is StreamEvent.Failure -> failure = event.message
                                 else -> {}
                             }
                         }
+                } catch (te: TimeoutCancellationException) {
+                    // stallGuard: a silent gateway kept the socket open — treat
+                    // like any transient failure so retries can kick in.
+                    failure = "Stream stalled - no data received for 90s (timed out)"
                 } catch (ce: CancellationException) {
                     throw ce
                 } catch (e: Exception) {
@@ -684,7 +782,24 @@ class AgentEngine(
                 )
             }
 
-            history += ChatMessage(role = Role.ASSISTANT, text = text.toString(), toolCalls = calls.toList())
+            history += ChatMessage(
+                role = Role.ASSISTANT,
+                text = text.toString(),
+                toolCalls = calls.toList(),
+                thinking = subThinking.toString(),
+            )
+            emitEvent(
+                AgentEvent.SubagentMessageCommitted(
+                    parentCallId,
+                    ChatMessage(
+                        role = Role.ASSISTANT,
+                        text = text.toString(),
+                        toolCalls = calls.toList(),
+                        thinking = subThinking.toString(),
+                        toolCallId = parentCallId,
+                    ),
+                )
+            )
 
             if (calls.isEmpty()) {
                 // No more tool calls: this is the subagent's final answer.
@@ -718,22 +833,18 @@ class AgentEngine(
                         ToolResult(false, e.message ?: "${call.name} failed")
                     }
                 }
-                history += ChatMessage(
+                val toolMessage = ChatMessage(
                     role = Role.TOOL,
                     text = result.output,
                     toolCallId = call.id,
                     toolName = call.name,
                     isError = !result.ok,
                 )
+                history += toolMessage
+                emitEvent(AgentEvent.SubagentMessageCommitted(parentCallId, toolMessage))
                 if (!result.ok) step("${call.name} failed — adjusting")
             }
         }
-
-        return ToolResult(
-            false,
-            "Subagent hit its $SUBAGENT_MAX_ITERATIONS-step limit without finishing. " +
-                "Do the research yourself with read-only tools.",
-        )
     }
 
     /** Summarize old history into one message when the context is nearly full. */
@@ -770,7 +881,7 @@ class AgentEngine(
                         "Output plain notes only.",
                     older, emptyList(),
                     RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF),
-                ).collect { event ->
+                ).stallGuard().collect { event ->
                     when (event) {
                         is StreamEvent.TextDelta -> summary.append(event.text)
                         is StreamEvent.Batch -> event.events.forEach { nested ->
@@ -780,12 +891,15 @@ class AgentEngine(
                             AgentEvent.Usage(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
+                                config.model, config.name,
                             )
                         )
                         is StreamEvent.Failure -> streamFailure = event.message
                         else -> {}
                     }
                 }
+            } catch (te: TimeoutCancellationException) {
+                streamFailure = "Stream stalled - no data received for 90s (timed out)"
             } catch (ce: CancellationException) {
                 throw ce
             } catch (e: Exception) {
@@ -927,7 +1041,7 @@ Rules:
 - Prefer edit_file/multi_edit for targeted changes to existing files; use write_file to create or fully rewrite files; use apply_patch for multi-file diffs.
 - Use todo_write to track multi-step work and keep statuses current.
 - Use ask_user whenever a decision is genuinely the user's to make instead of guessing.
-- For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer.
+- For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message — they run concurrently.
 
 """.trim()
         )
@@ -987,8 +1101,6 @@ Rules:
 
     companion object {
         const val COMPACTION_PREFIX = "[Auto-compacted context — summary of the earlier conversation]"
-        /** Max tool rounds a subagent may take before giving up. */
-        const val SUBAGENT_MAX_ITERATIONS = 12
 
         /** How many times a silent (reasoning-only, no answer) model is asked to answer. */
         const val MAX_ANSWER_NUDGES = 1

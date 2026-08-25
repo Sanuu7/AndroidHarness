@@ -42,6 +42,7 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.common.DotLoading
+import com.androidharness.app.ui.common.formatDuration
 import com.androidharness.app.ui.theme.defaultEffectsSpec
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.theme.fastSpatialSpec
@@ -56,7 +57,12 @@ import com.androidharness.app.ui.theme.fastSpatialSpec
  * auto-following view that stops following if the user scrolls up.
  */
 @Composable
-internal fun ThinkingBlock(thinking: String, live: Boolean = false) {
+internal fun ThinkingBlock(
+    thinking: String,
+    live: Boolean = false,
+    /** How long reasoning took — shown as "Thought for Ns" once committed. */
+    durationMs: Long = 0,
+) {
     var expanded by remember { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -79,7 +85,11 @@ internal fun ThinkingBlock(thinking: String, live: Boolean = false) {
                     Spacer(Modifier.width(8.dp))
                 }
                 Text(
-                    if (live) "Reasoning…" else "Reasoning",
+                    when {
+                        live -> "Thinking…"
+                        durationMs > 0 -> "Thought for ${formatDuration(durationMs)}"
+                        else -> "Thinking"
+                    },
                     style = MaterialTheme.typography.labelMedium,
                     color = scheme.onSurfaceVariant,
                     modifier = Modifier.weight(1f),

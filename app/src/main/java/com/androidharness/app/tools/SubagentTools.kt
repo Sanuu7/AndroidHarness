@@ -16,6 +16,8 @@ class TaskTool : Tool {
         "answers a research question, e.g. 'find every place X is configured and how'. " +
         "Use it for broad exploration whose raw output would bloat this conversation — " +
         "you get back only the subagent's final, self-contained answer. " +
+        "Need several independent explorations? Issue ALL task calls in ONE message — " +
+        "they run concurrently. Never serialize independent research into separate turns. " +
         "The subagent cannot modify files, ask you questions, or spawn further subagents."
     override val parametersSchema = Schema.obj(
         mapOf(

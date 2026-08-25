@@ -7,7 +7,6 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.util.TreeMap
 
 /**
  * Chunk-level tests for [OpenAiCompatProvider.parseChunk]: real-world SSE
@@ -16,16 +15,18 @@ import java.util.TreeMap
 class OpenAiCompatParsingTest {
 
     private lateinit var provider: OpenAiCompatProvider
-    private lateinit var acc: TreeMap<Int, Triple<StringBuilder, StringBuilder, StringBuilder>>
+    private lateinit var acc: LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>
+    private val indexToId = HashMap<Int, String>()
 
     @Before
     fun setUp() {
         provider = OpenAiCompatProvider(OkHttpClient(), Json { ignoreUnknownKeys = true })
-        acc = TreeMap()
+        acc = LinkedHashMap()
+        indexToId.clear()
     }
 
     private fun parse(payload: String): List<StreamEvent> =
-        provider.parseChunk(Json.parseToJsonElement(payload), acc)
+        provider.parseChunk(Json.parseToJsonElement(payload), acc, indexToId)
 
     @Test
     fun `explicit null content does not become text and tool calls still accumulate`() {

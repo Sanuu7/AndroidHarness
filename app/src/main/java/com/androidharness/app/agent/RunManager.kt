@@ -89,6 +89,7 @@ class RunManager(
     private val workspace: WorkspaceManager,
     private val linuxEnv: LinuxEnvironmentManager,
     private val settings: com.androidharness.app.data.SettingsRepository,
+    private val todoStore: TodoStore,
 ) {
 
     /** Live, per-session run state the UI mirrors. */
@@ -112,6 +113,9 @@ class RunManager(
         val error: String? = null,
         /** Transient "Retrying in Ns…" status while the engine backs off. */
         val retryStatus: String? = null,
+        /** When this turn's reasoning stream started/ended — drives "Thought for Ns". */
+        val thinkingStartedAt: Long? = null,
+        val thinkingEndedAt: Long? = null,
         val queuedMessage: String? = null,
         val pendingPlan: String? = null,
         val estimate: ContextEstimate? = null,
@@ -234,6 +238,9 @@ class RunManager(
         }
 
         val live = stateOf(sid)
+        // A fresh user prompt starts a fresh task list; the store is
+        // session-owned so nothing leaks across chats.
+        todoStore.beginRun(sid)
         sessions.addMessage(sid, ChatMessage(role = Role.USER, text = text, images = imageRefs, turnId = turnId), turnId)
         live.update {
             it.copy(
@@ -246,7 +253,7 @@ class RunManager(
         acquireKeepalive()
         RuntimeNotifier.update("Working…")
 
-        val history = sessions.messages(sid)
+        val history = with(sessions) { messages(sid).withoutSubagentTurns() }
         val job = appScope.launch {
             var promptJob: Job? = null
             try {
@@ -344,8 +351,13 @@ class RunManager(
                     buf.text.append(event.delta)
                     buf.dirty = true
                 }
-                if (live.value.retryStatus != null) {
-                    live.update { it.copy(retryStatus = null) }
+                live.update {
+                    // First answer text ends this turn's reasoning phase.
+                    if (it.thinkingStartedAt != null && it.thinkingEndedAt == null) {
+                        it.copy(thinkingEndedAt = System.currentTimeMillis(), retryStatus = null)
+                    } else if (it.retryStatus != null) {
+                        it.copy(retryStatus = null)
+                    } else it
                 }
             }
 
@@ -355,8 +367,11 @@ class RunManager(
                     buf.thinking.append(event.delta)
                     buf.dirty = true
                 }
-                if (live.value.retryStatus != null) {
-                    live.update { it.copy(retryStatus = null) }
+                live.update {
+                    it.copy(
+                        thinkingStartedAt = it.thinkingStartedAt ?: System.currentTimeMillis(),
+                        retryStatus = null,
+                    )
                 }
             }
 
@@ -365,12 +380,16 @@ class RunManager(
                 // Commit under the id the live bubble has been using, so the UI
                 // swaps live → committed in place instead of remove + insert.
                 val id = live.value.liveMessageId ?: UUID.randomUUID().toString()
-                val msg = event.message.copy(turnId = turnId, id = id)
+                val thinkingMs = live.value.thinkingStartedAt?.let { start ->
+                    (live.value.thinkingEndedAt ?: System.currentTimeMillis()) - start
+                } ?: 0L
+                val msg = event.message.copy(turnId = turnId, id = id, thinkingMs = thinkingMs)
                 sessions.addMessage(sessionId, msg, turnId)
                 live.update {
                     it.copy(
                         streamingText = null, streamingThinking = null,
                         liveMessageId = null, lastCommittedId = id,
+                        thinkingStartedAt = null, thinkingEndedAt = null,
                     )
                 }
             }
@@ -391,6 +410,15 @@ class RunManager(
             is AgentEvent.EnvironmentNeeded -> live.update { it.copy(pendingEnvironment = event.request) }
 
             is AgentEvent.ToolMessageCommitted -> sessions.addMessage(sessionId, event.message, turnId)
+
+            // Inner subagent turns persist under the parent session; the main
+            // chat hides them (assistant rows carry the parent call id).
+            is AgentEvent.SubagentMessageCommitted ->
+                sessions.addMessage(sessionId, event.message, turnId)
+
+            is AgentEvent.FileEdited -> sessions.recordFileEdit(
+                sessionId, event.turnId, event.relPath, event.added, event.removed,
+            )
 
             is AgentEvent.ToolFinished -> {
                 val remaining = live.value.runningCalls.filterNot { c -> c.id == event.callId }
@@ -415,13 +443,24 @@ class RunManager(
                 live.update { it.copy(queuedMessage = null) }
             }
 
-            is AgentEvent.Usage -> sessions.addUsage(
-                sessionId,
-                event.inputTokens.toLong(),
-                event.outputTokens.toLong(),
-                event.cachedInputTokens.toLong(),
-                event.cacheWriteTokens.toLong(),
-            )
+            is AgentEvent.Usage -> {
+                sessions.addUsage(
+                    sessionId,
+                    event.inputTokens.toLong(),
+                    event.outputTokens.toLong(),
+                    event.cachedInputTokens.toLong(),
+                    event.cacheWriteTokens.toLong(),
+                )
+                sessions.recordUsage(
+                    sessionId,
+                    event.providerName,
+                    event.model,
+                    event.inputTokens.toLong(),
+                    event.outputTokens.toLong(),
+                    event.cachedInputTokens.toLong(),
+                    event.cacheWriteTokens.toLong(),
+                )
+            }
 
             is AgentEvent.Retrying -> {
                 val seconds = (event.delayMs / 1000.0).let { if (it < 1) "<1" else "%.0f".format(it) }

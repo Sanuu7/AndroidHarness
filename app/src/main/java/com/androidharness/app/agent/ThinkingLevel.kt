@@ -6,6 +6,7 @@ enum class ThinkingLevel(val label: String) {
     LOW("Low"),
     MEDIUM("Medium"),
     HIGH("High"),
+    XHIGH("X-High"),
     MAX("Max"),
     ;
 
@@ -15,15 +16,22 @@ enum class ThinkingLevel(val label: String) {
         LOW -> 1_024
         MEDIUM -> 4_096
         HIGH -> 16_384
+        XHIGH -> 24_576
         MAX -> 32_768
     }.coerceAtMost((maxOutputTokens - 4_096).coerceAtLeast(0))
 
-    /** OpenAI-compatible reasoning_effort string, or null to omit. */
+    /**
+     * OpenAI-compatible reasoning_effort string, or null to omit. X-High and
+     * Max both ask for the highest tier; whether the endpoint accepts the
+     * extended "xhigh" value is decided at request time from the model id
+     * (see OpenAiCompatProvider.supportsExtendedEffort).
+     */
     val reasoningEffort: String?
         get() = when (this) {
             OFF -> null
             LOW -> "low"
             MEDIUM -> "medium"
-            HIGH, MAX -> "high"
+            HIGH -> "high"
+            XHIGH, MAX -> "xhigh"
         }
 }

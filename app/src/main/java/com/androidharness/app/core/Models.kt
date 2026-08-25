@@ -36,6 +36,8 @@ data class ChatMessage(
     val toolName: String? = null,
     val isError: Boolean = false,
     val thinking: String = "",
+    /** How long the model spent thinking before this message committed. */
+    val thinkingMs: Long = 0,
     val images: List<ImageRef> = emptyList(),
     /** Resolved image bytes for the current request; never persisted. */
     val imageData: List<ImageData> = emptyList(),

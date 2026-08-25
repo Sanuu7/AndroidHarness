@@ -13,6 +13,7 @@ import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.agent.QuestionRequest
 import com.androidharness.app.agent.RunManager
 import com.androidharness.app.agent.ThinkingLevel
+import com.androidharness.app.agent.ThinkingSpecs
 import com.androidharness.app.agent.TodoItem
 import com.androidharness.app.agent.describeToolCall
 import com.androidharness.app.core.ChatMessage
@@ -22,8 +23,10 @@ import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.data.db.SnippetEntity
 import com.androidharness.app.llm.ProviderConfig
+import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.llm.RequestOptions
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -93,6 +96,14 @@ data class ChatUiState(
     val currentToolAction: String? = null,
     /** Live progress lines per running subagent (task tool), newest last. */
     val subagentSteps: Map<String, List<String>> = emptyMap(),
+    /** When the current turn's reasoning stream started (drives the live "Thinking… Ns"). */
+    val thinkingStartedAt: Long? = null,
+    /** Per-turn file-edit stats ("+N −M" chips), keyed by turnId. */
+    val fileEditsByTurn: Map<String, List<com.androidharness.app.data.db.FileEditEntity>> = emptyMap(),
+    /** Model override picked from the active provider's catalog. */
+    val activeModel: String? = null,
+    /** Fetched model catalogs per provider id. */
+    val catalogs: Map<String, List<com.androidharness.app.llm.ModelEntry>> = emptyMap(),
     /** Precomputed human-readable activity line (computed in the ViewModel, never in composition). */
     val currentAction: String? = null,
     val retryStatus: String? = null,
@@ -103,6 +114,10 @@ data class ChatUiState(
         com.androidharness.app.data.env.ShizukuState.NOT_INSTALLED,
 ) {
     val activeProvider: ProviderConfig? get() = providers.firstOrNull { it.id == activeProviderId }
+
+    /** Model actually used for requests: catalog pick, else the entry's default. */
+    val effectiveModel: String?
+        get() = activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
 
     /** Best available measure of tokens currently inside the context window. */
     val contextUsed: Int
@@ -159,13 +174,37 @@ class ChatViewModel(
                             providers = providers,
                             activeProviderId = settings.activeProviderId
                                 ?: providers.firstOrNull()?.id,
+                            activeModel = settings.activeModel,
                         )
                     }
                 }
         }
         viewModelScope.launch {
-            c.todoStore.todos.collect { todos ->
+            c.providers.catalogs.collect { catalogs ->
+                _state.update { it.copy(catalogs = catalogs) }
+            }
+        }
+        viewModelScope.launch {
+            // Todos are session-owned. sessionIdFlow must be a combine INPUT —
+            // a new chat's first run claims the store before the state update
+            // lands, and a snapshot read never re-fires (the list stayed empty
+            // for the whole run).
+            combine(c.todoStore.todos, c.todoStore.owner, sessionIdFlow) { todos, owner, sid ->
+                if (owner != null && sid != null && owner == sid) todos else emptyList()
+            }.collect { todos ->
                 _state.update { it.copy(todos = todos) }
+            }
+        }
+
+        viewModelScope.launch {
+            // "+N −M" chips: per-file edit stats for the bound session.
+            sessionIdFlow.flatMapLatest { sid ->
+                if (sid == null) flowOf(emptyList())
+                else c.sessions.fileEditsFor(sid)
+            }.collect { edits ->
+                _state.update {
+                    it.copy(fileEditsByTurn = edits.groupBy { e -> e.turnId })
+                }
             }
         }
         viewModelScope.launch {
@@ -326,6 +365,7 @@ class ChatViewModel(
                 pendingEnvironment = live.pendingEnvironment,
                 currentToolAction = live.currentToolAction,
                 subagentSteps = live.subagentSteps,
+                thinkingStartedAt = live.thinkingStartedAt,
                 retryStatus = live.retryStatus,
                 queuedMessage = live.queuedMessage,
                 pendingPlan = live.pendingPlan,
@@ -509,11 +549,15 @@ class ChatViewModel(
 
         val s = _state.value
         viewModelScope.launch {
+            // A model picked from the provider's catalog overrides its default.
+            val effectiveConfig = s.activeModel
+                ?.takeIf { it.isNotBlank() && it != provider.model }
+                ?.let { provider.copy(model = it) } ?: provider
             val sid = c.runManager.startRun(
                 sessionId = sessionId,
                 text = text,
                 imageRefs = imageRefs,
-                config = provider,
+                config = effectiveConfig,
                 apiKey = apiKey,
                 permissionMode = s.permissionMode,
                 mode = s.mode,
@@ -594,11 +638,19 @@ class ChatViewModel(
         val sid = sessionId ?: return
         viewModelScope.launch {
             val fs = c.workspace.currentOnce()
-            val restored = runCatching { c.checkpoints.rewind(sid, turnId, fs) }.getOrDefault(0)
+            val outcome = runCatching { c.checkpoints.rewind(sid, turnId, fs) }.getOrNull()
             _state.update {
                 it.copy(
                     turnsWithCheckpoints = refreshCheckpoints(sid),
-                    error = if (restored == 0) "Nothing to rewind for that turn." else null,
+                    error = if (outcome == null) {
+                        "Rewind failed."
+                    } else if (outcome.restored == 0 && outcome.failed == 0) {
+                        "Nothing to rewind for that turn."
+                    } else if (outcome.failed > 0) {
+                        "Rewound ${outcome.restored} file(s) — ${outcome.failed} could not be restored."
+                    } else {
+                        null
+                    },
                 )
             }
         }
@@ -632,8 +684,9 @@ class ChatViewModel(
         val provider = _state.value.activeProvider ?: return
         val apiKey = c.providers.apiKey(provider.id) ?: return
         // Trigger compaction by temporarily pretending the context is full:
-        // simplest correct approach — ask the engine for a summary of all history.
-        val history = c.sessions.historyFor(sid).second
+        // Simplest correct approach — ask the engine for a summary of all history.
+        // Subagent inner turns are excluded (same rule as new runs).
+        val history = with(c.sessions) { historyFor(sid).second.withoutSubagentTurns() }
         if (history.size < 4) {
             _state.update { it.copy(error = "Not enough history to compact.") }
             return
@@ -692,7 +745,107 @@ class ChatViewModel(
     }
 
     fun setActiveProvider(id: String) {
-        viewModelScope.launch { c.settings.setActiveProvider(id) }
+        viewModelScope.launch {
+            // Switching provider resets any model override — the old pick
+            // belonged to the previous endpoint's catalog.
+            c.settings.setActiveModel(null)
+            c.settings.setActiveProvider(id)
+            // The new model may not speak the stored thinking tier — adapt.
+            val provider = _state.value.providers.firstOrNull { it.id == id }
+            ThinkingSpecs.clampStoredLevel(
+                c.settings,
+                provider?.model,
+                com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+            )
+        }
+    }
+
+    /** Selects [model] under provider [providerId] (null = its saved default). */
+    fun selectModel(providerId: String, model: String?) {
+        viewModelScope.launch {
+            c.settings.setActiveProvider(providerId)
+            c.settings.setActiveModel(model)
+            val provider = _state.value.providers.firstOrNull { it.id == providerId }
+            ThinkingSpecs.clampStoredLevel(
+                c.settings,
+                model?.takeIf { it.isNotBlank() } ?: provider?.model,
+                com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+            )
+        }
+    }
+
+    /**
+     * Add or update a provider (plus its API key) without leaving chat.
+     * Mirrors the Providers screen: a first-ever provider becomes active.
+     */
+    fun upsertProvider(
+        existing: ProviderConfig?,
+        name: String,
+        type: ProviderType,
+        baseUrl: String,
+        model: String,
+        apiKey: String,
+    ) {
+        viewModelScope.launch {
+            if (existing == null) {
+                val created = c.providers.add(name, type, baseUrl, model, apiKey)
+                if (_state.value.activeProviderId == null) {
+                    c.settings.setActiveProvider(created.id)
+                }
+            } else {
+                c.providers.update(
+                    existing.copy(name = name, type = type, baseUrl = baseUrl, model = model),
+                    apiKey,
+                )
+            }
+        }
+    }
+
+    fun deleteProvider(providerId: String) {
+        viewModelScope.launch { c.providers.delete(providerId) }
+    }
+
+    /** Stored API key for a provider (filled into the edit form). */
+    fun providerApiKey(providerId: String): String? = c.providers.apiKey(providerId)
+
+    // ---- Workspace switching (chat overflow + sheet) ------------------------
+
+    /** The shared container, for host-side pickers (AddWorkspaceDialog). */
+    val container: AppContainer get() = c
+
+    val workspaces: Flow<List<com.androidharness.app.data.db.ProjectEntity>>
+        get() = c.workspace.projects
+
+    val activeWorkspace: Flow<com.androidharness.app.data.db.ProjectEntity>
+        get() = c.workspace.currentProject
+
+    fun workspaceDescription(project: com.androidharness.app.data.db.ProjectEntity) =
+        c.workspace.describe(project)
+
+    fun setWorkspace(projectId: String) {
+        viewModelScope.launch { c.workspace.setActiveProject(projectId) }
+    }
+
+    fun addSafWorkspace(uri: Uri) {
+        viewModelScope.launch { c.workspace.addPickedFolder(uri) }
+    }
+
+    /**
+     * Refetches a provider's model catalog. Returns an error message on
+     * failure, null on success (catalog persisted and published to state).
+     */
+    suspend fun refreshCatalog(providerId: String): String? {
+        val provider = _state.value.providers.firstOrNull { it.id == providerId }
+            ?: return "Unknown provider"
+        val apiKey = c.providers.apiKey(providerId)
+        if (apiKey.isNullOrBlank()) return "No API key for this provider"
+        return when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, apiKey)) {
+            is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
+                c.providers.saveCatalog(providerId, result.models)
+                null
+            }
+            is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
+        }
     }
 
     fun dismissError() {

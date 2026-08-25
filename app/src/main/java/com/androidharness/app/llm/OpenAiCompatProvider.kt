@@ -3,6 +3,7 @@ package com.androidharness.app.llm
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
+import com.androidharness.app.llm.jsonArrayOrAbsent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
@@ -15,8 +16,6 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -59,9 +58,31 @@ class OpenAiCompatProvider(
             } else {
                 put("max_tokens", options.maxOutputTokens)
             }
-            options.thinking.reasoningEffort?.let { effort ->
-                // Not every compat server tolerates unknown request fields.
-                if (supportsReasoningEffort(host)) put("reasoning_effort", effort)
+            // Reasoning/thinking. OpenRouter takes the unified `reasoning`
+            // object and normalizes it across every provider it fronts — this
+            // is the ONLY way to reach Claude/Gemini thinking through the
+            // OpenAI-compatible API, whose native budget parameters live on
+            // their own protocols. The models.dev catalog supplies the exact
+            // per-model effort vocabulary (or a bare enabled toggle); the
+            // shipped family table is the offline fallback. Other remote
+            // OpenAI-compat hosts get `reasoning_effort` for models with an
+            // enumerated/known vocabulary; inherent reasoners (DeepSeek) get
+            // nothing and bare-local servers never see an unknown field.
+            if (options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF) {
+                if ("openrouter.ai" in host) {
+                    com.androidharness.app.agent.ThinkingSpecs
+                        .openRouterReasoning(config.model, options.thinking)
+                        ?.let { reasoning ->
+                            putJsonObject("reasoning") {
+                                reasoning.effort?.let { put("effort", it) }
+                                reasoning.enabled?.let { put("enabled", it) }
+                            }
+                        }
+                } else if (!isLocalHost(host)) {
+                    com.androidharness.app.agent.ThinkingSpecs
+                        .effortWire(config.model, options.thinking, ModelsDev.providerKeyFor(host))
+                        ?.let { put("reasoning_effort", it) }
+                }
             }
             // Pins all requests of one session to the same cache shard where
             // the endpoint supports it; gated by host so strict OpenAI-compat
@@ -103,8 +124,12 @@ class OpenAiCompatProvider(
             .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
 
-        // Accumulates streamed tool-call fragments: index -> (id, name, args)
-        val acc = TreeMap<Int, Triple<StringBuilder, StringBuilder, StringBuilder>>()
+        // Accumulates streamed tool-call fragments, keyed by CALL ID (with the
+        // stream index only as a fallback). Some gateways stream parallel tool
+        // calls with every fragment carrying index 0 — keying by index merged
+        // them into one garbled call, silently dropping the second subagent.
+        val acc = LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>()
+        val indexToId = HashMap<Int, String>()
 
         return flow {
             // Some gateways attach a usage block to many (or every) SSE chunk
@@ -113,7 +138,7 @@ class OpenAiCompatProvider(
             // the authoritative ones — and emit exactly one Usage per request.
             var pendingUsage: StreamEvent.Usage? = null
             ProviderFactory.sseJson(request).collect { el ->
-                parseChunk(el, acc).forEach { event ->
+                parseChunk(el, acc, indexToId).forEach { event ->
                     if (event is StreamEvent.Usage) pendingUsage = event else emit(event)
                 }
             }
@@ -135,7 +160,8 @@ class OpenAiCompatProvider(
      */
     internal fun parseChunk(
         el: JsonElement,
-        acc: TreeMap<Int, Triple<StringBuilder, StringBuilder, StringBuilder>>,
+        acc: LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>,
+        indexToId: MutableMap<Int, String> = HashMap(),
     ): List<StreamEvent> {
         val chunk = el as? JsonObject ?: return emptyList()
 
@@ -153,12 +179,12 @@ class OpenAiCompatProvider(
 
         // Usage may ride on the final chunk together with finish_reason and
         // tool calls — collect it without skipping the rest of the chunk.
-        chunk["usage"]?.jsonObject?.let { usage ->
+        chunk["usage"]?.jsonObjectOrAbsent()?.let { usage ->
             val input = usage["prompt_tokens"]?.jsonPrimitive?.intOrNull
             val output = usage["completion_tokens"]?.jsonPrimitive?.intOrNull
             // OpenAI/OpenRouter report inside prompt_tokens_details; DeepSeek's
             // direct API uses a flat prompt_cache_hit_tokens instead.
-            val cached = usage["prompt_tokens_details"]?.jsonObject
+            val cached = usage["prompt_tokens_details"]?.jsonObjectOrAbsent()
                 ?.get("cached_tokens")?.jsonPrimitive?.intOrNull
                 ?: usage["prompt_cache_hit_tokens"]?.jsonPrimitive?.intOrNull
                 ?: 0
@@ -167,8 +193,8 @@ class OpenAiCompatProvider(
             }
         }
 
-        val choice = chunk["choices"]?.jsonArray?.firstOrNull()?.jsonObject ?: return events
-        val delta = choice["delta"]?.jsonObject
+        val choice = chunk["choices"]?.jsonArrayOrAbsent()?.firstOrNull()?.jsonObjectOrAbsent() ?: return events
+        val delta = choice["delta"]?.jsonObjectOrAbsent()
 
         delta?.get("content")?.let { content ->
             when {
@@ -195,14 +221,26 @@ class OpenAiCompatProvider(
             }
         }
 
-        delta?.get("tool_calls")?.jsonArray?.forEach { tcEl ->
-            val tc = tcEl.jsonObject
+        delta?.get("tool_calls")?.jsonArrayOrAbsent()?.forEach { tcEl ->
+            val tc = tcEl.jsonObjectOrAbsent() ?: return@forEach
             val index = tc["index"]?.jsonPrimitive?.intOrNull ?: 0
-            val entry = acc.getOrPut(index) {
-                Triple(StringBuilder(), StringBuilder(), StringBuilder())
+            val newId = tc["id"]?.jsonPrimitive?.contentOrNull
+            // Key by call id; the stream index only links fragments that carry
+            // no id. A gateway that reuses index 0 for a SECOND call (new id)
+            // therefore opens a new entry instead of corrupting the first.
+            val key = if (!newId.isNullOrBlank()) {
+                indexToId[index] = newId
+                newId
+            } else {
+                indexToId[index] ?: "idx_$index"
             }
-            tc["id"]?.jsonPrimitive?.contentOrNull?.let { entry.first.append(it) }
-            tc["function"]?.jsonObject?.let { fn ->
+            val entry = acc.getOrPut(key) {
+                Triple(StringBuilder(newId ?: ""), StringBuilder(), StringBuilder())
+            }
+            if (!newId.isNullOrBlank() && entry.first.isEmpty()) {
+                entry.first.append(newId)
+            }
+            tc["function"]?.jsonObjectOrAbsent()?.let { fn ->
                 fn["name"]?.jsonPrimitive?.contentOrNull?.let { entry.second.append(it) }
                 fn["arguments"]?.jsonPrimitive?.contentOrNull?.let { entry.third.append(it) }
             }
@@ -222,7 +260,7 @@ class OpenAiCompatProvider(
 
     /** Materializes accumulated fragments into tool calls and clears [acc]. */
     internal fun drainAccumulated(
-        acc: TreeMap<Int, Triple<StringBuilder, StringBuilder, StringBuilder>>,
+        acc: LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>,
     ): List<ToolCallData> = acc.values.mapNotNull { (id, name, args) ->
         if (name.isBlank()) null
         else ToolCallData(
@@ -230,11 +268,27 @@ class OpenAiCompatProvider(
             name = name.toString(),
             argumentsJson = args.toString().ifBlank { "{}" },
         )
-    }.also { acc.clear() }
+    }.also {
+        // android.util.Log is unmocked on the JVM test harness — never let
+        // diagnostics throw inside the stream path.
+        runCatching {
+            if (it.size > 1) {
+                android.util.Log.d("HarnessSpawn", "drained ${it.size} parallel tool calls: ${it.map { c -> c.id }}")
+            }
+        }
+        acc.clear()
+    }
 
-    /** Hosts known to understand `reasoning_effort` (OpenRouter normalizes it for other models). */
-    private fun supportsReasoningEffort(host: String): Boolean =
-        "api.openai.com" in host || "openrouter.ai" in host || "api.groq.com" in host
+    /** True for bare-local servers (llama.cpp/Ollama/LM Studio) that reject unknown fields. */
+    internal fun isLocalHost(baseUrl: String): Boolean {
+        // strip scheme, path, then port so bare hostnames match cleanly
+        val host = baseUrl.lowercase()
+            .substringAfter("://", "").substringBefore('/')
+            .substringBefore(':')
+        return host == "localhost" || host == "0.0.0.0" || host.startsWith("127.") ||
+            host.startsWith("192.168.") || host.startsWith("10.") ||
+            Regex("^172\\.(1[6-9]|2[0-9]|3[01])\\.").containsMatchIn(host)
+    }
 
     /**
      * Whether to ask this endpoint for token accounting
@@ -243,16 +297,7 @@ class OpenAiCompatProvider(
      * hit rates and token totals never update. Bare-local servers are excluded
      * because older llama.cpp/Ollama/LM Studio builds reject unknown fields.
      */
-    internal fun supportsUsageAccounting(baseUrl: String): Boolean {
-        // strip scheme, path, then port so bare hostnames match cleanly
-        val host = baseUrl.lowercase()
-            .substringAfter("://", "").substringBefore('/')
-            .substringBefore(':')
-        val local = host == "localhost" || host == "0.0.0.0" || host.startsWith("127.") ||
-            host.startsWith("192.168.") || host.startsWith("10.") ||
-            Regex("^172\\.(1[6-9]|2[0-9]|3[01])\\.").containsMatchIn(host)
-        return !local
-    }
+    internal fun supportsUsageAccounting(baseUrl: String): Boolean = !isLocalHost(baseUrl)
 
     /**
      * Hosts that document `prompt_cache_key` (or a compatible alias). Sent only

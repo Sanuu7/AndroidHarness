@@ -3,6 +3,7 @@ package com.androidharness.app.llm
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
+import com.androidharness.app.llm.jsonArrayOrAbsent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
@@ -13,8 +14,6 @@ import kotlinx.serialization.json.buildJsonArray
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonArray
-import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
@@ -67,7 +66,9 @@ class GeminiProvider(
                 if (options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF) {
                     putJsonObject("thinkingConfig") {
                         // -1 lets the model pick its budget dynamically
+                        val catalogMax = ModelsDev.entry("google", config.model)?.budgetMax
                         val budget = options.thinking.budgetTokens(options.maxOutputTokens)
+                            .let { if (catalogMax != null) minOf(it, catalogMax) else it }
                         put("thinkingBudget", if (options.thinking == com.androidharness.app.agent.ThinkingLevel.MAX) -1 else budget)
                         put("includeThoughts", false)
                     }
@@ -98,36 +99,36 @@ class GeminiProvider(
             ProviderFactory.sseJson(request).collect { el ->
                 val chunk = el as? JsonObject ?: return@collect
 
-                chunk["error"]?.jsonObject?.get("message")?.jsonPrimitive?.contentOrNull
+                chunk["error"]?.jsonObjectOrAbsent()?.get("message")?.jsonPrimitive?.contentOrNull
                     ?.let {
                         emit(StreamEvent.Failure(it))
                         return@collect
                     }
 
-                chunk["usageMetadata"]?.jsonObject?.let { usage ->
+                chunk["usageMetadata"]?.jsonObjectOrAbsent()?.let { usage ->
                     inputTokens = usage["promptTokenCount"]?.jsonPrimitive?.intOrNull ?: inputTokens
                     outputTokens = usage["candidatesTokenCount"]?.jsonPrimitive?.intOrNull ?: outputTokens
                     cachedTokens = usage["cachedContentTokenCount"]?.jsonPrimitive?.intOrNull ?: cachedTokens
                 }
 
-                val candidate = chunk["candidates"]?.jsonArray?.firstOrNull()?.jsonObject
+                val candidate = chunk["candidates"]?.jsonArrayOrAbsent()?.firstOrNull()?.jsonObjectOrAbsent()
                 // Sits on the candidate, a sibling of content — read it before
                 // the parts extraction below, which may come up empty.
                 candidate?.get("finishReason")?.jsonPrimitive?.contentOrNull
                     ?.let { finishReason = it }
-                val parts = candidate?.get("content")?.jsonObject
-                    ?.get("parts")?.jsonArray
+                val parts = candidate?.get("content")?.jsonObjectOrAbsent()
+                    ?.get("parts")?.jsonArrayOrAbsent()
                     ?: return@collect
 
                 val events = mutableListOf<StreamEvent>()
                 for (partEl in parts) {
-                    val part = partEl.jsonObject
+                    val part = partEl.jsonObjectOrAbsent() ?: continue
                     val isThought = part["thought"]?.jsonPrimitive?.booleanOrNull == true
                     part["text"]?.jsonPrimitive?.contentOrNull?.let { text ->
                         events += if (isThought) StreamEvent.ThinkingDelta(text)
                         else StreamEvent.TextDelta(text)
                     }
-                    part["functionCall"]?.jsonObject?.let { fc ->
+                    part["functionCall"]?.jsonObjectOrAbsent()?.let { fc ->
                         val name = fc["name"]?.jsonPrimitive?.contentOrNull ?: return@let
                         val args = fc["args"]?.toString() ?: "{}"
                         callCounter++

@@ -65,6 +65,22 @@ object Diff {
             sb.toString()
         }
 
+    /** Counts of added/removed lines between [oldText] and [newText] (for "+N −M" chips). */
+    fun lineCounts(oldText: String, newText: String): Pair<Int, Int> {
+        // "".lines() is [""], which would read as one phantom changed line.
+        val oldLines = if (oldText.isEmpty()) emptyList() else oldText.lines().take(MAX_LINES)
+        val newLines = if (newText.isEmpty()) emptyList() else newText.lines().take(MAX_LINES)
+        var added = 0
+        var removed = 0
+        for ((mark, _) in myers(oldLines, newLines)) {
+            when (mark) {
+                '+' -> added++
+                '-' -> removed++
+            }
+        }
+        return added to removed
+    }
+
     /** Returns (op, line) where op is ' ', '-' or '+'. */
     private fun myers(a: List<String>, b: List<String>): List<Pair<Char, String>> {
         val n = a.size

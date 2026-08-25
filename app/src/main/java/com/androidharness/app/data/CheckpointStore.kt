@@ -47,12 +47,16 @@ class CheckpointStore(private val dao: HarnessDao) {
 
     /**
      * Restore the workspace to its state before [turnId]: replay that turn's
-     * snapshots in reverse, then drop them.
+     * snapshots, then drop them. Returns how many paths restored cleanly and
+     * how many failed (failures were previously silent — the UI now reports
+     * them so "undo" can't quietly lie).
      */
-    suspend fun rewind(sessionId: String, turnId: String, workspace: WorkspaceFs): Int {
+    suspend fun rewind(sessionId: String, turnId: String, workspace: WorkspaceFs): RewindResult {
         val checkpoints = dao.checkpointsForTurn(sessionId, turnId)
+        var restored = 0
+        var failed = 0
         checkpoints.forEach { cp ->
-            runCatching {
+            val ok = runCatching {
                 val node = workspace.resolve(cp.relPath)
                 if (!cp.existedBefore) {
                     if (node.exists) node.delete()
@@ -60,11 +64,14 @@ class CheckpointStore(private val dao: HarnessDao) {
                     val text = String(android.util.Base64.decode(cp.contentB64, android.util.Base64.NO_WRAP))
                     node.writeText(text)
                 }
-            }
+            }.isSuccess
+            if (ok) restored++ else failed++
         }
         dao.deleteCheckpoints(sessionId, turnId)
-        return checkpoints.size
+        return RewindResult(restored, failed)
     }
+
+    data class RewindResult(val restored: Int, val failed: Int)
 
     suspend fun clearSession(sessionId: String) {
         dao.deleteCheckpoints(sessionId)

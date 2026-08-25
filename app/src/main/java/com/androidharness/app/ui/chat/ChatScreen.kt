@@ -16,6 +16,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.DragInteraction
@@ -24,25 +25,30 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -67,6 +73,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.core.Role
@@ -79,18 +86,23 @@ import com.androidharness.app.ui.chat.components.EmptyState
 import com.androidharness.app.ui.chat.components.EnvironmentInstallCard
 import com.androidharness.app.ui.chat.components.MainHeader
 import com.androidharness.app.ui.chat.components.MessageComposer
+import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.chat.components.PlanApprovalCard
 import com.androidharness.app.ui.chat.components.QuestionCard
 import com.androidharness.app.ui.chat.components.QueuedMessageChip
 import com.androidharness.app.ui.chat.components.RewindButton
 import com.androidharness.app.ui.chat.components.SlashSuggestions
 import com.androidharness.app.ui.chat.components.SubagentCard
+import com.androidharness.app.ui.chat.components.SubagentPagerCard
 import com.androidharness.app.ui.chat.components.ThinkingBlock
 import com.androidharness.app.ui.chat.components.TodoCard
 import com.androidharness.app.ui.chat.components.ToolCallCard
 import com.androidharness.app.ui.chat.components.ToolGroupCard
 import com.androidharness.app.ui.chat.components.UserBubble
+import com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet
 import com.androidharness.app.ui.common.formatRelativeTime
+import com.androidharness.app.ui.common.formatDuration
+import com.androidharness.app.ui.settings.ProviderManagerSheet
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -105,15 +117,19 @@ import kotlinx.coroutines.launch
 fun ChatScreen(
     viewModel: ChatViewModel,
     onOpenDrawer: () -> Unit,
-    onManageProviders: () -> Unit,
     onOpenFile: (path: String, line: Int?) -> Unit,
     onNewChat: () -> Unit,
     onOpenTerminal: () -> Unit,
+    onOpenSubagent: (toolCallId: String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val snackbar = remember { SnackbarHostState() }
     var showContext by remember { mutableStateOf(false) }
+    var showModelPicker by remember { mutableStateOf(false) }
+    var showProviderManager by remember { mutableStateOf(false) }
+    var showWorkspaceSwitcher by remember { mutableStateOf(false) }
+    var showAddWorkspace by remember { mutableStateOf(false) }
     var slashExpanded by remember { mutableStateOf(false) }
 
     val clipboard = LocalClipboardManager.current
@@ -121,7 +137,6 @@ fun ChatScreen(
     var editingMessage by remember { mutableStateOf<ChatMessage?>(null) }
     var confirmingEdit by remember { mutableStateOf<Pair<ChatMessage, String>?>(null) }
     var showUndoDialog by remember { mutableStateOf(false) }
-    var selectingMessage by remember { mutableStateOf<ChatMessage?>(null) }
     val scope = rememberCoroutineScope()
 
     // Bottom-pinning for the message list: true while the newest content
@@ -139,15 +154,68 @@ fun ChatScreen(
     if (showContext) {
         ContextUsageDialog(state = state, onDismiss = { showContext = false })
     }
+    // System folder picker for adding a SAF workspace from chat.
+    val safWorkspacePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree(),
+    ) { uri: Uri? -> uri?.let { viewModel.addSafWorkspace(it) } }
+    if (showModelPicker) {
+        ModelPickerSheet(
+            providers = state.providers,
+            activeProviderId = state.activeProviderId,
+            activeModel = state.activeModel,
+            catalogs = state.catalogs,
+            thinkingLevel = state.thinkingLevel,
+            onDismiss = { showModelPicker = false },
+            onSelect = viewModel::selectModel,
+            onRefreshCatalog = viewModel::refreshCatalog,
+            onSetThinking = viewModel::setThinkingLevel,
+            // Provider management stays in-conversation: a sheet, not a screen.
+            onManageProviders = { showProviderManager = true },
+        )
+    }
+    if (showProviderManager) {
+        ProviderManagerSheet(
+            providers = state.providers,
+            activeProviderId = state.activeProviderId,
+            apiKey = viewModel::providerApiKey,
+            onDismiss = { showProviderManager = false },
+            onSetActive = viewModel::setActiveProvider,
+            onDelete = viewModel::deleteProvider,
+            onSave = viewModel::upsertProvider,
+        )
+    }
+    if (showWorkspaceSwitcher) {
+        val workspaces by viewModel.workspaces.collectAsStateWithLifecycle(initialValue = emptyList())
+        val activeWorkspace by viewModel.activeWorkspace.collectAsStateWithLifecycle(initialValue = null)
+        WorkspaceSwitcherSheet(
+            projects = workspaces,
+            currentProjectId = activeWorkspace?.id,
+            describe = viewModel::workspaceDescription,
+            onSelect = viewModel::setWorkspace,
+            onAdd = { showAddWorkspace = true },
+            onDismiss = { showWorkspaceSwitcher = false },
+        )
+    }
+    if (showAddWorkspace) {
+        com.androidharness.app.ui.common.AddWorkspaceDialog(
+            container = viewModel.container,
+            onDismiss = { showAddWorkspace = false },
+            onPickSaf = {
+                showAddWorkspace = false
+                safWorkspacePicker.launch(null)
+            },
+        )
+    }
     if (state.showCostDialog) {
         CostDialog(state = state, onDismiss = viewModel::dismissCostDialog)
     }
 
-    // Long-press message actions (copy; edit for user messages).
+    // Long-press menu for YOUR messages (agent text is directly selectable —
+    // hold and drag; the system toolbar handles copy).
     actionsMessage?.let { msg ->
         AlertDialog(
             onDismissRequest = { actionsMessage = null },
-            title = { Text(if (msg.role == Role.USER) "Your message" else "Agent message") },
+            title = { Text("Your message") },
             text = {
                 Text(
                     if (msg.text.length > 200) msg.text.take(200) + "…" else msg.text,
@@ -163,43 +231,13 @@ fun ChatScreen(
                         actionsMessage = null
                     }) { Text("Copy") }
                     TextButton(onClick = {
-                        selectingMessage = msg
+                        editingMessage = msg
                         actionsMessage = null
-                    }) { Text("Select text") }
+                    }) { Text("Edit") }
                 }
             },
             dismissButton = {
-                Row {
-                    if (msg.role == Role.USER) {
-                        TextButton(onClick = {
-                            editingMessage = msg
-                            actionsMessage = null
-                        }) { Text("Edit") }
-                    }
-                    TextButton(onClick = { actionsMessage = null }) { Text("Close") }
-                }
-            },
-        )
-    }
-
-    // Word-by-word selection for any message, via the system copy affordance.
-    selectingMessage?.let { msg ->
-        AlertDialog(
-            onDismissRequest = { selectingMessage = null },
-            confirmButton = {
-                TextButton(onClick = { selectingMessage = null }) { Text("Close") }
-            },
-            title = { Text("Select text") },
-            text = {
-                SelectionContainer {
-                    Text(
-                        msg.text,
-                        style = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .heightIn(max = 420.dp)
-                            .verticalScroll(rememberScrollState()),
-                    )
-                }
+                TextButton(onClick = { actionsMessage = null }) { Text("Close") }
             },
         )
     }
@@ -457,29 +495,37 @@ fun ChatScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
+            val ap = state.activeProvider
+            // Native tiers only — unsupported levels were intentionally dropped
+            // from every picker (they used to render dimmed).
+            val thinkingLevels = remember(state.effectiveModel, ap) {
+                com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
+                    state.effectiveModel,
+                    com.androidharness.app.llm.ModelsDev.providerKeyFor(ap?.baseUrl),
+                )
+            }
             MainHeader(
                 sessionTitle = state.sessionTitle,
                 busy = state.busy,
-                statusText = when {
-                    state.busy -> state.currentAction ?: "Working in your workspace…"
-                    state.activeProvider == null -> "Add a provider to get started"
-                    else -> state.activeProvider!!.let { "${it.name} · ${it.model}" }
+                statusText = if (state.busy) state.currentAction ?: "Working in your workspace…" else "",
+                pickerLabel = when {
+                    ap == null -> "Add a provider to get started"
+                    else -> "${ap.name} · ${state.effectiveModel ?: ap.model}"
                 },
-                providers = state.providers,
-                activeProviderId = state.activeProviderId,
                 mode = state.mode,
                 thinkingLevel = state.thinkingLevel,
+                thinkingLevels = thinkingLevels,
                 permissionMode = state.permissionMode,
                 canUndo = state.turnsWithCheckpoints.isNotEmpty(),
                 onOpenDrawer = onOpenDrawer,
-                onManageProviders = onManageProviders,
-                onSelectProvider = viewModel::setActiveProvider,
+                onPickModel = { showModelPicker = true },
                 onOpenTerminal = onOpenTerminal,
                 onSetThinking = viewModel::setThinkingLevel,
                 onSetPermission = viewModel::setPermissionMode,
                 onSetMode = viewModel::setMode,
                 onOpenContext = { showContext = true },
                 onOpenUndo = { showUndoDialog = true },
+                onSwitchWorkspace = { showWorkspaceSwitcher = true },
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -533,21 +579,35 @@ fun ChatScreen(
                             EmptyState(
                                 hasProvider = state.activeProvider != null,
                                 onSuggestion = { viewModel.send(it) },
-                                onAddProvider = onManageProviders,
+                                onAddProvider = { showProviderManager = true },
                             )
                         }
                     }
 
                     for ((messageIndex, message) in state.messages.withIndex()) {
+                        // Inner subagent turns persist with the parent task's
+                        // call id on the assistant row — they render on the
+                        // subagent's own page, never in the main list.
+                        if (message.role == Role.ASSISTANT && message.toolCallId != null) continue
                         val messageKey = message.id ?: "${message.role.name}-${message.createdAt}-$messageIndex"
                         when (message.role) {
                             Role.USER -> item(key = "message-$messageKey-user") {
                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                    UserBubble(
-                                        message.text,
-                                        message.images,
-                                        onLongPress = { actionsMessage = message },
-                                    )
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        UserBubble(
+                                            message.text,
+                                            message.images,
+                                            onLongPress = { actionsMessage = message },
+                                        )
+                                        if (message.turnId in state.turnsWithCheckpoints) {
+                                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                                CopyIconButton(message.text)
+                                                UndoIconButton(
+                                                    onClick = { message.turnId?.let { viewModel.rewindToTurn(it) } },
+                                                )
+                                            }
+                                        }
+                                    }
                                 }
                             }
                             Role.ASSISTANT -> {
@@ -555,33 +615,88 @@ fun ChatScreen(
                                     message.turnId in state.turnsWithCheckpoints
                                 if (message.thinking.isNotBlank()) {
                                     item(key = "message-$messageKey-thinking") {
-                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(message.thinking) }
+                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(message.thinking, durationMs = message.thinkingMs) }
                                     }
                                 }
                                 if (message.text.isNotBlank()) {
                                     item(key = "message-$messageKey-text") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                AssistantText(
-                                                    message.text,
-                                                    modifier = Modifier.weight(1f),
-                                                    onLongPress = { actionsMessage = message },
-                                                )
-                                                if (canRewind) {
-                                                    RewindButton(
-                                                        hasCheckpoints = true,
-                                                        onRewind = { message.turnId?.let { viewModel.rewindToTurn(it) } },
-                                                    )
+                                            Column {
+                                                AssistantText(message.text)
+                                                // Turn-final extras: diff chips + how
+                                                // long the whole turn took.
+                                                val isTurnFinal = state.messages
+                                                    .lastOrNull { m ->
+                                                        m.role == Role.ASSISTANT && m.turnId == message.turnId
+                                                    }?.id == message.id
+                                                val edits = state.fileEditsByTurn[message.turnId].orEmpty()
+                                                if (isTurnFinal && edits.isNotEmpty()) {
+                                                    FileEditChips(edits, Modifier.padding(top = 4.dp))
+                                                }
+                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                    CopyIconButton(message.text)
+                                                    if (canRewind) {
+                                                        UndoIconButton(
+                                                            onClick = { message.turnId?.let { viewModel.rewindToTurn(it) } },
+                                                        )
+                                                    }
+                                                    Spacer(Modifier.weight(1f))
+                                                    if (isTurnFinal) {
+                                                        val userAt = state.messages.firstOrNull { m ->
+                                                            m.role == Role.USER && m.turnId == message.turnId
+                                                        }?.createdAt ?: 0L
+                                                        val worked = formatDuration((message.createdAt - userAt).coerceAtLeast(0))
+                                                        if (worked.isNotEmpty()) {
+                                                            Text(
+                                                                worked,
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                fontFamily = FontFamily.Monospace,
+                                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            )
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                if (message.toolCalls.size >= 3) {
+                                // Subagents get their own treatment: 2+ run
+                                // in one bounded pager card, a lone one keeps
+                                // its standalone card; other tools group as before.
+                                val taskCalls = message.toolCalls.filter { it.name == "task" }
+                                val otherCalls = message.toolCalls.filter { it.name != "task" }
+                                if (taskCalls.size >= 2) {
+                                    item(key = "message-$messageKey-subagents") {
+                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                            SubagentPagerCard(
+                                                calls = taskCalls,
+                                                results = toolResults,
+                                                runningIds = runningIds,
+                                                subagentSteps = state.subagentSteps,
+                                                onOpen = onOpenSubagent,
+                                            )
+                                        }
+                                    }
+                                } else if (taskCalls.size == 1) {
+                                    val call = taskCalls[0]
+                                    item(key = call.id) {
+                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                            SubagentCard(
+                                                call = call,
+                                                steps = state.subagentSteps[call.id].orEmpty(),
+                                                result = toolResults[call.id],
+                                                running = call.id in runningIds,
+                                                onOpenFile = onOpenFile,
+                                                onOpenFull = { onOpenSubagent(call.id) },
+                                            )
+                                        }
+                                    }
+                                }
+                                if (otherCalls.size >= 3) {
                                     item(key = "message-$messageKey-tools") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             ToolGroupCard(
-                                                calls = message.toolCalls,
+                                                calls = otherCalls,
                                                 results = toolResults,
                                                 runningIds = runningIds,
                                                 onOpenFile = onOpenFile,
@@ -590,25 +705,15 @@ fun ChatScreen(
                                         }
                                     }
                                 } else {
-                                    for (call in message.toolCalls) {
+                                    for (call in otherCalls) {
                                         item(key = call.id) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                                if (call.name == "task") {
-                                                    SubagentCard(
-                                                        call = call,
-                                                        steps = state.subagentSteps[call.id].orEmpty(),
-                                                        result = toolResults[call.id],
-                                                        running = call.id in runningIds,
-                                                        onOpenFile = onOpenFile,
-                                                    )
-                                                } else {
-                                                    ToolCallCard(
-                                                        call = call,
-                                                        result = toolResults[call.id],
-                                                        running = call.id in runningIds,
-                                                        onOpenFile = onOpenFile,
-                                                    )
-                                                }
+                                                ToolCallCard(
+                                                    call = call,
+                                                    result = toolResults[call.id],
+                                                    running = call.id in runningIds,
+                                                    onOpenFile = onOpenFile,
+                                                )
                                             }
                                         }
                                     }
@@ -762,6 +867,95 @@ fun ChatScreen(
 
 // ---------------------------------------------------------------------------
 // Helpers
+
+/** Small copy icon with a brief check confirmation — ChatGPT-style action rows. */
+@Composable
+private fun CopyIconButton(text: String) {
+    var copied by remember { mutableStateOf(false) }
+    val clipboard = LocalClipboardManager.current
+    IconButton(onClick = {
+        clipboard.setText(AnnotatedString(text))
+        copied = true
+    }, modifier = Modifier.size(28.dp)) {
+        Icon(
+            if (copied) Icons.Filled.Check else Icons.Filled.ContentCopy,
+            contentDescription = "Copy",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(15.dp),
+        )
+    }
+    LaunchedEffect(copied) {
+        if (copied) {
+            delay(1500)
+            copied = false
+        }
+    }
+}
+
+@Composable
+private fun UndoIconButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick, modifier = Modifier.size(28.dp)) {
+        Icon(
+            Icons.Outlined.History,
+            contentDescription = "Undo file changes from this turn",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
+    }
+}
+
+/** "+N −M" chips per edited file, for the turn-final assistant message. */
+@Composable
+private fun FileEditChips(
+    edits: List<com.androidharness.app.data.db.FileEditEntity>,
+    modifier: Modifier = Modifier,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val statusColors = com.androidharness.app.ui.theme.LocalStatusColors.current
+    Row(
+        modifier = modifier.horizontalScroll(rememberScrollState()),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        edits.forEach { edit ->
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = scheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(5.dp),
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                ) {
+                    Text(
+                        edit.relPath.substringAfterLast('/'),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.widthIn(max = 140.dp),
+                    )
+                    if (edit.added > 0) {
+                        Text(
+                            "+${edit.added}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = statusColors.success,
+                        )
+                    }
+                    if (edit.removed > 0) {
+                        Text(
+                            "−${edit.removed}",
+                            style = MaterialTheme.typography.labelSmall,
+                            fontFamily = FontFamily.Monospace,
+                            color = scheme.error,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
 
 /** True when the last item's bottom edge sits within [tolerance]px of the viewport bottom. */
 private fun isAtBottom(info: LazyListLayoutInfo, canScrollForward: Boolean, tolerance: Int = 64): Boolean {

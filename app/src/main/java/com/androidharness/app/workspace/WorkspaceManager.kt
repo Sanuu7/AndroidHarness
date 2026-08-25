@@ -92,6 +92,19 @@ class WorkspaceManager(
         return project
     }
 
+    /**
+     * Adds a folder chosen in the system picker. When the SAF tree maps to a
+     * real path on shared storage the workspace is upgraded to a SHELL
+     * project (full shell) instead of a file-tools-only SAF one.
+     */
+    suspend fun addPickedFolder(treeUri: Uri): ProjectEntity {
+        val path = SafPathResolver.resolve(treeUri)
+        if (path != null && java.io.File(path).isDirectory) {
+            return addShellProject(path)
+        }
+        return addSafProject(treeUri)
+    }
+
     suspend fun setActiveProject(id: String) {
         dao.touchProject(id, System.currentTimeMillis())
     }

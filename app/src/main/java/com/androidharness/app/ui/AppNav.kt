@@ -1,5 +1,7 @@
 package com.androidharness.app.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -58,8 +60,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -79,8 +83,11 @@ import com.androidharness.app.ui.files.CodeViewerScreen
 import com.androidharness.app.ui.files.FilesScreen
 import com.androidharness.app.ui.settings.ProvidersScreen
 import com.androidharness.app.ui.settings.SettingsScreen
+import com.androidharness.app.ui.setup.SetupScreen
 import com.androidharness.app.ui.terminal.TerminalScreen
 import com.androidharness.app.ui.theme.fastEffectsSpec
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -101,8 +108,42 @@ fun AppNav(container: AppContainer) {
     val nav = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val focusManager = LocalFocusManager.current
     val sessions by container.sessions.sessions.collectAsStateWithLifecycle(initialValue = emptyList())
-    val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
+    // Nullable gate: the synthetic AppSettings() default (onboardingDone=false)
+    // used to pass for one frame as a real emission and flash the setup screen
+    // for fully-onboarded users. Null = DataStore hasn't spoken yet.
+    val settingsState by container.settings.settings
+        .map { it as AppSettings? }
+        .collectAsStateWithLifecycle(initialValue = null)
+    val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
+    val currentWorkspace by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
+    val allWorkspaces by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
+    val keyboard = LocalSoftwareKeyboardController.current
+
+    // Setup fires exactly once, decided from DataStore's REAL first emission.
+    val settings = settingsState
+    if (settings == null) {
+        Box(Modifier.fillMaxSize())
+        return
+    }
+    val needsSetup = !settings.onboardingDone && settings.activeProviderId == null
+
+    // Keyboard belongs to manual taps only. Two mechanisms fought this:
+    // (1) the composer's focus survives the drawer opening, and (2) the
+    // drawer's own accessibility focus pass can land ON the search field —
+    // that one arrives a frame AFTER the open event, so clearing immediately
+    // loses the race. Clear on both edges, once more after the settle, and
+    // hide the IME outright.
+    androidx.compose.runtime.LaunchedEffect(drawerState.currentValue) {
+        focusManager.clearFocus(force = true)
+        keyboard?.hide()
+        if (drawerState.currentValue == DrawerValue.Open) {
+            delay(120)
+            focusManager.clearFocus(force = true)
+            keyboard?.hide()
+        }
+    }
 
     // Which session the current back stack shows, for drawer highlighting.
     val currentEntry by nav.currentBackStackEntryFlow.collectAsStateWithLifecycle(initialValue = null)
@@ -114,6 +155,13 @@ fun AppNav(container: AppContainer) {
     var actionsSession by remember { mutableStateOf<SessionEntity?>(null) }
     var renamingSession by remember { mutableStateOf<SessionEntity?>(null) }
     var collapsedGroups by remember { mutableStateOf(setOf(SessionGroup.OLDER, SessionGroup.ARCHIVED)) }
+    var showWorkspaceSheet by remember { mutableStateOf(false) }
+    var showAddWorkspace by remember { mutableStateOf(false) }
+
+    // System folder picker for adding a SAF workspace from the drawer.
+    val safWorkspacePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree(),
+    ) { uri -> uri?.let { scope.launch { container.workspace.addPickedFolder(it) } } }
 
     // Run-result notifications deep-link into the session's chat.
     androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -167,6 +215,49 @@ fun AppNav(container: AppContainer) {
                         Text("New chat", style = MaterialTheme.typography.titleSmall)
                     }
                     Spacer(Modifier.height(8.dp))
+
+                    // ----- Workspace switcher -----
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp, vertical = 4.dp)
+                            .clip(RoundedCornerShape(12.dp))
+                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                            .combinedClickable(onClick = { showWorkspaceSheet = true })
+                            .padding(horizontal = 12.dp, vertical = 9.dp),
+                    ) {
+                        Icon(
+                            Icons.Outlined.Folder,
+                            contentDescription = null,
+                            modifier = Modifier.size(18.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                currentWorkspace?.name ?: "Workspace",
+                                style = MaterialTheme.typography.titleSmall,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                currentWorkspace?.let { container.workspace.describe(it).kindLabel }
+                                    ?: "Choose workspace",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        Icon(
+                            Icons.Filled.KeyboardArrowDown,
+                            contentDescription = "Switch workspace",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.size(18.dp),
+                        )
+                    }
+                    Spacer(Modifier.height(4.dp))
 
                     // ----- Search -----
                     OutlinedTextField(
@@ -244,6 +335,7 @@ fun AppNav(container: AppContainer) {
                     DrawerRow(
                         icon = { Icon(Icons.Outlined.Terminal, contentDescription = null) },
                         title = "Terminal",
+                        subtitle = "Shell in this workspace",
                         onClick = {
                             scope.launch { drawerState.close() }
                             nav.navigate("terminal")
@@ -252,6 +344,7 @@ fun AppNav(container: AppContainer) {
                     DrawerRow(
                         icon = { Icon(Icons.Outlined.Folder, contentDescription = null) },
                         title = "Workspace files",
+                        subtitle = "Browse and open project files",
                         onClick = {
                             scope.launch { drawerState.close() }
                             nav.navigate("files")
@@ -260,6 +353,11 @@ fun AppNav(container: AppContainer) {
                     DrawerRow(
                         icon = { Icon(Icons.Outlined.Hub, contentDescription = null) },
                         title = "Providers",
+                        subtitle = run {
+                            val active = providers.firstOrNull { it.id == settings.activeProviderId }
+                            if (active == null) "Add a provider to get started"
+                            else "${active.name} · ${settings.activeModel?.takeIf { it.isNotBlank() } ?: active.model}"
+                        },
                         onClick = {
                             scope.launch { drawerState.close() }
                             nav.navigate("providers")
@@ -268,6 +366,7 @@ fun AppNav(container: AppContainer) {
                     DrawerRow(
                         icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                         title = "Settings",
+                        subtitle = "Agent, workspace, environment, appearance",
                         onClick = {
                             scope.launch { drawerState.close() }
                             nav.navigate("settings")
@@ -280,7 +379,7 @@ fun AppNav(container: AppContainer) {
     ) {
         NavHost(
             navController = nav,
-            startDestination = "chat",
+            startDestination = if (needsSetup) "setup" else "chat",
             // Quiet transitions: a short fade with a small rise. No shared-element
             // theatrics — screens should feel instant.
             enterTransition = {
@@ -298,13 +397,20 @@ fun AppNav(container: AppContainer) {
                 val vm: ChatViewModel = viewModel(factory = ChatViewModel.factory(container, null))
                 ChatScreen(
                     viewModel = vm,
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onManageProviders = { nav.navigate("providers") },
+                    onOpenDrawer = {
+                        focusManager.clearFocus(force = true)
+                        scope.launch { drawerState.open() }
+                    },
                     onOpenFile = { path, line ->
                         nav.navigate("viewer/${encode(path)}?line=${line ?: 0}")
                     },
                     onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
                     onOpenTerminal = { nav.navigate("terminal") },
+                    onOpenSubagent = { callId ->
+                        vm.state.value.sessionId?.let { sid ->
+                            nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
+                        }
+                    },
                 )
             }
             composable(
@@ -316,13 +422,34 @@ fun AppNav(container: AppContainer) {
                     viewModel(factory = ChatViewModel.factory(container, sessionId))
                 ChatScreen(
                     viewModel = vm,
-                    onOpenDrawer = { scope.launch { drawerState.open() } },
-                    onManageProviders = { nav.navigate("providers") },
+                    onOpenDrawer = {
+                        focusManager.clearFocus(force = true)
+                        scope.launch { drawerState.open() }
+                    },
                     onOpenFile = { path, line ->
                         nav.navigate("viewer/${encode(path)}?line=${line ?: 0}")
                     },
                     onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
                     onOpenTerminal = { nav.navigate("terminal") },
+                    onOpenSubagent = { callId ->
+                        vm.state.value.sessionId?.let { sid ->
+                            nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
+                        }
+                    },
+                )
+            }
+            composable(
+                "subagent/{sessionId}/{toolCallId}",
+                arguments = listOf(
+                    navArgument("sessionId") { type = NavType.StringType },
+                    navArgument("toolCallId") { type = NavType.StringType },
+                ),
+            ) { entry ->
+                com.androidharness.app.ui.subagent.SubagentScreen(
+                    container = container,
+                    sessionId = entry.arguments?.getString("sessionId").orEmpty(),
+                    toolCallId = entry.arguments?.getString("toolCallId").orEmpty(),
+                    onBack = { nav.popBackStack() },
                 )
             }
             composable("terminal") {
@@ -356,6 +483,7 @@ fun AppNav(container: AppContainer) {
                     container = container,
                     onBack = { nav.popBackStack() },
                     onOpenStats = { nav.navigate("stats") },
+                    onRunSetup = { nav.navigate("setup") },
                 )
             }
             composable("stats") {
@@ -367,7 +495,37 @@ fun AppNav(container: AppContainer) {
             composable("providers") {
                 ProvidersScreen(container = container, onBack = { nav.popBackStack() })
             }
+            composable("setup") {
+                com.androidharness.app.ui.setup.SetupScreen(
+                    container = container,
+                    onFinish = {
+                        nav.navigate("chat") { popUpTo("setup") { inclusive = true } }
+                    },
+                )
+            }
         }
+    }
+
+    // Workspace switching from the drawer + chat overflow shares one sheet.
+    if (showWorkspaceSheet) {
+        com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
+            projects = allWorkspaces,
+            currentProjectId = currentWorkspace?.id,
+            describe = { container.workspace.describe(it) },
+            onSelect = { id -> scope.launch { container.workspace.setActiveProject(id) } },
+            onAdd = { showAddWorkspace = true },
+            onDismiss = { showWorkspaceSheet = false },
+        )
+    }
+    if (showAddWorkspace) {
+        com.androidharness.app.ui.common.AddWorkspaceDialog(
+            container = container,
+            onDismiss = { showAddWorkspace = false },
+            onPickSaf = {
+                showAddWorkspace = false
+                safWorkspacePicker.launch(null)
+            },
+        )
     }
 
     // Long-press session actions.
@@ -555,6 +713,7 @@ private fun SessionAction(
 private fun DrawerRow(
     icon: @Composable () -> Unit,
     title: String,
+    subtitle: String? = null,
     onClick: () -> Unit,
 ) {
     Row(
@@ -564,17 +723,28 @@ private fun DrawerRow(
             .padding(horizontal = 14.dp, vertical = 2.dp)
             .clip(RoundedCornerShape(12.dp))
             .combinedClickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 11.dp),
+            .padding(horizontal = 12.dp, vertical = 9.dp),
     ) {
         Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
             icon()
         }
         Spacer(Modifier.width(14.dp))
-        Text(
-            title,
-            style = MaterialTheme.typography.titleSmall,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Column {
+            Text(
+                title,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            if (subtitle != null) {
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                )
+            }
+        }
     }
 }
 

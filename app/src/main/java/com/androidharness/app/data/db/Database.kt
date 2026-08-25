@@ -39,6 +39,7 @@ data class MessageEntity(
     val toolName: String?,
     val isError: Boolean,
     val thinking: String = "",
+    val thinkingMs: Long = 0,
     val imagesJson: String = "[]",
     val turnId: String? = null,
     val createdAt: Long,
@@ -71,6 +72,45 @@ data class SnippetEntity(
     val name: String,
     val body: String,
 )
+
+/** One model request's token cost, attributed to its model — drives per-model stats. */
+@Entity(tableName = "usage_events", indices = [Index("sessionId")])
+data class UsageEventEntity(
+    @PrimaryKey(autoGenerate = true) val rowId: Long = 0,
+    val sessionId: String,
+    val providerName: String,
+    val model: String,
+    val inputTokens: Long,
+    val outputTokens: Long,
+    val cachedTokens: Long = 0,
+    val cacheWriteTokens: Long = 0,
+    val createdAt: Long,
+)
+
+/** Per-file line-change stats from one editing tool call — "+N −M" chips in chat. */
+@Entity(tableName = "file_edits", indices = [Index("sessionId"), Index("turnId")])
+data class FileEditEntity(
+    @PrimaryKey(autoGenerate = true) val rowId: Long = 0,
+    val sessionId: String,
+    val turnId: String,
+    val relPath: String,
+    val added: Long,
+    val removed: Long,
+    val createdAt: Long,
+)
+
+/** Aggregated per (provider, model) usage within a time window. */
+data class ModelUsagePojo(
+    val providerName: String,
+    val model: String,
+    val inputTokens: Long,
+    val outputTokens: Long,
+    val cachedTokens: Long,
+    val cacheWriteTokens: Long,
+    val requests: Long,
+) {
+    val totalTokens: Long get() = inputTokens + outputTokens
+}
 
 @Dao
 interface HarnessDao {
@@ -172,6 +212,32 @@ interface HarnessDao {
 
     @Delete
     suspend fun deleteSnippet(snippet: SnippetEntity)
+
+    // usage events (per-model attribution)
+    @Insert
+    suspend fun insertUsageEvent(event: UsageEventEntity)
+
+    @Query(
+        "SELECT providerName, model, SUM(inputTokens) AS inputTokens, " +
+            "SUM(outputTokens) AS outputTokens, SUM(cachedTokens) AS cachedTokens, " +
+            "SUM(cacheWriteTokens) AS cacheWriteTokens, COUNT(*) AS requests " +
+            "FROM usage_events WHERE createdAt >= :since " +
+            "GROUP BY providerName, model ORDER BY (SUM(inputTokens) + SUM(outputTokens)) DESC"
+    )
+    fun usageByModelSince(since: Long): Flow<List<ModelUsagePojo>>
+
+    @Query("DELETE FROM usage_events WHERE sessionId = :sessionId")
+    suspend fun deleteUsageEvents(sessionId: String)
+
+    // file edits (diff chips in chat)
+    @Insert
+    suspend fun insertFileEdit(edit: FileEditEntity)
+
+    @Query("SELECT * FROM file_edits WHERE sessionId = :sessionId ORDER BY createdAt ASC")
+    fun fileEditsFlow(sessionId: String): Flow<List<FileEditEntity>>
+
+    @Query("DELETE FROM file_edits WHERE sessionId = :sessionId")
+    suspend fun deleteFileEdits(sessionId: String)
 }
 
 @Database(
@@ -181,8 +247,10 @@ interface HarnessDao {
         ProjectEntity::class,
         CheckpointEntity::class,
         SnippetEntity::class,
+        UsageEventEntity::class,
+        FileEditEntity::class,
     ],
-    version = 5,
+    version = 7,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -195,6 +263,46 @@ abstract class AppDatabase : RoomDatabase() {
                 db.execSQL(
                     "ALTER TABLE sessions ADD COLUMN totalCacheWriteTokens INTEGER NOT NULL DEFAULT 0"
                 )
+            }
+        }
+
+        /** v6: per-request, per-model usage attribution for the stats redesign. */
+        val MIGRATION_5_6 = object : androidx.room.migration.Migration(5, 6) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS usage_events (" +
+                        "rowId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "sessionId TEXT NOT NULL, " +
+                        "providerName TEXT NOT NULL, " +
+                        "model TEXT NOT NULL, " +
+                        "inputTokens INTEGER NOT NULL, " +
+                        "outputTokens INTEGER NOT NULL, " +
+                        "cachedTokens INTEGER NOT NULL DEFAULT 0, " +
+                        "cacheWriteTokens INTEGER NOT NULL DEFAULT 0, " +
+                        "createdAt INTEGER NOT NULL)"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_usage_events_sessionId ON usage_events(sessionId)"
+                )
+            }
+        }
+
+        /** v7: thinking duration on messages + per-file edit stats for chat chips. */
+        val MIGRATION_6_7 = object : androidx.room.migration.Migration(6, 7) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE messages ADD COLUMN thinkingMs INTEGER NOT NULL DEFAULT 0")
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS file_edits (" +
+                        "rowId INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, " +
+                        "sessionId TEXT NOT NULL, " +
+                        "turnId TEXT NOT NULL, " +
+                        "relPath TEXT NOT NULL, " +
+                        "added INTEGER NOT NULL, " +
+                        "removed INTEGER NOT NULL, " +
+                        "createdAt INTEGER NOT NULL)"
+                )
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_file_edits_sessionId ON file_edits(sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_file_edits_turnId ON file_edits(turnId)")
             }
         }
     }

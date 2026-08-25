@@ -40,7 +40,7 @@ class AppContainer(val appContext: Context) {
     val providers = ProviderRepository(appContext, keys)
 
     private val db = Room.databaseBuilder(appContext, AppDatabase::class.java, "harness.db")
-        .addMigrations(AppDatabase.MIGRATION_4_5)
+        .addMigrations(AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7)
         // Only kicks in when no migration path exists (pre-v4 databases);
         // the v4→v5 path above preserves sessions and usage totals.
         .fallbackToDestructiveMigration(true)
@@ -77,10 +77,17 @@ class AppContainer(val appContext: Context) {
         workspace = workspace,
         linuxEnv = linuxEnv,
         settings = settings,
+        todoStore = todoStore,
     )
     val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
 
     init {
+        // models.dev thinking-capability catalog: serve the cached copy
+        // synchronously, then refresh in the background (weekly cadence).
+        com.androidharness.app.llm.ModelsDev.load(appContext)
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            com.androidharness.app.llm.ModelsDev.refresh(appContext)
+        }
         // Eagerly deploy the shell-user toolchain copy the moment both the
         // Linux environment and Shizuku are ready, so every tier works from
         // the first command (foreground shell, background spawn, terminal).
