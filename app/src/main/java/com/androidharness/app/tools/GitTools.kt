@@ -28,8 +28,9 @@ private suspend fun runGit(
             "git is not available here. Install the Linux environment (Settings → Terminal → Install) first.",
         )
     }
-    if (res.exitCode != 0 && res.rawOutput.contains("not a git repository", true)) {
-        return ToolResult(false, "The workspace at ${cwd.absolutePath} is not a git repository.")
+    val fullOutput = "${res.rawOutput}\n${res.rawStderr}"
+    if (res.exitCode != 0 && fullOutput.contains("not a git repository", ignoreCase = true)) {
+        return ToolResult(false, "The workspace is not a git repository (no .git folder found).")
     }
     return ToolResult(
         ok = !res.timedOut && res.exitCode == 0,

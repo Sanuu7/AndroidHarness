@@ -83,42 +83,148 @@ object ShellPolicy {
             }
         }
 
-        // 5. Check all tokens and explicit redirections
+        // 5. Check all tokens, commands, arguments, and explicit redirections
         val tokens = extractTokens(cmd)
-        val isSymlinkCmd = isSymlinkCreation(tokens)
+        val tokenCheck = checkCommandTokens(tokens, workspaceRoot, cwd)
+        if (tokenCheck != null) return tokenCheck
 
-        if (isSymlinkCmd && cwd != null && isSharedStorage(cwd)) {
-            return "Blocked: symlinks are not supported on Android shared storage (/storage/emulated/0). (symlink not supported/allowed)"
-        }
-
-        for (i in tokens.indices) {
-            val token = tokens[i]
-            val isRedirection = i > 0 && isRedirectionOp(tokens[i - 1])
-            val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection)
-            if (check != null) return check
-        }
-
-        // 6. Full-text scan for absolute paths in the command (including quoted strings, arguments, scripts)
-        val absolutePathMatches = ABS_PATH_REGEX.findAll(cmd)
-        for (m in absolutePathMatches) {
-            val p = m.value.trimEnd('/', ';', '&', '|', ')', '}', '"', '\'')
-            if (p.length > 1) {
-                val check = checkAbsolutePath(p, workspaceRoot, isSymlink = isSymlinkCmd, isRedirection = false)
-                if (check != null) return check
-            }
-        }
-
-        // 7. Full-text scan for relative traversals (../ or /..)
+        // 6. Full-text scan for relative traversals (../ or /..)
         if (TRAVERSAL_REGEX.containsMatchIn(cmd)) {
             val traversalMatches = TRAVERSAL_TOKEN_REGEX.findAll(cmd)
             for (m in traversalMatches) {
                 val t = m.value.trim('\'', '"', '`', '(', ')', '{', '}', ';', '&', '|')
-                val check = checkRelativePath(t, workspaceRoot, cwd, isSymlink = isSymlinkCmd, isRedirection = false)
+                val check = checkRelativePath(t, workspaceRoot, cwd, isSymlink = false, isRedirection = false)
                 if (check != null) return check
             }
         }
 
         return null
+    }
+
+    private fun checkCommandTokens(tokens: List<String>, workspaceRoot: File?, cwd: File?): String? {
+        val isSymlinkCmd = isSymlinkCreation(tokens)
+        if (isSymlinkCmd && cwd != null && isSharedStorage(cwd)) {
+            return "Blocked: symlinks are not supported on Android shared storage (/storage/emulated/0). (symlink not supported/allowed)"
+        }
+
+        val subCommands = mutableListOf<List<String>>()
+        var cur = mutableListOf<String>()
+        for (t in tokens) {
+            if (t == ";" || t == "&&" || t == "||" || t == "|" || t == "&") {
+                if (cur.isNotEmpty()) {
+                    subCommands += cur
+                    cur = mutableListOf()
+                }
+            } else {
+                cur += t
+            }
+        }
+        if (cur.isNotEmpty()) subCommands += cur
+
+        for (sub in subCommands) {
+            val check = checkSubCommand(sub, workspaceRoot, cwd, isSymlinkCmd)
+            if (check != null) return check
+        }
+        return null
+    }
+
+    private fun checkSubCommand(
+        sub: List<String>,
+        workspaceRoot: File?,
+        cwd: File?,
+        isSymlinkCmd: Boolean,
+    ): String? {
+        var cmdName: String? = null
+        var cmdIndex = -1
+        for (i in sub.indices) {
+            val t = sub[i]
+            if (isRedirectionOp(t)) continue
+            if (i > 0 && isRedirectionOp(sub[i - 1])) continue
+            if (t.contains("=") && !t.startsWith("=") && !t.startsWith("-")) continue
+            cmdName = t.substringAfterLast('/')
+            cmdIndex = i
+            break
+        }
+
+        val isTextOut = cmdName == "echo" || cmdName == "printf"
+        val isSearch = cmdName == "grep" || cmdName == "egrep" || cmdName == "fgrep" || cmdName == "rg"
+        val isStreamEdit = cmdName == "sed" || cmdName == "awk"
+
+        var patternSeen = false
+
+        for (i in sub.indices) {
+            val token = sub[i]
+            val isRedirection = i > 0 && isRedirectionOp(sub[i - 1])
+            if (isRedirectionOp(token)) continue
+
+            if (isRedirection) {
+                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = true)
+                if (check != null) return check
+                continue
+            }
+
+            if (i == cmdIndex) {
+                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+                if (check != null) return check
+                continue
+            }
+
+            if (isTextOut) {
+                // Arguments to echo/printf are literal text strings
+                continue
+            }
+
+            if (isSearch) {
+                if (token.startsWith("-")) continue
+                if (!patternSeen) {
+                    patternSeen = true
+                    continue // First non-option is search pattern/regex
+                }
+                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+                if (check != null) return check
+                continue
+            }
+
+            if (isStreamEdit) {
+                if (token.startsWith("-")) continue
+                if (!patternSeen) {
+                    patternSeen = true
+                    continue // First non-option is script/program
+                }
+                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+                if (check != null) return check
+                continue
+            }
+
+            val isScriptInterpreter = cmdName == "python" || cmdName == "python3" ||
+                cmdName == "node" || cmdName == "perl" || cmdName == "ruby" ||
+                cmdName == "sh" || cmdName == "bash" || cmdName == "eval"
+
+            if (isScriptInterpreter && ((i > 0 && (sub[i - 1] == "-c" || sub[i - 1] == "-e")) || cmdName == "eval")) {
+                val embedded = extractEmbeddedPaths(token)
+                for (p in embedded) {
+                    val check = checkAbsolutePath(p, workspaceRoot, isSymlink = false, isRedirection = false)
+                    if (check != null) return check
+                }
+                if (TRAVERSAL_REGEX.containsMatchIn(token)) {
+                    val check = checkRelativePath(token, workspaceRoot, cwd, isSymlink = false, isRedirection = false)
+                    if (check != null) return check
+                }
+                continue
+            }
+
+            if (token.startsWith("-")) continue
+
+            val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+            if (check != null) return check
+        }
+
+        return null
+    }
+
+    private fun extractEmbeddedPaths(text: String): List<String> {
+        val matches = ABS_PATH_REGEX.findAll(text)
+        return matches.map { it.value.trimEnd('/', ';', '&', '|', ')', '}', '"', '\'') }.filter { it.length > 1 }.toList()
     }
 
     private fun checkSinglePath(
@@ -227,6 +333,22 @@ object ShellPolicy {
         expanded = expanded.replace("`pwd`", cwdPath)
         expanded = expanded.replace("\$(echo \$PWD)", cwdPath)
         expanded = expanded.replace("\$(echo \${PWD})", cwdPath)
+
+        // Expand simple echo and printf subshell expressions: $(echo /etc/passwd), $(printf '...')
+        expanded = expanded.replace(Regex("""\$\(\s*echo\s+['"]?([^'")\s]+)['"]?\s*\)""")) { m ->
+            m.groupValues[1]
+        }
+        expanded = expanded.replace(Regex("""\$\(\s*printf\s+['"]?([^'")\s]+)['"]?\s*\)""")) { m ->
+            m.groupValues[1]
+        }
+        expanded = expanded.replace(Regex("""`\s*echo\s+['"]?([^'")\s]+)['"]?\s*`""")) { m ->
+            m.groupValues[1]
+        }
+
+        // Expand simple brace wrappers e.g. {../file}
+        expanded = expanded.replace(Regex("""\{([^{},;\s]+)\}""")) { m ->
+            m.groupValues[1]
+        }
 
         // Replace all variables sorted by name length descending
         val sortedVars = vars.entries.sortedByDescending { it.key.length }

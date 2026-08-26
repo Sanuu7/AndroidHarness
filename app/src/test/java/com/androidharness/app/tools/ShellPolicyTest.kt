@@ -87,6 +87,9 @@ class ShellPolicyTest {
             "/data/local/tmp/androidharness/linux/bin/python3 main.py",
             "cat doctor/unicode.txt",
             "printf 'a\\na\\nunique\\na' > nl.txt",
+            "echo \"/storage/emulated/0\"",
+            "printf '%s\\n' /storage/emulated/0/secret",
+            "grep -r '/storage/emulated/0/x' .",
         )
         for (cmd in allowedCmds) {
             val reason = ShellPolicy.denyReason(cmd, root, root)

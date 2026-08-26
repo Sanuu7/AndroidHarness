@@ -65,10 +65,40 @@ class HarnessUserService() : IHarnessService.Stub() {
                 val pkill = Runtime.getRuntime().exec(arrayOf("/system/bin/pkill", "-9", "-P", pid.toString()))
                 pkill.waitFor(1, java.util.concurrent.TimeUnit.SECONDS)
             }
-            // 3. Kill the target pid
+            // 3. Recursively kill all descendant processes in /proc
+            runCatching { killDescendants(pid) }
+            // 4. Kill the target pid
             runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
             true
         }.getOrDefault(false)
+
+    private fun killDescendants(rootPid: Int) {
+        val proc = File("/proc")
+        val pidDirs = proc.listFiles { f -> f.isDirectory && f.name.all { it.isDigit() } } ?: return
+        val children = mutableListOf<Int>()
+        for (dir in pidDirs) {
+            val p = dir.name.toIntOrNull() ?: continue
+            if (p == rootPid) continue
+            val statFile = File(dir, "stat")
+            val statContent = runCatching { statFile.readText() }.getOrNull() ?: continue
+            val lastParen = statContent.lastIndexOf(')')
+            if (lastParen > 0 && lastParen + 2 < statContent.length) {
+                val rest = statContent.substring(lastParen + 2).trimStart()
+                val tokens = rest.split(' ')
+                if (tokens.size >= 2) {
+                    val ppid = tokens[1].toIntOrNull()
+                    if (ppid == rootPid) {
+                        children += p
+                    }
+                }
+            }
+        }
+        for (child in children) {
+            runCatching { killDescendants(child) }
+            runCatching { android.system.Os.kill(-child, android.system.OsConstants.SIGKILL) }
+            runCatching { android.system.Os.kill(child, android.system.OsConstants.SIGKILL) }
+        }
+    }
 
     /** java.lang.ProcessImpl keeps the pid in a private field. */
     private fun pidOf(p: Process): Int? = runCatching {

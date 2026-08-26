@@ -167,8 +167,14 @@ class BgProcessStore(
 
     suspend fun kill(id: Int): Boolean {
         val e = entries[id] ?: return false
+        val logFile = File(e.cwd, e.logPath).takeIf { it.exists() }
+            ?: File(e.logPath).let { if (it.isAbsolute) it else File(detachedLogDir.parentFile, e.logPath) }
         val ok = when (e.source) {
-            "SHIZUKU" -> shizuku.killProcess(e.pid)
+            "SHIZUKU" -> {
+                shizuku.killProcess(e.pid)
+                killPidsWithFd(logFile)
+                true
+            }
             else -> {
                 val p = appProcesses[id]
                 if (p != null) {
@@ -185,10 +191,14 @@ class BgProcessStore(
                         }
                         runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
                     }
+                    killPidsWithFd(logFile)
                     p.destroyForcibly()
                     p.waitFor(2, TimeUnit.SECONDS)
                     true
-                } else true // nothing alive to kill (e.g. after an app restart)
+                } else {
+                    killPidsWithFd(logFile)
+                    true
+                }
             }
         }
         appProcesses.remove(id)
@@ -212,5 +222,25 @@ class BgProcessStore(
     private fun isHeartbeatLine(line: String): Boolean {
         val trimmed = line.trim()
         return trimmed.contains("heartbeat", ignoreCase = true)
+    }
+
+    private fun killPidsWithFd(logFile: File) {
+        if (!logFile.exists()) return
+        val canonTarget = runCatching { logFile.canonicalPath }.getOrDefault(logFile.absolutePath)
+        val proc = File("/proc")
+        val pidDirs = proc.listFiles { f -> f.isDirectory && f.name.all { it.isDigit() } } ?: return
+        for (dir in pidDirs) {
+            val pid = dir.name.toIntOrNull() ?: continue
+            val fdDir = File(dir, "fd")
+            val fds = runCatching { fdDir.listFiles() }.getOrNull() ?: continue
+            for (fd in fds) {
+                val link = runCatching { android.system.Os.readlink(fd.absolutePath) }.getOrNull()
+                if (link == canonTarget || link == logFile.absolutePath) {
+                    runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+                    runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
+                    break
+                }
+            }
+        }
     }
 }
