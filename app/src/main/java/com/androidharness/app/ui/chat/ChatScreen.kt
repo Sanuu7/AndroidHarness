@@ -788,24 +788,26 @@ fun ChatScreen(
                         }
                     }
 
-                    // Live streaming items are keyed by the MESSAGE id, which
-                    // the committed row reuses — the swap is an in-place
-                    // content change, never a remove + re-insert.
-                    val streamKey = state.streamingMessageId ?: state.currentTurnId ?: "idle"
-                    state.streamingThinking?.let { thinking ->
-                        if (thinking.isNotBlank()) {
-                            item(key = "message-$streamKey-thinking") {
-                                Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(thinking, live = true) }
+                    // Live streaming items are rendered only while not yet in the committed list.
+                    val streamAlreadyCommitted = state.streamingMessageId != null &&
+                        state.messages.any { it.id == state.streamingMessageId }
+                    if (!streamAlreadyCommitted) {
+                        val streamKey = state.streamingMessageId ?: state.currentTurnId ?: "idle"
+                        state.streamingThinking?.let { thinking ->
+                            if (thinking.isNotBlank()) {
+                                item(key = "streaming-$streamKey-thinking") {
+                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(thinking, live = true) }
+                                }
                             }
                         }
-                    }
-                    state.streamingText?.let { streaming ->
-                        item(key = "message-$streamKey-text") {
-                            Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                AssistantText(
-                                    streaming.take(revealedChars),
-                                    streaming = !state.streamingCommitted,
-                                )
+                        state.streamingText?.let { streaming ->
+                            item(key = "streaming-$streamKey-text") {
+                                Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                    AssistantText(
+                                        streaming.take(revealedChars),
+                                        streaming = !state.streamingCommitted,
+                                    )
+                                }
                             }
                         }
                     }
