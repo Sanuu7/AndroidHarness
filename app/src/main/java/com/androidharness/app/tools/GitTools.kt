@@ -36,7 +36,14 @@ private suspend fun runGit(
         output = buildString {
             if (res.note != null) append(res.note).append('\n')
             val text = res.rawOutput.trimEnd()
-            append(if (text.isEmpty()) "(no output)" else text)
+            if (text.isNotEmpty()) {
+                append("--- stdout ---\n").append(text).append('\n')
+            }
+            val err = res.rawStderr.trimEnd()
+            if (err.isNotEmpty()) {
+                append("--- stderr ---\n").append(err)
+            }
+            if (text.isEmpty() && err.isEmpty()) append("(no output)")
         },
     )
 }

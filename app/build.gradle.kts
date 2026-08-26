@@ -14,8 +14,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 3
-        versionName = "0.2-alpha"
+        versionCode = 4
+        versionName = "0.3-alpha"
     }
 
     buildTypes {

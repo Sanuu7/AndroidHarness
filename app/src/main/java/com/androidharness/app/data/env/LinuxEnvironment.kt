@@ -201,10 +201,18 @@ class LinuxEnvironmentManager(private val context: Context) {
         put("PREFIX", prefix.absolutePath)
         put("TERM", "xterm-256color")
         put("LANG", "C.UTF-8")
+        // The bundled (Termux-built) git warns "templates not found" on every
+        // init because it looks under its old build prefix. Point it at the
+        // templates shipped in our prefix, or disable templates if absent.
+        put("GIT_TEMPLATE_DIR", gitTemplatesDir().absolutePath)
         // bash sources this for `bash -c`: shims make every toolchain binary
         // runnable despite the W^X exec restriction on app-private files.
         if (shimFile.exists()) put("BASH_ENV", shimFile.absolutePath)
     }
+
+    /** Empty (templates disabled) when the prefix has no git-core templates. */
+    private fun gitTemplatesDir(): File =
+        File(prefix, "share/git-core/templates").takeIf { it.isDirectory } ?: File("")
 
     // ------------------------------------------------------------------
     // W^X workaround: per-binary linker shims
@@ -296,15 +304,18 @@ class LinuxEnvironmentManager(private val context: Context) {
      * Environment for the Shizuku (shell/root uid) tier, whose copy of the
      * toolchain lives at /data/local/tmp/androidharness/linux.
      */
-    fun tmpProcessEnv(): Map<String, String> = mapOf(
-        "PATH" to "$TMP_PREFIX/bin:$TMP_PREFIX/bin/applets:/system/bin:/system/xbin:/vendor/bin",
-        "LD_LIBRARY_PATH" to "$TMP_PREFIX/lib",
-        "HOME" to "$TMP_PREFIX/home",
-        "TMPDIR" to "$TMP_PREFIX/tmp",
-        "PREFIX" to TMP_PREFIX,
-        "TERM" to "xterm-256color",
-        "LANG" to "C.UTF-8",
-    )
+    fun tmpProcessEnv(): Map<String, String> = buildMap {
+        put("PATH", "$TMP_PREFIX/bin:$TMP_PREFIX/bin/applets:/system/bin:/system/xbin:/vendor/bin")
+        put("LD_LIBRARY_PATH", "$TMP_PREFIX/lib")
+        put("HOME", "$TMP_PREFIX/home")
+        put("TMPDIR", "$TMP_PREFIX/tmp")
+        put("PREFIX", TMP_PREFIX)
+        put("TERM", "xterm-256color")
+        put("LANG", "C.UTF-8")
+        // Same templates fix as the app-side env, for the /data/local/tmp copy.
+        val templates = File("$TMP_PREFIX/share/git-core/templates")
+        put("GIT_TEMPLATE_DIR", if (templates.isDirectory) templates.absolutePath else "")
+    }
 
     // ------------------------------------------------------------------
     // Deploy to the Shizuku (shell-uid) tier

@@ -91,10 +91,11 @@ class HarnessUserService() : IHarnessService.Stub() {
             return "exit=-1\ntimeout=0\nfailed to launch: ${e.message}"
         }
 
-        val output = StringBuilder()
         val limit = maxBytes.coerceIn(1024, 256_000)
-        val out = Thread { gobble(process.inputStream, output, limit) }
-        val err = Thread { gobble(process.errorStream, output, limit) }
+        val stdout = StringBuffer()
+        val stderr = StringBuffer()
+        val out = Thread { gobble(process.inputStream, stdout, limit) }
+        val err = Thread { gobble(process.errorStream, stderr, limit) }
         listOf(out, err).forEach { it.isDaemon = true; it.start() }
 
         val startedAt = System.currentTimeMillis()
@@ -112,28 +113,39 @@ class HarnessUserService() : IHarnessService.Stub() {
                 break
             }
         }
-        out.join(1000)
-        err.join(1000)
+        // Give the gobblers time to drain whatever the process managed to
+        // write before it died, so partial output survives the timeout.
+        out.join(2000)
+        err.join(2000)
 
         return buildString {
             append("exit=").append(exit).append('\n')
             append("timeout=").append(if (timedOut) 1 else 0).append('\n')
-            append(output)
+            append(stdout)
+            append(STDERR_SEPARATOR).append('\n')
+            append(stderr)
         }
     }
 
-    private fun gobble(stream: java.io.InputStream, into: StringBuilder, max: Int) {
+    private fun gobble(stream: java.io.InputStream, into: StringBuffer, max: Int) {
         try {
             val buf = CharArray(4096)
             stream.bufferedReader().use { reader ->
                 while (true) {
-                    if (into.length >= max) return
-                    val n = reader.read(buf) ?: break
+                    val n = reader.read(buf)
                     if (n <= 0) break
-                    into.append(buf, 0, minOf(n, max - into.length))
+                    synchronized(into) {
+                        if (into.length >= max) return
+                        into.append(buf, 0, minOf(n, max - into.length))
+                    }
                 }
             }
         } catch (_: Exception) {
         }
+    }
+
+    companion object {
+        /** Marks where captured stdout ends and stderr begins in exec() results. */
+        const val STDERR_SEPARATOR = "<<<HARNESS_STDERR>>>"
     }
 }

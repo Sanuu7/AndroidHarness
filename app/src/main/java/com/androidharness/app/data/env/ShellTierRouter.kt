@@ -33,6 +33,7 @@ data class ShellRunResult(
     val exitCode: Int,
     val timedOut: Boolean,
     val rawOutput: String,
+    val rawStderr: String,
     val tier: ExecutionTier,
     val note: String?,
 )
@@ -131,6 +132,7 @@ class ShellTierRouter(
                 exitCode = fb.exitCode,
                 timedOut = fb.timedOut,
                 rawOutput = fb.rawOutput,
+                rawStderr = fb.rawStderr,
                 tier = ExecutionTier.APP_LINUX,
                 note = "[note: Shizuku's privileged runner was unavailable, so this ran as the app user: expect permission errors on this directory]",
             )
@@ -138,7 +140,7 @@ class ShellTierRouter(
         val note = if (!toolchain) {
             "[note: privileged shell running /system/bin/sh only: install the Linux environment in Settings → Terminal for bash/git/python/node here]"
         } else null
-        return ShellRunResult(r.exitCode, r.timedOut, r.output, ExecutionTier.PRIVILEGED, note)
+        return ShellRunResult(r.exitCode, r.timedOut, r.output, r.stderr, ExecutionTier.PRIVILEGED, note)
     }
 
     // --- app-uid tier ------------------------------------------------------
@@ -157,14 +159,16 @@ class ShellTierRouter(
                 exitCode = -1,
                 timedOut = false,
                 rawOutput = "Failed to start shell (directory not reachable by the app?): ${e.message}",
+                rawStderr = "",
                 tier = ExecutionTier.TOYBOX,
                 note = permissionNote(cwd, tier),
             )
         }
 
-        val output = StringBuilder()
-        val out = Thread { gobble(process.inputStream, output, maxOutput) }
-        val err = Thread { gobble(process.errorStream, output, maxOutput) }
+        val stdout = StringBuffer()
+        val stderr = StringBuffer()
+        val out = Thread { gobble(process.inputStream, stdout, maxOutput) }
+        val err = Thread { gobble(process.errorStream, stderr, maxOutput) }
         listOf(out, err).forEach { it.isDaemon = true; it.start() }
 
         val deadline = System.currentTimeMillis() + timeoutMs
@@ -182,21 +186,32 @@ class ShellTierRouter(
                 break
             }
         }
-        out.join(1000)
-        err.join(1000)
+        // Drain whatever the process wrote before it died so partial output
+        // survives a timeout.
+        out.join(2000)
+        err.join(2000)
 
-        return ShellRunResult(exitCode, timedOut, output.toString(), tier, permissionNote(cwd, tier))
+        return ShellRunResult(
+            exitCode,
+            timedOut,
+            stdout.toString(),
+            stderr.toString(),
+            tier,
+            permissionNote(cwd, tier),
+        )
     }
 
-    private fun gobble(stream: java.io.InputStream, into: StringBuilder, max: Int) {
+    private fun gobble(stream: java.io.InputStream, into: StringBuffer, max: Int) {
         try {
             val buf = CharArray(4096)
             stream.bufferedReader().use { reader ->
                 while (true) {
-                    if (into.length >= max) return
-                    val n = reader.read(buf) ?: break
+                    val n = reader.read(buf)
                     if (n <= 0) break
-                    into.append(buf, 0, minOf(n, max - into.length))
+                    synchronized(into) {
+                        if (into.length >= max) return
+                        into.append(buf, 0, minOf(n, max - into.length))
+                    }
                 }
             }
         } catch (_: Exception) {

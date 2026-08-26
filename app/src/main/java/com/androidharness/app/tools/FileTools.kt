@@ -1,5 +1,6 @@
 package com.androidharness.app.tools
 
+import com.androidharness.app.core.splitLines
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -75,7 +76,10 @@ class ReadFileTool : Tool {
             val offset = (args["offset"]?.jsonPrimitive?.intOrNull ?: 1).coerceAtLeast(1)
             val limit = (args["limit"]?.jsonPrimitive?.intOrNull ?: 2000).coerceIn(1, 4000)
 
-            val all = file.readText().lines()
+            val raw = file.readText()
+            if (raw.isEmpty()) return@withContext ToolResult(true, "(empty file)")
+            val all = splitLines(raw)
+            if (all.isEmpty()) return@withContext ToolResult(true, "(empty file)")
             val slice = all.drop(offset - 1).take(limit)
             val sb = StringBuilder()
             for ((idx, line) in slice.withIndex()) {
@@ -95,7 +99,9 @@ class ReadFileTool : Tool {
 class WriteFileTool : Tool {
     override val name = "write_file"
     override val description =
-        "Create or overwrite a file in the workspace. Parent directories are created automatically."
+        "Create or overwrite a file in the workspace. Parent directories are created automatically. " +
+            "Non-empty content that doesn't end in a newline gets one appended (POSIX convention), " +
+            "so files stay patch- and grep-friendly."
     override val parametersSchema = Schema.obj(
         mapOf(
             "path" to Schema.string("File path relative to the workspace root."),
@@ -113,10 +119,13 @@ class WriteFileTool : Tool {
                 ?: throw ToolFailure("Missing required argument: content")
             val file = ctx.workspace.resolve(path)
             val existed = file.exists
-            file.writeText(content)
+            val endsWithNewline = content.endsWith("\n") || content.endsWith("\r")
+            val written = if (content.isNotEmpty() && !endsWithNewline) "$content\n" else content
+            val note = if (content.isNotEmpty() && !endsWithNewline) ", trailing newline added" else ""
+            file.writeText(written)
             ToolResult(
                 true,
-                "${if (existed) "Overwrote" else "Created"} $path (${content.length} chars)",
+                "${if (existed) "Overwrote" else "Created"} $path (${written.length} chars$note)",
             )
         }
 }
@@ -249,7 +258,7 @@ class GrepTool : Tool {
                 if (includeMatcher != null &&
                     !includeMatcher.matches(java.nio.file.Path.of(node.name))
                 ) continue
-                val lines = runCatching { node.readText().lines() }.getOrNull() ?: continue
+                val lines = runCatching { splitLines(node.readText()) }.getOrNull() ?: continue
                 lines.forEachIndexed { idx, line ->
                     if (matches.size >= MAX_GREP_MATCHES) return@forEachIndexed
                     if (regex.containsMatchIn(line)) {

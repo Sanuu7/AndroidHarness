@@ -15,8 +15,8 @@ object Diff {
      */
     suspend fun unified(oldText: String, newText: String, path: String): String =
         withContext(Dispatchers.Default) {
-            val oldLines = oldText.lines().take(MAX_LINES)
-            val newLines = newText.lines().take(MAX_LINES)
+            val oldLines = splitLines(oldText).take(MAX_LINES)
+            val newLines = splitLines(newText).take(MAX_LINES)
             val ops = myers(oldLines, newLines)
 
             val sb = StringBuilder()
@@ -67,9 +67,10 @@ object Diff {
 
     /** Counts of added/removed lines between [oldText] and [newText] (for "+N −M" chips). */
     fun lineCounts(oldText: String, newText: String): Pair<Int, Int> {
-        // "".lines() is [""], which would read as one phantom changed line.
-        val oldLines = if (oldText.isEmpty()) emptyList() else oldText.lines().take(MAX_LINES)
-        val newLines = if (newText.isEmpty()) emptyList() else newText.lines().take(MAX_LINES)
+        // POSIX line splitting: empty text is zero lines, and a trailing
+        // newline never counts as an extra (phantom) line.
+        val oldLines = splitLines(oldText).take(MAX_LINES)
+        val newLines = splitLines(newText).take(MAX_LINES)
         var added = 0
         var removed = 0
         for ((mark, _) in myers(oldLines, newLines)) {

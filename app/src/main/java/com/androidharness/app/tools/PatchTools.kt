@@ -1,5 +1,6 @@
 package com.androidharness.app.tools
 
+import com.androidharness.app.core.splitLines
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
@@ -13,7 +14,8 @@ class MultiEditTool : Tool {
     override val name = "multi_edit"
     override val description =
         "Apply multiple edits to one file atomically. Each edit is a string replacement " +
-        "(tolerant of whitespace drift); the whole call fails if any edit's old_string is missing or ambiguous."
+            "(tolerant of whitespace drift); the whole call fails if any edit's old_string is missing or ambiguous. " +
+            "Applies edits in order, so make each old_string unique against the result of the previous edits."
     override val parametersSchema = Schema.obj(
         mapOf(
             "path" to Schema.string("File path relative to the workspace root."),
@@ -78,13 +80,23 @@ class MultiEditTool : Tool {
 /**
  * Applies a unified diff. Supports modifying files, creating new files
  * (`--- /dev/null`) and deleting files (`+++ /dev/null`).
+ *
+ * Newline handling follows the POSIX convention (same as git): a trailing
+ * newline terminates the last line rather than starting a new one, so
+ * "a\nb\n" and "a\nb" are both two lines. The file's existing trailing-newline
+ * state is preserved; new files end with a newline unless the patch carries a
+ * "\ No newline at end of file" marker.
  */
 class ApplyPatchTool : Tool {
     override val name = "apply_patch"
     override val description =
         "Apply a unified diff to the workspace. Format: '--- a/path', '+++ b/path', '@@ ...' hunks. " +
-        "Use '--- /dev/null' to create a file and '+++ /dev/null' to delete one. " +
-        "Context lines must match the current file contents (whitespace drift is tolerated)."
+            "Use '--- /dev/null' to create a file and '+++ /dev/null' to delete one. " +
+            "Context lines must match the CURRENT file contents (whitespace drift is tolerated); " +
+            "a trailing newline terminates the last line, so never end a hunk with an extra empty " +
+            "context line for the file's final newline. Hunks are matched against the file as it " +
+            "exists when this call runs — if earlier edits in the same turn changed the file, " +
+            "re-read it and rebuild the patch instead of reusing a pre-computed diff."
     override val parametersSchema = Schema.obj(
         mapOf(
             "patch" to Schema.string("The complete unified diff text."),
@@ -106,15 +118,17 @@ class ApplyPatchTool : Tool {
                 when {
                     filePatch.isNewFile -> {
                         val content = filePatch.hunks.flatMap { it.added }.joinToString("\n")
-                        ctx.workspace.resolve(filePatch.path).writeText(
-                            if (content.endsWith("\n") || filePatch.trailingNewline) content else "$content\n"
-                        )
+                        val final = if (content.isNotEmpty() && filePatch.newFileHasNewline) "$content\n" else content
+                        ctx.workspace.resolve(filePatch.path).writeText(final)
                         results += "created ${filePatch.path}"
                     }
 
                     filePatch.isDelete -> {
                         val node = ctx.workspace.resolve(filePatch.path)
                         if (!node.exists) throw ToolFailure("${filePatch.path} does not exist (cannot delete)")
+                        if (node.isDirectory) throw ToolFailure(
+                            "${filePatch.path} is a directory; delete it with delete_file instead",
+                        )
                         node.delete()
                         results += "deleted ${filePatch.path}"
                     }
@@ -148,11 +162,11 @@ class ApplyPatchTool : Tool {
         val isNewFile: Boolean,
         val isDelete: Boolean,
         val hunks: List<Hunk>,
-        val trailingNewline: Boolean,
+        val newFileHasNewline: Boolean,
     )
 
     private fun parsePatch(patch: String): List<FilePatch> {
-        val lines = patch.lines()
+        val lines = splitLines(patch)
         val files = mutableListOf<FilePatch>()
         var i = 0
         while (i < lines.size) {
@@ -167,6 +181,10 @@ class ApplyPatchTool : Tool {
                     i++
                 }
                 val hunks = mutableListOf<Hunk>()
+                // A marker seen after the last content line means that line
+                // has no trailing newline in the file the diff describes.
+                var pendingNoNewline = false
+                var newFileHasNewline = true
                 while (i < lines.size && lines[i].startsWith("@@")) {
                     val hunkHeader = lines[i]
                     val oldStart = Regex("-(\\d+)").find(hunkHeader)?.groupValues?.get(1)?.toIntOrNull() ?: 1
@@ -176,11 +194,23 @@ class ApplyPatchTool : Tool {
                         val l = lines[i]
                         when {
                             l.startsWith("@@") || l.startsWith("--- ") -> break
-                            l.startsWith("+") -> hunkLines += '+' to l.removePrefix("+")
-                            l.startsWith("-") -> hunkLines += '-' to l.removePrefix("-")
-                            l.startsWith(" ") -> hunkLines += ' ' to l.removePrefix(" ")
-                            l.startsWith("\\") -> { /* "\ No newline at end of file" */ i++; continue }
-                            else -> hunkLines += ' ' to l
+                            l.startsWith("+") -> {
+                                hunkLines += '+' to l.removePrefix("+")
+                                pendingNoNewline = false
+                            }
+                            l.startsWith("-") -> {
+                                hunkLines += '-' to l.removePrefix("-")
+                                pendingNoNewline = false
+                            }
+                            l.startsWith(" ") -> {
+                                hunkLines += ' ' to l.removePrefix(" ")
+                                pendingNoNewline = false
+                            }
+                            l.startsWith("\\") -> pendingNoNewline = true // "\ No newline at end of file"
+                            else -> {
+                                hunkLines += ' ' to l
+                                pendingNoNewline = false
+                            }
                         }
                         i++
                     }
@@ -192,13 +222,25 @@ class ApplyPatchTool : Tool {
                         lines = hunkLines,
                     )
                 }
-                val path = newPath ?: oldPath
+                // The marker only describes the NEW file's newline state when
+                // the last content line is an addition (new-file patches).
+                if (pendingNoNewline && hunks.isNotEmpty()) {
+                    val lastMark = hunks.last().lines.lastOrNull()?.first
+                    if (lastMark == '+') newFileHasNewline = false
+                }
+                val isNewFile = oldPath == "/dev/null"
+                val isDelete = newPath == "/dev/null"
+                val path = when {
+                    isNewFile -> newPath ?: throw ToolFailure("New-file patch is missing the +++ b/path header")
+                    isDelete -> oldPath
+                    else -> newPath ?: oldPath
+                }
                 files += FilePatch(
                     path = path,
-                    isNewFile = oldPath == "/dev/null",
-                    isDelete = newPath == "/dev/null",
+                    isNewFile = isNewFile,
+                    isDelete = isDelete,
                     hunks = hunks,
-                    trailingNewline = true,
+                    newFileHasNewline = newFileHasNewline,
                 )
             } else {
                 i++
@@ -216,19 +258,46 @@ class ApplyPatchTool : Tool {
     // -- applying --------------------------------------------------------
 
     private fun applyHunks(text: String, hunks: List<Hunk>, path: String): String {
-        val current = text.lines().toMutableList()
+        val endsWithNewline = text.endsWith("\n") || text.endsWith("\r")
+        val current = splitLines(text).toMutableList()
         var shift = 0
         for ((hunkIdx, hunk) in hunks.withIndex()) {
-            val expectedOld = hunk.lines.filter { it.first != '+' }.map { it.second }
-            val position = findPosition(current, expectedOld, hunk.oldStart - 1 + shift)
-                ?: throw ToolFailure(
+            var hunkLines = hunk.lines
+            var expectedOld = hunkLines.filter { it.first != '+' }.map { it.second }
+            var position = findPosition(current, expectedOld, hunk.oldStart - 1 + shift)
+
+            // Trailing-newline normalization: patches are sometimes written
+            // with the file's final newline modeled as one extra empty
+            // context line. If the hunk matches once that phantom line is
+            // dropped, apply it without it (POSIX: the trailing newline
+            // terminates the last line instead of starting a new one).
+            if (position == null && expectedOld.size > 1 && expectedOld.last() == "") {
+                val trimmedExpected = expectedOld.dropLast(1)
+                val trimmedPos = findPosition(current, trimmedExpected, hunk.oldStart - 1 + shift)
+                if (trimmedPos != null) {
+                    position = trimmedPos
+                    hunkLines = dropLastOldEntry(hunkLines)
+                    expectedOld = trimmedExpected
+                }
+            }
+
+            if (position == null) {
+                val newlineHint = if (!endsWithNewline) {
+                    " Note: $path does not end with a newline — make sure the hunk's last " +
+                        "context/removed line matches the final line exactly and there is no extra " +
+                        "empty context line at the end of the hunk."
+                } else ""
+                throw ToolFailure(
                     "Hunk ${hunkIdx + 1} of $path does not match the file contents " +
-                    "(context mismatch near line ${hunk.oldStart}). Re-read the file and retry."
+                        "(context mismatch near line ${hunk.oldStart}). Re-read the file and rebuild the patch " +
+                        "against its current contents.$newlineHint"
                 )
+            }
+
             // rebuild that region following +/- ordering
             val newRegion = mutableListOf<String>()
             var oldCursor = position
-            for ((mark, line) in hunk.lines) {
+            for ((mark, line) in hunkLines) {
                 when (mark) {
                     ' ' -> {
                         newRegion += current[oldCursor]
@@ -243,7 +312,15 @@ class ApplyPatchTool : Tool {
             current.addAll(position, newRegion)
             shift += newRegion.size - expectedOld.size
         }
-        return current.joinToString("\n") + (if (text.endsWith("\n")) "\n" else "")
+        if (current.isEmpty()) return ""
+        return current.joinToString("\n") + (if (endsWithNewline) "\n" else "")
+    }
+
+    /** Removes the last non-'+' entry (the phantom empty context line). */
+    private fun dropLastOldEntry(lines: List<Pair<Char, String>>): List<Pair<Char, String>> {
+        val idx = lines.indexOfLast { it.first != '+' }
+        if (idx < 0) return lines
+        return lines.subList(0, idx) + lines.subList(idx + 1, lines.size)
     }
 
     /**

@@ -7,6 +7,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -17,7 +18,8 @@ import java.util.concurrent.TimeUnit
 
 class CreateDirTool : Tool {
     override val name = "create_dir"
-    override val description = "Create a directory (including parents) in the workspace."
+    override val description =
+        "Create a directory (including parents) in the workspace. Fails if the path exists and is a file."
     override val parametersSchema = Schema.obj(
         mapOf("path" to Schema.string("Directory path relative to the workspace root.")),
         required = listOf("path"),
@@ -28,7 +30,17 @@ class CreateDirTool : Tool {
         withContext(Dispatchers.IO) {
             val path = args["path"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: path")
-            ctx.workspace.resolve(path).mkdirs()
+            val node = ctx.workspace.resolve(path)
+            if (node.exists && node.isFile) {
+                throw ToolFailure("Cannot create directory: $path already exists and is a file")
+            }
+            if (node.exists && node.isDirectory) {
+                return@withContext ToolResult(true, "Directory already exists at $path")
+            }
+            node.mkdirs()
+            if (!node.exists || !node.isDirectory) {
+                throw ToolFailure("Failed to create directory $path")
+            }
             ToolResult(true, "Created directory $path")
         }
 }
@@ -36,9 +48,15 @@ class CreateDirTool : Tool {
 class DeleteFileTool : Tool {
     override val name = "delete_file"
     override val description =
-        "Delete a file or directory (recursively) in the workspace. This cannot be undone."
+        "Delete a file or directory in the workspace. Deleting a directory that contains anything " +
+            "requires recursive=true. This cannot be undone. The workspace root can never be deleted."
     override val parametersSchema = Schema.obj(
-        mapOf("path" to Schema.string("Path relative to the workspace root.")),
+        mapOf(
+            "path" to Schema.string("Path relative to the workspace root. Must not be the workspace root."),
+            "recursive" to Schema.boolean(
+                "Required (true) to delete a directory that has files or subdirectories inside it.",
+            ),
+        ),
         required = listOf("path"),
     )
     override val isReadOnly = false
@@ -47,10 +65,35 @@ class DeleteFileTool : Tool {
         withContext(Dispatchers.IO) {
             val path = args["path"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: path")
+            val recursive = args["recursive"]?.jsonPrimitive?.booleanOrNull ?: false
+            if (path.isBlank() || path.trim() == ".") {
+                throw ToolFailure(
+                    "Refusing to delete the workspace root. Delete the contents individually if that is intended.",
+                )
+            }
             val node = ctx.workspace.resolve(path)
+            if (node.relPath == "." || node.relPath.isBlank()) {
+                throw ToolFailure(
+                    "Refusing to delete the workspace root. Delete the contents individually if that is intended.",
+                )
+            }
             if (!node.exists) throw ToolFailure("Path does not exist: $path")
-            if (node.delete()) ToolResult(true, "Deleted $path")
-            else ToolResult(false, "Failed to delete $path")
+            if (node.isDirectory) {
+                val childCount = node.list().size
+                if (childCount > 0 && !recursive) {
+                    throw ToolFailure(
+                        "$path is a directory containing $childCount entr${if (childCount == 1) "y" else "ies"}. " +
+                            "Pass recursive=true to delete it with everything inside, or delete the contents individually.",
+                    )
+                }
+            }
+            val wasDirectory = node.isDirectory
+            if (node.delete()) {
+                val what = if (wasDirectory) "directory" else "file"
+                ToolResult(true, "Deleted $what $path")
+            } else {
+                ToolResult(false, "Failed to delete $path")
+            }
         }
 }
 

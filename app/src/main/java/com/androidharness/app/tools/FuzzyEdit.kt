@@ -1,5 +1,7 @@
 package com.androidharness.app.tools
 
+import com.androidharness.app.core.splitLines
+
 /**
  * Whitespace-tolerant string replacement for edit tools.
  *
@@ -101,8 +103,8 @@ object FuzzyEdit {
      * identical blank lines yields one match, not several.
      */
     private fun findNormalized(text: String, old: String, level: Level): List<Match> {
-        val textLines = text.lines()
-        val oldLines = old.lines()
+        val textLines = splitLines(text)
+        val oldLines = splitLines(old)
         if (oldLines.isEmpty() || oldLines.size > textLines.size) return emptyList()
 
         // Per-line offsets in the original text (line start index).

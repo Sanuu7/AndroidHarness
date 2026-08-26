@@ -551,13 +551,25 @@ class AgentEngine(
             }
         }
 
-        val result = try {
+        val startedAt = System.currentTimeMillis()
+        val executed = try {
             val raw = tool.execute(args, ToolContext(workspace))
             raw.copy(output = com.androidharness.app.tools.SecretRedactor.redact(raw.output))
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
             ToolResult(false, e.message ?: "${call.name} failed")
+        }
+
+        // Surface slow calls so the model can tell work from hangs and batch
+        // or split accordingly (only worth the tokens past a threshold).
+        val elapsedMs = System.currentTimeMillis() - startedAt
+        val result = if (elapsedMs >= 2_000 && executed.output.length < 100_000) {
+            val secs = elapsedMs / 1000.0
+            val note = if (elapsedMs >= 60_000) "[took ${"%.0f".format(secs)}s]" else "[took ${"%.1f".format(secs)}s]"
+            executed.copy(output = executed.output + (if (executed.output.isEmpty()) "" else "\n") + note)
+        } else {
+            executed
         }
 
         // Diff stats: only when the tool succeeded and actually changed lines.
@@ -1056,6 +1068,8 @@ Rules:
 - Prefer edit_file/multi_edit for targeted changes to existing files; use write_file to create or fully rewrite files; use apply_patch for multi-file diffs.
 - Use todo_write to track multi-step work and keep statuses current.
 - Use ask_user whenever a decision is genuinely the user's to make instead of guessing.
+- Tool calls in one message run in order, and each sees the workspace as of the END of the previous call: a patch or diff pre-computed before an earlier edit in the same message can be stale by the time it runs. Build patches right before applying them.
+- Text files follow the POSIX convention: the last line ends with a newline terminator. When patching or editing, never add an extra empty line for the file's final newline.
 - For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message: they run concurrently.
 
 """.trim()

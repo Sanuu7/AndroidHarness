@@ -236,6 +236,10 @@ class TerminalManager(
                 return@launch
             }
             val lines = res.output.lines().toMutableList()
+            res.stderr.trim().takeIf { it.isNotEmpty() }?.let { err ->
+                // keep stderr visible in the terminal, as before the split
+                lines.addAll(err.lines())
+            }
             // last marker line: parse, strip
             val markerIndex = lines.indexOfLast { it.startsWith("$marker:") }
             if (markerIndex >= 0) {
