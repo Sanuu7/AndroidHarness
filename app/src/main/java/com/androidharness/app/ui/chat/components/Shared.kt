@@ -46,7 +46,7 @@ import androidx.compose.ui.unit.dp
  */
 internal fun toolIcon(name: String): ImageVector = when (name) {
     "shell", "shell_background" -> Icons.Outlined.Terminal
-    "read_file" -> Icons.Outlined.Article
+    "read_file", "file_info" -> Icons.Outlined.Article
     "write_file", "edit_file", "multi_edit" -> Icons.Outlined.Edit
     "apply_patch" -> Icons.Outlined.Difference
     "list_dir" -> Icons.Outlined.Folder

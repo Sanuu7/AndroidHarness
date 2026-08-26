@@ -52,6 +52,7 @@ class ToolRegistry(tools: List<Tool>) {
             listOf(
                 ListDirTool(),
                 ReadFileTool(),
+                FileInfoTool(),
                 WriteFileTool(),
                 EditFileTool(),
                 MultiEditTool(),

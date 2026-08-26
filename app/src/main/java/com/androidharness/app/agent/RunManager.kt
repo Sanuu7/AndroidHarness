@@ -48,6 +48,7 @@ fun describeToolCall(call: ToolCallData): String {
         "edit_file", "multi_edit" -> "Editing ${arg("path") ?: "file"}…"
         "apply_patch" -> "Applying patch…"
         "read_file" -> "Reading ${arg("path") ?: "file"}…"
+        "file_info" -> "Inspecting ${arg("path") ?: "file"}…"
         "list_dir" -> "Listing ${arg("path") ?: "."}…"
         "search_files" -> "Finding ${arg("pattern") ?: "files"}…"
         "grep" -> "Searching for ${arg("pattern") ?: "pattern"}…"

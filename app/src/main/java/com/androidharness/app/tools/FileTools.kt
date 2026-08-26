@@ -96,6 +96,39 @@ class ReadFileTool : Tool {
         }
 }
 
+class FileInfoTool : Tool {
+    override val name = "file_info"
+    override val description =
+        "Inspect file or directory metadata: size in bytes, line count, and trailing newline status."
+    override val parametersSchema = Schema.obj(
+        mapOf("path" to Schema.string("Path relative to the workspace root.")),
+        required = listOf("path"),
+    )
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val path = args["path"]?.jsonPrimitive?.content
+                ?: throw ToolFailure("Missing required argument: path")
+            val node = ctx.workspace.resolve(path)
+            if (!node.exists) throw ToolFailure("Path does not exist: $path")
+            val sb = StringBuilder()
+            sb.append("path: ").append(path).append('\n')
+            sb.append("type: ").append(if (node.isDirectory) "directory" else "file").append('\n')
+            sb.append("size_bytes: ").append(node.length).append('\n')
+            if (node.isFile) {
+                val raw = runCatching { node.readText() }.getOrNull()
+                if (raw != null) {
+                    val endsWithNl = raw.endsWith("\n") || raw.endsWith("\r")
+                    val lines = splitLines(raw)
+                    sb.append("line_count: ").append(lines.size).append('\n')
+                    sb.append("trailing_newline: ").append(if (raw.isEmpty()) "empty file" else if (endsWithNl) "present" else "none").append('\n')
+                }
+            }
+            ToolResult(true, sb.toString().trimEnd())
+        }
+}
+
 class WriteFileTool : Tool {
     override val name = "write_file"
     override val description =

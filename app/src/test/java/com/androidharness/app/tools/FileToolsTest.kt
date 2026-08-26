@@ -193,4 +193,28 @@ class FileToolsTest {
         assertTrue(msg, msg.contains("outside the workspace"))
         assertFalse(tmp.root.parentFile.resolve("escape.txt").exists())
     }
+
+    // --- file_info metadata & newline check ---------------------------------------
+
+    @Test
+    fun `file_info reports byte size, line count, and trailing newline`() = runBlocking {
+        file("has_nl.txt").writeText("line1\nline2\n")
+        val r1 = run(FileInfoTool(), "path" to "has_nl.txt")
+        assertTrue(r1.ok)
+        assertTrue(r1.output.contains("type: file"))
+        assertTrue(r1.output.contains("line_count: 2"))
+        assertTrue(r1.output.contains("trailing_newline: present"))
+
+        file("no_nl.txt").writeText("line1\nline2")
+        val r2 = run(FileInfoTool(), "path" to "no_nl.txt")
+        assertTrue(r2.ok)
+        assertTrue(r2.output.contains("type: file"))
+        assertTrue(r2.output.contains("line_count: 2"))
+        assertTrue(r2.output.contains("trailing_newline: none"))
+
+        file("folder").mkdirs()
+        val r3 = run(FileInfoTool(), "path" to "folder")
+        assertTrue(r3.ok)
+        assertTrue(r3.output.contains("type: directory"))
+    }
 }
