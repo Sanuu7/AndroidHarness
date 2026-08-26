@@ -1192,12 +1192,16 @@ private fun CostDialog(
                 Text("Input: ${formatTokenCount(state.usage.totalInput)}")
                 Text("Output: ${formatTokenCount(state.usage.totalOutput)}")
                 val hitRateStr = when {
-                    state.busy -> "Calculating (prompt running)…"
+                    state.usage.requests == 0L && state.busy -> "Calculating…"
                     state.usage.totalInput > 0 -> "${"%.1f".format(state.usage.avgCacheHitRate * 100)}%"
-                    state.usage.requests == 0L -> "Calculating on completion…"
                     else -> "0.0%"
                 }
                 Text("Cache hit rate: $hitRateStr")
+                Text(
+                    "Hit rate updates after each completed turn",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall,
+                )
                 if (state.usage.totalCacheWrite > 0) {
                     Text(
                         "Cache writes: ${formatTokenCount(state.usage.totalCacheWrite)}",

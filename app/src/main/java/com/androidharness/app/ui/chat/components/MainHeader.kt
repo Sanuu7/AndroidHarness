@@ -153,15 +153,7 @@ internal fun MainHeader(
                     )
                 }
             }
-            IconButton(onClick = onOpenContext) {
-                Icon(
-                    Icons.Outlined.QueryStats,
-                    contentDescription = "Context usage",
-                    tint = scheme.onSurfaceVariant,
-                )
-            }
-
-            // Thinking Level Badge + Switcher Dropdown
+            // Thinking Level Badge + Switcher Dropdown (to the left of Context button)
             var thinkingBadgeMenu by remember { mutableStateOf(false) }
             Box(
                 modifier = Modifier.padding(end = 2.dp),
@@ -181,14 +173,14 @@ internal fun MainHeader(
                             modifier = Modifier.size(13.dp),
                             tint = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
                         )
-                        androidx.compose.foundation.layout.Spacer(Modifier.size(3.dp))
+                        Spacer(Modifier.width(3.dp))
                         Text(
                             thinkingLevel.label,
                             style = MaterialTheme.typography.labelSmall,
                             color = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
                             fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
                         )
-                        androidx.compose.foundation.layout.Spacer(Modifier.size(2.dp))
+                        Spacer(Modifier.width(2.dp))
                         Icon(
                             Icons.Filled.KeyboardArrowDown,
                             contentDescription = null,
@@ -244,6 +236,14 @@ internal fun MainHeader(
                         },
                     )
                 }
+            }
+
+            IconButton(onClick = onOpenContext) {
+                Icon(
+                    Icons.Outlined.QueryStats,
+                    contentDescription = "Context usage",
+                    tint = scheme.onSurfaceVariant,
+                )
             }
 
             Box {

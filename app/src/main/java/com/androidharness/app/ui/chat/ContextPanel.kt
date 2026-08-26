@@ -129,12 +129,16 @@ fun ContextUsageDialog(
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     val hitRateText = when {
-                        state.busy -> "Calculating (prompt running)…"
+                        state.usage.requests == 0L && state.busy -> "Calculating…"
                         state.usage.totalInput > 0 -> "%.1f%%".format(state.usage.avgCacheHitRate * 100)
-                        state.usage.requests == 0L -> "Calculating on prompt completion…"
                         else -> "0.0%"
                     }
                     TokenRow("Cache hit rate", hitRateText)
+                    Text(
+                        "Hit rate updates after each completed turn",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
