@@ -51,6 +51,8 @@ class ApprovalRequest(
     val call: ToolCallData,
     val toolDescription: String,
     val diffPreview: String? = null,
+    /** What "Always" remembers: a shell command signature, or the tool name. */
+    val grantKey: String = call.name,
 ) {
     val response = CompletableDeferred<Boolean>()
 }
@@ -159,6 +161,7 @@ class AgentEngine(
     private val linuxEnv: com.androidharness.app.data.env.LinuxEnvironmentManager,
     private val shizuku: com.androidharness.app.data.env.ShizukuManager,
     private val skills: com.androidharness.app.skills.SkillStore,
+    private val todoStore: TodoStore? = null,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -189,7 +192,7 @@ class AgentEngine(
         val systemPrompt = systemPrompt(workspace, mode)
         val tools = registry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
         val working = trimHistory(
-            history.map { it.withImagesResolved() },
+            ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
             maxContextTokens, options.maxOutputTokens,
         ).toMutableList()
         val provider = providerFactory(config)
@@ -218,6 +221,9 @@ class AgentEngine(
                     emit(AgentEvent.UserMessageInjected(queued))
                 }
             }
+            val shrunk = ContextHygiene.shrinkToolResults(working)
+            working.clear()
+            working.addAll(shrunk)
 
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, systemPrompt)
@@ -502,13 +508,23 @@ class AgentEngine(
             return ToolResult(true, "The user answered: $answer")
         }
 
+        val command = if (call.name == "shell" || call.name == "shell_background") {
+            com.androidharness.app.tools.ShellPolicy.commandOf(call.argumentsJson)
+        } else null
+        com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty())?.let { reason ->
+            if (call.name == "shell" || call.name == "shell_background") {
+                return ToolResult(false, reason)
+            }
+        }
+        val grantKey = com.androidharness.app.tools.ShellPolicy.grantKey(call.name, command)
         val approved = when {
-            call.name in sessionAllowedTools -> true
+            com.androidharness.app.tools.ShellPolicy.isGranted(call.name, command, sessionAllowedTools) -> true
             mode == PermissionMode.FULL_AUTO -> true
             mode == PermissionMode.CONFIRM_RISKY && tool.isReadOnly -> true
             else -> {
                 val preview = computeDiffPreview(call, workspace)
-                val request = ApprovalRequest(call, tool.description, preview)
+                    ?: command?.take(400)
+                val request = ApprovalRequest(call, tool.description, preview, grantKey)
                 emitEvent(AgentEvent.ApprovalNeeded(request))
                 request.response.await()
             }
@@ -536,7 +552,8 @@ class AgentEngine(
         }
 
         val result = try {
-            tool.execute(args, ToolContext(workspace))
+            val raw = tool.execute(args, ToolContext(workspace))
+            raw.copy(output = com.androidharness.app.tools.SecretRedactor.redact(raw.output))
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
@@ -827,7 +844,8 @@ class AgentEngine(
                 } else {
                     try {
                         val args = json.parseToJsonElement(call.argumentsJson).jsonObject
-                        tool.execute(args, ctx)
+                        val raw = tool.execute(args, ctx)
+                        raw.copy(output = com.androidharness.app.tools.SecretRedactor.redact(raw.output))
                     } catch (ce: CancellationException) {
                         throw ce
                     } catch (e: Exception) {
@@ -923,11 +941,7 @@ class AgentEngine(
         if (summary.isBlank()) return null
 
         emitEvent(AgentEvent.Compacted(summary.toString()))
-        val summaryMessage = ChatMessage(
-            role = Role.USER,
-            text = "$COMPACTION_PREFIX\n\n$summary",
-        )
-        return listOf(summaryMessage) + recent
+        return listOf(ContextHygiene.summaryMessage(summary.toString())) + recent
     }
 
     /**
@@ -1053,7 +1067,7 @@ Rules:
                 sb.append("- The shell tool currently runs Android's toybox sh (a real Linux environment can be installed). If a task needs git, python, node, compilers, curl/ssh or similar, do NOT retry with toybox: call the shell tool anyway with the command you need; the harness will show the user an install button in the chat. For everything else use shell_background for long-running servers.\n")
             }
         } else {
-            sb.append("- The shell tool runs in the app's shell workspace (${linuxEnv.shellFallbackRoot.absolutePath}) because the active workspace is a picked folder (SAF) that shell cannot access. Use file tools for the picked folder's files; use shell for toolchain/global commands. To run or host a project with the shell (node, python…), create its files inside the shell workspace itself (e.g. via shell heredocs: cat > server.js <<'EOF' …) then run or shell_background them from there. Alternatively tell the user to switch the workspace in Settings to a real folder.\n")
+            sb.append("- This workspace has no real filesystem path (cloud/SAF). File tools still work. Do NOT call shell, shell_background, or git tools, they will fail. Tell the user to switch to a device folder or the app workspace if they need a shell.\n")
         }
 
         // Shizuku guidance: tell the agent the current state so it can guide the user.
@@ -1086,6 +1100,10 @@ Rules:
         memory?.let {
             sb.append("\n# Agent memory (from previous sessions)\n").append(it).append('\n')
         }
+        val todos = TodoPrompt.format(todoStore?.todos?.value.orEmpty())
+        if (todos.isNotBlank()) {
+            sb.append('\n').append(todos)
+        }
         return sb.toString()
     }
 
@@ -1093,7 +1111,7 @@ Rules:
         when (name) {
             "memory" -> {
                 val node = workspace.resolve(com.androidharness.app.tools.MemoryWriteTool.MEMORY_PATH)
-                if (node.exists && node.isFile) node.readText() else null
+                if (node.exists && node.isFile) MemoryNotes.load(node.readText()) else null
             }
             else -> {
                 val node = workspace.resolve(name)

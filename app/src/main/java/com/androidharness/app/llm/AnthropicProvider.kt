@@ -336,7 +336,14 @@ class AnthropicProvider(
                     }
                 }
 
-                Role.SYSTEM -> i++
+                Role.SYSTEM -> {
+                    val m = messages[i]
+                    out += buildJsonObject {
+                        put("role", "user")
+                        put("content", m.text)
+                    }
+                    i++
+                }
             }
         }
         return out

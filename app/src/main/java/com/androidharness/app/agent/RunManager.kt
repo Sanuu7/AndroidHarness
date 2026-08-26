@@ -260,7 +260,9 @@ class RunManager(
         acquireKeepalive()
         RuntimeNotifier.update("Working…")
 
-        val history = with(sessions) { messages(sid).withoutSubagentTurns() }
+        val history = with(sessions) {
+            ContextHygiene.forModel(messages(sid).withoutSubagentTurns())
+        }
         val job = appScope.launch {
             var promptJob: Job? = null
             try {
@@ -481,10 +483,7 @@ class RunManager(
 
             is AgentEvent.Compacted -> {
                 sessions.setCompaction(sessionId, event.summary, System.currentTimeMillis())
-                sessions.addMessage(
-                    sessionId,
-                    ChatMessage(role = Role.USER, text = AgentEngine.COMPACTION_PREFIX + "\n\n" + event.summary),
-                )
+                sessions.addMessage(sessionId, ContextHygiene.summaryMessage(event.summary))
             }
 
             is AgentEvent.Error -> live.update { it.copy(error = event.message) }
@@ -511,7 +510,7 @@ class RunManager(
     fun approve(sessionId: String, rememberForSession: Boolean) {
         val live = stateOf(sessionId)
         val pending = live.value.pendingApproval ?: return
-        if (rememberForSession) synchronized(lock) { allowedTools[sessionId]?.add(pending.call.name) }
+        if (rememberForSession) synchronized(lock) { allowedTools[sessionId]?.add(pending.grantKey) }
         live.update { it.copy(pendingApproval = null) }
         pending.response.complete(true)
     }

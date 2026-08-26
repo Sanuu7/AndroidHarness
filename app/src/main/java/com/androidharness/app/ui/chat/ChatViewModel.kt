@@ -746,11 +746,7 @@ class ChatViewModel(
                 c.sessions.setCompaction(sid, summary.toString(), System.currentTimeMillis())
                 c.sessions.addMessage(
                     sid,
-                    ChatMessage(
-                        role = Role.USER,
-                        text = com.androidharness.app.agent.AgentEngine.COMPACTION_PREFIX +
-                            "\n\n" + summary,
-                    ),
+                    com.androidharness.app.agent.ContextHygiene.summaryMessage(summary.toString()),
                 )
             }
         } catch (ce: kotlinx.coroutines.CancellationException) {

@@ -54,20 +54,13 @@ class MemoryWriteTool : Tool {
         val path = MEMORY_PATH
         val node = ctx.workspace.resolve(path)
         val existing = if (node.exists && node.isFile) node.readText() else ""
-        val next = when (mode) {
-            "replace" -> content.trimEnd() + "\n"
-            else -> {
-                val base = existing.trimEnd()
-                if (base.isEmpty()) content.trimEnd() + "\n"
-                else base + "\n\n" + content.trimEnd() + "\n"
-            }
-        }
+        val next = com.androidharness.app.agent.MemoryNotes.write(existing, content, mode)
         node.writeText(next)
         return ToolResult(true, "Memory ${if (mode == "replace") "replaced" else "updated"} ($path).")
     }
 
     companion object {
         const val MEMORY_PATH = ".harness/memory.md"
-        const val MAX_MEMORY_CHARS = 8_000
+        const val MAX_MEMORY_CHARS = com.androidharness.app.agent.MemoryNotes.MAX_CHARS
     }
 }

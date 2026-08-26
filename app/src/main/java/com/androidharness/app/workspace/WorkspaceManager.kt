@@ -65,14 +65,25 @@ class WorkspaceManager(
     }
 
     fun fsFor(project: ProjectEntity): WorkspaceFs = when {
-        project.kind == KIND_SAF && project.uri != null ->
-            runCatching { SafFs(context, project.uri.toUri()) }.getOrElse { FileFs(appPrivateRoot) }
+        project.kind == KIND_SAF && project.uri != null -> {
+            val treeUri = project.uri.toUri()
+            val real = SafPathResolver.resolve(treeUri)?.let { java.io.File(it) }
+            if (real != null && real.isDirectory) {
+                FileFs(real)
+            } else {
+                runCatching { SafFs(context, treeUri) }.getOrElse { FileFs(appPrivateRoot) }
+            }
+        }
         project.kind == KIND_SHELL && project.uri != null ->
             FileFs(java.io.File(project.uri))
         else -> FileFs(appPrivateRoot)
     }
 
     suspend fun addSafProject(treeUri: Uri): ProjectEntity {
+        val existing = findDuplicate(projects.first(), KIND_SAF, treeUri.toString())
+        if (existing != null) {
+            return reactivate(existing)
+        }
         context.contentResolver.takePersistableUriPermission(
             treeUri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
@@ -92,17 +103,31 @@ class WorkspaceManager(
         return project
     }
 
-    /**
-     * Adds a folder chosen in the system picker. When the SAF tree maps to a
+    /** Adds a folder chosen in the system picker. When the SAF tree maps to a
      * real path on shared storage the workspace is upgraded to a SHELL
      * project (full shell) instead of a file-tools-only SAF one.
      */
     suspend fun addPickedFolder(treeUri: Uri): ProjectEntity {
+        val existing = findDuplicate(projects.first(), KIND_SAF, treeUri.toString())
+        if (existing != null) {
+            return reactivate(existing)
+        }
         val path = SafPathResolver.resolve(treeUri)
         if (path != null && java.io.File(path).isDirectory) {
             return addShellProject(path)
         }
         return addSafProject(treeUri)
+    }
+
+    /**
+     * Identity of a workspace folder for duplicate detection. A picked folder
+     * that maps to a real path gets the SAME key as that path added via the
+     * device browser, so "same folder twice through different doors" still
+     * collides. Returns null only for the app workspace (never deduped).
+     */
+    private suspend fun reactivate(project: ProjectEntity): ProjectEntity {
+        setActiveProject(project.id)
+        return project
     }
 
     suspend fun setActiveProject(id: String) {
@@ -138,6 +163,10 @@ class WorkspaceManager(
 
     /** Adds a project backed by a real filesystem path (requires Shizuku or All files access). */
     suspend fun addShellProject(path: String): ProjectEntity {
+        val existing = findDuplicate(projects.first(), KIND_SHELL, path)
+        if (existing != null) {
+            return reactivate(existing)
+        }
         val project = ProjectEntity(
             id = java.util.UUID.randomUUID().toString(),
             name = path.substringAfterLast('/').ifBlank { path },
@@ -169,9 +198,16 @@ class WorkspaceManager(
                 shellCapable = true
             }
             else -> {
-                kindLabel = "Picked folder"
-                kindSub = "SAF folder: file tools only, shell runs in the app workspace"
-                shellCapable = false
+                val real = project.uri?.let { runCatching { SafPathResolver.resolve(it.toUri()) }.getOrNull() }
+                if (real != null && java.io.File(real).isDirectory) {
+                    kindLabel = "Picked folder"
+                    kindSub = "Mapped to $real. File tools and shell share this tree."
+                    shellCapable = true
+                } else {
+                    kindLabel = "Picked folder"
+                    kindSub = "Cloud/SAF folder: file tools only. Shell cannot run here."
+                    shellCapable = false
+                }
             }
         }
         return WorkspaceDescription(kindLabel, kindSub, shellCapable)
@@ -207,5 +243,37 @@ class WorkspaceManager(
         const val KIND_APP = "APP"
         const val KIND_SAF = "SAF"
         const val KIND_SHELL = "SHELL"
+
+        /**
+         * The existing project pointing at the same folder as [kind]/[uri].
+         */
+        fun findDuplicate(
+            projects: List<ProjectEntity>,
+            kind: String,
+            uri: String?,
+            resolveSaf: (String) -> String? = { SafPathResolver.resolve(it.toUri()) },
+        ): ProjectEntity? {
+            val key = dedupeKey(kind, uri, resolveSaf) ?: return null
+            return projects.firstOrNull { dedupeKey(it.kind, it.uri, resolveSaf) == key }
+        }
+
+        /**
+         * Identity of a workspace folder for duplicate detection, pure so it
+         * is unit-testable without Android. A picked folder that maps to a
+         * real path gets the SAME key as that path added via the device
+         * browser, so "same folder twice through different doors" still
+         * collides. Returns null only for the app workspace (never deduped).
+         */
+        fun dedupeKey(
+            kind: String,
+            uri: String?,
+            resolveSaf: (String) -> String? = { SafPathResolver.resolve(it.toUri()) },
+        ): String? = when {
+            kind == KIND_APP -> null
+            kind == KIND_SAF && uri != null ->
+                resolveSaf(uri)?.let { "$KIND_SHELL:${it.trimEnd('/').ifEmpty { "/" }}" }
+                    ?: "$KIND_SAF:$uri"
+            else -> "$KIND_SHELL:${uri?.trimEnd('/')?.ifEmpty { "/" }}"
+        }
     }
 }

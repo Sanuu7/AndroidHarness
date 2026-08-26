@@ -161,7 +161,15 @@ class OpenAiResponsesProvider(
             put("output", m.text)
         })
 
-        Role.SYSTEM -> emptyList() // carried by `instructions`
+        Role.SYSTEM -> listOf(buildJsonObject {
+            put("role", "user")
+            putJsonArray("content") {
+                add(buildJsonObject {
+                    put("type", "input_text")
+                    put("text", m.text)
+                })
+            }
+        })
     }
 
     // ------------------------------------------------------------------

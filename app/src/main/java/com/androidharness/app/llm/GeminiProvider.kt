@@ -224,7 +224,16 @@ class GeminiProvider(
                     }
                 }
 
-                Role.SYSTEM -> i++
+                Role.SYSTEM -> {
+                    val m = messages[i]
+                    out += buildJsonObject {
+                        put("role", "user")
+                        putJsonArray("parts") {
+                            add(buildJsonObject { put("text", m.text) })
+                        }
+                    }
+                    i++
+                }
             }
         }
         return out

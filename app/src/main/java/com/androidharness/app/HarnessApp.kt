@@ -81,6 +81,7 @@ class AppContainer(val appContext: Context) {
         linuxEnv = linuxEnv,
         shizuku = shizuku,
         skills = skills,
+        todoStore = todoStore,
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,

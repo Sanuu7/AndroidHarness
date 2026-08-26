@@ -36,23 +36,17 @@ class ShellTool(
         withContext(Dispatchers.IO) {
             val command = args["command"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: command")
-            val safMode = ctx.workspace.shellRoot == null
-            val cwd = ctx.workspace.shellRoot ?: linuxEnv.shellFallbackRoot
+            val cwd = ctx.workspace.shellRoot
+                ?: throw ToolFailure(
+                    "This workspace has no real filesystem path, so the shell cannot run here. " +
+                        "Switch to a device folder or the app workspace (Settings → Workspace).",
+                )
             val timeoutSec = (args["timeout_seconds"]?.jsonPrimitive?.intOrNull ?: 120)
                 .coerceIn(1, 600)
 
             val res = router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
 
             val sb = StringBuilder()
-            if (safMode) {
-                sb.append(
-                    "[note: the active workspace is a picked folder (SAF) and is only reachable via " +
-                        "file tools; this command ran in the app's shell workspace " +
-                        "(${cwd.absolutePath}). To run code with the shell (node, python…), " +
-                        "create the files in the shell workspace itself (e.g. via shell heredocs " +
-                        "or by asking the user to switch the workspace in Settings).]\n"
-                )
-            }
             res.note?.let { sb.append(it).append('\n') }
             if (res.tier == ExecutionTier.TOYBOX && linuxEnv.bashExecutable() != null) {
                 sb.append("[note: fell back to toybox sh, launching the Linux bash failed on this device]\n")

@@ -37,7 +37,7 @@ class PendingPromptMappingTest {
         assertEquals(PendingPrompt.Kind.APPROVAL, prompt.kind)
         assertEquals("s1", prompt.sessionId)
         assertEquals("My Chat", prompt.sessionTitle)
-        assertEquals("edit_file — Edit an existing file", prompt.headline)
+        assertEquals("edit_file: Edit an existing file", prompt.headline)
         assertEquals("--- a.py\n+++ b.py", prompt.detail)
     }
 

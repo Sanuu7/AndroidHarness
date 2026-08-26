@@ -8,7 +8,6 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,16 +21,15 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.data.env.PathClassifier
-import com.androidharness.app.workspace.PathAssessment
 import kotlinx.coroutines.launch
 
 /**
- * The three ways to attach a workspace, shared by Settings and the chat
- * workspace switcher:
- * 1. App workspace — private folder, shell always works.
- * 2. Folder path — any real path; PRIVILEGED: needs Shizuku (or "All files
- *    access") for the shell to run there.
- * 3. Folder picker — SAF; file tools only, shell stays in the app workspace.
+ * The ways to attach a workspace, shared by Settings and the chat workspace
+ * switcher:
+ * 1. App workspace. Private folder, shell always works.
+ * 2. Device folder. Browsed in-app, no typing. Full shell.
+ * 3. System picker (SAF). Folders on internal storage or SD are upgraded to
+ *    full shell automatically; only cloud picks stay file tools only.
  */
 @Composable
 fun AddWorkspaceDialog(
@@ -42,31 +40,21 @@ fun AddWorkspaceDialog(
     val scope = rememberCoroutineScope()
     val projects = container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
     val appProject = projects.value.firstOrNull { it.kind == "APP" }
-    var path by remember { mutableStateOf("") }
-    var assessment by remember { mutableStateOf<PathAssessment?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     var showFolderBrowser by remember { mutableStateOf(false) }
 
-    fun assess() {
-        error = null
-        val a = container.workspace.assessPath(path.trim())
-        assessment = a
-        if (!a.directoryExists) {
-            error = "That folder doesn't exist. Check the path."
-        } else when (a.region) {
-            PathClassifier.Region.APP_DATA -> error = "That's the app's internal storage: use the App workspace instead."
-            PathClassifier.Region.SHARED_STORAGE -> {
-                val allFiles = container.shellRouter.isAllFilesAccess()
-                if (!allFiles && !container.shizuku.isGranted()) {
-                    error = "Shell here needs Shizuku or \"All files access\". You can still add it, but shell may be denied."
-                }
+    fun addBrowsedFolder(path: String) {
+        val trimmed = path.trim()
+        val assessment = container.workspace.assessPath(trimmed)
+        when {
+            !assessment.directoryExists ->
+                error = "That folder could not be read. Try another one."
+            assessment.region == PathClassifier.Region.APP_DATA ->
+                error = "That is the app's own private storage. Use the app workspace instead."
+            else -> scope.launch {
+                container.workspace.addShellProject(trimmed)
+                onDismiss()
             }
-            PathClassifier.Region.SYSTEM -> {
-                if (!container.shizuku.isGranted()) {
-                    error = "System paths need Shizuku to be running and granted."
-                }
-            }
-            null -> Unit
         }
     }
 
@@ -74,9 +62,8 @@ fun AddWorkspaceDialog(
         FolderPickerDialog(
             container = container,
             onPick = { picked ->
-                path = picked
                 showFolderBrowser = false
-                assess()
+                addBrowsedFolder(picked)
             },
             onDismiss = { showFolderBrowser = false },
         )
@@ -93,9 +80,9 @@ fun AddWorkspaceDialog(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
 
-                Text("App workspace (most private)", style = MaterialTheme.typography.titleSmall)
+                Text("App workspace", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "A folder only this app can see. Shell always works here.",
+                    "Private folder only this app can see. Shell always works here.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -109,54 +96,38 @@ fun AddWorkspaceDialog(
 
                 HorizontalDivider()
 
-                Text("Folder path (full shell)", style = MaterialTheme.typography.titleSmall)
+                Text("Device folder", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "Any folder on the device. Privileged: the shell needs " +
-                        "Shizuku or \"All files access\" to run here.",
+                    "Any folder on this phone or SD card. Pick it in the built-in " +
+                        "browser, no typing needed. Full shell.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedTextField(
-                    value = path,
-                    onValueChange = { path = it; error = null; assessment = null },
-                    label = { Text("Folder path") },
-                    placeholder = { Text("/storage/emulated/0/Projects/my-app") },
-                    singleLine = true,
-                    isError = error != null,
-                    supportingText = error?.let { { Text(it) } },
-                    modifier = Modifier.fillMaxWidth(),
                 )
                 OutlinedButton(
                     onClick = { showFolderBrowser = true },
                     modifier = Modifier.fillMaxWidth(),
-                ) { Text("Browse folders…") }
-                if (error == null && assessment != null && assessment!!.directoryExists) {
-                    Button(
-                        onClick = {
-                            scope.launch {
-                                container.workspace.addShellProject(path.trim())
-                                onDismiss()
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth(),
-                    ) { Text("Add this folder") }
-                } else if (path.isNotBlank()) {
-                    OutlinedButton(onClick = { assess() }, modifier = Modifier.fillMaxWidth()) {
-                        Text("Check path")
-                    }
-                }
+                ) { Text("Browse device folders") }
 
                 HorizontalDivider()
 
-                Text("Pick a folder (file tools only)", style = MaterialTheme.typography.titleSmall)
+                Text("System picker", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "Uses the system picker. Folders on internal storage or SD " +
-                        "cards are upgraded to full shell automatically.",
+                    "Android's own folder picker. Folders on internal storage or " +
+                        "SD cards become full-shell workspaces automatically. Cloud " +
+                        "folders work with file tools only.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 OutlinedButton(onClick = onPickSaf, modifier = Modifier.fillMaxWidth()) {
-                    Text("Open folder picker…")
+                    Text("Open system picker")
+                }
+
+                error?.let { msg ->
+                    Text(
+                        msg,
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
                 }
             }
         },

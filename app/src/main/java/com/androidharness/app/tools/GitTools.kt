@@ -15,7 +15,12 @@ private suspend fun runGit(
     ctx: ToolContext,
     gitArgs: String,
 ): ToolResult {
-    val cwd = ctx.workspace.shellRoot ?: linuxEnv.shellFallbackRoot
+    val cwd = ctx.workspace.shellRoot
+        ?: return ToolResult(
+            false,
+            "This workspace has no real filesystem path, so git cannot run here. " +
+                "Switch to a device folder or the app workspace (Settings → Workspace).",
+        )
     val res = router.run("git $gitArgs", cwd, timeoutMs = 60_000, maxOutput = 24_000)
     if (res.rawOutput.contains("not found") || res.rawOutput.contains("no such file", true) && res.exitCode == 127) {
         return ToolResult(

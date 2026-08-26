@@ -75,7 +75,11 @@ class FileFs(private val root: File) : WorkspaceFs {
         if (!node.exists) throw ToolFailure("Path does not exist: $path")
         if (node.isFile) return sequenceOf(node)
         val rootPath = root.canonicalFile.toPath()
-        return (node as FileFsNode).file.walkTopDown().map { FileFsNode(it, rootPath) }
+        return (node as FileFsNode).file.walkTopDown()
+            .onEnter { dir -> !WorkspaceIgnore.shouldSkipEnter(path, dir.name) }
+            .asSequence()
+            .map { FileFsNode(it, rootPath) }
+            .filter { n -> !n.isFile || !WorkspaceIgnore.shouldSkip(n.relPath, path) }
     }
 }
 
@@ -155,7 +159,14 @@ class SafFs(
             stack.add(node)
             while (stack.isNotEmpty()) {
                 val n = stack.removeFirst()
-                if (n.isDirectory) n.list().forEach { stack.add(it) } else yield(n)
+                if (n.isDirectory) {
+                    n.list().forEach { child ->
+                        if (child.isDirectory && WorkspaceIgnore.shouldSkipEnter(path, child.name)) return@forEach
+                        stack.add(child)
+                    }
+                } else if (!WorkspaceIgnore.shouldSkip(n.relPath, path)) {
+                    yield(n)
+                }
             }
         }
     }

@@ -29,15 +29,14 @@ class ShellBackgroundTool(
         withContext(Dispatchers.IO) {
             val command = args["command"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: command")
-            // For a SAF workspace the shell runs in the app's shell workspace;
-            // background processes follow the same rule so servers can start.
-            val cwd = ctx.workspace.shellRoot ?: linuxEnv.shellFallbackRoot
+            val cwd = ctx.workspace.shellRoot
+                ?: throw ToolFailure(
+                    "This workspace has no real filesystem path, so background processes cannot " +
+                        "start here. Switch to a device folder or the app workspace.",
+                )
             try {
                 val started = store.start(command, cwd)
                 val notes = StringBuilder()
-                if (ctx.workspace.shellRoot == null) {
-                    notes.append("[note: ran in the app's shell workspace: create the project files there for the server to find them]\n")
-                }
                 if (started.viaShizuku) {
                     notes.append("[note: running under Shizuku: survives the app being minimized or killed]\n")
                 }
