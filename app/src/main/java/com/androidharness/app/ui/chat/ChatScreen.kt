@@ -550,7 +550,6 @@ fun ChatScreen(
             MainHeader(
                 sessionTitle = state.sessionTitle,
                 busy = state.busy,
-                statusText = if (state.busy) state.currentAction ?: "Working in your workspace…" else "",
                 pickerLabel = when {
                     ap == null -> "Add a provider to get started"
                     else -> "${ap.name} · ${state.effectiveModel ?: ap.model}"

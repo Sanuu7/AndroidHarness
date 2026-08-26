@@ -11,11 +11,13 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -66,7 +68,6 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
 internal fun MainHeader(
     sessionTitle: String,
     busy: Boolean,
-    statusText: String,
     pickerLabel: String,
     mode: AgentMode,
     thinkingLevel: ThinkingLevel,
@@ -119,32 +120,23 @@ internal fun MainHeader(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier
                         .clip(RoundedCornerShape(6.dp))
-                        .clickable(enabled = !busy) { onPickModel() },
+                        .clickable { onPickModel() },
                 ) {
-                    // Idle: the active provider · model (tap to switch). Busy:
-                    // what the agent is doing right now.
-                    Crossfade(
-                        targetState = if (busy) statusText else pickerLabel,
-                        animationSpec = fastEffectsSpec(),
-                        label = "header status",
+                    Text(
+                        pickerLabel,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
                         modifier = Modifier.weight(1f, fill = false),
-                    ) { currentStatus ->
-                        Text(
-                            currentStatus,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (busy) scheme.primary else scheme.onSurfaceVariant,
-                        )
-                    }
-                    if (!busy) {
-                        Icon(
-                            Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "Switch model",
-                            tint = scheme.onSurfaceVariant,
-                            modifier = Modifier.size(14.dp),
-                        )
-                    }
+                    )
+                    Spacer(Modifier.width(2.dp))
+                    Icon(
+                        Icons.Filled.KeyboardArrowDown,
+                        contentDescription = "Switch model",
+                        tint = scheme.onSurfaceVariant,
+                        modifier = Modifier.size(14.dp),
+                    )
                 }
             }
 
