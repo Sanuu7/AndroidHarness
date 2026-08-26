@@ -32,6 +32,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
@@ -480,7 +481,16 @@ class ChatViewModel(
             SlashCommands.Kind.DOCTOR,
             SlashCommands.Kind.SKILL,
             SlashCommands.Kind.SNIPPET,
+            // /plan is handled after the when: mode flips, then the expanded
+            // skill prompt starts/queues like any other agent turn.
+            SlashCommands.Kind.PLAN,
             -> Unit
+        }
+
+        // /plan flips the header into Plan mode before the run starts, so the
+        // engine launches read-only (tool registry restricted to Plan schema).
+        if (resolved.kind == SlashCommands.Kind.PLAN) {
+            setMode(AgentMode.PLAN)
         }
 
         val agentText = resolved.agentText ?: return
@@ -777,8 +787,17 @@ class ChatViewModel(
     }
 
     fun setThinkingLevel(level: ThinkingLevel) {
-        _state.update { it.copy(thinkingLevel = level) }
-        viewModelScope.launch { c.settings.setThinkingLevel(level) }
+        // Resolve against the active model's real vocabulary (Hermes-style
+        // clamp): a non-native rung stores as the nearest weaker native one.
+        viewModelScope.launch {
+            ThinkingSpecs.setClamped(
+                c.settings,
+                _state.value.effectiveModel,
+                com.androidharness.app.llm.ModelsDev.providerKeyFor(_state.value.activeProvider?.baseUrl),
+                level,
+            )
+            _state.update { it.copy(thinkingLevel = c.settings.settings.firstOrNull()?.thinkingLevel ?: level) }
+        }
     }
 
     fun setActiveProvider(id: String) {

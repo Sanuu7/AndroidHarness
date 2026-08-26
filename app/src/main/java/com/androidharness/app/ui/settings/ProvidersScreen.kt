@@ -169,7 +169,6 @@ fun ProvidersScreen(
             activeProviderId = settings.activeProviderId,
             activeModel = settings.activeModel,
             catalogs = catalogs,
-            thinkingLevel = settings.thinkingLevel,
             browseProviderId = showModelsFor,
             onDismiss = { showModelsFor = null },
             onSelect = { providerId, model ->
@@ -202,9 +201,6 @@ fun ProvidersScreen(
                         is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
                     }
                 }
-            },
-            onSetThinking = { level ->
-                scope.launch { container.settings.setThinkingLevel(level) }
             },
             onManageProviders = { /* already here */ },
         )

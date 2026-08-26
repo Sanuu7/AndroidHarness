@@ -3,12 +3,15 @@ package com.androidharness.app.agent
 import kotlinx.coroutines.flow.firstOrNull
 
 /**
- * Per-model thinking capability. Primary source is the models.dev community
- * catalog ([com.androidharness.app.llm.ModelsDev]), which uniquely enumerates
- * each model's effort vocabulary; when it's unloaded or silent about a model,
- * the curated family table below decides — the same fallback approach desktop
- * harnesses take. The spec drives both the UI (which chips render) and the
- * request layer (exact wire value).
+ * Per-model thinking capability, with a Hermes-style resolution policy:
+ *
+ * Every surface (UI chips, stored setting, wire calls) speaks the ONE global
+ * ladder [ThinkingLevel]. What a given model accepts is DATA here — style +
+ * supported levels — and exactly one function, [resolveLevel], applies it:
+ * a requested rung passes through verbatim when supported, otherwise it takes
+ * the NEAREST WEAKER supported rung (a clamp never silently escalates cost),
+ * and only when nothing weaker exists does it take the weakest level. "none"
+ * is never a degradation target: an enabled ask stays enabled.
  */
 object ThinkingSpecs {
 
@@ -26,7 +29,7 @@ object ThinkingSpecs {
 
     data class Spec(
         val style: Style,
-        /** Levels the UI may offer, in ascending order. Always contains OFF. */
+        /** Rungs this model accepts natively, ascending. Always contains OFF. */
         val levels: List<ThinkingLevel>,
     )
 
@@ -35,10 +38,10 @@ object ThinkingSpecs {
     /** Ordered family rules; first match wins. */
     private val rules: List<Pair<Regex, Spec>> = listOf(
         Regex("(^|/)gpt-5") to
-            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH)),
+            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.MINIMAL, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH)),
 
         Regex("(^|/)o[3-9]([-.]|$)") to
-            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH)),
+            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.MINIMAL, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH)),
 
         Regex("(^|/)grok-[34]") to
             Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.HIGH)),
@@ -51,13 +54,13 @@ object ThinkingSpecs {
 
         // DeepSeek reasoners think inherently — there is no dial to send.
         Regex("deepseek") to
-            Spec(Style.NONE, listOf(ThinkingLevel.OFF, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
+            Spec(Style.NONE, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
 
         Regex("gpt-oss") to
-            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
+            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.MINIMAL, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
 
         Regex("qwen3|glm-[45]|kimi|minimax-m2|nemotron|hy3") to
-            Spec(Style.NONE, listOf(ThinkingLevel.OFF, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
+            Spec(Style.NONE, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
     )
 
     private val defaultSpec = Spec(Style.BUDGET, ALL)
@@ -68,13 +71,19 @@ object ThinkingSpecs {
      */
     data class RouterReasoning(val effort: String? = null, val enabled: Boolean? = null)
 
-    fun forModel(modelId: String?, devKey: String? = null): Spec {
-        if (!modelId.isNullOrBlank()) {
-            dynamicSpec(modelId, devKey)?.let { return it }
-            return rules.firstOrNull { (regex, _) -> regex.containsMatchIn(modelId.lowercase()) }?.second
-                ?: defaultSpec
-        }
-        return defaultSpec
+    /**
+     * One clamping policy for the whole app: keep a native rung verbatim,
+     * otherwise take the nearest WEAKER native rung (never escalates cost),
+     * falling back to the weakest native rung when nothing weaker exists.
+     * Unknown/custom vocabularies pass through rather than being guessed.
+     */
+    fun resolveLevel(level: ThinkingLevel?, spec: Spec?): ThinkingLevel? {
+        if (level == null || spec == null) return level
+        val enabled = spec.levels.filter { it != ThinkingLevel.OFF }
+        if (level == ThinkingLevel.OFF || enabled.isEmpty()) return level
+        if (level in enabled) return level
+        // Nearest weaker first; "floor" fallback keeps an enabled ask enabled.
+        return enabled.lastOrNull { it < level } ?: enabled.first()
     }
 
     /**
@@ -88,7 +97,8 @@ object ThinkingSpecs {
         val values = entry.effortValues
         if (!values.isNullOrEmpty()) {
             val levels = ThinkingLevel.entries.filter { level ->
-                level == ThinkingLevel.OFF || candidates(level).any { it in values }
+                level == ThinkingLevel.OFF ||
+                    values.any { v -> tierRank(v) == level.rank }
             }
             return Spec(Style.EFFORT, levels)
         }
@@ -97,11 +107,10 @@ object ThinkingSpecs {
     }
 
     /**
-     * Tiers the UI should render for this model: only its native ones. MAX is
-     * appended for EFFORT families missing it — as the "highest tier"
-     * sentinel it always has something safe to fold onto. NONE-style inherent
-     * reasoners keep exactly their shipped list (their tiers are cosmetic —
-     * no dial is ever sent).
+     * Tiers advertised in UI surfaces that only READ the current level
+     * (header badge): the model's native rungs — MAX/ULTRA appended as the
+     * "highest tier" sentinel for EFFORT families missing them, mirroring
+     * Hermes' top-tier folding. The model picker itself shows no thinking UI.
      */
     fun visibleLevels(modelId: String?, devKey: String? = null): List<ThinkingLevel> {
         val spec = forModel(modelId, devKey)
@@ -109,154 +118,146 @@ object ThinkingSpecs {
             ThinkingLevel.MAX !in spec.levels &&
             spec.levels.any { it != ThinkingLevel.OFF }
         ) {
-            return spec.levels + ThinkingLevel.MAX
+            return spec.levels + ThinkingLevel.MAX + ThinkingLevel.ULTRA
         }
         return spec.levels
     }
 
     /**
      * After a model switch the stored thinking tier may not exist on the new
-     * model — adapt it to the closest native tier (smallest ≥ current, else
-     * the model's top). Keeps UI chips and wire values honest without user
-     * intervention. No-op when the level is already supported.
+     * model — adapt it via the one clamp policy. Keeps the badge and wire
+     * values honest without user intervention; no-op when already supported.
      */
     suspend fun clampStoredLevel(
         settings: com.androidharness.app.data.SettingsRepository,
         modelId: String?,
         devKey: String?,
     ) {
-        val visible = visibleLevels(modelId, devKey)
-        val current = settings.settings.firstOrNull()?.thinkingLevel
-        if (visible.isEmpty() || current == null || current in visible) return
-        val usable = visible.filter { it != ThinkingLevel.OFF }
-        val clamped = when {
-            usable.isEmpty() -> ThinkingLevel.OFF
-            current == ThinkingLevel.MAX -> usable.last()
-            else -> usable.firstOrNull { it >= current } ?: usable.last()
-        }
-        settings.setThinkingLevel(clamped)
+        val current = settings.settings.firstOrNull()?.thinkingLevel ?: return
+        setClamped(settings, modelId, devKey, current)
     }
 
-    /** Wiring preference order per level, used to compute which tiers a model natively speaks. */
-    private fun candidates(level: ThinkingLevel): List<String> = when (level) {        ThinkingLevel.OFF -> emptyList()
-        ThinkingLevel.LOW -> listOf("low", "minimal")
-        ThinkingLevel.MEDIUM -> listOf("medium", "low", "minimal")
-        ThinkingLevel.HIGH -> listOf("high", "medium")
-        ThinkingLevel.XHIGH -> listOf("xhigh", "high")
-        ThinkingLevel.MAX -> listOf("max", "xhigh", "high")
+    /**
+     * Persists [requested] resolved against the model's real vocabulary. All
+     * setters funnel here so the stored value can never go off-ladder.
+     */
+    suspend fun setClamped(
+        settings: com.androidharness.app.data.SettingsRepository,
+        modelId: String?,
+        devKey: String?,
+        requested: ThinkingLevel,
+    ) {
+        val resolved = resolveLevel(requested, forModel(modelId, devKey))
+            ?: requested
+        settings.setThinkingLevel(resolved)
     }
 
-    private fun tierRank(tier: String): Int = when (tier) {
-        "none" -> 0
-        "minimal" -> 1
-        "low" -> 2
-        "medium" -> 3
-        "high" -> 4
-        "xhigh" -> 5
-        "max" -> 6
+    private fun tierRank(tier: String): Int = when (tier.lowercase()) {
+        "none" -> ThinkingLevel.OFF.rank
+        "minimal" -> ThinkingLevel.MINIMAL.rank
+        "low" -> ThinkingLevel.LOW.rank
+        "medium" -> ThinkingLevel.MEDIUM.rank
+        "high" -> ThinkingLevel.HIGH.rank
+        "xhigh" -> ThinkingLevel.XHIGH.rank
+        "max" -> ThinkingLevel.MAX.rank
         else -> -1
-    }
-
-    private fun tierRank(level: ThinkingLevel): Int = when (level) {
-        ThinkingLevel.OFF -> 0
-        ThinkingLevel.LOW -> 2
-        ThinkingLevel.MEDIUM -> 3
-        ThinkingLevel.HIGH -> 4
-        ThinkingLevel.XHIGH -> 5
-        ThinkingLevel.MAX -> 6
     }
 
     /** Closest tier the model actually enumerates (never invents a value). */
     private fun nearestEffort(values: List<String>, level: ThinkingLevel): String? =
-        values.minByOrNull { kotlin.math.abs(tierRank(it) - tierRank(level)) }
+        values.minByOrNull { kotlin.math.abs(tierRank(it) - level.rank) }
 
     /**
-     * Exact `reasoning_effort` string for [level] on [modelId], or null when
-     * this model/style takes no effort parameter (or the level is OFF). The
-     * models.dev vocabulary ([devKey]) wins over the shipped family table.
+     * Exact `reasoning_effort` string for [rawRequested] on [modelId] after
+     * clamping to its real vocabulary, or null when this model/style takes no
+     * effort parameter (or the level is OFF). The models.dev vocabulary
+     * ([devKey]) wins over the shipped family table.
      */
-    fun effortWire(modelId: String?, level: ThinkingLevel, devKey: String? = null): String? {
-        if (level == ThinkingLevel.OFF) return null
+    fun effortWire(modelId: String?, rawRequested: ThinkingLevel, devKey: String? = null): String? {
+        if (rawRequested == ThinkingLevel.OFF) return null
         val dyn = com.androidharness.app.llm.ModelsDev.entry(devKey, modelId)
         if (dyn?.reasoning == false) return null
         dyn?.effortValues?.takeIf { it.isNotEmpty() }?.let { values ->
-            return nearestEffort(values, level)
+            return nearestEffort(values, rawRequested)
         }
         val spec = forModel(modelId)
         if (spec.style != Style.EFFORT) return null
 
-        // Max is a sentinel for whatever the family's highest effort is.
-        if (level == ThinkingLevel.MAX) {
+        val resolved = resolveLevel(rawRequested, spec) ?: return null
+        if (resolved == ThinkingLevel.OFF) return null
+        // MAX/ULTRA are sentinels for whatever the family's highest effort is.
+        if (resolved == ThinkingLevel.MAX || resolved == ThinkingLevel.ULTRA) {
             return when {
                 ThinkingLevel.XHIGH in spec.levels -> "xhigh"
                 ThinkingLevel.HIGH in spec.levels -> "high"
                 else -> null
             }
         }
-        if (level !in spec.levels) return null
-        return when (level) {
-            ThinkingLevel.LOW -> "low"
-            ThinkingLevel.MEDIUM -> "medium"
-            ThinkingLevel.HIGH -> "high"
-            ThinkingLevel.XHIGH -> "xhigh"
-            ThinkingLevel.OFF, ThinkingLevel.MAX -> null
-        }
+        return resolved.reasoningEffort
     }
 
     /**
-     * What to put in OpenRouter's `reasoning` object for [modelId] at
-     * [level]. The models.dev vocabulary wins: exact effort strings from the
-     * model's own list (never invented), a bare `enabled` toggle when that's
-     * the only dial the model has, null for non-reasoners. Unknown models
-     * fall back to the shipped table via [openRouterEffort].
+     * What to put in OpenRouter's unified `reasoning` object for [modelId]
+     * at [rawRequested]. Same resolve-then-translate policy: exact effort
+     * strings from the model's own list (never invented), a bare `enabled`
+     * toggle when that's the only dial the model has, null for non-reasoners.
      */
-    fun openRouterReasoning(modelId: String?, level: ThinkingLevel): RouterReasoning? {
-        if (level == ThinkingLevel.OFF) return null
-        val dyn = com.androidharness.app.llm.ModelsDev.entry("openrouter", modelId)
+    fun openRouterReasoning(modelId: String?, rawRequested: ThinkingLevel): RouterReasoning? {
+        if (rawRequested == ThinkingLevel.OFF) return null
+        val devKey = "openrouter"
+        val dyn = com.androidharness.app.llm.ModelsDev.entry(devKey, modelId)
         if (dyn?.reasoning == false) return null
         if (dyn != null) {
             val values = dyn.effortValues
             if (!values.isNullOrEmpty()) {
-                return RouterReasoning(effort = nearestEffort(values, level))
+                return RouterReasoning(effort = nearestEffort(values, rawRequested))
             }
             if (dyn.toggle) return RouterReasoning(enabled = true)
             // Reported as reasoning-capable but no dial vocabulary —
             // let the shipped table try below.
         }
-        return openRouterEffort(modelId, level)?.let { RouterReasoning(effort = it) }
+        return openRouterEffort(modelId, rawRequested)?.let { RouterReasoning(effort = it) }
     }
 
     /**
      * Effort value for OpenRouter's unified `reasoning` object, which the
      * gateway normalizes across every provider it fronts. EFFORT families get
-     * their exact wire value (including "xhigh"); BUDGET families — Claude and
-     * Gemini reached through the OpenAI-compatible API, whose native budget
-     * parameters only exist on their own protocols — clamp to the standard
-     * low/medium/high vocabulary; NONE-style inherent reasoners (DeepSeek)
-     * get null: there is no dial, and they already think by default.
+     * their exact clamped wire value; BUDGET families reached through the
+     * OpenAI-compatible API clamp to the standard low/medium/high vocabulary;
+     * NONE-style inherent reasoners get null — there is no dial, and they
+     * already think by default.
      */
-    fun openRouterEffort(modelId: String?, level: ThinkingLevel): String? {
-        if (level == ThinkingLevel.OFF) return null
+    fun openRouterEffort(modelId: String?, rawRequested: ThinkingLevel): String? {
+        if (rawRequested == ThinkingLevel.OFF) return null
         val spec = forModel(modelId)
+        val resolved = resolveLevel(rawRequested, spec) ?: return null
         return when (spec.style) {
-            // Exact wire value when native, else clamp to the closest tier the
-            // family actually speaks (e.g. Medium on Grok becomes High).
-            Style.EFFORT -> effortWire(modelId, level)
-                ?: clampToNative(spec, level)?.let { effortWire(modelId, it) }
-            Style.BUDGET -> when (level) {
-                ThinkingLevel.LOW -> "low"
+            Style.EFFORT -> effortWire(modelId, resolved)
+            Style.BUDGET -> when (resolved) {
+                ThinkingLevel.MINIMAL, ThinkingLevel.LOW -> "low"
                 ThinkingLevel.MEDIUM -> "medium"
-                ThinkingLevel.OFF, ThinkingLevel.HIGH, ThinkingLevel.XHIGH, ThinkingLevel.MAX -> "high"
+                ThinkingLevel.OFF, ThinkingLevel.HIGH, ThinkingLevel.XHIGH, ThinkingLevel.MAX, ThinkingLevel.ULTRA -> "high"
             }
             Style.NONE -> null
         }
     }
 
-    /** Closest native tier to [level]: smallest tier ≥ level, else the family's top. */
-    private fun clampToNative(spec: Spec, level: ThinkingLevel): ThinkingLevel? {
-        val usable = spec.levels.filter { it != ThinkingLevel.OFF }
-        if (usable.isEmpty()) return null
-        if (level == ThinkingLevel.MAX) return usable.last()
-        return usable.firstOrNull { it >= level } ?: usable.last()
+    /**
+     * Resolves the globally-set level for [modelId] once, then hands each
+     * transport its answer: the native rung to encode, plus what OpenRouter
+     * should carry. Call sites never re-implement the clamp.
+     */
+    data class ResolvedThinking(val level: ThinkingLevel)
+
+    fun resolvedForModel(modelId: String?, rawRequested: ThinkingLevel, devKey: String? = null): ResolvedThinking =
+        ResolvedThinking(resolveLevel(rawRequested, forModel(modelId, devKey)) ?: rawRequested)
+
+    fun forModel(modelId: String?, devKey: String? = null): Spec {
+        if (!modelId.isNullOrBlank()) {
+            dynamicSpec(modelId, devKey)?.let { return it }
+            return rules.firstOrNull { (regex, _) -> regex.containsMatchIn(modelId.lowercase()) }?.second
+                ?: defaultSpec
+        }
+        return defaultSpec
     }
 }

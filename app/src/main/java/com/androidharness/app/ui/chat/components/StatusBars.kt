@@ -293,6 +293,7 @@ internal fun SlashSuggestions(
             add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
             add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))
             add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
+            add(SlashEntry("/plan", "Plan mode", "Load the plan skill and switch to Plan mode", SlashCommands.Kind.PLAN))
             add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
             state.skills.filter { it.enabled }.forEach { skill ->
                 add(SlashEntry("/${skill.name}", skill.name, skill.description, SlashCommands.Kind.SKILL))

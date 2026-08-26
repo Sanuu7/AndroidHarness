@@ -46,6 +46,13 @@ private enum class StatsRange(val label: String, val days: Long?) {
     LIFETIME("Lifetime", null),
 }
 
+/** How the per-model attribution rows are ordered. */
+private enum class StatsSort(val label: String) {
+    TOKENS("Tokens"),
+    PRICE("Price"),
+    REQUESTS("Requests"),
+}
+
 private data class StatsBundle(
     val input: Long,
     val output: Long,
@@ -91,6 +98,8 @@ fun StatsScreen(
 ) {
     val sessions by container.sessions.sessions.collectAsStateWithLifecycle(initialValue = emptyList())
     var range by remember { mutableStateOf(StatsRange.WEEK) }
+    var sort by remember { mutableStateOf(StatsSort.TOKENS) }
+    var minRequests by remember { mutableStateOf(0) }
 
     val cutoff = range.days?.let { System.currentTimeMillis() - TimeUnit.DAYS.toMillis(it) } ?: 0L
     val bundle = remember(sessions, cutoff) {
@@ -171,8 +180,41 @@ fun StatsScreen(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 } else {
-                    val maxTokens = byModel.maxOf { it.totalTokens }.coerceAtLeast(1)
-                    byModel.forEachIndexed { index, row ->
+                    // Sort selector: tokens, estimated price, or request count.
+                    val priced = byModel.map { row ->
+                        row to com.androidharness.app.llm.ModelPrices.estimate(
+                            row.model, row.inputTokens, row.outputTokens,
+                            row.cachedTokens, row.cacheWriteTokens,
+                        )
+                    }
+                    val sorted = when (sort) {
+                        StatsSort.TOKENS -> priced.sortedByDescending { it.first.totalTokens }
+                        StatsSort.PRICE -> priced.sortedByDescending { it.second ?: 0.0 }
+                        StatsSort.REQUESTS -> priced.sortedByDescending { it.first.requests }
+                    }
+                    var shown = sorted
+                    if (minRequests > 0) {
+                        shown = shown.filter { it.first.requests >= minRequests }
+                    }
+                    // Unpriced models sink when sorting by price, but stay
+                    // visible so the list never silently loses rows.
+                    val maxTokens = shown.maxOfOrNull { it.first.totalTokens }?.coerceAtLeast(1) ?: 1
+
+                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+                        StatsSort.entries.forEachIndexed { index, s ->
+                            SegmentedButton(
+                                selected = sort == s,
+                                onClick = { sort = s },
+                                shape = SegmentedButtonDefaults.itemShape(
+                                    index = index,
+                                    count = StatsSort.entries.size,
+                                ),
+                            ) { Text(s.label) }
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
+
+                    shown.forEachIndexed { index, (row, price) ->
                         if (index > 0) {
                             HorizontalDivider(
                                 color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
@@ -201,16 +243,11 @@ fun StatsScreen(
                                     fontFamily = FontFamily.Monospace,
                                     maxLines = 1,
                                 )
-                                com.androidharness.app.llm.ModelPrices.estimate(
-                                    row.model, row.inputTokens, row.outputTokens,
-                                    row.cachedTokens, row.cacheWriteTokens,
-                                )?.let {
-                                    Text(
-                                        "≈ \$${"%.2f".format(it)}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
+                                Text(
+                                    "≈ ${price?.let { "\$${"%.2f".format(it)}" } ?: "-"}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
                         }
                         Spacer(Modifier.height(6.dp))

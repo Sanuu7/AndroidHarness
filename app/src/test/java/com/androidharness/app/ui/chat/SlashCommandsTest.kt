@@ -134,4 +134,35 @@ class SlashCommandsTest {
         )
         assertEquals(SlashCommands.Pick.Send("/cost"), action)
     }
+
+    @Test
+    fun `plan expands to the plan skill invocation`() {
+        val result = resolve("/plan add offline mode")
+        assertEquals(SlashCommands.Kind.PLAN, result.kind)
+        assertTrue(result.startsAgent)
+        // Standard skill-invocation header with the plan skill loaded…
+        assertTrue(result.agentText!!.contains("invoked the \"plan\" skill"))
+        // …plus the user's instruction appended.
+        assertTrue(result.agentText!!.contains("add offline mode"))
+    }
+
+    @Test
+    fun `plan falls back to built-in instructions without a plan skill`() {
+        val result = resolve("/plan")  // "plan" not in the fake skill set
+        assertTrue(result.startsAgent)
+        assertTrue(result.agentText!!.contains("invoked the \"plan\" skill"))
+        assertTrue(result.agentText!!.contains("implementation plan"))
+    }
+
+    @Test
+    fun `plan uses the real skill content when one exists`() {
+        val custom = SlashCommands.resolve(
+            input = "/plan ship it",
+            skillNames = setOf("git", "systematic-debugging", "plan"),
+            snippetBodies = snippets,
+            skillContent = { name -> if (name == "plan") "# CUSTOM PLAN PROCEDURE" else null },
+        )
+        assertTrue(custom.agentText!!.contains("CUSTOM PLAN PROCEDURE"))
+        assertTrue(custom.agentText!!.contains("ship it"))
+    }
 }

@@ -1,10 +1,7 @@
 package com.androidharness.app.ui.chat.components
 
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -55,18 +52,16 @@ import kotlinx.coroutines.launch
  * a deliberate hop ("Switch provider" → manager sheet), never an accidental
  * scroll into another provider's models.
  */
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ModelPickerSheet(
     providers: List<ProviderConfig>,
     activeProviderId: String?,
     activeModel: String?,
     catalogs: Map<String, List<ModelEntry>>,
-    thinkingLevel: ThinkingLevel,
     onDismiss: () -> Unit,
     onSelect: (providerId: String, model: String?) -> Unit,
     onRefreshCatalog: suspend (providerId: String) -> String?,
-    onSetThinking: (ThinkingLevel) -> Unit,
     onManageProviders: () -> Unit,
     /** When set (Providers screen "browse"), list this provider instead of the active one. */
     browseProviderId: String? = null,
@@ -81,21 +76,7 @@ fun ModelPickerSheet(
     val activeProvider = providers.firstOrNull { it.id == activeProviderId }
     val effective = activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
     val listedModel = if (browseProviderId == null) effective else listedProvider?.model
-    val selectedEntry = catalogs[listedId]?.find { it.id == listedModel }
-
-    // models.dev (fresh, per-model vocabulary) first; provider-reported
-    // "not a reasoner" still wins over everything.
     val devKey = ModelsDev.providerKeyFor(listedProvider?.baseUrl)
-    var spec = com.androidharness.app.agent.ThinkingSpecs.forModel(
-        if (browseProviderId == null) effective else listedModel,
-        devKey,
-    )
-    if (selectedEntry?.reasoning == false) {
-        spec = com.androidharness.app.agent.ThinkingSpecs.Spec(
-            com.androidharness.app.agent.ThinkingSpecs.Style.NONE,
-            listOf(ThinkingLevel.OFF),
-        )
-    }
 
     // Opens fully expanded: half-expanded sheets trap bottom rows behind the
     // drag-to-dismiss gesture, which read as "touch not responding".
@@ -141,69 +122,11 @@ fun ModelPickerSheet(
                 }
             }
 
-            // Only the model's native tiers render — unsupported levels are
-            // hidden outright (per user decision, reversing the old dim-all).
-            if (listedProvider != null) {
-                val visible = com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
-                    if (browseProviderId == null) effective else listedModel,
-                    devKey,
-                )
-                Text(
-                    when {
-                        spec.style == com.androidharness.app.agent.ThinkingSpecs.Style.NONE &&
-                            spec.levels.size == 1 -> "This model doesn't support thinking"
-                        spec.style == com.androidharness.app.agent.ThinkingSpecs.Style.NONE ->
-                            "Thinking: this model reasons on its own; no dial to send"
-                        else -> "Thinking"
-                    },
-                    style = MaterialTheme.typography.labelMedium,
-                    color = scheme.onSurfaceVariant,
-                    modifier = Modifier.padding(bottom = 6.dp),
-                )
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    visible.forEach { level ->
-                        FilterChip(
-                            selected = thinkingLevel == level,
-                            onClick = { onSetThinking(level) },
-                            label = {
-                                Text(level.label, style = MaterialTheme.typography.labelSmall)
-                            },
-                        )
-                    }
-                }
-                if (thinkingLevel != ThinkingLevel.OFF && thinkingLevel !in visible) {
-                    Text(
-                        "“${thinkingLevel.label}” isn't native to this model. " +
-                            "Requests clamp to the nearest supported tier",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    )
-                }
-                if (spec.style == com.androidharness.app.agent.ThinkingSpecs.Style.EFFORT) {
-                    val wireValues = visible
-                        .filter { it != ThinkingLevel.OFF }
-                        .mapNotNull {
-                            com.androidharness.app.agent.ThinkingSpecs.effortWire(
-                                if (browseProviderId == null) effective else listedModel,
-                                it,
-                                devKey,
-                            )
-                        }
-                    if (wireValues.isNotEmpty()) {
-                        Text(
-                            "Sends reasoning_effort: ${wireValues.joinToString(" · ")}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        )
-                    }
-                }
-            }
-
             HorizontalDivider(Modifier.padding(vertical = 10.dp), color = scheme.outlineVariant.copy(alpha = 0.5f))
+
+            // Thinking tiers live in the header badge, not here: the picker is
+            // about WHICH model runs; the global ladder adapts to it via
+            // ThinkingSpecs.clampStoredLevel on every switch.
 
             Row(
                 verticalAlignment = Alignment.CenterVertically,

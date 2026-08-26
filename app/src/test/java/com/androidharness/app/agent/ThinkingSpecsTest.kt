@@ -8,16 +8,21 @@ import org.junit.Test
 class ThinkingSpecsTest {
 
     @Test
-    fun `gpt-5 family uses effort style with xhigh tier`() {
+    fun `gpt-5 family uses effort style with minimal rung`() {
         val spec = ThinkingSpecs.forModel("gpt-5.6-sol")
         assertEquals(ThinkingSpecs.Style.EFFORT, spec.style)
         assertEquals(
-            listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH),
+            listOf(
+                ThinkingLevel.OFF, ThinkingLevel.MINIMAL, ThinkingLevel.LOW,
+                ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH,
+            ),
             spec.levels,
         )
-        // MAX folds onto the same wire value as X-High.
+        // MAX and ULTRA fold onto the family's highest wire value.
         assertEquals("xhigh", ThinkingSpecs.effortWire("gpt-5.6-sol", ThinkingLevel.XHIGH))
         assertEquals("xhigh", ThinkingSpecs.effortWire("gpt-5.6-sol", ThinkingLevel.MAX))
+        assertEquals("xhigh", ThinkingSpecs.effortWire("gpt-5.6-sol", ThinkingLevel.ULTRA))
+        assertEquals("minimal", ThinkingSpecs.effortWire("gpt-5.6-sol", ThinkingLevel.MINIMAL))
     }
 
     @Test
@@ -34,7 +39,34 @@ class ThinkingSpecsTest {
             listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.HIGH),
             spec.levels,
         )
-        assertNull(ThinkingSpecs.effortWire("grok-4-fast", ThinkingLevel.MEDIUM))
+    }
+
+    @Test
+    fun `hermes clamp - non-native tier takes nearest weaker never stronger`() {
+        // Grok speaks only low/high: a Medium ask must NOT silently escalate
+        // cost (old behavior rounded UP to high); it clamps down to low.
+        assertEquals("low", ThinkingSpecs.effortWire("grok-4-fast", ThinkingLevel.MEDIUM))
+        assertEquals("high", ThinkingSpecs.effortWire("grok-4-fast", ThinkingLevel.XHIGH))
+        // Nothing weaker than MINIMAL exists -> floor keeps the ask enabled.
+        assertEquals("low", ThinkingSpecs.effortWire("grok-4-fast", ThinkingLevel.MINIMAL))
+        // ULTRA folds onto the family top.
+        assertEquals("high", ThinkingSpecs.effortWire("grok-4-fast", ThinkingLevel.ULTRA))
+    }
+
+    @Test
+    fun `resolveLevel is monotonic and never targets off`() {
+        val spec = ThinkingSpecs.forModel("grok-4-fast")
+        val seq = listOf(
+            ThinkingLevel.MINIMAL, ThinkingLevel.LOW, ThinkingLevel.MEDIUM,
+            ThinkingLevel.HIGH, ThinkingLevel.XHIGH, ThinkingLevel.MAX, ThinkingLevel.ULTRA,
+        )
+        val resolved = seq.mapNotNull { ThinkingSpecs.resolveLevel(it, spec) }
+        // A stronger request never resolves weaker than a weaker request.
+        assertTrue(resolved.zipWithNext().all { (a, b) -> b >= a })
+        // An enabled ask stays enabled.
+        assertTrue(resolved.none { it == ThinkingLevel.OFF })
+        // OFF passes through only when explicitly requested.
+        assertEquals(ThinkingLevel.OFF, ThinkingSpecs.resolveLevel(ThinkingLevel.OFF, spec))
     }
 
     @Test
@@ -42,7 +74,7 @@ class ThinkingSpecsTest {
         for (model in listOf("claude-sonnet-4-5", "gemini-2.5-flash")) {
             val spec = ThinkingSpecs.forModel(model)
             assertEquals(ThinkingSpecs.Style.BUDGET, spec.style)
-            assertEquals(ThinkingLevel.entries, spec.levels)
+            assertEquals(ThinkingLevel.entries.toList(), spec.levels)
             // Budget-style models take no effort parameter.
             assertNull(ThinkingSpecs.effortWire(model, ThinkingLevel.HIGH))
         }
@@ -88,9 +120,13 @@ class ThinkingSpecsTest {
     }
 
     @Test
-    fun `openrouter unified effort clamps non-native tiers upward`() {
-        // Grok speaks only low/high; Medium must not silently become no-op.
-        assertEquals("high", ThinkingSpecs.openRouterEffort("x-ai/grok-4-fast", ThinkingLevel.MEDIUM))
+    fun `openrouter unified effort clamps like hermes`() {
+        // Effort families keep exact natives…
+        assertEquals("xhigh", ThinkingSpecs.openRouterEffort("openai/gpt-5.6-sol", ThinkingLevel.XHIGH))
+        assertEquals("medium", ThinkingSpecs.openRouterEffort("openai/o4-mini", ThinkingLevel.MEDIUM))
+        // …Grok speaks only low/high: Medium clamps DOWN (never escalates).
+        assertEquals("low", ThinkingSpecs.openRouterEffort("x-ai/grok-4-fast", ThinkingLevel.MEDIUM))
+        // MAX folds onto the family top.
         assertEquals("high", ThinkingSpecs.openRouterEffort("x-ai/grok-4-fast", ThinkingLevel.MAX))
     }
 
@@ -128,7 +164,7 @@ class ThinkingSpecsTest {
         val spec = ThinkingSpecs.forModel("deepseek/deepseek-v4-flash", "openrouter")
         assertEquals(ThinkingSpecs.Style.EFFORT, spec.style)
         assertEquals(
-            listOf(ThinkingLevel.OFF, ThinkingLevel.HIGH, ThinkingLevel.XHIGH, ThinkingLevel.MAX),
+            listOf(ThinkingLevel.OFF, ThinkingLevel.HIGH, ThinkingLevel.XHIGH),
             spec.levels,
         )
         // Wire values come from the catalog vocabulary, clamping to nearest.

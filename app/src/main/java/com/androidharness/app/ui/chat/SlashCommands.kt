@@ -9,7 +9,7 @@ import com.androidharness.app.skills.buildSlashSkillMessage
 object SlashCommands {
 
     enum class Kind {
-        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN,
+        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN,
     }
 
     enum class Dispatch { START, QUEUE }
@@ -112,6 +112,27 @@ object SlashCommands {
             "and the coding conventions future agent sessions should follow. " +
             "If an AGENTS.md already exists, improve it."
 
+    /**
+     * The [SKILL]-style expansion for /plan: the plan skill's content wrapped
+     * in the standard invocation header, with the user's instruction appended.
+     * Falls back to built-in planning instructions when no such skill exists.
+     */
+    private fun planPrompt(instruction: String, skillContent: (String) -> String?): String =
+        buildSlashSkillMessage(
+            "plan",
+            skillContent("plan") ?: PLAN_SKILL_FALLBACK,
+            instruction,
+        )
+
+    private const val PLAN_SKILL_FALLBACK =
+        "Create a detailed implementation plan for the request. Do NOT write or " +
+            "modify any files yet.\n\n1. Research the codebase: structure, conventions, " +
+            "related code paths.\n2. Restate the goal and call out gaps or ambiguities " +
+            "(gap analysis BEFORE coding).\n3. Present a numbered step-by-step plan: " +
+            "exact files to touch, what changes in each, and how each step will be " +
+            "verified (tests, builds, manual checks).\n4. Stop after presenting the " +
+            "plan and wait for explicit approval before executing anything."
+
     fun resolve(
         input: String,
         skillNames: Set<String>,
@@ -132,6 +153,10 @@ object SlashCommands {
             "/doctor" -> Result(Kind.DOCTOR, agentText = DOCTOR_PROMPT)
             "/skills" -> Result(Kind.SKILLS)
             "/init" -> Result(Kind.INIT, agentText = INIT_PROMPT)
+            // /plan ALWAYS activates Plan mode AND loads the bundled plan
+            // skill — the model gets the full planning procedure plus whatever
+            // the user typed after the command.
+            "/plan" -> Result(Kind.PLAN, agentText = planPrompt(argument, skillContent))
             else -> {
                 val skillName = command.removePrefix("/")
                 if (skillName in skillNames) {

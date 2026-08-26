@@ -176,11 +176,9 @@ fun ChatScreen(
             activeProviderId = state.activeProviderId,
             activeModel = state.activeModel,
             catalogs = state.catalogs,
-            thinkingLevel = state.thinkingLevel,
             onDismiss = { showModelPicker = false },
             onSelect = viewModel::selectModel,
             onRefreshCatalog = viewModel::refreshCatalog,
-            onSetThinking = viewModel::setThinkingLevel,
             // Provider management stays in-conversation: a sheet, not a screen.
             onManageProviders = { showProviderManager = true },
         )
