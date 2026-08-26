@@ -104,11 +104,22 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
     override fun readText(): String = file.readText()
 
     override fun writeText(content: String) {
+        if (isDirectory) {
+            throw ToolFailure("Cannot write file '$relPath': is a directory")
+        }
         file.parentFile?.mkdirs()
-        java.io.FileOutputStream(file).use { fos ->
-            fos.write(content.toByteArray(Charsets.UTF_8))
-            fos.flush()
-            runCatching { fos.fd.sync() }
+        try {
+            java.io.FileOutputStream(file).use { fos ->
+                fos.write(content.toByteArray(Charsets.UTF_8))
+                fos.flush()
+                runCatching { fos.fd.sync() }
+            }
+        } catch (e: Exception) {
+            if (isDirectory || e.message?.contains("EISDIR") == true) {
+                throw ToolFailure("Cannot write file '$relPath': is a directory")
+            }
+            val cleanMsg = e.localizedMessage?.replace(file.absolutePath, relPath) ?: e.message
+            throw ToolFailure("Cannot write file '$relPath': $cleanMsg")
         }
     }
 
@@ -227,6 +238,9 @@ class SafFsNode(
     }
 
     override fun writeText(content: String) {
+        if (isDirectory) {
+            throw ToolFailure("Cannot write file '$relPath': is a directory")
+        }
         val target = when {
             // existing file resolved directly
             missingSegments.isEmpty() && doc.isFile -> doc

@@ -27,7 +27,12 @@ class HarnessUserService() : IHarnessService.Stub() {
         logPath: String,
     ): Int {
         return try {
-            val pb = ProcessBuilder(*cmd)
+            val wrappedCmd = if (File("/system/bin/setsid").exists()) {
+                arrayOf("/system/bin/setsid", *cmd)
+            } else {
+                cmd
+            }
+            val pb = ProcessBuilder(*wrappedCmd)
             pb.directory(dir?.let { File(it) })
             if (env != null) {
                 val e = pb.environment()
@@ -38,6 +43,7 @@ class HarnessUserService() : IHarnessService.Stub() {
             }
             val log = File(logPath)
             log.parentFile?.mkdirs()
+            log.createNewFile()
             pb.redirectOutput(ProcessBuilder.Redirect.appendTo(log))
             pb.redirectErrorStream(true)
             val p = pb.start()
@@ -52,16 +58,17 @@ class HarnessUserService() : IHarnessService.Stub() {
 
     override fun killProcess(pid: Int): Boolean =
         runCatching {
-            // Kill both process group (-pid) and specific pid to eliminate hydra orphans
-            android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL)
-            android.system.Os.kill(pid, android.system.OsConstants.SIGKILL)
-            true
-        }.getOrElse {
+            // 1. Kill process group
+            runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+            // 2. Kill all child processes by parent pid
             runCatching {
-                android.system.Os.kill(pid, android.system.OsConstants.SIGKILL)
-                true
-            }.getOrDefault(false)
-        }
+                val pkill = Runtime.getRuntime().exec(arrayOf("/system/bin/pkill", "-9", "-P", pid.toString()))
+                pkill.waitFor(1, java.util.concurrent.TimeUnit.SECONDS)
+            }
+            // 3. Kill the target pid
+            runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
+            true
+        }.getOrDefault(false)
 
     /** java.lang.ProcessImpl keeps the pid in a private field. */
     private fun pidOf(p: Process): Int? = runCatching {

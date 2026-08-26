@@ -221,6 +221,9 @@ class WriteFileTool : Tool {
             val content = args["content"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: content")
             val file = ctx.workspace.resolve(path)
+            if (file.exists && file.isDirectory) {
+                throw ToolFailure("Cannot write file '$path': is a directory")
+            }
             val existed = file.exists
             val endsWithNewline = content.endsWith("\n") || content.endsWith("\r")
             val written = if (content.isNotEmpty() && !endsWithNewline) "$content\n" else content

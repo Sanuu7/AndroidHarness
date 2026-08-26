@@ -89,8 +89,10 @@ class BgProcessStore(
      */
     suspend fun start(command: String, cwd: File): Started {
         val id = nextId.getAndIncrement()
-        detachedLogDir.mkdirs()
-        val logFile = File(detachedLogDir, "$id.log")
+        val bgDir = File(cwd, ".harness/bg").apply { mkdirs() }
+        val logFile = File(bgDir, "$id.log").apply {
+            runCatching { createNewFile() }
+        }.let { if (it.exists() || it.canWrite()) it else File(detachedLogDir, "$id.log").apply { createNewFile() } }
 
         if (shizuku.isGranted()) {
             // Make sure the shell-user toolchain copy exists before spawning.
@@ -170,6 +172,19 @@ class BgProcessStore(
             else -> {
                 val p = appProcesses[id]
                 if (p != null) {
+                    val pid = runCatching {
+                        val field = p.javaClass.getDeclaredField("pid")
+                        field.isAccessible = true
+                        field.getInt(p)
+                    }.getOrNull()
+                    if (pid != null && pid > 0) {
+                        runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+                        runCatching {
+                            val pkill = Runtime.getRuntime().exec(arrayOf("/system/bin/pkill", "-9", "-P", pid.toString()))
+                            pkill.waitFor(1, TimeUnit.SECONDS)
+                        }
+                        runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
+                    }
                     p.destroyForcibly()
                     p.waitFor(2, TimeUnit.SECONDS)
                     true
@@ -183,7 +198,8 @@ class BgProcessStore(
     }
 
     fun tail(entry: BgProcessEntry, chars: Int = 2_000): String {
-        val f = File(entry.logPath).let { if (it.isAbsolute) it else File(detachedLogDir.parentFile, entry.logPath) }
+        val f = File(entry.cwd, entry.logPath).takeIf { it.exists() }
+            ?: File(entry.logPath).let { if (it.isAbsolute) it else File(detachedLogDir.parentFile, entry.logPath) }
         return if (f.exists()) {
             val text = f.readText()
             val filtered = text.lines()

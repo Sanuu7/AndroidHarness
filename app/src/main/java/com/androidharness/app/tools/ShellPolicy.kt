@@ -246,7 +246,7 @@ object ShellPolicy {
     }
 
     private fun isRedirectionOp(op: String): Boolean =
-        op == ">" || op == ">>" || op == "<" || op == "1>" || op == "2>" || op == "1>>" || op == "2>>" || op == "tee"
+        op == ">" || op == ">>" || op == "<" || op == "1>" || op == "2>" || op == "1>>" || op == "2>>" || op == "&>" || op == "&>>" || op == "tee"
 
     private fun isAllowedSystemPath(path: String): Boolean {
         val allowedPrefixes = listOf(
@@ -365,6 +365,26 @@ object ShellPolicy {
             if (i >= n) break
 
             val c = command[i]
+            if (c in '0'..'9' && i + 1 < n && command[i + 1] == '>') {
+                var op = "$c>"
+                i += 2
+                if (i < n && command[i] == '>') {
+                    op += ">"
+                    i++
+                }
+                tokens += op
+                continue
+            }
+            if (c == '&' && i + 1 < n && command[i + 1] == '>') {
+                var op = "&>"
+                i += 2
+                if (i < n && command[i] == '>') {
+                    op += ">"
+                    i++
+                }
+                tokens += op
+                continue
+            }
             if (c == '>' || c == '<' || c == '|' || c == '&' || c == ';') {
                 var op = c.toString()
                 i++

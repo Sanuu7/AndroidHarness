@@ -48,6 +48,23 @@ private suspend fun runGit(
     )
 }
 
+private suspend fun runGitWithRetry(
+    router: ShellTierRouter,
+    linuxEnv: LinuxEnvironmentManager,
+    ctx: ToolContext,
+    gitArgs: String,
+    maxRetries: Int = 3,
+): ToolResult {
+    var res = runGit(router, linuxEnv, ctx, gitArgs)
+    var attempt = 0
+    while (!res.ok && isIndexLocked(res.output) && attempt < maxRetries) {
+        attempt++
+        kotlinx.coroutines.delay(200L * (1L shl (attempt - 1)))
+        res = runGit(router, linuxEnv, ctx, gitArgs)
+    }
+    return res
+}
+
 class GitStatusTool(
     private val router: ShellTierRouter,
     private val linuxEnv: LinuxEnvironmentManager,
@@ -60,7 +77,7 @@ class GitStatusTool(
     override val isReadOnly = true
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
-        withContext(Dispatchers.IO) { runGit(router, linuxEnv, ctx, "status --short --branch") }
+        withContext(Dispatchers.IO) { runGitWithRetry(router, linuxEnv, ctx, "status --short --branch") }
 }
 
 class GitDiffTool(
@@ -91,7 +108,7 @@ class GitDiffTool(
                 if (staged) append(" --staged")
                 if (!path.isNullOrBlank()) append(" -- ").append(path.shellQuote())
             }
-            runGit(router, linuxEnv, ctx, cmd)
+            runGitWithRetry(router, linuxEnv, ctx, cmd)
         }
 }
 
@@ -114,24 +131,16 @@ class GitCommitTool(
             val message = args["message"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: message")
             val commitCmd = "add -A && git commit -m ${message.shellQuote()}"
-            var res = runGit(router, linuxEnv, ctx, commitCmd)
-            if (!res.ok && isIndexLocked(res.output)) {
-                kotlinx.coroutines.delay(600)
-                res = runGit(router, linuxEnv, ctx, commitCmd)
-            }
+            val res = runGitWithRetry(router, linuxEnv, ctx, commitCmd)
             if (!res.ok && isIdentityUnknown(res.output)) {
-                val configRes = runGit(
+                val configRes = runGitWithRetry(
                     router,
                     linuxEnv,
                     ctx,
                     "config user.name 'Android Harness' && git config user.email 'harness@android.local'",
                 )
                 if (configRes.ok) {
-                    var retryRes = runGit(router, linuxEnv, ctx, commitCmd)
-                    if (!retryRes.ok && isIndexLocked(retryRes.output)) {
-                        kotlinx.coroutines.delay(600)
-                        retryRes = runGit(router, linuxEnv, ctx, commitCmd)
-                    }
+                    val retryRes = runGitWithRetry(router, linuxEnv, ctx, commitCmd)
                     return@withContext ToolResult(
                         ok = retryRes.ok,
                         output = "[note: auto-configured repository git identity 'Android Harness <harness@android.local>']\n" + retryRes.output,
@@ -140,17 +149,17 @@ class GitCommitTool(
             }
             res
         }
+}
 
-    private fun isIndexLocked(output: String): Boolean {
-        val lower = output.lowercase()
-        return lower.contains("index.lock") || lower.contains("another git process seems to be running")
-    }
+private fun isIndexLocked(output: String): Boolean {
+    val lower = output.lowercase()
+    return lower.contains("index.lock") || lower.contains("another git process seems to be running")
+}
 
-    private fun isIdentityUnknown(output: String): Boolean {
-        val lower = output.lowercase()
-        return lower.contains("author identity unknown") ||
-            lower.contains("tell me who you are") ||
-            lower.contains("empty ident name") ||
-            lower.contains("please tell me who you are")
-    }
+private fun isIdentityUnknown(output: String): Boolean {
+    val lower = output.lowercase()
+    return lower.contains("author identity unknown") ||
+        lower.contains("tell me who you are") ||
+        lower.contains("empty ident name") ||
+        lower.contains("please tell me who you are")
 }
