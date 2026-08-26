@@ -291,6 +291,7 @@ internal fun SlashSuggestions(
             add(SlashEntry("/clear", "New chat", "Start a fresh conversation", SlashCommands.Kind.CLEAR))
             add(SlashEntry("/compact", "Compact", "Summarize older context", SlashCommands.Kind.COMPACT))
             add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
+            add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))
             add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
             add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
             state.skills.filter { it.enabled }.forEach { skill ->

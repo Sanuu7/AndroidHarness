@@ -38,6 +38,16 @@ class SlashCommandsTest {
     }
 
     @Test
+    fun `doctor expands to the harness self-test battery prompt`() {
+        val result = resolve("/doctor")
+        assertEquals(SlashCommands.Kind.DOCTOR, result.kind)
+        assertTrue(result.startsAgent)
+        assertTrue(result.agentText!!.contains("Harness Doctor"))
+        assertTrue(result.agentText!!.contains("FILE CRUD & UNICODE"))
+        assertTrue(result.agentText!!.contains("SANDBOX BOUNDARIES"))
+    }
+
+    @Test
     fun `skill with instruction expands instead of queuing the raw slash text`() {
         val result = resolve("/git commit this")
         assertEquals(SlashCommands.Kind.SKILL, result.kind)

@@ -466,6 +466,7 @@ class ChatViewModel(
             }
             SlashCommands.Kind.PLAIN,
             SlashCommands.Kind.INIT,
+            SlashCommands.Kind.DOCTOR,
             SlashCommands.Kind.SKILL,
             SlashCommands.Kind.SNIPPET,
             -> Unit

@@ -561,10 +561,10 @@ class AgentEngine(
             ToolResult(false, e.message ?: "${call.name} failed")
         }
 
-        // Surface slow calls so the model can tell work from hangs and batch
-        // or split accordingly (only worth the tokens past a threshold).
+        // Surface tool-call latency so the model can tell work from hangs and batch
+        // or split accordingly.
         val elapsedMs = System.currentTimeMillis() - startedAt
-        val result = if (elapsedMs >= 2_000 && executed.output.length < 100_000) {
+        val result = if (executed.output.length < 100_000) {
             val secs = elapsedMs / 1000.0
             val note = if (elapsedMs >= 60_000) "[took ${"%.0f".format(secs)}s]" else "[took ${"%.1f".format(secs)}s]"
             executed.copy(output = executed.output + (if (executed.output.isEmpty()) "" else "\n") + note)
@@ -713,6 +713,7 @@ class AgentEngine(
                 "search_files, grep, web_fetch/search) to answer the task. " +
                 "You must not modify anything, and you cannot ask questions; if something " +
                 "is ambiguous, state your assumption and continue. " +
+                "When reporting file properties like newlines or byte counts, run a byte check (e.g. tail -c 3 | xxd) rather than inferring from line counts. " +
                 "Finish with a complete, self-contained answer: your final message is the " +
                 "ONLY thing returned to the caller, so include file paths, line references " +
                 "and concrete details, and no meta-commentary."
@@ -851,10 +852,11 @@ class AgentEngine(
             for (call in calls) {
                 step(describeToolCall(call))
                 val tool = registry.get(call.name)
+                val subStartedAt = System.currentTimeMillis()
                 val result = if (tool == null || !tool.isReadOnly || call.name == "ask_user" || call.name == "task") {
                     ToolResult(false, "${call.name} is not available to subagents.")
                 } else {
-                    try {
+                    val executed = try {
                         val args = json.parseToJsonElement(call.argumentsJson).jsonObject
                         val raw = tool.execute(args, ctx)
                         raw.copy(output = com.androidharness.app.tools.SecretRedactor.redact(raw.output))
@@ -862,6 +864,14 @@ class AgentEngine(
                         throw ce
                     } catch (e: Exception) {
                         ToolResult(false, e.message ?: "${call.name} failed")
+                    }
+                    val elapsedMs = System.currentTimeMillis() - subStartedAt
+                    if (executed.output.length < 100_000) {
+                        val secs = elapsedMs / 1000.0
+                        val note = if (elapsedMs >= 60_000) "[took ${"%.0f".format(secs)}s]" else "[took ${"%.1f".format(secs)}s]"
+                        executed.copy(output = executed.output + (if (executed.output.isEmpty()) "" else "\n") + note)
+                    } else {
+                        executed
                     }
                 }
                 val toolMessage = ChatMessage(
@@ -1070,6 +1080,7 @@ Rules:
 - Use ask_user whenever a decision is genuinely the user's to make instead of guessing.
 - Tool calls in one message run in order, and each sees the workspace as of the END of the previous call: a patch or diff pre-computed before an earlier edit in the same message can be stale by the time it runs. Build patches right before applying them.
 - Text files follow the POSIX convention: the last line ends with a newline terminator. When patching or editing, never add an extra empty line for the file's final newline.
+- When reporting file properties like newlines or byte counts, run a byte check (e.g. tail -c 3 | xxd) rather than inferring from line counts.
 - For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message: they run concurrently.
 
 """.trim()

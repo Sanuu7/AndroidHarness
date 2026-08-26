@@ -137,15 +137,27 @@ class BgProcessStore(
         return Started(entry, viaShizuku = false)
     }
 
-    /** All tracked processes with a live liveness check. */
+    /** All tracked processes with a live liveness check, pruning exited ones. */
     suspend fun list(): List<Pair<BgProcessEntry, Boolean>> {
         val out = mutableListOf<Pair<BgProcessEntry, Boolean>>()
+        val deadIds = mutableListOf<Int>()
         entries.values.sortedBy { it.id }.forEach { e ->
             val alive = when (e.source) {
                 "SHIZUKU" -> shizuku.isProcessAlive(e.pid)
                 else -> appProcesses[e.id]?.isAlive == true
             }
-            out += e to alive
+            if (alive) {
+                out += e to true
+            } else {
+                deadIds += e.id
+            }
+        }
+        if (deadIds.isNotEmpty()) {
+            deadIds.forEach { id ->
+                entries.remove(id)
+                appProcesses.remove(id)
+            }
+            persist()
         }
         return out
     }
@@ -175,7 +187,15 @@ class BgProcessStore(
         val f = File(entry.logPath)
         return if (f.exists()) {
             val text = f.readText()
-            if (text.length <= chars) text else "…\n" + text.takeLast(chars)
+            val filtered = text.lines()
+                .filterNot { isHeartbeatLine(it) }
+                .joinToString("\n")
+            if (filtered.length <= chars) filtered else "…\n" + filtered.takeLast(chars)
         } else ""
+    }
+
+    private fun isHeartbeatLine(line: String): Boolean {
+        val trimmed = line.trim()
+        return trimmed.contains("heartbeat", ignoreCase = true)
     }
 }
