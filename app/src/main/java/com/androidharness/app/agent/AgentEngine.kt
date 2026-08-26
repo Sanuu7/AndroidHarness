@@ -511,7 +511,8 @@ class AgentEngine(
         val command = if (call.name == "shell" || call.name == "shell_background") {
             com.androidharness.app.tools.ShellPolicy.commandOf(call.argumentsJson)
         } else null
-        com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty())?.let { reason ->
+        val root = workspace.shellRoot
+        com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty(), root, root)?.let { reason ->
             if (call.name == "shell" || call.name == "shell_background") {
                 return ToolResult(false, reason)
             }

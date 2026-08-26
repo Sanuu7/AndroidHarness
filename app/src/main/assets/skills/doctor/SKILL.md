@@ -33,7 +33,7 @@ Run the self-test battery checks in order:
    - verify marker.txt still exists, then delete it
 
 4. NEWLINE-LESS PATCH (Bug #2 regression):
-   - write_file "nl.txt" (via shell): printf 'a\na\nunique\na' > nl.txt (must NOT end in a newline; verify with `tail -c 3 nl.txt | xxd`)
+   - write_file "nl.txt" (via shell): printf 'a\na\nunique\na' > nl.txt (must NOT end in a newline; verify with tail -c 3 nl.txt | xxd)
    - apply_patch replacing "unique" → "CHANGED" must SUCCEED on the first try
    - the wrong-hunk error must MENTION the newline condition
 
@@ -53,24 +53,28 @@ Run the self-test battery checks in order:
 
 8. SHELL:
    - echo to stdout AND stderr → expect SEPARATE --- stdout --- / --- stderr --- sections
-   - `false` → expect non-zero exit code surfaced
-   - `sleep 8` with timeout_seconds=3 → expect "killed (timeout)" + elapsed time
-   - `which bash git python3 node` → all resolve in the toolchain
+   - false → expect non-zero exit code surfaced
+   - sleep 8 with timeout_seconds=3 → expect "killed (timeout)" + elapsed time
+   - which bash git python3 node → all resolve in the toolchain
+   - LARGE OUTPUT (Bug F regression):
+     - python3 -c "print('z'*10000)"   → exit code 0, tail "EXIT=0" present
+     - python3 -c "print('z'*64000)"   → exit code 0, tail "EXIT=0" present (NOT false exit 1)
 
 9. BACKGROUND PROCS:
-   - shell_background: `for i in 1 2 3; do echo tick$i; sleep 1; done`
+   - shell_background: for i in 1 2 3; do echo tick$i; sleep 1; done
    - bg_list must show it running, log must contain ONLY tick1/2/3 (no heartbeat)
    - bg_kill it, then bg_list must NOT retain it (or show it pruned)
 
 10. GIT:
     - git init -q → must produce NO template warning (GIT_TEMPLATE_DIR set)
-    - git_commit one fixture → succeeds
+    - git_commit one fixture → succeeds (Bug E regression: if it fails with "Author identity unknown", FAIL — harness should auto-configure or explain)
     - git_status / git_diff return clean output
 
 11. WEB:
     - web_search (any query) returns results
     - web_fetch https://example.com returns text
     - http_request GET https://httpbin.org/status/404 → 404 handled cleanly
+    - http_request POST https://httpbin.org/post with JSON body → 200, body echoed back
 
 12. SUBAGENTS:
     - two task() calls in ONE block → both complete, consistent workspace view
@@ -79,6 +83,18 @@ Run the self-test battery checks in order:
     - memory_write (append) a test line, read back .harness/memory.md
     - skills_list returns the catalog; skill_view a known skill succeeds
 
-CLEANUP: delete doctor/ and every fixture created above; leave the workspace exactly as you found it.
+14. SHELL SANDBOX (Bug A regression — must be BLOCKED):
+    - shell: echo INJECT > ../escape_me.txt → expect the file NOT created OUTSIDE the workspace
+    - shell: ls /storage/emulated/0/ → expect listing of arbitrary shared-storage dirs to be refused (or clearly reported as out-of-scope)
 
-OUTPUT: a table of PASS/FAIL per check. For any FAIL, quote the exact error message and note which regression it maps to (Bug #1/#2/#3 or a new one).
+15. BINARY & EMPTY (Bug C/Bug D regression):
+    - create a 4KB random file; read_file it → expect "binary" refusal (NOT mojibake lines)
+    - write_file "" (empty) → file_info must report size 0, line_count 0, an explicit empty marker
+    - 10MB single-line file → file_info.line_count must return promptly (no multi-second full-file scan)
+
+16. SYMLINKS (Bug B regression):
+    - shell: ln -sf /etc/passwd link → expect an explicit "symlink not supported/allowed" error (not silent, not a stale regular file)
+
+CLEANUP: delete doctor/ and every fixture created above (including ../escape_me.txt if it leaked); leave the workspace exactly as you found it.
+
+OUTPUT: a table of PASS/FAIL per check (1–16). For any FAIL, quote the exact error message and note which regression it maps to (Bug #1/#2/#3/#A/#B/#C/#D/#E/#F).

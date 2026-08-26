@@ -91,7 +91,7 @@ class HarnessUserService() : IHarnessService.Stub() {
             return "exit=-1\ntimeout=0\nfailed to launch: ${e.message}"
         }
 
-        val limit = maxBytes.coerceIn(1024, 256_000)
+        val limit = maxBytes.coerceIn(1024, 512_000)
         val stdout = StringBuffer()
         val stderr = StringBuffer()
         val out = Thread { gobble(process.inputStream, stdout, limit) }
@@ -135,8 +135,10 @@ class HarnessUserService() : IHarnessService.Stub() {
                     val n = reader.read(buf)
                     if (n <= 0) break
                     synchronized(into) {
-                        if (into.length >= max) return
-                        into.append(buf, 0, minOf(n, max - into.length))
+                        if (into.length < max) {
+                            val toAppend = minOf(n, max - into.length)
+                            into.append(buf, 0, toAppend)
+                        }
                     }
                 }
             }

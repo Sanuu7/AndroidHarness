@@ -209,8 +209,10 @@ class ShellTierRouter(
                     val n = reader.read(buf)
                     if (n <= 0) break
                     synchronized(into) {
-                        if (into.length >= max) return
-                        into.append(buf, 0, minOf(n, max - into.length))
+                        if (into.length < max) {
+                            val toAppend = minOf(n, max - into.length)
+                            into.append(buf, 0, toAppend)
+                        }
                     }
                 }
             }

@@ -35,6 +35,11 @@ class ShellBackgroundTool(
                         "start here. Switch to a device folder or the app workspace.",
                 )
 
+            val deny = ShellPolicy.denyReason(rawCommand, cwd, cwd)
+            if (deny != null) {
+                return@withContext ToolResult(false, deny)
+            }
+
             // Auto-append --no-bin-links for npm install on shared storage (symlinks unsupported).
             val (command, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
 

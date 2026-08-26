@@ -69,6 +69,9 @@ class ReadFileTool : Tool {
             val file = ctx.workspace.resolve(path)
             if (!file.exists) throw ToolFailure("File does not exist: $path")
             if (!file.isFile) throw ToolFailure("Not a file: $path")
+            if (file.isBinary()) {
+                throw ToolFailure("Cannot read $path: binary file (not text).")
+            }
             if (file.length > 2_000_000 && args["offset"] == null) {
                 throw ToolFailure("File is ${file.length} bytes; use offset/limit to read it in chunks.")
             }
@@ -96,6 +99,71 @@ class ReadFileTool : Tool {
         }
 }
 
+data class FileLineInfo(
+    val isEmpty: Boolean,
+    val isBinary: Boolean,
+    val lineCount: Long,
+    val trailingNewline: String,
+)
+
+fun inspectFileInfo(node: com.androidharness.app.workspace.FsNode): FileLineInfo {
+    if (!node.exists || !node.isFile || node.length == 0L) {
+        return FileLineInfo(
+            isEmpty = true,
+            isBinary = false,
+            lineCount = 0L,
+            trailingNewline = "none (empty file)",
+        )
+    }
+    if (node.isBinary()) {
+        return FileLineInfo(
+            isEmpty = false,
+            isBinary = true,
+            lineCount = 0L,
+            trailingNewline = "none (binary)",
+        )
+    }
+    var lineCount = 0L
+    var lastByte = -1
+    var hasBytes = false
+    val buf = ByteArray(64 * 1024)
+    try {
+        node.openInputStream()?.buffered(64 * 1024)?.use { input ->
+            while (true) {
+                val read = input.read(buf)
+                if (read <= 0) break
+                hasBytes = true
+                for (i in 0 until read) {
+                    val b = buf[i].toInt()
+                    if (b == 0x0A) { // '\n'
+                        lineCount++
+                    }
+                    lastByte = b
+                }
+            }
+        }
+    } catch (_: Exception) {
+    }
+    if (!hasBytes) {
+        return FileLineInfo(
+            isEmpty = true,
+            isBinary = false,
+            lineCount = 0L,
+            trailingNewline = "none (empty file)",
+        )
+    }
+    val endsWithNl = lastByte == 0x0A || lastByte == 0x0D
+    if (!endsWithNl) {
+        lineCount++
+    }
+    return FileLineInfo(
+        isEmpty = false,
+        isBinary = false,
+        lineCount = lineCount,
+        trailingNewline = if (endsWithNl) "present" else "none",
+    )
+}
+
 class FileInfoTool : Tool {
     override val name = "file_info"
     override val description =
@@ -117,12 +185,14 @@ class FileInfoTool : Tool {
             sb.append("type: ").append(if (node.isDirectory) "directory" else "file").append('\n')
             sb.append("size_bytes: ").append(node.length).append('\n')
             if (node.isFile) {
-                val raw = runCatching { node.readText() }.getOrNull()
-                if (raw != null) {
-                    val endsWithNl = raw.endsWith("\n") || raw.endsWith("\r")
-                    val lines = splitLines(raw)
-                    sb.append("line_count: ").append(lines.size).append('\n')
-                    sb.append("trailing_newline: ").append(if (raw.isEmpty()) "empty file" else if (endsWithNl) "present" else "none").append('\n')
+                val info = inspectFileInfo(node)
+                sb.append("is_empty: ").append(info.isEmpty).append('\n')
+                if (info.isBinary) {
+                    sb.append("is_binary: true\n")
+                    sb.append("line_count: (binary file)\n")
+                } else {
+                    sb.append("line_count: ").append(info.lineCount).append('\n')
+                    sb.append("trailing_newline: ").append(info.trailingNewline).append('\n')
                 }
             }
             ToolResult(true, sb.toString().trimEnd())
@@ -287,7 +357,7 @@ class GrepTool : Tool {
             val matches = mutableListOf<String>()
             for (node in ctx.workspace.walk(path)) {
                 if (matches.size >= MAX_GREP_MATCHES) break
-                if (!node.isFile || node.length > 2_000_000) continue
+                if (!node.isFile || node.length > 2_000_000 || node.isBinary()) continue
                 if (includeMatcher != null &&
                     !includeMatcher.matches(java.nio.file.Path.of(node.name))
                 ) continue

@@ -10,7 +10,7 @@ import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 
-private const val MAX_OUTPUT_CHARS = 30_000
+private const val MAX_OUTPUT_CHARS = 100_000
 
 class ShellTool(
     private val linuxEnv: LinuxEnvironmentManager,
@@ -48,6 +48,12 @@ class ShellTool(
                         "Switch to a device folder or the app workspace (Settings → Workspace).",
                 )
             val cwd = resolveCwd(args, root)
+
+            val deny = ShellPolicy.denyReason(rawCommand, root, cwd)
+            if (deny != null) {
+                return@withContext ToolResult(false, deny)
+            }
+
             val timeoutSec = (args["timeout_seconds"]?.jsonPrimitive?.intOrNull ?: 120)
                 .coerceIn(1, 600)
 
@@ -56,9 +62,27 @@ class ShellTool(
 
             val res = router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
 
+            val isSymlink = rawCommand.contains("ln ") && (rawCommand.contains("-s") || rawCommand.contains("--symbolic"))
+            val hasSymlinkError = isSymlink && (res.exitCode != 0 || res.rawOutput.contains("Permission denied", true) || res.rawStderr.contains("Permission denied", true) || res.rawOutput.contains("Operation not permitted", true) || res.rawStderr.contains("Operation not permitted", true))
+
+            if (isSymlink) {
+                // Check if ln left a stale empty regular file at destination
+                val tokens = ShellPolicy.extractTokens(rawCommand)
+                val lastToken = tokens.lastOrNull()?.trim()
+                if (!lastToken.isNullOrEmpty() && !lastToken.startsWith("-")) {
+                    val destFile = if (lastToken.startsWith("/")) File(lastToken) else File(cwd, lastToken)
+                    if (destFile.exists() && destFile.isFile && destFile.length() == 0L && hasSymlinkError) {
+                        destFile.delete()
+                    }
+                }
+            }
+
             val sb = StringBuilder()
             npmNote?.let { sb.append(it).append('\n') }
             res.note?.let { sb.append(it).append('\n') }
+            if (hasSymlinkError) {
+                sb.append("[note: symlink creation failed: symlink not supported/allowed on this filesystem]\n")
+            }
             if (res.tier == ExecutionTier.TOYBOX && linuxEnv.bashExecutable() != null) {
                 sb.append("[note: fell back to toybox sh, launching the Linux bash failed on this device]\n")
             }
@@ -66,13 +90,13 @@ class ShellTool(
                 sb.append("[note: ran with Shizuku ADB-shell privileges]\n")
             }
             if (res.timedOut) sb.append("[killed after ${timeoutSec}s timeout; output below is what was written before the kill]\n")
-            sb.append("exit code: ").append(if (res.timedOut) "killed (timeout)" else res.exitCode).append('\n')
+            sb.append("exit code: ").append(if (res.timedOut) "killed (timeout)" else if (hasSymlinkError && res.exitCode == 0) 1 else res.exitCode).append('\n')
             val out = res.rawOutput.trimEnd()
             val err = res.rawStderr.trimEnd()
             if (out.isNotEmpty()) sb.append("--- stdout ---\n").append(out.truncated()).append('\n')
             if (err.isNotEmpty()) sb.append("--- stderr ---\n").append(err.truncated()).append('\n')
             if (out.isEmpty() && err.isEmpty()) sb.append("(no output)")
-            ToolResult(ok = !res.timedOut && res.exitCode == 0, output = sb.toString().trimEnd())
+            ToolResult(ok = !res.timedOut && res.exitCode == 0 && !hasSymlinkError, output = sb.toString().trimEnd())
         }
 
     /** Resolves the optional cwd argument inside the workspace root. */

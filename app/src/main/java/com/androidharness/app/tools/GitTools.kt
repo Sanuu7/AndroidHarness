@@ -113,6 +113,31 @@ class GitCommitTool(
         withContext(Dispatchers.IO) {
             val message = args["message"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: message")
-            runGit(router, linuxEnv, ctx, "add -A && git commit -m ${message.shellQuote()}")
+            val commitCmd = "add -A && git commit -m ${message.shellQuote()}"
+            val res = runGit(router, linuxEnv, ctx, commitCmd)
+            if (!res.ok && isIdentityUnknown(res.output)) {
+                val configRes = runGit(
+                    router,
+                    linuxEnv,
+                    ctx,
+                    "config user.name 'Android Harness' && git config user.email 'harness@android.local'",
+                )
+                if (configRes.ok) {
+                    val retryRes = runGit(router, linuxEnv, ctx, commitCmd)
+                    return@withContext ToolResult(
+                        ok = retryRes.ok,
+                        output = "[note: auto-configured repository git identity 'Android Harness <harness@android.local>']\n" + retryRes.output,
+                    )
+                }
+            }
+            res
         }
+
+    private fun isIdentityUnknown(output: String): Boolean {
+        val lower = output.lowercase()
+        return lower.contains("author identity unknown") ||
+            lower.contains("tell me who you are") ||
+            lower.contains("empty ident name") ||
+            lower.contains("please tell me who you are")
+    }
 }

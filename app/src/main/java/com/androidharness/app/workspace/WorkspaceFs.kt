@@ -46,6 +46,12 @@ interface FsNode {
 
     /** Renames/moves this node to [newName] within the same parent. */
     fun renameTo(newName: String): Boolean
+
+    /** Opens an InputStream for reading raw bytes if this node is a file. */
+    fun openInputStream(): java.io.InputStream?
+
+    /** Checks whether the file is binary (non-UTF8 or contains NUL bytes). */
+    fun isBinary(): Boolean
 }
 
 // ---------------------------------------------------------------------------
@@ -111,6 +117,18 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
 
     override fun renameTo(newName: String): Boolean =
         file.renameTo(File(file.parentFile, newName))
+
+    override fun openInputStream(): java.io.InputStream? =
+        if (exists && isFile) file.inputStream() else null
+
+    override fun isBinary(): Boolean {
+        if (!exists || !isFile || length == 0L) return false
+        return try {
+            file.inputStream().use { stream -> isBinaryStream(stream) }
+        } catch (_: Exception) {
+            false
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------
@@ -241,10 +259,65 @@ class SafFsNode(
 
     override fun renameTo(newName: String): Boolean = exists && doc.renameTo(newName)
 
+    override fun openInputStream(): java.io.InputStream? =
+        if (exists && isFile) context.contentResolver.openInputStream(doc.uri) else null
+
+    override fun isBinary(): Boolean {
+        if (!exists || !isFile || length == 0L) return false
+        return try {
+            context.contentResolver.openInputStream(doc.uri)?.use { stream ->
+                isBinaryStream(stream)
+            } ?: false
+        } catch (_: Exception) {
+            false
+        }
+    }
+
     private fun mimeFor(fileName: String): String = when (fileName.substringAfterLast('.', "")) {
         "kt", "java", "py", "js", "ts", "c", "cpp", "h", "md", "txt", "json", "xml", "yml", "yaml", "toml", "gradle", "kts" -> "text/plain"
         "html", "htm" -> "text/html"
         "css" -> "text/css"
         else -> "application/octet-stream"
+    }
+}
+
+/** Detects non-UTF-8, NUL bytes, or binary content in the first 1KB of a stream. */
+fun isBinaryStream(stream: java.io.InputStream): Boolean {
+    val buf = ByteArray(1024)
+    val n = stream.read(buf)
+    if (n <= 0) return false
+
+    // 1. Check for NUL byte (0x00)
+    for (i in 0 until n) {
+        if (buf[i] == 0.toByte()) return true
+    }
+
+    // 2. Check control characters ratio (excluding \t, \n, \r)
+    var controlCount = 0
+    for (i in 0 until n) {
+        val b = buf[i].toInt() and 0xFF
+        if (b < 32 && b != 9 && b != 10 && b != 13) {
+            controlCount++
+        }
+    }
+    if (controlCount > n * 0.1) return true
+
+    // 3. UTF-8 decoder check
+    return try {
+        val decoder = Charsets.UTF_8.newDecoder()
+            .onMalformedInput(java.nio.charset.CodingErrorAction.REPORT)
+            .onUnmappableCharacter(java.nio.charset.CodingErrorAction.REPORT)
+        var validLen = n
+        while (validLen > 0 && (buf[validLen - 1].toInt() and 0xC0) == 0x80) {
+            validLen--
+        }
+        if (validLen > 0 && (buf[validLen - 1].toInt() and 0x80) != 0) {
+            validLen--
+        }
+        val checkLen = if (validLen > 0) validLen else n
+        decoder.decode(java.nio.ByteBuffer.wrap(buf, 0, checkLen))
+        false
+    } catch (_: java.nio.charset.CharacterCodingException) {
+        true
     }
 }

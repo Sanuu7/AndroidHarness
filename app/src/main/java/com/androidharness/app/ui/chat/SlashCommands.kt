@@ -70,28 +70,41 @@ object SlashCommands {
             "   - echo to stdout AND stderr → expect SEPARATE --- stdout --- / --- stderr --- sections\n" +
             "   - `false` → expect non-zero exit code surfaced\n" +
             "   - `sleep 8` with timeout_seconds=3 → expect \"killed (timeout)\" + elapsed time\n" +
-            "   - `which bash git python3 node` → all resolve in the toolchain\n\n" +
+            "   - `which bash git python3 node` → all resolve in the toolchain\n" +
+            "   - LARGE OUTPUT (Bug F regression):\n" +
+            "     - python3 -c \"print('z'*10000)\"   → exit code 0, tail \"EXIT=0\" present\n" +
+            "     - python3 -c \"print('z'*64000)\"   → exit code 0, tail \"EXIT=0\" present (NOT false exit 1)\n\n" +
             "9. BACKGROUND PROCS\n" +
             "   - shell_background: `for i in 1 2 3; do echo tick\$i; sleep 1; done`\n" +
             "   - bg_list must show it running, log must contain ONLY tick1/2/3 (no heartbeat)\n" +
             "   - bg_kill it, then bg_list must NOT retain it (or show it pruned)\n\n" +
             "10. GIT\n" +
             "    - git init -q → must produce NO template warning (GIT_TEMPLATE_DIR set)\n" +
-            "    - git_commit one fixture → succeeds\n" +
+            "    - git_commit one fixture → succeeds (Bug E regression: if it fails with \"Author identity unknown\", FAIL — harness should auto-configure or explain)\n" +
             "    - git_status / git_diff return clean output\n\n" +
             "11. WEB\n" +
             "    - web_search (any query) returns results\n" +
             "    - web_fetch https://example.com returns text\n" +
-            "    - http_request GET https://httpbin.org/status/404 → 404 handled cleanly\n\n" +
+            "    - http_request GET https://httpbin.org/status/404 → 404 handled cleanly\n" +
+            "    - http_request POST https://httpbin.org/post with JSON body → 200, body echoed back\n\n" +
             "12. SUBAGENTS\n" +
             "    - two task() calls in ONE block → both complete, consistent workspace view\n\n" +
             "13. MEMORY & SKILLS\n" +
             "    - memory_write (append) a test line, read back .harness/memory.md\n" +
             "    - skills_list returns the catalog; skill_view a known skill succeeds\n\n" +
-            "CLEANUP: delete doctor/ and every fixture created above; leave the workspace\n" +
+            "14. SHELL SANDBOX (Bug A regression — must be BLOCKED):\n" +
+            "    - shell: echo INJECT > ../escape_me.txt → expect the file NOT created OUTSIDE the workspace\n" +
+            "    - shell: ls /storage/emulated/0/ → expect listing of arbitrary shared-storage dirs to be refused (or clearly reported as out-of-scope)\n\n" +
+            "15. BINARY & EMPTY (Bug C/Bug D regression):\n" +
+            "    - create a 4KB random file; read_file it → expect \"binary\" refusal (NOT mojibake lines)\n" +
+            "    - write_file \"\" (empty) → file_info must report size 0, line_count 0, an explicit empty marker\n" +
+            "    - 10MB single-line file → file_info.line_count must return promptly (no multi-second full-file scan)\n\n" +
+            "16. SYMLINKS (Bug B regression):\n" +
+            "    - shell: ln -sf /etc/passwd link → expect an explicit \"symlink not supported/allowed\" error (not silent, not a stale regular file)\n\n" +
+            "CLEANUP: delete doctor/ and every fixture created above (including ../escape_me.txt if it leaked); leave the workspace\n" +
             "exactly as you found it.\n\n" +
-            "OUTPUT: a table of PASS/FAIL per check. For any FAIL, quote the exact error\n" +
-            "message and note which regression it maps to (Bug #1/#2/#3 or a new one)."
+            "OUTPUT: a table of PASS/FAIL per check (1–16). For any FAIL, quote the exact error\n" +
+            "message and note which regression it maps to (Bug #1/#2/#3/#A/#B/#C/#D/#E/#F)."
 
     const val INIT_PROMPT =
         "Explore this workspace thoroughly (files, structure, conventions), then write " +

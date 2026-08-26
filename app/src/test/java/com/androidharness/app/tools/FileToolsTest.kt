@@ -191,7 +191,7 @@ class FileToolsTest {
     fun `file tools still block path escapes`() = runBlocking {
         val msg = runExpectingFailure(WriteFileTool(), "path" to "../escape.txt", "content" to "nope")
         assertTrue(msg, msg.contains("outside the workspace"))
-        assertFalse(tmp.root.parentFile.resolve("escape.txt").exists())
+        assertFalse(tmp.root.parentFile?.resolve("escape.txt")?.exists() ?: false)
     }
 
     // --- file_info metadata & newline check ---------------------------------------
@@ -216,5 +216,61 @@ class FileToolsTest {
         val r3 = run(FileInfoTool(), "path" to "folder")
         assertTrue(r3.ok)
         assertTrue(r3.output.contains("type: directory"))
+    }
+
+    // --- binary & empty file checks ----------------------------------------------
+
+    @Test
+    fun `read_file refuses binary files`() = runBlocking {
+        val binBytes = ByteArray(4096) { idx -> if (idx % 10 == 0) 0.toByte() else (idx % 256).toByte() }
+        file("random.bin").writeBytes(binBytes)
+        val msg = runExpectingFailure(ReadFileTool(), "path" to "random.bin")
+        assertTrue(msg, msg.contains("binary"))
+    }
+
+    @Test
+    fun `file_info reports explicit empty marker for 0-byte file`() = runBlocking {
+        file("empty.txt").writeText("")
+        val r = run(FileInfoTool(), "path" to "empty.txt")
+        assertTrue(r.ok)
+        assertTrue(r.output.contains("size_bytes: 0"))
+        assertTrue(r.output.contains("is_empty: true"))
+        assertTrue(r.output.contains("line_count: 0"))
+    }
+
+    @Test
+    fun `file_info reports binary file without line count`() = runBlocking {
+        val binBytes = ByteArray(1024) { (it % 256).toByte() }
+        file("test.bin").writeBytes(binBytes)
+        val r = run(FileInfoTool(), "path" to "test.bin")
+        assertTrue(r.ok)
+        assertTrue(r.output.contains("is_binary: true"))
+    }
+
+    @Test
+    fun `file_info streams large single-line file promptly`() = runBlocking {
+        val largeFile = file("large.txt")
+        val size = 5_000_000
+        val bytes = ByteArray(size) { 'x'.code.toByte() }
+        largeFile.writeBytes(bytes)
+        val start = System.currentTimeMillis()
+        val r = run(FileInfoTool(), "path" to "large.txt")
+        val elapsed = System.currentTimeMillis() - start
+        assertTrue("Took ${elapsed}ms, should be under 1000ms", elapsed < 1000)
+        assertTrue(r.ok)
+        assertTrue(r.output.contains("is_empty: false"))
+        assertTrue(r.output.contains("line_count: 1"))
+        assertTrue(r.output.contains("trailing_newline: none"))
+    }
+
+    @Test
+    fun `grep skips binary files`() = runBlocking {
+        val binBytes = ByteArray(512) { 0.toByte() }
+        file("sample.bin").writeBytes(binBytes)
+        file("sample.txt").writeText("hello pattern here\n")
+        val r = run(GrepTool(), "pattern" to "pattern")
+        assertTrue(r.ok)
+        assertTrue(r.output.contains("sample.txt"))
+        assertFalse(r.output.contains("sample.bin"))
     }
 }
