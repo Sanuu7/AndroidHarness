@@ -1157,13 +1157,16 @@ private fun CostDialog(
     state: ChatUiState,
     onDismiss: () -> Unit,
 ) {
-    val cost = state.activeProvider?.let {
+    val model = state.effectiveModel
+    val providerKey = state.activeProvider?.let { com.androidharness.app.llm.ModelsDev.providerKeyFor(it.baseUrl) }
+    val cost = model?.let {
         com.androidharness.app.llm.ModelPrices.estimate(
-            it.model,
+            it,
             state.usage.totalInput,
             state.usage.totalOutput,
             state.usage.totalCached,
             state.usage.totalCacheWrite,
+            providerKey = providerKey,
         )
     }
     AlertDialog(

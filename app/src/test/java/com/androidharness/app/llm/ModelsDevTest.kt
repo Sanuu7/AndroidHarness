@@ -15,6 +15,7 @@ class ModelsDevTest {
           "gpt-5.6": {
             "id": "gpt-5.6", "reasoning": true,
             "limit": {"context": 1048576, "output": 131072},
+            "cost": {"input": 1.25, "output": 10.0, "cache_read": 0.3125, "cache_write": 1.25},
             "reasoning_options": [{"type":"effort","values":["none","low","medium","high","xhigh","max"]}]
           }
         }
@@ -24,6 +25,7 @@ class ModelsDevTest {
         "models": {
           "claude-sonnet-4-5": {
             "id": "claude-sonnet-4-5", "reasoning": true,
+            "cost": {"input": 3.0, "output": 15.0, "cache_read": 0.3, "cache_write": 3.75},
             "reasoning_options": [{"type":"budget_tokens","min":1024,"max":31999}]
           }
         }
@@ -33,6 +35,7 @@ class ModelsDevTest {
         "models": {
           "deepseek/deepseek-v4-flash": {
             "id": "deepseek/deepseek-v4-flash", "reasoning": true,
+            "cost": {"input": 0.14, "output": 0.28, "cache_read": 0.028},
             "reasoning_options": [{"type":"toggle"},{"type":"effort","values":["high","xhigh"]}]
           },
           "z-ai/glm-5.2": {
@@ -56,14 +59,20 @@ class ModelsDevTest {
         with(parsed["openai"]!!.getValue("gpt-5.6")) {
             assertEquals(true, reasoning)
             assertEquals(listOf("none", "low", "medium", "high", "xhigh", "max"), effortValues)
+            assertEquals(1.25, cost!!.input, 0.001)
+            assertEquals(10.0, cost!!.output, 0.001)
+            assertEquals(0.3125, cost!!.cacheRead, 0.001)
         }
         with(parsed["anthropic"]!!.getValue("claude-sonnet-4-5")) {
             assertTrue(budgetTokens)
             assertEquals(31999, budgetMax)
+            assertEquals(3.0, cost!!.input, 0.001)
+            assertEquals(15.0, cost!!.output, 0.001)
         }
         with(parsed["openrouter"]!!.getValue("z-ai/glm-5.2")) {
             assertTrue(toggle)
             assertNull(effortValues)
+            assertNull(cost)
         }
         assertEquals(false, parsed["openrouter"]!!.getValue("meta-llama/llama-3.3-70b-instruct").reasoning)
     }
@@ -81,6 +90,35 @@ class ModelsDevTest {
             // Unknown provider key or model → null (shipped table decides).
             assertNull(ModelsDev.entry(null, "gpt-5.6"))
             assertNull(ModelsDev.entry("openai", "nonexistent-model"))
+        } finally {
+            ModelsDev.replaceForTesting(emptyMap())
+        }
+    }
+
+    @Test
+    fun `findCost resolves pricing from catalog and ModelPrices calculates accurately`() {
+        ModelsDev.replaceForTesting(ModelsDev.parse(sample).entries)
+        try {
+            val cost = ModelsDev.findCost("openrouter", "deepseek-v4-flash")
+            assertEquals(0.14, cost!!.input, 0.001)
+            assertEquals(0.28, cost.output, 0.001)
+
+            // 1,000,000 input tokens + 1,000,000 output tokens on deepseek-v4-flash
+            val estimate = ModelPrices.estimate(
+                model = "deepseek/deepseek-v4-flash",
+                totalInputTokens = 1_000_000L,
+                outputTokens = 1_000_000L,
+                providerKey = "openrouter",
+            )
+            assertEquals(0.42, estimate!!, 0.001)
+
+            // Fallback estimation for offline / unlisted models
+            val fallback = ModelPrices.estimate(
+                model = "claude-3-5-sonnet",
+                totalInputTokens = 1_000_000L,
+                outputTokens = 1_000_000L,
+            )
+            assertEquals(18.0, fallback!!, 0.001)
         } finally {
             ModelsDev.replaceForTesting(emptyMap())
         }

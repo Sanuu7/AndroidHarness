@@ -47,7 +47,8 @@ fun ContextUsageDialog(
     // Fresh prompt tokens = total input minus cache reads/writes (pi semantics).
     val freshInput = (state.usage.totalInput - state.usage.totalCached - state.usage.totalCacheWrite)
         .coerceAtLeast(0)
-    val model = state.activeProvider?.model
+    val model = state.effectiveModel
+    val providerKey = state.activeProvider?.let { com.androidharness.app.llm.ModelsDev.providerKeyFor(it.baseUrl) }
     val estimatedCost = model?.let {
         ModelPrices.estimate(
             it,
@@ -55,6 +56,7 @@ fun ContextUsageDialog(
             outputTokens = state.usage.totalOutput,
             cachedTokens = state.usage.totalCached,
             cacheWriteTokens = state.usage.totalCacheWrite,
+            providerKey = providerKey,
         )
     }
 

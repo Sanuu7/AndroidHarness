@@ -16,6 +16,9 @@ import okhttp3.Request
 import java.io.File
 import java.util.concurrent.TimeUnit
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.doubleOrNull
+
 /**
  * The models.dev community catalog (https://models.dev — the same feed
  * OpenCode consumes, refreshed daily by its maintainers). Unlike every
@@ -34,6 +37,15 @@ object ModelsDev {
     /** Refetch at most weekly; the catalog moves fast but models ship faster. */
     private const val STALE_MS = 7L * 24 * 60 * 60 * 1000
 
+    /** List price in USD per 1,000,000 tokens for a model. */
+    @Serializable
+    data class ModelCost(
+        val input: Double, // $/1M prompt tokens
+        val output: Double, // $/1M completion tokens
+        val cacheRead: Double = input * 0.25, // $/1M cache read tokens
+        val cacheWrite: Double = input, // $/1M cache write tokens
+    )
+
     /** Per-model thinking capability as the catalog reports it. */
     data class Entry(
         /** Tri-state like ModelEntry.reasoning; false definitively means "cannot think". */
@@ -48,6 +60,8 @@ object ModelsDev {
         val toggle: Boolean,
         /** Context window tokens ("limit.context"), for display in pickers. */
         val contextTokens: Long? = null,
+        /** Live model pricing from the models.dev catalog ($ per 1M tokens). */
+        val cost: ModelCost? = null,
     )
 
     /** One provider listed on models.dev: display name, endpoint, protocol hint. */
@@ -173,6 +187,39 @@ object ModelsDev {
         }?.value
     }
 
+    /** Finds live cost information for a model across catalog providers. */
+    fun findCost(providerKey: String?, modelId: String?): ModelCost? {
+        if (modelId.isNullOrBlank()) return null
+        // 1. Direct match under providerKey
+        if (providerKey != null) {
+            entry(providerKey, modelId)?.cost?.let { return it }
+        }
+        // 2. Exact match across all providers
+        for ((_, models) in entries) {
+            models[modelId]?.cost?.let { return it }
+        }
+        // 3. Suffix match (e.g. "claude-3-5-sonnet" vs "anthropic/claude-3-5-sonnet")
+        val suffix = modelId.substringAfterLast('/')
+        for ((_, models) in entries) {
+            models[suffix]?.cost?.let { return it }
+            val found = models.entries.firstOrNull { (k, v) ->
+                (k.substringAfterLast('/') == suffix || k.endsWith("/$modelId") || modelId.endsWith("/$k")) &&
+                    v.cost != null
+            }?.value?.cost
+            if (found != null) return found
+        }
+        // 4. Substring / normalized match
+        val norm = modelId.lowercase().replace("-", "").replace(".", "").replace("/", "").replace(":", "")
+        for ((_, models) in entries) {
+            val found = models.entries.firstOrNull { (k, v) ->
+                val kNorm = k.lowercase().replace("-", "").replace(".", "").replace("/", "").replace(":", "")
+                (kNorm.contains(norm) || norm.contains(kNorm)) && v.cost != null
+            }?.value?.cost
+            if (found != null) return found
+        }
+        return null
+    }
+
     /** Parse output: per-provider model maps plus the searchable provider directory. */
     internal data class Parsed(
         val entries: Map<String, Map<String, Entry>>,
@@ -208,7 +255,18 @@ object ModelsDev {
                     }
                 }
                 val ctx = obj["limit"]?.jsonObject?.get("context")?.jsonPrimitive?.longOrNull
-                models[modelId] = Entry(reasoning, effort, budget, budgetMax, toggle, ctx)
+                val costObj = obj["cost"]?.jsonObject
+                val cost = if (costObj != null) {
+                    val input = costObj["input"]?.jsonPrimitive?.doubleOrNull
+                    val output = costObj["output"]?.jsonPrimitive?.doubleOrNull
+                    if (input != null && output != null) {
+                        val cacheRead = costObj["cache_read"]?.jsonPrimitive?.doubleOrNull ?: (input * 0.25)
+                        val cacheWrite = costObj["cache_write"]?.jsonPrimitive?.doubleOrNull ?: input
+                        ModelCost(input, output, cacheRead, cacheWrite)
+                    } else null
+                } else null
+
+                models[modelId] = Entry(reasoning, effort, budget, budgetMax, toggle, ctx, cost)
             }
             entriesMap[providerId] = models
             providersList += ProviderInfo(
