@@ -104,17 +104,23 @@ class ShizukuManager(
     init {
         refresh()
 
-        Shizuku.addBinderReceivedListener { refresh() }
-        Shizuku.addBinderDeadListener {
-            _state.value = ShizukuState.NOT_RUNNING
-            service = null
-            bindRequested.set(false)
-            _serviceState.value = UserServiceState.NOT_BOUND
+        runCatching {
+            Shizuku.addBinderReceivedListener { refresh() }
         }
-        Shizuku.addRequestPermissionResultListener { _, grantResult ->
-            if (grantResult == PackageManager.PERMISSION_GRANTED) {
-                _state.value = ShizukuState.GRANTED
-                bindUserService()
+        runCatching {
+            Shizuku.addBinderDeadListener {
+                _state.value = ShizukuState.NOT_RUNNING
+                service = null
+                bindRequested.set(false)
+                _serviceState.value = UserServiceState.NOT_BOUND
+            }
+        }
+        runCatching {
+            Shizuku.addRequestPermissionResultListener { _, grantResult ->
+                if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                    _state.value = ShizukuState.GRANTED
+                    bindUserService()
+                }
             }
         }
 
@@ -131,10 +137,15 @@ class ShizukuManager(
     }
 
     fun refresh() {
+        val ping = runCatching { Shizuku.pingBinder() }.getOrDefault(false)
+        val hasPermission = ping && runCatching {
+            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        }.getOrDefault(false)
+
         val s = when {
-            !Shizuku.pingBinder() -> ShizukuState.NOT_RUNNING
-            Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED -> ShizukuState.GRANTED
-            else -> ShizukuState.RUNNING_NO_PERMISSION
+            hasPermission -> ShizukuState.GRANTED
+            ping -> ShizukuState.RUNNING_NO_PERMISSION
+            else -> ShizukuState.NOT_RUNNING
         }
         _state.value = s
         if (s == ShizukuState.GRANTED) bindUserService()
@@ -143,12 +154,15 @@ class ShizukuManager(
     fun isGranted(): Boolean = _state.value == ShizukuState.GRANTED
 
     fun requestPermission() {
-        if (Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED) {
+        val granted = runCatching {
+            Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        }.getOrDefault(false)
+        if (granted) {
             _state.value = ShizukuState.GRANTED
             bindUserService()
             return
         }
-        Shizuku.requestPermission(0)
+        runCatching { Shizuku.requestPermission(0) }
     }
 
     /**
@@ -157,7 +171,10 @@ class ShizukuManager(
      */
     fun bindUserService() {
         if (service != null) return
-        if (!Shizuku.pingBinder() || Shizuku.checkSelfPermission() != PackageManager.PERMISSION_GRANTED) return
+        val hasPermission = runCatching {
+            Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
+        }.getOrDefault(false)
+        if (!hasPermission) return
         if (!bindRequested.compareAndSet(false, true)) return
         val ok = runCatching {
             Shizuku.getVersion() >= 10
