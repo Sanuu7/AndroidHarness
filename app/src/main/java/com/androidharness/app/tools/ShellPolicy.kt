@@ -12,6 +12,8 @@ object ShellPolicy {
     fun denyReason(command: String, workspaceRoot: File? = null, cwd: File? = null): String? {
         val cmd = command.trim()
         if (cmd.isEmpty()) return null
+
+        // 1. Dangerous system-level commands
         if (isRmRoot(cmd)) {
             return "Blocked: recursive delete of the filesystem root is never allowed."
         }
@@ -36,58 +38,144 @@ object ShellPolicy {
     }
 
     private fun checkSandbox(cmd: String, workspaceRoot: File?, cwd: File?): String? {
-        val tokens = extractTokens(cmd)
-        if (tokens.isEmpty()) return null
+        // 2. Recursively check command substitutions $(...) and `...`
+        val subshellMatch = extractSubshells(cmd)
+        for (subcmd in subshellMatch) {
+            val subDeny = denyReason(subcmd, workspaceRoot, cwd)
+            if (subDeny != null) {
+                return subDeny
+            }
+        }
 
+        // 3. Check variable assignments (e.g. D="/storage/emulated/0/Download", X=../escape)
+        val varAssignments = extractVariableAssignments(cmd)
+        for ((name, value) in varAssignments) {
+            val trimmedVal = value.trim('\'', '"', ' ')
+            if (trimmedVal.isNotEmpty()) {
+                val pathDeny = checkSinglePath(trimmedVal, workspaceRoot, cwd, isSymlink = false, isRedirection = false)
+                if (pathDeny != null) {
+                    return "Blocked: variable $name contains out-of-workspace path: $trimmedVal"
+                }
+            }
+        }
+
+        // 4. Check directory changes (cd .. or cd /storage/...)
+        val cdMatches = CD_REGEX.findAll(cmd)
+        for (m in cdMatches) {
+            val target = m.groupValues[1].trim('\'', '"', ' ')
+            if (target.isNotEmpty()) {
+                val pathDeny = checkSinglePath(target, workspaceRoot, cwd, isSymlink = false, isRedirection = false)
+                if (pathDeny != null) {
+                    return "Blocked: cd outside the workspace is not allowed: $target"
+                }
+            }
+        }
+
+        // 5. Check all tokens and explicit redirections
+        val tokens = extractTokens(cmd)
         val isSymlinkCmd = isSymlinkCreation(tokens)
+
+        if (isSymlinkCmd && cwd != null && isSharedStorage(cwd)) {
+            return "Blocked: symlinks are not supported on Android shared storage (/storage/emulated/0). (symlink not supported/allowed)"
+        }
 
         for (i in tokens.indices) {
             val token = tokens[i]
             val isRedirection = i > 0 && isRedirectionOp(tokens[i - 1])
+            val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection)
+            if (check != null) return check
+        }
 
-            // Check symlink creation
-            if (isSymlinkCmd) {
-                if (cwd != null && isSharedStorage(cwd)) {
-                    return "Blocked: symlinks are not supported on Android shared storage (/storage/emulated/0). (symlink not supported/allowed)"
-                }
+        // 6. Full-text scan for absolute paths in the command (including quoted strings, arguments, scripts)
+        val absolutePathMatches = ABS_PATH_REGEX.findAll(cmd)
+        for (m in absolutePathMatches) {
+            val p = m.value.trimEnd('/', ';', '&', '|', ')', '}', '"', '\'')
+            if (p.length > 1) {
+                val check = checkAbsolutePath(p, workspaceRoot, isSymlink = isSymlinkCmd, isRedirection = false)
+                if (check != null) return check
             }
+        }
 
-            // Check absolute paths
-            if (token.startsWith("/")) {
-                val canon = try { File(token).canonicalPath } catch (_: Exception) { token }
-                val inWorkspace = workspaceRoot != null &&
-                    (canon == workspaceRoot.canonicalPath || canon.startsWith(workspaceRoot.canonicalPath + "/"))
-                if (!inWorkspace && !isAllowedSystemPath(canon)) {
-                    if (isSymlinkCmd) {
-                        return "Blocked: symlink target is outside the workspace sandbox: $token (symlink not supported/allowed)"
-                    }
-                    return if (isRedirection) {
-                        "Blocked: redirection target is outside the workspace sandbox: $token"
-                    } else {
-                        "Blocked: accessing path outside workspace is not allowed: $token"
-                    }
-                }
+        // 7. Full-text scan for relative traversals (../ or /..)
+        if (TRAVERSAL_REGEX.containsMatchIn(cmd)) {
+            val traversalMatches = TRAVERSAL_TOKEN_REGEX.findAll(cmd)
+            for (m in traversalMatches) {
+                val t = m.value.trim('\'', '"', '`', '(', ')', '{', '}', ';', '&', '|')
+                val check = checkRelativePath(t, workspaceRoot, cwd, isSymlink = isSymlinkCmd, isRedirection = false)
+                if (check != null) return check
             }
+        }
 
-            // Check relative traversal (..)
-            if (token == ".." || token.startsWith("../") || token.contains("/..")) {
-                if (workspaceRoot != null) {
-                    val base = cwd ?: workspaceRoot
-                    val resolved = try { File(base, token).canonicalFile } catch (_: Exception) { null }
-                    val rootPath = workspaceRoot.canonicalPath
-                    if (resolved == null || (!resolved.path.startsWith("$rootPath/") && resolved.path != rootPath)) {
-                        if (isSymlinkCmd) {
-                            return "Blocked: symlink target is outside the workspace sandbox: $token (symlink not supported/allowed)"
-                        }
-                        return "Blocked: path is outside the workspace sandbox: $token"
-                    }
-                } else if (token == ".." || token.startsWith("..") || token.contains("/..")) {
-                    if (isSymlinkCmd) {
-                        return "Blocked: symlink target is outside the workspace sandbox: $token (symlink not supported/allowed)"
-                    }
-                    return "Blocked: path is outside the workspace sandbox: $token"
-                }
+        return null
+    }
+
+    private fun checkSinglePath(
+        token: String,
+        workspaceRoot: File?,
+        cwd: File?,
+        isSymlink: Boolean,
+        isRedirection: Boolean,
+    ): String? {
+        val clean = token.trim('\'', '"', '`', '{', '}', '(', ')')
+        if (clean.startsWith("/")) {
+            return checkAbsolutePath(clean, workspaceRoot, isSymlink, isRedirection)
+        }
+        if (clean == ".." || clean.startsWith("../") || clean.contains("/..")) {
+            return checkRelativePath(clean, workspaceRoot, cwd, isSymlink, isRedirection)
+        }
+        return null
+    }
+
+    private fun checkAbsolutePath(
+        path: String,
+        workspaceRoot: File?,
+        isSymlink: Boolean,
+        isRedirection: Boolean,
+    ): String? {
+        val canon = try { File(path).canonicalPath } catch (_: Exception) { path }
+        if (workspaceRoot != null) {
+            val rootCanon = workspaceRoot.canonicalPath
+            if (canon == rootCanon || canon.startsWith("$rootCanon/")) {
+                return null // In workspace
             }
+        }
+        if (isAllowedSystemPath(canon)) {
+            return null // Allowed system/toolchain path
+        }
+        if (isSymlink) {
+            return "Blocked: symlink target is outside the workspace sandbox: $path (symlink not supported/allowed)"
+        }
+        if (isRedirection) {
+            return "Blocked: redirection target is outside the workspace sandbox: $path"
+        }
+        return "Blocked: accessing path outside workspace is not allowed: $path"
+    }
+
+    private fun checkRelativePath(
+        path: String,
+        workspaceRoot: File?,
+        cwd: File?,
+        isSymlink: Boolean,
+        isRedirection: Boolean,
+    ): String? {
+        if (workspaceRoot != null) {
+            val base = cwd ?: workspaceRoot
+            val resolved = try { File(base, path).canonicalFile } catch (_: Exception) { null }
+            val rootPath = workspaceRoot.canonicalPath
+            if (resolved == null || (!resolved.path.startsWith("$rootPath/") && resolved.path != rootPath)) {
+                if (isSymlink) {
+                    return "Blocked: symlink target is outside the workspace sandbox: $path (symlink not supported/allowed)"
+                }
+                if (isRedirection) {
+                    return "Blocked: redirection target is outside the workspace sandbox: $path"
+                }
+                return "Blocked: path is outside the workspace sandbox: $path"
+            }
+        } else if (path == ".." || path.startsWith("..") || path.contains("/..")) {
+            if (isSymlink) {
+                return "Blocked: symlink target is outside the workspace sandbox: $path (symlink not supported/allowed)"
+            }
+            return "Blocked: path is outside the workspace sandbox: $path"
         }
         return null
     }
@@ -121,6 +209,8 @@ object ShellPolicy {
             "/data/local/tmp/androidharness",
             "/data/data/com.androidharness",
             "/data/user/0/com.androidharness",
+            "/data/data/com.androidharness.debug",
+            "/data/user/0/com.androidharness.debug",
         )
         return allowedPrefixes.any { path == it || path.startsWith("$it/") }
     }
@@ -128,6 +218,46 @@ object ShellPolicy {
     private fun isSharedStorage(file: File): Boolean {
         val p = file.absolutePath
         return p == "/storage/emulated/0" || p.startsWith("/storage/emulated/0/") || p == "/sdcard" || p.startsWith("/sdcard/")
+    }
+
+    private fun extractSubshells(cmd: String): List<String> {
+        val list = mutableListOf<String>()
+        var idx = 0
+        while (idx < cmd.length) {
+            val start = cmd.indexOf("\$(", idx)
+            if (start < 0) break
+            var depth = 1
+            var i = start + 2
+            while (i < cmd.length && depth > 0) {
+                if (cmd[i] == '(') depth++
+                else if (cmd[i] == ')') depth--
+                i++
+            }
+            if (depth == 0) {
+                list += cmd.substring(start + 2, i - 1)
+            }
+            idx = i
+        }
+        val backtickRegex = Regex("`([^`]+)`")
+        backtickRegex.findAll(cmd).forEach { m ->
+            list += m.groupValues[1]
+        }
+        return list
+    }
+
+    private fun extractVariableAssignments(cmd: String): List<Pair<String, String>> {
+        val list = mutableListOf<Pair<String, String>>()
+        val regex = Regex("""(?:^|[\s;&|])([A-Za-z_][A-Za-z0-9_]*)=(?:"([^"]*)"|'([^']*)'|([^\s;&|]+))""")
+        regex.findAll(cmd).forEach { m ->
+            val name = m.groupValues[1]
+            val value = when {
+                m.groupValues[2].isNotEmpty() -> m.groupValues[2]
+                m.groupValues[3].isNotEmpty() -> m.groupValues[3]
+                else -> m.groupValues[4]
+            }
+            list += name to value
+        }
+        return list
     }
 
     fun extractTokens(command: String): List<String> {
@@ -219,6 +349,11 @@ object ShellPolicy {
         val rootTarget = ROOT_PATH.containsMatchIn(cmd)
         return ((recursive && force) || noPreserve) && (rootTarget || noPreserve)
     }
+
+    private val CD_REGEX = Regex("""\bcd\s+([^\s;&|]+)""")
+    private val ABS_PATH_REGEX = Regex("""/(?:storage|sdcard|data|etc|mnt|system|vendor|apex|dev|proc|sys|tmp)[A-Za-z0-9_.\-/]*""")
+    private val TRAVERSAL_REGEX = Regex("""(?:\.\./|/\.\.|\b\.\.\b)""")
+    private val TRAVERSAL_TOKEN_REGEX = Regex("""[^\s;&|'"]*\.\.[^\s;&|'"]*""")
 
     private val RM = Regex("""(^|[\s;&|])rm\b""")
     private val RECURSIVE = Regex("""(^|[\s])(-[a-zA-Z]*r[a-zA-Z]*|--recursive)\b""")

@@ -101,4 +101,39 @@ class ShellPolicyTest {
         assertNotNull(reason)
         assertTrue(reason!!.contains("symlink not supported/allowed"))
     }
+
+    @Test
+    fun `sandbox blocks variable and command substitution bypasses (Bug G)`() {
+        val root = java.io.File("/data/data/com.androidharness/files/workspace")
+        val bypassCmds = listOf(
+            "D=\"/storage/emulated/0/Download\"; echo \"BYPASS-DATA\" > \"\$D/harness_bypass_probe.txt\"",
+            "echo LEAK > \"\$(printf '/storage/emulated/0/Download')/cs_write.txt\"",
+            "cat \"\$(echo /etc/passwd)\"",
+            "X=../escape.txt; cat \"\$X\"",
+            "cd .. && ls",
+            "cat {../brace_esc.txt}",
+            "stat /storage/emulated/0/Download/foo",
+            "eval \"cat /etc/shadow\"",
+            "python3 -c \"import os; print(os.listdir('/storage/emulated/0'))\"",
+        )
+        for (cmd in bypassCmds) {
+            val reason = ShellPolicy.denyReason(cmd, root, root)
+            assertNotNull("$cmd should be blocked by sandbox", reason)
+        }
+    }
+
+    @Test
+    fun `sandbox allows in-workspace variable and command substitutions`() {
+        val root = java.io.File("/data/data/com.androidharness/files/workspace")
+        val allowedCmds = listOf(
+            "D=\"doctor/nested\"; mkdir -p \"\$D\"; echo test > \"\$D/file.txt\"",
+            "VAR=\$(echo hello); echo \"\$VAR\"",
+            "for i in 1 2 3; do echo tick\$i; done",
+            "branch=\$(git rev-parse --abbrev-ref HEAD); echo \"\$branch\"",
+        )
+        for (cmd in allowedCmds) {
+            val reason = ShellPolicy.denyReason(cmd, root, root)
+            assertNull("$cmd should be allowed", reason)
+        }
+    }
 }
