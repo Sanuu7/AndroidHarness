@@ -168,6 +168,92 @@ internal fun MainHeader(
                     tint = scheme.onSurfaceVariant,
                 )
             }
+
+            // Thinking Level Badge + Switcher Dropdown
+            var thinkingBadgeMenu by remember { mutableStateOf(false) }
+            Box(
+                modifier = Modifier.padding(end = 2.dp),
+            ) {
+                androidx.compose.material3.Surface(
+                    onClick = { thinkingBadgeMenu = true },
+                    shape = RoundedCornerShape(8.dp),
+                    color = if (thinkingLevel != ThinkingLevel.OFF) scheme.secondaryContainer else scheme.surfaceContainerHigh,
+                ) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                    ) {
+                        Icon(
+                            Icons.Outlined.Tune,
+                            contentDescription = "Thinking level",
+                            modifier = Modifier.size(13.dp),
+                            tint = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                        )
+                        androidx.compose.foundation.layout.Spacer(Modifier.size(3.dp))
+                        Text(
+                            thinkingLevel.label,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
+                        )
+                        androidx.compose.foundation.layout.Spacer(Modifier.size(2.dp))
+                        Icon(
+                            Icons.Filled.KeyboardArrowDown,
+                            contentDescription = null,
+                            modifier = Modifier.size(13.dp),
+                            tint = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                DropdownMenu(
+                    expanded = thinkingBadgeMenu,
+                    onDismissRequest = { thinkingBadgeMenu = false },
+                ) {
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                "Thinking Level",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = scheme.onSurfaceVariant,
+                            )
+                        },
+                        onClick = {},
+                        enabled = false,
+                    )
+                    thinkingLevels.forEach { entry ->
+                        DropdownMenuItem(
+                            text = {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Text(entry.label, Modifier.weight(1f))
+                                    if (entry == thinkingLevel) {
+                                        Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
+                                    }
+                                }
+                            },
+                            onClick = {
+                                onSetThinking(entry)
+                                thinkingBadgeMenu = false
+                            },
+                        )
+                    }
+                    HorizontalDivider(Modifier.padding(vertical = 4.dp))
+                    DropdownMenuItem(
+                        text = { Text("Switch model…") },
+                        leadingIcon = {
+                            Icon(Icons.Outlined.Folder, contentDescription = null, tint = scheme.primary)
+                        },
+                        onClick = {
+                            thinkingBadgeMenu = false
+                            onPickModel()
+                        },
+                    )
+                }
+            }
+
             Box {
                 IconButton(onClick = { menu = true }) {
                     Icon(Icons.Filled.MoreVert, contentDescription = "More options")

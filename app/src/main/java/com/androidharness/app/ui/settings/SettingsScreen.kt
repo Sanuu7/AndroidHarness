@@ -79,7 +79,7 @@ import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.data.env.UserServiceState
-import com.androidharness.app.ui.chat.formatTokenCount
+import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SystemGrants

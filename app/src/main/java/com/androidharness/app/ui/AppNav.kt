@@ -58,6 +58,15 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.font.FontWeight
+import com.androidharness.app.ui.common.formatTokens
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalFocusManager
@@ -154,6 +163,7 @@ fun AppNav(container: AppContainer) {
     val currentSessionId = currentEntry
         ?.takeIf { it.destination.route == "chat/{sessionId}" }
         ?.arguments?.getString("sessionId")
+    val runningSessionIds by container.runManager.runningSessionIds.collectAsStateWithLifecycle()
 
     var searchQuery by remember { mutableStateOf("") }
     var actionsSession by remember { mutableStateOf<SessionEntity?>(null) }
@@ -313,6 +323,7 @@ fun AppNav(container: AppContainer) {
                                         session = session,
                                         selected = session.id == currentSessionId,
                                         pinned = session.id in settings.pinnedSessions,
+                                        running = session.id in runningSessionIds,
                                         onClick = { openChat(session.id) },
                                         onLongClick = { actionsSession = session },
                                     )
@@ -648,10 +659,22 @@ private fun SessionRow(
     session: SessionEntity,
     selected: Boolean,
     pinned: Boolean,
+    running: Boolean,
     onClick: () -> Unit,
     onLongClick: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "running_alpha",
+    )
+
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -679,18 +702,48 @@ private fun SessionRow(
                 style = MaterialTheme.typography.titleSmall,
                 color = scheme.onSurface,
             )
-            Text(
-                buildString {
-                    append(formatRelativeTime(session.updatedAt))
-                    if (session.totalInputTokens > 0) {
-                        append(" · ")
-                        append((session.totalInputTokens + session.totalOutputTokens) / 1000)
-                        append("k tokens")
+            if (running) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(top = 2.dp),
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(7.dp)
+                            .alpha(alpha)
+                            .background(scheme.primary, CircleShape),
+                    )
+                    Spacer(Modifier.width(5.dp))
+                    Text(
+                        "Working…",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.primary,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    val total = session.totalInputTokens + session.totalOutputTokens
+                    if (total > 0) {
+                        Text(
+                            " · ${formatTokens(total)} tokens",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                        )
                     }
-                },
-                style = MaterialTheme.typography.labelSmall,
-                color = scheme.onSurfaceVariant,
-            )
+                }
+            } else {
+                Text(
+                    buildString {
+                        append(formatRelativeTime(session.updatedAt))
+                        val total = session.totalInputTokens + session.totalOutputTokens
+                        if (total > 0) {
+                            append(" · ")
+                            append(formatTokens(total))
+                            append(" tokens")
+                        }
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onSurfaceVariant,
+                )
+            }
         }
         if (selected) {
             Icon(
@@ -699,6 +752,20 @@ private fun SessionRow(
                 tint = scheme.primary,
                 modifier = Modifier.size(16.dp),
             )
+        } else if (running) {
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(6.dp))
+                    .background(scheme.primaryContainer.copy(alpha = 0.8f))
+                    .padding(horizontal = 6.dp, vertical = 2.dp),
+            ) {
+                Text(
+                    "Running",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onPrimaryContainer,
+                    fontWeight = FontWeight.Medium,
+                )
+            }
         }
     }
 }

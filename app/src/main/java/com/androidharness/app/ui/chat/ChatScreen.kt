@@ -58,6 +58,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import com.androidharness.app.ui.common.formatTokenCount
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -1191,8 +1192,13 @@ private fun CostDialog(
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text("Input: ${formatTokenCount(state.usage.totalInput)}")
                 Text("Output: ${formatTokenCount(state.usage.totalOutput)}")
-                Text("Requests: ${state.usage.requests}")
-                Text("Cache hit rate: ${"%.1f".format(state.usage.avgCacheHitRate * 100)}%")
+                val hitRateStr = when {
+                    state.busy -> "Calculating (prompt running)…"
+                    state.usage.totalInput > 0 -> "${"%.1f".format(state.usage.avgCacheHitRate * 100)}%"
+                    state.usage.requests == 0L -> "Calculating on completion…"
+                    else -> "0.0%"
+                }
+                Text("Cache hit rate: $hitRateStr")
                 if (state.usage.totalCacheWrite > 0) {
                     Text(
                         "Cache writes: ${formatTokenCount(state.usage.totalCacheWrite)}",

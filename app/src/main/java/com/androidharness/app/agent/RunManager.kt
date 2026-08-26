@@ -144,6 +144,8 @@ class RunManager(
 
     private val keepaliveCount = AtomicInteger(0)
 
+    val runningSessionIds = MutableStateFlow<Set<String>>(emptySet())
+
     private fun stateOf(sessionId: String): MutableStateFlow<LiveRunState> =
         synchronized(lock) {
             states.getOrPut(sessionId) { MutableStateFlow(LiveRunState(sessionId)) }
@@ -258,6 +260,7 @@ class RunManager(
                 queuedMessage = null, pendingPlan = null,
             )
         }
+        runningSessionIds.update { it + sid }
         acquireKeepalive()
         RuntimeNotifier.update("Working…")
 
@@ -336,6 +339,7 @@ class RunManager(
                         pendingPlan = planText?.takeIf { t -> t.isNotBlank() },
                     )
                 }
+                runningSessionIds.update { it - sid }
                 synchronized(lock) {
                     jobs.remove(sid)
                     injections.remove(sid)

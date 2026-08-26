@@ -158,9 +158,5 @@ internal fun ThinkingBlock(
     }
 }
 
-private fun formatCharCount(count: Int): String = when {
-    count >= 100_000 -> "${count / 1000}k"
-    count >= 10_000 -> "${"%.1f".format(count / 1000f)}k"
-    count >= 1_000 -> "${count / 100}.${(count % 1000) / 100}k"
-    else -> count.toString()
-}
+private fun formatCharCount(count: Int): String = com.androidharness.app.ui.common.formatTokens(count)
+

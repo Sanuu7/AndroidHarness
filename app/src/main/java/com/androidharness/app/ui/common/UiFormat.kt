@@ -26,3 +26,29 @@ fun formatDuration(ms: Long): String = when {
     ms < 3_600_000 -> "${ms / 60_000}m ${(ms % 60_000) / 1000}s"
     else -> "${ms / 3_600_000}h ${(ms % 3_600_000) / 60_000}m"
 }
+
+/**
+ * Universal token count formatting across the app:
+ * - 450 -> "450"
+ * - 1,200 -> "1.2k"
+ * - 128,000 -> "128k"
+ * - 1,000,000 -> "1M" (never "1000k"!)
+ * - 1,500,000 -> "1.5M"
+ * - 128,000_000 -> "128M"
+ * - 1,000,000_000 -> "1B"
+ * - 2,500,000_000 -> "2.5B"
+ */
+fun formatTokenCount(tokens: Long): String = when {
+    tokens < 0 -> "0"
+    tokens >= 1_000_000_000 -> "%.1fB".format(tokens / 1_000_000_000.0).replace(".0B", "B")
+    tokens >= 1_000_000 -> "%.1fM".format(tokens / 1_000_000.0).replace(".0M", "M")
+    tokens >= 1_000 -> "%.1fK".format(tokens / 1_000.0).replace(".0K", "K")
+    else -> tokens.toString()
+}
+
+fun formatTokenCount(tokens: Int): String = formatTokenCount(tokens.toLong())
+
+fun formatTokens(tokens: Long): String = formatTokenCount(tokens)
+
+fun formatTokens(tokens: Int): String = formatTokenCount(tokens.toLong())
+

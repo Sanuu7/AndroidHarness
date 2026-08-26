@@ -382,9 +382,10 @@ private fun ModelRow(
     }
 }
 
-/** Compact context-window label for picker rows ("200K ctx", "1M ctx"). */
+/** Compact context-window label for picker rows ("200K ctx", "1M ctx", "1B ctx"). */
 private fun ctxLabel(tokens: Long?): String? = when {
-    tokens == null -> null
+    tokens == null || tokens <= 0 -> null
+    tokens >= 1_000_000_000 -> "${tokens / 1_000_000_000}B ctx"
     tokens >= 1_000_000 -> "${tokens / 1_000_000}M ctx"
     tokens >= 1_000 -> "${tokens / 1_000}K ctx"
     else -> "$tokens ctx"

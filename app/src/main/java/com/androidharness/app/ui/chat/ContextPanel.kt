@@ -22,11 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.llm.ModelPrices
 import com.androidharness.app.ui.common.ThinLinearProgress
 
-fun formatTokenCount(tokens: Long): String = when {
-    tokens >= 1_000_000 -> "%.1fM".format(tokens / 1_000_000.0).replace(".0M", "M")
-    tokens >= 1_000 -> "%.1fK".format(tokens / 1_000.0).replace(".0K", "K")
-    else -> tokens.toString()
-}
+import com.androidharness.app.ui.common.formatTokenCount
 
 /**
  * Current-context dialog, modeled on GUI harnesses like Cline: a live
@@ -132,10 +128,13 @@ fun ContextUsageDialog(
                 HorizontalDivider()
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    TokenRow(
-                        "Cache hit rate",
-                        if (state.usage.totalInput > 0) "%.1f%%".format(state.usage.avgCacheHitRate * 100) else "0.0%",
-                    )
+                    val hitRateText = when {
+                        state.busy -> "Calculating (prompt running)…"
+                        state.usage.totalInput > 0 -> "%.1f%%".format(state.usage.avgCacheHitRate * 100)
+                        state.usage.requests == 0L -> "Calculating on prompt completion…"
+                        else -> "0.0%"
+                    }
+                    TokenRow("Cache hit rate", hitRateText)
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
