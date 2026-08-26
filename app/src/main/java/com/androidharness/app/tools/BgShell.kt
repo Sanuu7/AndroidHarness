@@ -27,16 +27,21 @@ class ShellBackgroundTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
         withContext(Dispatchers.IO) {
-            val command = args["command"]?.jsonPrimitive?.content
+            val rawCommand = args["command"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: command")
             val cwd = ctx.workspace.shellRoot
                 ?: throw ToolFailure(
                     "This workspace has no real filesystem path, so background processes cannot " +
                         "start here. Switch to a device folder or the app workspace.",
                 )
+
+            // Auto-append --no-bin-links for npm install on shared storage (symlinks unsupported).
+            val (command, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
+
             try {
                 val started = store.start(command, cwd)
                 val notes = StringBuilder()
+                npmNote?.let { notes.append(it).append('\n') }
                 if (started.viaShizuku) {
                     notes.append("[note: running under Shizuku: survives the app being minimized or killed]\n")
                 }

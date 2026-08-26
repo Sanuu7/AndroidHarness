@@ -34,7 +34,7 @@ class ShellTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
         withContext(Dispatchers.IO) {
-            val command = args["command"]?.jsonPrimitive?.content
+            val rawCommand = args["command"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: command")
             val cwd = ctx.workspace.shellRoot
                 ?: throw ToolFailure(
@@ -44,9 +44,13 @@ class ShellTool(
             val timeoutSec = (args["timeout_seconds"]?.jsonPrimitive?.intOrNull ?: 120)
                 .coerceIn(1, 600)
 
+            // Auto-append --no-bin-links for npm install on shared storage (symlinks unsupported).
+            val (command, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
+
             val res = router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
 
             val sb = StringBuilder()
+            npmNote?.let { sb.append(it).append('\n') }
             res.note?.let { sb.append(it).append('\n') }
             if (res.tier == ExecutionTier.TOYBOX && linuxEnv.bashExecutable() != null) {
                 sb.append("[note: fell back to toybox sh, launching the Linux bash failed on this device]\n")
