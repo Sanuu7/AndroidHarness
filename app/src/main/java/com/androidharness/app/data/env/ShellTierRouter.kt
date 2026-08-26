@@ -188,10 +188,16 @@ class ShellTierRouter(
                 }.getOrNull()
                 if (pid != null && pid > 0) {
                     runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+                    runCatching {
+                        val pkill = Runtime.getRuntime().exec(arrayOf("/system/bin/pkill", "-9", "-P", pid.toString()))
+                        pkill.waitFor(1, TimeUnit.SECONDS)
+                    }
+                    runCatching { killDescendants(pid) }
                     runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
                 }
                 process.destroyForcibly()
                 process.waitFor(2, TimeUnit.SECONDS)
+                reapZombies()
                 break
             }
         }
@@ -199,6 +205,7 @@ class ShellTierRouter(
         // survives a timeout.
         out.join(2000)
         err.join(2000)
+        reapZombies()
 
         return ShellRunResult(
             exitCode,
@@ -226,6 +233,60 @@ class ShellTierRouter(
                 }
             }
         } catch (_: Exception) {
+        }
+    }
+
+    private fun killDescendants(rootPid: Int) {
+        val proc = File("/proc")
+        val pidDirs = proc.listFiles { f -> f.isDirectory && f.name.all { it.isDigit() } } ?: return
+        val children = mutableListOf<Int>()
+        for (dir in pidDirs) {
+            val p = dir.name.toIntOrNull() ?: continue
+            if (p <= 1 || p == rootPid) continue
+            val statFile = File(dir, "stat")
+            val statContent = runCatching { statFile.readText() }.getOrNull() ?: continue
+            val lastParen = statContent.lastIndexOf(')')
+            if (lastParen > 0 && lastParen + 2 < statContent.length) {
+                val rest = statContent.substring(lastParen + 2).trimStart()
+                val tokens = rest.split(' ')
+                if (tokens.size >= 2) {
+                    val ppid = tokens[1].toIntOrNull()
+                    if (ppid == rootPid) {
+                        children += p
+                    }
+                }
+            }
+        }
+        for (child in children) {
+            runCatching { killDescendants(child) }
+            runCatching { android.system.Os.kill(-child, android.system.OsConstants.SIGKILL) }
+            runCatching { android.system.Os.kill(child, android.system.OsConstants.SIGKILL) }
+        }
+    }
+
+    private val waitpidMethod by lazy {
+        runCatching {
+            android.system.Os::class.java.methods.firstOrNull { it.name == "waitpid" }
+        }.getOrNull()
+    }
+
+    private fun reapZombies() {
+        val method = waitpidMethod ?: return
+        val paramTypes = method.parameterTypes
+        val dummyStatus = if (paramTypes.size >= 2 && paramTypes[1] != Int::class.javaPrimitiveType) {
+            runCatching { paramTypes[1].getDeclaredConstructor().newInstance() }.getOrNull()
+        } else null
+
+        val wnohang = 1
+        while (true) {
+            val res = runCatching {
+                if (paramTypes.size == 3) {
+                    (method.invoke(null, -1, dummyStatus, wnohang) as? Number)?.toInt() ?: 0
+                } else if (paramTypes.size == 2) {
+                    (method.invoke(null, -1, wnohang) as? Number)?.toInt() ?: 0
+                } else 0
+            }.getOrDefault(0)
+            if (res <= 0) break
         }
     }
 }
