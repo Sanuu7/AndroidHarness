@@ -181,6 +181,15 @@ class ShellTierRouter(
             }
             if (System.currentTimeMillis() > deadline) {
                 timedOut = true
+                val pid = runCatching {
+                    val f = process.javaClass.getDeclaredField("pid")
+                    f.isAccessible = true
+                    f.getInt(process)
+                }.getOrNull()
+                if (pid != null && pid > 0) {
+                    runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+                    runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
+                }
                 process.destroyForcibly()
                 process.waitFor(2, TimeUnit.SECONDS)
                 break

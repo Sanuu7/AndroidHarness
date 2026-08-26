@@ -53,8 +53,8 @@ class BgProcessStore(
     private val nextId = AtomicInteger(1)
     private val ioLock = Mutex()
 
-    /** Logs for Shizuku-tier processes: inside the workspace, readable by both uids. */
-    private val detachedLogDir: File = File(workspaceRoot, ".harness-bg")
+    /** Logs for background processes: inside the workspace, readable by both uids and all tools. */
+    private val detachedLogDir: File = File(workspaceRoot, ".harness/bg").apply { mkdirs() }
 
     init {
         runCatching {
@@ -89,6 +89,8 @@ class BgProcessStore(
      */
     suspend fun start(command: String, cwd: File): Started {
         val id = nextId.getAndIncrement()
+        detachedLogDir.mkdirs()
+        val logFile = File(detachedLogDir, "$id.log")
 
         if (shizuku.isGranted()) {
             // Make sure the shell-user toolchain copy exists before spawning.
@@ -104,12 +106,11 @@ class BgProcessStore(
             val env = if (toolchainDeployed) {
                 linuxEnv.tmpProcessEnv().map { "${it.key}=${it.value}" }.toTypedArray()
             } else null
-            val log = File(detachedLogDir, "$id.log")
-            val pid = shizuku.spawnDetached(cmd, env, cwd.absolutePath, log.absolutePath)
+            val pid = shizuku.spawnDetached(cmd, env, cwd.absolutePath, logFile.absolutePath)
             if (pid != null && pid > 0) {
                 val entry = BgProcessEntry(
                     id = id, command = command, cwd = cwd.absolutePath,
-                    logPath = log.absolutePath, pid = pid, source = "SHIZUKU",
+                    logPath = ".harness/bg/$id.log", pid = pid, source = "SHIZUKU",
                     startedAt = System.currentTimeMillis(),
                 )
                 entries[id] = entry
@@ -119,8 +120,6 @@ class BgProcessStore(
             // service dropped mid-flight — fall back to the app tier below
         }
 
-        val logDir = File(cwd, ".harness/bg").apply { mkdirs() }
-        val logFile = File(logDir, "$id.log")
         val process = linuxEnv.shellProcessBuilder(command)
             .directory(cwd)
             .redirectOutput(ProcessBuilder.Redirect.appendTo(logFile))
@@ -129,7 +128,7 @@ class BgProcessStore(
         appProcesses[id] = process
         val entry = BgProcessEntry(
             id = id, command = command, cwd = cwd.absolutePath,
-            logPath = logFile.absolutePath, pid = -1, source = "APP",
+            logPath = ".harness/bg/$id.log", pid = -1, source = "APP",
             startedAt = System.currentTimeMillis(),
         )
         entries[id] = entry
@@ -184,7 +183,7 @@ class BgProcessStore(
     }
 
     fun tail(entry: BgProcessEntry, chars: Int = 2_000): String {
-        val f = File(entry.logPath)
+        val f = File(entry.logPath).let { if (it.isAbsolute) it else File(detachedLogDir.parentFile, entry.logPath) }
         return if (f.exists()) {
             val text = f.readText()
             val filtered = text.lines()

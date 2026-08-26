@@ -114,7 +114,11 @@ class GitCommitTool(
             val message = args["message"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: message")
             val commitCmd = "add -A && git commit -m ${message.shellQuote()}"
-            val res = runGit(router, linuxEnv, ctx, commitCmd)
+            var res = runGit(router, linuxEnv, ctx, commitCmd)
+            if (!res.ok && isIndexLocked(res.output)) {
+                kotlinx.coroutines.delay(600)
+                res = runGit(router, linuxEnv, ctx, commitCmd)
+            }
             if (!res.ok && isIdentityUnknown(res.output)) {
                 val configRes = runGit(
                     router,
@@ -123,7 +127,11 @@ class GitCommitTool(
                     "config user.name 'Android Harness' && git config user.email 'harness@android.local'",
                 )
                 if (configRes.ok) {
-                    val retryRes = runGit(router, linuxEnv, ctx, commitCmd)
+                    var retryRes = runGit(router, linuxEnv, ctx, commitCmd)
+                    if (!retryRes.ok && isIndexLocked(retryRes.output)) {
+                        kotlinx.coroutines.delay(600)
+                        retryRes = runGit(router, linuxEnv, ctx, commitCmd)
+                    }
                     return@withContext ToolResult(
                         ok = retryRes.ok,
                         output = "[note: auto-configured repository git identity 'Android Harness <harness@android.local>']\n" + retryRes.output,
@@ -132,6 +140,11 @@ class GitCommitTool(
             }
             res
         }
+
+    private fun isIndexLocked(output: String): Boolean {
+        val lower = output.lowercase()
+        return lower.contains("index.lock") || lower.contains("another git process seems to be running")
+    }
 
     private fun isIdentityUnknown(output: String): Boolean {
         val lower = output.lowercase()

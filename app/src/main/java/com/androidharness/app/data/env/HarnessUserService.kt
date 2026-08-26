@@ -51,8 +51,17 @@ class HarnessUserService() : IHarnessService.Stub() {
         runCatching { android.system.Os.kill(pid, 0); true }.getOrDefault(false)
 
     override fun killProcess(pid: Int): Boolean =
-        runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL); true }
-            .getOrDefault(false)
+        runCatching {
+            // Kill both process group (-pid) and specific pid to eliminate hydra orphans
+            android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL)
+            android.system.Os.kill(pid, android.system.OsConstants.SIGKILL)
+            true
+        }.getOrElse {
+            runCatching {
+                android.system.Os.kill(pid, android.system.OsConstants.SIGKILL)
+                true
+            }.getOrDefault(false)
+        }
 
     /** java.lang.ProcessImpl keeps the pid in a private field. */
     private fun pidOf(p: Process): Int? = runCatching {
@@ -108,6 +117,11 @@ class HarnessUserService() : IHarnessService.Stub() {
             }
             if (System.currentTimeMillis() - startedAt > timeoutMs) {
                 timedOut = true
+                val pid = pidOf(process)
+                if (pid != null && pid > 0) {
+                    runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+                    runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
+                }
                 process.destroyForcibly()
                 process.waitFor(2, TimeUnit.SECONDS)
                 break
@@ -122,6 +136,7 @@ class HarnessUserService() : IHarnessService.Stub() {
             append("exit=").append(exit).append('\n')
             append("timeout=").append(if (timedOut) 1 else 0).append('\n')
             append(stdout)
+            if (stdout.isNotEmpty() && !stdout.endsWith("\n")) append('\n')
             append(STDERR_SEPARATOR).append('\n')
             append(stderr)
         }

@@ -228,20 +228,14 @@ class ShizukuManager(
         val exit = lines.getOrNull(0)?.removePrefix("exit=")?.toIntOrNull() ?: -1
         val timedOut = lines.getOrNull(1)?.removePrefix("timeout=")?.toIntOrNull() == 1
         val body = lines.getOrNull(2) ?: ""
-        // Newer services separate stderr with a marker line; older ones
-        // return a single merged stream (fall back to treating it as stdout).
         val sep = HarnessUserService.STDERR_SEPARATOR
-        val sepLine = "\n$sep\n"
-        val sepIdx = body.indexOf(sepLine)
-        return when {
-            sepIdx >= 0 -> PrivilegedResult(
-                exit,
-                timedOut,
-                body.substring(0, sepIdx),
-                body.substring(sepIdx + sepLine.length),
-            )
-            body.startsWith("$sep\n") -> PrivilegedResult(exit, timedOut, "", body.substring(sep.length + 1))
-            else -> PrivilegedResult(exit, timedOut, body)
+        val sepIdx = body.indexOf(sep)
+        return if (sepIdx >= 0) {
+            val stdoutPart = body.substring(0, sepIdx).trimEnd('\n')
+            val stderrPart = body.substring(sepIdx + sep.length).removePrefix("\n")
+            PrivilegedResult(exit, timedOut, stdoutPart, stderrPart)
+        } else {
+            PrivilegedResult(exit, timedOut, body)
         }
     }
 

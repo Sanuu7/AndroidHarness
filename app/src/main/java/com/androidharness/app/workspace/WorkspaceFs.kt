@@ -105,7 +105,11 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
 
     override fun writeText(content: String) {
         file.parentFile?.mkdirs()
-        file.writeText(content)
+        java.io.FileOutputStream(file).use { fos ->
+            fos.write(content.toByteArray(Charsets.UTF_8))
+            fos.flush()
+            runCatching { fos.fd.sync() }
+        }
     }
 
     override fun mkdirs() {
@@ -242,7 +246,11 @@ class SafFsNode(
             }
         }
         context.contentResolver.openOutputStream(target.uri, "wt")?.use { out ->
-            out.write(content.toByteArray())
+            out.write(content.toByteArray(Charsets.UTF_8))
+            out.flush()
+            if (out is java.io.FileOutputStream) {
+                runCatching { out.fd.sync() }
+            }
         } ?: throw ToolFailure("Could not write $relPath")
     }
 
