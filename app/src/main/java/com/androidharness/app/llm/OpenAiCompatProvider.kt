@@ -183,14 +183,29 @@ class OpenAiCompatProvider(
             val input = usage["prompt_tokens"]?.jsonPrimitive?.intOrNull
             val output = usage["completion_tokens"]?.jsonPrimitive?.intOrNull
             val promptDetails = usage["prompt_tokens_details"]?.jsonObjectOrAbsent()
+                ?: usage["input_tokens_details"]?.jsonObjectOrAbsent()
             val cached = promptDetails?.get("cached_tokens")?.jsonPrimitive?.intOrNull
                 ?: promptDetails?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull
+                ?: promptDetails?.get("cache_read_tokens")?.jsonPrimitive?.intOrNull
+                ?: promptDetails?.get("cached_prompt_tokens")?.jsonPrimitive?.intOrNull
+                ?: promptDetails?.get("cached_tokens_count")?.jsonPrimitive?.intOrNull
+                ?: promptDetails?.get("prompt_cache_hit_tokens")?.jsonPrimitive?.intOrNull
                 ?: usage["prompt_cache_hit_tokens"]?.jsonPrimitive?.intOrNull
                 ?: usage["cache_read_input_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cache_read_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cached_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cached_prompt_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["prompt_cached_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cache_hit_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cachedContentTokenCount"]?.jsonPrimitive?.intOrNull
                 ?: 0
             val cacheWrite = promptDetails?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
+                ?: promptDetails?.get("cache_write_tokens")?.jsonPrimitive?.intOrNull
+                ?: promptDetails?.get("cache_creation_tokens")?.jsonPrimitive?.intOrNull
                 ?: usage["cache_creation_input_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cache_write_tokens"]?.jsonPrimitive?.intOrNull
                 ?: usage["prompt_cache_write_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cache_creation_tokens"]?.jsonPrimitive?.intOrNull
                 ?: 0
             if (input != null || output != null) {
                 events += StreamEvent.Usage(input ?: 0, output ?: 0, cached, cacheWrite)
