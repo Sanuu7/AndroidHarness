@@ -153,7 +153,7 @@ fun ModelPickerSheet(
                         spec.style == com.androidharness.app.agent.ThinkingSpecs.Style.NONE &&
                             spec.levels.size == 1 -> "This model doesn't support thinking"
                         spec.style == com.androidharness.app.agent.ThinkingSpecs.Style.NONE ->
-                            "Thinking — this model reasons on its own; no dial to send"
+                            "Thinking: this model reasons on its own; no dial to send"
                         else -> "Thinking"
                     },
                     style = MaterialTheme.typography.labelMedium,
@@ -264,7 +264,7 @@ fun ModelPickerSheet(
                 if (provider == null) {
                     item {
                         Text(
-                            "Add a provider first — the model list follows from it.",
+                            "Add a provider first. The model list follows from it.",
                             style = MaterialTheme.typography.bodyMedium,
                             color = scheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 24.dp),

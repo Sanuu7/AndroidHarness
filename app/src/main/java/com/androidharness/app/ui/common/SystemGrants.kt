@@ -22,6 +22,18 @@ object SystemGrants {
                 context, Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
 
+    fun isAllFilesAccessGranted(context: Context): Boolean =
+        if (Build.VERSION.SDK_INT >= 30) {
+            android.os.Environment.isExternalStorageManager()
+        } else {
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.WRITE_EXTERNAL_STORAGE,
+            ) == PackageManager.PERMISSION_GRANTED &&
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.READ_EXTERNAL_STORAGE,
+            ) == PackageManager.PERMISSION_GRANTED
+        }
+
     fun isIgnoringBatteryOptimizations(context: Context): Boolean =
         runCatching {
             val pm = context.getSystemService(Context.POWER_SERVICE) as PowerManager

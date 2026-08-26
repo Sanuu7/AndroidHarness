@@ -672,7 +672,7 @@ class RunManager(
                         sessionId = state.sessionId,
                         kind = PendingPrompt.Kind.APPROVAL,
                         sessionTitle = sessionTitle,
-                        headline = "${r.call.name} — ${r.toolDescription}",
+                        headline = "${r.call.name}: ${r.toolDescription}",
                         detail = r.diffPreview,
                     ))
                 }

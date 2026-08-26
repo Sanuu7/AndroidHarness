@@ -370,7 +370,7 @@ internal fun ProviderSheetContent(
                         )
                     } else {
                         Text(
-                            "$selectedLabel runs locally — no API key needed.",
+                            "$selectedLabel runs locally, no API key needed.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -584,7 +584,7 @@ private fun ProviderDirectory(
             curated.forEach { b ->
                 ProviderRow(
                     title = b.label,
-                    subtitle = if (b.needsKey) "API key required" else "Local — no API key",
+                    subtitle = if (b.needsKey) "API key required" else "Local (no API key)",
                     selected = b.label == selectedBrand?.label,
                     onClick = { onSelectBrand(b) },
                 )

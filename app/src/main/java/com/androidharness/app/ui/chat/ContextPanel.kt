@@ -114,7 +114,7 @@ fun ContextUsageDialog(
                     ) {
                         Text("Estimated cost", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            estimatedCost?.let { "$%.4f".format(it) } ?: "—",
+                            estimatedCost?.let { "$%.4f".format(it) } ?: "-",
                             style = MaterialTheme.typography.titleMedium,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.primary,
@@ -138,7 +138,7 @@ fun ContextUsageDialog(
                     Text(
                         if (state.usage.totalInput > 0)
                             "%.1f%%".format(state.usage.avgCacheHitRate * 100)
-                        else "—",
+                        else "-",
                         style = MaterialTheme.typography.titleMedium,
                         color = MaterialTheme.colorScheme.primary,
                     )
@@ -185,7 +185,7 @@ private fun BreakdownRow(label: String, tokens: Int?, total: Int) {
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Text(
-            tokens?.let { "%.1f%%".format(it.toFloat() / total * 100) } ?: "—",
+            tokens?.let { "%.1f%%".format(it.toFloat() / total * 100) } ?: "-",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

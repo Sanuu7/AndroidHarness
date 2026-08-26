@@ -54,7 +54,7 @@ fun AddWorkspaceDialog(
         if (!a.directoryExists) {
             error = "That folder doesn't exist. Check the path."
         } else when (a.region) {
-            PathClassifier.Region.APP_DATA -> error = "That's the app's internal storage — use the App workspace instead."
+            PathClassifier.Region.APP_DATA -> error = "That's the app's internal storage: use the App workspace instead."
             PathClassifier.Region.SHARED_STORAGE -> {
                 val allFiles = container.shellRouter.isAllFilesAccess()
                 if (!allFiles && !container.shizuku.isGranted()) {

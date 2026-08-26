@@ -191,7 +191,7 @@ fun ProviderManagerSheet(
                                             catalogBusy = true
                                             val err = ModelsDev.refresh(context, force = true)
                                             catalogStatus = err
-                                                ?: "Catalog updated — ${ModelsDev.providers().size} providers"
+                                                ?: "Catalog updated: ${ModelsDev.providers().size} providers"
                                             catalogBusy = false
                                         }
                                     },

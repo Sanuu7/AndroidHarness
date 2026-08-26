@@ -80,7 +80,7 @@ class ShellTierRouter(
             tier == ExecutionTier.APP_LINUX &&
                 region == PathClassifier.Region.SHARED_STORAGE &&
                 !isAllFilesAccess() ->
-                "[note: on this Android version the app can't reach shared storage without \"All files access\" — expect permission errors here. Grant it in Settings → Storage access, or start Shizuku for shell access.]"
+                "[note: on this Android version the app can't reach shared storage without \"All files access\": expect permission errors here. Grant it in Settings → Storage access, or start Shizuku for shell access.]"
 
             tier == ExecutionTier.TOYBOX &&
                 region == PathClassifier.Region.SYSTEM &&
@@ -125,18 +125,18 @@ class ShellTierRouter(
 
         val r = shizuku.runPrivileged(cmd, env, cwd.absolutePath, timeoutMs, maxOutput)
         if (r == null) {
-            // Service dropped mid-flight — fall back to the app uid tier.
+            // Service dropped mid-flight: fall back to the app uid tier.
             val fb = runApp(command, cwd, timeoutMs, maxOutput, ExecutionTier.APP_LINUX)
             return ShellRunResult(
                 exitCode = fb.exitCode,
                 timedOut = fb.timedOut,
                 rawOutput = fb.rawOutput,
                 tier = ExecutionTier.APP_LINUX,
-                note = "[note: Shizuku's privileged runner was unavailable, so this ran as the app user — expect permission errors on this directory]",
+                note = "[note: Shizuku's privileged runner was unavailable, so this ran as the app user: expect permission errors on this directory]",
             )
         }
         val note = if (!toolchain) {
-            "[note: privileged shell running /system/bin/sh only — install the Linux environment in Settings → Terminal for bash/git/python/node here]"
+            "[note: privileged shell running /system/bin/sh only: install the Linux environment in Settings → Terminal for bash/git/python/node here]"
         } else null
         return ShellRunResult(r.exitCode, r.timedOut, r.output, ExecutionTier.PRIVILEGED, note)
     }

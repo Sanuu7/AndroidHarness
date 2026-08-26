@@ -24,7 +24,7 @@ class EnvStatusTool(
         "Report the live state of the device environment: Shizuku connection + user-service state, " +
         "the Linux toolchain installation, which execution tier the shell tool will use for the " +
         "current workspace, and what the user must do to unlock more. Call this instead of probing " +
-        "/data/local/tmp or testing exec paths yourself — the harness knows the authoritative state."
+        "/data/local/tmp or testing exec paths yourself: the harness knows the authoritative state."
     override val parametersSchema = Schema.obj(emptyMap())
     override val isReadOnly = true
 
@@ -46,7 +46,7 @@ class EnvStatusTool(
         val tier = router.resolveTier(cwd)
         val tierText = when (tier) {
             ExecutionTier.PRIVILEGED ->
-                "Shizuku ADB-shell privileges (${if (shizuku.isTmpPrefixDeployed()) "with the full Linux toolchain deployed to /data/local/tmp" else "system /system/bin/sh — Linux toolchain not deployed"}) in $cwd"
+                "Shizuku ADB-shell privileges (${if (shizuku.isTmpPrefixDeployed()) "with the full Linux toolchain deployed to /data/local/tmp" else "system /system/bin/sh, Linux toolchain not deployed"}) in $cwd"
             ExecutionTier.APP_LINUX ->
                 "app-uid Linux bash (full toolchain: node, python, git, …) in $cwd"
             ExecutionTier.TOYBOX ->
@@ -54,7 +54,7 @@ class EnvStatusTool(
         }
         val storage =
             if (router.isAllFilesAccess()) "All files access granted ✓"
-            else "MANAGE_EXTERNAL_STORAGE NOT granted — app-uid can only reach its own folders on /sdcard"
+            else "MANAGE_EXTERNAL_STORAGE NOT granted: app-uid can only reach its own folders on /sdcard"
         return ToolResult(
             true,
             buildString {
@@ -64,7 +64,7 @@ class EnvStatusTool(
                     .append('\n')
                 append("Storage: ").append(storage).append('\n')
                 append("Active shell tier: ").append(tierText).append('\n')
-                append("Notes: the Shizuku server is an in-memory process — it has no on-disk binary; " +
+                append("Notes: the Shizuku server is an in-memory process, it has no on-disk binary; " +
                     "the bundled toolchain is copied to /data/local/tmp/androidharness/linux so the " +
                     "privileged shell can use bash/git/python/node anywhere. To unlock system paths " +
                     "or folders outside the app's own data, Shizuku must be running and granted; " +

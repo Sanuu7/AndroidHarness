@@ -102,7 +102,7 @@ class TerminalManager(
         _state.update {
             it.copy(started = true, cwd = cwd.absolutePath, lines = emptyList())
         }
-        appendLines(listOf("# terminal ready — ${if (linuxEnv.bashExecutable() != null) "bash" else "toybox sh"} (app user)"))
+        appendLines(listOf("# terminal ready: ${if (linuxEnv.bashExecutable() != null) "bash" else "toybox sh"} (app user)"))
 
         readJob = scope.launch {
             val input = process!!.inputStream.bufferedReader()
@@ -183,7 +183,7 @@ class TerminalManager(
         if (cmd.isEmpty()) return
         ensureStarted()
         if (_state.value.busy) {
-            appendLines(listOf("# still running — wait for it to finish"))
+            appendLines(listOf("# still running: wait for it to finish"))
             return
         }
         _state.update { it.copy(busy = true) }
@@ -230,7 +230,7 @@ class TerminalManager(
             val argv = if (useTmpBash) arrayOf(bash, "-c", script) else arrayOf("/system/bin/sh", "-c", script)
             val res = shizuku.runPrivileged(argv, env, cwd.absolutePath, timeoutMs = 120_000, maxBytes = 60_000)
             if (res == null) {
-                appendLines(listOf("# Shizuku unavailable — dropped to app tier"))
+                appendLines(listOf("# Shizuku unavailable: dropped to app tier"))
                 _state.update { it.copy(privileged = false) }
                 sendAppTier(cmd)
                 return@launch

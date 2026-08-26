@@ -121,8 +121,8 @@ fun ProvidersScreen(
             if (providers.isEmpty()) {
                 item {
                     Text(
-                        "No providers yet. Add one — an OpenAI-compatible endpoint " +
-                            "(OpenAI, OpenRouter, Groq, Ollama…), Anthropic, or Gemini — " +
+                        "No providers yet. Add an OpenAI-compatible endpoint " +
+                            "(OpenAI, OpenRouter, Groq, Ollama…), Anthropic, or Gemini " +
                             "with its API key and a model name.",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,

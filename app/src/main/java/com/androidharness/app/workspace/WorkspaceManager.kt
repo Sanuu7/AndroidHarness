@@ -160,17 +160,17 @@ class WorkspaceManager(
         when (project.kind) {
             KIND_APP -> {
                 kindLabel = "App workspace"
-                kindSub = "Private app folder — shell always works, safest option"
+                kindSub = "Private app folder: shell always works, safest option"
                 shellCapable = true
             }
             KIND_SHELL -> {
                 kindLabel = "Device folder"
-                kindSub = "Real path — full shell, needs All files access or Shizuku"
+                kindSub = "Real path: full shell, needs All files access or Shizuku"
                 shellCapable = true
             }
             else -> {
                 kindLabel = "Picked folder"
-                kindSub = "SAF folder — file tools only, shell runs in the app workspace"
+                kindSub = "SAF folder: file tools only, shell runs in the app workspace"
                 shellCapable = false
             }
         }

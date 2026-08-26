@@ -261,7 +261,7 @@ private fun WorkspaceSection(
                 SettingRow(
                     icon = if (project.kind == "APP") Icons.Outlined.Folder else Icons.Outlined.FolderOpen,
                     title = project.name,
-                    subtitle = desc.kindLabel + " — " + if (desc.shellCapable) "full shell" else "file tools only",
+                    subtitle = desc.kindLabel + " · " + if (desc.shellCapable) "full shell" else "file tools only",
                     onClick = { onSelectWorkspace(project.id) }.takeIf { !isActive },
                     divider = index != projects.lastIndex,
                     trailing = {
@@ -366,8 +366,8 @@ private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit) {
                 Column(Modifier.weight(1f)) {
                     Text("Storage access", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        if (allFiles) "Granted — the shell and file tools can use real paths anywhere."
-                        else "Off — outside the app's own folders, access is denied.",
+                        if (allFiles) "Granted: the shell and file tools can use real paths anywhere."
+                        else "Off: outside the app's own folders, access is denied.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -396,10 +396,10 @@ private fun ShizukuCard(
                     Text("Shizuku (ADB privileges)", style = MaterialTheme.typography.titleSmall)
                     Text(
                         when (state) {
-                            ShizukuState.NOT_INSTALLED -> "Not installed — optional."
+                            ShizukuState.NOT_INSTALLED -> "Not installed: optional."
                             ShizukuState.NOT_RUNNING -> "Installed, not running."
-                            ShizukuState.RUNNING_NO_PERMISSION -> "Running — grant AndroidHarness access."
-                            ShizukuState.GRANTED -> "Connected — system paths unlocked."
+                            ShizukuState.RUNNING_NO_PERMISSION -> "Running: grant AndroidHarness access."
+                            ShizukuState.GRANTED -> "Connected: system paths unlocked."
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -431,12 +431,6 @@ private fun LinuxEnvironmentCard(
     envState: com.androidharness.app.data.env.EnvState,
 ) {
     val scope = rememberCoroutineScope()
-    var wantPython by remember { mutableStateOf(false) }
-    var wantNode by remember { mutableStateOf(false) }
-    val wanted: () -> List<String> = {
-        mutableListOf("bash", "busybox", "ca-certificates", "git")
-            .also { if (wantPython) it += listOf("python", "python-pip"); if (wantNode) it += "nodejs" }
-    }
 
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -445,7 +439,7 @@ private fun LinuxEnvironmentCard(
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Linux environment", style = MaterialTheme.typography.titleSmall)
-                    Text("bash, git, python, node", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("bash, git, python, pip, node, npm", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 StatusText(
                     when (envState) {
@@ -471,7 +465,7 @@ private fun LinuxEnvironmentCard(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         OutlinedButton(onClick = { scope.launch { container.linuxEnv.install(container.linuxEnv.fullPackages) } }) {
-                            Text("Add missing")
+                            Text("Update / Check missing")
                         }
                         OutlinedButton(onClick = { scope.launch { container.linuxEnv.uninstall() } }) {
                             Text("Uninstall")
@@ -486,23 +480,23 @@ private fun LinuxEnvironmentCard(
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.error,
                         )
+                    } else {
+                        Text(
+                            "Installs bash, git, python 3, pip, node.js and npm into private storage.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
                     }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Python + pip", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        Switch(checked = wantPython, onCheckedChange = { wantPython = it })
-                    }
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text("Node.js", Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-                        Switch(checked = wantNode, onCheckedChange = { wantNode = it })
-                    }
-                    Button(onClick = { scope.launch { container.linuxEnv.install(wanted()) } }) {
-                        Text(if (envState is com.androidharness.app.data.env.EnvState.Failed) "Retry" else "Install")
+                    Button(onClick = { scope.launch { container.linuxEnv.install(container.linuxEnv.fullPackages) } }) {
+                        Text(if (envState is com.androidharness.app.data.env.EnvState.Failed) "Retry install" else "Install full environment")
                     }
                 }
                 is com.androidharness.app.data.env.EnvState.Downloading,
                 is com.androidharness.app.data.env.EnvState.Installing -> {
+                    val pkgName = (envState as? com.androidharness.app.data.env.EnvState.Downloading)?.pkg
+                        ?: (envState as? com.androidharness.app.data.env.EnvState.Installing)?.pkg
                     Text(
-                        "${(envState as? com.androidharness.app.data.env.EnvState.Downloading)?.pkg ?: (envState as com.androidharness.app.data.env.EnvState.Installing).pkg} …",
+                        if (pkgName != null) "Setting up $pkgName …" else "Installing environment…",
                         style = MaterialTheme.typography.bodyMedium,
                     )
                 }
@@ -844,7 +838,7 @@ private fun BatteryCard(container: AppContainer) {
                 Column(Modifier.weight(1f)) {
                     Text("Keep runs alive", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        "Hold the CPU while a run or terminal is active — the terminal won't die when the app is minimized.",
+                        "Hold the CPU while a run or terminal is active so the terminal will not die when the app is minimized.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
@@ -858,8 +852,8 @@ private fun BatteryCard(container: AppContainer) {
                 Column(Modifier.weight(1f)) {
                     Text("Battery optimization", style = MaterialTheme.typography.bodyLarge)
                     Text(
-                        if (exempt) "Excluded — Android won't throttle background runs."
-                        else "On — Samsung and other OEMs may kill background work. Exclude the app for reliable long runs.",
+                        if (exempt) "Excluded: Android will not throttle background runs."
+                        else "On: Samsung and other OEMs may kill background work. Exclude the app for reliable long runs.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

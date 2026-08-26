@@ -676,7 +676,7 @@ class ChatViewModel(
                     } else if (outcome.restored == 0 && outcome.failed == 0) {
                         "Nothing to rewind for that turn."
                     } else if (outcome.failed > 0) {
-                        "Rewound ${outcome.restored} file(s) — ${outcome.failed} could not be restored."
+                        "Rewound ${outcome.restored} file(s), ${outcome.failed} could not be restored."
                     } else {
                         null
                     },

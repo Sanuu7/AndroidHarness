@@ -36,10 +36,10 @@ class ShellBackgroundTool(
                 val started = store.start(command, cwd)
                 val notes = StringBuilder()
                 if (ctx.workspace.shellRoot == null) {
-                    notes.append("[note: ran in the app's shell workspace — create the project files there for the server to find them]\n")
+                    notes.append("[note: ran in the app's shell workspace: create the project files there for the server to find them]\n")
                 }
                 if (started.viaShizuku) {
-                    notes.append("[note: running under Shizuku — survives the app being minimized or killed]\n")
+                    notes.append("[note: running under Shizuku: survives the app being minimized or killed]\n")
                 }
                 ToolResult(
                     true,

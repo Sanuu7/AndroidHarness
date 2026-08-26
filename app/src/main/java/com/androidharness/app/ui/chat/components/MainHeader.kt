@@ -156,7 +156,7 @@ internal fun MainHeader(
                 IconButton(onClick = { onSetMode(AgentMode.ACT) }) {
                     Icon(
                         Icons.Outlined.EditNote,
-                        contentDescription = "Plan mode on — switch to Act",
+                        contentDescription = "Plan mode on: switch to Act",
                         tint = scheme.primary,
                     )
                 }

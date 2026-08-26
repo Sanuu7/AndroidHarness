@@ -159,7 +159,7 @@ fun FolderPickerDialog(
                         TextButton(
                             onClick = { permTick++ },
                             modifier = Modifier.fillMaxWidth(),
-                        ) { Text("I've granted it — check again") }
+                        ) { Text("I've granted it, check again") }
                     }
                 } else {
                     // ----- Folder list -----

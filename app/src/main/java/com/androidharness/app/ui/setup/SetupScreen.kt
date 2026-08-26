@@ -56,10 +56,15 @@ import com.androidharness.app.ui.settings.ProviderSheet
 import com.androidharness.app.ui.theme.LocalStatusColors
 import kotlinx.coroutines.launch
 
+import androidx.compose.material.icons.outlined.SdStorage
+import androidx.compose.runtime.DisposableEffect
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.compose.LocalLifecycleOwner
+
 /**
- * First-run setup: one quiet checklist screen. The provider step is required;
- * everything else is optional and skippable — all steps stay live so a long
- * Linux-environment download never blocks finishing later.
+ * First-run setup: checklist screen. Required steps (Provider, Storage access,
+ * and Notifications) must be completed before starting the harness.
  */
 @Composable
 fun SetupScreen(
@@ -70,6 +75,7 @@ fun SetupScreen(
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
     val success = LocalStatusColors.current.success
+    val lifecycleOwner = LocalLifecycleOwner.current
 
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val settings by container.settings.settings.collectAsStateWithLifecycle(
@@ -80,6 +86,9 @@ fun SetupScreen(
     val envState by container.linuxEnv.state.collectAsStateWithLifecycle()
 
     var showProviderDialog by remember { mutableStateOf(false) }
+    var storageGranted by remember {
+        mutableStateOf(SystemGrants.isAllFilesAccessGranted(context))
+    }
     var notifGranted by remember {
         mutableStateOf(SystemGrants.isPostNotificationsGranted(context))
     }
@@ -87,6 +96,18 @@ fun SetupScreen(
         ActivityResultContracts.RequestPermission(),
     ) { granted -> notifGranted = granted }
     var batteryExempt by remember { mutableStateOf(SystemGrants.isIgnoringBatteryOptimizations(context)) }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) {
+                storageGranted = SystemGrants.isAllFilesAccessGranted(context)
+                notifGranted = SystemGrants.isPostNotificationsGranted(context)
+                batteryExempt = SystemGrants.isIgnoringBatteryOptimizations(context)
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     fun finish() {
         scope.launch {
@@ -102,7 +123,8 @@ fun SetupScreen(
     val shizukuDone = shizukuState == ShizukuState.GRANTED && serviceState ==
         com.androidharness.app.data.env.UserServiceState.BOUND_READY
     val envDone = envState is EnvState.Ready
-    val completed = listOf(providerDone, notifGranted, shizukuDone, envDone, batteryExempt).count { it }
+    val requiredDone = providerDone && storageGranted && notifGranted
+    val completed = listOf(providerDone, storageGranted, notifGranted, shizukuDone, envDone, batteryExempt).count { it }
 
     Scaffold(containerColor = scheme.surface) { padding ->
         Column(
@@ -122,19 +144,19 @@ fun SetupScreen(
                 Text("Welcome to AndroidHarness", style = MaterialTheme.typography.headlineSmall)
                 Text(
                     "An agent that reads, edits and runs code on this device. " +
-                        "Connect an AI provider to begin — the rest is optional.",
+                        "Complete the required setup to begin.",
                     style = MaterialTheme.typography.bodyMedium,
                     color = scheme.onSurfaceVariant,
                 )
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        "$completed of 5 complete",
+                        "$completed of 6 complete",
                         style = MaterialTheme.typography.labelMediumEmphasized,
                         color = scheme.onSurfaceVariant,
                     )
                     ThinLinearProgress(
-                        progress = { completed / 5f },
+                        progress = { completed / 6f },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
@@ -146,7 +168,7 @@ fun SetupScreen(
                     title = "Connect an AI provider",
                     status = when {
                         providerDone -> "${activeProvider!!.name} · ${activeProvider.model}"
-                        else -> "Required — OpenRouter, Groq, Anthropic, Gemini, Ollama…"
+                        else -> "Required: OpenRouter, Groq, Anthropic, Gemini, Ollama…"
                     },
                     complete = providerDone,
                     optional = false,
@@ -156,17 +178,31 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 2. Notifications --------------------------------------
+                // -- 2. Storage access (required) --------------------------
+                SetupStep(
+                    icon = { Icon(Icons.Outlined.SdStorage, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
+                    title = "Storage access",
+                    status = if (storageGranted) "All files access granted"
+                             else "Required: grant all files access to read and edit project files",
+                    complete = storageGranted,
+                    optional = false,
+                ) {
+                    if (!storageGranted) {
+                        Button(onClick = { SystemGrants.openAllFilesAccess(context) }) { Text("Grant") }
+                    }
+                }
+
+                // -- 3. Notifications (required) ---------------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.Notifications, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Notifications",
                     status = if (notifGranted) "Runs report progress and approvals" 
-                             else "Needed for run progress while backgrounded",
+                             else "Required: needed for run progress while backgrounded",
                     complete = notifGranted,
                     optional = false,
                 ) {
                     if (!notifGranted) {
-                        OutlinedButton(onClick = {
+                        Button(onClick = {
                             if (android.os.Build.VERSION.SDK_INT >= 33) {
                                 notifLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                             } else notifGranted = true
@@ -174,18 +210,18 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 3. Shizuku (optional) ---------------------------------
+                // -- 4. Shizuku (optional) ---------------------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.Shield, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Shizuku",
                     status = when (shizukuState) {
-                        ShizukuState.NOT_INSTALLED -> "Optional — full shell toolchain & background servers"
+                        ShizukuState.NOT_INSTALLED -> "Optional: full shell toolchain & background servers"
                         ShizukuState.NOT_RUNNING -> "Open the Shizuku app and start it"
                         ShizukuState.RUNNING_NO_PERMISSION -> "Grant access to unlock ADB-level commands"
                         ShizukuState.GRANTED ->
                             if (serviceState == com.androidharness.app.data.env.UserServiceState.BOUND_READY)
-                                "Connected — privileged shell ready"
-                            else "Granted — waiting for user service…"
+                                "Connected: privileged shell ready"
+                            else "Granted: waiting for user service…"
                     },
                     complete = shizukuDone,
                     optional = true,
@@ -199,16 +235,16 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 4. Linux environment (optional) -----------------------
+                // -- 5. Linux environment (optional) -----------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.Terminal, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Linux environment",
                     status = when (val s = envState) {
-                        EnvState.Ready -> "Ready — bash, git and more for the shell tool"
+                        EnvState.Ready -> "Ready: bash, git, python, node and npm for real commands"
                         is EnvState.Downloading -> "Downloading ${s.pkg} (${s.index}/${s.total})"
                         is EnvState.Installing -> "Installing ${s.pkg} (${s.index}/${s.total})"
                         is EnvState.Failed -> s.message.take(80)
-                        EnvState.NotInstalled -> "Optional — bash/git/python/node for real commands"
+                        EnvState.NotInstalled -> "Optional: bash, git, python, pip, node, npm for real commands"
                     },
                     complete = envDone,
                     optional = true,
@@ -217,20 +253,20 @@ fun SetupScreen(
                     when (envState) {
                         EnvState.NotInstalled, is EnvState.Failed ->
                             OutlinedButton(onClick = {
-                                scope.launch { container.linuxEnv.install(container.linuxEnv.corePackages) }
+                                scope.launch { container.linuxEnv.install(container.linuxEnv.fullPackages) }
                             }) { Text(if (envState is EnvState.Failed) "Retry" else "Install") }
                         else -> {}
                     }
                 }
 
-                // -- 5. Battery optimization (optional) --------------------
+                // -- 6. Battery optimization (optional) --------------------
                 SetupStep(
                     icon = {
                         Icon(Icons.Outlined.BatteryChargingFull, null, Modifier.size(16.dp), scheme.onSurfaceVariant)
                     },
                     title = "Battery optimization",
-                    status = if (batteryExempt) "Exempted — long runs survive screen-off"
-                             else "Optional — keeps long runs alive on aggressive OEMs",
+                    status = if (batteryExempt) "Exempted: long runs survive screen-off"
+                             else "Optional: keeps long runs alive on aggressive OEMs",
                     complete = batteryExempt,
                     optional = true,
                 ) {
@@ -251,8 +287,12 @@ fun SetupScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                TextButton(onClick = ::finish) { Text("Skip for now") }
-                Button(onClick = ::finish, enabled = providerDone) { Text("Start harness") }
+                Text(
+                    if (requiredDone) "All required steps complete" else "Complete required steps (*)",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (requiredDone) success else scheme.onSurfaceVariant,
+                )
+                Button(onClick = ::finish, enabled = requiredDone) { Text("Start harness") }
             }
         }
     }

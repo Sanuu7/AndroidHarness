@@ -49,13 +49,13 @@ class ShellTool(
                     "[note: the active workspace is a picked folder (SAF) and is only reachable via " +
                         "file tools; this command ran in the app's shell workspace " +
                         "(${cwd.absolutePath}). To run code with the shell (node, python…), " +
-                        "create the files in the shell workspace itself — e.g. via shell heredocs " +
-                        "or by asking the user to switch the workspace in Settings.]\n"
+                        "create the files in the shell workspace itself (e.g. via shell heredocs " +
+                        "or by asking the user to switch the workspace in Settings).]\n"
                 )
             }
             res.note?.let { sb.append(it).append('\n') }
             if (res.tier == ExecutionTier.TOYBOX && linuxEnv.bashExecutable() != null) {
-                sb.append("[note: fell back to toybox sh — launching the Linux bash failed on this device]\n")
+                sb.append("[note: fell back to toybox sh, launching the Linux bash failed on this device]\n")
             }
             if (res.tier == ExecutionTier.PRIVILEGED) {
                 sb.append("[note: ran with Shizuku ADB-shell privileges]\n")

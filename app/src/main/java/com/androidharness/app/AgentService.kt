@@ -206,7 +206,7 @@ class AgentService : Service() {
     private fun buildResultNotification(result: RunResultNotification): Notification =
         Notification.Builder(this, RESULTS_CHANNEL_ID)
             .setContentTitle(if (result.ok) "Run finished" else "Run needs attention")
-            .setContentText(result.title + " — " + result.summary)
+            .setContentText(result.title + ": " + result.summary)
             .setSmallIcon(R.drawable.ic_launcher_foreground)
             .setAutoCancel(true)
             .setContentIntent(contentIntent(result.sessionId))
@@ -243,7 +243,7 @@ class AgentService : Service() {
                     PendingPrompt.Kind.ENVIRONMENT -> "Linux environment"
                 },
             )
-            .setContentText("${p.sessionTitle} — ${p.headline}")
+            .setContentText("${p.sessionTitle}: ${p.headline}")
             .setStyle(Notification.BigTextStyle().bigText("${p.sessionTitle}\n\n$body"))
             .setContentIntent(contentIntent(p.sessionId))
             .setAutoCancel(true)

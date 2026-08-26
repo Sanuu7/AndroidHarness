@@ -475,7 +475,7 @@ class AgentEngine(
                     return ToolResult(
                         false,
                         "The user declined installing the Linux environment right now. " +
-                            "Do NOT retry git/python/node commands in this session — use only " +
+                            "Do NOT retry git/python/node commands in this session: use only " +
                             "toybox-compatible commands (ls, cat, grep, sed, mkdir, cp, mv…) " +
                             "or continue with tasks that do not need them.",
                     )
@@ -682,7 +682,7 @@ class AgentEngine(
             "You are a read-only research subagent inside a coding harness. " +
                 "Explore the workspace with the tools you have (read_file, list_dir, " +
                 "search_files, grep, web_fetch/search) to answer the task. " +
-                "You must not modify anything, and you cannot ask questions — if something " +
+                "You must not modify anything, and you cannot ask questions; if something " +
                 "is ambiguous, state your assumption and continue. " +
                 "Finish with a complete, self-contained answer: your final message is the " +
                 "ONLY thing returned to the caller, so include file paths, line references " +
@@ -690,14 +690,14 @@ class AgentEngine(
         val history = mutableListOf(ChatMessage(role = Role.USER, text = prompt))
         val subTools = subagentTools()
         // No separate budget quota here: capping output made reasoning models
-        // burn the cap on thinking before ever answering ("reasoning streamed,
-        // no answer"). Subagents get the main loop's full output budget.
+        // burn the cap on thinking before ever answering (reasoning streamed,
+        // no answer). Subagents get the main loop's full output budget.
         val ctx = ToolContext(workspace)
 
         var iteration = 0
         var nudged = false
         // No step cap (user decision): a subagent runs until it answers, fails
-        // structurally, or its provider stops responding — long research
+        // structurally, or its provider stops responding. long research
         // passes are legitimate, and the parent sees real failures only.
         while (true) {
             iteration++
@@ -743,7 +743,7 @@ class AgentEngine(
                             }
                         }
                 } catch (te: TimeoutCancellationException) {
-                    // stallGuard: a silent gateway kept the socket open — treat
+                    // stallGuard: a silent gateway kept the socket open. treat
                     // like any transient failure so retries can kick in.
                     failure = "Stream stalled - no data received for 90s (timed out)"
                 } catch (ce: CancellationException) {
@@ -770,7 +770,7 @@ class AgentEngine(
                     continue
                 }
                 // Reasoning models can burn the whole budget on thinking and
-                // stream zero answer tokens — say so instead of "no output".
+                // stream zero answer tokens. say so instead of "no output".
                 val detail = when {
                     failure != null -> failure!!
                     subThinking.isNotBlank() ->
@@ -818,7 +818,7 @@ class AgentEngine(
 
             // Execute requested tools directly. The schema list only contains
             // read-only, non-interactive tools, so no permission gating is
-            // needed — but verify defensively and refuse anything else.
+            // needed. but verify defensively and refuse anything else.
             for (call in calls) {
                 step(describeToolCall(call))
                 val tool = registry.get(call.name)
@@ -843,7 +843,7 @@ class AgentEngine(
                 )
                 history += toolMessage
                 emitEvent(AgentEvent.SubagentMessageCommitted(parentCallId, toolMessage))
-                if (!result.ok) step("${call.name} failed — adjusting")
+                if (!result.ok) step("${call.name} failed. adjusting")
             }
         }
     }
@@ -857,7 +857,7 @@ class AgentEngine(
         maxContextTokens: Int,
         emitEvent: suspend (AgentEvent) -> Unit,
     ): List<ChatMessage>? {
-        emitEvent(AgentEvent.Compacting("Context near ${(maxContextTokens / 1000)}K — summarizing older messages"))
+        emitEvent(AgentEvent.Compacting("Context near ${(maxContextTokens / 1000)}K. summarizing older messages"))
 
         // keep the most recent messages; never start the kept slice on a TOOL message
         var keep = 8
@@ -945,7 +945,7 @@ class AgentEngine(
             !thinking.isNullOrBlank() ->
                 "Model stopped after reasoning without producing an answer."
             cutOff -> "Model hit the token limit before producing output."
-            else -> "Model returned no output at all — the model may be down, rate-limited, or incompatible."
+            else -> "Model returned no output at all: the model may be down, rate-limited, or incompatible."
         }
     }
 
@@ -1042,32 +1042,32 @@ Rules:
 - Prefer edit_file/multi_edit for targeted changes to existing files; use write_file to create or fully rewrite files; use apply_patch for multi-file diffs.
 - Use todo_write to track multi-step work and keep statuses current.
 - Use ask_user whenever a decision is genuinely the user's to make instead of guessing.
-- For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message — they run concurrently.
+- For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message: they run concurrently.
 
 """.trim()
         )
         if (workspace.shellRoot != null) {
             if (linuxEnv.isReady) {
-                sb.append("- The shell tool runs a full Linux environment (bash, git, python, node and more) with the workspace as its working directory. Call commands by their plain names (python3, git, node, ls, …) — the harness launches them correctly on every execution tier. Use shell_background for long-running servers.\n")
+                sb.append("- The shell tool runs a full Linux environment (bash, git, python, node and more) with the workspace as its working directory. Call commands by their plain names (python3, git, node, ls, …): the harness launches them correctly on every execution tier. Use shell_background for long-running servers.\n")
             } else {
-                sb.append("- The shell tool currently runs Android's toybox sh (a real Linux environment can be installed). If a task needs git, python, node, compilers, curl/ssh or similar, do NOT retry with toybox — call the shell tool anyway with the command you need; the harness will show the user an install button in the chat. For everything else use shell_background for long-running servers.\n")
+                sb.append("- The shell tool currently runs Android's toybox sh (a real Linux environment can be installed). If a task needs git, python, node, compilers, curl/ssh or similar, do NOT retry with toybox: call the shell tool anyway with the command you need; the harness will show the user an install button in the chat. For everything else use shell_background for long-running servers.\n")
             }
         } else {
-            sb.append("- The shell tool runs in the app's shell workspace (${linuxEnv.shellFallbackRoot.absolutePath}) because the active workspace is a picked folder (SAF) that shell cannot access. Use file tools for the picked folder's files; use shell for toolchain/global commands. To run or host a project with the shell (node, python…), create its files inside the shell workspace itself — e.g. via shell heredocs (cat > server.js <<'EOF' …) — then run or shell_background them from there. Alternatively tell the user to switch the workspace in Settings to a real folder.\n")
+            sb.append("- The shell tool runs in the app's shell workspace (${linuxEnv.shellFallbackRoot.absolutePath}) because the active workspace is a picked folder (SAF) that shell cannot access. Use file tools for the picked folder's files; use shell for toolchain/global commands. To run or host a project with the shell (node, python…), create its files inside the shell workspace itself (e.g. via shell heredocs: cat > server.js <<'EOF' …) then run or shell_background them from there. Alternatively tell the user to switch the workspace in Settings to a real folder.\n")
         }
 
-        // Shizuku guidance — tell the agent the current state so it can guide the user.
+        // Shizuku guidance: tell the agent the current state so it can guide the user.
         when {
             shizuku.isGranted() -> sb.append("- Shizuku is connected with ADB-shell privileges: the shell tool automatically runs as the shell user whenever the working directory needs it (system paths, shared storage), with the same toolchain. Just use shell normally.\n")
             shizuku.state.value == com.androidharness.app.data.env.ShizukuState.RUNNING_NO_PERMISSION -> sb.append("- Shizuku is running but AndroidHarness hasn't been granted access yet. If a task needs ADB-level shell access (edit system files, access any folder, etc.), tell the user to go to Settings → Terminal and tap \"Grant Shizuku access\".\n")
             shizuku.state.value == com.androidharness.app.data.env.ShizukuState.NOT_RUNNING -> sb.append("- Shizuku is installed but not running. If a task needs ADB-level shell access, tell the user to open the Shizuku app, start the service, then in AndroidHarness go to Settings → Terminal and tap \"Refresh status\" followed by \"Grant Shizuku access\".\n")
-            else -> {} // NOT_INSTALLED — no mention; don't distract the agent.
+            else -> {} // NOT_INSTALLED: no mention; don't distract the agent.
         }
         sb.append(
-            "- Shell environment rules (IMPORTANT): always call commands by plain name (ls, grep, head, python3, git, node…). NEVER work around the environment yourself — do not invoke /system/bin/linker64, /apex/.../linker64, or /system/bin/toybox directly, and do not craft alternate PATHs. The harness already makes every toolchain binary runnable in every tier. " +
-                "If a basic command fails with \"Permission denied\" or exit code 126/127, the environment is misconfigured on this device — run the env_status tool once, tell the user what it reports, and stop retrying command variants.\n",
+            "- Shell environment rules (IMPORTANT): always call commands by plain name (ls, grep, head, python3, git, node…). NEVER work around the environment yourself: do not invoke /system/bin/linker64, /apex/.../linker64, or /system/bin/toybox directly, and do not craft alternate PATHs. The harness already makes every toolchain binary runnable in every tier. " +
+                "If a basic command fails with \"Permission denied\" or exit code 126/127, the environment is misconfigured on this device: run the env_status tool once, tell the user what it reports, and stop retrying command variants.\n",
         )
-        sb.append("- /data/local/tmp is readable only by the shell user — never try to inspect it from the app tier, and never conclude Shizuku/toolchain state from files there; use env_status.\n")
+        sb.append("- /data/local/tmp is readable only by the shell user: never try to inspect it from the app tier, and never conclude Shizuku/toolchain state from files there; use env_status.\n")
         sb.append("- After tool calls complete, either continue with more tool calls or give the user a concise summary of what you did.\n")
         sb.append("- Never invent file contents you have not read.\n")
 
@@ -1103,12 +1103,12 @@ Rules:
     }.getOrNull()
 
     companion object {
-        const val COMPACTION_PREFIX = "[Auto-compacted context — summary of the earlier conversation]"
+        const val COMPACTION_PREFIX = "[Auto-compacted context: summary of the earlier conversation]"
 
         /** How many times a silent (reasoning-only, no answer) model is asked to answer. */
         const val MAX_ANSWER_NUDGES = 1
         private val ANSWER_NUDGE =
-            "Your previous reply ended without any visible answer — it was likely cut off " +
+            "Your previous reply ended without any visible answer: it was likely cut off " +
                 "mid-generation. Respond now with your actual answer (or the tool calls you intended)."
     }
 }

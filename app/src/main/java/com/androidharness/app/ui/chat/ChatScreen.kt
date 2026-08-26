@@ -296,7 +296,7 @@ fun ChatScreen(
             text = {
                 Text(
                     "Everything after this message will be deleted, and any file changes made " +
-                        "after it will be undone — files are restored to how they were at that " +
+                        "after it will be undone: files are restored to how they were at that " +
                         "point. The edited message is then resent. This cannot be undone.",
                 )
             },

@@ -165,7 +165,7 @@ fun StatsScreen(
                 if (byModel.isEmpty()) {
                     Text(
                         "No per-model data in this window. Attribution starts with " +
-                            "requests made after this version of the app — earlier " +
+                            "requests made after this version of the app: earlier " +
                             "sessions only have undivided totals.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -199,6 +199,7 @@ fun StatsScreen(
                                     formatTokenCount(row.totalTokens),
                                     style = MaterialTheme.typography.bodyMedium,
                                     fontFamily = FontFamily.Monospace,
+                                    maxLines = 1,
                                 )
                                 com.androidharness.app.llm.ModelPrices.estimate(
                                     row.model, row.inputTokens, row.outputTokens,
@@ -243,7 +244,7 @@ fun StatsScreen(
                     label = "Average hit rate",
                     value = if (bundle.input > 0) {
                         "%.1f%%".format(bundle.cached.toDouble() / bundle.input.toDouble() * 100)
-                    } else "—",
+                    } else "-",
                 )
                 if (bundle.input > 0) {
                     Spacer(Modifier.height(6.dp))
@@ -272,7 +273,7 @@ fun StatsScreen(
                 )
                 StatBig(
                     label = "Maximum cache hit score",
-                    value = bundle.peakHitRate?.let { "%.1f%%".format(it * 100) } ?: "—",
+                    value = bundle.peakHitRate?.let { "%.1f%%".format(it * 100) } ?: "-",
                     supporting = "best session in this window",
                 )
             }
