@@ -35,6 +35,7 @@ class ToolRegistry(tools: List<Tool>) {
 
     fun schemas(readOnlyOnly: Boolean = false) = byName.values
         .filter { !readOnlyOnly || it.isReadOnly }
+        .sortedBy { it.name }
         .map {
             com.androidharness.app.llm.ToolSchema(it.name, it.description, it.parametersSchema)
         }

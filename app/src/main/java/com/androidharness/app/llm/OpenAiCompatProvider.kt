@@ -88,7 +88,11 @@ class OpenAiCompatProvider(
             // the endpoint supports it; gated by host so strict OpenAI-compat
             // servers that reject unknown fields keep working.
             if (options.cacheKey != null && supportsCacheKey(config.baseUrl)) {
-                put("prompt_cache_key", options.cacheKey)
+                val cleanKey = options.cacheKey.take(64)
+                put("prompt_cache_key", cleanKey)
+                if (!isLocalHost(host)) {
+                    put("user", "pc_$cleanKey")
+                }
             }
             // Older llama.cpp/Ollama builds answer 400 to unknown fields; only
             // request usage accounting from endpoint families documenting it.
@@ -96,15 +100,28 @@ class OpenAiCompatProvider(
                 putJsonObject("stream_options") { put("include_usage", true) }
             }
             putJsonArray("messages") {
-                add(buildJsonObject {
-                    put("role", "system")
-                    put("content", systemPrompt)
-                })
+                if ("openrouter.ai" in host && (config.model.contains("claude", true) || config.model.contains("anthropic", true))) {
+                    add(buildJsonObject {
+                        put("role", "system")
+                        putJsonArray("content") {
+                            add(buildJsonObject {
+                                put("type", "text")
+                                put("text", systemPrompt)
+                                putJsonObject("cache_control") { put("type", "ephemeral") }
+                            })
+                        }
+                    })
+                } else {
+                    add(buildJsonObject {
+                        put("role", "system")
+                        put("content", systemPrompt)
+                    })
+                }
                 messages.forEach { add(serializeMessage(it)) }
             }
             if (tools.isNotEmpty()) {
                 putJsonArray("tools") {
-                    tools.forEach { schema ->
+                    tools.sortedBy { it.name }.forEach { schema ->
                         add(buildJsonObject {
                             put("type", "function")
                             putJsonObject("function") {
@@ -118,9 +135,14 @@ class OpenAiCompatProvider(
             }
         }
 
-        val request = Request.Builder()
+        val requestBuilder = Request.Builder()
             .url(config.baseUrl.trimEnd('/') + "/chat/completions")
             .header("Authorization", "Bearer $apiKey")
+        if ("openrouter.ai" in host) {
+            requestBuilder.header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
+            requestBuilder.header("X-Title", "Android Harness")
+        }
+        val request = requestBuilder
             .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
 

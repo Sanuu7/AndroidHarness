@@ -81,6 +81,11 @@ class OpenAiResponsesProvider(
         put("store", false)
         put("max_output_tokens", options.maxOutputTokens)
         put("instructions", systemPrompt)
+        options.cacheKey?.let { key ->
+            val cleanKey = key.take(64)
+            put("prompt_cache_key", cleanKey)
+            put("user", "pc_$cleanKey")
+        }
         if (options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF) {
             com.androidharness.app.agent.ThinkingSpecs
                 .effortWire(config.model, options.thinking, "openai")
@@ -96,7 +101,7 @@ class OpenAiResponsesProvider(
         }
         if (tools.isNotEmpty()) {
             putJsonArray("tools") {
-                tools.forEach { schema ->
+                tools.sortedBy { it.name }.forEach { schema ->
                     add(buildJsonObject {
                         put("type", "function")
                         put("name", schema.name)

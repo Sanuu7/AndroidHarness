@@ -50,7 +50,7 @@ class GeminiProvider(
                 putJsonArray("tools") {
                     add(buildJsonObject {
                         putJsonArray("functionDeclarations") {
-                            tools.forEach { schema ->
+                            tools.sortedBy { it.name }.forEach { schema ->
                                 add(buildJsonObject {
                                     put("name", schema.name)
                                     put("description", schema.description)

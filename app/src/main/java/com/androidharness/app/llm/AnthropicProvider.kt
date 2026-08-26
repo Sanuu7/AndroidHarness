@@ -69,13 +69,14 @@ class AnthropicProvider(
                 applyCacheBreakpoints(serializeMessages(messages)).forEach { add(it) }
             }
             if (tools.isNotEmpty()) {
+                val sortedTools = tools.sortedBy { it.name }
                 putJsonArray("tools") {
-                    tools.forEachIndexed { index, schema ->
+                    sortedTools.forEachIndexed { index, schema ->
                         add(buildJsonObject {
                             put("name", schema.name)
                             put("description", schema.description)
                             put("input_schema", schema.parametersJson)
-                            if (index == tools.lastIndex) {
+                            if (index == sortedTools.lastIndex) {
                                 putJsonObject("cache_control") { put("type", "ephemeral") }
                             }
                         })
