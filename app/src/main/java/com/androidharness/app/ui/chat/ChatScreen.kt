@@ -538,15 +538,10 @@ fun ChatScreen(
         topBar = {
             val ap = state.activeProvider
             // The FULL global ladder for every model (Hermes-style): picking a
-            // rung the model doesn't natively speak resolves down the chain.
+            // rung the model doesn't natively speak resolves down the chain
+            // inside setClamped; menus render plain labels without captions.
             val thinkingLevels = remember(state.effectiveModel, ap) {
                 com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
-                    state.effectiveModel,
-                    com.androidharness.app.llm.ModelsDev.providerKeyFor(ap?.baseUrl),
-                )
-            }
-            val modelThinkingSpec = remember(state.effectiveModel, ap) {
-                com.androidharness.app.agent.ThinkingSpecs.forModel(
                     state.effectiveModel,
                     com.androidharness.app.llm.ModelsDev.providerKeyFor(ap?.baseUrl),
                 )
@@ -561,7 +556,6 @@ fun ChatScreen(
                 mode = state.mode,
                 thinkingLevel = state.thinkingLevel,
                 thinkingLevels = thinkingLevels,
-                thinkingSpec = modelThinkingSpec,
                 permissionMode = state.permissionMode,
                 canUndo = state.turnsWithCheckpoints.isNotEmpty(),
                 onOpenDrawer = onOpenDrawer,

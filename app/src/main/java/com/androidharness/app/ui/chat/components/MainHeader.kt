@@ -74,8 +74,6 @@ internal fun MainHeader(
     thinkingLevel: ThinkingLevel,
     /** Full global ladder — every model offers every rung (Hermes-style). */
     thinkingLevels: List<ThinkingLevel>,
-    /** The active model's capability spec, for resolving fallback arrows. */
-    thinkingSpec: com.androidharness.app.agent.ThinkingSpecs.Spec,
     permissionMode: PermissionMode,
     canUndo: Boolean,
     onOpenDrawer: () -> Unit,
@@ -218,14 +216,6 @@ internal fun MainHeader(
                                     Text(entry.label, Modifier.weight(1f))
                                     if (entry == thinkingLevel) {
                                         Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
-                                    } else if (entry != ThinkingLevel.OFF &&
-                                        ThinkingSpecs.resolveLevel(entry, thinkingSpec) != entry
-                                    ) {
-                                        Text(
-                                            "→ ${ThinkingSpecs.resolveLevel(entry, thinkingSpec)?.label}",
-                                            style = MaterialTheme.typography.labelSmall,
-                                            color = scheme.onSurfaceVariant,
-                                        )
                                     }
                                 }
                             },
@@ -353,14 +343,6 @@ internal fun MainHeader(
                                 Text(entry.label, Modifier.weight(1f))
                                 if (entry == thinkingLevel) {
                                     Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
-                                } else if (entry != ThinkingLevel.OFF &&
-                                    ThinkingSpecs.resolveLevel(entry, thinkingSpec) != entry
-                                ) {
-                                    Text(
-                                        "→ ${ThinkingSpecs.resolveLevel(entry, thinkingSpec)?.label}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = scheme.onSurfaceVariant,
-                                    )
                                 }
                             }
                         }, onClick = { onSetThinking(entry); thinkingMenu = false })
