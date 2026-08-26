@@ -136,6 +136,9 @@ fun ChatScreen(
     var showProviderManager by remember { mutableStateOf(false) }
     var showWorkspaceSwitcher by remember { mutableStateOf(false) }
     var showAddWorkspace by remember { mutableStateOf(false) }
+    var pendingDeleteWorkspace by remember {
+        mutableStateOf<com.androidharness.app.data.db.ProjectEntity?>(null)
+    }
     var slashExpanded by remember { mutableStateOf(false) }
     var composerText by remember { mutableStateOf("") }
     var attachedSkill by remember { mutableStateOf<String?>(null) }
@@ -214,6 +217,25 @@ fun ChatScreen(
             onSelect = viewModel::setWorkspace,
             onAdd = { showAddWorkspace = true },
             onDismiss = { showWorkspaceSwitcher = false },
+            onDelete = { pendingDeleteWorkspace = it },
+        )
+    }
+    pendingDeleteWorkspace?.let { project ->
+        AlertDialog(
+            onDismissRequest = { pendingDeleteWorkspace = null },
+            title = { Text("Delete workspace?") },
+            text = { Text("Remove \"${project.name}\" from the list? Files on disk are not deleted.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    scope.launch {
+                        viewModel.container.workspace.deleteProject(project)
+                        pendingDeleteWorkspace = null
+                    }
+                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingDeleteWorkspace = null }) { Text("Cancel") }
+            },
         )
     }
     if (showAddWorkspace) {

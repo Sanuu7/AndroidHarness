@@ -523,6 +523,9 @@ fun AppNav(container: AppContainer) {
             onSelect = { id -> scope.launch { container.workspace.setActiveProject(id) } },
             onAdd = { showAddWorkspace = true },
             onDismiss = { showWorkspaceSheet = false },
+            onDelete = { project ->
+                scope.launch { container.workspace.deleteProject(project) }
+            },
         )
     }
     if (showAddWorkspace) {

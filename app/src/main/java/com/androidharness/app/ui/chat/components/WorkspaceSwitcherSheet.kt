@@ -13,6 +13,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -33,7 +34,7 @@ import com.androidharness.app.workspace.WorkspaceDescription
 /**
  * Quick workspace switching without leaving chat: every project as a
  * divider-separated row with its capability ("full shell" vs "file tools"),
- * tap to activate, one tap to add more.
+ * tap to activate, delete non-app workspaces, one tap to add more.
  *
  * Why a sheet: picking a workspace affects what every tool touches next, so
  * it stays one tap from anywhere (chat overflow, drawer) rather than buried
@@ -48,6 +49,7 @@ fun WorkspaceSwitcherSheet(
     onSelect: (String) -> Unit,
     onAdd: () -> Unit,
     onDismiss: () -> Unit,
+    onDelete: ((ProjectEntity) -> Unit)? = null,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -113,6 +115,19 @@ fun WorkspaceSwitcherSheet(
                                 tint = MaterialTheme.colorScheme.primary,
                                 modifier = Modifier.size(18.dp),
                             )
+                        }
+                        if (onDelete != null && project.kind != "APP") {
+                            IconButton(onClick = {
+                                onDismiss()
+                                onDelete(project)
+                            }) {
+                                Icon(
+                                    Icons.Outlined.Delete,
+                                    contentDescription = "Delete ${project.name}",
+                                    tint = MaterialTheme.colorScheme.error,
+                                    modifier = Modifier.size(18.dp),
+                                )
+                            }
                         }
                     }
                     if (index < projects.lastIndex) {
