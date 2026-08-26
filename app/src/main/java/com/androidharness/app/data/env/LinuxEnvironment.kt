@@ -211,16 +211,20 @@ class LinuxEnvironmentManager(private val context: Context) {
         // init because it looks under its old build prefix. Point it at the
         // templates shipped in our prefix, or disable templates if absent.
         put("GIT_TEMPLATE_DIR", gitTemplatesDir().absolutePath)
+        // Same re-rooting problem for git's exec helpers (git-remote-https,
+        // git-upload-pack…): its compiled-in exec path points at the old
+        // Termux prefix. Without this, HTTPS clones die with
+        // "remote helper 'https' aborted session".
+        put("GIT_EXEC_PATH", File(prefix, "libexec/git-core").absolutePath)
         // bash sources this for `bash -c`: shims make every toolchain binary
         // runnable despite the W^X exec restriction on app-private files.
         if (shimFile.exists()) put("BASH_ENV", shimFile.absolutePath)
         putAll(tlsEnvVars())
         // Bug 2 fix: tell every spawned shell where exec-capable scratch lives.
-        put(
-            "HARNESS_SCRATCH",
-            if (File(ShellPolicy.SCRATCH_TMP).isDirectory) ShellPolicy.SCRATCH_TMP
-            else File(context.filesDir, ".harness-scratch").absolutePath,
-        )
+        // This env serves APP-uid processes: they cannot write /data/local/tmp
+        // (SELinux), so they get the app-private mirror; the privileged tier's
+        // tmpProcessEnv exports the shared tmp scratch instead.
+        put("HARNESS_SCRATCH", appPrivateScratch.absolutePath)
     }
 
     // ------------------------------------------------------------------
@@ -249,9 +253,17 @@ class LinuxEnvironmentManager(private val context: Context) {
         val tmpScratch = File(ShellPolicy.SCRATCH_TMP)
         tmpScratch.mkdirs()
         runCatching { Os.chmod(tmpScratch.absolutePath, 0x1FF /* 0777 */) }
-        // App-private fallback for this build's package id.
-        File(context.filesDir, ".harness-scratch").mkdirs()
+        // App-private fallback for this build's package id: the ONLY location
+        // the app uid can reliably write (SELinux denies app-writes to
+        // /data/local/tmp even with mode 777).
+        appPrivateScratch.mkdirs()
     }
+
+    /**
+     * Scratch dir usable by THIS app's uid for direct writes (tar extraction
+     * etc.). App-private, so both package flavors map to their own copy.
+     */
+    val appPrivateScratch: File = File(context.filesDir, ".harness-scratch")
 
     /**
      * TLS trust vars (Bug 1 fix): point curl/python/git/node at the CA bundle
@@ -375,6 +387,9 @@ class LinuxEnvironmentManager(private val context: Context) {
         // Same templates fix as the app-side env, for the /data/local/tmp copy.
         val templates = File("$TMP_PREFIX/share/git-core/templates")
         put("GIT_TEMPLATE_DIR", if (templates.isDirectory) templates.absolutePath else "")
+        // Re-rooted git needs its exec helpers (git-remote-https etc.) pointed
+        // at our deployed copy or HTTPS remotes abort with a missing helper.
+        put("GIT_EXEC_PATH", "$TMP_PREFIX/libexec/git-core")
         // Bug 1 fix: the deployed copy carries its own CA bundle; export the
         // standard TLS vars so curl/python/git/node verify certificates.
         val tlsBundle = File("$TMP_PREFIX/etc/tls/cacert.pem")
