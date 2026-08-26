@@ -123,32 +123,29 @@ object ThinkingSpecs {
         ThinkingLevel.entries.toList()
 
     /**
-     * After a model switch the stored thinking tier may not exist on the new
-     * model — adapt it via the one clamp policy. Keeps the badge and wire
-     * values honest without user intervention; no-op when already supported.
+     * After a model switch the stored tier may not exist on the new model,
+     * but Hermes-style the STORED value is never rewritten: [resolveLevel]
+     * re-applies per request, so the same pick adapts to every model.
+     * Kept as a no-op shim for existing call sites.
      */
     suspend fun clampStoredLevel(
         settings: com.androidharness.app.data.SettingsRepository,
         modelId: String?,
         devKey: String?,
-    ) {
-        val current = settings.settings.firstOrNull()?.thinkingLevel ?: return
-        setClamped(settings, modelId, devKey, current)
-    }
+    ) = Unit
 
     /**
-     * Persists [requested] resolved against the model's real vocabulary. All
-     * setters funnel here so the stored value can never go off-ladder.
+     * Persists [requested] VERBATIM (the raw global pick, Hermes-style).
+     * Resolution happens later, per request, against whichever model runs —
+     * never here, or the user's intent would be lost on every switch.
      */
     suspend fun setClamped(
         settings: com.androidharness.app.data.SettingsRepository,
-        modelId: String?,
-        devKey: String?,
+        @Suppress("UNUSED_PARAMETER") modelId: String?,
+        @Suppress("UNUSED_PARAMETER") devKey: String?,
         requested: ThinkingLevel,
     ) {
-        val resolved = resolveLevel(requested, forModel(modelId, devKey))
-            ?: requested
-        settings.setThinkingLevel(resolved)
+        settings.setThinkingLevel(requested)
     }
 
     private fun tierRank(tier: String): Int = when (tier.lowercase()) {

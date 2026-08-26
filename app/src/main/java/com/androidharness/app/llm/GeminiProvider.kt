@@ -69,7 +69,12 @@ class GeminiProvider(
                         val catalogMax = ModelsDev.entry("google", config.model)?.budgetMax
                         val budget = options.thinking.budgetTokens(options.maxOutputTokens)
                             .let { if (catalogMax != null) minOf(it, catalogMax) else it }
-                        put("thinkingBudget", if (options.thinking == com.androidharness.app.agent.ThinkingLevel.MAX) -1 else budget)
+                        put(
+                            "thinkingBudget",
+                            if (options.thinking == com.androidharness.app.agent.ThinkingLevel.MAX ||
+                                options.thinking == com.androidharness.app.agent.ThinkingLevel.ULTRA
+                            ) -1 else budget,
+                        )
                         put("includeThoughts", false)
                     }
                 }
