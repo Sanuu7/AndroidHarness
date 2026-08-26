@@ -226,6 +226,15 @@ interface HarnessDao {
     )
     fun usageByModelSince(since: Long): Flow<List<ModelUsagePojo>>
 
+    @Query(
+        "SELECT providerName, model, SUM(inputTokens) AS inputTokens, " +
+            "SUM(outputTokens) AS outputTokens, SUM(cachedTokens) AS cachedTokens, " +
+            "SUM(cacheWriteTokens) AS cacheWriteTokens, COUNT(*) AS requests " +
+            "FROM usage_events WHERE sessionId = :sessionId " +
+            "GROUP BY providerName, model ORDER BY (SUM(inputTokens) + SUM(outputTokens)) DESC"
+    )
+    fun usageByModelForSession(sessionId: String): Flow<List<ModelUsagePojo>>
+
     @Query("DELETE FROM usage_events WHERE sessionId = :sessionId")
     suspend fun deleteUsageEvents(sessionId: String)
 

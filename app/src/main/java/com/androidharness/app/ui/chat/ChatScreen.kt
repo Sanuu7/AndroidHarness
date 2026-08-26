@@ -1159,15 +1159,29 @@ private fun CostDialog(
 ) {
     val model = state.effectiveModel
     val providerKey = state.activeProvider?.let { com.androidharness.app.llm.ModelsDev.providerKeyFor(it.baseUrl) }
-    val cost = model?.let {
-        com.androidharness.app.llm.ModelPrices.estimate(
-            it,
-            state.usage.totalInput,
-            state.usage.totalOutput,
-            state.usage.totalCached,
-            state.usage.totalCacheWrite,
-            providerKey = providerKey,
-        )
+    val cost: Double? = if (state.sessionModelUsage.isNotEmpty()) {
+        state.sessionModelUsage.sumOf { row ->
+            val pKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(row.providerName)
+            com.androidharness.app.llm.ModelPrices.estimate(
+                model = row.model,
+                totalInputTokens = row.inputTokens,
+                outputTokens = row.outputTokens,
+                cachedTokens = row.cachedTokens,
+                cacheWriteTokens = row.cacheWriteTokens,
+                providerKey = pKey,
+            ) ?: 0.0
+        }
+    } else {
+        model?.let {
+            com.androidharness.app.llm.ModelPrices.estimate(
+                it,
+                state.usage.totalInput,
+                state.usage.totalOutput,
+                state.usage.totalCached,
+                state.usage.totalCacheWrite,
+                providerKey = providerKey,
+            )
+        }
     }
     AlertDialog(
         onDismissRequest = onDismiss,

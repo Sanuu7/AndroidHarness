@@ -49,15 +49,29 @@ fun ContextUsageDialog(
         .coerceAtLeast(0)
     val model = state.effectiveModel
     val providerKey = state.activeProvider?.let { com.androidharness.app.llm.ModelsDev.providerKeyFor(it.baseUrl) }
-    val estimatedCost = model?.let {
-        ModelPrices.estimate(
-            it,
-            totalInputTokens = state.usage.totalInput,
-            outputTokens = state.usage.totalOutput,
-            cachedTokens = state.usage.totalCached,
-            cacheWriteTokens = state.usage.totalCacheWrite,
-            providerKey = providerKey,
-        )
+    val estimatedCost: Double? = if (state.sessionModelUsage.isNotEmpty()) {
+        state.sessionModelUsage.sumOf { row ->
+            val pKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(row.providerName)
+            ModelPrices.estimate(
+                model = row.model,
+                totalInputTokens = row.inputTokens,
+                outputTokens = row.outputTokens,
+                cachedTokens = row.cachedTokens,
+                cacheWriteTokens = row.cacheWriteTokens,
+                providerKey = pKey,
+            ) ?: 0.0
+        }
+    } else {
+        model?.let {
+            ModelPrices.estimate(
+                it,
+                totalInputTokens = state.usage.totalInput,
+                outputTokens = state.usage.totalOutput,
+                cachedTokens = state.usage.totalCached,
+                cacheWriteTokens = state.usage.totalCacheWrite,
+                providerKey = providerKey,
+            )
+        }
     }
 
     AlertDialog(
@@ -122,9 +136,14 @@ fun ContextUsageDialog(
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
-                    if (estimatedCost != null && model != null) {
+                    if (estimatedCost != null) {
+                        val subText = if (state.sessionModelUsage.size > 1) {
+                            "across ${state.sessionModelUsage.size} models used in this session"
+                        } else {
+                            "at ${model ?: "current model"} list prices"
+                        }
                         Text(
-                            "at $model list prices",
+                            subText,
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                         )

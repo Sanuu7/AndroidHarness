@@ -147,6 +147,10 @@ class SessionRepository(
         )
     }
 
+    /** Per-model usage breakdown for a single session. */
+    fun usageByModelFor(sessionId: String): Flow<List<com.androidharness.app.data.db.ModelUsagePojo>> =
+        db.dao().usageByModelForSession(sessionId)
+
     /** Per-file line-change stat from one editing tool call (chat "+N −M" chips). */
     suspend fun recordFileEdit(
         sessionId: String,
