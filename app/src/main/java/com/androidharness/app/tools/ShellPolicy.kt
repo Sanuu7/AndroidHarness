@@ -34,7 +34,19 @@ object ShellPolicy {
         }
 
         val effectiveCwd = cwd ?: workspaceRoot
-        return checkSandbox(cmd, workspaceRoot, effectiveCwd)
+
+        // Check raw command
+        val rawCheck = checkSandbox(cmd, workspaceRoot, effectiveCwd)
+        if (rawCheck != null) return rawCheck
+
+        // Check expanded command ($PWD, ${PWD}, $HOME, variable assignments, $'\x2e\x2e', $(pwd), etc.)
+        val expanded = expandVariables(cmd, workspaceRoot, effectiveCwd)
+        if (expanded != cmd) {
+            val expandedCheck = checkSandbox(expanded, workspaceRoot, effectiveCwd)
+            if (expandedCheck != null) return expandedCheck
+        }
+
+        return null
     }
 
     private fun checkSandbox(cmd: String, workspaceRoot: File?, cwd: File?): String? {
@@ -120,7 +132,7 @@ object ShellPolicy {
         if (clean.startsWith("/")) {
             return checkAbsolutePath(clean, workspaceRoot, isSymlink, isRedirection)
         }
-        if (clean == ".." || clean.startsWith("../") || clean.contains("/..")) {
+        if (clean == ".." || clean.startsWith("../") || clean.contains("/..") || clean.startsWith("./..")) {
             return checkRelativePath(clean, workspaceRoot, cwd, isSymlink, isRedirection)
         }
         return null
@@ -171,13 +183,59 @@ object ShellPolicy {
                 }
                 return "Blocked: path is outside the workspace sandbox: $path"
             }
-        } else if (path == ".." || path.startsWith("..") || path.contains("/..")) {
+        } else if (path == ".." || path.startsWith("..") || path.contains("/..") || path.startsWith("./..")) {
             if (isSymlink) {
                 return "Blocked: symlink target is outside the workspace sandbox: $path (symlink not supported/allowed)"
             }
             return "Blocked: path is outside the workspace sandbox: $path"
         }
         return null
+    }
+
+    fun expandVariables(
+        cmd: String,
+        workspaceRoot: File?,
+        cwd: File?,
+    ): String {
+        val vars = mutableMapOf<String, String>()
+        val effectiveCwd = cwd ?: workspaceRoot ?: File(".")
+        val cwdPath = effectiveCwd.canonicalPath
+        val rootPath = workspaceRoot?.canonicalPath ?: cwdPath
+        vars["PWD"] = cwdPath
+        vars["CWD"] = cwdPath
+        vars["WORKSPACE"] = rootPath
+        vars["HOME"] = "/data/local/tmp/androidharness/linux/home"
+
+        // Extract all variable assignments in the command: VAR=value
+        val assignments = extractVariableAssignments(cmd)
+        for ((k, v) in assignments) {
+            var resolvedV = v.trim('\'', '"')
+            for ((varName, varVal) in vars) {
+                resolvedV = resolvedV.replace("\$$varName", varVal).replace("\${$varName}", varVal)
+            }
+            vars[k] = resolvedV
+        }
+
+        var expanded = cmd
+        // Unescape ANSI-C quotes: $'...'
+        expanded = expanded.replace(ANSI_C_REGEX) { m ->
+            unescapeAnsiC(m.groupValues[1])
+        }
+
+        // Replace $(pwd), `pwd`, etc.
+        expanded = expanded.replace("\$(pwd)", cwdPath)
+        expanded = expanded.replace("`pwd`", cwdPath)
+        expanded = expanded.replace("\$(echo \$PWD)", cwdPath)
+        expanded = expanded.replace("\$(echo \${PWD})", cwdPath)
+
+        // Replace all variables sorted by name length descending
+        val sortedVars = vars.entries.sortedByDescending { it.key.length }
+        for ((k, v) in sortedVars) {
+            expanded = expanded.replace("\${$k}", v)
+            expanded = expanded.replace("\$$k", v)
+        }
+
+        return expanded
     }
 
     private fun isSymlinkCreation(tokens: List<String>): Boolean {
@@ -207,10 +265,10 @@ object ShellPolicy {
             "/sys",
             "/tmp",
             "/data/local/tmp/androidharness",
-            "/data/data/com.androidharness",
-            "/data/user/0/com.androidharness",
-            "/data/data/com.androidharness.debug",
-            "/data/user/0/com.androidharness.debug",
+            "/data/data/com.androidharness/files/linux",
+            "/data/user/0/com.androidharness/files/linux",
+            "/data/data/com.androidharness.debug/files/linux",
+            "/data/user/0/com.androidharness.debug/files/linux",
         )
         return allowedPrefixes.any { path == it || path.startsWith("$it/") }
     }
@@ -258,6 +316,44 @@ object ShellPolicy {
             list += name to value
         }
         return list
+    }
+
+    private fun unescapeAnsiC(s: String): String {
+        val sb = StringBuilder()
+        var i = 0
+        while (i < s.length) {
+            if (s[i] == '\\' && i + 1 < s.length) {
+                val next = s[i + 1]
+                when (next) {
+                    'x' -> {
+                        val hex = s.substring(i + 2, minOf(i + 4, s.length))
+                        val code = hex.toIntOrNull(16)
+                        if (code != null) {
+                            sb.append(code.toChar())
+                            i += 2 + hex.length
+                            continue
+                        }
+                    }
+                    '0', '1', '2', '3', '4', '5', '6', '7' -> {
+                        val oct = s.substring(i + 1, minOf(i + 4, s.length)).takeWhile { it in '0'..'7' }
+                        val code = oct.toIntOrNull(8)
+                        if (code != null) {
+                            sb.append(code.toChar())
+                            i += 1 + oct.length
+                            continue
+                        }
+                    }
+                    'n' -> { sb.append('\n'); i += 2; continue }
+                    'r' -> { sb.append('\r'); i += 2; continue }
+                    't' -> { sb.append('\t'); i += 2; continue }
+                    '\\' -> { sb.append('\\'); i += 2; continue }
+                    '\'' -> { sb.append('\''); i += 2; continue }
+                }
+            }
+            sb.append(s[i])
+            i++
+        }
+        return sb.toString()
     }
 
     fun extractTokens(command: String): List<String> {
@@ -354,6 +450,7 @@ object ShellPolicy {
     private val ABS_PATH_REGEX = Regex("""/(?:storage|sdcard|data|etc|mnt|system|vendor|apex|dev|proc|sys|tmp)[A-Za-z0-9_.\-/]*""")
     private val TRAVERSAL_REGEX = Regex("""(?:\.\./|/\.\.|\b\.\.\b)""")
     private val TRAVERSAL_TOKEN_REGEX = Regex("""[^\s;&|'"]*\.\.[^\s;&|'"]*""")
+    private val ANSI_C_REGEX = Regex("""\$'([^']*)'""")
 
     private val RM = Regex("""(^|[\s;&|])rm\b""")
     private val RECURSIVE = Regex("""(^|[\s])(-[a-zA-Z]*r[a-zA-Z]*|--recursive)\b""")

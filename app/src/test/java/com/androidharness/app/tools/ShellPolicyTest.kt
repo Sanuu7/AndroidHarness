@@ -115,6 +115,14 @@ class ShellPolicyTest {
             "stat /storage/emulated/0/Download/foo",
             "eval \"cat /etc/shadow\"",
             "python3 -c \"import os; print(os.listdir('/storage/emulated/0'))\"",
+            "echo ESCAPED > \"\$PWD/../rel_escape2.txt\"",
+            "cat \"\$PWD/../rel_escape2.txt\"",
+            "echo ESCAPED > \"\${PWD}/../rel_escape2.txt\"",
+            "D=\"\$PWD/..\"; cat \"\$D/file\"",
+            "P=\"..\"; echo ESCAPED > \"\$PWD/\$P/file\"",
+            "echo ESCAPED > \"\$(pwd)/../file\"",
+            "echo ESCAPED > \"`pwd`/../file\"",
+            "cat \$'\\x2e\\x2e/secret.txt'",
         )
         for (cmd in bypassCmds) {
             val reason = ShellPolicy.denyReason(cmd, root, root)
@@ -130,10 +138,41 @@ class ShellPolicyTest {
             "VAR=\$(echo hello); echo \"\$VAR\"",
             "for i in 1 2 3; do echo tick\$i; done",
             "branch=\$(git rev-parse --abbrev-ref HEAD); echo \"\$branch\"",
+            "echo OK > \"\$PWD/test.txt\"",
+            "echo OK > \"\${PWD}/nested/file.txt\"",
+            "D=\"doctor/nested\"; echo OK > \"\$D/../nested/test.txt\"",
         )
         for (cmd in allowedCmds) {
             val reason = ShellPolicy.denyReason(cmd, root, root)
             assertNull("$cmd should be allowed", reason)
+        }
+    }
+
+    @Test
+    fun `sandbox on shared storage blocks PWD traversal escape`() {
+        val root = java.io.File("/storage/emulated/0/Download/myworkspace")
+        val escapeCmds = listOf(
+            "echo ESCAPED > \"\$PWD/../rel_escape2.txt\"",
+            "cat \"\$PWD/../rel_escape2.txt\"",
+            "echo ESCAPED > \"\${PWD}/../rel_escape2.txt\"",
+            "cat /storage/emulated/0/Download/rel_escape2.txt",
+            "cat /storage/emulated/0/DCIM/photo.jpg",
+            "echo ESCAPED > /storage/emulated/0/other.txt",
+        )
+        for (cmd in escapeCmds) {
+            val reason = ShellPolicy.denyReason(cmd, root, root)
+            assertNotNull("$cmd should be blocked on shared storage workspace", reason)
+        }
+
+        val inWorkspaceCmds = listOf(
+            "echo OK > \"\$PWD/main.py\"",
+            "echo OK > \"\$PWD/src/nested/app.py\"",
+            "cat \"\$PWD/main.py\"",
+            "cat /storage/emulated/0/Download/myworkspace/main.py",
+        )
+        for (cmd in inWorkspaceCmds) {
+            val reason = ShellPolicy.denyReason(cmd, root, root)
+            assertNull("$cmd should be allowed on shared storage workspace", reason)
         }
     }
 }
