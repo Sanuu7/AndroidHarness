@@ -208,6 +208,7 @@ class OpenAiCompatProvider(
                 ?: usage["cache_creation_tokens"]?.jsonPrimitive?.intOrNull
                 ?: 0
             if (input != null || output != null) {
+                println("HarnessUsage: Parsed usage: input=$input, output=$output, cached=$cached, cacheWrite=$cacheWrite, raw=$usage")
                 events += StreamEvent.Usage(input ?: 0, output ?: 0, cached, cacheWrite)
             }
         }
@@ -319,15 +320,10 @@ class OpenAiCompatProvider(
     internal fun supportsUsageAccounting(baseUrl: String): Boolean = !isLocalHost(baseUrl)
 
     /**
-     * Hosts that document `prompt_cache_key` (or a compatible alias). Sent only
-     * to these so stricter OpenAI-compat servers (Ollama, LM Studio, …) never
-     * see an unknown field.
+     * Hosts that support session KV-cache pinning via `prompt_cache_key`.
+     * Sent to all remote gateways while protecting bare-local servers (Ollama, LM Studio).
      */
-    private fun supportsCacheKey(baseUrl: String): Boolean {
-        val host = baseUrl.lowercase()
-        return "api.openai.com" in host || "openrouter.ai" in host ||
-            "api.deepseek.com" in host || "api.moonshot" in host
-    }
+    private fun supportsCacheKey(baseUrl: String): Boolean = !isLocalHost(baseUrl)
 
     private fun serializeMessage(m: ChatMessage): JsonObject = when (m.role) {
         Role.USER -> buildJsonObject {
