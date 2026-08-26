@@ -79,7 +79,7 @@ fun ContextUsageDialog(
         confirmButton = {
             TextButton(onClick = onDismiss) { Text("Close") }
         },
-        title = { Text("Context") },
+        title = { Text("Context and Usage") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(12.dp),
@@ -87,15 +87,15 @@ fun ContextUsageDialog(
             ) {
                 Column {
                     Text(
-                        "Context window",
+                        "Context Window",
                         style = MaterialTheme.typography.labelLarge,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     Spacer(Modifier.height(2.dp))
                     Text(
-                        "${formatTokenCount(used)}/${formatTokenCount(max)} " +
-                            "(%.1f%%)".format(fraction * 100),
-                        style = MaterialTheme.typography.titleLarge,
+                        "${formatTokenCount(used)} / ${formatTokenCount(max)} tokens (" +
+                            "%.1f%%".format(fraction * 100) + ")",
+                        style = MaterialTheme.typography.titleMedium,
                     )
                     Spacer(Modifier.height(8.dp))
                     ThinLinearProgress(
@@ -106,23 +106,36 @@ fun ContextUsageDialog(
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     BreakdownRow("Messages", estimate?.messagesTokens, estimateTotal)
-                    BreakdownRow("System tools", estimate?.toolsTokens, estimateTotal)
-                    BreakdownRow("System prompt", estimate?.systemTokens, estimateTotal)
-                    BreakdownRow("Meta context", estimate?.metaTokens, estimateTotal)
+                    BreakdownRow("Tools and Skills", estimate?.toolsTokens, estimateTotal)
+                    BreakdownRow("System Prompt", estimate?.systemTokens, estimateTotal)
+                    BreakdownRow("Meta Context", estimate?.metaTokens, estimateTotal)
                 }
 
                 HorizontalDivider()
 
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    // Arrow directions match Cline's task-header convention.
-                    TokenRow("↑ Input (fresh)", formatTokenCount(freshInput))
-                    TokenRow("↓ Output", formatTokenCount(state.usage.totalOutput))
-                    if (state.usage.totalCached > 0) {
-                        TokenRow("→ Cache reads", formatTokenCount(state.usage.totalCached))
-                    }
+                    Text(
+                        "Session Tokens",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    TokenRow("Fresh input tokens", formatTokenCount(freshInput))
+                    TokenRow("Cached tokens (hits)", formatTokenCount(state.usage.totalCached))
                     if (state.usage.totalCacheWrite > 0) {
-                        TokenRow("← Cache writes", formatTokenCount(state.usage.totalCacheWrite))
+                        TokenRow("Cache writes (created)", formatTokenCount(state.usage.totalCacheWrite))
                     }
+                    TokenRow("Output tokens", formatTokenCount(state.usage.totalOutput))
+                    TokenRow("Total requests", state.usage.requests.toString())
+                }
+
+                HorizontalDivider()
+
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    TokenRow(
+                        "Cache hit rate",
+                        if (state.usage.totalInput > 0) "%.1f%%".format(state.usage.avgCacheHitRate * 100) else "0.0%",
+                    )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -130,51 +143,26 @@ fun ContextUsageDialog(
                     ) {
                         Text("Estimated cost", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            estimatedCost?.let { "$%.4f".format(it) } ?: "-",
+                            "$%.4f".format(estimatedCost ?: 0.0),
                             style = MaterialTheme.typography.titleMedium,
                             fontFamily = FontFamily.Monospace,
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
-                    if (estimatedCost != null) {
-                        val subText = if (state.sessionModelUsage.size > 1) {
-                            "across ${state.sessionModelUsage.size} models used in this session"
-                        } else {
-                            "at ${model ?: "current model"} list prices"
-                        }
-                        Text(
-                            subText,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        )
+                    val subText = if (state.sessionModelUsage.size > 1) {
+                        "Sum across ${state.sessionModelUsage.size} models used in this session"
+                    } else {
+                        "Calculated from ${model ?: "current model"} rates"
                     }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Text("Cache hit rate", style = MaterialTheme.typography.bodyMedium)
                     Text(
-                        if (state.usage.totalInput > 0)
-                            "%.1f%%".format(state.usage.avgCacheHitRate * 100)
-                        else "-",
-                        style = MaterialTheme.typography.titleMedium,
-                        color = MaterialTheme.colorScheme.primary,
+                        subText,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                     )
                 }
 
                 Text(
-                    "Session: ${formatTokenCount(freshInput)} fresh in · " +
-                        "${formatTokenCount(state.usage.totalCached)} cached · " +
-                        "${formatTokenCount(state.usage.totalOutput)} out · " +
-                        "${state.usage.requests} requests",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                Text(
-                    "Reasoning shown in chat is billed as output and never re-sent as input.",
+                    "Reasoning and thinking tokens are billed as output and are not re-sent as input.",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
                 )
@@ -206,7 +194,7 @@ private fun BreakdownRow(label: String, tokens: Int?, total: Int) {
     ) {
         Text(label, style = MaterialTheme.typography.bodyMedium)
         Text(
-            tokens?.let { "%.1f%%".format(it.toFloat() / total * 100) } ?: "-",
+            tokens?.let { "%.1f%%".format(it.toFloat() / total * 100) } ?: "0.0%",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )

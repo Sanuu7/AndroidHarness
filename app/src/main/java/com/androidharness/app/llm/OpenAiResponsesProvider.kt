@@ -246,9 +246,15 @@ class OpenAiResponsesProvider(
                 response?.get("usage")?.jsonObjectOrAbsent()?.let { usage ->
                     val input = usage["input_tokens"]?.jsonPrimitive?.intOrNull ?: 0
                     val output = usage["output_tokens"]?.jsonPrimitive?.intOrNull ?: 0
-                    val cached = usage["input_tokens_details"]?.jsonObjectOrAbsent()
-                        ?.get("cached_tokens")?.jsonPrimitive?.intOrNull ?: 0
-                    events += StreamEvent.Usage(input, output, cached)
+                    val inputDetails = usage["input_tokens_details"]?.jsonObjectOrAbsent()
+                    val cached = inputDetails?.get("cached_tokens")?.jsonPrimitive?.intOrNull
+                        ?: inputDetails?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull
+                        ?: usage["prompt_cache_hit_tokens"]?.jsonPrimitive?.intOrNull
+                        ?: 0
+                    val cacheWrite = inputDetails?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
+                        ?: usage["cache_creation_input_tokens"]?.jsonPrimitive?.intOrNull
+                        ?: 0
+                    events += StreamEvent.Usage(input, output, cached, cacheWrite)
                 }
                 drainAccumulated(acc)?.let { events += it }
                 val reason = if (type == "response.incomplete") {
