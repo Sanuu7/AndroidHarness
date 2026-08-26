@@ -17,6 +17,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import rikka.shizuku.Shizuku
+import java.io.File
 import java.util.concurrent.atomic.AtomicBoolean
 
 enum class ShizukuState {
@@ -247,6 +248,14 @@ class ShizukuManager(
      */
     suspend fun ensureTmpPrefix(stagingTarPath: String, hash: String): Boolean {
         val base = LinuxEnvironmentManager.TMP_PREFIX_BASE
+        // Bug 1 fix: locate the staged CA bundle (next to the tarball) so the
+        // deployed toolchain gets trust anchors; fall back gracefully.
+        val stagingDir = File(stagingTarPath).parentFile
+        val caSource = File(stagingDir, "etc/tls/cacert.pem")
+        val caInstall = if (caSource.isFile) {
+            "mkdir -p \"$base/linux/etc/tls\" && cp \"${caSource.absolutePath}\" " +
+                "\"$base/linux/etc/tls/cacert.pem\" && "
+        } else ""
         val check = runPrivileged(
             arrayOf("/system/bin/sh", "-c", "test -x \"$base/linux/bin/bash\" && cat \"$base/.harness-hash\""),
             env = null, dir = null, timeoutMs = 15_000, maxBytes = 2_000,
@@ -259,6 +268,7 @@ class ShizukuManager(
             append("rm -rf \"$base\" && ")
             append("mkdir -p \"$base\" && ")
             append("tar -xzf \"$stagingTarPath\" -C \"$base\" && ")
+            append(caInstall)
             append("chmod -R 755 \"$base\" && ")
             append("echo '$hash' > \"$base/.harness-hash\" && ")
             append("test -x \"$base/linux/bin/bash\" && ")

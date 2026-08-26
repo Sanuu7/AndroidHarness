@@ -103,7 +103,7 @@ object ShellPolicy {
 
     private fun checkCommandTokens(tokens: List<String>, workspaceRoot: File?, cwd: File?): String? {
         val isSymlinkCmd = isSymlinkCreation(tokens)
-        if (isSymlinkCmd && cwd != null && isSharedStorage(cwd)) {
+        if (isSymlinkCmd && cwd != null && isSharedStorage(cwd) && !isScratchOnlySymlink(tokens)) {
             return "Blocked: symlinks are not supported on Android shared storage (/storage/emulated/0). (symlink not supported/allowed)"
         }
 
@@ -367,6 +367,22 @@ object ShellPolicy {
         return tokens.any { it == "-s" || it == "-sf" || it == "-fs" || it == "--symbolic" || (it.startsWith("-") && it.contains("s")) }
     }
 
+    /**
+     * True when every path a symlink command references lives inside an
+     * exec-capable scratch dir. Shared storage cannot host symlinks, but the
+     * scratch dirs can: linking inside them is exactly how JDK/Gradle trees
+     * are wired up after extraction (Bug 4), so it stays allowed.
+     */
+    private fun isScratchOnlySymlink(tokens: List<String>): Boolean {
+        val args = tokens.drop(1).filter { !it.startsWith("-") }
+        if (args.isEmpty()) return false
+        return args.all { arg ->
+            SCRATCH_ROOTS.any { root ->
+                arg.startsWith(root)
+            }
+        }
+    }
+
     private fun isRedirectionOp(op: String): Boolean =
         op == ">" || op == ">>" || op == "<" || op == "1>" || op == "2>" || op == "1>>" || op == "2>>" || op == "&>" || op == "&>>" || op == "tee"
 
@@ -387,6 +403,11 @@ object ShellPolicy {
             "/sys",
             "/tmp",
             "/data/local/tmp/androidharness",
+            "/data/local/tmp/androidharness-scratch",
+            "/data/data/com.androidharness/files/.harness-scratch",
+            "/data/user/0/com.androidharness/files/.harness-scratch",
+            "/data/data/com.androidharness.debug/files/.harness-scratch",
+            "/data/user/0/com.androidharness.debug/files/.harness-scratch",
             "/data/data/com.androidharness/files/linux",
             "/data/user/0/com.androidharness/files/linux",
             "/data/data/com.androidharness.debug/files/linux",
@@ -603,4 +624,26 @@ object ShellPolicy {
     private val DD_DEV = Regex("""(^|[\s;&|])dd\b[\s\S]*\bof=/dev/""")
     private val FORK_BOMB = Regex(""":\s*\(\s*\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:""")
     private val CHMOD_ROOT = Regex("""(^|[\s;&|])chmod\b[\s\S]*\b777\b[\s\S]*(^|[\s])/(\s|$)""")
+
+    /**
+     * Designated exec-capable scratch dir (Bug 2/3): /data/local/tmp cannot
+     * hold the app-uid toolchain, so toolchains extracted by the shell go
+     * here instead. This filesystem keeps POSIX exec bits and allows
+     * symlinks, unlike the shared-storage workspace. The shell sandbox has
+     * a deliberate carve-out for exactly this directory (and its app-private
+     * mirror below); everything else outside the workspace stays blocked.
+     */
+    const val SCRATCH_TMP = "/data/local/tmp/androidharness-scratch"
+
+    /**
+     * App-private scratch mirror for when SELinux denies the shell uid
+     * /data/local/tmp access on newer builds: owned by this app's uid,
+     * so the linker workaround still works on both package ids.
+     */
+    const val SCRATCH_APPDATA = "/data/data/com.androidharness/files/.harness-scratch"
+    const val SCRATCH_APPDATA_DEBUG =
+        "/data/data/com.androidharness.debug/files/.harness-scratch"
+
+    /** Every exec-capable scratch root for all flavors of this app. */
+    val SCRATCH_ROOTS = listOf(SCRATCH_TMP, SCRATCH_APPDATA, SCRATCH_APPDATA_DEBUG)
 }

@@ -55,12 +55,23 @@ class EnvStatusTool(
         val storage =
             if (router.isAllFilesAccess()) "All files access granted ✓"
             else "MANAGE_EXTERNAL_STORAGE NOT granted: app-uid can only reach its own folders on /sdcard"
+        // Bug 1/2 status: TLS trust + exec-capable scratch availability.
+        val tlsBundle = java.io.File(linuxEnv.prefix, NetTls.BUNDLE_RELATIVE_PATH)
+        val scratch = ShellPolicy.SCRATCH_ROOTS.firstOrNull {
+            runCatching { java.io.File(it).isDirectory }.getOrDefault(false)
+        } ?: "(not provisioned yet)"
         return ToolResult(
             true,
             buildString {
                 append("Shizuku: ").append(szText).append('\n')
                 append("Linux environment: ")
                     .append(if (linuxEnv.isReady) "installed ✓" else "not installed")
+                    .append('\n')
+                append("TLS (Bug 1 fix): CA bundle ")
+                    .append(if (tlsBundle.isFile) "ready at ${tlsBundle.absolutePath} ✓" else "missing; falling back to system anchors")
+                    .append("; SSL_CERT_FILE/CURL_CA_BUNDLE/REQUESTS_CA_BUNDLE/GIT_SSL_CAINFO/NODE_EXTRA_CA_CERTS are exported to every shell\n")
+                append("Exec-capable scratch (Bug 2 fix): ").append(scratch)
+                    .append(" — extract JDK/Gradle/native tarballs HERE, never into shared storage (no exec bits, no symlinks); the env var HARNESS_SCRATCH is exported to every shell")
                     .append('\n')
                 append("Storage: ").append(storage).append('\n')
                 append("Active shell tier: ").append(tierText).append('\n')

@@ -11,6 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import com.androidharness.app.tools.ShellPolicy
 import org.apache.commons.compress.archivers.ar.ArArchiveInputStream
 import org.apache.commons.compress.archivers.tar.TarArchiveInputStream
 import org.apache.commons.compress.compressors.CompressorStreamFactory
@@ -114,6 +115,11 @@ class LinuxEnvironmentManager(private val context: Context) {
         // An older build left these world-writable; restore private defaults.
         runCatching { Os.chmod(context.dataDir.absolutePath, 0x1C0 /* 0700 */) }
         runCatching { Os.chmod(context.filesDir.absolutePath, 0x1C0 /* 0700 */) }
+        // Bug 1 fix: materialize the bundled Mozilla CA store into the prefix
+        // so curl/python/git/node in the shell tier verify TLS by default.
+        com.androidharness.app.tools.NetTls.ensureInstalled(prefix, context)
+        // Bug 2 fix: provision the designated exec-capable scratch dirs.
+        runCatching { ensureScratchDirs() }
     }
 
     private val _state = MutableStateFlow<EnvState>(
@@ -208,6 +214,60 @@ class LinuxEnvironmentManager(private val context: Context) {
         // bash sources this for `bash -c`: shims make every toolchain binary
         // runnable despite the W^X exec restriction on app-private files.
         if (shimFile.exists()) put("BASH_ENV", shimFile.absolutePath)
+        putAll(tlsEnvVars())
+        // Bug 2 fix: tell every spawned shell where exec-capable scratch lives.
+        put(
+            "HARNESS_SCRATCH",
+            if (File(ShellPolicy.SCRATCH_TMP).isDirectory) ShellPolicy.SCRATCH_TMP
+            else File(context.filesDir, ".harness-scratch").absolutePath,
+        )
+    }
+
+    // ------------------------------------------------------------------
+    // Bug 2 fix: exec-capable scratch dirs
+    //
+    // The workspace usually lives on shared storage (FUSE), which does not
+    // preserve POSIX exec bits (chmod +x is a no-op: files stay -rw-rw----)
+    // and cannot host symlinks, so JDK/Gradle/native binaries extracted there
+    // fail with "Permission denied" and tarballs containing symlinks fail to
+    // extract. These scratch dirs live on filesystems that support both:
+    //
+    //  - SCRATCH_TMP (/data/local/tmp/androidharness-scratch): world-writable
+    //    tmpfs/ext4 — works for BOTH the app uid and the Shizuku shell uid.
+    //  - the app-private mirror under /data/data/<pkg>/files/.harness-scratch:
+    //    fallback when SELinux denies tmp access; the app-uid linker
+    //    workaround makes binaries here runnable.
+    //
+    // The shell sandbox has a deliberate carve-out for exactly these paths
+    // (ShellPolicy) and env vars advertise them to every spawned shell.
+    // ------------------------------------------------------------------
+
+    /** Creates and permission-opens the exec-capable scratch dirs. Idempotent. */
+    fun ensureScratchDirs() {
+        // Shared location: both the app uid and the Shizuku shell uid can use
+        // it, so 0777 (only reachable via adb/shizuku on real devices).
+        val tmpScratch = File(ShellPolicy.SCRATCH_TMP)
+        tmpScratch.mkdirs()
+        runCatching { Os.chmod(tmpScratch.absolutePath, 0x1FF /* 0777 */) }
+        // App-private fallback for this build's package id.
+        File(context.filesDir, ".harness-scratch").mkdirs()
+    }
+
+    /**
+     * TLS trust vars (Bug 1 fix): point curl/python/git/node at the CA bundle
+     * materialized into the prefix. Falls back to the system store path when
+     * the bundled asset could not be provisioned.
+     */
+    fun tlsEnvVars(): Map<String, String> {
+        val dir = runCatching { File(prefix, "etc/tls") }.getOrNull()
+        val preferred = File(prefix, com.androidharness.app.tools.NetTls.BUNDLE_RELATIVE_PATH)
+        val path = when {
+            preferred.isFile -> preferred.absolutePath
+            dir != null && dir.isDirectory ->
+                File(dir, "cacert.pem").absolutePath
+            else -> "/system/etc/security/cacerts" // last resort: anchors dir hint
+        }
+        return com.androidharness.app.tools.NetTls.envVars(path)
     }
 
     /** Empty (templates disabled) when the prefix has no git-core templates. */
@@ -315,6 +375,16 @@ class LinuxEnvironmentManager(private val context: Context) {
         // Same templates fix as the app-side env, for the /data/local/tmp copy.
         val templates = File("$TMP_PREFIX/share/git-core/templates")
         put("GIT_TEMPLATE_DIR", if (templates.isDirectory) templates.absolutePath else "")
+        // Bug 1 fix: the deployed copy carries its own CA bundle; export the
+        // standard TLS vars so curl/python/git/node verify certificates.
+        val tlsBundle = File("$TMP_PREFIX/etc/tls/cacert.pem")
+        putAll(
+            com.androidharness.app.tools.NetTls.envVars(
+                if (tlsBundle.isFile) tlsBundle.absolutePath else "/system/etc/security/cacerts",
+            ),
+        )
+        // Bug 2 fix: exec-capable scratch location for the privileged tier.
+        put("HARNESS_SCRATCH", ShellPolicy.SCRATCH_TMP)
     }
 
     // ------------------------------------------------------------------
@@ -332,7 +402,7 @@ class LinuxEnvironmentManager(private val context: Context) {
     private val stagingMarker: File get() = File(stagingDir, ".harness-staged")
 
     /** Hash of the installed package set — re-stage/re-deploy when it changes. */
-    fun packageSetHash(): String = ("v3\n" + installedPackages().sorted().joinToString("\n"))
+    fun packageSetHash(): String = ("v4-tls\n" + installedPackages().sorted().joinToString("\n"))
         .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
     /** Writes (or refreshes) the staging tarball on shared storage. */
@@ -342,6 +412,21 @@ class LinuxEnvironmentManager(private val context: Context) {
             val hash = packageSetHash()
             if (stagingMarker.exists() && stagingMarker.readText() == hash && stagingTar.exists()) return
             stagingDir.mkdirs()
+            // Bug 1 fix: ship the CA bundle next to the tarball. The staging
+            // dir lives on shared storage where the shell uid can read it, so
+            // the privileged deploy can install the trust anchors as well.
+            runCatching {
+                val dst = File(stagingDir, "etc/tls/cacert.pem")
+                dst.parentFile?.mkdirs()
+                val src = File(prefix, com.androidharness.app.tools.NetTls.BUNDLE_RELATIVE_PATH)
+                if (src.isFile) {
+                    if (!dst.isFile || dst.length() != src.length()) src.copyTo(dst, overwrite = true)
+                } else {
+                    context.assets.open(com.androidharness.app.tools.NetTls.ASSET_PATH).use { input ->
+                        java.io.FileOutputStream(dst).use { out -> input.copyTo(out) }
+                    }
+                }
+            }
             val tmp = File(stagingDir, "prefix.tar.gz.tmp")
             org.apache.commons.compress.archivers.tar.TarArchiveOutputStream(
                 java.util.zip.GZIPOutputStream(tmp.outputStream().buffered()),

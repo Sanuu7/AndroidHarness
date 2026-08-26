@@ -58,7 +58,13 @@ class ShellTool(
                 .coerceIn(1, 600)
 
             // Auto-append --no-bin-links for npm install on shared storage (symlinks unsupported).
-            val (command, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
+            val (command, notes) = run {
+                val (afterNpm, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
+                // Bug 4 fix: retarget workspace tar extractions to the
+                // exec-capable scratch dir so symlinks/exec bits survive.
+                val (afterTar, tarNote) = ExecScratchRouting.prepare(afterNpm, cwd)
+                afterTar to listOfNotNull(npmNote, tarNote).joinToString("\n").ifBlank { null }
+            }
 
             val res = router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
 
@@ -78,7 +84,7 @@ class ShellTool(
             }
 
             val sb = StringBuilder()
-            npmNote?.let { sb.append(it).append('\n') }
+            notes?.let { sb.append(it).append('\n') }
             res.note?.let { sb.append(it).append('\n') }
             if (hasSymlinkError) {
                 sb.append("[note: symlink creation failed: symlink not supported/allowed on this filesystem]\n")

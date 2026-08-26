@@ -3,6 +3,7 @@ package com.androidharness.app.data.env
 import android.content.Context
 import android.os.Build
 import android.os.Environment
+import com.androidharness.app.tools.ShellPolicy
 import java.io.File
 import java.util.concurrent.TimeUnit
 
@@ -102,6 +103,26 @@ class ShellTierRouter(
 
     // --- privileged tier ---------------------------------------------------
 
+    /**
+     * Bug 2 fix: provisions the shared exec-capable scratch dir via the
+     * privileged side (mkdir 0777) when Shizuku is available. Best-effort;
+     * the app-side init also creates it directly.
+     */
+    private suspend fun ensurePrivilegedScratch() {
+        val scratch = ShellPolicy.SCRATCH_TMP
+        shizuku.runPrivileged(
+            arrayOf(
+                "/system/bin/sh",
+                "-c",
+                "mkdir -p '$scratch' && chmod 777 '$scratch'",
+            ),
+            env = null,
+            dir = null,
+            timeoutMs = 10_000,
+            maxBytes = 1_000,
+        )
+    }
+
     private suspend fun runPrivileged(
         command: String,
         cwd: File,
@@ -114,6 +135,9 @@ class ShellTierRouter(
             linuxEnv.ensureShellDeploy(shizuku)
             toolchain = shizuku.isTmpPrefixDeployed()
         }
+        // Bug 2 fix: make sure the designated exec-capable scratch dir exists
+        // and is writable by both the shell uid and the app uid.
+        runCatching { ensurePrivilegedScratch() }
 
         val cmd = if (toolchain) {
             arrayOf("${LinuxEnvironmentManager.TMP_PREFIX_BASE}/linux/bin/bash", "-c", command)
