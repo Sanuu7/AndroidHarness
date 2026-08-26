@@ -75,12 +75,16 @@ object ThinkingSpecs {
      * One clamping policy for the whole app: keep a native rung verbatim,
      * otherwise take the nearest WEAKER native rung (never escalates cost),
      * falling back to the weakest native rung when nothing weaker exists.
-     * Unknown/custom vocabularies pass through rather than being guessed.
+     * Models with NO reasoning capability at all resolve every ask to OFF —
+     * the only honest tier for them. Unknown/custom vocabularies pass through
+     * rather than being guessed.
      */
     fun resolveLevel(level: ThinkingLevel?, spec: Spec?): ThinkingLevel? {
         if (level == null || spec == null) return level
         val enabled = spec.levels.filter { it != ThinkingLevel.OFF }
-        if (level == ThinkingLevel.OFF || enabled.isEmpty()) return level
+        if (level == ThinkingLevel.OFF || enabled.isEmpty()) {
+            return if (enabled.isEmpty()) ThinkingLevel.OFF else level
+        }
         if (level in enabled) return level
         // Nearest weaker first; "floor" fallback keeps an enabled ask enabled.
         return enabled.lastOrNull { it < level } ?: enabled.first()
@@ -107,21 +111,16 @@ object ThinkingSpecs {
     }
 
     /**
-     * Tiers advertised in UI surfaces that only READ the current level
-     * (header badge): the model's native rungs — MAX/ULTRA appended as the
-     * "highest tier" sentinel for EFFORT families missing them, mirroring
-     * Hermes' top-tier folding. The model picker itself shows no thinking UI.
+     * Tiers advertised across ALL surfaces: the FULL global ladder, for EVERY
+     * model — exactly like Hermes, where /reasoning offers none..ultra
+     * regardless of endpoint. Selecting a rung the model doesn't natively
+     * speak resolves DOWN the chain (ultra -> max -> xhigh -> high -> …)
+     * until it lands on the closest supported tier via [setClamped], so the
+     * stored value and the wire call are always honest. The ladder itself
+     * never shrinks per model.
      */
-    fun visibleLevels(modelId: String?, devKey: String? = null): List<ThinkingLevel> {
-        val spec = forModel(modelId, devKey)
-        if (spec.style == Style.EFFORT &&
-            ThinkingLevel.MAX !in spec.levels &&
-            spec.levels.any { it != ThinkingLevel.OFF }
-        ) {
-            return spec.levels + ThinkingLevel.MAX + ThinkingLevel.ULTRA
-        }
-        return spec.levels
-    }
+    fun visibleLevels(modelId: String?, devKey: String? = null): List<ThinkingLevel> =
+        ThinkingLevel.entries.toList()
 
     /**
      * After a model switch the stored thinking tier may not exist on the new

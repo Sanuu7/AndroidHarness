@@ -537,10 +537,16 @@ fun ChatScreen(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             val ap = state.activeProvider
-            // Native tiers only — unsupported levels were intentionally dropped
-            // from every picker (they used to render dimmed).
+            // The FULL global ladder for every model (Hermes-style): picking a
+            // rung the model doesn't natively speak resolves down the chain.
             val thinkingLevels = remember(state.effectiveModel, ap) {
                 com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
+                    state.effectiveModel,
+                    com.androidharness.app.llm.ModelsDev.providerKeyFor(ap?.baseUrl),
+                )
+            }
+            val modelThinkingSpec = remember(state.effectiveModel, ap) {
+                com.androidharness.app.agent.ThinkingSpecs.forModel(
                     state.effectiveModel,
                     com.androidharness.app.llm.ModelsDev.providerKeyFor(ap?.baseUrl),
                 )
@@ -555,6 +561,7 @@ fun ChatScreen(
                 mode = state.mode,
                 thinkingLevel = state.thinkingLevel,
                 thinkingLevels = thinkingLevels,
+                thinkingSpec = modelThinkingSpec,
                 permissionMode = state.permissionMode,
                 canUndo = state.turnsWithCheckpoints.isNotEmpty(),
                 onOpenDrawer = onOpenDrawer,
