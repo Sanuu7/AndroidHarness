@@ -17,22 +17,15 @@ import com.androidharness.app.tools.ToolResult
 import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.channelFlow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.timeout
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
-import kotlin.time.Duration.Companion.milliseconds
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -143,16 +136,6 @@ sealed interface AgentEvent {
  * The harness loop: stream the model, execute requested tool calls (gated by
  * the permission mode), feed results back, repeat until the model stops.
  */
-/**
- * Fails a silent stream instead of hanging forever: the SSE client's read
- * timeout is infinite by design, so a dead gateway that keeps the socket open
- * would stall a run (or subagent) indefinitely. Throws
- * [kotlinx.coroutines.TimeoutCancellationException] when no event arrives in
- * [timeoutMs]; the loops catch it and route into the normal retry policy.
- */
-@OptIn(ExperimentalCoroutinesApi::class)
-private fun <T> Flow<T>.stallGuard(timeoutMs: Long = 90_000): Flow<T> = timeout(timeoutMs.toDouble().milliseconds)
-
 class AgentEngine(
     private val providerFactory: (ProviderConfig) -> LlmProvider,
     private val registry: ToolRegistry,
@@ -239,81 +222,62 @@ class AgentEngine(
             var text = StringBuilder()
             var thinking = StringBuilder()
             var calls = mutableListOf<ToolCallData>()
-            var failure: String? = null
 
             // Request attempt loop: transient failures (429/5xx/network) are
             // retried with backoff, but ONLY while nothing has streamed yet —
             // re-emitting deltas the UI already showed would duplicate output.
-            var attempt = 0
-            while (true) {
-                text = StringBuilder()
-                thinking = StringBuilder()
-                calls = mutableListOf()
-                failure = null
-                lastFinishReason = null
-                var cause: Throwable? = null
-
-                try {
-                    provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions).stallGuard()
-                        .collect { event ->
-                            when (event) {
+            val failure = StreamRetrier.run(
+                streamFor = {
+                    provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
+                },
+                onAttemptStart = {
+                    text = StringBuilder()
+                    thinking = StringBuilder()
+                    calls = mutableListOf()
+                    lastFinishReason = null
+                },
+                hasOutput = { text.isNotEmpty() || thinking.isNotEmpty() || calls.isNotEmpty() },
+                handleEvent = { event ->
+                    when (event) {
+                        is StreamEvent.TextDelta -> {
+                            text.append(event.text)
+                            emit(AgentEvent.Text(event.text))
+                        }
+                        is StreamEvent.ThinkingDelta -> {
+                            thinking.append(event.text)
+                            emit(AgentEvent.Thinking(event.text))
+                        }
+                        is StreamEvent.ToolCallReady -> calls += event.call
+                        is StreamEvent.ToolCallBatch -> calls += event.calls
+                        is StreamEvent.Batch -> event.events.forEach { nested ->
+                            when (nested) {
                                 is StreamEvent.TextDelta -> {
-                                    text.append(event.text)
-                                    emit(AgentEvent.Text(event.text))
+                                    text.append(nested.text)
+                                    emit(AgentEvent.Text(nested.text))
                                 }
                                 is StreamEvent.ThinkingDelta -> {
-                                    thinking.append(event.text)
-                                    emit(AgentEvent.Thinking(event.text))
+                                    thinking.append(nested.text)
+                                    emit(AgentEvent.Thinking(nested.text))
                                 }
-                                is StreamEvent.ToolCallReady -> calls += event.call
-                                is StreamEvent.ToolCallBatch -> calls += event.calls
-                                is StreamEvent.Batch -> event.events.forEach { nested ->
-                                    when (nested) {
-                                        is StreamEvent.TextDelta -> {
-                                            text.append(nested.text)
-                                            emit(AgentEvent.Text(nested.text))
-                                        }
-                                        is StreamEvent.ThinkingDelta -> {
-                                            thinking.append(nested.text)
-                                            emit(AgentEvent.Thinking(nested.text))
-                                        }
-                                        is StreamEvent.ToolCallReady -> calls += nested.call
-                                        is StreamEvent.ToolCallBatch -> calls += nested.calls
-                                        else -> {}
-                                    }
-                                }
-                                is StreamEvent.Usage -> emit(
-                                    AgentEvent.Usage(
-                                        event.inputTokens, event.outputTokens,
-                                        event.cachedInputTokens, event.cacheWriteTokens,
-                                        config.model, config.name,
-                                    )
-                                )
-                                is StreamEvent.Failure -> failure = event.message
-                                is StreamEvent.Done -> lastFinishReason = event.finishReason
+                                is StreamEvent.ToolCallReady -> calls += nested.call
+                                is StreamEvent.ToolCallBatch -> calls += nested.calls
+                                else -> {}
                             }
                         }
-                } catch (te: TimeoutCancellationException) {
-                    // stallGuard: a silent gateway kept the socket open — treat
-                    // like any transient failure so retries can kick in.
-                    failure = "Stream stalled - no data received for 90s (timed out)"
-                } catch (ce: CancellationException) {
-                    throw ce
-                } catch (e: Exception) {
-                    cause = e
-                    failure = e.message ?: e.javaClass.simpleName
-                }
-
-                val retryable = failure != null &&
-                    attempt < RetryPolicy.MAX_RETRIES &&
-                    text.isEmpty() && thinking.isEmpty() && calls.isEmpty() &&
-                    RetryPolicy.isRetryable(cause, failure)
-                if (!retryable) break
-                attempt++
-                val delayMs = RetryPolicy.delayMs(attempt)
-                emit(AgentEvent.Retrying(attempt, delayMs, failure!!.take(200)))
-                delay(delayMs)
-            }
+                        is StreamEvent.Usage -> emit(
+                            AgentEvent.Usage(
+                                event.inputTokens, event.outputTokens,
+                                event.cachedInputTokens, event.cacheWriteTokens,
+                                config.model, config.name,
+                            )
+                        )
+                        is StreamEvent.Done -> lastFinishReason = event.finishReason
+                        else -> {}
+                    }
+                },
+                retryReason = { f -> f.take(200) },
+                emitEvent = { emit(it) },
+            )
 
             // A turn that produced reasoning but no answer and no tool calls is
             // NOT committed: replaying an empty assistant message would hand
@@ -735,62 +699,48 @@ class AgentEngine(
             val text = StringBuilder()
             val calls = mutableListOf<ToolCallData>()
             val subThinking = StringBuilder()
-            var failure: String? = null
-            var attempt = 0
 
-            // Same transient-failure retry policy as the main loop.
-            while (true) {
-                text.clear()
-                calls.clear()
-                subThinking.setLength(0)
-                failure = null
-                var cause: Throwable? = null
-                try {
-                    provider.streamChat(config, apiKey, system, history, subTools, requestOptions).stallGuard()
-                        .collect { event ->
-                            when (event) {
-                                is StreamEvent.TextDelta -> text.append(event.text)
-                                is StreamEvent.ThinkingDelta -> subThinking.append(event.text)
-                                is StreamEvent.ToolCallReady -> calls += event.call
-                                is StreamEvent.ToolCallBatch -> calls += event.calls
-                                is StreamEvent.Batch -> event.events.forEach { nested ->
-                                    when (nested) {
-                                        is StreamEvent.TextDelta -> text.append(nested.text)
-                                        is StreamEvent.ThinkingDelta -> subThinking.append(nested.text)
-                                        is StreamEvent.ToolCallReady -> calls += nested.call
-                                        is StreamEvent.ToolCallBatch -> calls += nested.calls
-                                        else -> {}
-                                    }
-                                }
-                                is StreamEvent.Usage -> emitEvent(
-                                    AgentEvent.Usage(
-                                        event.inputTokens, event.outputTokens,
-                                        event.cachedInputTokens, event.cacheWriteTokens,
-                                        config.model, config.name,
-                                    )
-                                )
-                                is StreamEvent.Failure -> failure = event.message
+            // Same transient-failure retry policy as the main loop. Unlike the
+            // main loop, thinking output does not block a retry here: the
+            // subagent streams no deltas to the UI, so nothing can duplicate.
+            val failure = StreamRetrier.run(
+                streamFor = {
+                    provider.streamChat(config, apiKey, system, history, subTools, requestOptions)
+                },
+                onAttemptStart = {
+                    text.clear()
+                    calls.clear()
+                    subThinking.setLength(0)
+                },
+                hasOutput = { text.isNotEmpty() || calls.isNotEmpty() },
+                handleEvent = { event ->
+                    when (event) {
+                        is StreamEvent.TextDelta -> text.append(event.text)
+                        is StreamEvent.ThinkingDelta -> subThinking.append(event.text)
+                        is StreamEvent.ToolCallReady -> calls += event.call
+                        is StreamEvent.ToolCallBatch -> calls += event.calls
+                        is StreamEvent.Batch -> event.events.forEach { nested ->
+                            when (nested) {
+                                is StreamEvent.TextDelta -> text.append(nested.text)
+                                is StreamEvent.ThinkingDelta -> subThinking.append(nested.text)
+                                is StreamEvent.ToolCallReady -> calls += nested.call
+                                is StreamEvent.ToolCallBatch -> calls += nested.calls
                                 else -> {}
                             }
                         }
-                } catch (te: TimeoutCancellationException) {
-                    // stallGuard: a silent gateway kept the socket open. treat
-                    // like any transient failure so retries can kick in.
-                    failure = "Stream stalled - no data received for 90s (timed out)"
-                } catch (ce: CancellationException) {
-                    throw ce
-                } catch (e: Exception) {
-                    cause = e
-                    failure = e.message ?: e.javaClass.simpleName
-                }
-                val retryable = failure != null && attempt < RetryPolicy.MAX_RETRIES &&
-                    text.isEmpty() && calls.isEmpty() && RetryPolicy.isRetryable(cause, failure)
-                if (!retryable) break
-                attempt++
-                val delayMs = RetryPolicy.delayMs(attempt)
-                emitEvent(AgentEvent.Retrying(attempt, delayMs, "subagent: ${failure!!.take(160)}"))
-                delay(delayMs)
-            }
+                        is StreamEvent.Usage -> emitEvent(
+                            AgentEvent.Usage(
+                                event.inputTokens, event.outputTokens,
+                                event.cachedInputTokens, event.cacheWriteTokens,
+                                config.model, config.name,
+                            )
+                        )
+                        else -> {}
+                    }
+                },
+                retryReason = { f -> "subagent: ${f.take(160)}" },
+                emitEvent = { emitEvent(it) },
+            )
 
             if (text.isBlank() && calls.isEmpty()) {
                 // One continuation nudge mirrors the main loop: reasoning models
@@ -909,13 +859,8 @@ class AgentEngine(
         if (older.isEmpty()) return null
 
         val summary = StringBuilder()
-        var compactError: String? = null
-        var attempt = 0
-        while (true) {
-            var streamFailure: String? = null
-            var cause: Throwable? = null
-            summary.clear()
-            try {
+        val compactError = StreamRetrier.run(
+            streamFor = {
                 provider.streamChat(
                     config, apiKey,
                     "Summarize this coding-agent conversation compactly. Preserve: the user's goal, " +
@@ -923,43 +868,29 @@ class AgentEngine(
                         "Output plain notes only.",
                     older, emptyList(),
                     RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF),
-                ).stallGuard().collect { event ->
-                    when (event) {
-                        is StreamEvent.TextDelta -> summary.append(event.text)
-                        is StreamEvent.Batch -> event.events.forEach { nested ->
-                            if (nested is StreamEvent.TextDelta) summary.append(nested.text)
-                        }
-                        is StreamEvent.Usage -> emitEvent(
-                            AgentEvent.Usage(
-                                event.inputTokens, event.outputTokens,
-                                event.cachedInputTokens, event.cacheWriteTokens,
-                                config.model, config.name,
-                            )
-                        )
-                        is StreamEvent.Failure -> streamFailure = event.message
-                        else -> {}
+                )
+            },
+            onAttemptStart = { summary.clear() },
+            hasOutput = { summary.isNotBlank() },
+            handleEvent = { event ->
+                when (event) {
+                    is StreamEvent.TextDelta -> summary.append(event.text)
+                    is StreamEvent.Batch -> event.events.forEach { nested ->
+                        if (nested is StreamEvent.TextDelta) summary.append(nested.text)
                     }
+                    is StreamEvent.Usage -> emitEvent(
+                        AgentEvent.Usage(
+                            event.inputTokens, event.outputTokens,
+                            event.cachedInputTokens, event.cacheWriteTokens,
+                            config.model, config.name,
+                        )
+                    )
+                    else -> {}
                 }
-            } catch (te: TimeoutCancellationException) {
-                streamFailure = "Stream stalled - no data received for 90s (timed out)"
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (e: Exception) {
-                cause = e
-                streamFailure = e.message ?: e.javaClass.simpleName
-            }
-
-            val retryable = streamFailure != null && summary.isBlank() &&
-                attempt < RetryPolicy.MAX_RETRIES && RetryPolicy.isRetryable(cause, streamFailure)
-            if (!retryable) {
-                compactError = streamFailure
-                break
-            }
-            attempt++
-            val delayMs = RetryPolicy.delayMs(attempt)
-            emitEvent(AgentEvent.Retrying(attempt, delayMs, streamFailure!!.take(200)))
-            delay(delayMs)
-        }
+            },
+            retryReason = { f -> f.take(200) },
+            emitEvent = { emitEvent(it) },
+        )
         compactError?.let { emitEvent(AgentEvent.Error("Auto-compaction failed: $it")) }
         if (summary.isBlank()) return null
 
