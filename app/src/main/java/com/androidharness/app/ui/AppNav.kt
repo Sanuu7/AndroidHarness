@@ -5,13 +5,18 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.combinedClickable
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -30,6 +35,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.Folder
@@ -42,6 +48,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
@@ -71,8 +78,11 @@ import androidx.compose.ui.text.font.FontWeight
 import com.androidharness.app.ui.common.formatTokens
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
@@ -145,6 +155,10 @@ fun AppNav(container: AppContainer) {
     val needsSetup = !settings.onboardingDone
     val startDestination = remember { if (needsSetup) "setup" else "chat" }
 
+    var searchQuery by remember { mutableStateOf("") }
+    var searchOpen by remember { mutableStateOf(false) }
+    val searchFocus = remember { FocusRequester() }
+
     // Keyboard belongs to manual taps only. Two mechanisms fought this:
     // (1) the composer's focus survives the drawer opening, and (2) the
     // drawer's own accessibility focus pass can land ON the search field —
@@ -158,6 +172,10 @@ fun AppNav(container: AppContainer) {
             delay(120)
             focusManager.clearFocus(force = true)
             keyboard?.hide()
+        } else {
+            // Drawer closed: collapse search so it starts fresh next open.
+            searchOpen = false
+            searchQuery = ""
         }
     }
 
@@ -168,7 +186,6 @@ fun AppNav(container: AppContainer) {
         ?.arguments?.getString("sessionId")
     val runningSessionIds by container.runManager.runningSessionIds.collectAsStateWithLifecycle()
 
-    var searchQuery by remember { mutableStateOf("") }
     var actionsSession by remember { mutableStateOf<SessionEntity?>(null) }
     var renamingSession by remember { mutableStateOf<SessionEntity?>(null) }
     var collapsedGroups by remember { mutableStateOf(setOf(SessionGroup.OLDER, SessionGroup.ARCHIVED)) }
@@ -199,14 +216,14 @@ fun AppNav(container: AppContainer) {
         drawerContent = {
             ModalDrawerSheet {
                 Column(Modifier.fillMaxSize()) {
-                    // ----- Wordmark header -----
+                    // ----- Wordmark header (search button lives top-right) -----
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 24.dp, end = 28.dp, top = 24.dp, bottom = 16.dp),
+                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 24.dp, bottom = 16.dp),
                     ) {
                         HarnessMark(size = 40.dp)
                         Spacer(Modifier.width(14.dp))
-                        Column {
+                        Column(Modifier.weight(1f)) {
                             Text(
                                 "AndroidHarness",
                                 style = MaterialTheme.typography.titleMediumEmphasized,
@@ -217,6 +234,70 @@ fun AppNav(container: AppContainer) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
+                        IconButton(onClick = {
+                            searchOpen = !searchOpen
+                            if (searchOpen) {
+                                // Focus after the field enters composition.
+                                scope.launch {
+                                    kotlinx.coroutines.delay(120)
+                                    runCatching { searchFocus.requestFocus() }
+                                    keyboard?.show()
+                                }
+                            } else {
+                                searchQuery = ""
+                                focusManager.clearFocus(force = true)
+                                keyboard?.hide()
+                            }
+                        }) {
+                            Icon(
+                                if (searchOpen) Icons.Filled.Close else Icons.Outlined.Search,
+                                contentDescription = if (searchOpen) "Close search" else "Search chats",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    // ----- Search field (revealed by the header button) -----
+                    AnimatedVisibility(
+                        visible = searchOpen,
+                        enter = fadeIn(tween(150)) + expandVertically(tween(180)),
+                        exit = fadeOut(tween(120)) + shrinkVertically(tween(150)),
+                    ) {
+                        OutlinedTextField(
+                            value = searchQuery,
+                            onValueChange = { searchQuery = it },
+                            placeholder = { Text("Search chats") },
+                            singleLine = true,
+                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                            trailingIcon = {
+                                if (searchQuery.isNotEmpty()) {
+                                    IconButton(onClick = {
+                                        searchQuery = ""
+                                        runCatching { searchFocus.requestFocus() }
+                                    }) {
+                                        Icon(
+                                            Icons.Filled.Close,
+                                            contentDescription = "Clear search",
+                                            modifier = Modifier.size(17.dp),
+                                        )
+                                    }
+                                }
+                            },
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = OutlinedTextFieldDefaults.colors(
+                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                unfocusedBorderColor = Color.Transparent,
+                                focusedBorderColor = Color.Transparent,
+                            ),
+                            textStyle = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .focusRequester(searchFocus),
+                        )
                     }
 
                     // ----- New chat -----
@@ -320,27 +401,6 @@ fun AppNav(container: AppContainer) {
                             }
                         }
                     }
-
-                    // ----- Search -----
-                    OutlinedTextField(
-                        value = searchQuery,
-                        onValueChange = { searchQuery = it },
-                        placeholder = { Text("Search chats") },
-                        singleLine = true,
-                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                        shape = RoundedCornerShape(12.dp),
-                        colors = OutlinedTextFieldDefaults.colors(
-                            unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                            focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                            unfocusedBorderColor = Color.Transparent,
-                            focusedBorderColor = Color.Transparent,
-                        ),
-                        textStyle = MaterialTheme.typography.bodyMedium,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp),
-                    )
-                    Spacer(Modifier.height(6.dp))
 
                     LazyColumn(
                         modifier = Modifier.weight(1f).fillMaxWidth(),
