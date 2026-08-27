@@ -7,6 +7,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -95,6 +96,63 @@ internal object TermuxLinkRewrite {
     }
 }
 
+/**
+ * Termux packages ship scripts whose shebang points into the Termux build
+ * prefix (/data/data/com.termux/files/usr/...). Inside this app those paths
+ * never exist, so the scripts have to be fixed at extraction:
+ *
+ *  - the Android-bridge wrapper commands (termux-tools: pm, cmd, am, settings,
+ *    …) are dead weight here — they shadow the real /system binaries and die
+ *    with exit 126, so they are dropped;
+ *  - language tooling (bin/pip3, lib/node_modules/npm/bin/npm-cli.js, git's
+ *    libexec helper scripts, …) is genuinely needed, and the SHELL-uid tier
+ *    execs scripts directly (no linker shims exist there, so the kernel reads
+ *    the shebang). Their first line is rewritten to point into the deployed
+ *    prefix at /data/local/tmp, where the interpreter ELF is directly
+ *    executable. The app-uid tier never consults shebangs (W^X exec is
+ *    blocked and every command goes through the linker shims), so the same
+ *    file works in both tiers.
+ */
+internal object TermuxShebangs {
+    private const val TERMUX_USR = "/data/data/com.termux/files/usr/"
+
+    /** Match marker for any Termux-prefixed shebang (even outside files/usr). */
+    const val TERMUX_PREFIX_MARK = "#!/data/data/com.termux/"
+
+    /** Deployed shell-tier prefix — where rewritten shebangs point. */
+    const val DEPLOYED_PREFIX = LinuxEnvironmentManager.TMP_PREFIX_BASE + "/linux"
+
+    /** Android-bridge wrapper commands shipped by termux-tools. */
+    val SYSTEM_WRAPPERS = setOf(
+        "am", "bmgr", "bu", "cmd", "content", "device_config", "dpm", "dumpsys",
+        "getprop", "ime", "input", "log", "logcat", "media", "mount", "notify",
+        "pm", "settings", "setprop", "sm", "svc", "uiautomator", "umount",
+        "wm", "start", "stop",
+    )
+
+    /**
+     * True when [name] is a termux-tools Android-bridge wrapper. The wrappers
+     * are POSIX shell scripts — they all carry a Termux bin/sh shebang — so a
+     * non-shell script that happens to share a name (pm, log, …) is tooling
+     * that should be rewritten, not dropped.
+     */
+    fun isWrapperScript(name: String, firstLine: String): Boolean =
+        firstLine.startsWith("#!${TERMUX_USR}bin/sh") && name in SYSTEM_WRAPPERS
+
+    /**
+     * Rewrites a Termux-absolute shebang into the deployed prefix; null when
+     * the line cannot be repaired (not under files/usr, or still references
+     * the Termux prefix after rewriting). busybox provides `env` only as an
+     * applet in bin/applets, so env-style launchers route through that.
+     */
+    fun rewrittenFirstLine(firstLine: String): String? {
+        if (!firstLine.startsWith("#!$TERMUX_USR")) return null
+        var line = "#!$DEPLOYED_PREFIX/" + firstLine.removePrefix("#!$TERMUX_USR")
+        line = line.replaceFirst("$DEPLOYED_PREFIX/bin/env ", "$DEPLOYED_PREFIX/bin/applets/env ")
+        return if (line.contains("/data/data/com.termux")) null else line
+    }
+}
+
 sealed interface EnvState {
     data object NotInstalled : EnvState
     data class Downloading(val index: Int, val total: Int, val pkg: String) : EnvState
@@ -176,40 +234,52 @@ class LinuxEnvironmentManager(
     suspend fun install(wanted: List<String>) {
         if (_state.value is EnvState.Ready && wanted.all { installedContains(it) }) return
         withContext(Dispatchers.IO) {
-            try {
-                val indexText = fetchText(indexUrl())
-                val index = PackageIndex.parse(indexText)
-                val already = installedPackages().toSet()
-                val closure = resolve(index, wanted).filter { it.name !in already }
-                if (closure.isEmpty()) {
-                    markInstalled(wanted)
-                    _state.value = EnvState.Ready
-                    return@withContext
-                }
-
-                _state.value = EnvState.Downloading(0, closure.size, closure.first().name)
-                closure.forEachIndexed { i, pkg ->
-                    _state.value = EnvState.Downloading(i, closure.size, pkg.name)
-                    val debFile = File(tempDir, pkg.filename.substringAfterLast('/'))
-                    downloadVerified("$BASE_URL/${pkg.filename}", debFile, pkg.sha256)
-                    _state.value = EnvState.Installing(i, closure.size, pkg.name)
-                    extractDeb(debFile)
-                    debFile.delete()
-                    // record progress per package so a killed install resumes
-                    markInstalled(listOf(pkg.name))
-                }
-
-                File(prefix, "home").mkdirs()
-                File(prefix, "tmp").mkdirs()
-                File(prefix, "etc/termux").mkdirs()
-                markInstalled(wanted)
-                ensureShims()
-                _state.value = EnvState.Ready
-            } catch (ce: CancellationException) {
-                throw ce
-            } catch (e: Exception) {
-                _state.value = EnvState.Failed(e.message ?: "Install failed")
+            // Serialized: concurrent installs race the read-modify-write on the
+            // package marker and can silently drop entries, which later reads
+            // as phantom "missing" packages.
+            installMutex.withLock {
+                if (_state.value is EnvState.Ready && wanted.all { installedContains(it) }) return@withLock
+                installLocked(wanted)
             }
+        }
+    }
+
+    private val installMutex = Mutex()
+
+    private suspend fun installLocked(wanted: List<String>) {
+        try {
+            val indexText = fetchText(indexUrl())
+            val index = PackageIndex.parse(indexText)
+            val already = installedPackages().toSet()
+            val closure = resolve(index, wanted).filter { it.name !in already }
+            if (closure.isEmpty()) {
+                markInstalled(wanted)
+                _state.value = EnvState.Ready
+                return
+            }
+
+            _state.value = EnvState.Downloading(0, closure.size, closure.first().name)
+            closure.forEachIndexed { i, pkg ->
+                _state.value = EnvState.Downloading(i, closure.size, pkg.name)
+                val debFile = File(tempDir, pkg.filename.substringAfterLast('/'))
+                downloadVerified("$BASE_URL/${pkg.filename}", debFile, pkg.sha256)
+                _state.value = EnvState.Installing(i, closure.size, pkg.name)
+                extractDeb(debFile)
+                debFile.delete()
+                // record progress per package so a killed install resumes
+                markInstalled(listOf(pkg.name))
+            }
+
+            File(prefix, "home").mkdirs()
+            File(prefix, "tmp").mkdirs()
+            File(prefix, "etc/termux").mkdirs()
+            markInstalled(wanted)
+            ensureShims()
+            _state.value = EnvState.Ready
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            _state.value = EnvState.Failed(e.message ?: "Install failed")
         }
     }
 
@@ -277,16 +347,25 @@ class LinuxEnvironmentManager(
      * dead). Returns true when the environment is Ready afterwards.
      */
     suspend fun updateEnvironment(): Boolean = withContext(Dispatchers.IO) {
-        val installed = installedPackages().toSet()
-        val broken = installed.filter { pkg ->
-            BINARY_PROOF[pkg]?.let { progs -> progs.none { File(prefix, it).exists() } } ?: false
-        }
+        val broken = brokenInstalledPackages()
         if (broken.isNotEmpty()) {
             // Un-mark the broken ones so install() re-downloads them.
-            marker.writeText(installed.filter { it !in broken }.joinToString("\n"))
+            marker.writeText(installedPackages().filter { it !in broken }.joinToString("\n"))
         }
         install(fullPackages)
         isReady
+    }
+
+    /** Packages marked installed whose proof binary is gone from disk. */
+    private fun brokenInstalledPackages(): List<String> = installedPackages().filter { pkg ->
+        BINARY_PROOF[pkg]?.let { progs -> progs.none { File(prefix, it).exists() } } ?: false
+    }
+
+    /** Standard-set packages that are not usable right now: never installed, or marked installed with the binaries gone. */
+    private fun incompletePackages(): List<String> {
+        val installed = installedPackages().toSet()
+        val missing = fullPackages.filter { it !in installed }
+        return (missing + brokenInstalledPackages()).distinct()
     }
 
     // ------------------------------------------------------------------
@@ -335,51 +414,83 @@ class LinuxEnvironmentManager(
     }
 
     /**
-     * Bug 3 fix (existing installs): delete leftover Termux wrapper scripts
-     * in bin/ (pm, cmd, am, settings, ...) whose shebang points into the
-     * Termux prefix. Fresh installs never get them (filtered at extract);
-     * prefixes installed before the fix are cleaned here on app start so
-     * the real /system binaries stop being shadowed with exit 126.
+     * Bug 3 fix (existing installs): Termux's Android-bridge wrapper scripts
+     * in bin/ (pm, cmd, am, settings, ...) shadow the real /system binaries
+     * and die with exit 126; prefixes installed before the extract-time fix
+     * are cleaned here on app start. Other bin scripts carrying a
+     * Termux-absolute shebang (pip, …) are repaired in place instead: their
+     * first line is rewritten into the deployed shell-tier prefix. Returns
+     * (removed, rewritten) counts.
      */
-    private fun purgeDeadTermuxShims(): Int {
+    private fun purgeDeadTermuxShims(): Pair<Int, Int> {
         var removed = 0
+        var rewritten = 0
         val binDir = File(prefix, "bin")
         binDir.listFiles()?.forEach { f ->
             if (!f.isFile) return@forEach
             if (f.isElf()) return@forEach
-            val firstLine = runCatching { f.bufferedReader().use { it.readLine() } }.getOrNull() ?: return@forEach
-            if (firstLine.trimStart().startsWith("#!/data/data/com.termux/")) {
-                if (runCatching { f.delete() }.getOrDefault(false)) removed++
+            val text = runCatching { f.readText() }.getOrNull() ?: return@forEach
+            val nl = text.indexOf('\n')
+            val firstLine = text.lineSequence().firstOrNull()?.trim() ?: ""
+            if (!firstLine.startsWith(TermuxShebangs.TERMUX_PREFIX_MARK)) return@forEach
+            val repaired = TermuxShebangs.rewrittenFirstLine(firstLine)
+            if (repaired != null && !TermuxShebangs.isWrapperScript(f.name, firstLine)) {
+                runCatching {
+                    f.writeText(repaired + if (nl >= 0) text.substring(nl) else "")
+                }.onSuccess { rewritten++ }
+            } else if (runCatching { f.delete() }.getOrDefault(false)) {
+                removed++
             }
         }
-        return removed
+        return removed to rewritten
     }
 
     /**
-     * One-shot repair for existing installs: relink dangling symlinks and
-     * install npm when the nodejs-only bundle predates it. A network failure
-     * never demotes a Ready environment to Failed: the state is restored and
-     * repair retries on the next app start. Returns a summary, or null when
-     * nothing needed fixing.
+     * One-shot repair for existing installs, run at every app start:
+     * relinks dangling symlinks, cleans/rewrites Termux shebangs, and heals
+     * an incomplete toolchain — packages whose install was interrupted never
+     * complete on their own (the marker file exists, so the environment reads
+     * Ready), and packages whose binaries vanished keep reporting "broken"
+     * forever. install() resumes whatever is genuinely absent; late packages
+     * (LATE_PACKAGES) are excluded so their one-time notice still governs
+     * them. A network failure never demotes a Ready environment: the state is
+     * restored and the repair retries on the next app start. Returns a
+     * summary, or null when nothing needed fixing.
      */
     suspend fun repairIfNeeded(): String? {
         runCatching { gitGlobalConfig() }
         if (!marker.exists()) return null
         return withContext(Dispatchers.IO) {
             val relinked = repairLegacySymlinks()
-            val purged = purgeDeadTermuxShims()
-            val npmMissing = needsRepair()
-            if (relinked == 0 && purged == 0 && !npmMissing) return@withContext null
-            var npmNote: String? = null
-            if (npmMissing) {
+            val (purged, shebangsRewritten) = purgeDeadTermuxShims()
+            val broken = brokenInstalledPackages()
+            val missing = fullPackages.filter { !installedContains(it) && it !in latePackagesPending() }
+            var healNote: String? = null
+            if (broken.isNotEmpty() || missing.isNotEmpty()) {
                 val wasReady = _state.value is EnvState.Ready
-                // install() catches its own errors into EnvState.Failed, so
-                // restore Ready here when the env was healthy before repair.
+                if (broken.isNotEmpty()) {
+                    // Un-mark the broken ones so install() re-downloads them.
+                    marker.writeText(installedPackages().filter { it !in broken }.joinToString("\n"))
+                }
                 runCatching { install(fullPackages) }
                 if (_state.value is EnvState.Failed && wasReady) _state.value = EnvState.Ready
-                npmNote = if (File(prefix, "bin/npm").exists()) "npm installed"
-                else "npm still missing (retry on next launch)"
+                healNote = if (incompletePackages().isEmpty()) {
+                    buildList {
+                        if (broken.isNotEmpty()) add("reinstalled ${broken.joinToString(", ")}")
+                        if (missing.isNotEmpty()) add("finished installing ${missing.joinToString(", ")}")
+                    }.joinToString("; ").let { "restored toolchain ($it)" }
+                } else {
+                    "toolchain still incomplete (" + incompletePackages().joinToString(", ") +
+                        "); will retry on next launch"
+                }
             }
+            if (relinked == 0 && purged == 0 && shebangsRewritten == 0 && healNote == null) {
+                return@withContext null
+            }
+            // The repair changed prefix content without necessarily changing the
+            // package-set hash; drop the staging marker so the next shell-tier
+            // deploy re-stages instead of trusting the stale tarball.
+            runCatching { stagingMarker.delete() }
             ensureShims()
             buildString {
                 if (relinked > 0) append("relinked ").append(relinked).append(" dangling symlinks")
@@ -387,7 +498,12 @@ class LinuxEnvironmentManager(
                     if (isNotEmpty()) append("; ")
                     append("removed ").append(purged).append(" dead Termux shim(s) shadowing system binaries")
                 }
-                if (npmNote != null) append(if (isEmpty()) "" else "; ").append(npmNote)
+                if (shebangsRewritten > 0) {
+                    if (isNotEmpty()) append("; ")
+                    append("rewrote ").append(shebangsRewritten)
+                        .append(" Termux shebang(s) into the deployed prefix")
+                }
+                if (healNote != null) append(if (isEmpty()) "" else "; ").append(healNote)
             }.ifBlank { null }
         }
     }
@@ -663,7 +779,9 @@ class LinuxEnvironmentManager(
      * the tarball's etc/gitconfig + home/.gh-token).
      */
     fun packageSetHash(): String =
-        ("v6-ghauth\n" + installedPackages().sorted().joinToString("\n") +
+        // v7-shebang: shebang rewrite changed bin/ and lib/ script content
+        // without changing the package set — forces one re-stage + redeploy.
+        ("v7-shebang\n" + installedPackages().sorted().joinToString("\n") +
             "\n" + GitHubProvision.fingerprint(runCatching { githubTokenProvider() }.getOrNull()))
             .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
@@ -924,36 +1042,53 @@ class LinuxEnvironmentManager(
                         }
                         else -> {
                             target.parentFile?.mkdirs()
-                            // Bug 3 fix: Termux wrapper scripts (bin/pm, bin/cmd,
-                            // bin/am, bin/settings, ...) carry a dead shebang into
-                            // the Termux prefix (/data/data/com.termux/files/usr/bin/sh).
-                            // In the shell-uid tier the prefix bin dir is first on
-                            // PATH, so these shadows die with exit 126 "bad
-                            // interpreter". Drop non-ELF bin entries whose first
-                            // line targets the Termux prefix: the real /system
-                            // binaries win instead. Peek is stream-safe: the bytes
-                            // read are written back when the entry is kept.
+                            // Peek the first bytes of every regular file (stream-safe:
+                            // the bytes read are written back when the entry is kept).
+                            // Scripts with a Termux-absolute shebang split three ways:
+                            // the Android-bridge wrapper commands (bin/pm, cmd, am,
+                            // settings, ...) are dropped entirely — they shadow real
+                            // /system binaries and die with exit 126 (Bug 3 fix);
+                            // language tooling (bin/pip3, lib/node_modules npm-cli.js,
+                            // libexec git helper scripts, ...) gets its shebang
+                            // REWRITTEN into the deployed shell-tier prefix so direct
+                            // exec works where no linker shims exist; anything else is
+                            // written verbatim (the app tier never consults shebangs —
+                            // its commands run through the linker shims).
                             var skipWrite = false
                             val peeked = ByteArray(256)
-                            if (rel.startsWith("bin/") && !rel.contains("/applets/")) {
-                                val n = runCatching { tar.read(peeked, 0, peeked.size) }.getOrDefault(-1)
-                                val firstLine = if (n > 0)
-                                    String(peeked, 0, n, Charsets.UTF_8).lineSequence().firstOrNull()?.trim() ?: ""
-                                else ""
-                                if (firstLine.startsWith("#!/data/data/com.termux/")) {
+                            val n = runCatching { tar.read(peeked, 0, peeked.size) }.getOrDefault(-1)
+                            val entryText = if (n > 0) String(peeked, 0, n, Charsets.UTF_8) else ""
+                            val firstLine = entryText.lineSequence().firstOrNull()?.trim() ?: ""
+                            val rewritten = TermuxShebangs.rewrittenFirstLine(firstLine)
+                            val binEntry = rel.startsWith("bin/") && !rel.contains("/applets/")
+                            when {
+                                TermuxShebangs.isWrapperScript(rel.substringAfterLast('/'), firstLine) ||
+                                    (binEntry && firstLine.startsWith(TermuxShebangs.TERMUX_PREFIX_MARK) && rewritten == null) -> {
                                     // drain the rest of the entry without writing it
                                     tar.copyTo(object : java.io.OutputStream() {
                                         override fun write(b: Int) {}
                                     })
                                     skipWrite = true
-                                } else if (n > 0) {
+                                }
+                                rewritten != null && entryText.indexOf('\n') >= 0 -> {
+                                    val nl = entryText.indexOf('\n')
+                                    FileOutputStream(target).use { out ->
+                                        out.write(rewritten.toByteArray(Charsets.UTF_8))
+                                        out.write(peeked, nl, n - nl)
+                                        tar.copyTo(out)
+                                    }
+                                    runCatching { Os.chmod(target.absolutePath, e.mode.toInt() and 0xFFF) }
+                                    skipWrite = true
+                                }
+                                n > 0 -> {
                                     FileOutputStream(target).use { out ->
                                         out.write(peeked, 0, n)
                                         tar.copyTo(out)
                                     }
                                     runCatching { Os.chmod(target.absolutePath, e.mode.toInt() and 0xFFF) }
                                     skipWrite = true
-                                } // n <= 0: empty entry, fall through to the plain writer
+                                }
+                                // n <= 0: empty entry, fall through to the plain writer
                             }
                             if (skipWrite) continue
                             FileOutputStream(target).use { out -> tar.copyTo(out) }

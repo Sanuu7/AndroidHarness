@@ -138,11 +138,23 @@ class AppContainer(val appContext: Context) {
                 }
         }
         // Self-heal prefixes installed by older builds: relink dangling
-        // termux-absolute symlinks and add npm when the node-only bundle
-        // predates it. Silent when the prefix is already healthy; network
+        // termux-absolute symlinks, rewrite Termux shebangs, resume installs
+        // that were interrupted and reinstall packages whose binaries
+        // vanished. Silent when the prefix is already healthy; network
         // failures never demote a Ready environment (retried next launch).
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            linuxEnv.repairIfNeeded()
+            val repaired = linuxEnv.repairIfNeeded()
+            // A repair changes prefix content (reinstalled pip, rewritten
+            // shebangs) without necessarily changing the package-set hash, and
+            // StateFlow conflates the unchanged Ready state so the deploy
+            // collector above never re-fires — re-stage the shell-tier copy
+            // explicitly so it picks the fixes up.
+            if (repaired != null &&
+                shizuku.state.value == com.androidharness.app.data.env.ShizukuState.GRANTED &&
+                shizuku.serviceState.value == com.androidharness.app.data.env.UserServiceState.BOUND_READY
+            ) {
+                linuxEnv.ensureShellDeploy(shizuku)
+            }
         }
     }
 }
