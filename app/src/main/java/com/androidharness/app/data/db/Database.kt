@@ -130,9 +130,14 @@ data class SessionFileChangeEntity(
     val updatedAt: Long = 0,
 )
 
+/** A checkpointed turn with the timestamp of its earliest snapshot. */
+data class TurnFirstPojo(
+    val turnId: String,
+    val firstAt: Long,
+)
+
 /** Aggregated per (provider, model) usage within a time window. */
-data class ModelUsagePojo(
-    val providerName: String,
+data class ModelUsagePojo(    val providerName: String,
     val model: String,
     val inputTokens: Long,
     val outputTokens: Long,
@@ -230,6 +235,20 @@ interface HarnessDao {
 
     @Query("SELECT DISTINCT turnId FROM checkpoints WHERE sessionId = :sessionId")
     suspend fun turnsWithCheckpoints(sessionId: String): List<String>
+
+    /** Checkpointed turns in chronological order of their first snapshot. */
+    @Query(
+        "SELECT turnId AS turnId, MIN(createdAt) AS firstAt FROM checkpoints " +
+            "WHERE sessionId = :sessionId GROUP BY turnId ORDER BY firstAt ASC"
+    )
+    suspend fun checkpointTurnsOrdered(sessionId: String): List<TurnFirstPojo>
+
+    /** Per-turn "+N −M" stats for the undo preview; file_edits rows. */
+    @Query("SELECT * FROM file_edits WHERE sessionId = :sessionId AND turnId IN (:turnIds)")
+    suspend fun fileEditsForTurns(sessionId: String, turnIds: List<String>): List<FileEditEntity>
+
+    @Query("DELETE FROM file_edits WHERE sessionId = :sessionId AND turnId IN (:turnIds)")
+    suspend fun deleteFileEditsForTurns(sessionId: String, turnIds: List<String>)
 
     @Query("DELETE FROM checkpoints WHERE sessionId = :sessionId AND turnId = :turnId")
     suspend fun deleteCheckpoints(sessionId: String, turnId: String)

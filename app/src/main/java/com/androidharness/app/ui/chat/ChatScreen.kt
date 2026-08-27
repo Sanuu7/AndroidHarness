@@ -31,10 +31,12 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
@@ -49,6 +51,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -67,6 +70,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
@@ -148,6 +152,8 @@ fun ChatScreen(
     var editingMessage by remember { mutableStateOf<ChatMessage?>(null) }
     var confirmingEdit by remember { mutableStateOf<Pair<ChatMessage, String>?>(null) }
     var showUndoDialog by remember { mutableStateOf(false) }
+    // Chosen checkpoint awaiting confirmation with a per-file preview.
+    var confirmRewindTurn by remember { mutableStateOf<String?>(null) }
     val scope = rememberCoroutineScope()
 
     // Bottom-pinning for the message list: true while the newest content
@@ -306,7 +312,7 @@ fun ChatScreen(
                         modifier = Modifier.verticalScroll(rememberScrollState()),
                     ) {
                         Text(
-                            "Restore the workspace to before a turn. Only files are restored; messages stay.",
+                            "Pick a checkpoint. Files return to their state before that turn — and the chat rolls back with them: the agent's messages from that point on are removed.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -330,9 +336,9 @@ fun ChatScreen(
                                     )
                                 }
                                 TextButton(onClick = {
-                                    viewModel.rewindToTurn(tid)
                                     showUndoDialog = false
-                                }) { Text("Restore") }
+                                    confirmRewindTurn = tid
+                                }) { Text("Review…") }
                             }
                         }
                     }
@@ -340,6 +346,131 @@ fun ChatScreen(
             },
             confirmButton = {
                 TextButton(onClick = { showUndoDialog = false }) { Text("Close") }
+            },
+        )
+    }
+
+    // Undo confirmation: what exactly this rewind will revert, per file.
+    confirmRewindTurn?.let { tid ->
+        val preview by produceState<ChatViewModel.RewindPreview?>(initialValue = null, tid) {
+            value = runCatching { viewModel.rewindPreview(tid) }.getOrNull()
+        }
+        AlertDialog(
+            onDismissRequest = { confirmRewindTurn = null },
+            title = { Text("Undo to this checkpoint?") },
+            text = {
+                when (val p = preview) {
+                    null -> Row(
+                        horizontalArrangement = Arrangement.Center,
+                        modifier = Modifier.fillMaxWidth().padding(vertical = 24.dp),
+                    ) { CircularProgressIndicator(Modifier.size(22.dp)) }
+
+                    else -> Column(
+                        verticalArrangement = Arrangement.spacedBy(2.dp),
+                        modifier = Modifier.verticalScroll(rememberScrollState()),
+                    ) {
+                        Text(
+                            buildString {
+                                append("${p.files.size} file(s) revert to their earlier state")
+                                if (p.turns > 1) append(" (this turn + ${p.turns - 1} later)")
+                                if (p.messagesDeleted > 0) {
+                                    append(" · ${p.messagesDeleted} message(s) roll back")
+                                }
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                        if (p.files.isEmpty()) {
+                            Text(
+                                "No tracked file changes in this window.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        p.files.take(12).forEach { stat ->
+                            val scheme = MaterialTheme.colorScheme
+                            val dotColor = when {
+                                stat.willBeDeleted -> scheme.error
+                                !stat.existsNow -> com.androidharness.app.ui.theme.LocalStatusColors.current.success
+                                else -> com.androidharness.app.ui.theme.LocalStatusColors.current.warning
+                            }
+                            val note = when {
+                                stat.willBeDeleted -> "created by the agent · will be deleted"
+                                !stat.existsNow -> "missing on disk · will be restored"
+                                else -> "reverts to its earlier state"
+                            }
+                            Column {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Box(
+                                        Modifier
+                                            .size(8.dp)
+                                            .background(dotColor, CircleShape),
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            stat.relPath.substringAfterLast('/'),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                        val dir = stat.relPath.substringBeforeLast('/', "")
+                                        if (dir.isNotBlank()) {
+                                            Text(
+                                                dir,
+                                                style = MaterialTheme.typography.labelSmall,
+                                                color = scheme.onSurfaceVariant,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                            )
+                                        }
+                                    }
+                                    if (stat.added > 0 || stat.removed > 0) {
+                                        com.androidharness.app.ui.files.DiffStatText(stat.added, stat.removed)
+                                    }
+                                }
+                                Text(
+                                    note,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = scheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(start = 16.dp),
+                                )
+                            }
+                            HorizontalDivider(
+                                color = scheme.outlineVariant.copy(alpha = 0.4f),
+                                modifier = Modifier.padding(vertical = 4.dp),
+                            )
+                        }
+                        if (p.files.size > 12) {
+                            Text(
+                                "+ ${p.files.size - 12} more file(s)",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
+            },
+            confirmButton = {
+                val ready = preview != null &&
+                    (preview!!.files.isNotEmpty() || preview!!.messagesDeleted > 0)
+                TextButton(
+                    enabled = ready,
+                    onClick = {
+                        confirmRewindTurn = null
+                        scope.launch {
+                            val message = viewModel.performRewind(tid)
+                            snackbar.showSnackbar(message)
+                        }
+                    },
+                ) { Text("Undo", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmRewindTurn = null }) { Text("Cancel") }
             },
         )
     }
@@ -478,7 +609,7 @@ fun ChatScreen(
                 val res = snackbar.showSnackbar(
                     "Files changed", actionLabel = "Undo", duration = SnackbarDuration.Short,
                 )
-                if (res == SnackbarResult.ActionPerformed) viewModel.rewindToTurn(latestTurn)
+                if (res == SnackbarResult.ActionPerformed) confirmRewindTurn = latestTurn
             }
         }
     }
@@ -603,7 +734,7 @@ fun ChatScreen(
                                             Row(verticalAlignment = Alignment.CenterVertically) {
                                                 CopyIconButton(message.text)
                                                 UndoIconButton(
-                                                    onClick = { message.turnId?.let { viewModel.rewindToTurn(it) } },
+                                                    onClick = { message.turnId?.let { confirmRewindTurn = it } },
                                                 )
                                             }
                                         }
@@ -654,7 +785,7 @@ fun ChatScreen(
                                                     CopyIconButton(message.text)
                                                     if (canRewind) {
                                                         UndoIconButton(
-                                                            onClick = { message.turnId?.let { viewModel.rewindToTurn(it) } },
+                                                            onClick = { message.turnId?.let { confirmRewindTurn = it } },
                                                         )
                                                     }
                                                     Spacer(Modifier.weight(1f))

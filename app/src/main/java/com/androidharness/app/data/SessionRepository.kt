@@ -244,6 +244,52 @@ class SessionRepository(
         return bos.toByteArray()
     }
 
+    private fun gunzip(bytes: ByteArray): String =
+        java.util.zip.GZIPInputStream(bytes.inputStream()).use { it.bufferedReader(Charsets.UTF_8).readText() }
+
+    /** Per-turn "+N −M" rows for the undo preview. */
+    suspend fun fileEditsForTurns(
+        sessionId: String,
+        turnIds: List<String>,
+    ): List<com.androidharness.app.data.db.FileEditEntity> =
+        if (turnIds.isEmpty()) emptyList() else db.dao().fileEditsForTurns(sessionId, turnIds)
+
+    /** Drops the "+N −M" chips of turns whose messages a rewind removed. */
+    suspend fun deleteFileEditsForTurns(sessionId: String, turnIds: List<String>) {
+        if (turnIds.isNotEmpty()) db.dao().deleteFileEditsForTurns(sessionId, turnIds)
+    }
+
+    /**
+     * After a rewind restores [relPath], recompute its cumulative change row
+     * against the session baseline so the "+N −M" badges and the Files-changed
+     * diffs reflect the actual restored state instead of stale counters.
+     */
+    suspend fun refreshFileChangeAfterRewind(
+        sessionId: String,
+        relPath: String,
+        existsAfter: Boolean,
+        currentText: String?,
+    ) {
+        val existing = db.dao().sessionFileChange(sessionId, relPath) ?: return
+        if (!existing.hasBase) return
+        if (existsAfter && currentText == null) {
+            // Content too large to read now — keep counters, fix status only.
+            db.dao().upsertSessionFileChange(existing.copy(isDeleted = false, updatedAt = System.currentTimeMillis()))
+            return
+        }
+        val base = if (existing.isNew || existing.baseGzip == null) "" else gunzip(existing.baseGzip!!)
+        val current = if (existsAfter) currentText.orEmpty() else ""
+        val (added, removed) = com.androidharness.app.core.Diff.lineCounts(base, current)
+        db.dao().upsertSessionFileChange(
+            existing.copy(
+                added = added.toLong(),
+                removed = removed.toLong(),
+                isDeleted = !existsAfter,
+                updatedAt = System.currentTimeMillis(),
+            ),
+        )
+    }
+
     /** Per-(provider, model) token totals since [since] (epoch ms; 0 = lifetime). */
     fun usageByModelSince(since: Long): Flow<List<com.androidharness.app.data.db.ModelUsagePojo>> =
         db.dao().usageByModelSince(since)

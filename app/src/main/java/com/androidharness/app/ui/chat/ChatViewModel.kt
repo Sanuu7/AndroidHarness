@@ -685,25 +685,84 @@ class ChatViewModel(
     // Undo / edit
     // ------------------------------------------------------------------
 
-    fun rewindToTurn(turnId: String) {
-        val sid = sessionId ?: return
-        viewModelScope.launch {
-            val fs = c.workspace.currentOnce()
-            val outcome = runCatching { c.checkpoints.rewind(sid, turnId, fs) }.getOrNull()
-            _state.update {
-                it.copy(
-                    turnsWithCheckpoints = refreshCheckpoints(sid),
-                    error = if (outcome == null) {
-                        "Rewind failed."
-                    } else if (outcome.restored == 0 && outcome.failed == 0) {
-                        "Nothing to rewind for that turn."
-                    } else if (outcome.failed > 0) {
-                        "Rewound ${outcome.restored} file(s), ${outcome.failed} could not be restored."
-                    } else {
-                        null
-                    },
-                )
-            }
+    /** Per-file line in the undo confirmation preview. */
+    data class RewindFileStat(
+        val relPath: String,
+        val added: Long,
+        val removed: Long,
+        /** The agent created this file during the undone window → rewind deletes it. */
+        val willBeDeleted: Boolean,
+        /** Whether the file exists on disk right now (missing ⇒ rewind restores it). */
+        val existsNow: Boolean,
+    )
+
+    /** What one undo tap will do — feeds the confirmation dialog. */
+    data class RewindPreview(
+        val files: List<RewindFileStat>,
+        val messagesDeleted: Int,
+        val turns: Int,
+    )
+
+    /**
+     * Preview for the undo confirmation dialog: cumulative per-file stats of
+     * the chosen turn and every later one (undo rewinds through the present),
+     * plus how many messages will roll back.
+     */
+    suspend fun rewindPreview(turnId: String): RewindPreview? {
+        val sid = sessionId ?: return null
+        val ordered = runCatching { c.checkpoints.turnsOrdered(sid) }.getOrDefault(emptyList())
+        val idx = ordered.indexOfFirst { it.turnId == turnId }
+        val affected = if (idx >= 0) ordered.drop(idx).map { it.turnId } else listOf(turnId)
+
+        val sums = HashMap<String, LongArray>()
+        c.sessions.fileEditsForTurns(sid, affected).forEach { e ->
+            val acc = sums.getOrPut(e.relPath) { longArrayOf(0, 0) }
+            acc[0] += e.added
+            acc[1] += e.removed
+        }
+
+        // Existed-before from the earliest checkpoint per path: false means the
+        // agent created the file inside the undone window.
+        val existedBefore = HashMap<String, Boolean>()
+        runCatching { c.checkpoints.entitiesForTurns(sid, affected) }.getOrDefault(emptyList())
+            .forEach { cp -> existedBefore.putIfAbsent(cp.relPath, cp.existedBefore) }
+
+        val fs = c.workspace.currentOnce()
+        val files = (sums.keys + existedBefore.keys).map { path ->
+            val acc = sums[path] ?: longArrayOf(0, 0)
+            val created = existedBefore[path] == false
+            val existsNow = runCatching { fs?.resolve(path)?.exists == true }.getOrDefault(true)
+            RewindFileStat(path, acc[0], acc[1], willBeDeleted = created && existsNow, existsNow = existsNow)
+        }.sortedBy { it.relPath }
+
+        val msgs = runCatching { c.sessions.messages(sid) }.getOrDefault(emptyList())
+        val boundary = msgs.indexOfFirst { it.turnId == turnId && it.role != Role.USER }
+        val messagesDeleted = if (boundary >= 0) msgs.size - boundary else 0
+
+        return RewindPreview(files, messagesDeleted, affected.size)
+    }
+
+    /**
+     * Performs the confirmed undo: files back to their pre-turn state, the
+     * chat rolled back to before this turn's agent output, derived stats
+     * refreshed. Returns a user-facing summary for the snackbar.
+     */
+    suspend fun performRewind(turnId: String): String {
+        val sid = sessionId ?: return "No active chat."
+        if (_state.value.busy || sid in c.runManager.runningSessionIds.value) {
+            return "Stop the running agent first."
+        }
+        val summary = runCatching { c.runManager.rewindFromTurn(sid, turnId) }
+            .getOrElse { e -> return "Rewind failed: ${e.message}" }
+        _state.update { it.copy(turnsWithCheckpoints = refreshCheckpoints(sid)) }
+        return when {
+            summary.filesTouched == 0 && summary.messagesDeleted == 0 -> "Nothing to rewind for that turn."
+            summary.filesFailed > 0 ->
+                "Undo done, with issues: ${summary.filesRestored} file(s) restored, " +
+                    "${summary.messagesDeleted} message(s) removed, ${summary.filesFailed} could not be restored."
+            else ->
+                "Undo complete: ${summary.filesRestored} file(s) restored, " +
+                    "${summary.messagesDeleted} message(s) removed."
         }
     }
 

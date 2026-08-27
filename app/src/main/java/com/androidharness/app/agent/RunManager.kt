@@ -638,6 +638,67 @@ class RunManager(
         sessions.truncateFrom(sessionId, messageId)
     }
 
+    /**
+     * Full undo of a checkpointed turn: every file touched in [turnId] or any
+     * later turn returns to its pre-turn state (snapshots replayed newest-turn
+     * first so the earliest pre-state wins per path), the conversation rolls
+     * back to just before that turn's first agent message, the "+N −M" chip
+     * rows of the removed turns are dropped, and cumulative change counters
+     * are recomputed against the session baseline.
+     */
+    suspend fun rewindFromTurn(sessionId: String, turnId: String): RewindSummary {
+        val ordered = runCatching { checkpoints.turnsOrdered(sessionId) }.getOrDefault(emptyList())
+        val idx = ordered.indexOfFirst { it.turnId == turnId }
+        val affectedTurns = if (idx >= 0) ordered.drop(idx).map { it.turnId } else listOf(turnId)
+
+        val fs = workspace.currentOnce()
+        var restored = 0
+        var failed = 0
+        val paths = LinkedHashSet<String>()
+        for (tid in affectedTurns.reversed()) {
+            val result = runCatching { checkpoints.rewind(sessionId, tid, fs) }.getOrNull() ?: continue
+            restored += result.restored
+            failed += result.failed
+            paths += result.paths
+        }
+
+        // Chat rolls back: delete from this turn's first agent message onward.
+        val msgs = sessions.messages(sessionId)
+        val boundary = msgs.indexOfFirst { it.turnId == turnId && it.role != Role.USER }
+        var messagesDeleted = 0
+        if (boundary >= 0) {
+            msgs[boundary].id?.let { boundaryId ->
+                messagesDeleted = msgs.size - boundary
+                sessions.truncateFrom(sessionId, boundaryId)
+            }
+        }
+
+        // The removed turns' diff-chip rows point at messages that no longer exist.
+        sessions.deleteFileEditsForTurns(sessionId, affectedTurns)
+
+        // Keep the Files-changed view honest: recompute restored paths live.
+        for (path in paths) {
+            runCatching {
+                val node = runCatching { fs.resolve(path) }.getOrNull()
+                val exists = node?.exists == true && node.isFile
+                val text = if (exists && node != null && node.length <= 512_000) {
+                    runCatching { node.readText() }.getOrNull()
+                } else {
+                    null
+                }
+                sessions.refreshFileChangeAfterRewind(sessionId, path, exists, text)
+            }
+        }
+        return RewindSummary(restored, failed, messagesDeleted, paths.size)
+    }
+
+    data class RewindSummary(
+        val filesRestored: Int,
+        val filesFailed: Int,
+        val messagesDeleted: Int,
+        val filesTouched: Int,
+    )
+
     // ------------------------------------------------------------------
     // Keep-alive plumbing
     // ------------------------------------------------------------------
