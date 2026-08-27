@@ -4,6 +4,7 @@
 
 ### Added
 
+- **In-app updater** — checks GitHub Releases automatically on launch and manually from Settings → Updates. When a newer release is published, a dialog shows the release notes with every markdown link (and bare URLs) tappable, so changelog.md-style bodies open in the browser. Update installs silently through Shizuku (`pm install -r`) when granted, otherwise it hands the APK to the system installer with an unknown-sources retry path. Download shows animated MB/percent progress. Version matching understands Alpha-v0.3-style tags.
 - **Hermes-style global thinking ladder** — one canonical scale on every model: Off, Minimal, Low, Medium, High, X-High, Max, Ultra. The raw pick is stored verbatim and resolved at request time: non-native rungs fall down the chain (ultra → max → xhigh → high …) to the closest tier the model supports, floor fallback keeps an enabled ask enabled, and a stronger request never silently bills less than a weaker one.
 - **Slash plan** — typing `/plan [instruction]` flips the header into Plan mode automatically AND loads the bundled planning skill into the run prompt (built-in fallback instructions when no plan skill is installed).
 - **Stats screen sort + filter** — per-model attribution can be ordered by tokens, estimated price, or request count; price estimates render on every row.

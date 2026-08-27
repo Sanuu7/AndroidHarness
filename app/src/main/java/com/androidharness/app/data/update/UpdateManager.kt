@@ -151,29 +151,6 @@ class UpdateManager(
         }
     }
 
-    /**
-     * Compares like "0.3-alpha": numeric dot-parts of the version prefix;
-     * anything unparsable never prompts (no nagging on odd tags).
-     */
-    internal fun isNewer(remote: String, current: String): Boolean {
-        val r = parseParts(remote) ?: return false
-        val c = parseParts(current) ?: return false
-        val n = maxOf(r.size, c.size)
-        for (i in 0 until n) {
-            val rv = r.getOrElse(i) { 0 }
-            val cv = c.getOrElse(i) { 0 }
-            if (rv != cv) return rv > cv
-        }
-        return false
-    }
-
-    private fun parseParts(version: String): List<Int>? {
-        val core = version.trim().removePrefix("v").removePrefix("V").substringBefore('-')
-        val cleaned = core.filter { it.isDigit() || it == '.' }
-        if (cleaned.isEmpty() || cleaned.none { it.isDigit() }) return null
-        return cleaned.split('.').map { it.toIntOrNull() ?: 0 }
-    }
-
     /** Downloads the release APK, reporting progress through [step]. */
     private fun download(release: LatestRelease): File {
         val out = File(updateDir, release.apkName ?: "harness-update.apk")
@@ -265,5 +242,33 @@ class UpdateManager(
         const val RELEASES_API = "https://api.github.com/repos/Sanuu7/AndroidHarness/releases"
         const val NEED_INSTALL_PERMISSION =
             "Allow installs from this source to continue. Grant it, then tap Update again."
+
+        /**
+         * Compares the numeric core of [remote] against [current]: "0.3-alpha" ->
+         * 0.3, "Alpha-v0.3" -> 0.3, "v1.2.3" -> 1.2.3. Anything unparsable never
+         * prompts (no nagging on odd tags); equal versions never prompt.
+         */
+        internal fun isNewer(remote: String, current: String): Boolean {
+            val r = parseParts(remote) ?: return false
+            val c = parseParts(current) ?: return false
+            val n = maxOf(r.size, c.size)
+            for (i in 0 until n) {
+                val rv = r.getOrElse(i) { 0 }
+                val cv = c.getOrElse(i) { 0 }
+                if (rv != cv) return rv > cv
+            }
+            return false
+        }
+
+        /**
+         * Pulls the version core out of arbitrary release names/tags by scanning
+         * digit runs anywhere in the string and taking the last: "Alpha-v0.3"
+         * (the repo's tag shape), "0.3-alpha", "v1.2.3", "Alpha v0.31".
+         */
+        private fun parseParts(version: String): List<Int>? =
+            VERSION_CORE_RE.findAll(version).lastOrNull()
+                ?.value?.split('.')?.map { it.toIntOrNull() ?: 0 }
+
+        private val VERSION_CORE_RE = Regex("""\d+(?:\.\d+)*""")
     }
 }
