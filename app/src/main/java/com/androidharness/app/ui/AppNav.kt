@@ -184,6 +184,12 @@ fun AppNav(container: AppContainer) {
     val currentSessionId = currentEntry
         ?.takeIf { it.destination.route == "chat/{sessionId}" }
         ?.arguments?.getString("sessionId")
+    // The code editor fights the drawer's edge-swipe for every gesture:
+    // horizontal scrolling inside the editor opens the sidebar mid-edit.
+    // The drawer keeps its menu button; only the swipe gesture is disabled
+    // while an editor is on screen.
+    val currentRoute = currentEntry?.destination?.route
+    val drawerGesturesEnabled = currentRoute?.startsWith("viewer/") != true
     val runningSessionIds by container.runManager.runningSessionIds.collectAsStateWithLifecycle()
 
     var actionsSession by remember { mutableStateOf<SessionEntity?>(null) }
@@ -213,6 +219,7 @@ fun AppNav(container: AppContainer) {
 
     ModalNavigationDrawer(
         drawerState = drawerState,
+        gesturesEnabled = drawerGesturesEnabled,
         drawerContent = {
             ModalDrawerSheet {
                 Column(Modifier.fillMaxSize()) {
