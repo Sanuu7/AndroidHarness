@@ -1,8 +1,11 @@
 package com.androidharness.app.ui.chat.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
@@ -17,14 +20,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.Button
-import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -39,6 +45,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.AnnotatedString
@@ -49,6 +56,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.androidharness.app.agent.ApprovalRequest
 import com.androidharness.app.agent.QuestionRequest
 import com.androidharness.app.agent.describeToolCall
@@ -165,102 +173,187 @@ internal fun PlanApprovalCard(
     }
 }
 
-@OptIn(ExperimentalLayoutApi::class)
+/**
+ * Interactive question card. Options render as full-width selectable rows —
+ * single-choice answers fire instantly on tap (radio indicator), multi-select
+ * toggles checkboxes and answers through a submit button that shows the pick
+ * count. "Something else…" reveals a free-text field in every mode.
+ */
 @Composable
 internal fun QuestionCard(
     question: QuestionRequest,
     onAnswer: (String) -> Unit,
 ) {
-    var freeText by remember { mutableStateOf("") }
-    var selected by remember(question.callId) { mutableStateOf(setOf<Int>()) }
     val scheme = MaterialTheme.colorScheme
+    var selected by remember(question.callId) { mutableStateOf(setOf<Int>()) }
+    var noteOpen by remember(question.callId) { mutableStateOf(question.options.isEmpty()) }
+    var note by remember(question.callId) { mutableStateOf("") }
+    val multi = question.multiSelect
+
     val answerText: () -> String = {
         val picks = selected.sorted().mapNotNull { question.options.getOrNull(it) }
-        (picks + listOf(freeText.trim()).filter { it.isNotBlank() }).joinToString("; ")
+        (picks + listOf(note.trim()).filter { it.isNotBlank() }).joinToString("; ")
     }
-    val answerReady = if (question.multiSelect) {
-        selected.isNotEmpty() || freeText.isNotBlank()
-    } else {
-        freeText.isNotBlank()
-    }
-    ActionCard(
-        title = question.question,
-        actions = {
-            OutlinedTextField(
-                value = freeText,
-                onValueChange = { freeText = it },
-                modifier = Modifier.weight(1f),
-                placeholder = { Text(if (question.multiSelect) "Add a note…" else "Answer…") },
-                singleLine = true,
-                shape = MaterialTheme.shapes.medium,
-                textStyle = MaterialTheme.typography.bodyMedium,
-            )
-            IconButton(
-                onClick = { if (answerReady) onAnswer(answerText()) },
-                enabled = answerReady,
-            ) {
-                Icon(
-                    Icons.AutoMirrored.Filled.Send,
-                    contentDescription = "Send answer",
-                    tint = if (answerReady) scheme.primary else scheme.onSurfaceVariant,
-                )
-            }
-        },
+    val ready = selected.isNotEmpty() || note.isNotBlank()
+
+    Surface(
+        color = scheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth(),
     ) {
-        when {
-            question.multiSelect && question.options.isNotEmpty() -> {
-                Text(
-                    "Select all that apply",
-                    style = MaterialTheme.typography.labelMedium,
-                    color = scheme.onSurfaceVariant,
-                )
+        Column(Modifier.padding(16.dp)) {
+            Text(
+                if (multi) "PICK ANY THAT APPLY" else if (question.options.isEmpty()) "FREE ANSWER" else "PICK ONE",
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.primary,
+                letterSpacing = 1.2.sp,
+            )
+            Spacer(Modifier.height(8.dp))
+            Text(
+                question.question,
+                style = MaterialTheme.typography.bodyLarge,
+                color = scheme.onSurface,
+            )
+
+            if (question.options.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
                 question.options.forEachIndexed { idx, option ->
-                    val checked = idx in selected
+                    val isSel = idx in selected
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
                             .fillMaxWidth()
+                            .clip(MaterialTheme.shapes.medium)
+                            .background(
+                                if (isSel) scheme.primary.copy(alpha = 0.08f)
+                                else Color.Transparent,
+                            )
                             .clickable {
-                                selected = if (checked) selected - idx else selected + idx
+                                when {
+                                    multi -> selected = if (isSel) selected - idx else selected + idx
+                                    !noteOpen -> onAnswer(option)
+                                    else -> selected = if (isSel) selected - idx else selected + idx
+                                }
                             }
-                            .padding(vertical = 2.dp),
+                            .padding(horizontal = 10.dp, vertical = 11.dp),
                     ) {
-                        Checkbox(
-                            checked = checked,
-                            onCheckedChange = {
-                                selected = if (checked) selected - idx else selected + idx
-                            },
-                        )
+                        if (multi) {
+                            MultiCheck(checked = isSel)
+                        } else {
+                            RadioDot(checked = isSel)
+                        }
+                        Spacer(Modifier.width(12.dp))
                         Text(
                             option,
                             style = MaterialTheme.typography.bodyMedium,
+                            color = if (isSel) scheme.primary else scheme.onSurface,
                             modifier = Modifier.weight(1f),
+                        )
+                    }
+                    if (idx != question.options.lastIndex) {
+                        HorizontalDivider(
+                            color = scheme.outlineVariant.copy(alpha = 0.35f),
+                            modifier = Modifier.padding(start = 40.dp),
                         )
                     }
                 }
             }
-            question.options.isNotEmpty() -> {
-                FlowRow(
-                    horizontalArrangement = Arrangement.spacedBy(6.dp),
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                ) {
-                    question.options.forEach { option ->
-                        Surface(
-                            color = scheme.surface,
-                            contentColor = scheme.onSurface,
-                            shape = MaterialTheme.shapes.medium,
-                            border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
-                            onClick = { onAnswer(option) },
-                        ) {
-                            Text(
-                                option,
-                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                                style = MaterialTheme.typography.labelLarge,
-                            )
-                        }
-                    }
+
+            if (noteOpen) {
+                Spacer(Modifier.height(10.dp))
+                OutlinedTextField(
+                    value = note,
+                    onValueChange = { note = it },
+                    placeholder = { Text("Type your answer…", style = MaterialTheme.typography.bodyMedium) },
+                    textStyle = MaterialTheme.typography.bodyMedium,
+                    shape = MaterialTheme.shapes.medium,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+            } else {
+                Spacer(Modifier.height(6.dp))
+                TextButton(onClick = { noteOpen = true }) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = null,
+                        modifier = Modifier.size(15.dp),
+                        tint = scheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(
+                        "Something else…",
+                        style = MaterialTheme.typography.labelLarge,
+                        color = scheme.onSurfaceVariant,
+                    )
                 }
             }
+
+            if (multi || noteOpen) {
+                Spacer(Modifier.height(8.dp))
+                Button(
+                    onClick = { if (ready) onAnswer(answerText()) },
+                    enabled = ready,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        if (selected.isNotEmpty()) "Send answer · ${selected.size} selected"
+                        else "Send answer",
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Radio indicator for single-choice rows. */
+@Composable
+private fun RadioDot(checked: Boolean) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(20.dp)
+            .border(
+                width = 2.dp,
+                color = if (checked) scheme.primary else scheme.outlineVariant,
+                shape = CircleShape,
+            ),
+    ) {
+        if (checked) {
+            Box(
+                Modifier
+                    .size(10.dp)
+                    .background(scheme.primary, CircleShape),
+            )
+        }
+    }
+}
+
+/** Checkbox indicator for multi-select rows. */
+@Composable
+private fun MultiCheck(checked: Boolean) {
+    val scheme = MaterialTheme.colorScheme
+    Box(
+        contentAlignment = Alignment.Center,
+        modifier = Modifier
+            .size(20.dp)
+            .background(
+                if (checked) scheme.primary else Color.Transparent,
+                MaterialTheme.shapes.small,
+            )
+            .border(
+                width = 2.dp,
+                color = if (checked) scheme.primary else scheme.outlineVariant,
+                shape = MaterialTheme.shapes.small,
+            ),
+    ) {
+        if (checked) {
+            Icon(
+                Icons.Filled.Check,
+                contentDescription = null,
+                tint = scheme.onPrimary,
+                modifier = Modifier.size(14.dp),
+            )
         }
     }
 }

@@ -497,19 +497,37 @@ class AgentEngine(
             val args = runCatching {
                 json.parseToJsonElement(call.argumentsJson).jsonObject
             }.getOrNull()
-            val question = args?.let { a ->
+            val rawQuestion = args?.let { a ->
                 a["question"]?.jsonPrimitive?.contentOrNull
                     ?: a["text"]?.jsonPrimitive?.contentOrNull
                     ?: a["query"]?.jsonPrimitive?.contentOrNull
             }?.takeIf { it.isNotBlank() }
                 ?: return ToolResult(false, "ask_user requires a question.")
-            val multiSelect = (args["multi_select"] as? kotlinx.serialization.json.JsonPrimitive)
+            val multiSelectFlag = (args["multi_select"] as? kotlinx.serialization.json.JsonPrimitive)
                 ?.contentOrNull == "true"
-            val options = parseAskUserOptions(args["options"])
+            var options = parseAskUserOptions(args["options"])
+            var questionText = rawQuestion
+            var multiSelect = multiSelectFlag
+            if (options.isEmpty()) {
+                // Models often bake the choices into the question as a markdown
+                // bullet list and leave `options` empty — pull them out so the
+                // user gets tappable rows instead of a wall of text.
+                val (cleanQuestion, extracted) = extractOptionsFromQuestion(rawQuestion)
+                if (extracted.isNotEmpty()) {
+                    questionText = cleanQuestion
+                    options = extracted
+                    if (!multiSelect &&
+                        Regex(
+                            "all that apply|multiple (answers|choices|select)|select (all|every)",
+                            RegexOption.IGNORE_CASE,
+                        ).containsMatchIn(rawQuestion)
+                    ) multiSelect = true
+                }
+            }
             val request = QuestionRequest(
                 call.id,
-                question,
-                options.take(if (multiSelect) 8 else 4),
+                questionText,
+                options.take(if (multiSelect) 8 else 6),
                 multiSelect = multiSelect,
             )
             emitEvent(AgentEvent.QuestionNeeded(request))
@@ -1100,6 +1118,28 @@ class AgentEngine(
         }.map { it.trim() }
             .filter { it.isNotEmpty() }
             .take(12)
+
+    private val OPTION_BULLET = Regex("""^\s*(?:[-*•‣–]|\d{1,2}[.)])\s+(.+)$""")
+
+    /**
+     * Splits a trailing markdown bullet/numbered list off the question text:
+     * returns the trimmed question and the extracted option labels. Only
+     * fires when at least two consecutive trailing lines are bullets.
+     */
+    private fun extractOptionsFromQuestion(question: String): Pair<String, List<String>> {
+        val lines = question.trimEnd().lines()
+        val opts = ArrayList<String>()
+        var i = lines.lastIndex
+        while (i >= 0) {
+            val match = OPTION_BULLET.matchEntire(lines[i]) ?: break
+            val text = match.groupValues[1].trim()
+            if (text.isEmpty()) break
+            opts.add(0, text)
+            i--
+        }
+        if (opts.size < 2) return question to emptyList()
+        return lines.take(i + 1).joinToString("\n").trimEnd() to opts.take(8)
+    }
 
     private fun detectToolchainHints(command: String): List<String> {
         val hints = mutableListOf<String>()
