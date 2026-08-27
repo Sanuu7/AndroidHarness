@@ -12,6 +12,8 @@
     <!-- Let the user exclude the app from battery optimization (Samsung etc.). -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
+    <!-- In-app updates: request the install session for downloaded release APKs. -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <!-- Terminal/storage: let the app use real filesystem paths across shared
          storage ("All files access"), which the shell and file tools need on
@@ -51,6 +53,17 @@
             android:enabled="true"
             android:exported="true"
             android:multiprocess="false" />
+
+        <!-- Shares staged update APKs with the system package installer. -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.update"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
 
         <service
             android:name=".AgentService"

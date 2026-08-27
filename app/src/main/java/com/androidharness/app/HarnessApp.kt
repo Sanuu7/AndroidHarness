@@ -58,6 +58,7 @@ class AppContainer(val appContext: Context) {
     val linuxEnv = com.androidharness.app.data.env.LinuxEnvironmentManager(appContext)
     val shizuku = com.androidharness.app.data.env.ShizukuManager(appContext)
     val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv)
+    val updates = com.androidharness.app.data.update.UpdateManager(appContext, shizuku)
     val backgroundProcesses = com.androidharness.app.data.BgProcessStore(
         appContext, linuxEnv, shizuku, workspaceRoot = workspace.appPrivateRoot,
     )

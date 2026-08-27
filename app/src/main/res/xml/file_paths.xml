@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths>
+    <!-- Staged update APKs shared with the system package installer. -->
+    <external-files-path name="update" path="update/" />
+</paths>

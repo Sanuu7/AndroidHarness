@@ -9,12 +9,17 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.update.UpdateIntents
 import com.androidharness.app.ui.AppNav
 import com.androidharness.app.ui.theme.HarnessTheme
+import com.androidharness.app.ui.update.UpdateDialog
+import kotlinx.coroutines.launch
+import java.io.File
 
 class MainActivity : ComponentActivity() {
 
@@ -46,7 +51,44 @@ class MainActivity : ComponentActivity() {
                 themeMode = settings.themeMode,
                 dynamicColor = settings.dynamicColor,
             ) {
+                // Auto update check shortly after launch, once per process.
+                LaunchedEffect(Unit) {
+                    kotlinx.coroutines.delay(4_000)
+                    container.updates.check(manual = false)
+                }
                 AppNav(container)
+                // The one global update dialog, above everything else.
+                val step by container.updates.step.collectAsStateWithLifecycle()
+                UpdateDialog(
+                    step = step,
+                    onDismiss = { container.updates.dismiss() },
+                    onUpdate = {
+                        val s = container.updates.step.value
+                        val release = when (s) {
+                            is com.androidharness.app.data.update.UpdateManager.Step.Available -> s.release
+                            is com.androidharness.app.data.update.UpdateManager.Step.Error -> s.release
+                            else -> null
+                        }
+                        if (release != null) {
+                            kotlinx.coroutines.MainScope().launch {
+                                container.updates.startUpdate(
+                                    release,
+                                    onOpenSystemInstaller = { apk ->
+                                        UpdateIntents.installApk(this@MainActivity, apk)
+                                    },
+                                    onOpenUnknownSourcesSettings = {
+                                        UpdateIntents.openUnknownSourcesSettings(this@MainActivity)
+                                    },
+                                )
+                            }
+                        } else {
+                            // Error without release context = check failure; retry the check.
+                            kotlinx.coroutines.MainScope().launch { container.updates.check(manual = true) }
+                        }
+                    },
+                    onOpenSystemInstaller = { apk: File -> UpdateIntents.installApk(this, apk) },
+                    onOpenUnknownSources = { UpdateIntents.openUnknownSourcesSettings(this) },
+                )
             }
         }
     }

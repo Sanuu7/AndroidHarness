@@ -39,6 +39,7 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -163,6 +164,8 @@ fun SettingsScreen(
 
             AppearanceSection(container = container, settings = settings, scope = scope)
             SlashCommandsSection(container = container)
+
+            UpdatesCard(container = container)
 
             Spacer(Modifier.height(8.dp))
         }
@@ -976,6 +979,75 @@ private fun DropdownSetting(
                             expanded = false
                         },
                     )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpdatesCard(container: AppContainer) {
+    val step by container.updates.step.collectAsStateWithLifecycle()
+    val scope = rememberCoroutineScope()
+    val version = remember {
+        runCatching {
+            container.appContext.packageManager
+                .getPackageInfo(container.appContext.packageName, 0).versionName
+        }.getOrNull() ?: "?"
+    }
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.SystemUpdate,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Text("Updates", style = MaterialTheme.typography.titleSmall)
+            }
+            Text(
+                "Current version $version. Checks GitHub Releases for newer builds.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Button(
+                    onClick = { scope.launch { container.updates.check(manual = true) } },
+                    enabled = step !is com.androidharness.app.data.update.UpdateManager.Step.Checking &&
+                        step !is com.androidharness.app.data.update.UpdateManager.Step.Downloading,
+                ) {
+                    if (step is com.androidharness.app.data.update.UpdateManager.Step.Checking) {
+                        androidx.compose.material3.CircularProgressIndicator(
+                            modifier = Modifier.size(16.dp),
+                            strokeWidth = 2.dp,
+                        )
+                        Spacer(Modifier.width(8.dp))
+                    }
+                    Text(if (step is com.androidharness.app.data.update.UpdateManager.Step.Checking) "Checking…" else "Check for updates")
+                }
+                when (val s = step) {
+                    is com.androidharness.app.data.update.UpdateManager.Step.UpToDate -> {
+                        Spacer(Modifier.width(12.dp))
+                        Icon(
+                            Icons.Outlined.CheckCircle,
+                            contentDescription = null,
+                            tint = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.size(18.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("Up to date", style = MaterialTheme.typography.labelMedium)
+                    }
+                    is com.androidharness.app.data.update.UpdateManager.Step.Available -> {
+                        Spacer(Modifier.width(12.dp))
+                        Text(
+                            "${s.release.tag} available — see the dialog",
+                            style = MaterialTheme.typography.labelMedium,
+                            color = MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    else -> {}
                 }
             }
         }
