@@ -366,28 +366,54 @@ internal fun EnvironmentInstallCard(
     onSkip: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
+    val repair = request.repair
     ActionCard(
-        title = "Linux environment needed",
+        title = if (repair) {
+            "Linux environment needs repair"
+        } else {
+            "Linux environment needed"
+        },
         icon = Icons.Outlined.Terminal,
         actions = {
-            if (envState is EnvState.NotInstalled || envState is EnvState.Failed) {
-                TextButton(onClick = onSkip) { Text("Use toybox") }
-                Button(onClick = onInstall) { Text("Install now") }
+            if (!repair || envState is EnvState.Ready || envState is EnvState.Failed) {
+                TextButton(onClick = onSkip) { Text("Skip") }
+                Button(onClick = onInstall) { Text(if (repair) "Repair" else "Install now") }
             }
         },
     ) {
-        Text(
-            "The agent wants to run: ${request.command.take(80)}",
-            style = MaterialTheme.typography.bodySmall,
-            color = scheme.onSurfaceVariant,
-            maxLines = 2,
-            overflow = TextOverflow.Ellipsis,
-        )
-        Text(
-            "Required: ${request.hints.joinToString(" · ")}",
-            style = MaterialTheme.typography.labelMedium,
-            color = scheme.primary,
-        )
+        if (repair) {
+            Text(
+                "\"${request.missingTool}\" is missing from the installed Linux environment " +
+                    "(the command failed with \"not found\").",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+            )
+            Text(
+                "Wanted to run: ${request.command.take(80)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                "Repair reinstalls the toolchain, then the agent re-runs the command.",
+                style = MaterialTheme.typography.labelMedium,
+                color = scheme.primary,
+            )
+        } else {
+            Text(
+                "The agent wants to run: ${request.command.take(80)}",
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis,
+            )
+            Text(
+                "Required: ${request.hints.joinToString(" · ")}",
+                style = MaterialTheme.typography.labelMedium,
+                color = scheme.primary,
+            )
+        }
         when (envState) {
             is EnvState.Downloading -> {
                 Spacer(Modifier.height(10.dp))

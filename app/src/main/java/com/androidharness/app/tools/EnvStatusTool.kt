@@ -60,13 +60,35 @@ class EnvStatusTool(
         val scratch = ShellPolicy.SCRATCH_ROOTS.firstOrNull {
             runCatching { java.io.File(it).isDirectory }.getOrDefault(false)
         } ?: "(not provisioned yet)"
+        // Tool-contract probe: "installed ✓" must mean the headline tools the
+        // skills and UI promise actually exist, not just that the marker file
+        // does. Presence check (not exec) — app-uid binaries only run through
+        // the harness shell.
+        val probeRoot =
+            if (tier == ExecutionTier.PRIVILEGED && shizuku.isTmpPrefixDeployed())
+                java.io.File(com.androidharness.app.data.env.LinuxEnvironmentManager.TMP_PREFIX_BASE, "linux")
+            else linuxEnv.prefix
+        val headlineTools = listOf(
+            "bash" to listOf("bin/bash"),
+            "git" to listOf("bin/git"),
+            "python" to listOf("bin/python3", "bin/python"),
+            "node" to listOf("bin/node"),
+            "npm" to listOf("bin/npm"),
+            "pip" to listOf("bin/pip", "bin/pip3"),
+        )
+        val missing = headlineTools.filter { (name, rels) ->
+            rels.none { java.io.File(probeRoot, it).exists() }
+        }.map { it.first }
+        val envText = when {
+            !linuxEnv.isReady -> "not installed"
+            missing.isEmpty() -> "installed ✓ (bash, git, python, node, npm, pip all present)"
+            else -> "installed ⚠ missing: " + missing.joinToString(", ")
+        }
         return ToolResult(
             true,
             buildString {
                 append("Shizuku: ").append(szText).append('\n')
-                append("Linux environment: ")
-                    .append(if (linuxEnv.isReady) "installed ✓" else "not installed")
-                    .append('\n')
+                append("Linux environment: ").append(envText).append('\n')
                 append("TLS (Bug 1 fix): CA bundle ")
                     .append(if (tlsBundle.isFile) "ready at ${tlsBundle.absolutePath} ✓" else "missing; falling back to system anchors")
                     .append("; SSL_CERT_FILE/CURL_CA_BUNDLE/REQUESTS_CA_BUNDLE/GIT_SSL_CAINFO/NODE_EXTRA_CA_CERTS are exported to every shell\n")

@@ -71,6 +71,30 @@ object PackageIndex {
     }
 }
 
+/**
+ * Termux packages ship absolute symlinks into their own build prefix
+ * (/data/data/com.termux/files/usr/...); inside this app's prefix those
+ * dangle (bzcmp, bzless, and many man-page links). Rewrites them as paths
+ * relative to the link's directory, pointing at the same file inside our
+ * prefix, which also keeps the installed tree relocatable for the
+ * shell-user re-deploy.
+ */
+internal object TermuxLinkRewrite {
+    private const val TERMUX_USR = "/data/data/com.termux/files/usr/"
+
+    /**
+     * @param linkName raw symlink target from the package archive
+     * @param linkPath where the symlink itself lives inside the prefix (e.g. "bin/bzcmp")
+     * @return rewritten relative target, or null when nothing needs rewriting
+     */
+    fun relativeTarget(linkName: String, linkPath: String): String? {
+        if (!linkName.startsWith(TERMUX_USR)) return null
+        val inside = linkName.removePrefix(TERMUX_USR)
+        val depth = linkPath.trim('/').split('/').dropLast(1).count { it.isNotEmpty() }
+        return "../".repeat(depth) + inside
+    }
+}
+
 sealed interface EnvState {
     data object NotInstalled : EnvState
     data class Downloading(val index: Int, val total: Int, val pkg: String) : EnvState
@@ -138,7 +162,7 @@ class LinuxEnvironmentManager(private val context: Context) {
     val corePackages = listOf("bash", "busybox", "ca-certificates", "git")
 
     /** Everything a coding agent may need — used by the chat install card. */
-    val fullPackages = corePackages + listOf("python", "python-pip", "nodejs")
+    val fullPackages = corePackages + listOf("python", "python-pip", "nodejs", "npm")
 
     /** Installs [wanted] plus their full dependency closure. Resumes after interruptions. */
     suspend fun install(wanted: List<String>) {
@@ -197,6 +221,68 @@ class LinuxEnvironmentManager(private val context: Context) {
         runCatching { marker.readText().lines().filter { it.isNotBlank() } }.getOrDefault(emptyList())
 
     private fun installedContains(name: String): Boolean = installedPackages().any { it == name }
+
+    // ------------------------------------------------------------------
+    // Self-heal for prefixes installed by older builds
+    //
+    // Two legacy gaps: bundles installed before npm joined fullPackages
+    // (node present, npm missing) and symlinks extracted verbatim from
+    // termux packages pointing into /data/data/com.termux. Both are fixed
+    // in place on app start; healthy prefixes are untouched.
+    // ------------------------------------------------------------------
+
+    /** True when an installed prefix has node but is missing npm. */
+    fun needsRepair(): Boolean =
+        marker.exists() &&
+            File(prefix, "bin/node").exists() &&
+            !File(prefix, "bin/npm").exists()
+
+    /** Repoints dangling termux-absolute symlinks in bin/ and bin/applets. */
+    private fun repairLegacySymlinks(): Int {
+        var fixed = 0
+        for (dir in listOf(File(prefix, "bin"), File(prefix, "bin/applets"))) {
+            dir.listFiles()?.forEach { f ->
+                val link = runCatching { Os.readlink(f.absolutePath) }.getOrNull() ?: return@forEach
+                val rewritten = TermuxLinkRewrite.relativeTarget(link, f.toRelativeString(prefix)) ?: return@forEach
+                runCatching {
+                    Os.remove(f.absolutePath)
+                    Os.symlink(rewritten, f.absolutePath)
+                }.onSuccess { fixed++ }
+            }
+        }
+        return fixed
+    }
+
+    /**
+     * One-shot repair for existing installs: relink dangling symlinks and
+     * install npm when the nodejs-only bundle predates it. A network failure
+     * never demotes a Ready environment to Failed: the state is restored and
+     * repair retries on the next app start. Returns a summary, or null when
+     * nothing needed fixing.
+     */
+    suspend fun repairIfNeeded(): String? {
+        if (!marker.exists()) return null
+        return withContext(Dispatchers.IO) {
+            val relinked = repairLegacySymlinks()
+            val npmMissing = needsRepair()
+            if (relinked == 0 && !npmMissing) return@withContext null
+            var npmNote: String? = null
+            if (npmMissing) {
+                val wasReady = _state.value is EnvState.Ready
+                // install() catches its own errors into EnvState.Failed, so
+                // restore Ready here when the env was healthy before repair.
+                runCatching { install(fullPackages) }
+                if (_state.value is EnvState.Failed && wasReady) _state.value = EnvState.Ready
+                npmNote = if (File(prefix, "bin/npm").exists()) "npm installed"
+                else "npm still missing (retry on next launch)"
+            }
+            ensureShims()
+            buildString {
+                if (relinked > 0) append("relinked ").append(relinked).append(" dangling symlinks")
+                if (npmNote != null) append(if (isEmpty()) "" else "; ").append(npmNote)
+            }.ifBlank { null }
+        }
+    }
 
     /** Environment for spawned processes (PATH/LD_LIBRARY_PATH/HOME/…). */
     fun processEnv(): Map<String, String> = buildMap {
@@ -666,7 +752,11 @@ class LinuxEnvironmentManager(private val context: Context) {
                         e.isDirectory -> target.mkdirs()
                         e.isSymbolicLink -> {
                             target.parentFile?.mkdirs()
-                            runCatching { Os.symlink(e.linkName, target.absolutePath) }
+                            // Termux packages carry absolute symlinks into their
+                            // own build prefix; rewrite them into our prefix or
+                            // they arrive dangling (bzcmp, bzless, …).
+                            val linkName = TermuxLinkRewrite.relativeTarget(e.linkName, rel) ?: e.linkName
+                            runCatching { Os.symlink(linkName, target.absolutePath) }
                         }
                         else -> {
                             target.parentFile?.mkdirs()

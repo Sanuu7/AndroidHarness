@@ -68,8 +68,37 @@ class EnvironmentRequest(
     val call: ToolCallData,
     val command: String,
     val hints: List<String>,
+    /** True when the environment is installed but broken: the card becomes Repair. */
+    val repair: Boolean = false,
+    /** The tool that came back "not found" (repair flow only). */
+    val missingTool: String? = null,
 ) {
     val response = CompletableDeferred<Boolean>()
+}
+
+/** Headline tools → the binaries that must exist in the prefix for them. */
+internal val HEADLINE_TOOL_BINARIES: Map<String, List<String>> = mapOf(
+    "git" to listOf("bin/git"),
+    "python" to listOf("bin/python3", "bin/python"),
+    "node" to listOf("bin/node"),
+    "npm" to listOf("bin/npm"),
+    "pip" to listOf("bin/pip", "bin/pip3"),
+    "bash" to listOf("bin/bash"),
+)
+
+/**
+ * Detects a failed command whose failure is a MISSING HARNESS TOOL rather than
+ * a missing project binary: "npm: not found", "bash: node: command not found",
+ * "git: command not found" (exit 127 style). Returns the tool name, or null
+ * when the failure is unrelated to the harness toolchain.
+ */
+internal fun detectMissingHeadlineTool(output: String): String? {
+    if (!output.contains("not found", ignoreCase = true)) return null
+    for ((tool, _) in HEADLINE_TOOL_BINARIES) {
+        val failed = Regex("(^|[\\s/])${Regex.escape(tool)}:\\s*(command )?not found")
+        if (failed.containsMatchIn(output)) return tool
+    }
+    return null
 }
 
 /** Estimated token breakdown of the request about to be sent (chars / 4). */
@@ -596,6 +625,47 @@ class AgentEngine(
             throw ce
         } catch (e: Exception) {
             ToolResult(false, e.message ?: "${call.name} failed")
+        }
+
+        // Broken-environment repair: a headline tool died with "not found"
+        // while the environment claims Ready. That is the harness's bug (a
+        // half-installed toolchain), not the task's — surface a repair card
+        // in chat instead of letting the model retry blindly. The presence
+        // check keeps project-level failures ("vite: not found") out: those
+        // are not fixable by reinstalling the toolchain.
+        if (call.name == "shell" && !executed.ok &&
+            linuxEnv.isReady && linuxEnv.state.value !is com.androidharness.app.data.env.EnvState.Failed
+        ) {
+            val missingTool = detectMissingHeadlineTool(executed.output)
+            val binaries = missingTool?.let { HEADLINE_TOOL_BINARIES[it] }
+            if (binaries != null &&
+                binaries.none { java.io.File(linuxEnv.prefix, it).exists() }
+            ) {
+                val request = EnvironmentRequest(
+                    call, command ?: missingTool, listOf(missingTool),
+                    repair = true, missingTool = missingTool,
+                )
+                emitEvent(AgentEvent.EnvironmentNeeded(request))
+                if (request.response.await()) {
+                    // Repaired: run the exact same command again for the model.
+                    val retry = try {
+                        tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS))
+                    } catch (ce: CancellationException) {
+                        throw ce
+                    } catch (e: Exception) {
+                        ToolResult(false, e.message ?: "${call.name} failed again after repair")
+                    }
+                    return retry.copy(
+                        output = "[Linux environment repaired: $missingTool is now installed]\n" + retry.output,
+                    )
+                }
+                return executed.copy(
+                    output = executed.output +
+                        "\n[note: the user declined repairing the Linux environment ($missingTool is missing). " +
+                        "Do NOT retry commands that need it this session; continue with what works " +
+                        "or tell the user to repair from Settings → Linux environment.]",
+                )
+            }
         }
 
         // Surface tool-call latency so the model can tell work from hangs and batch

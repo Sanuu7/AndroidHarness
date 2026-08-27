@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Fixed
+
+- **npm was never installed**: the Linux toolchain installed `nodejs` but not the separate `npm` package (Termux ships them apart, and nodejs does not depend on npm), so every `npm`/`npx` command died with "not found" even though Setup promised "node and npm". npm now ships in the full install.
+- **Existing installs get npm automatically**: on launch the app repairs prefixes installed by older builds (node present, npm missing) instead of leaving them broken until a manual reinstall. A failed repair never demotes a working environment and retries next launch.
+- **env_status no longer reports a blind "installed ✓"**: it now probes the headline tools it promises (bash, git, python, node, npm, pip) and says exactly which are missing, in the right tier's prefix.
+- **Absolute symlinks from Termux packages arrive dangling**: package-internal links pointing into Termux's own prefix (bzcmp, bzless, …) are rewritten to relative paths at extract time, and old installs get theirs relinked on launch.
+- **Repair card in chat when the environment is half-broken**: if a command fails with "npm: not found"-style errors while the environment claims Ready, the agent pauses and the chat shows a Linux environment repair card (Repair / Skip). Repair reinstalls the toolchain and the command re-runs automatically; declining tells the agent to stop retrying. Also reflected in the status line and run notifications.
+
 ## 0.3-alpha (2026-08-27)
 
 ### Added

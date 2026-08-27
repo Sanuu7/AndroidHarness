@@ -552,6 +552,12 @@ class RunManager(
         val pending = live.value.pendingEnvironment ?: return
         appScope.launch {
             try {
+                if (pending.repair && !linuxEnv.needsRepair()) {
+                    // Nothing actually broken (e.g. self-heal fixed it first):
+                    // answer immediately without a pointless reinstall.
+                    pending.response.complete(true)
+                    return@launch
+                }
                 linuxEnv.install(linuxEnv.fullPackages)
                 if (linuxEnv.isReady) {
                     pending.response.complete(true)
@@ -767,7 +773,9 @@ class RunManager(
                         sessionId = state.sessionId,
                         kind = PendingPrompt.Kind.ENVIRONMENT,
                         sessionTitle = sessionTitle,
-                        headline = "Install the Linux environment to run: ${e.command.take(120)}",
+                        headline =
+                            if (e.repair) "Repair the Linux environment (missing: ${e.missingTool})"
+                            else "Install the Linux environment to run: ${e.command.take(120)}",
                     ))
                 }
             }

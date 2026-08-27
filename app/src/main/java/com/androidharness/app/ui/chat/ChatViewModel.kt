@@ -422,9 +422,15 @@ class ChatViewModel(
     private fun ChatUiState.computeCurrentAction(): String? = when {
         pendingQuestion != null -> "Waiting for your answer"
         pendingApproval != null -> "Waiting for your approval"
-        pendingEnvironment != null -> when (envState) {
-            is com.androidharness.app.data.env.EnvState.NotInstalled -> "Waiting for your approval"
-            is com.androidharness.app.data.env.EnvState.Failed -> "Linux install failed"
+        pendingEnvironment != null -> when {
+            envState is com.androidharness.app.data.env.EnvState.NotInstalled -> "Waiting for your approval"
+            envState is com.androidharness.app.data.env.EnvState.Failed -> "Linux install failed"
+            pendingEnvironment.repair -> when {
+                envState is com.androidharness.app.data.env.EnvState.Downloading ||
+                    envState is com.androidharness.app.data.env.EnvState.Installing ->
+                    "Repairing Linux environment…"
+                else -> "Waiting for your approval"
+            }
             else -> "Installing Linux environment…"
         }
         currentToolAction != null -> currentToolAction

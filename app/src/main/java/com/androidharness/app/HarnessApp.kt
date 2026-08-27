@@ -129,5 +129,12 @@ class AppContainer(val appContext: Context) {
                     }
                 }
         }
+        // Self-heal prefixes installed by older builds: relink dangling
+        // termux-absolute symlinks and add npm when the node-only bundle
+        // predates it. Silent when the prefix is already healthy; network
+        // failures never demote a Ready environment (retried next launch).
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            linuxEnv.repairIfNeeded()
+        }
     }
 }
