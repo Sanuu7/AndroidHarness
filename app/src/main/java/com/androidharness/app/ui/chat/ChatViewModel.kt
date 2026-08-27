@@ -94,6 +94,7 @@ data class ChatUiState(
     val snippets: List<SnippetEntity> = emptyList(),
     val skills: List<com.androidharness.app.skills.SkillMeta> = emptyList(),
     val showSkillsSheet: Boolean = false,
+    val showEnvSheet: Boolean = false,
     val showCostDialog: Boolean = false,
     val workspaceName: String = "",
     val currentToolAction: String? = null,
@@ -478,6 +479,10 @@ class ChatViewModel(
                 _state.update { it.copy(showSkillsSheet = true, skills = c.skills.list()) }
                 return
             }
+            SlashCommands.Kind.ENV -> {
+                _state.update { it.copy(showEnvSheet = true) }
+                return
+            }
             SlashCommands.Kind.UNKNOWN -> {
                 _state.update { it.copy(error = resolved.error) }
                 return
@@ -658,6 +663,10 @@ class ChatViewModel(
     fun denyEnvironmentInstall() {
         val sid = sessionId ?: return
         c.runManager.denyEnvironmentInstall(sid)
+    }
+
+    fun dismissEnvSheet() {
+        _state.update { it.copy(showEnvSheet = false) }
     }
 
     fun grantShizuku() {

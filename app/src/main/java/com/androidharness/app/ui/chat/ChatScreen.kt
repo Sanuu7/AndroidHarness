@@ -93,6 +93,7 @@ import com.androidharness.app.ui.chat.components.ApprovalCard
 import com.androidharness.app.ui.chat.components.AssistantText
 import com.androidharness.app.ui.chat.components.AttachmentChips
 import com.androidharness.app.ui.chat.components.EmptyState
+import com.androidharness.app.ui.chat.components.EnvSheet
 import com.androidharness.app.ui.chat.components.EnvironmentInstallCard
 import com.androidharness.app.ui.chat.components.MainHeader
 import com.androidharness.app.ui.chat.components.MessageComposer
@@ -194,6 +195,13 @@ fun ChatScreen(
                 composerText = ""
                 slashExpanded = false
             },
+        )
+    }
+    if (state.showEnvSheet) {
+        EnvSheet(
+            container = viewModel.container,
+            envState = state.envState,
+            onDismiss = viewModel::dismissEnvSheet,
         )
     }
     if (showProviderManager) {

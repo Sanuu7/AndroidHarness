@@ -20,13 +20,14 @@ class SlashCommandsTest {
 
     @Test
     fun `local commands never start an agent turn`() {
-        for (cmd in listOf("/clear", "/compact", "/cost", "/skills")) {
+        for (cmd in listOf("/clear", "/compact", "/cost", "/skills", "/env")) {
             val result = resolve(cmd)
             assertNull("$cmd should stay local", result.agentText)
             assertFalse(result.startsAgent)
         }
         assertEquals(SlashCommands.Kind.COST, resolve("/cost").kind)
         assertEquals(SlashCommands.Kind.SKILLS, resolve("/skills").kind)
+        assertEquals(SlashCommands.Kind.ENV, resolve("/env").kind)
     }
 
     @Test

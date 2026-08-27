@@ -86,6 +86,7 @@ import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SystemGrants
+import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
 import kotlinx.coroutines.launch
 
@@ -436,6 +437,9 @@ private fun LinuxEnvironmentCard(
     envState: com.androidharness.app.data.env.EnvState,
 ) {
     val scope = rememberCoroutineScope()
+    var checkResult by remember { mutableStateOf<String?>(null) }
+    var checking by remember { mutableStateOf(false) }
+    var confirmUninstall by remember { mutableStateOf(false) }
 
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -468,11 +472,38 @@ private fun LinuxEnvironmentCard(
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
                     }
+                    checkResult?.let { report ->
+                        Text(
+                            report,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = if (report.startsWith("All present")) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
+                        )
+                    }
+                    // Step 1: check. Step 2 (only when something is actually
+                    // missing/broken): confirm and update. Nothing to do → no
+                    // dead button.
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = { scope.launch { container.linuxEnv.install(container.linuxEnv.fullPackages) } }) {
-                            Text("Update / Check missing")
+                        OutlinedButton(
+                            enabled = !checking,
+                            onClick = {
+                                checking = true
+                                scope.launch {
+                                    checkResult = container.linuxEnv.checkMissing()
+                                    checking = false
+                                }
+                            },
+                        ) {
+                            Text(if (checking) "Checking…" else "Check missing")
                         }
-                        OutlinedButton(onClick = { scope.launch { container.linuxEnv.uninstall() } }) {
+                        if (checkResult != null && !checkResult!!.startsWith("All present")) {
+                            Button(onClick = {
+                                checkResult = null
+                                scope.launch { container.linuxEnv.updateEnvironment() }
+                            }) {
+                                Text("Update")
+                            }
+                        }
+                        OutlinedButton(onClick = { confirmUninstall = true }) {
                             Text("Uninstall")
                         }
                     }
@@ -504,9 +535,28 @@ private fun LinuxEnvironmentCard(
                         if (pkgName != null) "Setting up $pkgName …" else "Installing environment…",
                         style = MaterialTheme.typography.bodyMedium,
                     )
+                    ThinLinearProgress(Modifier.fillMaxWidth())
                 }
             }
         }
+    }
+
+    if (confirmUninstall) {
+        AlertDialog(
+            onDismissRequest = { confirmUninstall = false },
+            title = { Text("Uninstall Linux environment?") },
+            text = { Text("This deletes the whole toolchain (bash, git, python, node, npm and all downloaded packages). The agent falls back to toybox sh until it is installed again.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmUninstall = false
+                    checkResult = null
+                    scope.launch { container.linuxEnv.uninstall() }
+                }) { Text("Uninstall", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmUninstall = false }) { Text("Cancel") }
+            },
+        )
     }
 }
 

@@ -222,6 +222,64 @@ class LinuxEnvironmentManager(private val context: Context) {
 
     private fun installedContains(name: String): Boolean = installedPackages().any { it == name }
 
+    /** Package name → binaries proving it is actually usable (any-of). */
+    private val BINARY_PROOF: Map<String, List<String>> = mapOf(
+        "bash" to listOf("bin/bash"),
+        "busybox" to listOf("bin/busybox"),
+        "git" to listOf("bin/git"),
+        "python" to listOf("bin/python3", "bin/python"),
+        "python-pip" to listOf("bin/pip", "bin/pip3"),
+        "nodejs" to listOf("bin/node"),
+        "npm" to listOf("bin/npm"),
+        "ca-certificates" to listOf("etc/tls/cacert.pem"),
+    )
+
+    /**
+     * What is missing from the installed environment, human-readable. Checks
+     * BOTH the package marker and the binaries on disk — a marker entry whose
+     * binary vanished counts as missing (that was the silent no-op bug).
+     */
+    fun checkMissing(): String {
+        val installed = installedPackages().toSet()
+        val missingPkgs = fullPackages.filter { it !in installed }
+        val missingBins = BINARY_PROOF.filterKeys { it in installed || it in fullPackages }
+            .filterValues { progs -> progs.none { File(prefix, it).exists() } }
+            .keys.toList()
+        return when {
+            missingPkgs.isEmpty() && missingBins.isEmpty() ->
+                "All present: bash, git, python, pip, node, npm."
+            else -> buildString {
+                if (missingPkgs.isNotEmpty()) {
+                    append("Missing packages: ").append(missingPkgs.joinToString(", "))
+                }
+                if (missingBins.isNotEmpty()) {
+                    if (isNotEmpty()) append(" · ")
+                    append("Broken (marked installed but binary gone): ")
+                        .append(missingBins.joinToString(", "))
+                }
+            }
+        }
+    }
+
+    /**
+     * Update / check-missing: installs anything absent, and REINSTALLS
+     * packages whose marker entry exists but whose binaries are gone (a
+     * half-broken prefix never repaired itself before — the button looked
+     * dead). Returns true when the environment is Ready afterwards.
+     */
+    suspend fun updateEnvironment(): Boolean = withContext(Dispatchers.IO) {
+        val installed = installedPackages().toSet()
+        val broken = installed.filter { pkg ->
+            BINARY_PROOF[pkg]?.let { progs -> progs.none { File(prefix, it).exists() } } ?: false
+        }
+        if (broken.isNotEmpty()) {
+            // Un-mark the broken ones so install() re-downloads them.
+            marker.writeText(installed.filter { it !in broken }.joinToString("\n"))
+        }
+        install(fullPackages)
+        isReady
+    }
+
     // ------------------------------------------------------------------
     // Self-heal for prefixes installed by older builds
     //

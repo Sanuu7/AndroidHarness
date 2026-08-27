@@ -9,7 +9,7 @@ import com.androidharness.app.skills.buildSlashSkillMessage
 object SlashCommands {
 
     enum class Kind {
-        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN,
+        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV,
     }
 
     enum class Dispatch { START, QUEUE }
@@ -152,6 +152,7 @@ object SlashCommands {
             "/cost" -> Result(Kind.COST)
             "/doctor" -> Result(Kind.DOCTOR, agentText = DOCTOR_PROMPT)
             "/skills" -> Result(Kind.SKILLS)
+            "/env" -> Result(Kind.ENV)
             "/init" -> Result(Kind.INIT, agentText = INIT_PROMPT)
             // /plan ALWAYS activates Plan mode AND loads the bundled plan
             // skill — the model gets the full planning procedure plus whatever
