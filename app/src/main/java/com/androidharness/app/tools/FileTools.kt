@@ -8,6 +8,53 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonPrimitive
 import java.nio.file.FileSystems
+import com.androidharness.app.workspace.FsNode
+import com.androidharness.app.workspace.WorkspaceFs
+
+/** Bytes scanned at most when filesystem size metadata cannot be trusted (procfs/virtual entries). */
+private const val VIRTUAL_FILE_SCAN_CAP = 1024L * 1024L
+
+/**
+ * Shared-storage mounts (emulated internal storage, FAT-style SAF providers)
+ * treat names differing only in case as ONE file, so creating a twin-cased
+ * name silently mixes two files into one slot. App-private ext4/f2fs storage
+ * is genuinely case-sensitive. There is no portable mount-flag query on
+ * Android, so this is judged purely by path shape.
+ */
+internal object CaseCollision {
+    fun insensitiveMount(shellRootPath: String?, isSaf: Boolean): Boolean {
+        if (isSaf) return true
+        val p = shellRootPath?.replace('\\', '/') ?: return false
+        return p.startsWith("/storage/") || p.startsWith("/sdcard")
+    }
+
+    fun siblingsMatchingOnlyByCase(name: String, siblingNames: Collection<String>): List<String> =
+        siblingNames.filter { it != name && it.equals(name, ignoreCase = true) }
+
+    fun warning(newName: String, collisions: List<String>): String? =
+        collisions.firstOrNull()?.let { other ->
+            "[warning: \"$other\" already exists here and this filesystem treats names differing only in case as the SAME file — writing \"$newName\" will collide with it]"
+        }
+}
+
+/**
+ * Non-fatal aliasing check for write_file / create_dir / move_file on
+ * case-insensitive mounts. Walks only the nearest EXISTING parent directory;
+ * fully-new nested paths cannot collide with anything yet except through
+ * their created ancestors' siblings, which this deliberately ignores.
+ */
+internal fun caseCollisionWarning(workspace: WorkspaceFs, target: FsNode): String? {
+    if (!CaseCollision.insensitiveMount(workspace.shellRoot?.absolutePath, workspace.isSaf)) return null
+    val rel = target.relPath
+    if (rel.isBlank() || rel == ".") return null
+    val parentRel = if ('/' in rel) rel.substringBeforeLast('/') else "."
+    val parent = runCatching { workspace.resolve(parentRel) }.getOrNull() ?: return null
+    if (!parent.isDirectory) return null
+    val leaf = target.name.ifBlank { return null }
+    if (leaf == "?" || leaf == ".") return null
+    val collisions = CaseCollision.siblingsMatchingOnlyByCase(leaf, parent.list().mapNotNull { n -> n.name })
+    return CaseCollision.warning(leaf, collisions)
+}
 
 private const val MAX_LIST_ENTRIES = 500
 private const val MAX_READ_CHARS = 100_000
@@ -79,7 +126,9 @@ class ReadFileTool : Tool {
             val offset = (args["offset"]?.jsonPrimitive?.intOrNull ?: 1).coerceAtLeast(1)
             val limit = (args["limit"]?.jsonPrimitive?.intOrNull ?: 2000).coerceIn(1, 4000)
 
-            val raw = file.readText()
+            // A UTF-8 BOM is encoding metadata, not content — never surface it
+            // to the model (it leaks into line 1 and breaks exact matching).
+            val raw = file.readText().removePrefix("\uFEFF")
             if (raw.isEmpty()) return@withContext ToolResult(true, "(empty file)")
             val all = splitLines(raw)
             if (all.isEmpty()) return@withContext ToolResult(true, "(empty file)")
@@ -104,18 +153,90 @@ data class FileLineInfo(
     val isBinary: Boolean,
     val lineCount: Long,
     val trailingNewline: String,
+    /**
+     * Bytes actually streamed when filesystem metadata could not be trusted
+     * (procfs / virtual files report size 0). 0 for regular stat-backed files.
+     */
+    val measuredBytes: Long = 0L,
+    /** True when the scan stopped at the cap, i.e. real content continues. */
+    val sizeTruncated: Boolean = false,
 )
 
-fun inspectFileInfo(node: com.androidharness.app.workspace.FsNode): FileLineInfo {
-    if (!node.exists || !node.isFile || node.length == 0L) {
-        return FileLineInfo(
-            isEmpty = true,
-            isBinary = false,
-            lineCount = 0L,
-            trailingNewline = "none (empty file)",
-        )
+private class StreamScan {
+    var hasBytes = false
+    var lineCount = 0L
+    var lastByte = -1
+    var measuredBytes = 0L
+    var truncated = false
+    var binary = false
+}
+
+/**
+ * Streams [node] counting bytes and newline-terminated lines up to [byteCap].
+ * With [sniffBinary], binary content is detected inline from the first chunk
+ * (for zero-stat entries where node.isBinary()'s own length guard skips it).
+ */
+private fun scanFileStream(node: FsNode, byteCap: Long, sniffBinary: Boolean): StreamScan {
+    val scan = StreamScan()
+    val buf = ByteArray(64 * 1024)
+    try {
+        node.openInputStream()?.buffered(64 * 1024)?.use { input ->
+            var total = 0L
+            while (total < byteCap) {
+                val want = minOf(buf.size.toLong(), byteCap - total).toInt()
+                val read = input.read(buf, 0, want)
+                if (read <= 0) break
+                if (sniffBinary &&
+                    com.androidharness.app.workspace.isBinaryStream(java.io.ByteArrayInputStream(buf, 0, minOf(read, 1024)))
+                ) {
+                    scan.binary = true
+                    break
+                }
+                total += read
+                for (i in 0 until read) {
+                    val b = buf[i].toInt()
+                    if (b == 0x0A) { // '\n'
+                        scan.lineCount++
+                    }
+                    scan.lastByte = b
+                }
+            }
+            if (total >= byteCap && input.read() > 0) {
+                scan.truncated = true
+            }
+            scan.hasBytes = total > 0
+            scan.measuredBytes = total
+        }
+    } catch (_: Exception) {
+        // Unreadable stream behaves like an empty one, matching prior behavior.
     }
-    if (node.isBinary()) {
+    return scan
+}
+
+fun inspectFileInfo(node: FsNode): FileLineInfo {
+    if (!node.exists || !node.isFile) {
+        return emptyTextResult()
+    }
+    if (node.length > 0L) {
+        // Trust metadata for regular files (unchanged behavior, incl. big files).
+        if (node.isBinary()) {
+            return FileLineInfo(
+                isEmpty = false,
+                isBinary = true,
+                lineCount = 0L,
+                trailingNewline = "none (binary)",
+            )
+        }
+        val scan = scanFileStream(node, byteCap = Long.MAX_VALUE, sniffBinary = false)
+        if (!scan.hasBytes) return emptyTextResult()
+        return finished(scan)
+    }
+
+    // Size metadata says 0, but procfs/sysfs entries report 0 no matter how
+    // much they contain (/proc/self/status reads ~1KB). Decide emptiness by
+    // actually reading, bounded so pathological virtual files stay cheap.
+    val scan = scanFileStream(node, byteCap = VIRTUAL_FILE_SCAN_CAP, sniffBinary = true)
+    if (scan.binary) {
         return FileLineInfo(
             isEmpty = false,
             isBinary = true,
@@ -123,36 +244,21 @@ fun inspectFileInfo(node: com.androidharness.app.workspace.FsNode): FileLineInfo
             trailingNewline = "none (binary)",
         )
     }
-    var lineCount = 0L
-    var lastByte = -1
-    var hasBytes = false
-    val buf = ByteArray(64 * 1024)
-    try {
-        node.openInputStream()?.buffered(64 * 1024)?.use { input ->
-            while (true) {
-                val read = input.read(buf)
-                if (read <= 0) break
-                hasBytes = true
-                for (i in 0 until read) {
-                    val b = buf[i].toInt()
-                    if (b == 0x0A) { // '\n'
-                        lineCount++
-                    }
-                    lastByte = b
-                }
-            }
-        }
-    } catch (_: Exception) {
-    }
-    if (!hasBytes) {
-        return FileLineInfo(
-            isEmpty = true,
-            isBinary = false,
-            lineCount = 0L,
-            trailingNewline = "none (empty file)",
-        )
-    }
-    val endsWithNl = lastByte == 0x0A || lastByte == 0x0D
+    if (!scan.hasBytes) return emptyTextResult()
+    // Full cap consumed and more behind it: report what was verified and say so.
+    return finished(scan, sizeTruncated = scan.truncated || scan.measuredBytes >= VIRTUAL_FILE_SCAN_CAP)
+}
+
+private fun emptyTextResult() = FileLineInfo(
+    isEmpty = true,
+    isBinary = false,
+    lineCount = 0L,
+    trailingNewline = "none (empty file)",
+)
+
+private fun finished(scan: StreamScan, sizeTruncated: Boolean = false): FileLineInfo {
+    val endsWithNl = scan.lastByte == 0x0A || scan.lastByte == 0x0D
+    var lineCount = scan.lineCount
     if (!endsWithNl) {
         lineCount++
     }
@@ -161,6 +267,8 @@ fun inspectFileInfo(node: com.androidharness.app.workspace.FsNode): FileLineInfo
         isBinary = false,
         lineCount = lineCount,
         trailingNewline = if (endsWithNl) "present" else "none",
+        measuredBytes = scan.measuredBytes,
+        sizeTruncated = sizeTruncated,
     )
 }
 
@@ -186,13 +294,29 @@ class FileInfoTool : Tool {
             sb.append("size_bytes: ").append(node.length).append('\n')
             if (node.isFile) {
                 val info = inspectFileInfo(node)
-                sb.append("is_empty: ").append(info.isEmpty).append('\n')
-                if (info.isBinary) {
-                    sb.append("is_binary: true\n")
-                    sb.append("line_count: (binary file)\n")
+                if (info.isEmpty) {
+                    sb.append("is_empty: true\n")
+                    sb.append("line_count: 0\n")
                 } else {
-                    sb.append("line_count: ").append(info.lineCount).append('\n')
-                    sb.append("trailing_newline: ").append(info.trailingNewline).append('\n')
+                    val measuredNote =
+                        if (!info.isBinary && node.length == 0L && info.measuredBytes > 0L) {
+                            // procfs-style entry: stat undercounts, streaming told the truth.
+                            val measured = if (info.sizeTruncated) {
+                                ">= ${info.measuredBytes} bytes (scan cap reached)"
+                            } else {
+                                "${info.measuredBytes} bytes"
+                            }
+                            "size_note: stat reports 0 bytes; streamed content measures $measured\n"
+                        } else ""
+                    sb.append(measuredNote)
+                    sb.append("is_empty: ").append(info.isEmpty).append('\n')
+                    if (info.isBinary) {
+                        sb.append("is_binary: true\n")
+                        sb.append("line_count: (binary file)\n")
+                    } else {
+                        sb.append("line_count: ").append(info.lineCount).append('\n')
+                        sb.append("trailing_newline: ").append(info.trailingNewline).append('\n')
+                    }
                 }
             }
             ToolResult(true, sb.toString().trimEnd())
@@ -228,10 +352,14 @@ class WriteFileTool : Tool {
             val endsWithNewline = content.endsWith("\n") || content.endsWith("\r")
             val written = if (content.isNotEmpty() && !endsWithNewline) "$content\n" else content
             val note = if (content.isNotEmpty() && !endsWithNewline) ", trailing newline added" else ""
+            val warn = if (!existed) caseCollisionWarning(ctx.workspace, file) else null
             file.writeText(written)
             ToolResult(
                 true,
-                "${if (existed) "Overwrote" else "Created"} $path (${written.length} chars$note)",
+                buildString {
+                    append("${if (existed) "Overwrote" else "Created"} $path (${written.length} chars$note)")
+                    if (warn != null) append('\n').append(warn)
+                },
             )
         }
 }

@@ -91,6 +91,45 @@ class FileToolsTest {
         assertEquals("", file("a.txt").readText())
     }
 
+    // --- CRLF & BOM fidelity -----------------------------------------------------
+
+    @Test
+    fun `write_file preserves carriage returns byte for byte`() = runBlocking {
+        val content = "line1\r\nline2\r\nline3\r\n"
+        WriteFileTool().execute(
+            buildJsonObject {
+                put("path", JsonPrimitive("crlf.txt"))
+                put("content", JsonPrimitive(content))
+            },
+            ctx(),
+        )
+        val bytes = file("crlf.txt").readBytes()
+        assertEquals(content.length, bytes.size)
+        assertEquals(content, String(bytes, Charsets.UTF_8))
+        assertTrue(bytes.contains(0x0D.toByte()))
+    }
+
+    @Test
+    fun `read_file strips a UTF-8 BOM from line 1`() = runBlocking {
+        file("bom.txt").writeBytes(byteArrayOf(0xEF.toByte(), 0xBB.toByte(), 0xBF.toByte()) + "hello".toByteArray())
+        val r = ReadFileTool().execute(
+            buildJsonObject { put("path", JsonPrimitive("bom.txt")) },
+            ctx(),
+        )
+        assertTrue(r.output, r.ok)
+        assertEquals("1\thello", r.output)
+    }
+
+    @Test
+    fun `read_file without BOM is unchanged`() = runBlocking {
+        file("plain.txt").writeText("plain")
+        val r = ReadFileTool().execute(
+            buildJsonObject { put("path", JsonPrimitive("plain.txt")) },
+            ctx(),
+        )
+        assertEquals("1\tplain", r.output)
+    }
+
     // --- read_file empty file --------------------------------------------------
 
     @Test

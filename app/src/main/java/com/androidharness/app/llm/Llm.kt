@@ -166,7 +166,7 @@ object ProviderFactory {
                     try {
                         val source = it.body!!.source()
                         while (true) {
-                            val line = source.readUtf8Line() ?: break
+                            val line = readSseLine(source) ?: break
                             if (!line.startsWith("data:")) continue
                             val payload = line.removePrefix("data:").trim()
                             if (payload == "[DONE]") break
@@ -186,4 +186,28 @@ object ProviderFactory {
         })
         awaitClose { call.cancel() }
     }.flowOn(Dispatchers.IO)
+
+    /**
+     * Reads one SSE line from [source]. Lines terminate at '\n' with one
+     * immediately-preceding '\r' stripped (the CRLF form). Interior CR
+     * bytes anywhere else in the body are PRESERVED, unlike
+     * BufferedReader.readLine() / okio's readUtf8Line(), which treat every
+     * lone CR as a line break too. Some remote hosts emit unescaped CR
+     * characters inside streamed JSON strings (tool-argument content among
+     * them); with a standard reader those vanish silently and files
+     * written through write_file come back with their carriage returns
+     * stripped (CRLF corrupted into LF).
+     */
+    fun readSseLine(source: okio.BufferedSource): String? {
+        if (source.exhausted()) return null
+        val lf = source.indexOf('\n'.code.toByte())
+        return if (lf >= 0) {
+            val line = source.readUtf8(lf)
+            source.skip(1) // the '\n'
+            if (line.endsWith("\r")) line.dropLast(1) else line
+        } else {
+            val tail = source.readUtf8()
+            if (tail.endsWith("\r")) tail.dropLast(1) else tail
+        }
+    }
 }

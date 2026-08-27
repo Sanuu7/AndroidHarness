@@ -41,7 +41,14 @@ class CreateDirTool : Tool {
             if (!node.exists || !node.isDirectory) {
                 throw ToolFailure("Failed to create directory $path")
             }
-            ToolResult(true, "Created directory $path")
+            val warn = caseCollisionWarning(ctx.workspace, node)
+            ToolResult(
+                true,
+                buildString {
+                    append("Created directory $path")
+                    if (warn != null) append('\n').append(warn)
+                },
+            )
         }
 }
 
@@ -122,8 +129,15 @@ class MoveFileTool : Tool {
 
             // Fast path: same directory rename
             val sameDir = source.substringBeforeLast('/') == destination.substringBeforeLast('/')
+            val warn = caseCollisionWarning(ctx.workspace, to)
             if (sameDir && from.renameTo(to.name)) {
-                return@withContext ToolResult(true, "Moved $source → $destination")
+                return@withContext ToolResult(
+                    true,
+                    buildString {
+                        append("Moved $source → $destination")
+                        if (warn != null) append('\n').append(warn)
+                    },
+                )
             }
             // Slow path: copy content + delete (files only)
             if (!from.isFile) {
@@ -131,7 +145,13 @@ class MoveFileTool : Tool {
             }
             to.writeText(from.readText())
             from.delete()
-            ToolResult(true, "Moved $source → $destination")
+            ToolResult(
+                true,
+                buildString {
+                    append("Moved $source → $destination")
+                    if (warn != null) append('\n').append(warn)
+                },
+            )
         }
 }
 
