@@ -7,16 +7,19 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.animateScrollBy
 import androidx.compose.foundation.gestures.scrollBy
 import androidx.compose.foundation.interaction.DragInteraction
@@ -32,7 +35,6 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
@@ -47,6 +49,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -108,6 +111,7 @@ import com.androidharness.app.ui.chat.components.ToolGroupCard
 import com.androidharness.app.ui.chat.components.UserBubble
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.common.formatDuration
+import com.androidharness.app.ui.files.DiffStatText
 import com.androidharness.app.ui.settings.ProviderManagerSheet
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import kotlinx.coroutines.delay
@@ -644,7 +648,7 @@ fun ChatScreen(
                                                     }?.id == message.id
                                                 val edits = state.fileEditsByTurn[message.turnId].orEmpty()
                                                 if (isTurnFinal && edits.isNotEmpty()) {
-                                                    FileEditChips(edits, Modifier.padding(top = 4.dp))
+                                                    FileEditsCard(edits, onOpenFile, Modifier.padding(top = 4.dp))
                                                 }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     CopyIconButton(message.text)
@@ -956,58 +960,100 @@ private fun UndoIconButton(onClick: () -> Unit) {
     }
 }
 
-/** "+N −M" chips per edited file, merged across every edit in the turn. */
+/**
+ * Collapsible "Edited files" summary for a finished turn: the header carries
+ * the total "+N −M", expanding lists every edited file (merged across all
+ * edits in the turn) vertically, each row tapping through to the editor.
+ */
 @Composable
-private fun FileEditChips(
+private fun FileEditsCard(
     edits: List<com.androidharness.app.data.db.FileEditEntity>,
+    onOpenFile: (path: String, line: Int?) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val statusColors = com.androidharness.app.ui.theme.LocalStatusColors.current
     val merged = remember(edits) {
         edits.groupBy { it.relPath }.map { (path, group) ->
             path to Pair(group.sumOf { it.added }, group.sumOf { it.removed })
         }
     }
-    Row(
-        modifier = modifier.horizontalScroll(rememberScrollState()),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    var expanded by remember { mutableStateOf(false) }
+    val chevronRotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = fastEffectsSpec(),
+        label = "file edits chevron",
+    )
+
+    Surface(
+        shape = MaterialTheme.shapes.medium,
+        color = scheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = modifier.fillMaxWidth(),
     ) {
-        merged.forEach { (path, counts) ->
-            val (added, removed) = counts
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = scheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { expanded = !expanded }
+                    .padding(horizontal = 12.dp, vertical = 9.dp),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(5.dp),
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                ) {
-                    Text(
-                        path.substringAfterLast('/'),
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                        modifier = Modifier.widthIn(max = 140.dp),
-                    )
-                    if (added > 0) {
-                        Text(
-                            "+$added",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = FontFamily.Monospace,
-                            color = statusColors.success,
-                        )
-                    }
-                    if (removed > 0) {
-                        Text(
-                            "-$removed",
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = FontFamily.Monospace,
-                            color = scheme.error,
-                        )
+                Text(
+                    "Edited files",
+                    style = MaterialTheme.typography.labelLarge,
+                    modifier = Modifier.weight(1f),
+                )
+                DiffStatText(merged.sumOf { it.second.first }, merged.sumOf { it.second.second })
+                Icon(
+                    Icons.Filled.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Collapse edited files" else "Expand edited files",
+                    tint = scheme.onSurfaceVariant,
+                    modifier = Modifier
+                        .size(20.dp)
+                        .graphicsLayer { rotationZ = chevronRotation },
+                )
+            }
+            AnimatedVisibility(
+                visible = expanded,
+                enter = fadeIn(fastEffectsSpec()) + expandVertically(fastEffectsSpec()),
+                exit = fadeOut(fastEffectsSpec()) + shrinkVertically(fastEffectsSpec()),
+            ) {
+                Column {
+                    merged.forEachIndexed { index, (path, counts) ->
+                        val (added, removed) = counts
+                        if (index > 0) {
+                            HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
+                        }
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onOpenFile(path, null) }
+                                .padding(horizontal = 12.dp, vertical = 8.dp),
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    path.substringAfterLast('/'),
+                                    style = MaterialTheme.typography.labelMedium,
+                                    fontFamily = FontFamily.Monospace,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                val parent = path.substringBeforeLast('/')
+                                if (parent != path) {
+                                    Text(
+                                        parent,
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = scheme.onSurfaceVariant,
+                                        maxLines = 1,
+                                        overflow = TextOverflow.Ellipsis,
+                                    )
+                                }
+                            }
+                            DiffStatText(added, removed)
+                        }
                     }
                 }
             }
