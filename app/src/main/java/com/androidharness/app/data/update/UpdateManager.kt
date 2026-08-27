@@ -117,38 +117,44 @@ class UpdateManager(
     }
 
     private fun fetchLatest(): LatestRelease? {
+        // NOTE: /releases/latest EXCLUDES prereleases — every release in this
+        // repo ships as pre-release, so query the list instead. It arrives
+        // newest-first (by created date); drafts are skipped.
         val req = Request.Builder()
-            .url("$RELEASES_API/latest")
+            .url(RELEASES_API)
             .header("Accept", "application/vnd.github+json")
             .build()
         client.newCall(req).execute().use { resp ->
-            if (!resp.isSuccessful) {
-                // 404 simply means no releases published yet.
-                if (resp.code == 404) return null
-                throw IllegalStateException("GitHub API HTTP ${resp.code}")
+            if (!resp.isSuccessful) throw IllegalStateException("GitHub API HTTP ${resp.code}")
+            val arr = json.parseToJsonElement(resp.body!!.string()).jsonArray
+            for (el in arr) {
+                val root = el.jsonObject
+                if (root["draft"]?.jsonPrimitive?.content == "true") continue
+                return parseRelease(root) ?: continue
             }
-            val root = json.parseToJsonElement(resp.body!!.string()).jsonObject
-            val draft = root["draft"]?.jsonPrimitive?.content == "true"
-            if (draft) return null
-            val tag = root["tag_name"]?.jsonPrimitive?.content.orEmpty().removePrefix("v")
-            val name = root["name"]?.jsonPrimitive?.content.orEmpty()
-            val body = root["body"]?.jsonPrimitive?.content.orEmpty()
-            val url = root["html_url"]?.jsonPrimitive?.content.orEmpty()
-            var apkUrl: String? = null
-            var apkName: String? = null
-            var apkBytes = 0L
-            root["assets"]?.jsonArray?.forEach { el ->
-                val a = el.jsonObject
-                val assetName = a["name"]?.jsonPrimitive?.content.orEmpty()
-                if (assetName.endsWith(".apk", ignoreCase = true)) {
-                    apkUrl = a["browser_download_url"]?.jsonPrimitive?.content
-                    apkName = assetName
-                    apkBytes = a["size"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
-                }
-            }
-            if (tag.isBlank()) return null
-            return LatestRelease(tag, name.ifBlank { tag }, body, url, apkUrl, apkName, apkBytes)
+            return null
         }
+    }
+
+    private fun parseRelease(root: kotlinx.serialization.json.JsonObject): LatestRelease? {
+        val tag = root["tag_name"]?.jsonPrimitive?.content.orEmpty().removePrefix("v")
+        val name = root["name"]?.jsonPrimitive?.content.orEmpty()
+        val body = root["body"]?.jsonPrimitive?.content.orEmpty()
+        val url = root["html_url"]?.jsonPrimitive?.content.orEmpty()
+        var apkUrl: String? = null
+        var apkName: String? = null
+        var apkBytes = 0L
+        root["assets"]?.jsonArray?.forEach { el ->
+            val a = el.jsonObject
+            val assetName = a["name"]?.jsonPrimitive?.content.orEmpty()
+            if (assetName.endsWith(".apk", ignoreCase = true)) {
+                apkUrl = a["browser_download_url"]?.jsonPrimitive?.content
+                apkName = assetName
+                apkBytes = a["size"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+            }
+        }
+        if (tag.isBlank()) return null
+        return LatestRelease(tag, name.ifBlank { tag }, body, url, apkUrl, apkName, apkBytes)
     }
 
     /** Downloads the release APK, reporting progress through [step]. */
