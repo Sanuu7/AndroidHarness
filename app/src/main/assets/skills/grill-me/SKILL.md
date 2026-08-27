@@ -1,52 +1,69 @@
 ---
 name: grill-me
-description: Quiz or interview the user interactively — one question at a time, with follow-ups, then a verdict.
+description: Force ideas out of the user's head — sharp questions one at a time, then forge the answers into a concrete plan.
 category: collaboration
 ---
 
 # Grill me
 
-You are the interrogator. Your job is to put the user on the spot about a topic
-and find out how much they really know (or what they really want) — then tell
-them the truth about it.
+Not a test. An idea-extraction interview. The user has something half-formed
+in their head — a feature, an app, a rewrite, a decision — and your job is to
+ask the questions they haven't asked themselves, poke every vague answer until
+it becomes concrete, and walk away with a plan that could be executed tomorrow.
 
 ## When to use
-- The user says "grill me", "quiz me", "interview me", "test me on …"
-- The user wants to prepare for an interview, exam, or tough conversation
-- The user asks you to challenge their understanding of their own project
+- "grill me", "grill me about X", "help me figure out X", "interview me about X"
+- Before planning anything ambitious that the user described in one sentence
+- The user is going in circles and needs someone to ask the sharp questions
 
 ## Procedure
-1. **Scope first.** Your FIRST question establishes scope and depth: ask what
-   to be grilled on and how hard to go. Offer options (e.g. "Gentle /
-   Standard / Brutal") instead of guessing.
-2. **One question per turn.** Call `ask_user` once per question. Never batch
-   several questions into one call — the user answers one thing at a time.
-3. **Options when enumerable.** Facts and recall questions get 3-5 short
-   options plus "None of these" as an escape hatch. Opinions and preferences
-   get `multi_select=true` so the user can tick everything that applies.
-4. **Follow up.** When an answer is vague, half-right, or contradicts an
-   earlier one, drill in: "You said X earlier, but now Y — which is it?"
-   Keep the pressure friendly but relentless.
-5. **Adapt.** Questions answered easily → harder next. Two misses in a row on
-   a topic → explain that topic briefly, then test it again from a new angle.
-6. **Ramp, don't plateau.** 5-10 questions total (agree on the number at the
-   start). The last question should be the hardest of the session.
+1. **Open with scope.** First `ask_user`: what are we building or deciding,
+   and roughly how deep should this go? Offer options (quick pass / full
+   working session) instead of guessing.
+2. **One question per call.** Call `ask_user` once per question. Never batch
+   two questions into one call — each answer should reshape the next question.
+3. **Make them choose.** Convert vague intent into concrete either/or:
+   - Enumerable things (platforms, features, audiences, must-haves) →
+     `options` with `multi_select=true`, 4-8 checkboxes.
+   - Either/or decisions (A vs B vs C) → `options` without multi_select, and
+     always include a "none of these — I'll explain" escape hatch.
+   - Reaction prompts: "Here are 3 readings of what you just said — pick one,
+     merge two, or reject all." Reacting is easier than inventing from zero.
+4. **Attack vague words.** "Fast", "simple", "user-friendly", "modern" — make
+   the user define what that means in their context. One vague answer deserves
+   one follow-up that turns it measurable.
+5. **Hunt contradictions.** When an answer conflicts with an earlier one,
+   surface it plainly: "Earlier you said X, now Y — which wins?" Resolving
+   that tension is usually the most valuable minute of the session.
+6. **Cover the blind spots.** Edge cases, what happens on failure, cost,
+   maintenance, and the cut-order question: "If you can only ship half of
+   this, which half stays?"
+7. **Converge.** Echo the whole idea back in one paragraph and have them
+   correct it. Fix what they correct.
+8. **Deliver the brief.** End with the synthesis, not a grade:
+   - The idea in one paragraph
+   - Every decision made, with the answer that decided it
+   - Open questions that still need answering
+   - A step-by-step plan skeleton, ready to hand to /plan
+   Offer to save the brief to a file (e.g. IDEAS.md) or jump straight into
+   plan mode.
 
-## Report
-After the final question, deliver a verdict — no sugarcoating:
-- Score: X/Y, with one line on what it means.
-- Strong areas vs. shaky areas, quoting THEIR answers back as evidence.
-- The single most valuable thing to study or decide next.
+## Tone
+Collaborative, not adversarial. You are the co-founder poking holes before
+the world does, not an examiner. No scoring, no grades — every answer exists
+to improve the plan. Push hard on ideas, never on the person.
 
 ## Pitfalls
-- Do not ask two things in one ask_user call ("what and why?") — split them.
-- Do not reveal whether an answer was right before the next question unless
-  the user asked for immediate feedback; keep a running score silently.
-- Do not write files during a grill session. Talk, don't type.
-- If the user taps "Deny" on a question, treat it as "pass" and move on —
-  never re-ask the exact same question twice.
+- Never two questions in one ask_user call — split them.
+- Don't accept one-word answers to open questions; one follow-up minimum.
+- Cap the session at 4-10 questions (agree at the start). Stop early once the
+  idea is fully formed — done beats thorough.
+- If the user denies/passes twice on the same thread, drop that thread for
+  good and never re-ask it.
+- Don't write files during the interview; the brief comes at the end, and
+  only on request.
 
 ## Verification
-The user got every question through the interactive ask_user cards (checkboxes
-for multi-select), never as plain chat text they had to answer by typing prose
-when options would do, and finished with a concrete verdict.
+The session ends with a written brief plus a plan skeleton assembled from
+THEIR answers — the user can point at any line and say "yes, that's what I
+meant", and the next step is /plan or a file, not more questions.

@@ -503,8 +503,8 @@ class AgentEngine(
                     ?: a["query"]?.jsonPrimitive?.contentOrNull
             }?.takeIf { it.isNotBlank() }
                 ?: return ToolResult(false, "ask_user requires a question.")
-            val multiSelect = args["multi_select"]?.jsonPrimitive
-                ?.takeIf { it !is kotlinx.serialization.json.JsonNull }?.content == "true"
+            val multiSelect = (args["multi_select"] as? kotlinx.serialization.json.JsonPrimitive)
+                ?.contentOrNull == "true"
             val options = parseAskUserOptions(args["options"])
             val request = QuestionRequest(
                 call.id,
@@ -1031,29 +1031,75 @@ class AgentEngine(
      * Models pass options in wildly different shapes: string arrays, arrays of
      * objects, or a JSON-encoded string. Accept them all.
      */
+    /**
+     * Models deliver ask_user options in every shape imaginable: ["a","b"],
+     * [{"label":"a"}], {"1":"a","2":"b"}, "a, b, c", or JSON double-encoded as
+     * a string. Anything odd used to throw out of jsonPrimitive and the whole
+     * question never rendered — this variant never throws and salvages what it
+     * can from every shape.
+     */
     private fun parseAskUserOptions(element: kotlinx.serialization.json.JsonElement?): List<String> {
-        if (element == null) return emptyList()
-        val asArray = element as? kotlinx.serialization.json.JsonArray
-        if (asArray != null) {
-            return asArray.mapNotNull { el ->
-                when (el) {
-                    is kotlinx.serialization.json.JsonPrimitive -> el.contentOrNull
-                    is kotlinx.serialization.json.JsonObject ->
-                        el["option"]?.jsonPrimitive?.contentOrNull
-                            ?: el["label"]?.jsonPrimitive?.contentOrNull
-                            ?: el["text"]?.jsonPrimitive?.contentOrNull
-                            ?: el["value"]?.jsonPrimitive?.contentOrNull
-                    else -> null
-                }
-            }.filter { it.isNotBlank() }
-        }
-        // options came as a JSON-encoded string (models do this often)
-        val raw = element.jsonPrimitive?.contentOrNull ?: return emptyList()
-        return runCatching {
-            val nested = json.parseToJsonElement(raw)
-            parseAskUserOptions(nested)
-        }.getOrDefault(emptyList())
+        if (element == null || element is kotlinx.serialization.json.JsonNull) return emptyList()
+        return runCatching { parseOptionsSafe(element, depth = 0) }.getOrDefault(emptyList())
     }
+
+    private fun parseOptionsSafe(
+        element: kotlinx.serialization.json.JsonElement,
+        depth: Int,
+    ): List<String> {
+        if (depth > 3) return emptyList()
+        return when (element) {
+            is kotlinx.serialization.json.JsonNull -> emptyList()
+            is kotlinx.serialization.json.JsonArray ->
+                element.flatMap { parseOptionsSafe(it, depth + 1) }
+
+            is kotlinx.serialization.json.JsonPrimitive -> {
+                val content = element.contentOrNull?.trim().orEmpty()
+                when {
+                    content.isEmpty() -> emptyList()
+                    // JSON or string-encoded JSON: reparse, fall back to raw text.
+                    content.startsWith("[") || content.startsWith("{") -> {
+                        val nested = runCatching { json.parseToJsonElement(content) }.getOrNull()
+                        if (nested != null) parseOptionsSafe(nested, depth + 1) else listOf(content)
+                    }
+                    // Delimited plain text: "a | b", "a\nb", "a, b, c" (3+ parts
+                    // only, so "Yes, definitely" stays one option).
+                    content.contains('|') || content.contains('\n') -> splitOptionText(content)
+                    content.contains(", ") && splitOptionText(content).size >= 3 ->
+                        splitOptionText(content)
+                    else -> listOf(content)
+                }
+            }
+
+            is kotlinx.serialization.json.JsonObject -> {
+                // One option described as an object: take its display text.
+                val label = listOf(
+                    "option", "label", "text", "value", "title", "name",
+                    "answer", "choice", "description",
+                ).firstNotNullOfOrNull { key ->
+                    (element[key] as? kotlinx.serialization.json.JsonPrimitive)
+                        ?.contentOrNull?.takeIf { it.isNotBlank() }
+                }
+                if (label != null) return listOf(label)
+                // Wrapper objects: {"options": [...]} / {"choices": [...]}
+                val wrapper = element["options"] ?: element["choices"] ?: element["items"]
+                if (wrapper != null) return parseOptionsSafe(wrapper, depth + 1)
+                // Map form: {"1": "a", "2": "b"} — the values are the options.
+                val values = element.values.mapNotNull { v ->
+                    (v as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull
+                        ?.takeIf { it.isNotBlank() }
+                }
+                if (values.size >= 2) values else emptyList()
+            }
+        }
+    }
+
+    private fun splitOptionText(text: String): List<String> =
+        text.split('|', '\n').flatMap { part ->
+            if (part.contains(", ")) part.split(", ") else listOf(part)
+        }.map { it.trim() }
+            .filter { it.isNotEmpty() }
+            .take(12)
 
     private fun detectToolchainHints(command: String): List<String> {
         val hints = mutableListOf<String>()
