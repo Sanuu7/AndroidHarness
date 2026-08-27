@@ -719,8 +719,12 @@ class LinuxEnvironmentManager(
      * Called after the user saves/clears the GitHub token: refresh the prefix
      * copies, drop the staging marker (the package-set hash now differs via the
      * token fingerprint) and immediately redeploy the shell-tier toolchain.
+     * Everything here is blocking file IO plus a full prefix tar — it must run
+     * on IO: Settings calls this from a MAIN-dispatcher coroutine, and staging
+     * on main froze the app into an ANR ("input dispatching timed out" while
+     * writeTarEntries gzipped the toolchain).
      */
-    suspend fun refreshGitHub(shizuku: ShizukuManager) {
+    suspend fun refreshGitHub(shizuku: ShizukuManager) = withContext(Dispatchers.IO) {
         materializeGitHub()
         runCatching { stagingMarker.delete() }
         if (isReady) runCatching { ensureShellDeploy(shizuku) }
@@ -970,9 +974,14 @@ class LinuxEnvironmentManager(
     suspend fun ensureShellDeploy(shizuku: ShizukuManager): Boolean {
         if (!isReady) return false
         return deployLock.withLock {
-            stageForShell()
-            if (!stagingTar.exists()) return@withLock false
-            shizuku.ensureTmpPrefix(stagingTar.absolutePath, packageSetHash())
+            // stageForShell gzips the ENTIRE prefix and ensureTmpPrefix waits on
+            // a binder call that can run for minutes: never inherit the caller's
+            // dispatcher (Settings reaches this from the main thread).
+            withContext(Dispatchers.IO) {
+                stageForShell()
+                if (!stagingTar.exists()) return@withContext false
+                shizuku.ensureTmpPrefix(stagingTar.absolutePath, packageSetHash())
+            }
         }
     }
 

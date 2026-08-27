@@ -570,7 +570,9 @@ private fun GitHubSection(container: AppContainer) {
             confirmButton = {
                 TextButton(onClick = {
                     confirmLogout = false
-                    scope.launch {
+                    // Dispatchers.IO: the refresh chain re-materializes files and
+                    // re-stages the whole toolchain tar — never block the UI thread.
+                    scope.launch(Dispatchers.IO) {
                         container.keys.removeGitHubToken()
                         container.keys.removeGitHubLogin()
                         container.refreshGitHubAuth()
