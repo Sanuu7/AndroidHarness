@@ -46,4 +46,14 @@ class GitHubProvisionTest {
         assertNotEquals("none", GitHubProvision.fingerprint("ghp_A"))
         assertEquals(GitHubProvision.fingerprint(" ghp_A "), GitHubProvision.fingerprint("ghp_A"))
     }
+
+    @Test
+    fun `gh hosts yaml authenticates the cli and clears without a token`() {
+        val yaml = GitHubProvision.ghHostsYaml("ghp_TESTTOKEN123")
+        assertTrue(yaml!!.startsWith("github.com:"))
+        assertTrue(yaml.contains("git_protocol: https"))
+        assertTrue(yaml.contains("oauth_token: ghp_TESTTOKEN123"))
+        assertEquals(null, GitHubProvision.ghHostsYaml(null))
+        assertEquals(null, GitHubProvision.ghHostsYaml("  "))
+    }
 }

@@ -170,7 +170,7 @@ class LinuxEnvironmentManager(
     val corePackages = listOf("bash", "busybox", "ca-certificates", "git")
 
     /** Everything a coding agent may need, used by the chat install card. */
-    val fullPackages = corePackages + listOf("python", "python-pip", "nodejs", "npm")
+    val fullPackages = corePackages + listOf("gh", "python", "python-pip", "nodejs", "npm")
 
     /** Installs [wanted] plus their full dependency closure. Resumes after interruptions. */
     suspend fun install(wanted: List<String>) {
@@ -235,6 +235,7 @@ class LinuxEnvironmentManager(
         "bash" to listOf("bin/bash"),
         "busybox" to listOf("bin/busybox"),
         "git" to listOf("bin/git"),
+        "gh" to listOf("bin/gh"),
         "python" to listOf("bin/python3", "bin/python"),
         "python-pip" to listOf("bin/pip", "bin/pip3"),
         "nodejs" to listOf("bin/node"),
@@ -255,7 +256,7 @@ class LinuxEnvironmentManager(
             .keys.toList()
         return when {
             missingPkgs.isEmpty() && missingBins.isEmpty() ->
-                "All present: bash, git, python, pip, node, npm."
+                "All present: bash, git, gh, python, pip, node, npm."
             else -> buildString {
                 if (missingPkgs.isNotEmpty()) {
                     append("Missing packages: ").append(missingPkgs.joinToString(", "))
@@ -493,6 +494,7 @@ class LinuxEnvironmentManager(
     fun materializeGitHub() {
         val token = runCatching { githubTokenProvider() }.getOrNull()
         GitHubProvision.materializeTokenFile(prefix, token)
+        GitHubProvision.materializeGhHosts(prefix, token)
         gitGlobalConfig()
     }
 

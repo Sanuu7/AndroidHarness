@@ -5,6 +5,7 @@
 ### Added
 
 - **Persistent GitHub auth (Settings → GitHub)** — a personal access token stored in the app's encrypted settings (same Keystore-backed store as API keys). The token is re-materialized into the toolchain on every app start and every deploy: `~/.gh-token` (0600) for agents to read, a git identity so fresh clones can commit, and a `url.*.insteadOf` rewrite that injects the token into every `https://github.com` URL — credential helpers cannot exec in this toolchain (git's libexec sub-binaries are not kernel-execable under the W^X shim), so URL rewriting is the only transport that always works. Verify (calls `/user` and shows the login), Replace and Remove actions; saving immediately re-materializes and redeploys the shell-tier toolchain via a token fingerprint riding in the deploy hash.
+- **gh CLI joins the standard toolchain** — GitHub's official CLI (Termux package, 2.98.0, ~10 MB download) is now part of the package set: fresh installs include it, existing installs pull it via Settings → Terminal & environment → Update (check-missing reports it), and env_status probes it. When a GitHub token is set, gh is pre-authenticated automatically — `~/.config/gh/hosts.yml` (the file `gh auth login --with-token` would produce) is materialized next to `~/.gh-token` — so `gh api`, `gh pr`, `gh repo`, `gh release` work with no interactive login.
 
 ### Fixed
 

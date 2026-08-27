@@ -25,6 +25,9 @@ object GitHubProvision {
     /** Token file relative to the toolchain prefix. */
     const val TOKEN_FILE = "home/.gh-token"
 
+    /** gh CLI auth file relative to the toolchain prefix (HOME-scoped). */
+    const val GH_HOSTS_FILE = "home/.config/gh/hosts.yml"
+
     fun hasToken(token: String?): Boolean = !token.isNullOrBlank()
 
     /**
@@ -55,6 +58,30 @@ object GitHubProvision {
                 runCatching { Os.chmod(f.absolutePath, 0x180 /* 0600 */) }
             } else {
                 f.delete()
+            }
+        }
+    }
+
+    /**
+     * Minimal gh hosts.yml that authenticates the gh CLI with the same token —
+     * the file `gh auth login --with-token` would have produced, without the
+     * interactive login. Null when there is no token (the file is removed).
+     */
+    fun ghHostsYaml(token: String?): String? =
+        if (!hasToken(token)) null
+        else "github.com:\n    git_protocol: https\n    oauth_token: ${token!!.trim()}\n"
+
+    /** Writes (or removes) the gh CLI auth file inside the toolchain HOME. */
+    fun materializeGhHosts(prefix: File, token: String?) {
+        runCatching {
+            val f = File(prefix, GH_HOSTS_FILE)
+            val body = ghHostsYaml(token)
+            if (body == null) {
+                f.delete()
+            } else {
+                f.parentFile?.mkdirs()
+                f.writeText(body)
+                runCatching { Os.chmod(f.absolutePath, 0x180 /* 0600 */) }
             }
         }
     }
