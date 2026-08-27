@@ -89,11 +89,25 @@ class EnvStatusTool(
             missing.isEmpty() -> "installed ✓ (bash, git, python3, node, npm, pip all present)"
             else -> "installed ⚠ missing: " + missing.joinToString(", ")
         }
+        // GitHub auth status (stress-test M7): the token's master copy lives in
+        // the app's encrypted settings; this file is the materialized copy both
+        // shell tiers can read, so an agent can consume it (stress-test L11).
+        val ghToken = java.io.File(probeRoot, com.androidharness.app.data.env.GitHubProvision.TOKEN_FILE)
+        val ghText = when {
+            ghToken.isFile ->
+                "authenticated ✓ — token at " + ghToken.absolutePath + " (0600); git URLs are rewritten " +
+                    "with it automatically, so plain https://github.com clones and pushes work. Master copy " +
+                    "lives in the app's encrypted settings and survives toolchain reinstalls; manage in Settings → GitHub"
+            else ->
+                "no token — public HTTPS clones work anonymously; push/PR/private repos need a personal " +
+                    "access token (Settings → GitHub)"
+        }
         return ToolResult(
             true,
             buildString {
                 append("Shizuku: ").append(szText).append('\n')
                 append("Linux environment: ").append(envText).append('\n')
+                append("GitHub: ").append(ghText).append('\n')
                 append("TLS (Bug 1 fix): CA bundle ")
                     .append(if (tlsBundle.isFile) "ready at ${tlsBundle.absolutePath} ✓" else "missing; falling back to system anchors")
                     .append("; SSL_CERT_FILE/CURL_CA_BUNDLE/REQUESTS_CA_BUNDLE/GIT_SSL_CAINFO/NODE_EXTRA_CA_CERTS are exported to every shell\n")
@@ -107,7 +121,11 @@ class EnvStatusTool(
                     "privileged shell can use bash/git/python/node anywhere. To unlock system paths " +
                     "or folders outside the app's own data, Shizuku must be running and granted; " +
                     "to reach shared storage as the app uid, \"All files access\" must be granted in " +
-                    "Settings → Storage access.")
+                    "Settings → Storage access. " +
+                    "There is no /bin/bash on Android: scripts with a #!/bin/bash shebang fail with " +
+                    "\"bad interpreter\" — use #!/system/bin/sh (toybox) for system scripts, or run " +
+                    "them with the toolchain's bash (\$PREFIX/bin/bash script.sh); only HTTPS git " +
+                    "transport is available (no ssh binary, so git@github.com:… remotes do not work).")
             },
         )
     }

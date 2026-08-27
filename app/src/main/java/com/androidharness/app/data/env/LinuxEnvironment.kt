@@ -108,7 +108,11 @@ sealed interface EnvState {
  * node…) into the app's private storage, sourced from the public Termux
  * package repository. No root, no external app required.
  */
-class LinuxEnvironmentManager(private val context: Context) {
+class LinuxEnvironmentManager(
+    private val context: Context,
+    /** Master GitHub token from the app's encrypted settings (never stored in the prefix). */
+    private val githubTokenProvider: () -> String? = { null },
+) {
 
     val prefix: File = File(context.filesDir, "linux")
     private val marker = File(prefix, ".harness-installed")
@@ -144,6 +148,10 @@ class LinuxEnvironmentManager(private val context: Context) {
         com.androidharness.app.tools.NetTls.ensureInstalled(prefix, context)
         // Bug 2 fix: provision the designated exec-capable scratch dirs.
         runCatching { ensureScratchDirs() }
+        // GitHub auth (stress-test C1 fix): the toolchain HOME is wiped on
+        // every reinstall/redeploy, so ~/.gh-token must be re-materialized
+        // from the app's encrypted settings at every start.
+        runCatching { materializeGitHub() }
     }
 
     private val _state = MutableStateFlow<EnvState>(
@@ -389,8 +397,8 @@ class LinuxEnvironmentManager(private val context: Context) {
         put("GIT_EXEC_PATH", File(prefix, "libexec/git-core").absolutePath)
         // Bug 5 fix: a generated global config marks every repo safe, so
         // plain shell git inside a uid=2000-owned checkout never hits
-        // "detected dubious ownership". Identity is NOT set here: the
-        // git_commit tool already auto-configures it per repo.
+        // "detected dubious ownership". The same config carries the commit
+        // identity + GitHub token rewrite (see gitGlobalConfig).
         put("GIT_CONFIG_GLOBAL", gitGlobalConfig().absolutePath)
         put("HARNESS_GIT_CONFIG", gitGlobalConfig().absolutePath)
         // bash sources this for `bash -c`: shims make every toolchain binary
@@ -464,18 +472,39 @@ class LinuxEnvironmentManager(private val context: Context) {
         File(prefix, "share/git-core/templates").takeIf { it.isDirectory } ?: File("")
 
     /**
-     * Bug 5 fix: global git config marking every repository safe.
-     * Created once per app start (and repaired if deleted), so plain shell
-     * git in repos owned by another uid (Shizuku writes as uid 2000, the
-     * app is u0_aXXX) never dies on "detected dubious ownership".
+     * Bug 5 fix: global git config marking every repository safe, plus the
+     * GitHub materialization (stress-test C1/C2/M6): a commit identity so
+     * fresh clones can commit, and a token insteadOf rewrite as the credential
+     * transport (credential helpers cannot exec in this toolchain). The exact
+     * desired content is recomputed and written back whenever it drifts, so a
+     * token saved in Settings takes effect without reinstalling anything.
      */
     fun gitGlobalConfig(): File {
         val f = File(prefix, "etc/gitconfig")
-        if (!f.exists() || !f.readText().contains("[safe]")) {
+        val desired = GitHubProvision.gitConfigBody(runCatching { githubTokenProvider() }.getOrNull())
+        if (!f.exists() || f.readText() != desired) {
             f.parentFile?.mkdirs()
-            f.writeText("[safe]\n\tdirectory = *\n")
+            f.writeText(desired)
         }
         return f
+    }
+
+    /** Re-writes the toolchain copies of the GitHub auth state. Idempotent. */
+    fun materializeGitHub() {
+        val token = runCatching { githubTokenProvider() }.getOrNull()
+        GitHubProvision.materializeTokenFile(prefix, token)
+        gitGlobalConfig()
+    }
+
+    /**
+     * Called after the user saves/clears the GitHub token: refresh the prefix
+     * copies, drop the staging marker (the package-set hash now differs via the
+     * token fingerprint) and immediately redeploy the shell-tier toolchain.
+     */
+    suspend fun refreshGitHub(shizuku: ShizukuManager) {
+        materializeGitHub()
+        runCatching { stagingMarker.delete() }
+        if (isReady) runCatching { ensureShellDeploy(shizuku) }
     }
 
     // ------------------------------------------------------------------
@@ -612,9 +641,15 @@ class LinuxEnvironmentManager(private val context: Context) {
     private val stagingTar: File get() = File(stagingDir, "prefix.tar.gz")
     private val stagingMarker: File get() = File(stagingDir, ".harness-staged")
 
-    /** Hash of the installed package set, so it re-stages/re-deploys when it changes. */
-    fun packageSetHash(): String = ("v5-safegit\n" + installedPackages().sorted().joinToString("\n"))
-        .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
+    /**
+     * Hash of the installed package set + GitHub token fingerprint, so a token
+     * change re-stages/re-deploys the shell-tier copy (the token rides inside
+     * the tarball's etc/gitconfig + home/.gh-token).
+     */
+    fun packageSetHash(): String =
+        ("v6-ghauth\n" + installedPackages().sorted().joinToString("\n") +
+            "\n" + GitHubProvision.fingerprint(runCatching { githubTokenProvider() }.getOrNull()))
+            .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
     /** Writes (or refreshes) the staging tarball on shared storage. */
     fun stageForShell() {

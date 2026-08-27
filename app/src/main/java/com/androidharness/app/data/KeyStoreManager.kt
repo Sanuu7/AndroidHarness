@@ -24,4 +24,19 @@ class KeyStoreManager(context: Context) {
     fun removeKey(providerId: String) {
         prefs.edit().remove(providerId).apply()
     }
+
+    /** GitHub PAT used for push/PR/private-repo access from the toolchain. */
+    fun putGitHubToken(token: String) {
+        prefs.edit().putString(KEY_GITHUB, token.trim()).apply()
+    }
+
+    fun githubToken(): String? = prefs.getString(KEY_GITHUB, null)?.trim()?.ifBlank { null }
+
+    fun removeGitHubToken() {
+        prefs.edit().remove(KEY_GITHUB).apply()
+    }
+
+    private companion object {
+        const val KEY_GITHUB = "github_pat"
+    }
 }

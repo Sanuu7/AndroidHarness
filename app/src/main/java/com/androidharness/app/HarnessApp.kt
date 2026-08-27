@@ -58,7 +58,8 @@ class AppContainer(val appContext: Context) {
 
     val todoStore = TodoStore()
     private val fetchClient = OkHttpClient()
-    val linuxEnv = com.androidharness.app.data.env.LinuxEnvironmentManager(appContext)
+    val linuxEnv =
+        com.androidharness.app.data.env.LinuxEnvironmentManager(appContext) { keys.githubToken() }
     val shizuku = com.androidharness.app.data.env.ShizukuManager(appContext)
     val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv)
     val updates = com.androidharness.app.data.update.UpdateManager(appContext, shizuku)
@@ -98,6 +99,13 @@ class AppContainer(val appContext: Context) {
         todoStore = todoStore,
     )
     val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
+
+    /**
+     * Applies a GitHub token change end-to-end: re-materialize the prefix
+     * copies (token file + gitconfig rewrite), then redeploy the shell-tier
+     * toolchain so the new auth is live without an app restart.
+     */
+    suspend fun refreshGitHubAuth() = linuxEnv.refreshGitHub(shizuku)
 
     init {
         // models.dev thinking-capability catalog: serve the cached copy

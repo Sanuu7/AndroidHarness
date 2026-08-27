@@ -37,6 +37,7 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderOpen
+import androidx.compose.material.icons.outlined.Key
 import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.SystemUpdate
@@ -73,6 +74,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.AppContainer
 import com.androidharness.app.agent.PermissionMode
@@ -88,6 +90,7 @@ import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 
 private val CONTEXT_PRESETS = listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000)
@@ -164,6 +167,8 @@ fun SettingsScreen(
                 shizukuState = shizukuState,
                 serviceState = serviceState,
             )
+
+            GitHubSection(container)
 
             AppearanceSection(container = container, settings = settings, scope = scope)
             SlashCommandsSection(container = container)
@@ -360,6 +365,173 @@ private fun TerminalSection(
     )
     BatteryCard(container = container)
     LinuxEnvironmentCard(container = container, envState = envState)
+}
+
+// ---------------------------------------------------------------------------
+// GitHub
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun GitHubSection(container: AppContainer) {
+    val scope = rememberCoroutineScope()
+    var hasToken by remember { mutableStateOf(container.keys.githubToken() != null) }
+    var editing by remember { mutableStateOf(false) }
+    var draft by remember { mutableStateOf("") }
+    var verifying by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
+    var confirmRemove by remember { mutableStateOf(false) }
+
+    SettingsHeader("GitHub")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Key,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Personal access token", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        if (hasToken)
+                            "Stored in the app's encrypted settings and re-materialized into the " +
+                                "toolchain (~/.gh-token + git credential rewrite) on every start — " +
+                                "toolchain reinstalls no longer lose it."
+                        else
+                            "Enables push, PRs and private repos over HTTPS. Public clones work " +
+                                "anonymously without one.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusText(if (hasToken) "Set" else "Off", ok = hasToken)
+            }
+
+            if (editing) {
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    label = { Text("ghp_… / github_pat_…") },
+                    singleLine = true,
+                    visualTransformation = PasswordVisualTransformation(),
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    "Fine-grained or classic PAT with Contents read/write for the repos you push to.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            scope.launch {
+                                container.keys.putGitHubToken(draft)
+                                container.refreshGitHubAuth()
+                                hasToken = true
+                                editing = false
+                                draft = ""
+                                status = "Saved and materialized into the toolchain."
+                            }
+                        },
+                        enabled = draft.isNotBlank(),
+                    ) { Text("Save") }
+                    TextButton(onClick = {
+                        editing = false
+                        draft = ""
+                    }) { Text("Cancel") }
+                }
+            } else {
+                Text(
+                    "The toolchain's git config rewrites every https://github.com URL with the token: " +
+                        "credential helpers cannot exec on Android, so URL rewriting is the only " +
+                        "transport that always works.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (hasToken) {
+                        OutlinedButton(onClick = {
+                            verifying = true
+                            status = null
+                            scope.launch(Dispatchers.IO) {
+                                val token = container.keys.githubToken().orEmpty()
+                                status = runCatching {
+                                    val req = okhttp3.Request.Builder()
+                                        .url("https://api.github.com/user")
+                                        .header("Authorization", "Bearer $token")
+                                        .header("Accept", "application/vnd.github+json")
+                                        .build()
+                                    okhttp3.OkHttpClient.Builder()
+                                        .callTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+                                        .build()
+                                        .newCall(req).execute().use { resp ->
+                                            val body = resp.body?.string().orEmpty()
+                                            if (!resp.isSuccessful) "Verify failed: HTTP ${resp.code}"
+                                            else {
+                                                val login = Regex("\"login\"\\s*:\\s*\"([^\"]+)\"")
+                                                    .find(body)?.groupValues?.get(1)
+                                                if (login != null) "Verified as $login ✓"
+                                                else "Token accepted (HTTP ${resp.code}) ✓"
+                                            }
+                                        }
+                                }.getOrElse { "Verify failed: ${it.message}" }
+                                verifying = false
+                            }
+                        }) { Text(if (verifying) "Verifying…" else "Verify") }
+                        OutlinedButton(onClick = {
+                            editing = true
+                            draft = ""
+                        }) { Text("Replace") }
+                        OutlinedButton(onClick = { confirmRemove = true }) {
+                            Text("Remove", color = MaterialTheme.colorScheme.error)
+                        }
+                    } else {
+                        Button(onClick = {
+                            editing = true
+                            draft = ""
+                        }) { Text("Add token") }
+                    }
+                }
+            }
+            status?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+
+    if (confirmRemove) {
+        AlertDialog(
+            onDismissRequest = { confirmRemove = false },
+            title = { Text("Remove GitHub token?") },
+            text = {
+                Text(
+                    "The stored token is deleted, and the toolchain copies (~/.gh-token and the " +
+                        "credential rewrite in git config) are cleared. Push and private-repo " +
+                        "access stop working until a new token is added.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmRemove = false
+                    scope.launch {
+                        container.keys.removeGitHubToken()
+                        container.refreshGitHubAuth()
+                        hasToken = false
+                        status = "Token removed and toolchain copies cleared."
+                    }
+                }) { Text("Remove", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmRemove = false }) { Text("Cancel") }
+            },
+        )
+    }
 }
 
 @Composable

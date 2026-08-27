@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased (2026-08-28)
+
+### Added
+
+- **Persistent GitHub auth (Settings → GitHub)** — a personal access token stored in the app's encrypted settings (same Keystore-backed store as API keys). The token is re-materialized into the toolchain on every app start and every deploy: `~/.gh-token` (0600) for agents to read, a git identity so fresh clones can commit, and a `url.*.insteadOf` rewrite that injects the token into every `https://github.com` URL — credential helpers cannot exec in this toolchain (git's libexec sub-binaries are not kernel-execable under the W^X shim), so URL rewriting is the only transport that always works. Verify (calls `/user` and shows the login), Replace and Remove actions; saving immediately re-materializes and redeploys the shell-tier toolchain via a token fingerprint riding in the deploy hash.
+
+### Fixed
+
+- **Toolchain reinstall silently deleted the GitHub connection**: `~/.gh-token` and the git identity lived only inside the wiped Linux prefix. The master copy now lives app-side (encrypted settings) and both shell tiers receive fresh copies at every start/deploy.
+- **Raw tokens leaked into the chat DB inside URLs**: the redactor caught header-style secrets but missed tokens embedded in clone URLs printed by GIT_CURL_VERBOSE. It now strips `ghp_/gho_/ghu_/ghs_/ghr_` and `github_pat_` tokens anywhere, the `user:password@` userinfo of https URLs (host and path stay readable), and long token-shaped values behind credential-ish keys.
+- **git tools dead on non-repo workspaces**: `git_status`/`git_diff`/`git_commit` hit "not a git repository" and stopped. They now `git init` in place and retry with a note, so the commit-from-workspace workflow works in a fresh workspace too.
+- **env_status said nothing about GitHub or shell-script limits**: it now reports GitHub auth state ("authenticated ✓ — token at …" / "no token — …") with the materialized token path agents can read, and the Notes explain that `#!/bin/bash` shebangs fail on Android ("bad interpreter" — use `#!/system/bin/sh` or the toolchain bash) and that only HTTPS git transport exists (no ssh binary, so `git@github.com:` remotes are unusable).
+
 ## 0.3-alpha (2026-08-27)
 
 ### Added

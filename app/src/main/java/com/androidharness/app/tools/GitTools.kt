@@ -52,7 +52,22 @@ private suspend fun runGit(
         )
     }
     if (res.exitCode != 0 && fullOutput.contains("not a git repository", ignoreCase = true)) {
-        return ToolResult(false, "The workspace is not a git repository (no .git folder found).")
+        // A fresh workspace is not yet a repo: init one in place and retry,
+        // so the git tools work everywhere instead of dead-ending there
+        // (stress-test C4).
+        val initRes = router.run(gitCmd("init"), cwd, timeoutMs = 30_000, maxOutput = 2_000)
+        if (initRes.exitCode == 0) {
+            val retry = router.run(command, cwd, timeoutMs = 60_000, maxOutput = 24_000)
+            return buildGitResult(
+                retry,
+                note = "[note: the workspace was not a git repository; initialized one in place]",
+            )
+        }
+        return ToolResult(
+            false,
+            "The workspace is not a git repository and initializing one failed:\n" +
+                (initRes.rawOutput.trimEnd() + "\n" + initRes.rawStderr.trimEnd()).trim(),
+        )
     }
     // Defense in depth: -c should make dubious ownership impossible, but an
     // exotic setup that still hits it gets '*' persisted into the global
