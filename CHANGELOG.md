@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased (GitHub/toolchain audit)
+
+### Fixed
+
+- **git could not spawn helpers: dead SHELL_PATH baked into the Termux git ELF** — git runs helpers, hooks and aliases through its compiled-in `/data/data/com.termux/files/usr/bin/sh`, which never exists outside Termux, so `gh repo clone` died with "cannot exec …gh auth git-credential" and every gh clone carried a dead `credential.helper` line in its `.git/config`. The git binary is now patched at extract time: the 38-byte Termux shell path inside the ELF is replaced in place (same length, NUL-padded) with `/system/bin/sh`, which is exec-able in both shell tiers. Existing prefixes are self-healed on the next app start and the shell-tier copy redeploys automatically (staging hash bumped to v8-shellpath). Note: in the app-uid tier the helper binary itself still cannot exec under the W^X shim — the `url.*.insteadOf` rewrite remains the transport that always works there; in the privileged tier `gh repo clone` and friends work end-to-end.
+- **The materialized token was world-readable** — the privileged deploy's `chmod -R 755` flattened `home/.gh-token` and `home/.config/gh/hosts.yml` to 0755, and the staging tarball carried them 0644. Both files are now written 0600 from the first byte (created via `Os.open` with the mode, closing the world-readable window between write and chmod), land 0600 in the tarball, and are tightened right after the blanket 755 in the deploy script. Pre-existing 0755 copies are repaired on the next app start.
+- **env_status reported false facts** — it claimed the token file was "(0600)" unconditionally (that is how a real 0755 copy went unnoticed) and probed `python3`/`npm` with blind `File.exists()` calls the app uid could not perform against the deployed `/data/local/tmp` copy, reporting working tools as missing. It now stats the token file for real (directly app-side, through the privileged shell for the deployed copy) and resolves the headline tools with `command -v` in the exact tier the shell tool will use — falling back to filesystem checks only when the probe cannot run.
+- **`git init` produced `master`** — the generated global gitconfig now sets `init.defaultBranch = main`.
+- **The empty `credential.helper =` reset was removed from the global gitconfig** — it existed to keep git from spawning helpers that could only die with EACCES; with the shell path fixed it would block legitimate helpers in the privileged tier instead. The insteadOf rewrite still guarantees authenticated transport for `https://github.com` URLs in every tier.
+
+### Added
+
+- **`doctor --github` tool** — end-to-end GitHub diagnostics in one place: one API ping (verified login, account type, actual plan name from `/user`, granted scopes from `X-OAuth-Scopes`, with consequences spelled out for missing `delete_repo`/`gist`/`read:org`/`workflow`), the token file's real permissions, git's spawn shell (`git var GIT_SHELL_PATH` + exec check) and insteadOf rewrite presence, and a **Free-plan trap probe**: rulesets/branch-protection return 403 "Upgrade to GitHub Pro" for private repos on free accounts — which reads as "no protection configured" while force-pushes succeed — so the tool probes the most recently pushed private repo (and one org's) and warns explicitly when protection is paywalled. Applies to org-owned repos too.
+- **Token card scope toggles** — the Get access token deep link now builds its `scopes=` parameter from toggles for `workflow`, `gist`, `read:org` and `delete_repo` (`repo` stays always-on), so the token is created with the capabilities the work needs instead of failing with scope errors later.
+- **GitHub errors surface GitHub's own message** — the Settings token check now includes GitHub's verbatim `message` (e.g. "Resource not accessible by personal access token") in 401/403/5xx errors instead of only a generic sentence, and shows the verified plan and scopes after a successful check.
+
 ## 0.3-alpha (2026-08-27)
 
 ### Added

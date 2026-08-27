@@ -61,16 +61,13 @@ class EnvStatusTool(
             runCatching { java.io.File(it).isDirectory }.getOrDefault(false)
         } ?: "(not provisioned yet)"
         // Tool-contract probe: "installed ✓" must mean the headline tools the
-        // skills and UI promise actually exist, not just that the marker file
-        // does. Presence check (not exec); app-uid binaries only run through
-        // the harness shell.
-        val probeRoot =
-            if (tier == ExecutionTier.PRIVILEGED && shizuku.isTmpPrefixDeployed())
-                java.io.File(com.androidharness.app.data.env.LinuxEnvironmentManager.TMP_PREFIX_BASE, "linux")
-            else linuxEnv.prefix
-        // Bug 4 fix: probe the REAL binary names. The toolchain installs
-        // python3 (there is no plain "python"), and npm is a runner script
-        // that execs node, so bin/npm alone is not proof npm works.
+        // skills and UI promise can actually be RESOLVED in the tier that will
+        // run them, not that some file happens to exist. Blind File checks
+        // lie in both directions: the app uid cannot stat inside the deployed
+        // /data/local/tmp copy (its exists() returns false for working
+        // binaries), and in the app tier binaries run through linker shims
+        // that no filesystem check models.
+        val probeRoot = EnvProbes.probeRoot(linuxEnv, shizuku, tier)
         val headlineTools = listOf(
             "bash" to listOf("bin/bash"),
             "git" to listOf("bin/git"),
@@ -80,11 +77,14 @@ class EnvStatusTool(
             "npm" to listOf("bin/npm"),
             "pip" to listOf("bin/pip", "bin/pip3"),
         )
-        val nodePresent = java.io.File(probeRoot, "bin/node").exists()
-        val missing = headlineTools.filter { (name, rels) ->
-            if (name == "npm" && !nodePresent) true
-            else rels.none { java.io.File(probeRoot, it).exists() }
-        }.map { it.first }
+        val missing: List<String> = if (!linuxEnv.isReady) {
+            headlineTools.map { it.first }
+        } else {
+            val live = EnvProbes.commandPresence(router, cwd, headlineTools.map { it.first })
+            headlineTools.filter { (name, rels) ->
+                live?.get(name) ?: rels.none { java.io.File(probeRoot, it).exists() }
+            }.map { it.first }
+        }
         val envText = when {
             !linuxEnv.isReady -> "not installed"
             missing.isEmpty() -> "installed ✓ (bash, git, gh, python3, node, npm, pip all present)"
@@ -93,15 +93,21 @@ class EnvStatusTool(
         // GitHub auth status (stress-test M7): the token's master copy lives in
         // the app's encrypted settings; this file is the materialized copy both
         // shell tiers can read, so an agent can consume it (stress-test L11).
-        val ghToken = java.io.File(probeRoot, com.androidharness.app.data.env.GitHubProvision.TOKEN_FILE)
-        val ghHosts = java.io.File(probeRoot, com.androidharness.app.data.env.GitHubProvision.GH_HOSTS_FILE)
+        // Report the REAL permission bits: a hardcoded claim is how a 0755 copy
+        // went undetected.
+        val ghMode = EnvProbes.fileMode(shizuku, probeRoot, com.androidharness.app.data.env.GitHubProvision.TOKEN_FILE)
+        val ghHostsMode = EnvProbes.fileMode(shizuku, probeRoot, com.androidharness.app.data.env.GitHubProvision.GH_HOSTS_FILE)
+        val tokenPath = java.io.File(probeRoot, com.androidharness.app.data.env.GitHubProvision.TOKEN_FILE)
         val ghText = when {
-            ghToken.isFile ->
-                "authenticated ✓ — token at " + ghToken.absolutePath + " (0600); git URLs are rewritten " +
+            ghMode != null ->
+                "authenticated ✓ — token at " + tokenPath.absolutePath + " ($ghMode); git URLs are rewritten " +
                     "with it automatically, so plain https://github.com clones and pushes work" +
-                    (if (ghHosts.isFile) "; the gh CLI is authenticated too (~/.config/gh/hosts.yml)" else "") +
+                    (if (ghHostsMode != null) "; the gh CLI is authenticated too (~/.config/gh/hosts.yml)" else "") +
                     ". Master copy lives in the app's encrypted settings and survives toolchain reinstalls; " +
                     "manage in Settings → GitHub"
+            linuxEnv.githubToken() != null ->
+                "a token is configured, but ${tokenPath.absolutePath} could not be read from this tier " +
+                    "(missing or unreadable); `doctor --github` reports details — manage in Settings → GitHub"
             else ->
                 "no token — public HTTPS clones work anonymously; push/PR/private repos need a personal " +
                     "access token (Settings → GitHub)"

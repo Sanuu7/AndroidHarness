@@ -45,6 +45,7 @@ import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
@@ -96,9 +97,26 @@ import kotlinx.coroutines.launch
 
 private val CONTEXT_PRESETS = listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000)
 
-/** GitHub's new-token page, prefilled for classic tokens with repo scope. */
+/** GitHub's new-token page: the scope list is built from the toggles below. */
 private const val GH_NEW_TOKEN_URL =
-    "https://github.com/settings/tokens/new?description=AndroidHarness&scopes=repo"
+    "https://github.com/settings/tokens/new?description=AndroidHarness&scopes="
+
+/**
+ * Scopes the token card offers on top of the always-on `repo`: each unlocks a
+ * specific gh/git capability, and leaving one off is how "403 / Not Found"
+ * surprises happen later. `repo` is not toggleable — without it the token is
+ * useless for push/PR/private repos, AndroidHarness's core features.
+ */
+private val GH_OPTIONAL_SCOPES = listOf(
+    Triple("workflow", "workflow", "update GitHub Actions workflow files"),
+    Triple("gist", "gist", "create and manage gists"),
+    Triple("read:org", "read:org", "see org-owned repos and membership"),
+    Triple("delete_repo", "delete_repo", "let the agent delete repos it created"),
+)
+
+private fun ghNewTokenUrl(extraScopes: Set<String>): String =
+    GH_NEW_TOKEN_URL + (listOf("repo") + extraScopes.filter { s -> GH_OPTIONAL_SCOPES.any { it.first == s } })
+        .joinToString(",")
 @Composable
 fun SettingsScreen(
     container: AppContainer,
@@ -424,6 +442,7 @@ private fun GitHubSection(container: AppContainer) {
             }
 
             if (expanded) {
+                var selectedScopes by remember { mutableStateOf(setOf<String>()) }
                 Text(
                     "AndroidHarness uses a personal access token to push commits, open pull " +
                         "requests and reach your private repos. Paste a token you already have, or " +
@@ -433,10 +452,36 @@ private fun GitHubSection(container: AppContainer) {
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                Text(
+                    "Extra scopes (repo is always included):",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                GH_OPTIONAL_SCOPES.forEach { (scope, label, hint) ->
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Checkbox(
+                            checked = scope in selectedScopes,
+                            onCheckedChange = { checked ->
+                                selectedScopes = if (checked) selectedScopes + scope else selectedScopes - scope
+                            },
+                        )
+                        Column {
+                            Text(label, style = MaterialTheme.typography.bodyMedium)
+                            Text(
+                                hint,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
                 OutlinedButton(
                     onClick = {
                         runCatching {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(GH_NEW_TOKEN_URL)))
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ghNewTokenUrl(selectedScopes))))
                         }
                     },
                     modifier = Modifier.fillMaxWidth(),
@@ -464,17 +509,19 @@ private fun GitHubSection(container: AppContainer) {
                             status = "Checking that token with GitHub…"
                             scope.launch(Dispatchers.IO) {
                                 val token = draft.trim()
-                                val (verifiedLogin, error) = checkGitHubToken(token)
-                                if (verifiedLogin != null) {
+                                val check = checkGitHubToken(token)
+                                if (check.login != null) {
                                     container.keys.putGitHubToken(token)
-                                    container.keys.putGitHubLogin(verifiedLogin)
+                                    container.keys.putGitHubLogin(check.login)
                                     container.refreshGitHubAuth()
                                     hasToken = true
                                     expanded = false
                                     draft = ""
-                                    status = null
+                                    status = "Verified as ${check.login}" +
+                                        (check.plan?.let { " — plan: $it" } ?: "") +
+                                        (check.scopes?.let { " · scopes: $it" } ?: "")
                                 } else {
-                                    status = error
+                                    status = check.error
                                 }
                                 checking = false
                             }
@@ -540,12 +587,23 @@ private fun GitHubSection(container: AppContainer) {
     }
 }
 
+/** What the token check learned: either a verified identity or a reason. */
+private class GitHubTokenCheck(
+    val login: String? = null,
+    val plan: String? = null,
+    val scopes: String? = null,
+    val error: String? = null,
+)
+
 /**
- * Asks api.github.com who a token belongs to. Returns the verified login name,
- * or null plus a plain-language reason. The token is only persisted after this
- * returns a login, so an invalid paste never becomes the stored credential.
+ * Asks api.github.com who a token belongs to. Returns the verified login name
+ * plus the account plan and granted scopes, or an error carrying GitHub's own
+ * message verbatim — its hints ("Resource not accessible by personal access
+ * token", rate-limit notices) are more actionable than any generic sentence.
+ * The token is only persisted after this returns a login, so an invalid paste
+ * never becomes the stored credential.
  */
-private fun checkGitHubToken(token: String): Pair<String?, String?> {
+private fun checkGitHubToken(token: String): GitHubTokenCheck {
     return runCatching {
         val req = okhttp3.Request.Builder()
             .url("https://api.github.com/user")
@@ -557,18 +615,36 @@ private fun checkGitHubToken(token: String): Pair<String?, String?> {
             .build()
             .newCall(req).execute().use { resp ->
                 val body = resp.body?.string().orEmpty()
+                val ghMessage = Regex("\"message\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
                 when {
-                    resp.code == 401 -> null to "GitHub rejected that token. Make sure the whole " +
-                        "token was copied and that it has not expired or been revoked."
-                    resp.code == 403 -> null to "GitHub refused the check (rate limit or missing " +
-                        "approval). Wait a moment and try again."
-                    !resp.isSuccessful -> null to "GitHub returned HTTP ${resp.code}. Try again shortly."
-                    else -> Regex("\"login\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
-                        ?.let { it to null }
-                        ?: (null to "GitHub accepted the token but the response was unreadable. Try again.")
+                    resp.code == 401 -> GitHubTokenCheck(
+                        error = "GitHub rejected that token" + (ghMessage?.let { " ($it)" } ?: "") +
+                            ". Make sure the whole token was copied and that it has not expired or been revoked.",
+                    )
+                    resp.code == 403 -> GitHubTokenCheck(
+                        error = "GitHub refused the check" + (ghMessage?.let { " ($it)" } ?: "") +
+                            ". That is usually a rate limit or a token awaiting approval; wait a moment and try again.",
+                    )
+                    !resp.isSuccessful -> GitHubTokenCheck(
+                        error = "GitHub returned HTTP ${resp.code}" + (ghMessage?.let { ": $it" } ?: "") +
+                            ". Try again shortly.",
+                    )
+                    else -> {
+                        val login = Regex("\"login\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
+                        if (login == null) {
+                            GitHubTokenCheck(error = "GitHub accepted the token but the response was unreadable. Try again.")
+                        } else {
+                            GitHubTokenCheck(
+                                login = login,
+                                plan = Regex("\"plan\"\\s*:\\s*\\{[^}]*?\"name\"\\s*:\\s*\"([^\"]+)\"")
+                                    .find(body)?.groupValues?.get(1),
+                                scopes = resp.header("X-OAuth-Scopes")?.trim()?.ifBlank { null },
+                            )
+                        }
+                    }
                 }
             }
-    }.getOrElse { null to "Could not reach GitHub. Check your connection and try again." }
+    }.getOrElse { GitHubTokenCheck(error = "Could not reach GitHub. Check your connection and try again.") }
 }
 
 @Composable

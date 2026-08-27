@@ -69,6 +69,7 @@ class ToolRegistry(tools: List<Tool>) {
                 ShellTool(linuxEnv, shellRouter),
                 ShellBackgroundTool(bgStore, linuxEnv),
                 EnvStatusTool(shizuku, linuxEnv, shellRouter),
+                DoctorTool(linuxEnv, shizuku, shellRouter, httpClient),
                 BgListTool(bgStore),
                 BgKillTool(bgStore),
                 GitStatusTool(shellRouter, linuxEnv),

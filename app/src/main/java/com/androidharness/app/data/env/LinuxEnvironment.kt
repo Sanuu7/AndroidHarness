@@ -153,6 +153,64 @@ internal object TermuxShebangs {
     }
 }
 
+/**
+ * Termux's git embeds its SHELL_PATH (/data/data/com.termux/files/usr/bin/sh)
+ * in the ELF: git runs helpers, hooks and aliases through `sh -c` using that
+ * literal, and outside Termux the path never exists, so every spawn dies with
+ * "cannot exec" (gh repo clone's credential helper, for example). No env var
+ * can redirect it (unlike GIT_EXEC_PATH/GIT_TEMPLATE_DIR), so the string is
+ * patched in place at extraction: a same-length replacement keeps the ELF's
+ * layout intact and NUL padding terminates the shorter path. /system/bin/sh
+ * is exec-able from both shell tiers.
+ */
+internal object TermuxShellPath {
+    private const val TERMUX_SHELL = "/data/data/com.termux/files/usr/bin/sh"
+    private const val NEUTRAL_SHELL = "/system/bin/sh"
+    private val NEEDLE = TERMUX_SHELL.toByteArray(Charsets.UTF_8)
+    private val REPLACEMENT = NEUTRAL_SHELL.toByteArray(Charsets.UTF_8)
+
+    /** True when [relPath] is git territory whose ELFs may embed SHELL_PATH. */
+    fun appliesTo(relPath: String): Boolean =
+        relPath.startsWith("bin/git") || relPath.startsWith("libexec/git-core/")
+
+    /** Replaces every occurrence in [bytes] in place; returns how many. */
+    fun patchBytes(bytes: ByteArray): Int {
+        var count = 0
+        var i = 0
+        val last = bytes.size - NEEDLE.size
+        while (i <= last) {
+            var j = 0
+            while (j < NEEDLE.size && bytes[i + j] == NEEDLE[j]) j++
+            if (j == NEEDLE.size) {
+                REPLACEMENT.copyInto(bytes, i)
+                for (k in REPLACEMENT.size until NEEDLE.size) bytes[i + k] = 0
+                count++
+                i += NEEDLE.size
+            } else {
+                i++
+            }
+        }
+        return count
+    }
+
+    /**
+     * Patches [file] in place; returns the number of occurrences rewritten.
+     * ELF-gated: git's scripts under libexec/ are handled by the shebang
+     * rewriter, and a text file containing the literal must not be touched.
+     */
+    fun patch(file: File): Int = runCatching {
+        val bytes = file.readBytes()
+        if (bytes.size < 4 || bytes[0] != 0x7f.toByte() || bytes[1] != 'E'.code.toByte() ||
+            bytes[2] != 'L'.code.toByte() || bytes[3] != 'F'.code.toByte()
+        ) {
+            return 0
+        }
+        val n = patchBytes(bytes)
+        if (n > 0) file.writeBytes(bytes)
+        n
+    }.getOrDefault(0)
+}
+
 sealed interface EnvState {
     data object NotInstalled : EnvState
     data class Downloading(val index: Int, val total: Int, val pkg: String) : EnvState
@@ -446,16 +504,33 @@ class LinuxEnvironmentManager(
     }
 
     /**
+     * Patches git ELFs still carrying the dead Termux SHELL_PATH (prefixes
+     * installed before the extract-time fix). Only files already containing
+     * the literal are rewritten, so healthy prefixes cost one read each.
+     */
+    private fun repairGitShellPaths(): Int {
+        var patched = 0
+        File(prefix, "bin").listFiles()?.forEach { f ->
+            if (f.isFile && f.name.startsWith("git") && TermuxShellPath.patch(f) > 0) patched++
+        }
+        File(prefix, "libexec/git-core").listFiles()?.forEach { f ->
+            if (f.isFile && TermuxShellPath.patch(f) > 0) patched++
+        }
+        return patched
+    }
+
+    /**
      * One-shot repair for existing installs, run at every app start:
-     * relinks dangling symlinks, cleans/rewrites Termux shebangs, and heals
-     * an incomplete toolchain — packages whose install was interrupted never
-     * complete on their own (the marker file exists, so the environment reads
-     * Ready), and packages whose binaries vanished keep reporting "broken"
-     * forever. install() resumes whatever is genuinely absent; late packages
-     * (LATE_PACKAGES) are excluded so their one-time notice still governs
-     * them. A network failure never demotes a Ready environment: the state is
-     * restored and the repair retries on the next app start. Returns a
-     * summary, or null when nothing needed fixing.
+     * relinks dangling symlinks, cleans/rewrites Termux shebangs, neutralizes
+     * git's embedded Termux SHELL_PATH, and heals an incomplete toolchain —
+     * packages whose install was interrupted never complete on their own (the
+     * marker file exists, so the environment reads Ready), and packages whose
+     * binaries vanished keep reporting "broken" forever. install() resumes
+     * whatever is genuinely absent; late packages (LATE_PACKAGES) are excluded
+     * so their one-time notice still governs them. A network failure never
+     * demotes a Ready environment: the state is restored and the repair
+     * retries on the next app start. Returns a summary, or null when nothing
+     * needed fixing.
      */
     suspend fun repairIfNeeded(): String? {
         runCatching { gitGlobalConfig() }
@@ -463,6 +538,7 @@ class LinuxEnvironmentManager(
         return withContext(Dispatchers.IO) {
             val relinked = repairLegacySymlinks()
             val (purged, shebangsRewritten) = purgeDeadTermuxShims()
+            val shellPatched = repairGitShellPaths()
             val broken = brokenInstalledPackages()
             val missing = fullPackages.filter { !installedContains(it) && it !in latePackagesPending() }
             var healNote: String? = null
@@ -484,7 +560,7 @@ class LinuxEnvironmentManager(
                         "); will retry on next launch"
                 }
             }
-            if (relinked == 0 && purged == 0 && shebangsRewritten == 0 && healNote == null) {
+            if (relinked == 0 && purged == 0 && shebangsRewritten == 0 && shellPatched == 0 && healNote == null) {
                 return@withContext null
             }
             // The repair changed prefix content without necessarily changing the
@@ -502,6 +578,11 @@ class LinuxEnvironmentManager(
                     if (isNotEmpty()) append("; ")
                     append("rewrote ").append(shebangsRewritten)
                         .append(" Termux shebang(s) into the deployed prefix")
+                }
+                if (shellPatched > 0) {
+                    if (isNotEmpty()) append("; ")
+                    append("patched ").append(shellPatched)
+                        .append(" git binary(ies) with a working shell path")
                 }
                 if (healNote != null) append(if (isEmpty()) "" else "; ").append(healNote)
             }.ifBlank { null }
@@ -610,9 +691,15 @@ class LinuxEnvironmentManager(
      * desired content is recomputed and written back whenever it drifts, so a
      * token saved in Settings takes effect without reinstalling anything.
      */
+    /**
+     * Master GitHub token from the app's encrypted settings, for tools that
+     * report GitHub state (doctor, env_status). Null when none is configured.
+     */
+    fun githubToken(): String? = runCatching { githubTokenProvider() }.getOrNull()
+
     fun gitGlobalConfig(): File {
         val f = File(prefix, "etc/gitconfig")
-        val desired = GitHubProvision.gitConfigBody(runCatching { githubTokenProvider() }.getOrNull())
+        val desired = GitHubProvision.gitConfigBody(githubToken())
         if (!f.exists() || f.readText() != desired) {
             f.parentFile?.mkdirs()
             f.writeText(desired)
@@ -622,7 +709,7 @@ class LinuxEnvironmentManager(
 
     /** Re-writes the toolchain copies of the GitHub auth state. Idempotent. */
     fun materializeGitHub() {
-        val token = runCatching { githubTokenProvider() }.getOrNull()
+        val token = githubToken()
         GitHubProvision.materializeTokenFile(prefix, token)
         GitHubProvision.materializeGhHosts(prefix, token)
         gitGlobalConfig()
@@ -779,9 +866,10 @@ class LinuxEnvironmentManager(
      * the tarball's etc/gitconfig + home/.gh-token).
      */
     fun packageSetHash(): String =
-        // v7-shebang: shebang rewrite changed bin/ and lib/ script content
-        // without changing the package set — forces one re-stage + redeploy.
-        ("v7-shebang\n" + installedPackages().sorted().joinToString("\n") +
+        // v8-shellpath: the git ELF now ships with its SHELL_PATH patched to
+        // /system/bin/sh — content changed without changing the package set,
+        // so force one re-stage + redeploy (token files also land 0600 now).
+        ("v8-shellpath\n" + installedPackages().sorted().joinToString("\n") +
             "\n" + GitHubProvision.fingerprint(runCatching { githubTokenProvider() }.getOrNull()))
             .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
@@ -822,6 +910,16 @@ class LinuxEnvironmentManager(
         }
     }
 
+    /**
+     * The token-bearing copies ride inside the staging tarball; they must land
+     * 0600 in the deployed prefix (the privileged deploy's chmod -R 755 is
+     * corrected there, but the tarball entries themselves must not be 0644).
+     */
+    private fun isPrivateTokenEntry(name: String): Boolean {
+        val rel = name.removePrefix("linux/")
+        return rel == GitHubProvision.TOKEN_FILE || rel == GitHubProvision.GH_HOSTS_FILE
+    }
+
     private fun writeTarEntries(
         dir: File,
         base: String,
@@ -846,6 +944,7 @@ class LinuxEnvironmentManager(
             entry.mode = when {
                 link != null -> 0x1FF // 0777
                 child.isDirectory -> 0x1ED // 0755
+                isPrivateTokenEntry(name) -> 0x180 // 0600: the deployed copy must not be world-readable
                 child.canExecute() -> 0x1ED // 0755
                 else -> 0x1A4 // 0644
             }
@@ -1086,6 +1185,9 @@ class LinuxEnvironmentManager(
                                         tar.copyTo(out)
                                     }
                                     runCatching { Os.chmod(target.absolutePath, e.mode.toInt() and 0xFFF) }
+                                    // git's ELFs reference the dead Termux shell
+                                    // path; neutralize it while the bytes are hot.
+                                    if (TermuxShellPath.appliesTo(rel)) TermuxShellPath.patch(target)
                                     skipWrite = true
                                 }
                                 // n <= 0: empty entry, fall through to the plain writer

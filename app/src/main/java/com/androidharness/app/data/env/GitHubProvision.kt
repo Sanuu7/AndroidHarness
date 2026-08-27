@@ -1,6 +1,7 @@
 package com.androidharness.app.data.env
 
 import android.system.Os
+import android.system.OsConstants
 import java.io.File
 import java.security.MessageDigest
 
@@ -15,10 +16,13 @@ import java.security.MessageDigest
  *  - `<prefix>/home/.gh-token` (0600): the documented file agents can read
  *    (HOME points at `<prefix>/home` in both shell tiers).
  *  - `<prefix>/etc/gitconfig` carries a git identity plus an insteadOf rewrite
- *    that injects the token into every https://github.com URL. Credential
- *    helpers cannot work in this toolchain — git's libexec sub-binaries
- *    (git-credential-store) are not kernel-execable under the W^X shim — so
- *    URL rewriting is the only credential transport that always works.
+ *    that injects the token into every https://github.com URL. URL rewriting
+ *    is the only credential transport that works in BOTH tiers: in the app-uid
+ *    tier git-spawned helpers (gh auth git-credential, git-credential-store)
+ *    still cannot exec under the W^X shim. In the shell tier they work — git's
+ *    compiled-in SHELL_PATH is patched to /system/bin/sh at extract time (see
+ *    TermuxShellPath) — so no empty `credential.helper` reset is written that
+ *    would block them.
  */
 object GitHubProvision {
 
@@ -32,16 +36,15 @@ object GitHubProvision {
 
     /**
      * Full global git config body: safe.directory, a default commit identity
-     * (fresh clones can commit without "Please tell me who you are"), and the
-     * token rewrite. With no token, everything except the rewrite is still
-     * written, so HTTPS clones of public repos keep working anonymously.
+     * (fresh clones can commit without "Please tell me who you are"), main as
+     * the default branch for `git init`, and the token rewrite. With no token,
+     * everything except the rewrite is still written, so HTTPS clones of
+     * public repos keep working anonymously.
      */
     fun gitConfigBody(token: String?): String = buildString {
         append("[safe]\n\tdirectory = *\n")
         append("[user]\n\tname = Android Harness\n\temail = harness@android.local\n")
-        // Explicit empty helper list: even a stray user-level credential.helper
-        // cannot make git spawn a helper that exec() would kill with EACCES.
-        append("[credential]\n\thelper =\n")
+        append("[init]\n\tdefaultBranch = main\n")
         if (hasToken(token)) {
             append("[url \"https://x-access-token:").append(token).append("@github.com/\"]\n")
             append("\tinsteadOf = https://github.com/\n")
@@ -54,8 +57,7 @@ object GitHubProvision {
             val f = File(prefix, TOKEN_FILE)
             if (hasToken(token)) {
                 f.parentFile?.mkdirs()
-                f.writeText(token!!.trim() + "\n")
-                runCatching { Os.chmod(f.absolutePath, 0x180 /* 0600 */) }
+                writePrivate(f, token!!.trim() + "\n")
             } else {
                 f.delete()
             }
@@ -80,10 +82,30 @@ object GitHubProvision {
                 f.delete()
             } else {
                 f.parentFile?.mkdirs()
-                f.writeText(body)
-                runCatching { Os.chmod(f.absolutePath, 0x180 /* 0600 */) }
+                writePrivate(f, body)
             }
         }
+    }
+
+    /**
+     * Creates (or rewrites) [f] with mode 0600 from the first byte: writing
+     * first and chmodding after leaves the file world-readable in the window
+     * between the two calls, and a crash in between would leave it readable
+     * forever. The trailing chmod repairs copies an older build created 0755.
+     */
+    private fun writePrivate(f: File, text: String) {
+        val fd = Os.open(
+            f.absolutePath,
+            OsConstants.O_CREAT or OsConstants.O_WRONLY or OsConstants.O_TRUNC,
+            0x180 /* 0600 */,
+        )
+        try {
+            val bytes = text.toByteArray(Charsets.UTF_8)
+            Os.write(fd, bytes, 0, bytes.size)
+        } finally {
+            Os.close(fd)
+        }
+        runCatching { Os.chmod(f.absolutePath, 0x180) }
     }
 
     /**
