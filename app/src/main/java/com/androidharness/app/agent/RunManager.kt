@@ -430,9 +430,21 @@ class RunManager(
             is AgentEvent.SubagentMessageCommitted ->
                 sessions.addMessage(sessionId, event.message, turnId)
 
-            is AgentEvent.FileEdited -> sessions.recordFileEdit(
-                sessionId, event.turnId, event.relPath, event.added, event.removed,
-            )
+            is AgentEvent.FileEdited -> {
+                sessions.recordFileEdit(
+                    sessionId, event.turnId, event.relPath, event.added, event.removed,
+                )
+                // Cumulative per-session tracking for the Files-changed view.
+                sessions.recordFileChange(
+                    sessionId = sessionId,
+                    relPath = event.relPath,
+                    added = event.added,
+                    removed = event.removed,
+                    existedBefore = event.existedBefore,
+                    existsAfter = event.existsAfter,
+                    beforeText = event.beforeText,
+                )
+            }
 
             is AgentEvent.ToolFinished -> {
                 val remaining = live.value.runningCalls.filterNot { c -> c.id == event.callId }

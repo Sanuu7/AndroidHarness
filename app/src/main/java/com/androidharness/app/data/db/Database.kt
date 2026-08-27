@@ -6,6 +6,7 @@ import androidx.room.Delete
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.PrimaryKey
 import androidx.room.Query
 import androidx.room.RoomDatabase
@@ -97,6 +98,36 @@ data class FileEditEntity(
     val added: Long,
     val removed: Long,
     val createdAt: Long,
+)
+
+/**
+ * Cumulative per-file change tracking for one chat session — powers the
+ * GitHub-style "Files changed" view. Rows key on (session, path) and
+ * accumulate [added]/[removed] across all editing calls in the session. The
+ * first modification captures a gzipped pre-change snapshot ([baseGzip]) so
+ * every later diff renders against session-start content, exactly like a git
+ * commit's base. New files have no baseline bytes (diff against empty), and
+ * oversized pre-states leave [hasBase] false ("diff unavailable").
+ */
+@Entity(
+    tableName = "session_file_changes",
+    primaryKeys = ["sessionId", "relPath"],
+    indices = [Index("updatedAt")],
+)
+data class SessionFileChangeEntity(
+    val sessionId: String,
+    val relPath: String,
+    val added: Long = 0,
+    val removed: Long = 0,
+    /** The file did not exist before this session created it. */
+    val isNew: Boolean = false,
+    /** Last observed state of the file in this session is deleted. */
+    val isDeleted: Boolean = false,
+    /** gzip'd UTF-8 content at the time this session first touched the file. */
+    val baseGzip: ByteArray? = null,
+    /** True when a usable baseline exists (new file ⇒ empty baseline). */
+    val hasBase: Boolean = false,
+    val updatedAt: Long = 0,
 )
 
 /** Aggregated per (provider, model) usage within a time window. */
@@ -247,6 +278,22 @@ interface HarnessDao {
 
     @Query("DELETE FROM file_edits WHERE sessionId = :sessionId")
     suspend fun deleteFileEdits(sessionId: String)
+
+    // session file changes (GitHub-style "Files changed" per chat)
+    @Query(
+        "SELECT * FROM session_file_changes WHERE sessionId = :sessionId " +
+            "ORDER BY updatedAt DESC"
+    )
+    fun sessionFileChangesFlow(sessionId: String): Flow<List<SessionFileChangeEntity>>
+
+    @Query("SELECT * FROM session_file_changes WHERE sessionId = :sessionId AND relPath = :relPath")
+    suspend fun sessionFileChange(sessionId: String, relPath: String): SessionFileChangeEntity?
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsertSessionFileChange(change: SessionFileChangeEntity)
+
+    @Query("DELETE FROM session_file_changes WHERE sessionId = :sessionId")
+    suspend fun deleteSessionFileChanges(sessionId: String)
 }
 
 @Database(
@@ -258,8 +305,9 @@ interface HarnessDao {
         SnippetEntity::class,
         UsageEventEntity::class,
         FileEditEntity::class,
+        SessionFileChangeEntity::class,
     ],
-    version = 7,
+    version = 8,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -312,6 +360,29 @@ abstract class AppDatabase : RoomDatabase() {
                 )
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_file_edits_sessionId ON file_edits(sessionId)")
                 db.execSQL("CREATE INDEX IF NOT EXISTS index_file_edits_turnId ON file_edits(turnId)")
+            }
+        }
+
+        /** v8: cumulative per-session file changes ("Files changed" view). */
+        val MIGRATION_7_8 = object : androidx.room.migration.Migration(7, 8) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE TABLE IF NOT EXISTS session_file_changes (" +
+                        "sessionId TEXT NOT NULL, " +
+                        "relPath TEXT NOT NULL, " +
+                        "added INTEGER NOT NULL DEFAULT 0, " +
+                        "removed INTEGER NOT NULL DEFAULT 0, " +
+                        "isNew INTEGER NOT NULL DEFAULT 0, " +
+                        "isDeleted INTEGER NOT NULL DEFAULT 0, " +
+                        "baseGzip BLOB, " +
+                        "hasBase INTEGER NOT NULL DEFAULT 0, " +
+                        "updatedAt INTEGER NOT NULL DEFAULT 0, " +
+                        "PRIMARY KEY(sessionId, relPath))"
+                )
+                db.execSQL(
+                    "CREATE INDEX IF NOT EXISTS index_session_file_changes_updatedAt " +
+                        "ON session_file_changes(updatedAt)"
+                )
             }
         }
     }

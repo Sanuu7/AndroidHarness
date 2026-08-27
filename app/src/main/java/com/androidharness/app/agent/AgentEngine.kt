@@ -119,12 +119,21 @@ sealed interface AgentEvent {
      */
     data class SubagentMessageCommitted(val parentCallId: String, val message: ChatMessage) : AgentEvent
 
-    /** Line-change stats from one successful editing tool call ("+N −M" chips). */
+    /**
+     * Line-change stats from one successful editing tool call ("+N −M" chips),
+     * plus the pre-change state the Files-changed tracker needs: [existedBefore]
+     * flags whether the path existed before this call, [beforeText] carries its
+     * content when capturable (≤512KB), and [existsAfter] reports survival —
+     * together they let RunManager pin the per-session diff baseline.
+     */
     data class FileEdited(
         val turnId: String,
         val relPath: String,
         val added: Long,
         val removed: Long,
+        val existedBefore: Boolean = false,
+        val existsAfter: Boolean = true,
+        val beforeText: String? = null,
     ) : AgentEvent
 
     /**
@@ -536,14 +545,19 @@ class AgentEngine(
         }
 
         // Snapshot everything this tool might touch before it runs, and keep
-        // the before-text for "+N −M" diff stats.
-        val beforeTexts = LinkedHashMap<String, String?>()
+        // the before-text for "+N −M" diff stats. existed flags distinguish
+        // "file absent" (empty baseline) from "file too big to capture".
+        val beforeTexts = LinkedHashMap<String, Pair<Boolean, String?>>()
         checkpointTargets(call.name, args).forEach { path ->
             runCatching { checkpointer.snapshot(sessionId, turnId, workspace, path) }
             runCatching {
                 val node = workspace.resolve(path)
                 beforeTexts[path] =
-                    if (node.exists && node.isFile && node.length <= 512_000) node.readText() else null
+                    if (node.exists && node.isFile) {
+                        true to (if (node.length <= 512_000) node.readText() else null)
+                    } else {
+                        false to null
+                    }
             }
         }
 
@@ -569,17 +583,32 @@ class AgentEngine(
         }
 
         // Diff stats: only when the tool succeeded and actually changed lines.
+        // Newly created directories must not surface as file changes.
         if (result.ok && beforeTexts.isNotEmpty()) {
-            for ((path, before) in beforeTexts) {
+            for ((path, pre) in beforeTexts) {
+                val (existedBefore, before) = pre
                 runCatching {
                     val node = workspace.resolve(path)
+                    val nodeIsFile = node.exists && node.isFile
                     val after =
-                        if (node.exists && node.isFile && node.length <= 512_000) node.readText() else ""
+                        if (nodeIsFile && node.length <= 512_000) node.readText() else ""
                     val (added, removed) = com.androidharness.app.core.Diff.lineCounts(
                         before ?: "", after,
                     )
-                    if (added > 0 || removed > 0) {
-                        emitEvent(AgentEvent.FileEdited(turnId, path, added.toLong(), removed.toLong()))
+                    val changedLines = added > 0 || removed > 0
+                    val newlyCreated = !existedBefore && !node.isDirectory
+                    val deleted = existedBefore && !nodeIsFile
+                    when {
+                        node.isDirectory && !existedBefore -> Unit
+                        changedLines || newlyCreated || deleted -> emitEvent(
+                            AgentEvent.FileEdited(
+                                turnId, path,
+                                added.toLong(), removed.toLong(),
+                                existedBefore = existedBefore,
+                                existsAfter = nodeIsFile,
+                                beforeText = before,
+                            ),
+                        )
                     }
                 }
             }

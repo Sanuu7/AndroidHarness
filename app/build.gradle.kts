@@ -85,6 +85,8 @@ dependencies {
     implementation(libs.xz)
     implementation(libs.shizuku.api)
     implementation(libs.shizuku.provider)
+    // In-app code editor (gutter, undo/redo, search engine) for the file manager.
+    implementation(libs.sora.editor)
 
     testImplementation(libs.junit)
 }

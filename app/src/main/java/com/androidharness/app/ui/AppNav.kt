@@ -31,6 +31,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.PushPin
+import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.Search
@@ -46,6 +47,7 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
@@ -88,7 +90,8 @@ import com.androidharness.app.ui.chat.ChatScreen
 import com.androidharness.app.ui.chat.ChatViewModel
 import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.formatRelativeTime
-import com.androidharness.app.ui.files.CodeViewerScreen
+import com.androidharness.app.ui.files.ChangesScreen
+import com.androidharness.app.ui.files.CodeEditorScreen
 import com.androidharness.app.ui.files.FilesScreen
 import com.androidharness.app.ui.settings.ProvidersScreen
 import com.androidharness.app.ui.settings.SettingsScreen
@@ -273,6 +276,51 @@ fun AppNav(container: AppContainer) {
                     }
                     Spacer(Modifier.height(4.dp))
 
+                    // ----- Files-changed pill for the open chat -----
+                    // Live per-session aggregate; hidden until the agent (or an
+                    // in-app save) touches something in this conversation.
+                    if (currentSessionId != null) {
+                        val sessionChanges by container.sessions
+                            .fileChangesFor(currentSessionId!!)
+                            .collectAsStateWithLifecycle(initialValue = emptyList())
+                        if (sessionChanges.isNotEmpty()) {
+                            val adds = sessionChanges.sumOf { it.added }
+                            val dels = sessionChanges.sumOf { it.removed }
+                            val sid = currentSessionId!!
+                            Surface(
+                                color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                shape = RoundedCornerShape(12.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp, vertical = 2.dp)
+                                    .clip(RoundedCornerShape(12.dp))
+                                    .combinedClickable(onClick = {
+                                        scope.launch { drawerState.close() }
+                                        nav.navigate("changes/${encode(sid)}")
+                                    }),
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Difference,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(17.dp),
+                                        tint = MaterialTheme.colorScheme.primary,
+                                    )
+                                    Spacer(Modifier.width(10.dp))
+                                    Text(
+                                        "${sessionChanges.size} files changed",
+                                        style = MaterialTheme.typography.labelLarge,
+                                        modifier = Modifier.weight(1f),
+                                    )
+                                    com.androidharness.app.ui.files.DiffStatText(adds, dels)
+                                }
+                            }
+                        }
+                    }
+
                     // ----- Search -----
                     OutlinedTextField(
                         value = searchQuery,
@@ -417,7 +465,7 @@ fun AppNav(container: AppContainer) {
                         scope.launch { drawerState.open() }
                     },
                     onOpenFile = { path, line ->
-                        nav.navigate("viewer/${encode(path)}?line=${line ?: 0}")
+                        nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=")
                     },
                     onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
                     onOpenTerminal = { nav.navigate("terminal") },
@@ -442,7 +490,8 @@ fun AppNav(container: AppContainer) {
                         scope.launch { drawerState.open() }
                     },
                     onOpenFile = { path, line ->
-                        nav.navigate("viewer/${encode(path)}?line=${line ?: 0}")
+                        val sid = vm.state.value.sessionId ?: sessionId
+                        nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=${encode(sid.orEmpty())}")
                     },
                     onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
                     onOpenTerminal = { nav.navigate("terminal") },
@@ -473,23 +522,43 @@ fun AppNav(container: AppContainer) {
             composable("files") {
                 FilesScreen(
                     container = container,
+                    sessionId = currentSessionId,
                     onBack = { nav.popBackStack() },
-                    onOpenFile = { path -> nav.navigate("viewer/${encode(path)}") },
+                    onOpenFile = { path ->
+                        nav.navigate("viewer/${encode(path)}?line=0&session=${encode(currentSessionId.orEmpty())}")
+                    },
+                    onOpenChanges = currentSessionId?.let { sid ->
+                        { nav.navigate("changes/${encode(sid)}") }
+                    },
+                )
+            }
+            composable("changes/{sessionId}") { entry ->
+                val sid = entry.arguments?.getString("sessionId").orEmpty()
+                ChangesScreen(
+                    container = container,
+                    sessionId = sid,
+                    onBack = { nav.popBackStack() },
                 )
             }
             composable(
-                "viewer/{path}?line={line}",
+                "viewer/{path}?line={line}&session={session}",
                 arguments = listOf(
                     navArgument("path") { type = NavType.StringType },
                     navArgument("line") { type = NavType.IntType; defaultValue = 0 },
+                    navArgument("session") {
+                        type = NavType.StringType
+                        defaultValue = ""
+                    },
                 ),
             ) { entry ->
                 val path = entry.arguments?.getString("path").orEmpty()
                 val line = entry.arguments?.getInt("line")?.takeIf { it > 0 }
-                CodeViewerScreen(
+                val sessionArg = entry.arguments?.getString("session").orEmpty()
+                CodeEditorScreen(
                     container = container,
                     path = path,
                     initialLine = line,
+                    sessionId = sessionArg.takeIf { it.isNotBlank() },
                     onBack = { nav.popBackStack() },
                 )
             }

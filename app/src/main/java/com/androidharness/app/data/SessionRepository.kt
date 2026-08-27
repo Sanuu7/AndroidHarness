@@ -175,6 +175,75 @@ class SessionRepository(
     fun fileEditsFor(sessionId: String): Flow<List<com.androidharness.app.data.db.FileEditEntity>> =
         db.dao().fileEditsFlow(sessionId)
 
+    /**
+     * Cumulative per-file changes for one session — the GitHub-style
+     * "Files changed" view. Room invalidates this flow on writes, so the UI
+     * updates live while the agent works.
+     */
+    fun fileChangesFor(
+        sessionId: String,
+    ): Flow<List<com.androidharness.app.data.db.SessionFileChangeEntity>> =
+        db.dao().sessionFileChangesFlow(sessionId)
+
+    /**
+     * Records one modification of [relPath] against the session's change set.
+     *
+     * Rows accumulate: the first event fixes the baseline (gzipped pre-content,
+     * or an empty baseline when the file is new), later events only add to the
+     * line counters and refresh status. A deletion keeps its baseline so the
+     * removal stays diffable; re-creating the path clears the deleted flag.
+     *
+     * @param existedBefore whether the file existed before this call; a known
+     *   false (file was absent) diffs against an empty baseline, while an
+     *   unknown oversized pre-state (null [beforeText], true flag) records
+     *   counters but no baseline ("diff unavailable" in the UI)
+     */
+    suspend fun recordFileChange(
+        sessionId: String,
+        relPath: String,
+        added: Long,
+        removed: Long,
+        existedBefore: Boolean,
+        existsAfter: Boolean,
+        beforeText: String?,
+    ) {
+        val baselineKnown = !existedBefore || beforeText != null
+        if (!baselineKnown && existsAfter && added == 0L && removed == 0L) return
+
+        val existing = db.dao().sessionFileChange(sessionId, relPath)
+        val now = System.currentTimeMillis()
+        val merged = if (existing == null) {
+            com.androidharness.app.data.db.SessionFileChangeEntity(
+                sessionId = sessionId,
+                relPath = relPath,
+                added = added,
+                removed = removed,
+                isNew = !existedBefore,
+                isDeleted = existedBefore && !existsAfter,
+                baseGzip = if (existedBefore && beforeText != null) gzip(beforeText) else null,
+                hasBase = baselineKnown,
+                updatedAt = now,
+            )
+        } else {
+            existing.copy(
+                added = existing.added + added,
+                removed = existing.removed + removed,
+                // Re-creating a previously deleted path flips it back to modified.
+                isDeleted = if (!existedBefore) false else !existsAfter,
+                baseGzip = existing.baseGzip ?: if (existedBefore && beforeText != null) gzip(beforeText) else null,
+                hasBase = existing.hasBase || baselineKnown,
+                updatedAt = now,
+            )
+        }
+        db.dao().upsertSessionFileChange(merged)
+    }
+
+    private fun gzip(text: String): ByteArray {
+        val bos = java.io.ByteArrayOutputStream(text.length / 2 + 64)
+        java.util.zip.GZIPOutputStream(bos).use { it.write(text.toByteArray(Charsets.UTF_8)) }
+        return bos.toByteArray()
+    }
+
     /** Per-(provider, model) token totals since [since] (epoch ms; 0 = lifetime). */
     fun usageByModelSince(since: Long): Flow<List<com.androidharness.app.data.db.ModelUsagePojo>> =
         db.dao().usageByModelSince(since)
@@ -204,6 +273,7 @@ class SessionRepository(
         db.dao().deleteCheckpoints(session.id)
         db.dao().deleteUsageEvents(session.id)
         db.dao().deleteFileEdits(session.id)
+        db.dao().deleteSessionFileChanges(session.id)
         db.dao().deleteSession(session)
     }
 

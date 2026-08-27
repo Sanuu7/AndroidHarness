@@ -2,4 +2,6 @@
 <paths>
     <!-- Staged update APKs shared with the system package installer. -->
     <external-files-path name="update" path="update/" />
+    <!-- Files staged from the workspace for system share / open-with intents. -->
+    <cache-path name="shared" path="shared/" />
 </paths>

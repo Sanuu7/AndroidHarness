@@ -52,6 +52,15 @@ interface FsNode {
 
     /** Checks whether the file is binary (non-UTF8 or contains NUL bytes). */
     fun isBinary(): Boolean
+
+    /** Writes raw bytes to this file node, creating parent directories as needed. */
+    fun writeBytes(data: ByteArray)
+
+    /** Creates a new empty file [name] inside this (directory) node. */
+    fun createFile(name: String): FsNode
+
+    /** Creates a new directory [name] inside this (directory) node. */
+    fun createDir(name: String): FsNode
 }
 
 // ---------------------------------------------------------------------------
@@ -145,6 +154,43 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
 
     override fun renameTo(newName: String): Boolean =
         file.renameTo(File(file.parentFile, newName))
+
+    override fun writeBytes(data: ByteArray) {
+        if (isDirectory) throw ToolFailure("Cannot write file '$relPath': is a directory")
+        file.parentFile?.mkdirs()
+        try {
+            java.io.FileOutputStream(file).use { fos ->
+                fos.write(data)
+                fos.flush()
+                runCatching { fos.fd.sync() }
+            }
+        } catch (e: Exception) {
+            val cleanMsg = e.localizedMessage?.replace(file.absolutePath, relPath) ?: e.message
+            throw ToolFailure("Cannot write file '$relPath': $cleanMsg")
+        }
+    }
+
+    override fun createFile(name: String): FsNode {
+        if (!isDirectory) throw ToolFailure("Not a directory: $relPath")
+        val target = java.io.File(file, name)
+        try {
+            if (!target.exists() && !target.createNewFile()) {
+                throw ToolFailure("Could not create file '$name' in $relPath")
+            }
+        } catch (e: java.io.IOException) {
+            throw ToolFailure("Could not create file '$name' in $relPath: ${e.message}")
+        }
+        return FileFsNode(target, rootPath)
+    }
+
+    override fun createDir(name: String): FsNode {
+        if (!isDirectory) throw ToolFailure("Not a directory: $relPath")
+        val created = java.io.File(file, name)
+        if (!created.exists() && !created.mkdir()) {
+            throw ToolFailure("Could not create folder '$name' in $relPath")
+        }
+        return FileFsNode(created, rootPath)
+    }
 
     override fun openInputStream(): java.io.InputStream? =
         if (exists && isFile) file.inputStream() else null
@@ -291,10 +337,15 @@ class SafFsNode(
     }
 
     override fun writeText(content: String) {
+        writeBytes(content.toByteArray(Charsets.UTF_8))
+    }
+
+    /** Resolves (or creates) the DocumentFile this node should be written to. */
+    private fun resolveWriteTarget(): DocumentFile {
         if (isDirectory) {
             throw ToolFailure("Cannot write file '$relPath': is a directory")
         }
-        val target = when {
+        return when {
             // existing file resolved directly
             missingSegments.isEmpty() && doc.isFile -> doc
             // path resolved to a directory — nothing to write
@@ -312,13 +363,37 @@ class SafFsNode(
                     ?: throw ToolFailure("Could not create file $relPath")
             }
         }
+    }
+
+    override fun writeBytes(data: ByteArray) {
+        val target = resolveWriteTarget()
         context.contentResolver.openOutputStream(target.uri, "wt")?.use { out ->
-            out.write(content.toByteArray(Charsets.UTF_8))
+            out.write(data)
             out.flush()
             if (out is java.io.FileOutputStream) {
                 runCatching { out.fd.sync() }
             }
         } ?: throw ToolFailure("Could not write $relPath")
+    }
+
+    override fun createFile(name: String): FsNode = createChild(name, isDir = false)
+
+    override fun createDir(name: String): FsNode = createChild(name, isDir = true)
+
+    private fun createChild(name: String, isDir: Boolean): FsNode {
+        if (!isDirectory) throw ToolFailure("Not a directory: $relPath")
+        val created = if (isDir) {
+            doc.createDirectory(name) ?: run {
+                doc.findFile(name)?.takeIf { it.isDirectory }
+                    ?: throw ToolFailure("Could not create folder '$name' in $relPath")
+            }
+        } else {
+            doc.createFile(mimeFor(name), name) ?: run {
+                doc.findFile(name)?.takeIf { it.isFile }
+                    ?: throw ToolFailure("Could not create file '$name' in $relPath")
+            }
+        }
+        return SafFsNode(context, created, emptyList(), allSegments + name)
     }
 
     override fun mkdirs() {

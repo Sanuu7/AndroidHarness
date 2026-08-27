@@ -41,7 +41,10 @@ class AppContainer(val appContext: Context) {
     val providers = ProviderRepository(appContext, keys)
 
     private val db = Room.databaseBuilder(appContext, AppDatabase::class.java, "harness.db")
-        .addMigrations(AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6, AppDatabase.MIGRATION_6_7)
+        .addMigrations(
+            AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6,
+            AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8,
+        )
         // Only kicks in when no migration path exists (pre-v4 databases);
         // the v4→v5 path above preserves sessions and usage totals.
         .fallbackToDestructiveMigration(true)

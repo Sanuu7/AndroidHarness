@@ -18,6 +18,7 @@ coroutines = "1.10.2"
 commonsCompress = "1.28.0"
 xz = "1.12"
 shizuku = "13.1.5"
+soraEditor = "0.23.6"
 
 [libraries]
 core-ktx = { module = "androidx.core:core-ktx", version.ref = "coreKtx" }
@@ -44,6 +45,7 @@ kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serializa
 coroutines-android = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-android", version.ref = "coroutines" }
 commons-compress = { module = "org.apache.commons:commons-compress", version.ref = "commonsCompress" }
 xz = { module = "org.tukaani:xz", version.ref = "xz" }
+sora-editor = { module = "io.github.Rosemoe.sora-editor:editor", version.ref = "soraEditor" }
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 junit = { module = "junit:junit", version = "4.13.2" }

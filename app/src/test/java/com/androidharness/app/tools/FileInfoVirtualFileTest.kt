@@ -44,6 +44,9 @@ class FileInfoVirtualFileTest {
         override fun renameTo(newName: String) = false
         override fun openInputStream() = body.inputStream()
         override fun isBinary() = false
+        override fun writeBytes(data: ByteArray) = throw UnsupportedOperationException()
+        override fun createFile(name: String): FsNode = throw UnsupportedOperationException()
+        override fun createDir(name: String): FsNode = throw UnsupportedOperationException()
     }
 
     @Test
