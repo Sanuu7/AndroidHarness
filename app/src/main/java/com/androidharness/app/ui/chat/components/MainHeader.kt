@@ -27,7 +27,6 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
@@ -65,8 +64,9 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
  * The old design spent two rows here (title + status, then a provider chip row).
  * Now the subtitle line IS the provider switcher — "Provider · Model", tap to
  * change — and doubles as the live status line while the agent works. Plan mode
- * shows one small accent icon instead of a pill, the workspace switcher gets
- * the header icon slot, and context usage lives in the overflow menu.
+ * shows one small accent icon instead of a pill, the workspace-files explorer
+ * (migrated from the drawer) gets the header icon slot, and context usage
+ * lives in the overflow menu.
  */
 @Composable
 internal fun MainHeader(
@@ -87,7 +87,6 @@ internal fun MainHeader(
     onSetMode: (AgentMode) -> Unit,
     onOpenContext: () -> Unit,
     onOpenUndo: () -> Unit,
-    onSwitchWorkspace: () -> Unit,
     onOpenFiles: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
@@ -243,12 +242,12 @@ internal fun MainHeader(
                 }
             }
 
-            // Workspace switcher — occupies the slot the context button used
-            // to hold; context moved into the overflow menu.
-            IconButton(onClick = onSwitchWorkspace) {
+            // Workspace files explorer — migrated here from the drawer;
+            // workspace switching itself lives inside the file manager.
+            IconButton(onClick = onOpenFiles) {
                 Icon(
                     Icons.Outlined.Folder,
-                    contentDescription = "Switch workspace",
+                    contentDescription = "Workspace files",
                     tint = scheme.onSurfaceVariant,
                 )
             }
@@ -318,13 +317,6 @@ internal fun MainHeader(
                             Icon(Icons.Outlined.QueryStats, contentDescription = null)
                         },
                         onClick = { menu = false; onOpenContext() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Files") },
-                        leadingIcon = {
-                            Icon(Icons.Outlined.FolderOpen, contentDescription = null)
-                        },
-                        onClick = { menu = false; onOpenFiles() },
                     )
                     HorizontalDivider(Modifier.padding(vertical = 6.dp))
                     DropdownMenuItem(

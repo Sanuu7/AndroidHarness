@@ -106,7 +106,6 @@ import com.androidharness.app.ui.chat.components.TodoCard
 import com.androidharness.app.ui.chat.components.ToolCallCard
 import com.androidharness.app.ui.chat.components.ToolGroupCard
 import com.androidharness.app.ui.chat.components.UserBubble
-import com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.common.formatDuration
 import com.androidharness.app.ui.settings.ProviderManagerSheet
@@ -136,11 +135,6 @@ fun ChatScreen(
     var showContext by remember { mutableStateOf(false) }
     var showModelPicker by remember { mutableStateOf(false) }
     var showProviderManager by remember { mutableStateOf(false) }
-    var showWorkspaceSwitcher by remember { mutableStateOf(false) }
-    var showAddWorkspace by remember { mutableStateOf(false) }
-    var pendingDeleteWorkspace by remember {
-        mutableStateOf<com.androidharness.app.data.db.ProjectEntity?>(null)
-    }
     var slashExpanded by remember { mutableStateOf(false) }
     var composerText by remember { mutableStateOf("") }
     var attachedSkill by remember { mutableStateOf<String?>(null) }
@@ -167,10 +161,6 @@ fun ChatScreen(
     if (showContext) {
         ContextUsageDialog(state = state, onDismiss = { showContext = false })
     }
-    // System folder picker for adding a SAF workspace from chat.
-    val safWorkspacePicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree(),
-    ) { uri: Uri? -> uri?.let { viewModel.addSafWorkspace(it) } }
     if (showModelPicker) {
         ModelPickerSheet(
             providers = state.providers,
@@ -205,47 +195,6 @@ fun ChatScreen(
             onSetActive = viewModel::setActiveProvider,
             onDelete = viewModel::deleteProvider,
             onSave = viewModel::upsertProvider,
-        )
-    }
-    if (showWorkspaceSwitcher) {
-        val workspaces by viewModel.workspaces.collectAsStateWithLifecycle(initialValue = emptyList())
-        val activeWorkspace by viewModel.activeWorkspace.collectAsStateWithLifecycle(initialValue = null)
-        WorkspaceSwitcherSheet(
-            projects = workspaces,
-            currentProjectId = activeWorkspace?.id,
-            describe = viewModel::workspaceDescription,
-            onSelect = viewModel::setWorkspace,
-            onAdd = { showAddWorkspace = true },
-            onDismiss = { showWorkspaceSwitcher = false },
-            onDelete = { pendingDeleteWorkspace = it },
-        )
-    }
-    pendingDeleteWorkspace?.let { project ->
-        AlertDialog(
-            onDismissRequest = { pendingDeleteWorkspace = null },
-            title = { Text("Delete workspace?") },
-            text = { Text("Remove \"${project.name}\" from the list? Files on disk are not deleted.") },
-            confirmButton = {
-                TextButton(onClick = {
-                    scope.launch {
-                        viewModel.container.workspace.deleteProject(project)
-                        pendingDeleteWorkspace = null
-                    }
-                }) { Text("Delete", color = MaterialTheme.colorScheme.error) }
-            },
-            dismissButton = {
-                TextButton(onClick = { pendingDeleteWorkspace = null }) { Text("Cancel") }
-            },
-        )
-    }
-    if (showAddWorkspace) {
-        com.androidharness.app.ui.common.AddWorkspaceDialog(
-            container = viewModel.container,
-            onDismiss = { showAddWorkspace = false },
-            onPickSaf = {
-                showAddWorkspace = false
-                safWorkspacePicker.launch(null)
-            },
         )
     }
     if (state.showCostDialog) {
@@ -567,7 +516,6 @@ fun ChatScreen(
                 onSetMode = viewModel::setMode,
                 onOpenContext = { showContext = true },
                 onOpenUndo = { showUndoDialog = true },
-                onSwitchWorkspace = { showWorkspaceSwitcher = true },
                 onOpenFiles = onOpenFiles,
             )
         },

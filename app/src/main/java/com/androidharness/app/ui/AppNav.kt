@@ -405,15 +405,6 @@ fun AppNav(container: AppContainer) {
                         },
                     )
                     DrawerRow(
-                        icon = { Icon(Icons.Outlined.Folder, contentDescription = null) },
-                        title = "Workspace files",
-                        subtitle = "Browse and open project files",
-                        onClick = {
-                            scope.launch { drawerState.close() }
-                            nav.navigate("files")
-                        },
-                    )
-                    DrawerRow(
                         icon = { Icon(Icons.Outlined.Hub, contentDescription = null) },
                         title = "Providers",
                         subtitle = run {
