@@ -57,6 +57,8 @@ class QuestionRequest(
     val callId: String,
     val question: String,
     val options: List<String>,
+    /** Checkbox UI: the user may pick several options at once. */
+    val multiSelect: Boolean = false,
 ) {
     val response = CompletableDeferred<String>()
 }
@@ -501,8 +503,15 @@ class AgentEngine(
                     ?: a["query"]?.jsonPrimitive?.contentOrNull
             }?.takeIf { it.isNotBlank() }
                 ?: return ToolResult(false, "ask_user requires a question.")
+            val multiSelect = args["multi_select"]?.jsonPrimitive
+                ?.takeIf { it !is kotlinx.serialization.json.JsonNull }?.content == "true"
             val options = parseAskUserOptions(args["options"])
-            val request = QuestionRequest(call.id, question, options.take(4))
+            val request = QuestionRequest(
+                call.id,
+                question,
+                options.take(if (multiSelect) 8 else 4),
+                multiSelect = multiSelect,
+            )
             emitEvent(AgentEvent.QuestionNeeded(request))
             val answer = request.response.await()
             return ToolResult(true, "The user answered: $answer")

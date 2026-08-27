@@ -13,13 +13,18 @@ class AskUserTool : Tool {
         "Ask the user a clarifying question and wait for their answer. Use this whenever " +
         "a decision is genuinely the user's to make instead of guessing. You may call ask_user " +
         "several times in the same turn to gather everything you need before acting. " +
-        "Provide 2-4 short options when possible; the user can also type a free-form answer."
+        "Provide 2-4 short options when possible; the user can also type a free-form answer. " +
+        "Set multi_select=true when several answers can be true at once (the user gets " +
+        "checkboxes instead of single-choice chips); offer up to 8 options then."
     override val parametersSchema = Schema.obj(
         mapOf(
             "question" to Schema.string("The question to show the user."),
             "options" to Schema.array(
                 Schema.string("One possible answer."),
-                "Optional suggested answers (2-4).",
+                "Optional suggested answers (2-4, or up to 8 with multi_select).",
+            ),
+            "multi_select" to Schema.boolean(
+                "Allow the user to pick several options at once (checkboxes). Default false.",
             ),
         ),
         required = listOf("question"),

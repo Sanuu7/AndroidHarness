@@ -187,7 +187,9 @@ object SlashCommands {
 
     /**
      * Slash-menu tap. Skills become a composer badge and never send.
-     * Snippets still drop into the box as text. Local commands fire now.
+     * Snippets still drop into the box as text. /plan drops into the box too —
+     * the user finishes the instruction and sends manually. Other local
+     * commands fire now.
      */
     fun pickAction(entryCommand: String, typedQuery: String, kind: Kind): Pick {
         if (kind == Kind.SKILL) {
@@ -195,6 +197,11 @@ object SlashCommands {
                 typedQuery.removePrefix(entryCommand).trim()
             } else ""
             return Pick.AttachSkill(entryCommand.removePrefix("/"), leftover)
+        }
+        if (kind == Kind.PLAN) {
+            // Stay in the composer: "/plan" stays put so the user can append
+            // the instruction and hit send themselves. No auto-send.
+            return Pick.Insert("$entryCommand ")
         }
         if (kind == Kind.SNIPPET) {
             val rest = if (typedQuery.startsWith(entryCommand)) {

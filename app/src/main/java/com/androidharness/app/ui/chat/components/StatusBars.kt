@@ -295,7 +295,10 @@ internal fun SlashSuggestions(
             add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
             add(SlashEntry("/plan", "Plan mode", "Load the plan skill and switch to Plan mode", SlashCommands.Kind.PLAN))
             add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
-            state.skills.filter { it.enabled }.forEach { skill ->
+            // "plan" is excluded: the built-in /plan entry above already covers
+            // it (activates Plan mode + loads the plan skill) — showing the
+            // skill too used to list /plan twice.
+            state.skills.filter { it.enabled && it.name != "plan" }.forEach { skill ->
                 add(SlashEntry("/${skill.name}", skill.name, skill.description, SlashCommands.Kind.SKILL))
             }
             state.snippets.forEach { snippet ->

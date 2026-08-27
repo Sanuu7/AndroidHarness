@@ -1,6 +1,7 @@
 package com.androidharness.app.ui.chat.components
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -170,7 +172,17 @@ internal fun QuestionCard(
     onAnswer: (String) -> Unit,
 ) {
     var freeText by remember { mutableStateOf("") }
+    var selected by remember(question.callId) { mutableStateOf(setOf<Int>()) }
     val scheme = MaterialTheme.colorScheme
+    val answerText: () -> String = {
+        val picks = selected.sorted().mapNotNull { question.options.getOrNull(it) }
+        (picks + listOf(freeText.trim()).filter { it.isNotBlank() }).joinToString("; ")
+    }
+    val answerReady = if (question.multiSelect) {
+        selected.isNotEmpty() || freeText.isNotBlank()
+    } else {
+        freeText.isNotBlank()
+    }
     ActionCard(
         title = question.question,
         actions = {
@@ -178,41 +190,74 @@ internal fun QuestionCard(
                 value = freeText,
                 onValueChange = { freeText = it },
                 modifier = Modifier.weight(1f),
-                placeholder = { Text("Answer…") },
+                placeholder = { Text(if (question.multiSelect) "Add a note…" else "Answer…") },
                 singleLine = true,
                 shape = MaterialTheme.shapes.medium,
                 textStyle = MaterialTheme.typography.bodyMedium,
             )
             IconButton(
-                onClick = { if (freeText.isNotBlank()) onAnswer(freeText) },
-                enabled = freeText.isNotBlank(),
+                onClick = { if (answerReady) onAnswer(answerText()) },
+                enabled = answerReady,
             ) {
                 Icon(
                     Icons.AutoMirrored.Filled.Send,
                     contentDescription = "Send answer",
-                    tint = if (freeText.isNotBlank()) scheme.primary else scheme.onSurfaceVariant,
+                    tint = if (answerReady) scheme.primary else scheme.onSurfaceVariant,
                 )
             }
         },
     ) {
-        if (question.options.isNotEmpty()) {
-            FlowRow(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-            ) {
-                question.options.forEach { option ->
-                    Surface(
-                        color = scheme.surface,
-                        contentColor = scheme.onSurface,
-                        shape = MaterialTheme.shapes.medium,
-                        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
-                        onClick = { onAnswer(option) },
+        when {
+            question.multiSelect && question.options.isNotEmpty() -> {
+                Text(
+                    "Select all that apply",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurfaceVariant,
+                )
+                question.options.forEachIndexed { idx, option ->
+                    val checked = idx in selected
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable {
+                                selected = if (checked) selected - idx else selected + idx
+                            }
+                            .padding(vertical = 2.dp),
                     ) {
+                        Checkbox(
+                            checked = checked,
+                            onCheckedChange = {
+                                selected = if (checked) selected - idx else selected + idx
+                            },
+                        )
                         Text(
                             option,
-                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
-                            style = MaterialTheme.typography.labelLarge,
+                            style = MaterialTheme.typography.bodyMedium,
+                            modifier = Modifier.weight(1f),
                         )
+                    }
+                }
+            }
+            question.options.isNotEmpty() -> {
+                FlowRow(
+                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                ) {
+                    question.options.forEach { option ->
+                        Surface(
+                            color = scheme.surface,
+                            contentColor = scheme.onSurface,
+                            shape = MaterialTheme.shapes.medium,
+                            border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
+                            onClick = { onAnswer(option) },
+                        ) {
+                            Text(
+                                option,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 7.dp),
+                                style = MaterialTheme.typography.labelLarge,
+                            )
+                        }
                     }
                 }
             }
