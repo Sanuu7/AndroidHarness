@@ -36,7 +36,19 @@ class KeyStoreManager(context: Context) {
         prefs.edit().remove(KEY_GITHUB).apply()
     }
 
+    /** GitHub login name captured when a token was verified against /user. */
+    fun putGitHubLogin(login: String) {
+        prefs.edit().putString(KEY_GITHUB_LOGIN, login.trim()).apply()
+    }
+
+    fun githubLogin(): String? = prefs.getString(KEY_GITHUB_LOGIN, null)?.trim()?.ifBlank { null }
+
+    fun removeGitHubLogin() {
+        prefs.edit().remove(KEY_GITHUB_LOGIN).apply()
+    }
+
     private companion object {
         const val KEY_GITHUB = "github_pat"
+        const val KEY_GITHUB_LOGIN = "github_login"
     }
 }
