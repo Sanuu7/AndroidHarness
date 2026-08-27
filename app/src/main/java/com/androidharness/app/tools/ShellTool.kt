@@ -47,9 +47,13 @@ class ShellTool(
                     "This workspace has no real filesystem path, so the shell cannot run here. " +
                         "Switch to a device folder or the app workspace (Settings → Workspace).",
                 )
-            val cwd = resolveCwd(args, root)
+            val cwd =
+                if (ctx.sandboxOff) resolveCwdUnchecked(args, root)
+                else resolveCwd(args, root)
 
-            val deny = ShellPolicy.denyReason(rawCommand, root, cwd)
+            // Full access skips the denylist re-check; the engine already
+            // gated this call against the same policy.
+            val deny = if (ctx.sandboxOff) null else ShellPolicy.denyReason(rawCommand, root, cwd)
             if (deny != null) {
                 return@withContext ToolResult(false, deny)
             }
@@ -117,6 +121,21 @@ class ShellTool(
         if (!canonical.path.startsWith(canonicalRoot.path)) {
             throw ToolFailure("cwd is outside the workspace and was blocked: $rel")
         }
+        if (!canonical.exists()) throw ToolFailure("cwd does not exist: $rel")
+        if (!canonical.isDirectory) throw ToolFailure("cwd is not a directory: $rel")
+        return canonical
+    }
+
+    /** Full access variant: any absolute or escaping cwd resolves unchecked. */
+    private fun resolveCwdUnchecked(args: JsonObject, root: File): File {
+        val rel = args["cwd"]?.jsonPrimitive?.content?.trim()
+            ?.removePrefix("./")?.trimEnd('/')
+            ?: return root
+        if (rel.isEmpty()) return root
+        // Same resolution rule as UnboundedFileFs: absolute straight through,
+        // relative against "/" so escapes climb freely.
+        val dir = if (rel.startsWith('/')) File(rel) else File("/", rel)
+        val canonical = dir.canonicalFile
         if (!canonical.exists()) throw ToolFailure("cwd does not exist: $rel")
         if (!canonical.isDirectory) throw ToolFailure("cwd is not a directory: $rel")
         return canonical

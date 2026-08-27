@@ -26,6 +26,7 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.QueryStats
@@ -290,6 +291,7 @@ internal fun MainHeader(
                                 Icons.Outlined.Shield,
                                 contentDescription = null,
                                 tint = when (permissionMode) {
+                                    PermissionMode.FULL_ACCESS -> FullAccessOrange
                                     PermissionMode.FULL_AUTO -> scheme.error
                                     PermissionMode.CONFIRM_RISKY -> scheme.primary
                                     PermissionMode.CONFIRM_ALL -> scheme.onSurfaceVariant
@@ -352,9 +354,19 @@ internal fun MainHeader(
                     PermissionMode.entries.forEach { entry ->
                         DropdownMenuItem(text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(entry.label, Modifier.weight(1f))
+                                Text(
+                                    entry.label,
+                                    Modifier.weight(1f),
+                                    color = if (entry == PermissionMode.FULL_ACCESS) FullAccessOrange
+                                    else Color.Unspecified,
+                                )
                                 if (entry == permissionMode) {
-                                    Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
+                                    Icon(
+                                        Icons.Filled.Check,
+                                        contentDescription = "Selected",
+                                        tint = if (entry == PermissionMode.FULL_ACCESS) FullAccessOrange
+                                        else scheme.primary,
+                                    )
                                 }
                             }
                         }, onClick = { onSetPermission(entry); permissionMenu = false })
@@ -365,3 +377,6 @@ internal fun MainHeader(
         HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
     }
 }
+
+/** Accent for the Full access permission mode — warning orange, distinct from error red. */
+internal val FullAccessOrange = Color(0xFFF59E0B)

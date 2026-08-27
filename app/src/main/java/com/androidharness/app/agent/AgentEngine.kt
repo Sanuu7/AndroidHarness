@@ -14,6 +14,7 @@ import com.androidharness.app.tools.FuzzyEdit
 import com.androidharness.app.tools.ToolContext
 import com.androidharness.app.tools.ToolRegistry
 import com.androidharness.app.tools.ToolResult
+import com.androidharness.app.workspace.UnboundedFileFs
 import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
@@ -35,6 +36,8 @@ enum class PermissionMode(val label: String) {
     CONFIRM_ALL("Confirm everything"),
     CONFIRM_RISKY("Confirm risky actions"),
     FULL_AUTO("Full auto"),
+    /** Every sandbox layer off: no approvals, no shell denylist, no path containment. */
+    FULL_ACCESS("Full access"),
 }
 
 /** ACT executes tools; PLAN only allows inspection and must end with a plan. */
@@ -172,7 +175,10 @@ class AgentEngine(
         // cross-coroutine emission even when serialized, channelFlow exists
         // for exactly this. The local shim keeps every emit(...) call site.
         suspend fun emit(event: AgentEvent) = send(event)
-        val systemPrompt = systemPrompt(workspace, mode)
+        // Rebuilt when Full access toggles, because the path rules the model
+        // is told about change with it.
+        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false)
+        var promptSandboxOff = false
         val tools = registry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
         val working = trimHistory(
             ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
@@ -207,6 +213,24 @@ class AgentEngine(
             val shrunk = ContextHygiene.shrinkToolResults(working)
             working.clear()
             working.addAll(shrunk)
+
+            // Read once per round, so a mid-run mode switch applies here;
+            // Full access additionally lifts every sandbox layer for the
+            // tools this round executes.
+            val effectiveMode = permissionMode()
+            val sandboxOff = effectiveMode == PermissionMode.FULL_ACCESS
+            if (sandboxOff != promptSandboxOff) {
+                promptSandboxOff = sandboxOff
+                systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff)
+            }
+            // Open path resolution only exists on real-filesystem workspaces;
+            // SAF has no shell root and stays inside its picked tree.
+            val execWorkspace =
+                if (sandboxOff && !workspace.isSaf && workspace.shellRoot != null) {
+                    UnboundedFileFs(workspace.shellRoot!!)
+                } else {
+                    workspace
+                }
 
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, systemPrompt)
@@ -337,7 +361,7 @@ class AgentEngine(
                         async {
                             android.util.Log.d("HarnessSpawn", "task ${call.id} START ${System.currentTimeMillis()}")
                             val result = executeWithPermission(
-                                call, permissionMode(), sessionAllowedTools, workspace,
+                                call, effectiveMode, sessionAllowedTools, execWorkspace,
                                 sessionId, turnId, mode, requestOptions, config, apiKey,
                                 serialEmit,
                             )
@@ -351,7 +375,7 @@ class AgentEngine(
             for (call in otherCalls) {
                 emit(AgentEvent.ToolStarted(call))
                 results[call.id] = executeWithPermission(
-                    call, permissionMode(), sessionAllowedTools, workspace,
+                    call, effectiveMode, sessionAllowedTools, execWorkspace,
                     sessionId, turnId, mode, requestOptions, config, apiKey,
                 ) { emit(it) }
             }
@@ -415,7 +439,10 @@ class AgentEngine(
             }.getOrNull()
             val prompt = args?.get("prompt")?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
                 ?: return ToolResult(false, "task requires a prompt.")
-            return runSubagent(prompt, call.id, config, apiKey, workspace, requestOptions, emitEvent)
+            return runSubagent(
+                prompt, call.id, config, apiKey, workspace, requestOptions, emitEvent,
+                sandboxOff = mode == PermissionMode.FULL_ACCESS,
+            )
         }
 
         // Commands that need real toolchains (git/python/node/…) prompt the user
@@ -476,13 +503,17 @@ class AgentEngine(
             com.androidharness.app.tools.ShellPolicy.commandOf(call.argumentsJson)
         } else null
         val root = workspace.shellRoot
-        com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty(), root, root)?.let { reason ->
-            if (call.name == "shell" || call.name == "shell_background") {
-                return ToolResult(false, reason)
+        // Full access skips the shell denylist entirely — that is the point of the mode.
+        if (mode != PermissionMode.FULL_ACCESS) {
+            com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty(), root, root)?.let { reason ->
+                if (call.name == "shell" || call.name == "shell_background") {
+                    return ToolResult(false, reason)
+                }
             }
         }
         val grantKey = com.androidharness.app.tools.ShellPolicy.grantKey(call.name, command)
         val approved = when {
+            mode == PermissionMode.FULL_ACCESS -> true
             com.androidharness.app.tools.ShellPolicy.isGranted(call.name, command, sessionAllowedTools) -> true
             mode == PermissionMode.FULL_AUTO -> true
             mode == PermissionMode.CONFIRM_RISKY && tool.isReadOnly -> true
@@ -518,7 +549,7 @@ class AgentEngine(
 
         val startedAt = System.currentTimeMillis()
         val executed = try {
-            val raw = tool.execute(args, ToolContext(workspace))
+            val raw = tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS))
             raw.copy(output = com.androidharness.app.tools.SecretRedactor.redact(raw.output))
         } catch (ce: CancellationException) {
             throw ce
@@ -668,6 +699,7 @@ class AgentEngine(
         workspace: WorkspaceFs,
         requestOptions: RequestOptions,
         emitEvent: suspend (AgentEvent) -> Unit,
+        sandboxOff: Boolean = false,
     ): ToolResult {
         suspend fun step(line: String) = emitEvent(AgentEvent.SubagentStep(parentCallId, line))
         step("Task: ${prompt.take(80)}")
@@ -687,7 +719,7 @@ class AgentEngine(
         // No separate budget quota here: capping output made reasoning models
         // burn the cap on thinking before ever answering (reasoning streamed,
         // no answer). Subagents get the main loop's full output budget.
-        val ctx = ToolContext(workspace)
+        val ctx = ToolContext(workspace, sandboxOff)
 
         var iteration = 0
         var nudged = false
@@ -993,7 +1025,7 @@ class AgentEngine(
         return hints.distinct()
     }
 
-    private fun systemPrompt(workspace: WorkspaceFs, mode: AgentMode): String {
+    private fun systemPrompt(workspace: WorkspaceFs, mode: AgentMode, fullAccess: Boolean): String {
         val agentsFile = readWorkspaceDoc(workspace, "AGENTS.md")
             ?: readWorkspaceDoc(workspace, "HARNESS.md")
         val memory = readWorkspaceDoc(workspace, "memory")
@@ -1039,6 +1071,11 @@ Rules:
                 "If a basic command fails with \"Permission denied\" or exit code 126/127, the environment is misconfigured on this device: run the env_status tool once, tell the user what it reports, and stop retrying command variants.\n",
         )
         sb.append("- /data/local/tmp is readable only by the shell user: never try to inspect it from the app tier, and never conclude Shizuku/toolchain state from files there; use env_status.\n")
+        if (fullAccess) {
+            sb.append(
+                "- FULL ACCESS MODE is active: the workspace sandbox is lifted. File tools may read and write ANY path on the device (absolute paths work), the shell has no command denylist, and cwd may be any directory. The user chose this deliberately — no permission prompts will appear. Work outside the workspace only when the task requires it, and stay careful with system directories (/system, /data/system, /vendor): a mistake there can break the device.\n",
+            )
+        }
         sb.append("- After tool calls complete, either continue with more tool calls or give the user a concise summary of what you did.\n")
         sb.append("- Never invent file contents you have not read.\n")
 

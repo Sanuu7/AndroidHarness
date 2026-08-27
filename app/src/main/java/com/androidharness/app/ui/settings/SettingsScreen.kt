@@ -70,6 +70,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
@@ -77,6 +78,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ThemeMode
+import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.data.env.UserServiceState
@@ -965,12 +967,22 @@ private fun DropdownSetting(
         Box {
             DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 entries.forEach { (value, entryLabel) ->
+                    val isFullAccess = value == PermissionMode.FULL_ACCESS.name
                     DropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(entryLabel, Modifier.weight(1f))
+                                Text(
+                                    entryLabel,
+                                    Modifier.weight(1f),
+                                    color = if (isFullAccess) FullAccessOrange else Color.Unspecified,
+                                )
                                 if (entryLabel == current) {
-                                    Icon(Icons.Outlined.CheckCircle, contentDescription = null, tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(18.dp))
+                                    Icon(
+                                        Icons.Outlined.CheckCircle,
+                                        contentDescription = null,
+                                        tint = if (isFullAccess) FullAccessOrange else MaterialTheme.colorScheme.primary,
+                                        modifier = Modifier.size(18.dp),
+                                    )
                                 }
                             }
                         },

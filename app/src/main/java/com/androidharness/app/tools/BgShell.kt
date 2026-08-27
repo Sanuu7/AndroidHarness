@@ -35,7 +35,9 @@ class ShellBackgroundTool(
                         "start here. Switch to a device folder or the app workspace.",
                 )
 
-            val deny = ShellPolicy.denyReason(rawCommand, cwd, cwd)
+            // Full access skips the denylist re-check; the engine already
+            // gated this call against the same policy.
+            val deny = if (ctx.sandboxOff) null else ShellPolicy.denyReason(rawCommand, cwd, cwd)
             if (deny != null) {
                 return@withContext ToolResult(false, deny)
             }

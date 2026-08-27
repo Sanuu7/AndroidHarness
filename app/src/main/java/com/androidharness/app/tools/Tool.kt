@@ -10,6 +10,12 @@ import kotlinx.serialization.json.putJsonObject
 
 data class ToolContext(
     val workspace: WorkspaceFs,
+    /**
+     * Full access mode: tool-internal sandbox layers (shell denylist re-check,
+     * cwd containment) are off. The engine has already gated this; tools only
+     * honor it, they never enable it themselves.
+     */
+    val sandboxOff: Boolean = false,
 )
 
 data class ToolResult(

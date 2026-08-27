@@ -91,7 +91,20 @@ class FileFs(private val root: File) : WorkspaceFs {
 
 class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsNode {
     override val relPath: String
-        get() = rootPath.relativize(file.canonicalFile.toPath()).toString().ifBlank { "." }
+        get() {
+            // Full access mode resolves nodes outside this root; relativizing
+            // then throws (other drive) or yields an ugly "../.." climb.
+            // Render those as their absolute path instead.
+            val rel = runCatching {
+                rootPath.relativize(file.canonicalFile.toPath()).toString()
+            }.getOrNull()
+            return when {
+                rel == null -> file.absolutePath
+                rel.isBlank() -> "."
+                rel.startsWith("..") -> file.absolutePath
+                else -> rel
+            }
+        }
     override val name: String get() = file.name
     override val exists: Boolean get() = file.exists()
     override val isDirectory: Boolean get() = file.isDirectory
@@ -143,6 +156,46 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
         } catch (_: Exception) {
             false
         }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Unbounded filesystem (Full access mode)
+// ---------------------------------------------------------------------------
+
+/**
+ * Full access mode's [WorkspaceFs]: behaves like [FileFs] except the path
+ * containment check is lifted — `../` escapes resolve to their real
+ * locations anywhere the app uid (or Shizuku) can reach, and absolute paths
+ * go straight through. Relative paths still anchor at the workspace root so
+ * the model's everyday read_file("src/x.kt") calls land where they always
+ * did; only the guard is gone. The shell root stays the original workspace.
+ */
+class UnboundedFileFs(root: File) : WorkspaceFs {
+    private val delegate = FileFs(root)
+    private val rootPath: java.nio.file.Path = root.canonicalFile.toPath()
+
+    override val displayPath: String get() = delegate.displayPath
+    override val shellRoot: File get() = delegate.shellRoot
+    override val isSaf: Boolean get() = false
+
+    private fun openResolve(path: String): File {
+        if (path.startsWith('/')) return File(path).canonicalFile
+        return rootPath.resolve(path).normalize().toFile().canonicalFile
+    }
+
+    override fun resolve(path: String): FsNode =
+        FileFsNode(openResolve(path), rootPath)
+
+    override fun walk(path: String): Sequence<FsNode> {
+        val file = openResolve(path)
+        if (!file.exists()) throw ToolFailure("Path does not exist: $path")
+        if (file.isFile) return sequenceOf(FileFsNode(file, rootPath))
+        return file.walkTopDown()
+            .onEnter { dir -> !WorkspaceIgnore.shouldSkipEnter(path, dir.name) }
+            .asSequence()
+            .map { f -> FileFsNode(f, rootPath) }
+            .filter { n -> !n.isFile || !WorkspaceIgnore.shouldSkip(n.relPath, path) }
     }
 }
 
