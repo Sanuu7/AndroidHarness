@@ -62,26 +62,31 @@ class EnvStatusTool(
         } ?: "(not provisioned yet)"
         // Tool-contract probe: "installed ✓" must mean the headline tools the
         // skills and UI promise actually exist, not just that the marker file
-        // does. Presence check (not exec) — app-uid binaries only run through
+        // does. Presence check (not exec); app-uid binaries only run through
         // the harness shell.
         val probeRoot =
             if (tier == ExecutionTier.PRIVILEGED && shizuku.isTmpPrefixDeployed())
                 java.io.File(com.androidharness.app.data.env.LinuxEnvironmentManager.TMP_PREFIX_BASE, "linux")
             else linuxEnv.prefix
+        // Bug 4 fix: probe the REAL binary names. The toolchain installs
+        // python3 (there is no plain "python"), and npm is a runner script
+        // that execs node, so bin/npm alone is not proof npm works.
         val headlineTools = listOf(
             "bash" to listOf("bin/bash"),
             "git" to listOf("bin/git"),
-            "python" to listOf("bin/python3", "bin/python"),
+            "python3" to listOf("bin/python3", "bin/python"),
             "node" to listOf("bin/node"),
             "npm" to listOf("bin/npm"),
             "pip" to listOf("bin/pip", "bin/pip3"),
         )
+        val nodePresent = java.io.File(probeRoot, "bin/node").exists()
         val missing = headlineTools.filter { (name, rels) ->
-            rels.none { java.io.File(probeRoot, it).exists() }
+            if (name == "npm" && !nodePresent) true
+            else rels.none { java.io.File(probeRoot, it).exists() }
         }.map { it.first }
         val envText = when {
             !linuxEnv.isReady -> "not installed"
-            missing.isEmpty() -> "installed ✓ (bash, git, python, node, npm, pip all present)"
+            missing.isEmpty() -> "installed ✓ (bash, git, python3, node, npm, pip all present)"
             else -> "installed ⚠ missing: " + missing.joinToString(", ")
         }
         return ToolResult(
@@ -93,7 +98,7 @@ class EnvStatusTool(
                     .append(if (tlsBundle.isFile) "ready at ${tlsBundle.absolutePath} ✓" else "missing; falling back to system anchors")
                     .append("; SSL_CERT_FILE/CURL_CA_BUNDLE/REQUESTS_CA_BUNDLE/GIT_SSL_CAINFO/NODE_EXTRA_CA_CERTS are exported to every shell\n")
                 append("Exec-capable scratch (Bug 2 fix): ").append(scratch)
-                    .append(" — extract JDK/Gradle/native tarballs HERE, never into shared storage (no exec bits, no symlinks); the env var HARNESS_SCRATCH is exported to every shell")
+                    .append(": extract JDK/Gradle/native tarballs HERE, never into shared storage (no exec bits, no symlinks); the env var HARNESS_SCRATCH is exported to every shell")
                     .append('\n')
                 append("Storage: ").append(storage).append('\n')
                 append("Active shell tier: ").append(tierText).append('\n')

@@ -142,7 +142,7 @@ class PatchToolsTest {
             """.trimIndent(),
         )
         assertTrue(r.output, r.ok)
-        // exactly one trailing newline — no doubled newline
+        // exactly one trailing newline - no doubled newline
         assertEquals("one\nTWO\n", file("f.txt").readText())
     }
 
@@ -248,6 +248,141 @@ class PatchToolsTest {
             """.trimIndent(),
         )
         assertTrue(msg, msg.contains("does not match the file contents"))
+    }
+
+    // --- BUG: atomicity across hunks (validate-then-commit) ------------------
+
+    @Test
+    fun `failing second hunk leaves file untouched and names the bad hunk`() {
+        // The original repro: hunk 1 is valid, hunk 2 has garbage context that
+        // matches nothing. The old code applied hunk 1 and reported success.
+        write(
+            "m.txt",
+            "duplicate line\nunique line here\nSECOND HUNK SHOULD FAIL\n",
+        )
+        val msg = failingApply(
+            """
+            --- a/m.txt
+            +++ b/m.txt
+            @@ -1,3 +1,2 @@
+            -duplicate line
+             unique line here
+            @@ -3,1 +2,1 @@
+             garbage context that matches nothing
+            -SECOND HUNK SHOULD FAIL
+            +REPLACED
+            """.trimIndent(),
+        )
+        assertTrue(msg, msg.contains("NOT applied"))
+        assertTrue(msg, msg.contains("no hunk was written"))
+        assertTrue(msg, msg.contains("Hunk 2"))
+        // the valid first hunk must NOT have been applied
+        assertEquals(
+            "duplicate line\nunique line here\nSECOND HUNK SHOULD FAIL\n",
+            file("m.txt").readText(),
+        )
+    }
+
+    @Test
+    fun `multi-hunk patch is atomic with no partial application`() {
+        write("f.txt", "a\nb\nc\nd\n")
+        val msg = failingApply(
+            """
+            --- a/f.txt
+            +++ b/f.txt
+            @@ -1,1 +1,1 @@
+            -a
+            +A
+            @@ -3,1 +3,1 @@
+             nope
+            -c
+            +C
+            """.trimIndent(),
+        )
+        assertTrue(msg, msg.contains("Hunk 2"))
+        assertEquals("a\nb\nc\nd\n", file("f.txt").readText())
+    }
+
+    @Test
+    fun `failing hunk in second file blocks the first file write too`() {
+        write("good.txt", "one\n")
+        write("bad.txt", "x\n")
+        val msg = failingApply(
+            """
+            --- a/good.txt
+            +++ b/good.txt
+            @@ -1,1 +1,1 @@
+            -one
+            +ONE
+            --- a/bad.txt
+            +++ b/bad.txt
+            @@ -1,1 +1,1 @@
+             context that does not exist
+            -x
+            +y
+            """.trimIndent(),
+        )
+        assertTrue(msg, msg.contains("NOT applied"))
+        assertTrue(msg, msg.contains("bad.txt"))
+        assertEquals("one\n", file("good.txt").readText())
+    }
+
+    @Test
+    fun `dry run validates without writing`() {
+        write("f.txt", "one\ntwo\n")
+        val r = runBlocking {
+            ApplyPatchTool().execute(
+                buildJsonObject {
+                    put("patch", JsonPrimitive(
+                        "--- a/f.txt\n+++ b/f.txt\n@@ -1,2 +1,2 @@\n one\n-two\n+TWO",
+                    ))
+                    put("dry_run", JsonPrimitive(true))
+                },
+                ctx(),
+            )
+        }
+        assertTrue(r.output, r.ok)
+        assertTrue(r.output, r.output.contains("dry run"))
+        assertEquals("one\ntwo\n", file("f.txt").readText())
+    }
+
+    @Test
+    fun `dry run on bad hunk fails and writes nothing`() {
+        write("f.txt", "one\ntwo\n")
+        val msg = failingApply(
+            """
+            --- a/f.txt
+            +++ b/f.txt
+            @@ -1,2 +1,2 @@
+             missing context
+            -two
+            +TWO
+            """.trimIndent(),
+        )
+        assertTrue(msg, msg.contains("NOT applied"))
+        assertEquals("one\ntwo\n", file("f.txt").readText())
+    }
+
+    @Test
+    fun `successful multi-hunk patch reports hunk count and applies all`() {
+        write("f.txt", "a\nb\nc\nd\ne\nf\ng\nh\n")
+        val r = apply(
+            """
+            --- a/f.txt
+            +++ b/f.txt
+            @@ -1,2 +1,2 @@
+            -a
+            +A
+             b
+            @@ -7,2 +7,2 @@
+             g
+            -h
+            +H
+            """.trimIndent(),
+        )
+        assertTrue(r.output, r.ok)
+        assertTrue(r.output, r.output.contains("2 hunk(s) applied"))
+        assertEquals("A\nb\nc\nd\ne\nf\ng\nH\n", file("f.txt").readText())
     }
 
     @Test

@@ -17,14 +17,17 @@ Self-test battery verifying every tool family, sandbox bounds, regressions, and 
 Run the self-test battery checks in order:
 
 1. FILE CRUD & UNICODE:
-   - write_file "doctor/unicode.txt" containing: "café 中文 ✅\nwith tabs\there\n" (no trailing newline after 'here')
-   - read_file it back and confirm the 3 lines round-trip byte-identically
+   - write_file "doctor/unicode.txt" containing: "café 中文 ✅\nwith tabs\there\n"
+     NOTE: write_file normalizes to a POSIX trailing newline (documented behavior), so verify
+     with `tail -c 3 | xxd` that the file ends in exactly one \n; do NOT expect the file to stay
+     newline-less (that expectation caused false FAILs in earlier runs)
+   - read_file it back and confirm the 3 lines round-trip (identical modulo the one trailing newline)
    - move_file to "doctor/moved.txt", then delete_file it
    - create_dir "doctor/nested/deep" then delete_file "doctor" (recursive)
 
-2. SANDBOX BOUNDARIES (all must be BLOCKED):
+2. SANDBOX BOUNDARIES (all must be BLOCKED; SKIP when FULL ACCESS mode is on, record as DEVIATION):
    - write_file "../escape.txt"       → expect "outside the workspace" error
-   - read_file "/etc/hostname"        → expect "outside the workspace" error
+   - read_file "/etc/hostname"        → expect "outside the workspace" error (or "does not exist" on device userspaces)
    - write_file "doctor/../../esc.txt"→ expect "outside the workspace" error
 
 3. ROOT-DELETE GUARD (Bug #1 regression):
@@ -67,8 +70,14 @@ Run the self-test battery checks in order:
 
 10. GIT:
     - git init -q → must produce NO template warning (GIT_TEMPLATE_DIR set)
-    - git_commit one fixture → succeeds (Bug E regression: if it fails with "Author identity unknown", FAIL — harness should auto-configure or explain)
+    - git_commit one fixture → succeeds (Bug E regression: if it fails with "Author identity unknown", FAIL, harness should auto-configure or explain)
     - git_status / git_diff return clean output
+    NOTE: repo dirs created by the Shizuku shell user are owned uid=2000 while the app is u0_aXXX,
+    so PLAIN shell git commands inside such a repo may print "detected dubious ownership".
+    That is a git 2.35.2+ safety feature, not a harness bug; use `git -c safe.directory='*' ...`
+    in shell probes (the harness now exports GIT_CONFIG_GLOBAL with [safe] directory=* into every
+    shell, so this should no longer appear at all). The git_commit tool handles identity +
+    ownership automatically.
 
 11. WEB:
     - web_search (any query) returns results
@@ -83,9 +92,11 @@ Run the self-test battery checks in order:
     - memory_write (append) a test line, read back .harness/memory.md
     - skills_list returns the catalog; skill_view a known skill succeeds
 
-14. SHELL SANDBOX (Bug A regression — must be BLOCKED):
+14. SHELL SANDBOX (Bug A regression; must be BLOCKED; SKIP when FULL ACCESS mode is on, record as DEVIATION):
     - shell: echo INJECT > ../escape_me.txt → expect the file NOT created OUTSIDE the workspace
     - shell: ls /storage/emulated/0/ → expect listing of arbitrary shared-storage dirs to be refused (or clearly reported as out-of-scope)
+    NOTE: with Shizuku + All-Files-Access these writes legitimately succeed; delete any leaked
+    files (rm -f ../escape_me.txt) and mark DEVIATION, not FAIL.
 
 15. BINARY & EMPTY (Bug C/Bug D regression):
     - create a 4KB random file; read_file it → expect "binary" refusal (NOT mojibake lines)
@@ -97,4 +108,4 @@ Run the self-test battery checks in order:
 
 CLEANUP: delete doctor/ and every fixture created above (including ../escape_me.txt if it leaked); leave the workspace exactly as you found it.
 
-OUTPUT: a table of PASS/FAIL per check (1–16). For any FAIL, quote the exact error message and note which regression it maps to (Bug #1/#2/#3/#A/#B/#C/#D/#E/#F).
+OUTPUT: a table of PASS/FAIL per check (1-16). For any FAIL, quote the exact error message and note which regression it maps to (Bug #1/#2/#3/#A/#B/#C/#D/#E/#F).

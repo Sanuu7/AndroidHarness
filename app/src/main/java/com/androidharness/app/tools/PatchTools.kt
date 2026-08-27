@@ -92,14 +92,21 @@ class ApplyPatchTool : Tool {
     override val description =
         "Apply a unified diff to the workspace. Format: '--- a/path', '+++ b/path', '@@ ...' hunks. " +
             "Use '--- /dev/null' to create a file and '+++ /dev/null' to delete one. " +
+            "The whole patch is validated first: if ANY hunk fails to match, nothing is written " +
+            "and every failing hunk is reported by number and reason (atomic across hunks and files). " +
             "Context lines must match the CURRENT file contents (whitespace drift is tolerated); " +
             "a trailing newline terminates the last line, so never end a hunk with an extra empty " +
-            "context line for the file's final newline. Hunks are matched against the file as it " +
-            "exists when this call runs — if earlier edits in the same turn changed the file, " +
+            "context line for the file's final newline. Set dry_run=true to validate only. " +
+            "Hunks are matched against the file as it exists when this call runs; " +
+            "if earlier edits in the same turn changed the file, " +
             "re-read it and rebuild the patch instead of reusing a pre-computed diff."
     override val parametersSchema = Schema.obj(
         mapOf(
             "patch" to Schema.string("The complete unified diff text."),
+            "dry_run" to Schema.boolean(
+                "Validate the patch against current file contents and report what would change, " +
+                    "without writing anything. Defaults to false.",
+            ),
         ),
         required = listOf("patch"),
     )
@@ -109,42 +116,95 @@ class ApplyPatchTool : Tool {
         withContext(Dispatchers.IO) {
             val patch = args["patch"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: patch")
+            val dryRun = args["dry_run"]?.jsonPrimitive?.booleanOrNull ?: false
 
             val files = parsePatch(patch)
             if (files.isEmpty()) throw ToolFailure("No file sections found in the patch. Did you use --- a/path / +++ b/path headers?")
 
-            val results = mutableListOf<String>()
+            // Phase 1: compute every planned write against CURRENT content.
+            // Nothing touches the filesystem here: if any hunk (or a whole
+            // file section) fails, the whole patch is refused with a per-hunk
+            // report instead of half-applying it (the old behavior let hunk 1
+            // through and silently dropped the rest).
+            data class Plan(
+                val path: String,
+                val op: String, // create | delete | patch
+                val content: String? = null,
+                val hunksApplied: Int = 0,
+                val hunksTotal: Int = 0,
+            )
+            val plans = mutableListOf<Plan>()
+            val failures = mutableListOf<String>()
+
             for (filePatch in files) {
                 when {
                     filePatch.isNewFile -> {
                         val content = filePatch.hunks.flatMap { it.added }.joinToString("\n")
                         val final = if (content.isNotEmpty() && filePatch.newFileHasNewline) "$content\n" else content
-                        ctx.workspace.resolve(filePatch.path).writeText(final)
-                        results += "created ${filePatch.path}"
+                        val node = ctx.workspace.resolve(filePatch.path)
+                        if (node.exists) {
+                            failures += "${filePatch.path}: cannot create, it already exists (patch it instead or delete it first)"
+                        } else {
+                            plans += Plan(filePatch.path, "create", content = final)
+                        }
                     }
 
                     filePatch.isDelete -> {
                         val node = ctx.workspace.resolve(filePatch.path)
-                        if (!node.exists) throw ToolFailure("${filePatch.path} does not exist (cannot delete)")
-                        if (node.isDirectory) throw ToolFailure(
-                            "${filePatch.path} is a directory; delete it with delete_file instead",
-                        )
-                        node.delete()
-                        results += "deleted ${filePatch.path}"
+                        when {
+                            !node.exists ->
+                                failures += "${filePatch.path}: does not exist (cannot delete)"
+                            node.isDirectory ->
+                                failures += "${filePatch.path}: is a directory; delete it with delete_file instead"
+                            else -> plans += Plan(filePatch.path, "delete")
+                        }
                     }
 
                     else -> {
                         val node = ctx.workspace.resolve(filePatch.path)
                         if (!node.exists || !node.isFile) {
-                            throw ToolFailure("${filePatch.path} does not exist (create it first or use --- /dev/null)")
+                            failures += "${filePatch.path}: does not exist (create it first or use --- /dev/null)"
+                            continue
                         }
-                        val updated = applyHunks(node.readText(), filePatch.hunks, filePatch.path)
-                        node.writeText(updated)
-                        results += "patched ${filePatch.path} (${filePatch.hunks.size} hunk(s))"
+                        try {
+                            val applied = applyHunks(node.readText(), filePatch.hunks, filePatch.path)
+                            plans += Plan(filePatch.path, "patch", content = applied, hunksApplied = filePatch.hunks.size, hunksTotal = filePatch.hunks.size)
+                        } catch (e: ToolFailure) {
+                            failures += e.message ?: "unknown hunk failure in ${filePatch.path}"
+                        }
                     }
                 }
             }
-            ToolResult(true, results.joinToString("; "))
+
+            if (failures.isNotEmpty()) {
+                throw ToolFailure(
+                    "Patch NOT applied (atomic: no file was modified). " +
+                        failures.size + " of " + files.size + " file section(s) failed:\n" +
+                        failures.joinToString("\n") { "- $it" },
+                )
+            }
+
+            // Phase 2: commit (skipped entirely for dry runs). Only reached
+            // when every section validated.
+            val results = plans.map { p ->
+                if (!dryRun) {
+                    when (p.op) {
+                        "create" -> ctx.workspace.resolve(p.path).writeText(p.content ?: "")
+                        "delete" -> ctx.workspace.resolve(p.path).delete()
+                        else -> ctx.workspace.resolve(p.path).writeText(p.content ?: "")
+                    }
+                }
+                when (p.op) {
+                    "create" -> "created ${p.path}"
+                    "delete" -> "deleted ${p.path}"
+                    else -> "patched ${p.path} (${p.hunksApplied} hunk(s) applied)"
+                }
+            }
+            ToolResult(
+                true,
+                (if (dryRun) "[dry run: validated, nothing written] " else "") +
+                    results.joinToString("; "),
+            )
         }
 
     // -- parsing ---------------------------------------------------------
@@ -260,6 +320,18 @@ class ApplyPatchTool : Tool {
     private fun applyHunks(text: String, hunks: List<Hunk>, path: String): String {
         val endsWithNewline = text.endsWith("\n") || text.endsWith("\r")
         val current = splitLines(text).toMutableList()
+
+        // Pass 1: locate every hunk against the original text, simulating the
+        // size shift each earlier hunk contributes. All failures are collected
+        // so the error names EVERY bad hunk with its reason, and the caller
+        // never sees a partial application (atomic across hunks).
+        data class Resolved(
+            val lines: List<Pair<Char, String>>,
+            val expectedOld: List<String>,
+            val position: Int,
+        )
+        val resolved = mutableListOf<Resolved>()
+        val hunkFailures = mutableListOf<String>()
         var shift = 0
         for ((hunkIdx, hunk) in hunks.withIndex()) {
             var hunkLines = hunk.lines
@@ -283,21 +355,32 @@ class ApplyPatchTool : Tool {
 
             if (position == null) {
                 val newlineHint = if (!endsWithNewline) {
-                    " Note: $path does not end with a newline — make sure the hunk's last " +
+                    " Note: $path does not end with a newline, so make sure the hunk's last " +
                         "context/removed line matches the final line exactly and there is no extra " +
                         "empty context line at the end of the hunk."
                 } else ""
-                throw ToolFailure(
-                    "Hunk ${hunkIdx + 1} of $path does not match the file contents " +
-                        "(context mismatch near line ${hunk.oldStart}). Re-read the file and rebuild the patch " +
-                        "against its current contents.$newlineHint"
-                )
+                hunkFailures += "Hunk ${hunkIdx + 1} of $path does not match the file contents " +
+                    "(context mismatch near line ${hunk.oldStart}). Re-read the file and rebuild the patch " +
+                    "against its current contents.$newlineHint"
+                continue
             }
+            resolved += Resolved(hunkLines, expectedOld, position)
+            shift += hunkLines.count { it.first == '+' } - hunkLines.count { it.first == '-' }
+        }
 
-            // rebuild that region following +/- ordering
+        if (hunkFailures.isNotEmpty()) {
+            throw ToolFailure(
+                "Patch NOT applied to $path (${hunks.size} hunk(s), ${hunkFailures.size} failed; " +
+                    "no hunk was written):\n" + hunkFailures.joinToString("\n"),
+            )
+        }
+
+        // Pass 2: rebuild the regions, last hunk first so earlier positions
+        // stay valid without shift bookkeeping.
+        for (r in resolved.sortedByDescending { it.position }) {
             val newRegion = mutableListOf<String>()
-            var oldCursor = position
-            for ((mark, line) in hunkLines) {
+            var oldCursor = r.position
+            for ((mark, line) in r.lines) {
                 when (mark) {
                     ' ' -> {
                         newRegion += current[oldCursor]
@@ -307,11 +390,11 @@ class ApplyPatchTool : Tool {
                     '+' -> newRegion += line
                 }
             }
-            val endExclusive = position + expectedOld.size
-            for (k in endExclusive - 1 downTo position) current.removeAt(k)
-            current.addAll(position, newRegion)
-            shift += newRegion.size - expectedOld.size
+            val endExclusive = r.position + r.expectedOld.size
+            for (k in endExclusive - 1 downTo r.position) current.removeAt(k)
+            current.addAll(r.position, newRegion)
         }
+
         if (current.isEmpty()) return ""
         return current.joinToString("\n") + (if (endsWithNewline) "\n" else "")
     }

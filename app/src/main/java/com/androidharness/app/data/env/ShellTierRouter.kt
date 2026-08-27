@@ -67,7 +67,7 @@ class ShellTierRouter(
             PathClassifier.Region.SHARED_STORAGE,
             PathClassifier.Region.SYSTEM -> when {
                 // The shell uid can reach both /sdcard and system paths, and the
-                // deployed tmp toolchain execs normally — it's the best tier.
+                // deployed tmp toolchain execs normally, so it's the best tier.
                 shizuku.isGranted() -> ExecutionTier.PRIVILEGED
                 isAllFilesAccess() -> if (linuxEnv.isReady) ExecutionTier.APP_LINUX else ExecutionTier.TOYBOX
                 else -> if (linuxEnv.isReady) ExecutionTier.APP_LINUX else ExecutionTier.TOYBOX

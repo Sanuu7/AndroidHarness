@@ -117,7 +117,7 @@ class LinuxEnvironmentManager(private val context: Context) {
     /**
      * Real cwd for shell commands when the active workspace is a SAF folder.
      * Lives on shared storage (external files dir) so the Shizuku shell uid can
-     * enter it too — the old private-storage location is migrated once.
+     * enter it too, so the old private-storage location is migrated once.
      */
     val shellFallbackRoot: File = run {
         val newDir = File(context.getExternalFilesDir(null) ?: context.filesDir, "shell-workspace")
@@ -161,7 +161,7 @@ class LinuxEnvironmentManager(private val context: Context) {
     /** Base packages for a usable coding shell (git pulls its own deps). */
     val corePackages = listOf("bash", "busybox", "ca-certificates", "git")
 
-    /** Everything a coding agent may need — used by the chat install card. */
+    /** Everything a coding agent may need, used by the chat install card. */
     val fullPackages = corePackages + listOf("python", "python-pip", "nodejs", "npm")
 
     /** Installs [wanted] plus their full dependency closure. Resumes after interruptions. */
@@ -236,7 +236,7 @@ class LinuxEnvironmentManager(private val context: Context) {
 
     /**
      * What is missing from the installed environment, human-readable. Checks
-     * BOTH the package marker and the binaries on disk — a marker entry whose
+     * BOTH the package marker and the binaries on disk, so a marker entry whose
      * binary vanished counts as missing (that was the silent no-op bug).
      */
     fun checkMissing(): String {
@@ -264,7 +264,7 @@ class LinuxEnvironmentManager(private val context: Context) {
     /**
      * Update / check-missing: installs anything absent, and REINSTALLS
      * packages whose marker entry exists but whose binaries are gone (a
-     * half-broken prefix never repaired itself before — the button looked
+     * half-broken prefix never repaired itself before, so the button looked
      * dead). Returns true when the environment is Ready afterwards.
      */
     suspend fun updateEnvironment(): Boolean = withContext(Dispatchers.IO) {
@@ -312,6 +312,27 @@ class LinuxEnvironmentManager(private val context: Context) {
     }
 
     /**
+     * Bug 3 fix (existing installs): delete leftover Termux wrapper scripts
+     * in bin/ (pm, cmd, am, settings, ...) whose shebang points into the
+     * Termux prefix. Fresh installs never get them (filtered at extract);
+     * prefixes installed before the fix are cleaned here on app start so
+     * the real /system binaries stop being shadowed with exit 126.
+     */
+    private fun purgeDeadTermuxShims(): Int {
+        var removed = 0
+        val binDir = File(prefix, "bin")
+        binDir.listFiles()?.forEach { f ->
+            if (!f.isFile) return@forEach
+            if (f.isElf()) return@forEach
+            val firstLine = runCatching { f.bufferedReader().use { it.readLine() } }.getOrNull() ?: return@forEach
+            if (firstLine.trimStart().startsWith("#!/data/data/com.termux/")) {
+                if (runCatching { f.delete() }.getOrDefault(false)) removed++
+            }
+        }
+        return removed
+    }
+
+    /**
      * One-shot repair for existing installs: relink dangling symlinks and
      * install npm when the nodejs-only bundle predates it. A network failure
      * never demotes a Ready environment to Failed: the state is restored and
@@ -319,11 +340,13 @@ class LinuxEnvironmentManager(private val context: Context) {
      * nothing needed fixing.
      */
     suspend fun repairIfNeeded(): String? {
+        runCatching { gitGlobalConfig() }
         if (!marker.exists()) return null
         return withContext(Dispatchers.IO) {
             val relinked = repairLegacySymlinks()
+            val purged = purgeDeadTermuxShims()
             val npmMissing = needsRepair()
-            if (relinked == 0 && !npmMissing) return@withContext null
+            if (relinked == 0 && purged == 0 && !npmMissing) return@withContext null
             var npmNote: String? = null
             if (npmMissing) {
                 val wasReady = _state.value is EnvState.Ready
@@ -337,6 +360,10 @@ class LinuxEnvironmentManager(private val context: Context) {
             ensureShims()
             buildString {
                 if (relinked > 0) append("relinked ").append(relinked).append(" dangling symlinks")
+                if (purged > 0) {
+                    if (isNotEmpty()) append("; ")
+                    append("removed ").append(purged).append(" dead Termux shim(s) shadowing system binaries")
+                }
                 if (npmNote != null) append(if (isEmpty()) "" else "; ").append(npmNote)
             }.ifBlank { null }
         }
@@ -360,6 +387,12 @@ class LinuxEnvironmentManager(private val context: Context) {
         // Termux prefix. Without this, HTTPS clones die with
         // "remote helper 'https' aborted session".
         put("GIT_EXEC_PATH", File(prefix, "libexec/git-core").absolutePath)
+        // Bug 5 fix: a generated global config marks every repo safe, so
+        // plain shell git inside a uid=2000-owned checkout never hits
+        // "detected dubious ownership". Identity is NOT set here: the
+        // git_commit tool already auto-configures it per repo.
+        put("GIT_CONFIG_GLOBAL", gitGlobalConfig().absolutePath)
+        put("HARNESS_GIT_CONFIG", gitGlobalConfig().absolutePath)
         // bash sources this for `bash -c`: shims make every toolchain binary
         // runnable despite the W^X exec restriction on app-private files.
         if (shimFile.exists()) put("BASH_ENV", shimFile.absolutePath)
@@ -381,7 +414,7 @@ class LinuxEnvironmentManager(private val context: Context) {
     // extract. These scratch dirs live on filesystems that support both:
     //
     //  - SCRATCH_TMP (/data/local/tmp/androidharness-scratch): world-writable
-    //    tmpfs/ext4 — works for BOTH the app uid and the Shizuku shell uid.
+    //    tmpfs/ext4, which works for BOTH the app uid and the Shizuku shell uid.
     //  - the app-private mirror under /data/data/<pkg>/files/.harness-scratch:
     //    fallback when SELinux denies tmp access; the app-uid linker
     //    workaround makes binaries here runnable.
@@ -430,10 +463,25 @@ class LinuxEnvironmentManager(private val context: Context) {
     private fun gitTemplatesDir(): File =
         File(prefix, "share/git-core/templates").takeIf { it.isDirectory } ?: File("")
 
+    /**
+     * Bug 5 fix: global git config marking every repository safe.
+     * Created once per app start (and repaired if deleted), so plain shell
+     * git in repos owned by another uid (Shizuku writes as uid 2000, the
+     * app is u0_aXXX) never dies on "detected dubious ownership".
+     */
+    fun gitGlobalConfig(): File {
+        val f = File(prefix, "etc/gitconfig")
+        if (!f.exists() || !f.readText().contains("[safe]")) {
+            f.parentFile?.mkdirs()
+            f.writeText("[safe]\n\tdirectory = *\n")
+        }
+        return f
+    }
+
     // ------------------------------------------------------------------
     // W^X workaround: per-binary linker shims
     //
-    // On targetSdk 29+, execve() of app-data files is denied — only the
+    // On targetSdk 29+, execve() of app-data files is denied, so only the
     // outermost process can be launched via /system/bin/linker64. So a bare
     // `python3` or even `ls | head` from inside bash dies with EACCES. The
     // shim file defines a bash function per toolchain binary that re-routes
@@ -534,6 +582,10 @@ class LinuxEnvironmentManager(private val context: Context) {
         // Re-rooted git needs its exec helpers (git-remote-https etc.) pointed
         // at our deployed copy or HTTPS remotes abort with a missing helper.
         put("GIT_EXEC_PATH", "$TMP_PREFIX/libexec/git-core")
+        // Bug 5 fix: same safe.directory global config for the shell-uid
+        // tier, written under the deployed prefix.
+        put("GIT_CONFIG_GLOBAL", "$TMP_PREFIX/etc/gitconfig")
+        put("HARNESS_GIT_CONFIG", "$TMP_PREFIX/etc/gitconfig")
         // Bug 1 fix: the deployed copy carries its own CA bundle; export the
         // standard TLS vars so curl/python/git/node verify certificates.
         val tlsBundle = File("$TMP_PREFIX/etc/tls/cacert.pem")
@@ -560,14 +612,17 @@ class LinuxEnvironmentManager(private val context: Context) {
     private val stagingTar: File get() = File(stagingDir, "prefix.tar.gz")
     private val stagingMarker: File get() = File(stagingDir, ".harness-staged")
 
-    /** Hash of the installed package set — re-stage/re-deploy when it changes. */
-    fun packageSetHash(): String = ("v4-tls\n" + installedPackages().sorted().joinToString("\n"))
+    /** Hash of the installed package set, so it re-stages/re-deploys when it changes. */
+    fun packageSetHash(): String = ("v5-safegit\n" + installedPackages().sorted().joinToString("\n"))
         .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
     /** Writes (or refreshes) the staging tarball on shared storage. */
     fun stageForShell() {
         runCatching {
             if (!File(prefix, "bin/bash").exists()) return
+            // Bug 5 fix: the safe.directory config must exist before the
+            // prefix is tarred, or the deployed copy exports a missing file.
+            runCatching { gitGlobalConfig() }
             val hash = packageSetHash()
             if (stagingMarker.exists() && stagingMarker.readText() == hash && stagingTar.exists()) return
             stagingDir.mkdirs()
@@ -614,7 +669,7 @@ class LinuxEnvironmentManager(private val context: Context) {
                     linkName = link
                 }
                 child.isDirectory ->
-                    // tar marks directories with a trailing slash — without it
+                    // tar marks directories with a trailing slash, without which
                     // they extract as 0-byte files and children can't unpack.
                     org.apache.commons.compress.archivers.tar.TarArchiveEntry("$name/")
                 else -> org.apache.commons.compress.archivers.tar.TarArchiveEntry(child, name)
@@ -687,7 +742,7 @@ class LinuxEnvironmentManager(private val context: Context) {
 
     /**
      * Starts [command] with the best available shell: linker-launched bash,
-     * then direct bash, then toybox sh. Never throws — [fallbackUsed] reports
+     * then direct bash, then toybox sh. Never throws; [fallbackUsed] reports
      * which tier ended up running.
      */
     fun startShell(command: String, cwd: File): Pair<Process, ShellTier> {
@@ -781,7 +836,7 @@ class LinuxEnvironmentManager(private val context: Context) {
                 entry = ar.nextEntry
             }
             if (entry == null) throw IllegalStateException("No data archive in ${deb.name}")
-            // Choose the decompressor from the extension — auto-detection would
+            // Choose the decompressor from the extension, since auto-detection would
             // need a markable stream, which ArArchiveInputStream is not.
             val name = entry.name
             val input: java.io.InputStream = when {
@@ -818,6 +873,38 @@ class LinuxEnvironmentManager(private val context: Context) {
                         }
                         else -> {
                             target.parentFile?.mkdirs()
+                            // Bug 3 fix: Termux wrapper scripts (bin/pm, bin/cmd,
+                            // bin/am, bin/settings, ...) carry a dead shebang into
+                            // the Termux prefix (/data/data/com.termux/files/usr/bin/sh).
+                            // In the shell-uid tier the prefix bin dir is first on
+                            // PATH, so these shadows die with exit 126 "bad
+                            // interpreter". Drop non-ELF bin entries whose first
+                            // line targets the Termux prefix: the real /system
+                            // binaries win instead. Peek is stream-safe: the bytes
+                            // read are written back when the entry is kept.
+                            var skipWrite = false
+                            val peeked = ByteArray(256)
+                            if (rel.startsWith("bin/") && !rel.contains("/applets/")) {
+                                val n = runCatching { tar.read(peeked, 0, peeked.size) }.getOrDefault(-1)
+                                val firstLine = if (n > 0)
+                                    String(peeked, 0, n, Charsets.UTF_8).lineSequence().firstOrNull()?.trim() ?: ""
+                                else ""
+                                if (firstLine.startsWith("#!/data/data/com.termux/")) {
+                                    // drain the rest of the entry without writing it
+                                    tar.copyTo(object : java.io.OutputStream() {
+                                        override fun write(b: Int) {}
+                                    })
+                                    skipWrite = true
+                                } else if (n > 0) {
+                                    FileOutputStream(target).use { out ->
+                                        out.write(peeked, 0, n)
+                                        tar.copyTo(out)
+                                    }
+                                    runCatching { Os.chmod(target.absolutePath, e.mode.toInt() and 0xFFF) }
+                                    skipWrite = true
+                                } // n <= 0: empty entry, fall through to the plain writer
+                            }
+                            if (skipWrite) continue
                             FileOutputStream(target).use { out -> tar.copyTo(out) }
                             runCatching { Os.chmod(target.absolutePath, e.mode.toInt() and 0xFFF) }
                         }

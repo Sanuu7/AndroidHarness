@@ -60,7 +60,7 @@ class ShellBackgroundTool(
                 )
             } catch (e: Exception) {
                 // App-tier background processes run as the app uid, which may
-                // not reach folders outside its own — start Shizuku for those.
+                // not reach folders outside its own; start Shizuku for those.
                 val hint =
                     "[note: without Shizuku, background processes run as the app user and could not " +
                         "start in $cwd. Start Shizuku (Settings → Terminal) to run servers anywhere, " +
@@ -88,7 +88,9 @@ class BgListTool(
                 val uptime = (System.currentTimeMillis() - e.startedAt) / 1000
                 sb.append("[${e.id}] ")
                     .append(if (alive) "running" else "exited")
-                    .append(" (${uptime}s, via ").append(e.source.lowercase()).append(") ")
+                    .append(" (${uptime}s, via ").append(e.source.lowercase()).append(")")
+                    .append(if (e.startedAt < store.bootAt) " [prev app session]" else "")
+                    .append(" ")
                     .append(e.command.take(100)).append('\n')
                 val log = store.tail(e, 800)
                 if (log.isNotBlank()) sb.append(log.trimEnd()).append('\n')

@@ -33,7 +33,7 @@ data class BgProcessEntry(
  * persisted to a JSON file so it survives app restarts.
  *
  * When Shizuku is connected, processes are spawned inside Shizuku's server
- * process ([BgProcessEntry.source] = SHIZUKU) — they keep running even if the
+ * process ([BgProcessEntry.source] = SHIZUKU), so they keep running even if the
  * app is killed, and are re-adopted on the next launch. Without Shizuku they
  * run as plain app children (APP), kept alive by the foreground service +
  * wakelock while the app is running.
@@ -42,7 +42,7 @@ class BgProcessStore(
     private val context: Context,
     private val linuxEnv: LinuxEnvironmentManager,
     private val shizuku: ShizukuManager,
-    /** App workspace root — detached logs live under it so file tools can read them. */
+    /** App workspace root, so detached logs live under it so file tools can read them. */
     workspaceRoot: File,
 ) {
 
@@ -52,6 +52,17 @@ class BgProcessStore(
     private val appProcesses = ConcurrentHashMap<Int, Process>()
     private val nextId = AtomicInteger(1)
     private val ioLock = Mutex()
+
+    /**
+     * Bug 2 fix: unique-per-app-run token inside every log filename. Process
+     * ids restart at 1 when the registry state is gone (fresh install, >24h
+     * prune), which used to APPEND new output to an old session's log. The
+     * token makes log names collision-free across app restarts and lets
+     * bg_list flag entries that started in a previous app session.
+     */
+    private val bootToken: String = java.lang.Long.toString(System.currentTimeMillis(), 36)
+    /** When THIS app process started; older entries began in a previous session. */
+    val bootAt: Long = System.currentTimeMillis()
 
     /** Logs for background processes: inside the workspace, readable by both uids and all tools. */
     private val detachedLogDir: File = File(workspaceRoot, ".harness/bg").apply { mkdirs() }
@@ -85,14 +96,15 @@ class BgProcessStore(
     /**
      * Starts [command] in [cwd]. Prefers the Shizuku-detached tier (survives
      * app death) when Shizuku is connected; otherwise an app-child process.
-     * May throw when the app tier can't reach [cwd] — callers report that.
+     * May throw when the app tier can't reach [cwd]; callers report that.
      */
     suspend fun start(command: String, cwd: File): Started {
         val id = nextId.getAndIncrement()
         val bgDir = File(cwd, ".harness/bg").apply { mkdirs() }
-        val logFile = File(bgDir, "$id.log").apply {
+        val logName = "$id-$bootToken.log"
+        val logFile = File(bgDir, logName).apply {
             runCatching { createNewFile() }
-        }.let { if (it.exists() || it.canWrite()) it else File(detachedLogDir, "$id.log").apply { createNewFile() } }
+        }.let { if (it.exists() || it.canWrite()) it else File(detachedLogDir, logName).apply { createNewFile() } }
 
         if (shizuku.isGranted()) {
             // Make sure the shell-user toolchain copy exists before spawning.
@@ -112,14 +124,14 @@ class BgProcessStore(
             if (pid != null && pid > 0) {
                 val entry = BgProcessEntry(
                     id = id, command = command, cwd = cwd.absolutePath,
-                    logPath = ".harness/bg/$id.log", pid = pid, source = "SHIZUKU",
+                    logPath = ".harness/bg/$logName", pid = pid, source = "SHIZUKU",
                     startedAt = System.currentTimeMillis(),
                 )
                 entries[id] = entry
                 persist()
                 return Started(entry, viaShizuku = true)
             }
-            // service dropped mid-flight — fall back to the app tier below
+            // service dropped mid-flight, so fall back to the app tier below
         }
 
         val process = linuxEnv.shellProcessBuilder(command)
@@ -130,7 +142,7 @@ class BgProcessStore(
         appProcesses[id] = process
         val entry = BgProcessEntry(
             id = id, command = command, cwd = cwd.absolutePath,
-            logPath = ".harness/bg/$id.log", pid = -1, source = "APP",
+            logPath = ".harness/bg/$logName", pid = -1, source = "APP",
             startedAt = System.currentTimeMillis(),
         )
         entries[id] = entry
