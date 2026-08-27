@@ -601,8 +601,10 @@ class AgentEngine(
                     when {
                         node.isDirectory && !existedBefore -> Unit
                         changedLines || newlyCreated || deleted -> emitEvent(
+                            // Normalized so "./x.html" and "x.html" land in the
+                            // same change row instead of splitting the counts.
                             AgentEvent.FileEdited(
-                                turnId, path,
+                                turnId, com.androidharness.app.workspace.normalizeRelPath(path),
                                 added.toLong(), removed.toLong(),
                                 existedBefore = existedBefore,
                                 existsAfter = nodeIsFile,

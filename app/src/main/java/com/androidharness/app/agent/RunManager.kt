@@ -659,7 +659,7 @@ class RunManager(
             val result = runCatching { checkpoints.rewind(sessionId, tid, fs) }.getOrNull() ?: continue
             restored += result.restored
             failed += result.failed
-            paths += result.paths
+            result.paths.forEach { paths += com.androidharness.app.workspace.normalizeRelPath(it) }
         }
 
         // Chat rolls back: delete from this turn's first agent message onward.

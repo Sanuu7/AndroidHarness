@@ -431,6 +431,24 @@ class SafFsNode(
     }
 }
 
+/**
+ * Canonical key for change tracking: forward slashes, no "./" prefixes, no
+ * duplicate or trailing slashes. Absolute paths (full-access mode) keep their
+ * leading slash so they stay distinguishable from workspace-relative paths.
+ */
+fun normalizeRelPath(path: String): String {
+    val p = path.replace('\\', '/')
+    val absolute = p.startsWith("/")
+    val joined = p.split('/')
+        .filter { it.isNotEmpty() && it != "." }
+        .joinToString("/")
+    return when {
+        absolute -> "/$joined"
+        joined.isEmpty() -> "."
+        else -> joined
+    }
+}
+
 /** Detects non-UTF-8, NUL bytes, or binary content in the first 1KB of a stream. */
 fun isBinaryStream(stream: java.io.InputStream): Boolean {
     val buf = ByteArray(1024)

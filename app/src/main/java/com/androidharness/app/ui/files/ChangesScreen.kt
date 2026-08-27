@@ -50,6 +50,7 @@ import com.androidharness.app.core.Diff
 import com.androidharness.app.data.db.SessionFileChangeEntity
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.workspace.normalizeRelPath
 import java.util.zip.GZIPInputStream
 
 /**
@@ -72,16 +73,20 @@ fun ChangesScreen(
     val changes by container.sessions.fileChangesFor(sessionId)
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
-    val totalAdded = changes.sumOf { it.added }
-    val totalRemoved = changes.sumOf { it.removed }
+    // Rows recorded before path normalization (or via mixed spellings) merge
+    // here so a file always appears once with stacked counts.
+    val merged = remember(changes) { mergeSessionChanges(changes) }
+
+    val totalAdded = merged.sumOf { it.added }
+    val totalRemoved = merged.sumOf { it.removed }
 
     Scaffold(
         containerColor = scheme.surface,
         topBar = {
             AppHeader(
                 title = "Files changed",
-                subtitle = "${changes.size} " +
-                    (if (changes.size == 1) "file" else "files") +
+                subtitle = "${merged.size} " +
+                    (if (merged.size == 1) "file" else "files") +
                     " · this chat",
                 onBack = onBack,
             )
@@ -103,8 +108,8 @@ fun ChangesScreen(
                 ) {
                     Text(
                         buildString {
-                            append(changes.count { it.isNew }); append(" new · ")
-                            append(changes.size); append(" changed")
+                            append(merged.count { it.isNew }); append(" new · ")
+                            append(merged.size); append(" changed")
                         },
                         style = MaterialTheme.typography.labelLarge,
                         modifier = Modifier.weight(1f),
@@ -113,7 +118,7 @@ fun ChangesScreen(
                 }
             }
 
-            if (changes.isEmpty()) {
+            if (merged.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
                         "No files changed in this chat yet.\nEdits made by the agent show up here.",
@@ -126,7 +131,7 @@ fun ChangesScreen(
             }
 
             LazyColumn(Modifier.fillMaxSize()) {
-                itemsIndexed(changes, key = { _, c -> c.relPath }) { _, change ->
+                itemsIndexed(merged, key = { _, c -> c.relPath }) { _, change ->
                     ChangeRow(fs = fs, change = change, successColor = colors.success)
                     HorizontalDivider(
                         color = scheme.outlineVariant.copy(alpha = 0.5f),
@@ -255,6 +260,33 @@ private fun gunzipText(bytes: ByteArray): String =
     GZIPInputStream(bytes.inputStream()).use { stream ->
         stream.bufferedReader(Charsets.UTF_8).use { reader -> reader.readText() }
     }
+
+/**
+ * Collapses rows that describe the same file under different path spellings
+ * ("./a.html" vs "a.html", backslashes) into one row with stacked counts.
+ * Newest row decides deleted-ness; newness and baselines carry over from any
+ * variant that has them.
+ */
+internal fun mergeSessionChanges(
+    rows: List<SessionFileChangeEntity>,
+): List<SessionFileChangeEntity> = rows
+    .groupBy { normalizeRelPath(it.relPath) }
+    .map { (_, variants) ->
+        if (variants.size == 1) return@map variants.first()
+        val byRecency = variants.sortedByDescending { it.updatedAt }
+        val key = variants.first()
+        key.copy(
+            relPath = normalizeRelPath(key.relPath),
+            added = variants.sumOf { it.added },
+            removed = variants.sumOf { it.removed },
+            isNew = variants.any { it.isNew },
+            isDeleted = byRecency.first().isDeleted,
+            baseGzip = variants.firstOrNull { it.baseGzip != null }?.baseGzip,
+            hasBase = variants.any { it.hasBase },
+            updatedAt = byRecency.first().updatedAt,
+        )
+    }
+    .sortedByDescending { it.updatedAt }
 
 /** Same coloring rules as the chat approval cards' DiffView. */
 @Composable

@@ -716,7 +716,8 @@ class ChatViewModel(
 
         val sums = HashMap<String, LongArray>()
         c.sessions.fileEditsForTurns(sid, affected).forEach { e ->
-            val acc = sums.getOrPut(e.relPath) { longArrayOf(0, 0) }
+            val key = com.androidharness.app.workspace.normalizeRelPath(e.relPath)
+            val acc = sums.getOrPut(key) { longArrayOf(0, 0) }
             acc[0] += e.added
             acc[1] += e.removed
         }
@@ -725,7 +726,12 @@ class ChatViewModel(
         // agent created the file inside the undone window.
         val existedBefore = HashMap<String, Boolean>()
         runCatching { c.checkpoints.entitiesForTurns(sid, affected) }.getOrDefault(emptyList())
-            .forEach { cp -> existedBefore.putIfAbsent(cp.relPath, cp.existedBefore) }
+            .forEach { cp ->
+                existedBefore.putIfAbsent(
+                    com.androidharness.app.workspace.normalizeRelPath(cp.relPath),
+                    cp.existedBefore,
+                )
+            }
 
         val fs = c.workspace.currentOnce()
         val files = (sums.keys + existedBefore.keys).map { path ->

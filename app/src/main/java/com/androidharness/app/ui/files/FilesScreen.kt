@@ -19,6 +19,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.InsertDriveFile
@@ -28,6 +29,7 @@ import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderZip
@@ -63,6 +65,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -77,6 +80,7 @@ import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.workspace.FsNode
 import com.androidharness.app.workspace.WorkspaceFs
+import com.androidharness.app.workspace.normalizeRelPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -120,7 +124,9 @@ fun FilesScreen(
     val sessionForChanges = sessionId ?: "‹no-session›"
     val changes by container.sessions.fileChangesFor(sessionForChanges)
         .collectAsStateWithLifecycle(initialValue = emptyList())
-    val activeChanges = changes.filter { !it.isDeleted }
+    // Stacked per file: counts accumulate across every pass of this chat.
+    val mergedChanges = remember(changes) { mergeSessionChanges(changes) }
+    val activeChanges = mergedChanges.filter { !it.isDeleted }
 
     // ---- workspace switcher (same sheet the drawer and chat overflow use) ----
     val currentWorkspace by container.workspace.currentProject
@@ -228,21 +234,27 @@ fun FilesScreen(
 
             if (sessionId != null && onOpenChanges != null && activeChanges.isNotEmpty()) {
                 Surface(
-                    color = scheme.surfaceContainerLowest,
+                    color = scheme.surfaceContainerHigh,
+                    shape = RoundedCornerShape(12.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 12.dp, vertical = 6.dp),
-                    shape = MaterialTheme.shapes.medium,
-                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
+                        .clip(RoundedCornerShape(12.dp)),
                     onClick = onOpenChanges!!,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
                     ) {
+                        Icon(
+                            Icons.Outlined.Difference,
+                            contentDescription = null,
+                            modifier = Modifier.size(17.dp),
+                            tint = scheme.primary,
+                        )
+                        Spacer(Modifier.width(10.dp))
                         Text(
-                            "Changed this chat · ${activeChanges.size} " +
-                                if (activeChanges.size == 1) "file" else "files",
+                            "${activeChanges.size} files changed",
                             style = MaterialTheme.typography.labelLarge,
                             modifier = Modifier.weight(1f),
                         )
@@ -316,9 +328,11 @@ fun FilesScreen(
                     else entries.filter { it.name.contains(filter, ignoreCase = true) }
 
                     items(visible, key = { it.relPath }) { node ->
+                        val nodeKey = normalizeRelPath(node.relPath)
                         val change = if (node.isFile) activeChanges.firstOrNull {
-                            it.relPath == node.relPath || node.relPath.endsWith("/${node.name}") ||
-                                node.relPath.endsWith(it.relPath)
+                            it.relPath == nodeKey ||
+                                nodeKey.endsWith("/${it.relPath}") ||
+                                it.relPath.endsWith("/$nodeKey")
                         } else null
 
                         Column(
