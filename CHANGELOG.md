@@ -30,6 +30,3 @@
 - Thinking level selection removed from the model picker — it lives only in the header badge menus, which offer the full ladder for every model without fallback captions.
 - README credits inspirations: Hermes Agent (Nous Research), pi by Mario Zechner, and OpenCode.
 
-### Notes
-
-- The release APK is signed with the debug keystore (local alpha distribution; swap signing config before any public/Play release).
