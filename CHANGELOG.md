@@ -2,8 +2,6 @@
 
 ## 0.3-alpha (2026-08-27)
 
-Everything from `9e0bcc9` up to the 0.3-alpha release build (`4e56052`, versionCode 5).
-
 ### Added
 
 - **Hermes-style global thinking ladder** — one canonical scale on every model: Off, Minimal, Low, Medium, High, X-High, Max, Ultra. The raw pick is stored verbatim and resolved at request time: non-native rungs fall down the chain (ultra → max → xhigh → high …) to the closest tier the model supports, floor fallback keeps an enabled ask enabled, and a stronger request never silently bills less than a weaker one.
