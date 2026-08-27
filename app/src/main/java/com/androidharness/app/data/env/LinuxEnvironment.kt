@@ -304,6 +304,20 @@ class LinuxEnvironmentManager(
             File(prefix, "bin/node").exists() &&
             !File(prefix, "bin/npm").exists()
 
+    /**
+     * Packages that joined the default set after some installs already existed
+     * (gh in the 2026-08-28 build). Existing installs get the one-time "fetch
+     * the new packages" notice until they run Update; fresh installs never
+     * see it because they install the whole set at once.
+     */
+    private val LATE_PACKAGES = listOf("gh")
+
+    /** Packages from [LATE_PACKAGES] missing from an installed prefix. Empty = nothing to fetch. */
+    fun latePackagesPending(): List<String> {
+        if (!marker.exists()) return emptyList()
+        return LATE_PACKAGES.filter { !installedContains(it) }
+    }
+
     /** Repoints dangling termux-absolute symlinks in bin/ and bin/applets. */
     private fun repairLegacySymlinks(): Int {
         var fixed = 0

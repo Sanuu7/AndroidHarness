@@ -620,7 +620,7 @@ private fun LinuxEnvironmentCard(
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text("Linux environment", style = MaterialTheme.typography.titleSmall)
-                    Text("bash, git, python, pip, node, npm", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("bash, git, gh, python, pip, node, npm", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 StatusText(
                     when (envState) {
@@ -690,7 +690,7 @@ private fun LinuxEnvironmentCard(
                         )
                     } else {
                         Text(
-                            "Installs bash, git, python 3, pip, node.js and npm into private storage.",
+                            "Installs bash, git, gh, python 3, pip, node.js and npm into private storage.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )

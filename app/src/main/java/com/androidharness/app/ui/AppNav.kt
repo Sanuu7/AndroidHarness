@@ -80,6 +80,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
@@ -93,6 +94,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import android.content.Context
 import com.androidharness.app.AppContainer
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.db.SessionEntity
@@ -197,6 +199,19 @@ fun AppNav(container: AppContainer) {
     var collapsedGroups by remember { mutableStateOf(setOf(SessionGroup.OLDER, SessionGroup.ARCHIVED)) }
     var showWorkspaceSheet by remember { mutableStateOf(false) }
     var showAddWorkspace by remember { mutableStateOf(false) }
+
+    // One-time notice for installs whose Linux environment predates a package
+    // addition (gh): shown once, then never again, whichever button closes it.
+    val latePackages = remember { container.linuxEnv.latePackagesPending() }
+    var showLatePackagesNotice by remember {
+        val prefs = container.appContext.getSharedPreferences("notices", Context.MODE_PRIVATE)
+        mutableStateOf(latePackages.isNotEmpty() && !prefs.getBoolean("late_packages_v1", false))
+    }
+    fun dismissLatePackagesNotice() {
+        container.appContext.getSharedPreferences("notices", Context.MODE_PRIVATE)
+            .edit().putBoolean("late_packages_v1", true).apply()
+        showLatePackagesNotice = false
+    }
 
     // System folder picker for adding a SAF workspace from the drawer.
     val safWorkspacePicker = rememberLauncherForActivityResult(
@@ -675,6 +690,33 @@ fun AppNav(container: AppContainer) {
             onPickSaf = {
                 showAddWorkspace = false
                 safWorkspacePicker.launch(null)
+            },
+        )
+    }
+
+    // One-time "the toolchain gained new packages" notice for installs that
+    // predate the addition. "Fetch now" lands on Settings and starts the
+    // update so the progress card is visible; every path marks it as seen.
+    if (showLatePackagesNotice) {
+        AlertDialog(
+            onDismissRequest = { dismissLatePackagesNotice() },
+            title = { Text("Terminal & environment updated") },
+            text = {
+                Text(
+                    "The Linux toolchain gained new packages: ${latePackages.joinToString(", ")}. " +
+                        "Fetch them to add the new tools to your installed environment — " +
+                        "until then they show up as missing.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    dismissLatePackagesNotice()
+                    nav.navigate("settings")
+                    scope.launch { container.linuxEnv.updateEnvironment() }
+                }) { Text("Fetch now") }
+            },
+            dismissButton = {
+                TextButton(onClick = { dismissLatePackagesNotice() }) { Text("Later") }
             },
         )
     }
