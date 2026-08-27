@@ -469,6 +469,7 @@ fun AppNav(container: AppContainer) {
                     },
                     onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
                     onOpenTerminal = { nav.navigate("terminal") },
+                    onOpenFiles = { nav.navigate("files") },
                     onOpenSubagent = { callId ->
                         vm.state.value.sessionId?.let { sid ->
                             nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
@@ -495,6 +496,7 @@ fun AppNav(container: AppContainer) {
                     },
                     onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
                     onOpenTerminal = { nav.navigate("terminal") },
+                    onOpenFiles = { nav.navigate("files") },
                     onOpenSubagent = { callId ->
                         vm.state.value.sessionId?.let { sid ->
                             nav.navigate("subagent/${encode(sid)}/${encode(callId)}")

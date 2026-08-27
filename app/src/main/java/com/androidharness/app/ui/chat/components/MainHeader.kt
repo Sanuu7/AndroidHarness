@@ -26,6 +26,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EditNote
+import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
@@ -63,8 +65,8 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
  * The old design spent two rows here (title + status, then a provider chip row).
  * Now the subtitle line IS the provider switcher — "Provider · Model", tap to
  * change — and doubles as the live status line while the agent works. Plan mode
- * shows one small accent icon instead of a pill, and context usage gets its own
- * icon so the overflow menu stays short.
+ * shows one small accent icon instead of a pill, the workspace switcher gets
+ * the header icon slot, and context usage lives in the overflow menu.
  */
 @Composable
 internal fun MainHeader(
@@ -86,6 +88,7 @@ internal fun MainHeader(
     onOpenContext: () -> Unit,
     onOpenUndo: () -> Unit,
     onSwitchWorkspace: () -> Unit,
+    onOpenFiles: () -> Unit,
 ) {
     var menu by remember { mutableStateOf(false) }
     var thinkingMenu by remember { mutableStateOf(false) }
@@ -240,10 +243,12 @@ internal fun MainHeader(
                 }
             }
 
-            IconButton(onClick = onOpenContext) {
+            // Workspace switcher — occupies the slot the context button used
+            // to hold; context moved into the overflow menu.
+            IconButton(onClick = onSwitchWorkspace) {
                 Icon(
-                    Icons.Outlined.QueryStats,
-                    contentDescription = "Context usage",
+                    Icons.Outlined.Folder,
+                    contentDescription = "Switch workspace",
                     tint = scheme.onSurfaceVariant,
                 )
             }
@@ -308,11 +313,18 @@ internal fun MainHeader(
                         onClick = { menu = false; permissionMenu = true },
                     )
                     DropdownMenuItem(
-                        text = { Text("Workspace") },
+                        text = { Text("Context usage") },
                         leadingIcon = {
-                            Icon(Icons.Outlined.Folder, contentDescription = null, tint = scheme.onSurfaceVariant)
+                            Icon(Icons.Outlined.QueryStats, contentDescription = null)
                         },
-                        onClick = { menu = false; onSwitchWorkspace() },
+                        onClick = { menu = false; onOpenContext() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Files") },
+                        leadingIcon = {
+                            Icon(Icons.Outlined.FolderOpen, contentDescription = null)
+                        },
+                        onClick = { menu = false; onOpenFiles() },
                     )
                     HorizontalDivider(Modifier.padding(vertical = 6.dp))
                     DropdownMenuItem(

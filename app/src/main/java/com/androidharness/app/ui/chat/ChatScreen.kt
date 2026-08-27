@@ -127,6 +127,7 @@ fun ChatScreen(
     onOpenFile: (path: String, line: Int?) -> Unit,
     onNewChat: () -> Unit,
     onOpenTerminal: () -> Unit,
+    onOpenFiles: () -> Unit = {},
     onOpenSubagent: (toolCallId: String) -> Unit,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -567,6 +568,7 @@ fun ChatScreen(
                 onOpenContext = { showContext = true },
                 onOpenUndo = { showUndoDialog = true },
                 onSwitchWorkspace = { showWorkspaceSwitcher = true },
+                onOpenFiles = onOpenFiles,
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },

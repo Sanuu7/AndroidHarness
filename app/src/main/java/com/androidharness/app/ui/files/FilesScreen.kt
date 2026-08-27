@@ -1,5 +1,7 @@
 package com.androidharness.app.ui.files
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -69,6 +71,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
+import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.db.SessionFileChangeEntity
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.theme.LocalStatusColors
@@ -118,6 +121,24 @@ fun FilesScreen(
     val changes by container.sessions.fileChangesFor(sessionForChanges)
         .collectAsStateWithLifecycle(initialValue = emptyList())
     val activeChanges = changes.filter { !it.isDeleted }
+
+    // ---- workspace switcher (same sheet the drawer and chat overflow use) ----
+    val currentWorkspace by container.workspace.currentProject
+        .collectAsStateWithLifecycle(initialValue = null)
+    val allWorkspaces by container.workspace.projects
+        .collectAsStateWithLifecycle(initialValue = emptyList())
+    var showWorkspaceSheet by remember { mutableStateOf(false) }
+    var showAddWorkspace by remember { mutableStateOf(false) }
+    val safWorkspacePicker = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocumentTree(),
+    ) { uri -> uri?.let { scope.launch { container.workspace.addPickedFolder(it) } } }
+
+    // A workspace switch restarts the listing at its root.
+    LaunchedEffect(fs) {
+        currentPath = "."
+        filter = ""
+        filterActive = false
+    }
 
     LaunchedEffect(fs, currentPath, refreshTick) {
         val f = fs ?: return@LaunchedEffect
@@ -169,6 +190,13 @@ fun FilesScreen(
                 else "${fs?.displayPath.orEmpty().substringAfterLast('/')}/$currentPath",
                 onBack = onBack,
                 actions = {
+                    IconButton(onClick = { showWorkspaceSheet = true }) {
+                        Icon(
+                            Icons.Outlined.Folder,
+                            contentDescription = "Switch workspace",
+                            tint = if (currentWorkspace != null) scheme.onSurfaceVariant else scheme.primary,
+                        )
+                    }
                     IconButton(onClick = { filterActive = !filterActive }) {
                         Icon(Icons.Outlined.Search, contentDescription = "Filter")
                     }
@@ -550,6 +578,34 @@ fun FilesScreen(
             onPick = { destDir ->
                 pickMoveDest = null
                 perform("Moved ${src.name}") { FileOps.move(src, destDir, src.name) }
+            },
+        )
+    }
+
+    // ---- workspace switcher sheet + add/delete flows ----
+    if (showWorkspaceSheet) {
+        com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
+            projects = allWorkspaces,
+            currentProjectId = currentWorkspace?.id,
+            describe = { container.workspace.describe(it) },
+            onSelect = { id ->
+                scope.launch { container.workspace.setActiveProject(id) }
+                showWorkspaceSheet = false
+            },
+            onAdd = { showAddWorkspace = true },
+            onDismiss = { showWorkspaceSheet = false },
+            onDelete = { project ->
+                scope.launch { container.workspace.deleteProject(project) }
+            },
+        )
+    }
+    if (showAddWorkspace) {
+        com.androidharness.app.ui.common.AddWorkspaceDialog(
+            container = container,
+            onDismiss = { showAddWorkspace = false },
+            onPickSaf = {
+                showAddWorkspace = false
+                safWorkspacePicker.launch(null)
             },
         )
     }
