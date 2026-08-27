@@ -36,7 +36,7 @@ Status: early alpha.
 **Model flexibility**
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
 - Live model catalog fetch with latency check, per-model price tracking, and a running cost readout.
-- Thinking level control from Off to Max, mapped per provider.
+- One global thinking ladder from Off to Ultra on every model; non native rungs resolve down the chain at request time, never rewriting your pick.
 
 **Workspace hygiene**
 - Sandboxed file access: the agent cannot read or write outside the workspace, symlinks and binary files are refused, and delete guards protect the workspace root.
@@ -45,7 +45,8 @@ Status: early alpha.
 - /init writes an AGENTS.md for the project; /doctor runs a 16 point self-test of every tool family.
 
 **Slash commands**
-- /clear, /compact, /cost, /doctor, /init, /skills, plus any skill or snippet by name.
+- /clear, /compact, /cost, /doctor, /init, /plan, /skills, plus any skill or snippet by name.
+- /plan flips the agent into Plan mode and loads the planning skill automatically.
 
 ## Skills
 
@@ -72,6 +73,14 @@ Run the unit tests with:
 ```bash
 ./gradlew :app:testDebugUnitTest
 ```
+
+## Inspirations
+
+AndroidHarness borrows ideas and design taste from the open source coding agents it grew up alongside:
+
+- [Hermes Agent](https://github.com/NousResearch/hermes-agent) by Nous Research. The skills system, persistent memory, the global reasoning effort ladder that clamps to whatever the model supports at request time, thinking level selection kept out of the model picker, and the general "harness learns from experience" philosophy.
+- [pi (ohmypi)](https://github.com/earendil-works/pi) by Mario Zechner. Token usage semantics (input counts fresh prompt tokens only, cache reads and writes reported separately), which the stats screen matches on purpose.
+- [OpenCode](https://github.com/anomalyco/opencode). Tool surface conventions, plan mode workflow, and compact/slash command patterns.
 
 ## License
 
