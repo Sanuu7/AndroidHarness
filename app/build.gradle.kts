@@ -14,8 +14,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 5
-        versionName = "0.3-alpha"
+        versionCode = 6
+        versionName = "0.4-alpha"
     }
 
     buildTypes {
@@ -30,6 +30,14 @@ android {
         debug {
             applicationIdSuffix = ".debug"
         }
+    }
+
+    lint {
+        // lintVitalAnalyzeRelease crashes inside lint's own JavaDoc parser
+        // (NoSuchMethodError in JavaDocParser.parseDataItem while analyzing
+        // HarnessUserService.kt) — an AGP/lint bug, not a lint finding. Skip
+        // the release lint gate until the toolchain bug is fixed.
+        checkReleaseBuilds = false
     }
 
     compileOptions {
