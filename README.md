@@ -18,11 +18,21 @@ Status: early alpha.
 **Agent tools**
 - File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch with atomic rollback on failure.
 - Shell tools: run commands with timeouts, launch background processes, list and kill them.
-- Git tools: status, diff, commit. The harness auto-configures git identity so commits never fail on "author unknown".
-- Web tools: web search, page fetch, raw HTTP requests with JSON bodies.
-- Task tool: spawn subagents that work in parallel on independent chunks.
+- Git tools: status, diff, commit, log, show, branch, checkout, push, and pull. The harness auto-configures git identity so commits never fail on "author unknown".
+- Web tools: web search through keyless engines or the Brave and Tavily APIs with a key, page fetch, raw HTTP requests with JSON bodies, and GitHub API requests that authenticate automatically.
+- MCP tools: connect Model Context Protocol servers over stdio or HTTP, add them by pasting a Claude config or a claude mcp add command, and sign in with OAuth when the server needs it.
+- Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model.
 - Skill tools: list, view, and manage the markdown skills library from inside a run.
-- Todo and memory tools: a live todo list, plus a workspace memory file that is loaded at the start of every conversation.
+- Todo and memory tools: a live todo list, a core memory file that loads at the start of every conversation, and topic files with search for everything else.
+
+**Files and editor**
+- A workspace file manager: create, rename, move, copy, delete, and share files and folders, with open-in-other-apps support.
+- A real code editor: line numbers, unlimited undo and redo, keyword highlighting, find and replace with regex, word wrap, and a save flow that preserves the file's original encoding.
+- Per chat Files changed tracking: GitHub style badges and diffs for every file the agent touches, with rewind.
+
+**GitHub built in**
+- Sign in once in Settings: the agent's git push and pull, the bundled gh CLI, and GitHub API requests all authenticate automatically, and the login survives toolchain reinstalls.
+- doctor --github checks the token, git transport, and the free plan's hidden protection limits in one command.
 
 **Shell tiers, not a sandbox hack**
 - Commands route by path: Shizuku runs privileged commands as the shell uid, the app uid runs a Termux-prefix Linux toolchain with real bash, git, python and node, and bare toybox sh is the fallback when nothing else is installed.
@@ -31,7 +41,7 @@ Status: early alpha.
 **Runs that survive anything**
 - Foreground service keeps the agent and terminals alive while the screen is off.
 - Checkpoints and a run manager let a run survive an app restart.
-- Approve or deny sensitive actions from the notification shade, with configurable default permission modes.
+- Approve or deny sensitive actions from the notification shade, with four permission modes up to a full access mode that lifts every sandbox for workspaces you trust.
 
 **Model flexibility**
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.

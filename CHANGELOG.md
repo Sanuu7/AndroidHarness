@@ -1,5 +1,30 @@
 # Changelog
 
+## 0.5-alpha (2026-08-29)
+
+### Added
+
+- **MCP servers on every transport**: connect Model Context Protocol servers over stdio, Streamable HTTP, and the legacy HTTP+SSE transport, with session handling, protocol version headers, and both JSON and SSE response modes. Adding a server is paste-first: drop in a Claude mcpServers JSON block, a single server object, or a `claude mcp add` command line and see a live preview before saving. The manual editor covers command, args, env, URL, and headers per transport type, and a workspace `.harness/mcp.json` merges its servers into that workspace's chats.
+- **Sign in to MCP servers with OAuth**: when a server answers a request with a 401 challenge, Settings shows an Authenticate button. The flow implements the MCP authorization spec end to end: protected resource and authorization server metadata discovery, dynamic client registration, PKCE S256, the RFC 8707 resource parameter, a deep link redirect back into the app, code exchange, and automatic token refresh, with tokens stored in the encrypted keystore. Verified live against a real OAuth provider (Supabase), where 14 server tools connected and ran.
+- **Web search with real API keys**: Brave Search and Tavily join the keyless engines. The compact settings card has a three way provider selector, a Get API key button that opens the provider's key page in the browser, and a save flow that verifies the key with the provider before storing it, so a bad paste never becomes the saved credential. Keys live in per provider slots so switching engines keeps both, and an API failure falls back to the keyless engines with a note.
+- **Subagent model override**: the task tool accepts a model id from the provider's live catalog, so parallel subagents can run on different models. Unknown ids are refused with the valid list before anything spawns, the catalog fetch is shared across all parallel tasks in a run, and token usage attributes to the override model. The task title now shows in subagent progress lines.
+- **MCP config integrity**: every app-side save of mcp-servers.json writes an HMAC sidecar keyed by a non exportable keystore key. A file edited out of band is refused, its contents are reset, and Settings shows a red banner instead of silently running tampered server definitions.
+- **Security hardening from the on-device stress test battery**: the deployed toolchain's git config directories tighten to 0700, memory_write refuses topics that would be silently renamed (reads stay lenient so old names still resolve), and the full access permission mode now states its trust boundary in plain words in Settings.
+
+### Fixed
+
+- **git_show stat mode shows stats again**: `--no-patch` suppresses stat output in any position, so the message plus stats mode now runs `show -s --stat` and really delivers both.
+- **Commits stop printing "fatal: cannot exec maintenance"**: every git invocation disables auto gc and maintenance, which the sandbox could never exec anyway.
+- **web_search reports what it did**: the `[via]` tag names the engine that actually answered, and an explicitly requested engine while an API backend is active gets a note instead of silently returning different results than asked for.
+- **The MCP Test button surfaces sign-in immediately**: Test records the same statuses a real connect does, so a 401 found by Test shows the Authenticate button right away instead of only after a run.
+- **The MCP add dialog segmented control lays out correctly**: one short word per segment keeps the type row on a single line.
+- **Keystore loss no longer crash-loops the app**: when the encrypted preferences file cannot be decrypted (credential reset, or a backup restored onto a fresh install), the app resets it and starts over empty instead of dying at startup.
+
+### Changed
+
+- Every em-dash is gone from the app's text; string messages got natural punctuation and code comments became commas.
+- A stable copy of the debug signing key is kept in the gitignored signing-keys/ folder after a keystore regeneration broke plain reinstalls.
+
 ## 0.4-alpha (2026-08-28)
 
 ### Added
