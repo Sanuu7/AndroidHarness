@@ -248,11 +248,16 @@ class DoctorTool(
 
     private fun probeRulesets(lines: MutableList<String>, token: String, repo: String) {
         val resp = runCatching { api("/repos/$repo/rulesets", token) }.getOrNull()
+        // Label the cited repo: it is whatever private repo happened to be
+        // pushed most recently, NOT a dedicated probe target (doctor is
+        // GET-only and never touches anyone's repos).
         when {
-            resp == null -> lines += "[warn] rulesets probe for $repo failed (network)"
-            resp.code == 200 -> lines += "[ok] rulesets: available for $repo (protection configurable)"
-            resp.code == 403 -> lines += "[warn] FREE-PLAN TRAP: rulesets/branch protection for $repo is " +
-                "paywalled (403: ${jsonPath(resp.body, "message") ?: "upgrade required"}) — its branches are " +
+            resp == null -> lines += "[warn] rulesets probe failed (network)"
+            resp.code == 200 -> lines += "[ok] rulesets: available for private repos — checked against " +
+                "$repo (first recently-pushed private repo found; GET-only)"
+            resp.code == 403 -> lines += "[warn] FREE-PLAN TRAP: rulesets/branch protection is paywalled " +
+                "for private repos — $repo (the first recently-pushed private repo found; GET-only) " +
+                "returned 403: ${jsonPath(resp.body, "message") ?: "upgrade required"} — those branches are " +
                 "UNPROTECTED and force-pushes succeed. Real protection needs GitHub Pro / Team / org rulesets."
             else -> lines += "[warn] rulesets probe for $repo: HTTP ${resp.code} " +
                 "(${jsonPath(resp.body, "message") ?: "no message"})"

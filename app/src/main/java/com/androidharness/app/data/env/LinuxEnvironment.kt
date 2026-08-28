@@ -3,6 +3,7 @@ package com.androidharness.app.data.env
 import android.content.Context
 import android.os.Build
 import android.system.Os
+import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -717,17 +718,73 @@ class LinuxEnvironmentManager(
 
     /**
      * Called after the user saves/clears the GitHub token: refresh the prefix
-     * copies, drop the staging marker (the package-set hash now differs via the
-     * token fingerprint) and immediately redeploy the shell-tier toolchain.
-     * Everything here is blocking file IO plus a full prefix tar — it must run
-     * on IO: Settings calls this from a MAIN-dispatcher coroutine, and staging
-     * on main froze the app into an ANR ("input dispatching timed out" while
-     * writeTarEntries gzipped the toolchain).
+     * copies, then propagate to the shell tier. Auth propagation is done TWO
+     * ways on purpose: a direct write of the three auth-bearing files into the
+     * already-deployed prefix (fast, and independent of the deploy machinery —
+     * logout used to leave gh/git authenticated there when the full redeploy
+     * silently failed), followed by the full re-stage/redeploy driven by the
+     * token fingerprint in the staging hash.
      */
     suspend fun refreshGitHub(shizuku: ShizukuManager) = withContext(Dispatchers.IO) {
         materializeGitHub()
         runCatching { stagingMarker.delete() }
-        if (isReady) runCatching { ensureShellDeploy(shizuku) }
+        if (shizuku.isGranted()) {
+            runCatching { syncShellTierAuth(shizuku) }
+                .onFailure { Log.e(TAG, "shell-tier GitHub auth sync failed", it) }
+        }
+        if (isReady) {
+            runCatching { ensureShellDeploy(shizuku) }
+                .onFailure { Log.e(TAG, "post-auth-change shell-tier deploy failed", it) }
+                .onSuccess { ok ->
+                    if (!ok) Log.w(TAG, "post-auth-change shell-tier deploy skipped (Shizuku unavailable?)")
+                }
+        }
+    }
+
+    /**
+     * Writes the current auth state straight into the DEPLOYED shell-tier
+     * prefix, bypassing the hash-skip that legitimately avoids full redeploys:
+     * .gh-token, gh's hosts.yml and etc/gitconfig (which carries the insteadOf
+     * rewrite). Payloads are base64-wrapped so tokens and config bodies cannot
+     * break the shell quoting. A later full redeploy re-derives the same state.
+     */
+    private suspend fun syncShellTierAuth(shizuku: ShizukuManager) {
+        if (!shizuku.isTmpPrefixDeployed()) return
+        val token = githubToken()
+        val gitconfig = GitHubProvision.gitConfigBody(token)
+        val hosts = GitHubProvision.ghHostsYaml(token)
+        val script = buildString {
+            fun writeB64(path: String, content: String) {
+                val b64 = android.util.Base64.encodeToString(
+                    content.toByteArray(Charsets.UTF_8),
+                    android.util.Base64.NO_WRAP,
+                )
+                append("echo '$b64' | base64 -d > '$path' && chmod 600 '$path' && ")
+            }
+            append("mkdir -p '$TMP_PREFIX/etc' '$TMP_PREFIX/home/.config/gh' && ")
+            writeB64("$TMP_PREFIX/etc/gitconfig", gitconfig)
+            if (GitHubProvision.hasToken(token)) {
+                writeB64("$TMP_PREFIX/home/.gh-token", token!!.trim() + "\n")
+            } else {
+                append("rm -f '$TMP_PREFIX/home/.gh-token' && ")
+            }
+            val hostsBody = hosts
+            if (hostsBody != null) {
+                writeB64("$TMP_PREFIX/home/.config/gh/hosts.yml", hostsBody)
+            } else {
+                append("rm -f '$TMP_PREFIX/home/.config/gh/hosts.yml' && ")
+            }
+            append("echo AUTH_SYNC_OK")
+        }
+        val r = shizuku.runPrivileged(
+            arrayOf("/system/bin/sh", "-c", script),
+            env = null, dir = null, timeoutMs = 15_000, maxBytes = 1_000,
+        )
+        if (r == null || !r.output.contains("AUTH_SYNC_OK")) {
+            error(
+                "AUTH_SYNC_OK not confirmed (exit=${r?.exitCode}, stderr=${r?.stderr?.take(200)})",
+            )
+        }
     }
 
     // ------------------------------------------------------------------
@@ -879,7 +936,7 @@ class LinuxEnvironmentManager(
 
     /** Writes (or refreshes) the staging tarball on shared storage. */
     fun stageForShell() {
-        runCatching {
+        try {
             if (!File(prefix, "bin/bash").exists()) return
             // Bug 5 fix: the safe.directory config must exist before the
             // prefix is tarred, or the deployed copy exports a missing file.
@@ -911,6 +968,12 @@ class LinuxEnvironmentManager(
             }
             tmp.renameTo(stagingTar)
             stagingMarker.writeText(hash)
+        } catch (e: Exception) {
+            // A silent failure here deploys a STALE tarball on the next
+            // ensureTmpPrefix (it only compares hashes, not content). Auth
+            // changes survive this via syncShellTierAuth, but package changes
+            // would not — surface it.
+            Log.e(TAG, "staging the shell-tier tarball failed; the deployed copy stays stale", e)
         }
     }
 
@@ -1212,6 +1275,8 @@ class LinuxEnvironmentManager(
     }
 
     companion object {
+        private const val TAG = "LinuxEnvironment"
+
         private const val BASE_URL = "https://packages.termux.dev/apt/termux-main"
 
         /** Where the shell-user copy of [PREFIX] lives (exec-able by shell uid). */

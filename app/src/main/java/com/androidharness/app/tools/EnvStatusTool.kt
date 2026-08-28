@@ -114,6 +114,11 @@ class EnvStatusTool(
         val ghHostsMode = EnvProbes.fileMode(shizuku, probeRoot, com.androidharness.app.data.env.GitHubProvision.GH_HOSTS_FILE)
         val tokenPath = java.io.File(probeRoot, com.androidharness.app.data.env.GitHubProvision.TOKEN_FILE)
         val ghText = when {
+            ghMode != null && linuxEnv.githubToken() == null ->
+                "⚠ STALE SHELL CREDENTIALS: no token is configured in the app, but " +
+                    tokenPath.absolutePath + " still exists (" + ghMode + ") — git/gh in this tier may " +
+                    "still authenticate with the old token. Re-save and re-clear the token in " +
+                    "Settings → GitHub to propagate the logout, or redeploy the toolchain"
             ghMode != null ->
                 "authenticated ✓ — token at " + tokenPath.absolutePath + " ($ghMode); git URLs are rewritten " +
                     "with it automatically, so plain https://github.com clones and pushes work" +
