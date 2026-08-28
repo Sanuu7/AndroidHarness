@@ -37,3 +37,6 @@ Thumbs.db
 .hermes/
 research/
 
+
+# --- Signing ---
+signing-keys/

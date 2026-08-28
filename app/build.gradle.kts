@@ -35,7 +35,7 @@ android {
     lint {
         // lintVitalAnalyzeRelease crashes inside lint's own JavaDoc parser
         // (NoSuchMethodError in JavaDocParser.parseDataItem while analyzing
-        // HarnessUserService.kt) — an AGP/lint bug, not a lint finding. Skip
+        // HarnessUserService.kt), an AGP/lint bug, not a lint finding. Skip
         // the release lint gate until the toolchain bug is fixed.
         checkReleaseBuilds = false
     }
