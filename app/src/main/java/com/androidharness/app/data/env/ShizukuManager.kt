@@ -76,6 +76,19 @@ class ShizukuManager(
 
     fun isDeployInProgress(): Boolean = deploying
 
+    @Volatile private var deployCheckForced = false
+
+    /**
+     * Forces the next deploy check to compare hashes again (instead of
+     * trusting the cached deployed-state flag): removing the deployed
+     * .harness-hash or the staging marker then takes effect on the next
+     * privileged command, without an app restart.
+     */
+    fun invalidateDeployState() {
+        deployCheckForced = true
+        tmpPrefixDeployed = false
+    }
+
     private val isDebuggable: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
@@ -272,6 +285,7 @@ class ShizukuManager(
         ) ?: return false
         if (check.exitCode == 0 && check.output.trim() == hash) {
             tmpPrefixDeployed = true
+            deployCheckForced = false
             return true
         }
         deploying = true
@@ -302,6 +316,7 @@ class ShizukuManager(
             )
             val ok = r != null && r.exitCode == 0 && r.output.contains("DEPLOY_OK")
             if (ok) tmpPrefixDeployed = true
+            deployCheckForced = false
             return ok
         } finally {
             deploying = false
@@ -310,7 +325,7 @@ class ShizukuManager(
 
     /** Whether the shell-user toolchain currently exists at /data/local/tmp. */
     suspend fun isTmpPrefixDeployed(): Boolean {
-        if (tmpPrefixDeployed) return true
+        if (tmpPrefixDeployed && !deployCheckForced) return true
         val base = LinuxEnvironmentManager.TMP_PREFIX_BASE
         val r = runPrivileged(
             arrayOf("/system/bin/sh", "-c", "test -x \"$base/linux/bin/bash\" && echo OK"),
@@ -319,7 +334,9 @@ class ShizukuManager(
             timeoutMs = 10_000,
             maxBytes = 2_000,
         )
-        if (r != null && r.exitCode == 0 && r.output.contains("OK")) {
+        if (r != null && r.exitCode == 0 && r.output.contains("OK") && !deployCheckForced) {
+            // A forced check stays un-cached: callers must go through
+            // ensureTmpPrefix so the hash comparison actually happens.
             tmpPrefixDeployed = true
         }
         return tmpPrefixDeployed

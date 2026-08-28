@@ -737,6 +737,9 @@ class LinuxEnvironmentManager(
             runCatching { stageForShell() }
                 .onFailure { Log.e(TAG, "re-staging the shell-tier tarball after an auth change failed", it) }
         }
+        // The staging/deploy state may have changed under the cached flag;
+        // let the next privileged command re-verify the deployed hash.
+        shizuku.invalidateDeployState()
     }
 
     /**
@@ -886,8 +889,14 @@ class LinuxEnvironmentManager(
         put("TERM", "xterm-256color")
         put("LANG", "C.UTF-8")
         // Same templates fix as the app-side env, for the /data/local/tmp copy.
-        val templates = File("$TMP_PREFIX/share/git-core/templates")
-        put("GIT_TEMPLATE_DIR", if (templates.isDirectory) templates.absolutePath else "")
+        // The app uid CANNOT stat inside the deployed prefix (it is chmod 700),
+        // so deployed state is DERIVED from the app prefix: the deployed copy
+        // is staged from this exact tree, so it has the templates iff this one
+        // does. A live probe here silently broke after the 0700 hardening.
+        put(
+            "GIT_TEMPLATE_DIR",
+            if (gitTemplatesDir().isDirectory) "$TMP_PREFIX/share/git-core/templates" else "",
+        )
         // Re-rooted git needs its exec helpers (git-remote-https etc.) pointed
         // at our deployed copy or HTTPS remotes abort with a missing helper.
         put("GIT_EXEC_PATH", "$TMP_PREFIX/libexec/git-core")
@@ -897,12 +906,13 @@ class LinuxEnvironmentManager(
         put("HARNESS_GIT_CONFIG", "$TMP_PREFIX/etc/gitconfig")
         // Bug 1 fix: the deployed copy carries its own CA bundle; export the
         // standard TLS vars so curl/python/git/node verify certificates.
-        val tlsBundle = File("$TMP_PREFIX/etc/tls/cacert.pem")
-        putAll(
-            com.androidharness.app.tools.NetTls.envVars(
-                if (tlsBundle.isFile) tlsBundle.absolutePath else "/system/etc/security/cacerts",
-            ),
-        )
+        // Same derivation rule: stageForShell ships the staged bundle (from
+        // the app prefix or the bundled asset) and every deploy installs it,
+        // so the deployed path is unconditional. Blindly statting it from the
+        // app uid failed post-0700 and fell back to /system/etc/security/cacerts
+        // — a DIRECTORY — which broke all privileged-tier TLS (git exit with
+        // "error adding trust anchors", curl exit 77).
+        putAll(com.androidharness.app.tools.NetTls.envVars("$TMP_PREFIX/etc/tls/cacert.pem"))
         // Bug 2 fix: exec-capable scratch location for the privileged tier.
         put("HARNESS_SCRATCH", ShellPolicy.SCRATCH_TMP)
     }
