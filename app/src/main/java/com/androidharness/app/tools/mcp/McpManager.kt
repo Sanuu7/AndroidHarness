@@ -166,14 +166,7 @@ class McpManager(
             return conn
         } catch (e: McpAuthRequiredException) {
             conn.close()
-            authChallenges[config.name] = e.resourceMetadataUrl
-            _statuses.update {
-                it + (config.name to McpServerStatus(
-                    "auth",
-                    error = "Authorization required — tap Authenticate to connect your account.",
-                    needsAuth = true,
-                ))
-            }
+            recordAuth(config.name, e)
             return null
         } catch (e: Exception) {
             conn.close()
@@ -181,6 +174,18 @@ class McpManager(
                 it + (config.name to McpServerStatus("failed", error = e.message ?: "unknown error"))
             }
             return null
+        }
+    }
+
+    /** Records an OAuth challenge so Settings shows the Authenticate button. */
+    private fun recordAuth(name: String, e: McpAuthRequiredException) {
+        authChallenges[name] = e.resourceMetadataUrl
+        _statuses.update {
+            it + (name to McpServerStatus(
+                "auth",
+                error = "Authorization required — tap Authenticate to connect your account.",
+                needsAuth = true,
+            ))
         }
     }
 
@@ -208,8 +213,13 @@ class McpManager(
         return pb.start()
     }
 
-    /** Fresh connection for the Test-connection button (never cached). */
+    /**
+     * Fresh connection for the Test-connection button (never cached). Records
+     * the same statuses a real connect would, so a Test that hits a 401
+     * surfaces the Authenticate button without needing a run first.
+     */
     suspend fun testConnection(config: McpServerConfig): Result<Int> = withContext(Dispatchers.IO) {
+        _statuses.update { it + (config.name to McpServerStatus("connecting")) }
         val conn = McpConnection(
             serverName = config.name,
             config = config,
@@ -219,8 +229,17 @@ class McpManager(
         )
         try {
             conn.connect(context.filesDir)
+            _statuses.update {
+                it + (config.name to McpServerStatus("connected", toolCount = conn.tools.size))
+            }
             Result.success(conn.tools.size)
+        } catch (e: McpAuthRequiredException) {
+            recordAuth(config.name, e)
+            Result.failure(e)
         } catch (e: Exception) {
+            _statuses.update {
+                it + (config.name to McpServerStatus("failed", error = e.message ?: "unknown error"))
+            }
             Result.failure(e)
         } finally {
             conn.close()

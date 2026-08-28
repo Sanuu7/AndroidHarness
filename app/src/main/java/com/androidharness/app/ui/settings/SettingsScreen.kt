@@ -37,6 +37,7 @@ import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Key
@@ -96,7 +97,6 @@ import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
-import com.androidharness.app.tools.mcp.McpAuthRequiredException
 import com.androidharness.app.tools.mcp.McpConfigParser
 import com.androidharness.app.tools.mcp.McpServerConfig
 import kotlinx.coroutines.Dispatchers
@@ -908,68 +908,57 @@ private fun McpSection(container: AppContainer) {
     val statuses by container.mcp.statuses.collectAsStateWithLifecycle(initialValue = emptyMap())
     var editing by remember { mutableStateOf<McpServerConfig?>(null) }
     var showAdd by remember { mutableStateOf(false) }
-    var testResults by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+    var authError by remember { mutableStateOf<String?>(null) }
+    val anyConnected = servers.any { statuses[it.name]?.state == "connected" }
 
     SettingsHeader("MCP servers")
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Model Context Protocol (MCP) servers", style = MaterialTheme.typography.titleSmall)
-            Text(
-                "Tools from connected servers appear in every chat as mcp__server__tool, gated " +
-                    "by the normal permission settings. Local servers run as app child processes " +
-                    "(need node/python from Settings → Terminal); remote http/sse servers connect " +
-                    "directly and can sign in with OAuth. A workspace can also ship servers via " +
-                    ".harness/mcp.json.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            if (servers.isEmpty()) {
-                Text(
-                    "No servers configured yet — add one with Paste JSON or the manual editor.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Extension,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("MCP servers", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Extra tools the agent can use in any chat",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusText(
+                    when {
+                        servers.isEmpty() -> "Off"
+                        anyConnected -> "On"
+                        else -> "Idle"
+                    },
+                    ok = anyConnected,
                 )
             }
+
             servers.forEach { server ->
                 val status = statuses[server.name]
-                Column(Modifier.fillMaxWidth()) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         val dotColor = when {
                             !server.enabled -> MaterialTheme.colorScheme.outlineVariant
-                            status == null -> MaterialTheme.colorScheme.outlineVariant
-                            status.state == "connected" -> LocalStatusColors.current.success
-                            status.state == "auth" -> LocalStatusColors.current.warning
-                            status.state == "failed" -> MaterialTheme.colorScheme.error
+                            status?.state == "connected" -> LocalStatusColors.current.success
+                            status?.state == "auth" -> LocalStatusColors.current.warning
+                            status?.state == "failed" -> MaterialTheme.colorScheme.error
                             else -> MaterialTheme.colorScheme.outlineVariant
                         }
-                        Box(
-                            Modifier
-                                .size(9.dp)
-                                .background(dotColor, CircleShape),
-                        )
+                        Box(Modifier.size(9.dp).background(dotColor, CircleShape))
                         Spacer(Modifier.width(8.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                server.name + " · " + when (server.type) {
-                                    "http" -> "http"
-                                    "sse" -> "sse"
-                                    else -> "stdio"
-                                },
-                                style = MaterialTheme.typography.bodyLarge,
-                            )
-                            Text(
-                                when {
-                                    !server.enabled -> "Disabled"
-                                    status == null -> "Not connected yet (connects on the next run)"
-                                    status.state == "connected" -> "Connected — ${status.toolCount} tool(s)"
-                                    status.state == "auth" -> "Authorization required — sign in to use it"
-                                    status.state == "connecting" -> "Connecting…"
-                                    else -> "Failed: ${status.error?.take(120) ?: "unknown error"}"
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
+                        Text(
+                            "${server.name} · ${server.type}",
+                            style = MaterialTheme.typography.bodyLarge,
+                            modifier = Modifier.weight(1f),
+                        )
                         Switch(
                             checked = server.enabled,
                             onCheckedChange = { checked ->
@@ -977,16 +966,22 @@ private fun McpSection(container: AppContainer) {
                             },
                         )
                     }
-                    testResults[server.name]?.let {
-                        Text(
-                            it,
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                        if (status?.needsAuth == true) {
-                            Button(onClick = {
+                    Text(
+                        when {
+                            !server.enabled -> "Off — enable to use its tools"
+                            status == null -> "Not connected yet — tap Test, or it connects before a run"
+                            status.state == "connected" -> "Connected · ${status.toolCount} tools"
+                            status.state == "auth" -> "Sign in to use this server"
+                            status.state == "connecting" -> "Connecting…"
+                            else -> "Failed: ${status.error?.take(110) ?: "unknown error"}"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    if (status?.needsAuth == true && server.enabled) {
+                        Button(
+                            onClick = {
+                                authError = null
                                 scope.launch {
                                     container.mcp.startAuthentication(server.name).fold(
                                         onSuccess = { url ->
@@ -995,40 +990,37 @@ private fun McpSection(container: AppContainer) {
                                             }
                                         },
                                         onFailure = { e ->
-                                            testResults = testResults +
-                                                (server.name to "Auth failed: ${e.message?.take(160)}")
+                                            authError = e.message?.take(160)
                                         },
                                     )
                                 }
-                            }) { Text("Authenticate") }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) { Text("Authenticate") }
+                        authError?.let {
+                            Text(
+                                it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.error,
+                            )
                         }
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                         TextButton(onClick = {
-                            testResults = testResults - server.name
-                            scope.launch {
-                                val outcome = withContext(Dispatchers.IO) {
-                                    container.mcp.testConnection(server)
-                                }
-                                testResults = testResults + (server.name to outcome.fold(
-                                    onSuccess = { n -> "Test OK — $n tool(s) discovered" },
-                                    onFailure = { e ->
-                                        if (e is McpAuthRequiredException) "Needs authorization — tap Authenticate."
-                                        else "Test failed: ${e.message?.take(160)}"
-                                    },
-                                ))
-                            }
+                            scope.launch { withContext(Dispatchers.IO) { container.mcp.testConnection(server) } }
                         }) { Text("Test") }
                         TextButton(onClick = { editing = server }) { Text("Edit") }
                         TextButton(onClick = {
                             scope.launch { container.mcp.removeServer(server.name) }
                         }) { Text("Remove") }
                     }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
                 }
             }
+
             OutlinedButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Add server (paste JSON or command)")
+                Text("Add server")
             }
         }
     }
@@ -1115,6 +1107,13 @@ private fun McpAddDialog(
                         }
                     }
                 }
+                Text(
+                    "Tools appear in chats as mcp__server__tool and follow the normal " +
+                        "permission rules. If a server needs sign-in, an Authenticate " +
+                        "button appears after Test.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         },
         confirmButton = {
