@@ -47,16 +47,32 @@ class KeyStoreManager(context: Context) {
         prefs.edit().remove(KEY_GITHUB_LOGIN).apply()
     }
 
-    /** Search API key (Brave / Tavily) used by the web_search tool. */
-    fun putSearchApiKey(key: String) {
-        prefs.edit().putString(KEY_SEARCH_API, key.trim()).apply()
+    /**
+     * Search API keys used by the web_search tool, one slot per provider
+     * (brave/tavily) so switching providers keeps both keys. The pre-split
+     * single key lives in [KEY_SEARCH_API] until [migrateLegacySearchKey].
+     */
+    fun putSearchApiKey(provider: String, key: String) {
+        prefs.edit().putString(searchKeySlot(provider), key.trim()).apply()
     }
 
-    fun searchApiKey(): String? = prefs.getString(KEY_SEARCH_API, null)?.trim()?.ifBlank { null }
+    fun searchApiKey(provider: String): String? =
+        prefs.getString(searchKeySlot(provider), null)?.trim()?.ifBlank { null }
 
-    fun removeSearchApiKey() {
-        prefs.edit().remove(KEY_SEARCH_API).apply()
+    fun removeSearchApiKey(provider: String) {
+        prefs.edit().remove(searchKeySlot(provider)).apply()
     }
+
+    /** One-time: attribute the pre-split single key to [provider]'s slot. */
+    fun migrateLegacySearchKey(provider: String) {
+        val legacy = prefs.getString(KEY_SEARCH_API, null)?.trim()?.ifBlank { null } ?: return
+        prefs.edit()
+            .putString(searchKeySlot(provider), legacy)
+            .remove(KEY_SEARCH_API)
+            .apply()
+    }
+
+    private fun searchKeySlot(provider: String) = "${KEY_SEARCH_API}_$provider"
 
     private companion object {
         const val KEY_GITHUB = "github_pat"

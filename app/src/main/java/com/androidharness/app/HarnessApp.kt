@@ -20,6 +20,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
+import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
 class HarnessApp : Application() {
@@ -78,6 +79,7 @@ class AppContainer(val appContext: Context) {
     private var projectSkillsDir: java.io.File? = null
     private val disabledSkills = AtomicReference<Set<String>>(emptySet())
     private val webSearchProvider = AtomicReference("keyless")
+    private val searchKeyMigrated = AtomicBoolean(false)
 
     /**
      * web_search backend config, resolved per call so Settings changes apply
@@ -87,7 +89,7 @@ class AppContainer(val appContext: Context) {
         get() {
             val provider = webSearchProvider.get()
             if (provider == "keyless") return null
-            return keys.searchApiKey()?.let {
+            return keys.searchApiKey(provider)?.let {
                 com.androidharness.app.tools.SearchApiConfig(provider, it)
             }
         }
@@ -143,6 +145,11 @@ class AppContainer(val appContext: Context) {
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             settings.settings.collect {
                 disabledSkills.set(it.disabledSkills)
+                // The search key store moved to per-provider slots; attribute
+                // the pre-split key to whichever provider was active first.
+                if (searchKeyMigrated.compareAndSet(false, true)) {
+                    keys.migrateLegacySearchKey(it.webSearchProvider)
+                }
                 webSearchProvider.set(it.webSearchProvider)
             }
         }

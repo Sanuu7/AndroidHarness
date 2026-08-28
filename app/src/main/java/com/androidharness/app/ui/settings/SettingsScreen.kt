@@ -66,6 +66,8 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
+import okhttp3.RequestBody.Companion.toRequestBody
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -669,85 +671,225 @@ private fun checkGitHubToken(token: String): GitHubTokenCheck {
 @Composable
 private fun WebSearchSection(container: AppContainer) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val provider = settings.webSearchProvider
+    val providerName = when (provider) {
+        "brave" -> "Brave Search API"
+        "tavily" -> "Tavily API"
+        else -> "Keyless"
+    }
     var keyDraft by remember { mutableStateOf("") }
     var keyEpoch by remember { mutableStateOf(0) }
-    val hasKey = remember(keyEpoch) { container.keys.searchApiKey() != null }
+    var expanded by remember { mutableStateOf(false) }
+    var checking by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
+    val hasKey = remember(provider, keyEpoch) { container.keys.searchApiKey(provider) != null }
+    val keyUrl = if (provider == "brave") "https://brave.com/search/api/" else "https://app.tavily.com/home"
 
     SettingsHeader("Web search")
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("web_search backend", style = MaterialTheme.typography.titleSmall)
-            Text(
-                "The agent's web_search tool uses this provider. Keyless engines scrape public " +
-                    "search pages and need no setup; Brave and Tavily are proper search APIs " +
-                    "with cleaner, higher-quality results. Keys live in the app's encrypted storage.",
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            DropdownSetting(
-                label = "Provider",
-                current = when (provider) {
-                    "brave" -> "Brave Search API"
-                    "tavily" -> "Tavily API"
-                    else -> "Keyless (no key)"
-                },
-                entries = listOf(
-                    "keyless" to "Keyless (no key)",
-                    "brave" to "Brave Search API",
-                    "tavily" to "Tavily API",
-                ),
-                onSelect = { value -> scope.launch { container.settings.setWebSearchProvider(value) } },
-            )
-            if (provider != "keyless") {
-                OutlinedTextField(
-                    value = keyDraft,
-                    onValueChange = { keyDraft = it },
-                    label = { Text(if (hasKey) "Replace API key" else "Paste API key") },
-                    placeholder = { Text(if (provider == "brave") "BSA…" else "tvly-…") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Key,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
                 )
-                Row(
-                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Button(
-                        enabled = keyDraft.isNotBlank(),
-                        onClick = {
-                            val key = keyDraft.trim()
-                            scope.launch {
-                                withContext(Dispatchers.IO) { container.keys.putSearchApiKey(key) }
-                                keyDraft = ""
-                                keyEpoch++
-                            }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("web_search backend", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        when {
+                            provider == "keyless" -> "Public search engines, no setup"
+                            hasKey -> "$providerName · key saved"
+                            else -> "$providerName · no key yet (keyless fallback)"
                         },
-                    ) { Text(if (hasKey) "Update key" else "Save key") }
-                    if (hasKey) {
-                        StatusText("Key saved", ok = true)
-                        TextButton(onClick = {
-                            scope.launch {
-                                withContext(Dispatchers.IO) { container.keys.removeSearchApiKey() }
-                                keyEpoch++
-                            }
-                        }) { Text("Remove") }
-                    } else {
-                        StatusText("No key — using keyless engines", ok = false)
-                    }
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
                 }
-                Text(
-                    if (provider == "brave") {
-                        "Free key: brave.com/search/api (Free plan allows 1 query/second)."
-                    } else {
-                        "Free key: tavily.com (free tier: 1,000 requests/month)."
+                StatusText(
+                    when {
+                        provider == "keyless" -> "Keyless"
+                        hasKey -> "On"
+                        else -> "No key"
                     },
+                    ok = provider == "keyless" || hasKey,
+                )
+            }
+
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                listOf("keyless" to "Keyless", "brave" to "Brave", "tavily" to "Tavily")
+                    .forEachIndexed { index, (value, label) ->
+                        SegmentedButton(
+                            selected = provider == value,
+                            onClick = {
+                                if (provider != value) {
+                                    expanded = false
+                                    status = null
+                                    keyDraft = ""
+                                    scope.launch { container.settings.setWebSearchProvider(value) }
+                                }
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
+                        ) { Text(label) }
+                    }
+            }
+
+            when {
+                provider == "keyless" -> Text(
+                    "The agent searches public engines — zero setup; Brave or Tavily " +
+                        "give cleaner, higher-quality results.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+
+                expanded -> {
+                    Text(
+                        (if (provider == "brave") {
+                            "Free key at brave.com/search/api (Free plan: 1 query/second). "
+                        } else {
+                            "Free key at app.tavily.com (1,000 requests/month). "
+                        }) + "The key is checked with the provider before it is saved, and it " +
+                            "lives only in the app's encrypted storage.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    OutlinedButton(
+                        onClick = {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(keyUrl)))
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Icon(
+                            Icons.Outlined.OpenInNew,
+                            contentDescription = null,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text("Get API key")
+                    }
+                    OutlinedTextField(
+                        value = keyDraft,
+                        onValueChange = { keyDraft = it },
+                        label = { Text(if (hasKey) "Replace API key" else "Paste API key") },
+                        placeholder = { Text(if (provider == "brave") "BSA…" else "tvly-…") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            enabled = keyDraft.isNotBlank() && !checking,
+                            onClick = {
+                                checking = true
+                                status = "Checking that key with $providerName…"
+                                scope.launch {
+                                    val key = keyDraft.trim()
+                                    val error = withContext(Dispatchers.IO) { checkSearchKey(provider, key) }
+                                    if (error == null) {
+                                        withContext(Dispatchers.IO) { container.keys.putSearchApiKey(provider, key) }
+                                        keyDraft = ""
+                                        expanded = false
+                                        status = "Key verified and saved"
+                                        keyEpoch++
+                                    } else {
+                                        status = error
+                                    }
+                                    checking = false
+                                }
+                            },
+                        ) { Text(if (checking) "Checking…" else "Save and check") }
+                        TextButton(onClick = {
+                            expanded = false
+                            keyDraft = ""
+                            status = null
+                        }) { Text("Cancel") }
+                    }
+                    status?.let {
+                        Text(
+                            it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+
+                hasKey -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = {
+                        expanded = true
+                        keyDraft = ""
+                        status = null
+                    }) { Text("Replace key") }
+                    OutlinedButton(onClick = {
+                        scope.launch {
+                            withContext(Dispatchers.IO) { container.keys.removeSearchApiKey(provider) }
+                            keyEpoch++
+                        }
+                    }) { Text("Remove", color = MaterialTheme.colorScheme.error) }
+                }
+
+                else -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(onClick = {
+                        runCatching {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(keyUrl)))
+                        }
+                    }) { Text("Get API key") }
+                    OutlinedButton(onClick = {
+                        expanded = true
+                        keyDraft = ""
+                        status = null
+                    }) { Text("I have a key") }
+                }
             }
         }
     }
+}
+
+/**
+ * Asks the provider to accept a search API key before it is saved, mirroring
+ * the GitHub token flow: an invalid paste never becomes the stored credential.
+ * Returns null when the key works, or a human-readable reason why not.
+ */
+private fun checkSearchKey(provider: String, key: String): String? {
+    return runCatching {
+        val req = when (provider) {
+            "brave" -> okhttp3.Request.Builder()
+                .url("https://api.search.brave.com/res/v1/web/search?q=android&count=1")
+                .header("X-Subscription-Token", key)
+                .header("Accept", "application/json")
+                .build()
+            else -> okhttp3.Request.Builder()
+                .url("https://api.tavily.com/search")
+                .post(
+                    """{"api_key":"$key","query":"android","max_results":1}"""
+                        .toRequestBody("application/json".toMediaTypeOrNull()),
+                )
+                .build()
+        }
+        val name = if (provider == "brave") "Brave" else "Tavily"
+        okhttp3.OkHttpClient.Builder()
+            .callTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+            .newCall(req).execute().use { resp ->
+                val body = resp.body?.string().orEmpty()
+                val detail = Regex("\"(?:message|detail|error)\"\\s*:\\s*\"([^\"]+)\"")
+                    .find(body)?.groupValues?.get(1)
+                when {
+                    resp.code == 401 || resp.code == 403 ->
+                        "$name rejected that key" + (detail?.let { " ($it)" } ?: "") +
+                            ". Make sure the whole key was copied, that it belongs to $name, " +
+                            "and that it has not been deactivated."
+                    !resp.isSuccessful ->
+                        "$name returned HTTP ${resp.code}" + (detail?.let { ": $it" } ?: "") +
+                            ". Try again shortly."
+                    else -> null
+                }
+            }
+    }.getOrElse { "Could not reach the provider. Check your connection and try again." }
 }
 
 // ---------------------------------------------------------------------------
