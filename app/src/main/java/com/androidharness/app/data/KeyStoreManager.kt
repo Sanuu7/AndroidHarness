@@ -74,9 +74,35 @@ class KeyStoreManager(context: Context) {
 
     private fun searchKeySlot(provider: String) = "${KEY_SEARCH_API}_$provider"
 
+    /**
+     * Per-server MCP OAuth state (discovered endpoints + tokens) as a JSON
+     * blob, kept in the app's KeyStore-encrypted prefs like every other
+     * credential.
+     */
+    fun putMcpOAuthState(server: String, stateJson: String) {
+        prefs.edit().putString(mcpOAuthSlot(server), stateJson).apply()
+    }
+
+    fun mcpOAuthState(server: String): String? =
+        prefs.getString(mcpOAuthSlot(server), null)?.trim()?.ifBlank { null }
+
+    fun removeMcpOAuthState(server: String) {
+        prefs.edit().remove(mcpOAuthSlot(server)).apply()
+    }
+
+    private fun mcpOAuthSlot(server: String) =
+        "${KEY_MCP_OAUTH}_${McpServerNameSanitizer.sanitize(server)}"
+
+    private object McpServerNameSanitizer {
+        fun sanitize(raw: String): String =
+            raw.trim().lowercase().replace(Regex("[^a-z0-9_]+"), "_")
+                .trim('_').takeIf { it.isNotEmpty() } ?: "x"
+    }
+
     private companion object {
         const val KEY_GITHUB = "github_pat"
         const val KEY_GITHUB_LOGIN = "github_login"
         const val KEY_SEARCH_API = "search_api_key"
+        const val KEY_MCP_OAUTH = "mcp_oauth"
     }
 }

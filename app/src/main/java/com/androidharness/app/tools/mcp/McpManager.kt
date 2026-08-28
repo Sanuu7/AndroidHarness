@@ -1,6 +1,8 @@
 package com.androidharness.app.tools.mcp
 
 import android.content.Context
+import android.net.Uri
+import com.androidharness.app.data.KeyStoreManager
 import com.androidharness.app.data.env.LinuxEnvironmentManager
 import com.androidharness.app.tools.Tool
 import com.androidharness.app.tools.ToolFailure
@@ -14,16 +16,26 @@ import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import java.io.File
+import java.util.concurrent.ConcurrentHashMap
 
-/** Global server list persisted to filesDir/mcp-servers.json, like BgProcessStore. */
+/**
+ * Global server list persisted to filesDir/mcp-servers.json, like BgProcessStore.
+ * Supports stdio servers (spawned as app-tier children) and remote http/sse
+ * servers, including the MCP OAuth 2.1 flow: a 401 during connect flips the
+ * server to the "auth" state, [startAuthentication] runs discovery +
+ * dynamic client registration and returns the browser URL, and
+ * [completeAuthentication] finishes the PKCE exchange from the redirect.
+ */
 class McpManager(
     private val context: Context,
     private val linuxEnv: LinuxEnvironmentManager,
+    private val keys: KeyStoreManager,
 ) {
 
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
     private val storeFile = File(context.filesDir, "mcp-servers.json")
     private val ioLock = Mutex()
+    private val httpClient = mcpHttpClient()
 
     private val _servers = MutableStateFlow<List<McpServerConfig>>(loadServers())
     val servers: StateFlow<List<McpServerConfig>> = _servers
@@ -32,6 +44,18 @@ class McpManager(
     val statuses: StateFlow<Map<String, McpServerStatus>> = _statuses
 
     private val connections = HashMap<String, McpConnection>()
+
+    /** resource_metadata URLs from each server's last 401 challenge. */
+    private val authChallenges = ConcurrentHashMap<String, String?>()
+
+    private data class PendingAuth(
+        val serverName: String,
+        val state: String,
+        val verifier: String,
+        val context: McpOAuthContext,
+    )
+    @Volatile private var pendingAuth: PendingAuth? = null
+    private val oauthMutexes = HashMap<String, Mutex>()
 
     private fun loadServers(): List<McpServerConfig> = runCatching {
         if (storeFile.exists()) json.decodeFromString<List<McpServerConfig>>(storeFile.readText())
@@ -56,6 +80,7 @@ class McpManager(
 
     suspend fun removeServer(name: String) {
         disconnect(name)
+        keys.removeMcpOAuthState(name)
         persist(_servers.value.filterNot { it.name == name })
     }
 
@@ -126,13 +151,30 @@ class McpManager(
 
     private suspend fun tryConnect(config: McpServerConfig, cwd: File): McpConnection? {
         _statuses.update { it + (config.name to McpServerStatus("connecting")) }
-        val conn = McpConnection(config.name, config, processFactory(config))
+        val conn = McpConnection(
+            serverName = config.name,
+            config = config,
+            processFactory = { cwd2 -> spawnStdio(config, cwd2) },
+            authHeader = { authHeaderFor(config.name) },
+            httpClient = httpClient,
+        )
         try {
             conn.connect(cwd)
             _statuses.update {
                 it + (config.name to McpServerStatus("connected", toolCount = conn.tools.size))
             }
             return conn
+        } catch (e: McpAuthRequiredException) {
+            conn.close()
+            authChallenges[config.name] = e.resourceMetadataUrl
+            _statuses.update {
+                it + (config.name to McpServerStatus(
+                    "auth",
+                    error = "Authorization required — tap Authenticate to connect your account.",
+                    needsAuth = true,
+                ))
+            }
+            return null
         } catch (e: Exception) {
             conn.close()
             _statuses.update {
@@ -143,11 +185,12 @@ class McpManager(
     }
 
     /**
-     * Spawns the server as an app-tier child via the same builder the shell
-     * tool uses (linker-launched bash + Termux-prefix env), so plain command
-     * names like `npx` or `python3` resolve. Stderr goes to a cache log.
+     * Spawns a stdio server as an app-tier child via the same builder the
+     * shell tool uses (linker-launched bash + Termux-prefix env), so plain
+     * command names like `npx` or `python3` resolve. Stderr goes to a cache
+     * log. Remote servers never touch this.
      */
-    private fun processFactory(config: McpServerConfig): (File) -> Process = { cwd ->
+    private fun spawnStdio(config: McpServerConfig, cwd: File): Process {
         if (linuxEnv.bashExecutable() == null) {
             throw ToolFailure(
                 "The MCP server '${config.name}' needs node/python from the Linux environment. " +
@@ -162,12 +205,18 @@ class McpManager(
         config.env.forEach { (k, v) -> pb.environment()[k] = v }
         pb.directory(cwd)
         pb.redirectError(ProcessBuilder.Redirect.appendTo(logFile(config.name)))
-        pb.start()
+        return pb.start()
     }
 
     /** Fresh connection for the Test-connection button (never cached). */
     suspend fun testConnection(config: McpServerConfig): Result<Int> = withContext(Dispatchers.IO) {
-        val conn = McpConnection(config.name, config, processFactory(config))
+        val conn = McpConnection(
+            serverName = config.name,
+            config = config,
+            processFactory = { cwd -> spawnStdio(config, cwd) },
+            authHeader = { authHeaderFor(config.name) },
+            httpClient = httpClient,
+        )
         try {
             conn.connect(context.filesDir)
             Result.success(conn.tools.size)
@@ -176,6 +225,110 @@ class McpManager(
         } finally {
             conn.close()
         }
+    }
+
+    // --- OAuth -------------------------------------------------------------------
+
+    /**
+     * Runs discovery + dynamic client registration and returns the browser
+     * URL for the user to approve access. The PKCE verifier and state are
+     * held in memory until [completeAuthentication] consumes the redirect.
+     */
+    suspend fun startAuthentication(name: String): Result<String> = withContext(Dispatchers.IO) {
+        val config = _servers.value.firstOrNull { it.name == name }
+            ?: return@withContext Result.failure(IllegalArgumentException("Unknown MCP server '$name'"))
+        val url = config.url
+            ?: return@withContext Result.failure(IllegalArgumentException(
+                "Only remote (http/sse) MCP servers can be authenticated; stdio servers " +
+                    "get credentials from their env config.",
+            ))
+        runCatching {
+            val challenge = authChallenges[name]
+            val ctx = McpOAuth.discover(httpClient, challenge, url)
+                ?: throw McpOAuthException(
+                    "The server did not advertise an OAuth provider. If it uses a static " +
+                        "token instead, add it as a header (e.g. \"Authorization: Bearer …\") " +
+                        "in the server's edit dialog.",
+                )
+            val registered = McpOAuth.registerClient(httpClient, ctx)
+            val state = McpOAuth.createState()
+            val verifier = McpOAuth.createVerifier()
+            pendingAuth = PendingAuth(name, state, verifier, registered)
+            McpOAuth.authorizationUrl(registered, state, McpOAuth.codeChallenge(verifier))
+        }
+    }
+
+    /**
+     * Consumes the browser redirect (androidharness://mcp/oauth?code=…&state=…):
+     * verifies state, exchanges the code with PKCE, stores the tokens, and
+     * reconnects so the status flips to connected. Returns the server name.
+     */
+    suspend fun completeAuthentication(stateParam: String?, code: String?): Result<String> =
+        withContext(Dispatchers.IO) {
+            val pending = pendingAuth
+                ?: return@withContext Result.failure(IllegalStateException(
+                    "No MCP authentication is in progress.",
+                ))
+            if (stateParam != pending.state) {
+                return@withContext Result.failure(IllegalStateException(
+                    "The authentication response did not match this app (state mismatch). " +
+                        "Start over with Authenticate.",
+                ))
+            }
+            if (code.isNullOrBlank()) {
+                return@withContext Result.failure(IllegalStateException(
+                    "The provider returned no authorization code (access was likely denied).",
+                ))
+            }
+            runCatching {
+                val tokens = McpOAuth.exchangeCode(httpClient, pending.context, code, pending.verifier)
+                saveOAuthState(
+                    pending.serverName,
+                    McpOAuthState(pending.context, tokens.accessToken, tokens.refreshToken, tokens.expiresAtMs),
+                )
+                pendingAuth = null
+                // Reconnect eagerly so the UI reflects success without a run.
+                _servers.value.firstOrNull { it.name == pending.serverName }?.let { config ->
+                    disconnect(config.name)
+                    tryConnect(config, context.filesDir)?.let { fresh ->
+                        synchronized(connections) { connections[config.name] = fresh }
+                    }
+                }
+                pending.serverName
+            }.onFailure { pendingAuth = null }
+        }
+
+    /**
+     * Bearer token supplier for remote transports: the stored access token
+     * while valid, otherwise one refresh attempt (guarded per server).
+     */
+    private suspend fun authHeaderFor(name: String): String? {
+        val state = loadOAuthState(name) ?: return null
+        if (state.accessTokenValid()) return "Bearer ${state.accessToken}"
+        val refreshToken = state.refreshToken ?: return null
+        val mutex = synchronized(oauthMutexes) { oauthMutexes.getOrPut(name) { Mutex() } }
+        return mutex.withLock {
+            val current = loadOAuthState(name) ?: return@withLock null
+            if (current.accessTokenValid()) return@withLock "Bearer ${current.accessToken}"
+            val refreshed = runCatching {
+                McpOAuth.refreshTokens(httpClient, current.context, current.refreshToken ?: return@withLock null)
+            }.getOrNull() ?: return@withLock null
+            val updated = current.copy(
+                accessToken = refreshed.accessToken,
+                refreshToken = refreshed.refreshToken ?: current.refreshToken,
+                expiresAtMs = refreshed.expiresAtMs,
+            )
+            saveOAuthState(name, updated)
+            "Bearer ${updated.accessToken}"
+        }
+    }
+
+    private fun loadOAuthState(name: String): McpOAuthState? = runCatching {
+        keys.mcpOAuthState(name)?.let { json.decodeFromString<McpOAuthState>(it) }
+    }.getOrNull()
+
+    private fun saveOAuthState(name: String, state: McpOAuthState) {
+        runCatching { keys.putMcpOAuthState(name, json.encodeToString(McpOAuthState.serializer(), state)) }
     }
 
     private fun logFile(name: String): File =

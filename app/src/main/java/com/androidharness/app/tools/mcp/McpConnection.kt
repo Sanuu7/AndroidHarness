@@ -25,7 +25,7 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
-import java.io.BufferedWriter
+import okhttp3.OkHttpClient
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.atomic.AtomicInteger
@@ -33,20 +33,23 @@ import java.util.concurrent.atomic.AtomicInteger
 enum class ConnectionState { CONNECTING, READY, DEAD }
 
 /**
- * JSON-RPC 2.0 client for one MCP server over the stdio transport: the
- * process's stdin/stdout carry one JSON message per line, stderr goes to a
- * log file. Implements the minimal surface the harness needs:
+ * JSON-RPC 2.0 client for one MCP server over any supported transport:
+ * stdio (child process), Streamable HTTP, or the legacy HTTP+SSE transport.
+ * Implements the minimal surface the harness needs:
  * initialize → tools/list → tools/call. Server-initiated requests and
  * notifications are ignored.
  *
- * [processFactory] is injectable so tests can drive the protocol against an
- * in-process double instead of a real subprocess.
+ * [processFactory] is injectable so tests can drive the stdio protocol
+ * against an in-process double instead of a real subprocess.
  */
 class McpConnection(
     val serverName: String,
     private val config: McpServerConfig,
-    private val processFactory: (File) -> Process,
+    private val processFactory: ((File) -> Process)? = null,
+    /** Supplies the OAuth bearer token (or null) for remote transports. */
+    private val authHeader: suspend () -> String? = { null },
     private val handshakeTimeoutMs: Long = 15_000,
+    private val httpClient: OkHttpClient = mcpHttpClient(),
 ) {
 
     private val json = Json { ignoreUnknownKeys = true }
@@ -58,32 +61,53 @@ class McpConnection(
     val stateFlow: MutableStateFlow<ConnectionState> = _state
     val state: ConnectionState get() = _state.value
 
-    private var process: Process? = null
-    private var writer: BufferedWriter? = null
+    private var transport: McpTransport? = null
+    private var stdio: StdioTransport? = null
     var tools: List<McpToolInfo> = emptyList()
         private set
 
     val isAlive: Boolean
-        get() = _state.value == ConnectionState.READY && process?.isAlive == true
+        get() = when {
+            _state.value != ConnectionState.READY -> false
+            config.isRemote -> true
+            else -> stdio?.processAlive() == true
+        }
 
-    /** Spawns the server, completes the initialize handshake and discovers tools. */
+    /** Establishes the transport, completes the initialize handshake and discovers tools. */
     suspend fun connect(cwd: File) {
-        val proc = try {
-            processFactory(cwd)
-        } catch (e: Exception) {
-            throw ToolFailure(
-                "Could not start MCP server '$serverName': ${e.message}. " +
-                    "Check the command and that the Linux environment is installed.",
+        val t: McpTransport = when {
+            config.type == "http" -> StreamableHttpTransport(
+                config.url ?: throw ToolFailure("MCP server '$serverName' has no URL configured"),
+                config.headers, authHeader, httpClient,
+            )
+            config.type == "sse" -> SseLegacyTransport(
+                config.url ?: throw ToolFailure("MCP server '$serverName' has no URL configured"),
+                config.headers, authHeader, httpClient,
+            )
+            else -> StdioTransport(
+                serverName,
+                processFactory
+                    ?: throw ToolFailure("MCP server '$serverName' has no command configured"),
             )
         }
-        process = proc
-        writer = proc.outputStream.bufferedWriter()
-        scope.launch { readLoop(proc) }
+        transport = t
+        if (t is StdioTransport) stdio = t
+        scope.launch {
+            try {
+                for (line in t.incoming) handleLine(line)
+            } catch (_: Exception) {
+                // Cancelled.
+            }
+        }
         try {
+            t.start(cwd)
             rpc(
                 "initialize",
                 buildJsonObject {
-                    put("protocolVersion", "2024-11-05")
+                    put(
+                        "protocolVersion",
+                        if (config.isRemote) McpProtocol.REMOTE_VERSION else "2024-11-05",
+                    )
                     putJsonObject("capabilities") {}
                     putJsonObject("clientInfo") {
                         put("name", "AndroidHarness")
@@ -96,6 +120,9 @@ class McpConnection(
             val listed = rpc("tools/list", buildJsonObject {}, handshakeTimeoutMs)
             tools = parseTools(listed["result"])
             _state.value = ConnectionState.READY
+        } catch (e: McpAuthRequiredException) {
+            close()
+            throw e
         } catch (e: TimeoutCancellationException) {
             close()
             throw ToolFailure(
@@ -143,16 +170,16 @@ class McpConnection(
 
     fun close() {
         _state.value = ConnectionState.DEAD
-        val proc = process
-        process = null
-        runCatching { proc?.destroy() }
+        transport?.close()
+        transport = null
+        stdio = null
         scope.cancel()
     }
 
     // --- protocol internals ---------------------------------------------------
 
     private suspend fun rpc(method: String, params: JsonObject, timeoutMs: Long): JsonObject {
-        val w = writer ?: throw ToolFailure("MCP server '$serverName' is not running")
+        val t = transport ?: throw ToolFailure("MCP server '$serverName' is not connected")
         val id = nextId.getAndIncrement()
         val deferred = CompletableDeferred<JsonObject>()
         pending[id] = deferred
@@ -163,13 +190,7 @@ class McpConnection(
                 put("method", method)
                 put("params", params)
             }.toString()
-            writeMutex.withLock {
-                withContext(Dispatchers.IO) {
-                    w.write(line)
-                    w.newLine()
-                    w.flush()
-                }
-            }
+            writeMutex.withLock { t.send(line) }
             val resp = withTimeout(timeoutMs) { deferred.await() }
             resp["error"]?.jsonObject?.let { err ->
                 throw ToolFailure(
@@ -184,39 +205,16 @@ class McpConnection(
     }
 
     private suspend fun notify(method: String) {
-        val w = writer ?: return
+        val t = transport ?: return
         val line = buildJsonObject {
             put("jsonrpc", "2.0")
             put("method", method)
             put("params", buildJsonObject {})
         }.toString()
-        writeMutex.withLock {
-            withContext(Dispatchers.IO) {
-                w.write(line)
-                w.newLine()
-                w.flush()
-            }
-        }
+        writeMutex.withLock { t.send(line) }
     }
 
-    /** Runs on the IO scope until the process's stdout closes. */
-    private suspend fun readLoop(proc: Process) {
-        try {
-            proc.inputStream.bufferedReader().use { reader ->
-                while (true) {
-                    val line = reader.readLine() ?: break
-                    if (line.isNotBlank()) handleLine(line)
-                }
-            }
-        } catch (_: Exception) {
-            // Destroyed or IO error: fall through to the dead-path below.
-        }
-        _state.value = ConnectionState.DEAD
-        val dead = ToolFailure("MCP server '$serverName' exited unexpectedly")
-        pending.values.forEach { it.completeExceptionally(dead) }
-        pending.clear()
-    }
-
+    /** Runs on the connection scope until the transport's incoming channel closes. */
     private fun handleLine(line: String) {
         val obj = runCatching { json.parseToJsonElement(line).jsonObject }.getOrNull() ?: return
         // Server-initiated requests and notifications carry "method"; we only

@@ -104,7 +104,7 @@ class AppContainer(val appContext: Context) {
         fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
         searchApi = { searchApiConfig },
     )
-    val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv)
+    val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys)
     val engine = AgentEngine(
         providerFactory = { config -> ProviderFactory.create(config.type) },
         registry = registry,

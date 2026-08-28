@@ -41,8 +41,10 @@ class MainActivity : ComponentActivity() {
             notificationPermission.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
 
-        // Open the chat a run-result notification points at.
+        // Open the chat a run-result notification points at, and catch the
+        // MCP OAuth redirect when this activity is freshly created for it.
         handleSessionIntent(intent)
+        handleMcpOAuth(intent)
 
         setContent {
             val settings by container.settings.settings
@@ -96,11 +98,27 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         handleSessionIntent(intent)
+        handleMcpOAuth(intent)
     }
 
     private fun handleSessionIntent(intent: Intent?) {
         val sessionId = intent?.getStringExtra(AgentService.EXTRA_SESSION_ID) ?: return
         // AppNav observes this to deep-link into the session's chat.
         container.pendingSessionId.tryEmit(sessionId)
+    }
+
+    /** Completes the MCP OAuth browser round-trip (androidharness://mcp/oauth?code=…). */
+    private fun handleMcpOAuth(intent: Intent?) {
+        val data = intent?.data ?: return
+        if (data.scheme != "androidharness" || data.host != "mcp") return
+        kotlinx.coroutines.MainScope().launch {
+            container.mcp.completeAuthentication(
+                stateParam = data.getQueryParameter("state"),
+                code = data.getQueryParameter("code"),
+            ).fold(
+                onSuccess = { name -> android.util.Log.i("McpOAuth", "authenticated '$name'") },
+                onFailure = { e -> android.util.Log.w("McpOAuth", "auth failed: ${e.message}") },
+            )
+        }
     }
 }

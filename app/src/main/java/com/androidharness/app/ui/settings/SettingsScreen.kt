@@ -10,7 +10,9 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -94,6 +96,8 @@ import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.tools.mcp.McpAuthRequiredException
+import com.androidharness.app.tools.mcp.McpConfigParser
 import com.androidharness.app.tools.mcp.McpServerConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -899,6 +903,7 @@ private fun checkSearchKey(provider: String, key: String): String? {
 @Composable
 private fun McpSection(container: AppContainer) {
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val servers by container.mcp.servers.collectAsStateWithLifecycle(initialValue = emptyList())
     val statuses by container.mcp.statuses.collectAsStateWithLifecycle(initialValue = emptyMap())
     var editing by remember { mutableStateOf<McpServerConfig?>(null) }
@@ -910,17 +915,17 @@ private fun McpSection(container: AppContainer) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text("Model Context Protocol (MCP) servers", style = MaterialTheme.typography.titleSmall)
             Text(
-                "Tools from connected servers appear in every chat as mcp__server__tool and are " +
-                    "gated by the normal permission settings. Servers run as app child processes " +
-                    "with the Linux toolchain, so they need node/python from Settings → Terminal. " +
-                    "A workspace can also ship servers via a .harness/mcp.json file " +
-                    "(standard mcpServers format).",
+                "Tools from connected servers appear in every chat as mcp__server__tool, gated " +
+                    "by the normal permission settings. Local servers run as app child processes " +
+                    "(need node/python from Settings → Terminal); remote http/sse servers connect " +
+                    "directly and can sign in with OAuth. A workspace can also ship servers via " +
+                    ".harness/mcp.json.",
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (servers.isEmpty()) {
                 Text(
-                    "No servers configured yet.",
+                    "No servers configured yet — add one with Paste JSON or the manual editor.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -929,13 +934,35 @@ private fun McpSection(container: AppContainer) {
                 val status = statuses[server.name]
                 Column(Modifier.fillMaxWidth()) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
+                        val dotColor = when {
+                            !server.enabled -> MaterialTheme.colorScheme.outlineVariant
+                            status == null -> MaterialTheme.colorScheme.outlineVariant
+                            status.state == "connected" -> LocalStatusColors.current.success
+                            status.state == "auth" -> LocalStatusColors.current.warning
+                            status.state == "failed" -> MaterialTheme.colorScheme.error
+                            else -> MaterialTheme.colorScheme.outlineVariant
+                        }
+                        Box(
+                            Modifier
+                                .size(9.dp)
+                                .background(dotColor, CircleShape),
+                        )
+                        Spacer(Modifier.width(8.dp))
                         Column(Modifier.weight(1f)) {
-                            Text(server.name, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                server.name + " · " + when (server.type) {
+                                    "http" -> "http"
+                                    "sse" -> "sse"
+                                    else -> "stdio"
+                                },
+                                style = MaterialTheme.typography.bodyLarge,
+                            )
                             Text(
                                 when {
                                     !server.enabled -> "Disabled"
                                     status == null -> "Not connected yet (connects on the next run)"
                                     status.state == "connected" -> "Connected — ${status.toolCount} tool(s)"
+                                    status.state == "auth" -> "Authorization required — sign in to use it"
                                     status.state == "connecting" -> "Connecting…"
                                     else -> "Failed: ${status.error?.take(120) ?: "unknown error"}"
                                 },
@@ -958,6 +985,23 @@ private fun McpSection(container: AppContainer) {
                         )
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        if (status?.needsAuth == true) {
+                            Button(onClick = {
+                                scope.launch {
+                                    container.mcp.startAuthentication(server.name).fold(
+                                        onSuccess = { url ->
+                                            runCatching {
+                                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                            }
+                                        },
+                                        onFailure = { e ->
+                                            testResults = testResults +
+                                                (server.name to "Auth failed: ${e.message?.take(160)}")
+                                        },
+                                    )
+                                }
+                            }) { Text("Authenticate") }
+                        }
                         TextButton(onClick = {
                             testResults = testResults - server.name
                             scope.launch {
@@ -966,7 +1010,10 @@ private fun McpSection(container: AppContainer) {
                                 }
                                 testResults = testResults + (server.name to outcome.fold(
                                     onSuccess = { n -> "Test OK — $n tool(s) discovered" },
-                                    onFailure = { e -> "Test failed: ${e.message?.take(160)}" },
+                                    onFailure = { e ->
+                                        if (e is McpAuthRequiredException) "Needs authorization — tap Authenticate."
+                                        else "Test failed: ${e.message?.take(160)}"
+                                    },
                                 ))
                             }
                         }) { Text("Test") }
@@ -981,17 +1028,113 @@ private fun McpSection(container: AppContainer) {
             OutlinedButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
-                Text("Add server")
+                Text("Add server (paste JSON or command)")
             }
         }
     }
 
     if (showAdd) {
-        McpServerDialog(container, initial = null, onDismiss = { showAdd = false })
+        McpAddDialog(container, onDismiss = { showAdd = false }, onManual = {
+            showAdd = false
+            editing = McpServerConfig(name = "", type = "stdio")
+        })
     }
     editing?.let { config ->
         McpServerDialog(container, initial = config, onDismiss = { editing = null })
     }
+}
+
+/**
+ * Paste-first add dialog: accepts a Claude-style `{"mcpServers": {…}}` JSON, a
+ * single-server JSON object, or a `claude mcp add …` command line, showing a
+ * live preview of what will be added. A manual editor is one tap away.
+ */
+@Composable
+private fun McpAddDialog(
+    container: AppContainer,
+    onDismiss: () -> Unit,
+    onManual: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    var paste by remember { mutableStateOf("") }
+    val parsed = remember(paste) { McpConfigParser.parsePaste(paste) }
+    val existing = container.mcp.servers.value.map { it.name.lowercase() }
+    val conflicts = parsed.count { it.name.lowercase() in existing }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add MCP server") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+            ) {
+                OutlinedTextField(
+                    value = paste,
+                    onValueChange = { paste = it },
+                    label = { Text("Paste config") },
+                    placeholder = {
+                        Text(
+                            "{\"mcpServers\": {\"supabase\": {\"type\": \"http\", \"url\": \"…\"}}}\n" +
+                                "or: claude mcp add --transport http supabase \"https://…\"",
+                        )
+                    },
+                    minLines = 3,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                when {
+                    paste.isBlank() -> Text(
+                        "Works with any of: a full mcpServers JSON (Claude Desktop / Cursor format), " +
+                            "a single server JSON object, or a `claude mcp add` command.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                    parsed.isEmpty() -> Text(
+                        "Could not parse that. Use the manual editor below.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.error,
+                    )
+                    else -> Column {
+                        Text(
+                            "Will add ${parsed.size} server(s):",
+                            style = MaterialTheme.typography.labelMedium,
+                        )
+                        parsed.forEach { c ->
+                            Text(
+                                "• ${c.name} — ${c.type} — " +
+                                    (c.url ?: c.command + if (c.args.isEmpty()) "" else " ${c.args.joinToString(" ")}"),
+                                style = MaterialTheme.typography.bodySmall,
+                            )
+                        }
+                        if (conflicts > 0) {
+                            Text(
+                                "$conflicts name(s) already exist and will be replaced.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = LocalStatusColors.current.warning,
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = parsed.isNotEmpty(),
+                onClick = {
+                    scope.launch {
+                        parsed.forEach { container.mcp.addServer(it) }
+                        onDismiss()
+                    }
+                },
+            ) { Text(if (parsed.size > 1) "Add all" else "Add") }
+        },
+        dismissButton = {
+            Row {
+                TextButton(onClick = onManual) { Text("Manual editor") }
+                TextButton(onClick = onDismiss) { Text("Cancel") }
+            }
+        },
+    )
 }
 
 @Composable
@@ -1002,18 +1145,26 @@ private fun McpServerDialog(
 ) {
     val scope = rememberCoroutineScope()
     var name by remember { mutableStateOf(initial?.name ?: "") }
+    var type by remember { mutableStateOf(initial?.type ?: "stdio") }
     var command by remember { mutableStateOf(initial?.command ?: "") }
     var argsText by remember { mutableStateOf(initial?.args?.joinToString("\n") ?: "") }
     var envText by remember {
         mutableStateOf(initial?.env?.entries?.joinToString("\n") { "${it.key}=${it.value}" } ?: "")
     }
-    val duplicate = initial == null &&
+    var url by remember { mutableStateOf(initial?.url ?: "") }
+    var headersText by remember {
+        mutableStateOf(initial?.headers?.entries?.joinToString("\n") { "${it.key}: ${it.value}" } ?: "")
+    }
+    val duplicate = (initial == null || initial.name.isBlank()) &&
         container.mcp.servers.value.any { it.name.equals(name.trim(), ignoreCase = true) }
-    val valid = name.isNotBlank() && command.isNotBlank() && !duplicate
+    val valid = when (type) {
+        "http", "sse" -> name.isNotBlank() && url.isNotBlank() && !duplicate
+        else -> name.isNotBlank() && command.isNotBlank() && !duplicate
+    }
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(if (initial == null) "Add MCP server" else "Edit MCP server") },
+        title = { Text(if (initial?.name.isNullOrBlank()) "Add MCP server" else "Edit MCP server") },
         text = {
             Column(
                 verticalArrangement = Arrangement.spacedBy(8.dp),
@@ -1023,65 +1174,105 @@ private fun McpServerDialog(
                     value = name,
                     onValueChange = { name = it },
                     label = { Text("Name") },
-                    placeholder = { Text("e.g. filesystem") },
+                    placeholder = { Text("e.g. filesystem, supabase") },
                     singleLine = true,
                     supportingText = { if (duplicate) Text("A server with this name already exists.") },
                     isError = duplicate,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                OutlinedTextField(
-                    value = command,
-                    onValueChange = { command = it },
-                    label = { Text("Command") },
-                    placeholder = { Text("e.g. npx, python3, /full/path/server") },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = argsText,
-                    onValueChange = { argsText = it },
-                    label = { Text("Arguments (one per line)") },
-                    placeholder = { Text("-y\n@modelcontextprotocol/server-filesystem /path") },
-                    minLines = 2,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                OutlinedTextField(
-                    value = envText,
-                    onValueChange = { envText = it },
-                    label = { Text("Environment variables (KEY=value per line)") },
-                    minLines = 1,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                Text(
-                    "Only stdio servers are supported. The server process runs as the app user " +
-                        "with the Linux toolchain's PATH; it starts lazily before a run and dies " +
-                        "with the app.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    listOf("stdio" to "Local (stdio)", "http" to "HTTP", "sse" to "SSE")
+                        .forEachIndexed { index, (value, label) ->
+                            SegmentedButton(
+                                selected = type == value,
+                                onClick = { type = value },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
+                            ) { Text(label) }
+                        }
+                }
+                if (type == "stdio") {
+                    OutlinedTextField(
+                        value = command,
+                        onValueChange = { command = it },
+                        label = { Text("Command") },
+                        placeholder = { Text("e.g. npx, python3, /full/path/server") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = argsText,
+                        onValueChange = { argsText = it },
+                        label = { Text("Arguments (one per line)") },
+                        placeholder = { Text("-y\n@modelcontextprotocol/server-filesystem /path") },
+                        minLines = 2,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = envText,
+                        onValueChange = { envText = it },
+                        label = { Text("Environment variables (KEY=value per line)") },
+                        minLines = 1,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        "Runs as the app user with the Linux toolchain's PATH; it starts lazily " +
+                            "before a run and dies with the app. Needs node/python from the " +
+                            "Linux environment.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                } else {
+                    OutlinedTextField(
+                        value = url,
+                        onValueChange = { url = it },
+                        label = { Text("Server URL") },
+                        placeholder = { Text("https://mcp.example.com/mcp") },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    OutlinedTextField(
+                        value = headersText,
+                        onValueChange = { headersText = it },
+                        label = { Text("Headers (Key: value per line, optional)") },
+                        placeholder = { Text("Authorization: Bearer …") },
+                        minLines = 1,
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                    Text(
+                        if (type == "http") {
+                            "Streamable HTTP transport. If the server requires sign-in, save first — " +
+                                "the Authenticate button appears after the server demands it."
+                        } else {
+                            "Legacy HTTP+SSE transport for older remote servers."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
             }
         },
         confirmButton = {
             TextButton(
                 enabled = valid,
                 onClick = {
-                    val args = argsText.lines().map { it.trim() }.filter { it.isNotEmpty() }
-                    val env = envText.lines().mapNotNull { line ->
-                        val parts = line.split('=', limit = 2)
+                    fun kvLines(text: String, sep: Char) = text.lines().mapNotNull { line ->
+                        val parts = line.split(sep, limit = 2)
                         if (parts.size == 2 && parts[0].trim().isNotEmpty()) {
                             parts[0].trim() to parts[1].trim()
                         } else null
                     }.toMap()
+                    val config = McpServerConfig(
+                        name = name.trim(),
+                        type = type,
+                        command = if (type == "stdio") command.trim() else "",
+                        args = if (type == "stdio") argsText.lines().map { it.trim() }.filter { it.isNotEmpty() } else emptyList(),
+                        env = if (type == "stdio") kvLines(envText, '=') else emptyMap(),
+                        url = if (type == "stdio") null else url.trim(),
+                        headers = if (type == "stdio") emptyMap() else kvLines(headersText, ':'),
+                        enabled = initial?.enabled ?: true,
+                    )
                     scope.launch {
-                        container.mcp.addServer(
-                            McpServerConfig(
-                                name = name.trim(),
-                                command = command.trim(),
-                                args = args,
-                                env = env,
-                                enabled = initial?.enabled ?: true,
-                            ),
-                        )
+                        container.mcp.addServer(config)
                         onDismiss()
                     }
                 },
