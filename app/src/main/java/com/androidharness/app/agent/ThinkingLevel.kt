@@ -4,7 +4,7 @@ package com.androidharness.app.agent
  * Canonical reasoning-effort ladder, ordered low→high like Hermes'
  * EFFORT_LADDER. This ONE enum is the vocabulary every surface speaks; what a
  * given provider/model actually accepts is decided by ThinkingSpecs and
- * clamped at request time — never invented per call site.
+ * clamped at request time, never invented per call site.
  */
 enum class ThinkingLevel(val label: String) {
     OFF("Off"),
@@ -17,7 +17,7 @@ enum class ThinkingLevel(val label: String) {
     ULTRA("Ultra"),
     ;
 
-    /** Position on the global ladder — basis for nearest-weaker clamping. */
+    /** Position on the global ladder, basis for nearest-weaker clamping. */
     val rank: Int get() = ordinal
 
     /**

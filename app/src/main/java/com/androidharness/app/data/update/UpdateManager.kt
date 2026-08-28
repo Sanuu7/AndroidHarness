@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
  *
  *  - Shizuku granted + user service connected: `pm install -r` runs silently
  *    as the shell uid (the APK is staged under the app's external files dir,
- *    which the shell uid demonstrably reads — the toolchain deploy uses the
+ *    which the shell uid demonstrably reads, the toolchain deploy uses the
  *    exact same path family).
  *  - No Shizuku: hand the downloaded file to the system package installer
  *    (the standard "express" sideload flow with the platform's own UI).
@@ -39,7 +39,7 @@ class UpdateManager(
     data class LatestRelease(
         val tag: String,
         val name: String,
-        /** Release body/description — may contain plain links or a linked changelog.md. */
+        /** Release body/description, may contain plain links or a linked changelog.md. */
         val body: String,
         val htmlUrl: String,
         val apkUrl: String?,
@@ -117,7 +117,7 @@ class UpdateManager(
     }
 
     private fun fetchLatest(): LatestRelease? {
-        // NOTE: /releases/latest EXCLUDES prereleases — every release in this
+        // NOTE: /releases/latest EXCLUDES prereleases, every release in this
         // repo ships as pre-release, so query the list instead. It arrives
         // newest-first (by created date); drafts are skipped.
         val req = Request.Builder()
@@ -194,7 +194,7 @@ class UpdateManager(
     /**
      * Runs the install leg. Shizuku takes priority; system installer is the
      * fallback. Returns after handing off ([onNeedUserInstaller] opens the
-     * platform flow) — the caller drives UI state around this.
+     * platform flow), the caller drives UI state around this.
      */
     suspend fun startUpdate(
         release: LatestRelease,

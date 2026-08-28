@@ -8,7 +8,7 @@ import org.junit.Test
 /**
  * The SSE reader must split ONLY on LF (stripping an immediately-preceding
  * CR). readUtf8Line()/BufferedReader.readLine() instead break on every lone
- * CR, which silently strips carriage returns inside streamed JSON strings —
+ * CR, which silently strips carriage returns inside streamed JSON strings,
  * the reported write_file CRLF→LF corruption.
  */
 class SseLineReaderTest {

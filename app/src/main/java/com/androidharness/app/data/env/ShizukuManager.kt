@@ -45,7 +45,7 @@ data class PrivilegedResult(
 /**
  * Bridges AndroidHarness to Shizuku. Once Shizuku is running AND the user has
  * granted access, we bind an in-server "user service" ([HarnessUserService])
- * that executes shell commands as the shell (or root) uid — the only reliable
+ * that executes shell commands as the shell (or root) uid, the only reliable
  * way to reach system paths, pm/am, and any folder on the device on modern
  * Android. Also deploys a copy of the app's Linux toolchain to
  * /data/local/tmp/androidharness (a location that uid can exec from).
@@ -117,7 +117,7 @@ class ShizukuManager(
             service = null
             bindRequested.set(false)
             _serviceState.value = UserServiceState.NOT_BOUND
-            // The server may have restarted — rebind once it is back.
+            // The server may have restarted, rebind once it is back.
             scope.launch {
                 delay(1_500)
                 refresh()

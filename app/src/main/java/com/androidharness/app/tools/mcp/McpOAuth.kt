@@ -301,5 +301,5 @@ object McpOAuth {
         (this[key] as? JsonPrimitive)?.contentOrNull?.ifBlank { null }
 }
 
-/** OAuth steps failed after discovery — surfaced verbatim to the user. */
+/** OAuth steps failed after discovery, surfaced verbatim to the user. */
 class McpOAuthException(message: String) : Exception(message)

@@ -82,7 +82,7 @@ object CodeTokenizer {
 
     /**
      * Tokenizes one line against [lang]. Block comments starting on an earlier
-     * line are not tracked statefully — each line is tokenized independently,
+     * line are not tracked statefully, each line is tokenized independently,
      * matching the viewer's historical behavior.
      */
     fun tokenizeLine(lang: Lang, line: String): List<Token> {

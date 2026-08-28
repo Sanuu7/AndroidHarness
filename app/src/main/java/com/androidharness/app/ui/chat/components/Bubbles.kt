@@ -77,7 +77,7 @@ internal fun UserBubble(
 
 /**
  * Agent text is directly selectable: hold and drag to mark a range, copy via
- * the system toolbar — no dialogs between the user and the content.
+ * the system toolbar, no dialogs between the user and the content.
  */
 @OptIn(ExperimentalFoundationApi::class)
 @Composable

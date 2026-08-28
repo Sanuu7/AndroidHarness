@@ -62,8 +62,8 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
  * The chat header: a single flat row.
  *
  * The old design spent two rows here (title + status, then a provider chip row).
- * Now the subtitle line IS the provider switcher — "Provider · Model", tap to
- * change — and doubles as the live status line while the agent works. Plan mode
+ * Now the subtitle line IS the provider switcher, "Provider · Model", tap to
+ * change, and doubles as the live status line while the agent works. Plan mode
  * shows one small accent icon instead of a pill, the workspace-files explorer
  * (migrated from the drawer) gets the header icon slot, and context usage
  * lives in the overflow menu.
@@ -75,7 +75,7 @@ internal fun MainHeader(
     pickerLabel: String,
     mode: AgentMode,
     thinkingLevel: ThinkingLevel,
-    /** Full global ladder — every model offers every rung (Hermes-style). */
+    /** Full global ladder, every model offers every rung (Hermes-style). */
     thinkingLevels: List<ThinkingLevel>,
     permissionMode: PermissionMode,
     canUndo: Boolean,
@@ -242,7 +242,7 @@ internal fun MainHeader(
                 }
             }
 
-            // Workspace files explorer — migrated here from the drawer;
+            // Workspace files explorer, migrated here from the drawer;
             // workspace switching itself lives inside the file manager.
             IconButton(onClick = onOpenFiles) {
                 Icon(
@@ -382,5 +382,5 @@ internal fun MainHeader(
     }
 }
 
-/** Accent for the Full access permission mode — warning orange, distinct from error red. */
+/** Accent for the Full access permission mode, warning orange, distinct from error red. */
 internal val FullAccessOrange = Color(0xFFF59E0B)

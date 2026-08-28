@@ -150,7 +150,7 @@ private suspend fun runGit(
     }
     // Defense in depth: -c should make dubious ownership impossible, but an
     // exotic setup that still hits it gets '*' persisted into the global
-    // config once and a re-run — this is also what creates ~/.gitconfig when
+    // config once and a re-run, this is also what creates ~/.gitconfig when
     // none existed before.
     if (res.exitCode != 0 && isDubiousOwnership(fullOutput)) {
         val fixRes = router.run(
@@ -163,7 +163,7 @@ private suspend fun runGit(
             res = router.run(command, cwd, timeoutMs = 60_000, maxOutput = 24_000)
             return buildGitResult(
                 res,
-                note = "[note: added safe.directory '*' to the global git config — the repository was owned by another uid]",
+                note = "[note: added safe.directory '*' to the global git config; the repository was owned by another uid]",
             )
         }
     }
@@ -293,7 +293,7 @@ class GitCommitTool(
                 var note =
                     "[note: auto-configured repository git identity 'Android Harness <harness@android.local>']"
                 if (!repoConfig.ok) {
-                    // Repo-local config failed (read-only .git/config etc.) —
+                    // Repo-local config failed (read-only .git/config etc.),
                     // fall back to the global ~/.gitconfig identity.
                     val globalConfig = runGitWithRetry(
                         router,
@@ -395,7 +395,7 @@ class GitBranchManageTool(
     override val name = "git_branch_manage"
     override val description =
         "Create or delete a git branch in the workspace repository. action='create' makes a " +
-        "new branch pointing at HEAD (does not switch to it — use git_checkout); " +
+        "new branch pointing at HEAD (does not switch to it; use git_checkout); " +
         "action='delete' removes it (-d refuses unmerged branches unless force=true). " +
         "Runs as a modifying operation, so the user approves it first."
     override val parametersSchema = Schema.obj(
@@ -526,7 +526,7 @@ class GitPullTool(
             if (!res.ok && res.output.contains("CONFLICT", ignoreCase = true)) {
                 res.copy(
                     output = res.output +
-                        "\n[note: merge conflicts — edit the marked files, then stage and commit them]",
+                        "\n[note: merge conflicts found; edit the marked files, then stage and commit them]",
                 )
             } else {
                 res

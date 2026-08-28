@@ -30,7 +30,7 @@ data class AppSettings(
     val maxIterations: Int = DEFAULT_MAX_ITERATIONS,
     /** Hold a wakelock while a run is active so runs survive screen-off. */
     val keepAlive: Boolean = true,
-    /** Drawer: pinned / archived session ids (DataStore — no DB migration). */
+    /** Drawer: pinned / archived session ids (DataStore, no DB migration). */
     val pinnedSessions: Set<String> = emptySet(),
     val archivedSessions: Set<String> = emptySet(),
     /** First-run setup was finished or skipped; stops the setup gate. */

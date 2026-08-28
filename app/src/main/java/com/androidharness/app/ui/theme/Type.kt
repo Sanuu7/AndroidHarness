@@ -9,7 +9,7 @@ import androidx.compose.ui.unit.sp
 import com.androidharness.app.R
 
 /**
- * Google Sans Flex — bundled locally so the typeface renders identically on every
+ * Google Sans Flex, bundled locally so the typeface renders identically on every
  * device (no Play Services / network dependency). It is a variable font, so asking
  * for Medium/Bold/SemiBold renders from its weight axis rather than fake-bold.
  */

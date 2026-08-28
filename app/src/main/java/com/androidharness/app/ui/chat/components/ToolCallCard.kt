@@ -60,7 +60,7 @@ import com.androidharness.app.ui.theme.fastSpatialSpec
  * Flat hairline card, neutral icon tile, monospace tool name, one-line summary.
  * Status is a small slot on the right (dots while running, green check on
  * success, red cross on failure) and a thin 3dp line under the header while
- * running — no tinted circles, no wavy bars. The whole row toggles details.
+ * running, no tinted circles, no wavy bars. The whole row toggles details.
  */
 @Composable
 internal fun ToolCallCard(

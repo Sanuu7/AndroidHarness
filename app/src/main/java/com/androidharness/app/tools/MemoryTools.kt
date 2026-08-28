@@ -47,7 +47,7 @@ class MemoryReadTool : Tool {
             if (!topic.isNullOrEmpty()) {
                 val path = MemoryTopics.topicPath(topic)
                     ?: throw ToolFailure(
-                        "Invalid topic '$topic' — use letters, digits, '-' or '_' (max 48 chars).",
+                        "Invalid topic '$topic'. Use letters, digits, '-' or '_' (max 48 chars).",
                     )
                 val content = readMemoryNode(ctx.workspace, path)
                     ?: return@withContext ToolResult(

@@ -49,7 +49,7 @@ import kotlinx.coroutines.withContext
 import java.io.File
 
 /**
- * In-app folder browser for attaching a real path as a workspace — the
+ * In-app folder browser for attaching a real path as a workspace, the
  * "Folder path (full shell)" flow without typing. Folders only, parent-row
  * navigation, "Use this folder" to confirm.
  *

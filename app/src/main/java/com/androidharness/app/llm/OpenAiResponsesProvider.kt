@@ -20,12 +20,12 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
- * OpenAI's Responses API (`POST /v1/responses`) — the newer gpt-5/o-series
+ * OpenAI's Responses API (`POST /v1/responses`), the newer gpt-5/o-series
  * API where reasoning is a first-class object (`reasoning.effort` + streamed
  * summary), tools are flattened function items, and the whole request can be
  * serverless (`store: false`). Some newer OpenAI models are only available
  * here, not on /chat/completions. For all OpenAI-compatible gateways nothing
- * changes — they keep using [OpenAiCompatProvider].
+ * changes, they keep using [OpenAiCompatProvider].
  */
 class OpenAiResponsesProvider(
     @Suppress("unused") private val client: OkHttpClient,
@@ -51,7 +51,7 @@ class OpenAiResponsesProvider(
         val acc = LinkedHashMap<String, Triple<String, String, StringBuilder>>()
 
         return flow {
-            // Usage lands once on response.completed — hold it and emit after
+            // Usage lands once on response.completed, hold it and emit after
             // the stream so each request tallies exactly once.
             var pendingUsage: StreamEvent.Usage? = null
             ProviderFactory.sseJson(request).collect { el ->

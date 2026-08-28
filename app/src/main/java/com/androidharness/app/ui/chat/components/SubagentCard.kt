@@ -270,7 +270,7 @@ internal fun SubagentCard(
             if (running) {
                 ThinLinearProgress(modifier = Modifier.fillMaxWidth())
             }
-            // Live step tail — no tap needed while it works.
+            // Live step tail, no tap needed while it works.
             if (visibleTrail.isNotEmpty() && (running || expanded)) {
                 Column(
                     modifier = Modifier.padding(start = 12.dp, end = 12.dp, top = 2.dp),

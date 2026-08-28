@@ -20,7 +20,7 @@ import java.util.concurrent.TimeUnit
  * what EXISTS; this tells the agent what actually WORKS: one API ping with the
  * configured token (login, account type, plan, real token scopes), the token
  * file's real permissions, git's spawn shell (GIT_SHELL_PATH) and insteadOf
- * transport, and whether branch protection is silently unavailable — the
+ * transport, and whether branch protection is silently unavailable, the
  * Free-plan paywall returns 403 for rulesets/branch-protection on private
  * repos, which reads as "no protection configured" while force-pushes succeed.
  */
@@ -40,7 +40,7 @@ class DoctorTool(
     override val parametersSchema = Schema.obj(
         mapOf(
             "github" to Schema.boolean(
-                "Run the GitHub checks (default true — the only check set in this build).",
+                "Run the GitHub checks (default true; the only check set in this build).",
             ),
         ),
     )
@@ -60,7 +60,7 @@ class DoctorTool(
 
         val token = linuxEnv.githubToken()
         if (token == null) {
-            lines += "[fail] token: none configured — push/PR/private repos need a personal access " +
+            lines += "[fail] token: none configured; push/PR/private repos need a personal access " +
                 "token (Settings → GitHub). Public HTTPS clones still work anonymously."
         } else {
             checkApiUser(lines, token)
@@ -76,7 +76,7 @@ class DoctorTool(
             warns > 0 -> "all reachable checks ran: $warns warning(s)"
             else -> "all checks passed"
         }
-        return ToolResult(fails == 0, "GitHub doctor — $summary\n" + lines.joinToString("\n"))
+        return ToolResult(fails == 0, "GitHub doctor: $summary\n" + lines.joinToString("\n"))
     }
 
     // --- API checks ---------------------------------------------------------
@@ -161,7 +161,7 @@ class DoctorTool(
         when (mode) {
             "600" -> lines += "[ok] token file: $path is 0600"
             null -> lines += "[warn] token file: $path not readable from this tier (mode unknown)"
-            else -> lines += "[fail] token file: $path is $mode — should be 0600 " +
+            else -> lines += "[fail] token file: $path is $mode; should be 0600 " +
                 "(redeploy or re-save the token in Settings → GitHub to repair)"
         }
     }
@@ -191,15 +191,15 @@ class DoctorTool(
                 lines += "[warn] git transport: probe did not run (exit " +
                     "${res?.exitCode ?: -1})${res?.rawStderr?.takeIf { it.isNotBlank() }?.let { ": $it" } ?: ""}"
             shellLine.startsWith("shell-path=OK") ->
-                lines += "[ok] git shell path: ${shellLine.removePrefix("shell-path=OK ")} is exec-able — " +
+                lines += "[ok] git shell path: ${shellLine.removePrefix("shell-path=OK ")} is exec-able; " +
                     "git can spawn helpers/hooks (gh repo clone's credential helper works)"
             else ->
-                lines += "[fail] git shell path: ${shellLine.removePrefix("shell-path=")} — helpers, hooks " +
+                lines += "[fail] git shell path: ${shellLine.removePrefix("shell-path=")}; helpers, hooks " +
                     "and aliases that spawn `sh` cannot run"
         }
         when (insteadLine?.removePrefix("instead-of=")) {
             "OK" -> lines += "[ok] git token rewrite: url.*.insteadOf present in GIT_CONFIG_GLOBAL"
-            else -> lines += "[warn] git token rewrite: no insteadOf entry found — plain https://github.com " +
+            else -> lines += "[warn] git token rewrite: no insteadOf entry found; plain https://github.com " +
                 "URLs are anonymous unless a credential helper provides auth"
         }
     }
@@ -208,8 +208,8 @@ class DoctorTool(
 
     /**
      * Rulesets/branch-protection return 403 ("Upgrade to GitHub Pro") for
-     * private repos on free accounts. Nothing else in the harness errors —
-     * the repo just silently has NO protection and force-pushes succeed — so
+     * private repos on free accounts. Nothing else in the harness errors,
+     * the repo just silently has NO protection and force-pushes succeed, so
      * the paywall must be surfaced explicitly. Checks the user's most recently
      * pushed private repo, then one org's.
      */
@@ -221,7 +221,7 @@ class DoctorTool(
             api("/user/repos?visibility=private&affiliation=owner&per_page=1&sort=pushed", token)
         }.getOrNull()
         if (repos == null || repos.code != 200) {
-            lines += "[warn] free-plan probe: could not list private repos (HTTP ${repos?.code ?: -1}) — " +
+            lines += "[warn] free-plan probe: could not list private repos (HTTP ${repos?.code ?: -1}); " +
                 "protection state unknown"
         } else {
             val repo = firstRepoFullName(repos.body)
@@ -240,7 +240,7 @@ class DoctorTool(
             val orgFullName = orgRepo?.takeIf { it.code == 200 }?.let { firstRepoFullName(it.body) }
             when {
                 orgFullName != null -> probeRulesets(lines, token, orgFullName)
-                else -> lines += "[warn] org probe: no private $org repo visible to this token — " +
+                else -> lines += "[warn] org probe: no private $org repo visible to this token; " +
                     "that repo's protection state is unchecked"
             }
         }
@@ -253,11 +253,11 @@ class DoctorTool(
         // GET-only and never touches anyone's repos).
         when {
             resp == null -> lines += "[warn] rulesets probe failed (network)"
-            resp.code == 200 -> lines += "[ok] rulesets: available for private repos — checked against " +
+            resp.code == 200 -> lines += "[ok] rulesets: available for private repos; checked against " +
                 "$repo (first recently-pushed private repo found; GET-only)"
             resp.code == 403 -> lines += "[warn] FREE-PLAN TRAP: rulesets/branch protection is paywalled " +
-                "for private repos — $repo (the first recently-pushed private repo found; GET-only) " +
-                "returned 403: ${jsonPath(resp.body, "message") ?: "upgrade required"} — those branches are " +
+                "for private repos: $repo (the first recently-pushed private repo found; GET-only) " +
+                "returned 403: ${jsonPath(resp.body, "message") ?: "upgrade required"}; those branches are " +
                 "UNPROTECTED and force-pushes succeed. Real protection needs GitHub Pro / Team / org rulesets."
             else -> lines += "[warn] rulesets probe for $repo: HTTP ${resp.code} " +
                 "(${jsonPath(resp.body, "message") ?: "no message"})"

@@ -4,7 +4,7 @@ import java.io.File
 
 /**
  * Shell is not one permission. "Always allow" remembers a command *signature*
- * (first two tokens), and a small denylist + sandbox containment always wins —
+ * (first two tokens), and a small denylist + sandbox containment always wins,
  * including full auto.
  */
 object ShellPolicy {

@@ -21,7 +21,7 @@ import androidx.compose.ui.unit.dp
  *
  * Geometry mirrors `res/drawable/ic_launcher_foreground.xml` (the launcher icon)
  * scaled to a 24dp viewport, so the in-app identity and the home-screen icon match.
- * Filled, not stroked — it stays crisp at 14dp and holds up at 56dp.
+ * Filled, not stroked, it stays crisp at 14dp and holds up at 56dp.
  */
 val PromptMark: ImageVector = ImageVector.Builder(
     name = "PromptMark",
@@ -52,7 +52,7 @@ val PromptMark: ImageVector = ImageVector.Builder(
 
 /**
  * Brand tile: the prompt mark on a near-black (light theme) / near-white (dark
- * theme) rounded square. Deliberately monochrome — the dynamic accent is reserved
+ * theme) rounded square. Deliberately monochrome, the dynamic accent is reserved
  * for actions, not logos.
  */
 @Composable

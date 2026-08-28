@@ -19,7 +19,7 @@ class CheckpointStore(private val dao: HarnessDao) {
         workspace: WorkspaceFs,
         relPath: String,
     ) {
-        // one snapshot per (turn, path) — keep the earliest (pre-turn) state
+        // one snapshot per (turn, path), keep the earliest (pre-turn) state
         val existing = dao.checkpointsForTurn(sessionId, turnId)
         if (existing.any { it.relPath == relPath }) return
 
@@ -57,7 +57,7 @@ class CheckpointStore(private val dao: HarnessDao) {
     /**
      * Restore the workspace to its state before [turnId]: replay that turn's
      * snapshots, then drop them. Returns how many paths restored cleanly and
-     * how many failed (failures were previously silent — the UI now reports
+     * how many failed (failures were previously silent, the UI now reports
      * them so "undo" can't quietly lie). [RewindResult.paths] lists every
      * restored relPath so callers can refresh derived state.
      */

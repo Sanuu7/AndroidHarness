@@ -9,7 +9,7 @@ import java.io.File
 /**
  * Tier-routed environment probes shared by the status/doctor tools. Their
  * contract: report what the shell tool will ACTUALLY be able to do in the
- * workspace's execution tier — not what blind app-uid stat()s suggest. The
+ * workspace's execution tier, not what blind app-uid stat()s suggest. The
  * deployed /data/local/tmp copy is opaque to the app uid (its File.exists()
  * returns false for working binaries), so privileged-tier probes route
  * through the Shizuku shell.
@@ -59,7 +59,7 @@ internal object EnvProbes {
 
     /**
      * Resolves [names] in the live shell (`command -v`), which sees both real
-     * binaries and the app-tier linker shims — the ground truth for "can the
+     * binaries and the app-tier linker shims, the ground truth for "can the
      * agent run this tool right now". Null when the probe could not run and
      * the caller should report "unknown" instead of guessing: a non-blank
      * output with zero recognizable `name=state` lines means the shell itself

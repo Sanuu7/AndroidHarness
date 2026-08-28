@@ -69,7 +69,7 @@ class McpManager(
         val text = runCatching { storeFile.readText() }.getOrNull() ?: return emptyList()
         val parsed = runCatching { json.decodeFromString<List<McpServerConfig>>(text) }.getOrNull()
         // Integrity: the .hmac sidecar is written only by the app alongside each
-        // save. A mismatch means the file was edited out-of-band or corrupted —
+        // save. A mismatch means the file was edited out-of-band or corrupted,
         // refuse the contents loudly instead of spawning whatever it now defines.
         val expected = computeConfigHmac(text.toByteArray())
         val stored = runCatching { configHmacFile().readText().trim() }.getOrNull()
@@ -110,7 +110,7 @@ class McpManager(
 
     /**
      * HMAC-SHA256 over the config bytes, keyed by a non-exportable AndroidKeyStore
-     * key. Null when Keystore is unavailable — verification then degrades to
+     * key. Null when Keystore is unavailable, verification then degrades to
      * accept, never to bricking the server list.
      */
     private fun computeConfigHmac(data: ByteArray): String? = runCatching {
@@ -241,7 +241,7 @@ class McpManager(
         _statuses.update {
             it + (name to McpServerStatus(
                 "auth",
-                error = "Authorization required — tap Authenticate to connect your account.",
+                error = "Authorization required. Tap Authenticate to connect your account.",
                 needsAuth = true,
             ))
         }

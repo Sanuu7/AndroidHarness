@@ -297,7 +297,7 @@ internal fun SlashSuggestions(
             add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
             add(SlashEntry("/env", "Linux environment", "Check, update, install or repair the Linux env", SlashCommands.Kind.ENV))
             // "plan" is excluded: the built-in /plan entry above already covers
-            // it (activates Plan mode + loads the plan skill) — showing the
+            // it (activates Plan mode + loads the plan skill), showing the
             // skill too used to list /plan twice.
             state.skills.filter { it.enabled && it.name != "plan" }.forEach { skill ->
                 add(SlashEntry("/${skill.name}", skill.name, skill.description, SlashCommands.Kind.SKILL))

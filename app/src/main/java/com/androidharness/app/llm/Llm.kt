@@ -56,8 +56,8 @@ data class ToolSchema(
  * Per-request generation options derived from user settings.
  *
  * [cacheKey] is a stable per-session identifier (the session id). Providers use
- * it where the API supports explicit cache routing — OpenAI's `prompt_cache_key`
- * and Anthropic's `metadata.user_id` — so consecutive requests of one session
+ * it where the API supports explicit cache routing, OpenAI's `prompt_cache_key`
+ * and Anthropic's `metadata.user_id`, so consecutive requests of one session
  * land on the same cache shard.
  */
 data class RequestOptions(
@@ -77,8 +77,8 @@ sealed interface StreamEvent {
     /**
      * One per request, emitted once the final counts are known.
      *
-     * [inputTokens] is the TOTAL prompt size — uncached input + tokens served
-     * from the cache + tokens written to the cache — so the cache hit rate is
+     * [inputTokens] is the TOTAL prompt size, uncached input + tokens served
+     * from the cache + tokens written to the cache, so the cache hit rate is
      * simply `cachedInputTokens / inputTokens` for every provider.
      * [cachedInputTokens] counts cache reads only; [cacheWriteTokens]
      * (Anthropic) are billed at the 1.25x write premium and are reported
@@ -94,9 +94,9 @@ sealed interface StreamEvent {
 
     /**
      * Emitted once per request when the stream terminates. [finishReason] is
-     * the provider's raw termination code — "stop", "length", "tool_calls",
+     * the provider's raw termination code, "stop", "length", "tool_calls",
      * Anthropic's "max_tokens"/"end_turn"/"tool_use", Gemini's "STOP"/
-     * "MAX_TOKENS" — or null when the server never reported one.
+     * "MAX_TOKENS", or null when the server never reported one.
      */
     data class Done(val finishReason: String? = null) : StreamEvent
 }

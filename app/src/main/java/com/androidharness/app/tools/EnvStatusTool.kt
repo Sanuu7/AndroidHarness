@@ -82,7 +82,7 @@ class EnvStatusTool(
             else -> {
                 val live = EnvProbes.commandPresence(router, cwd, headlineTools.map { it.first })
                 when {
-                    // Live shell said so — the only authoritative answer.
+                    // Live shell said so, the only authoritative answer.
                     live != null -> headlineTools.filter { (name, _) -> live[name] == false }.map { it.first }
                     // App prefix is statable by this uid: filesystem check is honest here.
                     probeRoot === linuxEnv.prefix ->
@@ -100,10 +100,10 @@ class EnvStatusTool(
             missing != null && missing.isEmpty() -> "installed ✓ (bash, git, gh, python3, node, npm, pip all present)"
             missing != null -> "installed ⚠ missing: " + missing.joinToString(", ")
             shizuku.isDeployInProgress() ->
-                "redeploying the shell-tier copy right now — tool presence unknown for a moment, re-check shortly"
+                "redeploying the shell-tier copy right now; tool presence unknown for a moment, re-check shortly"
             else ->
                 "installed; presence probe unavailable right now (the shell-tier copy may have just been " +
-                    "redeployed) — re-check in a minute"
+                    "redeployed); re-check in a minute"
         }
         // GitHub auth status (stress-test M7): the token's master copy lives in
         // the app's encrypted settings; this file is the materialized copy both
@@ -116,20 +116,20 @@ class EnvStatusTool(
         val ghText = when {
             ghMode != null && linuxEnv.githubToken() == null ->
                 "⚠ STALE SHELL CREDENTIALS: no token is configured in the app, but " +
-                    tokenPath.absolutePath + " still exists (" + ghMode + ") — git/gh in this tier may " +
+                    tokenPath.absolutePath + " still exists (" + ghMode + "); git/gh in this tier may " +
                     "still authenticate with the old token. Re-save and re-clear the token in " +
                     "Settings → GitHub to propagate the logout, or redeploy the toolchain"
             ghMode != null ->
-                "authenticated ✓ — token at " + tokenPath.absolutePath + " ($ghMode); git URLs are rewritten " +
+                "authenticated ✓; token at " + tokenPath.absolutePath + " ($ghMode); git URLs are rewritten " +
                     "with it automatically, so plain https://github.com clones and pushes work" +
                     (if (ghHostsMode != null) "; the gh CLI is authenticated too (~/.config/gh/hosts.yml)" else "") +
                     ". Master copy lives in the app's encrypted settings and survives toolchain reinstalls; " +
                     "manage in Settings → GitHub"
             linuxEnv.githubToken() != null ->
                 "a token is configured, but ${tokenPath.absolutePath} could not be read from this tier " +
-                    "(missing or unreadable); `doctor --github` reports details — manage in Settings → GitHub"
+                    "(missing or unreadable); `doctor --github` reports details; manage in Settings → GitHub"
             else ->
-                "no token — public HTTPS clones work anonymously; push/PR/private repos need a personal " +
+                "no token: public HTTPS clones work anonymously; push/PR/private repos need a personal " +
                     "access token (Settings → GitHub)"
         }
         return ToolResult(
@@ -156,7 +156,7 @@ class EnvStatusTool(
                     "to reach shared storage as the app uid, \"All files access\" must be granted in " +
                     "Settings → Storage access. " +
                     "There is no /bin/bash on Android: scripts with a #!/bin/bash shebang fail with " +
-                    "\"bad interpreter\" — use #!/system/bin/sh (toybox) for system scripts, or run " +
+                    "\"bad interpreter\"; use #!/system/bin/sh (toybox) for system scripts, or run " +
                     "them with the toolchain's bash (\$PREFIX/bin/bash script.sh); only HTTPS git " +
                     "transport is available (no ssh binary, so git@github.com:… remotes do not work).")
             },

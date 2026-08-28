@@ -117,7 +117,7 @@ class GeminiProvider(
                 }
 
                 val candidate = chunk["candidates"]?.jsonArrayOrAbsent()?.firstOrNull()?.jsonObjectOrAbsent()
-                // Sits on the candidate, a sibling of content — read it before
+                // Sits on the candidate, a sibling of content, read it before
                 // the parts extraction below, which may come up empty.
                 candidate?.get("finishReason")?.jsonPrimitive?.contentOrNull
                     ?.let { finishReason = it }

@@ -13,7 +13,7 @@ import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
  * map onto [EditorColorScheme] slots so the host app theme drives the colors
  * (the editor view overrides those slots with Material colors at setup).
  *
- * Highlighting only — no completion — the right scope for a harness file
+ * Highlighting only, no completion, the right scope for a harness file
  * editor without shipping TextMate grammars.
  */
 class BasicCodeLanguage(path: String) : EmptyLanguage() {

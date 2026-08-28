@@ -15,7 +15,7 @@ import org.junit.rules.TemporaryFolder
 /**
  * file_info must not trust stat size alone: procfs entries (/proc/self/status
  * & co.) report st_size = 0 while their reads return real content, which made
- * file_info claim they were empty while read_file happily showed 1KB — the two
+ * file_info claim they were empty while read_file happily showed 1KB, the two
  * tools contradicted each other.
  */
 class FileInfoVirtualFileTest {

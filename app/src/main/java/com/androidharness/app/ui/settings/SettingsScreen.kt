@@ -112,7 +112,7 @@ private const val GH_NEW_TOKEN_URL =
 /**
  * Scopes the token card offers on top of the always-on `repo`: each unlocks a
  * specific gh/git capability, and leaving one off is how "403 / Not Found"
- * surprises happen later. `repo` is not toggleable — without it the token is
+ * surprises happen later. `repo` is not toggleable, without it the token is
  * useless for push/PR/private repos, AndroidHarness's core features.
  */
 private val GH_OPTIONAL_SCOPES = listOf(
@@ -525,13 +525,13 @@ private fun GitHubSection(container: AppContainer) {
                                 if (check.login != null) {
                                     container.keys.putGitHubToken(token)
                                     container.keys.putGitHubLogin(check.login)
-                                    // UI first — the auth propagation below keeps
+                                    // UI first, the auth propagation below keeps
                                     // running in the background.
                                     hasToken = true
                                     expanded = false
                                     draft = ""
                                     status = "Verified as ${check.login}" +
-                                        (check.plan?.let { " — plan: $it" } ?: "") +
+                                        (check.plan?.let { " (plan: $it)" } ?: "") +
                                         (check.scopes?.let { " · scopes: $it" } ?: "")
                                     checking = false
                                     container.refreshGitHubAuth()
@@ -586,7 +586,7 @@ private fun GitHubSection(container: AppContainer) {
                 TextButton(onClick = {
                     confirmLogout = false
                     // Dispatchers.IO: the refresh chain re-materializes files and
-                    // re-stages the whole toolchain tar — never block the UI thread.
+                    // re-stages the whole toolchain tar, never block the UI thread.
                     scope.launch(Dispatchers.IO) {
                         container.keys.removeGitHubToken()
                         container.keys.removeGitHubLogin()
@@ -619,7 +619,7 @@ private class GitHubTokenCheck(
 /**
  * Asks api.github.com who a token belongs to. Returns the verified login name
  * plus the account plan and granted scopes, or an error carrying GitHub's own
- * message verbatim — its hints ("Resource not accessible by personal access
+ * message verbatim, its hints ("Resource not accessible by personal access
  * token", rate-limit notices) are more actionable than any generic sentence.
  * The token is only persisted after this returns a login, so an invalid paste
  * never becomes the stored credential.
@@ -744,7 +744,7 @@ private fun WebSearchSection(container: AppContainer) {
 
             when {
                 provider == "keyless" -> Text(
-                    "The agent searches public engines — zero setup; Brave or Tavily " +
+                    "The agent searches public engines with zero setup; Brave or Tavily " +
                         "give cleaner, higher-quality results.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -918,7 +918,7 @@ private fun McpSection(container: AppContainer) {
             if (configTampered) {
                 Text(
                     "The MCP server list was modified outside the app and failed its integrity " +
-                        "check — its contents were ignored. Re-add your servers below to rebuild it.",
+                        "check; its contents were ignored. Re-add your servers below to rebuild it.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.error,
                 )
@@ -977,8 +977,8 @@ private fun McpSection(container: AppContainer) {
                     }
                     Text(
                         when {
-                            !server.enabled -> "Off — enable to use its tools"
-                            status == null -> "Not connected yet — tap Test, or it connects before a run"
+                            !server.enabled -> "Off (enable to use its tools)"
+                            status == null -> "Not connected yet; tap Test, or it connects before a run"
                             status.state == "connected" -> "Connected · ${status.toolCount} tools"
                             status.state == "auth" -> "Sign in to use this server"
                             status.state == "connecting" -> "Connecting…"
@@ -1102,7 +1102,7 @@ private fun McpAddDialog(
                         )
                         parsed.forEach { c ->
                             Text(
-                                "• ${c.name} — ${c.type} — " +
+                                "• ${c.name} · ${c.type} · " +
                                     (c.url ?: c.command + if (c.args.isEmpty()) "" else " ${c.args.joinToString(" ")}"),
                                 style = MaterialTheme.typography.bodySmall,
                             )
@@ -1248,7 +1248,7 @@ private fun McpServerDialog(
                     )
                     Text(
                         if (type == "http") {
-                            "Streamable HTTP transport. If the server requires sign-in, save first — " +
+                            "Streamable HTTP transport. If the server requires sign-in, save first; " +
                                 "the Authenticate button appears after the server demands it."
                         } else {
                             "Legacy HTTP+SSE transport for older remote servers."
@@ -1497,7 +1497,7 @@ private fun LinuxEnvironmentCard(
 /**
  * Read-only snapshot of what's actually driving requests right now. Model and
  * thinking changed from the chat header (picker + overflow), so they show
- * here as status, not settings — keeps this screen single-purpose.
+ * here as status, not settings, keeps this screen single-purpose.
  */
 @Composable
 private fun CurrentSetupCard(
@@ -1570,7 +1570,7 @@ private fun AgentSection(
             )
             if (settings.permissionMode == PermissionMode.FULL_ACCESS) {
                 Text(
-                    "Full access runs every file and shell action without confirmation — " +
+                    "Full access runs every file and shell action without confirmation; " +
                         "destructive commands are the model's judgment alone. Only the git " +
                         "tools (commit, push, pull, checkout, branch) still document asking " +
                         "you first. Enable only for workspaces you trust.",
@@ -1648,7 +1648,7 @@ private val AGENTS_MD_TEMPLATE = """# AGENTS.md
 (What this project is, in one or two sentences.)
 
 ## Build & run
-(Commands to build, run, and test — plain names, e.g. `gradlew assembleDebug`.)
+(Commands to build, run, and test; plain names, e.g. `gradlew assembleDebug`.)
 
 ## Conventions
 (Code style, naming, file organization the agent should follow.)
@@ -2045,7 +2045,7 @@ private fun UpdatesCard(container: AppContainer) {
                     is com.androidharness.app.data.update.UpdateManager.Step.Available -> {
                         Spacer(Modifier.width(12.dp))
                         Text(
-                            "${s.release.tag} available — see the dialog",
+                            "${s.release.tag} available, see the dialog",
                             style = MaterialTheme.typography.labelMedium,
                             color = MaterialTheme.colorScheme.primary,
                         )

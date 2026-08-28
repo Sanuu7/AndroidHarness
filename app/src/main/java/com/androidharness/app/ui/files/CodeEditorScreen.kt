@@ -309,7 +309,7 @@ fun CodeEditorScreen(
 
                 is Load.Binary -> NotTextView(
                     sizeBytes = st.sizeBytes,
-                    detail = "Binary file — it can't be edited as text.",
+                    detail = "Binary file: it can't be edited as text.",
                     onShare = {
                         val f = fs ?: return@NotTextView
                         scope.launch {
@@ -373,7 +373,7 @@ fun CodeEditorScreen(
                                 setWordwrap(true)
                                 setText(decoded.value!!.text)
                                 setEditorLanguage(BasicCodeLanguage(path))
-                                // Dirty flag via the event bus — survives setText
+                                // Dirty flag via the event bus, survives setText
                                 // swapping out the Content object.
                                 subscribeEvent(
                                     io.github.rosemoe.sora.event.ContentChangeEvent::class.java,
@@ -533,7 +533,7 @@ private fun FindBar(
                     modifier = Modifier.weight(1f).height(54.dp),
                 )
                 Text(
-                    if (matchInfo.first == 0) "—" else "${matchInfo.second + 1}/${matchInfo.first}",
+                    if (matchInfo.first == 0) "-" else "${matchInfo.second + 1}/${matchInfo.first}",
                     style = MaterialTheme.typography.labelSmall,
                     color = scheme.onSurfaceVariant,
                     modifier = Modifier.padding(horizontal = 6.dp),

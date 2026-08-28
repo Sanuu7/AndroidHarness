@@ -18,9 +18,9 @@ import java.io.File
  *    that injects the token into every https://github.com URL. URL rewriting
  *    is the only credential transport that works in BOTH tiers: in the app-uid
  *    tier git-spawned helpers (gh auth git-credential, git-credential-store)
- *    still cannot exec under the W^X shim. In the shell tier they work — git's
+ *    still cannot exec under the W^X shim. In the shell tier they work, git's
  *    compiled-in SHELL_PATH is patched to /system/bin/sh at extract time (see
- *    TermuxShellPath) — so no empty `credential.helper` reset is written that
+ *    TermuxShellPath), so no empty `credential.helper` reset is written that
  *    would block them.
  */
 object GitHubProvision {
@@ -64,7 +64,7 @@ object GitHubProvision {
     }
 
     /**
-     * Minimal gh hosts.yml that authenticates the gh CLI with the same token —
+     * Minimal gh hosts.yml that authenticates the gh CLI with the same token,
      * the file `gh auth login --with-token` would have produced, without the
      * interactive login. Null when there is no token (the file is removed).
      */

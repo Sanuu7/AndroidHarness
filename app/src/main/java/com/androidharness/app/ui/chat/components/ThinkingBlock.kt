@@ -49,7 +49,7 @@ import com.androidharness.app.ui.theme.fastSpatialSpec
 
 /**
  * Collapsible reasoning transcript. Deliberately quiet: a label, a chevron, and
- * a hairline rail next to the body text. No brain icons, no purple — reasoning
+ * a hairline rail next to the body text. No brain icons, no purple, reasoning
  * is supporting evidence, not the main character.
  *
  * While live the block stays collapsed to a one-line pill (fast streams would
@@ -60,7 +60,7 @@ import com.androidharness.app.ui.theme.fastSpatialSpec
 internal fun ThinkingBlock(
     thinking: String,
     live: Boolean = false,
-    /** How long reasoning took — shown as "Thought for Ns" once committed. */
+    /** How long reasoning took, shown as "Thought for Ns" once committed. */
     durationMs: Long = 0,
 ) {
     var expanded by remember { mutableStateOf(false) }

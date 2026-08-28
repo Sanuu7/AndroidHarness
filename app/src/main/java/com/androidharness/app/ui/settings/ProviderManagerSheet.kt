@@ -47,7 +47,7 @@ import kotlinx.coroutines.launch
 
 /**
  * Provider management without leaving the conversation: a fully-expanded
- * bottom sheet with two pages — a list (tap = activate + close; edit/delete
+ * bottom sheet with two pages, a list (tap = activate + close; edit/delete
  * icons mirror the Providers screen) and the shared add/edit form
  * ([ProviderSheetContent]) reached with a forward/back slide. The full-screen
  * Providers destination still exists for bulk management from the drawer.
@@ -178,7 +178,7 @@ fun ProviderManagerSheet(
                         }
                         item {
                             // The local model/thinking catalog (models.dev)
-                            // drives which models and tiers the pickers show —
+                            // drives which models and tiers the pickers show,
                             // this forces a fresh download instead of waiting
                             // for the weekly auto-refresh.
                             val context = LocalContext.current

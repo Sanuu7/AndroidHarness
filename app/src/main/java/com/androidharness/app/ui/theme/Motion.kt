@@ -9,7 +9,7 @@ import androidx.compose.animation.core.tween
  * Single source of truth for motion.
  *
  * Subtle & snappy: movement uses fast springs with no bounce, fades and scales
- * use short eased tweens. Nothing wiggles, morphs, or overshoots — the UI
+ * use short eased tweens. Nothing wiggles, morphs, or overshoots, the UI
  * should feel precise and get out of the way.
  *
  * The helper names are stable API; every animation site in the app reads

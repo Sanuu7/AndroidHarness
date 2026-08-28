@@ -68,7 +68,7 @@ import com.androidharness.app.ui.theme.LocalStatusColors
  * One shared skeleton for every "agent needs you" card (approvals, plans,
  * questions, environment installs): flat hairline card, quiet title row,
  * content, and a right-aligned action row with a single filled accent button.
- * The old design gave each card its own colors, icons and elevation — the
+ * The old design gave each card its own colors, icons and elevation, the
  *sameness here is what makes the feed readable.
  */
 @Composable
@@ -174,7 +174,7 @@ internal fun PlanApprovalCard(
 }
 
 /**
- * Interactive question card. Options render as full-width selectable rows —
+ * Interactive question card. Options render as full-width selectable rows,
  * single-choice answers fire instantly on tap (radio indicator), multi-select
  * toggles checkboxes and answers through a submit button that shows the pick
  * count. "Something else…" reveals a free-text field in every mode.

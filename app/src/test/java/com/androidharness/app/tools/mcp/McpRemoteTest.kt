@@ -233,7 +233,7 @@ private class TinyHttpServer {
                 handlers[path]?.handle(conn)
             }
         } catch (_: Exception) {
-            // Client disconnect or server stop — expected.
+            // Client disconnect or server stop, expected.
         }
     }
 

@@ -33,7 +33,7 @@ class WebSearchTool(
         "Search the web and return top results (title, url, snippet). Uses the configured " +
         "search API automatically when one is set in Settings; otherwise keyless engines " +
         "run with automatic fallback. Choose an engine with the 'engine' parameter " +
-        "(duckduckgo, bing, brave, google — keyless mode only) or use 'auto'."
+        "(duckduckgo, bing, brave, google; keyless mode only) or use 'auto'."
     override val parametersSchema = Schema.obj(
         mapOf(
             "query" to Schema.string("The search query."),
@@ -66,7 +66,7 @@ class WebSearchTool(
                     if (requested != "auto") {
                         // The engine selector is keyless-only; say so instead of
                         // silently returning different results than asked for.
-                        text.append("\n[note: the engine parameter is ignored — ${apiBackend.label} is active]")
+                        text.append("\n[note: the engine parameter is ignored; ${apiBackend.label} is active]")
                     }
                     text.append("\n[via ").append(outcome.via ?: apiBackend.label).append(']')
                     return ToolResult(true, text.toString())
@@ -101,7 +101,7 @@ class WebSearchTool(
 
 /**
  * Decides when http_request attaches the stored GitHub token. API hosts
- * (api.github.com, uploads.github.com) get it AUTOMATICALLY — anonymous API
+ * (api.github.com, uploads.github.com) get it AUTOMATICALLY, anonymous API
  * calls from the main agent were a standing footgun (60 req/h rate limit,
  * private repos 404). Explicit true widens to other github.com /
  * githubusercontent.com hosts; explicit false never attaches. The token is
@@ -198,11 +198,11 @@ class HttpRequestTool(
                     sb.append(respBody.take(20_000))
                     if (respBody.length > 20_000) sb.append("\n[truncated]")
                     if (attachAuth && token == null) {
-                        sb.append("\n[note: no GitHub token configured — request sent anonymously; " +
+                        sb.append("\n[note: no GitHub token configured; request sent anonymously; " +
                             "set one in Settings → GitHub for private repos and the 5000 req/h limit]")
                     }
                     if (attachAuth && token != null && (resp.code == 401 || resp.code == 403)) {
-                        sb.append("\n[note: GitHub refused an AUTHENTICATED request (" + resp.code + ") — " +
+                        sb.append("\n[note: GitHub refused an AUTHENTICATED request (" + resp.code + "): " +
                             "check the token's validity/scopes with doctor --github]")
                     }
                     ToolResult(true, sb.toString())

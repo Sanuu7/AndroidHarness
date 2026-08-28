@@ -12,7 +12,7 @@ import java.io.File
 
 /**
  * File-manager operations layered on [FsNode] primitives so they behave the
- * same on real directories and SAF trees. Copy conflicts never overwrite —
+ * same on real directories and SAF trees. Copy conflicts never overwrite,
  * they auto-suffix "(2)"-style; moves are copy+delete across roots.
  */
 object FileOps {
@@ -43,7 +43,7 @@ object FileOps {
             val srcParent = src.relPath.substringBeforeLast('/', missingDelimiterValue = "")
             val dstParent = destDir.relPath.trim('.').trim('/')
             if (srcParent == dstParent) {
-                // Plain rename within the same directory — no copy involved,
+                // Plain rename within the same directory, no copy involved,
                 // and ignore-lists must never apply to a user-requested move.
                 val finalName =
                     if (name != src.name && destDir.list().any { it.name == name }) {
@@ -56,7 +56,7 @@ object FileOps {
             }
             val moved = copy(src, destDir, name)
             if (!src.delete()) {
-                // Partially moved directories can't be rolled back safely — report.
+                // Partially moved directories can't be rolled back safely, report.
                 throw ToolFailure("Copied to destination but could not delete the original")
             }
             moved

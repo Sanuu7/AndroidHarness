@@ -87,7 +87,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * Workspace file manager: browse any directory, open files in the editor, and
- * manage them — rename, copy, move, delete, share to other apps, open
+ * manage them, rename, copy, move, delete, share to other apps, open
  * externally, create files/folders, filter.
  *
  * When [sessionId] is set the list also shows per-file "+N −M" badges for what

@@ -183,7 +183,7 @@ class AppContainer(val appContext: Context) {
             // A repair changes prefix content (reinstalled pip, rewritten
             // shebangs) without necessarily changing the package-set hash, and
             // StateFlow conflates the unchanged Ready state so the deploy
-            // collector above never re-fires — re-stage the shell-tier copy
+            // collector above never re-fires, re-stage the shell-tier copy
             // explicitly so it picks the fixes up.
             if (repaired != null &&
                 shizuku.state.value == com.androidharness.app.data.env.ShizukuState.GRANTED &&

@@ -15,7 +15,7 @@ object SecretRedactor {
         // the token-embedded clone/push URLs git prints on GIT_CURL_VERBOSE.
         Regex("""\bgh[posr]_[A-Za-z0-9]{16,}"""),
         Regex("""github_pat_[A-Za-z0-9_]{20,}"""),
-        // user:password@ userinfo inside an https URL — only the credentials
+        // user:password@ userinfo inside an https URL, only the credentials
         // are replaced, so the host and path stay readable.
         Regex("""(?<=https://)[^/\s@]+:[^/\s@]{6,}(?=@)"""),
         // token-shaped values behind credential-ish keys (config dumps, URLs)

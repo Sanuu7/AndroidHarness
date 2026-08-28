@@ -9,7 +9,7 @@ import java.io.File
 /**
  * SHELL_PATH neutralization for the Termux git ELF: the compiled-in
  * /data/data/com.termux/files/usr/bin/sh must be replaced in place with
- * /system/bin/sh — same total length, NUL-padded — so git can spawn helpers
+ * /system/bin/sh, same total length, NUL-padded, so git can spawn helpers
  * (`gh auth git-credential`), hooks and aliases via `sh -c`. Scripts are
  * off-limits: the shebang rewriter owns them.
  */

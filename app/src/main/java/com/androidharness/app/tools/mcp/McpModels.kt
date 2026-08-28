@@ -75,7 +75,7 @@ object McpNames {
  * Parses the ecosystem-standard MCP config shape:
  * `{"mcpServers": {"name": {"command": "..."}}} for stdio servers and
  * `{"name": {"type": "http", "url": "...", "headers": {...}}}` for remote
- * ones — the format Claude Desktop / Claude Code / Cursor use, so their
+ * ones, the format Claude Desktop / Claude Code / Cursor use, so their
  * server definitions work as-is. Also accepts a bare single-server object
  * or an array of them.
  */

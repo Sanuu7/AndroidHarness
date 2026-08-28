@@ -5,7 +5,7 @@ import java.io.IOException
 
 /**
  * Decides which provider failures are worth retrying and how long to wait.
- * Transient conditions only — rate limits, server overload, network drops.
+ * Transient conditions only, rate limits, server overload, network drops.
  * Permanent errors (bad request, auth, not found) surface to the user at once.
  */
 internal object RetryPolicy {
@@ -25,7 +25,7 @@ internal object RetryPolicy {
     /**
      * Classifies a failure from its (optional) thrown cause and (optional)
      * in-stream message. [ApiException] is checked before [IOException]
-     * because it subclasses it — an HTTP 400 must not retry even though it
+     * because it subclasses it, an HTTP 400 must not retry even though it
      * arrives as an IOException.
      */
     fun isRetryable(cause: Throwable?, message: String?): Boolean {

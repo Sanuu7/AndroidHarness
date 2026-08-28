@@ -8,8 +8,8 @@ import com.androidharness.app.core.splitLines
  * Models frequently reproduce code with drifted whitespace: trailing spaces
  * dropped, indentation off by a level, CRLF read as LF. An exact match then
  * fails and the turn is wasted on a re-read loop. This matcher retries at
- * increasingly tolerant levels — each only accepted when the match is
- * unambiguous — and replaces using the ORIGINAL text span, so surrounding
+ * increasingly tolerant levels, each only accepted when the match is
+ * unambiguous, and replaces using the ORIGINAL text span, so surrounding
  * formatting is never rewritten.
  *
  * Deliberately whitespace-only: no typo/Levenshtein tolerance. Wrong-but-
@@ -38,21 +38,21 @@ object FuzzyEdit {
     /**
      * Replaces occurrences of [old] with [new]. Tries exact substring first,
      * then line-ending/trailing-space tolerant, then indentation tolerant.
-     * Falls through to the next level when the current one finds NOTHING —
+     * Falls through to the next level when the current one finds NOTHING,
      * never when it is ambiguous (ambiguity at a stricter level is a real
      * error the caller must see).
      */
     fun replace(text: String, old: String, new: String, replaceAll: Boolean): Result {
         if (old.isEmpty()) return Result.NotFound("old_string is empty")
 
-        // L0 — today's behavior: plain substring.
+        // L0, today's behavior: plain substring.
         val exact = findAllExact(text, old)
         if (exact.isNotEmpty()) return finish(text, exact, new, replaceAll, Level.EXACT)
 
-        // L1 — same lines, ignoring trailing whitespace and line terminators.
+        // L1, same lines, ignoring trailing whitespace and line terminators.
         val l1 = findNormalized(text, old, Level.LINE_ENDINGS)
         if (l1.isEmpty()) {
-            // L2 — additionally ignore leading whitespace per line.
+            // L2, additionally ignore leading whitespace per line.
             val l2 = findNormalized(text, old, Level.INDENTATION)
             if (l2.isEmpty()) {
                 return Result.NotFound(

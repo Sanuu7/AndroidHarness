@@ -32,7 +32,7 @@ class FuzzyEditTest {
 
     @Test
     fun `internal whitespace drift is NOT tolerated`() {
-        // Spaces inside the line (not leading/trailing) must fail —
+        // Spaces inside the line (not leading/trailing) must fail,
         // conservative by design.
         val file = "fun foo()   {\n    return 1\n}\n"
         val old = "fun foo() {\n    return 1\n}"
@@ -85,7 +85,7 @@ class FuzzyEditTest {
         val old = "foo"
         val r = FuzzyEdit.replace(file, old, "bar", false)
         // L0/L1 find nothing ("  foo" != "foo" exact and trailing-trim doesn't
-        // help leading spaces), L2 finds two — must report ambiguous, not replace.
+        // help leading spaces), L2 finds two, must report ambiguous, not replace.
         assertTrue(r is Result.Ambiguous)
     }
 

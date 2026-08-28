@@ -41,8 +41,8 @@ import androidx.compose.ui.unit.dp
  * Shared bits for chat rendering: the tool icon map, monospace blocks and
  * clickable grep/search output lines.
  *
- * Icons are one family — Material Outlined, tinted by usage, never by colored
- * container circles — so a screen full of tool cards stays calm.
+ * Icons are one family, Material Outlined, tinted by usage, never by colored
+ * container circles, so a screen full of tool cards stays calm.
  */
 internal fun toolIcon(name: String): ImageVector = when (name) {
     "shell", "shell_background" -> Icons.Outlined.Terminal
@@ -83,7 +83,7 @@ internal fun MonoBlock(text: String) {
     }
 }
 
-/** Shared pretty-print instance — one per call site was allocated before. */
+/** Shared pretty-print instance, one per call site was allocated before. */
 private val prettyJson = kotlinx.serialization.json.Json { prettyPrint = true }
 
 private val linePattern = Regex("^(?s)(.+?):(\\d+): (.+)$")

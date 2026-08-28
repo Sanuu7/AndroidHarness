@@ -153,7 +153,7 @@ class ThinkingSpecsTest {
             mapOf(
                 "openrouter" to mapOf(
                     // Shipped table calls deepseek NONE (inherent); the catalog
-                    // says this lane takes an effort dial — catalog wins.
+                    // says this lane takes an effort dial, catalog wins.
                     "deepseek/deepseek-v4-flash" to com.androidharness.app.llm.ModelsDev.Entry(
                         reasoning = true, effortValues = listOf("high", "xhigh"),
                         budgetTokens = false, budgetMax = null, toggle = true,

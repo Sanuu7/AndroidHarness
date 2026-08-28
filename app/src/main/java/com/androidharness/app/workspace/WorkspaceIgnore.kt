@@ -35,7 +35,7 @@ object WorkspaceIgnore {
 
     /**
      * Whether [dirName] should be skipped while walking from [startRelPath].
-     * Walks that *start* inside an ignored directory still enter it — the user
+     * Walks that *start* inside an ignored directory still enter it, the user
      * asked to look there.
      */
     fun shouldSkipEnter(startRelPath: String, dirName: String): Boolean {

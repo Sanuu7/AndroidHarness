@@ -5,7 +5,7 @@ import kotlinx.serialization.json.JsonObject
 /**
  * Delegates a research task to a nested read-only agent with its own context
  * window. The engine intercepts calls to this tool and runs the subagent
- * loop itself ([AgentEngine.runSubagent]) — this stub only declares the
+ * loop itself ([AgentEngine.runSubagent]), this stub only declares the
  * schema. isReadOnly = true: subagents can never modify the workspace, so
  * no approval is needed to spawn one.
  */

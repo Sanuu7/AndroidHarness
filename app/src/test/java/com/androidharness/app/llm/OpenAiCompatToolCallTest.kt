@@ -6,7 +6,7 @@ import org.junit.Test
 /**
  * Regression tests for streamed tool-call accumulation. Gateways in the wild
  * stream parallel tool calls with every fragment carrying index 0, and echo
- * the call id on every fragment — the accumulator must keep calls separate by
+ * the call id on every fragment, the accumulator must keep calls separate by
  * ID and never lose argument fragments.
  */
 class OpenAiCompatToolCallTest {

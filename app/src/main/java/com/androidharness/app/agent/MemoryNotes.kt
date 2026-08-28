@@ -32,7 +32,7 @@ object MemoryNotes {
             }
         }
         if (next.length <= maxChars) return next
-        // Newest notes live at the end — keep the tail.
+        // Newest notes live at the end, keep the tail.
         return next.takeLast(maxChars)
     }
 }

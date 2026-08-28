@@ -80,7 +80,7 @@ object SlashCommands {
             "   - bg_kill it, then bg_list must NOT retain it (or show it pruned)\n\n" +
             "10. GIT\n" +
             "    - git init -q → must produce NO template warning (GIT_TEMPLATE_DIR set)\n" +
-            "    - git_commit one fixture → succeeds (Bug E regression: if it fails with \"Author identity unknown\", FAIL — harness should auto-configure or explain)\n" +
+            "    - git_commit one fixture → succeeds (Bug E regression: if it fails with \"Author identity unknown\", FAIL: harness should auto-configure or explain)\n" +
             "    - git_status / git_diff return clean output\n\n" +
             "11. WEB\n" +
             "    - web_search (any query) returns results\n" +
@@ -92,7 +92,7 @@ object SlashCommands {
             "13. MEMORY & SKILLS\n" +
             "    - memory_write (append) a test line, read back .harness/memory.md\n" +
             "    - skills_list returns the catalog; skill_view a known skill succeeds\n\n" +
-            "14. SHELL SANDBOX (Bug A regression — must be BLOCKED):\n" +
+            "14. SHELL SANDBOX (Bug A regression; must be BLOCKED):\n" +
             "    - shell: echo INJECT > ../escape_me.txt → expect the file NOT created OUTSIDE the workspace\n" +
             "    - shell: ls /storage/emulated/0/ → expect listing of arbitrary shared-storage dirs to be refused (or clearly reported as out-of-scope)\n\n" +
             "15. BINARY & EMPTY (Bug C/Bug D regression):\n" +
@@ -155,7 +155,7 @@ object SlashCommands {
             "/env" -> Result(Kind.ENV)
             "/init" -> Result(Kind.INIT, agentText = INIT_PROMPT)
             // /plan ALWAYS activates Plan mode AND loads the bundled plan
-            // skill — the model gets the full planning procedure plus whatever
+            // skill, the model gets the full planning procedure plus whatever
             // the user typed after the command.
             "/plan" -> Result(Kind.PLAN, agentText = planPrompt(argument, skillContent))
             else -> {
@@ -188,7 +188,7 @@ object SlashCommands {
 
     /**
      * Slash-menu tap. Skills become a composer badge and never send.
-     * Snippets still drop into the box as text. /plan drops into the box too —
+     * Snippets still drop into the box as text. /plan drops into the box too,
      * the user finishes the instruction and sends manually. Other local
      * commands fire now.
      */

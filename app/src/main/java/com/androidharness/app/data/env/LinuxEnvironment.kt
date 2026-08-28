@@ -103,7 +103,7 @@ internal object TermuxLinkRewrite {
  * never exist, so the scripts have to be fixed at extraction:
  *
  *  - the Android-bridge wrapper commands (termux-tools: pm, cmd, am, settings,
- *    …) are dead weight here — they shadow the real /system binaries and die
+ *    …) are dead weight here, they shadow the real /system binaries and die
  *    with exit 126, so they are dropped;
  *  - language tooling (bin/pip3, lib/node_modules/npm/bin/npm-cli.js, git's
  *    libexec helper scripts, …) is genuinely needed, and the SHELL-uid tier
@@ -120,7 +120,7 @@ internal object TermuxShebangs {
     /** Match marker for any Termux-prefixed shebang (even outside files/usr). */
     const val TERMUX_PREFIX_MARK = "#!/data/data/com.termux/"
 
-    /** Deployed shell-tier prefix — where rewritten shebangs point. */
+    /** Deployed shell-tier prefix, where rewritten shebangs point. */
     const val DEPLOYED_PREFIX = LinuxEnvironmentManager.TMP_PREFIX_BASE + "/linux"
 
     /** Android-bridge wrapper commands shipped by termux-tools. */
@@ -133,7 +133,7 @@ internal object TermuxShebangs {
 
     /**
      * True when [name] is a termux-tools Android-bridge wrapper. The wrappers
-     * are POSIX shell scripts — they all carry a Termux bin/sh shebang — so a
+     * are POSIX shell scripts, they all carry a Termux bin/sh shebang, so a
      * non-shell script that happens to share a name (pm, log, …) is tooling
      * that should be rewritten, not dropped.
      */
@@ -282,7 +282,7 @@ class LinuxEnvironmentManager(
      * Notified whenever the installed package set changes: the app wires this
      * to ShizukuManager.invalidateDeployState so the deployed copy is
      * re-checked (and redeployed if the hash moved) on the next privileged
-     * command — without it, an in-place package update would keep serving the
+     * command, without it, an in-place package update would keep serving the
      * old toolchain until an app restart.
      */
     var deployStateListener: (() -> Unit)? = null
@@ -292,7 +292,7 @@ class LinuxEnvironmentManager(
     /**
      * Self-heal for the deployed shell-tier copy: re-compares the deployed
      * hash at most once per [DEPLOY_REVERIFY_INTERVAL_MS], so a vanished or
-     * corrupted .harness-hash — or any external staging drift — is noticed and
+     * corrupted .harness-hash, or any external staging drift, is noticed and
      * repaired by the normal deploy path without waiting for an app restart.
      * No-op when the hash matches the staging state.
      */
@@ -553,7 +553,7 @@ class LinuxEnvironmentManager(
     /**
      * One-shot repair for existing installs, run at every app start:
      * relinks dangling symlinks, cleans/rewrites Termux shebangs, neutralizes
-     * git's embedded Termux SHELL_PATH, and heals an incomplete toolchain —
+     * git's embedded Termux SHELL_PATH, and heals an incomplete toolchain,
      * packages whose install was interrupted never complete on their own (the
      * marker file exists, so the environment reads Ready), and packages whose
      * binaries vanished keep reporting "broken" forever. install() resumes
@@ -749,7 +749,7 @@ class LinuxEnvironmentManager(
     /**
      * Called after the user saves/clears the GitHub token. Auth reaches the
      * shell tier through syncShellTierAuth (direct writes into the deployed
-     * prefix — fast, and independent of the deploy machinery; logout used to
+     * prefix, fast, and independent of the deploy machinery; logout used to
      * leave gh/git authenticated there when the full redeploy silently
      * failed). The staging tarball is then re-staged in the background so it
      * never carries a stale token, WITHOUT a redeploy: the deployed prefix is
@@ -778,7 +778,7 @@ class LinuxEnvironmentManager(
      * insteadOf rewrite). Payloads are base64-wrapped so tokens and config
      * bodies cannot break the shell quoting. The staging tarball carries no
      * auth at all ([isAuthEntry] excludes it), so this is the ONLY writer of
-     * the deployed prefix's auth files — it runs on every auth change and
+     * the deployed prefix's auth files, it runs on every auth change and
      * after every successful deploy.
      */
     private suspend fun syncShellTierAuth(shizuku: ShizukuManager) {
@@ -940,7 +940,7 @@ class LinuxEnvironmentManager(
         // the app prefix or the bundled asset) and every deploy installs it,
         // so the deployed path is unconditional. Blindly statting it from the
         // app uid failed post-0700 and fell back to /system/etc/security/cacerts
-        // — a DIRECTORY — which broke all privileged-tier TLS (git exit with
+        // (a DIRECTORY) which broke all privileged-tier TLS (git exit with
         // "error adding trust anchors", curl exit 77).
         putAll(com.androidharness.app.tools.NetTls.envVars("$TMP_PREFIX/etc/tls/cacert.pem"))
         // Bug 2 fix: exec-capable scratch location for the privileged tier.
@@ -970,7 +970,7 @@ class LinuxEnvironmentManager(
      * 30-60s untar and left the UI lagging.
      */
     fun packageSetHash(): String =
-        // v9-authsync: hash inputs changed (token fingerprint removed) — forces
+        // v9-authsync: hash inputs changed (token fingerprint removed), forces
         // one re-stage + redeploy so the deployed copy matches the new scheme.
         ("v9-authsync\n" + installedPackages().sorted().joinToString("\n"))
             .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
@@ -1013,7 +1013,7 @@ class LinuxEnvironmentManager(
             // A silent failure here deploys a STALE tarball on the next
             // ensureTmpPrefix (it only compares hashes, not content). Auth
             // changes survive this via syncShellTierAuth, but package changes
-            // would not — surface it.
+            // would not, surface it.
             Log.e(TAG, "staging the shell-tier tarball failed; the deployed copy stays stale", e)
         }
     }
@@ -1270,13 +1270,13 @@ class LinuxEnvironmentManager(
                             // the bytes read are written back when the entry is kept).
                             // Scripts with a Termux-absolute shebang split three ways:
                             // the Android-bridge wrapper commands (bin/pm, cmd, am,
-                            // settings, ...) are dropped entirely — they shadow real
+                            // settings, ...) are dropped entirely, they shadow real
                             // /system binaries and die with exit 126 (Bug 3 fix);
                             // language tooling (bin/pip3, lib/node_modules npm-cli.js,
                             // libexec git helper scripts, ...) gets its shebang
                             // REWRITTEN into the deployed shell-tier prefix so direct
                             // exec works where no linker shims exist; anything else is
-                            // written verbatim (the app tier never consults shebangs —
+                            // written verbatim (the app tier never consults shebangs,
                             // its commands run through the linker shims).
                             var skipWrite = false
                             val peeked = ByteArray(256)

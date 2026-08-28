@@ -18,7 +18,7 @@ import java.util.concurrent.TimeUnit
 /**
  * One entry of a provider's model catalog. [reasoning] is a tri-state:
  * true/false when the endpoint reports capability (e.g. OpenRouter's
- * `supported_parameters`), null when unknown — the UI then falls back to
+ * `supported_parameters`), null when unknown, the UI then falls back to
  * [reasoningCapable] id heuristics.
  */
 @Serializable
@@ -40,7 +40,7 @@ fun reasoningCapable(modelId: String): Boolean {
     ).containsMatchIn(m)
 }
 
-/** Fetches the model catalog from a provider — also doubles as a connection test. */
+/** Fetches the model catalog from a provider, also doubles as a connection test. */
 object ModelCatalog {
 
     private val json = Json { ignoreUnknownKeys = true }

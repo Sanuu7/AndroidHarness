@@ -59,7 +59,7 @@ class OpenAiCompatProvider(
                 put("max_tokens", options.maxOutputTokens)
             }
             // Reasoning/thinking. OpenRouter takes the unified `reasoning`
-            // object and normalizes it across every provider it fronts — this
+            // object and normalizes it across every provider it fronts, this
             // is the ONLY way to reach Claude/Gemini thinking through the
             // OpenAI-compatible API, whose native budget parameters live on
             // their own protocols. The models.dev catalog supplies the exact
@@ -148,7 +148,7 @@ class OpenAiCompatProvider(
 
         // Accumulates streamed tool-call fragments, keyed by CALL ID (with the
         // stream index only as a fallback). Some gateways stream parallel tool
-        // calls with every fragment carrying index 0 — keying by index merged
+        // calls with every fragment carrying index 0, keying by index merged
         // them into one garbled call, silently dropping the second subagent.
         val acc = LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>()
         val indexToId = HashMap<Int, String>()
@@ -156,8 +156,8 @@ class OpenAiCompatProvider(
         return flow {
             // Some gateways attach a usage block to many (or every) SSE chunk
             // instead of only the final one. Counting each would multiply the
-            // session totals, so keep the LAST usage seen — final counts are
-            // the authoritative ones — and emit exactly one Usage per request.
+            // session totals, so keep the LAST usage seen, final counts are
+            // the authoritative ones, and emit exactly one Usage per request.
             var pendingUsage: StreamEvent.Usage? = null
             ProviderFactory.sseJson(request).collect { el ->
                 parseChunk(el, acc, indexToId).forEach { event ->
@@ -166,7 +166,7 @@ class OpenAiCompatProvider(
             }
             pendingUsage?.let { emit(it) }
             // Some gateways close the stream after [DONE] without ever sending
-            // a finish_reason chunk — flush whatever fragments accumulated so
+            // a finish_reason chunk, flush whatever fragments accumulated so
             // requested tool calls aren't silently dropped.
             val leftover = drainAccumulated(acc)
             when {
@@ -200,7 +200,7 @@ class OpenAiCompatProvider(
         val events = mutableListOf<StreamEvent>()
 
         // Usage may ride on the final chunk together with finish_reason and
-        // tool calls — collect it without skipping the rest of the chunk.
+        // tool calls, collect it without skipping the rest of the chunk.
         chunk["usage"]?.jsonObjectOrAbsent()?.let { usage ->
             val input = usage["prompt_tokens"]?.jsonPrimitive?.intOrNull
             val output = usage["completion_tokens"]?.jsonPrimitive?.intOrNull
@@ -311,7 +311,7 @@ class OpenAiCompatProvider(
             argumentsJson = args.toString().ifBlank { "{}" },
         )
     }.also {
-        // android.util.Log is unmocked on the JVM test harness — never let
+        // android.util.Log is unmocked on the JVM test harness, never let
         // diagnostics throw inside the stream path.
         runCatching {
             if (it.size > 1) {

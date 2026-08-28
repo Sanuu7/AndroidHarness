@@ -33,7 +33,7 @@ internal object CaseCollision {
 
     fun warning(newName: String, collisions: List<String>): String? =
         collisions.firstOrNull()?.let { other ->
-            "[warning: \"$other\" already exists here and this filesystem treats names differing only in case as the SAME file — writing \"$newName\" will collide with it]"
+            "[warning: \"$other\" already exists here and this filesystem treats names differing only in case as the SAME file; writing \"$newName\" will collide with it]"
         }
 }
 
@@ -126,7 +126,7 @@ class ReadFileTool : Tool {
             val offset = (args["offset"]?.jsonPrimitive?.intOrNull ?: 1).coerceAtLeast(1)
             val limit = (args["limit"]?.jsonPrimitive?.intOrNull ?: 2000).coerceIn(1, 4000)
 
-            // A UTF-8 BOM is encoding metadata, not content — never surface it
+            // A UTF-8 BOM is encoding metadata, not content, never surface it
             // to the model (it leaks into line 1 and breaks exact matching).
             val raw = file.readText().removePrefix("\uFEFF")
             if (raw.isEmpty()) return@withContext ToolResult(true, "(empty file)")

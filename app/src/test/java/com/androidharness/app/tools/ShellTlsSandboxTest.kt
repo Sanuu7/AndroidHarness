@@ -87,7 +87,7 @@ class ShellTlsSandboxTest {
     }
 
     // ------------------------------------------------------------------
-    // Bug 3: sandbox carve-out — allowed inside the two scratch roots
+    // Bug 3: sandbox carve-out, allowed inside the two scratch roots
     // ------------------------------------------------------------------
 
     private fun sharedStorageWorkspace(): File =

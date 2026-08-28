@@ -40,7 +40,7 @@ class MemoryWriteTool : Tool {
     override val name = "memory_write"
     override val description =
         "Write to the agent memory. Without topic: the core memory file (.harness/memory.md), " +
-            "which is automatically loaded at the start of every conversation — keep it to small, " +
+            "which is automatically loaded at the start of every conversation, so keep it to small, " +
             "always-relevant facts (preferences, conventions, decisions). With topic: a topic file " +
             "under .harness/memory/<topic>.md for longer, task-specific notes; topic files are " +
             "listed by name in the system prompt and retrieved with memory_read/memory_search."
@@ -69,7 +69,7 @@ class MemoryWriteTool : Tool {
         } else {
             com.androidharness.app.agent.MemoryTopics.strictTopicPath(topic)
                 ?: throw ToolFailure(
-                    "Invalid topic '$topic' — topics must already be 1-48 chars of lowercase " +
+                    "Invalid topic '$topic'. Topics must already be 1-48 chars of lowercase " +
                         "letters, digits, '-' or '_'; invalid names are refused, not renamed. " +
                         "Omit the topic argument to write core memory.",
                 )

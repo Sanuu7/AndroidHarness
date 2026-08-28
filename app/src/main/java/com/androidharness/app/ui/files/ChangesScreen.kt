@@ -219,7 +219,7 @@ private fun ChangeRow(
                         strokeWidth = 2.dp,
                     )
                     !current.hasBase -> Text(
-                        "Diff unavailable — the pre-change content was too large to track.",
+                        "Diff unavailable: the pre-change content was too large to track.",
                         style = MaterialTheme.typography.labelMedium,
                         color = scheme.onSurfaceVariant,
                     )

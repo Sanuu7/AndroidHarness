@@ -71,7 +71,7 @@ import kotlinx.coroutines.launch
  */
 @Composable
 fun MarkdownText(text: String, streaming: Boolean = false) {
-    // The fence tracker is a composable (remember) — it must be invoked
+    // The fence tracker is a composable (remember), it must be invoked
     // unconditionally, so the `streaming` gate sits on the result.
     val openFence = rememberEndsInsideOpenFence(text) && streaming
     val cut = if (!streaming || openFence) -1 else text.lastIndexOf("\n\n")
@@ -108,7 +108,7 @@ private const val STREAM_FENCE_CAP = 1_500
 /**
  * Incremental open-fence scan. Streaming text only appends within a message,
  * so fence parity is folded per COMPLETED line and only new lines are scanned
- * — instead of rescanning the full accumulated text on every typewriter tick.
+ * instead of rescanning the full accumulated text on every typewriter tick.
  */
 private class FenceTracker {
     /** Offset such that [0, safePos) has been folded into [open]; always at a line boundary. */
@@ -528,7 +528,7 @@ private fun styledText(text: String): AnnotatedString {
                                     color = codeColor,
                                 )
                             )
-                            // Hair spaces pad the chip visually — spans can't
+                            // Hair spaces pad the chip visually, spans can't
                             // take real padding inside a Text.
                             append(" " + text.substring(i + 1, end) + " ")
                             pop()

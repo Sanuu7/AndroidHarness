@@ -74,7 +74,7 @@ data class SnippetEntity(
     val body: String,
 )
 
-/** One model request's token cost, attributed to its model — drives per-model stats. */
+/** One model request's token cost, attributed to its model, drives per-model stats. */
 @Entity(tableName = "usage_events", indices = [Index("sessionId")])
 data class UsageEventEntity(
     @PrimaryKey(autoGenerate = true) val rowId: Long = 0,
@@ -88,7 +88,7 @@ data class UsageEventEntity(
     val createdAt: Long,
 )
 
-/** Per-file line-change stats from one editing tool call — "+N −M" chips in chat. */
+/** Per-file line-change stats from one editing tool call, "+N −M" chips in chat. */
 @Entity(tableName = "file_edits", indices = [Index("sessionId"), Index("turnId")])
 data class FileEditEntity(
     @PrimaryKey(autoGenerate = true) val rowId: Long = 0,
@@ -101,7 +101,7 @@ data class FileEditEntity(
 )
 
 /**
- * Cumulative per-file change tracking for one chat session — powers the
+ * Cumulative per-file change tracking for one chat session, powers the
  * GitHub-style "Files changed" view. Rows key on (session, path) and
  * accumulate [added]/[removed] across all editing calls in the session. The
  * first modification captures a gzipped pre-change snapshot ([baseGzip]) so

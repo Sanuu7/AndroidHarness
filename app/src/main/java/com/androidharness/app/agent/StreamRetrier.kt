@@ -21,7 +21,7 @@ internal fun <T> Flow<T>.stallGuard(timeoutMs: Long = 90_000): Flow<T> =
 
 /**
  * The single shared retry wrapper for every streamed LLM request the engine
- * makes — main turn, subagent turn, compaction. Transient failures (HTTP
+ * makes, main turn, subagent turn, compaction. Transient failures (HTTP
  * 408/429/5xx, network drops, stalled gateways) are retried with
  * [RetryPolicy]'s backoff; permanent errors surface at once.
  *
@@ -74,7 +74,7 @@ internal object StreamRetrier {
                     }
                 }
             } catch (te: TimeoutCancellationException) {
-                // stallGuard: a silent gateway kept the socket open — treat
+                // stallGuard: a silent gateway kept the socket open, treat
                 // like any transient failure so retries can kick in. Caught
                 // before CancellationException because it subclasses it;
                 // genuine cancellation must still propagate.

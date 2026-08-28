@@ -78,7 +78,7 @@ fun describeToolCall(call: ToolCallData): String {
 
 /**
  * Owns agent runs in an application-wide scope, so a run survives minimizing
- * the app, rotating the screen, and navigating away — only process death ends
+ * the app, rotating the screen, and navigating away, only process death ends
  * it, and the foreground service + wakelock keep that at bay while a run is
  * active. ChatViewModel renders this state; it no longer owns the loop.
  *
@@ -119,7 +119,7 @@ class RunManager(
         val error: String? = null,
         /** Transient "Retrying in Ns…" status while the engine backs off. */
         val retryStatus: String? = null,
-        /** When this turn's reasoning stream started/ended — drives "Thought for Ns". */
+        /** When this turn's reasoning stream started/ended, drives "Thought for Ns". */
         val thinkingStartedAt: Long? = null,
         val thinkingEndedAt: Long? = null,
         val queuedMessage: String? = null,
@@ -217,7 +217,7 @@ class RunManager(
     /**
      * Starts an agent run for [text] in [sessionId] (a new session is created
      * when null). Returns the session id. The run executes on an app-wide
-     * scope — it is not tied to any ViewModel.
+     * scope, it is not tied to any ViewModel.
      */
     suspend fun startRun(
         sessionId: String?,
@@ -527,7 +527,7 @@ class RunManager(
                 )
             }
             is AgentEvent.Finished -> event.reason?.let { reason ->
-                // Abnormal end (no visible answer) — show why instead of
+                // Abnormal end (no visible answer), show why instead of
                 // ending the run silently.
                 live.update { it.copy(error = reason) }
             }

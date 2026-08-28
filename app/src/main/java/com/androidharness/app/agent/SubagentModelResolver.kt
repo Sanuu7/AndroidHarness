@@ -15,7 +15,7 @@ sealed interface SubagentModelResolution {
 
     /**
      * No catalog entry matches. [available] lists the ids to offer in the
-     * refusal — the whole catalog, or empty when the provider returned none
+     * refusal, the whole catalog, or empty when the provider returned none
      * (some endpoints do not support listing at all).
      */
     data class Unknown(val available: List<String>) : SubagentModelResolution
@@ -24,7 +24,7 @@ sealed interface SubagentModelResolution {
     data class Failed(val message: String) : SubagentModelResolution
 }
 
-/** Pure matching rules over catalog ids — unit-testable without any I/O. */
+/** Pure matching rules over catalog ids, unit-testable without any I/O. */
 object SubagentModels {
 
     fun match(requested: String, candidates: List<String>): SubagentModelResolution {

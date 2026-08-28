@@ -211,7 +211,7 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
 
 /**
  * Full access mode's [WorkspaceFs]: behaves like [FileFs] except the path
- * containment check is lifted — `../` escapes resolve to their real
+ * containment check is lifted, `../` escapes resolve to their real
  * locations anywhere the app uid (or Shizuku) can reach, and absolute paths
  * go straight through. Relative paths still anchor at the workspace root so
  * the model's everyday read_file("src/x.kt") calls land where they always
@@ -348,7 +348,7 @@ class SafFsNode(
         return when {
             // existing file resolved directly
             missingSegments.isEmpty() && doc.isFile -> doc
-            // path resolved to a directory — nothing to write
+            // path resolved to a directory, nothing to write
             missingSegments.isEmpty() -> throw ToolFailure("Not a file: $relPath")
             else -> {
                 var dir = doc

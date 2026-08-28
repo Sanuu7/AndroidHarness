@@ -73,7 +73,7 @@ data class PendingPrompt(
     val sessionTitle: String,
     /** One-line summary: tool name + description, the question, or the env summary. */
     val headline: String,
-    /** Optional expanded body — e.g. the diff preview for file edits. */
+    /** Optional expanded body, e.g. the diff preview for file edits. */
     val detail: String? = null,
     /** Predefined answer buttons for [Kind.QUESTION]. */
     val options: List<String> = emptyList(),
@@ -288,7 +288,7 @@ class AgentService : Service() {
     /**
      * Broadcast [PendingIntent] for one notification button. Request codes are
      * keyed per session+slot because extras are not part of PendingIntent
-     * identity — two sessions' identical actions would otherwise overwrite
+     * identity, two sessions' identical actions would otherwise overwrite
      * each other.
      */
     private fun button(action: String, label: String, sessionId: String): Notification.Action =
@@ -307,7 +307,7 @@ class AgentService : Service() {
     /**
      * [PendingIntent] delivering one ask_user answer: either a predefined
      * [optionText] carried on the intent, or (when null) a RemoteInput
-     * quick-reply — which is why this one must stay FLAG_MUTABLE.
+     * quick-reply, which is why this one must stay FLAG_MUTABLE.
      */
     private fun answerPendingIntent(sessionId: String, slot: Int, optionText: String?): PendingIntent =
         PendingIntent.getBroadcast(
@@ -335,7 +335,7 @@ class AgentService : Service() {
         const val RESULT_NOTIFICATION_ID = 9102
 
         /**
-         * Alert id shared by all sessions — notifications are keyed by the
+         * Alert id shared by all sessions, notifications are keyed by the
          * session id as TAG + this id, so parallel runs don't clobber each other.
          */
         const val ALERT_NOTIFICATION_ID = 9103

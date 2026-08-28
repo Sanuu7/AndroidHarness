@@ -56,7 +56,7 @@ import kotlinx.coroutines.withContext
 
 /**
  * One tappable provider brand. Everything except [label] is plumbing the UI
- * hides — users pick "OpenRouter", never "OpenAI-compatible + base URL".
+ * hides, users pick "OpenRouter", never "OpenAI-compatible + base URL".
  */
 data class ProviderBrand(
     val label: String,
@@ -74,7 +74,7 @@ internal val ProviderBrands: List<ProviderBrand?> = listOf(
     ProviderBrand("Gemini", ProviderType.GEMINI, "https://generativelanguage.googleapis.com/v1beta", true, "gemini-2.5-flash"),
     ProviderBrand("OpenAI", ProviderType.OPENAI_COMPAT, "https://api.openai.com/v1", true),
     // The newer Responses API (gpt-5/o-series first-class reasoning; some
-    // latest models exist only there) — same key as plain OpenAI.
+    // latest models exist only there), same key as plain OpenAI.
     ProviderBrand("OpenAI (Responses)", ProviderType.OPENAI_RESPONSES, "https://api.openai.com/v1", true),
     ProviderBrand("Groq", ProviderType.OPENAI_COMPAT, "https://api.groq.com/openai/v1", true),
     ProviderBrand("DeepSeek", ProviderType.OPENAI_COMPAT, "https://api.deepseek.com/v1", true),

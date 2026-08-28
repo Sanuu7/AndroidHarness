@@ -49,7 +49,7 @@ data class UsageStats(
     /**
      * Share of prompt tokens served from the provider's prompt cache.
      * totalInput is the TOTAL prompt size (uncached + cache reads + cache
-     * writes), so this counts cache writes as misses — the honest rate.
+     * writes), so this counts cache writes as misses, the honest rate.
      */
     val avgCacheHitRate: Double
         get() = if (totalInput > 0) totalCached.toDouble() / totalInput.toDouble() else 0.0
@@ -155,7 +155,7 @@ class ChatViewModel(
     /**
      * Streaming content kept on screen while waiting for the committed row to
      * arrive from Room. Without it, the live bubble disappears at commit and
-     * the message pops back in a frame or two later — the list bottom shrinks
+     * the message pops back in a frame or two later, the list bottom shrinks
      * then regrows, which reads as a flicker/bounce.
      */
     private data class HeldStream(
@@ -192,7 +192,7 @@ class ChatViewModel(
             }
         }
         viewModelScope.launch {
-            // Todos are session-owned. sessionIdFlow must be a combine INPUT —
+            // Todos are session-owned. sessionIdFlow must be a combine INPUT,
             // a new chat's first run claims the store before the state update
             // lands, and a snapshot read never re-fires (the list stayed empty
             // for the whole run).
@@ -249,7 +249,7 @@ class ChatViewModel(
             }
         }
 
-        // Messages come straight from the DB flow — RunManager writes them
+        // Messages come straight from the DB flow, RunManager writes them
         // during runs, so the UI is just a live mirror. A held streaming
         // bubble is released the moment its committed row arrives.
         viewModelScope.launch {
@@ -293,7 +293,7 @@ class ChatViewModel(
             }.collect { live ->
                 if (live != null) {
                     if (heldStream?.sessionId != null && heldStream?.sessionId != live.sessionId) {
-                        // Switched sessions while holding — drop the stale hold.
+                        // Switched sessions while holding, drop the stale hold.
                         heldStream = null
                     }
                     mirrorLive(live)
@@ -347,7 +347,7 @@ class ChatViewModel(
             var committed = false
             if (streamingText == null && streamingThinking == null) {
                 val hold = heldStream ?: run {
-                    // Only hold the stream that was actually just committed —
+                    // Only hold the stream that was actually just committed,
                     // matches by id so a stale commit id from an earlier
                     // iteration can't freeze the bubble after an error stop.
                     val lastId = live.lastCommittedId
@@ -711,7 +711,7 @@ class ChatViewModel(
         val existsNow: Boolean,
     )
 
-    /** What one undo tap will do — feeds the confirmation dialog. */
+    /** What one undo tap will do, feeds the confirmation dialog. */
     data class RewindPreview(
         val files: List<RewindFileStat>,
         val messagesDeleted: Int,
@@ -815,7 +815,7 @@ class ChatViewModel(
         val provider = _state.value.activeProvider ?: return
         val apiKey = c.providers.apiKey(provider.id) ?: return
         // Trigger compaction by temporarily pretending the context is full:
-        // Simplest correct approach — ask the engine for a summary of all history.
+        // Simplest correct approach, ask the engine for a summary of all history.
         // Subagent inner turns are excluded (same rule as new runs).
         val history = with(c.sessions) { historyFor(sid).second.withoutSubagentTurns() }
         if (history.size < 4) {
@@ -882,11 +882,11 @@ class ChatViewModel(
 
     fun setActiveProvider(id: String) {
         viewModelScope.launch {
-            // Switching provider resets any model override — the old pick
+            // Switching provider resets any model override, the old pick
             // belonged to the previous endpoint's catalog.
             c.settings.setActiveModel(null)
             c.settings.setActiveProvider(id)
-            // The new model may not speak the stored thinking tier — adapt.
+            // The new model may not speak the stored thinking tier, adapt.
             val provider = _state.value.providers.firstOrNull { it.id == id }
             ThinkingSpecs.clampStoredLevel(
                 c.settings,

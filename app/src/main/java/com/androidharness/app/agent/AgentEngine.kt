@@ -127,7 +127,7 @@ sealed interface AgentEvent {
         val outputTokens: Int,
         val cachedInputTokens: Int,
         val cacheWriteTokens: Int = 0,
-        /** Which model burned these tokens (config-effective id) — for per-model stats. */
+        /** Which model burned these tokens (config-effective id), for per-model stats. */
         val model: String = "",
         /** Display name of the provider that served them. */
         val providerName: String = "",
@@ -154,7 +154,7 @@ sealed interface AgentEvent {
      * Line-change stats from one successful editing tool call ("+N −M" chips),
      * plus the pre-change state the Files-changed tracker needs: [existedBefore]
      * flags whether the path existed before this call, [beforeText] carries its
-     * content when capturable (≤512KB), and [existsAfter] reports survival —
+     * content when capturable (≤512KB), and [existsAfter] reports survival,
      * together they let RunManager pin the per-session diff baseline.
      */
     data class FileEdited(
@@ -169,7 +169,7 @@ sealed interface AgentEvent {
 
     /**
      * The run ended. [reason] explains an abnormal end (the model produced no
-     * visible answer — e.g. it burned everything on reasoning); null on a
+     * visible answer, e.g. it burned everything on reasoning); null on a
      * normal stop.
      */
     data class Finished(val reason: String? = null) : AgentEvent
@@ -219,7 +219,7 @@ class AgentEngine(
          */
         resolveSubagentModel: (suspend (String) -> SubagentModelResolution)? = null,
     ): Flow<AgentEvent> = channelFlow {
-        // Parallel subagents emit from async children — plain flow{} forbids
+        // Parallel subagents emit from async children, plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
         // for exactly this. The local shim keeps every emit(...) call site.
         suspend fun emit(event: AgentEvent) = send(event)
@@ -248,7 +248,7 @@ class AgentEngine(
                 emit(AgentEvent.Error("Stopped after $maxIterations tool iterations (safety limit)."))
                 break
             } else if (maxIterations <= 0) {
-                iterations++ // tracked for nothing — unlimited mode
+                iterations++ // tracked for nothing, unlimited mode
             }
 
             // Messages typed while the agent was running steer the next turn.
@@ -297,7 +297,7 @@ class AgentEngine(
             var calls = mutableListOf<ToolCallData>()
 
             // Request attempt loop: transient failures (429/5xx/network) are
-            // retried with backoff, but ONLY while nothing has streamed yet —
+            // retried with backoff, but ONLY while nothing has streamed yet,
             // re-emitting deltas the UI already showed would duplicate output.
             val failure = StreamRetrier.run(
                 streamFor = {
@@ -386,7 +386,7 @@ class AgentEngine(
                 }
             }
 
-            // Subagents are read-only, independent and slow — run every task
+            // Subagents are read-only, independent and slow, run every task
             // call in the batch CONCURRENTLY so research branches don't queue
             // behind each other. Ordinary tools keep strict sequential order.
             val subagentCalls = calls.filter { it.name == "task" }
@@ -476,7 +476,7 @@ class AgentEngine(
         val tool = registry.get(call.name)
             ?: return ToolResult(false, "Unknown tool: ${call.name}")
 
-        // The model sometimes tries to modify files in plan mode — refuse cleanly.
+        // The model sometimes tries to modify files in plan mode, refuse cleanly.
         if (agentMode == AgentMode.PLAN && !tool.isReadOnly && call.name != "ask_user") {
             return ToolResult(
                 false,
@@ -540,7 +540,7 @@ class AgentEngine(
             val command = args?.get("command")?.jsonPrimitive?.content.orEmpty()
             val hints = detectToolchainHints(command)
             if (hints.isNotEmpty()) {
-                // A previous install already failed — tell the model clearly and
+                // A previous install already failed, tell the model clearly and
                 // do not re-prompt, so it stops retrying git/python/node commands.
                 val failed = linuxEnv.state.value as? com.androidharness.app.data.env.EnvState.Failed
                 if (failed != null) {
@@ -585,7 +585,7 @@ class AgentEngine(
             var multiSelect = multiSelectFlag
             if (options.isEmpty()) {
                 // Models often bake the choices into the question as a markdown
-                // bullet list and leave `options` empty — pull them out so the
+                // bullet list and leave `options` empty, pull them out so the
                 // user gets tappable rows instead of a wall of text.
                 val (cleanQuestion, extracted) = extractOptionsFromQuestion(rawQuestion)
                 if (extracted.isNotEmpty()) {
@@ -614,7 +614,7 @@ class AgentEngine(
             com.androidharness.app.tools.ShellPolicy.commandOf(call.argumentsJson)
         } else null
         val root = workspace.shellRoot
-        // Full access skips the shell denylist entirely — that is the point of the mode.
+        // Full access skips the shell denylist entirely, that is the point of the mode.
         if (mode != PermissionMode.FULL_ACCESS) {
             com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty(), root, root)?.let { reason ->
                 if (call.name == "shell" || call.name == "shell_background") {
@@ -675,7 +675,7 @@ class AgentEngine(
 
         // Broken-environment repair: a headline tool died with "not found"
         // while the environment claims Ready. That is the harness's bug (a
-        // half-installed toolchain), not the task's — surface a repair card
+        // half-installed toolchain), not the task's, surface a repair card
         // in chat instead of letting the model retry blindly. The presence
         // check keeps project-level failures ("vite: not found") out: those
         // are not fixable by reinstalling the toolchain.
@@ -771,7 +771,7 @@ class AgentEngine(
         "apply_patch" -> str("patch")?.let { patch ->
             // Mirror ApplyPatchTool's own path cleanup (a/ b/ prefixes, tab
             // suffixes) and also capture DELETED files ("--- x" + "+++ /dev/null"),
-            // which the old regex silently dropped — those were unrecoverable.
+            // which the old regex silently dropped, those were unrecoverable.
             val targets = LinkedHashSet<String>()
             var oldPath: String? = null
             patch.lines().forEach { line ->
@@ -1171,7 +1171,7 @@ class AgentEngine(
      * Models deliver ask_user options in every shape imaginable: ["a","b"],
      * [{"label":"a"}], {"1":"a","2":"b"}, "a, b, c", or JSON double-encoded as
      * a string. Anything odd used to throw out of jsonPrimitive and the whole
-     * question never rendered — this variant never throws and salvages what it
+     * question never rendered, this variant never throws and salvages what it
      * can from every shape.
      */
     private fun parseAskUserOptions(element: kotlinx.serialization.json.JsonElement?): List<String> {
@@ -1220,7 +1220,7 @@ class AgentEngine(
                 // Wrapper objects: {"options": [...]} / {"choices": [...]}
                 val wrapper = element["options"] ?: element["choices"] ?: element["items"]
                 if (wrapper != null) return parseOptionsSafe(wrapper, depth + 1)
-                // Map form: {"1": "a", "2": "b"} — the values are the options.
+                // Map form: {"1": "a", "2": "b"}, the values are the options.
                 val values = element.values.mapNotNull { v ->
                     (v as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull
                         ?.takeIf { it.isNotBlank() }
@@ -1317,7 +1317,7 @@ Rules:
         sb.append("- /data/local/tmp is readable only by the shell user: never try to inspect it from the app tier, and never conclude Shizuku/toolchain state from files there; use env_status.\n")
         if (fullAccess) {
             sb.append(
-                "- FULL ACCESS MODE is active: the workspace sandbox is lifted. File tools may read and write ANY path on the device (absolute paths work), the shell has no command denylist, and cwd may be any directory. The user chose this deliberately — no permission prompts will appear. Work outside the workspace only when the task requires it, and stay careful with system directories (/system, /data/system, /vendor): a mistake there can break the device.\n",
+                "- FULL ACCESS MODE is active: the workspace sandbox is lifted. File tools may read and write ANY path on the device (absolute paths work), the shell has no command denylist, and cwd may be any directory. The user chose this deliberately; no permission prompts will appear. Work outside the workspace only when the task requires it, and stay careful with system directories (/system, /data/system, /vendor): a mistake there can break the device.\n",
             )
         }
         sb.append("- After tool calls complete, either continue with more tool calls or give the user a concise summary of what you did.\n")

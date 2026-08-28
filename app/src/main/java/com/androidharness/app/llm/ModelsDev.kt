@@ -20,9 +20,9 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.doubleOrNull
 
 /**
- * The models.dev community catalog (https://models.dev — the same feed
+ * The models.dev community catalog (https://models.dev, the same feed
  * OpenCode consumes, refreshed daily by its maintainers). Unlike every
- * provider API — which reports only *whether* reasoning exists — this
+ * provider API, which reports only *whether* reasoning exists, this
  * catalog enumerates each model's actual thinking vocabulary: effort values
  * ("low"/"high"/"xhigh"/"max"…), budget-token ranges, or a plain on/off
  * toggle. We fetch it weekly, cache it on disk, and let it override the
@@ -149,7 +149,7 @@ object ModelsDev {
     /**
      * Downloads the catalog when the cache is stale (or [force]), stores it on
      * disk, and hot-swaps the in-memory maps. Returns an error message on
-     * failure — the old cache (or the shipped table) keeps serving.
+     * failure, the old cache (or the shipped table) keeps serving.
      */
     suspend fun refresh(context: Context, force: Boolean = false): String? =
         withContext(Dispatchers.IO) {
@@ -178,7 +178,7 @@ object ModelsDev {
         val models = entries[providerKey] ?: return null
         models[modelId]?.let { return it }
         // Catalog ids and user-configured ids differ in vendor prefixing both
-        // ways ("anthropic/claude-sonnet-4-5" vs "claude-sonnet-4-5") — fall
+        // ways ("anthropic/claude-sonnet-4-5" vs "claude-sonnet-4-5"), fall
         // back to suffix matching, first hit wins.
         val suffix = modelId.substringAfterLast('/')
         models[suffix]?.let { return it }

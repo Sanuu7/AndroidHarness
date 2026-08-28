@@ -50,7 +50,7 @@ import kotlinx.coroutines.delay
  * First-run / new-chat screen.
  *
  * One mark, one headline, one supporting line, and a single quiet list of
- * suggestions with hairline separators — no hero squircles, color pills, or
+ * suggestions with hairline separators, no hero squircles, color pills, or
  * status badges. Without a provider there is a real call-to-action button
  * instead of instructions to hunt through menus.
  */

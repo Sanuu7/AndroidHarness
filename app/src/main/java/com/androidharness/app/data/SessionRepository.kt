@@ -176,7 +176,7 @@ class SessionRepository(
         db.dao().fileEditsFlow(sessionId)
 
     /**
-     * Cumulative per-file changes for one session — the GitHub-style
+     * Cumulative per-file changes for one session, the GitHub-style
      * "Files changed" view. Room invalidates this flow on writes, so the UI
      * updates live while the agent works.
      */
@@ -273,7 +273,7 @@ class SessionRepository(
         val existing = db.dao().sessionFileChange(sessionId, relPath) ?: return
         if (!existing.hasBase) return
         if (existsAfter && currentText == null) {
-            // Content too large to read now — keep counters, fix status only.
+            // Content too large to read now, keep counters, fix status only.
             db.dao().upsertSessionFileChange(existing.copy(isDeleted = false, updatedAt = System.currentTimeMillis()))
             return
         }

@@ -4,7 +4,7 @@ package com.androidharness.app.core
  * Splits text into lines using the POSIX convention: a trailing newline is a
  * line TERMINATOR, not a separator.
  *
- * Kotlin's [String.lines] treats "a\nb\n" as THREE lines ("a", "b", "") — the
+ * Kotlin's [String.lines] treats "a\nb\n" as THREE lines ("a", "b", ""), the
  * trailing empty element leaks into line numbers, greps, diffs and patch
  * matching, where it shows up as a phantom extra line (it made apply_patch
  * fail on files without a trailing newline and append a stray newline to files

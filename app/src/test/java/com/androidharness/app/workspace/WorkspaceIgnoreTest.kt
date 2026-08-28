@@ -35,7 +35,7 @@ class WorkspaceIgnoreTest {
 
     @Test
     fun `starting at an ignored dir is still allowed to be entered`() {
-        // Walks that begin AT node_modules should still run — the user asked.
+        // Walks that begin AT node_modules should still run, the user asked.
         assertFalse(WorkspaceIgnore.shouldSkipEnter(startRelPath = "node_modules", dirName = "node_modules"))
         assertTrue(WorkspaceIgnore.shouldSkipEnter(startRelPath = ".", dirName = "node_modules"))
     }

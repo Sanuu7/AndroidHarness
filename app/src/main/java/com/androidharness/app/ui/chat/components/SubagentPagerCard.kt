@@ -58,7 +58,7 @@ import kotlinx.coroutines.launch
 /**
  * Several parallel subagents in ONE bounded-height card instead of a vertical
  * stack: an aggregate header (reused ToolGroupCard idiom), a scrollable row of
- * status tabs — one per agent — and a swipeable pager where each page holds a
+ * status tabs, one per agent, and a swipeable pager where each page holds a
  * single agent's header, live step tail, and scrollable TASK/RESULT detail.
  * The footprint never grows with agent count, which is what keeps parallel
  * runs usable on a phone.
@@ -79,7 +79,7 @@ internal fun SubagentPagerCard(
     val failedCount = calls.count { results[it.id]?.isError == true }
     val doneCount = calls.count { results[it.id]?.isError == false }
 
-    // Open on the first agent that's still working — that's where the action is.
+    // Open on the first agent that's still working, that's where the action is.
     val pagerState = rememberPagerState(
         initialPage = calls.indexOfFirst { it.id in runningIds }.coerceAtLeast(0),
     ) { calls.size }
@@ -91,7 +91,7 @@ internal fun SubagentPagerCard(
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column {
-            // Aggregate header — no chevron; the pager replaces expansion.
+            // Aggregate header, no chevron; the pager replaces expansion.
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),

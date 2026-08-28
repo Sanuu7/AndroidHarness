@@ -159,7 +159,7 @@ fun ChatScreen(
 
     // Bottom-pinning for the message list: true while the newest content
     // should stay in view; only a real user drag away from the bottom clears
-    // it — programmatic scrolls (follow, jump) never touch the pin.
+    // it, programmatic scrolls (follow, jump) never touch the pin.
     var pinnedToBottom by remember { mutableStateOf(true) }
 
     // True while a finger drag is driving the list (from interactionSource).
@@ -219,7 +219,7 @@ fun ChatScreen(
         CostDialog(state = state, onDismiss = viewModel::dismissCostDialog)
     }
 
-    // Long-press menu for YOUR messages (agent text is directly selectable —
+    // Long-press menu for YOUR messages (agent text is directly selectable,
     // hold and drag; the system toolbar handles copy).
     actionsMessage?.let { msg ->
         AlertDialog(
@@ -277,7 +277,7 @@ fun ChatScreen(
         )
     }
 
-    // Editing a message rewinds files and truncates the chat — warn first.
+    // Editing a message rewinds files and truncates the chat, warn first.
     confirmingEdit?.let { (msg, newText) ->
         AlertDialog(
             onDismissRequest = { confirmingEdit = null },
@@ -320,7 +320,7 @@ fun ChatScreen(
                         modifier = Modifier.verticalScroll(rememberScrollState()),
                     ) {
                         Text(
-                            "Pick a checkpoint. Files return to their state before that turn — and the chat rolls back with them: the agent's messages from that point on are removed.",
+                            "Pick a checkpoint. Files return to their state before that turn, and the chat rolls back with them: the agent's messages from that point on are removed.",
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -534,7 +534,7 @@ fun ChatScreen(
     }
 
     // Re-attach when scrolling settles at the bottom (finger release, fling
-    // end, or a programmatic scroll landing) — pin, then a cheap exact snap.
+    // end, or a programmatic scroll landing), pin, then a cheap exact snap.
     LaunchedEffect(listState) {
         snapshotFlow { listState.isScrollInProgress }
             .distinctUntilChanged()
@@ -549,7 +549,7 @@ fun ChatScreen(
 
     // Typewriter reveal: text appears at the stream's natural pace up to a
     // cap, so fast models don't dump whole paragraphs in a single frame.
-    // Large deltas (tool-storm bursts, restored turns) snap instantly —
+    // Large deltas (tool-storm bursts, restored turns) snap instantly,
     // animating through thousands of pending chars re-renders the bubble
     // every frame for many seconds and saturates the main thread.
     // Committing the message shows the full text instantly.
@@ -573,7 +573,7 @@ fun ChatScreen(
     }
 
     // While pinned, keep the newest content in view with small exact scrollBy
-    // deltas — cheap (no scrollToItem remeasure storm) and smooth (coalesced
+    // deltas, cheap (no scrollToItem remeasure storm) and smooth (coalesced
     // at frame-ish cadence instead of 250ms jumps).
     LaunchedEffect(pinnedToBottom, listState) {
         if (!pinnedToBottom) return@LaunchedEffect
@@ -720,7 +720,7 @@ fun ChatScreen(
 
                     for ((messageIndex, message) in state.messages.withIndex()) {
                         // Inner subagent turns persist with the parent task's
-                        // call id on the assistant row — they render on the
+                        // call id on the assistant row, they render on the
                         // subagent's own page, never in the main list.
                         if (message.role == Role.ASSISTANT && message.toolCallId != null) continue
                         val messageKey = message.id ?: "${message.role.name}-${message.createdAt}-$messageIndex"
@@ -1063,7 +1063,7 @@ fun ChatScreen(
 // ---------------------------------------------------------------------------
 // Helpers
 
-/** Small copy icon with a brief check confirmation — ChatGPT-style action rows. */
+/** Small copy icon with a brief check confirmation, ChatGPT-style action rows. */
 @Composable
 private fun CopyIconButton(text: String) {
     var copied by remember { mutableStateOf(false) }

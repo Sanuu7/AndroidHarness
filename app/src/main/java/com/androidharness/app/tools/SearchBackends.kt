@@ -161,7 +161,7 @@ internal class KeylessSearchBackend : SearchBackend {
     }
 
     private fun parseGoogle(html: String): List<WebSearchResult> {
-        // <a href="/url?q=..."><h3>title</h3></a> — often JS-walled, best effort
+        // <a href="/url?q=..."><h3>title</h3></a>, often JS-walled, best effort
         val itemRegex = Regex("(?s)<a href=\"(/url\\?q=[^\"]+)\"[^>]*>.*?<h3[^>]*>(.*?)</h3>")
         return itemRegex.findAll(html).mapNotNull { match ->
             val q = Regex("(?s)&amp;|&").replace(

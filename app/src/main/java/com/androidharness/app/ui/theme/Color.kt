@@ -12,7 +12,7 @@ import androidx.compose.ui.graphics.Color
  * disabled (pre-Android 12 devices, or dynamicColor off). The seed is the Google Blue
  * (#0B57D0) used across Google's Material 3 apps.
  *
- * The tertiary ramp is deliberately a neutral slate instead of the default purple —
+ * The tertiary ramp is deliberately a neutral slate instead of the default purple,
  * the UI does not use tertiary for branding, and a purple accent leaking through
  * chips/badges is exactly what made the old design feel noisy.
  */
@@ -93,7 +93,7 @@ internal val DarkColors = darkColorScheme(
  * The only hardcoded hues in the app: status colors.
  *
  * M3 has no success/warning roles, and status must read the same regardless of the
- * (dynamic, wallpaper-derived) accent — a green "done" and a red "failed" are
+ * (dynamic, wallpaper-derived) accent, a green "done" and a red "failed" are
  * universal. Everything else in the UI uses theme roles only.
  */
 class StatusColors(val success: Color, val warning: Color)

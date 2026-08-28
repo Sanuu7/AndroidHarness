@@ -163,7 +163,7 @@ fun AppNav(container: AppContainer) {
 
     // Keyboard belongs to manual taps only. Two mechanisms fought this:
     // (1) the composer's focus survives the drawer opening, and (2) the
-    // drawer's own accessibility focus pass can land ON the search field —
+    // drawer's own accessibility focus pass can land ON the search field,
     // that one arrives a frame AFTER the open event, so clearing immediately
     // loses the race. Clear on both edges, once more after the settle, and
     // hide the IME outright.
@@ -517,7 +517,7 @@ fun AppNav(container: AppContainer) {
             navController = nav,
             startDestination = startDestination,
             // Quiet transitions: a short fade with a small rise. No shared-element
-            // theatrics — screens should feel instant.
+            // theatrics, screens should feel instant.
             enterTransition = {
                 fadeIn(tween(220, easing = FastOutSlowInEasing)) +
                     slideInVertically(tween(240, easing = FastOutSlowInEasing)) { it / 28 }
@@ -704,7 +704,7 @@ fun AppNav(container: AppContainer) {
             text = {
                 Text(
                     "The Linux toolchain gained new packages: ${latePackages.joinToString(", ")}. " +
-                        "Fetch them to add the new tools to your installed environment — " +
+                        "Fetch them to add the new tools to your installed environment; " +
                         "until then they show up as missing.",
                 )
             },

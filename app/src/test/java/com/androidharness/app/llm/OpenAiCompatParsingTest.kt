@@ -154,7 +154,7 @@ class OpenAiCompatParsingTest {
 
     @Test
     fun `usage accounting requested for remote hosts, skipped for bare-local ones`() {
-        // Remote gateways must be asked — many report usage only when asked,
+        // Remote gateways must be asked, many report usage only when asked,
         // and without it cache hit rates freeze at zero.
         assertTrue(provider.supportsUsageAccounting("https://api.runinfra.ai/v1"))
         assertTrue(provider.supportsUsageAccounting("https://opencode.ai/zen/v1"))

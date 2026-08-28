@@ -48,7 +48,7 @@ class OpenAiResponsesProviderTest {
         assertEquals("function", tool["type"]!!.jsonPrimitive.content)
         assertEquals("read_file", tool["name"]!!.jsonPrimitive.content)
         assertFalse(tool["strict"]!!.jsonPrimitive.content.toBoolean())
-        // Responses wants the FLATTENED shape — no nested "function" object.
+        // Responses wants the FLATTENED shape, no nested "function" object.
         assertNull(tool["function"])
 
         val input = body["input"]!!.jsonArray

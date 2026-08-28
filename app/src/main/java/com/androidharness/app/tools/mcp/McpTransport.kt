@@ -83,7 +83,7 @@ internal class StdioTransport(
                     }
                 }
             } catch (_: Exception) {
-                // Destroyed or IO error — channel close signals the dead path.
+                // Destroyed or IO error, channel close signals the dead path.
             }
             incoming.close()
         }
@@ -256,7 +256,7 @@ internal class SseLegacyTransport(
                     }
                 }
             } catch (_: Exception) {
-                // Cancelled or connection dropped — channel close signals it.
+                // Cancelled or connection dropped, channel close signals it.
             }
             incoming.close()
         }

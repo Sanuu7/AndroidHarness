@@ -6,8 +6,8 @@ import kotlinx.coroutines.flow.firstOrNull
  * Per-model thinking capability, with a Hermes-style resolution policy:
  *
  * Every surface (UI chips, stored setting, wire calls) speaks the ONE global
- * ladder [ThinkingLevel]. What a given model accepts is DATA here — style +
- * supported levels — and exactly one function, [resolveLevel], applies it:
+ * ladder [ThinkingLevel]. What a given model accepts is DATA here, style +
+ * supported levels, and exactly one function, [resolveLevel], applies it:
  * a requested rung passes through verbatim when supported, otherwise it takes
  * the NEAREST WEAKER supported rung (a clamp never silently escalates cost),
  * and only when nothing weaker exists does it take the weakest level. "none"
@@ -17,7 +17,7 @@ object ThinkingSpecs {
 
     /** How a model consumes thinking configuration. */
     enum class Style {
-        /** Thinks on its own / takes no parameter — nothing sent on the wire. */
+        /** Thinks on its own / takes no parameter, nothing sent on the wire. */
         NONE,
 
         /** OpenAI-style `reasoning_effort` enum ("low"/"medium"/"high"/"xhigh"). */
@@ -52,7 +52,7 @@ object ThinkingSpecs {
         Regex("gemini-[23]") to
             Spec(Style.BUDGET, ALL),
 
-        // DeepSeek reasoners think inherently — there is no dial to send.
+        // DeepSeek reasoners think inherently, there is no dial to send.
         Regex("deepseek") to
             Spec(Style.NONE, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH)),
 
@@ -75,7 +75,7 @@ object ThinkingSpecs {
      * One clamping policy for the whole app: keep a native rung verbatim,
      * otherwise take the nearest WEAKER native rung (never escalates cost),
      * falling back to the weakest native rung when nothing weaker exists.
-     * Models with NO reasoning capability at all resolve every ask to OFF —
+     * Models with NO reasoning capability at all resolve every ask to OFF,
      * the only honest tier for them. Unknown/custom vocabularies pass through
      * rather than being guessed.
      */
@@ -112,7 +112,7 @@ object ThinkingSpecs {
 
     /**
      * Tiers advertised across ALL surfaces: the FULL global ladder, for EVERY
-     * model — exactly like Hermes, where /reasoning offers none..ultra
+     * model, exactly like Hermes, where /reasoning offers none..ultra
      * regardless of endpoint. Selecting a rung the model doesn't natively
      * speak resolves DOWN the chain (ultra -> max -> xhigh -> high -> …)
      * until it lands on the closest supported tier via [setClamped], so the
@@ -136,7 +136,7 @@ object ThinkingSpecs {
 
     /**
      * Persists [requested] VERBATIM (the raw global pick, Hermes-style).
-     * Resolution happens later, per request, against whichever model runs —
+     * Resolution happens later, per request, against whichever model runs,
      * never here, or the user's intent would be lost on every switch.
      */
     suspend fun setClamped(
@@ -209,7 +209,7 @@ object ThinkingSpecs {
                 return RouterReasoning(effort = nearestEffort(values, rawRequested))
             }
             if (dyn.toggle) return RouterReasoning(enabled = true)
-            // Reported as reasoning-capable but no dial vocabulary —
+            // Reported as reasoning-capable but no dial vocabulary,
             // let the shipped table try below.
         }
         return openRouterEffort(modelId, rawRequested)?.let { RouterReasoning(effort = it) }
@@ -220,7 +220,7 @@ object ThinkingSpecs {
      * gateway normalizes across every provider it fronts. EFFORT families get
      * their exact clamped wire value; BUDGET families reached through the
      * OpenAI-compatible API clamp to the standard low/medium/high vocabulary;
-     * NONE-style inherent reasoners get null — there is no dial, and they
+     * NONE-style inherent reasoners get null, there is no dial, and they
      * already think by default.
      */
     fun openRouterEffort(modelId: String?, rawRequested: ThinkingLevel): String? {
