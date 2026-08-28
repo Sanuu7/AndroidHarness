@@ -60,12 +60,16 @@ class WebSearchTool(
         val apiBackend = searchBackendFor(searchApi())
         if (apiBackend != null) {
             try {
-                val results = apiBackend.fetch(searchClient, query, count)
-                if (results.isNotEmpty()) {
-                    return ToolResult(
-                        true,
-                        formatResults(results, count) + "\n[via ${apiBackend.label}]",
-                    )
+                val outcome = apiBackend.fetch(searchClient, query, count)
+                if (outcome.results.isNotEmpty()) {
+                    val text = StringBuilder(formatResults(outcome.results, count))
+                    if (requested != "auto") {
+                        // The engine selector is keyless-only; say so instead of
+                        // silently returning different results than asked for.
+                        text.append("\n[note: the engine parameter is ignored — ${apiBackend.label} is active]")
+                    }
+                    text.append("\n[via ").append(outcome.via ?: apiBackend.label).append(']')
+                    return ToolResult(true, text.toString())
                 }
                 notes.append("[note: ${apiBackend.label} returned no results; falling back to keyless engines]\n")
             } catch (e: Exception) {
@@ -73,7 +77,7 @@ class WebSearchTool(
             }
         }
 
-        val results = try {
+        val outcome = try {
             keyless.fetch(searchClient, query, count, requested)
         } catch (e: ToolFailure) {
             return ToolResult(
@@ -84,7 +88,9 @@ class WebSearchTool(
         } catch (e: Exception) {
             return ToolResult(false, notes.toString() + "Search failed: ${e.message}")
         }
-        return ToolResult(true, notes.toString() + formatResults(results, count))
+        val text = StringBuilder(notes).append(formatResults(outcome.results, count))
+        outcome.via?.let { text.append("\n[via ").append(it).append(']') }
+        return ToolResult(true, text.toString())
     }
 
     private fun formatResults(results: List<WebSearchResult>, count: Int): String =

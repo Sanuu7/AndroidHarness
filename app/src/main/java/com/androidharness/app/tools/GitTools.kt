@@ -15,8 +15,13 @@ private fun String.shellQuote(): String = "'" + replace("'", "'\\''") + "'"
  * a different uid than whoever executes git (the app workspace seen by the
  * Shizuku shell uid, shared storage owned by the media uid), which otherwise
  * trips "detected dubious ownership in repository" on the very first command.
+ *
+ * gc.auto=0 and maintenance.auto=false stop git from spawning its detached
+ * auto-maintenance subprocess after commits: the sandbox cannot exec it, and
+ * the resulting "fatal: cannot exec 'maintenance'" noise made successful
+ * commits look failed (on-device QA, 2026-08-28).
  */
-private const val SAFE_DIR_ARG = "-c 'safe.directory=*'"
+private const val GIT_BASE_ARGS = "-c 'safe.directory=*' -c gc.auto=0 -c maintenance.auto=false"
 
 /**
  * Builds a shell command where every git step carries the safe.directory
@@ -24,7 +29,7 @@ private const val SAFE_DIR_ARG = "-c 'safe.directory=*'"
  * flag on EACH segment, not just the first.
  */
 internal fun gitCmd(vararg steps: String): String =
-    steps.joinToString(" && ") { "git $SAFE_DIR_ARG ${it.trim()}" }
+    steps.joinToString(" && ") { "git $GIT_BASE_ARGS ${it.trim()}" }
 
 /** Runtime directory whose artifacts must never be swept into a commit. */
 private const val HARNESS_DIR = ".harness"
@@ -42,8 +47,11 @@ internal fun gitLogCmd(limit: Int, path: String?, stat: Boolean): String =
 internal fun gitShowCmd(hash: String, noPatch: Boolean): String =
     gitCmd(
         buildString {
-            append("show --stat")
-            if (noPatch) append(" --no-patch")
+            append("show")
+            // -s BEFORE --stat: --no-patch suppresses the stat in any position,
+            // while "show -s --stat" keeps message + stat (verified on git 2.55).
+            if (noPatch) append(" -s")
+            append(" --stat")
             append(' ').append(hash.trim().shellQuote())
         },
     )

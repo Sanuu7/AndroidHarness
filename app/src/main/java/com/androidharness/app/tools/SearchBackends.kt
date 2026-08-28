@@ -18,6 +18,9 @@ import java.util.concurrent.TimeUnit
 
 data class WebSearchResult(val title: String, val url: String, val snippet: String)
 
+/** Results plus the source that produced them, for the [via …] output tag. */
+internal data class SearchOutcome(val results: List<WebSearchResult>, val via: String?)
+
 /**
  * The user's search API choice: provider id ("brave" | "tavily") plus the key
  * from encrypted storage. Null means the keyless HTML engines are used.
@@ -37,7 +40,7 @@ internal interface SearchBackend {
         query: String,
         count: Int,
         engine: String = "auto",
-    ): List<WebSearchResult>
+    ): SearchOutcome
 }
 
 /** Picks the backend for a user configuration; null = keyless scraping. */
@@ -63,7 +66,7 @@ internal class KeylessSearchBackend : SearchBackend {
         query: String,
         count: Int,
         engine: String,
-    ): List<WebSearchResult> = withContext(Dispatchers.IO) {
+    ): SearchOutcome = withContext(Dispatchers.IO) {
         val searchClient = client.newBuilder()
             .readTimeout(25, TimeUnit.SECONDS)
             .build()
@@ -75,7 +78,7 @@ internal class KeylessSearchBackend : SearchBackend {
         for (e in chain) {
             try {
                 val results = fetchEngine(searchClient, e, query)
-                if (results.isNotEmpty()) return@withContext results
+                if (results.isNotEmpty()) return@withContext SearchOutcome(results, via = e)
                 lastError = "$e returned no results"
             } catch (ex: Exception) {
                 lastError = "$e failed: ${ex.message}"
@@ -193,7 +196,7 @@ internal class BraveApiBackend(private val apiKey: String) : SearchBackend {
         query: String,
         count: Int,
         engine: String,
-    ): List<WebSearchResult> = withContext(Dispatchers.IO) {
+    ): SearchOutcome = withContext(Dispatchers.IO) {
         val url = "https://api.search.brave.com/res/v1/web/search" +
             "?q=${URLEncoder.encode(query, "UTF-8")}&count=$count"
         val body = client.newCall(
@@ -206,7 +209,7 @@ internal class BraveApiBackend(private val apiKey: String) : SearchBackend {
             if (!resp.isSuccessful) throw ToolFailure("HTTP ${resp.code}")
             resp.body?.string() ?: ""
         }
-        BraveSearchParser.parse(body)
+        SearchOutcome(BraveSearchParser.parse(body), via = label)
     }
 }
 
@@ -235,7 +238,7 @@ internal class TavilyApiBackend(private val apiKey: String) : SearchBackend {
         query: String,
         count: Int,
         engine: String,
-    ): List<WebSearchResult> = withContext(Dispatchers.IO) {
+    ): SearchOutcome = withContext(Dispatchers.IO) {
         val payload = buildJsonObject {
             put("api_key", apiKey)
             put("query", query)
@@ -251,7 +254,7 @@ internal class TavilyApiBackend(private val apiKey: String) : SearchBackend {
             if (!resp.isSuccessful) throw ToolFailure("HTTP ${resp.code}")
             resp.body?.string() ?: ""
         }
-        TavilySearchParser.parse(body)
+        SearchOutcome(TavilySearchParser.parse(body), via = label)
     }
 }
 

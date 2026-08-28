@@ -7,27 +7,28 @@ import org.junit.Assert.fail
 import org.junit.Test
 
 /**
- * Command-shape guarantees for the shell-level git tools: the dubious-
- * ownership override must ride on EVERY segment of a multi-step command,
- * and runtime artifacts under .harness/ must be excluded from staging.
+ * Command-shape guarantees for the shell-level git tools: the safe.directory
+ * override and the auto-maintenance suppression must ride on EVERY segment of
+ * a multi-step command, and runtime artifacts under .harness/ must be excluded
+ * from staging.
  */
 class GitCommandTest {
 
+    /** Prefix every git invocation must carry (see GitTools.GIT_BASE_ARGS). */
+    private val base = "git -c 'safe.directory=*' -c gc.auto=0 -c maintenance.auto=false"
+
     @Test
-    fun `gitCmd puts safe directory override on every step`() {
+    fun `gitCmd puts the overrides on every step`() {
         val cmd = gitCmd("status --short --branch")
-        assertEquals(
-            "git -c 'safe.directory=*' status --short --branch",
-            cmd,
-        )
+        assertEquals("$base status --short --branch", cmd)
     }
 
     @Test
-    fun `gitCmd repeats the override across chained steps`() {
+    fun `gitCmd repeats the overrides across chained steps`() {
         val cmd = gitCmd("add -A", "commit -m 'msg'")
         val parts = cmd.split(" && ")
         assertEquals(2, parts.size)
-        assertTrue(parts.all { it.startsWith("git -c 'safe.directory=*' ") })
+        assertTrue(parts.all { it.startsWith("$base ") })
     }
 
     @Test
@@ -43,7 +44,7 @@ class GitCommandTest {
     @Test
     fun `gitLogCmd shapes the default history command`() {
         assertEquals(
-            "git -c 'safe.directory=*' log -n 20 --date=short --pretty=format:'%h %ad %an  %s'",
+            "$base log -n 20 --date=short --pretty=format:'%h %ad %an  %s'",
             gitLogCmd(20, null, false),
         )
     }
@@ -57,13 +58,15 @@ class GitCommandTest {
     }
 
     @Test
-    fun `gitShowCmd quotes the hash and honors no_patch`() {
+    fun `gitShowCmd quotes the hash and keeps the stat under -s`() {
         assertEquals(
-            "git -c 'safe.directory=*' show --stat 'HEAD~1'",
+            "$base show --stat 'HEAD~1'",
             gitShowCmd("HEAD~1", false),
         )
+        // -s BEFORE --stat: --no-patch kills the stat in any position, while
+        // "show -s --stat" keeps message + stat (verified on git 2.55).
         assertEquals(
-            "git -c 'safe.directory=*' show --stat --no-patch 'HEAD'",
+            "$base show -s --stat 'HEAD'",
             gitShowCmd("HEAD", true),
         )
     }
@@ -71,19 +74,19 @@ class GitCommandTest {
     @Test
     fun `gitCheckoutCmd covers switch create and restore shapes`() {
         assertEquals(
-            "git -c 'safe.directory=*' checkout 'main'",
+            "$base checkout 'main'",
             gitCheckoutCmd("main", false, emptyList()),
         )
         assertEquals(
-            "git -c 'safe.directory=*' checkout -b 'feature/x'",
+            "$base checkout -b 'feature/x'",
             gitCheckoutCmd("feature/x", true, emptyList()),
         )
         assertEquals(
-            "git -c 'safe.directory=*' checkout -- 'a.kt' 'b.kt'",
+            "$base checkout -- 'a.kt' 'b.kt'",
             gitCheckoutCmd(null, false, listOf("a.kt", " b.kt")),
         )
         assertEquals(
-            "git -c 'safe.directory=*' checkout 'main' -- 'a.kt'",
+            "$base checkout 'main' -- 'a.kt'",
             gitCheckoutCmd("main", false, listOf("a.kt")),
         )
     }
@@ -100,11 +103,11 @@ class GitCommandTest {
     @Test
     fun `gitPushCmd defaults to origin and HEAD`() {
         assertEquals(
-            "git -c 'safe.directory=*' push 'origin' HEAD",
+            "$base push 'origin' HEAD",
             gitPushCmd(null, null, false),
         )
         assertEquals(
-            "git -c 'safe.directory=*' push -u 'origin' 'feature/x'",
+            "$base push -u 'origin' 'feature/x'",
             gitPushCmd("origin", "feature/x", true),
         )
     }
@@ -112,15 +115,15 @@ class GitCommandTest {
     @Test
     fun `gitPullCmd maps modes and rejects unknown ones`() {
         assertEquals(
-            "git -c 'safe.directory=*' pull --ff-only 'origin'",
+            "$base pull --ff-only 'origin'",
             gitPullCmd(null, null),
         )
         assertEquals(
-            "git -c 'safe.directory=*' pull 'origin'",
+            "$base pull 'origin'",
             gitPullCmd("origin", "merge"),
         )
         assertEquals(
-            "git -c 'safe.directory=*' pull --rebase 'origin'",
+            "$base pull --rebase 'origin'",
             gitPullCmd(null, "rebase"),
         )
         try {
