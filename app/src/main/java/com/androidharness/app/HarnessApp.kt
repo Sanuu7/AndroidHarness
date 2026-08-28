@@ -62,6 +62,13 @@ class AppContainer(val appContext: Context) {
         com.androidharness.app.data.env.LinuxEnvironmentManager(appContext) { keys.githubToken() }
     val shizuku = com.androidharness.app.data.env.ShizukuManager(appContext)
     val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv)
+
+    init {
+        // Package-set changes must invalidate the deployed-copy cache, or the
+        // privileged tier keeps serving the old toolchain until a restart.
+        linuxEnv.deployStateListener = { shizuku.invalidateDeployState() }
+    }
+
     val updates = com.androidharness.app.data.update.UpdateManager(appContext, shizuku)
     val backgroundProcesses = com.androidharness.app.data.BgProcessStore(
         appContext, linuxEnv, shizuku, workspaceRoot = workspace.appPrivateRoot,

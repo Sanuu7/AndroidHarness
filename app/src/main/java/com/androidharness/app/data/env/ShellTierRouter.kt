@@ -129,6 +129,9 @@ class ShellTierRouter(
         timeoutMs: Int,
         maxOutput: Int,
     ): ShellRunResult {
+        // Self-heal: catch a stale or vanished deployed copy even when nothing
+        // in-process changed the staging state (throttled internally).
+        linuxEnv.verifyDeployedCopyThrottled(shizuku)
         var toolchain = linuxEnv.isReady && shizuku.isTmpPrefixDeployed()
         if (linuxEnv.isReady && !toolchain) {
             // One-time deploy of the toolchain to an exec-allowed location.

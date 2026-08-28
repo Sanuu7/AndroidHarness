@@ -278,6 +278,34 @@ class LinuxEnvironmentManager(
 
     val isReady: Boolean get() = _state.value is EnvState.Ready
 
+    /**
+     * Notified whenever the installed package set changes: the app wires this
+     * to ShizukuManager.invalidateDeployState so the deployed copy is
+     * re-checked (and redeployed if the hash moved) on the next privileged
+     * command — without it, an in-place package update would keep serving the
+     * old toolchain until an app restart.
+     */
+    var deployStateListener: (() -> Unit)? = null
+
+    @Volatile private var lastDeployVerifyAt = 0L
+
+    /**
+     * Self-heal for the deployed shell-tier copy: re-compares the deployed
+     * hash at most once per [DEPLOY_REVERIFY_INTERVAL_MS], so a vanished or
+     * corrupted .harness-hash — or any external staging drift — is noticed and
+     * repaired by the normal deploy path without waiting for an app restart.
+     * No-op when the hash matches the staging state.
+     */
+    suspend fun verifyDeployedCopyThrottled(shizuku: ShizukuManager) {
+        if (shizuku.isDeployInProgress()) return
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - lastDeployVerifyAt < DEPLOY_REVERIFY_INTERVAL_MS) return
+        lastDeployVerifyAt = now
+        if (!isReady || !shizuku.isGranted()) return
+        runCatching { ensureShellDeploy(shizuku) }
+            .onFailure { Log.e(TAG, "periodic deployed-copy verification failed", it) }
+    }
+
     private val client = OkHttpClient.Builder()
         .connectTimeout(20, TimeUnit.SECONDS)
         .readTimeout(60, TimeUnit.SECONDS)
@@ -314,6 +342,7 @@ class LinuxEnvironmentManager(
             if (closure.isEmpty()) {
                 markInstalled(wanted)
                 _state.value = EnvState.Ready
+                runCatching { deployStateListener?.invoke() }
                 return
             }
 
@@ -335,6 +364,7 @@ class LinuxEnvironmentManager(
             markInstalled(wanted)
             ensureShims()
             _state.value = EnvState.Ready
+            runCatching { deployStateListener?.invoke() }
         } catch (ce: CancellationException) {
             throw ce
         } catch (e: Exception) {
@@ -1299,6 +1329,9 @@ class LinuxEnvironmentManager(
 
     companion object {
         private const val TAG = "LinuxEnvironment"
+
+        /** How often the deployed shell-tier copy is re-verified against the staging hash. */
+        private const val DEPLOY_REVERIFY_INTERVAL_MS = 5 * 60 * 1000L
 
         private const val BASE_URL = "https://packages.termux.dev/apt/termux-main"
 
