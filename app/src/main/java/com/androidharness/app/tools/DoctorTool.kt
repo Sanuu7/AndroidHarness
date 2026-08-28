@@ -179,7 +179,7 @@ class DoctorTool(
             append("\"\") echo 'shell-path=FAIL (git var GIT_SHELL_PATH empty; git >= 2.30 required)' ;; ")
             append("*) if [ -x \"\$sp\" ]; then echo \"shell-path=OK \$sp\"; ")
             append("else echo \"shell-path=DEAD \$sp is not executable\"; fi ;; esac; ")
-            append("io=\"\$(git config --global --get-all url.https://github.com/.insteadOf 2>/dev/null)\"; ")
+            append("io=\"\$(git config --global --get-regexp '^url\\..*insteadof\$' 2>/dev/null)\"; ")
             append("if [ -n \"\$io\" ]; then echo 'instead-of=OK'; else echo 'instead-of=ABSENT'; fi")
         }
         val res = runCatching { router.run(script, cwd, timeoutMs = 15_000, maxOutput = 4_000) }.getOrNull()
@@ -214,8 +214,12 @@ class DoctorTool(
      * pushed private repo, then one org's.
      */
     private fun checkFreePlanTrap(lines: MutableList<String>, token: String) {
-        val repos = runCatching { api("/user/repos?type=private&affiliation=owner&per_page=1&sort=pushed", token) }
-            .getOrNull()
+        // visibility + affiliation is the combinable pair; `type` alongside
+        // `affiliation` is rejected by GitHub with 422 Validation Failed,
+        // which used to leave the probe permanently "unknown".
+        val repos = runCatching {
+            api("/user/repos?visibility=private&affiliation=owner&per_page=1&sort=pushed", token)
+        }.getOrNull()
         if (repos == null || repos.code != 200) {
             lines += "[warn] free-plan probe: could not list private repos (HTTP ${repos?.code ?: -1}) — " +
                 "protection state unknown"

@@ -66,6 +66,16 @@ class ShizukuManager(
 
     @Volatile private var tmpPrefixDeployed = false
 
+    /**
+     * True while the deploy script is gutting and re-extracting
+     * /data/local/tmp/androidharness: during that window the deployed prefix
+     * is partially absent even though [isTmpPrefixDeployed] stays true (the
+     * hash matched at the last deploy), so status tools must not trust it.
+     */
+    @Volatile private var deploying = false
+
+    fun isDeployInProgress(): Boolean = deploying
+
     private val isDebuggable: Boolean =
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
@@ -264,31 +274,36 @@ class ShizukuManager(
             tmpPrefixDeployed = true
             return true
         }
-        val script = buildString {
-            append("rm -rf \"$base\" && ")
-            append("mkdir -p \"$base\" && ")
-            append("tar -xzf \"$stagingTarPath\" -C \"$base\" && ")
-            append(caInstall)
-            append("chmod -R 755 \"$base\" && ")
-            // The blanket 755 above makes the token-bearing copies world-
-            // readable; tighten them right after (guarded: they may be absent
-            // when no token is set, so this must not fail the deploy chain).
-            append("chmod 600 \"$base/linux/home/.gh-token\" " +
-                "\"$base/linux/home/.config/gh/hosts.yml\" 2>/dev/null; ")
-            append("echo '$hash' > \"$base/.harness-hash\" && ")
-            append("test -x \"$base/linux/bin/bash\" && ")
-            append("echo DEPLOY_OK")
+        deploying = true
+        try {
+            val script = buildString {
+                append("rm -rf \"$base\" && ")
+                append("mkdir -p \"$base\" && ")
+                append("tar -xzf \"$stagingTarPath\" -C \"$base\" && ")
+                append(caInstall)
+                append("chmod -R 755 \"$base\" && ")
+                // The blanket 755 above makes the token-bearing copies world-
+                // readable; tighten them right after (guarded: they may be absent
+                // when no token is set, so this must not fail the deploy chain).
+                append("chmod 600 \"$base/linux/home/.gh-token\" " +
+                    "\"$base/linux/home/.config/gh/hosts.yml\" 2>/dev/null; ")
+                append("echo '$hash' > \"$base/.harness-hash\" && ")
+                append("test -x \"$base/linux/bin/bash\" && ")
+                append("echo DEPLOY_OK")
+            }
+            val r = runPrivileged(
+                arrayOf("/system/bin/sh", "-c", script),
+                env = null,
+                dir = null,
+                timeoutMs = 300_000,
+                maxBytes = 20_000,
+            )
+            val ok = r != null && r.exitCode == 0 && r.output.contains("DEPLOY_OK")
+            if (ok) tmpPrefixDeployed = true
+            return ok
+        } finally {
+            deploying = false
         }
-        val r = runPrivileged(
-            arrayOf("/system/bin/sh", "-c", script),
-            env = null,
-            dir = null,
-            timeoutMs = 300_000,
-            maxBytes = 20_000,
-        )
-        val ok = r != null && r.exitCode == 0 && r.output.contains("DEPLOY_OK")
-        if (ok) tmpPrefixDeployed = true
-        return ok
     }
 
     /** Whether the shell-user toolchain currently exists at /data/local/tmp. */

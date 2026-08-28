@@ -61,7 +61,9 @@ internal object EnvProbes {
      * Resolves [names] in the live shell (`command -v`), which sees both real
      * binaries and the app-tier linker shims — the ground truth for "can the
      * agent run this tool right now". Null when the probe could not run and
-     * the caller should fall back to filesystem checks.
+     * the caller should report "unknown" instead of guessing: a non-blank
+     * output with zero recognizable `name=state` lines means the shell itself
+     * failed (e.g. exec during a redeploy, when the tmp prefix is gutted).
      */
     suspend fun commandPresence(
         router: ShellTierRouter,
@@ -74,11 +76,16 @@ internal object EnvProbes {
             ?: return null
         if (res.rawOutput.isBlank()) return null
         val found = names.associateWith { false }.toMutableMap()
+        var recognized = 0
         res.rawOutput.lineSequence().forEach { line ->
             val parts = line.trim().split('=', limit = 2)
             val name = parts.getOrNull(0)
-            if (name != null && name in found && parts.getOrNull(1) == "ok") found[name] = true
+            if (name != null && name in found) {
+                recognized++
+                if (parts.getOrNull(1) == "ok") found[name] = true
+            }
         }
+        if (recognized == 0) return null
         return found
     }
 }

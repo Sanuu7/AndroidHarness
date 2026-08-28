@@ -77,18 +77,33 @@ class EnvStatusTool(
             "npm" to listOf("bin/npm"),
             "pip" to listOf("bin/pip", "bin/pip3"),
         )
-        val missing: List<String> = if (!linuxEnv.isReady) {
-            headlineTools.map { it.first }
-        } else {
-            val live = EnvProbes.commandPresence(router, cwd, headlineTools.map { it.first })
-            headlineTools.filter { (name, rels) ->
-                live?.get(name) ?: rels.none { java.io.File(probeRoot, it).exists() }
-            }.map { it.first }
+        val missing: List<String>? = when {
+            !linuxEnv.isReady -> headlineTools.map { it.first }
+            else -> {
+                val live = EnvProbes.commandPresence(router, cwd, headlineTools.map { it.first })
+                when {
+                    // Live shell said so — the only authoritative answer.
+                    live != null -> headlineTools.filter { (name, _) -> live[name] == false }.map { it.first }
+                    // App prefix is statable by this uid: filesystem check is honest here.
+                    probeRoot === linuxEnv.prefix ->
+                        headlineTools.filter { (_, rels) -> rels.none { java.io.File(probeRoot, it).exists() } }
+                            .map { it.first }
+                    // Probe failed against the deployed copy (the app uid cannot
+                    // stat inside /data/local/tmp, and a redeploy may be gutting
+                    // it): "missing" would be a lie, report unknown instead.
+                    else -> null
+                }
+            }
         }
         val envText = when {
             !linuxEnv.isReady -> "not installed"
-            missing.isEmpty() -> "installed ✓ (bash, git, gh, python3, node, npm, pip all present)"
-            else -> "installed ⚠ missing: " + missing.joinToString(", ")
+            missing != null && missing.isEmpty() -> "installed ✓ (bash, git, gh, python3, node, npm, pip all present)"
+            missing != null -> "installed ⚠ missing: " + missing.joinToString(", ")
+            shizuku.isDeployInProgress() ->
+                "redeploying the shell-tier copy right now — tool presence unknown for a moment, re-check shortly"
+            else ->
+                "installed; presence probe unavailable right now (the shell-tier copy may have just been " +
+                    "redeployed) — re-check in a minute"
         }
         // GitHub auth status (stress-test M7): the token's master copy lives in
         // the app's encrypted settings; this file is the materialized copy both
