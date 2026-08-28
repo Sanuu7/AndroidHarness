@@ -3,12 +3,14 @@ package com.androidharness.app.tools
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -184,14 +186,39 @@ class WebSearchTool(
         .trim()
 }
 
+/**
+ * Decides when http_request attaches the stored GitHub token. API hosts
+ * (api.github.com, uploads.github.com) get it AUTOMATICALLY — anonymous API
+ * calls from the main agent were a standing footgun (60 req/h rate limit,
+ * private repos 404). Explicit true widens to other github.com /
+ * githubusercontent.com hosts; explicit false never attaches. The token is
+ * NEVER attached for any other host, whatever the arguments say.
+ */
+internal object GithubAuthPolicy {
+    fun shouldAttach(host: String?, explicit: Boolean?): Boolean {
+        val h = host?.lowercase()?.trimEnd('.') ?: return false
+        return when (explicit) {
+            false -> false
+            true -> h == "github.com" || h.endsWith(".github.com") ||
+                h == "githubusercontent.com" || h.endsWith(".githubusercontent.com")
+            null -> h == "api.github.com" || h == "uploads.github.com"
+        }
+    }
+}
+
 /** Generic HTTP client for testing APIs. */
 class HttpRequestTool(
     private val client: OkHttpClient,
+    /** Stored GitHub token from the app's encrypted settings (lazy, may be null). */
+    private val githubToken: () -> String? = { null },
 ) : Tool {
     override val name = "http_request"
     override val description =
         "Send an HTTP request (GET/POST/PUT/PATCH/DELETE) with optional headers and body. " +
-        "Returns status, headers and the truncated response body."
+        "Returns status, headers and the truncated response body. Requests to api.github.com " +
+        "and uploads.github.com are authenticated with the configured GitHub token automatically " +
+        "(set github_auth=false to go anonymous); github_auth=true extends auth to other " +
+        "github.com/githubusercontent.com hosts."
     override val parametersSchema = Schema.obj(
         mapOf(
             "method" to Schema.string("HTTP method. Defaults to GET."),
@@ -203,6 +230,11 @@ class HttpRequestTool(
             },
             "body" to Schema.string("Request body (for POST/PUT/PATCH)."),
             "content_type" to Schema.string("Body content type. Defaults to application/json."),
+            "github_auth" to Schema.boolean(
+                "GitHub token handling. Omitted: attach automatically for api.github.com and " +
+                    "uploads.github.com. true: also attach for other github.com / " +
+                    "githubusercontent.com hosts. false: never attach (anonymous request).",
+            ),
         ),
         required = listOf("url"),
     )
@@ -215,8 +247,17 @@ class HttpRequestTool(
             val method = (args["method"]?.jsonPrimitive?.content ?: "GET").uppercase()
             val body = args["body"]?.jsonPrimitive?.content
             val contentType = args["content_type"]?.jsonPrimitive?.content ?: "application/json"
+            val githubAuth = args["github_auth"]
+                ?.let { runCatching { it.jsonPrimitive.booleanOrNull }.getOrNull() }
+            val host = runCatching { url.toHttpUrlOrNull()?.host }.getOrNull()
+            val attachAuth = GithubAuthPolicy.shouldAttach(host, githubAuth)
+            val token = if (attachAuth) githubToken() else null
 
             val builder = Request.Builder().url(url)
+            // Attached first so an explicit user Authorization header wins.
+            if (attachAuth && token != null) {
+                builder.header("Authorization", "Bearer $token")
+            }
             args["headers"]?.jsonObject?.forEach { (key, value) ->
                 builder.header(key, value.jsonPrimitive.content)
             }
@@ -243,6 +284,14 @@ class HttpRequestTool(
                     val respBody = resp.body?.string() ?: ""
                     sb.append(respBody.take(20_000))
                     if (respBody.length > 20_000) sb.append("\n[truncated]")
+                    if (attachAuth && token == null) {
+                        sb.append("\n[note: no GitHub token configured — request sent anonymously; " +
+                            "set one in Settings → GitHub for private repos and the 5000 req/h limit]")
+                    }
+                    if (attachAuth && token != null && (resp.code == 401 || resp.code == 403)) {
+                        sb.append("\n[note: GitHub refused an AUTHENTICATED request (" + resp.code + ") — " +
+                            "check the token's validity/scopes with doctor --github]")
+                    }
                     ToolResult(true, sb.toString())
                 }
             } catch (e: Exception) {

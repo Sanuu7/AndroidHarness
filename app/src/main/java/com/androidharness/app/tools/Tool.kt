@@ -80,7 +80,7 @@ class ToolRegistry(tools: List<Tool>) {
                 MoveFileTool(),
                 WebFetchTool(httpClient),
                 WebSearchTool(httpClient),
-                HttpRequestTool(httpClient),
+                HttpRequestTool(httpClient) { linuxEnv.githubToken() },
                 AskUserTool(),
                 TaskTool(),
                 MemoryWriteTool(),
