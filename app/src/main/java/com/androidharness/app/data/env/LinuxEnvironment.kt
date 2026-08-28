@@ -741,10 +741,12 @@ class LinuxEnvironmentManager(
 
     /**
      * Writes the current auth state straight into the DEPLOYED shell-tier
-     * prefix, bypassing the hash-skip that legitimately avoids full redeploys:
-     * .gh-token, gh's hosts.yml and etc/gitconfig (which carries the insteadOf
-     * rewrite). Payloads are base64-wrapped so tokens and config bodies cannot
-     * break the shell quoting. A later full redeploy re-derives the same state.
+     * prefix: .gh-token, gh's hosts.yml and etc/gitconfig (which carries the
+     * insteadOf rewrite). Payloads are base64-wrapped so tokens and config
+     * bodies cannot break the shell quoting. The staging tarball carries no
+     * auth at all ([isAuthEntry] excludes it), so this is the ONLY writer of
+     * the deployed prefix's auth files — it runs on every auth change and
+     * after every successful deploy.
      */
     private suspend fun syncShellTierAuth(shizuku: ShizukuManager) {
         if (!shizuku.isTmpPrefixDeployed()) return
@@ -977,13 +979,17 @@ class LinuxEnvironmentManager(
     }
 
     /**
-     * The token-bearing copies ride inside the staging tarball; they must land
-     * 0600 in the deployed prefix (the privileged deploy's chmod -R 755 is
-     * corrected there, but the tarball entries themselves must not be 0644).
+     * Auth-bearing files are deliberately EXCLUDED from the staging tarball:
+     * it lives on shared storage and is the longest-lived, most widely
+     * readable token copy on the device. The deployed prefix receives them
+     * via [syncShellTierAuth] after every deploy, and the app prefix keeps
+     * its own 0600 copies.
      */
-    private fun isPrivateTokenEntry(name: String): Boolean {
+    private fun isAuthEntry(name: String): Boolean {
         val rel = name.removePrefix("linux/")
-        return rel == GitHubProvision.TOKEN_FILE || rel == GitHubProvision.GH_HOSTS_FILE
+        return rel == GitHubProvision.TOKEN_FILE ||
+            rel == GitHubProvision.GH_HOSTS_FILE ||
+            rel == "etc/gitconfig"
     }
 
     private fun writeTarEntries(
@@ -994,6 +1000,7 @@ class LinuxEnvironmentManager(
         dir.listFiles()?.forEach { child ->
             val name = "$base/${child.name}"
             val link = runCatching { Os.readlink(child.absolutePath) }.getOrNull()
+            if (link == null && !child.isDirectory && isAuthEntry(name)) return@forEach
             val entry = when {
                 link != null -> org.apache.commons.compress.archivers.tar.TarArchiveEntry(
                     name,
@@ -1010,7 +1017,6 @@ class LinuxEnvironmentManager(
             entry.mode = when {
                 link != null -> 0x1FF // 0777
                 child.isDirectory -> 0x1ED // 0755
-                isPrivateTokenEntry(name) -> 0x180 // 0600: the deployed copy must not be world-readable
                 child.canExecute() -> 0x1ED // 0755
                 else -> 0x1A4 // 0644
             }
@@ -1042,7 +1048,15 @@ class LinuxEnvironmentManager(
             withContext(Dispatchers.IO) {
                 stageForShell()
                 if (!stagingTar.exists()) return@withContext false
-                shizuku.ensureTmpPrefix(stagingTar.absolutePath, packageSetHash())
+                val ok = shizuku.ensureTmpPrefix(stagingTar.absolutePath, packageSetHash())
+                if (ok) {
+                    // The tarball carries no auth (excluded at stage time), so a
+                    // freshly deployed prefix has no gitconfig/token/hosts until
+                    // they are written directly.
+                    runCatching { syncShellTierAuth(shizuku) }
+                        .onFailure { Log.e(TAG, "post-deploy GitHub auth sync failed", it) }
+                }
+                ok
             }
         }
     }

@@ -282,11 +282,13 @@ class ShizukuManager(
                 append("tar -xzf \"$stagingTarPath\" -C \"$base\" && ")
                 append(caInstall)
                 append("chmod -R 755 \"$base\" && ")
-                // The blanket 755 above makes the token-bearing copies world-
-                // readable; tighten them right after (guarded: they may be absent
-                // when no token is set, so this must not fail the deploy chain).
+                // /data/local/tmp is o+x-traversable and the blanket 755 leaves
+                // everything group/other-readable: without this, ANY app that
+                // guesses the path could read the token-bearing copies below.
+                append("chmod 700 \"$base\" \"$base/linux\" && ")
                 append("chmod 600 \"$base/linux/home/.gh-token\" " +
-                    "\"$base/linux/home/.config/gh/hosts.yml\" 2>/dev/null; ")
+                    "\"$base/linux/home/.config/gh/hosts.yml\" " +
+                    "\"$base/linux/etc/gitconfig\" 2>/dev/null; ")
                 append("echo '$hash' > \"$base/.harness-hash\" && ")
                 append("test -x \"$base/linux/bin/bash\" && ")
                 append("echo DEPLOY_OK")
