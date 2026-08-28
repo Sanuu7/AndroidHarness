@@ -3,7 +3,6 @@ package com.androidharness.app.data.env
 import android.system.Os
 import android.system.OsConstants
 import java.io.File
-import java.security.MessageDigest
 
 /**
  * GitHub auth that survives toolchain reinstalls (stress-test C1/C2/M6).
@@ -107,14 +106,4 @@ object GitHubProvision {
         }
         runCatching { Os.chmod(f.absolutePath, 0x180) }
     }
-
-    /**
-     * Short fingerprint of the token for staging hashes: a token change must
-     * bump the deploy hash so the shell-tier copy is re-staged and re-deployed.
-     */
-    fun fingerprint(token: String?): String =
-        if (!hasToken(token)) "none"
-        else MessageDigest.getInstance("SHA-256").digest(token!!.trim().toByteArray())
-            .joinToString("") { "%02x".format(it) }
-            .take(12)
 }

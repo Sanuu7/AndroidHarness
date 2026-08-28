@@ -513,17 +513,20 @@ private fun GitHubSection(container: AppContainer) {
                                 if (check.login != null) {
                                     container.keys.putGitHubToken(token)
                                     container.keys.putGitHubLogin(check.login)
-                                    container.refreshGitHubAuth()
+                                    // UI first — the auth propagation below keeps
+                                    // running in the background.
                                     hasToken = true
                                     expanded = false
                                     draft = ""
                                     status = "Verified as ${check.login}" +
                                         (check.plan?.let { " — plan: $it" } ?: "") +
                                         (check.scopes?.let { " · scopes: $it" } ?: "")
+                                    checking = false
+                                    container.refreshGitHubAuth()
                                 } else {
                                     status = check.error
+                                    checking = false
                                 }
-                                checking = false
                             }
                         },
                         enabled = draft.isNotBlank() && !checking,
@@ -575,10 +578,14 @@ private fun GitHubSection(container: AppContainer) {
                     scope.launch(Dispatchers.IO) {
                         container.keys.removeGitHubToken()
                         container.keys.removeGitHubLogin()
-                        container.refreshGitHubAuth()
+                        // Reflect the logout in the UI FIRST: the auth propagation
+                        // below (file sync + tar re-stage) runs for many seconds,
+                        // and the old ordering left the screen showing "signed in"
+                        // until it finished.
                         hasToken = false
                         expanded = false
                         status = null
+                        container.refreshGitHubAuth()
                     }
                 }) { Text("Log out", color = MaterialTheme.colorScheme.error) }
             },

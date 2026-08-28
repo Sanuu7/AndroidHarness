@@ -2,7 +2,6 @@ package com.androidharness.app.data.env
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -11,8 +10,7 @@ import org.junit.Test
  * must always carry safe.directory + identity + a main default branch, embed
  * the token only via the insteadOf URL rewrite (credential helpers cannot
  * exec in the app tier, so no empty `credential.helper` reset is written that
- * would block them in the shell tier either), and the token fingerprint must
- * change the staging hash inputs.
+ * would block them in the shell tier either).
  */
 class GitHubProvisionTest {
 
@@ -45,15 +43,7 @@ class GitHubProvisionTest {
     @Test
     fun `blank tokens are treated as no token`() {
         assertEquals(GitHubProvision.gitConfigBody(null), GitHubProvision.gitConfigBody("   "))
-        assertEquals("none", GitHubProvision.fingerprint(""))
         assertFalse(GitHubProvision.hasToken(""))
-    }
-
-    @Test
-    fun `fingerprint distinguishes tokens so deploys pick up a rotation`() {
-        assertNotEquals(GitHubProvision.fingerprint("ghp_A"), GitHubProvision.fingerprint("ghp_B"))
-        assertNotEquals("none", GitHubProvision.fingerprint("ghp_A"))
-        assertEquals(GitHubProvision.fingerprint(" ghp_A "), GitHubProvision.fingerprint("ghp_A"))
     }
 
     @Test

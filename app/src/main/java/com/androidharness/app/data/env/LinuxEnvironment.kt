@@ -717,27 +717,25 @@ class LinuxEnvironmentManager(
     }
 
     /**
-     * Called after the user saves/clears the GitHub token: refresh the prefix
-     * copies, then propagate to the shell tier. Auth propagation is done TWO
-     * ways on purpose: a direct write of the three auth-bearing files into the
-     * already-deployed prefix (fast, and independent of the deploy machinery —
-     * logout used to leave gh/git authenticated there when the full redeploy
-     * silently failed), followed by the full re-stage/redeploy driven by the
-     * token fingerprint in the staging hash.
+     * Called after the user saves/clears the GitHub token. Auth reaches the
+     * shell tier through syncShellTierAuth (direct writes into the deployed
+     * prefix — fast, and independent of the deploy machinery; logout used to
+     * leave gh/git authenticated there when the full redeploy silently
+     * failed). The staging tarball is then re-staged in the background so it
+     * never carries a stale token, WITHOUT a redeploy: the deployed prefix is
+     * already correct, and untarring it again would only cost 30-60s and open
+     * the "presence unknown" window for no benefit.
      */
     suspend fun refreshGitHub(shizuku: ShizukuManager) = withContext(Dispatchers.IO) {
         materializeGitHub()
-        runCatching { stagingMarker.delete() }
         if (shizuku.isGranted()) {
             runCatching { syncShellTierAuth(shizuku) }
                 .onFailure { Log.e(TAG, "shell-tier GitHub auth sync failed", it) }
         }
+        runCatching { stagingMarker.delete() }
         if (isReady) {
-            runCatching { ensureShellDeploy(shizuku) }
-                .onFailure { Log.e(TAG, "post-auth-change shell-tier deploy failed", it) }
-                .onSuccess { ok ->
-                    if (!ok) Log.w(TAG, "post-auth-change shell-tier deploy skipped (Shizuku unavailable?)")
-                }
+            runCatching { stageForShell() }
+                .onFailure { Log.e(TAG, "re-staging the shell-tier tarball after an auth change failed", it) }
         }
     }
 
@@ -922,16 +920,17 @@ class LinuxEnvironmentManager(
     private val stagingMarker: File get() = File(stagingDir, ".harness-staged")
 
     /**
-     * Hash of the installed package set + GitHub token fingerprint, so a token
-     * change re-stages/re-deploys the shell-tier copy (the token rides inside
-     * the tarball's etc/gitconfig + home/.gh-token).
+     * Hash of the installed package set only. The GitHub token fingerprint is
+     * deliberately NOT an input anymore: auth changes propagate to the shell
+     * tier via syncShellTierAuth (direct file writes), and refreshGitHub
+     * re-stages the tarball in the background so the staging copy never goes
+     * stale. Pinning auth to full redeploys made every logout/login pay a
+     * 30-60s untar and left the UI lagging.
      */
     fun packageSetHash(): String =
-        // v8-shellpath: the git ELF now ships with its SHELL_PATH patched to
-        // /system/bin/sh — content changed without changing the package set,
-        // so force one re-stage + redeploy (token files also land 0600 now).
-        ("v8-shellpath\n" + installedPackages().sorted().joinToString("\n") +
-            "\n" + GitHubProvision.fingerprint(runCatching { githubTokenProvider() }.getOrNull()))
+        // v9-authsync: hash inputs changed (token fingerprint removed) — forces
+        // one re-stage + redeploy so the deployed copy matches the new scheme.
+        ("v9-authsync\n" + installedPackages().sorted().joinToString("\n"))
             .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
     /** Writes (or refreshes) the staging tarball on shared storage. */
