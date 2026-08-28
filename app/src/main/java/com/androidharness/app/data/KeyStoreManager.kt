@@ -47,8 +47,20 @@ class KeyStoreManager(context: Context) {
         prefs.edit().remove(KEY_GITHUB_LOGIN).apply()
     }
 
+    /** Search API key (Brave / Tavily) used by the web_search tool. */
+    fun putSearchApiKey(key: String) {
+        prefs.edit().putString(KEY_SEARCH_API, key.trim()).apply()
+    }
+
+    fun searchApiKey(): String? = prefs.getString(KEY_SEARCH_API, null)?.trim()?.ifBlank { null }
+
+    fun removeSearchApiKey() {
+        prefs.edit().remove(KEY_SEARCH_API).apply()
+    }
+
     private companion object {
         const val KEY_GITHUB = "github_pat"
         const val KEY_GITHUB_LOGIN = "github_login"
+        const val KEY_SEARCH_API = "search_api_key"
     }
 }

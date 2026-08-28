@@ -210,6 +210,8 @@ class AgentEngine(
         userInjections: Channel<String>? = null,
         /** Hard cap on tool-call iterations; 0 or negative = unlimited. */
         maxIterations: Int = 0,
+        /** Run-scoped tools (e.g. connected MCP servers) on top of the registry. */
+        extraTools: List<com.androidharness.app.tools.Tool> = emptyList(),
     ): Flow<AgentEvent> = channelFlow {
         // Parallel subagents emit from async children — plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
@@ -219,7 +221,8 @@ class AgentEngine(
         // is told about change with it.
         var systemPrompt = systemPrompt(workspace, mode, fullAccess = false)
         var promptSandboxOff = false
-        val tools = registry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
+        val runRegistry = registry.withExtra(extraTools)
+        val tools = runRegistry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
         val working = trimHistory(
             ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
             maxContextTokens, options.maxOutputTokens,
@@ -403,7 +406,7 @@ class AgentEngine(
                             val result = executeWithPermission(
                                 call, effectiveMode, sessionAllowedTools, execWorkspace,
                                 sessionId, turnId, mode, requestOptions, config, apiKey,
-                                serialEmit,
+                                runRegistry, serialEmit,
                             )
                             android.util.Log.d("HarnessSpawn", "task ${call.id} END ${System.currentTimeMillis()}")
                             call.id to result
@@ -417,6 +420,7 @@ class AgentEngine(
                 results[call.id] = executeWithPermission(
                     call, effectiveMode, sessionAllowedTools, execWorkspace,
                     sessionId, turnId, mode, requestOptions, config, apiKey,
+                    runRegistry,
                 ) { emit(it) }
             }
 
@@ -459,6 +463,7 @@ class AgentEngine(
         requestOptions: RequestOptions,
         config: ProviderConfig,
         apiKey: String,
+        registry: com.androidharness.app.tools.ToolRegistry,
         emitEvent: suspend (AgentEvent) -> Unit,
     ): ToolResult {
         val tool = registry.get(call.name)
@@ -1289,6 +1294,15 @@ Rules:
         }
         memory?.let {
             sb.append("\n# Agent memory (from previous sessions)\n").append(it).append('\n')
+        }
+        // Topic files are only listed by name: long-form notes stay on disk
+        // and out of the prompt; the model retrieves them on demand.
+        val memoryTopics = runCatching {
+            com.androidharness.app.tools.listMemoryTopics(workspace)
+        }.getOrDefault(emptyList())
+        if (memoryTopics.isNotEmpty()) {
+            sb.append("\nLong-term memory topic files on disk (retrieve with memory_read, search with memory_search): ")
+                .append(memoryTopics.joinToString(", ")).append('\n')
         }
         val todos = TodoPrompt.format(todoStore?.todos?.value.orEmpty())
         if (todos.isNotBlank()) {

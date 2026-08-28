@@ -92,8 +92,10 @@ import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.tools.mcp.McpServerConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private val CONTEXT_PRESETS = listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000)
 
@@ -163,6 +165,10 @@ fun SettingsScreen(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             GitHubSection(container)
+
+            WebSearchSection(container)
+
+            McpSection(container)
 
             CurrentSetupCard(settings = settings, providers = providers)
 
@@ -654,6 +660,295 @@ private fun checkGitHubToken(token: String): GitHubTokenCheck {
                 }
             }
     }.getOrElse { GitHubTokenCheck(error = "Could not reach GitHub. Check your connection and try again.") }
+}
+
+// ---------------------------------------------------------------------------
+// Web search
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun WebSearchSection(container: AppContainer) {
+    val scope = rememberCoroutineScope()
+    val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
+    val provider = settings.webSearchProvider
+    var keyDraft by remember { mutableStateOf("") }
+    var keyEpoch by remember { mutableStateOf(0) }
+    val hasKey = remember(keyEpoch) { container.keys.searchApiKey() != null }
+
+    SettingsHeader("Web search")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("web_search backend", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "The agent's web_search tool uses this provider. Keyless engines scrape public " +
+                    "search pages and need no setup; Brave and Tavily are proper search APIs " +
+                    "with cleaner, higher-quality results. Keys live in the app's encrypted storage.",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            DropdownSetting(
+                label = "Provider",
+                current = when (provider) {
+                    "brave" -> "Brave Search API"
+                    "tavily" -> "Tavily API"
+                    else -> "Keyless (no key)"
+                },
+                entries = listOf(
+                    "keyless" to "Keyless (no key)",
+                    "brave" to "Brave Search API",
+                    "tavily" to "Tavily API",
+                ),
+                onSelect = { value -> scope.launch { container.settings.setWebSearchProvider(value) } },
+            )
+            if (provider != "keyless") {
+                OutlinedTextField(
+                    value = keyDraft,
+                    onValueChange = { keyDraft = it },
+                    label = { Text(if (hasKey) "Replace API key" else "Paste API key") },
+                    placeholder = { Text(if (provider == "brave") "BSA…" else "tvly-…") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Button(
+                        enabled = keyDraft.isNotBlank(),
+                        onClick = {
+                            val key = keyDraft.trim()
+                            scope.launch {
+                                withContext(Dispatchers.IO) { container.keys.putSearchApiKey(key) }
+                                keyDraft = ""
+                                keyEpoch++
+                            }
+                        },
+                    ) { Text(if (hasKey) "Update key" else "Save key") }
+                    if (hasKey) {
+                        StatusText("Key saved", ok = true)
+                        TextButton(onClick = {
+                            scope.launch {
+                                withContext(Dispatchers.IO) { container.keys.removeSearchApiKey() }
+                                keyEpoch++
+                            }
+                        }) { Text("Remove") }
+                    } else {
+                        StatusText("No key — using keyless engines", ok = false)
+                    }
+                }
+                Text(
+                    if (provider == "brave") {
+                        "Free key: brave.com/search/api (Free plan allows 1 query/second)."
+                    } else {
+                        "Free key: tavily.com (free tier: 1,000 requests/month)."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// MCP servers
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun McpSection(container: AppContainer) {
+    val scope = rememberCoroutineScope()
+    val servers by container.mcp.servers.collectAsStateWithLifecycle(initialValue = emptyList())
+    val statuses by container.mcp.statuses.collectAsStateWithLifecycle(initialValue = emptyMap())
+    var editing by remember { mutableStateOf<McpServerConfig?>(null) }
+    var showAdd by remember { mutableStateOf(false) }
+    var testResults by remember { mutableStateOf<Map<String, String>>(emptyMap()) }
+
+    SettingsHeader("MCP servers")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Text("Model Context Protocol (MCP) servers", style = MaterialTheme.typography.titleSmall)
+            Text(
+                "Tools from connected servers appear in every chat as mcp__server__tool and are " +
+                    "gated by the normal permission settings. Servers run as app child processes " +
+                    "with the Linux toolchain, so they need node/python from Settings → Terminal. " +
+                    "A workspace can also ship servers via a .harness/mcp.json file " +
+                    "(standard mcpServers format).",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            if (servers.isEmpty()) {
+                Text(
+                    "No servers configured yet.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            servers.forEach { server ->
+                val status = statuses[server.name]
+                Column(Modifier.fillMaxWidth()) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Column(Modifier.weight(1f)) {
+                            Text(server.name, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                when {
+                                    !server.enabled -> "Disabled"
+                                    status == null -> "Not connected yet (connects on the next run)"
+                                    status.state == "connected" -> "Connected — ${status.toolCount} tool(s)"
+                                    status.state == "connecting" -> "Connecting…"
+                                    else -> "Failed: ${status.error?.take(120) ?: "unknown error"}"
+                                },
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                        Switch(
+                            checked = server.enabled,
+                            onCheckedChange = { checked ->
+                                scope.launch { container.mcp.setServerEnabled(server.name, checked) }
+                            },
+                        )
+                    }
+                    testResults[server.name]?.let {
+                        Text(
+                            it,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        TextButton(onClick = {
+                            testResults = testResults - server.name
+                            scope.launch {
+                                val outcome = withContext(Dispatchers.IO) {
+                                    container.mcp.testConnection(server)
+                                }
+                                testResults = testResults + (server.name to outcome.fold(
+                                    onSuccess = { n -> "Test OK — $n tool(s) discovered" },
+                                    onFailure = { e -> "Test failed: ${e.message?.take(160)}" },
+                                ))
+                            }
+                        }) { Text("Test") }
+                        TextButton(onClick = { editing = server }) { Text("Edit") }
+                        TextButton(onClick = {
+                            scope.launch { container.mcp.removeServer(server.name) }
+                        }) { Text("Remove") }
+                    }
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                }
+            }
+            OutlinedButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text("Add server")
+            }
+        }
+    }
+
+    if (showAdd) {
+        McpServerDialog(container, initial = null, onDismiss = { showAdd = false })
+    }
+    editing?.let { config ->
+        McpServerDialog(container, initial = config, onDismiss = { editing = null })
+    }
+}
+
+@Composable
+private fun McpServerDialog(
+    container: AppContainer,
+    initial: McpServerConfig?,
+    onDismiss: () -> Unit,
+) {
+    val scope = rememberCoroutineScope()
+    var name by remember { mutableStateOf(initial?.name ?: "") }
+    var command by remember { mutableStateOf(initial?.command ?: "") }
+    var argsText by remember { mutableStateOf(initial?.args?.joinToString("\n") ?: "") }
+    var envText by remember {
+        mutableStateOf(initial?.env?.entries?.joinToString("\n") { "${it.key}=${it.value}" } ?: "")
+    }
+    val duplicate = initial == null &&
+        container.mcp.servers.value.any { it.name.equals(name.trim(), ignoreCase = true) }
+    val valid = name.isNotBlank() && command.isNotBlank() && !duplicate
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(if (initial == null) "Add MCP server" else "Edit MCP server") },
+        text = {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                modifier = Modifier.verticalScroll(rememberScrollState()),
+            ) {
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text("Name") },
+                    placeholder = { Text("e.g. filesystem") },
+                    singleLine = true,
+                    supportingText = { if (duplicate) Text("A server with this name already exists.") },
+                    isError = duplicate,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = command,
+                    onValueChange = { command = it },
+                    label = { Text("Command") },
+                    placeholder = { Text("e.g. npx, python3, /full/path/server") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = argsText,
+                    onValueChange = { argsText = it },
+                    label = { Text("Arguments (one per line)") },
+                    placeholder = { Text("-y\n@modelcontextprotocol/server-filesystem /path") },
+                    minLines = 2,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                OutlinedTextField(
+                    value = envText,
+                    onValueChange = { envText = it },
+                    label = { Text("Environment variables (KEY=value per line)") },
+                    minLines = 1,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Text(
+                    "Only stdio servers are supported. The server process runs as the app user " +
+                        "with the Linux toolchain's PATH; it starts lazily before a run and dies " +
+                        "with the app.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = valid,
+                onClick = {
+                    val args = argsText.lines().map { it.trim() }.filter { it.isNotEmpty() }
+                    val env = envText.lines().mapNotNull { line ->
+                        val parts = line.split('=', limit = 2)
+                        if (parts.size == 2 && parts[0].trim().isNotEmpty()) {
+                            parts[0].trim() to parts[1].trim()
+                        } else null
+                    }.toMap()
+                    scope.launch {
+                        container.mcp.addServer(
+                            McpServerConfig(
+                                name = name.trim(),
+                                command = command.trim(),
+                                args = args,
+                                env = env,
+                                enabled = initial?.enabled ?: true,
+                            ),
+                        )
+                        onDismiss()
+                    }
+                },
+            ) { Text("Save") }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text("Cancel") }
+        },
+    )
 }
 
 @Composable

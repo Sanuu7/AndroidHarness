@@ -14,6 +14,8 @@ import kotlinx.coroutines.flow.map
 
 val Context.settingsStore by preferencesDataStore(name = "settings")
 
+private val WEB_SEARCH_PROVIDERS = setOf("keyless", "brave", "tavily")
+
 enum class ThemeMode { SYSTEM, LIGHT, DARK }
 
 data class AppSettings(
@@ -40,6 +42,8 @@ data class AppSettings(
     val activeModel: String? = null,
     /** Skill names hidden from the catalog and slash picker. */
     val disabledSkills: Set<String> = emptySet(),
+    /** web_search backend: "keyless" (default) | "brave" | "tavily". */
+    val webSearchProvider: String = "keyless",
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -65,6 +69,7 @@ class SettingsRepository(private val context: Context) {
         val ONBOARDING_DONE = booleanPreferencesKey("onboarding_done")
         val ACTIVE_MODEL = stringPreferencesKey("active_model")
         val DISABLED_SKILLS = stringSetPreferencesKey("disabled_skills")
+        val WEB_SEARCH_PROVIDER = stringPreferencesKey("web_search_provider")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -89,7 +94,15 @@ class SettingsRepository(private val context: Context) {
             onboardingDone = prefs[Keys.ONBOARDING_DONE] ?: false,
             activeModel = prefs[Keys.ACTIVE_MODEL],
             disabledSkills = prefs[Keys.DISABLED_SKILLS] ?: emptySet(),
+            webSearchProvider = prefs[Keys.WEB_SEARCH_PROVIDER]
+                ?.takeIf { it in WEB_SEARCH_PROVIDERS }
+                ?: "keyless",
         )
+    }
+
+    suspend fun setWebSearchProvider(provider: String) {
+        if (provider !in WEB_SEARCH_PROVIDERS) return
+        context.settingsStore.edit { it[Keys.WEB_SEARCH_PROVIDER] = provider }
     }
 
     suspend fun setPermissionMode(mode: PermissionMode) {

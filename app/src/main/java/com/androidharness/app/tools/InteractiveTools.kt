@@ -39,13 +39,19 @@ class AskUserTool : Tool {
 class MemoryWriteTool : Tool {
     override val name = "memory_write"
     override val description =
-        "Write to the agent memory file (.harness/memory.md in the workspace). Use it to record " +
-        "user preferences, project conventions and decisions that should survive across sessions. " +
-        "The memory is automatically loaded at the start of every conversation."
+        "Write to the agent memory. Without topic: the core memory file (.harness/memory.md), " +
+            "which is automatically loaded at the start of every conversation — keep it to small, " +
+            "always-relevant facts (preferences, conventions, decisions). With topic: a topic file " +
+            "under .harness/memory/<topic>.md for longer, task-specific notes; topic files are " +
+            "listed by name in the system prompt and retrieved with memory_read/memory_search."
     override val parametersSchema = Schema.obj(
         mapOf(
             "content" to Schema.string("Text to write."),
             "mode" to Schema.string("'append' (default) adds to the file; 'replace' overwrites it."),
+            "topic" to Schema.string(
+                "Optional topic name (letters, digits, '-' or '_'). Writes to " +
+                    ".harness/memory/<topic>.md instead of the core memory file.",
+            ),
         ),
         required = listOf("content"),
     )
@@ -55,11 +61,25 @@ class MemoryWriteTool : Tool {
         val content = args["content"]?.jsonPrimitive?.content
             ?: throw ToolFailure("Missing required argument: content")
         val mode = args["mode"]?.jsonPrimitive?.content ?: "append"
+        val topic = args["topic"]?.jsonPrimitive?.content?.trim()
 
-        val path = MEMORY_PATH
+        val path = if (topic.isNullOrEmpty()) {
+            MEMORY_PATH
+        } else {
+            com.androidharness.app.agent.MemoryTopics.topicPath(topic)
+                ?: throw ToolFailure(
+                    "Invalid topic '$topic' — use letters, digits, '-' or '_' (max 48 chars).",
+                )
+        }
+        val maxChars = if (topic.isNullOrEmpty()) {
+            com.androidharness.app.agent.MemoryNotes.MAX_CHARS
+        } else {
+            com.androidharness.app.agent.MemoryTopics.MAX_TOPIC_CHARS
+        }
+
         val node = ctx.workspace.resolve(path)
         val existing = if (node.exists && node.isFile) node.readText() else ""
-        val next = com.androidharness.app.agent.MemoryNotes.write(existing, content, mode)
+        val next = com.androidharness.app.agent.MemoryNotes.write(existing, content, mode, maxChars)
         node.writeText(next)
         return ToolResult(true, "Memory ${if (mode == "replace") "replaced" else "updated"} ($path).")
     }

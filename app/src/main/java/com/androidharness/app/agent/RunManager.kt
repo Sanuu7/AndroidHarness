@@ -94,6 +94,8 @@ class RunManager(
     private val linuxEnv: LinuxEnvironmentManager,
     private val settings: com.androidharness.app.data.SettingsRepository,
     private val todoStore: TodoStore,
+    /** MCP servers; tools are attached per run. Null in tests without MCP. */
+    private val mcp: com.androidharness.app.tools.mcp.McpManager? = null,
 ) {
 
     /** Live, per-session run state the UI mirrors. */
@@ -286,6 +288,7 @@ class RunManager(
                         .distinctUntilChanged()
                         .collect { RuntimeNotifier.setSessionPrompts(sid, it) }
                 }
+                val runWorkspace = workspace.currentOnce()
                 engine.run(
                     sessionId = sid,
                     turnId = turnId,
@@ -299,12 +302,15 @@ class RunManager(
                             .getOrDefault(permissionMode)
                     },
                     sessionAllowedTools = allowedTools[sid] ?: mutableSetOf(),
-                    workspace = workspace.currentOnce(),
+                    workspace = runWorkspace,
                     options = RequestOptions(maxOutputTokens = maxOutputTokens, thinking = thinking),
                     maxContextTokens = maxContextTokens,
                     mode = mode,
                     userInjections = channel,
                     maxIterations = maxIterations,
+                    // Connected MCP servers ride into this run; a failing
+                    // server must never block the run itself.
+                    extraTools = runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
                 ).collect { event -> handleEvent(sid, event) }
             } catch (ce: CancellationException) {
                 throw ce

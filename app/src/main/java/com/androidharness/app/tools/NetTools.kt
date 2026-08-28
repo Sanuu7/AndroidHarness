@@ -15,175 +15,82 @@ import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
-import java.net.URLEncoder
 import java.util.concurrent.TimeUnit
 
 /**
- * Web search with an engine parameter and automatic fallback. When [engine]
- * is "auto" (or an engine yields nothing), the next engine in the chain is
- * tried until results are found. All engines are keyless HTML endpoints.
+ * Web search. When the user configured a search API (Brave / Tavily key in
+ * Settings) that backend is used first for higher-quality results, with the
+ * keyless HTML engine chain as automatic fallback. Without a key the keyless
+ * chain runs directly: an engine parameter picks one, "auto" tries them all.
  */
 class WebSearchTool(
     private val client: OkHttpClient,
+    /** User's search API config, read fresh per call (may be null = keyless). */
+    private val searchApi: () -> SearchApiConfig? = { null },
 ) : Tool {
     override val name = "web_search"
     override val description =
-        "Search the web and return top results (title, url, snippet). No API key required. " +
-        "Choose an engine with the 'engine' parameter (duckduckgo, bing, brave, google) or " +
-        "use 'auto' to let the app fall back to whichever engine responds."
+        "Search the web and return top results (title, url, snippet). Uses the configured " +
+        "search API automatically when one is set in Settings; otherwise keyless engines " +
+        "run with automatic fallback. Choose an engine with the 'engine' parameter " +
+        "(duckduckgo, bing, brave, google — keyless mode only) or use 'auto'."
     override val parametersSchema = Schema.obj(
         mapOf(
             "query" to Schema.string("The search query."),
             "count" to Schema.integer("Maximum number of results (default 8)."),
-            "engine" to Schema.string("duckduckgo | bing | brave | google | auto (default)."),
+            "engine" to Schema.string("duckduckgo | bing | brave | google | auto (default). Keyless mode only."),
         ),
         required = listOf("query"),
     )
     override val isReadOnly = true
 
-    private data class SearchResult(val title: String, val url: String, val snippet: String)
+    private val keyless = KeylessSearchBackend()
 
-    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
-        withContext(Dispatchers.IO) {
-            val query = args["query"]?.jsonPrimitive?.content
-                ?: throw ToolFailure("Missing required argument: query")
-            val count = (args["count"]?.jsonPrimitive?.content?.toIntOrNull() ?: 8).coerceIn(1, 15)
-            val requested = args["engine"]?.jsonPrimitive?.contentOrNull?.trim()?.lowercase()
-                ?: "auto"
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        val query = args["query"]?.jsonPrimitive?.content
+            ?: throw ToolFailure("Missing required argument: query")
+        val count = (args["count"]?.jsonPrimitive?.content?.toIntOrNull() ?: 8).coerceIn(1, 15)
+        val requested = args["engine"]?.jsonPrimitive?.contentOrNull?.trim()?.lowercase()
+            ?: "auto"
+        val searchClient = client.newBuilder()
+            .readTimeout(25, TimeUnit.SECONDS)
+            .build()
 
-            val chain = when (requested) {
-                "duckduckgo" -> listOf("duckduckgo")
-                "bing" -> listOf("bing")
-                "brave" -> listOf("brave")
-                "google" -> listOf("google")
-                else -> listOf("duckduckgo", "bing", "brave", "google")
-            }
-
-            val searchClient = client.newBuilder()
-                .readTimeout(25, TimeUnit.SECONDS)
-                .build()
-
-            var lastError: String? = null
-            var usedEngine: String? = null
-            for (engine in chain) {
-                try {
-                    val results = fetch(searchClient, engine, query)
-                    if (results.isNotEmpty()) {
-                        usedEngine = engine
-                        val text = results.take(count).mapIndexed { idx, r ->
-                            "${idx + 1}. ${r.title}\n   ${r.url}\n   ${r.snippet}"
-                        }.joinToString("\n")
-                        return@withContext ToolResult(
-                            true,
-                            if (requested == "auto") text else text,
-                        )
-                    }
-                    lastError = "$engine returned no results"
-                } catch (e: Exception) {
-                    lastError = "$engine failed: ${e.message}"
+        val notes = StringBuilder()
+        val apiBackend = searchBackendFor(searchApi())
+        if (apiBackend != null) {
+            try {
+                val results = apiBackend.fetch(searchClient, query, count)
+                if (results.isNotEmpty()) {
+                    return ToolResult(
+                        true,
+                        formatResults(results, count) + "\n[via ${apiBackend.label}]",
+                    )
                 }
+                notes.append("[note: ${apiBackend.label} returned no results; falling back to keyless engines]\n")
+            } catch (e: Exception) {
+                notes.append("[note: ${apiBackend.label} failed: ${e.message}; falling back to keyless engines]\n")
             }
-            ToolResult(
+        }
+
+        val results = try {
+            keyless.fetch(searchClient, query, count, requested)
+        } catch (e: ToolFailure) {
+            return ToolResult(
                 false,
-                "Web search found nothing. Tried: ${chain.joinToString(", ")}. " +
-                    "Last error: ${lastError ?: "unknown"}. " +
-                    "You can also use web_fetch with a known URL.",
+                notes.toString() + e.message +
+                    " You can also use web_fetch with a known URL.",
             )
+        } catch (e: Exception) {
+            return ToolResult(false, notes.toString() + "Search failed: ${e.message}")
         }
-
-    private fun fetch(client: OkHttpClient, engine: String, query: String): List<SearchResult> {
-        val encoded = URLEncoder.encode(query, "UTF-8")
-        val url = when (engine) {
-            "duckduckgo" -> "https://html.duckduckgo.com/html/?q=$encoded"
-            "bing" -> "https://www.bing.com/search?q=$encoded"
-            "brave" -> "https://search.brave.com/search?q=$encoded"
-            else -> "https://www.google.com/search?q=$encoded&num=10"
-        }
-        val html = client.newCall(
-            Request.Builder()
-                .url(url)
-                .header("User-Agent", "Mozilla/5.0 (Linux; Android 14) AndroidHarness/1.0")
-                .build()
-        ).execute().use { resp ->
-            if (!resp.isSuccessful) throw ToolFailure("HTTP ${resp.code}")
-            resp.body?.string() ?: ""
-        }
-        return when (engine) {
-            "duckduckgo" -> parseDuckDuckGo(html)
-            "bing" -> parseBing(html)
-            "brave" -> parseBrave(html)
-            else -> parseGoogle(html)
-        }
+        return ToolResult(true, notes.toString() + formatResults(results, count))
     }
 
-    private fun parseDuckDuckGo(html: String): List<SearchResult> {
-        val linkRegex = Regex(
-            "(?s)<a[^>]*class=\"[^\"]*result__a[^\"]*\"[^>]*href=\"([^\"]+)\"[^>]*>(.*?)</a>"
-        )
-        val snippetRegex = Regex("(?s)result__snippet[^>]*>(.*?)</a>")
-        val links = linkRegex.findAll(html).toList()
-        val snippets = snippetRegex.findAll(html).map { cleanHtml(it.groupValues[1]) }.toList()
-        return links.mapIndexed { idx, match ->
-            var href = match.groupValues[1]
-            val uddg = Regex("[?&]uddg=([^&]+)").find(href)?.groupValues?.get(1)
-            if (uddg != null) {
-                href = runCatching { java.net.URLDecoder.decode(uddg, "UTF-8") }.getOrDefault(href)
-            }
-            SearchResult(cleanHtml(match.groupValues[2]), href, snippets.getOrElse(idx) { "" })
-        }.filter { it.url.startsWith("http") }
-    }
-
-    private fun parseBing(html: String): List<SearchResult> {
-        // <li class="b_algo"><h2><a href="...">title</a></h2><p>snippet</p>
-        val itemRegex = Regex("(?s)<li class=\"b_algo\".*?</li>")
-        return itemRegex.findAll(html).mapNotNull { item ->
-            val block = item.value
-            val linkMatch = Regex("<h2><a[^>]*href=\"([^\"]+)\"[^>]*>(.*?)</a>").find(block)
-                ?: return@mapNotNull null
-            val snippet = Regex("(?s)<p[^>]*>(.*?)</p>").find(block)?.groupValues?.get(1)
-            SearchResult(
-                cleanHtml(linkMatch.groupValues[2]),
-                linkMatch.groupValues[1],
-                cleanHtml(snippet ?: ""),
-            )
-        }.toList()
-    }
-
-    private fun parseBrave(html: String): List<SearchResult> {
-        // <div id="results"> <a href="...">title</a> <p class="snippet-description">...
-        val linkRegex = Regex("(?s)<a[^>]*href=\"(https?://[^\"]+)\"[^>]*>(.{5,200}?)</a>")
-        val snippetRegex = Regex("(?s)class=\"[^\"]*snippet[^\"]*\"[^>]*>(.*?)</")
-        val snippets = snippetRegex.findAll(html).map { cleanHtml(it.groupValues[1]) }.toList()
-        return linkRegex.findAll(html).mapIndexed { idx, match ->
-            SearchResult(cleanHtml(match.groupValues[2]), match.groupValues[1], snippets.getOrElse(idx) { "" })
-        }.filterNot { it.url.contains("brave.com") || it.title.isBlank() }.take(10).toList()
-    }
-
-    private fun parseGoogle(html: String): List<SearchResult> {
-        // <a href="/url?q=..."><h3>title</h3></a> — often JS-walled, best effort
-        val itemRegex = Regex("(?s)<a href=\"(/url\\?q=[^\"]+)\"[^>]*>.*?<h3[^>]*>(.*?)</h3>")
-        return itemRegex.findAll(html).mapNotNull { match ->
-            val q = Regex("(?s)&amp;|&").replace(
-                java.net.URLDecoder.decode(
-                    match.groupValues[1].removePrefix("/url?q=").substringBefore("&"),
-                    "UTF-8",
-                ),
-                "",
-            )
-            SearchResult(cleanHtml(match.groupValues[2]), q, "")
-        }.filter { it.url.startsWith("http") }.take(10).toList()
-    }
-
-    private fun cleanHtml(s: String): String = s
-        .replace(Regex("<[^>]+>"), "")
-        .replace("&amp;", "&")
-        .replace("&lt;", "<")
-        .replace("&gt;", ">")
-        .replace("&quot;", "\"")
-        .replace("&#x27;", "'")
-        .replace("&nbsp;", " ")
-        .replace(Regex("\\s+"), " ")
-        .trim()
+    private fun formatResults(results: List<WebSearchResult>, count: Int): String =
+        results.take(count).mapIndexed { idx, r ->
+            "${idx + 1}. ${r.title}\n   ${r.url}\n   ${r.snippet}"
+        }.joinToString("\n")
 }
 
 /**

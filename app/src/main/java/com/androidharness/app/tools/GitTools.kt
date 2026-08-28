@@ -5,6 +5,7 @@ import com.androidharness.app.data.env.ShellTierRouter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
 private fun String.shellQuote(): String = "'" + replace("'", "'\\''") + "'"
@@ -27,6 +28,76 @@ internal fun gitCmd(vararg steps: String): String =
 
 /** Runtime directory whose artifacts must never be swept into a commit. */
 private const val HARNESS_DIR = ".harness"
+
+internal fun gitLogCmd(limit: Int, path: String?, stat: Boolean): String =
+    gitCmd(
+        buildString {
+            append("log -n ").append(limit.coerceIn(1, 100))
+            append(" --date=short --pretty=format:'%h %ad %an  %s'")
+            if (stat) append(" --stat")
+            if (!path.isNullOrBlank()) append(" -- ").append(path.shellQuote())
+        },
+    )
+
+internal fun gitShowCmd(hash: String, noPatch: Boolean): String =
+    gitCmd(
+        buildString {
+            append("show --stat")
+            if (noPatch) append(" --no-patch")
+            append(' ').append(hash.trim().shellQuote())
+        },
+    )
+
+internal fun gitCheckoutCmd(branch: String?, create: Boolean, paths: List<String>): String {
+    val cleanPaths = paths.map { it.trim() }.filter { it.isNotEmpty() }
+    val b = branch?.trim().orEmpty()
+    if (b.isEmpty() && cleanPaths.isEmpty()) {
+        throw ToolFailure("checkout needs a branch, paths, or both")
+    }
+    return gitCmd(
+        buildString {
+            append("checkout")
+            if (b.isNotEmpty()) {
+                if (create) append(" -b")
+                append(' ').append(b.shellQuote())
+            } else {
+                append(" --")
+            }
+            if (cleanPaths.isNotEmpty()) {
+                if (b.isNotEmpty()) append(" --")
+                cleanPaths.forEach { append(' ').append(it.shellQuote()) }
+            }
+        },
+    )
+}
+
+internal fun gitPushCmd(remote: String?, branch: String?, setUpstream: Boolean): String =
+    gitCmd(
+        buildString {
+            append("push")
+            if (setUpstream) append(" -u")
+            append(' ').append((remote?.trim()?.ifEmpty { null } ?: "origin").shellQuote())
+            val b = branch?.trim().orEmpty()
+            append(' ').append(if (b.isEmpty()) "HEAD" else b.shellQuote())
+        },
+    )
+
+internal fun gitPullCmd(remote: String?, mode: String?): String {
+    val r = (remote?.trim()?.ifEmpty { null } ?: "origin").shellQuote()
+    return gitCmd(
+        when (mode?.trim()?.lowercase()) {
+            null, "", "ff-only" -> "pull --ff-only $r"
+            "merge" -> "pull $r"
+            "rebase" -> "pull --rebase $r"
+            else -> throw ToolFailure("Unknown pull mode '$mode' (use ff-only, merge or rebase)")
+        },
+    )
+}
+
+internal fun isNoUpstream(output: String): Boolean =
+    output.contains("has no upstream", ignoreCase = true) ||
+        output.contains("no upstream configured", ignoreCase = true) ||
+        output.contains("set the remote as upstream", ignoreCase = true)
 
 internal fun isDubiousOwnership(output: String): Boolean =
     output.contains("dubious ownership", ignoreCase = true)
@@ -235,6 +306,223 @@ class GitCommitTool(
                 }
             }
             res
+        }
+}
+
+class GitLogTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_log"
+    override val description =
+        "Show recent commit history of the workspace repository (short hash, date, author, " +
+        "subject), optionally limited to one path. Use it to answer 'what happened recently', " +
+        "to find a commit hash for git_show, or to check whether a file was touched before."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "limit" to Schema.integer("Maximum number of commits (default 20, max 100)."),
+            "path" to Schema.string("Optional file path to only show commits touching it."),
+            "stat" to Schema.string("Pass \"true\" to append a per-commit change summary (--stat)."),
+        ),
+    )
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 20
+            val path = args["path"]?.jsonPrimitive?.content
+            val stat = args["stat"]?.jsonPrimitive?.content == "true"
+            runGitWithRetry(router, linuxEnv, ctx, gitLogCmd(limit, path, stat))
+        }
+}
+
+class GitShowTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_show"
+    override val description =
+        "Show one commit: message, per-file stats and the patch. Defaults to HEAD. Use after " +
+        "git_log to inspect a specific change. Pass no_patch=true for just the message and stats."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "hash" to Schema.string("Commit hash or ref (default HEAD)."),
+            "no_patch" to Schema.string("Pass \"true\" to omit the diff and show message + stats only."),
+        ),
+    )
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val hash = args["hash"]?.jsonPrimitive?.content?.trim() ?: "HEAD"
+            val noPatch = args["no_patch"]?.jsonPrimitive?.content == "true"
+            runGitWithRetry(router, linuxEnv, ctx, gitShowCmd(hash, noPatch))
+        }
+}
+
+class GitBranchTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_branch"
+    override val description =
+        "List git branches of the workspace repository, current one marked with *. " +
+        "With all=true also lists remote-tracking branches."
+    override val parametersSchema = Schema.obj(
+        mapOf("all" to Schema.string("Pass \"true\" to include remote-tracking branches.")),
+    )
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val all = args["all"]?.jsonPrimitive?.content == "true"
+            runGitWithRetry(router, linuxEnv, ctx, gitCmd(if (all) "branch -a -v" else "branch -v"))
+        }
+}
+
+class GitBranchManageTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_branch_manage"
+    override val description =
+        "Create or delete a git branch in the workspace repository. action='create' makes a " +
+        "new branch pointing at HEAD (does not switch to it — use git_checkout); " +
+        "action='delete' removes it (-d refuses unmerged branches unless force=true). " +
+        "Runs as a modifying operation, so the user approves it first."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "action" to Schema.string("create | delete (required)."),
+            "name" to Schema.string("The branch name (required)."),
+            "force" to Schema.string("delete only: pass \"true\" to delete even if unmerged (-D)."),
+        ),
+        required = listOf("action", "name"),
+    )
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val action = args["action"]?.jsonPrimitive?.content?.trim()?.lowercase()
+                ?: throw ToolFailure("Missing required argument: action")
+            val name = args["name"]?.jsonPrimitive?.content?.trim()
+                ?: throw ToolFailure("Missing required argument: name")
+            if (name.isEmpty()) throw ToolFailure("Branch name must not be empty")
+            val force = args["force"]?.jsonPrimitive?.content == "true"
+            val command = when (action) {
+                "create" -> gitCmd("branch ${name.shellQuote()}")
+                "delete" -> gitCmd("branch ${if (force) "-D" else "-d"} ${name.shellQuote()}")
+                else -> throw ToolFailure("Unknown action '$action' (use create or delete)")
+            }
+            runGitWithRetry(router, linuxEnv, ctx, command)
+        }
+}
+
+class GitCheckoutTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_checkout"
+    override val description =
+        "Switch the workspace repository to another branch, or restore files. With branch: " +
+        "switches to it (create=true makes it first). With paths: discards uncommitted " +
+        "changes to those files (destructive). With both: restores the paths from the " +
+        "given branch. Runs as a modifying operation, so the user approves it first."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "branch" to Schema.string("Branch to switch to (or to restore paths from)."),
+            "create" to Schema.string("Pass \"true\" to create the branch before switching (-b)."),
+            "paths" to Schema.array(
+                Schema.string("File path to restore."),
+                "Paths to restore from the branch (or to reset if no branch is given). " +
+                    "Discards uncommitted changes to them.",
+            ),
+        ),
+    )
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val branch = args["branch"]?.jsonPrimitive?.content
+            val create = args["create"]?.jsonPrimitive?.content == "true"
+            val paths = args["paths"]?.let { runCatching { it.jsonArray }.getOrNull() }
+                ?.mapNotNull { runCatching { it.jsonPrimitive.content }.getOrNull() }
+                ?: emptyList()
+            if (branch.isNullOrBlank() && paths.isEmpty()) {
+                throw ToolFailure("checkout needs a branch, paths, or both")
+            }
+            runGitWithRetry(router, linuxEnv, ctx, gitCheckoutCmd(branch, create, paths))
+        }
+}
+
+class GitPushTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_push"
+    override val description =
+        "Push committed work to a remote (default origin; branch defaults to the current one). " +
+        "GitHub HTTPS remotes authenticate automatically with the stored GitHub token " +
+        "(doctor --github verifies it); other HTTPS remotes need credentials already set up " +
+        "in the shell. A first push without an upstream is retried with -u. " +
+        "Runs as a modifying operation, so the user approves it first."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "remote" to Schema.string("Remote name (default origin)."),
+            "branch" to Schema.string("Branch to push (default: the current branch)."),
+        ),
+    )
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val remote = args["remote"]?.jsonPrimitive?.content
+            val branch = args["branch"]?.jsonPrimitive?.content
+            val res = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = false))
+            if (!res.ok && isNoUpstream(res.output)) {
+                val retry = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = true))
+                if (retry.ok) {
+                    return@withContext ToolResult(
+                        true,
+                        "[note: no upstream was configured; pushed with -u to set it]\n${retry.output}",
+                    )
+                }
+                return@withContext retry
+            }
+            res
+        }
+}
+
+class GitPullTool(
+    private val router: ShellTierRouter,
+    private val linuxEnv: LinuxEnvironmentManager,
+) : Tool {
+    override val name = "git_pull"
+    override val description =
+        "Pull changes from a remote (default origin) into the current branch. mode: " +
+        "'ff-only' (default) refuses to create a merge commit, 'merge' allows one, " +
+        "'rebase' replays local commits on top. On conflicts: resolve the marked files, " +
+        "then stage and commit them. Runs as a modifying operation, so the user approves it first."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "remote" to Schema.string("Remote name (default origin)."),
+            "mode" to Schema.string("ff-only (default) | merge | rebase."),
+        ),
+    )
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val remote = args["remote"]?.jsonPrimitive?.content
+            val mode = args["mode"]?.jsonPrimitive?.content
+            val res = runGitWithRetry(router, linuxEnv, ctx, gitPullCmd(remote, mode))
+            if (!res.ok && res.output.contains("CONFLICT", ignoreCase = true)) {
+                res.copy(
+                    output = res.output +
+                        "\n[note: merge conflicts — edit the marked files, then stage and commit them]",
+                )
+            } else {
+                res
+            }
         }
 }
 

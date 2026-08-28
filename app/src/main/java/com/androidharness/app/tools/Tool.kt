@@ -34,10 +34,14 @@ interface Tool {
     suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult
 }
 
-class ToolRegistry(tools: List<Tool>) {
+class ToolRegistry(private val tools: List<Tool>) {
     private val byName = tools.associateBy { it.name }
 
     fun get(name: String): Tool? = byName[name]
+
+    /** Run-scoped extras (MCP tools) merge on top of the static set. */
+    fun withExtra(extra: List<Tool>): ToolRegistry =
+        if (extra.isEmpty()) this else ToolRegistry(tools + extra)
 
     fun schemas(readOnlyOnly: Boolean = false) = byName.values
         .filter { !readOnlyOnly || it.isReadOnly }
@@ -55,6 +59,7 @@ class ToolRegistry(tools: List<Tool>) {
             shizuku: com.androidharness.app.data.env.ShizukuManager,
             shellRouter: com.androidharness.app.data.env.ShellTierRouter,
             skills: com.androidharness.app.skills.SkillStore,
+            searchApi: () -> com.androidharness.app.tools.SearchApiConfig? = { null },
         ): ToolRegistry = ToolRegistry(
             listOf(
                 ListDirTool(),
@@ -74,16 +79,25 @@ class ToolRegistry(tools: List<Tool>) {
                 BgKillTool(bgStore),
                 GitStatusTool(shellRouter, linuxEnv),
                 GitDiffTool(shellRouter, linuxEnv),
+                GitLogTool(shellRouter, linuxEnv),
+                GitShowTool(shellRouter, linuxEnv),
                 GitCommitTool(shellRouter, linuxEnv),
+                GitBranchTool(shellRouter, linuxEnv),
+                GitBranchManageTool(shellRouter, linuxEnv),
+                GitCheckoutTool(shellRouter, linuxEnv),
+                GitPushTool(shellRouter, linuxEnv),
+                GitPullTool(shellRouter, linuxEnv),
                 CreateDirTool(),
                 DeleteFileTool(),
                 MoveFileTool(),
                 WebFetchTool(httpClient),
-                WebSearchTool(httpClient),
+                WebSearchTool(httpClient, searchApi),
                 HttpRequestTool(httpClient) { linuxEnv.githubToken() },
                 AskUserTool(),
                 TaskTool(),
                 MemoryWriteTool(),
+                MemoryReadTool(),
+                MemorySearchTool(),
                 TodoWriteTool(todoStore),
                 SkillViewTool(skills),
                 SkillsListTool(skills),

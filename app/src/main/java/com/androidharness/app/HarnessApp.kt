@@ -77,6 +77,20 @@ class AppContainer(val appContext: Context) {
     @Volatile
     private var projectSkillsDir: java.io.File? = null
     private val disabledSkills = AtomicReference<Set<String>>(emptySet())
+    private val webSearchProvider = AtomicReference("keyless")
+
+    /**
+     * web_search backend config, resolved per call so Settings changes apply
+     * to the very next search without a restart. Null = keyless engines.
+     */
+    val searchApiConfig: com.androidharness.app.tools.SearchApiConfig?
+        get() {
+            val provider = webSearchProvider.get()
+            if (provider == "keyless") return null
+            return keys.searchApiKey()?.let {
+                com.androidharness.app.tools.SearchApiConfig(provider, it)
+            }
+        }
 
     val skills = com.androidharness.app.skills.SkillStore(
         bundled = com.androidharness.app.skills.SkillAssets.load(appContext.assets),
@@ -84,7 +98,11 @@ class AppContainer(val appContext: Context) {
         projectDir = { projectSkillsDir },
         disabled = { disabledSkills.get() },
     )
-    val registry = ToolRegistry.default(fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills)
+    val registry = ToolRegistry.default(
+        fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
+        searchApi = { searchApiConfig },
+    )
+    val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv)
     val engine = AgentEngine(
         providerFactory = { config -> ProviderFactory.create(config.type) },
         registry = registry,
@@ -104,6 +122,7 @@ class AppContainer(val appContext: Context) {
         linuxEnv = linuxEnv,
         settings = settings,
         todoStore = todoStore,
+        mcp = mcp,
     )
     val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
 
@@ -122,7 +141,10 @@ class AppContainer(val appContext: Context) {
             com.androidharness.app.llm.ModelsDev.refresh(appContext)
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            settings.settings.collect { disabledSkills.set(it.disabledSkills) }
+            settings.settings.collect {
+                disabledSkills.set(it.disabledSkills)
+                webSearchProvider.set(it.webSearchProvider)
+            }
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             workspace.current.collect { fs ->
