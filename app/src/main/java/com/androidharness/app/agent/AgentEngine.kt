@@ -212,6 +212,12 @@ class AgentEngine(
         maxIterations: Int = 0,
         /** Run-scoped tools (e.g. connected MCP servers) on top of the registry. */
         extraTools: List<com.androidharness.app.tools.Tool> = emptyList(),
+        /**
+         * Resolves the task tool's optional `model` override to a catalog id.
+         * Null disables overrides: a task that passes `model` is refused with
+         * a clear message instead of silently running on the wrong model.
+         */
+        resolveSubagentModel: (suspend (String) -> SubagentModelResolution)? = null,
     ): Flow<AgentEvent> = channelFlow {
         // Parallel subagents emit from async children — plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
@@ -406,7 +412,7 @@ class AgentEngine(
                             val result = executeWithPermission(
                                 call, effectiveMode, sessionAllowedTools, execWorkspace,
                                 sessionId, turnId, mode, requestOptions, config, apiKey,
-                                runRegistry, serialEmit,
+                                runRegistry, resolveSubagentModel, serialEmit,
                             )
                             android.util.Log.d("HarnessSpawn", "task ${call.id} END ${System.currentTimeMillis()}")
                             call.id to result
@@ -420,7 +426,7 @@ class AgentEngine(
                 results[call.id] = executeWithPermission(
                     call, effectiveMode, sessionAllowedTools, execWorkspace,
                     sessionId, turnId, mode, requestOptions, config, apiKey,
-                    runRegistry,
+                    runRegistry, resolveSubagentModel,
                 ) { emit(it) }
             }
 
@@ -464,6 +470,7 @@ class AgentEngine(
         config: ProviderConfig,
         apiKey: String,
         registry: com.androidharness.app.tools.ToolRegistry,
+        resolveSubagentModel: (suspend (String) -> SubagentModelResolution)?,
         emitEvent: suspend (AgentEvent) -> Unit,
     ): ToolResult {
         val tool = registry.get(call.name)
@@ -484,8 +491,42 @@ class AgentEngine(
             }.getOrNull()
             val prompt = args?.get("prompt")?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
                 ?: return ToolResult(false, "task requires a prompt.")
+            val title = args["title"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
+            val requestedModel = args["model"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
+            var taskConfig = config
+            if (requestedModel != null) {
+                val resolver = resolveSubagentModel
+                    ?: return ToolResult(
+                        false,
+                        "task `model` overrides are not available in this run. " +
+                            "Retry the task without `model`.",
+                    )
+                when (val outcome = resolver(requestedModel)) {
+                    is SubagentModelResolution.Resolved ->
+                        taskConfig = config.copy(model = outcome.modelId)
+                    is SubagentModelResolution.Unknown -> {
+                        val listing = if (outcome.available.isEmpty()) {
+                            "the provider's catalog is empty or does not support listing models"
+                        } else {
+                            outcome.available.take(25).joinToString() +
+                                if (outcome.available.size > 25) " … (+${outcome.available.size - 25} more)" else ""
+                        }
+                        return ToolResult(
+                            false,
+                            "Unknown task model '$requestedModel': $listing. " +
+                                "Retry with a listed id, or omit `model` to use ${config.model}.",
+                        )
+                    }
+                    is SubagentModelResolution.Failed ->
+                        return ToolResult(
+                            false,
+                            "Could not verify task model '$requestedModel': ${outcome.message}. " +
+                                "Retry the task, or omit `model` to use ${config.model}.",
+                        )
+                }
+            }
             return runSubagent(
-                prompt, call.id, config, apiKey, workspace, requestOptions, emitEvent,
+                prompt, title, call.id, taskConfig, apiKey, workspace, requestOptions, emitEvent,
                 sandboxOff = mode == PermissionMode.FULL_ACCESS,
             )
         }
@@ -826,6 +867,7 @@ class AgentEngine(
      */
     private suspend fun runSubagent(
         prompt: String,
+        title: String?,
         parentCallId: String,
         config: com.androidharness.app.llm.ProviderConfig,
         apiKey: String,
@@ -835,7 +877,8 @@ class AgentEngine(
         sandboxOff: Boolean = false,
     ): ToolResult {
         suspend fun step(line: String) = emitEvent(AgentEvent.SubagentStep(parentCallId, line))
-        step("Task: ${prompt.take(80)}")
+        val label = if (title.isNullOrBlank()) "Task" else "Task [$title]"
+        step("$label: ${prompt.take(80)}")
         val provider = providerFactory(config)
         val system =
             "You are a read-only research subagent inside a coding harness. " +

@@ -289,6 +289,14 @@ class RunManager(
                         .collect { RuntimeNotifier.setSessionPrompts(sid, it) }
                 }
                 val runWorkspace = workspace.currentOnce()
+                // One catalog fetch per run serves every task `model` override;
+                // a provider that cannot list models just refuses overrides.
+                val modelResolver = SubagentModelResolver {
+                    when (val r = com.androidharness.app.llm.ModelCatalog.listModels(config, apiKey)) {
+                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> r.models.map { it.id }
+                        is com.androidharness.app.llm.ModelCatalog.Result.Failed -> error(r.message)
+                    }
+                }
                 engine.run(
                     sessionId = sid,
                     turnId = turnId,
@@ -311,6 +319,7 @@ class RunManager(
                     // Connected MCP servers ride into this run; a failing
                     // server must never block the run itself.
                     extraTools = runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
+                    resolveSubagentModel = modelResolver::resolve,
                 ).collect { event -> handleEvent(sid, event) }
             } catch (ce: CancellationException) {
                 throw ce
