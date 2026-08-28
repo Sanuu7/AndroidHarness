@@ -1,15 +1,35 @@
 package com.androidharness.app.data
 
 import android.content.Context
+import android.util.Log
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
+import java.security.GeneralSecurityException
 
 /** API keys are stored in EncryptedSharedPreferences backed by the Android Keystore. */
 class KeyStoreManager(context: Context) {
 
-    private val prefs = EncryptedSharedPreferences.create(
+    private val prefs = openPrefs(context)
+
+    /**
+     * The prefs file is wrapped by an AndroidKeyStore master key, so keystore
+     * loss (credential reset, backup restore onto another install) makes it
+     * undecryptable. Creating it would then throw from Application.onCreate
+     * and crash-loop the app forever; reset the file once and start over
+     * empty instead. The stored secrets are gone either way at that point.
+     */
+    private fun openPrefs(context: Context): android.content.SharedPreferences =
+        try {
+            createPrefs(context)
+        } catch (e: GeneralSecurityException) {
+            Log.w("KeyStoreManager", "Encrypted prefs are undecryptable (keystore reset?); resetting them", e)
+            context.deleteSharedPreferences(PREFS_NAME)
+            createPrefs(context)
+        }
+
+    private fun createPrefs(context: Context) = EncryptedSharedPreferences.create(
         context,
-        "api_keys",
+        PREFS_NAME,
         MasterKey.Builder(context).setKeyScheme(MasterKey.KeyScheme.AES256_GCM).build(),
         EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
         EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM,
@@ -100,6 +120,7 @@ class KeyStoreManager(context: Context) {
     }
 
     private companion object {
+        const val PREFS_NAME = "api_keys"
         const val KEY_GITHUB = "github_pat"
         const val KEY_GITHUB_LOGIN = "github_login"
         const val KEY_SEARCH_API = "search_api_key"
