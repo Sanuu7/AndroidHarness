@@ -38,7 +38,7 @@ class MemoryToolsTest {
 
     @Test
     fun `memory_write with topic lands in the topic dir`() = runBlocking {
-        val r = run(MemoryWriteTool(), "content" to "CI runs on push", "topic" to "GitHub Workflows")
+        val r = run(MemoryWriteTool(), "content" to "CI runs on push", "topic" to "github-workflows")
         assertTrue(r.ok)
         assertTrue(r.output.contains(".harness/memory/github-workflows.md"))
         assertEquals("CI runs on push\n", tmp.root.resolve(".harness/memory/github-workflows.md").readText())
@@ -52,6 +52,24 @@ class MemoryToolsTest {
         } catch (expected: ToolFailure) {
             assertTrue(expected.message.orEmpty().contains("Invalid topic"))
         }
+    }
+
+    @Test
+    fun `memory_write refuses topics that would be silently renamed`() = runBlocking {
+        for (bad in listOf("../../etc", "a/b", "GitHub Workflows", "Kotlin-Style", "..")) {
+            try {
+                run(MemoryWriteTool(), "content" to "x", "topic" to bad)
+                error("expected ToolFailure for '$bad'")
+            } catch (expected: ToolFailure) {
+                assertTrue(
+                    "expected refusal for '$bad', got: ${expected.message}",
+                    expected.message.orEmpty().contains("Invalid topic"),
+                )
+            }
+        }
+        // Nothing escaped the memory dir under laundered names.
+        val dir = tmp.root.resolve(".harness/memory")
+        assertTrue(!dir.exists() || dir.list().isNullOrEmpty())
     }
 
     // --- memory_read ----------------------------------------------------------

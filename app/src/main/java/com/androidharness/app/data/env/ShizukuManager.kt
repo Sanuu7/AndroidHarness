@@ -300,6 +300,9 @@ class ShizukuManager(
                 // everything group/other-readable: without this, ANY app that
                 // guesses the path could read the token-bearing copies below.
                 append("chmod 700 \"$base\" \"$base/linux\" && ")
+                // The gh config dirs were left 0777 by the blanket 755; the token
+                // FILES inside are 0600, but the dirs cost nothing to tighten.
+                append("chmod 700 \"$base/linux/home/.config\" \"$base/linux/home/.config/gh\" 2>/dev/null; ")
                 append("chmod 600 \"$base/linux/home/.gh-token\" " +
                     "\"$base/linux/home/.config/gh/hosts.yml\" " +
                     "\"$base/linux/etc/gitconfig\" 2>/dev/null; ")

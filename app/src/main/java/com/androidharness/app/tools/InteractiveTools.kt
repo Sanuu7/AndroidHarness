@@ -49,8 +49,9 @@ class MemoryWriteTool : Tool {
             "content" to Schema.string("Text to write."),
             "mode" to Schema.string("'append' (default) adds to the file; 'replace' overwrites it."),
             "topic" to Schema.string(
-                "Optional topic name (letters, digits, '-' or '_'). Writes to " +
-                    ".harness/memory/<topic>.md instead of the core memory file.",
+                "Optional topic name (already lowercase a-z, 0-9, '-' or '_'; anything else is " +
+                    "refused, not renamed). Writes to .harness/memory/<topic>.md instead of the " +
+                    "core memory file.",
             ),
         ),
         required = listOf("content"),
@@ -66,9 +67,11 @@ class MemoryWriteTool : Tool {
         val path = if (topic.isNullOrEmpty()) {
             MEMORY_PATH
         } else {
-            com.androidharness.app.agent.MemoryTopics.topicPath(topic)
+            com.androidharness.app.agent.MemoryTopics.strictTopicPath(topic)
                 ?: throw ToolFailure(
-                    "Invalid topic '$topic' — use letters, digits, '-' or '_' (max 48 chars).",
+                    "Invalid topic '$topic' — topics must already be 1-48 chars of lowercase " +
+                        "letters, digits, '-' or '_'; invalid names are refused, not renamed. " +
+                        "Omit the topic argument to write core memory.",
                 )
         }
         val maxChars = if (topic.isNullOrEmpty()) {

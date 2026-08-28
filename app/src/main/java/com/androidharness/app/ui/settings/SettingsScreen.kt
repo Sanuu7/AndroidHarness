@@ -906,6 +906,7 @@ private fun McpSection(container: AppContainer) {
     val context = LocalContext.current
     val servers by container.mcp.servers.collectAsStateWithLifecycle(initialValue = emptyList())
     val statuses by container.mcp.statuses.collectAsStateWithLifecycle(initialValue = emptyMap())
+    val configTampered by container.mcp.configTampered.collectAsStateWithLifecycle(initialValue = false)
     var editing by remember { mutableStateOf<McpServerConfig?>(null) }
     var showAdd by remember { mutableStateOf(false) }
     var authError by remember { mutableStateOf<String?>(null) }
@@ -914,6 +915,14 @@ private fun McpSection(container: AppContainer) {
     SettingsHeader("MCP servers")
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            if (configTampered) {
+                Text(
+                    "The MCP server list was modified outside the app and failed its integrity " +
+                        "check — its contents were ignored. Re-add your servers below to rebuild it.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                )
+            }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Outlined.Extension,
@@ -1559,6 +1568,17 @@ private fun AgentSection(
                 onSelect = { scope.launch { container.settings.setPermissionMode(PermissionMode.valueOf(it)) } },
                 divider = true,
             )
+            if (settings.permissionMode == PermissionMode.FULL_ACCESS) {
+                Text(
+                    "Full access runs every file and shell action without confirmation — " +
+                        "destructive commands are the model's judgment alone. Only the git " +
+                        "tools (commit, push, pull, checkout, branch) still document asking " +
+                        "you first. Enable only for workspaces you trust.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = FullAccessOrange,
+                    modifier = Modifier.padding(bottom = 8.dp),
+                )
+            }
             DropdownSetting(
                 label = "Max context window",
                 current = formatTokenCount(settings.maxContextTokens.toLong()),

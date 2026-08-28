@@ -25,4 +25,15 @@ object MemoryTopics {
             ?.take(48)
 
     fun topicPath(topic: String): String? = sanitize(topic)?.let { "$DIR/$it.md" }
+
+    /**
+     * Strict path for WRITES: the topic must already be in canonical form —
+     * no silent renaming. "../../etc" and "a/b" are refused outright instead
+     * of being laundered into plausible-looking file names. Reads stay
+     * lenient via [topicPath] so previously recorded names still resolve.
+     */
+    fun strictTopicPath(topic: String): String? {
+        val canonical = sanitize(topic) ?: return null
+        return if (topic.trim() == canonical) topicPath(canonical) else null
+    }
 }

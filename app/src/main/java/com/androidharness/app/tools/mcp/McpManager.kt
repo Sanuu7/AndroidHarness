@@ -37,6 +37,13 @@ class McpManager(
     private val ioLock = Mutex()
     private val httpClient = mcpHttpClient()
 
+    private val _configTampered = MutableStateFlow(false)
+    /**
+     * True when mcp-servers.json failed its integrity check (edited out-of-band
+     * or corrupted) and its contents were refused. Re-saving any server clears it.
+     */
+    val configTampered: StateFlow<Boolean> = _configTampered
+
     private val _servers = MutableStateFlow<List<McpServerConfig>>(loadServers())
     val servers: StateFlow<List<McpServerConfig>> = _servers
 
@@ -57,10 +64,29 @@ class McpManager(
     @Volatile private var pendingAuth: PendingAuth? = null
     private val oauthMutexes = HashMap<String, Mutex>()
 
-    private fun loadServers(): List<McpServerConfig> = runCatching {
-        if (storeFile.exists()) json.decodeFromString<List<McpServerConfig>>(storeFile.readText())
-        else emptyList()
-    }.getOrDefault(emptyList())
+    private fun loadServers(): List<McpServerConfig> {
+        if (!storeFile.exists()) return emptyList()
+        val text = runCatching { storeFile.readText() }.getOrNull() ?: return emptyList()
+        val parsed = runCatching { json.decodeFromString<List<McpServerConfig>>(text) }.getOrNull()
+        // Integrity: the .hmac sidecar is written only by the app alongside each
+        // save. A mismatch means the file was edited out-of-band or corrupted —
+        // refuse the contents loudly instead of spawning whatever it now defines.
+        val expected = computeConfigHmac(text.toByteArray())
+        val stored = runCatching { configHmacFile().readText().trim() }.getOrNull()
+        if (expected != null && stored != null && stored != expected) {
+            runCatching {
+                storeFile.delete()
+                configHmacFile().delete()
+            }
+            _configTampered.value = true
+            return emptyList()
+        }
+        if (expected != null && stored == null) {
+            // First launch after this change existed: adopt the current file.
+            runCatching { configHmacFile().writeText(expected) }
+        }
+        return parsed ?: emptyList()
+    }
 
     private suspend fun persist(list: List<McpServerConfig>) {
         _servers.value = list
@@ -70,10 +96,42 @@ class McpManager(
                     val tmp = File(storeFile.parentFile, storeFile.name + ".tmp")
                     tmp.writeText(json.encodeToString(list))
                     tmp.renameTo(storeFile)
+                    computeConfigHmac(storeFile.readBytes())?.let {
+                        configHmacFile().writeText(it)
+                    }
                 }
             }
         }
+        // An app-side save re-establishes integrity after any tamper refusal.
+        _configTampered.value = false
     }
+
+    private fun configHmacFile() = File(storeFile.parentFile, storeFile.name + ".hmac")
+
+    /**
+     * HMAC-SHA256 over the config bytes, keyed by a non-exportable AndroidKeyStore
+     * key. Null when Keystore is unavailable — verification then degrades to
+     * accept, never to bricking the server list.
+     */
+    private fun computeConfigHmac(data: ByteArray): String? = runCatching {
+        val key = runCatching {
+            val ks = java.security.KeyStore.getInstance("AndroidKeyStore").apply { load(null) }
+            (ks.getKey("mcp_config_hmac", null) as? javax.crypto.SecretKey) ?: run {
+                val gen = javax.crypto.KeyGenerator.getInstance("HmacSHA256", "AndroidKeyStore")
+                gen.init(
+                    android.security.keystore.KeyGenParameterSpec.Builder(
+                        "mcp_config_hmac",
+                        android.security.keystore.KeyProperties.PURPOSE_SIGN or
+                            android.security.keystore.KeyProperties.PURPOSE_VERIFY,
+                    ).setDigests(android.security.keystore.KeyProperties.DIGEST_SHA256).build(),
+                )
+                gen.generateKey()
+            }
+        }.getOrNull() ?: return@runCatching null
+        val mac = javax.crypto.Mac.getInstance("HmacSHA256")
+        mac.init(key)
+        android.util.Base64.encodeToString(mac.doFinal(data), android.util.Base64.NO_WRAP)
+    }.getOrNull()
 
     suspend fun addServer(config: McpServerConfig) =
         persist(_servers.value.filterNot { it.name == config.name } + config)

@@ -32,4 +32,20 @@ class MemoryTopicsTest {
         assertEquals(".harness/memory/deployment.md", MemoryTopics.topicPath("Deployment"))
         assertNull(MemoryTopics.topicPath("?!"))
     }
+
+    @Test
+    fun `strictTopicPath accepts only canonical topics`() {
+        assertEquals(".harness/memory/deploy.md", MemoryTopics.strictTopicPath("deploy"))
+        assertEquals(".harness/memory/a_b-c.md", MemoryTopics.strictTopicPath("a_b-c"))
+    }
+
+    @Test
+    fun `strictTopicPath refuses anything that sanitizing would rename`() {
+        assertNull(MemoryTopics.strictTopicPath("../../etc"))
+        assertNull(MemoryTopics.strictTopicPath("a/b"))
+        assertNull(MemoryTopics.strictTopicPath("GitHub Workflows"))
+        assertNull(MemoryTopics.strictTopicPath("Deployment"))
+        assertNull(MemoryTopics.strictTopicPath("-leading"))
+        assertNull(MemoryTopics.strictTopicPath("?!"))
+    }
 }
