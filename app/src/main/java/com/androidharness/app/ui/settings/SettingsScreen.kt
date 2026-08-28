@@ -1189,13 +1189,13 @@ private fun McpServerDialog(
                     modifier = Modifier.fillMaxWidth(),
                 )
                 SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    listOf("stdio" to "Local (stdio)", "http" to "HTTP", "sse" to "SSE")
+                    listOf("stdio" to "Local", "http" to "HTTP", "sse" to "SSE")
                         .forEachIndexed { index, (value, label) ->
                             SegmentedButton(
                                 selected = type == value,
                                 onClick = { type = value },
                                 shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
-                            ) { Text(label) }
+                            ) { Text(label, maxLines = 1) }
                         }
                 }
                 if (type == "stdio") {
@@ -1223,9 +1223,9 @@ private fun McpServerDialog(
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Text(
-                        "Runs as the app user with the Linux toolchain's PATH; it starts lazily " +
-                            "before a run and dies with the app. Needs node/python from the " +
-                            "Linux environment.",
+                        "Local process (stdio transport) running as the app user with the " +
+                            "Linux toolchain's PATH; it starts lazily before a run and dies with " +
+                            "the app. Needs node/python from the Linux environment.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
