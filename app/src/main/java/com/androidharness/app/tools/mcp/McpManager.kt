@@ -3,11 +3,16 @@ package com.androidharness.app.tools.mcp
 import android.content.Context
 import android.net.Uri
 import com.androidharness.app.data.KeyStoreManager
+import com.androidharness.app.data.env.EnvState
 import com.androidharness.app.data.env.LinuxEnvironmentManager
 import com.androidharness.app.tools.Tool
 import com.androidharness.app.tools.ToolFailure
 import com.androidharness.app.workspace.WorkspaceFs
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -51,6 +56,23 @@ class McpManager(
     val statuses: StateFlow<Map<String, McpServerStatus>> = _statuses
 
     private val connections = HashMap<String, McpConnection>()
+
+    /** Serializes connection creation per server so a startup reconnect and
+     * an early run cannot spawn two processes for the same name. */
+    private val connectLocks = HashMap<String, Mutex>()
+    private fun lockFor(name: String): Mutex =
+        synchronized(connectLocks) { connectLocks.getOrPut(name) { Mutex() } }
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    /** "Connected at least once" markers, kept so a restart can reconnect. */
+    private val statusFile = File(context.filesDir, "mcp-status.json")
+    private var storedStatuses: Map<String, McpStoredStatus> =
+        runCatching { McpReconnectPolicy.parseStored(statusFile.readText()) }.getOrDefault(emptyMap())
+
+    init {
+        autoReconnect()
+    }
 
     /** resource_metadata URLs from each server's last 401 challenge. */
     private val authChallenges = ConcurrentHashMap<String, String?>()
@@ -140,6 +162,8 @@ class McpManager(
         disconnect(name)
         keys.removeMcpOAuthState(name)
         persist(_servers.value.filterNot { it.name == name })
+        storedStatuses = storedStatuses - name
+        runCatching { statusFile.writeText(McpReconnectPolicy.serializeStored(storedStatuses)) }
     }
 
     suspend fun setServerEnabled(name: String, enabled: Boolean) =
@@ -189,22 +213,51 @@ class McpManager(
     }
 
     /** Live connection if healthy; otherwise up to two fresh connect attempts. */
-    private suspend fun connectionFor(config: McpServerConfig, cwd: File): McpConnection? {
-        synchronized(connections) { connections[config.name] }?.let { existing ->
-            if (existing.isAlive) return existing
-            synchronized(connections) { connections.remove(config.name) }
-            existing.close()
+    private suspend fun connectionFor(config: McpServerConfig, cwd: File): McpConnection? =
+        lockFor(config.name).withLock {
+            synchronized(connections) { connections[config.name] }?.let { existing ->
+                if (existing.isAlive) return@withLock existing
+                synchronized(connections) { connections.remove(config.name) }
+                existing.close()
+            }
+            tryConnect(config, cwd)?.let { return@withLock it }
+            // One retry: server binaries sometimes crash once on a cold start.
+            tryConnect(config, cwd)?.let { return@withLock it }
+            null
         }
-        tryConnect(config, cwd)?.let {
-            synchronized(connections) { connections[config.name] = it }
-            return it
+
+    /**
+     * Records that this server connected successfully, but only for app-side
+     * servers: workspace `.harness/mcp.json` entries must never earn an
+     * auto-reconnect (they would spawn commands at startup, the D1 vector).
+     */
+    private fun recordConnected(name: String, toolCount: Int) {
+        if (_servers.value.none { it.name == name }) return
+        storedStatuses = storedStatuses + (name to McpStoredStatus(toolCount, System.currentTimeMillis()))
+        runCatching { statusFile.writeText(McpReconnectPolicy.serializeStored(storedStatuses)) }
+    }
+
+    /**
+     * Startup auto-reconnect: servers that connected successfully before come
+     * back on their own after the app dies or restarts, so MCP tools are
+     * usable (and Settings shows real statuses) without a run or a manual
+     * Test first. Remote servers connect immediately; stdio servers wait for
+     * the toolchain to be Ready, because connecting before bash exists would
+     * record a bogus failure.
+     */
+    private fun autoReconnect() {
+        val candidates = McpReconnectPolicy.candidates(_servers.value, storedStatuses)
+        if (candidates.isEmpty()) return
+        val (remote, stdio) = candidates.partition { it.isRemote }
+        remote.forEach { config ->
+            scope.launch { connectionFor(config, context.filesDir) }
         }
-        // One retry: server binaries sometimes crash once on a cold start.
-        tryConnect(config, cwd)?.let {
-            synchronized(connections) { connections[config.name] = it }
-            return it
+        if (stdio.isNotEmpty()) {
+            scope.launch {
+                linuxEnv.state.first { it is EnvState.Ready }
+                stdio.forEach { config -> connectionFor(config, context.filesDir) }
+            }
         }
-        return null
     }
 
     private suspend fun tryConnect(config: McpServerConfig, cwd: File): McpConnection? {
@@ -221,6 +274,7 @@ class McpManager(
             _statuses.update {
                 it + (config.name to McpServerStatus("connected", toolCount = conn.tools.size))
             }
+            recordConnected(config.name, conn.tools.size)
             return conn
         } catch (e: McpAuthRequiredException) {
             conn.close()
@@ -290,6 +344,9 @@ class McpManager(
             _statuses.update {
                 it + (config.name to McpServerStatus("connected", toolCount = conn.tools.size))
             }
+            // A successful Test counts as "connected before", so this server
+            // starts reconnecting on future launches too.
+            recordConnected(config.name, conn.tools.size)
             Result.success(conn.tools.size)
         } catch (e: McpAuthRequiredException) {
             recordAuth(config.name, e)
@@ -367,9 +424,7 @@ class McpManager(
                 // Reconnect eagerly so the UI reflects success without a run.
                 _servers.value.firstOrNull { it.name == pending.serverName }?.let { config ->
                     disconnect(config.name)
-                    tryConnect(config, context.filesDir)?.let { fresh ->
-                        synchronized(connections) { connections[config.name] = fresh }
-                    }
+                    connectionFor(config, context.filesDir)
                 }
                 pending.serverName
             }.onFailure { pendingAuth = null }
