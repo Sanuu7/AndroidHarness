@@ -176,6 +176,27 @@ fun ChatScreen(
         }
     }
 
+    if (state.pendingWorkspaceMcp != null) {
+        AlertDialog(
+            onDismissRequest = { viewModel.denyWorkspaceMcp() },
+            title = { Text("Allow workspace MCP servers?") },
+            text = {
+                val names = state.pendingWorkspaceMcp?.joinToString(", ").orEmpty()
+                Text(
+                    "This workspace ships a .harness/mcp.json that wants to connect: $names. " +
+                        "Its servers can run local commands and reach the network. " +
+                        "Only approve configs you trust.",
+                )
+            },
+            confirmButton = {
+                Button(onClick = { viewModel.approveWorkspaceMcp() }) { Text("Approve") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.denyWorkspaceMcp() }) { Text("Run without them") }
+            },
+        )
+    }
+
     if (state.showPlanningPromo) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissPlanningPromo() },

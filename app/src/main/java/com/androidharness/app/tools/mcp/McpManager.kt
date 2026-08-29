@@ -19,6 +19,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.builtins.MapSerializer
+import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
 import java.io.File
 import java.util.concurrent.ConcurrentHashMap
@@ -189,16 +191,80 @@ class McpManager(
         if (node.exists && node.isFile) McpConfigParser.parse(node.readText()) else emptyList()
     }.getOrDefault(emptyList())
 
+    // --- Workspace config approval (security-battery D1) -------------------------
+
+    private val approvalsFile = File(context.filesDir, "mcp-approvals.json")
+    private var workspaceApprovals: Map<String, Long> =
+        runCatching {
+            json.decodeFromString<Map<String, Long>>(approvalsFile.readText())
+        }.getOrDefault(emptyMap())
+
+    private fun sha256(text: String): String =
+        java.security.MessageDigest.getInstance("SHA-256").digest(text.toByteArray())
+            .joinToString("") { "%02x".format(it) }
+
+    /** Stable key for a workspace's current config content: path plus content hash. */
+    private fun approvalKey(workspace: WorkspaceFs, configText: String): String =
+        "${workspace.shellRoot?.absolutePath ?: workspace.displayPath}:${sha256(configText)}"
+
+    private fun workspaceConfigText(workspace: WorkspaceFs): String? = runCatching {
+        val node = workspace.resolve(McpNames.WORKSPACE_CONFIG)
+        if (node.exists && node.isFile) node.readText() else null
+    }.getOrNull()
+
+    /** True when this exact workspace config was approved by the user. */
+    fun isWorkspaceApproved(workspace: WorkspaceFs): Boolean {
+        val text = workspaceConfigText(workspace) ?: return true
+        return workspaceApprovals.containsKey(approvalKey(workspace, text))
+    }
+
+    /** Workspace servers that would auto-run but have not been approved yet. */
+    fun unapprovedWorkspaceServers(workspace: WorkspaceFs): List<McpServerConfig> {
+        if (isWorkspaceApproved(workspace)) return emptyList()
+        return workspaceConfigs(workspace)
+    }
+
+    /** Records user approval for this exact workspace config content. */
+    fun approveWorkspace(workspace: WorkspaceFs) {
+        val text = workspaceConfigText(workspace) ?: return
+        workspaceApprovals = workspaceApprovals +
+            (approvalKey(workspace, text) to System.currentTimeMillis())
+        runCatching {
+            approvalsFile.writeText(json.encodeToString(
+                MapSerializer(String.serializer(), Long.serializer()),
+                workspaceApprovals,
+            ))
+        }
+    }
+
     /**
      * Tools for the next run: enabled global servers plus the workspace file's
      * servers (workspace wins on name collisions). Servers that fail to
      * connect are skipped with a recorded status; they never block the run.
+     *
+     * Workspace-file servers only connect after the user approved this exact
+     * config content (security-battery D1): a cloned repo's mcp.json never
+     * spawns commands until a chat dialog says so. Global servers are
+     * unaffected by the gate.
      */
     suspend fun activeTools(workspace: WorkspaceFs): List<Tool> {
         val global = _servers.value.filter { it.enabled }
+        val approved = isWorkspaceApproved(workspace)
         val ws = workspaceConfigs(workspace)
             .filter { ws -> global.none { it.name.equals(ws.name, ignoreCase = true) } }
-        val configs = global + ws
+        if (!approved) {
+            // Record why the workspace tools are absent so Settings/health
+            // surfaces the reason instead of a silent skip.
+            ws.forEach { ws ->
+                _statuses.update {
+                    it + (ws.name to McpServerStatus(
+                        "blocked",
+                        error = "Workspace .harness/mcp.json needs approval in chat before it can run.",
+                    ))
+                }
+            }
+        }
+        val configs = global + if (approved) ws else emptyList()
         if (configs.isEmpty()) return emptyList()
 
         val cwd = workspace.shellRoot ?: context.filesDir

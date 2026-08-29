@@ -120,6 +120,8 @@ data class ChatUiState(
     val showPlanningPromo: Boolean = false,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
+    /** Workspace .harness/mcp.json server names awaiting user approval before a run. */
+    val pendingWorkspaceMcp: List<String>? = null,
     /** Fetched model catalogs per provider id. */
     val catalogs: Map<String, List<com.androidharness.app.llm.ModelEntry>> = emptyMap(),
     /** Precomputed human-readable activity line (computed in the ViewModel, never in composition). */
@@ -163,6 +165,27 @@ class ChatViewModel(
     private val sessionIdFlow = MutableStateFlow(initialSessionId)
     private var pendingAttachments = mutableListOf<ImageRef>()
     private var steering = false
+    /** Text of a run paused on the workspace-MCP approval dialog. */
+    private var pendingRunText: String? = null
+
+    /** User approved the workspace .harness/mcp.json: remember it and run. */
+    fun approveWorkspaceMcp() {
+        val text = pendingRunText
+        pendingRunText = null
+        _state.update { it.copy(pendingWorkspaceMcp = null) }
+        viewModelScope.launch {
+            runCatching { c.mcp.approveWorkspace(c.workspace.currentOnce()) }
+            if (text != null) startRun(text, workspaceMcpGate = false)
+        }
+    }
+
+    /** User declined: run without the workspace servers (they stay blocked). */
+    fun denyWorkspaceMcp() {
+        val text = pendingRunText
+        pendingRunText = null
+        _state.update { it.copy(pendingWorkspaceMcp = null) }
+        if (text != null) startRun(text, workspaceMcpGate = false)
+    }
 
     /**
      * Streaming content kept on screen while waiting for the committed row to
@@ -611,25 +634,25 @@ class ChatViewModel(
     // Run lifecycle (delegated to the app-scoped RunManager)
     // ------------------------------------------------------------------
 
-    private fun startRun(text: String) {
-        val s = _state.value
+    private fun startRun(text: String, workspaceMcpGate: Boolean = true) {
+        val s0 = _state.value
         // Separate planning/execution models: plan-mode runs use the planning
         // slot, everything else the execution one. A slot without a provider
         // falls back to the active provider, keeping its model override.
         val provider = when {
-            s.planningModelsEnabled && s.mode == AgentMode.PLAN && s.planningProviderId != null ->
-                s.providers.firstOrNull { it.id == s.planningProviderId } ?: s.activeProvider
-            s.planningModelsEnabled && s.mode == AgentMode.ACT && s.executionProviderId != null ->
-                s.providers.firstOrNull { it.id == s.executionProviderId } ?: s.activeProvider
-            else -> s.activeProvider
+            s0.planningModelsEnabled && s0.mode == AgentMode.PLAN && s0.planningProviderId != null ->
+                s0.providers.firstOrNull { it.id == s0.planningProviderId } ?: s0.activeProvider
+            s0.planningModelsEnabled && s0.mode == AgentMode.ACT && s0.executionProviderId != null ->
+                s0.providers.firstOrNull { it.id == s0.executionProviderId } ?: s0.activeProvider
+            else -> s0.activeProvider
         } ?: run {
             _state.update { it.copy(error = "No provider configured. Add one from the Providers screen first.") }
             return
         }
         val roleModel = when {
-            s.planningModelsEnabled && s.mode == AgentMode.PLAN -> s.planningModel
-            s.planningModelsEnabled && s.mode == AgentMode.ACT -> s.executionModel
-            else -> s.activeModel
+            s0.planningModelsEnabled && s0.mode == AgentMode.PLAN -> s0.planningModel
+            s0.planningModelsEnabled && s0.mode == AgentMode.ACT -> s0.executionModel
+            else -> s0.activeModel
         }
         val apiKey = c.providers.apiKey(provider.id)
         if (apiKey.isNullOrBlank()) {
@@ -642,6 +665,28 @@ class ChatViewModel(
         _state.update { it.copy(attachments = emptyList(), error = null) }
 
         viewModelScope.launch {
+            // Security gate (battery D1): a workspace .harness/mcp.json never
+            // spawns commands until this exact file content was approved. The
+            // dialog offers approve (and continue) or run without those servers.
+            if (workspaceMcpGate) {
+                val unapproved = runCatching {
+                    c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
+                }.getOrDefault(emptyList())
+                if (unapproved.isNotEmpty()) {
+                    pendingRunText = text
+                    _state.update { it.copy(pendingWorkspaceMcp = unapproved.map { s -> s.name }) }
+                    return@launch
+                }
+            }
+            // A localhost provider is the local llama.cpp server: make sure it
+            // is actually serving before a run depends on it.
+            if (provider.baseUrl.startsWith("http://127.0.0.1")) {
+                val localError = c.localModels.ensureRunningFor(provider.model)
+                if (localError != null) {
+                    _state.update { it.copy(error = localError) }
+                    return@launch
+                }
+            }
             // A model picked from the provider's catalog overrides its default.
             val effectiveConfig = roleModel
                 ?.takeIf { it.isNotBlank() }
@@ -652,12 +697,12 @@ class ChatViewModel(
                 imageRefs = imageRefs,
                 config = effectiveConfig,
                 apiKey = apiKey,
-                permissionMode = s.permissionMode,
-                mode = s.mode,
-                maxOutputTokens = s.maxOutputTokens,
-                maxContextTokens = s.maxContextTokens,
-                thinking = s.thinkingLevel,
-                maxIterations = s.maxIterations,
+                permissionMode = s0.permissionMode,
+                mode = s0.mode,
+                maxOutputTokens = s0.maxOutputTokens,
+                maxContextTokens = s0.maxContextTokens,
+                thinking = s0.thinkingLevel,
+                maxIterations = s0.maxIterations,
             )
             if (sessionId == null) {
                 sessionId = sid

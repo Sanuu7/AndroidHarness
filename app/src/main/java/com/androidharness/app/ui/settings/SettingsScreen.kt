@@ -57,6 +57,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -221,6 +222,8 @@ fun SettingsScreen(
                     onOpenProviders = onOpenProviders,
                 )
             }
+
+            LocalModelsSection(container = container)
 
             CurrentSetupCard(settings = settings, providers = providers)
 
@@ -1821,6 +1824,296 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun LocalModelsSection(container: AppContainer) {
+    val scope = rememberCoroutineScope()
+    val engine by container.localModels.engine.collectAsStateWithLifecycle()
+    val server by container.localModels.server.collectAsStateWithLifecycle()
+    val downloads by container.localModels.downloads.collectAsStateWithLifecycle()
+    val localFiles by container.localModels.localFileNames.collectAsStateWithLifecycle()
+
+    val specs = remember { container.localModels.specs() }
+    var compatibleOnly by remember { mutableStateOf(true) }
+    var query by remember { mutableStateOf("") }
+    var searching by remember { mutableStateOf(false) }
+    var searchError by remember { mutableStateOf<String?>(null) }
+    var foundRepos by remember { mutableStateOf<List<com.androidharness.app.data.LocalModelManager.HfRepo>>(emptyList()) }
+    var fileDialog by remember {
+        mutableStateOf<Pair<String, List<com.androidharness.app.data.LocalModelManager.HfFile>>?>(null)
+    }
+    var loadingFiles by remember { mutableStateOf(false) }
+
+    fun openFiles(repoId: String) {
+        scope.launch {
+            loadingFiles = true
+            container.localModels.listGgufFiles(repoId)
+                .onSuccess { if (it.isEmpty()) searchError = "No GGUF files in that repo." else fileDialog = repoId to it }
+                .onFailure { searchError = it.message }
+            loadingFiles = false
+        }
+    }
+
+    fun humanBytes(b: Long): String = when {
+        b >= 1_000_000_000 -> "%.1f GB".format(b / 1e9)
+        b >= 1_000_000 -> "%.0f MB".format(b / 1e6)
+        else -> "$b B"
+    }
+
+    SettingsHeader("Local models")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column {
+                Text("Run a model right on this phone", style = MaterialTheme.typography.titleSmall)
+                Text(
+                    "${specs.soc}, ${specs.cores} cores, ${humanBytes(specs.totalRamBytes)} RAM " +
+                        "(${humanBytes(specs.freeRamBytes)} free). Models are served on 127.0.0.1 as an " +
+                        "OpenAI-compatible provider and added to Providers automatically.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            // Engine
+            when (val e = engine) {
+                is com.androidharness.app.data.LocalModelManager.EngineState.NotInstalled -> Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text("llama.cpp engine", style = MaterialTheme.typography.bodyLarge)
+                        Text(
+                            "One-time download of the official Android build.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Button(onClick = { scope.launch { container.localModels.installEngine() } }) { Text("Install") }
+                }
+                is com.androidharness.app.data.LocalModelManager.EngineState.Downloading -> Column {
+                    Text("Downloading llama.cpp: ${humanBytes(e.downloadedBytes)} / ${humanBytes(e.totalBytes)}")
+                    LinearProgressIndicator(
+                        progress = { if (e.totalBytes > 0) (e.downloadedBytes.toFloat() / e.totalBytes) else 0f },
+                        modifier = Modifier.fillMaxWidth(),
+                    )
+                }
+                is com.androidharness.app.data.LocalModelManager.EngineState.Ready -> Text(
+                    "llama.cpp ${e.tag} installed",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                is com.androidharness.app.data.LocalModelManager.EngineState.Failed -> Column {
+                    Text("Engine install failed: ${e.error}", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                    TextButton(onClick = { scope.launch { container.localModels.installEngine() } }) { Text("Retry") }
+                }
+            }
+
+            // Server status
+            when (val s = server) {
+                is com.androidharness.app.data.LocalModelManager.ServerState.Stopped -> {}
+                is com.androidharness.app.data.LocalModelManager.ServerState.Starting -> Text(
+                    "Starting ${s.model}...",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                is com.androidharness.app.data.LocalModelManager.ServerState.Running -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "Serving ${s.model} on 127.0.0.1:${s.port}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { container.localModels.stop() }) { Text("Stop") }
+                }
+                is com.androidharness.app.data.LocalModelManager.ServerState.Failed -> Text(
+                    s.error,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    maxLines = 4,
+                )
+            }
+
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Only show models that fit in RAM", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Hides files larger than 60% of this phone's total RAM.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(checked = compatibleOnly, onCheckedChange = { compatibleOnly = it })
+            }
+
+            // Downloaded models
+            if (localFiles.isNotEmpty()) {
+                Text("Downloaded", style = MaterialTheme.typography.titleSmall)
+                localFiles.forEach { name ->
+                    val running = server is com.androidharness.app.data.LocalModelManager.ServerState.Running &&
+                        (server as com.androidharness.app.data.LocalModelManager.ServerState.Running).model == name
+                    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                        Column(Modifier.weight(1f)) {
+                            Text(name, style = MaterialTheme.typography.bodyMedium, maxLines = 1)
+                            if (running) Text(
+                                "Serving now",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.primary,
+                            )
+                        }
+                        if (running) {
+                            TextButton(onClick = { container.localModels.stop() }) { Text("Stop") }
+                        } else {
+                            TextButton(onClick = { scope.launch { container.localModels.start(name) } }) { Text("Start") }
+                        }
+                        IconButton(onClick = { container.localModels.deleteModel(name) }) {
+                            Icon(Icons.Outlined.Delete, contentDescription = "Delete $name", modifier = Modifier.size(18.dp))
+                        }
+                    }
+                }
+            }
+
+            // Curated suggestions
+            Text("Suggested for mobile", style = MaterialTheme.typography.titleSmall)
+            container.localModels.curatedRepos.forEach { (name, repoId, blurb) ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { openFiles(repoId) },
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(name, style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "$blurb, $repoId",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                        )
+                    }
+                    Icon(
+                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                        contentDescription = "List $name files",
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+
+            // Hugging Face search
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = query,
+                    onValueChange = { query = it },
+                    label = { Text("Search Hugging Face") },
+                    singleLine = true,
+                    modifier = Modifier.weight(1f),
+                )
+                Button(
+                    onClick = {
+                        scope.launch {
+                            searching = true
+                            searchError = null
+                            container.localModels.searchRepos(query.trim())
+                                .onSuccess { foundRepos = it }
+                                .onFailure { searchError = it.message }
+                            searching = false
+                        }
+                    },
+                    enabled = query.isNotBlank() && !searching,
+                ) { Text("Go") }
+            }
+            if (searching) LinearProgressIndicator(Modifier.fillMaxWidth())
+            searchError?.let {
+                Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+            }
+            foundRepos.forEach { repo ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { openFiles(repo.id) },
+                ) {
+                    Text(repo.id, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f), maxLines = 1)
+                    Text(
+                        "${repo.downloads} downloads",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+
+    fileDialog?.let { (repoId, files) ->
+        val visible = if (compatibleOnly) files.filter { container.localModels.isCompatible(it.sizeBytes) } else files
+        AlertDialog(
+            onDismissRequest = { fileDialog = null },
+            title = { Text(repoId.substringAfter('/'), maxLines = 1) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (visible.isEmpty()) {
+                        Text(
+                            "Every GGUF in this repo is larger than the RAM filter allows. Turn off the filter to see them.",
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                    }
+                    visible.take(8).forEach { file ->
+                        val base = file.path.substringAfterLast('/')
+                        val downloaded = base in localFiles
+                        val progress = downloads[base]
+                        Column {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Column(Modifier.weight(1f)) {
+                                    Text(base, style = MaterialTheme.typography.bodySmall, maxLines = 2)
+                                    Text(
+                                        humanBytes(file.sizeBytes) + if (!container.localModels.isCompatible(file.sizeBytes)) ", above the RAM budget" else "",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                when {
+                                    progress != null -> {}
+                                    downloaded -> TextButton(onClick = {
+                                        fileDialog = null
+                                        scope.launch { container.localModels.start(base) }
+                                    }) { Text("Start") }
+                                    else -> TextButton(onClick = {
+                                        scope.launch { container.localModels.downloadModel(repoId, file) }
+                                    }) { Text("Get") }
+                                }
+                                if (downloaded && progress == null) {
+                                    IconButton(onClick = {
+                                        container.localModels.deleteModel(base)
+                                    }) {
+                                        Icon(Icons.Outlined.Delete, contentDescription = "Delete", modifier = Modifier.size(18.dp))
+                                    }
+                                }
+                            }
+                            progress?.let { p ->
+                                LinearProgressIndicator(
+                                    progress = { if (p.totalBytes > 0) (p.downloadedBytes.toFloat() / p.totalBytes) else 0f },
+                                    modifier = Modifier.fillMaxWidth(),
+                                )
+                                Text(
+                                    "${humanBytes(p.downloadedBytes)} / ${humanBytes(p.totalBytes)}",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
+                            }
+                        }
+                    }
+                    if (visible.size > 8) {
+                        Text(
+                            "and ${visible.size - 8} more quantizations, use the repo page for those.",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            },
+            confirmButton = { TextButton(onClick = { fileDialog = null }) { Text("Done") } },
+        )
     }
 }
 
