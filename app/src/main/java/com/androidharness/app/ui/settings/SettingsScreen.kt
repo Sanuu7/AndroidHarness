@@ -1920,7 +1920,7 @@ private fun LocalModelsSection(container: AppContainer) {
                 )
                 is com.androidharness.app.data.LocalModelManager.ServerState.Running -> Row(verticalAlignment = Alignment.CenterVertically) {
                     Text(
-                        "Serving ${s.model} on 127.0.0.1:${s.port}",
+                        "Serving ${s.model} on 127.0.0.1:${s.port}, ${s.ctx / 1024}k context",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.primary,
                         modifier = Modifier.weight(1f),

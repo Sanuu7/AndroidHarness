@@ -325,7 +325,7 @@ class LocalModelManager(
     sealed interface ServerState {
         data object Stopped : ServerState
         data class Starting(val model: String) : ServerState
-        data class Running(val model: String, val port: Int) : ServerState
+        data class Running(val model: String, val port: Int, val ctx: Int) : ServerState
         data class Failed(val error: String) : ServerState
     }
 
@@ -364,6 +364,16 @@ class LocalModelManager(
             _server.value = ServerState.Starting(fileName)
             val unified = bin.name == "llama"
             val threads = (Runtime.getRuntime().availableProcessors() - 2).coerceIn(2, 6)
+            // Context budget from free RAM: KV cache dominates at large ctx,
+            // quantized q8_0 KV with flash attention keeps it at roughly
+            // 60 KB per token for a small model. Under-budgeted ctx makes the
+            // server 400 once the harness prompt grows past it.
+            val free = specs().freeRamBytes
+            val ctx = when {
+                free >= 3_500_000_000L -> 32768
+                free >= 2_000_000_000L -> 16384
+                else -> 8192
+            }
             // Android refuses execve() on app-data files even with the exec
             // bits set, so launch through the system dynamic linker exactly
             // like shellProcessBuilder launches bash itself.
@@ -376,9 +386,14 @@ class LocalModelManager(
                 append(launch)
                 if (unified) append(" server")
                 append(" -m '${model.absolutePath}'")
-                append(" --host 127.0.0.1 --port $PORT --ctx-size 8192 --threads $threads")
+                append(" --host 127.0.0.1 --port $PORT --ctx-size $ctx --threads $threads")
+                append(" --flash-attn on --cache-type-k q8_0 --cache-type-v q8_0")
             }
             val pb = linuxEnv.shellProcessBuilder(cmd)
+            // ggml discovers its CPU backend plugin by scanning the executable
+            // directory and the working directory; the linker launch makes
+            // /proc/self/exe point at /system/bin, so cwd carries the search.
+            pb.directory(bin.parentFile)
             pb.environment()["LD_LIBRARY_PATH"] =
                 bin.parent + ":" + (pb.environment()["LD_LIBRARY_PATH"] ?: "")
             pb.redirectErrorStream(true)
@@ -398,7 +413,7 @@ class LocalModelManager(
                         .execute().use { it.code == 200 }
                 }.getOrDefault(false)
                 if (healthy) {
-                    _server.value = ServerState.Running(fileName, PORT)
+                    _server.value = ServerState.Running(fileName, PORT, ctx)
                     registerProvider(fileName)
                     return@withContext Result.success(Unit)
                 }
