@@ -364,8 +364,16 @@ class LocalModelManager(
             _server.value = ServerState.Starting(fileName)
             val unified = bin.name == "llama"
             val threads = (Runtime.getRuntime().availableProcessors() - 2).coerceIn(2, 6)
+            // Android refuses execve() on app-data files even with the exec
+            // bits set, so launch through the system dynamic linker exactly
+            // like shellProcessBuilder launches bash itself.
+            val linker = when (Build.SUPPORTED_ABIS.firstOrNull()) {
+                "x86_64", "arm64-v8a" -> "/system/bin/linker64"
+                else -> "/system/bin/linker"
+            }
+            val launch = if (File(linker).exists()) "'$linker' '${bin.absolutePath}'" else "'${bin.absolutePath}'"
             val cmd = buildString {
-                append("'${bin.absolutePath}'")
+                append(launch)
                 if (unified) append(" server")
                 append(" -m '${model.absolutePath}'")
                 append(" --host 127.0.0.1 --port $PORT --ctx-size 8192 --threads $threads")
