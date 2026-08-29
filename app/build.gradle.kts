@@ -18,6 +18,20 @@ android {
         versionName = "0.5-alpha"
     }
 
+    signingConfigs {
+        getByName("debug") {
+            // Prefer the stable debug key kept in the gitignored signing-keys/
+            // folder. AGP's default path is machine-dependent (it resolved to
+            // ~/.config/.android on this box and silently generated a fresh
+            // key there), and a stray debug keystore makes every install on a
+            // device that already has the app fail with a signature mismatch.
+            val stableDebugKey = rootProject.file("signing-keys/debug.keystore")
+            if (stableDebugKey.exists()) {
+                storeFile = stableDebugKey
+            }
+        }
+    }
+
     buildTypes {
         release {
             // Local alpha distribution: signed with the debug keystore so the
