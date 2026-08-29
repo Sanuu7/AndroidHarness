@@ -76,12 +76,21 @@ class LocalModelManager(
     private fun engineTagFile() = File(llamaDir, "engine.tag")
 
     private fun engineTag(): String =
-        runCatching { engineTagFile().readText().trim() }.getOrDefault("llama.cpp")
+        runCatching { engineTagFile().readText().trim() }.getOrNull()?.takeIf { it.isNotBlank() }
+            // Tarballs extract into a llama-bNNNNN directory; use that when the
+            // marker is missing (pre-fix installs that failed on detection).
+            ?: llamaDir.listFiles()?.firstOrNull { it.isDirectory && it.name.startsWith("llama-b") }?.name
+            ?: "llama.cpp"
 
+    /**
+     * The server binary: newer releases ship a unified `llama` launcher (the
+     * server is `llama server`, logic lives in the bundled .so files, so the
+     * launcher itself is small), older ones a standalone `llama-server`.
+     */
     private fun findBinary(): File? = runCatching {
         llamaDir.walkTopDown()
             .filter { it.isFile && (it.name == "llama-server" || it.name == "llama") }
-            .firstOrNull { it.length() > 1_000_000 }
+            .firstOrNull()
     }.getOrNull()
 
     /**
@@ -91,6 +100,15 @@ class LocalModelManager(
      */
     suspend fun installEngine() = withContext(Dispatchers.IO) {
         try {
+            // Already extracted (an earlier attempt may have failed after the
+            // download): finish the marker steps instead of re-downloading.
+            val existing = findBinary()
+            if (existing != null) {
+                existing.setExecutable(true, false)
+                if (!engineTagFile().exists()) engineTagFile().writeText(engineTag())
+                _engine.value = EngineState.Ready(engineTag())
+                return@withContext
+            }
             if (linuxEnv.bashExecutable() == null) {
                 throw IllegalStateException(
                     "The llama.cpp engine needs the Linux environment. Install it in Settings, Terminal and environment first.",
