@@ -678,23 +678,6 @@ class ChatViewModel(
                     return@launch
                 }
             }
-            // A localhost provider is the local llama.cpp server: make sure it
-            // is actually serving before a run depends on it, and clamp the
-            // harness context budget to the server's real window so compaction
-            // kicks in long before the server would reject the request.
-            var effectiveMaxContext = s0.maxContextTokens
-            if (provider.baseUrl.startsWith("http://127.0.0.1")) {
-                val localError = c.localModels.ensureRunningFor(provider.model)
-                if (localError != null) {
-                    _state.update { it.copy(error = localError) }
-                    return@launch
-                }
-                val serverCtx = (c.localModels.server.value
-                    as? com.androidharness.app.data.LocalModelManager.ServerState.Running)?.ctx
-                if (serverCtx != null) {
-                    effectiveMaxContext = minOf(effectiveMaxContext, serverCtx - 3072).coerceAtLeast(2048)
-                }
-            }
             // A model picked from the provider's catalog overrides its default.
             val effectiveConfig = roleModel
                 ?.takeIf { it.isNotBlank() }
@@ -708,7 +691,7 @@ class ChatViewModel(
                 permissionMode = s0.permissionMode,
                 mode = s0.mode,
                 maxOutputTokens = s0.maxOutputTokens,
-                maxContextTokens = effectiveMaxContext,
+                maxContextTokens = s0.maxContextTokens,
                 thinking = s0.thinkingLevel,
                 maxIterations = s0.maxIterations,
             )

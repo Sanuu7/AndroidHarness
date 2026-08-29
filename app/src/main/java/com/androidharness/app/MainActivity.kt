@@ -62,7 +62,8 @@ class MainActivity : ComponentActivity() {
                     container.updates.check(manual = false)
                 }
                 // Screenshots and the recents preview are blocked app wide unless
-                // the user allows them, and always blocked on credential screens.
+                // the user allows them, and always blocked while a key or token
+                // is on screen (SecureScreenEffect / SecureDialogEffect).
                 val credentialScreen by container.screenshotPolicy.credentialScreenVisible
                     .collectAsStateWithLifecycle()
                 LaunchedEffect(settings.allowScreenshots, credentialScreen) {

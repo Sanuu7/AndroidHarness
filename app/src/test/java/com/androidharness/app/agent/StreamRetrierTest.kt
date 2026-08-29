@@ -17,13 +17,6 @@ class StreamRetrierTest {
     private val noopEmit: suspend (AgentEvent.Retrying) -> Unit = {}
 
     @Test
-    fun `localhost providers get the long stall window, cloud stays tight`() {
-        assertEquals(15 * 60_000L, StreamRetrier.stallTimeoutFor("http://127.0.0.1:8901/v1"))
-        assertEquals(90_000L, StreamRetrier.stallTimeoutFor("https://api.openai.com/v1"))
-        assertEquals(90_000L, StreamRetrier.stallTimeoutFor(null))
-    }
-
-    @Test
     fun `clean stream returns null and forwards all events`() = runBlocking {
         val seen = mutableListOf<StreamEvent>()
         val result = StreamRetrier.run(

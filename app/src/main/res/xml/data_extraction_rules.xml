@@ -12,8 +12,6 @@
         <exclude domain="file" path="mcp-servers.json" />
         <exclude domain="file" path="mcp-servers.json.hmac" />
         <exclude domain="file" path="linux" />
-    <exclude domain="file" path="llama" />
-    <exclude domain="file" path="models" />
         <exclude domain="external" path="linux-deploy" />
     </cloud-backup>
     <device-transfer>
@@ -21,8 +19,6 @@
         <exclude domain="file" path="mcp-servers.json" />
         <exclude domain="file" path="mcp-servers.json.hmac" />
         <exclude domain="file" path="linux" />
-    <exclude domain="file" path="llama" />
-    <exclude domain="file" path="models" />
         <exclude domain="external" path="linux-deploy" />
     </device-transfer>
 </data-extraction-rules>

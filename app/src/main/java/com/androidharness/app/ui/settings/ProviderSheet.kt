@@ -43,6 +43,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.layout.Box
+import com.androidharness.app.ui.common.SecureDialogEffect
 import com.androidharness.app.llm.ModelCatalog
 import com.androidharness.app.llm.ModelEntry
 import com.androidharness.app.llm.ModelsDev
@@ -103,6 +104,9 @@ fun ProviderSheet(
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+        // The API key field lives in this sheet's own window, which the
+        // activity-level FLAG_SECURE never covered.
+        SecureDialogEffect()
         ProviderSheetContent(
             existing = existing,
             existingKey = existingKey,

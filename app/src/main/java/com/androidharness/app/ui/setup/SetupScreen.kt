@@ -50,7 +50,6 @@ import com.androidharness.app.data.env.EnvState
 import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.ui.common.HarnessMark
-import com.androidharness.app.ui.common.SecureScreenEffect
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.settings.ProviderSheet
@@ -73,7 +72,6 @@ fun SetupScreen(
     onFinish: () -> Unit,
 ) {
     // The provider step is where the first API key is entered.
-    SecureScreenEffect(container)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme

@@ -37,15 +37,6 @@ internal object StreamRetrier {
     const val STALLED_STREAM_MESSAGE = "Stream stalled - no data received for 90s (timed out)"
 
     /**
-     * Stall window for a provider. A local llama.cpp server sends nothing
-     * during prompt processing, which takes minutes of silence on a phone
-     * CPU, so localhost gets a generous window; cloud gateways keep the
-     * tight 90s cutoff.
-     */
-    internal fun stallTimeoutFor(baseUrl: String?): Long =
-        if (baseUrl?.startsWith("http://127.0.0.1") == true) 15 * 60_000L else 90_000L
-
-    /**
      * Streams until completion or terminal failure. Returns null on success,
      * otherwise the final failure message (from an exception or from
      * [StreamEvent.Failure]).

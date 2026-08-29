@@ -70,7 +70,6 @@ class AppContainer(val appContext: Context) {
         com.androidharness.app.data.env.LinuxEnvironmentManager(appContext) { keys.githubToken() }
     val shizuku = com.androidharness.app.data.env.ShizukuManager(appContext)
     val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv)
-    val localModels = com.androidharness.app.data.LocalModelManager(appContext, linuxEnv, providers)
 
     init {
         // Package-set changes must invalidate the deployed-copy cache, or the
