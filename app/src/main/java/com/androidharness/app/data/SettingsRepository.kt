@@ -16,7 +16,7 @@ val Context.settingsStore by preferencesDataStore(name = "settings")
 
 private val WEB_SEARCH_PROVIDERS = setOf("keyless", "brave", "tavily")
 
-enum class ThemeMode { SYSTEM, LIGHT, DARK }
+enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 
 data class AppSettings(
     val permissionMode: PermissionMode = PermissionMode.CONFIRM_RISKY,
@@ -44,6 +44,11 @@ data class AppSettings(
     val disabledSkills: Set<String> = emptySet(),
     /** web_search backend: "keyless" (default) | "brave" | "tavily". */
     val webSearchProvider: String = "keyless",
+    /**
+     * Screenshots are allowed outside credential screens. Off (default) blocks
+     * them app wide; screens that show keys and tokens always block.
+     */
+    val allowScreenshots: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -70,6 +75,7 @@ class SettingsRepository(private val context: Context) {
         val ACTIVE_MODEL = stringPreferencesKey("active_model")
         val DISABLED_SKILLS = stringSetPreferencesKey("disabled_skills")
         val WEB_SEARCH_PROVIDER = stringPreferencesKey("web_search_provider")
+        val ALLOW_SCREENSHOTS = booleanPreferencesKey("allow_screenshots")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -97,6 +103,7 @@ class SettingsRepository(private val context: Context) {
             webSearchProvider = prefs[Keys.WEB_SEARCH_PROVIDER]
                 ?.takeIf { it in WEB_SEARCH_PROVIDERS }
                 ?: "keyless",
+            allowScreenshots = prefs[Keys.ALLOW_SCREENSHOTS] ?: false,
         )
     }
 
@@ -115,6 +122,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setDynamicColor(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.DYNAMIC_COLOR] = enabled }
+    }
+
+    suspend fun setAllowScreenshots(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.ALLOW_SCREENSHOTS] = enabled }
     }
 
     suspend fun setActiveProvider(id: String?) {

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 12+: cloud backups and device-to-device transfers. The keystore
+     can't move between devices, so backed-up ciphertext is dead weight anyway;
+     mcp-servers.json carries plaintext server tokens and must never leave. -->
+<data-extraction-rules>
+    <cloud-backup>
+        <exclude domain="sharedpref" path="api_keys.xml" />
+        <exclude domain="file" path="mcp-servers.json" />
+        <exclude domain="file" path="mcp-servers.json.hmac" />
+    </cloud-backup>
+    <device-transfer>
+        <exclude domain="sharedpref" path="api_keys.xml" />
+        <exclude domain="file" path="mcp-servers.json" />
+        <exclude domain="file" path="mcp-servers.json.hmac" />
+    </device-transfer>
+</data-extraction-rules>

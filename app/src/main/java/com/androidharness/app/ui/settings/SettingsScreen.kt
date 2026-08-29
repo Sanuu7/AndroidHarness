@@ -94,6 +94,7 @@ import com.androidharness.app.data.env.UserServiceState
 import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.AddWorkspaceDialog
+import com.androidharness.app.ui.common.SecureScreenEffect
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
@@ -142,6 +143,9 @@ fun SettingsScreen(
     val shizukuState by container.shizuku.state.collectAsStateWithLifecycle(initialValue = ShizukuState.NOT_INSTALLED)
     val serviceState by container.shizuku.serviceState.collectAsStateWithLifecycle(initialValue = UserServiceState.NOT_BOUND)
     val scope = rememberCoroutineScope()
+
+    // Settings shows the GitHub PAT, API keys, and MCP OAuth state.
+    SecureScreenEffect(container)
 
     var showAddWorkspace by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<ProjectEntity?>(null) }
@@ -206,6 +210,7 @@ fun SettingsScreen(
             )
 
             AppearanceSection(container = container, settings = settings, scope = scope)
+            PrivacySection(container = container, settings = settings, scope = scope)
             SlashCommandsSection(container = container)
 
             UpdatesCard(container = container)
@@ -1749,7 +1754,14 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
                         selected = settings.themeMode == mode,
                         onClick = { scope.launch { container.settings.setThemeMode(mode) } },
                         shape = SegmentedButtonDefaults.itemShape(index = index, count = ThemeMode.entries.size),
-                    ) { Text(mode.name.lowercase().replaceFirstChar { it.uppercase() }) }
+                    ) {
+                        // maxLines=1: the checkmark eats the segment width, a
+                        // wrapped label breaks the row.
+                        Text(
+                            mode.name.lowercase().replaceFirstChar { it.uppercase() },
+                            maxLines = 1,
+                        )
+                    }
                 }
             }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
@@ -1764,6 +1776,34 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
                 Switch(
                     checked = settings.dynamicColor,
                     onCheckedChange = { scope.launch { container.settings.setDynamicColor(it) } },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun PrivacySection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
+    SettingsHeader("Privacy")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Allow screenshots", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        if (settings.allowScreenshots) {
+                            "On everywhere except screens that show keys and tokens."
+                        } else {
+                            "Off: screenshots and the recents preview are blocked app wide. " +
+                                "Key screens stay blocked even when this is on."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.allowScreenshots,
+                    onCheckedChange = { scope.launch { container.settings.setAllowScreenshots(it) } },
                 )
             }
         }

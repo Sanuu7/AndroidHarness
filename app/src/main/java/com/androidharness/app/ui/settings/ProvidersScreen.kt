@@ -45,6 +45,7 @@ import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.common.SecureScreenEffect
 import kotlinx.coroutines.launch
 
 @Composable
@@ -52,6 +53,8 @@ fun ProvidersScreen(
     container: AppContainer,
     onBack: () -> Unit,
 ) {
+    // The provider list is where API keys are entered and revealed.
+    SecureScreenEffect(container)
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val catalogs by container.providers.catalogs.collectAsStateWithLifecycle(initialValue = emptyMap())

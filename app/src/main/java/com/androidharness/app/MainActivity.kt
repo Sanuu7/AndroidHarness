@@ -5,6 +5,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.view.WindowManager
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -14,6 +15,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
 import androidx.core.content.ContextCompat
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.ScreenshotPolicy
 import com.androidharness.app.data.update.UpdateIntents
 import com.androidharness.app.ui.AppNav
 import com.androidharness.app.ui.theme.HarnessTheme
@@ -57,6 +59,17 @@ class MainActivity : ComponentActivity() {
                 LaunchedEffect(Unit) {
                     kotlinx.coroutines.delay(4_000)
                     container.updates.check(manual = false)
+                }
+                // Screenshots and the recents preview are blocked app wide unless
+                // the user allows them, and always blocked on credential screens.
+                val credentialScreen by container.screenshotPolicy.credentialScreenVisible
+                    .collectAsStateWithLifecycle()
+                LaunchedEffect(settings.allowScreenshots, credentialScreen) {
+                    if (ScreenshotPolicy.blocked(settings.allowScreenshots, credentialScreen)) {
+                        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    } else {
+                        window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+                    }
                 }
                 AppNav(container)
                 // The one global update dialog, above everything else.

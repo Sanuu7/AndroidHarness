@@ -40,6 +40,7 @@ class AppContainer(val appContext: Context) {
     val keys = KeyStoreManager(appContext)
     val settings = SettingsRepository(appContext)
     val providers = ProviderRepository(appContext, keys)
+    val screenshotPolicy = com.androidharness.app.data.ScreenshotPolicy()
 
     private val db = Room.databaseBuilder(appContext, AppDatabase::class.java, "harness.db")
         .addMigrations(

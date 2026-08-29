@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.theme
 
+import androidx.compose.material3.ColorScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.staticCompositionLocalOf
@@ -87,6 +88,24 @@ internal val DarkColors = darkColorScheme(
     inverseOnSurface = Color(0xFF2E3036),
     inversePrimary = Color(0xFF0B57D0),
     scrim = Color(0xFF000000),
+)
+
+/**
+ * AMOLED surfaces: the dark scheme with every background role at (or near)
+ * true black, where OLED pixels are fully off. Accent and content roles come
+ * from the base scheme untouched, so this works over both the static palette
+ * and a wallpaper-derived dynamic one.
+ */
+internal fun ColorScheme.amoledSurfaces(): ColorScheme = copy(
+    background = Color.Black,
+    surface = Color.Black,
+    surfaceVariant = Color(0xFF1B1B1F),
+    surfaceContainerLowest = Color.Black,
+    surfaceContainerLow = Color(0xFF0A0A0C),
+    surfaceContainer = Color(0xFF101014),
+    surfaceContainerHigh = Color(0xFF16161A),
+    surfaceContainerHighest = Color(0xFF1D1D22),
+    outlineVariant = Color(0xFF2C2C31),
 )
 
 /**

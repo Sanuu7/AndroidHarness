@@ -31,15 +31,18 @@ fun HarnessTheme(
     val dark = when (themeMode) {
         ThemeMode.SYSTEM -> isSystemInDarkTheme()
         ThemeMode.LIGHT -> false
-        ThemeMode.DARK -> true
+        ThemeMode.DARK, ThemeMode.AMOLED -> true
     }
     val context = LocalContext.current
-    val colorScheme = when {
+    val base = when {
         dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         dark -> DarkColors
         else -> LightColors
     }
+    // AMOLED blacks out the surface roles but keeps the accent roles, so a
+    // wallpaper-derived primary survives the switch to true black.
+    val colorScheme = if (themeMode == ThemeMode.AMOLED) base.amoledSurfaces() else base
 
     CompositionLocalProvider(
         LocalStatusColors provides (if (dark) StatusDark else StatusLight),

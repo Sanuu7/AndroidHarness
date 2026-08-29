@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 9-11 cloud backup: same exclusions as data_extraction_rules.xml.
+     api_keys.xml holds the keystore-wrapped credentials, mcp-servers.json
+     carries plaintext server tokens; neither belongs in a backup. -->
+<full-backup-content>
+    <exclude domain="sharedpref" path="api_keys.xml" />
+    <exclude domain="file" path="mcp-servers.json" />
+    <exclude domain="file" path="mcp-servers.json.hmac" />
+</full-backup-content>
