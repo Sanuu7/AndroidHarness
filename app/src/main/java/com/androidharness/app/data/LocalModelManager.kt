@@ -61,6 +61,8 @@ class LocalModelManager(
 
     sealed interface EngineState {
         data object NotInstalled : EngineState
+        /** Resolving the latest build on GitHub; no bytes flowing yet. */
+        data object Preparing : EngineState
         data class Downloading(val downloadedBytes: Long, val totalBytes: Long) : EngineState
         data class Ready(val tag: String) : EngineState
         data class Failed(val error: String) : EngineState
@@ -100,6 +102,11 @@ class LocalModelManager(
      */
     suspend fun installEngine() = withContext(Dispatchers.IO) {
         try {
+            // One install at a time; a second click while resolving must not
+            // start a second resolution chain.
+            if (_engine.value is EngineState.Preparing || _engine.value is EngineState.Downloading) {
+                return@withContext
+            }
             // Already extracted (an earlier attempt may have failed after the
             // download): finish the marker steps instead of re-downloading.
             val existing = findBinary()
@@ -109,6 +116,9 @@ class LocalModelManager(
                 _engine.value = EngineState.Ready(engineTag())
                 return@withContext
             }
+            // Reflect the click immediately: GitHub resolution (three requests)
+            // takes seconds before the first download byte arrives.
+            _engine.value = EngineState.Preparing
             if (linuxEnv.bashExecutable() == null) {
                 throw IllegalStateException(
                     "The llama.cpp engine needs the Linux environment. Install it in Settings, Terminal and environment first.",
@@ -167,6 +177,16 @@ class LocalModelManager(
         } catch (e: Exception) {
             _engine.value = EngineState.Failed(e.message ?: "Engine install failed.")
         }
+    }
+
+    /** Deletes the engine (and any leftover server process) to reclaim the space. */
+    fun uninstallEngine() {
+        stop()
+        runCatching {
+            linuxEnv.shellProcessBuilder("pkill -f 'llama.*--port $PORT' 2>/dev/null; true").start().waitFor()
+        }
+        runCatching { llamaDir.deleteRecursively() }
+        _engine.value = EngineState.NotInstalled
     }
 
     /** tar from the toolchain first, python's stdlib tarfile as the fallback. */

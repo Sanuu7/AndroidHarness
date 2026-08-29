@@ -1845,6 +1845,7 @@ private fun LocalModelsSection(container: AppContainer) {
         mutableStateOf<Pair<String, List<com.androidharness.app.data.LocalModelManager.HfFile>>?>(null)
     }
     var loadingFiles by remember { mutableStateOf(false) }
+    var showUninstallEngine by remember { mutableStateOf(false) }
 
     fun openFiles(repoId: String) {
         scope.launch {
@@ -1892,6 +1893,10 @@ private fun LocalModelsSection(container: AppContainer) {
                     }
                     Button(onClick = { scope.launch { container.localModels.installEngine() } }) { Text("Install") }
                 }
+                is com.androidharness.app.data.LocalModelManager.EngineState.Preparing -> Column {
+                    Text("Resolving the latest llama.cpp build...")
+                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                }
                 is com.androidharness.app.data.LocalModelManager.EngineState.Downloading -> Column {
                     Text("Downloading llama.cpp: ${humanBytes(e.downloadedBytes)} / ${humanBytes(e.totalBytes)}")
                     LinearProgressIndicator(
@@ -1899,11 +1904,15 @@ private fun LocalModelsSection(container: AppContainer) {
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
-                is com.androidharness.app.data.LocalModelManager.EngineState.Ready -> Text(
-                    "llama.cpp ${e.tag} installed",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
+                is com.androidharness.app.data.LocalModelManager.EngineState.Ready -> Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        "llama.cpp ${e.tag} installed",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.weight(1f),
+                    )
+                    TextButton(onClick = { showUninstallEngine = true }) { Text("Uninstall") }
+                }
                 is com.androidharness.app.data.LocalModelManager.EngineState.Failed -> Column {
                     Text("Engine install failed: ${e.error}", color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
                     TextButton(onClick = { scope.launch { container.localModels.installEngine() } }) { Text("Retry") }
@@ -2043,6 +2052,23 @@ private fun LocalModelsSection(container: AppContainer) {
                 }
             }
         }
+    }
+
+    if (showUninstallEngine) {
+        AlertDialog(
+            onDismissRequest = { showUninstallEngine = false },
+            title = { Text("Remove llama.cpp?") },
+            text = { Text("The engine files are deleted and the local server stops. You would need to download it again to use local models.") },
+            confirmButton = {
+                TextButton(onClick = {
+                    showUninstallEngine = false
+                    container.localModels.uninstallEngine()
+                }) { Text("Remove", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUninstallEngine = false }) { Text("Cancel") }
+            },
+        )
     }
 
     fileDialog?.let { (repoId, files) ->
