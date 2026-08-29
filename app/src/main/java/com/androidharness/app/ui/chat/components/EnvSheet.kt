@@ -63,6 +63,7 @@ fun EnvSheet(
             Text(
                 when (envState) {
                     is EnvState.Ready -> "Installed"
+                    is EnvState.Preparing -> "Resolving packages…"
                     is EnvState.Downloading -> "Downloading ${envState.pkg} (${envState.index + 1}/${envState.total})…"
                     is EnvState.Installing -> "Installing ${envState.pkg} (${envState.index + 1}/${envState.total})…"
                     is EnvState.Failed -> "Failed: ${envState.message}"
@@ -116,7 +117,7 @@ fun EnvSheet(
                         modifier = Modifier.fillMaxWidth(),
                     ) { Text(if (envState is EnvState.Failed) "Retry install" else "Install full environment") }
                 }
-                is EnvState.Downloading, is EnvState.Installing -> {
+                is EnvState.Downloading, is EnvState.Installing, is EnvState.Preparing -> {
                     com.androidharness.app.ui.common.ThinLinearProgress(Modifier.fillMaxWidth())
                 }
             }

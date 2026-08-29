@@ -214,6 +214,8 @@ internal object TermuxShellPath {
 
 sealed interface EnvState {
     data object NotInstalled : EnvState
+    /** Fetching the package index and resolving the closure; no bytes yet. */
+    data object Preparing : EnvState
     data class Downloading(val index: Int, val total: Int, val pkg: String) : EnvState
     data class Installing(val index: Int, val total: Int, val pkg: String) : EnvState
     data object Ready : EnvState
@@ -335,6 +337,9 @@ class LinuxEnvironmentManager(
 
     private suspend fun installLocked(wanted: List<String>) {
         try {
+            // React to the tap immediately: fetching the package index takes
+            // seconds on mobile networks before the first package download.
+            _state.value = EnvState.Preparing
             val indexText = fetchText(indexUrl())
             val index = PackageIndex.parse(indexText)
             val already = installedPackages().toSet()

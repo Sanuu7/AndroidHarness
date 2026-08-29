@@ -246,12 +246,13 @@ fun SetupScreen(
                         EnvState.Ready -> "Ready: bash, git, python, node and npm for real commands"
                         is EnvState.Downloading -> "Downloading ${s.pkg} (${s.index}/${s.total})"
                         is EnvState.Installing -> "Installing ${s.pkg} (${s.index}/${s.total})"
+                        is EnvState.Preparing -> "Resolving packages…"
                         is EnvState.Failed -> s.message.take(80)
                         EnvState.NotInstalled -> "Optional: bash, git, python, pip, node, npm for real commands"
                     },
                     complete = envDone,
                     optional = true,
-                    busy = envState is EnvState.Downloading || envState is EnvState.Installing,
+                    busy = envState is EnvState.Downloading || envState is EnvState.Installing || envState is EnvState.Preparing,
                 ) {
                     when (envState) {
                         EnvState.NotInstalled, is EnvState.Failed ->

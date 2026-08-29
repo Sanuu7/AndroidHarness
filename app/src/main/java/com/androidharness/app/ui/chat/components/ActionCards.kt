@@ -433,6 +433,15 @@ internal fun EnvironmentInstallCard(
                 Spacer(Modifier.height(6.dp))
                 ThinLinearProgress(modifier = Modifier.fillMaxWidth())
             }
+            is EnvState.Preparing -> {
+                Spacer(Modifier.height(10.dp))
+                Text(
+                    "Resolving packages…",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                Spacer(Modifier.height(6.dp))
+                ThinLinearProgress(modifier = Modifier.fillMaxWidth())
+            }
             is EnvState.Failed -> {
                 Spacer(Modifier.height(10.dp))
                 Text(
