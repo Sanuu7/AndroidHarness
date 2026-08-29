@@ -108,6 +108,14 @@ data class ChatUiState(
     val sessionModelUsage: List<com.androidharness.app.data.db.ModelUsagePojo> = emptyList(),
     /** Model override picked from the active provider's catalog. */
     val activeModel: String? = null,
+    /** Separate-model-per-mode settings, mirrored from AppSettings. */
+    val planningModelsEnabled: Boolean = false,
+    val planningProviderId: String? = null,
+    val planningModel: String? = null,
+    val executionProviderId: String? = null,
+    val executionModel: String? = null,
+    /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
+    val modeToast: String? = null,
     /** Fetched model catalogs per provider id. */
     val catalogs: Map<String, List<com.androidharness.app.llm.ModelEntry>> = emptyMap(),
     /** Precomputed human-readable activity line (computed in the ViewModel, never in composition). */
@@ -182,6 +190,11 @@ class ChatViewModel(
                             activeProviderId = settings.activeProviderId
                                 ?: providers.firstOrNull()?.id,
                             activeModel = settings.activeModel,
+                            planningModelsEnabled = settings.planningModelsEnabled,
+                            planningProviderId = settings.planningProviderId,
+                            planningModel = settings.planningModel,
+                            executionProviderId = settings.executionProviderId,
+                            executionModel = settings.executionModel,
                         )
                     }
                 }
@@ -594,10 +607,24 @@ class ChatViewModel(
     // ------------------------------------------------------------------
 
     private fun startRun(text: String) {
-        val provider = _state.value.activeProvider
-        if (provider == null) {
+        val s = _state.value
+        // Separate planning/execution models: plan-mode runs use the planning
+        // slot, everything else the execution one. A slot without a provider
+        // falls back to the active provider, keeping its model override.
+        val provider = when {
+            s.planningModelsEnabled && s.mode == AgentMode.PLAN && s.planningProviderId != null ->
+                s.providers.firstOrNull { it.id == s.planningProviderId } ?: s.activeProvider
+            s.planningModelsEnabled && s.mode == AgentMode.ACT && s.executionProviderId != null ->
+                s.providers.firstOrNull { it.id == s.executionProviderId } ?: s.activeProvider
+            else -> s.activeProvider
+        } ?: run {
             _state.update { it.copy(error = "No provider configured. Add one from the Providers screen first.") }
             return
+        }
+        val roleModel = when {
+            s.planningModelsEnabled && s.mode == AgentMode.PLAN -> s.planningModel
+            s.planningModelsEnabled && s.mode == AgentMode.ACT -> s.executionModel
+            else -> s.activeModel
         }
         val apiKey = c.providers.apiKey(provider.id)
         if (apiKey.isNullOrBlank()) {
@@ -609,11 +636,10 @@ class ChatViewModel(
         pendingAttachments.clear()
         _state.update { it.copy(attachments = emptyList(), error = null) }
 
-        val s = _state.value
         viewModelScope.launch {
             // A model picked from the provider's catalog overrides its default.
-            val effectiveConfig = s.activeModel
-                ?.takeIf { it.isNotBlank() && it != provider.model }
+            val effectiveConfig = roleModel
+                ?.takeIf { it.isNotBlank() }
                 ?.let { provider.copy(model = it) } ?: provider
             val sid = c.runManager.startRun(
                 sessionId = sessionId,
@@ -679,15 +705,46 @@ class ChatViewModel(
     }
 
     fun setMode(mode: AgentMode) {
+        if (_state.value.mode == mode) return
         _state.update { it.copy(mode = mode).withCurrentAction() }
+        announceMode(mode)
     }
 
     /** Approve the plan produced by a PLAN-mode run and execute it. */
     fun executePendingPlan() {
         val sid = sessionId ?: return
         c.runManager.clearPendingPlan(sid)
-        _state.update { it.copy(mode = AgentMode.ACT, pendingPlan = null) }
+        _state.update { it.copy(mode = AgentMode.ACT, pendingPlan = null).withCurrentAction() }
+        announceMode(AgentMode.ACT)
         startRun("The plan above is approved. Execute it step by step now.")
+    }
+
+    /**
+     * One-shot toast naming the model a mode switch will use, so the
+     * separate planning/execution slots are visible at the moment they
+     * matter. Quiet when the feature is off.
+     */
+    private fun announceMode(mode: AgentMode) {
+        val s = _state.value
+        if (!s.planningModelsEnabled) return
+        val label = if (mode == AgentMode.PLAN) "Planning mode" else "Execute mode"
+        val model = when (mode) {
+            AgentMode.PLAN ->
+                s.planningModel?.takeIf { it.isNotBlank() }
+                    ?: s.providers.firstOrNull { it.id == s.planningProviderId }?.model
+                    ?: s.effectiveModel
+            AgentMode.ACT ->
+                s.executionModel?.takeIf { it.isNotBlank() }
+                    ?: s.providers.firstOrNull { it.id == s.executionProviderId }?.model
+                    ?: s.effectiveModel
+        }?.substringAfterLast('/') ?: "default model"
+        _state.update { it.copy(modeToast = "$label: $model") }
+    }
+
+    fun clearModeToast() {
+        if (_state.value.modeToast != null) {
+            _state.update { it.copy(modeToast = null) }
+        }
     }
 
     fun discardPendingPlan() {

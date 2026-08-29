@@ -37,6 +37,9 @@ class AppContainer(val appContext: Context) {
     /** Deep-link channel: run-result notifications deliver a session id here. */
     val pendingSessionId = kotlinx.coroutines.flow.MutableSharedFlow<String>(extraBufferCapacity = 1)
 
+    /** Share-target channel: one ACTION_SEND payload awaiting the open chat. */
+    val pendingShare = kotlinx.coroutines.flow.MutableStateFlow<com.androidharness.app.data.PendingShare?>(null)
+
     val keys = KeyStoreManager(appContext)
     val settings = SettingsRepository(appContext)
     val providers = ProviderRepository(appContext, keys)

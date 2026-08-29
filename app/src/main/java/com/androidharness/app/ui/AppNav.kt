@@ -644,6 +644,7 @@ fun AppNav(container: AppContainer) {
                     onOpenStats = { nav.navigate("stats") },
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },
+                    onOpenProviders = { nav.navigate("providers") },
                 )
             }
             composable("skills") {

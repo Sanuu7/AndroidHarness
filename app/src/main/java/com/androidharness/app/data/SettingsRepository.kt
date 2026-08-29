@@ -49,6 +49,16 @@ data class AppSettings(
      * them app wide; screens that show keys and tokens always block.
      */
     val allowScreenshots: Boolean = false,
+    /**
+     * Separate models per agent mode: plan-mode runs use the planning
+     * provider/model, everything else uses the execution one. Off (default)
+     * runs everything on the single active model.
+     */
+    val planningModelsEnabled: Boolean = false,
+    val planningProviderId: String? = null,
+    val planningModel: String? = null,
+    val executionProviderId: String? = null,
+    val executionModel: String? = null,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -76,6 +86,11 @@ class SettingsRepository(private val context: Context) {
         val DISABLED_SKILLS = stringSetPreferencesKey("disabled_skills")
         val WEB_SEARCH_PROVIDER = stringPreferencesKey("web_search_provider")
         val ALLOW_SCREENSHOTS = booleanPreferencesKey("allow_screenshots")
+        val PLANNING_MODELS_ENABLED = booleanPreferencesKey("planning_models_enabled")
+        val PLANNING_PROVIDER = stringPreferencesKey("planning_provider_id")
+        val PLANNING_MODEL = stringPreferencesKey("planning_model")
+        val EXECUTION_PROVIDER = stringPreferencesKey("execution_provider_id")
+        val EXECUTION_MODEL = stringPreferencesKey("execution_model")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -104,6 +119,11 @@ class SettingsRepository(private val context: Context) {
                 ?.takeIf { it in WEB_SEARCH_PROVIDERS }
                 ?: "keyless",
             allowScreenshots = prefs[Keys.ALLOW_SCREENSHOTS] ?: false,
+            planningModelsEnabled = prefs[Keys.PLANNING_MODELS_ENABLED] ?: false,
+            planningProviderId = prefs[Keys.PLANNING_PROVIDER],
+            planningModel = prefs[Keys.PLANNING_MODEL],
+            executionProviderId = prefs[Keys.EXECUTION_PROVIDER],
+            executionModel = prefs[Keys.EXECUTION_MODEL],
         )
     }
 
@@ -126,6 +146,28 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setAllowScreenshots(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.ALLOW_SCREENSHOTS] = enabled }
+    }
+
+    suspend fun setPlanningModelsEnabled(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.PLANNING_MODELS_ENABLED] = enabled }
+    }
+
+    suspend fun setPlanningModel(providerId: String?, model: String?) {
+        context.settingsStore.edit { prefs ->
+            if (providerId == null) prefs.remove(Keys.PLANNING_PROVIDER)
+            else prefs[Keys.PLANNING_PROVIDER] = providerId
+            if (model.isNullOrBlank()) prefs.remove(Keys.PLANNING_MODEL)
+            else prefs[Keys.PLANNING_MODEL] = model
+        }
+    }
+
+    suspend fun setExecutionModel(providerId: String?, model: String?) {
+        context.settingsStore.edit { prefs ->
+            if (providerId == null) prefs.remove(Keys.EXECUTION_PROVIDER)
+            else prefs[Keys.EXECUTION_PROVIDER] = providerId
+            if (model.isNullOrBlank()) prefs.remove(Keys.EXECUTION_MODEL)
+            else prefs[Keys.EXECUTION_MODEL] = model
+        }
     }
 
     suspend fun setActiveProvider(id: String?) {

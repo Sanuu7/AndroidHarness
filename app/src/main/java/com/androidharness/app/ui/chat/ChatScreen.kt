@@ -68,6 +68,9 @@ import com.androidharness.app.ui.common.formatTokenCount
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import android.widget.Toast
+import androidx.compose.ui.platform.LocalContext
+import kotlinx.coroutines.flow.filterNotNull
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
@@ -147,6 +150,30 @@ fun ChatScreen(
     var slashExpanded by remember { mutableStateOf(false) }
     var composerText by remember { mutableStateOf("") }
     var attachedSkill by remember { mutableStateOf<String?>(null) }
+
+    // Share target: text/link shares prefill the composer, image shares ride
+    // the normal attach pipeline. Consumed once, by whichever chat is open.
+    LaunchedEffect(Unit) {
+        viewModel.container.pendingShare.filterNotNull().collect { share ->
+            viewModel.container.pendingShare.value = null
+            if (!share.text.isNullOrBlank()) {
+                composerText = if (composerText.isBlank()) share.text else "$composerText\n\n${share.text}"
+            }
+            if (share.stream != null && share.mime.startsWith("image/")) {
+                viewModel.attachImage(share.stream)
+            }
+        }
+    }
+
+    // Mode switches announce the model they will use when separate
+    // planning/execution models are enabled (see Settings, Planning model).
+    val toastContext = LocalContext.current
+    LaunchedEffect(state.modeToast) {
+        state.modeToast?.let {
+            Toast.makeText(toastContext, it, Toast.LENGTH_SHORT).show()
+            viewModel.clearModeToast()
+        }
+    }
 
     val clipboard = LocalClipboardManager.current
     var actionsMessage by remember { mutableStateOf<ChatMessage?>(null) }

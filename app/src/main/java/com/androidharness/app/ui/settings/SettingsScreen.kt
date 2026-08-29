@@ -88,6 +88,7 @@ import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.ui.chat.components.FullAccessOrange
+import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.data.env.UserServiceState
@@ -133,6 +134,7 @@ fun SettingsScreen(
     onOpenStats: () -> Unit = {},
     onRunSetup: () -> Unit = {},
     onOpenSkills: () -> Unit = {},
+    onOpenProviders: () -> Unit = {},
 ) {
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -189,6 +191,13 @@ fun SettingsScreen(
                 onOpenStats = onOpenStats,
                 onRunSetup = onRunSetup,
                 onOpenSkills = onOpenSkills,
+            )
+
+            PlanningModelSection(
+                container = container,
+                settings = settings,
+                scope = scope,
+                onOpenProviders = onOpenProviders,
             )
 
             WorkspaceSection(
@@ -1807,6 +1816,115 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun PlanningModelSection(
+    container: AppContainer,
+    settings: AppSettings,
+    scope: kotlinx.coroutines.CoroutineScope,
+    onOpenProviders: () -> Unit,
+) {
+    val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
+    val catalogs by container.providers.catalogs.collectAsStateWithLifecycle(initialValue = emptyMap())
+    var pickingRole by remember { mutableStateOf<String?>(null) }
+
+    // The sheet opens on the role's provider when one is set, else the
+    // active one, so the list is never empty for a first pick.
+    val fallbackProviderId = settings.activeProviderId ?: providers.firstOrNull()?.id
+
+    SettingsHeader("Planning model")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Separate plan and execute models", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        "Plan with one model, execute the approved plan with another. " +
+                            "Off, everything runs on the single model picked in chat.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.planningModelsEnabled,
+                    onCheckedChange = { scope.launch { container.settings.setPlanningModelsEnabled(it) } },
+                )
+            }
+            if (settings.planningModelsEnabled) {
+                ModelRoleRow(
+                    label = "Plan mode",
+                    model = settings.planningModel
+                        ?: providers.firstOrNull { it.id == (settings.planningProviderId ?: fallbackProviderId) }?.model,
+                ) { pickingRole = "plan" }
+                ModelRoleRow(
+                    label = "Execute mode",
+                    model = settings.executionModel
+                        ?: providers.firstOrNull { it.id == (settings.executionProviderId ?: fallbackProviderId) }?.model,
+                ) { pickingRole = "exec" }
+            }
+        }
+    }
+
+    pickingRole?.let { role ->
+        val isPlan = role == "plan"
+        ModelPickerSheet(
+            providers = providers,
+            activeProviderId = (if (isPlan) settings.planningProviderId else settings.executionProviderId)
+                ?: fallbackProviderId,
+            activeModel = if (isPlan) settings.planningModel else settings.executionModel,
+            catalogs = catalogs,
+            onDismiss = { pickingRole = null },
+            onSelect = { providerId, model ->
+                scope.launch {
+                    if (isPlan) container.settings.setPlanningModel(providerId, model)
+                    else container.settings.setExecutionModel(providerId, model)
+                }
+                pickingRole = null
+            },
+            onRefreshCatalog = { providerId ->
+                val provider = providers.firstOrNull { it.id == providerId }
+                val key = container.providers.apiKey(providerId)
+                when {
+                    provider == null -> "Unknown provider"
+                    key.isNullOrBlank() -> "No API key for this provider"
+                    else -> when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, key)) {
+                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
+                            container.providers.saveCatalog(providerId, result.models)
+                            null
+                        }
+                        is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
+                    }
+                }
+            },
+            onManageProviders = onOpenProviders,
+        )
+    }
+}
+
+@Composable
+private fun ModelRoleRow(label: String, model: String?, onClick: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text(label, style = MaterialTheme.typography.bodyLarge)
+            Text(
+                model ?: "Provider default",
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+            )
+        }
+        Icon(
+            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            contentDescription = "Choose $label model",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
     }
 }
 

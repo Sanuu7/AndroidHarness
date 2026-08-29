@@ -47,6 +47,7 @@ class MainActivity : ComponentActivity() {
         // MCP OAuth redirect when this activity is freshly created for it.
         handleSessionIntent(intent)
         handleMcpOAuth(intent)
+        handleShareIntent(intent)
 
         setContent {
             val settings by container.settings.settings
@@ -112,6 +113,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         handleSessionIntent(intent)
         handleMcpOAuth(intent)
+        handleShareIntent(intent)
     }
 
     private fun handleSessionIntent(intent: Intent?) {
@@ -133,5 +135,24 @@ class MainActivity : ComponentActivity() {
                 onFailure = { e -> android.util.Log.w("McpOAuth", "auth failed: ${e.message}") },
             )
         }
+    }
+
+    /**
+     * Receives shares from other apps (text, links, images): the open chat's
+     * composer consumes [container.pendingShare], prefilling the input or
+     * attaching the image.
+     */
+    private fun handleShareIntent(intent: Intent?) {
+        if (intent?.action != Intent.ACTION_SEND) return
+        val mime = intent.type ?: return
+        val text = intent.getStringExtra(Intent.EXTRA_TEXT)
+        val stream: android.net.Uri? = if (Build.VERSION.SDK_INT >= 33) {
+            intent.getParcelableExtra(Intent.EXTRA_STREAM, android.net.Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION") intent.getParcelableExtra(Intent.EXTRA_STREAM)
+        }
+        if (text.isNullOrBlank() && stream == null) return
+        container.pendingShare.value =
+            com.androidharness.app.data.PendingShare(mime = mime, text = text, stream = stream)
     }
 }
