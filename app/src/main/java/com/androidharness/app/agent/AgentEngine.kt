@@ -225,10 +225,20 @@ class AgentEngine(
         suspend fun emit(event: AgentEvent) = send(event)
         // Rebuilt when Full access toggles, because the path rules the model
         // is told about change with it.
-        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false)
+        // Local models (llama.cpp on this phone) run the bare path: no system
+        // prompt, no tool schemas, no injected skills, memory, or AGENTS.md.
+        // Phone-CPU prefill is the bottleneck and the harness prompt alone
+        // costs minutes; on localhost the model just chats with the visible
+        // conversation. Cloud providers keep the full harness.
+        val isLocalModel = config.baseUrl.startsWith("http://127.0.0.1")
+        var systemPrompt = if (isLocalModel) "" else systemPrompt(workspace, mode, fullAccess = false)
         var promptSandboxOff = false
         val runRegistry = registry.withExtra(extraTools)
-        val tools = runRegistry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
+        val tools = if (isLocalModel) {
+            emptyList()
+        } else {
+            runRegistry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
+        }
         val working = trimHistory(
             ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
             maxContextTokens, options.maxOutputTokens,
@@ -268,7 +278,7 @@ class AgentEngine(
             // tools this round executes.
             val effectiveMode = permissionMode()
             val sandboxOff = effectiveMode == PermissionMode.FULL_ACCESS
-            if (sandboxOff != promptSandboxOff) {
+            if (!isLocalModel && sandboxOff != promptSandboxOff) {
                 promptSandboxOff = sandboxOff
                 systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff)
             }
