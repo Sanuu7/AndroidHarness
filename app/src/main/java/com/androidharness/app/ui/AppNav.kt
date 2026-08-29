@@ -548,6 +548,7 @@ fun AppNav(container: AppContainer) {
                             nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
                         }
                     },
+                    onOpenSettings = { nav.navigate("settings") },
                 )
             }
             composable(
@@ -575,6 +576,7 @@ fun AppNav(container: AppContainer) {
                             nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
                         }
                     },
+                    onOpenSettings = { nav.navigate("settings") },
                 )
             }
             composable(

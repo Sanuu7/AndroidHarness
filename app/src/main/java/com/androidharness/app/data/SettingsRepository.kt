@@ -59,6 +59,8 @@ data class AppSettings(
     val planningModel: String? = null,
     val executionProviderId: String? = null,
     val executionModel: String? = null,
+    /** The one-time "you can now use two models" chat dialog was dismissed. */
+    val planningModelsPromoSeen: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -91,6 +93,7 @@ class SettingsRepository(private val context: Context) {
         val PLANNING_MODEL = stringPreferencesKey("planning_model")
         val EXECUTION_PROVIDER = stringPreferencesKey("execution_provider_id")
         val EXECUTION_MODEL = stringPreferencesKey("execution_model")
+        val PLANNING_PROMO_SEEN = booleanPreferencesKey("planning_promo_seen")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -124,6 +127,7 @@ class SettingsRepository(private val context: Context) {
             planningModel = prefs[Keys.PLANNING_MODEL],
             executionProviderId = prefs[Keys.EXECUTION_PROVIDER],
             executionModel = prefs[Keys.EXECUTION_MODEL],
+            planningModelsPromoSeen = prefs[Keys.PLANNING_PROMO_SEEN] ?: false,
         )
     }
 
@@ -150,6 +154,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setPlanningModelsEnabled(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.PLANNING_MODELS_ENABLED] = enabled }
+    }
+
+    suspend fun setPlanningModelsPromoSeen(seen: Boolean) {
+        context.settingsStore.edit { it[Keys.PLANNING_PROMO_SEEN] = seen }
     }
 
     suspend fun setPlanningModel(providerId: String?, model: String?) {

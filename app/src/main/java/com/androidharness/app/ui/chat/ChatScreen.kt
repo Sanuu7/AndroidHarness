@@ -140,6 +140,7 @@ fun ChatScreen(
     onOpenTerminal: () -> Unit,
     onOpenFiles: () -> Unit = {},
     onOpenSubagent: (toolCallId: String) -> Unit,
+    onOpenSettings: () -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -173,6 +174,29 @@ fun ChatScreen(
             Toast.makeText(toastContext, it, Toast.LENGTH_SHORT).show()
             viewModel.clearModeToast()
         }
+    }
+
+    if (!state.planningModelsPromoSeen && !state.planningModelsEnabled) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissPlanningPromo() },
+            title = { Text("Two models, one for planning, one for doing") },
+            text = {
+                Text(
+                    "You can now configure two models separately: one for planning mode, " +
+                        "and one that takes over once you approve the plan and execution starts.",
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.dismissPlanningPromo()
+                    viewModel.container.pendingSettingsScroll.value = "planning"
+                    onOpenSettings()
+                }) { Text("Configure") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissPlanningPromo() }) { Text("Close") }
+            },
+        )
     }
 
     val clipboard = LocalClipboardManager.current

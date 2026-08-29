@@ -114,6 +114,8 @@ data class ChatUiState(
     val planningModel: String? = null,
     val executionProviderId: String? = null,
     val executionModel: String? = null,
+    /** False until the one-time planning-models dialog is dismissed. */
+    val planningModelsPromoSeen: Boolean = false,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Fetched model catalogs per provider id. */
@@ -195,6 +197,7 @@ class ChatViewModel(
                             planningModel = settings.planningModel,
                             executionProviderId = settings.executionProviderId,
                             executionModel = settings.executionModel,
+                            planningModelsPromoSeen = settings.planningModelsPromoSeen,
                         )
                     }
                 }
@@ -745,6 +748,11 @@ class ChatViewModel(
         if (_state.value.modeToast != null) {
             _state.update { it.copy(modeToast = null) }
         }
+    }
+
+    /** The one-time planning-models dialog was dismissed (either button). */
+    fun dismissPlanningPromo() {
+        viewModelScope.launch { c.settings.setPlanningModelsPromoSeen(true) }
     }
 
     fun discardPendingPlan() {

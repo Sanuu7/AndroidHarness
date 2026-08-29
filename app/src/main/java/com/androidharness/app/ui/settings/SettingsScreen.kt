@@ -68,6 +68,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.layout.positionInRoot
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -152,6 +157,27 @@ fun SettingsScreen(
     var showAddWorkspace by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<ProjectEntity?>(null) }
 
+    // The chat promo dialog's Configure button deep-links here and expects
+    // the screen to scroll to the planning-model card. The section's content
+    // offset is derived from window positions (self-correcting at any scroll)
+    // plus the current scroll value.
+    val scrollState = rememberScrollState()
+    var containerTop by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
+    var planningContentY by remember { androidx.compose.runtime.mutableFloatStateOf(Float.NaN) }
+    LaunchedEffect(Unit) {
+        container.pendingSettingsScroll.filterNotNull().collect { target ->
+            if (target == "planning") {
+                withTimeoutOrNull(2_000) {
+                    while (planningContentY.isNaN()) kotlinx.coroutines.delay(50)
+                }
+                if (!planningContentY.isNaN()) {
+                    scrollState.animateScrollTo(planningContentY.roundToInt().coerceAtLeast(0))
+                }
+            }
+            container.pendingSettingsScroll.value = null
+        }
+    }
+
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
     ) { uri ->
@@ -172,7 +198,8 @@ fun SettingsScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .verticalScroll(rememberScrollState())
+                .verticalScroll(scrollState)
+                .onGloballyPositioned { containerTop = it.positionInRoot().y }
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
@@ -181,6 +208,19 @@ fun SettingsScreen(
             WebSearchSection(container)
 
             McpSection(container)
+
+            Box(
+                Modifier.onGloballyPositioned { coords ->
+                    planningContentY = coords.positionInRoot().y - containerTop + scrollState.value
+                },
+            ) {
+                PlanningModelSection(
+                    container = container,
+                    settings = settings,
+                    scope = scope,
+                    onOpenProviders = onOpenProviders,
+                )
+            }
 
             CurrentSetupCard(settings = settings, providers = providers)
 
@@ -191,13 +231,6 @@ fun SettingsScreen(
                 onOpenStats = onOpenStats,
                 onRunSetup = onRunSetup,
                 onOpenSkills = onOpenSkills,
-            )
-
-            PlanningModelSection(
-                container = container,
-                settings = settings,
-                scope = scope,
-                onOpenProviders = onOpenProviders,
             )
 
             WorkspaceSection(

@@ -40,6 +40,9 @@ class AppContainer(val appContext: Context) {
     /** Share-target channel: one ACTION_SEND payload awaiting the open chat. */
     val pendingShare = kotlinx.coroutines.flow.MutableStateFlow<com.androidharness.app.data.PendingShare?>(null)
 
+    /** In-app nav channel: a screen asking Settings to scroll to a section. */
+    val pendingSettingsScroll = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
+
     val keys = KeyStoreManager(appContext)
     val settings = SettingsRepository(appContext)
     val providers = ProviderRepository(appContext, keys)
