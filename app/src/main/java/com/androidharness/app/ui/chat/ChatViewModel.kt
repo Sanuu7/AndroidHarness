@@ -116,6 +116,8 @@ data class ChatUiState(
     val executionModel: String? = null,
     /** False until the one-time planning-models dialog is dismissed. */
     val planningModelsPromoSeen: Boolean = false,
+    /** True while the one-time planning-models dialog should be up; shown on plan-mode switch. */
+    val showPlanningPromo: Boolean = false,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Fetched model catalogs per provider id. */
@@ -710,6 +712,13 @@ class ChatViewModel(
     fun setMode(mode: AgentMode) {
         if (_state.value.mode == mode) return
         _state.update { it.copy(mode = mode).withCurrentAction() }
+        // Switching into Plan mode is the moment the intro is useful: offer
+        // it once, before the mode toast would matter.
+        val s = _state.value
+        if (mode == AgentMode.PLAN && !s.planningModelsEnabled && !s.planningModelsPromoSeen) {
+            _state.update { it.copy(showPlanningPromo = true) }
+            return
+        }
         announceMode(mode)
     }
 
@@ -752,6 +761,7 @@ class ChatViewModel(
 
     /** The one-time planning-models dialog was dismissed (either button). */
     fun dismissPlanningPromo() {
+        _state.update { it.copy(showPlanningPromo = false) }
         viewModelScope.launch { c.settings.setPlanningModelsPromoSeen(true) }
     }
 

@@ -176,7 +176,7 @@ fun ChatScreen(
         }
     }
 
-    if (!state.planningModelsPromoSeen && !state.planningModelsEnabled) {
+    if (state.showPlanningPromo) {
         AlertDialog(
             onDismissRequest = { viewModel.dismissPlanningPromo() },
             title = { Text("Two models, one for planning, one for doing") },
