@@ -300,6 +300,7 @@ class AgentEngine(
             // retried with backoff, but ONLY while nothing has streamed yet,
             // re-emitting deltas the UI already showed would duplicate output.
             val failure = StreamRetrier.run(
+                stallTimeoutMs = StreamRetrier.stallTimeoutFor(config.baseUrl),
                 streamFor = {
                     provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
                 },
@@ -912,6 +913,7 @@ class AgentEngine(
             // main loop, thinking output does not block a retry here: the
             // subagent streams no deltas to the UI, so nothing can duplicate.
             val failure = StreamRetrier.run(
+                stallTimeoutMs = StreamRetrier.stallTimeoutFor(config.baseUrl),
                 streamFor = {
                     provider.streamChat(config, apiKey, system, history, subTools, requestOptions)
                 },
@@ -1068,6 +1070,7 @@ class AgentEngine(
 
         val summary = StringBuilder()
         val compactError = StreamRetrier.run(
+            stallTimeoutMs = StreamRetrier.stallTimeoutFor(config.baseUrl),
             streamFor = {
                 provider.streamChat(
                     config, apiKey,
