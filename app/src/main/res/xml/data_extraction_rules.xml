@@ -1,16 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 12+: cloud backups and device-to-device transfers. The keystore
-     can't move between devices, so backed-up ciphertext is dead weight anyway;
-     mcp-servers.json carries plaintext server tokens and must never leave. -->
+<!-- Android 12+: cloud backups and device-to-device transfers.
+     Never leave the device: api_keys.xml holds the keystore-wrapped
+     credentials, mcp-servers.json carries plaintext server tokens, and the
+     linux/ toolchain prefix materializes the GitHub PAT in plaintext
+     (.gh-token, gh hosts.yml, etc/gitconfig). linux/ and the linux-deploy
+     staging dir are re-deployable and self-healing, so excluding them whole
+     also keeps a huge toolchain out of the 25 MB cloud backup quota. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="api_keys.xml" />
         <exclude domain="file" path="mcp-servers.json" />
         <exclude domain="file" path="mcp-servers.json.hmac" />
+        <exclude domain="file" path="linux" />
+        <exclude domain="external" path="linux-deploy" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="api_keys.xml" />
         <exclude domain="file" path="mcp-servers.json" />
         <exclude domain="file" path="mcp-servers.json.hmac" />
+        <exclude domain="file" path="linux" />
+        <exclude domain="external" path="linux-deploy" />
     </device-transfer>
 </data-extraction-rules>

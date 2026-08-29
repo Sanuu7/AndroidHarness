@@ -1,9 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Android 9-11 cloud backup: same exclusions as data_extraction_rules.xml.
-     api_keys.xml holds the keystore-wrapped credentials, mcp-servers.json
-     carries plaintext server tokens; neither belongs in a backup. -->
+<!-- Android 9-11 cloud backup.
+     Never leave the device: api_keys.xml holds the keystore-wrapped
+     credentials, mcp-servers.json carries plaintext server tokens, and the
+     linux/ toolchain prefix materializes the GitHub PAT in plaintext
+     (.gh-token, gh hosts.yml, etc/gitconfig). linux/ and the linux-deploy
+     staging dir are re-deployable and self-healing, so excluding them whole
+     also keeps a huge toolchain out of the 25 MB cloud backup quota. -->
 <full-backup-content>
     <exclude domain="sharedpref" path="api_keys.xml" />
     <exclude domain="file" path="mcp-servers.json" />
     <exclude domain="file" path="mcp-servers.json.hmac" />
+    <exclude domain="file" path="linux" />
+    <exclude domain="external" path="linux-deploy" />
 </full-backup-content>
