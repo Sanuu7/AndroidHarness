@@ -84,6 +84,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -153,7 +155,14 @@ fun ChatScreen(
     var showModelPicker by remember { mutableStateOf(false) }
     var showProviderManager by remember { mutableStateOf(false) }
     var slashExpanded by remember { mutableStateOf(false) }
-    var composerText by remember { mutableStateOf("") }
+    // The composer carries its own selection so programmatic edits (mention
+    // picks, share prefills) move the cursor instead of leaving it where the
+    // user last typed. composerText mirrors value.text for the readers.
+    var composerValue by remember { mutableStateOf(TextFieldValue("")) }
+    val composerText = composerValue.text
+    fun setComposerText(new: String, cursor: Int = new.length) {
+        composerValue = TextFieldValue(new, TextRange(cursor.coerceIn(0, new.length)))
+    }
     var attachedSkill by remember { mutableStateOf<String?>(null) }
 
     // Share target: text/link shares prefill the composer, image shares ride
@@ -162,7 +171,7 @@ fun ChatScreen(
         viewModel.container.pendingShare.filterNotNull().collect { share ->
             viewModel.container.pendingShare.value = null
             if (!share.text.isNullOrBlank()) {
-                composerText = if (composerText.isBlank()) share.text else "$composerText\n\n${share.text}"
+                setComposerText(if (composerText.isBlank()) share.text else "$composerText\n\n${share.text}")
             }
             if (share.stream != null && share.mime.startsWith("image/")) {
                 viewModel.attachImage(share.stream)
@@ -268,7 +277,7 @@ fun ChatScreen(
             onPick = { skill ->
                 viewModel.dismissSkillsSheet()
                 attachedSkill = skill.name
-                composerText = ""
+                setComposerText("")
                 slashExpanded = false
             },
         )
@@ -1057,7 +1066,7 @@ fun ChatScreen(
                         query = mention.second,
                         loading = state.mentionFiles.isEmpty(),
                         onPick = { path ->
-                            composerText = composerText.substring(0, mention.first) + "@$path "
+                            setComposerText(composerText.substring(0, mention.first) + "@$path ")
                         },
                         modifier = Modifier
                             .align(Alignment.BottomCenter)
@@ -1072,16 +1081,16 @@ fun ChatScreen(
                             when (val action = SlashCommands.pickAction(cmd, composerText, kind)) {
                                 is SlashCommands.Pick.AttachSkill -> {
                                     attachedSkill = action.name
-                                    composerText = action.leftover
+                                    setComposerText(action.leftover)
                                     slashExpanded = false
                                 }
                                 is SlashCommands.Pick.Insert -> {
-                                    composerText = action.text
+                                    setComposerText(action.text)
                                     slashExpanded = true
                                 }
                                 is SlashCommands.Pick.Send -> {
                                     viewModel.send(action.text)
-                                    composerText = ""
+                                    setComposerText("")
                                     attachedSkill = null
                                     slashExpanded = false
                                 }
@@ -1157,18 +1166,18 @@ fun ChatScreen(
                 AgentStatusBar(action = state.currentAction, busy = state.busy)
                 MessageComposer(
                     busy = state.busy,
-                    text = composerText,
+                    value = composerValue,
                     attachedSkill = attachedSkill,
-                    onTextChange = { input ->
-                        composerText = input
-                        slashExpanded = attachedSkill == null && input.startsWith("/")
+                    onValueChange = { input ->
+                        composerValue = input
+                        slashExpanded = attachedSkill == null && input.text.startsWith("/")
                     },
                     onClearSkill = { attachedSkill = null },
                     onSend = {
                         val payload = SlashCommands.composeSend(attachedSkill, composerText)
                         if (payload.isNotBlank() || state.fileAttachments.isNotEmpty()) {
                             viewModel.send(payload)
-                            composerText = ""
+                            setComposerText("")
                             attachedSkill = null
                             slashExpanded = false
                         }

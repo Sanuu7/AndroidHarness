@@ -44,6 +44,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.text.TextRange
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.theme.defaultEffectsSpec
@@ -59,9 +61,9 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
 @Composable
 internal fun MessageComposer(
     busy: Boolean,
-    text: String,
+    value: TextFieldValue,
     attachedSkill: String?,
-    onTextChange: (String) -> Unit,
+    onValueChange: (TextFieldValue) -> Unit,
     onClearSkill: () -> Unit,
     onSend: () -> Unit,
     onStop: () -> Unit,
@@ -71,7 +73,7 @@ internal fun MessageComposer(
 ) {
     val scheme = MaterialTheme.colorScheme
     val fxSpec = defaultEffectsSpec<Float>()
-    val hasText = text.isNotBlank()
+    val hasText = value.text.isNotBlank()
     val canSend = hasText || !attachedSkill.isNullOrBlank() || hasAttachments
     val showQueueSend = busy && canSend
     val showStopOnly = busy && !canSend
@@ -170,14 +172,14 @@ internal fun MessageComposer(
                     Spacer(Modifier.width(6.dp))
                 }
                 BasicTextField(
-                    value = text,
-                    onValueChange = onTextChange,
+                    value = value,
+                    onValueChange = onValueChange,
                     modifier = Modifier
                         .weight(1f)
                         .padding(vertical = 10.dp),
                     decorationBox = { inner ->
                         Box(contentAlignment = Alignment.CenterStart) {
-                            if (text.isEmpty()) {
+                            if (value.text.isEmpty()) {
                                 Text(
                                     when {
                                         !attachedSkill.isNullOrBlank() -> "Add a note, or send…"
