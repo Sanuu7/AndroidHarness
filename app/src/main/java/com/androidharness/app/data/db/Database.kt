@@ -4,6 +4,8 @@ import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
 import androidx.room.Entity
+import androidx.room.Fts4
+import androidx.room.FtsOptions
 import androidx.room.Index
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
@@ -44,6 +46,17 @@ data class MessageEntity(
     val imagesJson: String = "[]",
     val turnId: String? = null,
     val createdAt: Long,
+)
+
+/**
+ * External-content FTS4 index over message text. Room installs content-sync
+ * triggers on [MessageEntity] so every insert/delete keeps this current; the
+ * v9 migration backfills it with existing history.
+ */
+@Fts4(contentEntity = MessageEntity::class, tokenizer = FtsOptions.TOKENIZER_UNICODE61)
+@Entity(tableName = "message_fts")
+data class MessageFtsEntity(
+    val text: String,
 )
 
 @Entity(tableName = "projects")
@@ -210,6 +223,19 @@ interface HarnessDao {
     )
     suspend fun deleteMessagesFrom(sessionId: String, messageId: String): Int
 
+    // chat search
+    @Query(
+        "SELECT m.* FROM message_fts f JOIN messages m ON m.rowid = f.docid " +
+            "WHERE f.text MATCH :match ORDER BY m.createdAt DESC LIMIT :limit"
+    )
+    suspend fun searchFts(match: String, limit: Int): List<MessageEntity>
+
+    @Query("SELECT * FROM messages WHERE text LIKE :pattern ESCAPE '\\' ORDER BY createdAt DESC LIMIT :limit")
+    suspend fun searchLike(pattern: String, limit: Int): List<MessageEntity>
+
+    @Query("SELECT * FROM sessions WHERE id IN (:ids)")
+    suspend fun sessionsByIds(ids: List<String>): List<SessionEntity>
+
     // projects
     @Query("SELECT * FROM projects ORDER BY lastUsedAt DESC")
     fun projectsFlow(): Flow<List<ProjectEntity>>
@@ -325,8 +351,9 @@ interface HarnessDao {
         UsageEventEntity::class,
         FileEditEntity::class,
         SessionFileChangeEntity::class,
+        MessageFtsEntity::class,
     ],
-    version = 8,
+    version = 9,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -402,6 +429,21 @@ abstract class AppDatabase : RoomDatabase() {
                     "CREATE INDEX IF NOT EXISTS index_session_file_changes_updatedAt " +
                         "ON session_file_changes(updatedAt)"
                 )
+            }
+        }
+
+        /**
+         * v9: FTS4 search index over message text. Column list and options
+         * must stay byte-identical to Room's generated CREATE for schema
+         * validation; the rebuild backfills the index with existing history.
+         */
+        val MIGRATION_8_9 = object : androidx.room.migration.Migration(8, 9) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL(
+                    "CREATE VIRTUAL TABLE IF NOT EXISTS `message_fts` USING FTS4(" +
+                        "`text` TEXT NOT NULL, tokenize=unicode61, content=`messages`)"
+                )
+                db.execSQL("INSERT INTO message_fts(message_fts) VALUES('rebuild')")
             }
         }
     }

@@ -5,6 +5,7 @@ import com.androidharness.app.core.ImageRef
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.data.db.AppDatabase
+import com.androidharness.app.data.db.ChatSearch
 import com.androidharness.app.data.db.MessageEntity
 import com.androidharness.app.data.db.SessionEntity
 import kotlinx.coroutines.flow.Flow
@@ -12,6 +13,15 @@ import kotlinx.coroutines.flow.map
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.Json
 import java.util.UUID
+
+/** One message search hit from the drawer, grouped under its session. */
+data class MessageHit(
+    val messageId: String,
+    val sessionId: String,
+    val sessionTitle: String,
+    val text: String,
+    val createdAt: Long,
+)
 
 class SessionRepository(
     private val db: AppDatabase,
@@ -116,6 +126,35 @@ class SessionRepository(
 
     suspend fun renameSession(id: String, title: String) {
         db.dao().updateSession(id, title, System.currentTimeMillis())
+    }
+
+    /**
+     * Drawer message search. Word mode hits the FTS4 index (every token must
+     * appear, prefix-matched); fuzzy mode falls back to a substring LIKE that
+     * also finds partial words, code fragments, and punctuation runs. Subagent
+     * inner assistant rows stay out: they are not rendered in the main chat.
+     */
+    suspend fun searchMessages(rawQuery: String, fuzzy: Boolean, limit: Int = 80): List<MessageHit> {
+        val q = rawQuery.trim()
+        if (q.isEmpty()) return emptyList()
+        val rows: List<MessageEntity> = if (fuzzy) {
+            db.dao().searchLike(ChatSearch.likePattern(q), limit)
+        } else {
+            val match = ChatSearch.ftsMatchQuery(q) ?: return emptyList()
+            db.dao().searchFts(match, limit)
+        }.filterNot { it.role == Role.ASSISTANT.name && it.toolCallId != null }
+        if (rows.isEmpty()) return emptyList()
+        val titles = db.dao().sessionsByIds(rows.map { it.sessionId }.distinct())
+            .associate { it.id to it.title }
+        return rows.map { row ->
+            MessageHit(
+                messageId = row.id,
+                sessionId = row.sessionId,
+                sessionTitle = titles[row.sessionId].orEmpty(),
+                text = row.text,
+                createdAt = row.createdAt,
+            )
+        }
     }
 
     suspend fun addUsage(id: String, input: Long, output: Long, cached: Long, cacheWrite: Long = 0) {

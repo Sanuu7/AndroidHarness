@@ -55,6 +55,7 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
@@ -74,6 +75,8 @@ import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import com.androidharness.app.ui.common.formatTokens
 import androidx.compose.ui.draw.clip
@@ -97,6 +100,8 @@ import androidx.navigation.navArgument
 import android.content.Context
 import com.androidharness.app.AppContainer
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.MessageHit
+import com.androidharness.app.data.db.ChatSearch
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.ui.chat.ChatScreen
 import com.androidharness.app.ui.chat.ChatViewModel
@@ -160,6 +165,21 @@ fun AppNav(container: AppContainer) {
     var searchQuery by remember { mutableStateOf("") }
     var searchOpen by remember { mutableStateOf(false) }
     val searchFocus = remember { FocusRequester() }
+    var fuzzySearch by remember { mutableStateOf(false) }
+    var messageHits by remember { mutableStateOf<List<MessageHit>>(emptyList()) }
+
+    // Message hits lag the title filter by a short debounce so typing stays
+    // fluid: word mode asks the FTS index, fuzzy mode falls back to LIKE.
+    androidx.compose.runtime.LaunchedEffect(searchQuery, fuzzySearch) {
+        val q = searchQuery.trim()
+        if (q.isEmpty()) {
+            messageHits = emptyList()
+            return@LaunchedEffect
+        }
+        delay(250)
+        messageHits = runCatching { container.sessions.searchMessages(q, fuzzySearch) }
+            .getOrDefault(emptyList())
+    }
 
     // Keyboard belongs to manual taps only. Two mechanisms fought this:
     // (1) the composer's focus survives the drawer opening, and (2) the
@@ -285,41 +305,47 @@ fun AppNav(container: AppContainer) {
                         enter = fadeIn(tween(150)) + expandVertically(tween(180)),
                         exit = fadeOut(tween(120)) + shrinkVertically(tween(150)),
                     ) {
-                        OutlinedTextField(
-                            value = searchQuery,
-                            onValueChange = { searchQuery = it },
-                            placeholder = { Text("Search chats") },
-                            singleLine = true,
-                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
-                            trailingIcon = {
-                                if (searchQuery.isNotEmpty()) {
-                                    IconButton(onClick = {
-                                        searchQuery = ""
-                                        runCatching { searchFocus.requestFocus() }
-                                    }) {
-                                        Icon(
-                                            Icons.Filled.Close,
-                                            contentDescription = "Clear search",
-                                            modifier = Modifier.size(17.dp),
-                                        )
+                        Column(Modifier.fillMaxWidth()) {
+                            OutlinedTextField(
+                                value = searchQuery,
+                                onValueChange = { searchQuery = it },
+                                placeholder = { Text("Search chats and messages") },
+                                singleLine = true,
+                                leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                                trailingIcon = {
+                                    if (searchQuery.isNotEmpty()) {
+                                        IconButton(onClick = {
+                                            searchQuery = ""
+                                            runCatching { searchFocus.requestFocus() }
+                                        }) {
+                                            Icon(
+                                                Icons.Filled.Close,
+                                                contentDescription = "Clear search",
+                                                modifier = Modifier.size(17.dp),
+                                            )
+                                        }
                                     }
-                                }
-                            },
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                            keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                                focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                                unfocusedBorderColor = Color.Transparent,
-                                focusedBorderColor = Color.Transparent,
-                            ),
-                            textStyle = MaterialTheme.typography.bodyMedium,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(horizontal = 16.dp)
-                                .focusRequester(searchFocus),
-                        )
+                                },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                                keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
+                                shape = RoundedCornerShape(12.dp),
+                                colors = OutlinedTextFieldDefaults.colors(
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    unfocusedBorderColor = Color.Transparent,
+                                    focusedBorderColor = Color.Transparent,
+                                ),
+                                textStyle = MaterialTheme.typography.bodyMedium,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                                    .focusRequester(searchFocus),
+                            )
+                            FuzzySearchRow(
+                                fuzzy = fuzzySearch,
+                                onToggle = { fuzzySearch = !fuzzySearch },
+                            )
+                        }
                     }
 
                     // ----- New chat -----
@@ -427,28 +453,18 @@ fun AppNav(container: AppContainer) {
                     LazyColumn(
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                     ) {
-                        val filtered = sessions.filter {
+                        val filtered = if (searchQuery.isBlank()) sessions else sessions.filter {
                             it.title.contains(searchQuery, ignoreCase = true)
                         }
-                        val grouped = filtered.groupBy { sessionGroup(it, settings) }
-                        val order = SessionGroup.entries
-                        order.forEach { group ->
-                            val items = grouped[group].orEmpty()
-                            if (items.isEmpty()) return@forEach
-                            val collapsed = group in collapsedGroups
-                            stickyHeader {
-                                DrawerGroupHeader(
-                                    label = group.label,
-                                    collapsible = group == SessionGroup.OLDER || group == SessionGroup.ARCHIVED,
-                                    collapsed = collapsed,
-                                    onClick = {
-                                        collapsedGroups = if (collapsed) collapsedGroups - group
-                                        else collapsedGroups + group
-                                    },
-                                )
-                            }
-                            if (!collapsed) {
-                                items(items, key = { it.id }) { session ->
+
+                        if (searchQuery.isNotBlank()) {
+                            // Search mode: title matches on top, message hits
+                            // from the FTS/fuzzy search underneath.
+                            if (filtered.isNotEmpty()) {
+                                stickyHeader {
+                                    DrawerGroupHeader(label = "Chats", collapsible = false, collapsed = false, onClick = {})
+                                }
+                                items(filtered, key = { "s-${it.id}" }) { session ->
                                     SessionRow(
                                         session = session,
                                         selected = session.id == currentSessionId,
@@ -459,16 +475,70 @@ fun AppNav(container: AppContainer) {
                                     )
                                 }
                             }
-                        }
+                            if (messageHits.isNotEmpty()) {
+                                stickyHeader {
+                                    DrawerGroupHeader(label = "Messages", collapsible = false, collapsed = false, onClick = {})
+                                }
+                                items(messageHits, key = { "m-${it.messageId}" }) { hit ->
+                                    MessageHitRow(
+                                        hit = hit,
+                                        query = searchQuery,
+                                        fuzzy = fuzzySearch,
+                                        onClick = { openChat(hit.sessionId) },
+                                    )
+                                }
+                            }
+                            if (filtered.isEmpty() && messageHits.isEmpty()) {
+                                item {
+                                    Text(
+                                        "Nothing matches \"$searchQuery\".",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(20.dp),
+                                    )
+                                }
+                            }
+                        } else {
+                            val grouped = filtered.groupBy { sessionGroup(it, settings) }
+                            val order = SessionGroup.entries
+                            order.forEach { group ->
+                                val items = grouped[group].orEmpty()
+                                if (items.isEmpty()) return@forEach
+                                val collapsed = group in collapsedGroups
+                                stickyHeader {
+                                    DrawerGroupHeader(
+                                        label = group.label,
+                                        collapsible = group == SessionGroup.OLDER || group == SessionGroup.ARCHIVED,
+                                        collapsed = collapsed,
+                                        onClick = {
+                                            collapsedGroups = if (collapsed) collapsedGroups - group
+                                            else collapsedGroups + group
+                                        },
+                                    )
+                                }
+                                if (!collapsed) {
+                                    items(items, key = { it.id }) { session ->
+                                        SessionRow(
+                                            session = session,
+                                            selected = session.id == currentSessionId,
+                                            pinned = session.id in settings.pinnedSessions,
+                                            running = session.id in runningSessionIds,
+                                            onClick = { openChat(session.id) },
+                                            onLongClick = { actionsSession = session },
+                                        )
+                                    }
+                                }
+                            }
 
-                        if (filtered.isEmpty()) {
-                            item {
-                                Text(
-                                    if (searchQuery.isBlank()) "No chats yet." else "No chats match \"$searchQuery\".",
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(20.dp),
-                                )
+                            if (filtered.isEmpty()) {
+                                item {
+                                    Text(
+                                        "No chats yet.",
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        modifier = Modifier.padding(20.dp),
+                                    )
+                                }
                             }
                         }
                     }
@@ -941,6 +1011,87 @@ private fun SessionRow(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun FuzzySearchRow(fuzzy: Boolean, onToggle: () -> Unit) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+            .combinedClickable(onClick = onToggle)
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+    ) {
+        Column(Modifier.weight(1f)) {
+            Text("Fuzzy search", style = MaterialTheme.typography.labelLarge)
+            Text(
+                if (fuzzy) "Find text anywhere in messages" else "Whole-word matches",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        Switch(checked = fuzzy, onCheckedChange = { onToggle() })
+    }
+}
+
+@Composable
+private fun MessageHitRow(
+    hit: MessageHit,
+    query: String,
+    fuzzy: Boolean,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val annotated = run {
+        val snippet = ChatSearch.snippet(hit.text, ChatSearch.highlightNeedles(query, fuzzy))
+        buildAnnotatedString {
+            append(snippet.text)
+            for (r in snippet.ranges) {
+                addStyle(
+                    SpanStyle(color = scheme.primary, fontWeight = FontWeight.SemiBold),
+                    r.first,
+                    r.last + 1,
+                )
+            }
+        }
+    }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .combinedClickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 9.dp),
+    ) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+                hit.sessionTitle.ifBlank { "Chat" },
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f),
+            )
+            Text(
+                formatRelativeTime(hit.createdAt),
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+            )
+        }
+        Text(
+            annotated,
+            style = MaterialTheme.typography.bodyMedium,
+            color = scheme.onSurface,
+            maxLines = 2,
+            overflow = TextOverflow.Ellipsis,
+            modifier = Modifier.padding(top = 2.dp),
+        )
     }
 }
 
