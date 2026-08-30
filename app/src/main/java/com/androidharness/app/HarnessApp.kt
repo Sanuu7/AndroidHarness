@@ -165,6 +165,14 @@ class AppContainer(val appContext: Context) {
                 projectSkillsDir = fs.shellRoot?.resolve(".harness/skills")
             }
         }
+        // Regenerate the linker shims the moment the environment is ready: an
+        // older format (broken argv[0] for coreutils applets) must not survive
+        // an app update, and the header check makes this a no-op when current.
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            linuxEnv.state.collect {
+                if (it is com.androidharness.app.data.env.EnvState.Ready) linuxEnv.ensureShims()
+            }
+        }
         // Eagerly deploy the shell-user toolchain copy the moment both the
         // Linux environment and Shizuku are ready, so every tier works from
         // the first command (foreground shell, background spawn, terminal).
