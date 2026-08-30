@@ -34,6 +34,17 @@ object ContextHygiene {
     )
 
     /**
+     * Marker prefix of the user-visible compaction notice line; the summary
+     * itself stays hidden, this tells the user the transcript was folded.
+     */
+    const val COMPACTION_NOTICE_PREFIX = "[Context compacted:"
+
+    fun compactionNotice(): ChatMessage = ChatMessage(
+        role = Role.SYSTEM,
+        text = "$COMPACTION_NOTICE_PREFIX older messages were summarized into the hidden note above]",
+    )
+
+    /**
      * Model-facing slice: last compaction summary plus everything after it,
      * with stale tool dumps truncated. The UI still sees the full transcript.
      */

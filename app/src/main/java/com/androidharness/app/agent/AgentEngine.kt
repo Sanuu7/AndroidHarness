@@ -289,6 +289,9 @@ class AgentEngine(
                 if (compacted != null) {
                     working.clear()
                     working.addAll(compacted)
+                    // The window just shrank: refresh the context panel now
+                    // instead of waiting for the next request's usage row.
+                    emit(AgentEvent.EstimatedContext(estimateContext(working, systemPrompt)))
                 }
             }
 
@@ -1164,6 +1167,18 @@ class AgentEngine(
     }
 
     /**
+     * Post-compaction estimate for the context panel (the /compact path runs
+     * outside the request loop, so nothing else recomputes it): same math as
+     * the run loop, over the model-facing history slice.
+     */
+    fun estimateFor(
+        history: List<ChatMessage>,
+        workspace: WorkspaceFs,
+        mode: AgentMode,
+        fullAccess: Boolean,
+    ): ContextEstimate = estimateContext(history, systemPrompt(workspace, mode, fullAccess))
+
+    /**
      * Models pass options in wildly different shapes: string arrays, arrays of
      * objects, or a JSON-encoded string. Accept them all.
      */
@@ -1283,6 +1298,7 @@ The user's workspace is: ${workspace.displayPath}
 Rules:
 - All tool paths are relative to the workspace root. Paths outside the workspace are blocked.
 - Use list_dir/search_files/grep/read_file to explore before making changes.
+- A message may reference files as @path (for example @src/Main.kt): the user is pointing at those exact files, so read them before acting on the request.
 - Prefer edit_file/multi_edit for targeted changes to existing files; use write_file to create or fully rewrite files; use apply_patch for multi-file diffs.
 - Use todo_write to track multi-step work and keep statuses current.
 - Use ask_user whenever a decision is genuinely the user's to make instead of guessing.

@@ -45,6 +45,7 @@ import com.androidharness.app.ui.common.DotLoading
 internal fun UserBubble(
     text: String,
     images: List<ImageRef> = emptyList(),
+    fileChips: List<com.androidharness.app.ui.chat.FileAttachments.Block> = emptyList(),
     onLongPress: (() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -66,6 +67,21 @@ internal fun UserBubble(
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.onSurfaceVariant,
                     )
+                }
+                fileChips.forEach { chip ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            "📄 ${chip.name}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.width(6.dp))
+                        Text(
+                            chip.sizeLabel,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+                        )
+                    }
                 }
                 if (text.isNotBlank()) {
                     Text(text, style = MaterialTheme.typography.bodyLarge)

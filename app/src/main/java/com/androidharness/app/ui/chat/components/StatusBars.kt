@@ -11,6 +11,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +32,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Checklist
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
@@ -48,6 +50,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.TodoItem
@@ -382,6 +385,155 @@ internal fun SlashSuggestions(
                             }
                         }
                     }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * File suggestions for a trailing @path token in the composer, styled like
+ * [SlashSuggestions]. Empty query lists the workspace from the top; picking
+ * replaces the token with @<path>.
+ */
+@Composable
+internal fun MentionSuggestions(
+    files: List<String>,
+    query: String,
+    loading: Boolean,
+    onPick: (path: String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val filtered = remember(files, query) {
+        if (query.isBlank()) files
+        else files.filter { it.contains(query, ignoreCase = true) }
+    }.take(8)
+    if (filtered.isEmpty()) return
+    Surface(
+        color = scheme.surfaceContainerLow,
+        shape = MaterialTheme.shapes.large,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(horizontal = 12.dp, vertical = 4.dp),
+    ) {
+        Column(
+            Modifier
+                .padding(vertical = 4.dp)
+                .heightIn(max = 280.dp)
+                .verticalScroll(rememberScrollState()),
+        ) {
+            filtered.forEach { path ->
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onPick(path) }
+                        .padding(horizontal = 14.dp, vertical = 9.dp),
+                ) {
+                    Text(
+                        "@" + path.substringBeforeLast('/').ifEmpty { "." },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        path.substringAfterLast('/'),
+                        style = MaterialTheme.typography.bodyMedium,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** Transient "compacting" banner shown in the transcript while compaction runs. */
+@Composable
+internal fun CompactionBanner(note: String, modifier: Modifier = Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        color = scheme.surfaceContainerLow,
+        contentColor = scheme.onSurfaceVariant,
+        shape = MaterialTheme.shapes.medium,
+        modifier = modifier.fillMaxWidth(),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp),
+        ) {
+            DotLoading()
+            Spacer(Modifier.width(10.dp))
+            Column {
+                Text("Compacting conversation", style = MaterialTheme.typography.bodyMedium)
+                if (note.isNotBlank() && note != "Compacting conversation…") {
+                    Text(
+                        note,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant.copy(alpha = 0.8f),
+                    )
+                }
+            }
+        }
+    }
+}
+
+/** The persistent one-liner the transcript keeps after a compaction finished. */
+@Composable
+internal fun CompactionNoticeLine(modifier: Modifier = Modifier) {
+    Text(
+        "Context compacted, older messages summarized",
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = modifier
+            .fillMaxWidth()
+            .padding(vertical = 6.dp),
+        textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+    )
+}
+
+/** Pending file attachments in the composer: name, size, tap to remove. */
+@Composable
+internal fun FileAttachmentChips(
+    files: List<com.androidharness.app.ui.chat.FileAttachment>,
+    onRemove: (Int) -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+        files.forEachIndexed { idx, file ->
+            Surface(
+                shape = MaterialTheme.shapes.small,
+                color = scheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+                onClick = { onRemove(idx) },
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                ) {
+                    Icon(
+                        Icons.Outlined.Description,
+                        contentDescription = null,
+                        modifier = Modifier.size(13.dp),
+                        tint = scheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Text(file.name.take(20), style = MaterialTheme.typography.labelSmall)
+                    Spacer(Modifier.width(4.dp))
+                    Text(
+                        file.sizeLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(Icons.Filled.Close, contentDescription = "Remove", modifier = Modifier.size(13.dp))
                 }
             }
         }

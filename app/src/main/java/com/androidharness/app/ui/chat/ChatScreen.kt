@@ -107,6 +107,10 @@ import com.androidharness.app.ui.chat.components.QueuedMessageChip
 import com.androidharness.app.ui.chat.components.RewindButton
 import com.androidharness.app.skills.slashInvokedSkillName
 import com.androidharness.app.skills.slashSkillInstruction
+import com.androidharness.app.ui.chat.components.CompactionBanner
+import com.androidharness.app.ui.chat.components.CompactionNoticeLine
+import com.androidharness.app.ui.chat.components.FileAttachmentChips
+import com.androidharness.app.ui.chat.components.MentionSuggestions
 import com.androidharness.app.ui.chat.components.SkillsPickerSheet
 import com.androidharness.app.ui.chat.components.SkillUsedBadge
 import com.androidharness.app.ui.chat.components.SlashSuggestions
@@ -698,6 +702,10 @@ fun ChatScreen(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> uri?.let { viewModel.attachImage(it) } }
 
+    val fileLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri: Uri? -> uri?.let { viewModel.attachFile(it) } }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -800,14 +808,18 @@ fun ChatScreen(
                             Role.USER -> item(key = "message-$messageKey-user") {
                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                     Column(horizontalAlignment = Alignment.End) {
+                                        val (visibleText, fileChips) = FileAttachments.splitForDisplay(
+                                            slashSkillInstruction(message.text)
+                                                ?.ifBlank { "/${slashInvokedSkillName(message.text)}" }
+                                                ?: message.text,
+                                        )
                                         slashInvokedSkillName(message.text)?.let { skillName ->
                                             SkillUsedBadge(skillName)
                                         }
                                         UserBubble(
-                                            slashSkillInstruction(message.text)
-                                                ?.ifBlank { "/${slashInvokedSkillName(message.text)}" }
-                                                ?: message.text,
+                                            visibleText,
                                             message.images,
+                                            fileChips,
                                             onLongPress = { actionsMessage = message },
                                         )
                                         if (message.turnId in state.turnsWithCheckpoints) {
@@ -948,7 +960,15 @@ fun ChatScreen(
                                 }
                             }
                             Role.TOOL -> Unit
-                            Role.SYSTEM -> Unit
+                            Role.SYSTEM -> {
+                                if (message.text.startsWith(com.androidharness.app.agent.ContextHygiene.COMPACTION_NOTICE_PREFIX)) {
+                                    item(key = "message-$messageKey-system") {
+                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                            CompactionNoticeLine()
+                                        }
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -1027,33 +1047,51 @@ fun ChatScreen(
 
                 // Floating jump-to-latest button while detached from the
                 // bottom; pulses when new content lands while away.
-                SlashSuggestions(
-                    state = state,
-                    query = composerText,
-                    expanded = slashExpanded && attachedSkill == null,
-                    onPick = { cmd, kind ->
-                        when (val action = SlashCommands.pickAction(cmd, composerText, kind)) {
-                            is SlashCommands.Pick.AttachSkill -> {
-                                attachedSkill = action.name
-                                composerText = action.leftover
-                                slashExpanded = false
+                // @-mention file picker: a trailing @path token opens the
+                // workspace file list; picking rewrites the token in place.
+                val mention = remember(composerText) { MentionToken.parse(composerText) }
+                if (mention != null && attachedSkill == null) {
+                    LaunchedEffect(mention != null) { viewModel.loadMentionFiles() }
+                    MentionSuggestions(
+                        files = state.mentionFiles,
+                        query = mention.second,
+                        loading = state.mentionFiles.isEmpty(),
+                        onPick = { path ->
+                            composerText = composerText.substring(0, mention.first) + "@$path "
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 8.dp),
+                    )
+                } else {
+                    SlashSuggestions(
+                        state = state,
+                        query = composerText,
+                        expanded = slashExpanded && attachedSkill == null,
+                        onPick = { cmd, kind ->
+                            when (val action = SlashCommands.pickAction(cmd, composerText, kind)) {
+                                is SlashCommands.Pick.AttachSkill -> {
+                                    attachedSkill = action.name
+                                    composerText = action.leftover
+                                    slashExpanded = false
+                                }
+                                is SlashCommands.Pick.Insert -> {
+                                    composerText = action.text
+                                    slashExpanded = true
+                                }
+                                is SlashCommands.Pick.Send -> {
+                                    viewModel.send(action.text)
+                                    composerText = ""
+                                    attachedSkill = null
+                                    slashExpanded = false
+                                }
                             }
-                            is SlashCommands.Pick.Insert -> {
-                                composerText = action.text
-                                slashExpanded = true
-                            }
-                            is SlashCommands.Pick.Send -> {
-                                viewModel.send(action.text)
-                                composerText = ""
-                                attachedSkill = null
-                                slashExpanded = false
-                            }
-                        }
-                    },
-                    modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .padding(bottom = 8.dp),
-                )
+                        },
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .padding(bottom = 8.dp),
+                    )
+                }
                 ScrollToBottomFab(
                     visible = !pinnedToBottom,
                     unread = unreadWhileAway,
@@ -1105,6 +1143,17 @@ fun ChatScreen(
                     )
                 }
 
+                if (state.fileAttachments.isNotEmpty()) {
+                    FileAttachmentChips(
+                        files = state.fileAttachments,
+                        onRemove = viewModel::removeFileAttachment,
+                    )
+                }
+
+                state.compactionNote?.let { note ->
+                    CompactionBanner(note, Modifier.padding(bottom = 6.dp))
+                }
+
                 AgentStatusBar(action = state.currentAction, busy = state.busy)
                 MessageComposer(
                     busy = state.busy,
@@ -1117,7 +1166,7 @@ fun ChatScreen(
                     onClearSkill = { attachedSkill = null },
                     onSend = {
                         val payload = SlashCommands.composeSend(attachedSkill, composerText)
-                        if (payload.isNotBlank()) {
+                        if (payload.isNotBlank() || state.fileAttachments.isNotEmpty()) {
                             viewModel.send(payload)
                             composerText = ""
                             attachedSkill = null
@@ -1125,7 +1174,9 @@ fun ChatScreen(
                         }
                     },
                     onStop = viewModel::stop,
-                    onAttach = { galleryLauncher.launch("image/*") },
+                    onAttachImage = { galleryLauncher.launch("image/*") },
+                    onAttachFile = { fileLauncher.launch("*/*") },
+                    hasAttachments = state.fileAttachments.isNotEmpty(),
                 )
             }
         }

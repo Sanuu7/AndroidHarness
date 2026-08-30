@@ -26,6 +26,10 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.AttachFile
+import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.Image
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -33,6 +37,9 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
@@ -58,12 +65,14 @@ internal fun MessageComposer(
     onClearSkill: () -> Unit,
     onSend: () -> Unit,
     onStop: () -> Unit,
-    onAttach: () -> Unit,
+    onAttachImage: () -> Unit,
+    onAttachFile: () -> Unit,
+    hasAttachments: Boolean = false,
 ) {
     val scheme = MaterialTheme.colorScheme
     val fxSpec = defaultEffectsSpec<Float>()
     val hasText = text.isNotBlank()
-    val canSend = hasText || !attachedSkill.isNullOrBlank()
+    val canSend = hasText || !attachedSkill.isNullOrBlank() || hasAttachments
     val showQueueSend = busy && canSend
     val showStopOnly = busy && !canSend
     val actionColor by animateColorAsState(
@@ -99,13 +108,39 @@ internal fun MessageComposer(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.padding(start = 2.dp, end = 4.dp, top = 3.dp, bottom = 3.dp),
             ) {
-                IconButton(onClick = onAttach, modifier = Modifier.size(40.dp)) {
-                    Icon(
-                        Icons.Outlined.AttachFile,
-                        contentDescription = "Attach image",
-                        tint = scheme.onSurfaceVariant,
-                        modifier = Modifier.size(19.dp),
-                    )
+                // Attach menu: images keep the vision pipeline, every other
+                // file type goes through the generic attachment flow.
+                var attachMenu by remember { mutableStateOf(false) }
+                Box {
+                    IconButton(onClick = { attachMenu = true }, modifier = Modifier.size(40.dp)) {
+                        Icon(
+                            Icons.Outlined.AttachFile,
+                            contentDescription = "Attach",
+                            tint = scheme.onSurfaceVariant,
+                            modifier = Modifier.size(19.dp),
+                        )
+                    }
+                    DropdownMenu(
+                        expanded = attachMenu,
+                        onDismissRequest = { attachMenu = false },
+                    ) {
+                        DropdownMenuItem(
+                            text = { Text("Photo or image") },
+                            leadingIcon = { Icon(Icons.Outlined.Image, contentDescription = null) },
+                            onClick = {
+                                attachMenu = false
+                                onAttachImage()
+                            },
+                        )
+                        DropdownMenuItem(
+                            text = { Text("Any file") },
+                            leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null) },
+                            onClick = {
+                                attachMenu = false
+                                onAttachFile()
+                            },
+                        )
+                    }
                 }
                 if (!attachedSkill.isNullOrBlank()) {
                     Surface(

@@ -125,6 +125,8 @@ class RunManager(
         val queuedMessage: String? = null,
         val pendingPlan: String? = null,
         val estimate: ContextEstimate? = null,
+        /** While a compaction is in flight ("Context near 90K, summarizing…"). */
+        val compactionNote: String? = null,
     )
 
     /** Pending streamed deltas, published to the UI at frame cadence by the flusher. */
@@ -511,11 +513,17 @@ class RunManager(
             }
 
             is AgentEvent.EstimatedContext -> live.update { it.copy(estimate = event.estimate) }
-            is AgentEvent.Compacting -> RuntimeNotifier.update(event.reason)
+            is AgentEvent.Compacting -> {
+                RuntimeNotifier.update(event.reason)
+                live.update { it.copy(compactionNote = event.reason) }
+            }
 
             is AgentEvent.Compacted -> {
+                live.update { it.copy(compactionNote = null) }
                 sessions.setCompaction(sessionId, event.summary, System.currentTimeMillis())
                 sessions.addMessage(sessionId, ContextHygiene.summaryMessage(event.summary))
+                // A visible transcript line, so the fold is not silent.
+                sessions.addMessage(sessionId, ContextHygiene.compactionNotice())
             }
 
             is AgentEvent.Error -> live.update { it.copy(error = event.message) }

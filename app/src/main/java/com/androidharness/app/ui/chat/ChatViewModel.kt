@@ -82,12 +82,17 @@ data class ChatUiState(
     val pendingPlan: String? = null,
     val queuedMessage: String? = null,
     val attachments: List<String> = emptyList(), // display names of picked images
+    val fileAttachments: List<FileAttachment> = emptyList(),
     val maxContextTokens: Int = 1_000_000,
     val maxOutputTokens: Int = 32_768,
     val maxIterations: Int = 0,
     val providers: List<ProviderConfig> = emptyList(),
     val activeProviderId: String? = null,
     val estimate: ContextEstimate? = null,
+    /** While a compaction runs, its status line for the transcript ("Compacting conversation…"). */
+    val compactionNote: String? = null,
+    /** Workspace files for the @-mention picker (lazily loaded, per workspace). */
+    val mentionFiles: List<String> = emptyList(),
     val usage: UsageStats = UsageStats(),
     val todos: List<TodoItem> = emptyList(),
     val turnsWithCheckpoints: Set<String> = emptySet(),
@@ -139,9 +144,14 @@ data class ChatUiState(
     val effectiveModel: String?
         get() = activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
 
-    /** Best available measure of tokens currently inside the context window. */
+    /**
+     * Best available measure of tokens currently inside the context window.
+     * A live/last-round estimate wins: it reflects compaction the moment it
+     * happens, while usage.lastInput is the previous request's measured size
+     * and stays stale until the next one.
+     */
     val contextUsed: Int
-        get() = maxOf(usage.lastInput.toInt(), estimate?.total ?: 0)
+        get() = estimate?.total ?: usage.lastInput.toInt().coerceAtLeast(0)
 }
 
 /**
@@ -164,6 +174,9 @@ class ChatViewModel(
     private var sessionId: String? = initialSessionId
     private val sessionIdFlow = MutableStateFlow(initialSessionId)
     private var pendingAttachments = mutableListOf<ImageRef>()
+    private val pendingFileAttachments = mutableListOf<FileAttachment>()
+    /** Workspace key the @-mention file list was built for (empty until loaded). */
+    private var mentionCacheKey: String? = null
     private var steering = false
     /** Text of a run paused on the workspace-MCP approval dialog. */
     private var pendingRunText: String? = null
@@ -432,6 +445,7 @@ class ChatViewModel(
                 queuedMessage = live.queuedMessage,
                 pendingPlan = live.pendingPlan,
                 estimate = live.estimate,
+                compactionNote = live.compactionNote,
                 error = live.error ?: st.error,
             ).withCurrentAction()
         }
@@ -490,7 +504,8 @@ class ChatViewModel(
 
     fun send(rawText: String) {
         val trimmed = rawText.trim()
-        if (trimmed.isEmpty()) return
+        // File-only sends are legitimate: the attachments carry the message.
+        if (trimmed.isEmpty() && _state.value.fileAttachments.isEmpty()) return
 
         val resolved = if (trimmed.startsWith("/")) {
             SlashCommands.resolve(
@@ -631,6 +646,140 @@ class ChatViewModel(
     }
 
     // ------------------------------------------------------------------
+    // File attachments (non-image): text-like files ride inline in the
+    // message, everything else is copied into the workspace so the agent's
+    // shell tools can inspect it.
+    // ------------------------------------------------------------------
+
+    fun attachFile(uri: Uri) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                val resolver = c.appContext.contentResolver
+                val name = queryDisplayName(resolver, uri) ?: "file"
+                val mime = resolver.getType(uri) ?: "application/octet-stream"
+                if (mime.startsWith("image/")) {
+                    attachImage(uri)
+                    return@launch
+                }
+                val size = querySize(resolver, uri)
+                if (FileAttachments.isTextLike(name, mime)) {
+                    val text = readTextLimited(resolver, uri)
+                    if (text != null) {
+                        addFileAttachment(
+                            FileAttachment(
+                                name, mime, FileAttachments.humanBytes(size ?: text.length.toLong()),
+                                text, null,
+                            ),
+                        )
+                        return@launch
+                    }
+                }
+                copyAttachmentToWorkspace(resolver, uri, name, mime, size)
+            }.onFailure {
+                _state.update { st -> st.copy(error = "Could not attach that file: ${it.message}") }
+            }
+        }
+    }
+
+    fun removeFileAttachment(index: Int) {
+        val removed = _state.value.fileAttachments.getOrNull(index) ?: return
+        if (index < pendingFileAttachments.size) pendingFileAttachments.removeAt(index)
+        removed.workspacePath?.let { path ->
+            viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+                runCatching { c.workspace.currentOnce().resolve(path).delete() }
+            }
+        }
+        _state.update { it.copy(fileAttachments = it.fileAttachments.toMutableList().apply { removeAt(index) }) }
+    }
+
+    /** Workspace file list for the @-mention picker, cached per workspace. */
+    fun loadMentionFiles() {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            val fs = runCatching { c.workspace.currentOnce() }.getOrNull() ?: return@launch
+            if (fs.displayPath == mentionCacheKey) return@launch
+            val files = runCatching {
+                fs.walk("")
+                    .filter { it.isFile }
+                    .map { it.relPath }
+                    .take(600)
+                    .toList()
+                    .sorted()
+            }.getOrDefault(emptyList())
+            mentionCacheKey = fs.displayPath
+            _state.update { it.copy(mentionFiles = files) }
+        }
+    }
+
+    private fun addFileAttachment(file: FileAttachment) {
+        pendingFileAttachments += file
+        _state.update { it.copy(fileAttachments = it.fileAttachments + file) }
+    }
+
+    private suspend fun copyAttachmentToWorkspace(
+        resolver: android.content.ContentResolver,
+        uri: Uri,
+        name: String,
+        mime: String,
+        size: Long?,
+    ) {
+        val cap = FileAttachments.COPY_BYTE_LIMIT
+        if (size != null && size > cap) {
+            throw IllegalStateException("file is larger than ${FileAttachments.humanBytes(cap)}")
+        }
+        val fs = c.workspace.currentOnce()
+        val dir = fs.resolve(".harness/attachments")
+        dir.mkdirs()
+        val safe = name.replace(Regex("[^A-Za-z0-9._\\- ()]"), "_").take(80).ifBlank { "file" }
+        val stamp = java.text.SimpleDateFormat("MMdd-HHmmss", java.util.Locale.US).format(java.util.Date())
+        val unique = "$stamp-$safe"
+        val node = dir.createFile(unique)
+        val bytes = resolver.openInputStream(uri)!!.use { it.readBytes() }
+        if (bytes.size > cap) {
+            runCatching { node.delete() }
+            throw IllegalStateException("file is larger than ${FileAttachments.humanBytes(cap)}")
+        }
+        node.writeBytes(bytes)
+        addFileAttachment(
+            FileAttachment(
+                name, mime, FileAttachments.humanBytes(size ?: bytes.size.toLong()),
+                null, ".harness/attachments/$unique",
+            ),
+        )
+    }
+
+    /** Decoded text up to the inline limit, or null (too big or binary content). */
+    private fun readTextLimited(resolver: android.content.ContentResolver, uri: Uri): String? = runCatching {
+        resolver.openInputStream(uri)!!.use { input ->
+            val max = FileAttachments.INLINE_CHAR_LIMIT
+            val buffer = java.io.ByteArrayOutputStream()
+            val chunk = ByteArray(16 * 1024)
+            while (true) {
+                val n = input.read(chunk)
+                if (n < 0) break
+                if (buffer.size() + n > max) return null
+                buffer.write(chunk, 0, n)
+            }
+            val text = buffer.toString("UTF-8")
+            // Binary misdetected as text would carry NULs; let it take the copy path.
+            if (text.contains('\u0000')) null else text
+        }
+    }.getOrNull()
+
+    private fun queryDisplayName(resolver: android.content.ContentResolver, uri: Uri): String? = runCatching {
+        resolver.query(uri, arrayOf(android.provider.OpenableColumns.DISPLAY_NAME), null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(android.provider.OpenableColumns.DISPLAY_NAME)
+            if (idx >= 0 && cursor.moveToFirst()) cursor.getString(idx) else null
+        }
+    }.getOrNull()
+
+    private fun querySize(resolver: android.content.ContentResolver, uri: Uri): Long? = runCatching {
+        resolver.query(uri, arrayOf(android.provider.OpenableColumns.SIZE), null, null, null)?.use { cursor ->
+            val idx = cursor.getColumnIndex(android.provider.OpenableColumns.SIZE)
+            if (idx >= 0 && cursor.moveToFirst() && !cursor.isNull(idx)) cursor.getLong(idx) else null
+        }
+    }.getOrNull()
+
+    // ------------------------------------------------------------------
     // Run lifecycle (delegated to the app-scoped RunManager)
     // ------------------------------------------------------------------
 
@@ -662,7 +811,14 @@ class ChatViewModel(
 
         val imageRefs = pendingAttachments.toList()
         pendingAttachments.clear()
-        _state.update { it.copy(attachments = emptyList(), error = null) }
+        val fileItems = pendingFileAttachments.toList()
+        pendingFileAttachments.clear()
+        _state.update { it.copy(attachments = emptyList(), fileAttachments = emptyList(), error = null) }
+        // File attachments ride after the user's text as model-readable blocks.
+        val payload = FileAttachments.buildMessageSuffix(fileItems)
+            .takeIf { it.isNotEmpty() }
+            ?.let { suffix -> if (text.isBlank()) suffix else "$text\n\n$suffix" }
+            ?: text
 
         viewModelScope.launch {
             // Security gate (battery D1): a workspace .harness/mcp.json never
@@ -673,7 +829,7 @@ class ChatViewModel(
                     c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
                 }.getOrDefault(emptyList())
                 if (unapproved.isNotEmpty()) {
-                    pendingRunText = text
+                    pendingRunText = payload
                     _state.update { it.copy(pendingWorkspaceMcp = unapproved.map { s -> s.name }) }
                     return@launch
                 }
@@ -684,7 +840,7 @@ class ChatViewModel(
                 ?.let { provider.copy(model = it) } ?: provider
             val sid = c.runManager.startRun(
                 sessionId = sessionId,
-                text = text,
+                text = payload,
                 imageRefs = imageRefs,
                 config = effectiveConfig,
                 apiKey = apiKey,
@@ -698,7 +854,7 @@ class ChatViewModel(
             if (sessionId == null) {
                 sessionId = sid
                 sessionIdFlow.value = sid
-                _state.update { it.copy(sessionId = sid, sessionTitle = text.take(48)) }
+                _state.update { it.copy(sessionId = sid, sessionTitle = payload.take(48)) }
             }
         }
     }
@@ -933,7 +1089,7 @@ class ChatViewModel(
             _state.update { it.copy(error = "Not enough history to compact.") }
             return
         }
-        _state.update { it.copy(busy = true) }
+        _state.update { it.copy(busy = true, compactionNote = "Compacting conversation…") }
         c.runManager.acquireKeepalive()
         try {
             val summary = StringBuilder()
@@ -961,13 +1117,25 @@ class ChatViewModel(
                     sid,
                     com.androidharness.app.agent.ContextHygiene.summaryMessage(summary.toString()),
                 )
+                c.sessions.addMessage(sid, com.androidharness.app.agent.ContextHygiene.compactionNotice())
+                // Refresh the context panel now: usage.lastInput still carries
+                // the pre-compact request size until the next real request.
+                val fresh = c.engine.estimateFor(
+                    com.androidharness.app.agent.ContextHygiene.forModel(
+                        with(c.sessions) { historyFor(sid).second.withoutSubagentTurns() },
+                    ),
+                    c.workspace.currentOnce(),
+                    _state.value.mode,
+                    _state.value.permissionMode == PermissionMode.FULL_ACCESS,
+                )
+                _state.update { it.copy(estimate = fresh) }
             }
         } catch (ce: kotlinx.coroutines.CancellationException) {
             throw ce
         } catch (e: Exception) {
             _state.update { it.copy(error = e.message ?: "Compaction failed") }
         } finally {
-            _state.update { it.copy(busy = false) }
+            _state.update { it.copy(busy = false, compactionNote = null) }
             c.runManager.releaseKeepalive()
         }
     }
