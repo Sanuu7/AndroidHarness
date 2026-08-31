@@ -1,5 +1,33 @@
 # Changelog
 
+## 0.6-alpha (2026-08-31)
+
+### Added
+
+- **Chat backup and restore**: a Chat backup card in Settings exports every chat with its full message history to a JSON file through the system picker, and imports a file back into the chat list. Import skips chats that already exist by id, so re-importing the same file is a no-op. The file holds chats and messages only: no API keys, providers, or settings ever go in, tool-call payloads ride along as the exact strings from the database so old files keep importing, and imported messages are immediately searchable.
+- **Full-text chat search**: the drawer search now searches inside messages, not just titles. Hits come from a Room FTS4 index and render with highlighted snippets under their chat, and a fuzzy switch toggles between word-prefix matching and a substring mode that finds code fragments and partial words. Tapping a hit opens the chat.
+- **Separate planning and execution models**: a Settings switch that gives Plan mode its own provider and model slot while execute mode keeps another. Each slot is picked with the same model sheet as the header, falling back to the active provider, and mode changes toast which model will run. A one-time dialog introduces the feature the first time you switch into Plan mode, and its Configure button jumps to Settings scrolled to the card.
+- **Share target**: the app appears in Android's share sheet for text and images. Shared text or links prefill the composer, and shared images run through the normal attach pipeline, so sending a stack trace or a browser page to the agent is one tap away.
+- **@-file mention picker**: typing @ in the composer suggests files from the current workspace (lazily loaded, ignore rules respected), and picking one inserts the path. The system prompt tells the model that @path means read it.
+- **Attachments for every file type**: the attach button now offers Any file next to Photo. Text-like files under 32 KB ride inline as fenced blocks on the message, larger or binary files are copied into the workspace under .harness/attachments and referenced by path, and message bubbles show them as name and size chips.
+- **Compaction you can see**: automatic and /compact compaction now show a "Compacting conversation" banner while running and leave a visible notice message where the history was folded, and the context panel updates live right after folding instead of showing a stale number.
+- **MCP servers reconnect on their own**: servers that connected successfully once are recorded in a status sidecar and reconnect themselves after the app restarts, remote ones immediately and stdio ones once the Linux toolchain is ready. Failures never disqualify future retries, and removing a server clears its marker.
+- **Workspace MCP configs need approval**: a .harness/mcp.json inside a cloned workspace no longer connects its servers silently. The chat shows an approval dialog before the run starts, with Approve remembered per workspace path plus a content hash (so an edited file re-prompts) or Run without them; global servers connect exactly as before.
+- **AMOLED theme**: a fourth entry in the theme selector that blacks out every surface role while keeping the accent colors from the dynamic or static palette.
+- **Allow screenshots toggle**: a new Privacy section in Settings. Screenshots stay blocked app wide by default; with the toggle on they work everywhere except while a key or token is on screen.
+
+### Fixed
+
+- **Shell tier coreutils work again**: ls -la rejected its own flags and echo/printf emitted nothing. Two causes stacked: the linker shims resolved symlinks to the canonical coreutils target, so the multi-call binary lost the invoked name and its argv[0] dispatch broke, and bash 5.3 stopped sourcing BASH_ENV for -c. Shims now route through the bin entry itself (which also repairs git helpers, xz, setarch and busybox applets) and every spawned command sources the shim explicitly; existing installs regenerate the shims on first shell use or app start.
+- **Allowing screenshots really allows them**: with the toggle on, Settings, Providers, and Setup no longer force the whole screen secure; only the surfaces that put a secret on screen raise the policy. Dialogs and bottom sheets are covered too, which they never were before: they live in their own windows that the activity-wide flag could not reach, so a screenshot over a key dialog captured the dialog on a black background.
+- **The mention picker no longer eats the next keystrokes**: picking a file from the @ suggestions left the text field's cursor at its old position, so typing landed after the @ instead of after the inserted path. Every programmatic composer write (mention picks, share prefills, slash picks, resets) now places the cursor at the end of what it inserted.
+- **The Linux environment install reacts instantly**: a Preparing state with a spinner now covers the package index download and dependency resolution that used to look like a dead button for several seconds before the first package progress appeared, in Settings, the setup screen, the chat environment sheet, and the run-time environment card.
+
+### Changed
+
+- **Unused media permissions removed**: READ_MEDIA_IMAGES, READ_MEDIA_VIDEO, and READ_MEDIA_AUDIO are gone from the manifest. Nothing referenced them; all file and media access goes through the Storage Access Framework and the all-files grant.
+- **Credentials stay out of cloud backups**: the encrypted API key preferences, the MCP server config with its plaintext tokens and HMAC sidecar, and the GitHub token copies inside the deployed toolchain are all excluded from Android cloud backups and device transfers, which also keeps the multi-hundred-MB toolchain from blowing the 25 MB backup quota.
+
 ## 0.5-alpha (2026-08-29)
 
 ### Added

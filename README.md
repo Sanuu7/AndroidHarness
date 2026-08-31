@@ -14,6 +14,7 @@ Status: early alpha.
 - Multiple workspaces, one workspace switcher, switch projects without losing context.
 - Queue a message while the agent is busy; it picks it up when the current run finishes.
 - Ask the agent questions mid-run and answer from the notification shade or the chat.
+- Chat backup and restore: export every chat with its full message history to a JSON file and import it back on any device. The file holds chats and messages only, never API keys or settings.
 
 **Agent tools**
 - File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch with atomic rollback on failure.
@@ -47,6 +48,7 @@ Status: early alpha.
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
 - Live model catalog fetch with latency check, per-model price tracking, and a running cost readout.
 - One global thinking ladder from Off to Ultra on every model; non native rungs resolve down the chain at request time, never rewriting your pick.
+- Separate planning and execution models: a Settings switch that lets Plan mode run one model while execute mode runs another, each picked from the same model sheet, with a toast confirming which model fired.
 
 **Workspace hygiene**
 - Sandboxed file access: the agent cannot read or write outside the workspace, symlinks and binary files are refused, and delete guards protect the workspace root.
