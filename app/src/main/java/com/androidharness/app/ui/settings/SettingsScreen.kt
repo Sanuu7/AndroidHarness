@@ -32,6 +32,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Archive
 import androidx.compose.material.icons.outlined.AutoStories
 import androidx.compose.material.icons.outlined.BarChart
 import androidx.compose.material.icons.outlined.CheckCircle
@@ -91,6 +92,7 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.AppContainer
 import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.ChatBackupException
 import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
@@ -255,6 +257,7 @@ fun SettingsScreen(
 
             AppearanceSection(container = container, settings = settings, scope = scope)
             PrivacySection(container = container, settings = settings, scope = scope)
+            ChatsBackupSection(container)
             SlashCommandsSection(container = container)
 
             UpdatesCard(container = container)
@@ -2258,6 +2261,113 @@ private fun UpdatesCard(container: AppContainer) {
                     }
                     else -> {}
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChatsBackupSection(container: AppContainer) {
+    val scope = rememberCoroutineScope()
+    var busy by remember { mutableStateOf(false) }
+    var statusText by remember { mutableStateOf<String?>(null) }
+    var statusIsError by remember { mutableStateOf(false) }
+
+    val suggestedName = remember {
+        "androidharness-chats-" +
+            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date()) +
+            ".json"
+    }
+
+    fun report(text: String, error: Boolean = false) {
+        statusText = text
+        statusIsError = error
+    }
+
+    val exportLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/json"),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            busy = true
+            statusText = null
+            try {
+                val r = container.chatBackup.exportTo(uri)
+                report("Exported ${r.sessions} chats (${r.messages} messages).")
+            } catch (e: ChatBackupException) {
+                report(e.message ?: "Export failed.", error = true)
+            } catch (e: Exception) {
+                report("Export failed: ${e.message ?: "unknown error"}", error = true)
+            } finally {
+                busy = false
+            }
+        }
+    }
+
+    val importLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument(),
+    ) { uri ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        scope.launch {
+            busy = true
+            statusText = null
+            try {
+                val r = container.chatBackup.importFrom(uri)
+                report(
+                    "Imported ${r.sessions} chats (${r.messages} messages)" +
+                        if (r.skipped > 0) ", ${r.skipped} already present." else ".",
+                )
+            } catch (e: ChatBackupException) {
+                report(e.message ?: "Import failed.", error = true)
+            } catch (e: Exception) {
+                report("Import failed: ${e.message ?: "unknown error"}", error = true)
+            } finally {
+                busy = false
+            }
+        }
+    }
+
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Archive,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Chat backup", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        "Save all chats to a file, or restore them from one. " +
+                            "Chats and messages only: no API keys, providers, or settings are in the file.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Button(onClick = { exportLauncher.launch(suggestedName) }, enabled = !busy) {
+                    Text("Export")
+                }
+                OutlinedButton(
+                    onClick = {
+                        importLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/*"))
+                    },
+                    enabled = !busy,
+                ) {
+                    Text("Import")
+                }
+            }
+            if (busy) ThinLinearProgress(Modifier.fillMaxWidth())
+            statusText?.let {
+                Text(
+                    it,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = if (statusIsError) MaterialTheme.colorScheme.error
+                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

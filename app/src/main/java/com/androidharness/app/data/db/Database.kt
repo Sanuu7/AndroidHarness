@@ -236,6 +236,20 @@ interface HarnessDao {
     @Query("SELECT * FROM sessions WHERE id IN (:ids)")
     suspend fun sessionsByIds(ids: List<String>): List<SessionEntity>
 
+    // chat backup (export/import)
+    @Query("SELECT * FROM sessions ORDER BY createdAt ASC")
+    suspend fun allSessions(): List<SessionEntity>
+
+    @Query("SELECT id FROM sessions")
+    suspend fun allSessionIds(): List<String>
+
+    @Query("SELECT * FROM messages ORDER BY sessionId, createdAt ASC, rowid ASC")
+    suspend fun allMessages(): List<MessageEntity>
+
+    /** Batch insert for restored chats; IGNORE keeps a partial collision from aborting the import. */
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertImportedMessages(messages: List<MessageEntity>)
+
     // projects
     @Query("SELECT * FROM projects ORDER BY lastUsedAt DESC")
     fun projectsFlow(): Flow<List<ProjectEntity>>

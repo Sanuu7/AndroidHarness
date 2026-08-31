@@ -5,6 +5,7 @@ import android.content.Context
 import androidx.room.Room
 import com.androidharness.app.agent.AgentEngine
 import com.androidharness.app.agent.TodoStore
+import com.androidharness.app.data.ChatBackupManager
 import com.androidharness.app.data.CheckpointStore
 import com.androidharness.app.data.ImageStore
 import com.androidharness.app.data.KeyStoreManager
@@ -59,6 +60,7 @@ class AppContainer(val appContext: Context) {
         .fallbackToDestructiveMigration(true)
         .build()
     val sessions = SessionRepository(db)
+    val chatBackup = ChatBackupManager(db, appContext)
     val snippets = com.androidharness.app.data.SnippetRepository(db.dao())
 
     val workspace = WorkspaceManager(appContext, db.dao())
