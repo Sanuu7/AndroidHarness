@@ -5,7 +5,10 @@
      linux/ toolchain prefix materializes the GitHub PAT in plaintext
      (.gh-token, gh hosts.yml, etc/gitconfig). linux/ and the linux-deploy
      staging dir are re-deployable and self-healing, so excluding them whole
-     also keeps a huge toolchain out of the 25 MB cloud backup quota. -->
+     also keeps a huge toolchain out of the 25 MB cloud backup quota. The
+    DataStore files (provider names/URLs, settings) are excluded too: they
+    fingerprint the user's AI stack and restore nothing usable without the
+    keys, which are excluded above. -->
 <data-extraction-rules>
     <cloud-backup>
         <exclude domain="sharedpref" path="api_keys.xml" />
@@ -13,6 +16,7 @@
         <exclude domain="file" path="mcp-servers.json.hmac" />
         <exclude domain="file" path="linux" />
         <exclude domain="external" path="linux-deploy" />
+        <exclude domain="file" path="datastore" />
     </cloud-backup>
     <device-transfer>
         <exclude domain="sharedpref" path="api_keys.xml" />
@@ -20,5 +24,6 @@
         <exclude domain="file" path="mcp-servers.json.hmac" />
         <exclude domain="file" path="linux" />
         <exclude domain="external" path="linux-deploy" />
+        <exclude domain="file" path="datastore" />
     </device-transfer>
 </data-extraction-rules>

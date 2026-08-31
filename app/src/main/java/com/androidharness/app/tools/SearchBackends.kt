@@ -25,7 +25,12 @@ internal data class SearchOutcome(val results: List<WebSearchResult>, val via: S
  * The user's search API choice: provider id ("brave" | "tavily") plus the key
  * from encrypted storage. Null means the keyless HTML engines are used.
  */
-data class SearchApiConfig(val provider: String, val apiKey: String)
+// Manual toString: the generated one embeds the raw key, and a stray
+// Log.d(config) would leak a live Brave/Tavily key to logcat.
+data class SearchApiConfig(val provider: String, val apiKey: String) {
+    override fun toString(): String =
+        "SearchApiConfig(provider=$provider, apiKey=${if (apiKey.isEmpty()) "<unset>" else "<redacted>"})"
+}
 
 /**
  * One web-search source. The keyless backend scrapes HTML search endpoints;

@@ -104,9 +104,11 @@ class ShellTierRouter(
     // --- privileged tier ---------------------------------------------------
 
     /**
-     * Bug 2 fix: provisions the shared exec-capable scratch dir via the
-     * privileged side (mkdir 0777) when Shizuku is available. Best-effort;
-     * the app-side init also creates it directly.
+     * Bug 2 fix: provisions the exec-capable scratch dir via the privileged
+     * side when Shizuku is available. Best-effort; the app-side init also
+     * creates it directly. 0700 shell-owned: every legitimate user (Shizuku
+     * exec, adb) runs as the shell uid, and the app uid is walled off from
+     * /data/local/tmp by DAC and SELinux anyway.
      */
     private suspend fun ensurePrivilegedScratch() {
         val scratch = ShellPolicy.SCRATCH_TMP
@@ -114,7 +116,7 @@ class ShellTierRouter(
             arrayOf(
                 "/system/bin/sh",
                 "-c",
-                "mkdir -p '$scratch' && chmod 777 '$scratch'",
+                "mkdir -p '$scratch' && chmod 700 '$scratch'",
             ),
             env = null,
             dir = null,

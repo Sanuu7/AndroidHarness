@@ -101,6 +101,7 @@ import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.data.env.UserServiceState
 import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.common.openOAuthBrowser
 import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.SecureDialogEffect
 import com.androidharness.app.ui.common.SecureScreenEffect
@@ -1053,7 +1054,7 @@ private fun McpSection(container: AppContainer) {
                                     container.mcp.startAuthentication(server.name).fold(
                                         onSuccess = { url ->
                                             runCatching {
-                                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                                                openOAuthBrowser(context, Uri.parse(url))
                                             }
                                         },
                                         onFailure = { e ->

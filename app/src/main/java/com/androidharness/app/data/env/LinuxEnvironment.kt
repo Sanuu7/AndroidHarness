@@ -354,8 +354,17 @@ class LinuxEnvironmentManager(
             _state.value = EnvState.Downloading(0, closure.size, closure.first().name)
             closure.forEachIndexed { i, pkg ->
                 _state.value = EnvState.Downloading(i, closure.size, pkg.name)
-                val debFile = File(tempDir, pkg.filename.substringAfterLast('/'))
-                downloadVerified("$BASE_URL/${pkg.filename}", debFile, pkg.sha256)
+                // The index is parsed from the network response, so its Filename
+                // field is untrusted: keep the download URL inside the repo pool
+                // and the local file inside this temp dir.
+                val fileField = pkg.filename
+                val debBase = fileField.substringAfterLast('/')
+                if (fileField.startsWith('/') || fileField.contains('\\') ||
+                    fileField.split('/').any { it.isEmpty() || it == "." || it == ".." } ||
+                    !debBase.endsWith(".deb")
+                ) throw IllegalStateException("Unsafe package filename in the index: $fileField")
+                val debFile = File(tempDir, debBase)
+                downloadVerified("$BASE_URL/$fileField", debFile, pkg.sha256)
                 _state.value = EnvState.Installing(i, closure.size, pkg.name)
                 extractDeb(debFile)
                 debFile.delete()
@@ -669,8 +678,8 @@ class LinuxEnvironmentManager(
     // fail with "Permission denied" and tarballs containing symlinks fail to
     // extract. These scratch dirs live on filesystems that support both:
     //
-    //  - SCRATCH_TMP (/data/local/tmp/androidharness-scratch): world-writable
-    //    tmpfs/ext4, which works for BOTH the app uid and the Shizuku shell uid.
+    //  - SCRATCH_TMP (/data/local/tmp/androidharness-scratch): 0700 shell-owned
+    //    tmpfs/ext4, writable by the Shizuku shell tier (and adb).
     //  - the app-private mirror under /data/data/<pkg>/files/.harness-scratch:
     //    fallback when SELinux denies tmp access; the app-uid linker
     //    workaround makes binaries here runnable.
@@ -681,14 +690,16 @@ class LinuxEnvironmentManager(
 
     /** Creates and permission-opens the exec-capable scratch dirs. Idempotent. */
     fun ensureScratchDirs() {
-        // Shared location: both the app uid and the Shizuku shell uid can use
-        // it, so 0777 (only reachable via adb/shizuku on real devices).
+        // Shell-owned and 0700: every legitimate user (Shizuku exec, adb) runs
+        // as the shell uid, so loosening the mode only widens the attack
+        // surface; the app uid is walled off from /data/local/tmp by DAC and
+        // SELinux regardless of the mode bits.
         val tmpScratch = File(ShellPolicy.SCRATCH_TMP)
         tmpScratch.mkdirs()
-        runCatching { Os.chmod(tmpScratch.absolutePath, 0x1FF /* 0777 */) }
+        runCatching { Os.chmod(tmpScratch.absolutePath, 0x1C0 /* 0700 */) }
         // App-private fallback for this build's package id: the ONLY location
         // the app uid can reliably write (SELinux denies app-writes to
-        // /data/local/tmp even with mode 777).
+        // /data/local/tmp even with a permissive mode).
         appPrivateScratch.mkdirs()
     }
 
@@ -972,6 +983,19 @@ class LinuxEnvironmentManager(
         ("v9-authsync\n" + installedPackages().sorted().joinToString("\n"))
             .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
 
+    private fun fileSha256(file: File): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        file.inputStream().use { input ->
+            val buf = ByteArray(64 * 1024)
+            while (true) {
+                val n = input.read(buf)
+                if (n < 0) break
+                digest.update(buf, 0, n)
+            }
+        }
+        return digest.digest().joinToString("") { b -> "%02x".format(b) }
+    }
+
     /** Writes (or refreshes) the staging tarball on shared storage. */
     fun stageForShell() {
         try {
@@ -980,7 +1004,15 @@ class LinuxEnvironmentManager(
             // prefix is tarred, or the deployed copy exports a missing file.
             runCatching { gitGlobalConfig() }
             val hash = packageSetHash()
-            if (stagingMarker.exists() && stagingMarker.readText() == hash && stagingTar.exists()) return
+            // The marker's second line is the tarball's CONTENT hash: a
+            // package-list fingerprint alone accepted a swapped tarball whose
+            // marker was left untouched. A content mismatch re-stages from the
+            // app-side prefix, overwriting whatever sits on shared storage.
+            val markerLines = runCatching { stagingMarker.readText().lines() }.getOrDefault(emptyList())
+            if (stagingTar.exists() &&
+                markerLines.getOrNull(0) == hash &&
+                markerLines.getOrNull(1) == fileSha256(stagingTar)
+            ) return
             stagingDir.mkdirs()
             // Bug 1 fix: ship the CA bundle next to the tarball. The staging
             // dir lives on shared storage where the shell uid can read it, so
@@ -1005,7 +1037,7 @@ class LinuxEnvironmentManager(
                 writeTarEntries(prefix, "linux", tar)
             }
             tmp.renameTo(stagingTar)
-            stagingMarker.writeText(hash)
+            stagingMarker.writeText("$hash\n${fileSha256(stagingTar)}")
         } catch (e: Exception) {
             // A silent failure here deploys a STALE tarball on the next
             // ensureTmpPrefix (it only compares hashes, not content). Auth
@@ -1250,6 +1282,11 @@ class LinuxEnvironmentManager(
                         rel = rel.removePrefix(termuxPrefix).removePrefix("/")
                     }
                     if (rel.isEmpty() || rel.startsWith("data/data")) continue
+                    // Zip-slip guard: a crafted data.tar entry with .. segments
+                    // would write outside the prefix. Real packages never ship them.
+                    if (rel.split('/').any { it == ".." }) {
+                        throw IllegalStateException("Refusing traversal path in ${deb.name}: ${e.name}")
+                    }
 
                     val target = File(prefix, rel)
                     when {
