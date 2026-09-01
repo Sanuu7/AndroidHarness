@@ -26,6 +26,13 @@ object WebResourceExtractor {
     private val explicitPreviewDirectiveRegex = Regex("""(?:::web-preview|\{preview|\{web-preview)\{target=["']([^"']+)["'](?:,\s*title=["']([^"']+)["'])?\}""", RegexOption.IGNORE_CASE)
 
     /**
+     * Strips explicit preview directives from text so they don't display as raw markdown markup.
+     */
+    fun stripDirectives(text: String): String {
+        return text.replace(explicitPreviewDirectiveRegex, "").trimEnd()
+    }
+
+    /**
      * Extracts an explicit preview directive if emitted by the agent (e.g. ::web-preview{target="index.html"}).
      */
     fun extractExplicitDirective(text: String): WebPreviewTarget? {

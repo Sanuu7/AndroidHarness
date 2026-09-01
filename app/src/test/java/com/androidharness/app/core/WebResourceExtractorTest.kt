@@ -26,6 +26,13 @@ class WebResourceExtractorTest {
     }
 
     @Test
+    fun `stripDirectives removes directive syntax cleanly`() {
+        val directiveMsg = "Page ready.\n::web-preview{target=\"index.html\"}\nEnjoy!"
+        val clean = WebResourceExtractor.stripDirectives(directiveMsg)
+        assertEquals("Page ready.\n\nEnjoy!", clean)
+    }
+
+    @Test
     fun `findPrimaryPreviewTarget prioritizes explicit directive over heuristics`() {
         val directiveMsg = """
             I created the landing page.

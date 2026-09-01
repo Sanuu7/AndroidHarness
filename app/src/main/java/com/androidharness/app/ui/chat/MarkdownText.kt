@@ -78,27 +78,32 @@ fun MarkdownText(
     streaming: Boolean = false,
     onOpenUrl: ((String) -> Unit)? = null,
 ) {
+    // Strip agent system directives (like ::web-preview{...}) so raw markup is never visible to the user
+    val cleanText = remember(text) {
+        com.androidharness.app.core.WebResourceExtractor.stripDirectives(text)
+    }
+
     // The fence tracker is a composable (remember), it must be invoked
     // unconditionally, so the `streaming` gate sits on the result.
-    val openFence = rememberEndsInsideOpenFence(text) && streaming
-    val cut = if (!streaming || openFence) -1 else text.lastIndexOf("\n\n")
+    val openFence = rememberEndsInsideOpenFence(cleanText) && streaming
+    val cut = if (!streaming || openFence) -1 else cleanText.lastIndexOf("\n\n")
     // Key the stable prefix on `cut` (not the ever-growing `text`): while the
     // in-progress tail grows, the completed-paragraph prefix string is reused
     // instead of being re-allocated on every typewriter tick.
-    val safeText = remember(streaming, openFence, cut, if (!streaming || openFence) text else null) {
+    val safeText = remember(streaming, openFence, cut, if (!streaming || openFence) cleanText else null) {
         when {
-            !streaming -> text
-            openFence -> if (text.length > STREAM_FENCE_CAP) {
-                "…" + text.takeLast(STREAM_FENCE_CAP)
-            } else text
-            cut > 0 -> text.substring(0, cut)
+            !streaming -> cleanText
+            openFence -> if (cleanText.length > STREAM_FENCE_CAP) {
+                "…" + cleanText.takeLast(STREAM_FENCE_CAP)
+            } else cleanText
+            cut > 0 -> cleanText.substring(0, cut)
             else -> ""
         }
     }
     // The fence path renders the (capped) whole text; only paragraph streaming
     // has a separate plain tail.
-    val tail = remember(text, safeText, openFence) {
-        if (openFence) "" else text.substring(safeText.length)
+    val tail = remember(cleanText, safeText, openFence) {
+        if (openFence) "" else cleanText.substring(safeText.length)
     }
 
     Column(Modifier.fillMaxWidth()) {
