@@ -10,6 +10,9 @@ Status: early alpha.
 
 **Chat with a real coding agent**
 - Full markdown chat with streaming responses, thinking blocks, and cards showing every tool call the agent makes.
+- Voice input with live waveforms and Groq Whisper cloud transcription (`whisper-large-v3` / `turbo`) or native Android speech.
+- Fork conversations from any assistant turn into a fresh session with cloned context.
+- Resume last active chat automatically on launch with shimmering skeleton loading.
 - Attach skills to a message or drop one in with a slash command.
 - Multiple workspaces, one workspace switcher, switch projects without losing context.
 - Queue a message while the agent is busy; it picks it up when the current run finishes.
@@ -21,6 +24,7 @@ Status: early alpha.
 - Shell tools: run commands with timeouts, launch background processes, list and kill them.
 - Git tools: status, diff, commit, log, show, branch, checkout, push, and pull. The harness auto-configures git identity so commits never fail on "author unknown".
 - Web tools: web search through keyless engines or the Brave and Tavily APIs with a key, page fetch, raw HTTP requests with JSON bodies, and GitHub API requests that authenticate automatically.
+- In-app web preview: universal preview hub for localhost ports, workspace HTML files, and web links with Eruda DevTools, console logs, and one-tap bug fixing.
 - MCP tools: connect Model Context Protocol servers over stdio or HTTP, add them by pasting a Claude config or a claude mcp add command, and sign in with OAuth when the server needs it.
 - Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model.
 - Skill tools: list, view, and manage the markdown skills library from inside a run.
@@ -28,7 +32,8 @@ Status: early alpha.
 
 **Files and editor**
 - A workspace file manager: create, rename, move, copy, delete, and share files and folders, with open-in-other-apps support.
-- A real code editor: line numbers, unlimited undo and redo, keyword highlighting, find and replace with regex, word wrap, and a save flow that preserves the file's original encoding.
+- A real code editor: multi-color syntax highlighting across Kotlin, Java, Python, JS, TS, HTML, CSS, and Shell, line numbers, unlimited undo and redo, find and replace with regex, word wrap toggle, and encoding preservation.
+- Visual diff viewer: side-by-side / inline diff viewer with dual line gutters, syntax coloring, and change stats.
 - Per chat Files changed tracking: GitHub style badges and diffs for every file the agent touches, with rewind.
 
 **GitHub built in**
@@ -52,6 +57,7 @@ Status: early alpha.
 
 **Workspace hygiene**
 - Sandboxed file access: the agent cannot read or write outside the workspace, symlinks and binary files are refused, and delete guards protect the workspace root.
+- Aider-style Repo Map: automatic codebase symbol indexing that feeds project structure into the agent's context.
 - Workspace ignore files so builds and caches stay out of the agent's way.
 - Context hygiene keeps prompts tight and redacts secrets before they reach the model.
 - /init writes an AGENTS.md for the project; /doctor runs a 16 point self-test of every tool family.

@@ -14,8 +14,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 8
-        versionName = "0.6-alpha"
+        versionCode = 9
+        versionName = "0.7-alpha"
     }
 
     signingConfigs {

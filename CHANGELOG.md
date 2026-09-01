@@ -1,5 +1,25 @@
 # Changelog
 
+## 0.7-alpha (2026-09-01)
+
+### Added
+
+- **Aider-style Repo Map**: an automatic codebase indexer that scans project files and generates a compact hierarchical symbol outline (classes, interfaces, methods, functions, and types for Kotlin, Java, Python, JavaScript, TypeScript, HTML, and Shell scripts). The outline injects directly into the agent's system prompt so the model understands codebase structure without burning tool calls on broad exploration, with an opt-in toggle in Settings under Chat behavior.
+- **In-app web preview hub**: a full preview environment for web projects. It auto-probes open localhost ports, previews local workspace HTML files, and opens chat links directly in a bottom sheet with Eruda DevTools, responsive device frames, console logs, and a one-tap "Fix this bug" bridge that sends errors directly back to the agent.
+- **Voice input and Groq Whisper transcription**: transcribes speech using either Android's native speech recognizer or cloud-backed Groq Whisper (`whisper-large-v3` and `turbo`). Features a floating input layout with live audio waveforms, hold-to-talk, swipe-to-lock, and slide-to-cancel gestures.
+- **Visual diff viewer**: a dedicated diff screen with dual line-number gutters, syntax coloring, additions and deletions stats, and horizontal scrolling for side-by-side review of agent file changes.
+- **Fork conversation**: fork any chat from any assistant turn into a fresh session with cloned message history, compaction summary, and token usage records.
+- **Resume last active chat**: an option in Settings that automatically reopens your most recent conversation on app launch with a shimmering skeleton loading transition.
+- **Biometric auto-lock timeout**: configure how quickly the app locks when backgrounded (Immediately, 1m, 5m, 15m) to avoid repeated authentication prompts during quick app switches.
+- **Rich syntax highlighting in code editor**: multi-color token styling for Kotlin, Java, Python, JS, TS, HTML, XML, CSS, JSON, and Shell in the built-in file editor.
+
+### Fixed
+
+- **Chat rendering and streaming performance**: eliminated 60 fps main-thread recomposition bottlenecks during typewriter streaming by optimizing selection layout bounds, precomputing message lookups outside LazyColumn item scopes, and moving infinite animation transitions to hardware graphics layers.
+- **Biometric authentication reliability**: require biometric or PIN confirmation before toggling app lock in Settings, and fixed a cold-start initialization race where the app briefly bypassed the lock screen before preferences loaded.
+- **Code editor multi-line styling**: fixed span generation in sora-editor where identical consecutive token styles were dropped across line boundaries.
+- **Security audit hardening**: hardened scratch directories to 0700, added zip-slip extraction validation, scoped DataStore backup exclusions, validated package file paths, and routed MCP OAuth through Chrome Custom Tabs.
+
 ## 0.6-alpha (2026-08-31)
 
 ### Added
