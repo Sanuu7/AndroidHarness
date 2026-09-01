@@ -697,7 +697,9 @@ private fun WebPageView(
             } else {
                 val norm = LocalPortProbe.normalizeLocalUrl(t)
                 currentUrl = norm
-                view.loadUrl(norm)
+                view.post {
+                    view.loadUrl(norm)
+                }
             }
         }
     }
@@ -756,7 +758,7 @@ private fun WebPageView(
                     Icon(Icons.Default.Refresh, contentDescription = "Reload", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                 }
 
-                // Clean Page Title and Path
+                // Clean Page Title (no URL subtitle)
                 Column(
                     modifier = Modifier
                         .weight(1f)
@@ -766,14 +768,6 @@ private fun WebPageView(
                         pageTitle,
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    Text(
-                        currentUrl,
-                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                        color = scheme.onSurfaceVariant,
-                        fontFamily = FontFamily.Monospace,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
@@ -933,17 +927,25 @@ private fun WebPageView(
                                 request: WebResourceRequest?,
                             ): WebResourceResponse? {
                                 val uri = request?.url ?: return null
-                                if (uri.host == "localhost" && workspace != null && isWorkspaceHtml(currentUrl)) {
+                                if ((uri.host == "localhost" || uri.host == "127.0.0.1") && workspace != null && isWorkspaceHtml(currentUrl)) {
                                     val path = uri.path?.trimStart('/') ?: return null
-                                    val node = runCatching { workspace.resolve(path) }.getOrNull()
+                                    if (path.isEmpty()) return null
+                                    val baseDir = if ('/' in currentUrl) currentUrl.substringBeforeLast('/') else ""
+                                    val fullPath = if (baseDir.isNotEmpty()) "$baseDir/$path" else path
+                                    val node = runCatching { workspace.resolve(fullPath) }.getOrNull()
+                                        ?: runCatching { workspace.resolve(path) }.getOrNull()
                                     if (node != null && node.exists && node.isFile) {
                                         val mime = when (node.name.substringAfterLast('.', "").lowercase()) {
                                             "css" -> "text/css"
-                                            "js" -> "application/javascript"
+                                            "js", "mjs" -> "application/javascript"
                                             "json" -> "application/json"
                                             "png" -> "image/png"
                                             "jpg", "jpeg" -> "image/jpeg"
                                             "svg" -> "image/svg+xml"
+                                            "ico" -> "image/x-icon"
+                                            "woff" -> "font/woff"
+                                            "woff2" -> "font/woff2"
+                                            "ttf" -> "font/ttf"
                                             else -> "text/plain"
                                         }
                                         val stream = node.openInputStream()

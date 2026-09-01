@@ -962,8 +962,13 @@ fun ChatScreen(
                                                         used.forEach { SkillUsedBadge(it) }
                                                     }
                                                 }
+                                                val isTurnFinal = state.messages
+                                                    .lastOrNull { m ->
+                                                        m.role == Role.ASSISTANT && m.turnId == message.turnId
+                                                    }?.id == message.id
                                                 AssistantText(
                                                     message.text,
+                                                    showPreviewChip = isTurnFinal && !state.busy,
                                                     onOpenUrl = { url ->
                                                         webPreviewUrl = url
                                                         showWebPreview = true
@@ -971,10 +976,6 @@ fun ChatScreen(
                                                 )
                                                 // Turn-final extras: diff chips + how
                                                 // long the whole turn took.
-                                                val isTurnFinal = state.messages
-                                                    .lastOrNull { m ->
-                                                        m.role == Role.ASSISTANT && m.turnId == message.turnId
-                                                    }?.id == message.id
                                                 val edits = state.fileEditsByTurn[message.turnId].orEmpty()
                                                 if (isTurnFinal && edits.isNotEmpty()) {
                                                     FileEditsCard(edits, onOpenFile, Modifier.padding(top = 4.dp))

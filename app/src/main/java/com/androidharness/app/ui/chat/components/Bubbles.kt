@@ -114,6 +114,7 @@ internal fun UserBubble(
 internal fun AssistantText(
     text: String,
     streaming: Boolean = false,
+    showPreviewChip: Boolean = false,
     onOpenUrl: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
@@ -143,7 +144,7 @@ internal fun AssistantText(
                 }
             }
 
-            if (primaryTarget != null && onOpenUrl != null) {
+            if (showPreviewChip && primaryTarget != null && onOpenUrl != null) {
                 Spacer(Modifier.size(6.dp))
                 WebPreviewActionChip(
                     target = primaryTarget,
