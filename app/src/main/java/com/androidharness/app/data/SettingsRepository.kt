@@ -65,6 +65,8 @@ data class AppSettings(
     val forkPromoSeen: Boolean = false,
     /** Biometric app lock: requires fingerprint/face/PIN authentication to open. */
     val biometricLockEnabled: Boolean = false,
+    /** Grace period in minutes before re-locking when app is backgrounded (0 = immediately). */
+    val biometricLockTimeoutMinutes: Int = 0,
     /** Voice speech-to-text engine: "inbuilt" (native Android recognizer) or "groq" (Groq Whisper API). */
     val voiceEngine: String = "inbuilt",
     /** Groq Whisper model: "whisper-large-v3" (default) or "whisper-large-v3-turbo". */
@@ -116,6 +118,7 @@ class SettingsRepository(private val context: Context) {
         val PLANNING_PROMO_SEEN = booleanPreferencesKey("planning_promo_seen")
         val FORK_PROMO_SEEN = booleanPreferencesKey("fork_promo_seen")
         val BIOMETRIC_LOCK_ENABLED = booleanPreferencesKey("biometric_lock_enabled")
+        val BIOMETRIC_LOCK_TIMEOUT = intPreferencesKey("biometric_lock_timeout_minutes")
         val VOICE_ENGINE = stringPreferencesKey("voice_engine")
         val GROQ_WHISPER_MODEL = stringPreferencesKey("groq_whisper_model")
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
@@ -158,6 +161,7 @@ class SettingsRepository(private val context: Context) {
             planningModelsPromoSeen = prefs[Keys.PLANNING_PROMO_SEEN] ?: false,
             forkPromoSeen = prefs[Keys.FORK_PROMO_SEEN] ?: false,
             biometricLockEnabled = prefs[Keys.BIOMETRIC_LOCK_ENABLED] ?: false,
+            biometricLockTimeoutMinutes = prefs[Keys.BIOMETRIC_LOCK_TIMEOUT] ?: 0,
             voiceEngine = prefs[Keys.VOICE_ENGINE] ?: AppSettings.VOICE_ENGINE_INBUILT,
             groqWhisperModel = prefs[Keys.GROQ_WHISPER_MODEL] ?: AppSettings.GROQ_MODEL_WHISPER_V3,
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
@@ -202,6 +206,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setBiometricLockEnabled(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.BIOMETRIC_LOCK_ENABLED] = enabled }
+    }
+
+    suspend fun setBiometricLockTimeout(minutes: Int) {
+        context.settingsStore.edit { it[Keys.BIOMETRIC_LOCK_TIMEOUT] = minutes }
     }
 
     suspend fun setVoiceEngine(engine: String) {

@@ -45,6 +45,7 @@ import com.androidharness.app.data.update.UpdateIntents
 import com.androidharness.app.ui.AppNav
 import com.androidharness.app.ui.theme.HarnessTheme
 import com.androidharness.app.ui.update.UpdateDialog
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
 
@@ -192,9 +193,29 @@ class MainActivity : FragmentActivity() {
         }
     }
 
+    private var lastPausedTimestamp: Long = 0L
+
+    override fun onPause() {
+        super.onPause()
+        lastPausedTimestamp = System.currentTimeMillis()
+    }
+
     override fun onResume() {
         super.onResume()
         promptShownThisResume = false
+        if (isUnlocked && lastPausedTimestamp > 0L) {
+            val settings = runCatching {
+                kotlinx.coroutines.runBlocking { container.settings.settings.first() }
+            }.getOrNull()
+            if (settings != null && settings.biometricLockEnabled) {
+                val timeoutMillis = settings.biometricLockTimeoutMinutes * 60 * 1000L
+                val elapsed = System.currentTimeMillis() - lastPausedTimestamp
+                if (elapsed >= timeoutMillis) {
+                    isUnlocked = false
+                    promptBiometricUnlock()
+                }
+            }
+        }
     }
 
     private fun promptBiometricUnlock() {

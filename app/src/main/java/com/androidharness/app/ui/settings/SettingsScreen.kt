@@ -2158,6 +2158,23 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
                     },
                 )
             }
+            if (settings.biometricLockEnabled) {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text("Auto-lock timeout", style = MaterialTheme.typography.labelLarge)
+                    val timeouts = listOf(0 to "Instant", 1 to "1m", 5 to "5m", 15 to "15m")
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        timeouts.forEachIndexed { index, (mins, label) ->
+                            SegmentedButton(
+                                selected = settings.biometricLockTimeoutMinutes == mins,
+                                onClick = { scope.launch { container.settings.setBiometricLockTimeout(mins) } },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = timeouts.size),
+                            ) {
+                                Text(label, maxLines = 1)
+                            }
+                        }
+                    }
+                }
+            }
             HorizontalDivider()
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
