@@ -882,21 +882,28 @@ fun ChatScreen(
                         .weight(1f)
                         .fillMaxWidth(),
                 ) {
-                LazyColumn(
-                    state = listState,
-                    modifier = Modifier.fillMaxWidth(),
-                    contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    if (state.messages.isEmpty() && state.streamingText == null) {
-                        item {
-                            EmptyState(
-                                hasProvider = state.activeProvider != null,
-                                onSuggestion = { viewModel.send(it) },
-                                onAddProvider = { showProviderManager = true },
-                            )
-                        }
-                    }
+                    if (state.isLoadingMessages) {
+                        ChatLoadingSkeleton(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 14.dp, vertical = 16.dp),
+                        )
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            if (state.messages.isEmpty() && state.streamingText == null) {
+                                item {
+                                    EmptyState(
+                                        hasProvider = state.activeProvider != null,
+                                        onSuggestion = { viewModel.send(it) },
+                                        onAddProvider = { showProviderManager = true },
+                                    )
+                                }
+                            }
 
                     for ((messageIndex, message) in state.messages.withIndex()) {
                         // Inner subagent turns persist with the parent task's
@@ -1160,6 +1167,7 @@ fun ChatScreen(
                                 )
                             }
                         }
+                    }
                     }
                 }
 
@@ -1672,3 +1680,159 @@ private const val FOLLOW_MIN_INTERVAL_MS = 64L
 private const val PIN_TOLERANCE_PX = 96
 // scrollBy clamping makes a huge forward scroll stop exactly at the end.
 private const val FORWARD_FAR_PX = 100_000f
+
+@Composable
+private fun ChatLoadingSkeleton(modifier: Modifier = Modifier) {
+    val transition = rememberInfiniteTransition(label = "skeletonShimmer")
+    val translateAnim = transition.animateFloat(
+        initialValue = -300f,
+        targetValue = 900f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 1200, easing = FastOutSlowInEasing),
+            repeatMode = RepeatMode.Restart,
+        ),
+        label = "shimmerTranslate",
+    )
+
+    val scheme = MaterialTheme.colorScheme
+    val shimmerColors = listOf(
+        scheme.surfaceContainerHigh.copy(alpha = 0.6f),
+        scheme.surfaceContainerHighest.copy(alpha = 0.9f),
+        scheme.surfaceContainerHigh.copy(alpha = 0.6f),
+    )
+    val shimmerBrush = androidx.compose.ui.graphics.Brush.linearGradient(
+        colors = shimmerColors,
+        start = androidx.compose.ui.geometry.Offset(translateAnim.value, translateAnim.value),
+        end = androidx.compose.ui.geometry.Offset(translateAnim.value + 300f, translateAnim.value + 300f),
+    )
+
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+        // Centered loading badge
+        Box(
+            modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 8.dp),
+            contentAlignment = Alignment.Center,
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(20.dp),
+                color = scheme.surfaceContainerHigh,
+                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.4f)),
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                ) {
+                    CircularProgressIndicator(
+                        strokeWidth = 2.dp,
+                        modifier = Modifier.size(16.dp),
+                        color = scheme.primary,
+                    )
+                    Text(
+                        "Loading chat…",
+                        style = MaterialTheme.typography.labelMedium,
+                        color = scheme.onSurface,
+                    )
+                }
+            }
+        }
+
+        // Skeleton assistant bubble (left)
+        Row(
+            modifier = Modifier.fillMaxWidth(0.85f),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp, 18.dp, 18.dp, 4.dp),
+                color = scheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.9f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.65f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.4f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                }
+            }
+        }
+
+        // Skeleton user bubble (right)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp, 18.dp, 4.dp, 18.dp),
+                color = scheme.surfaceContainerHigh,
+                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.4f)),
+                modifier = Modifier.fillMaxWidth(0.7f),
+            ) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.5f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                }
+            }
+        }
+
+        // Skeleton assistant response block (left)
+        Row(
+            modifier = Modifier.fillMaxWidth(0.92f),
+            horizontalArrangement = Arrangement.Start,
+        ) {
+            Surface(
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp, 18.dp, 18.dp, 4.dp),
+                color = scheme.surfaceContainerLow,
+                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.3f)),
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.95f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.85f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth(0.55f)
+                            .height(14.dp)
+                            .background(shimmerBrush, androidx.compose.foundation.shape.RoundedCornerShape(7.dp)),
+                    )
+                }
+            }
+        }
+    }
+}

@@ -64,6 +64,8 @@ data class ChatUiState(
     val sessionId: String? = null,
     val sessionTitle: String = "New chat",
     val messages: List<ChatMessage> = emptyList(),
+    /** True while messages are being initially loaded from Room for this session. */
+    val isLoadingMessages: Boolean = false,
     val streamingText: String? = null,
     val streamingThinking: String? = null,
     /** Stable id of the streaming message; the committed row reuses it. */
@@ -327,7 +329,13 @@ class ChatViewModel(
         // bubble is released the moment its committed row arrives.
         viewModelScope.launch {
             sessionIdFlow.flatMapLatest { sid ->
-                if (sid == null) flowOf(emptyList()) else c.sessions.messagesFlow(sid)
+                if (sid == null) {
+                    _state.update { it.copy(isLoadingMessages = false) }
+                    flowOf(emptyList())
+                } else {
+                    _state.update { it.copy(isLoadingMessages = it.messages.isEmpty()) }
+                    c.sessions.messagesFlow(sid)
+                }
             }.collect { msgs ->
                 val hold = heldStream
                 if (hold != null && msgs.any { it.id == hold.messageId }) {
@@ -335,12 +343,13 @@ class ChatViewModel(
                     _state.update {
                         it.copy(
                             messages = msgs,
+                            isLoadingMessages = false,
                             streamingText = null, streamingThinking = null,
                             streamingMessageId = null, streamingCommitted = false,
                         ).withCurrentAction()
                     }
                 } else {
-                    _state.update { it.copy(messages = msgs) }
+                    _state.update { it.copy(messages = msgs, isLoadingMessages = false) }
                 }
             }
         }
@@ -385,6 +394,7 @@ class ChatViewModel(
 
         if (initialSessionId != null) {
             viewModelScope.launch {
+                c.settings.setLastActiveSessionId(initialSessionId)
                 val sess = c.sessions.session(initialSessionId)
                 _state.update {
                     it.copy(
@@ -889,6 +899,9 @@ class ChatViewModel(
                 sessionId = sid
                 sessionIdFlow.value = sid
                 _state.update { it.copy(sessionId = sid, sessionTitle = payload.take(48)) }
+                viewModelScope.launch {
+                    c.settings.setLastActiveSessionId(sid)
+                }
             }
         }
     }

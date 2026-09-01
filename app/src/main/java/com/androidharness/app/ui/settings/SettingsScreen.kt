@@ -274,6 +274,7 @@ fun SettingsScreen(
             )
 
             AppearanceSection(container = container, settings = settings, scope = scope)
+            ChatBehaviorSection(container = container, settings = settings, scope = scope)
             PrivacySection(container = container, settings = settings, scope = scope)
             ChatsBackupSection(container)
             SlashCommandsSection(container = container)
@@ -2065,6 +2066,33 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
                 Switch(
                     checked = settings.dynamicColor,
                     onCheckedChange = { scope.launch { container.settings.setDynamicColor(it) } },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
+    SettingsHeader("Chat behavior")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Resume last chat on launch", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        if (settings.resumeLastChat) {
+                            "On: opens your most recent chat when launching the app."
+                        } else {
+                            "Off: starts a new empty chat each time the app opens."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.resumeLastChat,
+                    onCheckedChange = { scope.launch { container.settings.setResumeLastChat(it) } },
                 )
             }
         }

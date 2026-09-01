@@ -71,6 +71,10 @@ data class AppSettings(
     val groqWhisperModel: String = "whisper-large-v3",
     /** The one-time voice configuration promo dialog was dismissed. */
     val voicePromoSeen: Boolean = false,
+    /** Resume the last opened chat session when app launches. */
+    val resumeLastChat: Boolean = true,
+    /** ID of the last active chat session. */
+    val lastActiveSessionId: String? = null,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -113,6 +117,8 @@ class SettingsRepository(private val context: Context) {
         val VOICE_ENGINE = stringPreferencesKey("voice_engine")
         val GROQ_WHISPER_MODEL = stringPreferencesKey("groq_whisper_model")
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
+        val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
+        val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -152,6 +158,8 @@ class SettingsRepository(private val context: Context) {
             voiceEngine = prefs[Keys.VOICE_ENGINE] ?: AppSettings.VOICE_ENGINE_INBUILT,
             groqWhisperModel = prefs[Keys.GROQ_WHISPER_MODEL] ?: AppSettings.GROQ_MODEL_WHISPER_V3,
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
+            resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
+            lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
         )
     }
 
@@ -279,6 +287,17 @@ class SettingsRepository(private val context: Context) {
         context.settingsStore.edit { prefs ->
             if (model.isNullOrBlank()) prefs.remove(Keys.ACTIVE_MODEL)
             else prefs[Keys.ACTIVE_MODEL] = model
+        }
+    }
+
+    suspend fun setResumeLastChat(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.RESUME_LAST_CHAT] = enabled }
+    }
+
+    suspend fun setLastActiveSessionId(sessionId: String?) {
+        context.settingsStore.edit { prefs ->
+            if (sessionId.isNullOrBlank()) prefs.remove(Keys.LAST_ACTIVE_SESSION)
+            else prefs[Keys.LAST_ACTIVE_SESSION] = sessionId
         }
     }
 }

@@ -161,7 +161,16 @@ fun AppNav(container: AppContainer) {
     // Stay on setup until Skip or Start harness. Connecting a provider used
     // to flip this and remount NavHost onto chat mid-flow.
     val needsSetup = !settings.onboardingDone
-    val startDestination = remember { if (needsSetup) "setup" else "chat" }
+    val lastSession = settings.lastActiveSessionId?.takeIf { sid ->
+        settings.resumeLastChat && sessions.any { it.id == sid }
+    }
+    val startDestination = remember {
+        when {
+            needsSetup -> "setup"
+            lastSession != null -> "chat/$lastSession"
+            else -> "chat"
+        }
+    }
 
     var searchQuery by remember { mutableStateOf("") }
     var searchOpen by remember { mutableStateOf(false) }
@@ -247,6 +256,7 @@ fun AppNav(container: AppContainer) {
     fun openChat(sessionId: String?) {
         scope.launch { drawerState.close() }
         if (sessionId == null) {
+            scope.launch { container.settings.setLastActiveSessionId(null) }
             nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
         } else {
             nav.navigate("chat/$sessionId")
@@ -611,7 +621,10 @@ fun AppNav(container: AppContainer) {
                     onOpenFile = { path, line ->
                         nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=")
                     },
-                    onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
+                    onNewChat = {
+                        scope.launch { container.settings.setLastActiveSessionId(null) }
+                        nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
+                    },
                     onOpenTerminal = { nav.navigate("terminal") },
                     onOpenFiles = { nav.navigate("files") },
                     onOpenSubagent = { callId ->
@@ -642,7 +655,10 @@ fun AppNav(container: AppContainer) {
                         val sid = vm.state.value.sessionId ?: sessionId
                         nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=${encode(sid.orEmpty())}")
                     },
-                    onNewChat = { nav.navigate("chat") { popUpTo("chat") { inclusive = true } } },
+                    onNewChat = {
+                        scope.launch { container.settings.setLastActiveSessionId(null) }
+                        nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
+                    },
                     onOpenTerminal = { nav.navigate("terminal") },
                     onOpenFiles = { nav.navigate("files") },
                     onOpenSubagent = { callId ->
