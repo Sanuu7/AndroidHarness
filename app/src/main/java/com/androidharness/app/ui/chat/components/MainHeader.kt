@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
@@ -114,12 +115,23 @@ internal fun MainHeader(
                     .weight(1f)
                     .padding(horizontal = 6.dp),
             ) {
-                Text(
-                    sessionTitle,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (sessionTitle.startsWith("Fork of ")) {
+                        Icon(
+                            Icons.Outlined.ForkRight,
+                            contentDescription = "Forked session",
+                            tint = scheme.primary,
+                            modifier = Modifier.size(16.dp),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
+                    Text(
+                        sessionTitle,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.titleMediumEmphasized,
+                    )
+                }
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     modifier = Modifier

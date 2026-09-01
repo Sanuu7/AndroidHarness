@@ -1,5 +1,6 @@
 package com.androidharness.app.data
 
+import androidx.room.withTransaction
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ImageRef
 import com.androidharness.app.core.Role
@@ -8,6 +9,7 @@ import com.androidharness.app.data.db.AppDatabase
 import com.androidharness.app.data.db.ChatSearch
 import com.androidharness.app.data.db.MessageEntity
 import com.androidharness.app.data.db.SessionEntity
+import com.androidharness.app.data.db.UsageEventEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.builtins.ListSerializer
@@ -127,6 +129,170 @@ class SessionRepository(
     suspend fun renameSession(id: String, title: String) {
         db.dao().updateSession(id, title, System.currentTimeMillis())
     }
+
+    /**
+     * Forks a chat from an assistant message into a fresh session.
+     * The new session title is "Fork of <parent.title>".
+     *
+     * In the new session transcript:
+     * - The prior history (before this fork turn) is stored as compaction context
+     *   (with a hidden compaction summary system message) so the agent retains full context.
+     * - Only the prompt that triggered this turn and the forked assistant message are
+     *   inserted as visible messages.
+     * - Cumulative token counts and usage_events up to this turn are copied so context
+     *   window usage, hit ratio, and model stats in ContextDialog remain accurate.
+     */
+    suspend fun forkSession(parentSessionId: String, targetAssistantMessageId: String): String =
+        db.withTransaction {
+            val parent = db.dao().session(parentSessionId)
+                ?: error("Parent session not found: $parentSessionId")
+            val allMessages = db.dao().messages(parentSessionId)
+            val targetIdx = allMessages.indexOfFirst { it.id == targetAssistantMessageId }
+            if (targetIdx < 0) error("Target message not found in session: $targetAssistantMessageId")
+
+            val targetAssistant = allMessages[targetIdx]
+            val priorMessages = allMessages.subList(0, targetIdx + 1)
+
+            // Find the user prompt corresponding to this turn:
+            // either matching turnId, or the nearest preceding user message.
+            val turnId = targetAssistant.turnId
+            val userMsg = (if (turnId != null) {
+                priorMessages.lastOrNull { it.role == Role.USER.name && it.turnId == turnId }
+            } else null) ?: priorMessages.lastOrNull { it.role == Role.USER.name }
+
+            val earlierMessages = if (userMsg != null) {
+                val userIdx = priorMessages.indexOfFirst { it.id == userMsg.id }
+                if (userIdx > 0) priorMessages.subList(0, userIdx) else emptyList()
+            } else {
+                if (targetIdx > 0) priorMessages.subList(0, targetIdx) else emptyList()
+            }
+
+            // Build a structured context summary of the earlier conversation if any exists,
+            // preserving parent's existing compaction summary.
+            val summaryBuilder = StringBuilder()
+            if (parent.compactionSummary.isNotBlank()) {
+                summaryBuilder.append(parent.compactionSummary.trim()).append("\n\n")
+            }
+            val earlierChatMessages = earlierMessages.map { it.toChatMessageCached() }
+                .filterNot { it.role == Role.SYSTEM && it.text.startsWith(com.androidharness.app.agent.ContextHygiene.COMPACTION_NOTICE_PREFIX) }
+            for (m in earlierChatMessages) {
+                if (m.role == Role.SYSTEM && m.text.startsWith(com.androidharness.app.agent.AgentEngine.COMPACTION_PREFIX)) {
+                    val stripped = m.text.removePrefix(com.androidharness.app.agent.AgentEngine.COMPACTION_PREFIX).trim()
+                    if (stripped.isNotBlank()) summaryBuilder.append(stripped).append("\n\n")
+                    continue
+                }
+                when (m.role) {
+                    Role.USER -> summaryBuilder.append("User: ").append(m.text).append("\n\n")
+                    Role.ASSISTANT -> if (m.text.isNotBlank()) summaryBuilder.append("Assistant: ").append(m.text).append("\n\n")
+                    Role.TOOL -> if (m.text.isNotBlank()) {
+                        val preview = if (m.text.length > 500) m.text.take(500) + "…" else m.text
+                        summaryBuilder.append("Tool (${m.toolName ?: "tool"}): ").append(preview).append("\n\n")
+                    }
+                    Role.SYSTEM -> {}
+                }
+            }
+
+            val forkTitle = if (parent.title.startsWith("Fork of ")) {
+                parent.title
+            } else {
+                "Fork of ${parent.title}"
+            }
+
+            val newSessionId = UUID.randomUUID().toString()
+            val now = System.currentTimeMillis()
+            val finalSummary = summaryBuilder.toString().trim()
+
+            val newSession = SessionEntity(
+                id = newSessionId,
+                title = forkTitle,
+                createdAt = now,
+                updatedAt = now,
+                totalInputTokens = parent.totalInputTokens,
+                totalOutputTokens = parent.totalOutputTokens,
+                totalCachedTokens = parent.totalCachedTokens,
+                totalCacheWriteTokens = parent.totalCacheWriteTokens,
+                requestCount = parent.requestCount,
+                lastInputTokens = parent.lastInputTokens,
+                projectId = parent.projectId,
+                compactionSummary = finalSummary,
+                compactionBefore = if (finalSummary.isNotBlank()) now else 0L,
+            )
+            db.dao().insertSession(newSession)
+
+            val newMessages = mutableListOf<MessageEntity>()
+            if (finalSummary.isNotBlank()) {
+                val summaryEntity = MessageEntity(
+                    id = UUID.randomUUID().toString(),
+                    sessionId = newSessionId,
+                    role = Role.SYSTEM.name,
+                    text = "${com.androidharness.app.agent.AgentEngine.COMPACTION_PREFIX}\n\n$finalSummary",
+                    toolCallsJson = "[]",
+                    toolCallId = null,
+                    toolName = null,
+                    isError = false,
+                    thinking = "",
+                    thinkingMs = 0,
+                    imagesJson = "[]",
+                    turnId = null,
+                    createdAt = now - 2,
+                )
+                newMessages.add(summaryEntity)
+            }
+
+            val newTurnId = UUID.randomUUID().toString()
+            if (userMsg != null) {
+                newMessages.add(
+                    MessageEntity(
+                        id = UUID.randomUUID().toString(),
+                        sessionId = newSessionId,
+                        role = userMsg.role,
+                        text = userMsg.text,
+                        toolCallsJson = userMsg.toolCallsJson,
+                        toolCallId = userMsg.toolCallId,
+                        toolName = userMsg.toolName,
+                        isError = userMsg.isError,
+                        thinking = userMsg.thinking,
+                        thinkingMs = userMsg.thinkingMs,
+                        imagesJson = userMsg.imagesJson,
+                        turnId = newTurnId,
+                        createdAt = now - 1,
+                    )
+                )
+            }
+
+            newMessages.add(
+                MessageEntity(
+                    id = UUID.randomUUID().toString(),
+                    sessionId = newSessionId,
+                    role = targetAssistant.role,
+                    text = targetAssistant.text,
+                    toolCallsJson = targetAssistant.toolCallsJson,
+                    toolCallId = targetAssistant.toolCallId,
+                    toolName = targetAssistant.toolName,
+                    isError = targetAssistant.isError,
+                    thinking = targetAssistant.thinking,
+                    thinkingMs = targetAssistant.thinkingMs,
+                    imagesJson = targetAssistant.imagesJson,
+                    turnId = newTurnId,
+                    createdAt = now,
+                )
+            )
+
+            for (m in newMessages) {
+                db.dao().insertMessage(m)
+            }
+
+            // Copy usage events so cost and model breakdown charts in ContextDialog show up
+            val usageEvents = db.dao().usageEventsForSessionUpTo(parentSessionId, targetAssistant.createdAt)
+            if (usageEvents.isNotEmpty()) {
+                val clonedEvents = usageEvents.map { ev ->
+                    ev.copy(rowId = 0, sessionId = newSessionId)
+                }
+                db.dao().insertUsageEvents(clonedEvents)
+            }
+
+            newSessionId
+        }
 
     /**
      * Drawer message search. Word mode hits the FTS4 index (every token must

@@ -61,6 +61,8 @@ data class AppSettings(
     val executionModel: String? = null,
     /** The one-time "you can now use two models" chat dialog was dismissed. */
     val planningModelsPromoSeen: Boolean = false,
+    /** The one-time introductory fork dialog was dismissed. */
+    val forkPromoSeen: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -94,6 +96,7 @@ class SettingsRepository(private val context: Context) {
         val EXECUTION_PROVIDER = stringPreferencesKey("execution_provider_id")
         val EXECUTION_MODEL = stringPreferencesKey("execution_model")
         val PLANNING_PROMO_SEEN = booleanPreferencesKey("planning_promo_seen")
+        val FORK_PROMO_SEEN = booleanPreferencesKey("fork_promo_seen")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -128,6 +131,7 @@ class SettingsRepository(private val context: Context) {
             executionProviderId = prefs[Keys.EXECUTION_PROVIDER],
             executionModel = prefs[Keys.EXECUTION_MODEL],
             planningModelsPromoSeen = prefs[Keys.PLANNING_PROMO_SEEN] ?: false,
+            forkPromoSeen = prefs[Keys.FORK_PROMO_SEEN] ?: false,
         )
     }
 
@@ -158,6 +162,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setPlanningModelsPromoSeen(seen: Boolean) {
         context.settingsStore.edit { it[Keys.PLANNING_PROMO_SEEN] = seen }
+    }
+
+    suspend fun setForkPromoSeen(seen: Boolean) {
+        context.settingsStore.edit { it[Keys.FORK_PROMO_SEEN] = seen }
     }
 
     suspend fun setPlanningModel(providerId: String?, model: String?) {

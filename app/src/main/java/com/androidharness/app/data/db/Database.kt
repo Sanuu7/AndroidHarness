@@ -325,6 +325,12 @@ interface HarnessDao {
     )
     fun usageByModelForSession(sessionId: String): Flow<List<ModelUsagePojo>>
 
+    @Query("SELECT * FROM usage_events WHERE sessionId = :sessionId AND createdAt <= :upToCreatedAt ORDER BY createdAt ASC")
+    suspend fun usageEventsForSessionUpTo(sessionId: String, upToCreatedAt: Long): List<UsageEventEntity>
+
+    @Insert
+    suspend fun insertUsageEvents(events: List<UsageEventEntity>)
+
     @Query("DELETE FROM usage_events WHERE sessionId = :sessionId")
     suspend fun deleteUsageEvents(sessionId: String)
 

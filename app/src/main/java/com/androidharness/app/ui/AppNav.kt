@@ -39,6 +39,7 @@ import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
@@ -619,6 +620,9 @@ fun AppNav(container: AppContainer) {
                         }
                     },
                     onOpenSettings = { nav.navigate("settings") },
+                    onNavigateToSession = { sid ->
+                        nav.navigate("chat/$sid")
+                    },
                 )
             }
             composable(
@@ -647,6 +651,9 @@ fun AppNav(container: AppContainer) {
                         }
                     },
                     onOpenSettings = { nav.navigate("settings") },
+                    onNavigateToSession = { sid ->
+                        nav.navigate("chat/$sid")
+                    },
                 )
             }
             composable(
@@ -939,13 +946,24 @@ private fun SessionRow(
             Spacer(Modifier.width(6.dp))
         }
         Column(Modifier.weight(1f)) {
-            Text(
-                session.title,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-                style = MaterialTheme.typography.titleSmall,
-                color = scheme.onSurface,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (session.title.startsWith("Fork of ")) {
+                    Icon(
+                        Icons.Outlined.ForkRight,
+                        contentDescription = "Forked session",
+                        tint = scheme.primary,
+                        modifier = Modifier.size(14.dp),
+                    )
+                    Spacer(Modifier.width(4.dp))
+                }
+                Text(
+                    session.title,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = scheme.onSurface,
+                )
+            }
             if (running) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,

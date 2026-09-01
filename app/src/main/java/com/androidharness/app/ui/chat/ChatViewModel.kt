@@ -123,6 +123,12 @@ data class ChatUiState(
     val planningModelsPromoSeen: Boolean = false,
     /** True while the one-time planning-models dialog should be up; shown on plan-mode switch. */
     val showPlanningPromo: Boolean = false,
+    /** False until the one-time introductory fork dialog is dismissed. */
+    val forkPromoSeen: Boolean = false,
+    /** True while the one-time fork promo dialog should be shown. */
+    val showForkPromo: Boolean = false,
+    /** Pending message for which fork was requested while promo was pending. */
+    val pendingForkMessage: ChatMessage? = null,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Workspace .harness/mcp.json server names awaiting user approval before a run. */
@@ -236,6 +242,7 @@ class ChatViewModel(
                             executionProviderId = settings.executionProviderId,
                             executionModel = settings.executionModel,
                             planningModelsPromoSeen = settings.planningModelsPromoSeen,
+                            forkPromoSeen = settings.forkPromoSeen,
                         )
                     }
                 }
@@ -366,12 +373,27 @@ class ChatViewModel(
 
         if (initialSessionId != null) {
             viewModelScope.launch {
+                val sess = c.sessions.session(initialSessionId)
                 _state.update {
                     it.copy(
                         sessionId = initialSessionId,
-                        sessionTitle = c.sessions.session(initialSessionId)?.title ?: "Chat",
+                        sessionTitle = sess?.title ?: "Chat",
                         turnsWithCheckpoints = refreshCheckpoints(initialSessionId),
                     )
+                }
+                // If this is a forked/compacted session without a live run yet,
+                // compute an initial context estimate so the context bar shows the
+                // real size immediately rather than waiting for a turn.
+                if (sess != null && (sess.compactionSummary.isNotBlank() || sess.lastInputTokens > 0)) {
+                    val fresh = c.engine.estimateFor(
+                        com.androidharness.app.agent.ContextHygiene.forModel(
+                            with(c.sessions) { historyFor(initialSessionId).second.withoutSubagentTurns() },
+                        ),
+                        c.workspace.currentOnce(),
+                        _state.value.mode,
+                        _state.value.permissionMode == PermissionMode.FULL_ACCESS,
+                    )
+                    _state.update { it.copy(estimate = fresh) }
                 }
             }
         }
@@ -955,6 +977,46 @@ class ChatViewModel(
     fun dismissPlanningPromo() {
         _state.update { it.copy(showPlanningPromo = false) }
         viewModelScope.launch { c.settings.setPlanningModelsPromoSeen(true) }
+    }
+
+    /** User tapped fork on an assistant message. Shows promo if not seen yet, otherwise forks. */
+    fun requestFork(message: ChatMessage, onForked: (String) -> Unit) {
+        val s = _state.value
+        if (!s.forkPromoSeen) {
+            _state.update { it.copy(showForkPromo = true, pendingForkMessage = message) }
+        } else {
+            val mid = message.id ?: return
+            forkFrom(mid, onForked)
+        }
+    }
+
+    /** Confirm fork after promo or directly. */
+    fun confirmForkFromPromo(onForked: (String) -> Unit) {
+        val msg = _state.value.pendingForkMessage
+        _state.update { it.copy(showForkPromo = false, pendingForkMessage = null) }
+        viewModelScope.launch {
+            c.settings.setForkPromoSeen(true)
+            val mid = msg?.id ?: return@launch
+            forkFrom(mid, onForked)
+        }
+    }
+
+    fun dismissForkPromo() {
+        _state.update { it.copy(showForkPromo = false, pendingForkMessage = null) }
+        viewModelScope.launch { c.settings.setForkPromoSeen(true) }
+    }
+
+    private fun forkFrom(messageId: String, onForked: (String) -> Unit) {
+        val sid = sessionId ?: return
+        viewModelScope.launch {
+            try {
+                val newSid = c.sessions.forkSession(sid, messageId)
+                _state.update { it.copy(modeToast = "Branched into new chat") }
+                onForked(newSid)
+            } catch (e: Exception) {
+                _state.update { it.copy(error = "Fork failed: ${e.message}") }
+            }
+        }
     }
 
     fun discardPendingPlan() {

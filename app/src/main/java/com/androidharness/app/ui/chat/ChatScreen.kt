@@ -47,6 +47,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
+import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material3.AlertDialog
@@ -147,6 +148,7 @@ fun ChatScreen(
     onOpenFiles: () -> Unit = {},
     onOpenSubagent: (toolCallId: String) -> Unit,
     onOpenSettings: () -> Unit = {},
+    onNavigateToSession: (sessionId: String) -> Unit = {},
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -229,6 +231,27 @@ fun ChatScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissPlanningPromo() }) { Text("Close") }
+            },
+        )
+    }
+
+    if (state.showForkPromo) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissForkPromo() },
+            title = { Text("Fork conversation from here") },
+            text = {
+                Text(
+                    "Forking branches this chat into a new session starting with this prompt and response. " +
+                        "The active agent still retains all background context and project details so you can steer down a new direction cleanly.",
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.confirmForkFromPromo { newSid -> onNavigateToSession(newSid) }
+                }) { Text("Fork chat") }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.dismissForkPromo() }) { Text("Cancel") }
             },
         )
     }
@@ -884,6 +907,13 @@ fun ChatScreen(
                                                 }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     CopyIconButton(message.text)
+                                                    ForkIconButton(
+                                                        onClick = {
+                                                            viewModel.requestFork(message) { newSid ->
+                                                                onNavigateToSession(newSid)
+                                                            }
+                                                        },
+                                                    )
                                                     if (canRewind) {
                                                         UndoIconButton(
                                                             onClick = { message.turnId?.let { confirmRewindTurn = it } },
@@ -1216,6 +1246,18 @@ private fun CopyIconButton(text: String) {
             delay(1500)
             copied = false
         }
+    }
+}
+
+@Composable
+private fun ForkIconButton(onClick: () -> Unit) {
+    IconButton(onClick = onClick, modifier = Modifier.size(28.dp)) {
+        Icon(
+            Icons.Outlined.ForkRight,
+            contentDescription = "Fork from this message",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
