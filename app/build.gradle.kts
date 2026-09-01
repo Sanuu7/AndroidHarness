@@ -101,6 +101,7 @@ dependencies {
     // Custom Tabs for the MCP OAuth authorize screen.
     implementation(libs.browser)
     implementation(libs.security.crypto)
+    implementation(libs.biometric)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)

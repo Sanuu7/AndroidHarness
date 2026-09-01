@@ -402,6 +402,8 @@ private fun TerminalSection(
 
     SettingsHeader("Terminal & environment")
 
+    LinuxEnvironmentCard(container = container, envState = envState)
+
     // What the shell can reach right now.
     val appShellOk = envState is com.androidharness.app.data.env.EnvState.Ready
     val storageText = if (allFiles) "All files ✓" else "Needs grant"
@@ -452,7 +454,6 @@ private fun TerminalSection(
         onGrant = { container.shizuku.requestPermission() },
     )
     BatteryCard(container = container)
-    LinuxEnvironmentCard(container = container, envState = envState)
 }
 
 // ---------------------------------------------------------------------------
@@ -1848,6 +1849,25 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
     SettingsHeader("Privacy")
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Biometric app lock", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        if (settings.biometricLockEnabled) {
+                            "On: requires fingerprint, face or device PIN to open the app."
+                        } else {
+                            "Off: the app opens immediately without authentication."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.biometricLockEnabled,
+                    onCheckedChange = { scope.launch { container.settings.setBiometricLockEnabled(it) } },
+                )
+            }
+            HorizontalDivider()
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
                     Text("Allow screenshots", style = MaterialTheme.typography.bodyLarge)

@@ -24,6 +24,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material.icons.outlined.AttachFile
 import androidx.compose.material.icons.outlined.Description
@@ -69,6 +70,8 @@ internal fun MessageComposer(
     onStop: () -> Unit,
     onAttachImage: () -> Unit,
     onAttachFile: () -> Unit,
+    onToggleVoice: () -> Unit = {},
+    isListening: Boolean = false,
     hasAttachments: Boolean = false,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -182,12 +185,13 @@ internal fun MessageComposer(
                             if (value.text.isEmpty()) {
                                 Text(
                                     when {
+                                        isListening -> "Listening…"
                                         !attachedSkill.isNullOrBlank() -> "Add a note, or send…"
                                         busy -> "Queue a message, or stop…"
                                         else -> "Message your agent…"
                                     },
                                     style = MaterialTheme.typography.bodyLarge,
-                                    color = scheme.onSurfaceVariant,
+                                    color = if (isListening) scheme.primary else scheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
@@ -199,7 +203,19 @@ internal fun MessageComposer(
                     cursorBrush = SolidColor(scheme.primary),
                     maxLines = 5,
                 )
-                Spacer(Modifier.width(6.dp))
+                Spacer(Modifier.width(4.dp))
+                IconButton(
+                    onClick = onToggleVoice,
+                    modifier = Modifier.size(36.dp),
+                ) {
+                    Icon(
+                        Icons.Filled.Mic,
+                        contentDescription = if (isListening) "Stop voice input" else "Voice input",
+                        tint = if (isListening) scheme.primary else scheme.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp),
+                    )
+                }
+                Spacer(Modifier.width(4.dp))
                 if (showQueueSend) {
                     Surface(
                         shape = CircleShape,

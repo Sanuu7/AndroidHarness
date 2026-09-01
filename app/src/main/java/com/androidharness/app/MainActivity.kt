@@ -6,14 +6,37 @@ import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.biometric.BiometricManager
+import androidx.biometric.BiometricPrompt
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Fingerprint
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material3.Button
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ScreenshotPolicy
 import com.androidharness.app.data.update.UpdateIntents
@@ -23,9 +46,11 @@ import com.androidharness.app.ui.update.UpdateDialog
 import kotlinx.coroutines.launch
 import java.io.File
 
-class MainActivity : ComponentActivity() {
+class MainActivity : FragmentActivity() {
 
     private lateinit var container: AppContainer
+    private var isUnlocked by mutableStateOf(false)
+    private var promptShownThisResume by mutableStateOf(false)
 
     private val notificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
@@ -61,6 +86,16 @@ class MainActivity : ComponentActivity() {
                     kotlinx.coroutines.delay(4_000)
                     container.updates.check(manual = false)
                 }
+
+                // Biometric lock prompt on start / when enabled.
+                LaunchedEffect(settings.biometricLockEnabled) {
+                    if (!settings.biometricLockEnabled) {
+                        isUnlocked = true
+                    } else if (!isUnlocked && !promptShownThisResume) {
+                        promptBiometricUnlock()
+                    }
+                }
+
                 // Screenshots and the recents preview are blocked app wide unless
                 // the user allows them, and always blocked while a key or token
                 // is on screen (SecureScreenEffect / SecureDialogEffect).
@@ -73,7 +108,48 @@ class MainActivity : ComponentActivity() {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     }
                 }
-                AppNav(container)
+
+                if (settings.biometricLockEnabled && !isUnlocked) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .background(MaterialTheme.colorScheme.surface),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center,
+                            modifier = Modifier.padding(24.dp),
+                        ) {
+                            Icon(
+                                Icons.Outlined.Lock,
+                                contentDescription = "App Locked",
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(64.dp),
+                            )
+                            Spacer(Modifier.height(16.dp))
+                            Text(
+                                "AndroidHarness is Locked",
+                                style = MaterialTheme.typography.titleLarge,
+                            )
+                            Spacer(Modifier.height(8.dp))
+                            Text(
+                                "Unlock with biometric or device credentials to access your workspaces and chats.",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                            Spacer(Modifier.height(24.dp))
+                            Button(onClick = { promptBiometricUnlock() }) {
+                                Icon(Icons.Outlined.Fingerprint, contentDescription = null, modifier = Modifier.size(18.dp))
+                                Spacer(Modifier.size(8.dp))
+                                Text("Unlock")
+                            }
+                        }
+                    }
+                } else {
+                    AppNav(container)
+                }
+
                 // The one global update dialog, above everything else.
                 val step by container.updates.step.collectAsStateWithLifecycle()
                 UpdateDialog(
@@ -107,6 +183,45 @@ class MainActivity : ComponentActivity() {
                     onOpenUnknownSources = { UpdateIntents.openUnknownSourcesSettings(this) },
                 )
             }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        promptShownThisResume = false
+    }
+
+    private fun promptBiometricUnlock() {
+        promptShownThisResume = true
+        val executor = ContextCompat.getMainExecutor(this)
+        val prompt = BiometricPrompt(
+            this,
+            executor,
+            object : BiometricPrompt.AuthenticationCallback() {
+                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
+                    super.onAuthenticationSucceeded(result)
+                    isUnlocked = true
+                }
+
+                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
+                    super.onAuthenticationError(errorCode, errString)
+                }
+            },
+        )
+        val promptInfo = BiometricPrompt.PromptInfo.Builder()
+            .setTitle("Unlock AndroidHarness")
+            .setSubtitle("Confirm your fingerprint, face, or PIN")
+            .setAllowedAuthenticators(
+                BiometricManager.Authenticators.BIOMETRIC_STRONG or
+                    BiometricManager.Authenticators.BIOMETRIC_WEAK or
+                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
+            )
+            .build()
+        try {
+            prompt.authenticate(promptInfo)
+        } catch (e: Exception) {
+            // Fallback unlock if device lacks biometric hardware / lock screen is none
+            isUnlocked = true
         }
     }
 

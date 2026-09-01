@@ -63,6 +63,8 @@ data class AppSettings(
     val planningModelsPromoSeen: Boolean = false,
     /** The one-time introductory fork dialog was dismissed. */
     val forkPromoSeen: Boolean = false,
+    /** Biometric app lock: requires fingerprint/face/PIN authentication to open. */
+    val biometricLockEnabled: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -97,6 +99,7 @@ class SettingsRepository(private val context: Context) {
         val EXECUTION_MODEL = stringPreferencesKey("execution_model")
         val PLANNING_PROMO_SEEN = booleanPreferencesKey("planning_promo_seen")
         val FORK_PROMO_SEEN = booleanPreferencesKey("fork_promo_seen")
+        val BIOMETRIC_LOCK_ENABLED = booleanPreferencesKey("biometric_lock_enabled")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -132,6 +135,7 @@ class SettingsRepository(private val context: Context) {
             executionModel = prefs[Keys.EXECUTION_MODEL],
             planningModelsPromoSeen = prefs[Keys.PLANNING_PROMO_SEEN] ?: false,
             forkPromoSeen = prefs[Keys.FORK_PROMO_SEEN] ?: false,
+            biometricLockEnabled = prefs[Keys.BIOMETRIC_LOCK_ENABLED] ?: false,
         )
     }
 
@@ -166,6 +170,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setForkPromoSeen(seen: Boolean) {
         context.settingsStore.edit { it[Keys.FORK_PROMO_SEEN] = seen }
+    }
+
+    suspend fun setBiometricLockEnabled(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.BIOMETRIC_LOCK_ENABLED] = enabled }
     }
 
     suspend fun setPlanningModel(providerId: String?, model: String?) {

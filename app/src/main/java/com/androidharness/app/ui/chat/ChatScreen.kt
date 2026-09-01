@@ -738,6 +738,19 @@ fun ChatScreen(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> uri?.let { viewModel.attachFile(it) } }
 
+    val voiceController = rememberVoiceInputController()
+    val audioPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            val base = composerText
+            voiceController.startListening { transcribed, isFinal ->
+                val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                setComposerText(newText)
+            }
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -1215,6 +1228,26 @@ fun ChatScreen(
                     onStop = viewModel::stop,
                     onAttachImage = { galleryLauncher.launch("image/*") },
                     onAttachFile = { fileLauncher.launch("*/*") },
+                    onToggleVoice = {
+                        if (voiceController.isListening) {
+                            voiceController.stopListening()
+                        } else {
+                            if (androidx.core.content.ContextCompat.checkSelfPermission(
+                                    toastContext,
+                                    android.Manifest.permission.RECORD_AUDIO,
+                                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                            ) {
+                                val base = composerText
+                                voiceController.startListening { transcribed, isFinal ->
+                                    val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                                    setComposerText(newText)
+                                }
+                            } else {
+                                audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                            }
+                        }
+                    },
+                    isListening = voiceController.isListening,
                     hasAttachments = state.fileAttachments.isNotEmpty(),
                 )
             }
