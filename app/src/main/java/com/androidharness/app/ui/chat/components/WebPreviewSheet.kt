@@ -723,121 +723,130 @@ private fun WebPageView(
     }
 
     Column(Modifier.fillMaxSize()) {
-        // Clean Title & Action Header Bar (No URL text field)
+        // Clean Title & Action Header Bar (Spaced controls with comfortable touch targets)
         Surface(
             color = scheme.surfaceContainerLow,
             modifier = Modifier.fillMaxWidth(),
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 6.dp, vertical = 6.dp),
+                    .padding(horizontal = 8.dp, vertical = 8.dp),
             ) {
-                IconButton(onClick = onBackToHub, modifier = Modifier.size(34.dp)) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "All Sources", tint = scheme.onSurface)
-                }
-
-                IconButton(
-                    onClick = { webViewRef?.let { if (it.canGoBack()) it.goBack() } },
-                    enabled = canGoBack,
-                    modifier = Modifier.size(32.dp),
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
                 ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowBack,
-                        contentDescription = "History Back",
-                        modifier = Modifier.size(16.dp),
-                        tint = if (canGoBack) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.3f),
-                    )
-                }
+                    IconButton(onClick = onBackToHub, modifier = Modifier.size(38.dp)) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "All Sources", tint = scheme.onSurface, modifier = Modifier.size(20.dp))
+                    }
 
-                IconButton(
-                    onClick = { webViewRef?.let { if (it.canGoForward()) it.goForward() } },
-                    enabled = canGoForward,
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Filled.ArrowForward,
-                        contentDescription = "History Forward",
-                        modifier = Modifier.size(16.dp),
-                        tint = if (canGoForward) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.3f),
-                    )
-                }
-
-                IconButton(onClick = reload, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Refresh, contentDescription = "Reload", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
-                }
-
-                Spacer(Modifier.weight(1f))
-
-                // Eruda DevTools Launcher
-                IconButton(onClick = openDevTools, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        Icons.Outlined.DeveloperMode,
-                        contentDescription = "DevTools",
-                        modifier = Modifier.size(16.dp),
-                        tint = scheme.primary,
-                    )
-                }
-
-                // Open in external browser
-                IconButton(
-                    onClick = {
-                        runCatching {
-                            if (!isWorkspaceHtml(currentUrl)) {
-                                val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
-                                context.startActivity(intent)
-                            }
-                        }
-                    },
-                    enabled = !isWorkspaceHtml(currentUrl),
-                    modifier = Modifier.size(32.dp),
-                ) {
-                    Icon(
-                        Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = "Open in external browser",
-                        modifier = Modifier.size(16.dp),
-                        tint = if (!isWorkspaceHtml(currentUrl)) scheme.onSurfaceVariant else scheme.onSurfaceVariant.copy(alpha = 0.3f),
-                    )
-                }
-
-                // JS Console Drawer Toggle
-                IconButton(onClick = onToggleConsole, modifier = Modifier.size(32.dp)) {
-                    Box {
+                    IconButton(
+                        onClick = { webViewRef?.let { if (it.canGoBack()) it.goBack() } },
+                        enabled = canGoBack,
+                        modifier = Modifier.size(38.dp),
+                    ) {
                         Icon(
-                            Icons.Outlined.BugReport,
-                            contentDescription = "Console",
-                            modifier = Modifier.size(16.dp),
-                            tint = if (consoleLogs.any { it.level == ConsoleMessage.MessageLevel.ERROR }) {
-                                scheme.error
-                            } else if (showConsole) {
-                                scheme.primary
-                            } else {
-                                scheme.onSurfaceVariant
-                            },
+                            Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "History Back",
+                            modifier = Modifier.size(19.dp),
+                            tint = if (canGoBack) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.3f),
                         )
-                        if (consoleLogs.any { it.level == ConsoleMessage.MessageLevel.ERROR }) {
-                            Box(
-                                modifier = Modifier
-                                    .size(5.dp)
-                                    .background(scheme.error, CircleShape)
-                                    .align(Alignment.TopEnd),
-                            )
-                        }
+                    }
+
+                    IconButton(
+                        onClick = { webViewRef?.let { if (it.canGoForward()) it.goForward() } },
+                        enabled = canGoForward,
+                        modifier = Modifier.size(38.dp),
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Filled.ArrowForward,
+                            contentDescription = "History Forward",
+                            modifier = Modifier.size(19.dp),
+                            tint = if (canGoForward) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        )
+                    }
+
+                    IconButton(onClick = reload, modifier = Modifier.size(38.dp)) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Reload", modifier = Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
                     }
                 }
 
-                IconButton(onClick = onToggleFullscreen, modifier = Modifier.size(32.dp)) {
-                    Icon(
-                        if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
-                        contentDescription = "Fullscreen",
-                        modifier = Modifier.size(16.dp),
-                        tint = scheme.onSurfaceVariant,
-                    )
-                }
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(4.dp),
+                ) {
+                    // Eruda DevTools Launcher
+                    IconButton(onClick = openDevTools, modifier = Modifier.size(38.dp)) {
+                        Icon(
+                            Icons.Outlined.DeveloperMode,
+                            contentDescription = "DevTools",
+                            modifier = Modifier.size(20.dp),
+                            tint = scheme.primary,
+                        )
+                    }
 
-                IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) {
-                    Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
+                    // Open in external browser
+                    IconButton(
+                        onClick = {
+                            runCatching {
+                                if (!isWorkspaceHtml(currentUrl)) {
+                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
+                                    context.startActivity(intent)
+                                }
+                            }
+                        },
+                        enabled = !isWorkspaceHtml(currentUrl),
+                        modifier = Modifier.size(38.dp),
+                    ) {
+                        Icon(
+                            Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = "Open in external browser",
+                            modifier = Modifier.size(20.dp),
+                            tint = if (!isWorkspaceHtml(currentUrl)) scheme.onSurfaceVariant else scheme.onSurfaceVariant.copy(alpha = 0.3f),
+                        )
+                    }
+
+                    // JS Console Drawer Toggle
+                    IconButton(onClick = onToggleConsole, modifier = Modifier.size(38.dp)) {
+                        Box {
+                            Icon(
+                                Icons.Outlined.BugReport,
+                                contentDescription = "Console",
+                                modifier = Modifier.size(20.dp),
+                                tint = if (consoleLogs.any { it.level == ConsoleMessage.MessageLevel.ERROR }) {
+                                    scheme.error
+                                } else if (showConsole) {
+                                    scheme.primary
+                                } else {
+                                    scheme.onSurfaceVariant
+                                },
+                            )
+                            if (consoleLogs.any { it.level == ConsoleMessage.MessageLevel.ERROR }) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(6.dp)
+                                        .background(scheme.error, CircleShape)
+                                        .align(Alignment.TopEnd),
+                                )
+                            }
+                        }
+                    }
+
+                    IconButton(onClick = onToggleFullscreen, modifier = Modifier.size(38.dp)) {
+                        Icon(
+                            if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
+                            contentDescription = "Fullscreen",
+                            modifier = Modifier.size(20.dp),
+                            tint = scheme.onSurfaceVariant,
+                        )
+                    }
+
+                    IconButton(onClick = onClose, modifier = Modifier.size(38.dp)) {
+                        Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
+                    }
                 }
             }
         }
