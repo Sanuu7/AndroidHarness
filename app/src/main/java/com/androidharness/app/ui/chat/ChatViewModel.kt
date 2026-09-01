@@ -20,6 +20,7 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ImageRef
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
+import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.data.db.SnippetEntity
 import com.androidharness.app.llm.ProviderConfig
@@ -129,6 +130,14 @@ data class ChatUiState(
     val showForkPromo: Boolean = false,
     /** Pending message for which fork was requested while promo was pending. */
     val pendingForkMessage: ChatMessage? = null,
+    /** Voice speech-to-text engine ("inbuilt" or "groq"). */
+    val voiceEngine: String = AppSettings.VOICE_ENGINE_INBUILT,
+    /** Groq Whisper model ("whisper-large-v3" or "whisper-large-v3-turbo"). */
+    val groqWhisperModel: String = AppSettings.GROQ_MODEL_WHISPER_V3,
+    /** False until the one-time voice configuration promo dialog is dismissed. */
+    val voicePromoSeen: Boolean = false,
+    /** True while the one-time voice promo dialog should be shown. */
+    val showVoicePromo: Boolean = false,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Workspace .harness/mcp.json server names awaiting user approval before a run. */
@@ -243,6 +252,9 @@ class ChatViewModel(
                             executionModel = settings.executionModel,
                             planningModelsPromoSeen = settings.planningModelsPromoSeen,
                             forkPromoSeen = settings.forkPromoSeen,
+                            voiceEngine = settings.voiceEngine,
+                            groqWhisperModel = settings.groqWhisperModel,
+                            voicePromoSeen = settings.voicePromoSeen,
                         )
                     }
                 }
@@ -1004,6 +1016,23 @@ class ChatViewModel(
     fun dismissForkPromo() {
         _state.update { it.copy(showForkPromo = false, pendingForkMessage = null) }
         viewModelScope.launch { c.settings.setForkPromoSeen(true) }
+    }
+
+    fun promptVoicePromo() {
+        _state.update { it.copy(showVoicePromo = true) }
+    }
+
+    fun dismissVoicePromo() {
+        _state.update { it.copy(showVoicePromo = false) }
+        viewModelScope.launch { c.settings.setVoicePromoSeen(true) }
+    }
+
+    fun selectVoiceEngineFromPromo(engine: String) {
+        _state.update { it.copy(showVoicePromo = false, voiceEngine = engine) }
+        viewModelScope.launch {
+            c.settings.setVoiceEngine(engine)
+            c.settings.setVoicePromoSeen(true)
+        }
     }
 
     private fun forkFrom(messageId: String, onForked: (String) -> Unit) {

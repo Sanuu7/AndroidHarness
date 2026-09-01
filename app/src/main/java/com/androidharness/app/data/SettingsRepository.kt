@@ -65,11 +65,21 @@ data class AppSettings(
     val forkPromoSeen: Boolean = false,
     /** Biometric app lock: requires fingerprint/face/PIN authentication to open. */
     val biometricLockEnabled: Boolean = false,
+    /** Voice speech-to-text engine: "inbuilt" (native Android recognizer) or "groq" (Groq Whisper API). */
+    val voiceEngine: String = "inbuilt",
+    /** Groq Whisper model: "whisper-large-v3" (default) or "whisper-large-v3-turbo". */
+    val groqWhisperModel: String = "whisper-large-v3",
+    /** The one-time voice configuration promo dialog was dismissed. */
+    val voicePromoSeen: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
         const val DEFAULT_MAX_OUTPUT = 32_768
         const val DEFAULT_MAX_ITERATIONS = 0 // unlimited
+        const val VOICE_ENGINE_INBUILT = "inbuilt"
+        const val VOICE_ENGINE_GROQ = "groq"
+        const val GROQ_MODEL_WHISPER_V3 = "whisper-large-v3"
+        const val GROQ_MODEL_WHISPER_TURBO = "whisper-large-v3-turbo"
     }
 }
 
@@ -100,6 +110,9 @@ class SettingsRepository(private val context: Context) {
         val PLANNING_PROMO_SEEN = booleanPreferencesKey("planning_promo_seen")
         val FORK_PROMO_SEEN = booleanPreferencesKey("fork_promo_seen")
         val BIOMETRIC_LOCK_ENABLED = booleanPreferencesKey("biometric_lock_enabled")
+        val VOICE_ENGINE = stringPreferencesKey("voice_engine")
+        val GROQ_WHISPER_MODEL = stringPreferencesKey("groq_whisper_model")
+        val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -136,6 +149,9 @@ class SettingsRepository(private val context: Context) {
             planningModelsPromoSeen = prefs[Keys.PLANNING_PROMO_SEEN] ?: false,
             forkPromoSeen = prefs[Keys.FORK_PROMO_SEEN] ?: false,
             biometricLockEnabled = prefs[Keys.BIOMETRIC_LOCK_ENABLED] ?: false,
+            voiceEngine = prefs[Keys.VOICE_ENGINE] ?: AppSettings.VOICE_ENGINE_INBUILT,
+            groqWhisperModel = prefs[Keys.GROQ_WHISPER_MODEL] ?: AppSettings.GROQ_MODEL_WHISPER_V3,
+            voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
         )
     }
 
@@ -174,6 +190,18 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setBiometricLockEnabled(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.BIOMETRIC_LOCK_ENABLED] = enabled }
+    }
+
+    suspend fun setVoiceEngine(engine: String) {
+        context.settingsStore.edit { it[Keys.VOICE_ENGINE] = engine }
+    }
+
+    suspend fun setGroqWhisperModel(model: String) {
+        context.settingsStore.edit { it[Keys.GROQ_WHISPER_MODEL] = model }
+    }
+
+    suspend fun setVoicePromoSeen(seen: Boolean) {
+        context.settingsStore.edit { it[Keys.VOICE_PROMO_SEEN] = seen }
     }
 
     suspend fun setPlanningModel(providerId: String?, model: String?) {

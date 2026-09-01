@@ -42,6 +42,7 @@ import androidx.compose.material.icons.outlined.Extension
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Key
+import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material.icons.outlined.Shield
@@ -169,6 +170,7 @@ fun SettingsScreen(
     val scrollState = rememberScrollState()
     var containerTop by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
     var planningContentY by remember { androidx.compose.runtime.mutableFloatStateOf(Float.NaN) }
+    var voiceContentY by remember { androidx.compose.runtime.mutableFloatStateOf(Float.NaN) }
     LaunchedEffect(Unit) {
         container.pendingSettingsScroll.filterNotNull().collect { target ->
             if (target == "planning") {
@@ -177,6 +179,13 @@ fun SettingsScreen(
                 }
                 if (!planningContentY.isNaN()) {
                     scrollState.animateScrollTo(planningContentY.roundToInt().coerceAtLeast(0))
+                }
+            } else if (target == "voice") {
+                withTimeoutOrNull(2_000) {
+                    while (voiceContentY.isNaN()) kotlinx.coroutines.delay(50)
+                }
+                if (!voiceContentY.isNaN()) {
+                    scrollState.animateScrollTo(voiceContentY.roundToInt().coerceAtLeast(0))
                 }
             }
             container.pendingSettingsScroll.value = null
@@ -211,6 +220,14 @@ fun SettingsScreen(
             GitHubSection(container)
 
             WebSearchSection(container)
+
+            Box(
+                Modifier.onGloballyPositioned { coords ->
+                    voiceContentY = coords.positionInRoot().y - containerTop + scrollState.value
+                },
+            ) {
+                VoiceSpeechSection(container = container, settings = settings, scope = scope)
+            }
 
             McpSection(container)
 
@@ -954,6 +971,216 @@ private fun checkSearchKey(provider: String, key: String): String? {
                 }
             }
     }.getOrElse { "Could not reach the provider. Check your connection and try again." }
+}
+
+// ---------------------------------------------------------------------------
+// Voice & speech (Groq Whisper / Inbuilt)
+// ---------------------------------------------------------------------------
+
+@Composable
+private fun VoiceSpeechSection(
+    container: AppContainer,
+    settings: AppSettings,
+    scope: kotlinx.coroutines.CoroutineScope,
+) {
+    val context = LocalContext.current
+    val voiceEngine = settings.voiceEngine
+    val groqModel = settings.groqWhisperModel
+    val isGroq = voiceEngine == AppSettings.VOICE_ENGINE_GROQ
+
+    var keyDraft by remember { mutableStateOf("") }
+    var keyEpoch by remember { mutableStateOf(0) }
+    var expanded by remember { mutableStateOf(false) }
+    var checking by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
+    val hasGroqKey = remember(keyEpoch) { container.keys.groqApiKey() != null }
+    val groqKeyUrl = "https://console.groq.com/keys"
+
+    // The pasted key is only on screen while the entry form is open.
+    SecureScreenEffect(container, expanded)
+
+    SettingsHeader("Voice & speech")
+    OutlinedCard(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.Mic,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text("Speech-to-text engine", style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        when {
+                            !isGroq -> "Inbuilt Android recognizer"
+                            hasGroqKey -> "Groq Whisper ($groqModel) · key saved"
+                            else -> "Groq Whisper · no key yet"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusText(
+                    when {
+                        !isGroq -> "Inbuilt"
+                        hasGroqKey -> "On"
+                        else -> "No key"
+                    },
+                    ok = !isGroq || hasGroqKey,
+                )
+            }
+
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                listOf(
+                    AppSettings.VOICE_ENGINE_INBUILT to "Inbuilt",
+                    AppSettings.VOICE_ENGINE_GROQ to "Groq",
+                ).forEachIndexed { index, (value, label) ->
+                    SegmentedButton(
+                        selected = voiceEngine == value,
+                        onClick = {
+                            if (voiceEngine != value) {
+                                expanded = false
+                                status = null
+                                keyDraft = ""
+                                scope.launch { container.settings.setVoiceEngine(value) }
+                            }
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+                    ) { Text(label) }
+                }
+            }
+
+            if (!isGroq) {
+                Text(
+                    "Uses the on-device or system speech recognizer without sending audio to external APIs.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            } else {
+                Text(
+                    "Whisper Model",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+
+                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                    listOf(
+                        AppSettings.GROQ_MODEL_WHISPER_V3 to "Whisper 3",
+                        AppSettings.GROQ_MODEL_WHISPER_TURBO to "Turbo",
+                    ).forEachIndexed { index, (value, label) ->
+                        SegmentedButton(
+                            selected = groqModel == value,
+                            onClick = {
+                                if (groqModel != value) {
+                                    scope.launch { container.settings.setGroqWhisperModel(value) }
+                                }
+                            },
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+                        ) { Text(label) }
+                    }
+                }
+
+                when {
+                    expanded -> {
+                        Text(
+                            "Get a free API key at console.groq.com/keys. The key is checked with " +
+                                "Groq before it is saved, and it lives only in the app's encrypted storage.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                runCatching {
+                                    context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(groqKeyUrl)))
+                                }
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Icon(
+                                Icons.Outlined.OpenInNew,
+                                contentDescription = null,
+                                modifier = Modifier.size(16.dp),
+                            )
+                            Spacer(Modifier.width(6.dp))
+                            Text("Get Groq API key")
+                        }
+                        OutlinedTextField(
+                            value = keyDraft,
+                            onValueChange = { keyDraft = it },
+                            label = { Text(if (hasGroqKey) "Replace Groq API key" else "Paste Groq API key") },
+                            placeholder = { Text("gsk_…") },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                        )
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(
+                                enabled = keyDraft.isNotBlank() && !checking,
+                                onClick = {
+                                    checking = true
+                                    status = "Checking that key with Groq…"
+                                    scope.launch {
+                                        val key = keyDraft.trim()
+                                        val res = com.androidharness.app.data.audio.GroqWhisperClient.validateApiKey(key)
+                                        if (res.success) {
+                                            withContext(Dispatchers.IO) { container.keys.putGroqApiKey(key) }
+                                            keyDraft = ""
+                                            expanded = false
+                                            status = "Key verified and saved"
+                                            keyEpoch++
+                                        } else {
+                                            status = res.error ?: "Verification failed"
+                                        }
+                                        checking = false
+                                    }
+                                },
+                            ) { Text(if (checking) "Checking…" else "Save and check") }
+                            TextButton(onClick = {
+                                expanded = false
+                                keyDraft = ""
+                                status = null
+                            }) { Text("Cancel") }
+                        }
+                        status?.let {
+                            Text(
+                                it,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+
+                    hasGroqKey -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        OutlinedButton(onClick = {
+                            expanded = true
+                            keyDraft = ""
+                            status = null
+                        }) { Text("Replace key") }
+                        OutlinedButton(onClick = {
+                            scope.launch {
+                                withContext(Dispatchers.IO) { container.keys.removeGroqApiKey() }
+                                keyEpoch++
+                            }
+                        }) { Text("Remove", color = MaterialTheme.colorScheme.error) }
+                    }
+
+                    else -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(groqKeyUrl)))
+                            }
+                        }) { Text("Get API key") }
+                        OutlinedButton(onClick = {
+                            expanded = true
+                            keyDraft = ""
+                            status = null
+                        }) { Text("I have a key") }
+                    }
+                }
+            }
+        }
+    }
 }
 
 // ---------------------------------------------------------------------------

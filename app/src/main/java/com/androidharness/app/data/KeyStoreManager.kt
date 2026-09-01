@@ -113,6 +113,17 @@ class KeyStoreManager(context: Context) {
     private fun mcpOAuthSlot(server: String) =
         "${KEY_MCP_OAUTH}_${McpServerNameSanitizer.sanitize(server)}"
 
+    /** Groq API key used for high-speed Whisper speech-to-text transcriptions. */
+    fun putGroqApiKey(key: String) {
+        prefs.edit().putString(KEY_GROQ_API, key.trim()).apply()
+    }
+
+    fun groqApiKey(): String? = prefs.getString(KEY_GROQ_API, null)?.trim()?.ifBlank { null }
+
+    fun removeGroqApiKey() {
+        prefs.edit().remove(KEY_GROQ_API).apply()
+    }
+
     private object McpServerNameSanitizer {
         fun sanitize(raw: String): String =
             raw.trim().lowercase().replace(Regex("[^a-z0-9_]+"), "_")
@@ -125,5 +136,6 @@ class KeyStoreManager(context: Context) {
         const val KEY_GITHUB_LOGIN = "github_login"
         const val KEY_SEARCH_API = "search_api_key"
         const val KEY_MCP_OAUTH = "mcp_oauth"
+        const val KEY_GROQ_API = "groq_api_key"
     }
 }

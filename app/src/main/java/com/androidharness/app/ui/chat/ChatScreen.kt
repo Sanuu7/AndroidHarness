@@ -3,6 +3,7 @@ package com.androidharness.app.ui.chat
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import com.androidharness.app.data.AppSettings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
@@ -252,6 +253,31 @@ fun ChatScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.dismissForkPromo() }) { Text("Cancel") }
+            },
+        )
+    }
+
+    if (state.showVoicePromo) {
+        AlertDialog(
+            onDismissRequest = { viewModel.dismissVoicePromo() },
+            title = { Text("Voice & speech input") },
+            text = {
+                Text(
+                    "You can transcribe speech with Groq Whisper (ultra fast and accurate cloud transcription with hold/swipe gestures) or use Android's inbuilt speech recognizer.\n\n" +
+                        "Configure Groq Whisper in Settings with your free Groq API key, or start using inbuilt speech immediately.",
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    viewModel.selectVoiceEngineFromPromo(AppSettings.VOICE_ENGINE_GROQ)
+                    viewModel.container.pendingSettingsScroll.value = "voice"
+                    onOpenSettings()
+                }) { Text("Configure Groq Whisper") }
+            },
+            dismissButton = {
+                TextButton(onClick = {
+                    viewModel.selectVoiceEngineFromPromo(AppSettings.VOICE_ENGINE_INBUILT)
+                }) { Text("Use inbuilt speech") }
             },
         )
     }
@@ -738,16 +764,26 @@ fun ChatScreen(
         ActivityResultContracts.GetContent()
     ) { uri: Uri? -> uri?.let { viewModel.attachFile(it) } }
 
-    val voiceController = rememberVoiceInputController()
+    val voiceController = rememberVoiceInputController(viewModel.container)
     val audioPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            val base = composerText
-            voiceController.startListening { transcribed, isFinal ->
-                val newText = if (base.isBlank()) transcribed else "$base $transcribed"
-                setComposerText(newText)
+            if (state.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) {
+                voiceController.startGroqRecording(locked = false)
+            } else {
+                val base = composerText
+                voiceController.startNativeListening { transcribed, isFinal ->
+                    val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                    setComposerText(newText)
+                }
             }
+        }
+    }
+
+    LaunchedEffect(voiceController.errorMessage) {
+        voiceController.errorMessage?.let {
+            Toast.makeText(toastContext, it, Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -1228,9 +1264,15 @@ fun ChatScreen(
                     onStop = viewModel::stop,
                     onAttachImage = { galleryLauncher.launch("image/*") },
                     onAttachFile = { fileLauncher.launch("*/*") },
-                    onToggleVoice = {
-                        if (voiceController.isListening) {
-                            voiceController.stopListening()
+                    voiceEngine = state.voiceEngine,
+                    groqRecordState = voiceController.groqRecordState,
+                    rmsDb = voiceController.rmsDb,
+                    recordingDurationMs = voiceController.recordingDurationMs,
+                    onToggleInbuiltVoice = {
+                        if (!state.voicePromoSeen) {
+                            viewModel.promptVoicePromo()
+                        } else if (voiceController.isListeningInbuilt) {
+                            voiceController.stopNativeListening()
                         } else {
                             if (androidx.core.content.ContextCompat.checkSelfPermission(
                                     toastContext,
@@ -1238,7 +1280,7 @@ fun ChatScreen(
                                 ) == android.content.pm.PackageManager.PERMISSION_GRANTED
                             ) {
                                 val base = composerText
-                                voiceController.startListening { transcribed, isFinal ->
+                                voiceController.startNativeListening { transcribed, isFinal ->
                                     val newText = if (base.isBlank()) transcribed else "$base $transcribed"
                                     setComposerText(newText)
                                 }
@@ -1247,7 +1289,31 @@ fun ChatScreen(
                             }
                         }
                     },
-                    isListening = voiceController.isListening,
+                    isInbuiltListening = voiceController.isListeningInbuilt,
+                    onStartGroqRecord = { locked ->
+                        if (!state.voicePromoSeen) {
+                            viewModel.promptVoicePromo()
+                        } else if (androidx.core.content.ContextCompat.checkSelfPermission(
+                                toastContext,
+                                android.Manifest.permission.RECORD_AUDIO,
+                            ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+                        ) {
+                            voiceController.startGroqRecording(locked = locked)
+                        } else {
+                            audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+                        }
+                    },
+                    onLockGroqRecord = voiceController::lockGroqRecording,
+                    onCancelGroqRecord = voiceController::cancelGroqRecording,
+                    onStopAndTranscribeGroq = {
+                        voiceController.stopAndTranscribeGroq(
+                            model = state.groqWhisperModel,
+                        ) { transcribed ->
+                            val base = composerText
+                            val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                            setComposerText(newText)
+                        }
+                    },
                     hasAttachments = state.fileAttachments.isNotEmpty(),
                 )
             }
