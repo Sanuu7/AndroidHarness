@@ -18,6 +18,7 @@ internal fun formatBrowserState(state: BrowserState): String {
     val sb = StringBuilder()
     sb.append("URL: ").append(state.url.ifBlank { "(blank)" }).append("\n")
     sb.append("Title: ").append(state.title.ifBlank { "(no title)" }).append("\n")
+    sb.append("Scroll: y=${state.scrollY}\n")
 
     if (!state.error.isNullOrBlank()) {
         sb.append("Warning: ").append(state.error).append("\n")
@@ -34,6 +35,8 @@ internal fun formatBrowserState(state: BrowserState): String {
             if (!el.role.isNullOrBlank()) sb.append(" role=\"").append(el.role).append("\"")
             if (!el.text.isNullOrBlank()) sb.append(" text=\"").append(el.text.replace("\n", " ")).append("\"")
             if (!el.href.isNullOrBlank()) sb.append(" href=\"").append(el.href).append("\"")
+            if (el.disabled) sb.append(" [DISABLED]")
+            if (!el.inViewport) sb.append(" [offscreen]")
             sb.append("\n")
         }
     } else {
@@ -58,9 +61,11 @@ class BrowserNavigateTool(
 ) : Tool {
     override val name = "browser_navigate"
     override val description =
-        "Navigate the in-app browser/WebView to a target URL, localhost server (e.g. http://localhost:3000), " +
-        "or a relative workspace HTML file (e.g. index.html). Returns page title, URL, text summary, and " +
-        "an indexed catalog of interactive elements ([id]) for clicking and typing."
+        "Navigate the in-app browser/WebView to a target URL, a localhost server (e.g. http://localhost:3000), " +
+        "or a workspace-relative local file (e.g. 'index.html', 'docs/about.html'). Local files are served over " +
+        "a loopback HTTP server, so relative links, form submits, and assets work like a real site. Returns page " +
+        "title, URL, scroll position, text excerpt, and an indexed catalog of interactive elements ([id]) for " +
+        "clicking and typing."
     override val parametersSchema = Schema.obj(
         mapOf(
             "url" to Schema.string("The target URL (e.g. 'https://example.com', 'http://localhost:5173', or 'index.html')."),
@@ -219,11 +224,12 @@ class BrowserEvalTool(
 ) : Tool {
     override val name = "browser_eval"
     override val description =
-        "Evaluate arbitrary JavaScript in the page context and return the result. " +
-        "Useful for inspecting custom DOM attributes, reading localStorage/sessionStorage, or triggering custom browser APIs."
+        "Evaluate JavaScript in the page context inside a sandboxed async function: `await` is allowed, the " +
+        "completion value (or an explicit `return`) is the result, and thrown errors are reported as tool " +
+        "failures. Each call is isolated; persist state via localStorage/sessionStorage, not globals."
     override val parametersSchema = Schema.obj(
         mapOf(
-            "code" to Schema.string("JavaScript code to evaluate in page context."),
+            "code" to Schema.string("JavaScript to run, e.g. `return document.title;` or `await fetch('/api').then(r => r.json())`."),
         ),
         required = listOf("code"),
     )
@@ -234,8 +240,12 @@ class BrowserEvalTool(
             ?: throw ToolFailure("Missing required argument: code")
 
         return try {
-            val result = controller.evaluateJs(code)
-            ToolResult(true, "Result: $result")
+            val outcome = controller.evalUser(code)
+            if (outcome.ok) {
+                ToolResult(true, "Result: ${outcome.value}")
+            } else {
+                ToolResult(false, "JavaScript error: ${outcome.error}")
+            }
         } catch (e: Exception) {
             ToolResult(false, "Failed to execute JavaScript: ${e.message}")
         }
@@ -250,7 +260,8 @@ class BrowserScreenshotTool(
 ) : Tool {
     override val name = "browser_screenshot"
     override val description =
-        "Capture a screenshot image of the current page/WebView viewport. Saves the image to disk and returns file details."
+        "Capture a screenshot image of the current page/WebView viewport. The image is shown inline in the " +
+        "chat transcript so the user sees it, and the tool result reports the saved file details."
     override val parametersSchema = Schema.obj(emptyMap())
     override val isReadOnly = true
 
@@ -258,7 +269,12 @@ class BrowserScreenshotTool(
         return try {
             val image = controller.screenshot()
             if (image != null) {
-                ToolResult(true, "Screenshot captured: ${image.file.name} (${image.file.length()} bytes, path=${image.file.absolutePath})")
+                ToolResult(
+                    true,
+                    "Screenshot captured: ${image.file.name} (${image.file.length()} bytes, path=${image.file.absolutePath}). " +
+                        "It is shown in the chat transcript; the user can see it.",
+                    image = com.androidharness.app.core.ImageRef(image.file.name, image.mime),
+                )
             } else {
                 ToolResult(false, "Failed to capture screenshot: WebView is not initialized or failed to render canvas.")
             }
@@ -276,10 +292,12 @@ class BrowserGetLogsTool(
 ) : Tool {
     override val name = "browser_get_logs"
     override val description =
-        "Retrieve recent browser console logs, warnings, and JavaScript runtime errors captured from the active page."
+        "Retrieve recent browser console logs, warnings, and JavaScript runtime errors, each tagged with the page " +
+        "URL that produced it. Set clear=true to empty the buffer after reading (equivalent to browser_clear_logs)."
     override val parametersSchema = Schema.obj(
         mapOf(
             "level" to Schema.string("Filter by level: 'ERROR', 'WARN', 'LOG', 'DEBUG', or leave empty for all."),
+            "source" to Schema.string("Only logs whose page URL or script source contains this substring."),
             "clear" to Schema.boolean("Whether to clear the log buffer after reading (default false)."),
         ),
     )
@@ -287,10 +305,11 @@ class BrowserGetLogsTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         val level = args["level"]?.jsonPrimitive?.content
+        val source = args["source"]?.jsonPrimitive?.content
         val clear = args["clear"]?.jsonPrimitive?.booleanOrNull ?: false
 
         return try {
-            val logs = controller.getLogs(levelFilter = level, clear = clear)
+            val logs = controller.getLogs(levelFilter = level, sourceFilter = source, clear = clear)
             if (logs.isEmpty()) {
                 ToolResult(true, "No console logs captured.")
             } else {
@@ -300,12 +319,136 @@ class BrowserGetLogsTool(
                     if (log.source.isNotBlank() || log.line > 0) {
                         sb.append(" (${log.source}:${log.line})")
                     }
+                    if (log.url.isNotBlank()) {
+                        sb.append(" @ ${log.url.take(100)}")
+                    }
                     sb.append("\n")
                 }
                 ToolResult(true, sb.toString().trimEnd())
             }
         } catch (e: Exception) {
             ToolResult(false, "Failed to read console logs: ${e.message}")
+        }
+    }
+}
+
+/**
+ * Blocks until a condition holds on the page.
+ */
+class BrowserWaitForTool(
+    private val controller: BrowserController,
+) : Tool {
+    override val name = "browser_wait_for"
+    override val description =
+        "Block until a condition holds on the current page: 'selector' (CSS selector exists and is visible), " +
+        "'text' (string appears in body text), or 'url_contains' (URL substring). Use after clicks that trigger " +
+        "async re-renders or navigations instead of guessing."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "condition" to Schema.string("selector | text | url_contains"),
+            "value" to Schema.string("The CSS selector, text, or URL substring to wait for."),
+            "timeout_ms" to Schema.integer("Max wait in milliseconds (default 5000, max 30000)."),
+        ),
+        required = listOf("condition", "value"),
+    )
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        val condition = args["condition"]?.jsonPrimitive?.content
+            ?: throw ToolFailure("Missing required argument: condition")
+        val value = args["value"]?.jsonPrimitive?.content
+            ?: throw ToolFailure("Missing required argument: value")
+        val timeoutMs = args["timeout_ms"]?.jsonPrimitive?.content?.toLongOrNull() ?: 5_000L
+
+        return try {
+            val state = controller.waitFor(condition, value, timeoutMs)
+            ToolResult(true, "Condition met.\n\n" + formatBrowserState(state))
+        } catch (e: Exception) {
+            ToolResult(false, "browser_wait_for failed: ${e.message}")
+        }
+    }
+}
+
+/**
+ * History navigation: back, forward, and in-place refresh.
+ */
+class BrowserBackTool(
+    private val controller: BrowserController,
+) : Tool {
+    override val name = "browser_back"
+    override val description =
+        "Go back one page in browser history. Preserves console logs and, for workspace pages, restores app " +
+        "state better than re-navigating."
+    override val parametersSchema = Schema.obj(emptyMap())
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        return try {
+            val state = controller.back()
+            ToolResult(true, formatBrowserState(state))
+        } catch (e: Exception) {
+            ToolResult(false, "browser_back failed: ${e.message}")
+        }
+    }
+}
+
+class BrowserForwardTool(
+    private val controller: BrowserController,
+) : Tool {
+    override val name = "browser_forward"
+    override val description = "Go forward one page in browser history (after a browser_back)."
+    override val parametersSchema = Schema.obj(emptyMap())
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        return try {
+            val state = controller.forward()
+            ToolResult(true, formatBrowserState(state))
+        } catch (e: Exception) {
+            ToolResult(false, "browser_forward failed: ${e.message}")
+        }
+    }
+}
+
+class BrowserRefreshTool(
+    private val controller: BrowserController,
+) : Tool {
+    override val name = "browser_refresh"
+    override val description =
+        "Reload the current page in place. Unlike re-navigating, in-page state that the browser owns " +
+        "(history entry, scroll anchor) behaves like a normal reload, and console logs are preserved."
+    override val parametersSchema = Schema.obj(emptyMap())
+    override val isReadOnly = false
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        return try {
+            val state = controller.refresh()
+            ToolResult(true, formatBrowserState(state))
+        } catch (e: Exception) {
+            ToolResult(false, "browser_refresh failed: ${e.message}")
+        }
+    }
+}
+
+/**
+ * Cheap read of the current URL and title.
+ */
+class BrowserGetUrlTool(
+    private val controller: BrowserController,
+) : Tool {
+    override val name = "browser_get_url"
+    override val description =
+        "Return just the current page URL and title, without re-reading the DOM. Cheap way to confirm where " +
+        "the browser ended up after a click or navigation."
+    override val parametersSchema = Schema.obj(emptyMap())
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        return try {
+            val (url, title) = controller.getUrl()
+            ToolResult(true, "URL: ${url.ifBlank { "(blank)" }}\nTitle: ${title.ifBlank { "(no title)" }}")
+        } catch (e: Exception) {
+            ToolResult(false, "browser_get_url failed: ${e.message}")
         }
     }
 }

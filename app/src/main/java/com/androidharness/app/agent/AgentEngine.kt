@@ -444,6 +444,7 @@ class AgentEngine(
                     toolCallId = call.id,
                     toolName = call.name,
                     isError = !result.ok,
+                    images = listOfNotNull(result.image),
                 )
                 working += toolMessage
                 emit(AgentEvent.ToolMessageCommitted(toolMessage))
@@ -1044,6 +1045,7 @@ class AgentEngine(
                     toolCallId = call.id,
                     toolName = call.name,
                     isError = !result.ok,
+                    images = listOfNotNull(result.image),
                 )
                 history += toolMessage
                 emitEvent(AgentEvent.SubagentMessageCommitted(parentCallId, toolMessage))

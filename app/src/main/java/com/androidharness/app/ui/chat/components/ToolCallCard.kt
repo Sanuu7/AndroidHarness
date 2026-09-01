@@ -1,5 +1,7 @@
 package com.androidharness.app.ui.chat.components
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.animateFloatAsState
@@ -8,7 +10,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -35,17 +39,23 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.describeToolCall
 import com.androidharness.app.core.ChatMessage
+import com.androidharness.app.core.ImageRef
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.common.ThinLinearProgress
@@ -54,9 +64,12 @@ import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.defaultEffectsSpec
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.theme.fastSpatialSpec
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import java.io.File
 
 /**
  * One tool call = one compact, quiet row.
@@ -178,6 +191,14 @@ internal fun ToolCallCard(
             }
             if (running) {
                 ThinLinearProgress(modifier = Modifier.fillMaxWidth())
+            }
+            result?.images?.takeIf { it.isNotEmpty() }?.let { imgs ->
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+                ) {
+                    imgs.forEach { ref -> ToolResultImage(ref) }
+                }
             }
             AnimatedVisibility(
                 expanded,
@@ -331,6 +352,15 @@ internal fun ToolGroupCard(
             if (anyRunning) {
                 ThinLinearProgress(modifier = Modifier.fillMaxWidth())
             }
+            results.values.filterNotNull().map { it.images }.flatten()
+                .takeIf { it.isNotEmpty() }?.let { imgs ->
+                    Column(
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
+                    ) {
+                        imgs.forEach { ref -> ToolResultImage(ref) }
+                    }
+                }
             AnimatedVisibility(
                 expanded,
                 enter = expandVertically(animationSpec = fastSpatialSpec()) + fadeIn(defaultEffectsSpec()),
@@ -362,5 +392,43 @@ internal fun ToolGroupCard(
                 }
             }
         }
+    }
+}
+
+/**
+ * Inline tool-result image (browser screenshots). Decoded off the main thread
+ * with a coarse sample size; these are for viewing in the transcript, not
+ * pixel work. Provider payloads never include them.
+ */
+@Composable
+private fun ToolResultImage(ref: ImageRef) {
+    val context = LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val bitmap by produceState<Bitmap?>(initialValue = null, ref.name) {
+        value = withContext(Dispatchers.IO) {
+            runCatching {
+                val file = File(context.filesDir, "images/${ref.name}")
+                if (!file.exists()) return@runCatching null
+                val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
+                BitmapFactory.decodeFile(file.absolutePath, bounds)
+                var sample = 1
+                while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 1024) sample *= 2
+                BitmapFactory.decodeFile(
+                    file.absolutePath,
+                    BitmapFactory.Options().apply { inSampleSize = sample },
+                )
+            }.getOrNull()
+        }
+    }
+    bitmap?.let { bmp ->
+        Image(
+            bitmap = bmp.asImageBitmap(),
+            contentDescription = ref.name,
+            contentScale = ContentScale.FillWidth,
+            modifier = Modifier
+                .fillMaxWidth()
+                .clip(RoundedCornerShape(10.dp))
+                .border(1.dp, scheme.outlineVariant.copy(alpha = 0.5f), RoundedCornerShape(10.dp)),
+        )
     }
 }

@@ -21,6 +21,12 @@ data class ToolContext(
 data class ToolResult(
     val ok: Boolean,
     val output: String,
+    /**
+     * Optional image rendered inline in the chat transcript next to the tool
+     * card (e.g. browser screenshots). Persisted with the tool message but
+     * providers only ever see [output]; the image is display-only.
+     */
+    val image: com.androidharness.app.core.ImageRef? = null,
 )
 
 class ToolFailure(message: String) : Exception(message)
@@ -115,6 +121,11 @@ class ToolRegistry(private val tools: List<Tool>) {
                         BrowserGetDomTool(browserController),
                         BrowserGetLogsTool(browserController),
                         BrowserScreenshotTool(browserController),
+                        BrowserWaitForTool(browserController),
+                        BrowserBackTool(browserController),
+                        BrowserForwardTool(browserController),
+                        BrowserRefreshTool(browserController),
+                        BrowserGetUrlTool(browserController),
                     )
                 )
             }
