@@ -1266,8 +1266,10 @@ fun ChatScreen(
                     onAttachFile = { fileLauncher.launch("*/*") },
                     voiceEngine = state.voiceEngine,
                     groqRecordState = voiceController.groqRecordState,
-                    rmsDb = voiceController.rmsDb,
                     recordingDurationMs = voiceController.recordingDurationMs,
+                    levels = voiceController.levels,
+                    cancelArmed = voiceController.cancelArmed,
+                    onCancelArmedChange = { voiceController.cancelArmed = it },
                     onToggleInbuiltVoice = {
                         if (!state.voicePromoSeen) {
                             viewModel.promptVoicePromo()

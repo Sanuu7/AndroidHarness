@@ -62,6 +62,11 @@ class VoiceInputController(
     var recordingDurationMs by mutableLongStateOf(0L)
         private set
 
+    var levels by mutableStateOf<List<Float>>(emptyList())
+        private set
+
+    var cancelArmed by mutableStateOf(false)
+
     var errorMessage by mutableStateOf<String?>(null)
         private set
 
@@ -170,6 +175,8 @@ class VoiceInputController(
     fun startGroqRecording(locked: Boolean = false): Boolean {
         if (groqRecordState != GroqRecordState.IDLE) return false
         errorMessage = null
+        cancelArmed = false
+        levels = emptyList()
 
         val audioDir = File(context.cacheDir, "audio_recordings").apply { mkdirs() }
         val audioFile = File(audioDir, "rec_${System.currentTimeMillis()}.m4a")
@@ -187,9 +194,9 @@ class VoiceInputController(
                 setAudioSource(MediaRecorder.AudioSource.MIC)
                 setOutputFormat(MediaRecorder.OutputFormat.MPEG_4)
                 setAudioEncoder(MediaRecorder.AudioEncoder.AAC)
-                setAudioEncodingBitRate(128_000)
-                setAudioSamplingRate(44_100)
                 setAudioChannels(1)
+                setAudioSamplingRate(44_100)
+                setAudioEncodingBitRate(128_000)
                 setOutputFile(audioFile.absolutePath)
                 prepare()
                 start()
@@ -203,7 +210,9 @@ class VoiceInputController(
                 while (isActive && (groqRecordState == GroqRecordState.HOLDING || groqRecordState == GroqRecordState.LOCKED)) {
                     val maxAmp = runCatching { mediaRecorder?.maxAmplitude ?: 0 }.getOrDefault(0)
                     // Normalize amplitude 0..32767 to 0f..1f
-                    rmsDb = (maxAmp / 32767f).coerceIn(0f, 1f)
+                    val scaled = (maxAmp / 32767f).coerceIn(0f, 1f)
+                    rmsDb = scaled
+                    levels = (levels + scaled).takeLast(40)
                     recordingDurationMs = SystemClock.elapsedRealtime() - recordStartTime
                     delay(60)
                 }
@@ -219,12 +228,14 @@ class VoiceInputController(
     fun lockGroqRecording() {
         if (groqRecordState == GroqRecordState.HOLDING) {
             groqRecordState = GroqRecordState.LOCKED
+            cancelArmed = false
         }
     }
 
     fun cancelGroqRecording() {
         cleanupGroqRecorder()
         groqRecordState = GroqRecordState.IDLE
+        cancelArmed = false
     }
 
     fun stopAndTranscribeGroq(
