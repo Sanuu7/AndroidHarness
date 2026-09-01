@@ -145,7 +145,7 @@ fun CodeEditorScreen(
     var searchOpen by remember { mutableStateOf(false) }
     var gotoOpen by remember { mutableStateOf(false) }
     var menuOpen by remember { mutableStateOf(false) }
-    var wordwrapOn by remember { mutableStateOf(true) }
+    var wordwrapOn by remember { mutableStateOf(false) }
 
     fun editorText(): String = editorRef?.text?.toString().orEmpty()
 
@@ -368,11 +368,10 @@ fun CodeEditorScreen(
                                 props.stickyScroll = false
                                 getComponent(EditorAutoCompletion::class.java)?.setEnabled(false)
                                 isEditable = false
-                                // Wrap by default: horizontal panning fights the
-                                // reader's vertical scroll and loses lines off-screen.
-                                setWordwrap(true)
-                                setText(decoded.value!!.text)
+                                setWordwrap(false)
                                 setEditorLanguage(BasicCodeLanguage(path))
+                                setText(decoded.value!!.text)
+                                applyEditorTheme(this, scheme)
                                 // Dirty flag via the event bus, survives setText
                                 // swapping out the Content object.
                                 subscribeEvent(

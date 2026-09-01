@@ -48,7 +48,7 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
                             TokenType.COMMENT -> slot(COMMENT, italic = true)
                             TokenType.ANNOTATION -> slot(ANNOTATION)
                             TokenType.OPERATOR -> slot(OPERATOR)
-                            TokenType.PLAIN -> continue
+                            TokenType.PLAIN -> slot(PLAIN)
                         }
                         if (slot != lastStyle) {
                             builder.addIfNeeded(lineIdx, t.start, slot)
@@ -57,6 +57,7 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
                     }
                     lineIdx++
                     lineStart = i + 1
+                    lastStyle = -1L
                     if (i == n) break
                 }
                 i++
@@ -70,6 +71,7 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
     }
 
     private companion object {
+        const val PLAIN = EditorColorScheme.TEXT_NORMAL
         const val KEYWORD = EditorColorScheme.KEYWORD
         const val KEYWORD_CONTROL = EditorColorScheme.ATTRIBUTE_NAME
         const val HTML_TAG = EditorColorScheme.HTML_TAG
