@@ -4,7 +4,9 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.androidharness.app.data.AppSettings
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.togetherWith
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -882,28 +884,36 @@ fun ChatScreen(
                         .weight(1f)
                         .fillMaxWidth(),
                 ) {
-                    if (state.isLoadingMessages) {
-                        ChatLoadingSkeleton(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(horizontal = 14.dp, vertical = 16.dp),
-                        )
-                    } else {
-                        LazyColumn(
-                            state = listState,
-                            modifier = Modifier.fillMaxWidth(),
-                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
-                        ) {
-                            if (state.messages.isEmpty() && state.streamingText == null) {
-                                item {
-                                    EmptyState(
-                                        hasProvider = state.activeProvider != null,
-                                        onSuggestion = { viewModel.send(it) },
-                                        onAddProvider = { showProviderManager = true },
-                                    )
+                    AnimatedContent(
+                        targetState = state.isLoadingMessages,
+                        transitionSpec = {
+                            fadeIn(tween(220, easing = FastOutSlowInEasing)) togetherWith
+                                fadeOut(tween(160, easing = FastOutSlowInEasing))
+                        },
+                        label = "chatLoadingTransition",
+                    ) { loading ->
+                        if (loading) {
+                            ChatLoadingSkeleton(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .padding(horizontal = 14.dp, vertical = 16.dp),
+                            )
+                        } else {
+                            LazyColumn(
+                                state = listState,
+                                modifier = Modifier.fillMaxWidth(),
+                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
+                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                            ) {
+                                if (state.messages.isEmpty() && state.streamingText == null) {
+                                    item {
+                                        EmptyState(
+                                            hasProvider = state.activeProvider != null,
+                                            onSuggestion = { viewModel.send(it) },
+                                            onAddProvider = { showProviderManager = true },
+                                        )
+                                    }
                                 }
-                            }
 
                     for ((messageIndex, message) in state.messages.withIndex()) {
                         // Inner subagent turns persist with the parent task's
@@ -1168,8 +1178,9 @@ fun ChatScreen(
                             }
                         }
                     }
-                    }
                 }
+            }
+        }
 
                 // Floating jump-to-latest button while detached from the
                 // bottom; pulses when new content lands while away.
