@@ -159,7 +159,7 @@ fun ChatScreen(
     var showModelPicker by remember { mutableStateOf(false) }
     var showProviderManager by remember { mutableStateOf(false) }
     var showWebPreview by remember { mutableStateOf(false) }
-    var webPreviewUrl by remember { mutableStateOf("http://localhost:3000") }
+    var webPreviewUrl by remember { mutableStateOf<String?>(null) }
     var slashExpanded by remember { mutableStateOf(false) }
     // The composer carries its own selection so programmatic edits (mention
     // picks, share prefills) move the cursor instead of leaving it where the
@@ -355,10 +355,13 @@ fun ChatScreen(
     if (showWebPreview) {
         val fs by viewModel.container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
         WebPreviewSheet(
-            initialUrlOrPath = webPreviewUrl,
+            initialTarget = webPreviewUrl,
             workspace = fs,
             messages = state.messages,
-            onDismiss = { showWebPreview = false },
+            onDismiss = {
+                showWebPreview = false
+                webPreviewUrl = null
+            },
         )
     }
     if (state.showCostDialog) {
