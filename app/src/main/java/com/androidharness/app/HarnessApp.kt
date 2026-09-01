@@ -68,6 +68,7 @@ class AppContainer(val appContext: Context) {
     val images = ImageStore(appContext)
 
     val todoStore = TodoStore()
+    val repoMap = com.androidharness.app.repomap.RepoMapCache()
     private val fetchClient = OkHttpClient()
     val linuxEnv =
         com.androidharness.app.data.env.LinuxEnvironmentManager(appContext) { keys.githubToken() }
@@ -124,6 +125,7 @@ class AppContainer(val appContext: Context) {
         shizuku = shizuku,
         skills = skills,
         todoStore = todoStore,
+        repoMap = repoMap,
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -135,6 +137,7 @@ class AppContainer(val appContext: Context) {
         settings = settings,
         todoStore = todoStore,
         mcp = mcp,
+        repoMap = repoMap,
     )
     val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
 

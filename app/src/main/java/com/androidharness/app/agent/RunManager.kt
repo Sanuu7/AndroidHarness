@@ -96,6 +96,7 @@ class RunManager(
     private val todoStore: TodoStore,
     /** MCP servers; tools are attached per run. Null in tests without MCP. */
     private val mcp: com.androidharness.app.tools.mcp.McpManager? = null,
+    private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
 ) {
 
     /** Live, per-session run state the UI mirrors. */
@@ -299,6 +300,7 @@ class RunManager(
                         is com.androidharness.app.llm.ModelCatalog.Result.Failed -> error(r.message)
                     }
                 }
+                val repoMapOn = runCatching { settings.settings.first().repoMapEnabled }.getOrDefault(true)
                 engine.run(
                     sessionId = sid,
                     turnId = turnId,
@@ -322,6 +324,7 @@ class RunManager(
                     // server must never block the run itself.
                     extraTools = runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
                     resolveSubagentModel = modelResolver::resolve,
+                    repoMapEnabled = repoMapOn,
                 ).collect { event -> handleEvent(sid, event) }
             } catch (ce: CancellationException) {
                 throw ce
@@ -448,6 +451,7 @@ class RunManager(
                 sessions.addMessage(sessionId, event.message, turnId)
 
             is AgentEvent.FileEdited -> {
+                repoMap?.invalidate(event.relPath)
                 sessions.recordFileEdit(
                     sessionId, event.turnId, event.relPath, event.added, event.removed,
                 )

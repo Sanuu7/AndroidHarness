@@ -75,6 +75,8 @@ data class AppSettings(
     val resumeLastChat: Boolean = true,
     /** ID of the last active chat session. */
     val lastActiveSessionId: String? = null,
+    /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
+    val repoMapEnabled: Boolean = true,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -119,6 +121,7 @@ class SettingsRepository(private val context: Context) {
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
+        val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -160,6 +163,7 @@ class SettingsRepository(private val context: Context) {
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
+            repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
         )
     }
 
@@ -273,6 +277,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setOnboardingDone(done: Boolean) {
         context.settingsStore.edit { it[Keys.ONBOARDING_DONE] = done }
+    }
+
+    suspend fun setRepoMapEnabled(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.REPO_MAP_ENABLED] = enabled }
     }
 
     suspend fun setSkillEnabled(name: String, enabled: Boolean) {

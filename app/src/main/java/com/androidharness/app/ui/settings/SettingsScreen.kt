@@ -2097,6 +2097,25 @@ private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, 
                     onCheckedChange = { scope.launch { container.settings.setResumeLastChat(it) } },
                 )
             }
+            HorizontalDivider()
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                Column(Modifier.weight(1f)) {
+                    Text("Workspace code index (Repo map)", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        if (settings.repoMapEnabled) {
+                            "On: injects a compact project symbol map (classes, functions, types) into context so the agent understands codebase structure without extra searches."
+                        } else {
+                            "Off: agent explores files only using tool commands."
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.repoMapEnabled,
+                    onCheckedChange = { scope.launch { container.settings.setRepoMapEnabled(it) } },
+                )
+            }
         }
     }
 }

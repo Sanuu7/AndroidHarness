@@ -188,6 +188,7 @@ class AgentEngine(
     private val shizuku: com.androidharness.app.data.env.ShizukuManager,
     private val skills: com.androidharness.app.skills.SkillStore,
     private val todoStore: TodoStore? = null,
+    private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -218,6 +219,7 @@ class AgentEngine(
          * a clear message instead of silently running on the wrong model.
          */
         resolveSubagentModel: (suspend (String) -> SubagentModelResolution)? = null,
+        repoMapEnabled: Boolean = true,
     ): Flow<AgentEvent> = channelFlow {
         // Parallel subagents emit from async children, plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
@@ -225,7 +227,7 @@ class AgentEngine(
         suspend fun emit(event: AgentEvent) = send(event)
         // Rebuilt when Full access toggles, because the path rules the model
         // is told about change with it.
-        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false)
+        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false, repoMapEnabled = repoMapEnabled)
         var promptSandboxOff = false
         val runRegistry = registry.withExtra(extraTools)
         val tools = runRegistry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
@@ -270,7 +272,7 @@ class AgentEngine(
             val sandboxOff = effectiveMode == PermissionMode.FULL_ACCESS
             if (sandboxOff != promptSandboxOff) {
                 promptSandboxOff = sandboxOff
-                systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff)
+                systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff, repoMapEnabled = repoMapEnabled)
             }
             // Open path resolution only exists on real-filesystem workspaces;
             // SAF has no shell root and stays inside its picked tree.
@@ -1176,7 +1178,8 @@ class AgentEngine(
         workspace: WorkspaceFs,
         mode: AgentMode,
         fullAccess: Boolean,
-    ): ContextEstimate = estimateContext(history, systemPrompt(workspace, mode, fullAccess))
+        repoMapEnabled: Boolean = true,
+    ): ContextEstimate = estimateContext(history, systemPrompt(workspace, mode, fullAccess, repoMapEnabled))
 
     /**
      * Models pass options in wildly different shapes: string arrays, arrays of
@@ -1284,7 +1287,12 @@ class AgentEngine(
         return hints.distinct()
     }
 
-    private fun systemPrompt(workspace: WorkspaceFs, mode: AgentMode, fullAccess: Boolean): String {
+    private fun systemPrompt(
+        workspace: WorkspaceFs,
+        mode: AgentMode,
+        fullAccess: Boolean,
+        repoMapEnabled: Boolean = true,
+    ): String {
         val agentsFile = readWorkspaceDoc(workspace, "AGENTS.md")
             ?: readWorkspaceDoc(workspace, "HARNESS.md")
         val memory = readWorkspaceDoc(workspace, "memory")
@@ -1367,6 +1375,14 @@ Rules:
         val todos = TodoPrompt.format(todoStore?.todos?.value.orEmpty())
         if (todos.isNotBlank()) {
             sb.append('\n').append(todos)
+        }
+        if (repoMapEnabled) {
+            val map = runCatching {
+                kotlinx.coroutines.runBlocking { repoMap?.getMap(workspace, maxChars = 10_000) }
+            }.getOrNull()
+            if (!map.isNullOrBlank()) {
+                sb.append("\n# Repository Map (codebase index)\n").append(map).append('\n')
+            }
         }
         return sb.toString()
     }
