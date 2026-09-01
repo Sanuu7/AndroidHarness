@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.view.View
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
@@ -60,6 +61,7 @@ import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.outlined.DeveloperMode
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.FullscreenExit
@@ -97,7 +99,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -125,6 +126,33 @@ data class WebConsoleLog(
     val timestamp: Long = System.currentTimeMillis(),
 )
 
+/** Eruda mobile devtools script CDN loader */
+private const val ERUDA_INJECT_JS = """
+(function () {
+    if (window.__eruda_injected) {
+        if (window.eruda) {
+            window.eruda.show();
+        }
+        return;
+    }
+    var script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/eruda";
+    script.onload = function () {
+        if (window.eruda) {
+            window.eruda.init({
+                tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets']
+            });
+            window.eruda.show();
+            window.__eruda_injected = true;
+        }
+    };
+    script.onerror = function() {
+        console.error('Failed to load Eruda DevTools from CDN. Check network connection.');
+    };
+    document.head.appendChild(script);
+})();
+"""
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebPreviewSheet(
@@ -137,7 +165,6 @@ fun WebPreviewSheet(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
-    val statusColors = LocalStatusColors.current
 
     var stage by remember {
         mutableStateOf(if (!initialTarget.isNullOrBlank()) WebPreviewStage.WEB_VIEW else WebPreviewStage.SOURCE_HUB)
@@ -242,7 +269,7 @@ fun WebPreviewSheet(
 }
 
 // ---------------------------------------------------------------------------
-// Stage 1: Native Source Picker Hub
+// Stage 1: Native Source Picker Hub (Smart Filtering)
 // ---------------------------------------------------------------------------
 
 @Composable
@@ -257,6 +284,8 @@ private fun SourceHubView(
 ) {
     val scheme = MaterialTheme.colorScheme
     var customUrlInput by remember { mutableStateOf("") }
+
+    val hasAnySources = workspaceHtmlFiles.isNotEmpty() || chatLinks.isNotEmpty() || activePorts.isNotEmpty()
 
     Column(Modifier.fillMaxSize()) {
         // Header
@@ -281,7 +310,7 @@ private fun SourceHubView(
                     fontWeight = FontWeight.SemiBold,
                 )
                 Text(
-                    "Choose a workspace file, chat link, or local server to preview",
+                    if (isScanning) "Scanning workspace & live ports…" else "Select a source to inspect",
                     style = MaterialTheme.typography.labelSmall,
                     color = scheme.onSurfaceVariant,
                 )
@@ -303,21 +332,14 @@ private fun SourceHubView(
                 .padding(14.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-            // 1. Workspace HTML files (Highest priority)
-            CollapsibleSection(
-                title = "Workspace Files",
-                count = workspaceHtmlFiles.size,
-                icon = Icons.Outlined.Folder,
-                defaultExpanded = workspaceHtmlFiles.isNotEmpty(),
-            ) {
-                if (workspaceHtmlFiles.isEmpty()) {
-                    Text(
-                        "No .html or .htm files found in current workspace root.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                        modifier = Modifier.padding(12.dp),
-                    )
-                } else {
+            // 1. Workspace HTML files (only if present)
+            if (workspaceHtmlFiles.isNotEmpty()) {
+                CollapsibleSection(
+                    title = "Workspace Files",
+                    count = workspaceHtmlFiles.size,
+                    icon = Icons.Outlined.Folder,
+                    defaultExpanded = true,
+                ) {
                     workspaceHtmlFiles.forEach { file ->
                         SourceRowItem(
                             icon = Icons.Outlined.Description,
@@ -330,21 +352,14 @@ private fun SourceHubView(
                 }
             }
 
-            // 2. Chat Links
-            CollapsibleSection(
-                title = "Links in Chat",
-                count = chatLinks.size,
-                icon = Icons.Outlined.Link,
-                defaultExpanded = chatLinks.isNotEmpty(),
-            ) {
-                if (chatLinks.isEmpty()) {
-                    Text(
-                        "No web links mentioned in this conversation yet.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = scheme.onSurfaceVariant,
-                        modifier = Modifier.padding(12.dp),
-                    )
-                } else {
+            // 2. Chat Links (only if present in conversation)
+            if (chatLinks.isNotEmpty()) {
+                CollapsibleSection(
+                    title = "Links in Chat",
+                    count = chatLinks.size,
+                    icon = Icons.Outlined.Link,
+                    defaultExpanded = true,
+                ) {
                     chatLinks.forEach { link ->
                         SourceRowItem(
                             icon = Icons.Outlined.Language,
@@ -357,38 +372,73 @@ private fun SourceHubView(
                 }
             }
 
-            // 3. Localhost servers
-            val allPorts = (activePorts + LocalPortProbe.COMMON_PORTS).distinct()
-            CollapsibleSection(
-                title = "Localhost Servers",
-                count = activePorts.size,
-                icon = Icons.Outlined.Sensors,
-                defaultExpanded = activePorts.isNotEmpty(),
-                headerAction = {
-                    IconButton(onClick = onRescanPorts, modifier = Modifier.size(24.dp)) {
-                        Icon(
-                            Icons.Default.Refresh,
-                            contentDescription = "Rescan ports",
-                            tint = scheme.primary,
-                            modifier = Modifier.size(16.dp),
+            // 3. Localhost servers (only show LIVE servers)
+            if (activePorts.isNotEmpty()) {
+                CollapsibleSection(
+                    title = "Live Local Servers",
+                    count = activePorts.size,
+                    icon = Icons.Outlined.Sensors,
+                    defaultExpanded = true,
+                    headerAction = {
+                        IconButton(onClick = onRescanPorts, modifier = Modifier.size(24.dp)) {
+                            Icon(
+                                Icons.Default.Refresh,
+                                contentDescription = "Rescan ports",
+                                tint = scheme.primary,
+                                modifier = Modifier.size(16.dp),
+                            )
+                        }
+                    },
+                ) {
+                    activePorts.forEach { port ->
+                        SourceRowItem(
+                            icon = Icons.Outlined.Sensors,
+                            title = "http://localhost:$port",
+                            subtitle = "Active listening server on port $port",
+                            badgeText = "LIVE",
+                            isLive = true,
+                            onClick = { onSelectTarget("http://localhost:$port") },
                         )
                     }
-                },
-            ) {
-                allPorts.take(8).forEach { port ->
-                    val isLive = port in activePorts
-                    SourceRowItem(
-                        icon = Icons.Outlined.Sensors,
-                        title = "http://localhost:$port",
-                        subtitle = if (isLive) "Active listening server" else "Common dev port (tap to probe)",
-                        badgeText = if (isLive) "LIVE" else "PORT",
-                        isLive = isLive,
-                        onClick = { onSelectTarget("http://localhost:$port") },
-                    )
                 }
             }
 
-            // Custom Direct URL
+            // Clean Empty State when no automatic sources found
+            if (!hasAnySources && !isScanning) {
+                Surface(
+                    shape = MaterialTheme.shapes.medium,
+                    color = scheme.surfaceContainerLow,
+                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.4f)),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Column(
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        modifier = Modifier.padding(20.dp),
+                    ) {
+                        Icon(
+                            Icons.Outlined.Sensors,
+                            contentDescription = null,
+                            tint = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+                            modifier = Modifier.size(32.dp),
+                        )
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "No active web sources detected",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Spacer(Modifier.height(4.dp))
+                        Text(
+                            "Start a dev server in Terminal (e.g. `python3 -m http.server 8000` or `npm run dev`), or enter an address below.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                            textAlign = androidx.compose.ui.text.style.TextAlign.Center,
+                        )
+                    }
+                }
+            }
+
+            // Custom Direct URL Card
             Surface(
                 shape = MaterialTheme.shapes.medium,
                 color = scheme.surfaceContainerLowest,
@@ -397,7 +447,7 @@ private fun SourceHubView(
             ) {
                 Column(Modifier.padding(12.dp)) {
                     Text(
-                        "Or Enter Custom Address",
+                        "Enter Custom Address or Port",
                         style = MaterialTheme.typography.labelMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
@@ -594,7 +644,7 @@ private fun SourceRowItem(
 }
 
 // ---------------------------------------------------------------------------
-// Stage 2: WebView Execution with Loading Animation
+// Stage 2: Optimized WebView Execution + Mobile DevTools
 // ---------------------------------------------------------------------------
 
 @Composable
@@ -654,6 +704,10 @@ private fun WebPageView(
 
     val reload: () -> Unit = {
         load(currentUrl)
+    }
+
+    val openDevTools: () -> Unit = {
+        webViewRef?.evaluateJavascript(ERUDA_INJECT_JS, null)
     }
 
     Column(Modifier.fillMaxSize()) {
@@ -746,6 +800,16 @@ private fun WebPageView(
                     }
                 }
 
+                // Eruda DevTools Launcher
+                IconButton(onClick = openDevTools, modifier = Modifier.size(32.dp)) {
+                    Icon(
+                        Icons.Outlined.DeveloperMode,
+                        contentDescription = "DevTools",
+                        modifier = Modifier.size(16.dp),
+                        tint = scheme.primary,
+                    )
+                }
+
                 // Open in external browser
                 IconButton(
                     onClick = {
@@ -812,7 +876,7 @@ private fun WebPageView(
             ThinLinearProgress(modifier = Modifier.fillMaxWidth())
         }
 
-        // WebView and Overlays
+        // Hardware-Accelerated Smooth WebView
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             AndroidView(
                 factory = { ctx ->
@@ -821,10 +885,18 @@ private fun WebPageView(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT,
                         )
+
+                        // Hardware Acceleration & High-FPS Smooth Scrolling
+                        setLayerType(View.LAYER_TYPE_HARDWARE, null)
+                        isVerticalScrollBarEnabled = true
+                        isHorizontalScrollBarEnabled = false
+                        overScrollMode = View.OVER_SCROLL_IF_CONTENT_SCROLLS
+
                         @SuppressLint("SetJavaScriptEnabled")
                         settings.apply {
                             javaScriptEnabled = true
                             domStorageEnabled = true
+                            cacheMode = WebSettings.LOAD_DEFAULT
                             loadWithOverviewMode = true
                             useWideViewPort = true
                             builtInZoomControls = true
