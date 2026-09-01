@@ -690,6 +690,9 @@ private fun WebPageView(
                     val html = runCatching { node.readText() }.getOrDefault("")
                     pageTitle = t.substringAfterLast('/')
                     view.loadDataWithBaseURL("https://localhost/", html, "text/html", "UTF-8", null)
+                } else if (workspace == null) {
+                    // Workspace still resolving from container, keep loading state
+                    isLoading = true
                 } else {
                     isLoading = false
                     errorMessage = "File '$t' not found in active workspace."
@@ -701,6 +704,13 @@ private fun WebPageView(
                     view.loadUrl(norm)
                 }
             }
+        }
+    }
+
+    // Auto-reload when workspace finishes initializing from container flow
+    LaunchedEffect(workspace, target) {
+        if (workspace != null && isWorkspaceHtml(target) && webViewRef != null) {
+            load(target)
         }
     }
 
@@ -758,20 +768,7 @@ private fun WebPageView(
                     Icon(Icons.Default.Refresh, contentDescription = "Reload", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                 }
 
-                // Clean Page Title (no URL subtitle)
-                Column(
-                    modifier = Modifier
-                        .weight(1f)
-                        .padding(horizontal = 8.dp),
-                ) {
-                    Text(
-                        pageTitle,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.SemiBold,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                }
+                Spacer(Modifier.weight(1f))
 
                 // Eruda DevTools Launcher
                 IconButton(onClick = openDevTools, modifier = Modifier.size(32.dp)) {
