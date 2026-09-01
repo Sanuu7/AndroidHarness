@@ -80,7 +80,11 @@ fun MarkdownText(
 ) {
     // Strip agent system directives (like ::web-preview{...}) so raw markup is never visible to the user
     val cleanText = remember(text) {
-        com.androidharness.app.core.WebResourceExtractor.stripDirectives(text)
+        if (text.contains("preview")) {
+            com.androidharness.app.core.WebResourceExtractor.stripDirectives(text)
+        } else {
+            text
+        }
     }
 
     // The fence tracker is a composable (remember), it must be invoked
@@ -522,20 +526,22 @@ private fun ParagraphText(text: String, onOpenUrl: ((String) -> Unit)? = null) {
     val styled = styledText(text)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val context = LocalContext.current
+    val currentOpenUrl by androidx.compose.runtime.rememberUpdatedState(onOpenUrl)
     Text(
         text = styled,
         style = MaterialTheme.typography.bodyLarge,
         onTextLayout = { layout = it },
-        modifier = Modifier.pointerInput(styled) {
+        modifier = Modifier.pointerInput(Unit) {
             detectTapGestures { pos ->
                 val offset = layout?.getOffsetForPosition(pos) ?: return@detectTapGestures
                 styled.getStringAnnotations("url", offset, offset)
                     .firstOrNull()?.let { ann ->
-                        if (onOpenUrl != null && com.androidharness.app.core.LocalPortProbe.isLocalhostUrl(ann.item)) {
-                            onOpenUrl(ann.item)
+                        val url = ann.item
+                        if (currentOpenUrl != null && com.androidharness.app.core.LocalPortProbe.isLocalhostUrl(url)) {
+                            currentOpenUrl?.invoke(url)
                         } else {
                             runCatching {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ann.item)))
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
                             }
                         }
                     }

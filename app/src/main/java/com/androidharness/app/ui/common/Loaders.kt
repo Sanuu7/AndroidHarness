@@ -21,7 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.Dp
@@ -41,30 +41,62 @@ fun DotLoading(
     dotSize: Dp = 4.dp,
 ) {
     val transition = rememberInfiniteTransition(label = "dot loading")
+    val alpha0 by transition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 520, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+            initialStartOffset = StartOffset(0),
+        ),
+        label = "dot 0",
+    )
+    val alpha1 by transition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 520, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+            initialStartOffset = StartOffset(140),
+        ),
+        label = "dot 1",
+    )
+    val alpha2 by transition.animateFloat(
+        initialValue = 0.25f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(durationMillis = 520, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+            initialStartOffset = StartOffset(280),
+        ),
+        label = "dot 2",
+    )
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(3.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        repeat(3) { index ->
-            val alpha by transition.animateFloat(
-                initialValue = 0.25f,
-                targetValue = 1f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(durationMillis = 520, easing = LinearEasing),
-                    repeatMode = RepeatMode.Reverse,
-                    initialStartOffset = StartOffset(index * 140),
-                ),
-                label = "dot $index",
-            )
-            Box(
-                Modifier
-                    .size(dotSize)
-                    .alpha(alpha)
-                    .clip(CircleShape)
-                    .background(color),
-            )
-        }
+        Box(
+            Modifier
+                .size(dotSize)
+                .graphicsLayer { alpha = alpha0 }
+                .clip(CircleShape)
+                .background(color),
+        )
+        Box(
+            Modifier
+                .size(dotSize)
+                .graphicsLayer { alpha = alpha1 }
+                .clip(CircleShape)
+                .background(color),
+        )
+        Box(
+            Modifier
+                .size(dotSize)
+                .graphicsLayer { alpha = alpha2 }
+                .clip(CircleShape)
+                .background(color),
+        )
     }
 }
 

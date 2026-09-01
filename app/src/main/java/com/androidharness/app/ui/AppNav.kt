@@ -466,12 +466,20 @@ fun AppNav(container: AppContainer) {
                         }
                     }
 
+                    val boundaries = remember { DateBoundaries.now() }
+                    val filteredSessions = remember(sessions, searchQuery) {
+                        if (searchQuery.isBlank()) sessions else sessions.filter {
+                            it.title.contains(searchQuery, ignoreCase = true)
+                        }
+                    }
+                    val groupedSessions = remember(filteredSessions, settings.pinnedSessions, settings.archivedSessions) {
+                        filteredSessions.groupBy { sessionGroup(it, settings, boundaries) }
+                    }
+
                     LazyColumn(
                         modifier = Modifier.weight(1f).fillMaxWidth(),
                     ) {
-                        val filtered = if (searchQuery.isBlank()) sessions else sessions.filter {
-                            it.title.contains(searchQuery, ignoreCase = true)
-                        }
+                        val filtered = filteredSessions
 
                         if (searchQuery.isNotBlank()) {
                             // Search mode: title matches on top, message hits
@@ -515,7 +523,7 @@ fun AppNav(container: AppContainer) {
                                 }
                             }
                         } else {
-                            val grouped = filtered.groupBy { sessionGroup(it, settings) }
+                            val grouped = groupedSessions
                             val order = SessionGroup.entries
                             order.forEach { group ->
                                 val items = grouped[group].orEmpty()
@@ -1190,22 +1198,37 @@ private fun DrawerRow(
     }
 }
 
-private fun sessionGroup(session: SessionEntity, settings: AppSettings): SessionGroup {
+data class DateBoundaries(
+    val todayStart: Long,
+    val yesterdayStart: Long,
+    val weekStart: Long,
+) {
+    companion object {
+        fun now(): DateBoundaries {
+            val cal = Calendar.getInstance()
+            cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0)
+            cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)
+            val todayStart = cal.timeInMillis
+            val yesterdayStart = todayStart - 24L * 60 * 60 * 1000
+            cal.add(Calendar.DAY_OF_YEAR, -(cal.get(Calendar.DAY_OF_WEEK) - cal.firstDayOfWeek))
+            val weekStart = cal.timeInMillis
+            return DateBoundaries(todayStart, yesterdayStart, weekStart)
+        }
+    }
+}
+
+private fun sessionGroup(
+    session: SessionEntity,
+    settings: AppSettings,
+    boundaries: DateBoundaries,
+): SessionGroup {
     if (session.id in settings.pinnedSessions) return SessionGroup.PINNED
     if (session.id in settings.archivedSessions) return SessionGroup.ARCHIVED
 
-    val cal = Calendar.getInstance()
-    cal.set(Calendar.HOUR_OF_DAY, 0); cal.set(Calendar.MINUTE, 0)
-    cal.set(Calendar.SECOND, 0); cal.set(Calendar.MILLISECOND, 0)
-    val todayStart = cal.timeInMillis
-    val yesterdayStart = todayStart - 24L * 60 * 60 * 1000
-    cal.add(Calendar.DAY_OF_YEAR, -(cal.get(Calendar.DAY_OF_WEEK) - cal.firstDayOfWeek))
-    val weekStart = cal.timeInMillis
-
     return when {
-        session.updatedAt >= todayStart -> SessionGroup.TODAY
-        session.updatedAt >= yesterdayStart -> SessionGroup.YESTERDAY
-        session.updatedAt >= weekStart -> SessionGroup.THIS_WEEK
+        session.updatedAt >= boundaries.todayStart -> SessionGroup.TODAY
+        session.updatedAt >= boundaries.yesterdayStart -> SessionGroup.YESTERDAY
+        session.updatedAt >= boundaries.weekStart -> SessionGroup.THIS_WEEK
         else -> SessionGroup.OLDER
     }
 }

@@ -858,11 +858,56 @@ fun ChatScreen(
                     .imePadding(),
             ) {
                 val toolResults = remember(state.messages) {
-                    state.messages.filter { it.role == Role.TOOL }
-                        .associateBy { it.toolCallId ?: "" }
+                    val map = HashMap<String, ChatMessage>(state.messages.size)
+                    for (m in state.messages) {
+                        if (m.role == Role.TOOL && !m.toolCallId.isNullOrEmpty()) {
+                            map[m.toolCallId] = m
+                        }
+                    }
+                    map
                 }
                 val runningIds = remember(state.runningCalls) {
                     state.runningCalls.map { it.id }.toSet()
+                }
+
+                // Precompute message lookup maps to eliminate O(N^2) scans in LazyColumn items
+                val turnFinalAssistantIds = remember(state.messages) {
+                    val map = HashMap<String, String>()
+                    for (m in state.messages) {
+                        if (m.role == Role.ASSISTANT && m.turnId != null && m.id != null) {
+                            map[m.turnId] = m.id
+                        }
+                    }
+                    map
+                }
+                val turnFirstUserTimes = remember(state.messages) {
+                    val map = HashMap<String, Long>()
+                    for (m in state.messages) {
+                        if (m.role == Role.USER && m.turnId != null && !map.containsKey(m.turnId)) {
+                            map[m.turnId] = m.createdAt
+                        }
+                    }
+                    map
+                }
+                val skillUsedByMessage = remember(state.messages) {
+                    val map = HashMap<String, List<String>>()
+                    for (m in state.messages) {
+                        if (m.role == Role.ASSISTANT && m.id != null) {
+                            val skills = m.toolCalls
+                                .filter { it.name == "skill_view" }
+                                .mapNotNull { call ->
+                                    runCatching {
+                                        kotlinx.serialization.json.Json.parseToJsonElement(call.argumentsJson)
+                                            .jsonObject["name"]?.jsonPrimitive?.content
+                                    }.getOrNull()
+                                }
+                                .distinct()
+                            if (skills.isNotEmpty()) {
+                                map[m.id] = skills
+                            }
+                        }
+                    }
+                    map
                 }
 
                 // FAB visibility tracks the pin (not the raw at-bottom check),
@@ -962,15 +1007,7 @@ fun ChatScreen(
                                     item(key = "message-$messageKey-text") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             Column {
-                                                val used = message.toolCalls
-                                                    .filter { it.name == "skill_view" }
-                                                    .mapNotNull { call ->
-                                                        runCatching {
-                                                            kotlinx.serialization.json.Json.parseToJsonElement(call.argumentsJson)
-                                                                .jsonObject["name"]?.jsonPrimitive?.content
-                                                        }.getOrNull()
-                                                    }
-                                                    .distinct()
+                                                val used = skillUsedByMessage[message.id].orEmpty()
                                                 if (used.isNotEmpty()) {
                                                     Row(
                                                         horizontalArrangement = Arrangement.spacedBy(6.dp),
@@ -979,10 +1016,7 @@ fun ChatScreen(
                                                         used.forEach { SkillUsedBadge(it) }
                                                     }
                                                 }
-                                                val isTurnFinal = state.messages
-                                                    .lastOrNull { m ->
-                                                        m.role == Role.ASSISTANT && m.turnId == message.turnId
-                                                    }?.id == message.id
+                                                val isTurnFinal = message.id == turnFinalAssistantIds[message.turnId]
                                                 AssistantText(
                                                     message.text,
                                                     showPreviewChip = isTurnFinal && !state.busy,
@@ -1013,9 +1047,7 @@ fun ChatScreen(
                                                     }
                                                     Spacer(Modifier.weight(1f))
                                                     if (isTurnFinal) {
-                                                        val userAt = state.messages.firstOrNull { m ->
-                                                            m.role == Role.USER && m.turnId == message.turnId
-                                                        }?.createdAt ?: 0L
+                                                        val userAt = turnFirstUserTimes[message.turnId] ?: 0L
                                                         val worked = formatDuration((message.createdAt - userAt).coerceAtLeast(0))
                                                         if (worked.isNotEmpty()) {
                                                             Text(
@@ -1111,22 +1143,20 @@ fun ChatScreen(
                         state.streamingThinking?.let { thinking ->
                             if (thinking.isNotBlank()) {
                                 item(key = "streaming-$streamKey-thinking") {
-                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(thinking, live = true) }
+                                    ThinkingBlock(thinking, live = true)
                                 }
                             }
                         }
                         state.streamingText?.let { streaming ->
                             item(key = "streaming-$streamKey-text") {
-                                Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                    AssistantText(
-                                        streaming.take(revealedChars),
-                                        streaming = !state.streamingCommitted,
-                                        onOpenUrl = { url ->
-                                            webPreviewUrl = url
-                                            showWebPreview = true
-                                        },
-                                    )
-                                }
+                                AssistantText(
+                                    streaming.take(revealedChars),
+                                    streaming = !state.streamingCommitted,
+                                    onOpenUrl = { url ->
+                                        webPreviewUrl = url
+                                        showWebPreview = true
+                                    },
+                                )
                             }
                         }
                     }

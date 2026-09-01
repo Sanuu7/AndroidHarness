@@ -37,6 +37,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -136,7 +137,11 @@ internal fun AssistantText(
         } else {
             Row(verticalAlignment = Alignment.Top) {
                 Box(Modifier.weight(1f)) {
-                    SelectionContainer { MarkdownText(text, streaming = streaming, onOpenUrl = onOpenUrl) }
+                    if (streaming) {
+                        MarkdownText(text, streaming = true, onOpenUrl = onOpenUrl)
+                    } else {
+                        SelectionContainer { MarkdownText(text, streaming = false, onOpenUrl = onOpenUrl) }
+                    }
                 }
                 if (streaming) {
                     Spacer(Modifier.width(4.dp))
@@ -228,7 +233,7 @@ fun WebPreviewActionChip(
 @Composable
 private fun BlinkingCursor() {
     val transition = rememberInfiniteTransition(label = "cursor")
-    val alpha by transition.animateFloat(
+    val cursorAlpha by transition.animateFloat(
         initialValue = 0.15f,
         targetValue = 1f,
         animationSpec = infiniteRepeatable(animation = tween(480), repeatMode = RepeatMode.Reverse),
@@ -237,8 +242,10 @@ private fun BlinkingCursor() {
     Text(
         "▏",
         style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = alpha),
-        modifier = Modifier.padding(top = 2.dp),
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier
+            .padding(top = 2.dp)
+            .graphicsLayer { alpha = cursorAlpha },
     )
 }
 
