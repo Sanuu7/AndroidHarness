@@ -18,6 +18,13 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
+    <!-- Allow discovering speech recognition service engines on Android 11+ -->
+    <queries>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+    </queries>
+
     <!-- Terminal/storage: let the app use real filesystem paths across shared
          storage ("All files access"), which the shell and file tools need on
          Android 11+. Grant it from Settings → Storage access. -->

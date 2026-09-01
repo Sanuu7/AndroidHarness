@@ -102,6 +102,7 @@ dependencies {
     implementation(libs.browser)
     implementation(libs.security.crypto)
     implementation(libs.biometric)
+    implementation(libs.fragment.ktx)
 
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
