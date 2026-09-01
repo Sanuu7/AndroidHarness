@@ -49,10 +49,14 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.common.VisualDiffViewer
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.defaultEffectsSpec
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.theme.fastSpatialSpec
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 
 /**
  * One tool call = one compact, quiet row.
@@ -79,6 +83,14 @@ internal fun ToolCallCard(
     // and parsing args per frame was a measurable cost during runs.
     val description = remember(call) { describeToolCall(call).removeSuffix("…") }
     val pretty = remember(call.argumentsJson) { prettyArgs(call.argumentsJson) }
+    val patchDiff = remember(call) {
+        if (call.name == "apply_patch") {
+            runCatching {
+                val obj = Json.parseToJsonElement(call.argumentsJson).jsonObject
+                obj["patch"]?.jsonPrimitive?.content
+            }.getOrNull()
+        } else null
+    }
     val ok = result?.let { !it.isError }
     val scheme = MaterialTheme.colorScheme
     val success = LocalStatusColors.current.success
@@ -177,7 +189,16 @@ internal fun ToolCallCard(
                         color = scheme.outlineVariant.copy(alpha = 0.5f),
                         modifier = Modifier.padding(bottom = 10.dp),
                     )
-                    MonoBlock(pretty)
+                    if (patchDiff != null) {
+                        VisualDiffViewer(
+                            diffText = patchDiff,
+                            maxHeight = 280.dp,
+                            showFileHeader = false,
+                            onOpenFile = { path -> onOpenFile(path, null) },
+                        )
+                    } else {
+                        MonoBlock(pretty)
+                    }
                     result?.let {
                         Spacer(Modifier.height(8.dp))
                         if (call.name in listOf("grep", "search_files", "web_search")) {

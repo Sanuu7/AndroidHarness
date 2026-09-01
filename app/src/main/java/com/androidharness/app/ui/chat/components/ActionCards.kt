@@ -62,6 +62,7 @@ import com.androidharness.app.agent.QuestionRequest
 import com.androidharness.app.agent.describeToolCall
 import com.androidharness.app.data.env.EnvState
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.common.VisualDiffViewer
 import com.androidharness.app.ui.theme.LocalStatusColors
 
 /**
@@ -460,42 +461,9 @@ internal fun EnvironmentInstallCard(
 
 @Composable
 internal fun DiffView(diff: String) {
-    val lines = remember(diff) { diff.lines() }
-    val scheme = MaterialTheme.colorScheme
-    val addBg = LocalStatusColors.current.success.copy(alpha = 0.14f)
-    val delBg = scheme.error.copy(alpha = 0.14f)
-    val hunkColor = scheme.primary
-    Surface(
-        color = scheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(
-            text = buildDiffAnnotated(lines, addBg, delBg, hunkColor),
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier
-                .padding(10.dp)
-                .heightIn(max = 240.dp)
-                .verticalScroll(rememberScrollState()),
-        )
-    }
-}
-
-private fun buildDiffAnnotated(
-    lines: List<String>,
-    addBg: Color,
-    delBg: Color,
-    hunkColor: Color,
-): AnnotatedString = buildAnnotatedString {
-    lines.forEachIndexed { idx, line ->
-        if (idx > 0) append('\n')
-        when (line.firstOrNull()) {
-            '+' -> withStyle(SpanStyle(background = addBg)) { append(line) }
-            '-' -> withStyle(SpanStyle(background = delBg)) { append(line) }
-            '@' -> withStyle(SpanStyle(fontWeight = FontWeight.Bold, color = hunkColor)) { append(line) }
-            else -> append(line)
-        }
-    }
+    VisualDiffViewer(
+        diffText = diff,
+        maxHeight = 260.dp,
+        showFileHeader = false,
+    )
 }

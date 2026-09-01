@@ -49,6 +49,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.core.Diff
 import com.androidharness.app.data.db.SessionFileChangeEntity
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.common.VisualDiffViewer
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.workspace.normalizeRelPath
 import java.util.zip.GZIPInputStream
@@ -288,45 +289,12 @@ internal fun mergeSessionChanges(
     }
     .sortedByDescending { it.updatedAt }
 
-/** Same coloring rules as the chat approval cards' DiffView. */
+/** Upgraded to interactive, native visual diff viewer with line numbers and copy action. */
 @Composable
 internal fun SessionDiffView(diff: String) {
-    val scheme = MaterialTheme.colorScheme
-    val addBg = LocalStatusColors.current.success.copy(alpha = 0.14f)
-    val delBg = scheme.error.copy(alpha = 0.14f)
-    val hunkColor = scheme.primary
-    Surface(
-        color = scheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        val annotated = remember(diff) { annotate(diff.lines(), addBg, delBg, hunkColor) }
-        Text(
-            text = annotated,
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace,
-            modifier = Modifier
-                .padding(10.dp)
-                .heightIn(max = 420.dp)
-                .verticalScroll(rememberScrollState()),
-        )
-    }
+    VisualDiffViewer(
+        diffText = diff,
+        maxHeight = 420.dp,
+        showFileHeader = false,
+    )
 }
-
-private fun annotate(lines: List<String>, addBg: Color, delBg: Color, hunkColor: Color) =
-    buildAnnotatedString {
-        lines.forEachIndexed { idx, line ->
-            if (idx > 0) append('\n')
-            when {
-                line.startsWith("+++") || line.startsWith("---") ->
-                    withStyle(SpanStyle(color = Color.Gray)) { append(line) }
-                line.startsWith("+") -> withStyle(SpanStyle(background = addBg)) { append(line) }
-                line.startsWith("-") -> withStyle(SpanStyle(background = delBg)) { append(line) }
-                line.startsWith("@") -> withStyle(
-                    SpanStyle(fontWeight = FontWeight.Bold, color = hunkColor),
-                ) { append(line) }
-                else -> append(line)
-            }
-        }
-    }

@@ -3,11 +3,161 @@ package com.androidharness.app.core
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
+enum class DiffLineType {
+    CONTEXT,
+    ADD,
+    REMOVE,
+    HEADER,
+}
+
+data class DiffLine(
+    val type: DiffLineType,
+    val oldNum: Int?,
+    val newNum: Int?,
+    val text: String,
+)
+
+data class DiffHunk(
+    val header: String,
+    val oldStart: Int,
+    val newStart: Int,
+    val lines: List<DiffLine>,
+)
+
+data class ParsedDiff(
+    val oldPath: String? = null,
+    val newPath: String? = null,
+    val hunks: List<DiffHunk> = emptyList(),
+    val isTruncated: Boolean = false,
+) {
+    val totalAdded: Int get() = hunks.sumOf { h -> h.lines.count { it.type == DiffLineType.ADD } }
+    val totalRemoved: Int get() = hunks.sumOf { h -> h.lines.count { it.type == DiffLineType.REMOVE } }
+}
+
 /** Myers O(ND) line diff producing unified-diff-style preview text. */
 object Diff {
 
     private const val MAX_LINES = 3000
     private const val CONTEXT = 2
+
+    /**
+     * Parse raw unified diff string into structured [ParsedDiff] with computed old/new line numbers.
+     */
+    fun parseUnified(diffText: String): ParsedDiff {
+        val lines = splitLines(diffText)
+        var oldPath: String? = null
+        var newPath: String? = null
+        val hunks = mutableListOf<DiffHunk>()
+        var currentLines = mutableListOf<DiffLine>()
+        var currentHeader = ""
+        var oldStart = 1
+        var newStart = 1
+        var oldCursor = 1
+        var newCursor = 1
+        var inHunk = false
+        var isTruncated = false
+
+        fun flushHunk() {
+            if (inHunk && (currentHeader.isNotEmpty() || currentLines.isNotEmpty())) {
+                hunks += DiffHunk(currentHeader, oldStart, newStart, currentLines.toList())
+                currentLines = mutableListOf()
+            }
+        }
+
+        for (line in lines) {
+            when {
+                line.startsWith("--- ") -> {
+                    flushHunk()
+                    inHunk = false
+                    oldPath = line.removePrefix("--- ").trim()
+                        .removePrefix("a/").removePrefix("b/").substringBefore('\t')
+                }
+                line.startsWith("+++ ") -> {
+                    newPath = line.removePrefix("+++ ").trim()
+                        .removePrefix("a/").removePrefix("b/").substringBefore('\t')
+                }
+                line.startsWith("@@") -> {
+                    flushHunk()
+                    inHunk = true
+                    currentHeader = line
+                    val match = Regex("@@ -(\\d+)(?:,\\d+)? \\+(\\d+)(?:,\\d+)? @@").find(line)
+                    if (match != null) {
+                        oldStart = match.groupValues[1].toIntOrNull() ?: 1
+                        newStart = match.groupValues[2].toIntOrNull() ?: 1
+                    } else {
+                        val fallbackOld = Regex("-(\\d+)").find(line)?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                        val fallbackNew = Regex("\\+(\\d+)").find(line)?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                        oldStart = fallbackOld
+                        newStart = fallbackNew
+                    }
+                    oldCursor = oldStart
+                    newCursor = newStart
+                }
+                line.startsWith("  @@") -> {
+                    // Internal separator eliding unchanged lines
+                    if (!inHunk) inHunk = true
+                    currentLines += DiffLine(
+                        type = DiffLineType.HEADER,
+                        oldNum = null,
+                        newNum = null,
+                        text = line.trim(),
+                    )
+                }
+                line.contains("[diff truncated") -> {
+                    isTruncated = true
+                }
+                line.startsWith("+") -> {
+                    if (!inHunk) inHunk = true
+                    currentLines += DiffLine(
+                        type = DiffLineType.ADD,
+                        oldNum = null,
+                        newNum = newCursor++,
+                        text = line.substring(1),
+                    )
+                }
+                line.startsWith("-") -> {
+                    if (!inHunk) inHunk = true
+                    currentLines += DiffLine(
+                        type = DiffLineType.REMOVE,
+                        oldNum = oldCursor++,
+                        newNum = null,
+                        text = line.substring(1),
+                    )
+                }
+                line.startsWith(" ") -> {
+                    if (!inHunk) inHunk = true
+                    currentLines += DiffLine(
+                        type = DiffLineType.CONTEXT,
+                        oldNum = oldCursor++,
+                        newNum = newCursor++,
+                        text = line.substring(1),
+                    )
+                }
+                line.startsWith("\\") -> {
+                    // "\ No newline at end of file"
+                }
+                else -> {
+                    // Plain text context without prefix
+                    if (inHunk && line.isNotEmpty()) {
+                        currentLines += DiffLine(
+                            type = DiffLineType.CONTEXT,
+                            oldNum = oldCursor++,
+                            newNum = newCursor++,
+                            text = line,
+                        )
+                    }
+                }
+            }
+        }
+        flushHunk()
+
+        return ParsedDiff(
+            oldPath = oldPath,
+            newPath = newPath,
+            hunks = hunks,
+            isTruncated = isTruncated,
+        )
+    }
 
     /**
      * Unified diff between [oldText] and [newText]. Lines are prefixed with
