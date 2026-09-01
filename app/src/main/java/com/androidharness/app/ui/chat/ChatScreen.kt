@@ -358,6 +358,9 @@ fun ChatScreen(
             initialTarget = webPreviewUrl,
             workspace = fs,
             messages = state.messages,
+            onSendPrompt = { prompt ->
+                viewModel.send(prompt)
+            },
             onDismiss = {
                 showWebPreview = false
                 webPreviewUrl = null

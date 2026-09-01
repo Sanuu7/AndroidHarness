@@ -4,6 +4,7 @@ import android.annotation.SuppressLint
 import android.content.Intent
 import android.graphics.Bitmap
 import android.net.Uri
+import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.webkit.ConsoleMessage
@@ -46,7 +47,6 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -54,9 +54,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Delete
@@ -93,7 +93,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
@@ -159,10 +158,10 @@ fun WebPreviewSheet(
     initialTarget: String? = null,
     workspace: WorkspaceFs? = null,
     messages: List<ChatMessage> = emptyList(),
+    onSendPrompt: ((String) -> Unit)? = null,
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
 
@@ -170,7 +169,6 @@ fun WebPreviewSheet(
         mutableStateOf(if (!initialTarget.isNullOrBlank()) WebPreviewStage.WEB_VIEW else WebPreviewStage.SOURCE_HUB)
     }
     var currentTarget by remember { mutableStateOf(initialTarget ?: "http://localhost:3000") }
-    var inputUrl by remember { mutableStateOf(currentTarget) }
 
     var isScanningSources by remember { mutableStateOf(true) }
     var activePorts by remember { mutableStateOf<List<Int>>(emptyList()) }
@@ -197,8 +195,15 @@ fun WebPreviewSheet(
             LocalPortProbe.normalizeLocalUrl(target)
         }
         currentTarget = norm
-        inputUrl = norm
         stage = WebPreviewStage.WEB_VIEW
+    }
+
+    val handleFixBug: (String) -> Unit = { bugDescription ->
+        scope.launch {
+            sheetState.hide()
+            onDismiss()
+            onSendPrompt?.invoke(bugDescription)
+        }
     }
 
     ModalBottomSheet(
@@ -250,10 +255,7 @@ fun WebPreviewSheet(
                             onToggleFullscreen = { isFullscreen = !isFullscreen },
                             onToggleConsole = { showConsole = !showConsole },
                             onBackToHub = { stage = WebPreviewStage.SOURCE_HUB },
-                            onTargetChanged = { newTarget ->
-                                currentTarget = newTarget
-                                inputUrl = newTarget
-                            },
+                            onFixBug = handleFixBug,
                             onClose = {
                                 scope.launch {
                                     sheetState.hide()
@@ -456,7 +458,7 @@ private fun SourceHubView(
                         OutlinedTextField(
                             value = customUrlInput,
                             onValueChange = { customUrlInput = it },
-                            placeholder = { Text("e.g. 5173, localhost:8000, https://...") },
+                            placeholder = { Text("https://...") },
                             singleLine = true,
                             textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                             shape = RoundedCornerShape(8.dp),
@@ -657,14 +659,13 @@ private fun WebPageView(
     onToggleFullscreen: () -> Unit,
     onToggleConsole: () -> Unit,
     onBackToHub: () -> Unit,
-    onTargetChanged: (String) -> Unit,
+    onFixBug: (String) -> Unit,
     onClose: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     val statusColors = LocalStatusColors.current
     val context = LocalContext.current
 
-    var inputUrl by remember { mutableStateOf(target) }
     var currentUrl by remember { mutableStateOf(target) }
     var isLoading by remember { mutableStateOf(true) }
     var progress by remember { mutableIntStateOf(0) }
@@ -695,7 +696,6 @@ private fun WebPageView(
                 }
             } else {
                 val norm = LocalPortProbe.normalizeLocalUrl(t)
-                inputUrl = norm
                 currentUrl = norm
                 view.loadUrl(norm)
             }
@@ -711,7 +711,7 @@ private fun WebPageView(
     }
 
     Column(Modifier.fillMaxSize()) {
-        // Navigation Bar
+        // Clean Title & Action Header Bar (No URL text field)
         Surface(
             color = scheme.surfaceContainerLow,
             modifier = Modifier.fillMaxWidth(),
@@ -756,48 +756,27 @@ private fun WebPageView(
                     Icon(Icons.Default.Refresh, contentDescription = "Reload", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                 }
 
-                // Address input bar
-                Surface(
-                    shape = RoundedCornerShape(20.dp),
-                    color = scheme.surfaceContainerHighest,
-                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+                // Clean Page Title and Path
+                Column(
                     modifier = Modifier
                         .weight(1f)
-                        .height(34.dp)
-                        .padding(horizontal = 4.dp),
+                        .padding(horizontal = 8.dp),
                 ) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 8.dp),
-                    ) {
-                        Icon(
-                            if (isWorkspaceHtml(currentUrl)) Icons.Outlined.Description else Icons.Default.Language,
-                            contentDescription = null,
-                            modifier = Modifier.size(14.dp),
-                            tint = scheme.primary,
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        BasicTextField(
-                            value = inputUrl,
-                            onValueChange = { inputUrl = it },
-                            textStyle = MaterialTheme.typography.bodySmall.copy(
-                                color = scheme.onSurface,
-                                fontFamily = FontFamily.Monospace,
-                                fontSize = 11.sp,
-                            ),
-                            singleLine = true,
-                            cursorBrush = SolidColor(scheme.primary),
-                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
-                            keyboardActions = KeyboardActions(
-                                onGo = {
-                                    currentUrl = inputUrl
-                                    onTargetChanged(inputUrl)
-                                    load(inputUrl)
-                                },
-                            ),
-                            modifier = Modifier.weight(1f),
-                        )
-                    }
+                    Text(
+                        pageTitle,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    Text(
+                        currentUrl,
+                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                        color = scheme.onSurfaceVariant,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
                 }
 
                 // Eruda DevTools Launcher
@@ -876,7 +855,7 @@ private fun WebPageView(
             ThinLinearProgress(modifier = Modifier.fillMaxWidth())
         }
 
-        // Hardware-Accelerated Smooth WebView
+        // Hardware-Accelerated Smooth WebView with Touch Disallow
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             AndroidView(
                 factory = { ctx ->
@@ -885,6 +864,19 @@ private fun WebPageView(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                             ViewGroup.LayoutParams.MATCH_PARENT,
                         )
+
+                        // Smooth fluid scrolling: prevent BottomSheet gesture interception during touch
+                        setOnTouchListener { v, event ->
+                            when (event.action) {
+                                MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
+                                    v.parent?.requestDisallowInterceptTouchEvent(true)
+                                }
+                                MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
+                                    v.parent?.requestDisallowInterceptTouchEvent(false)
+                                }
+                            }
+                            false
+                        }
 
                         // Hardware Acceleration & High-FPS Smooth Scrolling
                         setLayerType(View.LAYER_TYPE_HARDWARE, null)
@@ -912,7 +904,6 @@ private fun WebPageView(
                                 url?.let {
                                     if (!it.startsWith("data:") && !it.startsWith("https://localhost/")) {
                                         currentUrl = it
-                                        inputUrl = it
                                     }
                                 }
                                 canGoBack = canGoBack()
@@ -923,7 +914,7 @@ private fun WebPageView(
                                 isLoading = false
                                 canGoBack = canGoBack()
                                 canGoForward = canGoForward()
-                                pageTitle = view?.title ?: "Web Preview"
+                                pageTitle = view?.title ?: currentUrl.substringAfterLast('/')
                             }
 
                             override fun onReceivedError(
@@ -1025,7 +1016,7 @@ private fun WebPageView(
                 }
             }
 
-            // Error Overlay
+            // Error Overlay with Fix Bug action
             errorMessage?.let { err ->
                 Box(
                     modifier = Modifier
@@ -1065,10 +1056,26 @@ private fun WebPageView(
                                 modifier = Modifier.clickable { onBackToHub() },
                             ) {
                                 Text(
-                                    "Pick another source",
+                                    "Pick source",
                                     style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 )
+                            }
+                            Surface(
+                                shape = RoundedCornerShape(8.dp),
+                                color = scheme.errorContainer,
+                                modifier = Modifier.clickable {
+                                    onFixBug("Fix web server error when loading $currentUrl: $err")
+                                },
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                                ) {
+                                    Icon(Icons.Filled.AutoFixHigh, contentDescription = null, tint = scheme.onErrorContainer, modifier = Modifier.size(15.dp))
+                                    Spacer(Modifier.width(4.dp))
+                                    Text("Fix with Agent", color = scheme.onErrorContainer, style = MaterialTheme.typography.labelMedium)
+                                }
                             }
                             Surface(
                                 shape = RoundedCornerShape(8.dp),
@@ -1079,7 +1086,7 @@ private fun WebPageView(
                                     "Retry",
                                     color = scheme.onPrimary,
                                     style = MaterialTheme.typography.labelMedium,
-                                    modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
                                 )
                             }
                         }
@@ -1087,20 +1094,22 @@ private fun WebPageView(
                 }
             }
 
-            // Console Drawer Overlay
+            // Console Drawer Overlay with "Fix this bug" action button
             androidx.compose.animation.AnimatedVisibility(
                 visible = showConsole,
                 enter = expandVertically(fastEffectsSpec()) + fadeIn(fastEffectsSpec()),
                 exit = shrinkVertically(fastEffectsSpec()) + fadeOut(fastEffectsSpec()),
                 modifier = Modifier.align(Alignment.BottomCenter),
             ) {
+                val errorLogs = consoleLogs.filter { it.level == ConsoleMessage.MessageLevel.ERROR }
+
                 Surface(
                     color = scheme.surfaceContainerLowest,
                     border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
                     shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .heightIn(max = 240.dp),
+                        .heightIn(max = 260.dp),
                 ) {
                     Column(Modifier.fillMaxSize()) {
                         Row(
@@ -1117,6 +1126,41 @@ private fun WebPageView(
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f),
                             )
+
+                            // Quick "Fix this bug" if any JavaScript errors exist
+                            if (errorLogs.isNotEmpty()) {
+                                Surface(
+                                    shape = RoundedCornerShape(6.dp),
+                                    color = scheme.errorContainer,
+                                    modifier = Modifier
+                                        .padding(end = 6.dp)
+                                        .clickable {
+                                            val errs = errorLogs.take(3).joinToString("\n") {
+                                                "${it.message} (${it.source ?: "inline"}:${it.lineNumber})"
+                                            }
+                                            onFixBug("Fix JavaScript errors on $currentUrl:\n$errs")
+                                        },
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+                                    ) {
+                                        Icon(
+                                            Icons.Filled.AutoFixHigh,
+                                            contentDescription = null,
+                                            tint = scheme.onErrorContainer,
+                                            modifier = Modifier.size(13.dp),
+                                        )
+                                        Spacer(Modifier.width(4.dp))
+                                        Text(
+                                            "Fix bug in chat",
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
+                                            color = scheme.onErrorContainer,
+                                        )
+                                    }
+                                }
+                            }
+
                             IconButton(onClick = { consoleLogs.clear() }, modifier = Modifier.size(24.dp)) {
                                 Icon(Icons.Outlined.Delete, contentDescription = "Clear logs", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
                             }
@@ -1149,6 +1193,7 @@ private fun WebPageView(
                             ) {
                                 items(consoleLogs) { log ->
                                     Row(
+                                        verticalAlignment = Alignment.CenterVertically,
                                         modifier = Modifier
                                             .fillMaxWidth()
                                             .background(
@@ -1177,13 +1222,39 @@ private fun WebPageView(
                                             },
                                         )
                                         Spacer(Modifier.width(6.dp))
-                                        Text(
-                                            log.message,
-                                            style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                                            fontFamily = FontFamily.Monospace,
-                                            color = scheme.onSurface,
-                                            modifier = Modifier.weight(1f),
-                                        )
+                                        Column(Modifier.weight(1f)) {
+                                            Text(
+                                                log.message,
+                                                style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
+                                                fontFamily = FontFamily.Monospace,
+                                                color = scheme.onSurface,
+                                            )
+                                            if (log.source != null) {
+                                                Text(
+                                                    "${log.source.substringAfterLast('/')}:${log.lineNumber}",
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                                    fontFamily = FontFamily.Monospace,
+                                                    color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                                )
+                                            }
+                                        }
+                                        if (log.level == ConsoleMessage.MessageLevel.ERROR) {
+                                            Spacer(Modifier.width(4.dp))
+                                            Surface(
+                                                shape = RoundedCornerShape(4.dp),
+                                                color = scheme.errorContainer,
+                                                modifier = Modifier.clickable {
+                                                    onFixBug("Fix JavaScript error on $currentUrl: ${log.message} at ${log.source ?: "inline"}:${log.lineNumber}")
+                                                },
+                                            ) {
+                                                Text(
+                                                    "Fix",
+                                                    style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                                                    color = scheme.onErrorContainer,
+                                                    modifier = Modifier.padding(horizontal = 5.dp, vertical = 2.dp),
+                                                )
+                                            }
+                                        }
                                     }
                                 }
                             }
