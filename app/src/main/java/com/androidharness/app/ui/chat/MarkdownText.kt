@@ -70,7 +70,11 @@ import kotlinx.coroutines.launch
  * Full content renders once the message commits.
  */
 @Composable
-fun MarkdownText(text: String, streaming: Boolean = false) {
+fun MarkdownText(
+    text: String,
+    streaming: Boolean = false,
+    onOpenUrl: ((String) -> Unit)? = null,
+) {
     // The fence tracker is a composable (remember), it must be invoked
     // unconditionally, so the `streaming` gate sits on the result.
     val openFence = rememberEndsInsideOpenFence(text) && streaming
@@ -97,8 +101,8 @@ fun MarkdownText(text: String, streaming: Boolean = false) {
     Column(Modifier.fillMaxWidth()) {
         // Capped fence text still parses to a real CodeBlock (language header,
         // copy button); the cap bounds the per-frame layout cost.
-        if (safeText.isNotEmpty()) MarkdownBlocks(safeText)
-        if (tail.isNotEmpty()) MarkdownBlocks(tail, plain = true)
+        if (safeText.isNotEmpty()) MarkdownBlocks(safeText, onOpenUrl = onOpenUrl)
+        if (tail.isNotEmpty()) MarkdownBlocks(tail, plain = true, onOpenUrl = onOpenUrl)
     }
 }
 
@@ -254,7 +258,11 @@ private fun parseBlocks(text: String): List<Block> {
 // Block rendering
 
 @Composable
-private fun MarkdownBlocks(text: String, plain: Boolean = false) {
+private fun MarkdownBlocks(
+    text: String,
+    plain: Boolean = false,
+    onOpenUrl: ((String) -> Unit)? = null,
+) {
     val blocks = remember(text) { parseBlocks(text) }
     blocks.forEachIndexed { index, block ->
         when (block) {
@@ -279,7 +287,7 @@ private fun MarkdownBlocks(text: String, plain: Boolean = false) {
             is Block.Paragraph -> if (plain) {
                 Text(block.text, style = MaterialTheme.typography.bodyLarge)
             } else {
-                ParagraphText(block.text)
+                ParagraphText(block.text, onOpenUrl = onOpenUrl)
             }
         }
         if (index != blocks.lastIndex) Spacer(Modifier.height(5.dp))
@@ -362,7 +370,7 @@ private fun QuoteBlock(lines: List<String>) {
 
 /** Paragraph text with tap-to-open links (annotations set by [styledText]). */
 @Composable
-private fun ParagraphText(text: String) {
+private fun ParagraphText(text: String, onOpenUrl: ((String) -> Unit)? = null) {
     val styled = styledText(text)
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val context = LocalContext.current
@@ -375,8 +383,12 @@ private fun ParagraphText(text: String) {
                 val offset = layout?.getOffsetForPosition(pos) ?: return@detectTapGestures
                 styled.getStringAnnotations("url", offset, offset)
                     .firstOrNull()?.let { ann ->
-                        runCatching {
-                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ann.item)))
+                        if (onOpenUrl != null && com.androidharness.app.core.LocalPortProbe.isLocalhostUrl(ann.item)) {
+                            onOpenUrl(ann.item)
+                        } else {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ann.item)))
+                            }
                         }
                     }
             }

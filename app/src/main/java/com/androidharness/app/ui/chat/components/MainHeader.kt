@@ -31,6 +31,7 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
@@ -89,6 +90,7 @@ internal fun MainHeader(
     onOpenContext: () -> Unit,
     onOpenUndo: () -> Unit,
     onOpenFiles: () -> Unit,
+    onOpenWebPreview: () -> Unit = {},
 ) {
     var menu by remember { mutableStateOf(false) }
     var thinkingMenu by remember { mutableStateOf(false) }
@@ -335,6 +337,11 @@ internal fun MainHeader(
                         text = { Text("Terminal") },
                         leadingIcon = { Icon(Icons.Outlined.Terminal, contentDescription = null) },
                         onClick = { menu = false; onOpenTerminal() },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Web preview (localhost)") },
+                        leadingIcon = { Icon(Icons.Outlined.Language, contentDescription = null) },
+                        onClick = { menu = false; onOpenWebPreview() },
                     )
                     DropdownMenuItem(
                         text = { Text("Undo file changes…") },

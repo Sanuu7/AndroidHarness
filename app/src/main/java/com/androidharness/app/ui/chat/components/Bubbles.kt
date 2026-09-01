@@ -100,6 +100,7 @@ internal fun UserBubble(
 internal fun AssistantText(
     text: String,
     streaming: Boolean = false,
+    onOpenUrl: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -116,7 +117,7 @@ internal fun AssistantText(
         } else {
             Row(verticalAlignment = Alignment.Top) {
                 Box(Modifier.weight(1f)) {
-                    SelectionContainer { MarkdownText(text, streaming = streaming) }
+                    SelectionContainer { MarkdownText(text, streaming = streaming, onOpenUrl = onOpenUrl) }
                 }
                 if (streaming) {
                     Spacer(Modifier.width(4.dp))

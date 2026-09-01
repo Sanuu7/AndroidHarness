@@ -125,6 +125,7 @@ import com.androidharness.app.ui.chat.components.TodoCard
 import com.androidharness.app.ui.chat.components.ToolCallCard
 import com.androidharness.app.ui.chat.components.ToolGroupCard
 import com.androidharness.app.ui.chat.components.UserBubble
+import com.androidharness.app.ui.chat.components.WebPreviewSheet
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.common.formatDuration
 import com.androidharness.app.ui.files.DiffStatText
@@ -157,6 +158,8 @@ fun ChatScreen(
     var showContext by remember { mutableStateOf(false) }
     var showModelPicker by remember { mutableStateOf(false) }
     var showProviderManager by remember { mutableStateOf(false) }
+    var showWebPreview by remember { mutableStateOf(false) }
+    var webPreviewUrl by remember { mutableStateOf("http://localhost:3000") }
     var slashExpanded by remember { mutableStateOf(false) }
     // The composer carries its own selection so programmatic edits (mention
     // picks, share prefills) move the cursor instead of leaving it where the
@@ -347,6 +350,12 @@ fun ChatScreen(
             onSetActive = viewModel::setActiveProvider,
             onDelete = viewModel::deleteProvider,
             onSave = viewModel::upsertProvider,
+        )
+    }
+    if (showWebPreview) {
+        WebPreviewSheet(
+            initialUrl = webPreviewUrl,
+            onDismiss = { showWebPreview = false },
         )
     }
     if (state.showCostDialog) {
@@ -821,6 +830,7 @@ fun ChatScreen(
                 onOpenContext = { showContext = true },
                 onOpenUndo = { showUndoDialog = true },
                 onOpenFiles = onOpenFiles,
+                onOpenWebPreview = { showWebPreview = true },
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
@@ -943,7 +953,13 @@ fun ChatScreen(
                                                         used.forEach { SkillUsedBadge(it) }
                                                     }
                                                 }
-                                                AssistantText(message.text)
+                                                AssistantText(
+                                                    message.text,
+                                                    onOpenUrl = { url ->
+                                                        webPreviewUrl = url
+                                                        showWebPreview = true
+                                                    },
+                                                )
                                                 // Turn-final extras: diff chips + how
                                                 // long the whole turn took.
                                                 val isTurnFinal = state.messages
@@ -1078,6 +1094,10 @@ fun ChatScreen(
                                     AssistantText(
                                         streaming.take(revealedChars),
                                         streaming = !state.streamingCommitted,
+                                        onOpenUrl = { url ->
+                                            webPreviewUrl = url
+                                            showWebPreview = true
+                                        },
                                     )
                                 }
                             }
