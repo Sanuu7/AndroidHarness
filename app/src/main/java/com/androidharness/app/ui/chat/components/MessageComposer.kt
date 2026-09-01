@@ -302,7 +302,7 @@ internal fun MessageComposer(
                                 text = when {
                                     isInbuiltListening -> "Listening…"
                                     !attachedSkill.isNullOrBlank() -> "Add a note, or send…"
-                                    busy -> "Queue a message, or stop…"
+                                    busy -> "Queue message"
                                     else -> "Message your agent…"
                                 },
                                 style = MaterialTheme.typography.bodyLarge,
