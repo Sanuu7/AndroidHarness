@@ -349,24 +349,20 @@ internal fun MessageComposer(
         // Action button on the right
         when {
             showQueueSend -> {
-                Surface(
-                    shape = CircleShape,
-                    color = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer,
-                    modifier = Modifier.size(52.dp),
-                ) {
-                    Box(contentAlignment = Alignment.Center, modifier = Modifier.fillMaxSize()) {
-                        IconButton(
-                            onClick = onStop,
-                            modifier = Modifier.fillMaxSize(),
-                        ) {
-                            Icon(
-                                Icons.Filled.Stop,
-                                contentDescription = "Stop",
-                                modifier = Modifier.size(20.dp),
-                            )
+                Box(
+                    modifier = Modifier
+                        .size(52.dp)
+                        .scale(buttonScale)
+                        .clip(RoundedCornerShape(corner))
+                        .background(MaterialTheme.colorScheme.primary)
+                        .clickable {
+                            haptics.performHapticFeedback(HapticFeedbackType.Confirm)
+                            onSend()
                         }
-                    }
+                        .semantics { contentDescription = "Queue message" },
+                    contentAlignment = Alignment.Center,
+                ) {
+                    SendGlyph(color = MaterialTheme.colorScheme.onPrimary)
                 }
             }
 

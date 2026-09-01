@@ -125,11 +125,19 @@ data class WebConsoleLog(
     val timestamp: Long = System.currentTimeMillis(),
 )
 
-/** Eruda mobile devtools script CDN loader */
+/** Eruda mobile devtools script CDN loader with toggle support */
 private const val ERUDA_INJECT_JS = """
 (function () {
-    if (window.__eruda_injected) {
-        if (window.eruda) {
+    if (window.eruda) {
+        var el = document.querySelector('.eruda-container');
+        if (el && el.style.display !== 'none' && window.eruda._isInit) {
+            window.eruda.hide();
+        } else if (window.eruda._isInit) {
+            window.eruda.show();
+        } else {
+            window.eruda.init({
+                tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets']
+            });
             window.eruda.show();
         }
         return;
@@ -142,7 +150,6 @@ private const val ERUDA_INJECT_JS = """
                 tool: ['console', 'elements', 'network', 'resources', 'info', 'snippets']
             });
             window.eruda.show();
-            window.__eruda_injected = true;
         }
     };
     script.onerror = function() {
