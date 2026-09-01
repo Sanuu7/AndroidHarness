@@ -59,9 +59,10 @@ class ToolRegistry(private val tools: List<Tool>) {
             shizuku: com.androidharness.app.data.env.ShizukuManager,
             shellRouter: com.androidharness.app.data.env.ShellTierRouter,
             skills: com.androidharness.app.skills.SkillStore,
+            browserController: com.androidharness.app.browser.BrowserController? = null,
             searchApi: () -> com.androidharness.app.tools.SearchApiConfig? = { null },
-        ): ToolRegistry = ToolRegistry(
-            listOf(
+        ): ToolRegistry {
+            val baseTools = mutableListOf<Tool>(
                 ListDirTool(),
                 ReadFileTool(),
                 FileInfoTool(),
@@ -103,7 +104,22 @@ class ToolRegistry(private val tools: List<Tool>) {
                 SkillsListTool(skills),
                 SkillManageTool(skills),
             )
-        )
+            if (browserController != null) {
+                baseTools.addAll(
+                    listOf(
+                        BrowserNavigateTool(browserController),
+                        BrowserClickTool(browserController),
+                        BrowserTypeTool(browserController),
+                        BrowserScrollTool(browserController),
+                        BrowserEvalTool(browserController),
+                        BrowserGetDomTool(browserController),
+                        BrowserGetLogsTool(browserController),
+                        BrowserScreenshotTool(browserController),
+                    )
+                )
+            }
+            return ToolRegistry(baseTools)
+        }
     }
 }
 

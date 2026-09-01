@@ -17,6 +17,11 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.fadeIn
@@ -57,6 +62,7 @@ import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Delete
@@ -82,6 +88,7 @@ import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateListOf
@@ -165,6 +172,7 @@ fun WebPreviewSheet(
     initialTarget: String? = null,
     workspace: WorkspaceFs? = null,
     messages: List<ChatMessage> = emptyList(),
+    browserController: com.androidharness.app.browser.BrowserController? = null,
     onSendPrompt: ((String) -> Unit)? = null,
     onDismiss: () -> Unit,
 ) {
@@ -259,8 +267,10 @@ fun WebPreviewSheet(
                             isFullscreen = isFullscreen,
                             showConsole = showConsole,
                             consoleLogs = consoleLogs,
+                            browserController = browserController,
                             onToggleFullscreen = { isFullscreen = !isFullscreen },
                             onToggleConsole = { showConsole = !showConsole },
+                            onHideConsole = { showConsole = false },
                             onBackToHub = { stage = WebPreviewStage.SOURCE_HUB },
                             onFixBug = handleFixBug,
                             onClose = {
@@ -663,8 +673,10 @@ private fun WebPageView(
     isFullscreen: Boolean,
     showConsole: Boolean,
     consoleLogs: MutableList<WebConsoleLog>,
+    browserController: com.androidharness.app.browser.BrowserController? = null,
     onToggleFullscreen: () -> Unit,
     onToggleConsole: () -> Unit,
+    onHideConsole: () -> Unit,
     onBackToHub: () -> Unit,
     onFixBug: (String) -> Unit,
     onClose: () -> Unit,
@@ -681,6 +693,17 @@ private fun WebPageView(
     var canGoForward by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+
+    // Agent control state: banner strip + expandable activity trail
+    var showAgentTrack by remember { mutableStateOf(false) }
+    val controlActiveFlow = remember(browserController) {
+        browserController?.isAgentControlling ?: kotlinx.coroutines.flow.MutableStateFlow(false)
+    }
+    val agentControlling by controlActiveFlow.collectAsState()
+    val trackFlow = remember(browserController) {
+        browserController?.actionTrack ?: kotlinx.coroutines.flow.MutableStateFlow(emptyList())
+    }
+    val agentTracks by trackFlow.collectAsState()
 
     val isWorkspaceHtml: (String) -> Boolean = { t ->
         t.endsWith(".html", ignoreCase = true) || t.endsWith(".htm", ignoreCase = true)
@@ -862,6 +885,48 @@ private fun WebPageView(
             ThinLinearProgress(modifier = Modifier.fillMaxWidth())
         }
 
+        // "Agent is controlling the browser" strip; tap to expand the action trail
+        AnimatedVisibility(
+            visible = agentControlling,
+            enter = expandVertically(fastEffectsSpec()) + fadeIn(fastEffectsSpec()),
+            exit = shrinkVertically(fastEffectsSpec()) + fadeOut(fastEffectsSpec()),
+        ) {
+            Surface(
+                color = scheme.primaryContainer,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable {
+                        showAgentTrack = !showAgentTrack
+                        if (showAgentTrack) onHideConsole()
+                    },
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 12.dp, vertical = 6.dp),
+                ) {
+                    AgentPulsingDot(tint = scheme.onPrimaryContainer)
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Agent is controlling the browser",
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        color = scheme.onPrimaryContainer,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Icon(
+                        if (showAgentTrack) Icons.Filled.KeyboardArrowDown else Icons.Filled.KeyboardArrowUp,
+                        contentDescription = if (showAgentTrack) "Hide agent activity" else "Show agent activity",
+                        tint = scheme.onPrimaryContainer,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+            }
+        }
+
         // Hardware-Accelerated Smooth WebView with Touch Disallow
         Box(modifier = Modifier.weight(1f).fillMaxWidth()) {
             AndroidView(
@@ -992,18 +1057,27 @@ private fun WebPageView(
                                             lineNumber = consoleMessage.lineNumber(),
                                         ),
                                     )
-                                    if (consoleLogs.size > 200) consoleLogs.removeLast()
+                                    if (consoleLogs.size > 200) consoleLogs.removeAt(consoleLogs.lastIndex)
                                 }
                                 return true
                             }
                         }
 
                         webViewRef = this
+                        browserController?.bindActiveWebView(this)
                         load(target)
                     }
                 },
                 modifier = Modifier.fillMaxSize(),
             )
+
+            DisposableEffect(webViewRef, browserController) {
+                onDispose {
+                    webViewRef?.let { wv ->
+                        browserController?.unbindActiveWebView(wv)
+                    }
+                }
+            }
 
             // Dedicated Loading Screen (smooth overlay)
             if (isLoading && errorMessage == null) {
@@ -1277,6 +1351,119 @@ private fun WebPageView(
                     }
                 }
             }
+
+            // Agent activity trail: what the agent did in this browser, newest first
+            androidx.compose.animation.AnimatedVisibility(
+                visible = showAgentTrack,
+                enter = expandVertically(fastEffectsSpec()) + fadeIn(fastEffectsSpec()),
+                exit = shrinkVertically(fastEffectsSpec()) + fadeOut(fastEffectsSpec()),
+                modifier = Modifier.align(Alignment.BottomCenter),
+            ) {
+                Surface(
+                    color = scheme.surfaceContainerLowest,
+                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
+                    shape = RoundedCornerShape(topStart = 14.dp, topEnd = 14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 240.dp),
+                ) {
+                    Column(Modifier.fillMaxSize()) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(scheme.surfaceContainerLow)
+                                .padding(horizontal = 10.dp, vertical = 6.dp),
+                        ) {
+                            Text(
+                                "AGENT ACTIVITY (${agentTracks.size})",
+                                style = MaterialTheme.typography.labelSmall,
+                                fontFamily = FontFamily.Monospace,
+                                fontWeight = FontWeight.Bold,
+                                modifier = Modifier.weight(1f),
+                            )
+                            IconButton(
+                                onClick = { browserController?.clearTrack() },
+                                modifier = Modifier.size(24.dp),
+                            ) {
+                                Icon(Icons.Outlined.Delete, contentDescription = "Clear trail", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                            }
+                            Spacer(Modifier.width(6.dp))
+                            IconButton(onClick = { showAgentTrack = false }, modifier = Modifier.size(24.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close activity", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                            }
+                        }
+                        HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.4f))
+
+                        if (agentTracks.isEmpty()) {
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    "The agent has not touched this browser yet",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = scheme.onSurfaceVariant,
+                                    fontFamily = FontFamily.Monospace,
+                                )
+                            }
+                        } else {
+                            val timeFmt = remember {
+                                java.text.SimpleDateFormat("HH:mm:ss", java.util.Locale.US)
+                            }
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                contentPadding = PaddingValues(6.dp),
+                                verticalArrangement = Arrangement.spacedBy(2.dp),
+                            ) {
+                                items(agentTracks.asReversed()) { entry ->
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .background(
+                                                if (entry.ok) Color.Transparent else scheme.error.copy(alpha = 0.10f),
+                                                RoundedCornerShape(6.dp),
+                                            )
+                                            .padding(horizontal = 4.dp, vertical = 3.dp),
+                                    ) {
+                                        Text(
+                                            timeFmt.format(java.util.Date(entry.timestamp)),
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
+                                            fontFamily = FontFamily.Monospace,
+                                            color = scheme.onSurfaceVariant,
+                                        )
+                                        Spacer(Modifier.width(6.dp))
+                                        Surface(
+                                            shape = RoundedCornerShape(4.dp),
+                                            color = if (entry.ok) scheme.secondaryContainer else scheme.errorContainer,
+                                        ) {
+                                            Text(
+                                                entry.action,
+                                                style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp, fontWeight = FontWeight.Bold),
+                                                color = if (entry.ok) scheme.onSecondaryContainer else scheme.onErrorContainer,
+                                                modifier = Modifier.padding(horizontal = 5.dp, vertical = 1.dp),
+                                            )
+                                        }
+                                        Spacer(Modifier.width(6.dp))
+                                        Text(
+                                            entry.detail,
+                                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
+                                            fontFamily = FontFamily.Monospace,
+                                            color = scheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                            modifier = Modifier.weight(1f),
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -1286,3 +1473,24 @@ private fun WebPageView(
         }
     }
 }
+
+/** Small pulsing dot used on the "Agent is controlling" strip. */
+@Composable
+private fun AgentPulsingDot(tint: Color) {
+    val transition = rememberInfiniteTransition(label = "agent pulse")
+    val alpha by transition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(700),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "agent pulse alpha",
+    )
+    Box(
+        modifier = Modifier
+            .size(8.dp)
+            .background(tint.copy(alpha = alpha), CircleShape),
+    )
+}
+

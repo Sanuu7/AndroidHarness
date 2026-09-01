@@ -360,6 +360,7 @@ fun ChatScreen(
             initialTarget = webPreviewUrl,
             workspace = fs,
             messages = state.messages,
+            browserController = viewModel.container.browser,
             onSendPrompt = { prompt ->
                 viewModel.send(prompt)
             },

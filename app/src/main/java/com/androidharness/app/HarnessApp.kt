@@ -111,8 +111,10 @@ class AppContainer(val appContext: Context) {
         projectDir = { projectSkillsDir },
         disabled = { disabledSkills.get() },
     )
+    val browser = com.androidharness.app.browser.BrowserController(appContext, images)
     val registry = ToolRegistry.default(
         fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
+        browserController = browser,
         searchApi = { searchApiConfig },
     )
     val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys)
