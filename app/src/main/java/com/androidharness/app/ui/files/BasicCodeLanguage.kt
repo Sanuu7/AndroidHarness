@@ -37,11 +37,15 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
                     val line = text.substring(lineStart, i)
                     for (t in CodeTokenizer.tokenizeLine(lang, line)) {
                         val slot = when (t.type) {
+                            TokenType.KEYWORD_CONTROL -> slot(KEYWORD_CONTROL, bold = true)
                             TokenType.KEYWORD -> slot(KEYWORD, bold = true)
+                            TokenType.TYPE_NAME -> slot(TYPE_NAME)
+                            TokenType.FUNCTION_NAME -> slot(FUNCTION_NAME)
                             TokenType.STRING -> slot(STRING)
                             TokenType.NUMBER -> slot(NUMBER)
-                            TokenType.COMMENT -> slot(COMMENT)
+                            TokenType.COMMENT -> slot(COMMENT, italic = true)
                             TokenType.ANNOTATION -> slot(ANNOTATION)
+                            TokenType.OPERATOR -> slot(OPERATOR)
                             TokenType.PLAIN -> continue
                         }
                         if (slot != lastStyle) {
@@ -59,15 +63,19 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
             return Styles(builder.build())
         }
 
-        private fun slot(id: Int, bold: Boolean = false): Long =
-            TextStyle.makeStyle(id, 0, bold, false, false)
+        private fun slot(id: Int, bold: Boolean = false, italic: Boolean = false): Long =
+            TextStyle.makeStyle(id, 0, bold, italic, false)
     }
 
     private companion object {
         const val KEYWORD = EditorColorScheme.KEYWORD
+        const val KEYWORD_CONTROL = EditorColorScheme.ATTRIBUTE_NAME
+        const val TYPE_NAME = EditorColorScheme.IDENTIFIER_NAME
+        const val FUNCTION_NAME = EditorColorScheme.FUNCTION_NAME
         const val COMMENT = EditorColorScheme.COMMENT
         const val STRING = EditorColorScheme.LITERAL
-        const val NUMBER = EditorColorScheme.LITERAL
+        const val NUMBER = EditorColorScheme.ATTRIBUTE_VALUE
         const val ANNOTATION = EditorColorScheme.ANNOTATION
+        const val OPERATOR = EditorColorScheme.OPERATOR
     }
 }

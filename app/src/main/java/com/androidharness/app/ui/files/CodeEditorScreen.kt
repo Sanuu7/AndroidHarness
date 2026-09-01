@@ -433,20 +433,42 @@ fun CodeEditorScreen(
     }
 }
 
-/** Maps Material theme colors onto the editor palette slots the language uses. */
+/** Maps rich syntax highlight palette onto the editor slots based on current theme mode. */
 private fun applyEditorTheme(ed: CodeEditor, scheme: androidx.compose.material3.ColorScheme) {
     val cs = ed.colorScheme
+    val isDark = scheme.surface.red * 0.299f + scheme.surface.green * 0.587f + scheme.surface.blue * 0.114f < 0.5f
     fun set(slot: Int, color: androidx.compose.ui.graphics.Color) = cs.setColor(slot, color.toArgb())
+
     set(EditorColorScheme.WHOLE_BACKGROUND, scheme.surface)
     set(EditorColorScheme.LINE_NUMBER_BACKGROUND, scheme.surfaceContainerLowest)
     set(EditorColorScheme.LINE_NUMBER, scheme.outline.copy(alpha = 0.55f))
     set(EditorColorScheme.LINE_NUMBER_CURRENT, scheme.primary)
-    set(EditorColorScheme.KEYWORD, scheme.primary)
-    set(EditorColorScheme.COMMENT, scheme.outline)
-    set(EditorColorScheme.LITERAL, scheme.tertiary)
-    set(EditorColorScheme.ANNOTATION, scheme.error)
     set(EditorColorScheme.TEXT_NORMAL, scheme.onSurface)
     set(EditorColorScheme.SELECTION_INSERT, scheme.primary.copy(alpha = 0.35f))
+
+    if (isDark) {
+        // Dark theme rich syntax palette
+        set(EditorColorScheme.ATTRIBUTE_NAME, androidx.compose.ui.graphics.Color(0xFFFF7B72)) // Control keywords (import, return, if, etc) -> Coral Red
+        set(EditorColorScheme.KEYWORD, androidx.compose.ui.graphics.Color(0xFF79C0FF))        // Core keywords (fun, class, val, var) -> Sky Blue
+        set(EditorColorScheme.IDENTIFIER_NAME, androidx.compose.ui.graphics.Color(0xFFFFA657))// Types / Classes -> Warm Orange
+        set(EditorColorScheme.FUNCTION_NAME, androidx.compose.ui.graphics.Color(0xFFD2A8FF))  // Functions / methods -> Soft Purple
+        set(EditorColorScheme.LITERAL, androidx.compose.ui.graphics.Color(0xFFA5D6FF))        // Strings -> Cyan/Light Blue
+        set(EditorColorScheme.ATTRIBUTE_VALUE, androidx.compose.ui.graphics.Color(0xFF7EE787))// Numbers & constants -> Mint Green
+        set(EditorColorScheme.COMMENT, androidx.compose.ui.graphics.Color(0xFF8B949E))        // Comments -> Slate Gray
+        set(EditorColorScheme.ANNOTATION, androidx.compose.ui.graphics.Color(0xFFFF9E64))     // Annotations -> Amber Orange
+        set(EditorColorScheme.OPERATOR, androidx.compose.ui.graphics.Color(0xFFFF7B72))       // Operators -> Coral Red
+    } else {
+        // Light theme rich syntax palette
+        set(EditorColorScheme.ATTRIBUTE_NAME, androidx.compose.ui.graphics.Color(0xFFCF222E)) // Control keywords (import, return, if, etc) -> Deep Crimson Red
+        set(EditorColorScheme.KEYWORD, androidx.compose.ui.graphics.Color(0xFF0550AE))        // Core keywords (fun, class, val, var) -> Royal Blue
+        set(EditorColorScheme.IDENTIFIER_NAME, androidx.compose.ui.graphics.Color(0xFF953800))// Types / Classes -> Rust Brown
+        set(EditorColorScheme.FUNCTION_NAME, androidx.compose.ui.graphics.Color(0xFF8250DF))  // Functions / methods -> Purple
+        set(EditorColorScheme.LITERAL, androidx.compose.ui.graphics.Color(0xFF0A3069))        // Strings -> Dark Blue
+        set(EditorColorScheme.ATTRIBUTE_VALUE, androidx.compose.ui.graphics.Color(0xFF1A7F37))// Numbers & constants -> Forest Green
+        set(EditorColorScheme.COMMENT, androidx.compose.ui.graphics.Color(0xFF6E7781))        // Comments -> Mid Gray
+        set(EditorColorScheme.ANNOTATION, androidx.compose.ui.graphics.Color(0xFFB35900))     // Annotations -> Dark Amber
+        set(EditorColorScheme.OPERATOR, androidx.compose.ui.graphics.Color(0xFFCF222E))       // Operators -> Deep Crimson Red
+    }
 }
 
 // ---------------------------------------------------------------------------

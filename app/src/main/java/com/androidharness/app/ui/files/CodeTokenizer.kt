@@ -5,7 +5,18 @@ package com.androidharness.app.ui.files
  * sora-editor language adapter. Produces per-line token spans so consumers
  * only map [TokenType] to their own color/style system.
  */
-enum class TokenType { KEYWORD, STRING, NUMBER, COMMENT, ANNOTATION, PLAIN }
+enum class TokenType {
+    KEYWORD,
+    KEYWORD_CONTROL,
+    TYPE_NAME,
+    FUNCTION_NAME,
+    STRING,
+    NUMBER,
+    COMMENT,
+    ANNOTATION,
+    OPERATOR,
+    PLAIN,
+}
 
 data class Token(
     /** Column where the token starts (inclusive). */
@@ -19,47 +30,52 @@ object CodeTokenizer {
 
     data class Lang(
         val keywords: Set<String>,
+        val controlKeywords: Set<String> = emptySet(),
+        val types: Set<String> = emptySet(),
         val lineComment: String,
         val blockCommentStart: String? = null,
         val blockCommentEnd: String? = null,
     )
 
     private val Kotlin = Lang(
-        keywords = setOf("package", "import", "class", "interface", "object", "enum", "fun",
-            "val", "var", "data", "sealed", "abstract", "open", "override", "private",
-            "protected", "internal", "public", "return", "if", "else", "when", "for", "while",
-            "do", "in", "is", "as", "this", "super", "true", "false", "null", "throw", "try",
-            "catch", "finally", "continue", "break", "companion", "constructor", "init",
-            "const", "lateinit", "by", "suspend", "typealias", "annotation",
+        controlKeywords = setOf("package", "import", "return", "if", "else", "when", "for", "while", "do", "throw", "try", "catch", "finally", "continue", "break"),
+        keywords = setOf(
+            "class", "interface", "object", "enum", "fun", "val", "var", "data", "sealed", "abstract",
+            "open", "override", "private", "protected", "internal", "public", "in", "is", "as", "this",
+            "super", "true", "false", "null", "companion", "constructor", "init", "const", "lateinit",
+            "by", "suspend", "typealias", "annotation", "inline", "value", "operator", "infix",
         ),
+        types = setOf("String", "Int", "Long", "Float", "Double", "Boolean", "Char", "Byte", "Short", "Unit", "Any", "List", "Map", "Set", "Array"),
         lineComment = "//", blockCommentStart = "/*", blockCommentEnd = "*/",
     )
 
     private val Python = Lang(
-        keywords = setOf("def", "class", "import", "from", "as", "return", "if", "elif",
-            "else", "for", "while", "in", "is", "not", "and", "or", "True", "False", "None",
-            "try", "except", "finally", "with", "yield", "raise", "pass", "break", "continue",
-            "lambda", "self", "async", "await",
+        controlKeywords = setOf("import", "from", "as", "return", "if", "elif", "else", "for", "while", "try", "except", "finally", "with", "yield", "raise", "pass", "break", "continue"),
+        keywords = setOf(
+            "def", "class", "in", "is", "not", "and", "or", "True", "False", "None",
+            "lambda", "self", "async", "await", "global", "nonlocal",
         ),
+        types = setOf("str", "int", "float", "bool", "list", "dict", "set", "tuple", "bytes", "object"),
         lineComment = "#",
     )
 
     private val JsTs = Lang(
-        keywords = setOf("import", "export", "default", "function", "const", "let", "var",
-            "class", "return", "if", "else", "for", "while", "do", "switch", "case", "break",
-            "continue", "new", "this", "super", "true", "false", "null", "undefined", "async",
-            "await", "throw", "try", "catch", "finally", "typeof", "instanceof", "interface",
-            "type", "extends", "implements", "from",
+        controlKeywords = setOf("import", "export", "from", "default", "return", "if", "else", "for", "while", "do", "switch", "case", "break", "continue", "throw", "try", "catch", "finally"),
+        keywords = setOf(
+            "function", "const", "let", "var", "class", "new", "this", "super", "true", "false",
+            "null", "undefined", "async", "await", "typeof", "instanceof", "interface", "type",
+            "extends", "implements", "public", "private", "protected", "readonly", "static", "as",
         ),
+        types = setOf("string", "number", "boolean", "any", "void", "never", "unknown", "Promise", "Array", "Record", "Object"),
         lineComment = "//", blockCommentStart = "/*", blockCommentEnd = "*/",
     )
 
     private val Xml = Lang(keywords = emptySet(), lineComment = "<!--", blockCommentEnd = "-->")
 
     private val Sh = Lang(
-        keywords = setOf("if", "then", "else", "elif", "fi", "for", "while", "do", "done",
-            "case", "esac", "in", "function", "return", "echo", "exit", "export", "local",
-            "source",
+        controlKeywords = setOf("if", "then", "else", "elif", "fi", "for", "while", "do", "done", "case", "esac", "return", "exit", "source"),
+        keywords = setOf(
+            "in", "function", "echo", "export", "local", "alias", "unset", "set", "shift",
         ),
         lineComment = "#",
     )
@@ -152,11 +168,25 @@ object CodeTokenizer {
                     val start = i
                     while (i < codePart.length && (codePart[i].isLetterOrDigit() || codePart[i] == '_')) i++
                     val word = codePart.substring(start, i)
+                    val type = when {
+                        word in lang.controlKeywords -> TokenType.KEYWORD_CONTROL
+                        word in lang.keywords -> TokenType.KEYWORD
+                        word in lang.types -> TokenType.TYPE_NAME
+                        // Check if followed by open parenthesis for function call
+                        i < codePart.length && codePart[i] == '(' -> TokenType.FUNCTION_NAME
+                        else -> TokenType.PLAIN
+                    }
                     out += Token(
                         offset + start,
                         offset + i,
-                        if (word in lang.keywords) TokenType.KEYWORD else TokenType.PLAIN,
+                        type,
                     )
+                }
+                c == '+' || c == '-' || c == '*' || c == '/' || c == '=' || c == '!' ||
+                    c == '<' || c == '>' || c == '&' || c == '|' || c == '%' || c == '^' ||
+                    c == '?' || c == ':' -> {
+                    out += Token(offset + i, offset + i + 1, TokenType.OPERATOR)
+                    i++
                 }
                 else -> i++
             }
