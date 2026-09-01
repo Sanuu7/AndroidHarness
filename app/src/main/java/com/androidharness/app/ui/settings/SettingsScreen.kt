@@ -104,6 +104,8 @@ import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.openOAuthBrowser
 import com.androidharness.app.ui.common.AddWorkspaceDialog
+import com.androidharness.app.ui.common.BiometricAuth
+import com.androidharness.app.ui.common.findFragmentActivity
 import com.androidharness.app.ui.common.SecureDialogEffect
 import com.androidharness.app.ui.common.SecureScreenEffect
 import com.androidharness.app.ui.common.SystemGrants
@@ -2101,6 +2103,7 @@ private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, 
 
 @Composable
 private fun PrivacySection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
+    val context = LocalContext.current
     SettingsHeader("Privacy")
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -2119,7 +2122,21 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
                 }
                 Switch(
                     checked = settings.biometricLockEnabled,
-                    onCheckedChange = { scope.launch { container.settings.setBiometricLockEnabled(it) } },
+                    onCheckedChange = { targetState ->
+                        val activity = context.findFragmentActivity()
+                        if (activity != null) {
+                            BiometricAuth.prompt(
+                                activity = activity,
+                                title = if (targetState) "Enable Biometric Lock" else "Disable Biometric Lock",
+                                subtitle = "Scan fingerprint, face, or PIN to confirm",
+                                onSuccess = {
+                                    scope.launch { container.settings.setBiometricLockEnabled(targetState) }
+                                },
+                            )
+                        } else {
+                            scope.launch { container.settings.setBiometricLockEnabled(targetState) }
+                        }
+                    },
                 )
             }
             HorizontalDivider()

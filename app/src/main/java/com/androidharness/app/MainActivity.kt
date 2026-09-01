@@ -11,6 +11,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.biometric.BiometricManager
 import androidx.biometric.BiometricPrompt
+import com.androidharness.app.ui.common.BiometricAuth
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -193,36 +194,18 @@ class MainActivity : FragmentActivity() {
 
     private fun promptBiometricUnlock() {
         promptShownThisResume = true
-        val executor = ContextCompat.getMainExecutor(this)
-        val prompt = BiometricPrompt(
-            this,
-            executor,
-            object : BiometricPrompt.AuthenticationCallback() {
-                override fun onAuthenticationSucceeded(result: BiometricPrompt.AuthenticationResult) {
-                    super.onAuthenticationSucceeded(result)
+        BiometricAuth.prompt(
+            activity = this,
+            title = "Unlock AndroidHarness",
+            subtitle = "Confirm your fingerprint, face, or PIN",
+            onSuccess = { isUnlocked = true },
+            onError = {
+                // If biometrics not enrolled or unavailable, fallback unlock so user is not permanently locked out
+                if (!BiometricAuth.canAuthenticate(this)) {
                     isUnlocked = true
-                }
-
-                override fun onAuthenticationError(errorCode: Int, errString: CharSequence) {
-                    super.onAuthenticationError(errorCode, errString)
                 }
             },
         )
-        val promptInfo = BiometricPrompt.PromptInfo.Builder()
-            .setTitle("Unlock AndroidHarness")
-            .setSubtitle("Confirm your fingerprint, face, or PIN")
-            .setAllowedAuthenticators(
-                BiometricManager.Authenticators.BIOMETRIC_STRONG or
-                    BiometricManager.Authenticators.BIOMETRIC_WEAK or
-                    BiometricManager.Authenticators.DEVICE_CREDENTIAL
-            )
-            .build()
-        try {
-            prompt.authenticate(promptInfo)
-        } catch (e: Exception) {
-            // Fallback unlock if device lacks biometric hardware / lock screen is none
-            isUnlocked = true
-        }
     }
 
     override fun onNewIntent(intent: Intent) {
