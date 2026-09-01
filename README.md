@@ -94,11 +94,20 @@ Run the unit tests with:
 
 ## Inspirations
 
-AndroidHarness borrows ideas and design taste from the open source coding agents it grew up alongside:
+AndroidHarness borrows ideas and design taste from open source projects across the ecosystem:
 
-- [Hermes Agent](https://github.com/NousResearch/hermes-agent) by Nous Research. The skills system, persistent memory, the global reasoning effort ladder that clamps to whatever the model supports at request time, thinking level selection kept out of the model picker, and the general "harness learns from experience" philosophy.
-- [pi (ohmypi)](https://github.com/earendil-works/pi) by Mario Zechner. Token usage semantics (input counts fresh prompt tokens only, cache reads and writes reported separately), which the stats screen matches on purpose.
-- [OpenCode](https://github.com/anomalyco/opencode). Tool surface conventions, plan mode workflow, and compact/slash command patterns.
+- [Hermes Agent](https://github.com/NousResearch/hermes-agent)
+- [Aider](https://github.com/Aider-AI/aider)
+- [pi (ohmypi)](https://github.com/earendil-works/pi)
+- [OpenCode](https://github.com/anomalyco/opencode)
+- [Claude Code](https://github.com/anthropics)
+- [Roo Code](https://github.com/RooCodeInc/Roo-Code) / [Cline](https://github.com/cline/cline)
+- [browser-use](https://github.com/browser-use/browser-use)
+- [Termux](https://github.com/termux)
+- [Shizuku](https://github.com/RikkaApps/Shizuku)
+- [llama.cpp](https://github.com/ggerganov/llama.cpp)
+- [sora-editor](https://github.com/Rosemoe/sora-editor)
+- [Eruda](https://github.com/liriliri/eruda)
 
 ## License
 
