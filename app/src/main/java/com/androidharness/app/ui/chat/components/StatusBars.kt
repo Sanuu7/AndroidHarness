@@ -76,6 +76,7 @@ internal fun AgentStatusBar(action: String?, busy: Boolean) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
+                .background(scheme.surface)
                 .padding(horizontal = 18.dp, vertical = 7.dp),
         ) {
             StatusDot()

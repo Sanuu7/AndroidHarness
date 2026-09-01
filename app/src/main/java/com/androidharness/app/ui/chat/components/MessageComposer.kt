@@ -257,7 +257,7 @@ internal fun MessageComposer(
                 modifier = Modifier
                     .weight(1f)
                     .clip(RoundedCornerShape(26.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerHigh),
+                    .background(Color.Transparent),
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -330,17 +330,19 @@ internal fun MessageComposer(
                         )
                     }
                 }
-                if (ringAlpha > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .matchParentSize()
-                            .border(
-                                width = 1.5.dp,
-                                color = MaterialTheme.colorScheme.primary.copy(alpha = 0.55f * ringAlpha),
-                                shape = RoundedCornerShape(26.dp),
-                            ),
-                    )
-                }
+                Box(
+                    modifier = Modifier
+                        .matchParentSize()
+                        .border(
+                            width = 1.dp,
+                            color = if (ringAlpha > 0f) {
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.55f * ringAlpha)
+                            } else {
+                                MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f)
+                            },
+                            shape = RoundedCornerShape(26.dp),
+                        ),
+                )
             }
         }
 
