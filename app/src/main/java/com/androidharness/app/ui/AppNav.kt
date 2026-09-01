@@ -161,13 +161,11 @@ fun AppNav(container: AppContainer) {
     // Stay on setup until Skip or Start harness. Connecting a provider used
     // to flip this and remount NavHost onto chat mid-flow.
     val needsSetup = !settings.onboardingDone
-    val lastSession = settings.lastActiveSessionId?.takeIf { sid ->
-        settings.resumeLastChat && sessions.any { it.id == sid }
-    }
+    val lastSession = settings.lastActiveSessionId?.takeIf { settings.resumeLastChat }
     val startDestination = remember {
         when {
             needsSetup -> "setup"
-            lastSession != null -> "chat/$lastSession"
+            !lastSession.isNullOrBlank() -> "chat/$lastSession"
             else -> "chat"
         }
     }
@@ -216,6 +214,13 @@ fun AppNav(container: AppContainer) {
     val currentSessionId = currentEntry
         ?.takeIf { it.destination.route == "chat/{sessionId}" }
         ?.arguments?.getString("sessionId")
+
+    // Track active session in DataStore whenever navigating to a chat session
+    androidx.compose.runtime.LaunchedEffect(currentSessionId) {
+        if (!currentSessionId.isNullOrBlank()) {
+            container.settings.setLastActiveSessionId(currentSessionId)
+        }
+    }
     // The code editor fights the drawer's edge-swipe for every gesture:
     // horizontal scrolling inside the editor opens the sidebar mid-edit.
     // The drawer keeps its menu button; only the swipe gesture is disabled
