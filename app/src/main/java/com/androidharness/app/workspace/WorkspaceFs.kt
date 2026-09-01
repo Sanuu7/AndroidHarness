@@ -290,7 +290,7 @@ class SafFs(
             val stack = ArrayDeque<FsNode>()
             stack.add(node)
             while (stack.isNotEmpty()) {
-                val n = stack.removeFirst()
+                val n = stack.removeAt(0)
                 if (n.isDirectory) {
                     n.list().forEach { child ->
                         if (child.isDirectory && WorkspaceIgnore.shouldSkipEnter(path, child.name)) return@forEach

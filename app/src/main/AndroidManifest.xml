@@ -18,6 +18,12 @@
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
 
+    <!-- Make audio recording hardware optional so devices without a built-in
+         microphone (Android TV, displays, kiosks) are not excluded by Play. -->
+    <uses-feature
+        android:name="android.hardware.microphone"
+        android:required="false" />
+
     <!-- Allow discovering speech recognition service engines on Android 11+ -->
     <queries>
         <intent>
