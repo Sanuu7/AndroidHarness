@@ -4,6 +4,7 @@ import io.github.rosemoe.sora.lang.EmptyLanguage
 import io.github.rosemoe.sora.lang.analysis.AnalyzeManager
 import io.github.rosemoe.sora.lang.analysis.SimpleAnalyzeManager
 import io.github.rosemoe.sora.lang.styling.MappedSpans
+import io.github.rosemoe.sora.lang.styling.SpanFactory
 import io.github.rosemoe.sora.lang.styling.Styles
 import io.github.rosemoe.sora.lang.styling.TextStyle
 import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
@@ -19,8 +20,9 @@ import io.github.rosemoe.sora.widget.schemes.EditorColorScheme
 class BasicCodeLanguage(path: String) : EmptyLanguage() {
 
     private val lang = CodeTokenizer.langFor(path)
+    private val analyzer = Analyzer()
 
-    override fun getAnalyzeManager(): AnalyzeManager = Analyzer()
+    override fun getAnalyzeManager(): AnalyzeManager = analyzer
 
     private inner class Analyzer : SimpleAnalyzeManager<Unit>() {
 
@@ -28,36 +30,44 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
             val builder = MappedSpans.Builder()
             var lineStart = 0
             var lineIdx = 0
-            var lastStyle = -1L
 
             var i = 0
             val n = text.length
             while (i <= n) {
                 if (i == n || text[i] == '\n') {
                     val line = text.substring(lineStart, i)
-                    for (t in CodeTokenizer.tokenizeLine(lang, line)) {
-                        val slot = when (t.type) {
-                            TokenType.KEYWORD_CONTROL -> slot(KEYWORD_CONTROL, bold = true)
-                            TokenType.KEYWORD -> slot(KEYWORD, bold = true)
-                            TokenType.HTML_TAG -> slot(HTML_TAG, bold = true)
-                            TokenType.ATTRIBUTE_NAME -> slot(ATTRIBUTE_NAME)
-                            TokenType.TYPE_NAME -> slot(TYPE_NAME)
-                            TokenType.FUNCTION_NAME -> slot(FUNCTION_NAME)
-                            TokenType.STRING -> slot(STRING)
-                            TokenType.NUMBER -> slot(NUMBER)
-                            TokenType.COMMENT -> slot(COMMENT, italic = true)
-                            TokenType.ANNOTATION -> slot(ANNOTATION)
-                            TokenType.OPERATOR -> slot(OPERATOR)
-                            TokenType.PLAIN -> slot(PLAIN)
+                    val tokens = CodeTokenizer.tokenizeLine(lang, line)
+                    if (tokens.isEmpty()) {
+                        builder.add(lineIdx, SpanFactory.obtain(0, slot(PLAIN)))
+                    } else {
+                        var lineLastStyle = -1L
+                        if (tokens.first().start > 0) {
+                            builder.add(lineIdx, SpanFactory.obtain(0, slot(PLAIN)))
+                            lineLastStyle = slot(PLAIN)
                         }
-                        if (slot != lastStyle) {
-                            builder.addIfNeeded(lineIdx, t.start, slot)
-                            lastStyle = slot
+                        for (t in tokens) {
+                            val slot = when (t.type) {
+                                TokenType.KEYWORD_CONTROL -> slot(KEYWORD_CONTROL, bold = true)
+                                TokenType.KEYWORD -> slot(KEYWORD, bold = true)
+                                TokenType.HTML_TAG -> slot(HTML_TAG, bold = true)
+                                TokenType.ATTRIBUTE_NAME -> slot(ATTRIBUTE_NAME)
+                                TokenType.TYPE_NAME -> slot(TYPE_NAME)
+                                TokenType.FUNCTION_NAME -> slot(FUNCTION_NAME)
+                                TokenType.STRING -> slot(STRING)
+                                TokenType.NUMBER -> slot(NUMBER)
+                                TokenType.COMMENT -> slot(COMMENT, italic = true)
+                                TokenType.ANNOTATION -> slot(ANNOTATION)
+                                TokenType.OPERATOR -> slot(OPERATOR)
+                                TokenType.PLAIN -> slot(PLAIN)
+                            }
+                            if (t.start == 0 || slot != lineLastStyle) {
+                                builder.add(lineIdx, SpanFactory.obtain(t.start, slot))
+                                lineLastStyle = slot
+                            }
                         }
                     }
                     lineIdx++
                     lineStart = i + 1
-                    lastStyle = -1L
                     if (i == n) break
                 }
                 i++
