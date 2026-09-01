@@ -353,8 +353,11 @@ fun ChatScreen(
         )
     }
     if (showWebPreview) {
+        val fs by viewModel.container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
         WebPreviewSheet(
-            initialUrl = webPreviewUrl,
+            initialUrlOrPath = webPreviewUrl,
+            workspace = fs,
+            messages = state.messages,
             onDismiss = { showWebPreview = false },
         )
     }

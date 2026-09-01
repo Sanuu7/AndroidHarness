@@ -9,6 +9,7 @@ import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceError
 import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
@@ -36,7 +37,6 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -52,26 +52,23 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Language
+import androidx.compose.material.icons.filled.Link
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Fullscreen
 import androidx.compose.material.icons.outlined.FullscreenExit
-import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Sensors
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FilterChip
-import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -86,11 +83,9 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -99,11 +94,15 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.LocalPortProbe
+import com.androidharness.app.core.WebResourceExtractor
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastEffectsSpec
+import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.launch
+import java.io.ByteArrayInputStream
 
 data class WebConsoleLog(
     val level: ConsoleMessage.MessageLevel,
@@ -116,7 +115,9 @@ data class WebConsoleLog(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun WebPreviewSheet(
-    initialUrl: String = "http://localhost:3000",
+    initialUrlOrPath: String = "http://localhost:3000",
+    workspace: WorkspaceFs? = null,
+    messages: List<ChatMessage> = emptyList(),
     onDismiss: () -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
@@ -125,8 +126,8 @@ fun WebPreviewSheet(
     val scheme = MaterialTheme.colorScheme
     val statusColors = LocalStatusColors.current
 
-    var currentUrl by remember { mutableStateOf(LocalPortProbe.normalizeLocalUrl(initialUrl)) }
-    var inputUrl by remember { mutableStateOf(currentUrl) }
+    var currentTarget by remember { mutableStateOf(initialUrlOrPath) }
+    var inputUrl by remember { mutableStateOf(initialUrlOrPath) }
     var isLoading by remember { mutableStateOf(false) }
     var pageTitle by remember { mutableStateOf("Web Preview") }
     var progress by remember { mutableIntStateOf(0) }
@@ -134,27 +135,59 @@ fun WebPreviewSheet(
     var canGoBack by remember { mutableStateOf(false) }
     var canGoForward by remember { mutableStateOf(false) }
     var activePorts by remember { mutableStateOf<List<Int>>(emptyList()) }
+    var workspaceHtmlFiles by remember { mutableStateOf<List<String>>(emptyList()) }
+    var chatLinks by remember { mutableStateOf<List<String>>(emptyList()) }
     var isFullscreen by remember { mutableStateOf(false) }
     var showConsole by remember { mutableStateOf(false) }
+    var showSourceSelector by remember { mutableStateOf(false) }
     val consoleLogs = remember { mutableStateListOf<WebConsoleLog>() }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    var selectedSourceTab by remember { mutableIntStateOf(0) }
 
-    // Probe common localhost ports on launch
-    LaunchedEffect(Unit) {
+    // Load available sources on open
+    LaunchedEffect(workspace, messages) {
         activePorts = LocalPortProbe.probe()
+        workspaceHtmlFiles = WebResourceExtractor.findWorkspaceHtmlFiles(workspace)
+        chatLinks = messages.flatMap { WebResourceExtractor.extractUrls(it.text) }.distinct()
+    }
+
+    val isWorkspaceHtml: (String) -> Boolean = { target ->
+        target.endsWith(".html", ignoreCase = true) || target.endsWith(".htm", ignoreCase = true) ||
+            (workspace != null && target in workspaceHtmlFiles)
+    }
+
+    val loadTarget: (String) -> Unit = { target ->
+        currentTarget = target
+        inputUrl = target
+        errorMessage = null
+        val view = webViewRef
+        if (view != null) {
+            if (isWorkspaceHtml(target)) {
+                // Workspace file preview: load HTML text directly with virtual base URL
+                val node = runCatching { workspace?.resolve(target) }.getOrNull()
+                if (node != null && node.exists && node.isFile) {
+                    val html = runCatching { node.readText() }.getOrDefault("")
+                    pageTitle = target.substringAfterLast('/')
+                    view.loadDataWithBaseURL("https://localhost/", html, "text/html", "UTF-8", null)
+                } else {
+                    errorMessage = "File '$target' does not exist in the active workspace."
+                }
+            } else {
+                val norm = LocalPortProbe.normalizeLocalUrl(target)
+                inputUrl = norm
+                currentTarget = norm
+                view.loadUrl(norm)
+            }
+        }
     }
 
     val reload: () -> Unit = {
         errorMessage = null
-        webViewRef?.reload()
-    }
-
-    val loadUrl: (String) -> Unit = { target ->
-        val norm = LocalPortProbe.normalizeLocalUrl(target)
-        inputUrl = norm
-        currentUrl = norm
-        errorMessage = null
-        webViewRef?.loadUrl(norm)
+        if (isWorkspaceHtml(currentTarget)) {
+            loadTarget(currentTarget)
+        } else {
+            webViewRef?.reload()
+        }
     }
 
     ModalBottomSheet(
@@ -170,7 +203,7 @@ fun WebPreviewSheet(
                 .navigationBarsPadding()
                 .imePadding(),
         ) {
-            // Header Bar
+            // Top Navigation Bar
             Surface(
                 color = scheme.surfaceContainerLow,
                 modifier = Modifier.fillMaxWidth(),
@@ -220,7 +253,7 @@ fun WebPreviewSheet(
                             )
                         }
 
-                        // URL input pill
+                        // Target input / address bar
                         Surface(
                             shape = RoundedCornerShape(20.dp),
                             color = scheme.surfaceContainerHighest,
@@ -235,7 +268,7 @@ fun WebPreviewSheet(
                                 modifier = Modifier.padding(horizontal = 10.dp),
                             ) {
                                 Icon(
-                                    Icons.Default.Language,
+                                    if (isWorkspaceHtml(currentTarget)) Icons.Outlined.Description else Icons.Default.Language,
                                     contentDescription = null,
                                     modifier = Modifier.size(15.dp),
                                     tint = scheme.primary,
@@ -256,28 +289,31 @@ fun WebPreviewSheet(
                                         imeAction = ImeAction.Go,
                                     ),
                                     keyboardActions = KeyboardActions(
-                                        onGo = { loadUrl(inputUrl) },
+                                        onGo = { loadTarget(inputUrl) },
                                     ),
                                     modifier = Modifier.weight(1f),
                                 )
                             }
                         }
 
-                        // Open in external browser
+                        // Open external link
                         IconButton(
                             onClick = {
                                 runCatching {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
-                                    context.startActivity(intent)
+                                    if (!isWorkspaceHtml(currentTarget)) {
+                                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentTarget))
+                                        context.startActivity(intent)
+                                    }
                                 }
                             },
+                            enabled = !isWorkspaceHtml(currentTarget),
                             modifier = Modifier.size(34.dp),
                         ) {
                             Icon(
                                 Icons.AutoMirrored.Outlined.OpenInNew,
-                                contentDescription = "Open in browser",
+                                contentDescription = "Open in external browser",
                                 modifier = Modifier.size(18.dp),
-                                tint = scheme.onSurfaceVariant,
+                                tint = if (!isWorkspaceHtml(currentTarget)) scheme.onSurfaceVariant else scheme.onSurfaceVariant.copy(alpha = 0.3f),
                             )
                         }
 
@@ -340,7 +376,32 @@ fun WebPreviewSheet(
                         }
                     }
 
-                    // Port Quick Chips Row
+                    // Source Tabs & Selector Chips
+                    ScrollableTabRow(
+                        selectedTabIndex = selectedSourceTab,
+                        edgePadding = 8.dp,
+                        divider = {},
+                        containerColor = Color.Transparent,
+                        modifier = Modifier.fillMaxWidth().height(36.dp),
+                    ) {
+                        Tab(
+                            selected = selectedSourceTab == 0,
+                            onClick = { selectedSourceTab = 0 },
+                            text = { Text("Localhost (${activePorts.size})", style = MaterialTheme.typography.labelMedium) },
+                        )
+                        Tab(
+                            selected = selectedSourceTab == 1,
+                            onClick = { selectedSourceTab = 1 },
+                            text = { Text("Workspace HTML (${workspaceHtmlFiles.size})", style = MaterialTheme.typography.labelMedium) },
+                        )
+                        Tab(
+                            selected = selectedSourceTab == 2,
+                            onClick = { selectedSourceTab = 2 },
+                            text = { Text("Chat Links (${chatLinks.size})", style = MaterialTheme.typography.labelMedium) },
+                        )
+                    }
+
+                    // Chip list for the selected category
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier
@@ -348,70 +409,67 @@ fun WebPreviewSheet(
                             .horizontalScroll(rememberScrollState())
                             .padding(horizontal = 10.dp, vertical = 4.dp),
                     ) {
-                        Text(
-                            "PORTS:",
-                            style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                            color = scheme.onSurfaceVariant.copy(alpha = 0.8f),
-                            fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(end = 6.dp),
-                        )
-                        val portsToShow = (activePorts + LocalPortProbe.COMMON_PORTS).distinct()
-                        portsToShow.take(8).forEach { port ->
-                            val isOpen = port in activePorts
-                            val isSelected = currentUrl.contains(":$port")
-                            Surface(
-                                shape = RoundedCornerShape(12.dp),
-                                color = when {
-                                    isSelected -> scheme.primaryContainer
-                                    isOpen -> statusColors.success.copy(alpha = 0.15f)
-                                    else -> scheme.surfaceContainerHigh
-                                },
-                                border = BorderStroke(
-                                    1.dp,
-                                    if (isSelected) scheme.primary
-                                    else if (isOpen) statusColors.success.copy(alpha = 0.5f)
-                                    else scheme.outlineVariant.copy(alpha = 0.4f),
-                                ),
-                                modifier = Modifier
-                                    .padding(horizontal = 3.dp)
-                                    .clickable { loadUrl("http://localhost:$port") },
-                            ) {
-                                Row(
-                                    verticalAlignment = Alignment.CenterVertically,
-                                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                        when (selectedSourceTab) {
+                            0 -> {
+                                val portsToShow = (activePorts + LocalPortProbe.COMMON_PORTS).distinct()
+                                portsToShow.take(8).forEach { port ->
+                                    val isOpen = port in activePorts
+                                    val isSelected = currentTarget.contains(":$port")
+                                    PreviewChip(
+                                        label = ":$port",
+                                        isSelected = isSelected,
+                                        isLive = isOpen,
+                                        onClick = { loadTarget("http://localhost:$port") },
+                                    )
+                                }
+                                IconButton(
+                                    onClick = { scope.launch { activePorts = LocalPortProbe.probe() } },
+                                    modifier = Modifier.size(26.dp),
                                 ) {
-                                    if (isOpen) {
-                                        Box(
-                                            modifier = Modifier
-                                                .size(6.dp)
-                                                .background(statusColors.success, CircleShape),
-                                        )
-                                        Spacer(Modifier.width(4.dp))
-                                    }
-                                    Text(
-                                        ":$port",
-                                        style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
-                                        fontFamily = FontFamily.Monospace,
-                                        color = if (isSelected) scheme.onPrimaryContainer else scheme.onSurface,
+                                    Icon(
+                                        Icons.Outlined.Sensors,
+                                        contentDescription = "Scan Ports",
+                                        tint = scheme.primary,
+                                        modifier = Modifier.size(15.dp),
                                     )
                                 }
                             }
-                        }
-
-                        IconButton(
-                            onClick = {
-                                scope.launch {
-                                    activePorts = LocalPortProbe.probe()
+                            1 -> {
+                                if (workspaceHtmlFiles.isEmpty()) {
+                                    Text(
+                                        "No .html files in workspace",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = scheme.onSurfaceVariant,
+                                    )
+                                } else {
+                                    workspaceHtmlFiles.forEach { file ->
+                                        PreviewChip(
+                                            label = file,
+                                            isSelected = currentTarget == file,
+                                            isLive = false,
+                                            onClick = { loadTarget(file) },
+                                        )
+                                    }
                                 }
-                            },
-                            modifier = Modifier.size(26.dp),
-                        ) {
-                            Icon(
-                                Icons.Outlined.Sensors,
-                                contentDescription = "Scan Ports",
-                                tint = scheme.primary,
-                                modifier = Modifier.size(15.dp),
-                            )
+                            }
+                            2 -> {
+                                if (chatLinks.isEmpty()) {
+                                    Text(
+                                        "No links found in chat",
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = scheme.onSurfaceVariant,
+                                    )
+                                } else {
+                                    chatLinks.forEach { link ->
+                                        PreviewChip(
+                                            label = link.removePrefix("https://").removePrefix("http://").take(24),
+                                            isSelected = currentTarget == link,
+                                            isLive = false,
+                                            onClick = { loadTarget(link) },
+                                        )
+                                    }
+                                }
+                            }
                         }
                     }
 
@@ -438,7 +496,6 @@ fun WebPreviewSheet(
                             settings.apply {
                                 javaScriptEnabled = true
                                 domStorageEnabled = true
-                                databaseEnabled = true
                                 loadWithOverviewMode = true
                                 useWideViewPort = true
                                 builtInZoomControls = true
@@ -452,8 +509,10 @@ fun WebPreviewSheet(
                                 override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                     isLoading = true
                                     url?.let {
-                                        currentUrl = it
-                                        inputUrl = it
+                                        if (!it.startsWith("data:") && !it.startsWith("https://localhost/")) {
+                                            currentTarget = it
+                                            inputUrl = it
+                                        }
                                     }
                                     canGoBack = canGoBack()
                                     canGoForward = canGoForward()
@@ -461,10 +520,6 @@ fun WebPreviewSheet(
 
                                 override fun onPageFinished(view: WebView?, url: String?) {
                                     isLoading = false
-                                    url?.let {
-                                        currentUrl = it
-                                        inputUrl = it
-                                    }
                                     canGoBack = canGoBack()
                                     canGoForward = canGoForward()
                                     pageTitle = view?.title ?: "Web Preview"
@@ -479,6 +534,34 @@ fun WebPreviewSheet(
                                         isLoading = false
                                         errorMessage = error?.description?.toString() ?: "Failed to connect"
                                     }
+                                }
+
+                                override fun shouldInterceptRequest(
+                                    view: WebView?,
+                                    request: WebResourceRequest?,
+                                ): WebResourceResponse? {
+                                    // Resolve workspace relative assets for local HTML previews
+                                    val uri = request?.url ?: return null
+                                    if (uri.host == "localhost" && workspace != null && isWorkspaceHtml(currentTarget)) {
+                                        val path = uri.path?.trimStart('/') ?: return null
+                                        val node = runCatching { workspace.resolve(path) }.getOrNull()
+                                        if (node != null && node.exists && node.isFile) {
+                                            val mime = when (node.name.substringAfterLast('.', "").lowercase()) {
+                                                "css" -> "text/css"
+                                                "js" -> "application/javascript"
+                                                "json" -> "application/json"
+                                                "png" -> "image/png"
+                                                "jpg", "jpeg" -> "image/jpeg"
+                                                "svg" -> "image/svg+xml"
+                                                else -> "text/plain"
+                                            }
+                                            val stream = node.openInputStream()
+                                            if (stream != null) {
+                                                return WebResourceResponse(mime, "UTF-8", stream)
+                                            }
+                                        }
+                                    }
+                                    return super.shouldInterceptRequest(view, request)
                                 }
                             }
 
@@ -509,8 +592,8 @@ fun WebPreviewSheet(
                                 }
                             }
 
-                            loadUrl(currentUrl)
                             webViewRef = this
+                            loadTarget(currentTarget)
                         }
                     },
                     modifier = Modifier.fillMaxSize(),
@@ -537,13 +620,13 @@ fun WebPreviewSheet(
                             )
                             Spacer(Modifier.height(12.dp))
                             Text(
-                                "Server not responding",
+                                "Cannot load target",
                                 style = MaterialTheme.typography.titleMedium,
                                 fontWeight = FontWeight.Bold,
                             )
                             Spacer(Modifier.height(4.dp))
                             Text(
-                                "Nothing is listening on $currentUrl yet.\nMake sure your dev server is running (e.g. `npm run dev` or `python -m http.server`).",
+                                err,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = scheme.onSurfaceVariant,
                                 textAlign = androidx.compose.ui.text.style.TextAlign.Center,
@@ -565,7 +648,7 @@ fun WebPreviewSheet(
                                         modifier = Modifier.size(16.dp),
                                     )
                                     Spacer(Modifier.width(6.dp))
-                                    Text("Retry connection", color = scheme.onPrimary, style = MaterialTheme.typography.labelMedium)
+                                    Text("Retry", color = scheme.onPrimary, style = MaterialTheme.typography.labelMedium)
                                 }
                             }
                         }
@@ -699,6 +782,56 @@ fun WebPreviewSheet(
     DisposableEffect(Unit) {
         onDispose {
             webViewRef?.destroy()
+        }
+    }
+}
+
+@Composable
+private fun PreviewChip(
+    label: String,
+    isSelected: Boolean,
+    isLive: Boolean,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val statusColors = LocalStatusColors.current
+
+    Surface(
+        shape = RoundedCornerShape(12.dp),
+        color = when {
+            isSelected -> scheme.primaryContainer
+            isLive -> statusColors.success.copy(alpha = 0.15f)
+            else -> scheme.surfaceContainerHigh
+        },
+        border = BorderStroke(
+            1.dp,
+            if (isSelected) scheme.primary
+            else if (isLive) statusColors.success.copy(alpha = 0.5f)
+            else scheme.outlineVariant.copy(alpha = 0.4f),
+        ),
+        modifier = Modifier
+            .padding(horizontal = 3.dp)
+            .clickable(onClick = onClick),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+        ) {
+            if (isLive) {
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .background(statusColors.success, CircleShape),
+                )
+                Spacer(Modifier.width(4.dp))
+            }
+            Text(
+                label,
+                style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp),
+                fontFamily = FontFamily.Monospace,
+                color = if (isSelected) scheme.onPrimaryContainer else scheme.onSurface,
+                maxLines = 1,
+            )
         }
     }
 }

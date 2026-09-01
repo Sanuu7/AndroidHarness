@@ -17,10 +17,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -30,10 +37,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.core.ImageRef
+import com.androidharness.app.core.WebPreviewTarget
+import com.androidharness.app.core.WebResourceExtractor
+import com.androidharness.app.core.WebTargetType
 import com.androidharness.app.ui.chat.MarkdownText
 import com.androidharness.app.ui.common.DotLoading
+import com.androidharness.app.ui.theme.LocalStatusColors
 
 /**
  * User messages are neutral gray bubbles (not the old accent-filled ones) so the
@@ -103,6 +117,10 @@ internal fun AssistantText(
     onOpenUrl: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
+    val primaryTarget = androidx.compose.runtime.remember(text, streaming) {
+        if (!streaming && text.isNotBlank()) WebResourceExtractor.findPrimaryPreviewTarget(text) else null
+    }
+
     Column(modifier = modifier) {
         if (text.isBlank() && streaming) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -124,6 +142,84 @@ internal fun AssistantText(
                     BlinkingCursor()
                 }
             }
+
+            if (primaryTarget != null && onOpenUrl != null) {
+                Spacer(Modifier.size(6.dp))
+                WebPreviewActionChip(
+                    target = primaryTarget,
+                    onClick = { onOpenUrl(primaryTarget.urlOrPath) },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun WebPreviewActionChip(
+    target: WebPreviewTarget,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val statusColors = LocalStatusColors.current
+
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = scheme.surfaceContainerHigh,
+        border = BorderStroke(
+            1.dp,
+            if (target.isLive) statusColors.success.copy(alpha = 0.5f)
+            else scheme.outlineVariant.copy(alpha = 0.6f),
+        ),
+        modifier = modifier.clickable(onClick = onClick),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            Icon(
+                when (target.type) {
+                    WebTargetType.WORKSPACE_HTML -> Icons.Outlined.Description
+                    else -> Icons.Outlined.Language
+                },
+                contentDescription = null,
+                tint = if (target.isLive) statusColors.success else scheme.primary,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(6.dp))
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    if (target.isLive) {
+                        Box(
+                            modifier = Modifier
+                                .size(6.dp)
+                                .background(statusColors.success, CircleShape),
+                        )
+                        Spacer(Modifier.width(4.dp))
+                    }
+                    Text(
+                        target.title,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.SemiBold,
+                        color = scheme.onSurface,
+                    )
+                }
+                Text(
+                    target.subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onSurfaceVariant,
+                    fontFamily = FontFamily.Monospace,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Spacer(Modifier.width(8.dp))
+            Icon(
+                Icons.AutoMirrored.Outlined.OpenInNew,
+                contentDescription = null,
+                tint = scheme.onSurfaceVariant,
+                modifier = Modifier.size(14.dp),
+            )
         }
     }
 }
