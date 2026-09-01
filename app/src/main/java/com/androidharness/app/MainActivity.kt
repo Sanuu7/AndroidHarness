@@ -77,10 +77,12 @@ class MainActivity : FragmentActivity() {
 
         setContent {
             val settings by container.settings.settings
-                .collectAsStateWithLifecycle(initialValue = AppSettings())
+                .collectAsStateWithLifecycle(initialValue = null)
+            val currentSettings = settings ?: return@setContent
+
             HarnessTheme(
-                themeMode = settings.themeMode,
-                dynamicColor = settings.dynamicColor,
+                themeMode = currentSettings.themeMode,
+                dynamicColor = currentSettings.dynamicColor,
             ) {
                 // Auto update check shortly after launch, once per process.
                 LaunchedEffect(Unit) {
@@ -89,10 +91,10 @@ class MainActivity : FragmentActivity() {
                 }
 
                 // Biometric lock prompt on start / when enabled.
-                LaunchedEffect(settings.biometricLockEnabled) {
-                    if (!settings.biometricLockEnabled) {
+                LaunchedEffect(currentSettings.biometricLockEnabled) {
+                    if (!currentSettings.biometricLockEnabled) {
                         isUnlocked = true
-                    } else if (!isUnlocked && !promptShownThisResume) {
+                    } else if (!isUnlocked) {
                         promptBiometricUnlock()
                     }
                 }
@@ -102,15 +104,15 @@ class MainActivity : FragmentActivity() {
                 // is on screen (SecureScreenEffect / SecureDialogEffect).
                 val credentialScreen by container.screenshotPolicy.credentialScreenVisible
                     .collectAsStateWithLifecycle()
-                LaunchedEffect(settings.allowScreenshots, credentialScreen) {
-                    if (ScreenshotPolicy.blocked(settings.allowScreenshots, credentialScreen)) {
+                LaunchedEffect(currentSettings.allowScreenshots, credentialScreen) {
+                    if (ScreenshotPolicy.blocked(currentSettings.allowScreenshots, credentialScreen)) {
                         window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     } else {
                         window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
                     }
                 }
 
-                if (settings.biometricLockEnabled && !isUnlocked) {
+                if (currentSettings.biometricLockEnabled && !isUnlocked) {
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
