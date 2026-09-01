@@ -39,6 +39,8 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
                         val slot = when (t.type) {
                             TokenType.KEYWORD_CONTROL -> slot(KEYWORD_CONTROL, bold = true)
                             TokenType.KEYWORD -> slot(KEYWORD, bold = true)
+                            TokenType.HTML_TAG -> slot(HTML_TAG, bold = true)
+                            TokenType.ATTRIBUTE_NAME -> slot(ATTRIBUTE_NAME)
                             TokenType.TYPE_NAME -> slot(TYPE_NAME)
                             TokenType.FUNCTION_NAME -> slot(FUNCTION_NAME)
                             TokenType.STRING -> slot(STRING)
@@ -70,6 +72,8 @@ class BasicCodeLanguage(path: String) : EmptyLanguage() {
     private companion object {
         const val KEYWORD = EditorColorScheme.KEYWORD
         const val KEYWORD_CONTROL = EditorColorScheme.ATTRIBUTE_NAME
+        const val HTML_TAG = EditorColorScheme.HTML_TAG
+        const val ATTRIBUTE_NAME = EditorColorScheme.IDENTIFIER_VAR
         const val TYPE_NAME = EditorColorScheme.IDENTIFIER_NAME
         const val FUNCTION_NAME = EditorColorScheme.FUNCTION_NAME
         const val COMMENT = EditorColorScheme.COMMENT

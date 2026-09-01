@@ -448,6 +448,8 @@ private fun applyEditorTheme(ed: CodeEditor, scheme: androidx.compose.material3.
 
     if (isDark) {
         // Dark theme rich syntax palette
+        set(EditorColorScheme.HTML_TAG, androidx.compose.ui.graphics.Color(0xFF7EE787))       // HTML/XML tags (<html, <div, <meta, <!DOCTYPE) -> Mint Green
+        set(EditorColorScheme.IDENTIFIER_VAR, androidx.compose.ui.graphics.Color(0xFF79C0FF)) // HTML attributes / JSON keys (charset, name, content) -> Sky Blue
         set(EditorColorScheme.ATTRIBUTE_NAME, androidx.compose.ui.graphics.Color(0xFFFF7B72)) // Control keywords (import, return, if, etc) -> Coral Red
         set(EditorColorScheme.KEYWORD, androidx.compose.ui.graphics.Color(0xFF79C0FF))        // Core keywords (fun, class, val, var) -> Sky Blue
         set(EditorColorScheme.IDENTIFIER_NAME, androidx.compose.ui.graphics.Color(0xFFFFA657))// Types / Classes -> Warm Orange
@@ -459,6 +461,8 @@ private fun applyEditorTheme(ed: CodeEditor, scheme: androidx.compose.material3.
         set(EditorColorScheme.OPERATOR, androidx.compose.ui.graphics.Color(0xFFFF7B72))       // Operators -> Coral Red
     } else {
         // Light theme rich syntax palette
+        set(EditorColorScheme.HTML_TAG, androidx.compose.ui.graphics.Color(0xFF116329))       // HTML/XML tags (<html, <div, <meta, <!DOCTYPE) -> Dark Forest Green
+        set(EditorColorScheme.IDENTIFIER_VAR, androidx.compose.ui.graphics.Color(0xFF0550AE)) // HTML attributes / JSON keys (charset, name, content) -> Royal Blue
         set(EditorColorScheme.ATTRIBUTE_NAME, androidx.compose.ui.graphics.Color(0xFFCF222E)) // Control keywords (import, return, if, etc) -> Deep Crimson Red
         set(EditorColorScheme.KEYWORD, androidx.compose.ui.graphics.Color(0xFF0550AE))        // Core keywords (fun, class, val, var) -> Royal Blue
         set(EditorColorScheme.IDENTIFIER_NAME, androidx.compose.ui.graphics.Color(0xFF953800))// Types / Classes -> Rust Brown
