@@ -20,9 +20,43 @@ data class WebPreviewTarget(
 
 object WebResourceExtractor {
 
-    private val markdownLinkRegex = Regex("""\[([^\]]+)\]\((https?://[^\)\s]+|localhost:[^\)\s]+|127\.0\.0\.1:[^\)\s]+)\)""", RegexOption.IGNORE_CASE)
+    private val markdownLinkRegex = Regex("""\[([^\]]+)\]\((https?://[^\)\s]+|localhost:[^\)\s]+|127\.0\.0\.1:[^\)\s]+|preview:[^\)\s]+)\)""", RegexOption.IGNORE_CASE)
     private val rawUrlRegex = Regex("""\b(https?://[a-zA-Z0-9\-._~:/?#\[\]@!$&'()*+,;=%]+)\b""", RegexOption.IGNORE_CASE)
     private val htmlFileRegex = Regex("""\b([a-zA-Z0-9_\-./]+\.(?:html|htm))\b""", RegexOption.IGNORE_CASE)
+    private val explicitPreviewDirectiveRegex = Regex("""(?:::web-preview|\{preview|\{web-preview)\{target=["']([^"']+)["'](?:,\s*title=["']([^"']+)["'])?\}""", RegexOption.IGNORE_CASE)
+
+    /**
+     * Extracts an explicit preview directive if emitted by the agent (e.g. ::web-preview{target="index.html"}).
+     */
+    fun extractExplicitDirective(text: String): WebPreviewTarget? {
+        val match = explicitPreviewDirectiveRegex.find(text) ?: return null
+        val target = match.groupValues[1].trim()
+        val customTitle = match.groupValues.getOrNull(2)?.trim()?.ifBlank { null }
+
+        return when {
+            LocalPortProbe.isLocalhostUrl(target) -> WebPreviewTarget(
+                type = WebTargetType.LOCAL_SERVER,
+                title = customTitle ?: "Open Web Preview",
+                subtitle = target,
+                urlOrPath = target,
+                isLive = true,
+            )
+            target.endsWith(".html", ignoreCase = true) || target.endsWith(".htm", ignoreCase = true) -> WebPreviewTarget(
+                type = WebTargetType.WORKSPACE_HTML,
+                title = customTitle ?: "Preview ${target.substringAfterLast('/')}",
+                subtitle = "Local workspace file",
+                urlOrPath = target,
+                isLive = false,
+            )
+            else -> WebPreviewTarget(
+                type = WebTargetType.CHAT_LINK,
+                title = customTitle ?: "Open Link Preview",
+                subtitle = target,
+                urlOrPath = target,
+                isLive = false,
+            )
+        }
+    }
 
     /**
      * Extract all unique URLs found in text (both markdown links and bare URLs).
@@ -70,6 +104,10 @@ object WebResourceExtractor {
      * Determine if a message has previewable web targets (URLs or HTML files) to show a preview action chip.
      */
     fun findPrimaryPreviewTarget(text: String): WebPreviewTarget? {
+        // 0. Explicit agent directive takes absolute top priority
+        val explicit = extractExplicitDirective(text)
+        if (explicit != null) return explicit
+
         val urls = extractUrls(text)
         val localhost = urls.firstOrNull { LocalPortProbe.isLocalhostUrl(it) }
         if (localhost != null) {
@@ -87,7 +125,7 @@ object WebResourceExtractor {
             val file = htmlFiles.first()
             return WebPreviewTarget(
                 type = WebTargetType.WORKSPACE_HTML,
-                title = "Preview $file",
+                title = "Preview ${file.substringAfterLast('/')}",
                 subtitle = "Local workspace file",
                 urlOrPath = file,
                 isLive = false,

@@ -26,6 +26,21 @@ class WebResourceExtractorTest {
     }
 
     @Test
+    fun `findPrimaryPreviewTarget prioritizes explicit directive over heuristics`() {
+        val directiveMsg = """
+            I created the landing page.
+            ::web-preview{target="landing/index.html"}
+            Also check out https://example.com and index.html
+        """.trimIndent()
+
+        val target = WebResourceExtractor.findPrimaryPreviewTarget(directiveMsg)
+        assertNotNull(target)
+        assertEquals(WebTargetType.WORKSPACE_HTML, target?.type)
+        assertEquals("landing/index.html", target?.urlOrPath)
+        assertEquals("Preview index.html", target?.title)
+    }
+
+    @Test
     fun `findPrimaryPreviewTarget prioritizes localhost servers then html files then web urls`() {
         val localMsg = "Server started at http://localhost:3000. Enjoy!"
         val targetLocal = WebResourceExtractor.findPrimaryPreviewTarget(localMsg)

@@ -16,8 +16,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.ContentCopy
@@ -47,6 +49,7 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -157,9 +160,62 @@ private sealed interface Block {
     data class Quote(val lines: List<String>) : Block
     data object Rule : Block
     data class Bullets(val items: List<ListItem>) : Block
+    data class Table(
+        val headers: List<String>,
+        val alignments: List<TextAlign>,
+        val rows: List<List<String>>,
+    ) : Block
 }
 
 private data class ListItem(val marker: String, val content: String, val nested: List<ListItem>)
+
+private fun isTableStart(lines: List<String>, idx: Int): Boolean {
+    if (idx + 1 >= lines.size) return false
+    val header = lines[idx].trim()
+    val delimiter = lines[idx + 1].trim()
+    if (!header.contains('|') || !delimiter.contains('|')) return false
+    val delimiterCells = delimiter.trim('|').split('|')
+    return delimiterCells.isNotEmpty() && delimiterCells.all { cell ->
+        val trimmed = cell.trim()
+        trimmed.isNotEmpty() && trimmed.all { it == '-' || it == ':' }
+    }
+}
+
+private fun parseTableBlock(lines: List<String>, startIdx: Int): Pair<Block.Table, Int> {
+    val headerLine = lines[startIdx].trim()
+    val delimiterLine = lines[startIdx + 1].trim()
+
+    val headers = splitTableRow(headerLine)
+    val alignments = splitTableRow(delimiterLine).map { cell ->
+        val trimmed = cell.trim()
+        when {
+            trimmed.startsWith(':') && trimmed.endsWith(':') -> TextAlign.Center
+            trimmed.endsWith(':') -> TextAlign.End
+            else -> TextAlign.Start
+        }
+    }
+
+    val rows = mutableListOf<List<String>>()
+    var i = startIdx + 2
+    while (i < lines.size) {
+        val line = lines[i].trim()
+        if (line.isBlank() || !line.contains('|')) break
+        rows += splitTableRow(line)
+        i++
+    }
+
+    return Block.Table(headers, alignments, rows) to i
+}
+
+private fun splitTableRow(row: String): List<String> {
+    val clean = row.trim()
+    val trimmed = if (clean.startsWith('|') && clean.endsWith('|') && clean.length > 1) {
+        clean.substring(1, clean.length - 1)
+    } else {
+        clean.removePrefix("|").removeSuffix("|")
+    }
+    return trimmed.split('|').map { it.trim() }
+}
 
 private val bulletRegex = Regex("^\\s*([-*+])\\s+(.*)$")
 private val numberedRegex = Regex("^\\s*(\\d+)[.)]\\s+(.*)$")
@@ -217,6 +273,13 @@ private fun parseBlocks(text: String): List<Block> {
                     i++
                 }
                 out += Block.Quote(quoteLines)
+            }
+
+            isTableStart(lines, i) -> {
+                flushParagraph()
+                val (tableBlock, nextIdx) = parseTableBlock(lines, i)
+                out += tableBlock
+                i = nextIdx
             }
 
             bulletRegex.matches(line) || numberedRegex.matches(line) -> {
@@ -284,6 +347,7 @@ private fun MarkdownBlocks(
                 modifier = Modifier.padding(vertical = 4.dp),
             )
             is Block.Bullets -> ListBlock(block.items, plain = plain)
+            is Block.Table -> TableBlock(block, onOpenUrl = onOpenUrl)
             is Block.Paragraph -> if (plain) {
                 Text(block.text, style = MaterialTheme.typography.bodyLarge)
             } else {
@@ -363,6 +427,85 @@ private fun QuoteBlock(lines: List<String>) {
                     color = scheme.onSurfaceVariant,
                     modifier = Modifier.padding(vertical = 1.dp),
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun TableBlock(
+    table: Block.Table,
+    onOpenUrl: ((String) -> Unit)? = null,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val scrollState = rememberScrollState()
+
+    Surface(
+        color = scheme.surfaceContainerLowest,
+        shape = MaterialTheme.shapes.medium,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 4.dp),
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .horizontalScroll(scrollState),
+        ) {
+            // Header Row
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier
+                    .background(scheme.surfaceContainerHigh)
+                    .padding(horizontal = 8.dp, vertical = 7.dp),
+            ) {
+                table.headers.forEachIndexed { colIdx, header ->
+                    val align = table.alignments.getOrElse(colIdx) { TextAlign.Start }
+                    Text(
+                        text = header,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = align,
+                        color = scheme.onSurface,
+                        modifier = Modifier
+                            .widthIn(min = 100.dp)
+                            .padding(horizontal = 8.dp),
+                    )
+                }
+            }
+
+            HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
+
+            // Body Rows (Zebra striped for clean mobile document legibility)
+            table.rows.forEachIndexed { rowIdx, row ->
+                val bg = if (rowIdx % 2 == 1) scheme.surfaceContainerLow.copy(alpha = 0.5f) else Color.Transparent
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .background(bg)
+                        .padding(horizontal = 8.dp, vertical = 7.dp),
+                ) {
+                    table.headers.indices.forEach { colIdx ->
+                        val cellText = row.getOrElse(colIdx) { "" }
+                        val align = table.alignments.getOrElse(colIdx) { TextAlign.Start }
+                        Box(
+                            modifier = Modifier
+                                .widthIn(min = 100.dp)
+                                .padding(horizontal = 8.dp),
+                        ) {
+                            Text(
+                                text = styledText(cellText),
+                                style = MaterialTheme.typography.bodySmall,
+                                textAlign = align,
+                                color = scheme.onSurface,
+                            )
+                        }
+                    }
+                }
+                if (rowIdx != table.rows.lastIndex) {
+                    HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.25f))
+                }
             }
         }
     }
