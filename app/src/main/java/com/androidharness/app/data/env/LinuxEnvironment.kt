@@ -29,6 +29,8 @@ data class PkgMeta(
     val filename: String,
     val size: Long,
     val sha256: String,
+    val description: String = "",
+    val installedSize: Long = 0L,
 )
 
 /** Parses the Debian Packages index served by the Termux repository. */
@@ -60,6 +62,7 @@ object PackageIndex {
                 .split(',')
                 .map { it.trim().substringBefore('(').trim().split('|').first().trim() }
                 .filter { it.isNotBlank() }
+            val desc = fields["Description"]?.lines()?.firstOrNull()?.trim().orEmpty()
             out[name] = PkgMeta(
                 name = name,
                 version = fields["Version"] ?: "",
@@ -67,6 +70,8 @@ object PackageIndex {
                 filename = filename,
                 size = fields["Size"]?.toLongOrNull() ?: 0L,
                 sha256 = fields["SHA256"] ?: "",
+                description = desc,
+                installedSize = fields["Installed-Size"]?.toLongOrNull() ?: 0L,
             )
         }
         return out
@@ -335,14 +340,80 @@ class LinuxEnvironmentManager(
 
     private val installMutex = Mutex()
 
+    private var cachedIndex: Map<String, PkgMeta>? = null
+    private val indexMutex = Mutex()
+
+    /** Returns the parsed repository package index, caching it in memory. */
+    suspend fun getPackageIndex(forceRefresh: Boolean = false): Map<String, PkgMeta> = withContext(Dispatchers.IO) {
+        indexMutex.withLock {
+            if (!forceRefresh && cachedIndex != null) return@withLock cachedIndex!!
+            val text = fetchText(indexUrl())
+            val index = PackageIndex.parse(text)
+            cachedIndex = index
+            index
+        }
+    }
+
+    /** Searches available repository packages by name or description. */
+    suspend fun searchPackages(query: String): List<PkgMeta> = withContext(Dispatchers.IO) {
+        val q = query.trim().lowercase()
+        if (q.isEmpty()) return@withContext emptyList()
+        val index = runCatching { getPackageIndex() }.getOrDefault(emptyMap())
+        index.values.filter {
+            it.name.lowercase().contains(q) || it.description.lowercase().contains(q)
+        }.sortedWith(
+            compareBy<PkgMeta> {
+                when {
+                    it.name.equals(q, ignoreCase = true) -> 0
+                    it.name.lowercase().startsWith(q) -> 1
+                    it.name.lowercase().contains(q) -> 2
+                    else -> 3
+                }
+            }.thenBy { it.name }
+        )
+    }
+
+    /** Returns metadata for a package by name, or null if unknown. */
+    suspend fun getPackageMeta(name: String): PkgMeta? = withContext(Dispatchers.IO) {
+        val index = runCatching { getPackageIndex() }.getOrNull()
+        index?.get(name)
+    }
+
+    /** Resolves which packages need to be downloaded/installed for [wanted] excluding already-installed ones. */
+    suspend fun resolveClosure(wanted: List<String>): List<PkgMeta> = withContext(Dispatchers.IO) {
+        val index = getPackageIndex()
+        val already = installedPackages().toSet()
+        resolve(index, wanted).filter { it.name !in already }
+    }
+
+    /**
+     * Uninstalls an installed package. Core packages cannot be uninstalled.
+     */
+    suspend fun uninstallPackage(name: String): Boolean = withContext(Dispatchers.IO) {
+        if (name in corePackages) throw IllegalArgumentException("Cannot uninstall core package '$name'")
+        val installed = installedPackages().toMutableSet()
+        if (name !in installed) return@withContext false
+        installed.remove(name)
+        marker.writeText(installed.joinToString("\n"))
+        BINARY_PROOF[name]?.forEach { binRel ->
+            File(prefix, binRel).delete()
+        }
+        ensureShims(force = true)
+        runCatching { deployStateListener?.invoke() }
+        true
+    }
+
     private suspend fun installLocked(wanted: List<String>) {
         try {
             // React to the tap immediately: fetching the package index takes
             // seconds on mobile networks before the first package download.
             _state.value = EnvState.Preparing
-            val indexText = fetchText(indexUrl())
-            val index = PackageIndex.parse(indexText)
+            val index = getPackageIndex()
             val already = installedPackages().toSet()
+            val unknown = wanted.filter { it !in index }
+            if (unknown.isNotEmpty()) {
+                throw IllegalArgumentException("Unknown package(s): ${unknown.joinToString(", ")}. Not found in repository.")
+            }
             val closure = resolve(index, wanted).filter { it.name !in already }
             if (closure.isEmpty()) {
                 markInstalled(wanted)
@@ -376,7 +447,7 @@ class LinuxEnvironmentManager(
             File(prefix, "tmp").mkdirs()
             File(prefix, "etc/termux").mkdirs()
             markInstalled(wanted)
-            ensureShims()
+            ensureShims(force = true)
             _state.value = EnvState.Ready
             runCatching { deployStateListener?.invoke() }
         } catch (ce: CancellationException) {
@@ -401,7 +472,7 @@ class LinuxEnvironmentManager(
     fun installedPackages(): List<String> =
         runCatching { marker.readText().lines().filter { it.isNotBlank() } }.getOrDefault(emptyList())
 
-    private fun installedContains(name: String): Boolean = installedPackages().any { it == name }
+    fun installedContains(name: String): Boolean = installedPackages().any { it == name }
 
     /** Package name → binaries proving it is actually usable (any-of). */
     private val BINARY_PROOF: Map<String, List<String>> = mapOf(
@@ -866,14 +937,15 @@ class LinuxEnvironmentManager(
 
     private fun shellQuote(s: String): String = "'" + s.replace("'", "'\\''") + "'"
 
-    /** (Re)generates the shim file when missing or emitted by an older format. */
-    fun ensureShims() {
+    /** (Re)generates the shim file when missing, forced, or emitted by an older format. */
+    fun ensureShims(force: Boolean = false) {
         runCatching {
             val linker = linkerPath() ?: return
             val binDir = File(prefix, "bin")
             if (!binDir.isDirectory) return
+            if (force) shimFile.delete()
             // Cheap freshness check: when current, only the header line is read.
-            if (shimFile.isFile &&
+            if (!force && shimFile.isFile &&
                 runCatching { shimFile.bufferedReader().use { it.readLine() } }.getOrNull() == ShellShims.HEADER
             ) return
             val bash = File(binDir, "bash").absolutePath

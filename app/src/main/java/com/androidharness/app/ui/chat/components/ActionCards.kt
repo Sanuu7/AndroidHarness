@@ -26,8 +26,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -116,23 +118,60 @@ internal fun ApprovalCard(
     onApprove: (Boolean) -> Unit,
     onDeny: () -> Unit,
 ) {
+    val isPkg = approval.call.name == "pkg_install"
+    val scheme = MaterialTheme.colorScheme
     ActionCard(
-        title = "Approve this action?",
-        icon = Icons.Outlined.Shield,
+        title = if (isPkg) "Install Linux package?" else "Approve this action?",
+        icon = if (isPkg) Icons.Outlined.Inventory2 else Icons.Outlined.Shield,
+        iconTint = if (isPkg) scheme.tertiary else scheme.primary,
         actions = {
-            TextButton(onClick = onDeny) { Text("Deny") }
-            FilledTonalButton(onClick = { onApprove(true) }) { Text("Always") }
+            TextButton(onClick = onDeny) { Text(if (isPkg) "Decline" else "Deny") }
+            if (!isPkg) {
+                FilledTonalButton(onClick = { onApprove(true) }) { Text("Always") }
+            }
             Button(onClick = { onApprove(false) }) { Text("Allow") }
         },
     ) {
+        if (isPkg) {
+            Surface(
+                color = scheme.errorContainer.copy(alpha = 0.25f),
+                shape = MaterialTheme.shapes.small,
+                border = BorderStroke(1.dp, scheme.error.copy(alpha = 0.4f)),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp),
+            ) {
+                Row(
+                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Icon(
+                        Icons.Outlined.WarningAmber,
+                        contentDescription = null,
+                        tint = scheme.error,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        "Warning: The agent is about to download and install packages on your device. Confirm before proceeding.",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onErrorContainer,
+                    )
+                }
+            }
+        }
         Text(
             describeToolCall(approval.call),
             style = MaterialTheme.typography.bodyMedium,
         )
-        approval.diffPreview?.let { diff ->
-            if (diff.isNotBlank()) {
+        approval.diffPreview?.let { preview ->
+            if (preview.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
-                DiffView(diff)
+                if (isPkg) {
+                    MonoBlock(preview)
+                } else {
+                    DiffView(preview)
+                }
             }
         }
         if (approval.diffPreview == null) {

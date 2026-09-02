@@ -629,7 +629,16 @@ class AgentEngine(
             }
         }
         val grantKey = com.androidharness.app.tools.ShellPolicy.grantKey(call.name, command)
+        val isPkgInstall = call.name == "pkg_install"
         val approved = when {
+            isPkgInstall -> {
+                // Mandatory confirmation: even in FULL_ACCESS or FULL_AUTO mode,
+                // package installation ALWAYS requires explicit user confirmation (Decline or Allow).
+                val preview = computePkgInstallPreview(call)
+                val request = ApprovalRequest(call, tool.description, preview, grantKey)
+                emitEvent(AgentEvent.ApprovalNeeded(request))
+                request.response.await()
+            }
             mode == PermissionMode.FULL_ACCESS -> true
             com.androidharness.app.tools.ShellPolicy.isGranted(call.name, command, sessionAllowedTools) -> true
             mode == PermissionMode.FULL_AUTO -> true
@@ -850,6 +859,24 @@ class AgentEngine(
             null
         }
     }
+
+    /** Formats a preview for package installation approval warnings. */
+    private fun computePkgInstallPreview(call: ToolCallData): String? = runCatching {
+        val args = json.parseToJsonElement(call.argumentsJson).jsonObject
+        val pkgs = when (val p = args["packages"]) {
+            is kotlinx.serialization.json.JsonArray -> p.map { it.jsonPrimitive.content.trim() }.filter { it.isNotEmpty() }
+            else -> listOfNotNull(args["package"]?.jsonPrimitive?.content?.trim()).filter { it.isNotEmpty() }
+        }
+        val reason = args["reason"]?.jsonPrimitive?.contentOrNull
+        buildString {
+            append("Packages to install:\n")
+            pkgs.forEach { append("  • ").append(it).append('\n') }
+            if (!reason.isNullOrBlank()) {
+                append("\nReason: ").append(reason).append('\n')
+            }
+            append("\nNote: Installing packages downloads data and modifies your Linux environment.")
+        }.trim()
+    }.getOrNull()
 
     // ------------------------------------------------------------------
     // Subagents
@@ -1322,7 +1349,7 @@ Rules:
         )
         if (workspace.shellRoot != null) {
             if (linuxEnv.isReady) {
-                sb.append("- The shell tool runs a full Linux environment (bash, git, python, node and more) with the workspace as its working directory. Call commands by their plain names (python3, git, node, ls, …): the harness launches them correctly on every execution tier. Use shell_background for long-running servers.\n")
+                sb.append("- The shell tool runs a full Linux environment (bash, git, python, node and more) with the workspace as its working directory. Call commands by their plain names (python3, git, node, ls, …): the harness launches them correctly on every execution tier. Use shell_background for long-running servers. If a required CLI package is missing (e.g. ripgrep, jq, clang, rust, tmux, tree, openjdk-17), search for it with pkg_search and install it with pkg_install (do NOT run 'apt' or 'pkg' directly in shell). Package installation will always prompt the user with a confirmation warning before downloading.\n")
             } else {
                 sb.append("- The shell tool currently runs Android's toybox sh (a real Linux environment can be installed). If a task needs git, python, node, compilers, curl/ssh or similar, do NOT retry with toybox: call the shell tool anyway with the command you need; the harness will show the user an install button in the chat. For everything else use shell_background for long-running servers.\n")
             }

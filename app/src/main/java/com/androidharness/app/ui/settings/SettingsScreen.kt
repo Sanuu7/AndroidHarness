@@ -47,11 +47,13 @@ import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.SdStorage
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.SystemUpdate
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -1665,6 +1667,7 @@ private fun LinuxEnvironmentCard(
     var checkResult by remember { mutableStateOf<String?>(null) }
     var checking by remember { mutableStateOf(false) }
     var confirmUninstall by remember { mutableStateOf(false) }
+    var showPackagesSheet by remember { mutableStateOf(false) }
 
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -1693,7 +1696,7 @@ private fun LinuxEnvironmentCard(
                     val installed = container.linuxEnv.installedPackages()
                     if (installed.isNotEmpty()) {
                         Text(
-                            "Packages: ${installed.joinToString(", ")}",
+                            "Packages (${installed.size}): ${installed.joinToString(", ")}",
                             style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -1708,7 +1711,15 @@ private fun LinuxEnvironmentCard(
                     // Step 1: check. Step 2 (only when something is actually
                     // missing/broken): confirm and update. Nothing to do → no
                     // dead button.
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        FilledTonalButton(onClick = { showPackagesSheet = true }) {
+                            Icon(Icons.Outlined.Inventory2, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Packages")
+                        }
                         OutlinedButton(
                             enabled = !checking,
                             onClick = {
@@ -1783,6 +1794,13 @@ private fun LinuxEnvironmentCard(
             dismissButton = {
                 TextButton(onClick = { confirmUninstall = false }) { Text("Cancel") }
             },
+        )
+    }
+
+    if (showPackagesSheet) {
+        PackageManagerSheet(
+            container = container,
+            onDismiss = { showPackagesSheet = false },
         )
     }
 }

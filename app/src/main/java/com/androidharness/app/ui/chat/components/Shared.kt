@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.DriveFileMove
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Public
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Terminal
@@ -58,6 +59,7 @@ internal fun toolIcon(name: String): ImageVector = when (name) {
     "todo_write" -> Icons.Outlined.Checklist
     "memory_write" -> Icons.Outlined.EditNote
     "bg_list", "bg_kill" -> Icons.Outlined.Terminal
+    "pkg_install", "pkg_search", "pkg_list" -> Icons.Outlined.Inventory2
     "skill_view", "skills_list", "skill_manage" -> Icons.Outlined.AutoStories
     else -> Icons.Outlined.Build
 }

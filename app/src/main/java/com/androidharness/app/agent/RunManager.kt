@@ -72,6 +72,9 @@ fun describeToolCall(call: ToolCallData): String {
         "skill_view" -> "Loading skill ${arg("name") ?: "…"}…"
         "skills_list" -> "Listing skills…"
         "skill_manage" -> "Updating skill ${arg("name") ?: ""}…".trim()
+        "pkg_install" -> "Installing package ${arg("package") ?: arg("packages") ?: "…"}"
+        "pkg_search" -> "Searching packages for ${arg("query") ?: "…"}"
+        "pkg_list" -> "Listing installed packages…"
         else -> "Running ${call.name}…"
     }
 }

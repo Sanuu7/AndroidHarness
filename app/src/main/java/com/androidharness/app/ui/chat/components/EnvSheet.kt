@@ -8,10 +8,15 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -22,6 +27,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import com.androidharness.app.ui.settings.PackageManagerSheet
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -49,6 +55,7 @@ fun EnvSheet(
     var checkResult by remember { mutableStateOf<String?>(null) }
     var checking by remember { mutableStateOf(false) }
     var confirmUninstall by remember { mutableStateOf(false) }
+    var showPackagesSheet by remember { mutableStateOf(false) }
     val linuxEnv = container.linuxEnv
 
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -75,6 +82,14 @@ fun EnvSheet(
 
             when (envState) {
                 is EnvState.Ready -> {
+                    val installed = linuxEnv.installedPackages()
+                    if (installed.isNotEmpty()) {
+                        Text(
+                            "Packages (${installed.size}): ${installed.joinToString(", ")}",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
                     checkResult?.let { report ->
                         Text(
                             report,
@@ -82,7 +97,15 @@ fun EnvSheet(
                             color = if (report.startsWith("All present")) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.primary,
                         )
                     }
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        FilledTonalButton(onClick = { showPackagesSheet = true }) {
+                            Icon(Icons.Outlined.Inventory2, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Spacer(Modifier.width(6.dp))
+                            Text("Packages")
+                        }
                         OutlinedButton(
                             enabled = !checking,
                             onClick = {
@@ -139,6 +162,13 @@ fun EnvSheet(
             dismissButton = {
                 TextButton(onClick = { confirmUninstall = false }) { Text("Cancel") }
             },
+        )
+    }
+
+    if (showPackagesSheet) {
+        PackageManagerSheet(
+            container = container,
+            onDismiss = { showPackagesSheet = false },
         )
     }
 }
