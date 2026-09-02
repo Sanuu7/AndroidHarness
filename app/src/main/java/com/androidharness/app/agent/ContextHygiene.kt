@@ -17,12 +17,10 @@ object ContextHygiene {
 
     /**
      * Maximum number of recent images to keep in model context across the
-     * whole conversation (including user attachments and tool screenshots).
-     * Older images have their heavy base64 payloads evicted from working context
-     * while preserving text transcripts so providers with strict per-request
-     * image ceilings (like 8-image limits) never 400.
+     * whole conversation (keeps only the 2 most recent images in context,
+     * while user can attach freely).
      */
-    const val MAX_CONTEXT_IMAGES = 4
+    const val MAX_CONTEXT_IMAGES = 2
 
     fun shrinkToolResults(
         history: List<ChatMessage>,

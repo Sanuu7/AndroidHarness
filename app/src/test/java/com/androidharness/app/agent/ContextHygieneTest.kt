@@ -84,12 +84,12 @@ class ContextHygieneTest {
                 imageData = listOf(img),
             )
         }
-        val out = ContextHygiene.shrinkToolResults(history, maxImages = 3)
-        // Only the last 3 messages should retain imageData
+        val out = ContextHygiene.shrinkToolResults(history, maxImages = 2)
+        // Only the last 2 messages retain imageData; older 4 are evicted
         assertEquals(0, out[0].imageData.size)
         assertEquals(0, out[1].imageData.size)
         assertEquals(0, out[2].imageData.size)
-        assertEquals(1, out[3].imageData.size)
+        assertEquals(0, out[3].imageData.size)
         assertEquals(1, out[4].imageData.size)
         assertEquals(1, out[5].imageData.size)
         // Text is preserved
