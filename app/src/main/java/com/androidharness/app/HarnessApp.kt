@@ -2,6 +2,7 @@ package com.androidharness.app
 
 import android.app.Application
 import android.content.Context
+import android.webkit.WebView
 import androidx.room.Room
 import com.androidharness.app.agent.AgentEngine
 import com.androidharness.app.agent.TodoStore
@@ -30,6 +31,7 @@ class HarnessApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        WebView.enableSlowWholeDocumentDraw()
         container = AppContainer(this)
     }
 }

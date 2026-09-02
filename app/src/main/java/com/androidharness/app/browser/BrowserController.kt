@@ -43,6 +43,7 @@ import java.lang.ref.WeakReference
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
+import kotlin.math.roundToInt
 
 @Serializable
 data class BrowserConsoleLog(
@@ -169,6 +170,17 @@ class BrowserController(
     fun adoptWebView(wv: WebView) {
         activeWebViewRef?.clear()
         activeWebViewRef = null
+        val adoptedUrl = runCatching { wv.url }.getOrNull()
+        if (adoptedUrl.isNullOrBlank() || adoptedUrl == "about:blank") {
+            // Never overwrite active headless state with an uninitialized or blank view
+            mainHandler.post {
+                runCatching {
+                    (wv.parent as? android.view.ViewGroup)?.removeView(wv)
+                    wv.destroy()
+                }
+            }
+            return
+        }
         val old = headlessWebView
         headlessWebView = wv
         if (old != null && old !== wv) {
@@ -758,16 +770,29 @@ class BrowserController(
                 wv.layout(0, 0, width, height)
             }
 
-            // Sync View scroll position with DOM scroll if they diverged in headless mode
-            val domScrollY = runCatching {
-                evalRaw("String(Math.round(window.scrollY || 0))").trim('"').toIntOrNull() ?: 0
-            }.getOrDefault(0)
-            val domScrollX = runCatching {
-                evalRaw("String(Math.round(window.scrollX || 0))").trim('"').toIntOrNull() ?: 0
-            }.getOrDefault(0)
-            if (wv.scrollY != domScrollY || wv.scrollX != domScrollX) {
-                wv.scrollTo(domScrollX, domScrollY)
-            }
+            // Query DOM scroll offset and DPR to convert CSS coordinates to canvas pixels
+            val (domScrollX, domScrollY, dpr) = runCatching {
+                val raw = evalRaw(
+                    "(function(){ try { return JSON.stringify({ " +
+                        "x: Math.round(window.scrollX || window.pageXOffset || 0), " +
+                        "y: Math.round(window.scrollY || window.pageYOffset || 0), " +
+                        "dpr: window.devicePixelRatio || 1 " +
+                        "}); } catch(e) { return ''; } })()"
+                )
+                val decoded = decodeJsJson(raw) ?: raw
+                val obj = jsJson.parseToJsonElement(decoded).jsonObject
+                Triple(
+                    obj["x"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toIntOrNull() } ?: 0,
+                    obj["y"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toIntOrNull() } ?: 0,
+                    obj["dpr"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull() }
+                        ?: appContext.resources.displayMetrics.density.toDouble(),
+                )
+            }.getOrDefault(
+                Triple(0, 0, appContext.resources.displayMetrics.density.toDouble())
+            )
+
+            val scrollXPx = (domScrollX * dpr).roundToInt()
+            val scrollYPx = (domScrollY * dpr).roundToInt()
 
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
@@ -777,7 +802,7 @@ class BrowserController(
                 // Force synchronous software rasterization of current DOM state
                 wv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
                 val saveCount = canvas.save()
-                canvas.translate(-wv.scrollX.toFloat(), -wv.scrollY.toFloat())
+                canvas.translate(-scrollXPx.toFloat(), -scrollYPx.toFloat())
                 wv.draw(canvas)
                 canvas.restoreToCount(saveCount)
             } finally {
