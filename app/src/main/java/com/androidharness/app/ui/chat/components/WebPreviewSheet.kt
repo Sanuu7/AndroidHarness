@@ -944,8 +944,11 @@ private fun WebPageView(
                             ViewGroup.LayoutParams.MATCH_PARENT,
                         )
 
-                        // Smooth fluid scrolling: prevent BottomSheet gesture interception during touch
+                        // Touch listener: lock and consume user touches when agent is driving
                         setOnTouchListener { v, event ->
+                            if (browserController?.isAgentControlling?.value == true) {
+                                return@setOnTouchListener true
+                            }
                             when (event.action) {
                                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                                     v.parent?.requestDisallowInterceptTouchEvent(true)

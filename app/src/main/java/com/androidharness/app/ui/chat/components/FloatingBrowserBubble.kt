@@ -1,6 +1,7 @@
 package com.androidharness.app.ui.chat.components
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -35,9 +36,9 @@ import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.remember
@@ -47,11 +48,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -63,10 +62,10 @@ import com.androidharness.app.browser.BrowserActionTrack
 import kotlin.math.roundToInt
 
 /**
- * Floating, draggable, animated bubble showing live browser automation status.
+ * Floating, draggable bubble showing live browser automation.
  *
- * Glows and pulses with dynamic gradients while the agent is driving the browser.
- * Tapping expands into the real-time live browser preview sheet.
+ * Rotates border gradient 360 degrees on every agent action.
+ * Tapping opens the live preview of the browser.
  */
 @Composable
 fun FloatingBrowserBubble(
@@ -77,8 +76,8 @@ fun FloatingBrowserBubble(
 ) {
     AnimatedVisibility(
         visible = visible,
-        enter = scaleIn(tween(350, easing = FastOutSlowInEasing)) + fadeIn(tween(250)),
-        exit = scaleOut(tween(250, easing = FastOutSlowInEasing)) + fadeOut(tween(200)),
+        enter = scaleIn(tween(300, easing = FastOutSlowInEasing)) + fadeIn(tween(200)),
+        exit = scaleOut(tween(250, easing = FastOutSlowInEasing)) + fadeOut(tween(180)),
         modifier = modifier,
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -89,57 +88,46 @@ fun FloatingBrowserBubble(
             val bubbleWidthPx = with(density) { 210.dp.toPx() }
             val bubbleHeightPx = with(density) { 56.dp.toPx() }
 
-            // Default position: Top-right under header with margin
+            // Default position: Top-right
             var offsetX by remember { mutableFloatStateOf((parentWidthPx - bubbleWidthPx - 32f).coerceAtLeast(16f)) }
             var offsetY by remember { mutableFloatStateOf(60f) }
 
-            val infiniteTransition = rememberInfiniteTransition(label = "bubble glow")
+            // 360-degree spin animation triggered whenever agent performs an action
+            val rotationAnim = remember { Animatable(0f) }
+            LaunchedEffect(latestAction) {
+                if (latestAction != null) {
+                    val target = rotationAnim.value + 360f
+                    rotationAnim.animateTo(
+                        targetValue = target,
+                        animationSpec = tween(durationMillis = 800, easing = FastOutSlowInEasing),
+                    )
+                }
+            }
 
-            // Ambient breathing pulse
-            val pulseScale by infiniteTransition.animateFloat(
-                initialValue = 1.0f,
-                targetValue = 1.04f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(1200, easing = FastOutSlowInEasing),
-                    repeatMode = RepeatMode.Reverse,
-                ),
-                label = "pulse scale",
-            )
+            val scheme = MaterialTheme.colorScheme
 
-            // Dynamic rotation for luminous rainbow border gradient
-            val glowRotation by infiniteTransition.animateFloat(
-                initialValue = 0f,
-                targetValue = 360f,
-                animationSpec = infiniteRepeatable(
-                    animation = tween(4000, easing = LinearEasing),
-                    repeatMode = RepeatMode.Restart,
-                ),
-                label = "glow rotation",
-            )
+            val borderBrush = remember(scheme, rotationAnim.value) {
+                val rot = (rotationAnim.value % 360f)
+                Brush.sweepGradient(
+                    0.0f to scheme.primary,
+                    0.3f to scheme.tertiary,
+                    0.6f to scheme.secondary,
+                    1.0f to scheme.primary,
+                    center = androidx.compose.ui.geometry.Offset.Zero,
+                )
+            }
 
-            // Pulsing live radar dot
+            // Subtle live radar dot on the icon
+            val infiniteTransition = rememberInfiniteTransition(label = "radar")
             val radarAlpha by infiniteTransition.animateFloat(
-                initialValue = 0.3f,
+                initialValue = 0.4f,
                 targetValue = 1.0f,
                 animationSpec = infiniteRepeatable(
-                    animation = tween(800, easing = FastOutSlowInEasing),
+                    animation = tween(900, easing = FastOutSlowInEasing),
                     repeatMode = RepeatMode.Reverse,
                 ),
                 label = "radar alpha",
             )
-
-            val scheme = MaterialTheme.colorScheme
-
-            val gradientBrush = remember(scheme, glowRotation) {
-                Brush.sweepGradient(
-                    colors = listOf(
-                        scheme.primary,
-                        scheme.tertiary,
-                        scheme.secondary,
-                        scheme.primary,
-                    ),
-                )
-            }
 
             Box(
                 modifier = Modifier
@@ -149,10 +137,6 @@ fun FloatingBrowserBubble(
                             offsetY.roundToInt().coerceIn(8, (parentHeightPx - bubbleHeightPx - 8).roundToInt().coerceAtLeast(8)),
                         )
                     }
-                    .graphicsLayer {
-                        scaleX = pulseScale
-                        scaleY = pulseScale
-                    }
                     .pointerInput(Unit) {
                         detectDragGestures { change, dragAmount ->
                             change.consume()
@@ -160,10 +144,10 @@ fun FloatingBrowserBubble(
                             offsetY += dragAmount.y
                         }
                     }
-                    .shadow(12.dp, RoundedCornerShape(28.dp), ambientColor = scheme.primary, spotColor = scheme.primary)
+                    .shadow(10.dp, RoundedCornerShape(28.dp), ambientColor = scheme.primary, spotColor = scheme.primary)
                     .clip(RoundedCornerShape(28.dp))
-                    .background(scheme.surfaceContainerHighest.copy(alpha = 0.95f))
-                    .border(1.5.dp, gradientBrush, RoundedCornerShape(28.dp))
+                    .background(scheme.surfaceContainerHighest.copy(alpha = 0.96f))
+                    .border(2.dp, borderBrush, RoundedCornerShape(28.dp))
                     .clickable(
                         interactionSource = remember { MutableInteractionSource() },
                         indication = null,
@@ -175,7 +159,7 @@ fun FloatingBrowserBubble(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    // Animated glowing orb with globe icon
+                    // Globe icon with subtle live ring
                     Box(
                         modifier = Modifier
                             .size(36.dp)
@@ -183,8 +167,8 @@ fun FloatingBrowserBubble(
                             .background(scheme.primaryContainer)
                             .drawBehind {
                                 drawCircle(
-                                    color = scheme.primary.copy(alpha = radarAlpha * 0.4f),
-                                    radius = size.minDimension / 1.5f,
+                                    color = scheme.primary.copy(alpha = radarAlpha * 0.35f),
+                                    radius = size.minDimension / 1.6f,
                                     style = Stroke(width = 2.dp.toPx()),
                                 )
                             },
@@ -198,7 +182,7 @@ fun FloatingBrowserBubble(
                         )
                     }
 
-                    // Status and action labels
+                    // Text details
                     Column(
                         modifier = Modifier.width(115.dp),
                         verticalArrangement = Arrangement.Center,
@@ -233,7 +217,6 @@ fun FloatingBrowserBubble(
                         )
                     }
 
-                    // Open / Expand arrow icon
                     Icon(
                         Icons.Outlined.OpenInFull,
                         contentDescription = "Open Web Preview",
