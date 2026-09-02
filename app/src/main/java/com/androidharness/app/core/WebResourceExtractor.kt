@@ -108,12 +108,13 @@ object WebResourceExtractor {
         }
 
     /**
-     * Determine if a message has previewable web targets (URLs or HTML files) to show a preview action chip.
+     * Determine if a message has previewable web targets (only live localhost servers).
+     * Raw HTML files and external non-localhost URLs are ignored so only real local servers get the button.
      */
     fun findPrimaryPreviewTarget(text: String): WebPreviewTarget? {
-        // 0. Explicit agent directive takes absolute top priority
+        // 0. Explicit agent directive if pointing to localhost
         val explicit = extractExplicitDirective(text)
-        if (explicit != null) return explicit
+        if (explicit != null && explicit.type == WebTargetType.LOCAL_SERVER) return explicit
 
         val urls = extractUrls(text)
         val localhost = urls.firstOrNull { LocalPortProbe.isLocalhostUrl(it) }
@@ -124,29 +125,6 @@ object WebResourceExtractor {
                 subtitle = localhost,
                 urlOrPath = localhost,
                 isLive = true,
-            )
-        }
-
-        val htmlFiles = extractHtmlFileReferences(text)
-        if (htmlFiles.isNotEmpty()) {
-            val file = htmlFiles.first()
-            return WebPreviewTarget(
-                type = WebTargetType.WORKSPACE_HTML,
-                title = "Preview ${file.substringAfterLast('/')}",
-                subtitle = "Local workspace file",
-                urlOrPath = file,
-                isLive = false,
-            )
-        }
-
-        if (urls.isNotEmpty()) {
-            val firstUrl = urls.first()
-            return WebPreviewTarget(
-                type = WebTargetType.CHAT_LINK,
-                title = "Open Link Preview",
-                subtitle = firstUrl,
-                urlOrPath = firstUrl,
-                isLive = false,
             )
         }
 

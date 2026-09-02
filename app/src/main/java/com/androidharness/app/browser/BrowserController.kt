@@ -241,8 +241,6 @@ class BrowserController(
     }
 
     private suspend fun getOrCreateWebView(): WebView = withContext(Dispatchers.Main) {
-        activeWebViewRef?.get()?.let { return@withContext it }
-
         headlessWebView?.let { return@withContext it }
 
         val wv = WebView(appContext).apply {

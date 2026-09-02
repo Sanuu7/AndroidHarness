@@ -33,22 +33,22 @@ class WebResourceExtractorTest {
     }
 
     @Test
-    fun `findPrimaryPreviewTarget prioritizes explicit directive over heuristics`() {
+    fun `findPrimaryPreviewTarget prioritizes localhost directive over heuristics`() {
         val directiveMsg = """
             I created the landing page.
-            ::web-preview{target="landing/index.html"}
+            ::web-preview{target="http://localhost:3000"}
             Also check out https://example.com and index.html
         """.trimIndent()
 
         val target = WebResourceExtractor.findPrimaryPreviewTarget(directiveMsg)
         assertNotNull(target)
-        assertEquals(WebTargetType.WORKSPACE_HTML, target?.type)
-        assertEquals("landing/index.html", target?.urlOrPath)
-        assertEquals("Preview index.html", target?.title)
+        assertEquals(WebTargetType.LOCAL_SERVER, target?.type)
+        assertEquals("http://localhost:3000", target?.urlOrPath)
+        assertEquals("Open Web Preview", target?.title)
     }
 
     @Test
-    fun `findPrimaryPreviewTarget prioritizes localhost servers then html files then web urls`() {
+    fun `findPrimaryPreviewTarget only detects live localhost servers`() {
         val localMsg = "Server started at http://localhost:3000. Enjoy!"
         val targetLocal = WebResourceExtractor.findPrimaryPreviewTarget(localMsg)
         assertNotNull(targetLocal)
@@ -57,15 +57,11 @@ class WebResourceExtractorTest {
 
         val htmlMsg = "Built the new single page app in public/index.html."
         val targetHtml = WebResourceExtractor.findPrimaryPreviewTarget(htmlMsg)
-        assertNotNull(targetHtml)
-        assertEquals(WebTargetType.WORKSPACE_HTML, targetHtml?.type)
-        assertEquals("public/index.html", targetHtml?.urlOrPath)
+        assertNull(targetHtml)
 
         val webMsg = "Refer to the docs at https://developer.mozilla.org/en-US/docs/Web"
         val targetWeb = WebResourceExtractor.findPrimaryPreviewTarget(webMsg)
-        assertNotNull(targetWeb)
-        assertEquals(WebTargetType.CHAT_LINK, targetWeb?.type)
-        assertEquals("https://developer.mozilla.org/en-US/docs/Web", targetWeb?.urlOrPath)
+        assertNull(targetWeb)
 
         val plainMsg = "No links or html files here."
         assertNull(WebResourceExtractor.findPrimaryPreviewTarget(plainMsg))
