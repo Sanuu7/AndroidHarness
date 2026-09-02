@@ -4,6 +4,7 @@ import com.androidharness.app.data.env.LinuxEnvironmentManager
 import com.androidharness.app.data.env.PkgMeta
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.jsonPrimitive
 
 class PkgInstallTool(
@@ -41,8 +42,8 @@ class PkgInstallTool(
             return ToolResult(false, "Linux environment is not ready or not installed. The environment must be installed first.")
         }
         val pkgs = when (val p = args["packages"]) {
-            is JsonArray -> p.map { it.jsonPrimitive.content.trim() }.filter { it.isNotEmpty() }
-            else -> listOfNotNull(args["package"]?.jsonPrimitive?.content?.trim()).filter { it.isNotEmpty() }
+            is JsonArray -> p.mapNotNull { (it as? JsonPrimitive)?.content?.trim() }.filter { it.isNotEmpty() }
+            else -> listOfNotNull((args["package"] as? JsonPrimitive)?.content?.trim()).filter { it.isNotEmpty() }
         }
         if (pkgs.isEmpty()) {
             return ToolResult(false, "Missing package name(s) to install.")

@@ -864,10 +864,10 @@ class AgentEngine(
     private fun computePkgInstallPreview(call: ToolCallData): String? = runCatching {
         val args = json.parseToJsonElement(call.argumentsJson).jsonObject
         val pkgs = when (val p = args["packages"]) {
-            is kotlinx.serialization.json.JsonArray -> p.map { it.jsonPrimitive.content.trim() }.filter { it.isNotEmpty() }
-            else -> listOfNotNull(args["package"]?.jsonPrimitive?.content?.trim()).filter { it.isNotEmpty() }
+            is kotlinx.serialization.json.JsonArray -> p.mapNotNull { (it as? kotlinx.serialization.json.JsonPrimitive)?.content?.trim() }.filter { it.isNotEmpty() }
+            else -> listOfNotNull((args["package"] as? kotlinx.serialization.json.JsonPrimitive)?.content?.trim()).filter { it.isNotEmpty() }
         }
-        val reason = args["reason"]?.jsonPrimitive?.contentOrNull
+        val reason = (args["reason"] as? kotlinx.serialization.json.JsonPrimitive)?.contentOrNull
         buildString {
             append("Packages to install:\n")
             pkgs.forEach { append("  • ").append(it).append('\n') }
