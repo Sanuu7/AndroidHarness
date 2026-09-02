@@ -220,6 +220,14 @@ class GeminiProvider(
                                     }
                                 }
                             })
+                            t.imageData.forEach { image ->
+                                add(buildJsonObject {
+                                    putJsonObject("inlineData") {
+                                        put("mimeType", image.mime)
+                                        put("data", image.base64)
+                                    }
+                                })
+                            }
                             i++
                         }
                     }

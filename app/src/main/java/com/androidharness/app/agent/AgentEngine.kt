@@ -446,7 +446,7 @@ class AgentEngine(
                     isError = !result.ok,
                     images = listOfNotNull(result.image),
                 )
-                working += toolMessage
+                working += toolMessage.withImagesResolved()
                 emit(AgentEvent.ToolMessageCommitted(toolMessage))
                 emit(AgentEvent.ToolFinished(call.id, result))
             }
@@ -1047,7 +1047,7 @@ class AgentEngine(
                     isError = !result.ok,
                     images = listOfNotNull(result.image),
                 )
-                history += toolMessage
+                history += toolMessage.withImagesResolved()
                 emitEvent(AgentEvent.SubagentMessageCommitted(parentCallId, toolMessage))
                 if (!result.ok) step("${call.name} failed. adjusting")
             }

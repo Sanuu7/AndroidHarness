@@ -392,7 +392,26 @@ class OpenAiCompatProvider(
         Role.TOOL -> buildJsonObject {
             put("role", "tool")
             put("tool_call_id", m.toolCallId ?: "")
-            put("content", m.text)
+            if (m.imageData.isEmpty()) {
+                put("content", m.text)
+            } else {
+                putJsonArray("content") {
+                    if (m.text.isNotBlank()) {
+                        add(buildJsonObject {
+                            put("type", "text")
+                            put("text", m.text)
+                        })
+                    }
+                    m.imageData.forEach { image ->
+                        add(buildJsonObject {
+                            put("type", "image_url")
+                            putJsonObject("image_url") {
+                                put("url", "data:${image.mime};base64,${image.base64}")
+                            }
+                        })
+                    }
+                }
+            }
         }
 
         Role.SYSTEM -> buildJsonObject {

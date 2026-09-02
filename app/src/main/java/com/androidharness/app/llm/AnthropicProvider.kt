@@ -325,7 +325,28 @@ class AnthropicProvider(
                             add(buildJsonObject {
                                 put("type", "tool_result")
                                 put("tool_use_id", t.toolCallId ?: "")
-                                put("content", t.text)
+                                if (t.imageData.isEmpty()) {
+                                    put("content", t.text)
+                                } else {
+                                    putJsonArray("content") {
+                                        if (t.text.isNotBlank()) {
+                                            add(buildJsonObject {
+                                                put("type", "text")
+                                                put("text", t.text)
+                                            })
+                                        }
+                                        t.imageData.forEach { image ->
+                                            add(buildJsonObject {
+                                                put("type", "image")
+                                                putJsonObject("source") {
+                                                    put("type", "base64")
+                                                    put("media_type", image.mime)
+                                                    put("data", image.base64)
+                                                }
+                                            })
+                                        }
+                                    }
+                                }
                                 if (t.isError) put("is_error", true)
                             })
                             i++

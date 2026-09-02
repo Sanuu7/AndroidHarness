@@ -160,11 +160,19 @@ class OpenAiResponsesProvider(
             }
         }
 
-        Role.TOOL -> listOf(buildJsonObject {
-            put("type", "function_call_output")
-            put("call_id", m.toolCallId ?: "")
-            put("output", m.text)
-        })
+        Role.TOOL -> buildList {
+            add(buildJsonObject {
+                put("type", "function_call_output")
+                put("call_id", m.toolCallId ?: "")
+                put("output", m.text)
+            })
+            m.imageData.forEach { image ->
+                add(buildJsonObject {
+                    put("type", "input_image")
+                    put("image_url", "data:${image.mime};base64,${image.base64}")
+                })
+            }
+        }
 
         Role.SYSTEM -> listOf(buildJsonObject {
             put("role", "user")

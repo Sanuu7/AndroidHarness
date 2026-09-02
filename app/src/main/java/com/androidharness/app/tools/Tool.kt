@@ -22,9 +22,8 @@ data class ToolResult(
     val ok: Boolean,
     val output: String,
     /**
-     * Optional image rendered inline in the chat transcript next to the tool
-     * card (e.g. browser screenshots). Persisted with the tool message but
-     * providers only ever see [output]; the image is display-only.
+     * Optional image rendered inline in the chat transcript and resolved into
+     * [ChatMessage.imageData] for vision-capable models.
      */
     val image: com.androidharness.app.core.ImageRef? = null,
 )

@@ -70,14 +70,19 @@ class OpenAiResponsesProviderTest {
                     text = "let me check",
                     toolCalls = listOf(ToolCallData("call_1", "read_file", """{"path":"a.kt"}""")),
                 ),
-                ChatMessage(role = Role.TOOL, text = "file body", toolCallId = "call_1"),
+                ChatMessage(
+                    role = Role.TOOL,
+                    text = "file body",
+                    toolCallId = "call_1",
+                    imageData = listOf(com.androidharness.app.core.ImageData("image/png", "base64data")),
+                ),
             ),
             tools = emptyList(),
             options = RequestOptions(),
         )
         val input = body["input"]!!.jsonArray.map { it.jsonObject }
-        // assistant message + function_call item + function_call_output item
-        assertEquals(3, input.size)
+        // assistant message + function_call item + function_call_output item + input_image item
+        assertEquals(4, input.size)
         with(input[1]) {
             assertEquals("function_call", this["type"]!!.jsonPrimitive.content)
             assertEquals("call_1", this["call_id"]!!.jsonPrimitive.content)
@@ -87,6 +92,10 @@ class OpenAiResponsesProviderTest {
             assertEquals("function_call_output", this["type"]!!.jsonPrimitive.content)
             assertEquals("call_1", this["call_id"]!!.jsonPrimitive.content)
             assertEquals("file body", this["output"]!!.jsonPrimitive.content)
+        }
+        with(input[3]) {
+            assertEquals("input_image", this["type"]!!.jsonPrimitive.content)
+            assertEquals("data:image/png;base64,base64data", this["image_url"]!!.jsonPrimitive.content)
         }
     }
 

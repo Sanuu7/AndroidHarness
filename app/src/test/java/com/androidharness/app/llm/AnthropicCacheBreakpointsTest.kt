@@ -151,15 +151,30 @@ class AnthropicCacheBreakpointsTest {
     }
 
     @Test
-    fun `usage normalization math`() {
-        // Anthropic reports input_tokens EXCLUDING cache reads/writes; the
-        // provider must emit uncached + read + write as the total prompt.
-        val uncached = 1_000
-        val cacheRead = 98_000
-        val cacheWrite = 1_500
-        val total = uncached + cacheRead + cacheWrite
-        val hitRate = cacheRead.toDouble() / total
-        // long-session steady state: ~97.5% honest hit rate
-        assertEquals(0.9752, hitRate, 0.001)
+    fun `tool result with image serializes image block in tool_result`() {
+        val toolMsg = com.androidharness.app.core.ChatMessage(
+            role = com.androidharness.app.core.Role.TOOL,
+            text = "screenshot taken",
+            toolCallId = "call_123",
+            imageData = listOf(com.androidharness.app.core.ImageData("image/png", "base64bytes")),
+        )
+        // serializeMessages is private, test through applyCacheBreakpoints or reflection
+        val method = provider.javaClass.getDeclaredMethod("serializeMessages", List::class.java).apply {
+            isAccessible = true
+        }
+        @Suppress("UNCHECKED_CAST")
+        val serialized = method.invoke(provider, listOf(toolMsg)) as List<JsonObject>
+        assertEquals(1, serialized.size)
+        val userContent = serialized[0]["content"]!!.jsonArray
+        assertEquals(1, userContent.size)
+        val toolResult = userContent[0].jsonObject
+        assertEquals("tool_result", toolResult["type"]!!.jsonPrimitive.content)
+        assertEquals("call_123", toolResult["tool_use_id"]!!.jsonPrimitive.content)
+        val parts = toolResult["content"]!!.jsonArray
+        assertEquals(2, parts.size)
+        assertEquals("text", parts[0].jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("image", parts[1].jsonObject["type"]!!.jsonPrimitive.content)
+        assertEquals("base64", parts[1].jsonObject["source"]!!.jsonObject["type"]!!.jsonPrimitive.content)
     }
 }
+
