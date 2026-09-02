@@ -71,4 +71,28 @@ class ContextHygieneTest {
         assertEquals("continue", out[1].text)
         assertEquals("fresh", out[2].text)
     }
+
+    @Test
+    fun `evicts older images when exceeding maxImages cap`() {
+        val img = com.androidharness.app.core.ImageData("image/png", "b64")
+        val history = (1..6).map { i ->
+            ChatMessage(
+                role = Role.TOOL,
+                text = "result $i",
+                toolCallId = "c$i",
+                toolName = "read_image",
+                imageData = listOf(img),
+            )
+        }
+        val out = ContextHygiene.shrinkToolResults(history, maxImages = 3)
+        // Only the last 3 messages should retain imageData
+        assertEquals(0, out[0].imageData.size)
+        assertEquals(0, out[1].imageData.size)
+        assertEquals(0, out[2].imageData.size)
+        assertEquals(1, out[3].imageData.size)
+        assertEquals(1, out[4].imageData.size)
+        assertEquals(1, out[5].imageData.size)
+        // Text is preserved
+        assertEquals("result 1", out[0].text)
+    }
 }

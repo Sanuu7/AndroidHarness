@@ -15,14 +15,46 @@ object ContextHygiene {
 
     const val STALE_TOOL_CHARS = 4_000
 
+    /**
+     * Maximum number of recent images to keep in model context across the
+     * whole conversation (including user attachments and tool screenshots).
+     * Older images have their heavy base64 payloads evicted from working context
+     * while preserving text transcripts so providers with strict per-request
+     * image ceilings (like 8-image limits) never 400.
+     */
+    const val MAX_CONTEXT_IMAGES = 4
+
     fun shrinkToolResults(
         history: List<ChatMessage>,
         recentFull: Int = RECENT_FULL_TOOLS,
         maxChars: Int = STALE_TOOL_CHARS,
+        maxImages: Int = MAX_CONTEXT_IMAGES,
     ): List<ChatMessage> {
         val toolIndices = history.indices.filter { history[it].role == Role.TOOL }
         val keepFull = toolIndices.takeLast(recentFull).toSet()
-        return history.mapIndexed { i, m ->
+
+        // Count all images across the conversation from newest to oldest
+        var keptImages = 0
+        val withEvictedImages = history.asReversed().map { m ->
+            if (m.imageData.isEmpty()) {
+                m
+            } else {
+                val availableQuota = (maxImages - keptImages).coerceAtLeast(0)
+                if (availableQuota >= m.imageData.size) {
+                    keptImages += m.imageData.size
+                    m
+                } else if (availableQuota > 0) {
+                    val keptSlice = m.imageData.takeLast(availableQuota)
+                    keptImages += availableQuota
+                    m.copy(imageData = keptSlice)
+                } else {
+                    // All image quota exhausted: strip base64 payloads for older turns
+                    m.copy(imageData = emptyList())
+                }
+            }
+        }.asReversed()
+
+        return withEvictedImages.mapIndexed { i, m ->
             if (m.role != Role.TOOL || i in keepFull || m.text.length <= maxChars) m
             else m.copy(text = truncate(m.text, maxChars))
         }
