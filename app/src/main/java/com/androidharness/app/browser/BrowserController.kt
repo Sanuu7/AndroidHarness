@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
 import android.webkit.WebResourceRequest
@@ -745,13 +746,43 @@ class BrowserController(
      * Captures a screenshot of the current page and saves it in ImageStore.
      */
     suspend fun screenshot(): StoredImage? = withContext(Dispatchers.Main) {
-        val wv = getOrCreateWebView()
+        val wv = activeWebViewRef?.get() ?: getOrCreateWebView()
         runCatching {
             val width = wv.width.takeIf { it > 0 } ?: 1080
             val height = wv.height.takeIf { it > 0 } ?: 1920
+            if (wv.width <= 0 || wv.height <= 0) {
+                wv.measure(
+                    View.MeasureSpec.makeMeasureSpec(width, View.MeasureSpec.EXACTLY),
+                    View.MeasureSpec.makeMeasureSpec(height, View.MeasureSpec.EXACTLY),
+                )
+                wv.layout(0, 0, width, height)
+            }
+
+            // Sync View scroll position with DOM scroll if they diverged in headless mode
+            val domScrollY = runCatching {
+                evalRaw("String(Math.round(window.scrollY || 0))").trim('"').toIntOrNull() ?: 0
+            }.getOrDefault(0)
+            val domScrollX = runCatching {
+                evalRaw("String(Math.round(window.scrollX || 0))").trim('"').toIntOrNull() ?: 0
+            }.getOrDefault(0)
+            if (wv.scrollY != domScrollY || wv.scrollX != domScrollX) {
+                wv.scrollTo(domScrollX, domScrollY)
+            }
+
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
-            wv.draw(canvas)
+
+            val prevLayer = wv.layerType
+            try {
+                // Force synchronous software rasterization of current DOM state
+                wv.setLayerType(View.LAYER_TYPE_SOFTWARE, null)
+                val saveCount = canvas.save()
+                canvas.translate(-wv.scrollX.toFloat(), -wv.scrollY.toFloat())
+                wv.draw(canvas)
+                canvas.restoreToCount(saveCount)
+            } finally {
+                wv.setLayerType(prevLayer, null)
+            }
 
             val dir = File(appContext.filesDir, "images").apply { mkdirs() }
             val file = File(dir, "browser_${UUID.randomUUID()}.png")
