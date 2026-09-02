@@ -31,7 +31,8 @@ The user sees every action live in the web preview sheet, with an "Agent is cont
 7. `browser_get_url` is the cheap way to confirm where you are (it reads the page's own location, so it is accurate for local and synthetic pages alike).
 8. `browser_eval` is synchronous and sandboxed: the last expression's value (or an explicit `return`) comes back as the result, and both runtime throws and syntax errors are reported as tool failures with the real message. There is no `await`; for async work, kick off the request, then `browser_wait_for` on the state it produces (stash results in localStorage and read them in a follow-up eval).
 9. `browser_scroll` then `browser_get_dom` for content below the fold.
-10. `browser_screenshot` captures the viewport and shows the image inline in the chat. Use it when layout or styling is the question, not for routine checks.
+10. `browser_screenshot` captures the viewport and shows the image inline in the chat. To visually inspect and analyze the captured screenshot yourself, call `read_image` with the screenshot filename or path returned by the tool.
+11. `read_image` loads image files from the workspace or screenshot store (PNG, JPG, WebP, GIF, SVG) directly into your multimodal vision context so you can observe visual layout, styling, and errors.
 
 ## Rules
 - Element ids are only valid from the most recent tool result. Never reuse ids from memory.

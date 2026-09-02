@@ -508,3 +508,76 @@ class GrepTool : Tool {
             )
         }
 }
+
+/**
+ * Inspects or loads an image file from the workspace or app image store (such as browser screenshots).
+ * The image is attached to the tool result so vision-capable models receive the image in multimodal requests.
+ */
+class ReadImageTool(
+    private val imageStore: com.androidharness.app.data.ImageStore,
+) : Tool {
+    override val name = "read_image"
+    override val description =
+        "Inspect and load an image file from the workspace (or a browser screenshot filename/path) so you can see its visual content. The image is rendered and passed directly to your vision context."
+    override val parametersSchema = Schema.obj(
+        mapOf(
+            "path" to Schema.string("Workspace-relative path to an image file (e.g. 'assets/logo.png') OR screenshot name/path returned by browser_screenshot (e.g. 'browser_xyz.png')."),
+        ),
+        required = listOf("path"),
+    )
+    override val isReadOnly = true
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
+        withContext(Dispatchers.IO) {
+            val path = args["path"]?.jsonPrimitive?.content
+                ?: throw ToolFailure("Missing required argument: path")
+
+            // 1. Check if path is in the ImageStore directory directly (e.g. browser screenshots)
+            val leafName = java.io.File(path).name
+            val storedFile = java.io.File(imageStore.imagesDir, leafName)
+            if (storedFile.exists() && storedFile.isFile) {
+                val mime = when (storedFile.extension.lowercase()) {
+                    "jpg", "jpeg" -> "image/jpeg"
+                    "webp" -> "image/webp"
+                    "gif" -> "image/gif"
+                    else -> "image/png"
+                }
+                return@withContext ToolResult(
+                    ok = true,
+                    output = "Loaded image from store: ${storedFile.name} (${storedFile.length()} bytes, $mime). Image attached for visual analysis.",
+                    image = com.androidharness.app.core.ImageRef(storedFile.name, mime),
+                )
+            }
+
+            // 2. Otherwise resolve against workspace
+            val node = ctx.workspace.resolve(path)
+            if (!node.exists) throw ToolFailure("Image file does not exist: $path")
+            if (!node.isFile) throw ToolFailure("Not a file: $path")
+
+            val ext = node.name.substringAfterLast('.', "").lowercase()
+            val mime = when (ext) {
+                "jpg", "jpeg" -> "image/jpeg"
+                "png" -> "image/png"
+                "webp" -> "image/webp"
+                "gif" -> "image/gif"
+                "svg" -> "image/svg+xml"
+                else -> throw ToolFailure("Unsupported image format: .$ext (expected png, jpg, webp, gif, svg)")
+            }
+
+            // Read bytes from workspace and copy into ImageStore so ImageStore.resolve can serve base64
+            val bytes = node.openInputStream()?.use { it.readBytes() }
+                ?: throw ToolFailure("Could not read image bytes from $path")
+
+            if (bytes.isEmpty()) throw ToolFailure("Image file is empty (0 bytes): $path")
+
+            val destFile = java.io.File(imageStore.imagesDir, "ws_${java.util.UUID.randomUUID()}.$ext")
+            destFile.writeBytes(bytes)
+
+            ToolResult(
+                ok = true,
+                output = "Loaded image $path (${bytes.size} bytes, $mime). Image attached for visual analysis.",
+                image = com.androidharness.app.core.ImageRef(destFile.name, mime),
+            )
+        }
+}
+

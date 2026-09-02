@@ -155,11 +155,24 @@ data class ChatUiState(
     val shizukuState: com.androidharness.app.data.env.ShizukuState =
         com.androidharness.app.data.env.ShizukuState.NOT_INSTALLED,
 ) {
-    val activeProvider: ProviderConfig? get() = providers.firstOrNull { it.id == activeProviderId }
+    val activeProvider: ProviderConfig?
+        get() = when {
+            planningModelsEnabled && mode == AgentMode.PLAN && planningProviderId != null ->
+                providers.firstOrNull { it.id == planningProviderId } ?: providers.firstOrNull { it.id == activeProviderId }
+            planningModelsEnabled && mode == AgentMode.ACT && executionProviderId != null ->
+                providers.firstOrNull { it.id == executionProviderId } ?: providers.firstOrNull { it.id == activeProviderId }
+            else -> providers.firstOrNull { it.id == activeProviderId }
+        }
 
     /** Model actually used for requests: catalog pick, else the entry's default. */
     val effectiveModel: String?
-        get() = activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+        get() = when {
+            planningModelsEnabled && mode == AgentMode.PLAN ->
+                planningModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+            planningModelsEnabled && mode == AgentMode.ACT ->
+                executionModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+            else -> activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+        }
 
     /**
      * Best available measure of tokens currently inside the context window.
@@ -1264,11 +1277,20 @@ class ChatViewModel(
     }
 
     fun setActiveProvider(id: String) {
+        val s = _state.value
         viewModelScope.launch {
-            // Switching provider resets any model override, the old pick
-            // belonged to the previous endpoint's catalog.
-            c.settings.setActiveModel(null)
-            c.settings.setActiveProvider(id)
+            if (s.planningModelsEnabled) {
+                if (s.mode == AgentMode.PLAN) {
+                    c.settings.setPlanningModel(id, null)
+                } else {
+                    c.settings.setExecutionModel(id, null)
+                }
+            } else {
+                // Switching provider resets any model override, the old pick
+                // belonged to the previous endpoint's catalog.
+                c.settings.setActiveModel(null)
+                c.settings.setActiveProvider(id)
+            }
             // The new model may not speak the stored thinking tier, adapt.
             val provider = _state.value.providers.firstOrNull { it.id == id }
             ThinkingSpecs.clampStoredLevel(
@@ -1281,9 +1303,18 @@ class ChatViewModel(
 
     /** Selects [model] under provider [providerId] (null = its saved default). */
     fun selectModel(providerId: String, model: String?) {
+        val s = _state.value
         viewModelScope.launch {
-            c.settings.setActiveProvider(providerId)
-            c.settings.setActiveModel(model)
+            if (s.planningModelsEnabled) {
+                if (s.mode == AgentMode.PLAN) {
+                    c.settings.setPlanningModel(providerId, model)
+                } else {
+                    c.settings.setExecutionModel(providerId, model)
+                }
+            } else {
+                c.settings.setActiveProvider(providerId)
+                c.settings.setActiveModel(model)
+            }
             val provider = _state.value.providers.firstOrNull { it.id == providerId }
             ThinkingSpecs.clampStoredLevel(
                 c.settings,

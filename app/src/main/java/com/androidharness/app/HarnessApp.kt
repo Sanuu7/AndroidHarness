@@ -114,6 +114,7 @@ class AppContainer(val appContext: Context) {
     val browser = com.androidharness.app.browser.BrowserController(appContext, images)
     val registry = ToolRegistry.default(
         fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
+        imageStore = images,
         browserController = browser,
         searchApi = { searchApiConfig },
     )

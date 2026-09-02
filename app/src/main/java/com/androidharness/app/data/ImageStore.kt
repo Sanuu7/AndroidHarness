@@ -13,6 +13,7 @@ data class StoredImage(val file: File, val mime: String)
 class ImageStore(private val context: Context) {
 
     private val dir: File = File(context.filesDir, "images").apply { mkdirs() }
+    val imagesDir: File get() = dir
 
     /** Copies the picked image in, downscaling to at most 1568px on the long edge. */
     fun import(uri: Uri): StoredImage? {

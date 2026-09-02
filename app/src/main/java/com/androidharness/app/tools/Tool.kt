@@ -65,6 +65,7 @@ class ToolRegistry(private val tools: List<Tool>) {
             shizuku: com.androidharness.app.data.env.ShizukuManager,
             shellRouter: com.androidharness.app.data.env.ShellTierRouter,
             skills: com.androidharness.app.skills.SkillStore,
+            imageStore: com.androidharness.app.data.ImageStore? = null,
             browserController: com.androidharness.app.browser.BrowserController? = null,
             searchApi: () -> com.androidharness.app.tools.SearchApiConfig? = { null },
         ): ToolRegistry {
@@ -110,6 +111,9 @@ class ToolRegistry(private val tools: List<Tool>) {
                 SkillsListTool(skills),
                 SkillManageTool(skills),
             )
+            if (imageStore != null) {
+                baseTools.add(ReadImageTool(imageStore))
+            }
             if (browserController != null) {
                 baseTools.addAll(
                     listOf(

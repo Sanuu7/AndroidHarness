@@ -1308,6 +1308,7 @@ The user's workspace is: ${workspace.displayPath}
 Rules:
 - All tool paths are relative to the workspace root. Paths outside the workspace are blocked.
 - Use list_dir/search_files/grep/read_file to explore before making changes.
+- Use read_image to inspect visual content of image files or browser screenshots (e.g. from browser_screenshot).
 - A message may reference files as @path (for example @src/Main.kt): the user is pointing at those exact files, so read them before acting on the request.
 - Prefer edit_file/multi_edit for targeted changes to existing files; use write_file to create or fully rewrite files; use apply_patch for multi-file diffs.
 - Use todo_write to track multi-step work and keep statuses current.
