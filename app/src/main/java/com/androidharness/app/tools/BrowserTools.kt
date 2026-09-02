@@ -61,11 +61,11 @@ class BrowserNavigateTool(
 ) : Tool {
     override val name = "browser_navigate"
     override val description =
-        "Navigate the in-app browser/WebView to a target URL, a localhost server (e.g. http://localhost:3000), " +
-        "or a workspace-relative local file (e.g. 'index.html', 'docs/about.html'). Local files are served over " +
-        "a loopback HTTP server, so relative links, form submits, and assets work like a real site. Returns page " +
-        "title, URL, scroll position, text excerpt, and an indexed catalog of interactive elements ([id]) for " +
-        "clicking and typing."
+        "Navigate the in-app browser/WebView to a target URL, a localhost dev server (e.g. http://localhost:3000), " +
+        "or a workspace-relative local file (e.g. 'index.html', 'docs/about.html'). Local files are served under " +
+        "https://harness.workspace/ws/... via request interception, so relative links, form submits, assets, and " +
+        "back/forward history behave like a real site. Returns page title, URL, scroll position, text excerpt, " +
+        "and an indexed catalog of interactive elements ([id]) for clicking and typing."
     override val parametersSchema = Schema.obj(
         mapOf(
             "url" to Schema.string("The target URL (e.g. 'https://example.com', 'http://localhost:5173', or 'index.html')."),

@@ -7,8 +7,11 @@ import android.os.Handler
 import android.os.Looper
 import android.webkit.ConsoleMessage
 import android.webkit.WebChromeClient
+import android.webkit.WebResourceRequest
+import android.webkit.WebResourceResponse
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import androidx.webkit.WebViewAssetLoader
 import com.androidharness.app.core.LocalPortProbe
 import com.androidharness.app.data.ImageStore
 import com.androidharness.app.data.StoredImage
@@ -129,10 +132,57 @@ class BrowserController(
     private var baseUrlPath: String? = null
 
     /**
-     * Loopback server for workspace pages, so local sites navigate like real
-     * ones: relative links, form submits, assets, and history all just work.
+     * Serves workspace pages to every WebView (headless and preview sheet)
+     * under https://harness.workspace/... via request interception: no
+     * sockets, and every local page is a real navigation with real history.
+     * The handler owns the WHOLE host so same-origin fetch('/...') and XHR
+     * resolve too.
      */
-    private val httpServer = WorkspaceHttpServer(workspace = { currentWorkspace }, rootDoc = { baseUrlPath })
+    private val assetLoader = WebViewAssetLoader.Builder()
+        .setDomain(WorkspacePathHandler.HOST)
+        .addPathHandler(
+            "/",
+            WorkspacePathHandler(
+                workspaceProvider = { currentWorkspace },
+                rootDocProvider = { baseUrlPath },
+            ),
+        )
+        .build()
+
+    /**
+     * Routes a WebView request through the workspace asset loader. Wired into
+     * BOTH the headless client and the preview sheet's client; returns null
+     * for hosts the loader does not own so callers fall through to default
+     * loading.
+     */
+    fun interceptWorkspaceRequest(url: android.net.Uri?): WebResourceResponse? {
+        if (url?.host != WorkspacePathHandler.HOST) return null
+        return assetLoader.shouldInterceptRequest(url)
+    }
+
+    /**
+     * Takes ownership of the preview sheet's WebView when the sheet closes,
+     * so agent page state and history survive the sheet. Replaces (and
+     * destroys) any previous background WebView.
+     */
+    fun adoptWebView(wv: WebView) {
+        activeWebViewRef?.clear()
+        activeWebViewRef = null
+        val old = headlessWebView
+        headlessWebView = wv
+        if (old != null && old !== wv) {
+            mainHandler.post {
+                runCatching {
+                    (old.parent as? android.view.ViewGroup)?.removeView(old)
+                    old.destroy()
+                }
+            }
+        }
+        // The sheet is gone; detach the adopted view from any leftover parent.
+        mainHandler.post {
+            runCatching { (wv.parent as? android.view.ViewGroup)?.removeView(wv) }
+        }
+    }
 
     private val isPageLoading = AtomicBoolean(false)
 
@@ -239,6 +289,14 @@ class BrowserController(
                     isPageLoading.set(false)
                     loadDeferred?.complete(Unit)
                 }
+
+                override fun shouldInterceptRequest(
+                    view: WebView?,
+                    request: WebResourceRequest?,
+                ): WebResourceResponse? {
+                    return request?.let { interceptWorkspaceRequest(it.url) }
+                        ?: super.shouldInterceptRequest(view, request)
+                }
             }
         }
         headlessWebView = wv
@@ -304,8 +362,10 @@ class BrowserController(
 
     /**
      * Navigate to an external URL, a localhost dev server, or a workspace
-     * HTML file. Local files are served over the loopback HTTP server, which
-     * is health-checked (and rebound if wedged) before every navigation.
+     * HTML file. Local files are served under the fixed asset origin
+     * https://harness.workspace/ws/... by WebViewAssetLoader: no sockets,
+     * real navigation entries, and relative links/forms/assets that behave
+     * like a normal site.
      */
     suspend fun navigate(url: String, workspace: WorkspaceFs?): BrowserState {
         val detail = url.take(120)
@@ -314,34 +374,25 @@ class BrowserController(
             currentWorkspace = workspace
             val target = url.trim()
 
-            // Resolve local paths and confirm the file server is healthy OFF
-            // the main thread: a socket connect() from the UI thread throws
-            // NetworkOnMainThreadException, which the probe would otherwise
-            // swallow and misreport as "server failed to start".
+            // Validate local paths before touching the WebView.
             val localUrl: String? = if (isWorkspaceFileTarget(target)) {
-                withContext(Dispatchers.IO) {
-                    val rel = normalizeWorkspacePath(target, workspace?.shellRoot?.absolutePath)
-                        ?: throw IllegalArgumentException(
-                            "Unsupported local path '$target'. Use a workspace-relative path like " +
-                                "'index.html' or 'docs/about.html'; file:// and absolute paths must point " +
-                                "inside the active workspace."
-                        )
-                    if (workspace == null) {
-                        throw IllegalArgumentException("No active workspace is set, cannot open '$rel'.")
-                    }
-                    val node = runCatching { workspace.resolve(rel) }.getOrNull()
-                    if (node == null || !node.exists) {
-                        throw IllegalArgumentException(
-                            "Workspace file not found: $rel (workspace: ${workspace.displayPath})"
-                        )
-                    }
-                    baseUrlPath = rel
-                    val port = ensureServerHealthy()
-                    val served = rel.split('/').joinToString("/") { seg ->
-                        java.net.URLEncoder.encode(seg, "UTF-8")
-                    }
-                    "http://127.0.0.1:$port/$served"
+                val rel = normalizeWorkspacePath(target, workspace?.shellRoot?.absolutePath)
+                    ?: throw IllegalArgumentException(
+                        "Unsupported local path '$target'. Use a workspace-relative path like " +
+                            "'index.html' or 'docs/about.html'; file:// and absolute paths must point " +
+                            "inside the active workspace."
+                    )
+                if (workspace == null) {
+                    throw IllegalArgumentException("No active workspace is set, cannot open '$rel'.")
                 }
+                val node = runCatching { workspace.resolve(rel) }.getOrNull()
+                if (node == null || !node.exists) {
+                    throw IllegalArgumentException(
+                        "Workspace file not found: $rel (workspace: ${workspace.displayPath})"
+                    )
+                }
+                baseUrlPath = rel
+                BrowserController.localFileUrl(rel)
             } else null
 
             withContext(Dispatchers.Main) {
@@ -364,7 +415,7 @@ class BrowserController(
     }
 
     /**
-     * Local-file targets: scheme-less paths, "./"-relative names, and file://
+     * Local-file targets: scheme-less paths, "./"-relative forms, and file://
      * URIs. Everything else (http/https, scheme-less localhost:PORT dev
      * servers) is treated as an external URL and never rewritten.
      */
@@ -372,44 +423,6 @@ class BrowserController(
         if (target.startsWith("localhost:") || target.startsWith("127.0.0.1:")) return false
         if (target.contains("://") && !target.startsWith("file://")) return false
         return true
-    }
-
-    /**
-     * Binds (or rebinds) the loopback server and proves it answers before the
-     * WebView is pointed at it. A dead or wedged listener used to surface as
-     * an opaque ERR_CONNECTION_REFUSED; now it either self-heals or fails with
-     * an explicit, logged reason. Must be called OFF the main thread.
-     */
-    private fun ensureServerHealthy(): Int {
-        var port = httpServer.ensureStarted()
-        var reason = probeServer(port)
-        if (reason == null) return port
-        android.util.Log.w("HarnessBrowser", "Workspace file server probe failed on port $port ($reason); rebinding")
-        httpServer.stop()
-        port = httpServer.ensureStarted()
-        reason = probeServer(port)
-        if (reason == null) return port
-        android.util.Log.w("HarnessBrowser", "Workspace file server rebind probe failed on port $port ($reason)")
-        throw IllegalStateException("Local file server failed to start (port $port): $reason")
-    }
-
-    /** Returns null when the server answers an HTTP request, else the failure reason. */
-    private fun probeServer(port: Int): String? {
-        return try {
-            java.net.Socket().use { s ->
-                s.connect(java.net.InetSocketAddress("127.0.0.1", port), 1_000)
-                s.soTimeout = 1_500
-                s.getOutputStream().apply {
-                    write("HEAD / HTTP/1.1\r\nHost: 127.0.0.1\r\nConnection: close\r\n\r\n".toByteArray(Charsets.ISO_8859_1))
-                    flush()
-                }
-                val reader = java.io.BufferedReader(java.io.InputStreamReader(s.getInputStream(), Charsets.ISO_8859_1))
-                val status = reader.readLine()
-                if (status != null && status.startsWith("HTTP/1.")) null else "no HTTP status line"
-            }
-        } catch (e: Exception) {
-            "${e.javaClass.simpleName}: ${e.message}"
-        }
     }
 
     /**
@@ -538,26 +551,63 @@ class BrowserController(
     }
 
     /**
-     * Go back / forward in WebView history. Throws when there is nowhere to go.
+     * Go back / forward in WebView history. Steps past intermediate HTTP
+     * redirect entries (e.g. 301/302 jumps) so back actually lands on the
+     * previous distinct page instead of bouncing back to the current one.
      */
     suspend fun back(): BrowserState {
         track("back", "history")
-        val canGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoBack() }
-        if (!canGo) throw IllegalStateException("No previous page in history.")
         val before = currentUrl()
-        withContext(Dispatchers.Main) { getOrCreateWebView().goBack() }
+        val steps = withContext(Dispatchers.Main) {
+            val wv = getOrCreateWebView()
+            val list = wv.copyBackForwardList()
+            val currIdx = list.currentIndex
+            if (currIdx <= 0) return@withContext 0
+            val currUrl = list.currentItem?.url.orEmpty()
+            // Find the nearest backward entry whose URL is meaningfully different
+            var stepCount = -1
+            while (currIdx + stepCount >= 0) {
+                val item = list.getItemAtIndex(currIdx + stepCount)
+                if (item != null && item.url != currUrl && !isRedirectBounce(item.url, currUrl)) {
+                    break
+                }
+                stepCount--
+            }
+            if (currIdx + stepCount < 0) -1 else stepCount
+        }
+        if (steps == 0) throw IllegalStateException("No previous page in history.")
+        withContext(Dispatchers.Main) { getOrCreateWebView().goBackOrForward(steps) }
         awaitSettle(before)
         return extractState()
     }
 
     suspend fun forward(): BrowserState {
         track("forward", "history")
-        val canGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoForward() }
-        if (!canGo) throw IllegalStateException("No next page in history.")
         val before = currentUrl()
-        withContext(Dispatchers.Main) { getOrCreateWebView().goForward() }
+        val steps = withContext(Dispatchers.Main) {
+            val wv = getOrCreateWebView()
+            val list = wv.copyBackForwardList()
+            val currIdx = list.currentIndex
+            if (currIdx >= list.size - 1) return@withContext 0
+            val currUrl = list.currentItem?.url.orEmpty()
+            var stepCount = 1
+            while (currIdx + stepCount < list.size) {
+                val item = list.getItemAtIndex(currIdx + stepCount)
+                if (item != null && item.url != currUrl) break
+                stepCount++
+            }
+            if (currIdx + stepCount >= list.size) 1 else stepCount
+        }
+        if (steps == 0) throw IllegalStateException("No next page in history.")
+        withContext(Dispatchers.Main) { getOrCreateWebView().goBackOrForward(steps) }
         awaitSettle(before)
         return extractState()
+    }
+
+    private fun isRedirectBounce(urlA: String, urlB: String): Boolean {
+        val cleanA = urlA.removeSuffix("/").substringBefore('?')
+        val cleanB = urlB.removeSuffix("/").substringBefore('?')
+        return cleanA.equals(cleanB, ignoreCase = true)
     }
 
     /**
@@ -639,16 +689,33 @@ class BrowserController(
      * Evaluates JavaScript in the page inside a sandboxed synchronous wrapper:
      * the completion value (or an explicit `return`) is the result, and both
      * runtime throws and syntax errors surface as [BrowserEvalOutcome.error]
-     * instead of a bare null. WebView's evaluateJavascript does not await
-     * promises, so eval is synchronous by design; async flows should kick off
-     * work, then use [waitFor].
+     * instead of a bare null. If the code returns a Promise, the result is
+     * staged into window.__harnessAsync by the page and polled here, so
+     * `await`-style async evals work up to [awaitPromiseMs].
      */
-    suspend fun evalUser(code: String): BrowserEvalOutcome {
+    suspend fun evalUser(code: String, awaitPromiseMs: Long = 10_000): BrowserEvalOutcome {
         val detail = code.replace('\n', ' ').take(80)
-        val raw = evalRaw(buildEvalJs(code))
-        val outcome = parseEvalOutcome(raw)
+        var outcome = parseEvalOutcome(evalRaw(buildEvalJs(code)))
+        if (outcome.ok && outcome.value == PROMISE_SENTINEL) {
+            outcome = awaitStagedPromise(awaitPromiseMs)
+        }
         track("eval", detail, ok = outcome.ok)
         return outcome
+    }
+
+    private suspend fun awaitStagedPromise(timeoutMs: Long): BrowserEvalOutcome {
+        val deadline = System.currentTimeMillis() + timeoutMs
+        while (System.currentTimeMillis() < deadline) {
+            val raw = evalRaw(
+                "(function(){ try { return window.__harnessAsync == null " +
+                    "? JSON.stringify({ ok: true, value: \"$PROMISE_SENTINEL\" }) " +
+                    ": String(window.__harnessAsync); } catch (e) { return JSON.stringify({ ok: false, error: String(e) }); } })()"
+            )
+            val staged = parseEvalOutcome(raw)
+            if (staged.ok && staged.value != PROMISE_SENTINEL) return staged
+            delay(150)
+        }
+        return BrowserEvalOutcome(false, null, "Promise did not settle within ${timeoutMs}ms")
     }
 
     private suspend fun evalRaw(code: String): String = withContext(Dispatchers.Main) {
@@ -733,6 +800,21 @@ class BrowserController(
 
         private const val MAX_LOGS = 200
 
+        /** Marker returned by eval when the result is a promise being awaited. */
+        const val PROMISE_SENTINEL = "__harness_promise__"
+
+        /**
+         * Builds the stable URL for a workspace-relative HTML file. Used by
+         * both the agent's navigate() and the preview sheet's own load path so
+         * both share one origin and one, clean history stack.
+         */
+        fun localFileUrl(rel: String): String {
+            val served = rel.split('/').joinToString("/") { seg ->
+                java.net.URLEncoder.encode(seg, "UTF-8")
+            }
+            return "https://${WorkspacePathHandler.HOST}${WorkspacePathHandler.PATH_PREFIX}$served"
+        }
+
         /**
          * Maps a browser_navigate target to a workspace-relative HTML path.
          * Accepts plain names ("index.html"), "./"-relative forms, file:// URIs
@@ -759,11 +841,14 @@ class BrowserController(
         }
 
         /**
-         * Builds the sandboxed eval script for [code]. WebView's
-         * evaluateJavascript does NOT await promises, so this is synchronous:
+         * Builds the sandboxed eval script for [code]. evaluateJavascript does
+         * not await promises, so when the code yields a thenable, its result
+         * is staged into window.__harnessAsync ([PROMISE_SENTINEL] signals the
+         * Kotlin side to poll) and settled errors still come back as
+         * {ok:false, error}. The sync path is unchanged:
          *
-         * 1. `eval(code)` first, which returns the completion value, so bare
-         *    trailing expressions like `2+2` work and side effects run once.
+         * 1. `eval(code)` first: completion value, so bare trailing
+         *    expressions like `2+2` work and side effects run once.
          * 2. On SyntaxError (e.g. an explicit `return` statement, which eval
          *    rejects), retry via `new Function(code)`, which allows `return`.
          * 3. Anything else that throws, including genuine syntax errors (which
@@ -773,14 +858,23 @@ class BrowserController(
             val literal = jsJson.encodeToString(code)
             return """
                 (function() {
+                    $STAGE_PROMISE_FN
+                    function __stageOf(v) {
+                        const staged = __harnessStage(v);
+                        return staged === null ? null : JSON.stringify({ ok: true, value: "$PROMISE_SENTINEL" });
+                    }
                     try {
                         let __v = eval($literal);
+                        const __s = __stageOf(__v);
+                        if (__s !== null) return __s;
                         return JSON.stringify({ ok: true, value: __v === undefined ? null : __v });
                     } catch (e) {
                         if (e instanceof SyntaxError) {
                             try {
                                 const __f = new Function($literal);
                                 const __r = __f.call(window);
+                                const __s = __stageOf(__r);
+                                if (__s !== null) return __s;
                                 return JSON.stringify({ ok: true, value: __r === undefined ? null : __r });
                             } catch (e2) {
                                 return JSON.stringify({ ok: false, error: String(e2 && e2.message || e2) });
@@ -791,6 +885,25 @@ class BrowserController(
                 })();
             """.trimIndent()
         }
+
+        /**
+         * Page-side helper: when [v] is a thenable, park its settlement in
+         * window.__harnessAsync and return the envelope string; otherwise
+         * null. evaluateJavascript never awaits promises on its own.
+         */
+        private val STAGE_PROMISE_FN = """
+            function __harnessStage(v) {
+                if (v !== undefined && v !== null && typeof v.then === 'function') {
+                    window.__harnessAsync = null;
+                    Promise.resolve(v).then(
+                        function(pv) { window.__harnessAsync = JSON.stringify({ ok: true, value: pv === undefined ? null : pv }); },
+                        function(pe) { window.__harnessAsync = JSON.stringify({ ok: false, error: String(pe && pe.message || pe) }); }
+                    );
+                    return { ok: true, value: "$PROMISE_SENTINEL" };
+                }
+                return null;
+            }
+        """.trimIndent()
 
         private val jsJson = Json { isLenient = true; ignoreUnknownKeys = true }
 

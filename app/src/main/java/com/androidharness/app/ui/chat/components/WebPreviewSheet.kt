@@ -109,6 +109,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
+import com.androidharness.app.browser.BrowserController
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.LocalPortProbe
 import com.androidharness.app.core.WebResourceExtractor
@@ -717,9 +718,14 @@ private fun WebPageView(
             if (isWorkspaceHtml(t)) {
                 val node = runCatching { workspace?.resolve(t) }.getOrNull()
                 if (node != null && node.exists && node.isFile) {
-                    val html = runCatching { node.readText() }.getOrDefault("")
                     pageTitle = t.substringAfterLast('/')
-                    view.loadDataWithBaseURL("https://localhost/", html, "text/html", "UTF-8", null)
+                    // Load through the shared workspace origin instead of
+                    // loadDataWithBaseURL: loadData creates a data: history
+                    // entry, which pollutes back/forward for the agent.
+                    currentUrl = BrowserController.localFileUrl(t)
+                    view.post {
+                        view.loadUrl(currentUrl)
+                    }
                 } else if (workspace == null) {
                     // Workspace still resolving from container, keep loading state
                     isLoading = true
@@ -1004,6 +1010,10 @@ private fun WebPageView(
                                 view: WebView?,
                                 request: WebResourceRequest?,
                             ): WebResourceResponse? {
+                                // Workspace pages served by the agent browser's asset
+                                // loader (https://harness.workspace/ws/...) must resolve
+                                // on this WebView too, so agent and user see one site.
+                                browserController?.interceptWorkspaceRequest(request?.url)?.let { return it }
                                 val uri = request?.url ?: return null
                                 if ((uri.host == "localhost" || uri.host == "127.0.0.1") && workspace != null && isWorkspaceHtml(currentUrl)) {
                                     val path = uri.path?.trimStart('/') ?: return null
@@ -1469,7 +1479,14 @@ private fun WebPageView(
 
     DisposableEffect(Unit) {
         onDispose {
-            webViewRef?.destroy()
+            webViewRef?.let { wv ->
+                // Hand the WebView (with its history and page state) to the
+                // browser controller instead of destroying it, so agent
+                // navigation survives the sheet closing. Falls back to
+                // destroy when no controller is wired.
+                val bc = browserController
+                if (bc != null) bc.adoptWebView(wv) else wv.destroy()
+            }
         }
     }
 }

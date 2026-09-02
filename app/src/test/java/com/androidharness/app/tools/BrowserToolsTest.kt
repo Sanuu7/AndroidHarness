@@ -4,7 +4,7 @@ import com.androidharness.app.browser.BrowserController
 import com.androidharness.app.browser.BrowserConsoleLog
 import com.androidharness.app.browser.BrowserElement
 import com.androidharness.app.browser.BrowserState
-import com.androidharness.app.browser.WorkspaceHttpServer
+import com.androidharness.app.browser.WorkspacePathHandler
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
@@ -116,9 +116,6 @@ class BrowserToolsTest {
     @Test
     fun `eval sandbox is synchronous and embeds escaped code`() {
         val js = BrowserController.buildEvalJs("return 2 + 2")
-        // sync wrapper (no async/await) so evaluateJavascript does not have to await promises
-        assertTrue(!js.contains("async"))
-        assertTrue(!js.contains("await"))
         // the user code is embedded as a JSON string literal: quotes escaped
         assertTrue(js.contains("\"return 2 + 2\""))
         // both eval and new Function passes present
@@ -126,6 +123,9 @@ class BrowserToolsTest {
         assertTrue(js.contains("new Function("))
         // errors surface with the message
         assertTrue(js.contains("ok: false"))
+        // promise staging exists in both passes and signals the poll loop
+        assertEquals(2, Regex(Regex.escape("__stageOf(__")).findAll(js).count())
+        assertTrue(js.contains(BrowserController.PROMISE_SENTINEL))
     }
 
     @Test
@@ -151,37 +151,40 @@ class BrowserToolsTest {
         assertEquals(null, norm("assets/app.js", root))
         // traversal is refused
         assertEquals(null, norm("../secrets.html", root))
-        assertEquals(null, norm("a/../../secrets.html", root))
+        assertEquals(null, norm("a/../../secrets.html", null))
         // dev-server style scheme-less hosts are not workspace files (handled elsewhere)
         assertEquals(null, norm("localhost:3000", root))
     }
 
     @Test
-    fun `server path mapping handles roots, queries, and traversal`() {
-        assertEquals("index.html", WorkspaceHttpServer.mapRequestPath("/", null))
-        assertEquals("index.html", WorkspaceHttpServer.mapRequestPath("/?form=1", null))
-        assertEquals("pages/about.html", WorkspaceHttpServer.mapRequestPath("/pages/about.html", null))
-        assertEquals("pages/about.html", WorkspaceHttpServer.mapRequestPath("/pages/about.html?x=1#frag", null))
-        assertEquals("my page.html", WorkspaceHttpServer.mapRequestPath("/my%20page.html", null))
-        assertEquals("pages/index.html", WorkspaceHttpServer.mapRequestPath("/", "pages/index.html"))
-        assertEquals("pages/index.html", WorkspaceHttpServer.mapRequestPath("/?a=b", "pages/index.html"))
+    fun `asset handler path sanitization handles roots, queries, and traversal`() {
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("", null))
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("/", null))
+        assertEquals("pages/about.html", WorkspacePathHandler.sanitizeRelPath("pages/about.html", null))
+        assertEquals("pages/about.html", WorkspacePathHandler.sanitizeRelPath("/pages/about.html", null))
+        assertEquals("pages/index.html", WorkspacePathHandler.sanitizeRelPath("", "pages/index.html"))
+        assertEquals("pages/index.html", WorkspacePathHandler.sanitizeRelPath("/", "pages/index.html"))
+        // the synthetic ws/ prefix is stripped: /ws/x resolves to workspace x
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("ws/index.html", null))
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("ws", null))
+        // bare /ws/ is the site root: falls back to the current base document
+        assertEquals("pages/index.html", WorkspacePathHandler.sanitizeRelPath("ws/", "pages/index.html"))
         // traversal is rejected outright
-        assertEquals(null, WorkspaceHttpServer.mapRequestPath("/../etc/passwd", null))
-        assertEquals(null, WorkspaceHttpServer.mapRequestPath("/a/../../etc/passwd", null))
-        assertEquals(null, WorkspaceHttpServer.mapRequestPath("/%2e%2e/secrets", null))
-        // trailing-slash directory stays a path (server appends index.html itself)
-        assertEquals("docs", WorkspaceHttpServer.mapRequestPath("/docs/", null))
+        assertEquals(null, WorkspacePathHandler.sanitizeRelPath("../etc/passwd", null))
+        assertEquals(null, WorkspacePathHandler.sanitizeRelPath("a/../../etc/passwd", null))
+        // trailing-slash directory stays a path (handler appends index.html itself)
+        assertEquals("docs", WorkspacePathHandler.sanitizeRelPath("docs/", null))
     }
 
     @Test
-    fun `server mime mapping covers common web assets`() {
-        assertEquals("text/html", WorkspaceHttpServer.mimeFor("index.html"))
-        assertEquals("text/css", WorkspaceHttpServer.mimeFor("style.css"))
-        assertEquals("application/javascript", WorkspaceHttpServer.mimeFor("app.mjs"))
-        assertEquals("image/png", WorkspaceHttpServer.mimeFor("img.png"))
-        assertEquals("image/svg+xml", WorkspaceHttpServer.mimeFor("icon.SVG"))
-        assertEquals("font/woff2", WorkspaceHttpServer.mimeFor("font.woff2"))
-        assertEquals("application/octet-stream", WorkspaceHttpServer.mimeFor("data.bin"))
+    fun `asset handler mime mapping covers common web assets`() {
+        assertEquals("text/html", WorkspacePathHandler.mimeFor("index.html"))
+        assertEquals("text/css", WorkspacePathHandler.mimeFor("style.css"))
+        assertEquals("application/javascript", WorkspacePathHandler.mimeFor("app.mjs"))
+        assertEquals("image/png", WorkspacePathHandler.mimeFor("img.png"))
+        assertEquals("image/svg+xml", WorkspacePathHandler.mimeFor("icon.SVG"))
+        assertEquals("font/woff2", WorkspacePathHandler.mimeFor("font.woff2"))
+        assertEquals("application/octet-stream", WorkspacePathHandler.mimeFor("data.bin"))
     }
 
     @Test

@@ -100,6 +100,9 @@ dependencies {
     implementation(libs.documentfile)
     // Custom Tabs for the MCP OAuth authorize screen.
     implementation(libs.browser)
+    // WebViewAssetLoader: serves workspace files to the agent browser over a
+    // stable https origin without any sockets.
+    implementation(libs.webkit)
     implementation(libs.security.crypto)
     implementation(libs.biometric)
     implementation(libs.fragment.ktx)
