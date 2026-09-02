@@ -128,6 +128,7 @@ import com.androidharness.app.ui.chat.components.ToolCallCard
 import com.androidharness.app.ui.chat.components.ToolGroupCard
 import com.androidharness.app.ui.chat.components.UserBubble
 import com.androidharness.app.ui.chat.components.WebPreviewSheet
+import com.androidharness.app.ui.chat.components.FloatingBrowserBubble
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.common.formatDuration
 import com.androidharness.app.ui.files.DiffStatText
@@ -172,6 +173,8 @@ fun ChatScreen(
         composerValue = TextFieldValue(new, TextRange(cursor.coerceIn(0, new.length)))
     }
     var attachedSkill by remember { mutableStateOf<String?>(null) }
+    val isAgentControllingBrowser by viewModel.container.browser.isAgentControlling.collectAsStateWithLifecycle(initialValue = false)
+    val browserActionTracks by viewModel.container.browser.actionTrack.collectAsStateWithLifecycle(initialValue = emptyList())
 
     // Share target: text/link shares prefill the composer, image shares ride
     // the normal attach pipeline. Consumed once, by whichever chat is open.
@@ -1399,6 +1402,16 @@ fun ChatScreen(
                     hasAttachments = state.fileAttachments.isNotEmpty(),
                 )
             }
+
+            // Draggable, animated floating bubble shown whenever agent is driving the browser
+            FloatingBrowserBubble(
+                visible = isAgentControllingBrowser && !showWebPreview,
+                latestAction = browserActionTracks.lastOrNull(),
+                onClick = {
+                    showWebPreview = true
+                },
+                modifier = Modifier.fillMaxSize(),
+            )
         }
     }
 }

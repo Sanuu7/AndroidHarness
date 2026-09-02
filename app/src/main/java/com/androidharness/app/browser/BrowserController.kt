@@ -231,6 +231,11 @@ class BrowserController(
         }
     }
 
+    /** Returns active browser URL if initialized or navigating. */
+    fun getActiveUrl(): String? {
+        return activeWebViewRef?.get()?.url ?: headlessWebView?.url
+    }
+
     private suspend fun currentUrl(): String? = withContext(Dispatchers.Main) {
         runCatching { getOrCreateWebView().url }.getOrNull()
     }

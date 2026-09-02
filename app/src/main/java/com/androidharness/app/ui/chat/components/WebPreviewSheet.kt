@@ -181,10 +181,11 @@ fun WebPreviewSheet(
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
 
+    val effectiveInitial = initialTarget ?: browserController?.getActiveUrl()
     var stage by remember {
-        mutableStateOf(if (!initialTarget.isNullOrBlank()) WebPreviewStage.WEB_VIEW else WebPreviewStage.SOURCE_HUB)
+        mutableStateOf(if (!effectiveInitial.isNullOrBlank()) WebPreviewStage.WEB_VIEW else WebPreviewStage.SOURCE_HUB)
     }
-    var currentTarget by remember { mutableStateOf(initialTarget ?: "http://localhost:3000") }
+    var currentTarget by remember { mutableStateOf(effectiveInitial ?: "http://localhost:3000") }
 
     var isScanningSources by remember { mutableStateOf(true) }
     var activePorts by remember { mutableStateOf<List<Int>>(emptyList()) }
