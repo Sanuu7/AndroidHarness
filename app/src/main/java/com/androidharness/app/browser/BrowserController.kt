@@ -551,51 +551,67 @@ class BrowserController(
     }
 
     /**
-     * Go back / forward in WebView history. If a single step hits an HTTP redirect
-     * (e.g. 301/302) that bounces the page back to the same destination, it
-     * automatically steps back again until a distinct previous URL is reached.
+     * Go back in WebView history. If a step lands on a 301/302 redirect that
+     * bounces back to the starting page, retries up to 5 times. Uses a short
+     * fixed delay instead of awaitSettle to avoid following redirects forward.
      */
     suspend fun back(): BrowserState {
         track("back", "history")
         val canGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoBack() }
         if (!canGo) throw IllegalStateException("No previous page in history.")
-        
+
+        val startUrl = currentUrl().orEmpty()
         var attempts = 0
-        var startUrl = currentUrl()
         while (attempts < 5) {
             attempts++
-            val before = currentUrl()
             withContext(Dispatchers.Main) { getOrCreateWebView().goBack() }
-            awaitSettle(before)
-            val after = currentUrl()
-            if (after != null && after != startUrl && !isSamePage(after, startUrl.orEmpty())) {
-                break
+            // Short fixed wait: just enough for the back navigation to commit
+            // its URL, but NOT long enough for a 301 redirect to fire and
+            // bounce us forward again.
+            delay(300)
+            val after = currentUrl().orEmpty()
+            if (after != startUrl && !isSamePage(after, startUrl)) {
+                // Landed on a distinct page. Wait for it to finish loading.
+                withTimeoutOrNull(8_000) {
+                    while (isActive && isPageLoading.get()) delay(100)
+                }
+                awaitScrollSettle()
+                return extractState()
             }
             val canStillGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoBack() }
             if (!canStillGo) break
         }
+        // Exhausted retries or can't go further: return whatever we landed on.
+        awaitScrollSettle()
         return extractState()
     }
 
+    /**
+     * Go forward in WebView history. Same redirect-aware retry as back().
+     */
     suspend fun forward(): BrowserState {
         track("forward", "history")
         val canGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoForward() }
         if (!canGo) throw IllegalStateException("No next page in history.")
-        
+
+        val startUrl = currentUrl().orEmpty()
         var attempts = 0
-        var startUrl = currentUrl()
         while (attempts < 5) {
             attempts++
-            val before = currentUrl()
             withContext(Dispatchers.Main) { getOrCreateWebView().goForward() }
-            awaitSettle(before)
-            val after = currentUrl()
-            if (after != null && after != startUrl && !isSamePage(after, startUrl.orEmpty())) {
-                break
+            delay(300)
+            val after = currentUrl().orEmpty()
+            if (after != startUrl && !isSamePage(after, startUrl)) {
+                withTimeoutOrNull(8_000) {
+                    while (isActive && isPageLoading.get()) delay(100)
+                }
+                awaitScrollSettle()
+                return extractState()
             }
             val canStillGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoForward() }
             if (!canStillGo) break
         }
+        awaitScrollSettle()
         return extractState()
     }
 
