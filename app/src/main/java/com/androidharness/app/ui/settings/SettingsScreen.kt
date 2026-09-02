@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
@@ -1711,9 +1712,10 @@ private fun LinuxEnvironmentCard(
                     // Step 1: check. Step 2 (only when something is actually
                     // missing/broken): confirm and update. Nothing to do → no
                     // dead button.
-                    Row(
+                    FlowRow(
                         horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalAlignment = Alignment.CenterVertically,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth(),
                     ) {
                         FilledTonalButton(onClick = { showPackagesSheet = true }) {
                             Icon(Icons.Outlined.Inventory2, contentDescription = null, modifier = Modifier.size(16.dp))
