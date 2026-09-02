@@ -208,7 +208,7 @@ fun PackageManagerSheet(
             OutlinedTextField(
                 value = query,
                 onValueChange = { query = it },
-                placeholder = { Text("Search packages (e.g. jq, ripgrep, clang, tmux)…") },
+                placeholder = { Text("Search packages…") },
                 leadingIcon = {
                     Icon(Icons.Outlined.Search, contentDescription = null, tint = scheme.onSurfaceVariant)
                 },
