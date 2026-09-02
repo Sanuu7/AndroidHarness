@@ -551,60 +551,55 @@ class BrowserController(
     }
 
     /**
-     * Go back / forward in WebView history. Steps past intermediate HTTP
-     * redirect entries (e.g. 301/302 jumps) so back actually lands on the
-     * previous distinct page instead of bouncing back to the current one.
+     * Go back / forward in WebView history. If a single step hits an HTTP redirect
+     * (e.g. 301/302) that bounces the page back to the same destination, it
+     * automatically steps back again until a distinct previous URL is reached.
      */
     suspend fun back(): BrowserState {
         track("back", "history")
-        val before = currentUrl()
-        val steps = withContext(Dispatchers.Main) {
-            val wv = getOrCreateWebView()
-            val list = wv.copyBackForwardList()
-            val currIdx = list.currentIndex
-            if (currIdx <= 0) return@withContext 0
-            val currUrl = list.currentItem?.url.orEmpty()
-            // Find the nearest backward entry whose URL is meaningfully different
-            var stepCount = -1
-            while (currIdx + stepCount >= 0) {
-                val item = list.getItemAtIndex(currIdx + stepCount)
-                if (item != null && item.url != currUrl && !isRedirectBounce(item.url, currUrl)) {
-                    break
-                }
-                stepCount--
+        val canGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoBack() }
+        if (!canGo) throw IllegalStateException("No previous page in history.")
+        
+        var attempts = 0
+        var startUrl = currentUrl()
+        while (attempts < 5) {
+            attempts++
+            val before = currentUrl()
+            withContext(Dispatchers.Main) { getOrCreateWebView().goBack() }
+            awaitSettle(before)
+            val after = currentUrl()
+            if (after != null && after != startUrl && !isSamePage(after, startUrl.orEmpty())) {
+                break
             }
-            if (currIdx + stepCount < 0) -1 else stepCount
+            val canStillGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoBack() }
+            if (!canStillGo) break
         }
-        if (steps == 0) throw IllegalStateException("No previous page in history.")
-        withContext(Dispatchers.Main) { getOrCreateWebView().goBackOrForward(steps) }
-        awaitSettle(before)
         return extractState()
     }
 
     suspend fun forward(): BrowserState {
         track("forward", "history")
-        val before = currentUrl()
-        val steps = withContext(Dispatchers.Main) {
-            val wv = getOrCreateWebView()
-            val list = wv.copyBackForwardList()
-            val currIdx = list.currentIndex
-            if (currIdx >= list.size - 1) return@withContext 0
-            val currUrl = list.currentItem?.url.orEmpty()
-            var stepCount = 1
-            while (currIdx + stepCount < list.size) {
-                val item = list.getItemAtIndex(currIdx + stepCount)
-                if (item != null && item.url != currUrl) break
-                stepCount++
+        val canGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoForward() }
+        if (!canGo) throw IllegalStateException("No next page in history.")
+        
+        var attempts = 0
+        var startUrl = currentUrl()
+        while (attempts < 5) {
+            attempts++
+            val before = currentUrl()
+            withContext(Dispatchers.Main) { getOrCreateWebView().goForward() }
+            awaitSettle(before)
+            val after = currentUrl()
+            if (after != null && after != startUrl && !isSamePage(after, startUrl.orEmpty())) {
+                break
             }
-            if (currIdx + stepCount >= list.size) 1 else stepCount
+            val canStillGo = withContext(Dispatchers.Main) { getOrCreateWebView().canGoForward() }
+            if (!canStillGo) break
         }
-        if (steps == 0) throw IllegalStateException("No next page in history.")
-        withContext(Dispatchers.Main) { getOrCreateWebView().goBackOrForward(steps) }
-        awaitSettle(before)
         return extractState()
     }
 
-    private fun isRedirectBounce(urlA: String, urlB: String): Boolean {
+    private fun isSamePage(urlA: String, urlB: String): Boolean {
         val cleanA = urlA.removeSuffix("/").substringBefore('?')
         val cleanB = urlB.removeSuffix("/").substringBefore('?')
         return cleanA.equals(cleanB, ignoreCase = true)
