@@ -9,11 +9,13 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
@@ -70,6 +72,8 @@ fun ModelPickerSheet(
     val scope = rememberCoroutineScope()
     var query by remember { mutableStateOf("") }
     var thinkOnly by remember { mutableStateOf(false) }
+    var isRefreshing by remember { mutableStateOf(false) }
+    var refreshError by remember { mutableStateOf<String?>(null) }
 
     val listedId = browseProviderId ?: activeProviderId
     val listedProvider = providers.firstOrNull { it.id == listedId }
@@ -155,24 +159,46 @@ fun ModelPickerSheet(
                 listedProvider?.let { p ->
                     val catalog = catalogs[p.id].orEmpty()
                     Text(
-                        if (catalog.isEmpty()) "models" else "${catalog.size} models",
+                        if (isRefreshing) "reloading…" else if (catalog.isEmpty()) "models" else "${catalog.size} models",
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.onSurfaceVariant,
                     )
-                    var refreshError by remember { mutableStateOf<String?>(null) }
-                    IconButton(onClick = {
-                        scope.launch {
-                            refreshError = onRefreshCatalog(p.id)
+                    IconButton(
+                        onClick = {
+                            if (!isRefreshing) {
+                                scope.launch {
+                                    isRefreshing = true
+                                    refreshError = onRefreshCatalog(p.id)
+                                    isRefreshing = false
+                                }
+                            }
+                        },
+                    ) {
+                        if (isRefreshing) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp),
+                                strokeWidth = 2.dp,
+                            )
+                        } else {
+                            Icon(
+                                Icons.Outlined.Refresh,
+                                contentDescription = "Refresh models",
+                                tint = scheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp),
+                            )
                         }
-                    }) {
-                        Icon(
-                            Icons.Outlined.Refresh,
-                            contentDescription = "Refresh models",
-                            tint = scheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp),
-                        )
                     }
                 }
+            }
+            if (refreshError != null) {
+                Text(
+                    refreshError!!.take(80),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.error,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.padding(top = 2.dp),
+                )
             }
 
             // Bounded height: a wrap-content LazyColumn inside a bottom sheet
@@ -197,20 +223,33 @@ fun ModelPickerSheet(
                     val catalog = catalogs[provider.id].orEmpty()
                     item(key = "autofetch") {
                         // Fetch once per sheet open when the catalog is empty.
-                        var error by remember { mutableStateOf<String?>(null) }
                         LaunchedEffect(provider.id) {
-                            if (catalog.isEmpty()) {
-                                error = onRefreshCatalog(provider.id)
+                            if (catalog.isEmpty() && !isRefreshing) {
+                                isRefreshing = true
+                                refreshError = onRefreshCatalog(provider.id)
+                                isRefreshing = false
                             }
                         }
-                        error?.let {
-                            Text(
-                                it.take(80),
-                                style = MaterialTheme.typography.labelSmall,
-                                color = scheme.error,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
+                    }
+                    if (isRefreshing && catalog.isEmpty()) {
+                        item(key = "reloading") {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 24.dp),
+                            ) {
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(20.dp),
+                                    strokeWidth = 2.dp,
+                                )
+                                Spacer(Modifier.width(12.dp))
+                                Text(
+                                    "Reloading models…",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = scheme.onSurfaceVariant,
+                                )
+                            }
                         }
                     }
 
