@@ -267,13 +267,13 @@ class BrowserScreenshotTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         return try {
-            val image = controller.screenshot()
-            if (image != null) {
+            val result = controller.screenshot(ctx.workspace)
+            if (result != null) {
                 ToolResult(
                     true,
-                    "Screenshot captured: ${image.file.name} (${image.file.length()} bytes, path=${image.file.absolutePath}). " +
-                        "It is shown in the chat transcript; the user can see it.",
-                    image = com.androidharness.app.core.ImageRef(image.file.name, image.mime),
+                    "Screenshot captured: ${result.relPath} (${result.sizeBytes} bytes). " +
+                        "Saved to workspace and shown in chat transcript.",
+                    image = com.androidharness.app.core.ImageRef(result.filename, result.mime),
                 )
             } else {
                 ToolResult(false, "Failed to capture screenshot: WebView is not initialized or failed to render canvas.")

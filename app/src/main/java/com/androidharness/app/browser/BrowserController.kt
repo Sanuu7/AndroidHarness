@@ -37,9 +37,13 @@ import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.contentOrNull
+import java.io.ByteArrayOutputStream
 import java.io.File
 import java.io.FileOutputStream
 import java.lang.ref.WeakReference
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 import java.util.concurrent.atomic.AtomicBoolean
@@ -100,6 +104,15 @@ data class BrowserEvalOutcome(
     val ok: Boolean,
     val value: String?,
     val error: String?,
+)
+
+/** Saved screenshot outcome containing workspace relative path, cache file, and size. */
+data class BrowserScreenshotResult(
+    val filename: String,
+    val relPath: String,
+    val cachedFile: File,
+    val sizeBytes: Long,
+    val mime: String = "image/jpeg",
 )
 
 /**
@@ -755,9 +768,10 @@ class BrowserController(
     }
 
     /**
-     * Captures a screenshot of the current page and saves it in ImageStore.
+     * Captures a screenshot of the current page as a JPEG, saves it into the workspace
+     * under `.harness/screenshots/{timestamp}.jpg`, and copies it to ImageStore for chat viewing.
      */
-    suspend fun screenshot(): StoredImage? = withContext(Dispatchers.Main) {
+    suspend fun screenshot(workspace: WorkspaceFs? = currentWorkspace): BrowserScreenshotResult? = withContext(Dispatchers.Main) {
         val wv = activeWebViewRef?.get() ?: getOrCreateWebView()
         runCatching {
             val width = wv.width.takeIf { it > 0 } ?: 1080
@@ -809,14 +823,36 @@ class BrowserController(
                 wv.setLayerType(prevLayer, null)
             }
 
-            val dir = File(appContext.filesDir, "images").apply { mkdirs() }
-            val file = File(dir, "browser_${UUID.randomUUID()}.png")
-            FileOutputStream(file).use { out ->
-                bitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
+            val jpegBytes = ByteArrayOutputStream().use { baos ->
+                bitmap.compress(Bitmap.CompressFormat.JPEG, 90, baos)
+                baos.toByteArray()
             }
             bitmap.recycle()
-            track("screenshot", file.name)
-            StoredImage(file, "image/png")
+
+            val filename = formatScreenshotFilename()
+            val workspaceRelPath = "$SCREENSHOTS_DIR/$filename"
+
+            // 1. Save directly to active workspace under .harness/screenshots/{timestamp}.jpg
+            val targetWs = workspace ?: currentWorkspace
+            if (targetWs != null) {
+                val node = targetWs.resolve(workspaceRelPath)
+                node.writeBytes(jpegBytes)
+            }
+
+            // 2. Cache copy into ImageStore dir for chat transcript rendering and vision inspection
+            val cachedFile = File(imageStore.imagesDir, filename)
+            withContext(Dispatchers.IO) {
+                cachedFile.writeBytes(jpegBytes)
+            }
+
+            track("screenshot", filename)
+            BrowserScreenshotResult(
+                filename = filename,
+                relPath = workspaceRelPath,
+                cachedFile = cachedFile,
+                sizeBytes = jpegBytes.size.toLong(),
+                mime = "image/jpeg",
+            )
         }.onFailure { track("screenshot", "failed: ${it.message.orEmpty().take(60)}", ok = false) }.getOrNull()
     }
 
@@ -1042,6 +1078,14 @@ class BrowserController(
                 if (!ok) null
                 else obj["hit"]?.let { (it as? JsonPrimitive)?.booleanOrNull } == true
             }.getOrElse { null }
+        }
+
+        const val SCREENSHOTS_DIR = ".harness/screenshots"
+
+        /** Generates a screenshot file name formatted with the current timestamp. */
+        fun formatScreenshotFilename(timestampMillis: Long = System.currentTimeMillis()): String {
+            val sdf = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US)
+            return "${sdf.format(Date(timestampMillis))}.jpg"
         }
 
         /**

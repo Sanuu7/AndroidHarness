@@ -202,6 +202,14 @@ class BrowserToolsTest {
     }
 
     @Test
+    fun `screenshot filename format matches timestamp convention`() {
+        val filename = BrowserController.formatScreenshotFilename(1756900000000L)
+        assertTrue(filename.endsWith(".jpg"))
+        assertTrue(filename.matches(Regex("""\d{8}_\d{6}\.jpg""")))
+        assertEquals(".harness/screenshots", BrowserController.SCREENSHOTS_DIR)
+    }
+
+    @Test
     fun `tool classes are loadable`() {
         assertTrue(BrowserNavigateTool::class.java != null)
         assertTrue(BrowserClickTool::class.java != null)

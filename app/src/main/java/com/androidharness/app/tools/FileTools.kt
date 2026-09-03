@@ -560,7 +560,7 @@ class ReadImageTool(
         "Inspect and load an image file from the workspace (or a browser screenshot filename/path) so you can see its visual content. The image is rendered and passed directly to your vision context."
     override val parametersSchema = Schema.obj(
         mapOf(
-            "path" to Schema.string("Workspace-relative path to an image file (e.g. 'assets/logo.png') OR screenshot name/path returned by browser_screenshot (e.g. 'browser_xyz.png')."),
+            "path" to Schema.string("Workspace-relative path to an image file (e.g. 'assets/logo.png', '.harness/screenshots/20260903_120000.jpg') OR screenshot filename returned by browser_screenshot."),
         ),
         required = listOf("path"),
     )
