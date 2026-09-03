@@ -1021,9 +1021,11 @@ fun ChatScreen(
                                                     }
                                                 }
                                                 val isTurnFinal = message.id == turnFinalAssistantIds[message.turnId]
+                                                val isTurnRunning = state.busy && (message.turnId == state.currentTurnId ||
+                                                    (state.currentTurnId == null && message.turnId == state.messages.lastOrNull { it.turnId != null }?.turnId))
                                                 AssistantText(
                                                     message.text,
-                                                    showPreviewChip = isTurnFinal && !state.busy,
+                                                    showPreviewChip = isTurnFinal && !isTurnRunning,
                                                     onOpenUrl = { url ->
                                                         webPreviewUrl = url
                                                         showWebPreview = true
@@ -1032,7 +1034,7 @@ fun ChatScreen(
                                                 // Turn-final extras: diff chips + how
                                                 // long the whole turn took.
                                                 val edits = state.fileEditsByTurn[message.turnId].orEmpty()
-                                                if (isTurnFinal && edits.isNotEmpty()) {
+                                                if (isTurnFinal && !isTurnRunning && edits.isNotEmpty()) {
                                                     FileEditsCard(edits, onOpenFile, Modifier.padding(top = 4.dp))
                                                 }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
