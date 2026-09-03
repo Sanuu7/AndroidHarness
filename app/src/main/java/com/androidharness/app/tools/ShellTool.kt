@@ -132,9 +132,8 @@ class ShellTool(
             ?.removePrefix("./")?.trimEnd('/')
             ?: return root
         if (rel.isEmpty()) return root
-        // Same resolution rule as UnboundedFileFs: absolute straight through,
-        // relative against "/" so escapes climb freely.
-        val dir = if (rel.startsWith('/')) File(rel) else File("/", rel)
+        // Absolute paths resolve directly; relative paths resolve against workspace root.
+        val dir = if (rel.startsWith('/')) File(rel) else File(root, rel)
         val canonical = dir.canonicalFile
         if (!canonical.exists()) throw ToolFailure("cwd does not exist: $rel")
         if (!canonical.isDirectory) throw ToolFailure("cwd is not a directory: $rel")

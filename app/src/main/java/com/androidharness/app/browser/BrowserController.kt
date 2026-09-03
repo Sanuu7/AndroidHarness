@@ -941,7 +941,12 @@ class BrowserController(
                     } catch (e) {
                         if (e instanceof SyntaxError) {
                             try {
-                                const __f = new Function($literal);
+                                const __AsyncFunction = (function() {
+                                    try { return Object.getPrototypeOf(async function(){}).constructor; } catch(_) { return null; }
+                                })() || Function;
+                                const __f = (typeof __AsyncFunction === 'function' && __AsyncFunction !== Function)
+                                    ? new __AsyncFunction($literal)
+                                    : new Function($literal);
                                 const __r = __f.call(window);
                                 const __s = __stageOf(__r);
                                 if (__s !== null) return __s;

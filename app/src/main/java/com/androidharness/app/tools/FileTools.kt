@@ -486,25 +486,64 @@ class GrepTool : Tool {
             }
 
             val matches = mutableListOf<String>()
+            val skipped = mutableListOf<String>()
             for (node in ctx.workspace.walk(path)) {
                 if (matches.size >= MAX_GREP_MATCHES) break
-                if (!node.isFile || node.length > 2_000_000 || node.isBinary()) continue
+                if (!node.isFile) continue
+                if (node.length > 2_000_000) {
+                    skipped += "${node.relPath} (>2MB)"
+                    continue
+                }
+                if (node.isBinary()) continue
                 if (includeMatcher != null &&
                     !includeMatcher.matches(java.nio.file.Path.of(node.name))
                 ) continue
-                val lines = runCatching { splitLines(node.readText()) }.getOrNull() ?: continue
+                val text = runCatching { node.readText() }.getOrNull()
+                if (text == null) {
+                    skipped += "${node.relPath} (read failed)"
+                    continue
+                }
+                val lines = splitLines(text)
                 lines.forEachIndexed { idx, line ->
                     if (matches.size >= MAX_GREP_MATCHES) return@forEachIndexed
-                    if (regex.containsMatchIn(line)) {
+                    val matched = if (line.length <= 65_536) {
+                        regex.containsMatchIn(line)
+                    } else {
+                        // Chunk long lines to prevent ART regex engine limits from dropping matches
+                        var found = false
+                        val chunkSize = 60_000
+                        val overlap = 2_000
+                        var start = 0
+                        while (start < line.length) {
+                            val end = (start + chunkSize).coerceAtMost(line.length)
+                            val sub = line.substring(start, end)
+                            if (regex.containsMatchIn(sub)) {
+                                found = true
+                                break
+                            }
+                            if (end >= line.length) break
+                            start += (chunkSize - overlap)
+                        }
+                        found
+                    }
+                    if (matched) {
                         matches += "${node.relPath}:${idx + 1}: ${line.take(300)}"
                     }
                 }
             }
-            if (matches.isEmpty()) ToolResult(true, "No matches for \"$pattern\".")
+
+            val skippedNote = if (skipped.isNotEmpty()) {
+                val preview = skipped.take(3).joinToString(", ")
+                val extra = if (skipped.size > 3) " and ${skipped.size - 3} more" else ""
+                "\n[Skipped: $preview$extra]"
+            } else ""
+
+            if (matches.isEmpty()) ToolResult(true, "No matches for \"$pattern\".$skippedNote")
             else ToolResult(
                 true,
                 matches.joinToString("\n") +
-                    if (matches.size >= MAX_GREP_MATCHES) "\n[truncated at $MAX_GREP_MATCHES matches]" else "",
+                    (if (matches.size >= MAX_GREP_MATCHES) "\n[truncated at $MAX_GREP_MATCHES matches]" else "") +
+                    skippedNote,
             )
         }
 }

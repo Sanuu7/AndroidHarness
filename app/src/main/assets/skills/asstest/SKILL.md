@@ -1,12 +1,12 @@
 ---
 name: asstest
-description: Deep self-test battery, 22 checks across 8 phases. Superset of doctor for full regression sweeps.
+description: Deep self-test battery, 25 checks across 9 phases. Superset of doctor for full regression sweeps.
 category: software-development
 ---
 
 # Harness Deep Test (asstest)
 
-22 checks in 8 phases. Superset of /doctor: byte-exact round-trips, patch atomicity,
+25 checks in 9 phases. Superset of /doctor: byte-exact round-trips, patch atomicity,
 grep semantics, uid-split ownership, git branch ops, HTTP edge cases, and parallel
 write races. Use /doctor for a quick pass, this for a full sweep.
 
@@ -73,8 +73,9 @@ PHASE 6: NETWORK (checks 17-18)
 18. web_search returns results; https://example.com fetches with TLS verified (no cert errors).
 
 PHASE 7: PARALLELISM (checks 19-21)
-19. Two task() subagents in ONE block, each writing asstest/sub-<name>.txt: both complete,
-    both files exist, consistent workspace view.
+19. Two task() subagents in ONE block, each reading/analyzing files in asstest/: both complete,
+    return factual excerpts/conclusions, consistent workspace view. Subagents are read-only
+    by design (they have read_file/grep/search_files, not write_file).
 20. Same-path last-writer-wins: two sequential write_file calls to the same path; the file
     ends holding exactly the second content (no interleaving or corruption).
 21. shell_background: start `for i in 1 2 3; do echo tick$i; sleep 1; done`; bg_list shows
@@ -89,8 +90,17 @@ PHASE 8: SANDBOX (check 22)
     All-Files-Access some of these legitimately succeed: delete any leaked files
     (rm -f ../escape_me.txt) and mark DEVIATION, not FAIL.
 
+PHASE 9: REGRESSION REPRO GAUNTLET (checks 23-25)
+23. browser_eval top-level await: `browser_eval` with `const v = await Promise.resolve(42); return v;`
+    or `return await Promise.resolve(42);` succeeds and returns 42 (does NOT fail with "await is only valid in async functions").
+24. shell relative cwd: create `asstest/sub/`, run `shell` with `command: "pwd"`, `cwd: "asstest/sub"`;
+    returns exit 0 with path ending in `/asstest/sub` (does NOT error with "cwd does not exist: asstest/sub").
+25. grep minified 200KB line: create `asstest/long.js` containing 200,000 characters with keyword
+    `FINDME_TARGET` embedded in the middle; `grep` for `FINDME_TARGET` returns matching line and does
+    NOT silently drop the file.
+
 CLEANUP: delete asstest/ and every fixture created above (including ../escape*.txt leaks);
 leave the workspace exactly as you found it.
 
-OUTPUT: a PASS/FAIL table per check (1-22) grouped by phase. For any FAIL, quote the exact
+OUTPUT: a PASS/FAIL table per check (1-25) grouped by phase. For any FAIL, quote the exact
 error message and name the regression it maps to.
