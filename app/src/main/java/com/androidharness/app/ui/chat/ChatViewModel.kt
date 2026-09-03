@@ -652,6 +652,21 @@ class ChatViewModel(
     }
 
     /**
+     * Reruns a past user message as a fresh turn. Attachments are not
+     * re-attached: the message row already displays them, and the stored
+     * workspace copies are no longer in the pending-attachment queue.
+     * No-op while a run is active (the run would swallow it into a queue).
+     */
+    fun retryMessage(text: String) {
+        val sid = sessionId ?: return
+        if (c.runManager.isRunning(sid)) {
+            _state.update { it.copy(error = "Wait for the current run to finish before retrying.") }
+            return
+        }
+        send(text)
+    }
+
+    /**
      * Stops the in-flight run, then sends the queued text as a new turn.
      * Default send-while-busy only injects at the next iteration.
      */

@@ -404,6 +404,13 @@ fun ChatScreen(
                         editingMessage = msg
                         actionsMessage = null
                     }) { Text("Edit") }
+                    TextButton(
+                        onClick = {
+                            actionsMessage = null
+                            viewModel.retryMessage(msg.text)
+                        },
+                        enabled = !state.busy,
+                    ) { Text("Retry") }
                 }
             },
             dismissButton = {
