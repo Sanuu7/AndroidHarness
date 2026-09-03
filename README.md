@@ -10,21 +10,22 @@ Status: early alpha.
 
 **Chat with a real coding agent**
 - Full markdown chat with streaming responses, thinking blocks, and cards showing every tool call the agent makes.
-- Voice input with live waveforms and Groq Whisper cloud transcription (`whisper-large-v3` / `turbo`) or native Android speech.
+- Voice input with live waveforms and Groq Whisper cloud transcription (`whisper-large-v3` / `turbo`) or native Android speech. Tap the mic to lock recording open, or hold with slide-up lock and slide-left cancel.
 - Fork conversations from any assistant turn into a fresh session with cloned context.
 - Resume last active chat automatically on launch with shimmering skeleton loading.
 - Attach skills to a message or drop one in with a slash command.
 - Multiple workspaces, one workspace switcher, switch projects without losing context.
 - Queue a message while the agent is busy; it picks it up when the current run finishes.
+- Long-press your own message for Retry alongside Copy and Edit, resending it as a fresh turn.
 - Ask the agent questions mid-run and answer from the notification shade or the chat.
 - Chat backup and restore: export every chat with its full message history to a JSON file and import it back on any device. The file holds chats and messages only, never API keys or settings.
 
 **Agent tools**
-- File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch with atomic rollback on failure.
-- Shell tools: run commands with timeouts, launch background processes, list and kill them.
+- File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch with atomic rollback on failure. The agent reads images by filename and extracts text from attached PDFs.
+- Shell tools: run commands with timeouts, launch background processes, list and kill them, install Linux packages, and query Android logs with package, tag, level, and pattern filters.
 - Git tools: status, diff, commit, log, show, branch, checkout, push, and pull. The harness auto-configures git identity so commits never fail on "author unknown".
 - Web tools: web search through keyless engines or the Brave and Tavily APIs with a key, page fetch, raw HTTP requests with JSON bodies, and GitHub API requests that authenticate automatically.
-- In-app web preview: universal preview hub for localhost ports, workspace HTML files, and web links with Eruda DevTools, console logs, and one-tap bug fixing.
+- In-app web preview: universal preview hub for localhost ports, workspace HTML files, and web links with Eruda DevTools, console logs, and one-tap bug fixing. The agent also drives the page itself through browser tools (navigate, snapshot, click, type, scroll, eval, screenshot) with a floating live-action bubble.
 - MCP tools: connect Model Context Protocol servers over stdio or HTTP, add them by pasting a Claude config or a claude mcp add command, and sign in with OAuth when the server needs it.
 - Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model.
 - Skill tools: list, view, and manage the markdown skills library from inside a run.
@@ -51,9 +52,9 @@ Status: early alpha.
 
 **Model flexibility**
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
-- Live model catalog fetch with latency check, per-model price tracking, and a running cost readout.
+- Live model catalog fetch with latency check, per-model price tracking, and a running cost readout, plus a total estimated cost hero on the Stats screen.
 - One global thinking ladder from Off to Ultra on every model; non native rungs resolve down the chain at request time, never rewriting your pick.
-- Separate planning and execution models: a Settings switch that lets Plan mode run one model while execute mode runs another, each picked from the same model sheet, with a toast confirming which model fired.
+- Per-chat dual planning: a chat menu toggle that runs Plan mode on one model and execution on another, each picked from the same model sheet, with a toast confirming which model fired and a plan card that survives app restarts.
 
 **Workspace hygiene**
 - Sandboxed file access: the agent cannot read or write outside the workspace, symlinks and binary files are refused, and delete guards protect the workspace root.

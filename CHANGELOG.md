@@ -1,5 +1,26 @@
 # Changelog
 
+## 0.8-alpha (2026-09-04)
+
+### Added
+
+- **Agent browser control**: the agent drives a headless WebView through 13 browser tools (navigate, snapshot, click, type, scroll, eval, screenshot, wait, back/forward/refresh, get URL, open URL). Workspace pages serve over an in-app asset loader, screenshots render inline in the chat and save as JPEG under .harness/screenshots, and a floating bubble with a live action trail expands into the preview sheet pinned to the page the agent is on.
+- **Per-chat dual planning**: a Dual planning toggle in the chat menu replaces the old global switch. Plan mode runs on the planning model slot, approval flips to Act on the execution slot, the header shows a fork icon with a model-only subtitle plus Plan/Exec suffix, and the pending plan card survives app process death.
+- **read_image tool**: the agent reads images from the workspace or past screenshots by filename, with vision frames fed into every provider and graceful text fallback on text-only models.
+- **read_logcat tool**: the agent queries Android logs with package, tag, level, and pattern filters.
+- **PDF attachments**: attached PDFs extract their text into the message so the agent can read them.
+- **Dynamic package installer**: the agent installs Linux packages through a dedicated tool family with a package manager sheet in Settings.
+- **Retry in the message menu**: long-pressing your own message offers Retry alongside Copy and Edit, resending the text as a fresh turn.
+- **Total estimated cost in Stats**: the hero line adds the window total at list prices, summed with the same per-row math as the By model card.
+- **Tap-to-lock voice recording**: tapping the Groq Whisper mic locks recording open directly, alongside the existing hold, slide-up lock, and slide-left cancel gestures.
+- **Model picker reloading state**: the chat model sheet shows a spinner with reloading text on manual refresh and a loading row on auto-fetch, and provider add auto-syncs the catalog with Custom endpoint first.
+
+### Fixed
+
+- **Preview chip only on live servers**: the Open Web Preview button renders only when the mentioned localhost port accepts connections, so dead server mentions show no chip.
+- **Plan approval loop resolved**: plan runs resolve the role model through the full fallback chain instead of raw slots, approval questions and mutating tools are rejected in Plan mode, and plan text carries no preview directives.
+- **Provider catalog counts agree**: the update toast and the add-provider search hint count the same speakable rows, and the directory updates live on refresh.
+
 ## 0.7-alpha (2026-09-01)
 
 ### Added
