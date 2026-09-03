@@ -169,9 +169,13 @@ data class ChatUiState(
     val effectiveModel: String?
         get() = when {
             dualPlanning && mode == AgentMode.PLAN ->
-                planningModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+                planningModel?.takeIf { it.isNotBlank() }
+                    ?: providers.firstOrNull { it.id == planningProviderId }?.model
+                    ?: activeProvider?.model
             dualPlanning && mode == AgentMode.ACT ->
-                executionModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+                executionModel?.takeIf { it.isNotBlank() }
+                    ?: providers.firstOrNull { it.id == executionProviderId }?.model
+                    ?: activeProvider?.model
             else -> activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
         }
 
@@ -876,9 +880,15 @@ class ChatViewModel(
             return
         }
         val roleModel = when {
-            s0.dualPlanning && s0.mode == AgentMode.PLAN -> s0.planningModel
-            s0.dualPlanning && s0.mode == AgentMode.ACT -> s0.executionModel
-            else -> s0.activeModel
+            s0.dualPlanning && s0.mode == AgentMode.PLAN ->
+                s0.planningModel?.takeIf { it.isNotBlank() }
+                    ?: s0.providers.firstOrNull { it.id == s0.planningProviderId }?.model
+                    ?: provider.model
+            s0.dualPlanning && s0.mode == AgentMode.ACT ->
+                s0.executionModel?.takeIf { it.isNotBlank() }
+                    ?: s0.providers.firstOrNull { it.id == s0.executionProviderId }?.model
+                    ?: provider.model
+            else -> s0.activeModel?.takeIf { it.isNotBlank() } ?: provider.model
         }
         val apiKey = c.providers.apiKey(provider.id)
         if (apiKey.isNullOrBlank()) {
@@ -1002,16 +1012,18 @@ class ChatViewModel(
 
         val planModel = s.planningModel?.takeIf { it.isNotBlank() }
             ?: s.providers.firstOrNull { it.id == s.planningProviderId }?.model
+            ?: s.activeProvider?.model
         val execModel = s.executionModel?.takeIf { it.isNotBlank() }
             ?: s.providers.firstOrNull { it.id == s.executionProviderId }?.model
+            ?: s.activeProvider?.model
 
         if (planModel == null && execModel == null) {
             _state.update { it.copy(modeToast = "Configure dual planning models in Settings first") }
             return
         }
 
-        val planName = (planModel ?: s.effectiveModel)?.substringAfterLast('/') ?: "default"
-        val execName = (execModel ?: s.effectiveModel)?.substringAfterLast('/') ?: "default"
+        val planName = planModel?.substringAfterLast('/') ?: "default"
+        val execName = execModel?.substringAfterLast('/') ?: "default"
 
         _state.update {
             it.copy(

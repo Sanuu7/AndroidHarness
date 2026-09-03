@@ -74,6 +74,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import android.widget.Toast
 import androidx.compose.ui.platform.LocalContext
+import com.androidharness.app.agent.AgentMode
 import kotlinx.coroutines.flow.filterNotNull
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -817,20 +818,24 @@ fun ChatScreen(
             val ap = state.activeProvider
             // The FULL global ladder for every model (Hermes-style): picking a
             // rung the model doesn't natively speak resolves down the chain
-            val baseProvider = state.providers.firstOrNull { it.id == state.activeProviderId } ?: ap
-            val baseModel = state.activeModel?.takeIf { it.isNotBlank() } ?: baseProvider?.model
-            val thinkingLevels = remember(baseModel, baseProvider) {
+            val currentProvider = state.activeProvider
+            val currentModel = state.effectiveModel ?: currentProvider?.model
+            val thinkingLevels = remember(currentModel, currentProvider) {
                 com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
-                    baseModel,
-                    com.androidharness.app.llm.ModelsDev.providerKeyFor(baseProvider?.baseUrl),
+                    currentModel,
+                    com.androidharness.app.llm.ModelsDev.providerKeyFor(currentProvider?.baseUrl),
                 )
             }
             MainHeader(
                 sessionTitle = state.sessionTitle,
                 busy = state.busy,
                 pickerLabel = when {
-                    baseProvider == null -> "Add a provider to get started"
-                    else -> "${baseProvider.name} · $baseModel"
+                    currentProvider == null -> "Add a provider to get started"
+                    state.dualPlanning && state.mode == AgentMode.PLAN ->
+                        "${currentProvider.name} · $currentModel (Plan)"
+                    state.dualPlanning && state.mode == AgentMode.ACT ->
+                        "${currentProvider.name} · $currentModel (Exec)"
+                    else -> "${currentProvider.name} · $currentModel"
                 },
                 mode = state.mode,
                 dualPlanning = state.dualPlanning,

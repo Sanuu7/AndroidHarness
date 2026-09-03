@@ -514,10 +514,10 @@ class AgentEngine(
             ?: return ToolResult(false, "Unknown tool: ${call.name}")
 
         // The model sometimes tries to modify files in plan mode, refuse cleanly.
-        if (agentMode == AgentMode.PLAN && !tool.isReadOnly && call.name != "ask_user") {
+        if (agentMode == AgentMode.PLAN && !tool.isReadOnly) {
             return ToolResult(
                 false,
-                "Plan mode is active: ${call.name} was rejected. Finish exploring and present your plan.",
+                "Plan mode is active: ${call.name} was rejected. Modifying files is not allowed in Plan mode. Finish your turn and present your plan for user approval.",
             )
         }
 
@@ -615,6 +615,29 @@ class AgentEngine(
                     ?: a["query"]?.jsonPrimitive?.contentOrNull
             }?.takeIf { it.isNotBlank() }
                 ?: return ToolResult(false, "ask_user requires a question.")
+
+            if (agentMode == AgentMode.PLAN) {
+                val qLower = rawQuestion.lowercase()
+                if (qLower.contains("proceed") ||
+                    qLower.contains("execute") ||
+                    qLower.contains("implement") ||
+                    qLower.contains("build this") ||
+                    qLower.contains("apply these") ||
+                    qLower.contains("start working") ||
+                    qLower.contains("ready to start") ||
+                    qLower.contains("approve") ||
+                    qLower.contains("should i start") ||
+                    qLower.contains("shall i begin") ||
+                    qLower.contains("want me to build")
+                ) {
+                    return ToolResult(
+                        false,
+                        "Plan mode is active: do not ask the user for approval to execute. " +
+                            "The app UI automatically displays native 'Approve & execute' buttons to the user when your turn ends. " +
+                            "Present your complete plan in your final text response and STOP without calling tools.",
+                    )
+                }
+            }
             val multiSelectFlag = (args["multi_select"] as? kotlinx.serialization.json.JsonPrimitive)
                 ?.contentOrNull == "true"
             var options = parseAskUserOptions(args["options"])
@@ -1415,8 +1438,11 @@ Rules:
         if (mode == AgentMode.PLAN) {
             sb.append(
                 "\nPLAN MODE IS ACTIVE:\n" +
-                    "- You may only inspect the workspace with read-only tools. Any attempt to modify files will be rejected.\n" +
-                    "- Explore what is needed, then finish with a clear, concrete, step-by-step plan the user can approve.\n"
+                    "- You are in read-only planning mode. All mutating tools (modifying files, running state-changing commands) are strictly disabled.\n" +
+                    "- Explore the codebase using read-only tools to understand the task.\n" +
+                    "- Formulate a complete, clear, step-by-step implementation plan and output it in your final response text.\n" +
+                    "- CRITICAL: Do NOT call `ask_user` to ask if you should proceed, build, or implement the plan. The user interface automatically displays native 'Approve & execute' and 'Discard' buttons when you finish your turn.\n" +
+                    "- Once you present your plan in your text response, STOP immediately. Do not attempt to call any mutating tools or ask for permission.\n"
             )
         }
         val catalog = skills.catalog()
