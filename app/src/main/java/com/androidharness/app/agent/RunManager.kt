@@ -270,6 +270,8 @@ class RunManager(
         // session-owned so nothing leaks across chats.
         todoStore.beginRun(sid)
         sessions.addMessage(sid, ChatMessage(role = Role.USER, text = text, images = imageRefs, turnId = turnId), turnId)
+        // A new run replaces any plan approval still pending on this session.
+        runCatching { sessions.setPendingPlan(sid, null) }
         live.update {
             it.copy(
                 running = true, error = null, turnId = turnId,
@@ -352,6 +354,10 @@ class RunManager(
                     }.getOrNull()
                 } else null
                 lingerJobs.remove(sid)?.cancel()
+                val pendingPlan = planText?.takeIf { t -> t.isNotBlank() }
+                // Persist alongside the live state: the approval card must
+                // survive process death, not just this app scope.
+                runCatching { sessions.setPendingPlan(sid, pendingPlan) }
                 live.update {
                     it.copy(
                         running = false,
@@ -369,7 +375,7 @@ class RunManager(
                         subagentSteps = emptyMap(),
                         retryStatus = null,
                         queuedMessage = null,
-                        pendingPlan = planText?.takeIf { t -> t.isNotBlank() },
+                        pendingPlan = pendingPlan,
                     )
                 }
                 runningSessionIds.update { it - sid }
@@ -642,6 +648,16 @@ class RunManager(
     /** Dismisses the pending PLAN-mode plan card without executing it. */
     fun clearPendingPlan(sessionId: String) {
         stateOf(sessionId).update { it.copy(pendingPlan = null) }
+        appScope.launch { runCatching { sessions.setPendingPlan(sessionId, null) } }
+    }
+
+    /**
+     * Re-arms a plan approval persisted on the session row after process
+     * death wiped the in-memory live state; a live plan always wins.
+     */
+    fun seedPendingPlan(sessionId: String, plan: String?) {
+        if (plan.isNullOrBlank()) return
+        stateOf(sessionId).update { if (it.pendingPlan == null) it.copy(pendingPlan = plan) else it }
     }
 
     /** Queue a steering message for the running agent. Replaces any previous queued text. */

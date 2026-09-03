@@ -35,6 +35,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -345,6 +346,14 @@ class ChatViewModel(
         // Messages come straight from the DB flow, RunManager writes them
         // during runs, so the UI is just a live mirror. A held streaming
         // bubble is released the moment its committed row arrives.
+        viewModelScope.launch {
+            // A finished plan persists on the session row, so re-arm the
+            // approval card when a chat is (re)opened after process death.
+            sessionIdFlow.filterNotNull().collect { sid ->
+                val persisted = runCatching { c.sessions.session(sid) }.getOrNull()?.pendingPlan
+                if (!persisted.isNullOrBlank()) c.runManager.seedPendingPlan(sid, persisted)
+            }
+        }
         viewModelScope.launch {
             sessionIdFlow.flatMapLatest { sid ->
                 if (sid == null) {
@@ -1119,6 +1128,9 @@ class ChatViewModel(
     fun discardPendingPlan() {
         val sid = sessionId ?: return
         c.runManager.clearPendingPlan(sid)
+        // Clear the persisted copy on this scope: the plan-seeding collector
+        // shares it, so the card cannot be resurrected by a session switch.
+        viewModelScope.launch { runCatching { c.sessions.setPendingPlan(sid, null) } }
         _state.update {
             it.copy(
                 pendingPlan = null,

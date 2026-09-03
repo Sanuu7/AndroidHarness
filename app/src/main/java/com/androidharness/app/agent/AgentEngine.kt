@@ -1442,6 +1442,7 @@ Rules:
                     "- Explore the codebase using read-only tools to understand the task.\n" +
                     "- Formulate a complete, clear, step-by-step implementation plan and output it in your final response text.\n" +
                     "- CRITICAL: Do NOT call `ask_user` to ask if you should proceed, build, or implement the plan. The user interface automatically displays native 'Approve & execute' and 'Discard' buttons when you finish your turn.\n" +
+                    "- Do NOT include `::web-preview` directives and do not claim anything was created or hosted: nothing exists yet, so a preview would open an empty page.\n" +
                     "- Once you present your plan in your text response, STOP immediately. Do not attempt to call any mutating tools or ask for permission.\n"
             )
         }

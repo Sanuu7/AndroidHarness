@@ -29,6 +29,8 @@ data class SessionEntity(
     val projectId: String? = null,
     val compactionSummary: String = "",
     val compactionBefore: Long = 0,
+    /** Plan awaiting user approval; survives process death so the card reappears. */
+    val pendingPlan: String? = null,
 )
 
 @Entity(tableName = "messages", indices = [Index("sessionId")])
@@ -190,6 +192,9 @@ interface HarnessDao {
 
     @Query("UPDATE sessions SET compactionSummary = :summary, compactionBefore = :before WHERE id = :id")
     suspend fun setCompaction(id: String, summary: String, before: Long)
+
+    @Query("UPDATE sessions SET pendingPlan = :plan WHERE id = :id")
+    suspend fun setPendingPlan(id: String, plan: String?)
 
     @Delete
     suspend fun deleteSession(session: SessionEntity)
@@ -373,7 +378,7 @@ interface HarnessDao {
         SessionFileChangeEntity::class,
         MessageFtsEntity::class,
     ],
-    version = 9,
+    version = 10,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -464,6 +469,13 @@ abstract class AppDatabase : RoomDatabase() {
                         "`text` TEXT NOT NULL, tokenize=unicode61, content=`messages`)"
                 )
                 db.execSQL("INSERT INTO message_fts(message_fts) VALUES('rebuild')")
+            }
+        }
+
+        /** v10: plan approval persisted per session so it survives process death. */
+        val MIGRATION_9_10 = object : androidx.room.migration.Migration(9, 10) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE sessions ADD COLUMN pendingPlan TEXT")
             }
         }
     }

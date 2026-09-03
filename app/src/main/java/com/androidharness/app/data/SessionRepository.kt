@@ -57,6 +57,10 @@ class SessionRepository(
     suspend fun messages(sessionId: String): List<ChatMessage> =
         db.dao().messages(sessionId).map { it.toChatMessageCached() }
 
+    /** Plan awaiting approval; persisted so the card survives process death. */
+    suspend fun setPendingPlan(sessionId: String, plan: String?) =
+        db.dao().setPendingPlan(sessionId, plan)
+
     /**
      * Model-facing history must exclude subagent inner turns: inner assistant
      * rows are marked with toolCallId = their parent task call id, and their
