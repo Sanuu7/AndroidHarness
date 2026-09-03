@@ -719,6 +719,22 @@ class ChatViewModel(
                     return@launch
                 }
                 val size = querySize(resolver, uri)
+                if (FileAttachments.isPdf(name, mime)) {
+                    val pdfExtract = resolver.openInputStream(uri)?.use { stream ->
+                        PdfTextExtractor.extract(stream)
+                    }
+                    if (pdfExtract != null && pdfExtract.text.isNotBlank()) {
+                        val pageLabel = if (pdfExtract.pageCount == 1) "1 page" else "${pdfExtract.pageCount} pages"
+                        val sizeLabel = "${FileAttachments.humanBytes(size ?: pdfExtract.text.length.toLong())}, $pageLabel"
+                        addFileAttachment(
+                            FileAttachment(
+                                name, "application/pdf", sizeLabel,
+                                pdfExtract.text, null,
+                            ),
+                        )
+                        return@launch
+                    }
+                }
                 if (FileAttachments.isTextLike(name, mime)) {
                     val text = readTextLimited(resolver, uri)
                     if (text != null) {

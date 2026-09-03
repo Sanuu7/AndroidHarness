@@ -56,6 +56,14 @@ class FileAttachmentsTest {
     }
 
     @Test
+    fun `pdf detection identifies pdf files`() {
+        assertTrue(FileAttachments.isPdf("doc.pdf", "application/pdf"))
+        assertTrue(FileAttachments.isPdf("doc.PDF", "application/octet-stream"))
+        assertFalse(FileAttachments.isPdf("doc.txt", "text/plain"))
+        assertFalse(FileAttachments.isPdf("doc.png", "image/png"))
+    }
+
+    @Test
     fun `human bytes reads naturally`() {
         assertEquals("500 B", FileAttachments.humanBytes(500))
         assertEquals("12 KB", FileAttachments.humanBytes(12_000))

@@ -92,6 +92,11 @@ object FileAttachments {
         "dart", "lua", "pl", "bat", "ps1", "gitignore", "env", "lock",
     )
 
+    fun isPdf(name: String, mime: String?): Boolean {
+        if (mime == "application/pdf") return true
+        return name.endsWith(".pdf", ignoreCase = true)
+    }
+
     fun isTextLike(name: String, mime: String?): Boolean {
         if (mime != null) {
             if (mime.startsWith("text/")) return true
@@ -105,6 +110,7 @@ object FileAttachments {
     fun langFor(name: String): String? {
         val ext = name.substringAfterLast('.', "").lowercase()
         return when (ext) {
+            "pdf" -> "text"
             "kt", "kts" -> "kotlin"
             "py" -> "python"
             "js" -> "javascript"
