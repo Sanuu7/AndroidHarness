@@ -817,21 +817,23 @@ fun ChatScreen(
             val ap = state.activeProvider
             // The FULL global ladder for every model (Hermes-style): picking a
             // rung the model doesn't natively speak resolves down the chain
-            // inside setClamped; menus render plain labels without captions.
-            val thinkingLevels = remember(state.effectiveModel, ap) {
+            val baseProvider = state.providers.firstOrNull { it.id == state.activeProviderId } ?: ap
+            val baseModel = state.activeModel?.takeIf { it.isNotBlank() } ?: baseProvider?.model
+            val thinkingLevels = remember(baseModel, baseProvider) {
                 com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
-                    state.effectiveModel,
-                    com.androidharness.app.llm.ModelsDev.providerKeyFor(ap?.baseUrl),
+                    baseModel,
+                    com.androidharness.app.llm.ModelsDev.providerKeyFor(baseProvider?.baseUrl),
                 )
             }
             MainHeader(
                 sessionTitle = state.sessionTitle,
                 busy = state.busy,
                 pickerLabel = when {
-                    ap == null -> "Add a provider to get started"
-                    else -> "${ap.name} · ${state.effectiveModel ?: ap.model}"
+                    baseProvider == null -> "Add a provider to get started"
+                    else -> "${baseProvider.name} · $baseModel"
                 },
                 mode = state.mode,
+                dualPlanning = state.dualPlanning,
                 thinkingLevel = state.thinkingLevel,
                 thinkingLevels = thinkingLevels,
                 permissionMode = state.permissionMode,
@@ -842,6 +844,7 @@ fun ChatScreen(
                 onSetThinking = viewModel::setThinkingLevel,
                 onSetPermission = viewModel::setPermissionMode,
                 onSetMode = viewModel::setMode,
+                onToggleDualPlanning = viewModel::toggleDualPlanning,
                 onOpenContext = { showContext = true },
                 onOpenUndo = { showUndoDialog = true },
                 onOpenFiles = onOpenFiles,

@@ -2234,36 +2234,28 @@ private fun PlanningModelSection(
     // active one, so the list is never empty for a first pick.
     val fallbackProviderId = settings.activeProviderId ?: providers.firstOrNull()?.id
 
-    SettingsHeader("Planning model")
+    SettingsHeader("Dual planning models")
     OutlinedCard(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                Column(Modifier.weight(1f)) {
-                    Text("Separate plan and execute models", style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        "Plan with one model, execute the approved plan with another. " +
-                            "Off, everything runs on the single model picked in chat.",
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = settings.planningModelsEnabled,
-                    onCheckedChange = { scope.launch { container.settings.setPlanningModelsEnabled(it) } },
+            Column(Modifier.fillMaxWidth()) {
+                Text("Separate plan and execute models", style = MaterialTheme.typography.bodyLarge)
+                Text(
+                    "Configure models for dual planning. When activated from chat, " +
+                        "planning runs with the plan model and execution runs with the execute model.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
-            if (settings.planningModelsEnabled) {
-                ModelRoleRow(
-                    label = "Plan mode",
-                    model = settings.planningModel
-                        ?: providers.firstOrNull { it.id == (settings.planningProviderId ?: fallbackProviderId) }?.model,
-                ) { pickingRole = "plan" }
-                ModelRoleRow(
-                    label = "Execute mode",
-                    model = settings.executionModel
-                        ?: providers.firstOrNull { it.id == (settings.executionProviderId ?: fallbackProviderId) }?.model,
-                ) { pickingRole = "exec" }
-            }
+            ModelRoleRow(
+                label = "Plan model",
+                model = settings.planningModel
+                    ?: providers.firstOrNull { it.id == (settings.planningProviderId ?: fallbackProviderId) }?.model,
+            ) { pickingRole = "plan" }
+            ModelRoleRow(
+                label = "Execute model",
+                model = settings.executionModel
+                    ?: providers.firstOrNull { it.id == (settings.executionProviderId ?: fallbackProviderId) }?.model,
+            ) { pickingRole = "exec" }
         }
     }
 

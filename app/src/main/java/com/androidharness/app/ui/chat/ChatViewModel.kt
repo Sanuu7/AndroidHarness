@@ -118,6 +118,7 @@ data class ChatUiState(
     val activeModel: String? = null,
     /** Separate-model-per-mode settings, mirrored from AppSettings. */
     val planningModelsEnabled: Boolean = false,
+    val dualPlanning: Boolean = false,
     val planningProviderId: String? = null,
     val planningModel: String? = null,
     val executionProviderId: String? = null,
@@ -157,9 +158,9 @@ data class ChatUiState(
 ) {
     val activeProvider: ProviderConfig?
         get() = when {
-            planningModelsEnabled && mode == AgentMode.PLAN && planningProviderId != null ->
+            dualPlanning && mode == AgentMode.PLAN && planningProviderId != null ->
                 providers.firstOrNull { it.id == planningProviderId } ?: providers.firstOrNull { it.id == activeProviderId }
-            planningModelsEnabled && mode == AgentMode.ACT && executionProviderId != null ->
+            dualPlanning && mode == AgentMode.ACT && executionProviderId != null ->
                 providers.firstOrNull { it.id == executionProviderId } ?: providers.firstOrNull { it.id == activeProviderId }
             else -> providers.firstOrNull { it.id == activeProviderId }
         }
@@ -167,9 +168,9 @@ data class ChatUiState(
     /** Model actually used for requests: catalog pick, else the entry's default. */
     val effectiveModel: String?
         get() = when {
-            planningModelsEnabled && mode == AgentMode.PLAN ->
+            dualPlanning && mode == AgentMode.PLAN ->
                 planningModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
-            planningModelsEnabled && mode == AgentMode.ACT ->
+            dualPlanning && mode == AgentMode.ACT ->
                 executionModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
             else -> activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
         }
@@ -398,6 +399,9 @@ class ChatViewModel(
                             _state.update {
                                 it.copy(turnsWithCheckpoints = refreshCheckpoints(sid))
                             }
+                        }
+                        if (_state.value.dualPlanning && _state.value.mode == AgentMode.ACT) {
+                            _state.update { it.copy(dualPlanning = false) }
                         }
                     }
                     wasRunning = live.running
@@ -862,9 +866,9 @@ class ChatViewModel(
         // slot, everything else the execution one. A slot without a provider
         // falls back to the active provider, keeping its model override.
         val provider = when {
-            s0.planningModelsEnabled && s0.mode == AgentMode.PLAN && s0.planningProviderId != null ->
+            s0.dualPlanning && s0.mode == AgentMode.PLAN && s0.planningProviderId != null ->
                 s0.providers.firstOrNull { it.id == s0.planningProviderId } ?: s0.activeProvider
-            s0.planningModelsEnabled && s0.mode == AgentMode.ACT && s0.executionProviderId != null ->
+            s0.dualPlanning && s0.mode == AgentMode.ACT && s0.executionProviderId != null ->
                 s0.providers.firstOrNull { it.id == s0.executionProviderId } ?: s0.activeProvider
             else -> s0.activeProvider
         } ?: run {
@@ -872,8 +876,8 @@ class ChatViewModel(
             return
         }
         val roleModel = when {
-            s0.planningModelsEnabled && s0.mode == AgentMode.PLAN -> s0.planningModel
-            s0.planningModelsEnabled && s0.mode == AgentMode.ACT -> s0.executionModel
+            s0.dualPlanning && s0.mode == AgentMode.PLAN -> s0.planningModel
+            s0.dualPlanning && s0.mode == AgentMode.ACT -> s0.executionModel
             else -> s0.activeModel
         }
         val apiKey = c.providers.apiKey(provider.id)
@@ -978,16 +982,44 @@ class ChatViewModel(
     }
 
     fun setMode(mode: AgentMode) {
-        if (_state.value.mode == mode) return
-        _state.update { it.copy(mode = mode).withCurrentAction() }
-        // Switching into Plan mode is the moment the intro is useful: offer
-        // it once, before the mode toast would matter.
+        if (_state.value.mode == mode && !_state.value.dualPlanning) return
+        val wasDual = _state.value.dualPlanning
+        _state.update { it.copy(mode = mode, dualPlanning = false).withCurrentAction() }
+        if (wasDual) {
+            _state.update { it.copy(modeToast = "Dual planning off: ${if (mode == AgentMode.PLAN) "Plan mode" else "Act mode"}") }
+        } else {
+            announceMode(mode)
+        }
+    }
+
+    fun toggleDualPlanning() {
         val s = _state.value
-        if (mode == AgentMode.PLAN && !s.planningModelsEnabled && !s.planningModelsPromoSeen) {
-            _state.update { it.copy(showPlanningPromo = true) }
+        if (s.dualPlanning) {
+            _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
+            _state.update { it.copy(modeToast = "Dual planning off") }
             return
         }
-        announceMode(mode)
+
+        val planModel = s.planningModel?.takeIf { it.isNotBlank() }
+            ?: s.providers.firstOrNull { it.id == s.planningProviderId }?.model
+        val execModel = s.executionModel?.takeIf { it.isNotBlank() }
+            ?: s.providers.firstOrNull { it.id == s.executionProviderId }?.model
+
+        if (planModel == null && execModel == null) {
+            _state.update { it.copy(modeToast = "Configure dual planning models in Settings first") }
+            return
+        }
+
+        val planName = (planModel ?: s.effectiveModel)?.substringAfterLast('/') ?: "default"
+        val execName = (execModel ?: s.effectiveModel)?.substringAfterLast('/') ?: "default"
+
+        _state.update {
+            it.copy(
+                dualPlanning = true,
+                mode = AgentMode.PLAN,
+            ).withCurrentAction()
+        }
+        _state.update { it.copy(modeToast = "Dual planning on: $planName -> $execName") }
     }
 
     /** Approve the plan produced by a PLAN-mode run and execute it. */
@@ -995,30 +1027,12 @@ class ChatViewModel(
         val sid = sessionId ?: return
         c.runManager.clearPendingPlan(sid)
         _state.update { it.copy(mode = AgentMode.ACT, pendingPlan = null).withCurrentAction() }
-        announceMode(AgentMode.ACT)
         startRun("The plan above is approved. Execute it step by step now.")
     }
 
-    /**
-     * One-shot toast naming the model a mode switch will use, so the
-     * separate planning/execution slots are visible at the moment they
-     * matter. Quiet when the feature is off.
-     */
     private fun announceMode(mode: AgentMode) {
-        val s = _state.value
-        if (!s.planningModelsEnabled) return
-        val label = if (mode == AgentMode.PLAN) "Planning mode" else "Execute mode"
-        val model = when (mode) {
-            AgentMode.PLAN ->
-                s.planningModel?.takeIf { it.isNotBlank() }
-                    ?: s.providers.firstOrNull { it.id == s.planningProviderId }?.model
-                    ?: s.effectiveModel
-            AgentMode.ACT ->
-                s.executionModel?.takeIf { it.isNotBlank() }
-                    ?: s.providers.firstOrNull { it.id == s.executionProviderId }?.model
-                    ?: s.effectiveModel
-        }?.substringAfterLast('/') ?: "default model"
-        _state.update { it.copy(modeToast = "$label: $model") }
+        val label = if (mode == AgentMode.PLAN) "Plan mode" else "Act mode"
+        _state.update { it.copy(modeToast = label) }
     }
 
     fun clearModeToast() {
@@ -1093,7 +1107,13 @@ class ChatViewModel(
     fun discardPendingPlan() {
         val sid = sessionId ?: return
         c.runManager.clearPendingPlan(sid)
-        _state.update { it.copy(pendingPlan = null) }
+        _state.update {
+            it.copy(
+                pendingPlan = null,
+                dualPlanning = false,
+                mode = AgentMode.ACT,
+            ).withCurrentAction()
+        }
     }
 
     // ------------------------------------------------------------------
@@ -1295,20 +1315,20 @@ class ChatViewModel(
     fun setActiveProvider(id: String) {
         val s = _state.value
         viewModelScope.launch {
-            if (s.planningModelsEnabled) {
-                if (s.mode == AgentMode.PLAN) {
-                    c.settings.setPlanningModel(id, null)
-                } else {
-                    c.settings.setExecutionModel(id, null)
-                }
-            } else {
-                // Switching provider resets any model override, the old pick
-                // belonged to the previous endpoint's catalog.
-                c.settings.setActiveModel(null)
-                c.settings.setActiveProvider(id)
+            val wasDual = s.dualPlanning
+            // Switching provider resets any model override, the old pick
+            // belonged to the previous endpoint's catalog.
+            c.settings.setActiveModel(null)
+            c.settings.setActiveProvider(id)
+            if (wasDual) {
+                _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
             }
             // The new model may not speak the stored thinking tier, adapt.
             val provider = _state.value.providers.firstOrNull { it.id == id }
+            if (wasDual) {
+                val modelName = provider?.model?.substringAfterLast('/') ?: "default"
+                _state.update { it.copy(modeToast = "Dual planning off. Switched to $modelName") }
+            }
             ThinkingSpecs.clampStoredLevel(
                 c.settings,
                 provider?.model,
@@ -1321,17 +1341,17 @@ class ChatViewModel(
     fun selectModel(providerId: String, model: String?) {
         val s = _state.value
         viewModelScope.launch {
-            if (s.planningModelsEnabled) {
-                if (s.mode == AgentMode.PLAN) {
-                    c.settings.setPlanningModel(providerId, model)
-                } else {
-                    c.settings.setExecutionModel(providerId, model)
-                }
-            } else {
-                c.settings.setActiveProvider(providerId)
-                c.settings.setActiveModel(model)
+            val wasDual = s.dualPlanning
+            c.settings.setActiveProvider(providerId)
+            c.settings.setActiveModel(model)
+            if (wasDual) {
+                _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
             }
             val provider = _state.value.providers.firstOrNull { it.id == providerId }
+            val chosenModel = (model ?: provider?.model)?.substringAfterLast('/') ?: "default"
+            if (wasDual) {
+                _state.update { it.copy(modeToast = "Dual planning off. Switched to $chosenModel") }
+            }
             ThinkingSpecs.clampStoredLevel(
                 c.settings,
                 model?.takeIf { it.isNotBlank() } ?: provider?.model,

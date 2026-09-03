@@ -28,6 +28,7 @@ import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.ui.graphics.Color
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
@@ -76,6 +77,7 @@ internal fun MainHeader(
     busy: Boolean,
     pickerLabel: String,
     mode: AgentMode,
+    dualPlanning: Boolean = false,
     thinkingLevel: ThinkingLevel,
     /** Full global ladder, every model offers every rung (Hermes-style). */
     thinkingLevels: List<ThinkingLevel>,
@@ -87,6 +89,7 @@ internal fun MainHeader(
     onSetThinking: (ThinkingLevel) -> Unit,
     onSetPermission: (PermissionMode) -> Unit,
     onSetMode: (AgentMode) -> Unit,
+    onToggleDualPlanning: () -> Unit = {},
     onOpenContext: () -> Unit,
     onOpenUndo: () -> Unit,
     onOpenFiles: () -> Unit,
@@ -166,7 +169,7 @@ internal fun MainHeader(
                 IconButton(onClick = { onSetMode(AgentMode.ACT) }) {
                     Icon(
                         Icons.Outlined.EditNote,
-                        contentDescription = "Plan mode on: switch to Act",
+                        contentDescription = if (dualPlanning) "Dual planning on: switch to Act" else "Plan mode on: switch to Act",
                         tint = scheme.primary,
                     )
                 }
@@ -272,22 +275,41 @@ internal fun MainHeader(
                 }
                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                     DropdownMenuItem(
-                        text = { Text(if (mode == AgentMode.PLAN) "Act mode" else "Plan mode") },
+                        text = { Text(if (mode == AgentMode.PLAN && !dualPlanning) "Act mode" else "Plan mode") },
                         leadingIcon = {
                             Icon(
                                 Icons.Outlined.EditNote,
                                 contentDescription = null,
-                                tint = if (mode == AgentMode.PLAN) scheme.primary else scheme.onSurfaceVariant,
+                                tint = if (mode == AgentMode.PLAN && !dualPlanning) scheme.primary else scheme.onSurfaceVariant,
                             )
                         },
                         trailingIcon = {
-                            if (mode == AgentMode.PLAN) {
+                            if (mode == AgentMode.PLAN && !dualPlanning) {
                                 Icon(Icons.Filled.Check, contentDescription = "Enabled", tint = scheme.primary)
                             }
                         },
                         onClick = {
                             menu = false
-                            onSetMode(if (mode == AgentMode.PLAN) AgentMode.ACT else AgentMode.PLAN)
+                            onSetMode(if (mode == AgentMode.PLAN && !dualPlanning) AgentMode.ACT else AgentMode.PLAN)
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Dual planning") },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.ForkRight,
+                                contentDescription = null,
+                                tint = if (dualPlanning) scheme.primary else scheme.onSurfaceVariant,
+                            )
+                        },
+                        trailingIcon = {
+                            if (dualPlanning) {
+                                Icon(Icons.Filled.Check, contentDescription = "Enabled", tint = scheme.primary)
+                            }
+                        },
+                        onClick = {
+                            menu = false
+                            onToggleDualPlanning()
                         },
                     )
                     DropdownMenuItem(
