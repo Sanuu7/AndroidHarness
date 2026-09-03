@@ -792,12 +792,13 @@ fun ChatScreen(
     ) { uri: Uri? -> uri?.let { viewModel.attachFile(it) } }
 
     val voiceController = rememberVoiceInputController(viewModel.container)
+    var pendingLockedRecord by remember { mutableStateOf(false) }
     val audioPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
             if (state.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) {
-                voiceController.startGroqRecording(locked = false)
+                voiceController.startGroqRecording(locked = pendingLockedRecord)
             } else {
                 val base = composerText
                 voiceController.startNativeListening { transcribed, isFinal ->
@@ -1397,6 +1398,7 @@ fun ChatScreen(
                         ) {
                             voiceController.startGroqRecording(locked = locked)
                         } else {
+                            pendingLockedRecord = locked
                             audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                         }
                     },

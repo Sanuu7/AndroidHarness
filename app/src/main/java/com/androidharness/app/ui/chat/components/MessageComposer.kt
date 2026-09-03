@@ -439,6 +439,7 @@ internal fun MessageComposer(
                         dragX = dragX,
                         dragY = dragY,
                         onStart = { onStartGroqRecord(false) },
+                        onTapLock = { onStartGroqRecord(true) },
                         onFinish = onStopAndTranscribeGroq,
                         onCancel = onCancelGroqRecord,
                         onLock = onLockGroqRecord,
@@ -771,6 +772,7 @@ private fun HuliaMicButton(
     dragX: Float,
     dragY: Float,
     onStart: () -> Unit,
+    onTapLock: () -> Unit = {},
     onFinish: () -> Unit,
     onCancel: () -> Unit,
     onLock: () -> Unit,
@@ -849,21 +851,25 @@ private fun HuliaMicButton(
                 .pointerInput(available) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
-                        down.consume()
-
-                        haptics.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onStart()
 
                         var armed = false
                         var locked = false
+                        var moved = false
                         while (true) {
                             val event = awaitPointerEvent()
                             val change = event.changes.firstOrNull { it.id == down.id } ?: break
                             if (!change.pressed) break
-                            change.consume()
 
                             val dy = change.position.y - down.position.y
                             val dx = change.position.x - down.position.x
+                            if (!moved && (abs(dx) > 4f || abs(dy) > 4f)) {
+                                moved = true
+                                change.consume()
+                                haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                                onStart()
+                            }
+                            if (!moved) continue
+                            change.consume()
                             onDrag(dx, dy)
 
                             val vertical = -dy > abs(dx)
@@ -885,7 +891,11 @@ private fun HuliaMicButton(
                         }
 
                         onDrag(0f, 0f)
-                        if (!locked) {
+                        if (!moved) {
+                            down.consume()
+                            haptics.performHapticFeedback(HapticFeedbackType.LongPress)
+                            onTapLock()
+                        } else if (!locked) {
                             if (armed) onCancel() else onFinish()
                             onCancelArmedChange(false)
                         }
@@ -895,7 +905,7 @@ private fun HuliaMicButton(
                     contentDescription = if (recording) {
                         "Recording. Release to send, slide left to cancel, slide up to lock"
                     } else {
-                        "Hold to record a voice message"
+                        "Tap to lock recording, hold to record a voice message"
                     }
                 },
             contentAlignment = Alignment.Center,
