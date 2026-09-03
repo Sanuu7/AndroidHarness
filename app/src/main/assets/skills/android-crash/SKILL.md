@@ -17,8 +17,8 @@ Get the stack, then fix the cause. Do not guess the Activity.
 - Compose preview looks wrong (android-compose)
 
 ## Procedure
-1. `env_status`. If the Linux prefix or Shizuku is missing and you need logcat, tell the user once.
-2. `shell` `logcat -d -t 200 *:E` (or the package name if you know it). Check: a stack or FATAL EXCEPTION.
+1. `env_status`. If the Linux prefix or Shizuku is missing and you need device-wide logcat, tell the user once.
+2. `read_logcat` with `level="E"` and `package_name` (or `tag="AndroidRuntime"`). Check: a stack or FATAL EXCEPTION.
 3. `grep` the top frames in the workspace. `read_file` the file. Check: the crashing line.
 4. Fix with `edit_file`. Check: the NPE / race / bad cast is actually gone.
 5. Tell the user how to relaunch. If they can, pull logcat again.

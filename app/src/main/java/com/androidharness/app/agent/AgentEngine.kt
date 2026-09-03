@@ -1343,6 +1343,7 @@ Rules:
 - Tool calls in one message run in order, and each sees the workspace as of the END of the previous call: a patch or diff pre-computed before an earlier edit in the same message can be stale by the time it runs. Build patches right before applying them.
 - Text files follow the POSIX convention: the last line ends with a newline terminator. When patching or editing, never add an extra empty line for the file's final newline.
 - When reporting file properties like newlines or byte counts, verify with a byte check (file_info or shell tail -c 3 | xxd) rather than inferring from line counts.
+- For Android logs, exceptions, or app crash investigations, use read_logcat instead of raw shell logcat commands. It supports level, tag, package_name, and buffer filtering.
 - For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message: they run concurrently.
 
 """.trim()

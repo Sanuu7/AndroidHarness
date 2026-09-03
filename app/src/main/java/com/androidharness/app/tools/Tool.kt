@@ -82,6 +82,7 @@ class ToolRegistry(private val tools: List<Tool>) {
                 ShellBackgroundTool(bgStore, linuxEnv),
                 EnvStatusTool(shizuku, linuxEnv, shellRouter),
                 DoctorTool(linuxEnv, shizuku, shellRouter, httpClient),
+                ReadLogcatTool(shizuku),
                 PkgInstallTool(linuxEnv),
                 PkgSearchTool(linuxEnv),
                 PkgListTool(linuxEnv),

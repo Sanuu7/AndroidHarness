@@ -25,7 +25,7 @@ Find the actual root cause before changing code. Do not shotgun-fix.
 
 ## Pitfalls
 - Do not restart from a different theory every turn. Finish the current one.
-- On Android, pull `logcat -d -t 200` via `shell` (see android-crash) instead of guessing.
+- On Android, pull logs via `read_logcat` (see android-crash) instead of guessing.
 - If a command is 126/127, call `env_status` once and stop inventing PATHs.
 
 ## Verification

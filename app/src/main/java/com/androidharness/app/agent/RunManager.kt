@@ -84,6 +84,7 @@ fun describeToolCall(call: ToolCallData): String {
         "pkg_install" -> "Installing package ${arg("packages") ?: arg("package") ?: "…"}"
         "pkg_search" -> "Searching packages for ${arg("query") ?: "…"}"
         "pkg_list" -> "Listing installed packages…"
+        "read_logcat" -> "Reading logcat ${arg("tag") ?: arg("package_name") ?: ""}…".trim()
         else -> "Running ${call.name}…"
     }
 }
