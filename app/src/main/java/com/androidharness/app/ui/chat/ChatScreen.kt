@@ -1408,6 +1408,11 @@ fun ChatScreen(
                 visible = isAgentControllingBrowser && !showWebPreview,
                 latestAction = browserActionTracks.lastOrNull(),
                 onClick = {
+                    // Pin the preview to the page the agent is actually on,
+                    // otherwise the sheet falls back to a stale/default target.
+                    viewModel.container.browser.getActiveUrl()
+                        ?.takeIf { it.isNotBlank() && it != "about:blank" }
+                        ?.let { webPreviewUrl = it }
                     showWebPreview = true
                 },
                 modifier = Modifier.fillMaxSize(),
