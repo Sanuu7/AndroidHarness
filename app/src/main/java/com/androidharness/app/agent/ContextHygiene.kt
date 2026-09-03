@@ -58,6 +58,25 @@ object ContextHygiene {
         }
     }
 
+    /**
+     * Strips all base64 image data from messages while inserting a text notice
+     * so text-only models understand an image was previously present without
+     * receiving unsupported binary payloads.
+     */
+    fun stripImages(
+        messages: List<ChatMessage>,
+        note: String = "[Attached image omitted: active model does not support image input]",
+    ): List<ChatMessage> = messages.map { m ->
+        if (m.imageData.isEmpty()) {
+            m
+        } else {
+            val names = m.images.joinToString(", ") { it.name }.ifEmpty { "image" }
+            val placeholder = "$note ($names)"
+            val newText = if (m.text.isNotBlank()) "${m.text}\n\n$placeholder" else placeholder
+            m.copy(text = newText, imageData = emptyList())
+        }
+    }
+
     fun summaryMessage(summary: String): ChatMessage = ChatMessage(
         role = Role.SYSTEM,
         text = "${AgentEngine.COMPACTION_PREFIX}\n\n$summary",

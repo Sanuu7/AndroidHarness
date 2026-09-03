@@ -235,6 +235,12 @@ class AgentEngine(
             ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
             maxContextTokens, options.maxOutputTokens,
         ).toMutableList()
+        // If active model is known to be text-only, strip image data upfront
+        if (!com.androidharness.app.llm.visionCapable(config.model)) {
+            val sanitized = ContextHygiene.stripImages(working)
+            working.clear()
+            working.addAll(sanitized)
+        }
         val provider = providerFactory(config)
         // Stable per-session cache routing for providers that support it.
         val requestOptions = options.copy(cacheKey = sessionId)
@@ -301,10 +307,49 @@ class AgentEngine(
             var thinking = StringBuilder()
             var calls = mutableListOf<ToolCallData>()
 
+            val streamEventHandler: suspend (StreamEvent) -> Unit = { event ->
+                when (event) {
+                    is StreamEvent.TextDelta -> {
+                        text.append(event.text)
+                        emit(AgentEvent.Text(event.text))
+                    }
+                    is StreamEvent.ThinkingDelta -> {
+                        thinking.append(event.text)
+                        emit(AgentEvent.Thinking(event.text))
+                    }
+                    is StreamEvent.ToolCallReady -> calls += event.call
+                    is StreamEvent.ToolCallBatch -> calls += event.calls
+                    is StreamEvent.Batch -> event.events.forEach { nested ->
+                        when (nested) {
+                            is StreamEvent.TextDelta -> {
+                                text.append(nested.text)
+                                emit(AgentEvent.Text(nested.text))
+                            }
+                            is StreamEvent.ThinkingDelta -> {
+                                thinking.append(nested.text)
+                                emit(AgentEvent.Thinking(nested.text))
+                            }
+                            is StreamEvent.ToolCallReady -> calls += nested.call
+                            is StreamEvent.ToolCallBatch -> calls += nested.calls
+                            else -> {}
+                        }
+                    }
+                    is StreamEvent.Usage -> emit(
+                        AgentEvent.Usage(
+                            event.inputTokens, event.outputTokens,
+                            event.cachedInputTokens, event.cacheWriteTokens,
+                            config.model, config.name,
+                        )
+                    )
+                    is StreamEvent.Done -> lastFinishReason = event.finishReason
+                    else -> {}
+                }
+            }
+
             // Request attempt loop: transient failures (429/5xx/network) are
             // retried with backoff, but ONLY while nothing has streamed yet,
             // re-emitting deltas the UI already showed would duplicate output.
-            val failure = StreamRetrier.run(
+            var failure = StreamRetrier.run(
                 streamFor = {
                     provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
                 },
@@ -315,47 +360,33 @@ class AgentEngine(
                     lastFinishReason = null
                 },
                 hasOutput = { text.isNotEmpty() || thinking.isNotEmpty() || calls.isNotEmpty() },
-                handleEvent = { event ->
-                    when (event) {
-                        is StreamEvent.TextDelta -> {
-                            text.append(event.text)
-                            emit(AgentEvent.Text(event.text))
-                        }
-                        is StreamEvent.ThinkingDelta -> {
-                            thinking.append(event.text)
-                            emit(AgentEvent.Thinking(event.text))
-                        }
-                        is StreamEvent.ToolCallReady -> calls += event.call
-                        is StreamEvent.ToolCallBatch -> calls += event.calls
-                        is StreamEvent.Batch -> event.events.forEach { nested ->
-                            when (nested) {
-                                is StreamEvent.TextDelta -> {
-                                    text.append(nested.text)
-                                    emit(AgentEvent.Text(nested.text))
-                                }
-                                is StreamEvent.ThinkingDelta -> {
-                                    thinking.append(nested.text)
-                                    emit(AgentEvent.Thinking(nested.text))
-                                }
-                                is StreamEvent.ToolCallReady -> calls += nested.call
-                                is StreamEvent.ToolCallBatch -> calls += nested.calls
-                                else -> {}
-                            }
-                        }
-                        is StreamEvent.Usage -> emit(
-                            AgentEvent.Usage(
-                                event.inputTokens, event.outputTokens,
-                                event.cachedInputTokens, event.cacheWriteTokens,
-                                config.model, config.name,
-                            )
-                        )
-                        is StreamEvent.Done -> lastFinishReason = event.finishReason
-                        else -> {}
-                    }
-                },
+                handleEvent = streamEventHandler,
                 retryReason = { f -> f.take(200) },
                 emitEvent = { emit(it) },
             )
+
+            // Dynamic vision degradation fallback: if provider rejected image input,
+            // strip images from working history and retry without failing the turn.
+            if (failure != null && isVisionError(failure) && working.any { it.imageData.isNotEmpty() }) {
+                val stripped = ContextHygiene.stripImages(working)
+                working.clear()
+                working.addAll(stripped)
+                failure = StreamRetrier.run(
+                    streamFor = {
+                        provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
+                    },
+                    onAttemptStart = {
+                        text = StringBuilder()
+                        thinking = StringBuilder()
+                        calls = mutableListOf()
+                        lastFinishReason = null
+                    },
+                    hasOutput = { text.isNotEmpty() || thinking.isNotEmpty() || calls.isNotEmpty() },
+                    handleEvent = streamEventHandler,
+                    retryReason = { f -> f.take(200) },
+                    emitEvent = { emit(it) },
+                )
+            }
 
             // A turn that produced reasoning but no answer and no tool calls is
             // NOT committed: replaying an empty assistant message would hand
@@ -1101,6 +1132,7 @@ class AgentEngine(
         if (older.isEmpty()) return null
 
         val summary = StringBuilder()
+        val olderClean = ContextHygiene.stripImages(older)
         val compactError = StreamRetrier.run(
             streamFor = {
                 provider.streamChat(
@@ -1108,7 +1140,7 @@ class AgentEngine(
                     "Summarize this coding-agent conversation compactly. Preserve: the user's goal, " +
                         "files created/modified and their paths, key decisions, pending work and next steps. " +
                         "Output plain notes only.",
-                    older, emptyList(),
+                    olderClean, emptyList(),
                     RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF),
                 )
             },
@@ -1440,5 +1472,13 @@ Rules:
         private val ANSWER_NUDGE =
             "Your previous reply ended without any visible answer: it was likely cut off " +
                 "mid-generation. Respond now with your actual answer (or the tool calls you intended)."
+
+        val VISION_ERROR_REGEX = Regex(
+            "image|vision|multimodal|inlineData|image_url|unsupported media|expected text only|does not support image",
+            RegexOption.IGNORE_CASE,
+        )
+
+        fun isVisionError(error: String): Boolean =
+            VISION_ERROR_REGEX.containsMatchIn(error)
     }
 }

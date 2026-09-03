@@ -40,6 +40,22 @@ fun reasoningCapable(modelId: String): Boolean {
     ).containsMatchIn(m)
 }
 
+/**
+ * Family-based vision-capability heuristic.
+ * Returns false for models known to reject multimodal/image input payloads.
+ */
+fun visionCapable(modelId: String): Boolean {
+    val m = modelId.lowercase()
+    if (m.contains("-vl") || m.contains("vision") || m.contains("omni") || m.contains("4o") ||
+        m.contains("gemini") || m.contains("claude") || m.contains("gpt-4-turbo")
+    ) {
+        return true
+    }
+    return !Regex(
+        "(^|/)(deepseek-(chat|coder|r1|reasoner|v[0-9])|qwen.*coder|o1-mini|codellama|mistral-(tiny|small|embed)|llama-.*-(?!.*vision))",
+    ).containsMatchIn(m)
+}
+
 /** Fetches the model catalog from a provider, also doubles as a connection test. */
 object ModelCatalog {
 
