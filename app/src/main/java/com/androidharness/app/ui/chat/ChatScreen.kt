@@ -316,10 +316,12 @@ fun ChatScreen(
         ContextUsageDialog(state = state, onDismiss = { showContext = false })
     }
     if (showModelPicker) {
+        val currentProviderId = state.activeProvider?.id ?: state.activeProviderId
+        val currentModel = state.effectiveModel ?: state.activeModel
         ModelPickerSheet(
             providers = state.providers,
-            activeProviderId = state.activeProviderId,
-            activeModel = state.activeModel,
+            activeProviderId = currentProviderId,
+            activeModel = currentModel,
             catalogs = state.catalogs,
             onDismiss = { showModelPicker = false },
             onSelect = viewModel::selectModel,
