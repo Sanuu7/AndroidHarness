@@ -834,10 +834,10 @@ fun ChatScreen(
                 pickerLabel = when {
                     currentProvider == null -> "Add a provider to get started"
                     state.dualPlanning && state.mode == AgentMode.PLAN ->
-                        "${currentProvider.name} · $currentModel (Plan)"
+                        "$currentModel (Plan)"
                     state.dualPlanning && state.mode == AgentMode.ACT ->
-                        "${currentProvider.name} · $currentModel (Exec)"
-                    else -> "${currentProvider.name} · $currentModel"
+                        "$currentModel (Exec)"
+                    else -> currentModel ?: currentProvider.name
                 },
                 mode = state.mode,
                 dualPlanning = state.dualPlanning,

@@ -162,13 +162,13 @@ internal fun MainHeader(
             }
 
             AnimatedVisibility(
-                visible = mode == AgentMode.PLAN,
+                visible = mode == AgentMode.PLAN || dualPlanning,
                 enter = fadeIn(fastEffectsSpec()) + scaleIn(fastEffectsSpec(), initialScale = 0.8f),
                 exit = fadeOut(fastEffectsSpec()) + scaleOut(fastEffectsSpec(), targetScale = 0.8f),
             ) {
-                IconButton(onClick = { onSetMode(AgentMode.ACT) }) {
+                IconButton(onClick = { if (dualPlanning) onToggleDualPlanning() else onSetMode(AgentMode.ACT) }) {
                     Icon(
-                        Icons.Outlined.EditNote,
+                        Icons.Outlined.ForkRight,
                         contentDescription = if (dualPlanning) "Dual planning on: switch to Act" else "Plan mode on: switch to Act",
                         tint = scheme.primary,
                     )
