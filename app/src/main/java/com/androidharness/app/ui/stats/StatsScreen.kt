@@ -108,6 +108,22 @@ fun StatsScreen(
     val byModel by container.sessions.usageByModelSince(cutoff)
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
+    // Window total at list prices: same per-row math as the By model card,
+    // summed, so the hero and the rows can never disagree. Null when no
+    // per-model rows exist (pre-attribution sessions), so no suffix shows.
+    val totalCost = remember(byModel) {
+        if (byModel.isEmpty()) {
+            null
+        } else {
+            byModel.sumOf { row ->
+                com.androidharness.app.llm.ModelPrices.estimate(
+                    row.model, row.inputTokens, row.outputTokens,
+                    row.cachedTokens, row.cacheWriteTokens,
+                ) ?: 0.0
+            }
+        }
+    }
+
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
@@ -149,7 +165,8 @@ fun StatsScreen(
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
-                        "total tokens · ${bundle.requests} requests · ${bundle.sessionCount} sessions",
+                        "total tokens · ${bundle.requests} requests · ${bundle.sessionCount} sessions" +
+                            (totalCost?.let { " · ≈ \$${"%.2f".format(it)}" } ?: ""),
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.padding(top = 2.dp),
