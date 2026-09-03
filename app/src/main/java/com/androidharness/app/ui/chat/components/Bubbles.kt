@@ -34,7 +34,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
@@ -43,6 +47,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.core.ImageRef
+import com.androidharness.app.core.LocalPortProbe
 import com.androidharness.app.core.WebPreviewTarget
 import com.androidharness.app.core.WebResourceExtractor
 import com.androidharness.app.core.WebTargetType
@@ -119,8 +124,14 @@ internal fun AssistantText(
     onOpenUrl: ((String) -> Unit)? = null,
     modifier: Modifier = Modifier,
 ) {
-    val primaryTarget = androidx.compose.runtime.remember(text, streaming) {
+    val primaryTarget = remember(text, streaming) {
         if (!streaming && text.isNotBlank()) WebResourceExtractor.findPrimaryPreviewTarget(text) else null
+    }
+    var targetLive by remember(text, streaming) { mutableStateOf<Boolean?>(null) }
+    if (showPreviewChip && primaryTarget != null && onOpenUrl != null) {
+        LaunchedEffect(text) {
+            targetLive = LocalPortProbe.isUrlLive(primaryTarget.urlOrPath)
+        }
     }
 
     Column(modifier = modifier) {
@@ -149,7 +160,7 @@ internal fun AssistantText(
                 }
             }
 
-            if (showPreviewChip && primaryTarget != null && onOpenUrl != null) {
+            if (showPreviewChip && primaryTarget != null && targetLive == true && onOpenUrl != null) {
                 Spacer(Modifier.size(6.dp))
                 WebPreviewActionChip(
                     target = primaryTarget,

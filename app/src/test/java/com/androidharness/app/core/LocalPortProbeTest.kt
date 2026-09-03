@@ -34,6 +34,16 @@ class LocalPortProbeTest {
     }
 
     @Test
+    fun `portOfUrl extracts explicit and default ports`() {
+        assertEquals(3000, LocalPortProbe.portOfUrl("http://localhost:3000"))
+        assertEquals(5173, LocalPortProbe.portOfUrl("http://localhost:5173/dashboard"))
+        assertEquals(8080, LocalPortProbe.portOfUrl("127.0.0.1:8080"))
+        assertEquals(80, LocalPortProbe.portOfUrl("http://localhost"))
+        assertEquals(443, LocalPortProbe.portOfUrl("https://localhost/app"))
+        assertEquals(null, LocalPortProbe.portOfUrl("https://example.com/page"))
+    }
+
+    @Test
     fun `normalizeLocalUrl formats ports and urls correctly`() {
         assertEquals("http://localhost:3000", LocalPortProbe.normalizeLocalUrl("3000"))
         assertEquals("http://localhost:5173", LocalPortProbe.normalizeLocalUrl("localhost:5173"))

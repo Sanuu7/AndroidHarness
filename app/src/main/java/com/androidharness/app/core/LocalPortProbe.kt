@@ -66,6 +66,31 @@ object LocalPortProbe {
     }
 
     /**
+     * Extracts the port from a localhost URL or bare host:port string.
+     * Falls back to the scheme default (80/443) when no explicit port;
+     * null when no port can be determined.
+     */
+    fun portOfUrl(url: String): Int? {
+        val trimmed = url.trim()
+        try {
+            val port = java.net.URI(trimmed).port
+            if (port in 1..65535) return port
+        } catch (_: Exception) {
+        }
+        extractPortsFromText(trimmed).firstOrNull()?.let { return it }
+        if (!isLocalhostUrl(trimmed)) return null
+        return if (trimmed.lowercase().startsWith("https")) 443 else 80
+    }
+
+    /**
+     * True when the URL's port currently accepts TCP connections on loopback.
+     */
+    suspend fun isUrlLive(url: String, timeoutMs: Int = 60): Boolean {
+        val port = portOfUrl(url) ?: return false
+        return withContext(Dispatchers.IO) { isPortOpen(port, timeoutMs) }
+    }
+
+    /**
      * Normalizes a localhost URL or port string to standard `http://localhost:<port>/` format.
      */
     fun normalizeLocalUrl(input: String): String {
