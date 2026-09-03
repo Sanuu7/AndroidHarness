@@ -588,8 +588,18 @@ class ReadImageTool(
                 )
             }
 
-            // 2. Otherwise resolve against workspace
-            val node = ctx.workspace.resolve(path)
+            // 2. Check if path or filename points to .harness/screenshots/
+            val candidatePath = if (!path.contains('/') && !path.contains('\\')) {
+                ".harness/screenshots/$path"
+            } else {
+                path
+            }
+            val resolvedNode = runCatching { ctx.workspace.resolve(candidatePath) }.getOrNull()
+            val node = if (resolvedNode != null && resolvedNode.exists && resolvedNode.isFile) {
+                resolvedNode
+            } else {
+                ctx.workspace.resolve(path)
+            }
             if (!node.exists) throw ToolFailure("Image file does not exist: $path")
             if (!node.isFile) throw ToolFailure("Not a file: $path")
 
