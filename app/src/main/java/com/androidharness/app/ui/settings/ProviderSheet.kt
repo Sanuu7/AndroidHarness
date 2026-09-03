@@ -31,14 +31,17 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -154,20 +157,21 @@ internal fun ProviderSheetContent(
     var entries by remember { mutableStateOf<List<ModelEntry>?>(null) }
     var fetchError by remember { mutableStateOf<String?>(null) }
     var fetching by remember { mutableStateOf(false) }
+    var catalogSyncing by remember { mutableStateOf(false) }
 
-    val devProviders = remember {
-        val curatedHosts = ProviderBrands.filterNotNull().map {
-            it.baseUrl.substringAfter("://").substringBefore('/').lowercase()
-        }
-        val curatedIds = setOf(
-            "openrouter", "anthropic", "google", "openai", "groq",
-            "deepseek", "togetherai", "mistral",
-        )
-        ModelsDev.providers().filter { info ->
-            ModelsDev.protocolFor(info.npm) != null &&
-                info.id !in curatedIds &&
-                (info.api == null ||
-                    curatedHosts.none { it in info.api.substringAfter("://").lowercase() })
+    // Reactive directory: updates when a background catalog refresh lands,
+    // so the count here always matches the provider-manager toast.
+    val catalogProviders by ModelsDev.providersFlow.collectAsStateWithLifecycle(initialValue = ModelsDev.providers())
+    val devProviders = remember(catalogProviders) {
+        ModelsDev.speakableProviders(catalogProviders)
+    }
+    // Auto-sync on open when adding: the user always browses a fresh list.
+    val context = LocalContext.current
+    LaunchedEffect(existing) {
+        if (existing == null && !catalogSyncing) {
+            catalogSyncing = true
+            ModelsDev.refresh(context, force = true)
+            catalogSyncing = false
         }
     }
 
@@ -262,6 +266,14 @@ internal fun ProviderSheetContent(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                 ) {
+                    if (catalogSyncing) {
+                        Text(
+                            "Updating model catalog…",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        Spacer(Modifier.height(6.dp))
+                    }
                     if (devProviders.isNotEmpty()) {
                         OutlinedTextField(
                             value = providerQuery,
@@ -554,10 +566,10 @@ private fun ModelPickRow(
 }
 
 /**
- * The searchable provider directory: curated brands under "Popular", every
- * models.dev provider the app can speak to under "All providers", then
- * "Custom endpoint". Divider-separated tap targets, selection shown with a
- * trailing check.
+ * The searchable provider directory: "Custom endpoint" first, then curated
+ * brands under "Popular", then every models.dev provider the app can speak
+ * to under "All providers". Divider-separated tap targets, selection shown
+ * with a trailing check.
  */
 @Composable
 private fun ProviderDirectory(
@@ -583,6 +595,20 @@ private fun ProviderDirectory(
             .heightIn(max = 280.dp)
             .verticalScroll(rememberScrollState()),
     ) {
+        if (q.isBlank() || "custom".contains(q)) {
+            ProviderRow(
+                title = "Custom endpoint",
+                subtitle = "Bring your own server URL",
+                selected = customSelected,
+                onClick = onSelectCustom,
+            )
+            if (curated.isNotEmpty() || dev.isNotEmpty()) {
+                HorizontalDivider(
+                    color = scheme.outlineVariant.copy(alpha = 0.35f),
+                    modifier = Modifier.padding(vertical = 4.dp),
+                )
+            }
+        }
         if (curated.isNotEmpty()) {
             DirectoryLabel(if (q.isBlank()) "Popular" else "Brands")
             curated.forEach { b ->
@@ -604,20 +630,6 @@ private fun ProviderDirectory(
                     onClick = { onSelectDev(info) },
                 )
             }
-        }
-        if (q.isBlank() || "custom".contains(q)) {
-            if (curated.isNotEmpty() || dev.isNotEmpty()) {
-                HorizontalDivider(
-                    color = scheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = 4.dp),
-                )
-            }
-            ProviderRow(
-                title = "Custom endpoint",
-                subtitle = "Bring your own server URL",
-                selected = customSelected,
-                onClick = onSelectCustom,
-            )
         }
     }
 }

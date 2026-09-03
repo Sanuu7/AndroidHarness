@@ -2,6 +2,9 @@ package com.androidharness.app.llm
 
 import android.content.Context
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.booleanOrNull
@@ -83,6 +86,43 @@ object ModelsDev {
     @Volatile private var providerInfos: List<ProviderInfo> = emptyList()
     @Volatile private var loaded = false
 
+    /**
+     * Hot-swap observable: every [load]/[refresh]/[replaceForTesting] pushes
+     * the fresh directory here so Compose screens recompute without reopening.
+     */
+    private val _providersFlow = MutableStateFlow<List<ProviderInfo>>(emptyList())
+    val providersFlow: StateFlow<List<ProviderInfo>> = _providersFlow.asStateFlow()
+
+    /**
+     * Subset of [ProviderInfo] the app can actually speak to: known protocol
+     * plus not shadowed by a curated brand. Shared so the update toast in the
+     * provider manager and the add-provider directory count the same rows.
+     */
+    fun speakableProviders(all: List<ProviderInfo> = providers()): List<ProviderInfo> {
+        val curatedHosts = setOf(
+            "openrouter.ai", "api.anthropic.com", "generativelanguage.googleapis.com",
+            "api.openai.com", "api.groq.com", "api.deepseek.com", "api.together.xyz",
+            "api.mistral.ai", "127.0.0.1",
+        )
+        val curatedIds = setOf(
+            "openrouter", "anthropic", "google", "openai", "groq",
+            "deepseek", "togetherai", "mistral",
+        )
+        return all.filter { info ->
+            protocolFor(info.npm) != null &&
+                info.id !in curatedIds &&
+                (info.api == null ||
+                    curatedHosts.none {
+                        it in info.api.substringAfter("://").lowercase()
+                    })
+        }
+    }
+
+    private fun publish(infos: List<ProviderInfo>) {
+        providerInfos = infos
+        _providersFlow.value = infos
+    }
+
     /** models.dev provider key for an endpoint, or null when unmapped. */
     fun providerKeyFor(baseUrl: String?): String? {
         val host = baseUrl?.lowercase() ?: return null
@@ -143,7 +183,7 @@ object ModelsDev {
         if (!file.exists()) return
         val parsed = runCatching { parse(file.readText()) }.getOrNull() ?: return
         entries = parsed.entries
-        providerInfos = parsed.providers
+        publish(parsed.providers)
     }
 
     /**
@@ -164,7 +204,7 @@ object ModelsDev {
                     val parsed = parse(body)
                     file.writeText(body)
                     entries = parsed.entries
-                    providerInfos = parsed.providers
+                    publish(parsed.providers)
                     null
                 }
             } catch (e: Exception) {
@@ -286,7 +326,7 @@ object ModelsDev {
         providers: List<ProviderInfo> = emptyList(),
     ) {
         entries = map
-        providerInfos = providers
+        publish(providers)
         loaded = true
     }
 }

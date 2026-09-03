@@ -144,4 +144,40 @@ class ModelsDevTest {
         assertNull(ModelsDev.protocolFor("@ai-sdk/amazon-bedrock"))
         assertEquals(com.androidharness.app.llm.ProviderType.ANTHROPIC, ModelsDev.protocolFor("@ai-sdk/anthropic"))
     }
+
+    @Test
+    fun `speakableProviders matches the add-provider directory filter`() {
+        val parsed = ModelsDev.parse(sample)
+        // openai/anthropic/openrouter are all curated brands, none speakable.
+        assertEquals(emptyList<String>(), ModelsDev.speakableProviders(parsed.providers).map { it.id })
+        // A gateway with a known protocol and no curated host survives.
+        val extra = ModelsDev.ProviderInfo(
+            id = "novagateway",
+            name = "Nova Gateway",
+            api = "https://api.novagateway.example.com/v1",
+            npm = "@ai-sdk/openai-compatible",
+            modelCount = 3,
+        )
+        assertEquals(
+            listOf("novagateway"),
+            ModelsDev.speakableProviders(parsed.providers + extra).map { it.id },
+        )
+    }
+
+    @Test
+    fun `providersFlow publishes load and replaceForTesting`() {
+        ModelsDev.replaceForTesting(
+            ModelsDev.parse(sample).entries,
+            ModelsDev.parse(sample).providers,
+        )
+        try {
+            assertEquals(
+                ModelsDev.providers().map { it.id },
+                ModelsDev.providersFlow.value.map { it.id },
+            )
+        } finally {
+            ModelsDev.replaceForTesting(emptyMap())
+        }
+        assertEquals(emptyList<String>(), ModelsDev.providersFlow.value.map { it.id })
+    }
 }
