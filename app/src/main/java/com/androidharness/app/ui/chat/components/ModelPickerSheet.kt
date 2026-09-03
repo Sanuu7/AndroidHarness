@@ -228,7 +228,6 @@ fun ModelPickerSheet(
                             entry.id == (if (browseProviderId == null) effective else listedModel)
                         ModelRow(
                             id = entry.id,
-                            default = entry.id == provider.model,
                             thinking = entry.reasoning ?: reasoningCapable(entry.id),
                             known = entry.reasoning != null,
                             selected = isSelected,
@@ -263,7 +262,6 @@ fun ModelPickerSheet(
 @Composable
 private fun ModelRow(
     id: String,
-    default: Boolean,
     thinking: Boolean,
     known: Boolean,
     selected: Boolean,
@@ -287,7 +285,6 @@ private fun ModelRow(
                 overflow = TextOverflow.Ellipsis,
             )
             val sub = listOfNotNull(
-                if (default) "saved default" else null,
                 if (thinking) "thinking" else null,
                 ctx,
             ).joinToString(" · ")
