@@ -39,6 +39,25 @@ class FileToolsTest {
             e.message ?: ""
         }
 
+    @Test
+    fun `malformed globs return a clean error`() = runBlocking {
+        for (pattern in listOf("*.h[tm][", "[", "{a,b", "**/*[")) {
+            val message = runExpectingFailure(SearchFilesTool(), "pattern" to pattern)
+            assertEquals("Invalid glob pattern: \"$pattern\". Check brackets, braces, and escapes.", message)
+        }
+        val message = runExpectingFailure(GrepTool(), "pattern" to "text", "include" to "[")
+        assertTrue(message, message.startsWith("Invalid glob pattern:"))
+    }
+
+    @Test
+    fun `valid character classes and recursive globs still match`() = runBlocking {
+        file("index.htm").writeText("text")
+        file("nested").mkdirs()
+        file("nested/index.htm").writeText("text")
+        val result = run(SearchFilesTool(), "pattern" to "**/*.ht[ml]")
+        assertEquals(setOf("index.htm", "nested/index.htm"), result.output.lines().toSet())
+    }
+
     // --- splitLines (POSIX line semantics) -----------------------------------
 
     @Test

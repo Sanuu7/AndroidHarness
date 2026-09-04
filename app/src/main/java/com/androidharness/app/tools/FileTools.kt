@@ -413,6 +413,12 @@ class EditFileTool : Tool {
         }
 }
 
+internal fun globMatcher(pattern: String): java.nio.file.PathMatcher = try {
+    FileSystems.getDefault().getPathMatcher("glob:$pattern")
+} catch (_: IllegalArgumentException) {
+    throw ToolFailure("Invalid glob pattern: \"$pattern\". Check brackets, braces, and escapes.")
+}
+
 class SearchFilesTool : Tool {
     override val name = "search_files"
     override val description =
@@ -436,10 +442,10 @@ class SearchFilesTool : Tool {
             // additionally match against the workspace-relative path. When
             // a pattern starts with "**/" also match against the file name directly
             // so root-level files match "**/*.ext".
-            val nameMatcher = FileSystems.getDefault().getPathMatcher("glob:$pattern")
+            val nameMatcher = globMatcher(pattern)
             val rootMatcher = if (pattern.startsWith("**/")) {
                 runCatching {
-                    FileSystems.getDefault().getPathMatcher("glob:${pattern.removePrefix("**/")}")
+                    globMatcher(pattern.removePrefix("**/"))
                 }.getOrNull()
             } else null
             val matches = mutableListOf<String>()
@@ -494,7 +500,7 @@ class GrepTool : Tool {
             val path = args["path"]?.jsonPrimitive?.content ?: "."
             val include = args["include"]?.jsonPrimitive?.content
             val includeMatcher = include?.let {
-                FileSystems.getDefault().getPathMatcher("glob:$it")
+                globMatcher(it)
             }
 
             val matches = mutableListOf<String>()

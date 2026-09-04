@@ -14,6 +14,80 @@ import org.junit.Test
  */
 class GitCommandTest {
 
+    @get:org.junit.Rule
+    val tmp = org.junit.rules.TemporaryFolder()
+
+    private fun shell(command: String): Pair<Int, String> {
+        val process = ProcessBuilder("bash", "-c", command).directory(tmp.root)
+            .redirectErrorStream(true).start()
+        val output = process.inputStream.bufferedReader().readText()
+        return process.waitFor() to output
+    }
+
+    private fun success(command: String): String {
+        val (code, output) = shell(command)
+        assertEquals(output, 0, code)
+        return output
+    }
+
+    @Test
+    fun `commit runs in bash and removes tracked runtime artifacts`() {
+        success(gitCmd("init", "config user.name Test", "config user.email test@example.com"))
+        tmp.root.resolve(".harness").mkdirs()
+        val artifact = tmp.root.resolve(".harness/screenshot.png").apply { writeText("private") }
+        tmp.root.resolve("file.txt").writeText("first")
+        success(gitCmd("add -A", "commit -m initial"))
+        tmp.root.resolve("file.txt").writeText("second")
+        success(gitCommitCmd("don't expand $(false)"))
+        assertEquals("file.txt", success(gitCmd("ls-files")).trim())
+        assertTrue(artifact.exists())
+        assertEquals("don't expand $(false)", success(gitCmd("log -1 --format=%s")).trim())
+    }
+
+    @Test
+    fun `first commit works with no tracked runtime directory`() {
+        success(gitCmd("init", "config user.name Test", "config user.email test@example.com"))
+        tmp.root.resolve("file.txt").writeText("first")
+        tmp.root.resolve(".harness").mkdirs()
+        tmp.root.resolve(".harness/private.txt").writeText("private")
+        success(gitCommitCmd("initial"))
+        assertEquals("file.txt", success(gitCmd("ls-files")).trim())
+    }
+
+    @Test
+    fun `log explains a directory with no history and rejects an outside path`() {
+        success(gitCmd("init", "config user.name Test", "config user.email test@example.com"))
+        tmp.root.resolve("file.txt").writeText("first")
+        success(gitCommitCmd("initial"))
+        tmp.root.resolve("untracked").mkdirs()
+        val (code, output) = shell(gitLogCmd(20, "untracked", false))
+        val result = gitLogResult(buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+            code, false, output, "", com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+        )), "untracked")
+        assertTrue(result.ok)
+        assertTrue(result.output, result.output.contains("No commit history found for 'untracked'"))
+        val (outsideCode, outsideOutput) = shell(gitLogCmd(20, tmp.root.parentFile.path, false))
+        val outside = buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+            outsideCode, false, "", outsideOutput, com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+        ))
+        assertFalse(outside.ok)
+        assertFalse(outside.output, outside.output.contains("fatal:"))
+    }
+
+    @Test
+    fun `non repository errors are actionable`() {
+        for (command in listOf(gitCmd("status"), gitLogCmd(20, null, false), gitCmd("diff"))) {
+            val (code, output) = shell(command)
+            val result = buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+                code, false, "", output, com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+            ))
+            assertFalse(result.ok)
+            assertTrue(result.output, result.output.contains("git init"))
+            assertFalse(result.output, result.output.contains("fatal:"))
+            assertFalse(tmp.root.resolve(".git").exists())
+        }
+    }
+
     /** Prefix every git invocation must carry (see GitTools.GIT_BASE_ARGS). */
     private val base = "git -c 'safe.directory=*' -c gc.auto=0 -c maintenance.auto=false"
 

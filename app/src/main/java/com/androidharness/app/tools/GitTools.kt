@@ -35,6 +35,12 @@ internal fun gitCmd(vararg steps: String): String =
 /** Runtime directory whose artifacts must never be swept into a commit. */
 private const val HARNESS_DIR = ".harness"
 
+internal fun gitCommitCmd(message: String): String = gitCmd(
+    "rm -r --cached --ignore-unmatch ${":(top)$HARNESS_DIR".shellQuote()}",
+    "add -A -- ${":(top,exclude)$HARNESS_DIR".shellQuote()} ${":(top,exclude)$HARNESS_DIR/**".shellQuote()}",
+    "commit -m ${message.shellQuote()}",
+)
+
 internal fun gitLogCmd(limit: Int, path: String?, stat: Boolean): String =
     gitCmd(
         buildString {
@@ -44,6 +50,13 @@ internal fun gitLogCmd(limit: Int, path: String?, stat: Boolean): String =
             if (!path.isNullOrBlank()) append(" -- ").append(path.shellQuote())
         },
     )
+
+internal fun gitLogResult(result: ToolResult, path: String?): ToolResult {
+    if (!result.ok || !result.output.endsWith("(no output)")) return result
+    val message = if (path.isNullOrBlank()) "No commit history found."
+        else "No commit history found for '$path'. The path filters workspace history; it does not select a repository."
+    return result.copy(output = result.output.removeSuffix("(no output)") + message)
+}
 
 internal fun gitShowCmd(hash: String, noPatch: Boolean): String =
     gitCmd(
@@ -129,37 +142,7 @@ private suspend fun runGit(
         )
     }
     if (res.exitCode != 0 && fullOutput.contains("not a git repository", ignoreCase = true)) {
-        // A fresh workspace is not yet a repo: init one in place and retry,
-        // so the git tools work everywhere instead of dead-ending there
-        // (stress-test C4). Ensure .harness/ is excluded so internal runtime
-        // files (e.g. screenshots) never leak into the repository.
-        val initRes = router.run(
-            gitCmd(
-                "init",
-                "config --local core.excludesFile .git/info/exclude",
-            ),
-            cwd,
-            timeoutMs = 30_000,
-            maxOutput = 2_000,
-        )
-        if (initRes.exitCode == 0) {
-            router.run(
-                "mkdir -p .git/info && grep -q '^$HARNESS_DIR/' .git/info/exclude 2>/dev/null || printf '\\n%s/\\n' '$HARNESS_DIR' >> .git/info/exclude",
-                cwd,
-                timeoutMs = 10_000,
-                maxOutput = 500,
-            )
-            val retry = router.run(command, cwd, timeoutMs = 60_000, maxOutput = 24_000)
-            return buildGitResult(
-                retry,
-                note = "[note: the workspace was not a git repository; initialized one in place]",
-            )
-        }
-        return ToolResult(
-            false,
-            "The workspace is not a git repository and initializing one failed:\n" +
-                (initRes.rawOutput.trimEnd() + "\n" + initRes.rawStderr.trimEnd()).trim(),
-        )
+        return buildGitResult(res)
     }
     // Defense in depth: -c should make dubious ownership impossible, but an
     // exotic setup that still hits it gets '*' persisted into the global
@@ -183,11 +166,16 @@ private suspend fun runGit(
     return buildGitResult(res)
 }
 
-private fun buildGitResult(
+internal fun buildGitResult(
     res: com.androidharness.app.data.env.ShellRunResult,
     note: String? = null,
 ): ToolResult {
     val full = "${res.rawOutput}\n${res.rawStderr}"
+    if (res.exitCode != 0 && (full.contains("not a git repository", ignoreCase = true) ||
+            full.contains("outside repository", ignoreCase = true))) {
+        return ToolResult(false, "The workspace or requested path is not in a Git repository. " +
+            "Select the repository workspace, or run git init in the intended folder first.")
+    }
     if (res.exitCode != 0 && full.contains("does not have any commits yet", ignoreCase = true)) {
         return ToolResult(
             ok = true,
@@ -302,10 +290,7 @@ class GitCommitTool(
         withContext(Dispatchers.IO) {
             val message = args["message"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: message")
-            val unstageHarnessCmd = "rm -r --cached --ignore-unmatch :/(top)$HARNESS_DIR 2>/dev/null || true"
-            val stageCmd =
-                "add -A -- ${":(top,exclude)$HARNESS_DIR".shellQuote()} ${":(top,exclude)$HARNESS_DIR/**".shellQuote()}"
-            val commitCommand = gitCmd(unstageHarnessCmd, stageCmd, "commit -m ${message.shellQuote()}")
+            val commitCommand = gitCommitCmd(message)
             val res = runGitWithRetry(router, linuxEnv, ctx, commitCommand)
             if (!res.ok && isIdentityUnknown(res.output)) {
                 val repoConfig = runGitWithRetry(
@@ -356,7 +341,7 @@ class GitLogTool(
     override val parametersSchema = Schema.obj(
         mapOf(
             "limit" to Schema.integer("Maximum number of commits (default 20, max 100)."),
-            "path" to Schema.string("Optional file path to only show commits touching it."),
+            "path" to Schema.string("Optional file or directory filter within the workspace repository; does not select another repository."),
             "stat" to Schema.string("Pass \"true\" to append a per-commit change summary (--stat)."),
         ),
     )
@@ -367,7 +352,8 @@ class GitLogTool(
             val limit = args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: 20
             val path = args["path"]?.jsonPrimitive?.content
             val stat = args["stat"]?.jsonPrimitive?.content == "true"
-            runGitWithRetry(router, linuxEnv, ctx, gitLogCmd(limit, path, stat))
+            val result = runGitWithRetry(router, linuxEnv, ctx, gitLogCmd(limit, path, stat))
+            gitLogResult(result, path)
         }
 }
 
