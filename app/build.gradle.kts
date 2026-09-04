@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,8 +8,19 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
-fun publicConfig(name: String): String = providers.gradleProperty(name)
-    .orElse(providers.environmentVariable(name)).getOrElse("")
+fun publicConfig(name: String): String {
+    val localProp = runCatching {
+        val f = rootProject.file("local.properties")
+        if (f.exists()) {
+            val props = Properties()
+            f.inputStream().use { props.load(it) }
+            props.getProperty(name)
+        } else null
+    }.getOrNull()
+    return providers.gradleProperty(name)
+        .orElse(providers.environmentVariable(name))
+        .getOrElse(localProp ?: "")
+}
 fun quotedConfig(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {

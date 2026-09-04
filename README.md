@@ -87,6 +87,19 @@ Requires JDK 17 and the Android SDK.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
+### GitHub OAuth Setup (Optional)
+
+Browser login is disabled by default until configured. To enable it for your own build:
+
+1. Register an OAuth App on GitHub:
+   - Authorization callback URL: `com.androidharness.app.debug.oauth://github/callback` (or `com.androidharness.app.oauth://github/callback` for release)
+2. Deploy the backend token exchange service in `backend/github-oauth` (Node, Docker, or Cloudflare Worker).
+3. Set your credentials in `local.properties` (or environment variables):
+   ```properties
+   GITHUB_CLIENT_ID=your_client_id
+   GITHUB_AUTH_BACKEND=https://your-oauth-worker-domain.workers.dev
+   ```
+
 Run the unit tests with:
 
 ```bash
