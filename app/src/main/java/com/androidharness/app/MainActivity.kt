@@ -75,6 +75,7 @@ class MainActivity : FragmentActivity() {
         // MCP OAuth redirect when this activity is freshly created for it.
         handleSessionIntent(intent)
         handleMcpOAuth(intent)
+        intent?.data?.let { container.githubOAuth.complete(it) }
         handleShareIntent(intent)
 
         setContent {
@@ -238,6 +239,7 @@ class MainActivity : FragmentActivity() {
         super.onNewIntent(intent)
         handleSessionIntent(intent)
         handleMcpOAuth(intent)
+        intent?.data?.let { container.githubOAuth.complete(it) }
         handleShareIntent(intent)
     }
 

@@ -38,7 +38,7 @@ Status: early alpha.
 - Per chat Files changed tracking: GitHub style badges and diffs for every file the agent touches, with rewind.
 
 **GitHub built in**
-- Sign in once in Settings: the agent's git push and pull, the bundled gh CLI, and GitHub API requests all authenticate automatically, and the login survives toolchain reinstalls.
+- Continue with GitHub in Settings: authorize in your browser without creating or pasting a personal access token. Git push/pull, the bundled gh CLI, and GitHub API requests reuse the login, with automatic token renewal. Publisher setup: [GitHub OAuth backend](backend/github-oauth/README.md).
 - doctor --github checks the token, git transport, and the free plan's hidden protection limits in one command.
 
 **Shell tiers, not a sandbox hack**

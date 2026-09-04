@@ -1,0 +1,7 @@
+{
+  "name": "androidharness-github-oauth",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22" },
+  "scripts": { "start": "node server.mjs", "start:local": "node --env-file=.env server.mjs", "test": "node --test server.test.mjs" }
+}

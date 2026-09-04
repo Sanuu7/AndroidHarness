@@ -6,6 +6,10 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+fun publicConfig(name: String): String = providers.gradleProperty(name)
+    .orElse(providers.environmentVariable(name)).getOrElse("")
+fun quotedConfig(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
+
 android {
     namespace = "com.androidharness.app"
     compileSdk = 37
@@ -16,6 +20,8 @@ android {
         targetSdk = 36
         versionCode = 10
         versionName = "0.8-alpha"
+        buildConfigField("String", "GITHUB_CLIENT_ID", quotedConfig(publicConfig("GITHUB_CLIENT_ID")))
+        buildConfigField("String", "GITHUB_AUTH_BACKEND", quotedConfig(publicConfig("GITHUB_AUTH_BACKEND")))
     }
 
     signingConfigs {
@@ -66,6 +72,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true
         compose = true
         aidl = true
     }

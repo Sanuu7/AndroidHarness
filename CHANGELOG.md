@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+
+- Replace GitHub token entry with browser OAuth login, PKCE and state verification, encrypted pending-login recovery, automatic token renewal, and account switching. Existing credentials remain usable.
+- Add a small configurable GitHub token-exchange backend and publisher setup guide. Login requires OAuth registration and an HTTPS backend; unconfigured builds explain that setup is pending.
+
 ## 0.8-alpha (2026-09-04)
 
 ### Added

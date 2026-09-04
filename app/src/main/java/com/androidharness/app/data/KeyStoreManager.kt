@@ -45,9 +45,15 @@ class KeyStoreManager(context: Context) {
         prefs.edit().remove(providerId).apply()
     }
 
-    /** GitHub PAT used for push/PR/private-repo access from the toolchain. */
+    /** GitHub access token used for push/PR/private-repo access from the toolchain. */
     fun putGitHubToken(token: String) {
         prefs.edit().putString(KEY_GITHUB, token.trim()).apply()
+    }
+
+    /** Commit the token pair together: a rotated refresh token must not be lost. */
+    fun putGitHubOAuth(token: String, login: String, refreshJson: String?) {
+        check(prefs.edit().putString(KEY_GITHUB, token).putString(KEY_GITHUB_LOGIN, login)
+            .putString("github_oauth_refresh", refreshJson).commit()) { "Could not save GitHub credentials" }
     }
 
     fun githubToken(): String? = prefs.getString(KEY_GITHUB, null)?.trim()?.ifBlank { null }
