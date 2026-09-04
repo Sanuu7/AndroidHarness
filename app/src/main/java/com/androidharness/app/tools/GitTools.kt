@@ -5,6 +5,7 @@ import com.androidharness.app.data.env.ShellTierRouter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -47,11 +48,8 @@ internal fun gitLogCmd(limit: Int, path: String?, stat: Boolean): String =
 internal fun gitShowCmd(hash: String, noPatch: Boolean): String =
     gitCmd(
         buildString {
-            append("show")
-            // -s BEFORE --stat: --no-patch suppresses the stat in any position,
-            // while "show -s --stat" keeps message + stat (verified on git 2.55).
-            if (noPatch) append(" -s")
-            append(" --stat")
+            append("show --stat")
+            if (noPatch) append(" -s") else append(" --patch")
             append(' ').append(hash.trim().shellQuote())
         },
     )
@@ -133,9 +131,24 @@ private suspend fun runGit(
     if (res.exitCode != 0 && fullOutput.contains("not a git repository", ignoreCase = true)) {
         // A fresh workspace is not yet a repo: init one in place and retry,
         // so the git tools work everywhere instead of dead-ending there
-        // (stress-test C4).
-        val initRes = router.run(gitCmd("init"), cwd, timeoutMs = 30_000, maxOutput = 2_000)
+        // (stress-test C4). Ensure .harness/ is excluded so internal runtime
+        // files (e.g. screenshots) never leak into the repository.
+        val initRes = router.run(
+            gitCmd(
+                "init",
+                "config --local core.excludesFile .git/info/exclude",
+            ),
+            cwd,
+            timeoutMs = 30_000,
+            maxOutput = 2_000,
+        )
         if (initRes.exitCode == 0) {
+            router.run(
+                "mkdir -p .git/info && grep -q '^$HARNESS_DIR/' .git/info/exclude 2>/dev/null || printf '\\n%s/\\n' '$HARNESS_DIR' >> .git/info/exclude",
+                cwd,
+                timeoutMs = 10_000,
+                maxOutput = 500,
+            )
             val retry = router.run(command, cwd, timeoutMs = 60_000, maxOutput = 24_000)
             return buildGitResult(
                 retry,
@@ -173,23 +186,36 @@ private suspend fun runGit(
 private fun buildGitResult(
     res: com.androidharness.app.data.env.ShellRunResult,
     note: String? = null,
-): ToolResult = ToolResult(
-    ok = !res.timedOut && res.exitCode == 0,
-    // trimEnd kills the trailing newline that used to render as a stray blank line.
-    output = buildString {
-        val header = note ?: res.note
-        if (header != null) append(header).append('\n')
-        val text = res.rawOutput.trimEnd()
-        if (text.isNotEmpty()) {
-            append("--- stdout ---\n").append(text).append('\n')
-        }
-        val err = res.rawStderr.trimEnd()
-        if (err.isNotEmpty()) {
-            append("--- stderr ---\n").append(err)
-        }
-        if (text.isEmpty() && err.isEmpty()) append("(no output)")
-    }.trimEnd(),
-)
+): ToolResult {
+    val full = "${res.rawOutput}\n${res.rawStderr}"
+    if (res.exitCode != 0 && full.contains("does not have any commits yet", ignoreCase = true)) {
+        return ToolResult(
+            ok = true,
+            output = buildString {
+                val header = note ?: res.note
+                if (header != null) append(header).append('\n')
+                append("No commits yet (repository is empty).")
+            }.trimEnd(),
+        )
+    }
+    return ToolResult(
+        ok = !res.timedOut && res.exitCode == 0,
+        // trimEnd kills the trailing newline that used to render as a stray blank line.
+        output = buildString {
+            val header = note ?: res.note
+            if (header != null) append(header).append('\n')
+            val text = res.rawOutput.trimEnd()
+            if (text.isNotEmpty()) {
+                append("--- stdout ---\n").append(text).append('\n')
+            }
+            val err = res.rawStderr.trimEnd()
+            if (err.isNotEmpty()) {
+                append("--- stderr ---\n").append(err)
+            }
+            if (text.isEmpty() && err.isEmpty()) append("(no output)")
+        }.trimEnd(),
+    )
+}
 
 private suspend fun runGitWithRetry(
     router: ShellTierRouter,
@@ -276,9 +302,10 @@ class GitCommitTool(
         withContext(Dispatchers.IO) {
             val message = args["message"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: message")
+            val unstageHarnessCmd = "rm -r --cached --ignore-unmatch :/(top)$HARNESS_DIR 2>/dev/null || true"
             val stageCmd =
-                "add -A -- ${":(exclude)$HARNESS_DIR".shellQuote()} ${":(exclude)$HARNESS_DIR/**".shellQuote()}"
-            val commitCommand = gitCmd(stageCmd, "commit -m ${message.shellQuote()}")
+                "add -A -- ${":(top,exclude)$HARNESS_DIR".shellQuote()} ${":(top,exclude)$HARNESS_DIR/**".shellQuote()}"
+            val commitCommand = gitCmd(unstageHarnessCmd, stageCmd, "commit -m ${message.shellQuote()}")
             val res = runGitWithRetry(router, linuxEnv, ctx, commitCommand)
             if (!res.ok && isIdentityUnknown(res.output)) {
                 val repoConfig = runGitWithRetry(
@@ -363,7 +390,8 @@ class GitShowTool(
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
         withContext(Dispatchers.IO) {
             val hash = args["hash"]?.jsonPrimitive?.content?.trim() ?: "HEAD"
-            val noPatch = args["no_patch"]?.jsonPrimitive?.content == "true"
+            val noPatch = args["no_patch"]?.jsonPrimitive?.booleanOrNull
+                ?: (args["no_patch"]?.jsonPrimitive?.content?.equals("true", ignoreCase = true) == true)
             runGitWithRetry(router, linuxEnv, ctx, gitShowCmd(hash, noPatch))
         }
 }

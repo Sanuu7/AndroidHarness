@@ -232,6 +232,15 @@ class BrowserToolsTest {
     }
 
     @Test
+    fun `normalize workspace path preserves query and fragment suffix`() {
+        val (clean, suffix) = BrowserController.splitLocalTarget("index.html?v=2#details")
+        assertEquals("index.html", clean)
+        assertEquals("?v=2#details", suffix)
+        assertEquals("index.html", BrowserController.normalizeWorkspacePath("index.html?v=2#details", "/workspace"))
+        assertEquals("qa-browser.html", BrowserController.normalizeWorkspacePath("qa-browser.html#anchor-test", "/workspace"))
+    }
+
+    @Test
     fun `tool classes are loadable`() {
         assertTrue(BrowserNavigateTool::class.java != null)
         assertTrue(BrowserClickTool::class.java != null)

@@ -433,8 +433,15 @@ class SearchFilesTool : Tool {
             val path = args["path"]?.jsonPrimitive?.content ?: "."
 
             // Match against the file name via a synthetic path; ** patterns
-            // additionally match against the workspace-relative path.
+            // additionally match against the workspace-relative path. When
+            // a pattern starts with "**/" also match against the file name directly
+            // so root-level files match "**/*.ext".
             val nameMatcher = FileSystems.getDefault().getPathMatcher("glob:$pattern")
+            val rootMatcher = if (pattern.startsWith("**/")) {
+                runCatching {
+                    FileSystems.getDefault().getPathMatcher("glob:${pattern.removePrefix("**/")}")
+                }.getOrNull()
+            } else null
             val matches = mutableListOf<String>()
             ctx.workspace.walk(path).forEach { node ->
                 if (matches.size >= MAX_SEARCH_RESULTS) return@forEach
@@ -445,7 +452,12 @@ class SearchFilesTool : Tool {
                 val pathMatch = runCatching {
                     nameMatcher.matches(java.nio.file.Path.of(node.relPath))
                 }.getOrDefault(false)
-                if (nameMatch || pathMatch) matches += node.relPath
+                val rootMatch = if (rootMatcher != null && !node.relPath.contains('/')) {
+                    runCatching {
+                        rootMatcher.matches(java.nio.file.Path.of(node.name))
+                    }.getOrDefault(false)
+                } else false
+                if (nameMatch || pathMatch || rootMatch) matches += node.relPath
             }
             if (matches.isEmpty()) ToolResult(true, "No files matched \"$pattern\".")
             else ToolResult(

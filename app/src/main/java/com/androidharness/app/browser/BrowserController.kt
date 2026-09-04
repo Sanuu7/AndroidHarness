@@ -137,6 +137,11 @@ class BrowserController(
 
     // Ring buffer of console logs (capped)
     private val consoleLogs = CopyOnWriteArrayList<BrowserConsoleLog>()
+    private val logLock = Any()
+    @Volatile
+    private var lastLoggedMessage: String? = null
+    @Volatile
+    private var lastLoggedTimestamp: Long = 0L
 
     // Current workspace reference for resolving local HTML files/assets
     @Volatile
@@ -387,6 +392,7 @@ class BrowserController(
 
             // Validate local paths before touching the WebView.
             val localUrl: String? = if (isWorkspaceFileTarget(target)) {
+                val (_, suffix) = splitLocalTarget(target)
                 val rel = normalizeWorkspacePath(target, workspace?.shellRoot?.absolutePath)
                     ?: throw IllegalArgumentException(
                         "Unsupported local path '$target'. Use a workspace-relative path like " +
@@ -403,7 +409,7 @@ class BrowserController(
                     )
                 }
                 baseUrlPath = rel
-                BrowserController.localFileUrl(rel)
+                BrowserController.localFileUrl(rel) + suffix
             } else null
 
             withContext(Dispatchers.Main) {
@@ -749,17 +755,32 @@ class BrowserController(
             else -> "LOG"
         }
         val sourceUrl = currentUrl ?: getActiveUrl().orEmpty()
-        consoleLogs.add(
-            BrowserConsoleLog(
-                level = level,
-                message = msg.message().orEmpty(),
-                source = msg.sourceId().orEmpty(),
-                line = msg.lineNumber(),
-                url = sourceUrl,
+        val text = msg.message().orEmpty()
+        val src = msg.sourceId().orEmpty()
+        val line = msg.lineNumber()
+
+        val signature = "$level:$text:$src:$line"
+        val now = System.currentTimeMillis()
+        synchronized(logLock) {
+            if (signature == lastLoggedMessage && (now - lastLoggedTimestamp) < 150L) {
+                // Deduplicate identical duplicate dispatches from simultaneous webview clients
+                return
+            }
+            lastLoggedMessage = signature
+            lastLoggedTimestamp = now
+
+            consoleLogs.add(
+                BrowserConsoleLog(
+                    level = level,
+                    message = text,
+                    source = src,
+                    line = line,
+                    url = sourceUrl,
+                )
             )
-        )
-        if (consoleLogs.size > MAX_LOGS) {
-            consoleLogs.removeAt(0)
+            if (consoleLogs.size > MAX_LOGS) {
+                consoleLogs.removeAt(0)
+            }
         }
     }
 
@@ -868,7 +889,7 @@ class BrowserController(
      * Retrieves recent console logs. Filter by level and/or a substring of the
      * page URL or script source.
      */
-    fun getLogs(levelFilter: String? = null, sourceFilter: String? = null, clear: Boolean = false): List<BrowserConsoleLog> {
+    fun getLogs(levelFilter: String? = null, sourceFilter: String? = null, clear: Boolean = false): List<BrowserConsoleLog> = synchronized(logLock) {
         track("logs", buildString {
             append(levelFilter?.uppercase()?.take(12) ?: "all")
             if (!sourceFilter.isNullOrBlank()) append(", src~")
@@ -886,9 +907,13 @@ class BrowserController(
             }
         }
         if (clear) {
-            consoleLogs.clear()
+            if (levelFilter.isNullOrBlank() && sourceFilter.isNullOrBlank()) {
+                consoleLogs.clear()
+            } else {
+                consoleLogs.removeAll(list.toSet())
+            }
         }
-        return list
+        list
     }
 
     /**
@@ -940,6 +965,16 @@ class BrowserController(
             return "https://${WorkspacePathHandler.HOST}${WorkspacePathHandler.PATH_PREFIX}$served"
         }
 
+        fun splitLocalTarget(target: String): Pair<String, String> {
+            val trimmed = target.trim()
+            val queryIdx = trimmed.indexOf('?').takeIf { it >= 0 } ?: trimmed.length
+            val hashIdx = trimmed.indexOf('#').takeIf { it >= 0 } ?: trimmed.length
+            val splitIdx = minOf(queryIdx, hashIdx)
+            val pathPart = trimmed.substring(0, splitIdx)
+            val suffix = trimmed.substring(splitIdx)
+            return Pair(pathPart, suffix)
+        }
+
         /**
          * Maps a browser_navigate target to a workspace-relative HTML path.
          * Accepts plain names ("index.html"), "./"-relative forms, file:// URIs
@@ -949,7 +984,8 @@ class BrowserController(
          * and non-HTML files. Pure for tests.
          */
         fun normalizeWorkspacePath(target: String, rootPath: String?): String? {
-            var rel = target.trim().removePrefix("file://")
+            val (pathOnly, _) = splitLocalTarget(target)
+            var rel = pathOnly.removePrefix("file://")
             while (rel.startsWith("./")) rel = rel.substring(2)
             if (rel.startsWith("/")) {
                 val root = rootPath?.trimEnd('/') ?: return null

@@ -60,13 +60,13 @@ class GitCommandTest {
     @Test
     fun `gitShowCmd quotes the hash and keeps the stat under -s`() {
         assertEquals(
-            "$base show --stat 'HEAD~1'",
+            "$base show --stat --patch 'HEAD~1'",
             gitShowCmd("HEAD~1", false),
         )
         // -s BEFORE --stat: --no-patch kills the stat in any position, while
         // "show -s --stat" keeps message + stat (verified on git 2.55).
         assertEquals(
-            "$base show -s --stat 'HEAD'",
+            "$base show --stat -s 'HEAD'",
             gitShowCmd("HEAD", true),
         )
     }
