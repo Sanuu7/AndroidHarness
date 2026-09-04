@@ -160,8 +160,10 @@ fun ChatScreen(
     val listState = rememberLazyListState()
     val snackbar = remember { SnackbarHostState() }
     var showContext by remember { mutableStateOf(false) }
-    var showModelPicker by remember { mutableStateOf(false) }
-    var showProviderManager by remember { mutableStateOf(false) }
+    var activeModelPickerTarget by remember { mutableStateOf<ModelSelectionTarget?>(null) }
+    var activeProviderManagerTarget by remember { mutableStateOf<ModelSelectionTarget?>(null) }
+    val showModelPicker = activeModelPickerTarget != null
+    val showProviderManager = activeProviderManagerTarget != null
     var showWebPreview by remember { mutableStateOf(false) }
     var webPreviewUrl by remember { mutableStateOf<String?>(null) }
     var slashExpanded by remember { mutableStateOf(false) }
@@ -315,19 +317,24 @@ fun ChatScreen(
     if (showContext) {
         ContextUsageDialog(state = state, onDismiss = { showContext = false })
     }
-    if (showModelPicker) {
-        val currentProviderId = state.activeProvider?.id ?: state.activeProviderId
-        val currentModel = state.effectiveModel ?: state.activeModel
+    activeModelPickerTarget?.let { target ->
+        val currentProviderId = state.selectedProviderIdFor(target) ?: state.activeProviderId
+        val currentModel = state.selectedModelFor(target) ?: state.activeModel
         ModelPickerSheet(
             providers = state.providers,
             activeProviderId = currentProviderId,
             activeModel = currentModel,
             catalogs = state.catalogs,
-            onDismiss = { showModelPicker = false },
-            onSelect = viewModel::selectModel,
+            onDismiss = { activeModelPickerTarget = null },
+            onSelect = { providerId, model ->
+                viewModel.selectModelForTarget(target, providerId, model)
+            },
             onRefreshCatalog = viewModel::refreshCatalog,
             // Provider management stays in-conversation: a sheet, not a screen.
-            onManageProviders = { showProviderManager = true },
+            onManageProviders = {
+                activeProviderManagerTarget = target
+                activeModelPickerTarget = null
+            },
         )
     }
     if (state.showSkillsSheet) {
@@ -349,13 +356,15 @@ fun ChatScreen(
             onDismiss = viewModel::dismissEnvSheet,
         )
     }
-    if (showProviderManager) {
+    activeProviderManagerTarget?.let { target ->
         ProviderManagerSheet(
             providers = state.providers,
-            activeProviderId = state.activeProviderId,
+            activeProviderId = state.selectedProviderIdFor(target) ?: state.activeProviderId,
             apiKey = viewModel::providerApiKey,
-            onDismiss = { showProviderManager = false },
-            onSetActive = viewModel::setActiveProvider,
+            onDismiss = { activeProviderManagerTarget = null },
+            onSetActive = { providerId ->
+                viewModel.selectProviderForTarget(target, providerId)
+            },
             onDelete = viewModel::deleteProvider,
             onSave = viewModel::upsertProvider,
         )
@@ -854,7 +863,9 @@ fun ChatScreen(
                 permissionMode = state.permissionMode,
                 canUndo = state.turnsWithCheckpoints.isNotEmpty(),
                 onOpenDrawer = onOpenDrawer,
-                onPickModel = { showModelPicker = true },
+                onPickModel = {
+                    activeModelPickerTarget = state.modelSelectionTarget
+                },
                 onOpenTerminal = onOpenTerminal,
                 onSetThinking = viewModel::setThinkingLevel,
                 onSetPermission = viewModel::setPermissionMode,
@@ -977,7 +988,7 @@ fun ChatScreen(
                                         EmptyState(
                                             hasProvider = state.activeProvider != null,
                                             onSuggestion = { viewModel.send(it) },
-                                            onAddProvider = { showProviderManager = true },
+                                            onAddProvider = { activeProviderManagerTarget = ModelSelectionTarget.ACTIVE },
                                         )
                                     }
                                 }

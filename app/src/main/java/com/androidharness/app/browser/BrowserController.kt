@@ -267,6 +267,7 @@ class BrowserController(
     }
 
     private suspend fun getOrCreateWebView(): WebView = withContext(Dispatchers.Main) {
+        activeWebViewRef?.get()?.let { return@withContext it }
         headlessWebView?.let { return@withContext it }
 
         val wv = WebView(appContext).apply {
@@ -280,26 +281,7 @@ class BrowserController(
 
             webChromeClient = object : WebChromeClient() {
                 override fun onConsoleMessage(msg: ConsoleMessage?): Boolean {
-                    msg?.let {
-                        val level = when (it.messageLevel()) {
-                            ConsoleMessage.MessageLevel.ERROR -> "ERROR"
-                            ConsoleMessage.MessageLevel.WARNING -> "WARN"
-                            ConsoleMessage.MessageLevel.DEBUG -> "DEBUG"
-                            else -> "LOG"
-                        }
-                        consoleLogs.add(
-                            BrowserConsoleLog(
-                                level = level,
-                                message = it.message().orEmpty(),
-                                source = it.sourceId().orEmpty(),
-                                line = it.lineNumber(),
-                                url = url.orEmpty(),
-                            )
-                        )
-                        if (consoleLogs.size > MAX_LOGS) {
-                            consoleLogs.removeAt(0)
-                        }
-                    }
+                    recordConsoleMessage(msg, url.orEmpty())
                     return true
                 }
             }
@@ -758,8 +740,30 @@ class BrowserController(
         return BrowserEvalOutcome(false, null, "Promise did not settle within ${timeoutMs}ms")
     }
 
-    private suspend fun evalRaw(code: String): String = withContext(Dispatchers.Main) {
-        val wv = getOrCreateWebView()
+    fun recordConsoleMessage(msg: ConsoleMessage?, currentUrl: String? = null) {
+        msg ?: return
+        val level = when (msg.messageLevel()) {
+            ConsoleMessage.MessageLevel.ERROR -> "ERROR"
+            ConsoleMessage.MessageLevel.WARNING -> "WARN"
+            ConsoleMessage.MessageLevel.DEBUG -> "DEBUG"
+            else -> "LOG"
+        }
+        val sourceUrl = currentUrl ?: getActiveUrl().orEmpty()
+        consoleLogs.add(
+            BrowserConsoleLog(
+                level = level,
+                message = msg.message().orEmpty(),
+                source = msg.sourceId().orEmpty(),
+                line = msg.lineNumber(),
+                url = sourceUrl,
+            )
+        )
+        if (consoleLogs.size > MAX_LOGS) {
+            consoleLogs.removeAt(0)
+        }
+    }
+
+    private suspend fun evalRawOn(wv: WebView, code: String): String = withContext(Dispatchers.Main) {
         val deferred = CompletableDeferred<String>()
         wv.evaluateJavascript(code) { result ->
             deferred.complete(result ?: "null")
@@ -767,12 +771,16 @@ class BrowserController(
         deferred.await()
     }
 
+    private suspend fun evalRaw(code: String): String = withContext(Dispatchers.Main) {
+        evalRawOn(getOrCreateWebView(), code)
+    }
+
     /**
      * Captures a screenshot of the current page as a JPEG, saves it into the workspace
      * under `.harness/screenshots/{timestamp}.jpg`, and copies it to ImageStore for chat viewing.
      */
     suspend fun screenshot(workspace: WorkspaceFs? = currentWorkspace): BrowserScreenshotResult? = withContext(Dispatchers.Main) {
-        val wv = activeWebViewRef?.get() ?: getOrCreateWebView()
+        val wv = getOrCreateWebView()
         runCatching {
             val width = wv.width.takeIf { it > 0 } ?: 1080
             val height = wv.height.takeIf { it > 0 } ?: 1920
@@ -784,29 +792,29 @@ class BrowserController(
                 wv.layout(0, 0, width, height)
             }
 
-            // Query DOM scroll offset and DPR to convert CSS coordinates to canvas pixels
+            // Query DOM scroll offset and DPR directly on the captured WebView instance
             val (domScrollX, domScrollY, dpr) = runCatching {
-                val raw = evalRaw(
+                val raw = evalRawOn(
+                    wv,
                     "(function(){ try { return JSON.stringify({ " +
-                        "x: Math.round(window.scrollX || window.pageXOffset || 0), " +
-                        "y: Math.round(window.scrollY || window.pageYOffset || 0), " +
-                        "dpr: window.devicePixelRatio || 1 " +
+                        "x: Number(window.scrollX || window.pageXOffset || 0), " +
+                        "y: Number(window.scrollY || window.pageYOffset || 0), " +
+                        "dpr: Number(window.devicePixelRatio || 1) " +
                         "}); } catch(e) { return ''; } })()"
                 )
                 val decoded = decodeJsJson(raw) ?: raw
                 val obj = jsJson.parseToJsonElement(decoded).jsonObject
                 Triple(
-                    obj["x"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toIntOrNull() } ?: 0,
-                    obj["y"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toIntOrNull() } ?: 0,
-                    obj["dpr"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull() }
+                    obj["x"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull() } ?: 0.0,
+                    obj["y"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull() } ?: 0.0,
+                    obj["dpr"]?.let { (it as? JsonPrimitive)?.contentOrNull?.toDoubleOrNull() }?.takeIf { it > 0.0 }
                         ?: appContext.resources.displayMetrics.density.toDouble(),
                 )
             }.getOrDefault(
-                Triple(0, 0, appContext.resources.displayMetrics.density.toDouble())
+                Triple(0.0, 0.0, appContext.resources.displayMetrics.density.toDouble())
             )
 
-            val scrollXPx = (domScrollX * dpr).roundToInt()
-            val scrollYPx = (domScrollY * dpr).roundToInt()
+            val (scrollXPx, scrollYPx) = computeScreenshotScrollPixels(domScrollX, domScrollY, dpr)
 
             val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
             val canvas = Canvas(bitmap)
@@ -908,6 +916,17 @@ class BrowserController(
 
         /** Marker returned by eval when the result is a promise being awaited. */
         const val PROMISE_SENTINEL = "__harness_promise__"
+
+        fun computeScreenshotScrollPixels(
+            domScrollX: Double,
+            domScrollY: Double,
+            dpr: Double,
+        ): Pair<Int, Int> {
+            val safeDpr = if (dpr.isFinite() && dpr > 0.0) dpr else 1.0
+            val safeX = if (domScrollX.isFinite()) domScrollX else 0.0
+            val safeY = if (domScrollY.isFinite()) domScrollY else 0.0
+            return Pair((safeX * safeDpr).roundToInt(), (safeY * safeDpr).roundToInt())
+        }
 
         /**
          * Builds the stable URL for a workspace-relative HTML file. Used by

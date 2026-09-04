@@ -100,6 +100,7 @@ import com.androidharness.app.data.ChatBackupException
 import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
+import com.androidharness.app.ui.settings.ProviderManagerSheet
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.data.env.UserServiceState
@@ -2229,6 +2230,7 @@ private fun PlanningModelSection(
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val catalogs by container.providers.catalogs.collectAsStateWithLifecycle(initialValue = emptyMap())
     var pickingRole by remember { mutableStateOf<String?>(null) }
+    var managingRoleProvider by remember { mutableStateOf<String?>(null) }
 
     // The sheet opens on the role's provider when one is set, else the
     // active one, so the list is never empty for a first pick.
@@ -2290,7 +2292,45 @@ private fun PlanningModelSection(
                     }
                 }
             },
-            onManageProviders = onOpenProviders,
+            onManageProviders = {
+                managingRoleProvider = role
+                pickingRole = null
+            },
+        )
+    }
+
+    managingRoleProvider?.let { role ->
+        val isPlan = role == "plan"
+        ProviderManagerSheet(
+            providers = providers,
+            activeProviderId = (if (isPlan) settings.planningProviderId else settings.executionProviderId)
+                ?: fallbackProviderId,
+            apiKey = container.providers::apiKey,
+            onDismiss = { managingRoleProvider = null },
+            onSetActive = { providerId ->
+                scope.launch {
+                    if (isPlan) container.settings.setPlanningModel(providerId, null)
+                    else container.settings.setExecutionModel(providerId, null)
+                }
+                managingRoleProvider = null
+            },
+            onDelete = { providerId ->
+                scope.launch { container.providers.delete(providerId) }
+            },
+            onSave = { existing, name, type, baseUrl, model, apiKey ->
+                scope.launch {
+                    val created = if (existing == null) {
+                        container.providers.add(name, type, baseUrl, model, apiKey)
+                    } else {
+                        val updated = existing.copy(name = name, type = type, baseUrl = baseUrl, model = model)
+                        container.providers.update(updated, apiKey)
+                        updated
+                    }
+                    if (isPlan) container.settings.setPlanningModel(created.id, null)
+                    else container.settings.setExecutionModel(created.id, null)
+                    managingRoleProvider = null
+                }
+            },
         )
     }
 }

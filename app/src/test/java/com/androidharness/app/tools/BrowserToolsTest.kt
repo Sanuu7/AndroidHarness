@@ -210,6 +210,28 @@ class BrowserToolsTest {
     }
 
     @Test
+    fun `screenshot scroll pixels preserves fractional precision before rounding`() {
+        val (x, y) = BrowserController.computeScreenshotScrollPixels(
+            domScrollX = 10.25,
+            domScrollY = 499.9111,
+            dpr = 2.625,
+        )
+        assertEquals(27, x)
+        assertEquals(1312, y)
+    }
+
+    @Test
+    fun `screenshot scroll pixels falls back safely for non finite inputs`() {
+        val (x, y) = BrowserController.computeScreenshotScrollPixels(
+            domScrollX = Double.NaN,
+            domScrollY = Double.POSITIVE_INFINITY,
+            dpr = -2.0,
+        )
+        assertEquals(0, x)
+        assertEquals(0, y)
+    }
+
+    @Test
     fun `tool classes are loadable`() {
         assertTrue(BrowserNavigateTool::class.java != null)
         assertTrue(BrowserClickTool::class.java != null)

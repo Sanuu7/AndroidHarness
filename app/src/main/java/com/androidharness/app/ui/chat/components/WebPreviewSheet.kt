@@ -1059,6 +1059,7 @@ private fun WebPageView(
 
                             override fun onConsoleMessage(consoleMessage: ConsoleMessage?): Boolean {
                                 if (consoleMessage != null) {
+                                    browserController?.recordConsoleMessage(consoleMessage, currentUrl)
                                     consoleLogs.add(
                                         0,
                                         WebConsoleLog(

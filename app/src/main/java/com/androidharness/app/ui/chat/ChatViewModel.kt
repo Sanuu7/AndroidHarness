@@ -61,6 +61,12 @@ sealed interface NavEvent {
     data object NewChat : NavEvent
 }
 
+enum class ModelSelectionTarget {
+    ACTIVE,
+    PLANNING,
+    EXECUTION,
+}
+
 data class ChatUiState(
     val sessionId: String? = null,
     val sessionTitle: String = "New chat",
@@ -179,6 +185,27 @@ data class ChatUiState(
                     ?: activeProvider?.model
             else -> activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
         }
+
+    val modelSelectionTarget: ModelSelectionTarget
+        get() = when {
+            dualPlanning && mode == AgentMode.PLAN -> ModelSelectionTarget.PLANNING
+            dualPlanning && mode == AgentMode.ACT -> ModelSelectionTarget.EXECUTION
+            else -> ModelSelectionTarget.ACTIVE
+        }
+
+    fun selectedProviderIdFor(target: ModelSelectionTarget): String? = when (target) {
+        ModelSelectionTarget.PLANNING -> planningProviderId ?: activeProviderId
+        ModelSelectionTarget.EXECUTION -> executionProviderId ?: activeProviderId
+        ModelSelectionTarget.ACTIVE -> activeProviderId
+    }
+
+    fun selectedModelFor(target: ModelSelectionTarget): String? = when (target) {
+        ModelSelectionTarget.PLANNING -> planningModel?.takeIf { it.isNotBlank() }
+            ?: providers.firstOrNull { it.id == (planningProviderId ?: activeProviderId) }?.model
+        ModelSelectionTarget.EXECUTION -> executionModel?.takeIf { it.isNotBlank() }
+            ?: providers.firstOrNull { it.id == (executionProviderId ?: activeProviderId) }?.model
+        ModelSelectionTarget.ACTIVE -> activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
+    }
 
     /**
      * Best available measure of tokens currently inside the context window.
@@ -1351,52 +1378,101 @@ class ChatViewModel(
         }
     }
 
-    fun setActiveProvider(id: String) {
+    fun selectProviderForTarget(target: ModelSelectionTarget, id: String) {
         val s = _state.value
         viewModelScope.launch {
-            val wasDual = s.dualPlanning
-            // Switching provider resets any model override, the old pick
-            // belonged to the previous endpoint's catalog.
-            c.settings.setActiveModel(null)
-            c.settings.setActiveProvider(id)
-            if (wasDual) {
-                _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
+            when (target) {
+                ModelSelectionTarget.PLANNING -> {
+                    c.settings.setPlanningModel(id, null)
+                    val provider = s.providers.firstOrNull { it.id == id }
+                    ThinkingSpecs.clampStoredLevel(
+                        c.settings,
+                        provider?.model,
+                        com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+                    )
+                }
+                ModelSelectionTarget.EXECUTION -> {
+                    c.settings.setExecutionModel(id, null)
+                    val provider = s.providers.firstOrNull { it.id == id }
+                    ThinkingSpecs.clampStoredLevel(
+                        c.settings,
+                        provider?.model,
+                        com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+                    )
+                }
+                ModelSelectionTarget.ACTIVE -> {
+                    val wasDual = s.dualPlanning
+                    c.settings.setActiveModel(null)
+                    c.settings.setActiveProvider(id)
+                    if (wasDual) {
+                        _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
+                    }
+                    val provider = s.providers.firstOrNull { it.id == id }
+                    if (wasDual) {
+                        val modelName = provider?.model?.substringAfterLast('/') ?: "default"
+                        _state.update { it.copy(modeToast = "Dual planning off. Switched to $modelName") }
+                    }
+                    ThinkingSpecs.clampStoredLevel(
+                        c.settings,
+                        provider?.model,
+                        com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+                    )
+                }
             }
-            // The new model may not speak the stored thinking tier, adapt.
-            val provider = _state.value.providers.firstOrNull { it.id == id }
-            if (wasDual) {
-                val modelName = provider?.model?.substringAfterLast('/') ?: "default"
-                _state.update { it.copy(modeToast = "Dual planning off. Switched to $modelName") }
+        }
+    }
+
+    fun setActiveProvider(id: String) {
+        selectProviderForTarget(ModelSelectionTarget.ACTIVE, id)
+    }
+
+    fun selectModelForTarget(target: ModelSelectionTarget, providerId: String, model: String?) {
+        val s = _state.value
+        viewModelScope.launch {
+            when (target) {
+                ModelSelectionTarget.PLANNING -> {
+                    c.settings.setPlanningModel(providerId, model)
+                    val provider = s.providers.firstOrNull { it.id == providerId }
+                    ThinkingSpecs.clampStoredLevel(
+                        c.settings,
+                        model?.takeIf { it.isNotBlank() } ?: provider?.model,
+                        com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+                    )
+                }
+                ModelSelectionTarget.EXECUTION -> {
+                    c.settings.setExecutionModel(providerId, model)
+                    val provider = s.providers.firstOrNull { it.id == providerId }
+                    ThinkingSpecs.clampStoredLevel(
+                        c.settings,
+                        model?.takeIf { it.isNotBlank() } ?: provider?.model,
+                        com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+                    )
+                }
+                ModelSelectionTarget.ACTIVE -> {
+                    val wasDual = s.dualPlanning
+                    c.settings.setActiveProvider(providerId)
+                    c.settings.setActiveModel(model)
+                    if (wasDual) {
+                        _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
+                    }
+                    val provider = s.providers.firstOrNull { it.id == providerId }
+                    val chosenModel = (model ?: provider?.model)?.substringAfterLast('/') ?: "default"
+                    if (wasDual) {
+                        _state.update { it.copy(modeToast = "Dual planning off. Switched to $chosenModel") }
+                    }
+                    ThinkingSpecs.clampStoredLevel(
+                        c.settings,
+                        model?.takeIf { it.isNotBlank() } ?: provider?.model,
+                        com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
+                    )
+                }
             }
-            ThinkingSpecs.clampStoredLevel(
-                c.settings,
-                provider?.model,
-                com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
-            )
         }
     }
 
     /** Selects [model] under provider [providerId] (null = its saved default). */
     fun selectModel(providerId: String, model: String?) {
-        val s = _state.value
-        viewModelScope.launch {
-            val wasDual = s.dualPlanning
-            c.settings.setActiveProvider(providerId)
-            c.settings.setActiveModel(model)
-            if (wasDual) {
-                _state.update { it.copy(dualPlanning = false, mode = AgentMode.ACT).withCurrentAction() }
-            }
-            val provider = _state.value.providers.firstOrNull { it.id == providerId }
-            val chosenModel = (model ?: provider?.model)?.substringAfterLast('/') ?: "default"
-            if (wasDual) {
-                _state.update { it.copy(modeToast = "Dual planning off. Switched to $chosenModel") }
-            }
-            ThinkingSpecs.clampStoredLevel(
-                c.settings,
-                model?.takeIf { it.isNotBlank() } ?: provider?.model,
-                com.androidharness.app.llm.ModelsDev.providerKeyFor(provider?.baseUrl),
-            )
-        }
+        selectModelForTarget(ModelSelectionTarget.ACTIVE, providerId, model)
     }
 
     /**
