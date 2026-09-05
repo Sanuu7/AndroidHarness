@@ -1,6 +1,6 @@
 # Privacy Policy for AndroidHarness
 
-Last updated: September 5, 2026
+Last updated: September 6, 2026
 
 AndroidHarness runs on your device. It is a tool that connects to services you
 choose and configure yourself. I built it so that your data stays between you
@@ -22,13 +22,12 @@ them (which can include file contents and command output from your device) to
 the AI provider you configured, for example OpenAI, Anthropic, or any other
 OpenAI-compatible endpoint you entered. Web search queries go to the search
 service you configured, or to public search engines when no API key is set.
-If you connect a GitHub account, browser authorization happens on GitHub. The
-login backend configured by the app publisher exchanges temporary authorization
-codes and renews tokens with GitHub. This backend temporarily processes the
-authorization code, PKCE verifier, and access/refresh tokens; its supplied
-implementation does not store or log them. Hosting providers may retain network
-metadata such as IP addresses according to their policies. Repository requests
-and Git operations go directly to GitHub. If you add an MCP server, the app talks to that server directly, and
+If you connect a GitHub account, you create a personal access token on
+GitHub and paste it into the app. The app checks the token by calling
+GitHub's API with it and saves it only after GitHub confirms it belongs to
+you. The token is sent only to GitHub: for the check, for repository
+requests, and for Git operations. There is no separate login server between
+you and GitHub. If you add an MCP server, the app talks to that server directly, and
 any OAuth sign-in happens between you and that server.
 
 Which services receive data, and what keys they use, is entirely up to you.
@@ -37,9 +36,7 @@ using it.
 
 ## What I collect
 
-The app has no analytics, advertising, crash reporting, or telemetry. The
-GitHub login service processes credentials only for authentication as described
-above; deployment operators must keep request and response body logging disabled.
+The app has no analytics, advertising, crash reporting, or telemetry.
 
 ## Backups
 
