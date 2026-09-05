@@ -101,6 +101,18 @@ internal fun gitPushCmd(remote: String?, branch: String?, setUpstream: Boolean):
         },
     )
 
+/**
+ * Detects a branch with no upstream configured. A plain `git push <remote>
+ * <branch>` with an explicit refspec succeeds WITHOUT recording
+ * branch.<name>.remote/merge, so the push tool must check up front and pass
+ * -u itself: retrying with -u only after a no-upstream failure can never
+ * fire, and the next git_pull fails without the tracking config.
+ */
+internal fun gitUpstreamCheckCmd(branch: String?): String {
+    val target = branch?.trim().orEmpty().ifEmpty { "HEAD" }
+    return gitCmd("rev-parse --verify --quiet ${(target + "@{u}").shellQuote()}")
+}
+
 internal fun gitPullCmd(remote: String?, mode: String?): String {
     val r = (remote?.trim()?.ifEmpty { null } ?: "origin").shellQuote()
     return gitCmd(
@@ -112,11 +124,6 @@ internal fun gitPullCmd(remote: String?, mode: String?): String {
         },
     )
 }
-
-internal fun isNoUpstream(output: String): Boolean =
-    output.contains("has no upstream", ignoreCase = true) ||
-        output.contains("no upstream configured", ignoreCase = true) ||
-        output.contains("set the remote as upstream", ignoreCase = true)
 
 internal fun isDubiousOwnership(output: String): Boolean =
     output.contains("dubious ownership", ignoreCase = true)
@@ -485,7 +492,7 @@ class GitPushTool(
         "Push committed work to a remote (default origin; branch defaults to the current one). " +
         "GitHub HTTPS remotes authenticate automatically with the stored GitHub token " +
         "(doctor --github verifies it); other HTTPS remotes need credentials already set up " +
-        "in the shell. A first push without an upstream is retried with -u. " +
+        "in the shell. A first push for a branch with no upstream tracking sets it with -u. " +
         "Runs as a modifying operation, so the user approves it first."
     override val parametersSchema = Schema.obj(
         mapOf(
@@ -499,18 +506,21 @@ class GitPushTool(
         withContext(Dispatchers.IO) {
             val remote = args["remote"]?.jsonPrimitive?.content
             val branch = args["branch"]?.jsonPrimitive?.content
-            val res = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = false))
-            if (!res.ok && isNoUpstream(res.output)) {
-                val retry = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = true))
-                if (retry.ok) {
-                    return@withContext ToolResult(
-                        true,
-                        "[note: no upstream was configured; pushed with -u to set it]\n${retry.output}",
-                    )
-                }
-                return@withContext retry
+            val upstreamRes = runGitWithRetry(router, linuxEnv, ctx, gitUpstreamCheckCmd(branch))
+            if (upstreamRes.ok) {
+                return@withContext runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = false))
             }
-            res
+            // No upstream recorded (or the ref lookup failed), so push with -u
+            // and record it. The explicit refspec cannot fail with a
+            // no-upstream error, so there is no post-hoc retry to attempt.
+            val retry = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = true))
+            if (retry.ok) {
+                retry.copy(
+                    output = "[note: no upstream was configured; pushed with -u to set it]\n${retry.output}",
+                )
+            } else {
+                retry
+            }
         }
 }
 

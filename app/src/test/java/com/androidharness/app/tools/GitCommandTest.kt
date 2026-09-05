@@ -208,13 +208,30 @@ class GitCommandTest {
     }
 
     @Test
-    fun `no upstream detector matches real git phrasing`() {
-        assertTrue(
-            isNoUpstream(
-                "fatal: The current branch main has no upstream branch.\n" +
-                    "To push the current branch and set the remote as upstream, use",
-            ),
+    fun `upstream check detects missing tracking and push -u records it`() {
+        assertEquals(
+            "$base rev-parse --verify --quiet 'HEAD@{u}'",
+            gitUpstreamCheckCmd(null),
         )
-        assertFalse(isNoUpstream("Everything up-to-date"))
+        assertEquals(
+            "$base rev-parse --verify --quiet 'feature/x@{u}'",
+            gitUpstreamCheckCmd("feature/x"),
+        )
+        // A plain push on a branch with no upstream leaves no tracking config.
+        success(gitCmd("init", "config user.name Test", "config user.email test@example.com"))
+        tmp.root.resolve("f.txt").writeText("first")
+        success(gitCmd("add -A", "commit -m initial"))
+        // Inside the per-test folder so repeated runs never see a stale
+        // remote whose old master rejects the fresh push.
+        val remote = tmp.root.resolve("upstream-remote.git").absolutePath
+        success("git init -q --bare '$remote'")
+        success(gitCmd("remote add origin '$remote'"))
+        val (checkCode, _) = shell(gitUpstreamCheckCmd(null))
+        assertFalse(checkCode == 0)
+        success(gitPushCmd(null, null, true))
+        val (checkCode2, _) = shell(gitUpstreamCheckCmd(null))
+        assertEquals(0, checkCode2)
+        assertEquals("origin", success(gitCmd("config branch.master.remote")).trim())
+        assertEquals("refs/heads/master", success(gitCmd("config branch.master.merge")).trim())
     }
 }
