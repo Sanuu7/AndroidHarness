@@ -1,0 +1,62 @@
+# AndroidHarness repo wiki
+
+50 pages covering the app's architecture and major subsystems.
+
+- **Application Core & Entry Points**
+  - [Application Initialization and State](01-application-initialization-and-state.md)
+  - [Primary User Interface Entry](02-primary-user-interface-entry.md)
+  - [Foreground Service & Execution Host](03-foreground-service-execution-host.md)
+- **Agent Orchestration & Execution Loop**
+  - [Agent Execution Engine](04-agent-execution-engine.md)
+  - [Agent Run Lifecycle Management](05-agent-run-lifecycle-management.md)
+  - [Context Pruning and Sanitization](06-context-pruning-and-sanitization.md)
+  - [Reasoning and Thinking Budgets](07-reasoning-and-thinking-budgets.md)
+  - [Stream Streaming & Fault Recovery](08-stream-streaming-fault-recovery.md)
+  - [Subagent Delegation and Model Resolution](09-subagent-delegation-and-model-resolution.md)
+  - [Task and Todo Plan Persistence](10-task-and-todo-plan-persistence.md)
+  - [Agent Long-Term Memory & Topic Notes](11-agent-long-term-memory-topic-notes.md)
+- **LLM Providers & Catalog**
+  - [LLM Core Interface & Client Contracts](12-llm-core-interface-client-contracts.md)
+  - [Anthropic Claude Integration](13-anthropic-claude-integration.md)
+  - [Google Gemini Integration](14-google-gemini-integration.md)
+  - [OpenAI Compatible Provider](15-openai-compatible-provider.md)
+  - [OpenAI Realtime & Responses Provider](16-openai-realtime-responses-provider.md)
+  - [Model Catalog & Developer Metadata](17-model-catalog-developer-metadata.md)
+  - [Token Pricing & Cost Tracking](18-token-pricing-cost-tracking.md)
+- **Tool Framework & Execution Sandbox**
+  - [Tool Definition & Dispatch System](19-tool-definition-dispatch-system.md)
+  - [Shell Command Execution and Sandboxing](20-shell-command-execution-and-sandboxing.md)
+  - [Shell Security Policy & Command Verification](21-shell-security-policy-command-verification.md)
+  - [Background Shell Process Management](22-background-shell-process-management.md)
+  - [Secret Masking & Sanitization](23-secret-masking-sanitization.md)
+  - [Interactive User Prompts](24-interactive-user-prompts.md)
+  - [Execution Scratch Routing](25-execution-scratch-routing.md)
+  - [Skill Extension Tools](26-skill-extension-tools.md)
+- **Workspace & Storage Management**
+  - [Workspace Manager](27-workspace-manager.md)
+  - [Workspace Virtual File System](28-workspace-virtual-file-system.md)
+  - [Android SAF Path Resolution](29-android-saf-path-resolution.md)
+  - [Workspace Ignore Filters](30-workspace-ignore-filters.md)
+  - [Workspace File Tools](31-workspace-file-tools.md)
+  - [Diff Calculation & Text Processing](32-diff-calculation-text-processing.md)
+  - [Patch Application Engine](33-patch-application-engine.md)
+  - [Fuzzy Edit Matching](34-fuzzy-edit-matching.md)
+  - [Git Version Control Integration](35-git-version-control-integration.md)
+  - [Code Indexing & Search Backends](36-code-indexing-search-backends.md)
+- **System Probes & Environment Diagnostics**
+  - [Environment Inspection & Probes](37-environment-inspection-probes.md)
+  - [System Doctor & Diagnostic Self-Check](38-system-doctor-diagnostic-self-check.md)
+  - [Android Logcat Tool](39-android-logcat-tool.md)
+  - [Package & Storage Tools](40-package-storage-tools.md)
+  - [Network Diagnostics & TLS Probing](41-network-diagnostics-tls-probing.md)
+  - [Browser Interaction & Web Extraction](42-browser-interaction-web-extraction.md)
+- **Model Context Protocol (MCP)**
+  - [MCP Client Manager](43-mcp-client-manager.md)
+  - [MCP Connection Controller](44-mcp-connection-controller.md)
+  - [MCP Low-Level Transport](45-mcp-low-level-transport.md)
+  - [MCP Reconnect Strategy](46-mcp-reconnect-strategy.md)
+  - [MCP Tool Adapter](47-mcp-tool-adapter.md)
+  - [MCP OAuth Authentication](48-mcp-oauth-authentication.md)
+  - [MCP Data Models](49-mcp-data-models.md)
+- **Shared Infrastructure & Core Models**
+  - [Shared Data Models](50-shared-data-models.md)
