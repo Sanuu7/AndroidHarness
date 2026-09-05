@@ -1,5 +1,3 @@
-import java.util.Properties
-
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -7,21 +5,6 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
     alias(libs.plugins.ksp)
 }
-
-fun publicConfig(name: String): String {
-    val localProp = runCatching {
-        val f = rootProject.file("local.properties")
-        if (f.exists()) {
-            val props = Properties()
-            f.inputStream().use { props.load(it) }
-            props.getProperty(name)
-        } else null
-    }.getOrNull()
-    return providers.gradleProperty(name)
-        .orElse(providers.environmentVariable(name))
-        .getOrElse(localProp ?: "")
-}
-fun quotedConfig(value: String): String = "\"" + value.replace("\\", "\\\\").replace("\"", "\\\"") + "\""
 
 android {
     namespace = "com.androidharness.app"
@@ -33,8 +16,6 @@ android {
         targetSdk = 36
         versionCode = 10
         versionName = "0.8-alpha"
-        buildConfigField("String", "GITHUB_CLIENT_ID", quotedConfig(publicConfig("GITHUB_CLIENT_ID")))
-        buildConfigField("String", "GITHUB_AUTH_BACKEND", quotedConfig(publicConfig("GITHUB_AUTH_BACKEND")))
     }
 
     signingConfigs {

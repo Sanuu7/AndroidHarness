@@ -153,8 +153,6 @@ class AppContainer(val appContext: Context) {
      */
     suspend fun refreshGitHubAuth() = linuxEnv.refreshGitHub(shizuku)
 
-    val githubOAuth = com.androidharness.app.data.github.GitHubOAuthManager(keys) { refreshGitHubAuth() }
-
     init {
         // models.dev thinking-capability catalog: serve the cached copy
         // synchronously, then refresh in the background (weekly cadence).

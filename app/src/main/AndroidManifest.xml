@@ -68,12 +68,6 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="androidharness" android:host="mcp" />
             </intent-filter>
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-                <category android:name="android.intent.category.DEFAULT" />
-                <category android:name="android.intent.category.BROWSABLE" />
-                <data android:scheme="${applicationId}.oauth" android:host="github" android:path="/callback" />
-            </intent-filter>
             <!-- Share target: text, links, and images shared from other apps
                  land in the chat composer. -->
             <intent-filter>

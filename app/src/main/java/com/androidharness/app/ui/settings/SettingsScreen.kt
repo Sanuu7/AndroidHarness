@@ -130,6 +130,14 @@ private val GH_OPTIONAL_SCOPES = listOf(
     Triple("delete_repo", "delete_repo", "let the agent delete repos it created"),
 )
 
+/** GitHub's new-token page: the scope list is built from the toggles below. */
+private const val GH_NEW_TOKEN_URL =
+    "https://github.com/settings/tokens/new?description=AndroidHarness&scopes="
+
+private fun ghNewTokenUrl(extraScopes: Set<String>): String =
+    GH_NEW_TOKEN_URL + (listOf("repo") + extraScopes.filter { s -> GH_OPTIONAL_SCOPES.any { it.first == s } })
+        .joinToString(",")
+
 @Composable
 fun SettingsScreen(
     container: AppContainer,
@@ -473,12 +481,18 @@ private fun TerminalSection(
 
 @Composable
 private fun GitHubSection(container: AppContainer) {
+    val scope = rememberCoroutineScope()
     val context = LocalContext.current
-    val auth = container.githubOAuth
-    val state by auth.state.collectAsStateWithLifecycle()
+    var hasToken by remember { mutableStateOf(container.keys.githubToken() != null) }
+    var expanded by remember { mutableStateOf(false) }
+    var draft by remember { mutableStateOf("") }
+    var checking by remember { mutableStateOf(false) }
+    var status by remember { mutableStateOf<String?>(null) }
     var confirmLogout by remember { mutableStateOf(false) }
-    var selectedScopes by remember { mutableStateOf(setOf<String>()) }
-    var showPermissions by remember { mutableStateOf(false) }
+    val login = remember(hasToken) { container.keys.githubLogin() }
+
+    // The pasted token is only on screen while the entry form is open.
+    SecureScreenEffect(container, expanded)
 
     SettingsHeader("GitHub")
     OutlinedCard(Modifier.fillMaxWidth()) {
@@ -488,62 +502,221 @@ private fun GitHubSection(container: AppContainer) {
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text("GitHub", style = MaterialTheme.typography.titleSmall)
-                    Text(if (state.connected) state.login?.let { "Signed in as $it" } ?: "Connected"
-                        else "Push commits, open pull requests and access private repos",
-                        style = MaterialTheme.typography.bodySmall)
+                    Text(
+                        when {
+                            hasToken && login != null -> "Signed in as $login"
+                            hasToken -> "Token saved"
+                            else -> "Push, pull requests, private repos"
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                    )
                 }
-                StatusText(if (state.connected) "On" else "Off", ok = state.connected)
+                StatusText(if (hasToken) "On" else "Off", ok = hasToken)
             }
-            if (!auth.configured) {
-                Text("GitHub browser login is not available in this build yet. The app publisher needs to finish login setup.",
-                    style = MaterialTheme.typography.bodySmall)
-            } else {
-                Text("Sign in securely in your browser and approve AndroidHarness on GitHub.",
-                    style = MaterialTheme.typography.bodySmall)
-                TextButton(onClick = { showPermissions = !showPermissions }, enabled = !state.busy && !state.waiting) {
-                    Text("Optional permissions")
+
+            if (!hasToken && !expanded) {
+                Button(
+                    onClick = { expanded = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text("Login with GitHub")
                 }
-                if (showPermissions) {
-                    Text("Repository access is requested for push, pull and private repos.", style = MaterialTheme.typography.bodySmall)
-                    GH_OPTIONAL_SCOPES.forEach { (permission, label, hint) ->
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Checkbox(checked = permission in selectedScopes, enabled = !state.busy && !state.waiting,
-                                onCheckedChange = { checked -> selectedScopes = if (checked) selectedScopes + permission else selectedScopes - permission })
-                            Column {
-                                Text(label)
-                                Text(hint, style = MaterialTheme.typography.bodySmall)
-                            }
+            }
+
+            if (expanded) {
+                var selectedScopes by remember { mutableStateOf(setOf<String>()) }
+                Text(
+                    "AndroidHarness uses a personal access token to push commits, open pull " +
+                        "requests and reach your private repos. Paste a token you already have, or " +
+                        "tap Get access token to create a new one in your browser. The token is " +
+                        "checked with GitHub before it is saved, and it lives only in the app’s " +
+                        "encrypted storage.",
+                    style = MaterialTheme.typography.bodySmall,
+                )
+                Text(
+                    "Extra scopes (repo is always included):",
+                    style = MaterialTheme.typography.labelMedium,
+                )
+                GH_OPTIONAL_SCOPES.forEach { (permission, label, hint) ->
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Checkbox(
+                            checked = permission in selectedScopes,
+                            onCheckedChange = { checked ->
+                                selectedScopes = if (checked) selectedScopes + permission else selectedScopes - permission
+                            },
+                        )
+                        Column {
+                            Text(label)
+                            Text(hint, style = MaterialTheme.typography.bodySmall)
                         }
                     }
                 }
-                Button(onClick = {
-                    runCatching {
-                        com.androidharness.app.ui.common.openOAuthBrowser(context, Uri.parse(auth.begin(selectedScopes)))
-                    }.onFailure { auth.browserFailed() }
-                }, enabled = !state.busy && !state.waiting, modifier = Modifier.fillMaxWidth()) {
-                    Text(if (state.busy) "Connecting…" else if (state.waiting) "Waiting for GitHub…"
-                        else if (state.connected) "Sign in again / switch account" else "Continue with GitHub")
+                OutlinedButton(
+                    onClick = {
+                        runCatching {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(ghNewTokenUrl(selectedScopes))))
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Icon(Icons.Outlined.OpenInNew, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text("Get access token")
                 }
-            }
-            if (state.waiting && !state.busy) {
-                TextButton(onClick = { auth.cancel() }) { Text("Cancel sign-in") }
-            }
-            state.message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-            if (state.connected) {
-                OutlinedButton(onClick = { confirmLogout = true }, enabled = !state.busy) {
-                    Text("Log out", color = MaterialTheme.colorScheme.error)
+                OutlinedTextField(
+                    value = draft,
+                    onValueChange = { draft = it },
+                    label = { Text("Paste your access token") },
+                    placeholder = { Text("ghp_… or github_pat_…") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Button(
+                        onClick = {
+                            checking = true
+                            status = "Checking that token with GitHub…"
+                            scope.launch(Dispatchers.IO) {
+                                val token = draft.trim()
+                                val check = checkGitHubToken(token)
+                                if (check.login != null) {
+                                    container.keys.putGitHubToken(token)
+                                    container.keys.putGitHubLogin(check.login)
+                                    // UI first, the auth propagation below keeps
+                                    // running in the background.
+                                    hasToken = true
+                                    expanded = false
+                                    draft = ""
+                                    status = "Verified as ${check.login}" +
+                                        (check.plan?.let { " (plan: $it)" } ?: "") +
+                                        (check.scopes?.let { " · scopes: $it" } ?: "")
+                                    checking = false
+                                    container.refreshGitHubAuth()
+                                } else {
+                                    status = check.error
+                                    checking = false
+                                }
+                            }
+                        },
+                        enabled = draft.isNotBlank() && !checking,
+                    ) { Text(if (checking) "Checking…" else "Save and check") }
+                    TextButton(onClick = {
+                        expanded = false
+                        draft = ""
+                        status = null
+                    }) { Text("Cancel") }
+                }
+                status?.let {
+                    Text(it, style = MaterialTheme.typography.bodySmall)
+                }
+            } else if (hasToken) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    OutlinedButton(onClick = {
+                        expanded = true
+                        draft = ""
+                        status = null
+                    }) { Text("Replace token") }
+                    OutlinedButton(onClick = { confirmLogout = true }) {
+                        Text("Log out", color = MaterialTheme.colorScheme.error)
+                    }
                 }
             }
         }
     }
+
     if (confirmLogout) {
-        AlertDialog(onDismissRequest = { confirmLogout = false }, title = { Text("Log out of GitHub?") },
-            text = { Text("This removes GitHub credentials from this device and its terminal tools. To revoke AndroidHarness access on GitHub as well, remove it from your GitHub account’s authorized applications.") },
-            confirmButton = {
-                TextButton(onClick = { confirmLogout = false; auth.logout() }) { Text("Log out") }
+        AlertDialog(
+            onDismissRequest = { confirmLogout = false },
+            title = { Text("Log out of GitHub?") },
+            text = {
+                Text(
+                    "The saved token is deleted and the copies inside the Linux toolchain (the " +
+                        "token file, the git credential rewrite and the gh CLI login) are cleared. " +
+                        "Push and private repo access stop working until you log in again.",
+                )
             },
-            dismissButton = { TextButton(onClick = { confirmLogout = false }) { Text("Cancel") } })
+            confirmButton = {
+                TextButton(onClick = {
+                    confirmLogout = false
+                    scope.launch(Dispatchers.IO) {
+                        container.keys.removeGitHubToken()
+                        container.keys.removeGitHubLogin()
+                        // Reflect the logout in the UI FIRST: the auth propagation
+                        // below (file sync) runs for a few seconds, and the old
+                        // ordering left the screen showing "signed in" until it
+                        // finished.
+                        hasToken = false
+                        expanded = false
+                        status = null
+                        container.refreshGitHubAuth()
+                    }
+                }) { Text("Log out", color = MaterialTheme.colorScheme.error) }
+            },
+            dismissButton = {
+                TextButton(onClick = { confirmLogout = false }) { Text("Cancel") }
+            },
+        )
     }
+}
+
+/** What the token check learned: either a verified identity or a reason. */
+private class GitHubTokenCheck(
+    val login: String? = null,
+    val plan: String? = null,
+    val scopes: String? = null,
+    val error: String? = null,
+)
+
+/**
+ * Asks api.github.com who a token belongs to. Returns the verified login name
+ * plus the account plan and granted scopes, or an error carrying GitHub’s own
+ * message verbatim, its hints ("Resource not accessible by personal access
+ * token", rate-limit notices) are more actionable than any generic sentence.
+ * The token is only persisted after this returns a login, so an invalid paste
+ * never becomes the stored credential.
+ */
+private fun checkGitHubToken(token: String): GitHubTokenCheck {
+    return runCatching {
+        val req = okhttp3.Request.Builder()
+            .url("https://api.github.com/user")
+            .header("Authorization", "Bearer $token")
+            .header("Accept", "application/vnd.github+json")
+            .build()
+        okhttp3.OkHttpClient.Builder()
+            .callTimeout(15, java.util.concurrent.TimeUnit.SECONDS)
+            .build()
+            .newCall(req).execute().use { resp ->
+                val body = resp.body?.string().orEmpty()
+                val ghMessage = Regex("\"message\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
+                when {
+                    resp.code == 401 -> GitHubTokenCheck(
+                        error = "GitHub rejected that token" + (ghMessage?.let { " ($it)" } ?: "") +
+                            ". Make sure the whole token was copied and that it has not expired or been revoked.",
+                    )
+                    resp.code == 403 -> GitHubTokenCheck(
+                        error = "GitHub refused the check" + (ghMessage?.let { " ($it)" } ?: "") +
+                            ". That is usually a rate limit or a token awaiting SSO authorization; wait a moment and try again.",
+                    )
+                    !resp.isSuccessful -> GitHubTokenCheck(
+                        error = "GitHub returned HTTP ${resp.code}" + (ghMessage?.let { ": $it" } ?: "") +
+                            ". Try again shortly.",
+                    )
+                    else -> {
+                        val login = Regex("\"login\"\\s*:\\s*\"([^\"]+)\"").find(body)?.groupValues?.get(1)
+                        if (login == null) {
+                            GitHubTokenCheck(error = "GitHub accepted the token but the response was unreadable. Try again.")
+                        } else {
+                            GitHubTokenCheck(
+                                login = login,
+                                plan = Regex("\"plan\"\\s*:\\s*\\{[^}]*?\"name\"\\s*:\\s*\"([^\"]+)\"")
+                                    .find(body)?.groupValues?.get(1),
+                                scopes = resp.header("X-OAuth-Scopes")?.trim()?.ifBlank { null },
+                            )
+                        }
+                    }
+                }
+            }
+    }.getOrElse { GitHubTokenCheck(error = "Could not reach GitHub. Check your connection and try again.") }
 }
 
 // ---------------------------------------------------------------------------
