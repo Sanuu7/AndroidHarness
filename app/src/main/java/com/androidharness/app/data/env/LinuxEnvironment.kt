@@ -838,21 +838,17 @@ class LinuxEnvironmentManager(
      * shell tier through syncShellTierAuth (direct writes into the deployed
      * prefix, fast, and independent of the deploy machinery; logout used to
      * leave gh/git authenticated there when the full redeploy silently
-     * failed). The staging tarball is then re-staged in the background so it
-     * never carries a stale token, WITHOUT a redeploy: the deployed prefix is
-     * already correct, and untarring it again would only cost 30-60s and open
-     * the "presence unknown" window for no benefit.
+     * failed). No re-stage happens here: the tarball excludes all auth files
+     * (isAuthEntry), so token changes cannot make it stale, and a forced
+     * re-tar of the whole prefix on every login/logout held the auth mutex
+     * for tens of seconds and left the Settings UI stuck on "Connecting...".
+     * Deploys re-stage via ensureShellDeploy when the package set changes.
      */
     suspend fun refreshGitHub(shizuku: ShizukuManager) = withContext(Dispatchers.IO) {
         materializeGitHub()
         if (shizuku.isGranted()) {
             runCatching { syncShellTierAuth(shizuku) }
                 .onFailure { Log.e(TAG, "shell-tier GitHub auth sync failed", it) }
-        }
-        runCatching { stagingMarker.delete() }
-        if (isReady) {
-            runCatching { stageForShell() }
-                .onFailure { Log.e(TAG, "re-staging the shell-tier tarball after an auth change failed", it) }
         }
         // The staging/deploy state may have changed under the cached flag;
         // let the next privileged command re-verify the deployed hash.
