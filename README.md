@@ -106,6 +106,10 @@ Run the unit tests with:
 ./gradlew :app:testDebugUnitTest
 ```
 
+## Developer Repo Wiki
+
+A generated architecture reference covering the agent engine, tools, providers, MCP stack, and workspace layer: [repowiki](https://github.com/Sanuu7/AndroidHarness/tree/main/repowiki). Last updated: 2026-09-06.
+
 ## Inspirations
 
 AndroidHarness borrows ideas and design taste from open source projects across the ecosystem:
