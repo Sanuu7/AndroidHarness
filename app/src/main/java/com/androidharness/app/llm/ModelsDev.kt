@@ -230,34 +230,47 @@ object ModelsDev {
     /** Finds live cost information for a model across catalog providers. */
     fun findCost(providerKey: String?, modelId: String?): ModelCost? {
         if (modelId.isNullOrBlank()) return null
+        // Resellers list the same model id at every price from free promo to
+        // list rate, and catalog order is alphabetical, not canonical: kenari
+        // lists glm-5-3-flash at $0/$0 ahead of every paid entry, which held
+        // a whole session's estimate at $0.00 (on-device QA, 2026-09-06). The
+        // first match that actually charges wins; a model free everywhere
+        // keeps its $0 via the first zero-cost match.
+        var freeMatch: ModelCost? = null
+        fun charged(cost: ModelCost?): ModelCost? {
+            if (cost == null) return null
+            if (cost.input > 0 || cost.output > 0) return cost
+            if (freeMatch == null) freeMatch = cost
+            return null
+        }
+
         // 1. Direct match under providerKey
         if (providerKey != null) {
-            entry(providerKey, modelId)?.cost?.let { return it }
+            charged(entry(providerKey, modelId)?.cost)?.let { return it }
         }
         // 2. Exact match across all providers
         for ((_, models) in entries) {
-            models[modelId]?.cost?.let { return it }
+            charged(models[modelId]?.cost)?.let { return it }
         }
         // 3. Suffix match (e.g. "claude-3-5-sonnet" vs "anthropic/claude-3-5-sonnet")
         val suffix = modelId.substringAfterLast('/')
         for ((_, models) in entries) {
-            models[suffix]?.cost?.let { return it }
-            val found = models.entries.firstOrNull { (k, v) ->
-                (k.substringAfterLast('/') == suffix || k.endsWith("/$modelId") || modelId.endsWith("/$k")) &&
-                    v.cost != null
+            charged(models[suffix]?.cost)?.let { return it }
+            val hit = models.entries.firstOrNull { (k, v) ->
+                (k.substringAfterLast('/') == suffix || k.endsWith("/$modelId")) && v.cost != null
             }?.value?.cost
-            if (found != null) return found
+            charged(hit)?.let { return it }
         }
         // 4. Substring / normalized match
         val norm = modelId.lowercase().replace("-", "").replace(".", "").replace("/", "").replace(":", "")
         for ((_, models) in entries) {
-            val found = models.entries.firstOrNull { (k, v) ->
+            val hit = models.entries.firstOrNull { (k, v) ->
                 val kNorm = k.lowercase().replace("-", "").replace(".", "").replace("/", "").replace(":", "")
                 (kNorm.contains(norm) || norm.contains(kNorm)) && v.cost != null
             }?.value?.cost
-            if (found != null) return found
+            charged(hit)?.let { return it }
         }
-        return null
+        return freeMatch
     }
 
     /** Parse output: per-provider model maps plus the searchable provider directory. */

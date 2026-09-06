@@ -125,6 +125,56 @@ class ModelsDevTest {
     }
 
     @Test
+    fun `findCost skips a free reseller listing and prices at the first charged match`() {
+        // kenari lists glm-5-3-flash at $0/$0 ahead of the paid providers in
+        // catalog order; a paying user's session must not estimate to zero.
+        val freeFirst = """
+        {
+          "kenari": {
+            "id": "kenari", "name": "Kenari", "npm": "@ai-sdk/openai-compatible",
+            "models": {"glm-5-3-flash": {"id": "glm-5-3-flash", "cost": {"input": 0, "output": 0}}}
+          },
+          "tokengo": {
+            "id": "tokengo", "name": "TokenGo", "npm": "@ai-sdk/openai-compatible",
+            "models": {"glm-5-3-flash": {"id": "glm-5-3-flash", "cost": {"input": 0.075, "output": 0.025, "cache_read": 0.015}}}
+          }
+        }
+        """.trimIndent()
+        ModelsDev.replaceForTesting(ModelsDev.parse(freeFirst).entries)
+        try {
+            val cost = ModelsDev.findCost(null, "glm-5-3-flash")!!
+            assertEquals(0.075, cost.input, 1e-9)
+            assertEquals(0.025, cost.output, 1e-9)
+        } finally {
+            ModelsDev.replaceForTesting(emptyMap())
+        }
+    }
+
+    @Test
+    fun `findCost keeps a genuine zero when every listing is free`() {
+        val allFree = """
+        {
+          "aa": {
+            "id": "aa", "name": "AA", "npm": "@ai-sdk/openai-compatible",
+            "models": {"m-1": {"id": "m-1", "cost": {"input": 0, "output": 0}}}
+          },
+          "bb": {
+            "id": "bb", "name": "BB", "npm": "@ai-sdk/openai-compatible",
+            "models": {"m-1": {"id": "m-1", "cost": {"input": 0, "output": 0}}}
+          }
+        }
+        """.trimIndent()
+        ModelsDev.replaceForTesting(ModelsDev.parse(allFree).entries)
+        try {
+            val cost = ModelsDev.findCost(null, "m-1")!!
+            assertEquals(0.0, cost.input, 1e-9)
+            assertEquals(0.0, cost.output, 1e-9)
+        } finally {
+            ModelsDev.replaceForTesting(emptyMap())
+        }
+    }
+
+    @Test
     fun `provider key mapping covers the major endpoints`() {
         assertEquals("openrouter", ModelsDev.providerKeyFor("https://openrouter.ai/api/v1"))
         assertEquals("anthropic", ModelsDev.providerKeyFor("https://api.anthropic.com"))
