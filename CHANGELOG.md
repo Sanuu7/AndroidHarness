@@ -1,9 +1,26 @@
 # Changelog
 
-## Unreleased
+## 0.9-alpha (2026-09-06)
 
-- Replace GitHub token entry with browser OAuth login, PKCE and state verification, encrypted pending-login recovery, automatic token renewal, and account switching. Existing credentials remain usable.
-- Add a small configurable GitHub token-exchange backend and publisher setup guide. Login requires OAuth registration and an HTTPS backend; unconfigured builds explain that setup is pending.
+### Added
+
+- **Developer repo wiki**: a generated 50-page wiki of the codebase lives under repowiki/, linked from the README.
+
+### Fixed
+
+- **Dual planning survives provider switches**: picking a provider or model from the planning or execution picker routes the choice to that role's slot and keeps dual planning on. A provider change used to reset dual planning or land the pick in the wrong slot, leaving the header showing something other than what would run.
+- **The preview sheet stays on the agent's page**: the agent and the web preview share one webview choice, the agent's console logs bridge into the storage the sheet reads, and screenshots keep fractional scroll offsets instead of snapping to whole pixels.
+- **Browser navigation keeps queries and anchors**: URLs with ?query or #fragment parts navigate to the full address, and rapid console log arrivals are deduplicated instead of flooding the action trail.
+- **search_files matches root files with recursive globs**: a pattern like **/*.py also hits files sitting at the workspace root, and an invalid glob now returns a clear error instead of crashing the tool (search_files and grep include patterns both).
+- **git show emits diffs again**: asking for the patch prints it, a log or show on a repository with no commits yet reports "No commits yet" instead of a bare failure, and an empty history answers with a sentence instead of "(no output)".
+- **git commit handles real-world messages**: quotes and apostrophes in a message are shell-quoted so the command no longer breaks, .harness/ runtime files are excluded at commit time even when they were staged earlier, and a small locale shim keeps scripts that probe the locale working in the toolchain.
+- **git_push records and repairs upstream tracking**: the first push of a new branch now sets its upstream so a later git_pull works, and a branch tracked to the wrong ref (say, cut from origin/main) gets re-pushed with -u to point at itself.
+- **Cost estimates price at a real listing**: resellers list the same model id everywhere from free promo to list rate, and the free listing won the lookup, pinning a whole session's estimate near zero. Pricing now skips $0 matches unless every listing is free.
+- **grep can't wedge a session with a pathological regex**: a pattern like ^(a+)+$ used to backtrack forever inside the regex engine and hang the run; matching now runs on a step budget and fails cleanly with an exceeded-budget message.
+
+### Changed
+
+- **Non-repo workspaces ask for git init**: git tools answer with "not a Git repository, run git init in the intended folder first" instead of silently creating a repo in place.
 
 ## 0.8-alpha (2026-09-04)
 
