@@ -4,6 +4,7 @@ import android.content.Context
 import androidx.datastore.preferences.core.edit
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
+import com.androidharness.app.llm.HarnessProvider
 import com.androidharness.app.llm.ModelCatalog
 import com.androidharness.app.llm.ModelEntry
 import com.androidharness.app.llm.ProviderConfig
@@ -25,11 +26,12 @@ class ProviderRepository(
     private val listKey = stringPreferencesKey("provider_list")
 
     val providers: Flow<List<ProviderConfig>> = context.providerStore.data.map { prefs ->
-        prefs[listKey]?.let { raw ->
+        val saved = prefs[listKey]?.let { raw ->
             runCatching {
                 json.decodeFromString(ListSerializer(ProviderConfig.serializer()), raw)
             }.getOrDefault(emptyList())
         } ?: emptyList()
+        listOf(HarnessProvider.config.copy(model = HarnessProvider.sanitize(saved.firstOrNull { it.id == HarnessProvider.ID }?.model))) + saved.filterNot { it.id == HarnessProvider.ID }
     }
 
     /**
@@ -45,7 +47,9 @@ class ProviderRepository(
                     json.decodeFromString(ListSerializer(ModelEntry.serializer()), value as String)
                 }.getOrNull()?.let { providerId to it }
             }
-            .toMap()
+            .toMap().let { catalogs ->
+                if (catalogs[HarnessProvider.ID].isNullOrEmpty()) catalogs + (HarnessProvider.ID to HarnessProvider.fallbackModels) else catalogs
+            }
     }
 
     suspend fun catalog(providerId: String): List<ModelEntry> =
@@ -72,6 +76,10 @@ class ProviderRepository(
     }
 
     suspend fun update(config: ProviderConfig, apiKey: String?) {
+        if (config.id == HarnessProvider.ID) {
+            save(current().map { if (it.id == config.id) HarnessProvider.config.copy(model = HarnessProvider.sanitize(config.model)) else it })
+            return
+        }
         if (apiKey != null) {
             if (apiKey.isBlank()) keys.removeKey(config.id) else keys.putKey(config.id, apiKey)
         }
@@ -79,12 +87,35 @@ class ProviderRepository(
     }
 
     suspend fun delete(id: String) {
+        if (id == HarnessProvider.ID) return
         keys.removeKey(id)
         context.providerStore.edit { it.remove(catalogKey(id)) }
         save(current().filterNot { it.id == id })
     }
 
-    fun apiKey(providerId: String): String? = keys.getKey(providerId)
+    fun apiKey(providerId: String): String? = if (providerId == HarnessProvider.ID) HarnessProvider.KEYLESS else keys.getKey(providerId)
+
+    /**
+     * Learned wire protocol per Harness model. The first chat request for a
+     * model probes chat/completions vs /messages; the winner is stored here
+     * so every later request routes directly. Keyed by bare model id so the
+     * pin survives catalog refetches.
+     */
+    val harnessWires: Flow<Map<String, String>> = context.providerStore.data.map { prefs ->
+        prefs.asMap().asSequence()
+            .filter { it.key.name.startsWith(WIRE_PREFIX) }
+            .mapNotNull { (key, value) ->
+                val model = key.name.removePrefix(WIRE_PREFIX)
+                (value as? String)?.takeIf { it.isNotEmpty() }?.let { model to it }
+            }
+            .toMap()
+    }
+
+    suspend fun wire(model: String): String? = harnessWires.first()[model]
+
+    suspend fun pinWire(model: String, wire: String) {
+        context.providerStore.edit { it[stringPreferencesKey(WIRE_PREFIX + model)] = wire }
+    }
 
     private fun catalogKey(providerId: String) = stringPreferencesKey(CATALOG_PREFIX + providerId)
 
@@ -97,5 +128,6 @@ class ProviderRepository(
 
     private companion object {
         const val CATALOG_PREFIX = "catalog_"
+        const val WIRE_PREFIX = "wire_harness_"
     }
 }

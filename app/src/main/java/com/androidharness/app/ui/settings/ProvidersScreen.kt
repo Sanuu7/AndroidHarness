@@ -236,12 +236,12 @@ private fun ProviderCard(
             Column(Modifier.weight(1f)) {
                 Text(provider.name, style = MaterialTheme.typography.titleSmallEmphasized)
                 Text(
-                    "${provider.type.label} · ${provider.model}",
+                    if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model else "${provider.type.label} · ${provider.model}",
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant,
                 )
                 Text(
-                    provider.baseUrl,
+                    if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) "Built-in · Free" else provider.baseUrl,
                     style = MaterialTheme.typography.labelSmall,
                     color = scheme.onSurfaceVariant,
                     maxLines = 1,
@@ -264,11 +264,13 @@ private fun ProviderCard(
                     tint = scheme.onSurfaceVariant,
                 )
             }
-            IconButton(onClick = onEdit) {
-                Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = scheme.onSurfaceVariant)
-            }
-            IconButton(onClick = onDelete) {
-                Icon(Icons.Outlined.Delete, contentDescription = "Delete", tint = scheme.error)
+            if (provider.id != com.androidharness.app.llm.HarnessProvider.ID) {
+                IconButton(onClick = onEdit) {
+                    Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = scheme.onSurfaceVariant)
+                }
+                IconButton(onClick = onDelete) {
+                    Icon(Icons.Outlined.Delete, contentDescription = "Delete", tint = scheme.error)
+                }
             }
         }
     }

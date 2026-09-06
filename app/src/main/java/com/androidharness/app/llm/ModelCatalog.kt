@@ -89,12 +89,12 @@ object ModelCatalog {
                         config.baseUrl.trimEnd('/') + "/models" to
                             Request.Builder().header("x-goog-api-key", apiKey)
                 }
-                client.newCall(requestBuilder.url(url).build()).execute().use { resp ->
+                client.newCall(requestBuilder.url(url).build().let { if (config.id == HarnessProvider.ID) HarnessProvider.anonymous(it) else it }).execute().use { resp ->
                     if (!resp.isSuccessful) {
                         return@use Result.Failed("HTTP ${resp.code}: ${resp.message}")
                     }
                     val body = resp.body?.string() ?: return@use Result.Failed("Empty response")
-                    Result.Models(parseCatalog(config.type, body), System.currentTimeMillis() - started)
+                    Result.Models(parseCatalog(config.type, body).let { if (config.id == HarnessProvider.ID) HarnessProvider.models(it) else it }, System.currentTimeMillis() - started)
                 }
             } catch (e: Exception) {
                 Result.Failed(e.message ?: "Connection failed")

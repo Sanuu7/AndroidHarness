@@ -130,7 +130,7 @@ fun ProviderManagerSheet(
                                         overflow = TextOverflow.Ellipsis,
                                     )
                                     Text(
-                                        "${provider.type.endpointPath} · ${provider.model}",
+                                        if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model else "${provider.type.endpointPath} · ${provider.model}",
                                         style = MaterialTheme.typography.labelSmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                                         maxLines = 1,
@@ -145,22 +145,24 @@ fun ProviderManagerSheet(
                                         modifier = Modifier.size(18.dp),
                                     )
                                 }
-                                IconButton(onClick = {
-                                    editing = provider
-                                    showForm = true
-                                }) {
-                                    Icon(
-                                        Icons.Outlined.Edit,
-                                        contentDescription = "Edit",
-                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                    )
-                                }
-                                IconButton(onClick = { onDelete(provider.id) }) {
-                                    Icon(
-                                        Icons.Outlined.Delete,
-                                        contentDescription = "Delete",
-                                        tint = MaterialTheme.colorScheme.error,
-                                    )
+                                if (provider.id != com.androidharness.app.llm.HarnessProvider.ID) {
+                                    IconButton(onClick = {
+                                        editing = provider
+                                        showForm = true
+                                    }) {
+                                        Icon(
+                                            Icons.Outlined.Edit,
+                                            contentDescription = "Edit",
+                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                        )
+                                    }
+                                    IconButton(onClick = { onDelete(provider.id) }) {
+                                        Icon(
+                                            Icons.Outlined.Delete,
+                                            contentDescription = "Delete",
+                                            tint = MaterialTheme.colorScheme.error,
+                                        )
+                                    }
                                 }
                             }
                             if (index < providers.lastIndex) {

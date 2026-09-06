@@ -136,7 +136,7 @@ class SettingsRepository(private val context: Context) {
                 ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
                 ?: ThemeMode.SYSTEM,
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: true,
-            activeProviderId = prefs[Keys.ACTIVE_PROVIDER],
+            activeProviderId = prefs[Keys.ACTIVE_PROVIDER] ?: com.androidharness.app.llm.HarnessProvider.ID,
             thinkingLevel = prefs[Keys.THINKING_LEVEL]
                 ?.let { runCatching { ThinkingLevel.valueOf(it) }.getOrNull() }
                 ?: ThinkingLevel.OFF,

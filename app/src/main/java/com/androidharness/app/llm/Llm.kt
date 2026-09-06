@@ -133,6 +133,9 @@ object ProviderFactory {
         .readTimeout(0, TimeUnit.MILLISECONDS) // SSE streams are long-lived
         .build()
 
+    fun create(config: ProviderConfig): LlmProvider =
+        if (config.id == HarnessProvider.ID) HarnessProvider.create() else create(config.type)
+
     fun create(type: ProviderType): LlmProvider = when (type) {
         ProviderType.OPENAI_COMPAT -> OpenAiCompatProvider(client, json)
         ProviderType.OPENAI_RESPONSES -> OpenAiResponsesProvider(client, json)
@@ -145,8 +148,8 @@ object ProviderFactory {
      * emitting the JSON payload of each `data:` line. Cancellation of the
      * collector cancels the underlying HTTP call.
      */
-    fun sseJson(request: Request): Flow<JsonElement> = callbackFlow {
-        val call = client.newCall(request)
+    fun sseJson(request: Request, httpClient: OkHttpClient = client): Flow<JsonElement> = callbackFlow {
+        val call = httpClient.newCall(request)
         call.enqueue(object : Callback {
             override fun onFailure(call: Call, e: IOException) {
                 close(e)
