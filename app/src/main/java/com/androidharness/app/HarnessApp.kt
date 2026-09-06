@@ -114,15 +114,17 @@ class AppContainer(val appContext: Context) {
         disabled = { disabledSkills.get() },
     )
     val browser = com.androidharness.app.browser.BrowserController(appContext, images)
+    val phone = com.androidharness.app.phone.PhoneController(shizuku, images)
     val registry = ToolRegistry.default(
         fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
         imageStore = images,
         browserController = browser,
+        phoneController = phone,
         searchApi = { searchApiConfig },
     )
     val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys)
     val engine = AgentEngine(
-        providerFactory = { config -> ProviderFactory.create(config.type) },
+        providerFactory = { config -> ProviderFactory.create(config) },
         registry = registry,
         checkpointer = checkpoints,
         imageStore = images,
@@ -158,6 +160,17 @@ class AppContainer(val appContext: Context) {
         // synchronously, then refresh in the background (weekly cadence).
         com.androidharness.app.llm.ModelsDev.load(appContext)
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            // Learned wire per Harness model (chat vs anthropic vs responses),
+            // persisted by the first-request probe; mirrored into memory so
+            // every request path reads it synchronously.
+            providers.harnessWires.collect { com.androidharness.app.llm.HarnessProvider.pins = it }
+        }
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            val builtIn = com.androidharness.app.llm.HarnessProvider
+            val catalog = com.androidharness.app.llm.ModelCatalog.listModels(builtIn.config, builtIn.KEYLESS)
+            if (catalog is com.androidharness.app.llm.ModelCatalog.Result.Models) {
+                providers.saveCatalog(builtIn.ID, catalog.models)
+            }
             com.androidharness.app.llm.ModelsDev.refresh(appContext)
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

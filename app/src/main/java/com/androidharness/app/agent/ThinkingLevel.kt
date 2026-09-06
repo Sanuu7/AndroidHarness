@@ -25,7 +25,7 @@ enum class ThinkingLevel(val label: String) {
      * Budget families (Claude/Gemini natively) take every ladder rung;
      * MINIMAL gets a tiny budget, ULTRA rides with MAX.
      */
-    fun budgetTokens(maxOutputTokens: Int): Int = when (this) {
+    fun budgetTokens(@Suppress("UNUSED_PARAMETER") maxOutputTokens: Int): Int = when (this) {
         OFF -> 0
         MINIMAL -> 512
         LOW -> 1_024
@@ -33,7 +33,7 @@ enum class ThinkingLevel(val label: String) {
         HIGH -> 16_384
         XHIGH -> 24_576
         MAX, ULTRA -> 32_768
-    }.coerceAtMost((maxOutputTokens - 4_096).coerceAtLeast(0))
+    }
 
     /**
      * OpenAI-compatible reasoning_effort string, or null to omit. Top-tier

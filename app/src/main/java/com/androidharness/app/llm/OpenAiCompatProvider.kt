@@ -68,7 +68,7 @@ class OpenAiCompatProvider(
             // OpenAI-compat hosts get `reasoning_effort` for models with an
             // enumerated/known vocabulary; inherent reasoners (DeepSeek) get
             // nothing and bare-local servers never see an unknown field.
-            if (options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF) {
+            run {
                 if ("openrouter.ai" in host) {
                     com.androidharness.app.agent.ThinkingSpecs
                         .openRouterReasoning(config.model, options.thinking)
@@ -159,7 +159,7 @@ class OpenAiCompatProvider(
             // session totals, so keep the LAST usage seen, final counts are
             // the authoritative ones, and emit exactly one Usage per request.
             var pendingUsage: StreamEvent.Usage? = null
-            ProviderFactory.sseJson(request).collect { el ->
+            ProviderFactory.sseJson(request, client).collect { el ->
                 parseChunk(el, acc, indexToId).forEach { event ->
                     if (event is StreamEvent.Usage) pendingUsage = event else emit(event)
                 }

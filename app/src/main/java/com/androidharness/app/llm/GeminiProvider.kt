@@ -62,20 +62,30 @@ class GeminiProvider(
                 }
             }
             putJsonObject("generationConfig") {
-                put("maxOutputTokens", options.maxOutputTokens)
-                if (options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF) {
+                val model = config.model.substringAfterLast('/').lowercase()
+                val level = options.thinking
+                val off = level == com.androidharness.app.agent.ThinkingLevel.OFF
+                val catalog = ModelsDev.entry("google", config.model)
+                val supported = catalog?.reasoning != false &&
+                    (model.startsWith("gemini-2.5") || model.startsWith("gemini-3"))
+                val ceiling = catalog?.budgetMax ?: if ("pro" in model) 32_768 else 24_576
+                val budget = level.budgetTokens(options.maxOutputTokens).coerceAtMost(ceiling)
+                put("maxOutputTokens", if (supported && !off) maxOf(options.maxOutputTokens, budget + 4_096) else options.maxOutputTokens)
+                if (supported) {
                     putJsonObject("thinkingConfig") {
-                        // -1 lets the model pick its budget dynamically
-                        val catalogMax = ModelsDev.entry("google", config.model)?.budgetMax
-                        val budget = options.thinking.budgetTokens(options.maxOutputTokens)
-                            .let { if (catalogMax != null) minOf(it, catalogMax) else it }
-                        put(
-                            "thinkingBudget",
-                            if (options.thinking == com.androidharness.app.agent.ThinkingLevel.MAX ||
-                                options.thinking == com.androidharness.app.agent.ThinkingLevel.ULTRA
-                            ) -1 else budget,
-                        )
-                        put("includeThoughts", false)
+                        if (model.startsWith("gemini-3")) {
+                            put("thinkingLevel", when (level) {
+                                com.androidharness.app.agent.ThinkingLevel.OFF,
+                                com.androidharness.app.agent.ThinkingLevel.MINIMAL -> if ("flash" in model) "minimal" else "low"
+                                com.androidharness.app.agent.ThinkingLevel.LOW -> "low"
+                                com.androidharness.app.agent.ThinkingLevel.MEDIUM -> if ("flash" in model) "medium" else "low"
+                                else -> "high"
+                            })
+                        } else {
+                            // Gemini 2.5 Pro cannot disable thinking.
+                            put("thinkingBudget", if ("pro" in model) maxOf(128, budget) else budget)
+                        }
+                        put("includeThoughts", !off)
                     }
                 }
             }
@@ -101,7 +111,7 @@ class GeminiProvider(
         var finishReason: String? = null
 
         return flow {
-            ProviderFactory.sseJson(request).collect { el ->
+            ProviderFactory.sseJson(request, client).collect { el ->
                 val chunk = el as? JsonObject ?: return@collect
 
                 chunk["error"]?.jsonObjectOrAbsent()?.get("message")?.jsonPrimitive?.contentOrNull

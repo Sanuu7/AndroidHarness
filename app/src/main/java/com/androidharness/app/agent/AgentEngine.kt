@@ -734,7 +734,7 @@ class AgentEngine(
 
         val startedAt = System.currentTimeMillis()
         val executed = try {
-            val raw = tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS))
+            val raw = tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS, sessionId))
             raw.copy(output = com.androidharness.app.tools.SecretRedactor.redact(raw.output))
         } catch (ce: CancellationException) {
             throw ce
@@ -764,7 +764,7 @@ class AgentEngine(
                 if (request.response.await()) {
                     // Repaired: run the exact same command again for the model.
                     val retry = try {
-                        tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS))
+                        tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS, sessionId))
                     } catch (ce: CancellationException) {
                         throw ce
                     } catch (e: Exception) {

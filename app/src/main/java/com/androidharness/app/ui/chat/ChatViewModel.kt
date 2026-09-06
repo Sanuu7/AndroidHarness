@@ -959,6 +959,18 @@ class ChatViewModel(
             ?: text
 
         viewModelScope.launch {
+            // Harness free-tier models live behind different wires per model; probe
+            // once on first use and pin the winner so later requests route directly.
+            if (provider.id == com.androidharness.app.llm.HarnessProvider.ID &&
+                c.providers.wire(roleModel) == null
+            ) {
+                val learned = com.androidharness.app.llm.HarnessProvider.probeWire(roleModel)
+                if (learned != null) {
+                    c.providers.pinWire(roleModel, learned.name)
+                    com.androidharness.app.llm.HarnessProvider.pins =
+                        com.androidharness.app.llm.HarnessProvider.pins + (roleModel to learned.name)
+                }
+            }
             // Security gate (battery D1): a workspace .harness/mcp.json never
             // spawns commands until this exact file content was approved. The
             // dialog offers approve (and continue) or run without those servers.
@@ -1312,7 +1324,7 @@ class ChatViewModel(
         c.runManager.acquireKeepalive()
         try {
             val summary = StringBuilder()
-            com.androidharness.app.llm.ProviderFactory.create(provider.type).streamChat(
+            com.androidharness.app.llm.ProviderFactory.create(provider).streamChat(
                 provider, apiKey,
                 "Summarize this coding-agent conversation compactly. Preserve: the user's goal, " +
                     "files created/modified and their paths, key decisions, pending work and next steps. " +

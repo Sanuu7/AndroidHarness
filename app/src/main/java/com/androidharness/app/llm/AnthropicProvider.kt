@@ -45,9 +45,9 @@ class AnthropicProvider(
             // when present so X-High/Max never exceeds what the model accepts.
             val catalogMax = ModelsDev.entry("anthropic", config.model)?.budgetMax
             val budget = options.thinking.budgetTokens(options.maxOutputTokens)
-                .let { if (catalogMax != null) minOf(it, catalogMax) else it }
+                .let { if (it == 0) 0 else maxOf(1_024, if (catalogMax != null) minOf(it, catalogMax) else it) }
             // Anthropic requires max_tokens > thinking budget
-            put("max_tokens", maxOf(options.maxOutputTokens, budget + 8_192))
+            put("max_tokens", if (budget > 0) maxOf(options.maxOutputTokens, budget + 4_096) else options.maxOutputTokens)
             put("stream", true)
             if (budget > 0) {
                 putJsonObject("thinking") {
@@ -103,7 +103,7 @@ class AnthropicProvider(
         var cacheWriteTokens = 0
         var stopReason: String? = null
 
-        return ProviderFactory.sseJson(request).mapNotNull { el ->
+        return ProviderFactory.sseJson(request, client).mapNotNull { el ->
             val event = el as? JsonObject ?: return@mapNotNull null
             when (event["type"]?.jsonPrimitive?.contentOrNull) {
                 "message_start" -> {

@@ -54,7 +54,7 @@ class OpenAiResponsesProvider(
             // Usage lands once on response.completed, hold it and emit after
             // the stream so each request tallies exactly once.
             var pendingUsage: StreamEvent.Usage? = null
-            ProviderFactory.sseJson(request).collect { el ->
+            ProviderFactory.sseJson(request, client).collect { el ->
                 parseEvent(el, acc).forEach { event ->
                     if (event is StreamEvent.Usage) pendingUsage = event else emit(event)
                 }
@@ -86,13 +86,13 @@ class OpenAiResponsesProvider(
             put("prompt_cache_key", cleanKey)
             put("user", "pc_$cleanKey")
         }
-        if (options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF) {
+        run {
             com.androidharness.app.agent.ThinkingSpecs
                 .effortWire(config.model, options.thinking, "openai")
                 ?.let { effort ->
                     putJsonObject("reasoning") {
                         put("effort", effort)
-                        put("summary", "auto")
+                        if (effort != "none") put("summary", "auto")
                     }
                 }
         }
@@ -161,15 +161,25 @@ class OpenAiResponsesProvider(
         }
 
         Role.TOOL -> buildList {
+            // Tool outputs are string-only; images must ride in their own user
+            // message item. A bare top-level input_image item 400s on strict
+            // gateways ("did not match any supported type").
             add(buildJsonObject {
                 put("type", "function_call_output")
                 put("call_id", m.toolCallId ?: "")
                 put("output", m.text)
             })
-            m.imageData.forEach { image ->
+            if (m.imageData.isNotEmpty()) {
                 add(buildJsonObject {
-                    put("type", "input_image")
-                    put("image_url", "data:${image.mime};base64,${image.base64}")
+                    put("role", "user")
+                    putJsonArray("content") {
+                        m.imageData.forEach { image ->
+                            add(buildJsonObject {
+                                put("type", "input_image")
+                                put("image_url", "data:${image.mime};base64,${image.base64}")
+                            })
+                        }
+                    }
                 })
             }
         }

@@ -46,6 +46,11 @@ object ThinkingSpecs {
         Regex("(^|/)grok-[34]") to
             Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.LOW, ThinkingLevel.HIGH)),
 
+        // Meta Muse Spark (OpenCode Zen relay): the relay 400s anything outside
+        // [minimal, low, medium, high, xhigh]; "max" is NOT accepted.
+        Regex("muse-spark") to
+            Spec(Style.EFFORT, listOf(ThinkingLevel.OFF, ThinkingLevel.MINIMAL, ThinkingLevel.LOW, ThinkingLevel.MEDIUM, ThinkingLevel.HIGH, ThinkingLevel.XHIGH)),
+
         Regex("claude") to
             Spec(Style.BUDGET, ALL),
 
@@ -161,7 +166,10 @@ object ThinkingSpecs {
 
     /** Closest tier the model actually enumerates (never invents a value). */
     private fun nearestEffort(values: List<String>, level: ThinkingLevel): String? =
-        values.minByOrNull { kotlin.math.abs(tierRank(it) - level.rank) }
+        values.filter { tierRank(it) > ThinkingLevel.OFF.rank }.let { enabled ->
+            enabled.filter { tierRank(it) <= level.rank }.maxByOrNull { tierRank(it) }
+                ?: enabled.minByOrNull { tierRank(it) }
+        }
 
     /**
      * Exact `reasoning_effort` string for [rawRequested] on [modelId] after
@@ -170,8 +178,8 @@ object ThinkingSpecs {
      * ([devKey]) wins over the shipped family table.
      */
     fun effortWire(modelId: String?, rawRequested: ThinkingLevel, devKey: String? = null): String? {
-        if (rawRequested == ThinkingLevel.OFF) return null
         val dyn = com.androidharness.app.llm.ModelsDev.entry(devKey, modelId)
+        if (rawRequested == ThinkingLevel.OFF) return dyn?.effortValues?.firstOrNull { it == "none" }
         if (dyn?.reasoning == false) return null
         dyn?.effortValues?.takeIf { it.isNotEmpty() }?.let { values ->
             return nearestEffort(values, rawRequested)
@@ -199,7 +207,7 @@ object ThinkingSpecs {
      * toggle when that's the only dial the model has, null for non-reasoners.
      */
     fun openRouterReasoning(modelId: String?, rawRequested: ThinkingLevel): RouterReasoning? {
-        if (rawRequested == ThinkingLevel.OFF) return null
+        if (rawRequested == ThinkingLevel.OFF) return RouterReasoning(enabled = false)
         val devKey = "openrouter"
         val dyn = com.androidharness.app.llm.ModelsDev.entry(devKey, modelId)
         if (dyn?.reasoning == false) return null

@@ -207,4 +207,41 @@ class ThinkingSpecsTest {
         com.androidharness.app.llm.ModelsDev.replaceForTesting(emptyMap())
         assertEquals("high", ThinkingSpecs.openRouterReasoning("anthropic/claude-sonnet-4-5", ThinkingLevel.HIGH)?.effort)
     }
+
+    @Test
+    fun `muse spark sends relay vocabulary up to xhigh - never max`() {
+        val m = "muse-spark-1.3-contributor-free"
+        assertEquals("xhigh", ThinkingSpecs.effortWire(m, ThinkingLevel.XHIGH, "openai"))
+        assertEquals("xhigh", ThinkingSpecs.effortWire(m, ThinkingLevel.MAX, "openai"))
+        assertEquals("high", ThinkingSpecs.effortWire(m, ThinkingLevel.HIGH, "openai"))
+        assertEquals("minimal", ThinkingSpecs.effortWire(m, ThinkingLevel.MINIMAL, "openai"))
+        assertNull(ThinkingSpecs.effortWire(m, ThinkingLevel.OFF, "openai"))
+    }
+    @Test
+    fun `catalog effort floors independently of order and ignores unknown values`() {
+        com.androidharness.app.llm.ModelsDev.replaceForTesting(mapOf("test" to mapOf(
+            "model" to com.androidharness.app.llm.ModelsDev.Entry(
+                reasoning = true, effortValues = listOf("high", "none", "unknown", "low"),
+                budgetTokens = false, budgetMax = null, toggle = true,
+            ),
+        )))
+        assertEquals("low", ThinkingSpecs.effortWire("model", ThinkingLevel.MEDIUM, "test"))
+        assertEquals("low", ThinkingSpecs.effortWire("model", ThinkingLevel.MINIMAL, "test"))
+        assertEquals("none", ThinkingSpecs.effortWire("model", ThinkingLevel.OFF, "test"))
+        assertEquals("high", ThinkingSpecs.effortWire("model", ThinkingLevel.ULTRA, "test"))
+    }
+
+    @Test
+    fun `off explicitly disables openrouter reasoning`() {
+        assertEquals(false, ThinkingSpecs.openRouterReasoning("any-model", ThinkingLevel.OFF)?.enabled)
+    }
+
+    @Test
+    fun `output limit does not erase selected thinking budget`() {
+        assertEquals(512, ThinkingLevel.MINIMAL.budgetTokens(1_500))
+        assertEquals(4_096, ThinkingLevel.MEDIUM.budgetTokens(4_096))
+        assertEquals(16_384, ThinkingLevel.HIGH.budgetTokens(8_192))
+        assertEquals(32_768, ThinkingLevel.MAX.budgetTokens(8_192))
+        assertEquals(0, ThinkingLevel.OFF.budgetTokens(1_500))
+    }
 }

@@ -81,7 +81,9 @@ class OpenAiResponsesProviderTest {
             options = RequestOptions(),
         )
         val input = body["input"]!!.jsonArray.map { it.jsonObject }
-        // assistant message + function_call item + function_call_output item + input_image item
+        // assistant message + function_call item + function_call_output item +
+        // user message carrying the image (bare input_image items 400 on
+        // strict gateways: "did not match any supported type")
         assertEquals(4, input.size)
         with(input[1]) {
             assertEquals("function_call", this["type"]!!.jsonPrimitive.content)
@@ -94,8 +96,11 @@ class OpenAiResponsesProviderTest {
             assertEquals("file body", this["output"]!!.jsonPrimitive.content)
         }
         with(input[3]) {
-            assertEquals("input_image", this["type"]!!.jsonPrimitive.content)
-            assertEquals("data:image/png;base64,base64data", this["image_url"]!!.jsonPrimitive.content)
+            assertEquals("user", this["role"]!!.jsonPrimitive.content)
+            val parts = this["content"]!!.jsonArray.map { it.jsonObject }
+            assertEquals(1, parts.size)
+            assertEquals("input_image", parts[0]["type"]!!.jsonPrimitive.content)
+            assertEquals("data:image/png;base64,base64data", parts[0]["image_url"]!!.jsonPrimitive.content)
         }
     }
 
