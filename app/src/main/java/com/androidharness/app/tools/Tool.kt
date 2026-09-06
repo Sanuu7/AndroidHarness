@@ -16,6 +16,7 @@ data class ToolContext(
      * honor it, they never enable it themselves.
      */
     val sandboxOff: Boolean = false,
+    val sessionId: String? = null,
 )
 
 data class ToolResult(
@@ -66,6 +67,7 @@ class ToolRegistry(private val tools: List<Tool>) {
             skills: com.androidharness.app.skills.SkillStore,
             imageStore: com.androidharness.app.data.ImageStore? = null,
             browserController: com.androidharness.app.browser.BrowserController? = null,
+            phoneController: com.androidharness.app.phone.PhoneController? = null,
             searchApi: () -> com.androidharness.app.tools.SearchApiConfig? = { null },
         ): ToolRegistry {
             val baseTools = mutableListOf<Tool>(
@@ -136,6 +138,7 @@ class ToolRegistry(private val tools: List<Tool>) {
                     )
                 )
             }
+            if (phoneController != null) baseTools.add(PhoneTool(phoneController))
             return ToolRegistry(baseTools)
         }
     }
