@@ -50,6 +50,24 @@ class FileToolsTest {
     }
 
     @Test
+    fun `grep fails fast with a budget error on a pathological regex`() = runBlocking {
+        // The on-device wedge was `^(a+)+$` against 36 bytes (security QA,
+        // 2026-09-06): exponential on ART, but desktop JDKs short-circuit it,
+        // so the test uses a shape that backtracks hard on ANY engine and a
+        // tiny budget to prove the wrapper trips instead of hanging.
+        file("evil.txt").writeText("a".repeat(500) + "\n")
+        val started = System.currentTimeMillis()
+        val message = runExpectingFailure(
+            GrepTool(regexStepBudget = 100_000),
+            "pattern" to ".*.*x",
+        )
+        assertTrue(message, message.contains("step budget"))
+        // Budgeted, so this returns in well under a second; the assert only
+        // catches a regression to the unbounded hang.
+        assertTrue(System.currentTimeMillis() - started < 10_000)
+    }
+
+    @Test
     fun `valid character classes and recursive globs still match`() = runBlocking {
         file("index.htm").writeText("text")
         file("nested").mkdirs()

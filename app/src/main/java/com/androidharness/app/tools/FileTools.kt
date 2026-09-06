@@ -474,7 +474,46 @@ class SearchFilesTool : Tool {
         }
 }
 
-class GrepTool : Tool {
+/** Thrown when a regex burns through its step budget; mapped to a clean tool failure. */
+internal class RegexBudgetExceeded : RuntimeException()
+
+/** Default charAt budget for one tool call; a few seconds of pathological backtracking on device. */
+internal const val DEFAULT_REGEX_STEP_BUDGET = 100_000_000L
+
+/**
+ * Tracks regex engine steps across a whole tool call. java.util.regex reads
+ * its input only through CharSequence.charAt, so a counting wrapper bounds
+ * catastrophic backtracking: `^(a+)+$` against a crafted 36-byte file used
+ * to wedge grep forever with no recovery (security QA, 2026-09-06).
+ */
+internal class RegexStepBudget(internal val maxSteps: Long = DEFAULT_REGEX_STEP_BUDGET) {
+    var steps = 0L
+        internal set
+}
+
+/**
+ * A CharSequence that charges one step per charAt against [budget]. The
+ * budget is shared across every text this call matches, so once a pattern
+ * blows it, every later match attempt fails immediately.
+ */
+internal class BudgetedCharSequence(
+    private val inner: CharSequence,
+    private val budget: RegexStepBudget,
+) : CharSequence {
+    override val length: Int get() = inner.length
+
+    override fun get(index: Int): Char {
+        if (++budget.steps > budget.maxSteps) throw RegexBudgetExceeded()
+        return inner[index]
+    }
+
+    override fun subSequence(startIndex: Int, endIndex: Int): CharSequence =
+        BudgetedCharSequence(inner.subSequence(startIndex, endIndex), budget)
+
+    override fun toString(): String = inner.toString()
+}
+
+class GrepTool(private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET) : Tool {
     override val name = "grep"
     override val description =
         "Search file contents in the workspace with a regular expression. Returns matching lines as path:line: text."
@@ -505,6 +544,7 @@ class GrepTool : Tool {
 
             val matches = mutableListOf<String>()
             val skipped = mutableListOf<String>()
+            val budget = RegexStepBudget(regexStepBudget)
             for (node in ctx.workspace.walk(path)) {
                 if (matches.size >= MAX_GREP_MATCHES) break
                 if (!node.isFile) continue
@@ -522,31 +562,38 @@ class GrepTool : Tool {
                     continue
                 }
                 val lines = splitLines(text)
-                lines.forEachIndexed { idx, line ->
-                    if (matches.size >= MAX_GREP_MATCHES) return@forEachIndexed
-                    val matched = if (line.length <= 65_536) {
-                        regex.containsMatchIn(line)
-                    } else {
-                        // Chunk long lines to prevent ART regex engine limits from dropping matches
-                        var found = false
-                        val chunkSize = 60_000
-                        val overlap = 2_000
-                        var start = 0
-                        while (start < line.length) {
-                            val end = (start + chunkSize).coerceAtMost(line.length)
-                            val sub = line.substring(start, end)
-                            if (regex.containsMatchIn(sub)) {
-                                found = true
-                                break
+                try {
+                    lines.forEachIndexed { idx, line ->
+                        if (matches.size >= MAX_GREP_MATCHES) return@forEachIndexed
+                        val matched = if (line.length <= 65_536) {
+                            regex.containsMatchIn(BudgetedCharSequence(line, budget))
+                        } else {
+                            // Chunk long lines to prevent ART regex engine limits from dropping matches
+                            var found = false
+                            val chunkSize = 60_000
+                            val overlap = 2_000
+                            var start = 0
+                            while (start < line.length) {
+                                val end = (start + chunkSize).coerceAtMost(line.length)
+                                val sub = line.substring(start, end)
+                                if (regex.containsMatchIn(BudgetedCharSequence(sub, budget))) {
+                                    found = true
+                                    break
+                                }
+                                if (end >= line.length) break
+                                start += (chunkSize - overlap)
                             }
-                            if (end >= line.length) break
-                            start += (chunkSize - overlap)
+                            found
                         }
-                        found
+                        if (matched) {
+                            matches += "${node.relPath}:${idx + 1}: ${line.take(300)}"
+                        }
                     }
-                    if (matched) {
-                        matches += "${node.relPath}:${idx + 1}: ${line.take(300)}"
-                    }
+                } catch (e: RegexBudgetExceeded) {
+                    throw ToolFailure(
+                        "Regex exceeded its step budget while matching (pathological backtracking). " +
+                            "Simplify the pattern or narrow the search."
+                    )
                 }
             }
 
