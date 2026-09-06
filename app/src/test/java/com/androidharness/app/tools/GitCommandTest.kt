@@ -208,14 +208,14 @@ class GitCommandTest {
     }
 
     @Test
-    fun `upstream check detects missing tracking and push -u records it`() {
+    fun `upstream check reads the merge ref and push -u records it`() {
         assertEquals(
-            "$base rev-parse --verify --quiet 'HEAD@{u}'",
-            gitUpstreamCheckCmd(null),
+            "$base config --get 'branch.feature/x.merge'",
+            gitUpstreamCheckCmd("feature/x"),
         )
         assertEquals(
-            "$base rev-parse --verify --quiet 'feature/x@{u}'",
-            gitUpstreamCheckCmd("feature/x"),
+            "$base rev-parse --abbrev-ref HEAD",
+            gitHeadBranchCmd(),
         )
         // A plain push on a branch with no upstream leaves no tracking config.
         success(gitCmd("init", "config user.name Test", "config user.email test@example.com"))
@@ -226,12 +226,47 @@ class GitCommandTest {
         val remote = tmp.root.resolve("upstream-remote.git").absolutePath
         success("git init -q --bare '$remote'")
         success(gitCmd("remote add origin '$remote'"))
-        val (checkCode, _) = shell(gitUpstreamCheckCmd(null))
+        val (checkCode, _) = shell(gitUpstreamCheckCmd("master"))
         assertFalse(checkCode == 0)
         success(gitPushCmd(null, null, true))
-        val (checkCode2, _) = shell(gitUpstreamCheckCmd(null))
-        assertEquals(0, checkCode2)
+        val (_, checkOut) = shell(gitUpstreamCheckCmd("master"))
+        assertEquals("refs/heads/master", checkOut.trim())
         assertEquals("origin", success(gitCmd("config branch.master.remote")).trim())
-        assertEquals("refs/heads/master", success(gitCmd("config branch.master.merge")).trim())
+    }
+
+    /**
+     * G1b regression: a branch cut off origin/main (or otherwise repointed)
+     * carries merge = refs/heads/<source>, the push tool must see the wrong
+     * value and re-push with -u, which rewrites the config even though the
+     * push itself is already up to date.
+     */
+    @Test
+    fun `push -u repairs a branch tracking the wrong merge ref`() {
+        success(gitCmd("init", "config user.name Test", "config user.email test@example.com"))
+        tmp.root.resolve("f.txt").writeText("first")
+        success(gitCmd("add -A", "commit -m initial"))
+        val remote = tmp.root.resolve("wrong-merge-remote.git").absolutePath
+        success("git init -q --bare '$remote'")
+        success(gitCmd("remote add origin '$remote'"))
+        success(gitPushCmd(null, null, true))
+        // What `checkout -b <name> origin/main` leaves behind.
+        success(gitCmd("config branch.master.merge refs/heads/other"))
+        val (_, polluted) = shell(gitUpstreamCheckCmd("master"))
+        assertEquals("refs/heads/other", polluted.trim())
+        success(gitPushCmd(null, null, true))
+        val (_, repaired) = shell(gitUpstreamCheckCmd("master"))
+        assertEquals("refs/heads/master", repaired.trim())
+    }
+
+    @Test
+    fun `firstOutputLine reads the stdout section of a built result`() {
+        val ok = buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+            0, false, "refs/heads/master\n", "", com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+        ))
+        assertEquals("refs/heads/master", ok.firstOutputLine())
+        val empty = buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+            0, false, "", "", com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+        ))
+        assertEquals(null, empty.firstOutputLine())
     }
 }

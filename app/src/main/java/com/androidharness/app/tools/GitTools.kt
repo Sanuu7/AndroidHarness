@@ -101,17 +101,28 @@ internal fun gitPushCmd(remote: String?, branch: String?, setUpstream: Boolean):
         },
     )
 
+internal fun gitHeadBranchCmd(): String = gitCmd("rev-parse --abbrev-ref HEAD")
+
 /**
- * Detects a branch with no upstream configured. A plain `git push <remote>
- * <branch>` with an explicit refspec succeeds WITHOUT recording
- * branch.<name>.remote/merge, so the push tool must check up front and pass
- * -u itself: retrying with -u only after a no-upstream failure can never
- * fire, and the next git_pull fails without the tracking config.
+ * Reads branch.<branch>.merge, the ref git_pull merges FROM. Mere existence
+ * of @{u} is not enough: a branch cut with `checkout -b <name> origin/main`
+ * records merge = refs/heads/main, and a plain push leaves that untouched,
+ * so the next git_pull merges main into the feature branch and --ff-only
+ * aborts (on-device QA, 2026-09-06). The push tool requires
+ * refs/heads/<branch> here and re-pushes with -u on any mismatch; -u
+ * rewrites the tracking config even when the push is up to date, so a wrong
+ * upstream self-heals on the next push.
  */
-internal fun gitUpstreamCheckCmd(branch: String?): String {
-    val target = branch?.trim().orEmpty().ifEmpty { "HEAD" }
-    return gitCmd("rev-parse --verify --quiet ${(target + "@{u}").shellQuote()}")
-}
+internal fun gitUpstreamCheckCmd(branch: String): String =
+    gitCmd("config --get ${"branch.$branch.merge".shellQuote()}")
+
+/** First non-blank stdout line of a built result; check commands emit one value. */
+internal fun ToolResult.firstOutputLine(): String? =
+    output
+        .substringAfter("--- stdout ---\n", "")
+        .substringBefore("\n--- stderr ---")
+        .lineSequence()
+        .firstOrNull { it.isNotBlank() }
 
 internal fun gitPullCmd(remote: String?, mode: String?): String {
     val r = (remote?.trim()?.ifEmpty { null } ?: "origin").shellQuote()
@@ -492,7 +503,8 @@ class GitPushTool(
         "Push committed work to a remote (default origin; branch defaults to the current one). " +
         "GitHub HTTPS remotes authenticate automatically with the stored GitHub token " +
         "(doctor --github verifies it); other HTTPS remotes need credentials already set up " +
-        "in the shell. A first push for a branch with no upstream tracking sets it with -u. " +
+        "in the shell. If a branch tracks nothing or the wrong upstream, the push is sent " +
+        "with -u so tracking points at the same-named remote branch. " +
         "Runs as a modifying operation, so the user approves it first."
     override val parametersSchema = Schema.obj(
         mapOf(
@@ -505,18 +517,27 @@ class GitPushTool(
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
         withContext(Dispatchers.IO) {
             val remote = args["remote"]?.jsonPrimitive?.content
-            val branch = args["branch"]?.jsonPrimitive?.content
-            val upstreamRes = runGitWithRetry(router, linuxEnv, ctx, gitUpstreamCheckCmd(branch))
-            if (upstreamRes.ok) {
-                return@withContext runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = false))
+            val branchArg = args["branch"]?.jsonPrimitive?.content?.trim().orEmpty()
+            var branch = branchArg
+            if (branch.isEmpty()) {
+                // Resolve HEAD so the tracking check targets the checked-out
+                // branch instead of a literal "HEAD"; failure means there is
+                // no repository (or no commit) to push from, so surface it.
+                val head = runGitWithRetry(router, linuxEnv, ctx, gitHeadBranchCmd())
+                if (!head.ok) return@withContext head
+                branch = head.firstOutputLine() ?: return@withContext head
             }
-            // No upstream recorded (or the ref lookup failed), so push with -u
-            // and record it. The explicit refspec cannot fail with a
-            // no-upstream error, so there is no post-hoc retry to attempt.
-            val retry = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branch, setUpstream = true))
+            val mergeValue = runGitWithRetry(router, linuxEnv, ctx, gitUpstreamCheckCmd(branch))
+            if (mergeValue.ok && mergeValue.firstOutputLine() == "refs/heads/$branch") {
+                return@withContext runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branchArg.ifEmpty { null }, setUpstream = false))
+            }
+            // Upstream missing or pointing at another branch. The explicit
+            // refspec cannot fail with a no-upstream error, so there is no
+            // post-hoc retry to attempt; -u rewrites the tracking config.
+            val retry = runGitWithRetry(router, linuxEnv, ctx, gitPushCmd(remote, branchArg.ifEmpty { null }, setUpstream = true))
             if (retry.ok) {
                 retry.copy(
-                    output = "[note: no upstream was configured; pushed with -u to set it]\n${retry.output}",
+                    output = "[note: upstream tracking was missing or pointed at another branch; pushed with -u to fix it]\n${retry.output}",
                 )
             } else {
                 retry
