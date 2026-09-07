@@ -40,6 +40,7 @@ import androidx.compose.material.icons.filled.PushPin
 import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.ForkRight
+import androidx.compose.material.icons.outlined.AutoMode
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
@@ -572,6 +573,15 @@ fun AppNav(container: AppContainer) {
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                     )
                     DrawerRow(
+                        icon = { Icon(Icons.Outlined.AutoMode, contentDescription = null) },
+                        title = "Automation",
+                        subtitle = "Scheduled agent tasks",
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            nav.navigate("automation")
+                        },
+                    )
+                    DrawerRow(
                         icon = { Icon(Icons.Outlined.Terminal, contentDescription = null) },
                         title = "Terminal",
                         subtitle = "Shell in this workspace",
@@ -745,10 +755,16 @@ fun AppNav(container: AppContainer) {
                     onBack = { nav.popBackStack() },
                 )
             }
+            composable("automation") {
+                com.androidharness.app.ui.automation.AutomationScreen(container,
+                    onBack = { nav.popBackStack() },
+                    onOpenSession = { nav.navigate("chat/$it") })
+            }
             composable("settings") {
                 SettingsScreen(
                     container = container,
                     onBack = { nav.popBackStack() },
+                    onOpenAutomation = { nav.navigate("automation") },
                     onOpenStats = { nav.navigate("stats") },
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },

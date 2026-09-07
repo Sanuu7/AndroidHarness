@@ -142,6 +142,7 @@ private fun ghNewTokenUrl(extraScopes: Set<String>): String =
 fun SettingsScreen(
     container: AppContainer,
     onBack: () -> Unit,
+    onOpenAutomation: () -> Unit = {},
     onOpenStats: () -> Unit = {},
     onRunSetup: () -> Unit = {},
     onOpenSkills: () -> Unit = {},
@@ -218,6 +219,11 @@ fun SettingsScreen(
                 .padding(horizontal = 16.dp, vertical = 8.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+            OutlinedCard(Modifier.fillMaxWidth()) {
+                TextButton(onClick = onOpenAutomation, modifier = Modifier.fillMaxWidth()) {
+                    Text("Automation · tasks, schedules and history")
+                }
+            }
             GitHubSection(container)
 
             WebSearchSection(container)

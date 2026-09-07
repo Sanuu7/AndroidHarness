@@ -10,6 +10,7 @@ lifecycle = "2.9.4"
 navigation = "2.9.8"
 room = "2.8.4"
 datastore = "1.2.1"
+work = "2.10.5"
 documentfile = "1.1.0"
 fragment = "1.8.6"
 browser = "1.10.0"
@@ -41,6 +42,7 @@ room-runtime = { module = "androidx.room:room-runtime", version.ref = "room" }
 room-ktx = { module = "androidx.room:room-ktx", version.ref = "room" }
 room-compiler = { module = "androidx.room:room-compiler", version.ref = "room" }
 datastore-preferences = { module = "androidx.datastore:datastore-preferences", version.ref = "datastore" }
+work-runtime-ktx = { module = "androidx.work:work-runtime-ktx", version.ref = "work" }
 documentfile = { module = "androidx.documentfile:documentfile", version.ref = "documentfile" }
 fragment-ktx = { module = "androidx.fragment:fragment-ktx", version.ref = "fragment" }
 browser = { module = "androidx.browser:browser", version.ref = "browser" }

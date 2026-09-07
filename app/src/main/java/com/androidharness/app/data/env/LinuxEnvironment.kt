@@ -712,6 +712,11 @@ class LinuxEnvironmentManager(
         put("HOME", "${prefix.absolutePath}/home")
         put("TMPDIR", "${prefix.absolutePath}/tmp")
         put("PREFIX", prefix.absolutePath)
+        val termuxExec = File(prefix, "lib/libtermux-exec.so")
+        if (termuxExec.exists()) {
+            put("LD_PRELOAD", termuxExec.absolutePath)
+            put("TERMUX__PREFIX", prefix.absolutePath)
+        }
         put("TERM", "xterm-256color")
         put("LANG", "C.UTF-8")
         // The bundled (Termux-built) git warns "templates not found" on every
@@ -993,6 +998,8 @@ class LinuxEnvironmentManager(
         put("HOME", "$TMP_PREFIX/home")
         put("TMPDIR", "$TMP_PREFIX/tmp")
         put("PREFIX", TMP_PREFIX)
+        put("LD_PRELOAD", "$TMP_PREFIX/lib/libtermux-exec.so")
+        put("TERMUX__PREFIX", TMP_PREFIX)
         put("TERM", "xterm-256color")
         put("LANG", "C.UTF-8")
         // Same templates fix as the app-side env, for the /data/local/tmp copy.

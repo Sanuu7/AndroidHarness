@@ -167,14 +167,4 @@ class SkillParserTest {
         assertTrue(block.contains("sketch: Compare variants."))
     }
 
-    @Test
-    fun `parses bundled phone-control skill`() {
-        val skillFile = java.io.File("src/main/assets/skills/phone-control/SKILL.md").takeIf { it.exists() }
-            ?: java.io.File("app/src/main/assets/skills/phone-control/SKILL.md")
-        assertTrue(skillFile.exists())
-        val parsed = SkillParser.parse(skillFile.readText())
-        assertEquals("phone-control", parsed.name)
-        assertEquals("android", parsed.category)
-        assertTrue(parsed.body.contains("phone_control"))
-    }
 }

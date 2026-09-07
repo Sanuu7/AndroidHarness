@@ -1433,9 +1433,6 @@ Rules:
         sb.append("- After tool calls complete, either continue with more tool calls or give the user a concise summary of what you did.\n")
         sb.append("- Never invent file contents you have not read.\n")
         sb.append("- Browser automation: when previewing or interacting with web projects via browser tools, start a local dev/http server using shell_background (e.g. python3 -m http.server 8000, npm run dev, or similar) and navigate to http://localhost:<port>.\n")
-        if (registry.get("phone_control") != null) {
-            sb.append("- Phone control: use the phone_control tool to observe and operate external Android apps with a visible pointer. Actions: status, screenshot, move, click, drag, scroll, type, key. Always inspect a fresh screenshot before sending input. Input coordinates are physical screen pixels; when using a resized screenshot, provide screenshot_width and screenshot_height for automatic scaling. Inputs affect live apps on the device; AndroidHarness itself is protected from agent input. Ask the user before sensitive or irreversible actions (purchases, messages, deletions), and never enter credentials or bypass secure screens.\n")
-        }
         sb.append("- Mobile UI formatting: responses are displayed on a phone touchscreen. Format text cleanly and compactly. Use standard markdown tables (| Col 1 | Col 2 |) or concise bullet lists rather than wide ASCII terminal boxes. When creating, editing, or serving HTML/web projects, host them on localhost via shell_background and include an explicit preview directive `::web-preview{target=\"http://localhost:<port>\"}` to offer the user a one-tap in-app web preview button.\n")
 
         if (mode == AgentMode.PLAN) {

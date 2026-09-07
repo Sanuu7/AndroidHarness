@@ -98,6 +98,7 @@ dependencies {
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.datastore.preferences)
+    implementation(libs.work.runtime.ktx)
     implementation(libs.documentfile)
     // Custom Tabs for the MCP OAuth authorize screen.
     implementation(libs.browser)

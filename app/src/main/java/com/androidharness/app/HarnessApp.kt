@@ -114,12 +114,10 @@ class AppContainer(val appContext: Context) {
         disabled = { disabledSkills.get() },
     )
     val browser = com.androidharness.app.browser.BrowserController(appContext, images)
-    val phone = com.androidharness.app.phone.PhoneController(appContext, shizuku, images)
     val registry = ToolRegistry.default(
         fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
         imageStore = images,
         browserController = browser,
-        phoneController = phone,
         searchApi = { searchApiConfig },
     )
     val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys)
@@ -146,6 +144,7 @@ class AppContainer(val appContext: Context) {
         mcp = mcp,
         repoMap = repoMap,
     )
+    val automation = com.androidharness.app.automation.AutomationManager(this)
     val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
 
     /**

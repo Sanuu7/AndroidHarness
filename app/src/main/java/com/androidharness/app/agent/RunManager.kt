@@ -78,16 +78,6 @@ fun describeToolCall(call: ToolCallData): String {
         "task" -> "Delegating: ${arg("title") ?: "research subagent"}…"
         "memory_write" -> "Saving to memory…"
         "todo_write" -> "Updating task list…"
-        "phone_control" -> when (arg("action")) {
-            "screenshot" -> "Taking screenshot…"
-            "click" -> "Clicking (${arg("x")}, ${arg("y")})…"
-            "move" -> "Moving pointer to (${arg("x")}, ${arg("y")})…"
-            "drag" -> "Dragging (${arg("x")}, ${arg("y")}) → (${arg("x2")}, ${arg("y2")})…"
-            "scroll" -> "Scrolling screen…"
-            "type" -> "Typing text…"
-            "key" -> "Pressing ${arg("text") ?: "key"}…"
-            else -> "Controlling phone…"
-        }
         "skill_view" -> "Loading skill ${arg("name") ?: "…"}…"
         "skills_list" -> "Listing skills…"
         "skill_manage" -> "Updating skill ${arg("name") ?: ""}…".trim()
@@ -126,6 +116,7 @@ class RunManager(
     data class LiveRunState(
         val sessionId: String,
         val running: Boolean = false,
+        val cancelled: Boolean = false,
         val turnId: String? = null,
         val streamingText: String? = null,
         val streamingThinking: String? = null,
@@ -222,7 +213,7 @@ class RunManager(
     fun isRunning(sessionId: String?): Boolean =
         sessionId != null && synchronized(lock) { jobs[sessionId]?.isActive == true }
 
-    /** What the notification and the phone-control overlay should say right now. */
+    /** What the run notification should say right now. */
     fun actionText(s: LiveRunState): String? = when {
         s.pendingQuestion != null -> "Waiting for your answer"
         s.pendingApproval != null -> "Waiting for your approval"
@@ -257,6 +248,7 @@ class RunManager(
         maxContextTokens: Int,
         thinking: ThinkingLevel,
         maxIterations: Int,
+        workspaceOverride: com.androidharness.app.workspace.WorkspaceFs? = null,
     ): String {
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
@@ -284,7 +276,7 @@ class RunManager(
         runCatching { sessions.setPendingPlan(sid, null) }
         live.update {
             it.copy(
-                running = true, error = null, turnId = turnId,
+                running = true, cancelled = false, error = null, turnId = turnId,
                 streamingText = "", streamingThinking = null,
                 liveMessageId = UUID.randomUUID().toString(), lastCommittedId = null,
                 queuedMessage = null, pendingPlan = null,
@@ -316,7 +308,7 @@ class RunManager(
                         .distinctUntilChanged()
                         .collect { RuntimeNotifier.setSessionPrompts(sid, it) }
                 }
-                val runWorkspace = workspace.currentOnce()
+                val runWorkspace = workspaceOverride ?: workspace.currentOnce()
                 // One catalog fetch per run serves every task `model` override;
                 // a provider that cannot list models just refuses overrides.
                 val modelResolver = SubagentModelResolver {
@@ -352,6 +344,7 @@ class RunManager(
                     repoMapEnabled = repoMapOn,
                 ).collect { event -> handleEvent(sid, event) }
             } catch (ce: CancellationException) {
+                live.update { it.copy(cancelled = true) }
                 throw ce
             } catch (e: Exception) {
                 live.update { it.copy(error = e.message ?: "Unexpected error") }
