@@ -38,7 +38,7 @@ class PhoneConsentActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) return
+        serviceLaunchRequested = savedInstanceState?.getBoolean("serviceLaunchRequested") ?: false
         val container = (application as HarnessApp).container
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
             android.widget.Toast.makeText(this, "Phone control needs Android 11 or newer.", android.widget.Toast.LENGTH_LONG).show()
@@ -110,8 +110,13 @@ class PhoneConsentActivity : ComponentActivity() {
         }
     }
 
+    override fun onSaveInstanceState(outState: Bundle) {
+        outState.putBoolean("serviceLaunchRequested", serviceLaunchRequested)
+        super.onSaveInstanceState(outState)
+    }
+
     override fun onDestroy() {
-        if (!serviceLaunchRequested) {
+        if (isFinishing && !isChangingConfigurations && !serviceLaunchRequested) {
             (application as HarnessApp).container.phone.notifyConsentFailed()
         }
         super.onDestroy()

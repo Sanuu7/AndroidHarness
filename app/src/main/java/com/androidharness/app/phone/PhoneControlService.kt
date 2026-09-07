@@ -77,6 +77,7 @@ import com.androidharness.app.MainActivity
 import com.androidharness.app.data.ThemeMode
 import com.androidharness.app.ui.theme.HarnessTheme
 import kotlinx.coroutines.*
+import kotlinx.coroutines.android.asCoroutineDispatcher
 import kotlinx.coroutines.flow.*
 import kotlin.math.roundToInt
 
@@ -120,8 +121,9 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     private var projection: MediaProjection? = null
     private var display: VirtualDisplay? = null
     private var reader: ImageReader? = null
-    private var frame: android.graphics.Bitmap? = null
-    private var frameAt = 0L
+    private var capturedImage: android.media.Image? = null
+    @Volatile private var captureActive = false
+    @Volatile var observationEpoch = 0L; private set
     @Volatile private var lastInputAt = 0L
 
     class OverlayUi {
@@ -170,7 +172,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        if (intent?.action == ACTION_STOP) { stopSelf(); return START_NOT_STICKY }
+        if (intent?.action == ACTION_STOP) { stopByUser(); return START_NOT_STICKY }
         val targetSession = intent?.getStringExtra("session")
         if (!targetSession.isNullOrBlank()) {
             sessionId = targetSession
@@ -204,18 +206,17 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
             val consent = intent.getParcelableExtra<Intent>("consent") ?: error("Missing capture consent")
             projection = getSystemService(MediaProjectionManager::class.java)
                 .getMediaProjection(android.app.Activity.RESULT_OK, consent)
-            projection!!.registerCallback(object : MediaProjection.Callback() { override fun onStop() { stopSelf() } }, handler)
+            projection!!.registerCallback(object : MediaProjection.Callback() { override fun onStop() { captureActive = false; stopSelf() } }, handler)
 
             reader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 3)
+            captureActive = true
             reader!!.setOnImageAvailableListener({ source ->
-                source.acquireLatestImage()?.use { image ->
-                    if (paused || SystemClock.elapsedRealtime() - frameAt < 80) return@use
-                    val plane = image.planes[0]
-                    val padded = android.graphics.Bitmap.createBitmap(plane.rowStride / plane.pixelStride, image.height, android.graphics.Bitmap.Config.ARGB_8888)
-                    padded.copyPixelsFromBuffer(plane.buffer)
-                    val next = android.graphics.Bitmap.createBitmap(padded, 0, 0, image.width, image.height)
-                    if (next !== padded) padded.recycle()
-                    synchronized(this) { frame?.recycle(); frame = next; frameAt = SystemClock.elapsedRealtime() }
+                if (captureActive) {
+                    val next = source.acquireLatestImage()
+                    if (next != null) {
+                        capturedImage?.close()
+                        capturedImage = next
+                    }
                 }
             }, captureHandler)
             display = projection!!.createVirtualDisplay(
@@ -248,20 +249,35 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
         }
     }
 
-    @Synchronized
-    private fun snapshotAfter(after: Long): android.graphics.Bitmap? =
-        if (!paused && frameAt >= after && SystemClock.elapsedRealtime() - frameAt < 5_000) {
-            frame?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
-        } else null
-
+    // Retain the latest Image without throttling or converting every video frame.
+    // A static display need not produce another frame after input completes.
     suspend fun snapshot(): android.graphics.Bitmap? {
-        val after = lastInputAt
-        val deadline = SystemClock.elapsedRealtime() + 1_800
-        while (SystemClock.elapsedRealtime() < deadline) {
-            snapshotAfter(after)?.let { return it }
-            delay(40)
+        delay((lastInputAt + 200 - SystemClock.elapsedRealtime()).coerceAtLeast(0))
+        return withContext(captureHandler.asCoroutineDispatcher()) {
+            val deadline = SystemClock.elapsedRealtime() + 1_800
+            while (captureActive && capturedImage == null && SystemClock.elapsedRealtime() < deadline) delay(40)
+            if (!captureActive || paused) return@withContext null
+            val image = capturedImage ?: return@withContext null
+            val plane = image.planes[0]
+            val padded = android.graphics.Bitmap.createBitmap(
+                plane.rowStride / plane.pixelStride, image.height, android.graphics.Bitmap.Config.ARGB_8888,
+            )
+            try {
+                plane.buffer.rewind()
+                padded.copyPixelsFromBuffer(plane.buffer)
+                val result = android.graphics.Bitmap.createBitmap(padded, 0, 0, image.width, image.height)
+                if (result !== padded) padded.recycle()
+                result
+            } catch (error: Exception) {
+                padded.recycle()
+                throw error
+            }
         }
-        return snapshotAfter(after)
+    }
+
+    fun stopByUser() {
+        if (sessionId.isNotBlank()) container.runManager.stop(sessionId)
+        stopSelf()
     }
 
     fun noteInputCompleted() {
@@ -276,10 +292,12 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     }
 
     fun togglePause() {
+        observationEpoch++
         ui.paused = !ui.paused
     }
 
     fun openChat() {
+        observationEpoch++
         startActivity(Intent(this, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
         val target = container.runManager.runningSessionIds.value.firstOrNull() ?: sessionId
         container.pendingSessionId.tryEmit(target)
@@ -406,7 +424,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                             Text("Chat", style = MaterialTheme.typography.labelMedium)
                         }
                         Button(
-                            onClick = { stopSelf() },
+                            onClick = { stopByUser() },
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = scheme.errorContainer,
                                 contentColor = scheme.onErrorContainer,
@@ -423,14 +441,18 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
 
     override fun onDestroy() {
         if (container.phone.service === this) container.phone.service = null
-        if (sessionId.isNotBlank()) container.runManager.stop(sessionId)
+        captureActive = false
         serviceScope.cancel()
         handler.removeCallbacksAndMessages(null)
         display?.release()
-        reader?.close()
+        reader?.setOnImageAvailableListener(null, null)
+        captureHandler.post {
+            capturedImage?.close()
+            capturedImage = null
+            reader?.close()
+            captureThread.quitSafely()
+        }
         projection?.stop()
-        if (::captureThread.isInitialized) captureThread.quitSafely()
-        synchronized(this) { frame?.recycle(); frame = null }
         panelView?.let { runCatching { windows.removeView(it) } }
         cursorView?.let { runCatching { windows.removeView(it) } }
         panelView = null; cursorView = null
