@@ -40,13 +40,15 @@ import com.androidharness.app.workspace.WorkspaceFs
 internal fun DestinationPickerDialog(
     fs: WorkspaceFs?,
     startPath: String,
-    mustAvoidSubtreeOf: String,
+    mustAvoidSubtreeOf: String = "",
+    mustAvoidSubtrees: List<String> = listOf(mustAvoidSubtreeOf),
     confirmLabel: String,
     onDismiss: () -> Unit,
     onPick: (FsNode) -> Unit,
 ) {
-    val forbiddenBase = remember(mustAvoidSubtreeOf) { mustAvoidSubtreeOf.trim('/') }
-    var dir by remember { mutableStateOf(if (isInsideForbidden(startPath, forbiddenBase)) "." else startPath) }
+    val forbidden = remember(mustAvoidSubtrees) { mustAvoidSubtrees.filter { it.isNotBlank() } }
+    fun forbiddenPath(path: String) = forbidden.any { isInsideForbidden(path, it.trim('/')) }
+    var dir by remember { mutableStateOf(if (forbiddenPath(startPath)) "." else startPath) }
     var dirs by remember { mutableStateOf<List<FsNode>>(emptyList()) }
 
     LaunchedEffect(fs, dir) {
@@ -128,7 +130,7 @@ internal fun DestinationPickerDialog(
             }
         },
         confirmButton = {
-            val selectable = fs != null && !isInsideForbidden(dir, forbiddenBase)
+            val selectable = fs != null && !forbiddenPath(dir)
             TextButton(
                 enabled = selectable,
                 onClick = {

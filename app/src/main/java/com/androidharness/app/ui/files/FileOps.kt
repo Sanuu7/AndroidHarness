@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.core.content.FileProvider
 import com.androidharness.app.tools.ToolFailure
 import com.androidharness.app.workspace.FsNode
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
@@ -22,14 +23,15 @@ object FileOps {
 
     /**
      * Copies [src] into [destDir] as [name]. Returns the created node.
-     * Directories are cloned recursively (ignoring [.git]/node_modules).
+     * Directories are cloned recursively; [preserveAll] keeps ignored project folders too.
      */
-    suspend fun copy(src: FsNode, destDir: FsNode, name: String): FsNode =
+    suspend fun copy(src: FsNode, destDir: FsNode, name: String, preserveAll: Boolean = false): FsNode =
         withContext(Dispatchers.IO) {
             if (!destDir.isDirectory) throw ToolFailure("Target is not a folder")
+            checkDestination(src, destDir)
             val targetName = uniqueChildName(destDir, name)
             val target = if (src.isDirectory) destDir.createDir(targetName) else destDir.createFile(targetName)
-            transferInto(src, target)
+            transferInto(src, target, preserveAll = preserveAll)
             target
         }
 
@@ -40,6 +42,7 @@ object FileOps {
     suspend fun move(src: FsNode, destDir: FsNode, name: String): FsNode =
         withContext(Dispatchers.IO) {
             require(destDir.isDirectory) { "Target is not a folder" }
+            checkDestination(src, destDir)
             val srcParent = src.relPath.substringBeforeLast('/', missingDelimiterValue = "")
             val dstParent = destDir.relPath.trim('.').trim('/')
             if (srcParent == dstParent) {
@@ -54,13 +57,95 @@ object FileOps {
                 if (!src.renameTo(finalName)) throw ToolFailure("Rename failed for ${src.name}")
                 return@withContext src.resolveSiblingIn(destDir, finalName)
             }
-            val moved = copy(src, destDir, name)
+            val moved = copy(src, destDir, name, preserveAll = true)
             if (!src.delete()) {
                 // Partially moved directories can't be rolled back safely, report.
                 throw ToolFailure("Copied to destination but could not delete the original")
             }
             moved
         }
+
+    private fun checkDestination(src: FsNode, dest: FsNode) {
+        val source = com.androidharness.app.workspace.normalizeRelPath(src.relPath)
+        val target = com.androidharness.app.workspace.normalizeRelPath(dest.relPath)
+        require(!src.isDirectory || (source != "." && source != "/" && target != source && !target.startsWith("$source/"))) {
+            "A folder cannot be copied or moved into itself."
+        }
+    }
+
+    /** Continues independent items after a failure, preserving the failed selection for retry. */
+    internal suspend fun batch(nodes: List<FsNode>, operation: suspend (FsNode) -> Unit): FileBatchResult =
+        withContext(Dispatchers.IO) {
+            val completed = mutableSetOf<String>()
+            val failures = linkedMapOf<String, String>()
+            for (node in nodes) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                try {
+                    operation(node)
+                    completed += node.relPath
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    failures[node.relPath] = error.message ?: "Operation failed"
+                }
+            }
+            FileBatchResult(completed, failures)
+        }
+
+    /** Files share as separate attachments; selections containing folders share as one ZIP. */
+    suspend fun shareMany(context: Context, nodes: List<FsNode>) {
+        require(nodes.isNotEmpty()) { "Select files to share." }
+        val archive = nodes.any { it.isDirectory }
+        val uris = if (archive) {
+            listOf(withContext(Dispatchers.IO) {
+                val dir = File(context.cacheDir, "shared").apply { mkdirs() }
+                val zip = File.createTempFile("shared-files-", ".zip", dir)
+                try {
+                    zip.outputStream().use { writeShareZip(nodes, it) }
+                    FileProvider.getUriForFile(context, "${context.packageName}.update", zip)
+                } catch (error: Exception) {
+                    zip.delete()
+                    throw error
+                }
+            })
+        } else nodes.map { stageForShare(context, it) }
+        val send = Intent(if (uris.size == 1) Intent.ACTION_SEND else Intent.ACTION_SEND_MULTIPLE).apply {
+            type = if (archive) "application/zip" else {
+                nodes.map { mimeForName(it.name) }.distinct().singleOrNull() ?: "*/*"
+            }
+            if (uris.size == 1) putExtra(Intent.EXTRA_STREAM, uris.first())
+            else putParcelableArrayListExtra(Intent.EXTRA_STREAM, ArrayList(uris))
+            clipData = android.content.ClipData.newRawUri("Shared files", uris.first()).apply {
+                uris.drop(1).forEach { addItem(android.content.ClipData.Item(it)) }
+            }
+            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        }
+        context.startActivity(Intent.createChooser(send, "Share ${nodes.size} items").apply {
+            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        })
+    }
+
+    internal fun writeShareZip(nodes: List<FsNode>, output: java.io.OutputStream) {
+        java.util.zip.ZipOutputStream(output).use { zip ->
+            fun append(node: FsNode, path: String, depth: Int) {
+                require(depth < 100) { "Folder nesting is too deep to share." }
+                realFileOrNull(node)?.let {
+                    require(!java.nio.file.Files.isSymbolicLink(it.toPath())) { "Cannot archive symbolic link: ${node.name}" }
+                }
+                if (node.isDirectory) {
+                    zip.putNextEntry(java.util.zip.ZipEntry("$path/"))
+                    zip.closeEntry()
+                    node.list().forEach { append(it, "$path/${it.name}", depth + 1) }
+                } else {
+                    zip.putNextEntry(java.util.zip.ZipEntry(path))
+                    node.openInputStream()?.use { it.copyTo(zip) }
+                        ?: throw ToolFailure("Could not read ${node.name}")
+                    zip.closeEntry()
+                }
+            }
+            nodes.forEach { append(it, it.name, 0) }
+        }
+    }
 
     /** Reads [node]'s bytes and stages them under cache/shared for sharing. */
     suspend fun stageForShare(context: Context, node: FsNode): Uri = withContext(Dispatchers.IO) {
@@ -129,7 +214,7 @@ object FileOps {
 
     // -- internals ----------------------------------------------------------
 
-    private fun transferInto(src: FsNode, target: FsNode, depth: Int = 0) {
+    private fun transferInto(src: FsNode, target: FsNode, depth: Int = 0, preserveAll: Boolean = false) {
         if (src.isFile) {
             val bytes = src.openInputStream()?.use { it.readBytes() }
                 ?: throw ToolFailure("Could not read ${src.name}")
@@ -138,13 +223,13 @@ object FileOps {
             for (child in src.list()) {
                 // Ignore-lists apply below the operation's own root so an
                 // explicit .git/node_modules selection still moves whole.
-                if (depth > 0 && skip(child.name)) continue
+                if (!preserveAll && depth > 0 && skip(child.name)) continue
                 val childTarget = if (child.isDirectory) {
                     target.createDir(child.name)
                 } else {
                     target.createFile(child.name)
                 }
-                transferInto(child, childTarget, depth + 1)
+                transferInto(child, childTarget, depth + 1, preserveAll)
             }
         }
     }
@@ -178,3 +263,5 @@ object FileOps {
     private fun FsNode.resolveSiblingIn(parentDir: FsNode, newName: String): FsNode =
         parentDir.list().firstOrNull { it.name == newName } ?: this
 }
+
+internal data class FileBatchResult(val completed: Set<String>, val failures: Map<String, String>)

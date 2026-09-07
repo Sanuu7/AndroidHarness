@@ -1,7 +1,9 @@
 package com.androidharness.app.ui.files
 
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
@@ -14,6 +16,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -42,6 +48,8 @@ import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -120,6 +128,27 @@ fun FilesScreen(
     var loadError by remember { mutableStateOf<String?>(null) }
     var entries by remember { mutableStateOf<List<FsNode>>(emptyList()) }
 
+    var selecting by remember(fs, currentPath) { mutableStateOf(false) }
+    var selectedPaths by remember(fs, currentPath) { mutableStateOf<Set<String>>(emptySet()) }
+    var batchBusy by remember { mutableStateOf(false) }
+    var batchAction by remember(fs) { mutableStateOf<String?>(null) }
+    var batchTargets by remember(fs) { mutableStateOf<List<FsNode>>(emptyList()) }
+    var batchErrors by remember { mutableStateOf<List<String>>(emptyList()) }
+    val visibleEntries = if (filter.isBlank()) entries else entries.filter { it.name.contains(filter, ignoreCase = true) }
+    val selectedNodes = entries.filter { it.relPath in selectedPaths }
+    fun toggleSelection(node: FsNode) {
+        if (batchBusy) return
+        selecting = true
+        selectedPaths = if (node.relPath in selectedPaths) selectedPaths - node.relPath else selectedPaths + node.relPath
+    }
+    fun closeSelection() {
+        if (!batchBusy) {
+            selecting = false
+            selectedPaths = emptySet()
+        }
+    }
+    BackHandler(enabled = selecting || batchBusy) { closeSelection() }
+
     // Session-change overlay; sentinel id keeps a live-but-empty flow flowing.
     val sessionForChanges = sessionId ?: "‹no-session›"
     val changes by container.sessions.fileChangesFor(sessionForChanges)
@@ -159,6 +188,7 @@ fun FilesScreen(
                 emptyList()
             }.sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
         }
+        selectedPaths = selectedPaths.intersect(entries.map { it.relPath }.toSet())
         loading = false
     }
 
@@ -177,6 +207,25 @@ fun FilesScreen(
         }
     }
 
+    fun runBatch(action: String, nodes: List<FsNode>, operation: suspend (FsNode) -> Unit) {
+        batchBusy = true
+        scope.launch {
+            try {
+                val result = FileOps.batch(nodes, operation)
+                selectedPaths = selectedPaths - result.completed
+                batchErrors = result.failures.map { (path, reason) -> "$path: $reason" }
+                if (result.failures.isEmpty()) {
+                    selecting = false
+                    selectedPaths = emptySet()
+                }
+                toast("$action ${result.completed.size} of ${nodes.size} items")
+                refreshTick++
+            } finally {
+                batchBusy = false
+            }
+        }
+    }
+
     // ---- action targets ----
     var menuNode by remember { mutableStateOf<FsNode?>(null) }
     var renamingNode by remember { mutableStateOf<FsNode?>(null) }
@@ -191,48 +240,99 @@ fun FilesScreen(
         containerColor = scheme.surface,
         topBar = {
             AppHeader(
-                title = "Files",
+                title = if (selecting) "${selectedNodes.size} selected" else "Files",
                 subtitle = if (currentPath == ".") fs?.displayPath.orEmpty()
                 else "${fs?.displayPath.orEmpty().substringAfterLast('/')}/$currentPath",
-                onBack = onBack,
+                onBack = { if (selecting) closeSelection() else onBack() },
                 actions = {
-                    IconButton(onClick = { showWorkspaceSheet = true }) {
-                        Icon(
-                            Icons.Outlined.Folder,
-                            contentDescription = "Switch workspace",
-                            tint = if (currentWorkspace != null) scheme.onSurfaceVariant else scheme.primary,
-                        )
-                    }
-                    IconButton(onClick = { filterActive = !filterActive }) {
-                        Icon(Icons.Outlined.Search, contentDescription = "Filter")
-                    }
-                    IconButton(onClick = { refreshTick++ }) {
-                        Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
-                    }
-                    Box {
-                        IconButton(onClick = { headerMenuOpen = true }) {
-                            Icon(Icons.Filled.MoreVert, contentDescription = "More")
+                    if (selecting) {
+                        TextButton(
+                            enabled = !batchBusy && visibleEntries.isNotEmpty(),
+                            onClick = {
+                                val paths = visibleEntries.map { it.relPath }.toSet()
+                                selectedPaths = if (selectedPaths.containsAll(paths)) selectedPaths - paths else selectedPaths + paths
+                            },
+                        ) {
+                            Text(if (visibleEntries.isNotEmpty() && visibleEntries.all { it.relPath in selectedPaths }) "Deselect all" else "Select all")
                         }
-                        DropdownMenu(expanded = headerMenuOpen, onDismissRequest = { headerMenuOpen = false }) {
-                            DropdownMenuItem(
-                                text = { Text("New file") },
-                                leadingIcon = { Icon(Icons.Outlined.NoteAdd, null) },
-                                onClick = { headerMenuOpen = false; creatingFile = true },
+                    } else {
+                        IconButton(onClick = { showWorkspaceSheet = true }) {
+                            Icon(
+                                Icons.Outlined.Folder,
+                                contentDescription = "Switch workspace",
+                                tint = if (currentWorkspace != null) scheme.onSurfaceVariant else scheme.primary,
                             )
-                            DropdownMenuItem(
-                                text = { Text("New folder") },
-                                leadingIcon = { Icon(Icons.Outlined.CreateNewFolder, null) },
-                                onClick = { headerMenuOpen = false; creatingFolder = true },
-                            )
+                        }
+                        IconButton(onClick = { filterActive = !filterActive }) {
+                            Icon(Icons.Outlined.Search, contentDescription = "Filter")
+                        }
+                        IconButton(onClick = { refreshTick++ }) {
+                            Icon(Icons.Outlined.Refresh, contentDescription = "Refresh")
+                        }
+                        Box {
+                            IconButton(onClick = { headerMenuOpen = true }) {
+                                Icon(Icons.Filled.MoreVert, contentDescription = "More")
+                            }
+                            DropdownMenu(expanded = headerMenuOpen, onDismissRequest = { headerMenuOpen = false }) {
+                                DropdownMenuItem(
+                                    text = { Text("Select items") },
+                                    onClick = { headerMenuOpen = false; selecting = true },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("New file") },
+                                    leadingIcon = { Icon(Icons.Outlined.NoteAdd, null) },
+                                    onClick = { headerMenuOpen = false; creatingFile = true },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text("New folder") },
+                                    leadingIcon = { Icon(Icons.Outlined.CreateNewFolder, null) },
+                                    onClick = { headerMenuOpen = false; creatingFolder = true },
+                                )
+                            }
                         }
                     }
                 },
             )
         },
+        bottomBar = {
+            if (selecting) {
+                Surface(color = scheme.surfaceContainerHigh, tonalElevation = 2.dp) {
+                    Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp)) {
+                        if (batchBusy) LinearProgressIndicator(Modifier.fillMaxWidth())
+                        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
+                            TextButton(enabled = selectedNodes.isNotEmpty() && !batchBusy, onClick = {
+                                val nodes = selectedNodes.toList()
+                                batchBusy = true
+                                scope.launch {
+                                    try {
+                                        FileOps.shareMany(context, nodes)
+                                    } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                                        throw cancelled
+                                    } catch (error: Exception) {
+                                        batchErrors = listOf(error.message ?: "Share failed")
+                                    } finally {
+                                        batchBusy = false
+                                    }
+                                }
+                            }) { Text("Share") }
+                            TextButton(enabled = selectedNodes.isNotEmpty() && !batchBusy, onClick = {
+                                batchTargets = selectedNodes.toList(); batchAction = "Copy"
+                            }) { Text("Copy") }
+                            TextButton(enabled = selectedNodes.isNotEmpty() && !batchBusy, onClick = {
+                                batchTargets = selectedNodes.toList(); batchAction = "Move"
+                            }) { Text("Move") }
+                            TextButton(enabled = selectedNodes.isNotEmpty() && !batchBusy, onClick = {
+                                batchTargets = selectedNodes.toList(); batchAction = "Delete"
+                            }) { Text("Delete", color = if (selectedNodes.isNotEmpty() && !batchBusy) scheme.error else scheme.onSurfaceVariant) }
+                        }
+                    }
+                }
+            }
+        },
     ) { padding ->
         Column(Modifier.fillMaxSize().padding(padding)) {
 
-            if (sessionId != null && onOpenChanges != null && activeChanges.isNotEmpty()) {
+            if (!selecting && sessionId != null && onOpenChanges != null && activeChanges.isNotEmpty()) {
                 Surface(
                     color = scheme.surfaceContainerHigh,
                     shape = RoundedCornerShape(12.dp),
@@ -305,7 +405,7 @@ fun FilesScreen(
                                 verticalAlignment = Alignment.CenterVertically,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { currentPath = parentOf(currentPath) }
+                                    .clickable(enabled = !selecting && !batchBusy) { currentPath = parentOf(currentPath) }
                                     .padding(horizontal = 16.dp, vertical = 12.dp),
                             ) {
                                 Icon(
@@ -324,8 +424,7 @@ fun FilesScreen(
                         }
                     }
 
-                    val visible = if (filter.isBlank()) entries
-                    else entries.filter { it.name.contains(filter, ignoreCase = true) }
+                    val visible = visibleEntries
 
                     items(visible, key = { it.relPath }) { node ->
                         val nodeKey = normalizeRelPath(node.relPath)
@@ -338,9 +437,13 @@ fun FilesScreen(
                         Column(
                             Modifier
                                 .fillMaxWidth()
+                                .background(if (node.relPath in selectedPaths) scheme.primaryContainer.copy(alpha = 0.45f) else Color.Transparent)
                                 .combinedClickable(
+                                    enabled = !batchBusy,
                                     onClick = {
-                                        if (node.isDirectory) {
+                                        if (selecting) {
+                                            toggleSelection(node)
+                                        } else if (node.isDirectory) {
                                             filter = ""
                                             filterActive = false
                                             currentPath = node.relPath
@@ -348,7 +451,7 @@ fun FilesScreen(
                                             onOpenFile(node.relPath)
                                         }
                                     },
-                                    onLongClick = { menuNode = node },
+                                    onLongClick = { toggleSelection(node) },
                                 ),
                         ) {
                             Row(
@@ -357,6 +460,13 @@ fun FilesScreen(
                                     .fillMaxWidth()
                                     .padding(horizontal = 16.dp, vertical = 11.dp),
                             ) {
+                                if (selecting) {
+                                    Checkbox(
+                                        checked = node.relPath in selectedPaths,
+                                        enabled = !batchBusy,
+                                        onCheckedChange = { toggleSelection(node) },
+                                    )
+                                }
                                 Icon(
                                     iconFor(node),
                                     contentDescription = null,
@@ -382,7 +492,12 @@ fun FilesScreen(
                                 if (node.isFile && change != null) {
                                     DiffStatText(change.added, change.removed)
                                 }
-                                if (node.isDirectory) {
+                                if (!selecting) {
+                                    IconButton(onClick = { menuNode = node }) {
+                                        Icon(Icons.Filled.MoreVert, contentDescription = "Actions for ${node.name}")
+                                    }
+                                }
+                                if (node.isDirectory && !selecting) {
                                     Spacer(Modifier.width(10.dp))
                                     Icon(
                                         Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -593,6 +708,59 @@ fun FilesScreen(
                 pickMoveDest = null
                 perform("Moved ${src.name}") { FileOps.move(src, destDir, src.name) }
             },
+        )
+    }
+
+    if (batchAction == "Delete") {
+        AlertDialog(
+            onDismissRequest = { batchAction = null },
+            title = { Text("Delete ${batchTargets.size} items?") },
+            text = {
+                Text(
+                    batchTargets.take(8).joinToString("\n") { it.name } +
+                        (if (batchTargets.size > 8) "\n…and ${batchTargets.size - 8} more" else "") +
+                        "\n\nThese items and any folder contents will be permanently deleted.",
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val nodes = batchTargets
+                    batchAction = null
+                    runBatch("Deleted", nodes) { node -> check(node.delete()) { "Could not delete this item." } }
+                }) { Text("Delete", color = scheme.error) }
+            },
+            dismissButton = { TextButton(onClick = { batchAction = null }) { Text("Cancel") } },
+        )
+    }
+    if (batchAction == "Copy" || batchAction == "Move") {
+        val action = batchAction!!
+        DestinationPickerDialog(
+            fs = fs,
+            startPath = currentPath,
+            mustAvoidSubtrees = batchTargets.filter { it.isDirectory }.map { it.relPath },
+            confirmLabel = "$action ${batchTargets.size} here",
+            onDismiss = { batchAction = null },
+            onPick = { destination ->
+                val nodes = batchTargets
+                batchAction = null
+                runBatch(if (action == "Copy") "Copied" else "Moved", nodes) { node ->
+                    if (action == "Copy") FileOps.copy(node, destination, node.name, preserveAll = true)
+                    else FileOps.move(node, destination, node.name)
+                }
+            },
+        )
+    }
+    if (batchErrors.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = { batchErrors = emptyList() },
+            title = { Text("Some items could not be processed") },
+            text = {
+                Text(
+                    batchErrors.joinToString("\n\n"),
+                    modifier = Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()),
+                )
+            },
+            confirmButton = { TextButton(onClick = { batchErrors = emptyList() }) { Text("OK") } },
         )
     }
 
