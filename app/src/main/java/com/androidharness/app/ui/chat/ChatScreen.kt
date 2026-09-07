@@ -1081,6 +1081,14 @@ fun ChatScreen(
                                                         showWebPreview = true
                                                     },
                                                 )
+                                                val edits = state.fileEditsByTurn[message.turnId].orEmpty()
+                                                if (isTurnFinal && !isTurnRunning && edits.isNotEmpty()) {
+                                                    FileEditsCard(
+                                                        edits = edits,
+                                                        onOpenFile = onOpenFile,
+                                                        modifier = Modifier.padding(top = 8.dp),
+                                                    )
+                                                }
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth(),
                                                     verticalAlignment = Alignment.CenterVertically,

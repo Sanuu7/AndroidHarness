@@ -6,6 +6,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.ui.graphics.Color
@@ -41,6 +41,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.foundation.background
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalClipboardManager
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
@@ -178,16 +181,14 @@ private sealed interface Block {
 
 private data class ListItem(val marker: String, val content: String, val nested: List<ListItem>)
 
-private fun isTableStart(lines: List<String>, idx: Int): Boolean {
+internal fun isTableStart(lines: List<String>, idx: Int): Boolean {
     if (idx + 1 >= lines.size) return false
     val header = lines[idx].trim()
     val delimiter = lines[idx + 1].trim()
     if (!header.contains('|') || !delimiter.contains('|')) return false
-    val delimiterCells = delimiter.trim('|').split('|')
-    return delimiterCells.isNotEmpty() && delimiterCells.all { cell ->
-        val trimmed = cell.trim()
-        trimmed.isNotEmpty() && trimmed.all { it == '-' || it == ':' }
-    }
+    val delimiterCells = splitTableRow(delimiter)
+    return delimiterCells.size == splitTableRow(header).size &&
+        delimiterCells.all { it.matches(Regex(":?-+:?")) }
 }
 
 private fun parseTableBlock(lines: List<String>, startIdx: Int): Pair<Block.Table, Int> {
@@ -214,16 +215,6 @@ private fun parseTableBlock(lines: List<String>, startIdx: Int): Pair<Block.Tabl
     }
 
     return Block.Table(headers, alignments, rows) to i
-}
-
-private fun splitTableRow(row: String): List<String> {
-    val clean = row.trim()
-    val trimmed = if (clean.startsWith('|') && clean.endsWith('|') && clean.length > 1) {
-        clean.substring(1, clean.length - 1)
-    } else {
-        clean.removePrefix("|").removeSuffix("|")
-    }
-    return trimmed.split('|').map { it.trim() }
 }
 
 private val bulletRegex = Regex("^\\s*([-*+])\\s+(.*)$")
@@ -448,72 +439,70 @@ private fun TableBlock(
 ) {
     val scheme = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
+    val density = LocalDensity.current
+    val measurer = rememberTextMeasurer()
+    val bodyStyle = MaterialTheme.typography.bodyMedium
+    val headerStyle = bodyStyle.copy(fontWeight = FontWeight.SemiBold)
+    val rows = listOf(table.headers) + table.rows
+    val styledRows = rows.map { row ->
+        table.headers.indices.map { styledText(row.getOrElse(it) { "" }) }
+    }
 
     Surface(
         color = scheme.surfaceContainerLowest,
         shape = MaterialTheme.shapes.medium,
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .horizontalScroll(scrollState),
-        ) {
-            // Header Row
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .background(scheme.surfaceContainerHigh)
-                    .padding(horizontal = 8.dp, vertical = 7.dp),
-            ) {
-                table.headers.forEachIndexed { colIdx, header ->
-                    val align = table.alignments.getOrElse(colIdx) { TextAlign.Start }
-                    Text(
-                        text = header,
-                        style = MaterialTheme.typography.labelMedium,
-                        fontWeight = FontWeight.Bold,
-                        textAlign = align,
-                        color = scheme.onSurface,
-                        modifier = Modifier
-                            .widthIn(min = 100.dp)
-                            .padding(horizontal = 8.dp),
-                    )
+        BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val viewport = with(density) { maxWidth.roundToPx() }
+            val padding = with(density) { 24.dp.roundToPx() }
+            val minWidth = with(density) { 88.dp.roundToPx() }
+            val maxColumnWidth = with(density) { 280.dp.roundToPx() }
+            val widths = remember(styledRows, bodyStyle, headerStyle, density, viewport, measurer) {
+                val natural = table.headers.indices.map { column ->
+                    styledRows.indices.maxOf { row ->
+                        measurer.measure(
+                            text = styledRows[row][column],
+                            style = if (row == 0) headerStyle else bodyStyle,
+                            softWrap = false,
+                        ).size.width + padding
+                    }
                 }
+                markdownColumnWidths(natural, viewport, minWidth, maxColumnWidth)
             }
-
-            HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
-
-            // Body Rows (Zebra striped for clean mobile document legibility)
-            table.rows.forEachIndexed { rowIdx, row ->
-                val bg = if (rowIdx % 2 == 1) scheme.surfaceContainerLow.copy(alpha = 0.5f) else Color.Transparent
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .background(bg)
-                        .padding(horizontal = 8.dp, vertical = 7.dp),
-                ) {
-                    table.headers.indices.forEach { colIdx ->
-                        val cellText = row.getOrElse(colIdx) { "" }
-                        val align = table.alignments.getOrElse(colIdx) { TextAlign.Start }
-                        Box(
-                            modifier = Modifier
-                                .widthIn(min = 100.dp)
-                                .padding(horizontal = 8.dp),
+            val tableWidth = with(density) { widths.sum().toDp() }
+            Column(Modifier.horizontalScroll(scrollState)) {
+                Column(Modifier.width(tableWidth)) {
+                    styledRows.forEachIndexed { rowIndex, row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth().background(
+                                when {
+                                    rowIndex == 0 -> scheme.surfaceContainerHigh
+                                    rowIndex % 2 == 0 -> scheme.surfaceContainerLow.copy(alpha = 0.5f)
+                                    else -> Color.Transparent
+                                }
+                            ),
+                            verticalAlignment = Alignment.Top,
                         ) {
-                            Text(
-                                text = styledText(cellText),
-                                style = MaterialTheme.typography.bodySmall,
-                                textAlign = align,
-                                color = scheme.onSurface,
+                            row.forEachIndexed { column, cell ->
+                                LinkedText(
+                                    styled = cell,
+                                    style = if (rowIndex == 0) headerStyle else bodyStyle,
+                                    textAlign = table.alignments.getOrElse(column) { TextAlign.Start },
+                                    onOpenUrl = onOpenUrl,
+                                    modifier = Modifier
+                                        .width(with(density) { widths[column].toDp() })
+                                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                                )
+                            }
+                        }
+                        if (rowIndex < styledRows.lastIndex) {
+                            HorizontalDivider(
+                                color = scheme.outlineVariant.copy(alpha = if (rowIndex == 0) 0.7f else 0.3f),
                             )
                         }
                     }
-                }
-                if (rowIdx != table.rows.lastIndex) {
-                    HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.25f))
                 }
             }
         }
@@ -523,15 +512,27 @@ private fun TableBlock(
 /** Paragraph text with tap-to-open links (annotations set by [styledText]). */
 @Composable
 private fun ParagraphText(text: String, onOpenUrl: ((String) -> Unit)? = null) {
-    val styled = styledText(text)
+    LinkedText(styledText(text), MaterialTheme.typography.bodyLarge, onOpenUrl = onOpenUrl)
+}
+
+@Composable
+private fun LinkedText(
+    styled: AnnotatedString,
+    style: TextStyle,
+    textAlign: TextAlign = TextAlign.Start,
+    onOpenUrl: ((String) -> Unit)? = null,
+    modifier: Modifier = Modifier,
+) {
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val context = LocalContext.current
     val currentOpenUrl by androidx.compose.runtime.rememberUpdatedState(onOpenUrl)
     Text(
         text = styled,
-        style = MaterialTheme.typography.bodyLarge,
+        style = style,
+        textAlign = textAlign,
+        color = MaterialTheme.colorScheme.onSurface,
         onTextLayout = { layout = it },
-        modifier = Modifier.pointerInput(Unit) {
+        modifier = modifier.pointerInput(styled) {
             detectTapGestures { pos ->
                 val offset = layout?.getOffsetForPosition(pos) ?: return@detectTapGestures
                 styled.getStringAnnotations("url", offset, offset)
