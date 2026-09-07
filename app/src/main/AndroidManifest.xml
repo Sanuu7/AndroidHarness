@@ -108,7 +108,7 @@
         <receiver
             android:name=".agent.NotificationActionReceiver"
             android:exported="false" />
-        <activity android:name=".phone.PhoneConsentActivity" android:exported="false" />
+        <activity android:name=".phone.PhoneConsentActivity" android:exported="false" android:theme="@android:style/Theme.Translucent.NoTitleBar" />
         <service android:name=".phone.PhoneControlService" android:exported="false" android:foregroundServiceType="mediaProjection" />
     </application>
 

@@ -1,10 +1,13 @@
 package com.androidharness.app.phone
 
+import android.content.Context
+import android.content.Intent
 import android.graphics.Bitmap
 import com.androidharness.app.data.ImageStore
 import com.androidharness.app.data.env.ShizukuManager
 import com.androidharness.app.core.ImageRef
 import com.androidharness.app.tools.ToolResult
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -12,13 +15,61 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.UUID
 
-class PhoneController(private val shizuku: ShizukuManager, private val images: ImageStore) {
+class PhoneController(
+    private val context: Context,
+    private val shizuku: ShizukuManager,
+    private val images: ImageStore,
+) {
     @Volatile var service: PhoneControlService? = null
     private val mutex = Mutex()
+    @Volatile private var consentDeferred: CompletableDeferred<Boolean>? = null
+
     fun ready() = shizuku.isGranted() && shizuku.isServiceReady()
 
+    fun notifyConsentSuccess() {
+        consentDeferred?.complete(true)
+    }
+
+    fun notifyConsentFailed() {
+        consentDeferred?.complete(false)
+    }
+
     suspend fun execute(session: String?, action: String, x: Int, y: Int, x2: Int, y2: Int, text: String): ToolResult = mutex.withLock {
-        val host = service ?: return@withLock ToolResult(false, "Start Phone control from the chat menu first.")
+        if (session.isNullOrBlank()) {
+            return@withLock ToolResult(false, "No active session ID for phone control.")
+        }
+
+        var host = service
+        if (host == null) {
+            if (!ready()) {
+                return@withLock ToolResult(false, "Shizuku is not running or not authorized. Ensure Shizuku is running first.")
+            }
+            val deferred = CompletableDeferred<Boolean>()
+            consentDeferred = deferred
+            withContext(Dispatchers.Main) {
+                val intent = Intent(context, PhoneConsentActivity::class.java).apply {
+                    putExtra("session", session)
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                }
+                context.startActivity(intent)
+            }
+            val granted = try {
+                deferred.await()
+            } catch (ce: kotlinx.coroutines.CancellationException) {
+                consentDeferred = null
+                throw ce
+            } finally {
+                consentDeferred = null
+            }
+            if (!granted || service == null) {
+                return@withLock ToolResult(false, "The user declined or cancelled phone control.")
+            }
+            host = service ?: return@withLock ToolResult(false, "Phone control service failed to start.")
+        }
+
+        if (host.sessionId != session && !host.paused) {
+            host.sessionId = session
+        }
         if (!PhoneInput.sessionAllowed(session, host.sessionId, host.paused)) return@withLock ToolResult(false, "Phone control belongs to another chat or is paused.")
         if (!ready()) {
             withContext(Dispatchers.Main) { host.stopSelf() }

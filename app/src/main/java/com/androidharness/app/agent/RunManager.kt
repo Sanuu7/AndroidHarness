@@ -78,6 +78,16 @@ fun describeToolCall(call: ToolCallData): String {
         "task" -> "Delegating: ${arg("title") ?: "research subagent"}…"
         "memory_write" -> "Saving to memory…"
         "todo_write" -> "Updating task list…"
+        "phone_control" -> when (arg("action")) {
+            "screenshot" -> "Taking screenshot…"
+            "click" -> "Clicking (${arg("x")}, ${arg("y")})…"
+            "move" -> "Moving pointer to (${arg("x")}, ${arg("y")})…"
+            "drag" -> "Dragging (${arg("x")}, ${arg("y")}) → (${arg("x2")}, ${arg("y2")})…"
+            "scroll" -> "Scrolling screen…"
+            "type" -> "Typing text…"
+            "key" -> "Pressing ${arg("text") ?: "key"}…"
+            else -> "Controlling phone…"
+        }
         "skill_view" -> "Loading skill ${arg("name") ?: "…"}…"
         "skills_list" -> "Listing skills…"
         "skill_manage" -> "Updating skill ${arg("name") ?: ""}…".trim()
@@ -212,16 +222,16 @@ class RunManager(
     fun isRunning(sessionId: String?): Boolean =
         sessionId != null && synchronized(lock) { jobs[sessionId]?.isActive == true }
 
-    /** What the notification should say for this run right now. */
-    private fun actionText(s: LiveRunState): String? = when {
+    /** What the notification and the phone-control overlay should say right now. */
+    fun actionText(s: LiveRunState): String? = when {
         s.pendingQuestion != null -> "Waiting for your answer"
         s.pendingApproval != null -> "Waiting for your approval"
         s.pendingEnvironment != null -> "Linux environment needs your attention"
         s.retryStatus != null -> s.retryStatus
-        s.currentToolAction != null -> s.currentToolAction
-        s.runningCalls.isNotEmpty() -> describeToolCall(s.runningCalls.last())
+        s.runningCalls.isNotEmpty() -> s.currentToolAction ?: describeToolCall(s.runningCalls.last())
         s.streamingThinking != null && s.streamingText.isNullOrEmpty() -> "Thinking…"
         s.streamingText != null -> "Writing response…"
+        s.currentToolAction != null -> s.currentToolAction
         s.running -> "Working…"
         else -> null
     }

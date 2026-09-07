@@ -114,7 +114,7 @@ class AppContainer(val appContext: Context) {
         disabled = { disabledSkills.get() },
     )
     val browser = com.androidharness.app.browser.BrowserController(appContext, images)
-    val phone = com.androidharness.app.phone.PhoneController(shizuku, images)
+    val phone = com.androidharness.app.phone.PhoneController(appContext, shizuku, images)
     val registry = ToolRegistry.default(
         fetchClient, todoStore, backgroundProcesses, linuxEnv, shizuku, shellRouter, skills,
         imageStore = images,

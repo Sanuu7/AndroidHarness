@@ -590,11 +590,11 @@ class ChatViewModel(
             }
             else -> "Installing Linux environment…"
         }
-        currentToolAction != null -> currentToolAction
         retryStatus != null -> retryStatus
-        runningCalls.isNotEmpty() -> describeToolCall(runningCalls.last())
+        runningCalls.isNotEmpty() -> currentToolAction ?: describeToolCall(runningCalls.last())
         streamingThinking != null && streamingText.isNullOrEmpty() -> "Thinking…"
         streamingText != null -> "Writing response…"
+        currentToolAction != null -> currentToolAction
         busy -> if (mode == AgentMode.PLAN) "Planning…" else "Working…"
         else -> null
     }

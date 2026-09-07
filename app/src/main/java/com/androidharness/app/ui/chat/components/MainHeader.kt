@@ -94,7 +94,6 @@ internal fun MainHeader(
     onOpenUndo: () -> Unit,
     onOpenFiles: () -> Unit,
     onOpenWebPreview: () -> Unit = {},
-    onOpenPhoneControl: () -> Unit = {},
 ) {
     var menu by remember { mutableStateOf(false) }
     var thinkingMenu by remember { mutableStateOf(false) }
@@ -360,10 +359,6 @@ internal fun MainHeader(
                         text = { Text("Terminal") },
                         leadingIcon = { Icon(Icons.Outlined.Terminal, contentDescription = null) },
                         onClick = { menu = false; onOpenTerminal() },
-                    )
-                    DropdownMenuItem(
-                        text = { Text("Phone control") },
-                        onClick = { menu = false; onOpenPhoneControl() },
                     )
                     DropdownMenuItem(
                         text = { Text("Web preview (localhost)") },

@@ -5,7 +5,7 @@ import kotlinx.serialization.json.*
 
 class PhoneTool(private val controller: PhoneController) : Tool {
     override val name = "phone_control"
-    override val description = "Control the user's Android phone with a visible mouse, only after the user enables Phone control for this chat. Actions: status, screenshot, move, click, drag, scroll, type, key. Always inspect a fresh screenshot before acting. Coordinates are physical screen pixels, not resized image pixels. Scroll text is -10..10 (nonzero); key text is BACK/HOME/ENTER/DEL/TAB/APP_SWITCH. Typing supports printable ASCII only. Ask before purchases, messages, deletion or other consequential actions. Never enter credentials or bypass secure screens."
+    override val description = "Control the user's Android phone with a visible mouse. Calling this tool prompts the user to allow phone control if not already active. Actions: status, screenshot, move, click, drag, scroll, type, key. Always inspect a fresh screenshot before acting. Coordinates are physical screen pixels, not resized image pixels. Scroll text is -10..10 (nonzero); key text is BACK/HOME/ENTER/DEL/TAB/APP_SWITCH. Typing supports printable ASCII only. Ask before purchases, messages, deletion or other consequential actions. Never enter credentials or bypass secure screens."
     override val isReadOnly = false
     override val parametersSchema = Schema.obj(mapOf(
         "action" to Schema.string("Action to perform"),

@@ -156,7 +156,6 @@ fun ChatScreen(
     onOpenSettings: () -> Unit = {},
     onNavigateToSession: (sessionId: String) -> Unit = {},
 ) {
-    val phoneContext = androidx.compose.ui.platform.LocalContext.current
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     val snackbar = remember { SnackbarHostState() }
@@ -876,11 +875,6 @@ fun ChatScreen(
                 onOpenUndo = { showUndoDialog = true },
                 onOpenFiles = onOpenFiles,
                 onOpenWebPreview = { showWebPreview = true },
-                onOpenPhoneControl = {
-                    val sid = state.sessionId
-                    if (sid == null) android.widget.Toast.makeText(phoneContext, "Send a message to create this chat first.", android.widget.Toast.LENGTH_LONG).show()
-                    else phoneContext.startActivity(android.content.Intent(phoneContext, com.androidharness.app.phone.PhoneConsentActivity::class.java).putExtra("session", sid))
-                },
             )
         },
         snackbarHost = { SnackbarHost(snackbar) },
