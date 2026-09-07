@@ -26,6 +26,15 @@ class AutomationScheduleTest {
             projectId = "project-a", projectName = "Project A", schedule = AutomationSchedule.DAILY)
         assertEquals(task, Json.decodeFromString<AutomationTask>(Json.encodeToString(AutomationTask.serializer(), task)))
     }
+    @Test fun oneTimeTaskRetainsScheduledDate() {
+        val runAt = 1_789_000_000_000L
+        val task = AutomationTask(title = "Build once", prompt = "Build the APK",
+            projectId = "project-a", projectName = "Project A", schedule = AutomationSchedule.ONCE,
+            scheduledAt = runAt)
+        val restored = Json.decodeFromString<AutomationTask>(Json.encodeToString(AutomationTask.serializer(), task))
+        assertEquals(AutomationSchedule.ONCE, restored.schedule)
+        assertEquals(runAt, restored.scheduledAt)
+    }
     @Test(expected = IllegalArgumentException::class)
     fun invalidHourIsRejected() { AutomationManager.nextDaily(24, 0) }
 }

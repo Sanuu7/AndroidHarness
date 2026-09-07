@@ -11,7 +11,7 @@ import kotlinx.coroutines.sync.withLock
 import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
-/** Daily schedules are best effort: Android may defer work while idle. */
+/** Scheduled automations are best effort: Android may defer work while idle. */
 class AutomationManager(private val c: AppContainer) {
     val repository = AutomationRepository(c.appContext)
     private val work get() = WorkManager.getInstance(c.appContext)
@@ -22,18 +22,32 @@ class AutomationManager(private val c: AppContainer) {
         require(task.hour in 0..23 && task.minute in 0..59)
         repository.save(task)
         val name = "automation-schedule-${task.id}"
-        if (task.enabled && task.schedule == AutomationSchedule.DAILY) {
-            val next = nextDaily(task.hour, task.minute)
-            repository.save(task.copy(nextRunAt = next))
-            work.enqueueUniquePeriodicWork(name, ExistingPeriodicWorkPolicy.UPDATE,
-                PeriodicWorkRequestBuilder<AutomationWorker>(24, TimeUnit.HOURS)
-                    .setNextScheduleTimeOverride(next)
-                    .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-                    .setInputData(workDataOf(AutomationWorker.KEY_TASK_ID to task.id, "scheduled" to true))
-                    .build())
-        } else {
-            work.cancelUniqueWork(name)
-            repository.save(task.copy(nextRunAt = null))
+        when {
+            task.enabled && task.schedule == AutomationSchedule.DAILY -> {
+                val next = nextDaily(task.hour, task.minute)
+                repository.save(task.copy(nextRunAt = next, scheduledAt = null))
+                work.enqueueUniquePeriodicWork(name, ExistingPeriodicWorkPolicy.UPDATE,
+                    PeriodicWorkRequestBuilder<AutomationWorker>(24, TimeUnit.HOURS)
+                        .setNextScheduleTimeOverride(next)
+                        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                        .setInputData(workDataOf(AutomationWorker.KEY_TASK_ID to task.id, "scheduled" to true))
+                        .build())
+            }
+            task.enabled && task.schedule == AutomationSchedule.ONCE -> {
+                val runAt = requireNotNull(task.scheduledAt) { "Choose a date and time." }
+                require(runAt > System.currentTimeMillis()) { "Scheduled time must be in the future." }
+                repository.save(task.copy(nextRunAt = runAt))
+                work.enqueueUniqueWork(name, ExistingWorkPolicy.REPLACE,
+                    OneTimeWorkRequestBuilder<AutomationWorker>()
+                        .setInitialDelay((runAt - System.currentTimeMillis()).coerceAtLeast(0), TimeUnit.MILLISECONDS)
+                        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                        .setInputData(workDataOf(AutomationWorker.KEY_TASK_ID to task.id, "scheduled" to true))
+                        .build())
+            }
+            else -> {
+                work.cancelUniqueWork(name)
+                repository.save(task.copy(nextRunAt = null, scheduledAt = if (task.schedule == AutomationSchedule.ONCE) task.scheduledAt else null))
+            }
         }
     }
 
@@ -165,7 +179,13 @@ class AutomationManager(private val c: AppContainer) {
             sid?.let { c.runManager.stopAndJoin(it) }
             status(AutomationStatus.BLOCKED, e.message ?: "Could not start task.", true)
         } finally {
-            if (scheduled) repository.task(id)?.takeIf { it.enabled }?.let { save(it) }
+            if (scheduled) repository.task(id)?.takeIf { it.enabled }?.let { current ->
+                when (current.schedule) {
+                    AutomationSchedule.DAILY -> save(current)
+                    AutomationSchedule.ONCE -> repository.save(current.copy(enabled = false, nextRunAt = null))
+                    AutomationSchedule.MANUAL -> Unit
+                }
+            }
         }
     }
 
