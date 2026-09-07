@@ -13,6 +13,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.AutoAwesome
@@ -646,6 +647,7 @@ private fun StatusPill(status: AutomationStatus) {
 
 private enum class AutomationEditorMode { ASK_AI, MANUAL }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AutomationEditorDialog(
     container: AppContainer,
@@ -745,34 +747,49 @@ private fun AutomationEditorDialog(
     }
     val hasModel = effectiveProviderId != null && !effectiveModel.isNullOrBlank()
     val canSave = hasModel && if (mode == AutomationEditorMode.ASK_AI) aiDraft != null else manualCanSave
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    AlertDialog(
+    ModalBottomSheet(
         onDismissRequest = onDismiss,
-        shape = RoundedCornerShape(28.dp),
-        icon = {
-            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
-                Icon(
-                    if (mode == AutomationEditorMode.ASK_AI) Icons.Outlined.AutoAwesome else Icons.Outlined.AutoMode,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(10.dp).size(24.dp),
-                )
-            }
-        },
-        title = {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(if (task == null) "New automation" else "Edit automation")
-                if (projectName.isNotBlank()) {
-                    Text(projectName, style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1,
-                        overflow = TextOverflow.Ellipsis)
+        sheetState = sheetState,
+        containerColor = MaterialTheme.colorScheme.surface,
+        dragHandle = null,
+    ) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(0.94f)
+                .navigationBarsPadding()
+                .imePadding(),
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 20.dp, end = 12.dp, top = 14.dp, bottom = 10.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        if (task == null) "New automation" else "Edit automation",
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.SemiBold,
+                    )
+                    if (projectName.isNotBlank()) {
+                        Text(
+                            projectName,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
+                }
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Filled.Close, contentDescription = "Close")
                 }
             }
-        },
-        text = {
+
             Column(
-                modifier = Modifier.heightIn(min = 480.dp, max = 570.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(18.dp),
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                     SegmentedButton(
@@ -796,45 +813,77 @@ private fun AutomationEditorDialog(
                     model = effectiveModel,
                     onClick = { showModelPicker = true },
                 )
+            }
 
+            Spacer(Modifier.height(12.dp))
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+
+            Box(Modifier.weight(1f).fillMaxWidth()) {
                 if (mode == AutomationEditorMode.ASK_AI) {
-                    AskAiAutomationEditor(aiTurns, aiInput, { aiInput = it }, aiBusy, aiError, aiDraft, ::askAi) {
+                    AskAiAutomationEditor(
+                        turns = aiTurns,
+                        input = aiInput,
+                        onInputChange = { aiInput = it },
+                        busy = aiBusy,
+                        error = aiError,
+                        draft = aiDraft,
+                        onAsk = ::askAi,
+                        modifier = Modifier.fillMaxSize(),
+                    ) {
                         mode = AutomationEditorMode.MANUAL
                     }
                 } else {
-                    ManualAutomationEditor(
-                        title, { title = it }, prompt, { prompt = it }, checkCommand, { checkCommand = it },
-                        schedule, { schedule = it }, onceAt, { onceAt = it }, hour, { hour = it }, minute, { minute = it },
-                    )
-                }
-            }
-        },
-        confirmButton = {
-            Button(enabled = canSave, onClick = {
-                val draft = aiDraft
-                if (mode == AutomationEditorMode.ASK_AI && draft != null) {
-                    onSave(
-                        draft.title, draft.prompt, draft.checkCommand, draft.schedule, draft.scheduledAt,
-                        draft.hour, draft.minute, effectiveProviderId, effectiveModel,
-                    )
-                } else {
-                    onSave(title.trim(), prompt.trim(), checkCommand.trim(), schedule,
-                        onceAt.takeIf { schedule == AutomationSchedule.ONCE }, hourValue ?: 8, minuteValue ?: 0,
-                        effectiveProviderId, effectiveModel)
-                }
-            }) { Text(if (task == null) "Create automation" else "Save changes") }
-        },
-        dismissButton = {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                onDelete?.let {
-                    TextButton(onClick = it, colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-                        Text("Delete")
+                    Column(
+                        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+                    ) {
+                        ManualAutomationEditor(
+                            title, { title = it }, prompt, { prompt = it }, checkCommand, { checkCommand = it },
+                            schedule, { schedule = it }, onceAt, { onceAt = it }, hour, { hour = it }, minute, { minute = it },
+                        )
                     }
                 }
-                TextButton(onClick = onDismiss) { Text("Cancel") }
             }
-        },
-    )
+
+            Surface(
+                tonalElevation = 2.dp,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(10.dp),
+                ) {
+                    onDelete?.let {
+                        TextButton(
+                            onClick = it,
+                            colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error),
+                        ) { Text("Delete") }
+                    }
+                    Spacer(Modifier.weight(1f))
+                    Button(
+                        enabled = canSave,
+                        onClick = {
+                            val draft = aiDraft
+                            if (mode == AutomationEditorMode.ASK_AI && draft != null) {
+                                onSave(
+                                    draft.title, draft.prompt, draft.checkCommand, draft.schedule, draft.scheduledAt,
+                                    draft.hour, draft.minute, effectiveProviderId, effectiveModel,
+                                )
+                            } else {
+                                onSave(
+                                    title.trim(), prompt.trim(), checkCommand.trim(), schedule,
+                                    onceAt.takeIf { schedule == AutomationSchedule.ONCE }, hourValue ?: 8, minuteValue ?: 0,
+                                    effectiveProviderId, effectiveModel,
+                                )
+                            }
+                        },
+                    ) {
+                        Text(if (task == null) "Create automation" else "Save changes")
+                    }
+                }
+            }
+        }
+    }
 
     if (showModelPicker) {
         ModelPickerSheet(
@@ -921,37 +970,30 @@ private fun AutomationModelSelector(
     OutlinedCard(
         onClick = onClick,
         colors = CardDefaults.outlinedCardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            containerColor = MaterialTheme.colorScheme.surface,
         ),
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(16.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+            modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp),
         ) {
-            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
-                Icon(
-                    Icons.Outlined.AutoAwesome,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                    modifier = Modifier.padding(8.dp).size(19.dp),
-                )
-            }
+            Icon(
+                Icons.Outlined.AutoAwesome,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(20.dp),
+            )
             Column(Modifier.weight(1f)) {
-                Text("Model", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("AI model", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     if (providerName != null && model != null) "$providerName · $model" else "Choose a provider and model",
-                    style = MaterialTheme.typography.titleSmall,
+                    style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                )
-                Text(
-                    "Used for setup and every run",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }
             Text("Change", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
@@ -968,95 +1010,123 @@ private fun AskAiAutomationEditor(
     error: String?,
     draft: AutomationAiDraft?,
     onAsk: (String) -> Unit,
+    modifier: Modifier = Modifier,
     onEditManually: () -> Unit,
 ) {
-    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-        Text("Tell AI what you want", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
-        Text(
-            "Describe the job and timing normally. AI will ask only when something important is missing.",
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
+    Column(modifier = modifier) {
+        LazyColumn(
+            modifier = Modifier.weight(1f).fillMaxWidth(),
+            contentPadding = PaddingValues(horizontal = 20.dp, vertical = 18.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            if (turns.isEmpty()) {
+                item {
+                    Column(
+                        modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 8.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
+                            Icon(
+                                Icons.Outlined.AutoAwesome,
+                                contentDescription = null,
+                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                                modifier = Modifier.padding(12.dp).size(26.dp),
+                            )
+                        }
+                        Text(
+                            "What should this automation do?",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold,
+                        )
+                        Text(
+                            "Describe the task and timing in your own words. AI will ask a short follow-up only if it needs something important.",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+                item {
+                    Row(
+                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    ) {
+                        AssistChip(
+                            onClick = { onAsk("Every hour, check the project for build failures and fix them.") },
+                            label = { Text("Every hour") },
+                        )
+                        AssistChip(
+                            onClick = { onAsk("Tomorrow at 8 PM, build the debug APK and fix any build errors.") },
+                            label = { Text("Tomorrow at 8 PM") },
+                        )
+                        AssistChip(
+                            onClick = { onAsk("Every day at 9 AM, run the project tests and fix failures.") },
+                            label = { Text("Daily at 9 AM") },
+                        )
+                    }
+                }
+            } else {
+                items(turns) { turn -> AutomationAiBubble(turn) }
+            }
 
-    if (turns.isEmpty()) {
-        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text("Examples", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(
-                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
-            ) {
-            AssistChip(onClick = { onAsk("Tomorrow at 8 PM, build the debug APK and fix any build errors.") },
-                label = { Text("Tomorrow at 8 PM") },
-                leadingIcon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = null, modifier = Modifier.size(17.dp)) })
-            AssistChip(onClick = { onAsk("Every hour, check the project for build failures and fix them.") },
-                label = { Text("Every hour") },
-                leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(17.dp)) })
-            AssistChip(onClick = { onAsk("Every day at 9 AM, run the project tests and fix failures.") },
-                label = { Text("Daily at 9 AM") },
-                leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(17.dp)) })
+            if (busy) {
+                item {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp),
+                    ) {
+                        CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
+                        Text("Working out the automation…", style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            }
+
+            error?.let { message ->
+                item {
+                    Surface(
+                        color = MaterialTheme.colorScheme.errorContainer,
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        Text(
+                            message,
+                            color = MaterialTheme.colorScheme.onErrorContainer,
+                            style = MaterialTheme.typography.bodySmall,
+                            modifier = Modifier.padding(12.dp),
+                        )
+                    }
+                }
+            }
+
+            draft?.let { ready ->
+                item { AutomationAiDraftCard(ready, onEditManually) }
             }
         }
-    }
 
-    if (turns.isNotEmpty()) {
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(
-                modifier = Modifier.padding(14.dp),
-                verticalArrangement = Arrangement.spacedBy(10.dp),
+        if (draft == null) {
+            Surface(
+                tonalElevation = 3.dp,
+                modifier = Modifier.fillMaxWidth(),
             ) {
-                turns.forEach { turn -> AutomationAiBubble(turn) }
-            }
-        }
-    }
-
-    error?.let {
-        Surface(color = MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
-            Text(it, color = MaterialTheme.colorScheme.onErrorContainer, style = MaterialTheme.typography.bodySmall,
-                modifier = Modifier.padding(12.dp))
-        }
-    }
-
-    if (busy) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier.padding(vertical = 6.dp)) {
-            CircularProgressIndicator(modifier = Modifier.size(18.dp), strokeWidth = 2.dp)
-            Text("Working out the automation…", style = MaterialTheme.typography.bodySmall)
-        }
-    }
-
-    draft?.let { AutomationAiDraftCard(it, onEditManually) }
-
-    if (draft == null) {
-        Surface(
-            color = MaterialTheme.colorScheme.surfaceContainerLow,
-            shape = RoundedCornerShape(20.dp),
-            modifier = Modifier.fillMaxWidth(),
-        ) {
-            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = onInputChange,
                     enabled = !busy,
-                    placeholder = { Text(if (turns.isEmpty()) "Example: every hour run the tests and fix failures" else "Answer AI's question…") },
-                    minLines = 4,
-                    maxLines = 4,
-                    shape = RoundedCornerShape(16.dp),
+                    placeholder = {
+                        Text(if (turns.isEmpty()) "Describe your automation…" else "Answer AI…")
+                    },
+                    minLines = 2,
+                    maxLines = 2,
+                    shape = RoundedCornerShape(18.dp),
                     trailingIcon = {
-                        FilledTonalIconButton(onClick = { onAsk(input) }, enabled = input.isNotBlank() && !busy) {
+                        FilledTonalIconButton(
+                            onClick = { onAsk(input) },
+                            enabled = input.isNotBlank() && !busy,
+                        ) {
                             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(124.dp),
-                )
-                Text(
-                    "Review the automation before it is saved.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).height(88.dp),
                 )
             }
         }
