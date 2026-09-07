@@ -203,6 +203,12 @@ fun ProvidersScreen(
                     }
                 }
             },
+            onAddCustomModel = { providerId, model, reasoning ->
+                scope.launch { container.providers.addCustomModel(providerId, model, reasoning) }
+            },
+            onDeleteCustomModel = { providerId, model ->
+                scope.launch { container.providers.removeCustomModel(providerId, model) }
+            },
             onManageProviders = { /* already here */ },
         )
     }

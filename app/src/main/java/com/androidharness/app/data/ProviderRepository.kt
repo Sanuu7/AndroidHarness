@@ -31,15 +31,21 @@ class ProviderRepository(
                 json.decodeFromString(ListSerializer(ProviderConfig.serializer()), raw)
             }.getOrDefault(emptyList())
         } ?: emptyList()
-        listOf(HarnessProvider.config.copy(model = HarnessProvider.sanitize(saved.firstOrNull { it.id == HarnessProvider.ID }?.model))) + saved.filterNot { it.id == HarnessProvider.ID }
+        val harnessCustom = prefs[customModelsKey(HarnessProvider.ID)]?.let { raw ->
+            runCatching {
+                json.decodeFromString<List<ModelEntry>>(raw)
+            }.getOrDefault(emptyList())
+        }?.map { it.id }?.toSet().orEmpty()
+        listOf(HarnessProvider.config.copy(model = HarnessProvider.sanitize(saved.firstOrNull { it.id == HarnessProvider.ID }?.model, harnessCustom))) + saved.filterNot { it.id == HarnessProvider.ID }
     }
 
     /**
      * Fetched model catalogs per provider id, persisted so the pickers show
-     * every model a provider offers without refetching on each open.
+     * every model a provider offers without refetching on each open. Custom
+     * models added by the user merge at the top of each list.
      */
     val catalogs: Flow<Map<String, List<ModelEntry>>> = context.providerStore.data.map { prefs ->
-        prefs.asMap().asSequence()
+        val catalogMap = prefs.asMap().asSequence()
             .filter { it.key.name.startsWith(CATALOG_PREFIX) }
             .mapNotNull { (key, value) ->
                 val providerId = key.name.removePrefix(CATALOG_PREFIX)
@@ -47,13 +53,67 @@ class ProviderRepository(
                     json.decodeFromString(ListSerializer(ModelEntry.serializer()), value as String)
                 }.getOrNull()?.let { providerId to it }
             }
-            .toMap().let { catalogs ->
-                if (catalogs[HarnessProvider.ID].isNullOrEmpty()) catalogs + (HarnessProvider.ID to HarnessProvider.fallbackModels) else catalogs
+            .toMap().toMutableMap()
+
+        if (catalogMap[HarnessProvider.ID].isNullOrEmpty()) {
+            catalogMap[HarnessProvider.ID] = HarnessProvider.fallbackModels
+        }
+
+        prefs.asMap().asSequence()
+            .filter { it.key.name.startsWith(CUSTOM_MODELS_PREFIX) }
+            .forEach { (key, value) ->
+                val providerId = key.name.removePrefix(CUSTOM_MODELS_PREFIX)
+                val customList = runCatching {
+                    json.decodeFromString(ListSerializer(ModelEntry.serializer()), value as String)
+                }.getOrDefault(emptyList())
+                if (customList.isNotEmpty()) {
+                    val base = catalogMap[providerId].orEmpty().filterNot { baseEntry ->
+                        customList.any { it.id == baseEntry.id }
+                    }
+                    catalogMap[providerId] = customList + base
+                }
             }
+
+        catalogMap
     }
 
     suspend fun catalog(providerId: String): List<ModelEntry> =
         catalogs.first()[providerId].orEmpty()
+
+    suspend fun customModels(providerId: String): List<ModelEntry> {
+        val raw = context.providerStore.data.first()[customModelsKey(providerId)] ?: return emptyList()
+        return runCatching {
+            json.decodeFromString<List<ModelEntry>>(raw)
+        }.getOrDefault(emptyList())
+    }
+
+    suspend fun addCustomModel(providerId: String, modelId: String, reasoning: Boolean? = null) {
+        val clean = modelId.trim()
+        if (clean.isBlank()) return
+        context.providerStore.edit { prefs ->
+            val key = customModelsKey(providerId)
+            val raw = prefs[key]
+            val existing = if (raw == null) emptyList() else runCatching {
+                json.decodeFromString<List<ModelEntry>>(raw)
+            }.getOrDefault(emptyList())
+            val updated = listOf(ModelEntry(clean, reasoning = reasoning, custom = true)) +
+                existing.filterNot { it.id == clean }
+            prefs[key] = json.encodeToString(ListSerializer(ModelEntry.serializer()), updated)
+        }
+    }
+
+    suspend fun removeCustomModel(providerId: String, modelId: String) {
+        context.providerStore.edit { prefs ->
+            val key = customModelsKey(providerId)
+            val raw = prefs[key]
+            val existing = if (raw == null) emptyList() else runCatching {
+                json.decodeFromString<List<ModelEntry>>(raw)
+            }.getOrDefault(emptyList())
+            val updated = existing.filterNot { it.id == modelId }
+            if (updated.isEmpty()) prefs.remove(key)
+            else prefs[key] = json.encodeToString(ListSerializer(ModelEntry.serializer()), updated)
+        }
+    }
 
     suspend fun saveCatalog(providerId: String, entries: List<ModelEntry>) {
         context.providerStore.edit { prefs ->
@@ -77,7 +137,8 @@ class ProviderRepository(
 
     suspend fun update(config: ProviderConfig, apiKey: String?) {
         if (config.id == HarnessProvider.ID) {
-            save(current().map { if (it.id == config.id) HarnessProvider.config.copy(model = HarnessProvider.sanitize(config.model)) else it })
+            val custom = customModels(HarnessProvider.ID).map { it.id }.toSet()
+            save(current().map { if (it.id == config.id) HarnessProvider.config.copy(model = HarnessProvider.sanitize(config.model, custom)) else it })
             return
         }
         if (apiKey != null) {
@@ -118,6 +179,7 @@ class ProviderRepository(
     }
 
     private fun catalogKey(providerId: String) = stringPreferencesKey(CATALOG_PREFIX + providerId)
+    private fun customModelsKey(providerId: String) = stringPreferencesKey(CUSTOM_MODELS_PREFIX + providerId)
 
     private suspend fun current(): List<ProviderConfig> = providers.first()
 
@@ -128,6 +190,7 @@ class ProviderRepository(
 
     private companion object {
         const val CATALOG_PREFIX = "catalog_"
+        const val CUSTOM_MODELS_PREFIX = "custom_models_"
         const val WIRE_PREFIX = "wire_harness_"
     }
 }

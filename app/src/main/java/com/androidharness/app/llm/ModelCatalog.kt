@@ -26,6 +26,7 @@ data class ModelEntry(
     val id: String,
     val reasoning: Boolean? = null,
     val contextTokens: Long? = null,
+    val custom: Boolean = false,
 )
 
 /** Family-based thinking-capability hint for endpoints that don't report it. */

@@ -1487,6 +1487,18 @@ class ChatViewModel(
         selectModelForTarget(ModelSelectionTarget.ACTIVE, providerId, model)
     }
 
+    fun addCustomModel(providerId: String, model: String, reasoning: Boolean? = null) {
+        viewModelScope.launch {
+            c.providers.addCustomModel(providerId, model, reasoning)
+        }
+    }
+
+    fun deleteCustomModel(providerId: String, model: String) {
+        viewModelScope.launch {
+            c.providers.removeCustomModel(providerId, model)
+        }
+    }
+
     /**
      * Add or update a provider (plus its API key) without leaving chat.
      * Mirrors the Providers screen: a first-ever provider becomes active.

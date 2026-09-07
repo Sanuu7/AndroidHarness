@@ -2262,6 +2262,12 @@ private fun PlanningModelSection(
                     }
                 }
             },
+            onAddCustomModel = { providerId, model, reasoning ->
+                scope.launch { container.providers.addCustomModel(providerId, model, reasoning) }
+            },
+            onDeleteCustomModel = { providerId, model ->
+                scope.launch { container.providers.removeCustomModel(providerId, model) }
+            },
             onManageProviders = {
                 managingRoleProvider = role
                 pickingRole = null

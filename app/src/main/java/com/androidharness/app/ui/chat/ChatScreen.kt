@@ -330,6 +330,8 @@ fun ChatScreen(
                 viewModel.selectModelForTarget(target, providerId, model)
             },
             onRefreshCatalog = viewModel::refreshCatalog,
+            onAddCustomModel = viewModel::addCustomModel,
+            onDeleteCustomModel = viewModel::deleteCustomModel,
             // Provider management stays in-conversation: a sheet, not a screen.
             onManageProviders = {
                 activeProviderManagerTarget = target

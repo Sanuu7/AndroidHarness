@@ -27,8 +27,8 @@ object HarnessProvider {
     fun isFree(model: String): Boolean = model == "big-pickle" ||
         (model.endsWith("-free") && model != "ox-alpha-free")
 
-    fun sanitize(model: String?): String =
-        model?.takeIf { isFree(it) && it !in retired } ?: DEFAULT_MODEL
+    fun sanitize(model: String?, custom: Set<String> = emptySet()): String =
+        model?.takeIf { (isFree(it) || it in custom) && it !in retired } ?: DEFAULT_MODEL
 
     fun models(entries: List<ModelEntry>): List<ModelEntry> {
         val free = entries.filter { isFree(it.id) }

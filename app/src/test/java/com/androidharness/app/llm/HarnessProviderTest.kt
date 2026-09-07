@@ -17,6 +17,11 @@ class HarnessProviderTest {
         assertEquals("muse-spark-1.3-contributor-free", HarnessProvider.sanitize("muse-spark-1.3-contributor-free"))
     }
 
+    @Test fun customModelsSurviveSanitize() {
+        assertEquals("my-custom-model", HarnessProvider.sanitize("my-custom-model", setOf("my-custom-model")))
+        assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("my-custom-model", setOf("other")))
+    }
+
     @Test fun wirePinMapping() {
         HarnessProvider.pins = mapOf(
             "a" to ProviderType.ANTHROPIC.name,

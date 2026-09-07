@@ -11,10 +11,17 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.AssistChip
+import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilterChip
@@ -25,6 +32,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -67,6 +75,8 @@ fun ModelPickerSheet(
     onManageProviders: () -> Unit,
     /** When set (Providers screen "browse"), list this provider instead of the active one. */
     browseProviderId: String? = null,
+    onAddCustomModel: (providerId: String, model: String, reasoning: Boolean?) -> Unit = { _, _, _ -> },
+    onDeleteCustomModel: (providerId: String, model: String) -> Unit = { _, _ -> },
 ) {
     val scheme = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
@@ -74,6 +84,7 @@ fun ModelPickerSheet(
     var thinkOnly by remember { mutableStateOf(false) }
     var isRefreshing by remember { mutableStateOf(false) }
     var refreshError by remember { mutableStateOf<String?>(null) }
+    var showAddCustomDialog by remember { mutableStateOf(false) }
 
     val listedId = browseProviderId ?: activeProviderId
     val listedProvider = providers.firstOrNull { it.id == listedId }
@@ -153,6 +164,12 @@ fun ModelPickerSheet(
                     selected = thinkOnly,
                     onClick = { thinkOnly = !thinkOnly },
                     label = { Text("Thinking only", style = MaterialTheme.typography.labelSmall) },
+                    modifier = Modifier.padding(top = 8.dp),
+                )
+                Spacer(Modifier.width(8.dp))
+                AssistChip(
+                    onClick = { showAddCustomDialog = true },
+                    label = { Text("+ Custom", style = MaterialTheme.typography.labelSmall) },
                     modifier = Modifier.padding(top = 8.dp),
                 )
                 Spacer(Modifier.weight(1f))
@@ -261,6 +278,51 @@ fun ModelPickerSheet(
                         .filter { q.isBlank() || it.id.lowercase().contains(q) }
                         .filter { !thinkOnly || (it.reasoning ?: reasoningCapable(it.id)) }
 
+                    if (query.isNotBlank() && rows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
+                        item(key = "inline-custom-${query.trim()}") {
+                            Surface(
+                                shape = MaterialTheme.shapes.medium,
+                                color = scheme.primaryContainer.copy(alpha = 0.5f),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 4.dp)
+                                    .clickable {
+                                        val customName = query.trim()
+                                        onAddCustomModel(provider.id, customName, null)
+                                        onSelect(provider.id, customName)
+                                        onDismiss()
+                                    },
+                            ) {
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.Add,
+                                        contentDescription = null,
+                                        tint = scheme.primary,
+                                        modifier = Modifier.size(20.dp),
+                                    )
+                                    Spacer(Modifier.width(8.dp))
+                                    Column(Modifier.weight(1f)) {
+                                        Text(
+                                            "Use custom model",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = scheme.primary,
+                                        )
+                                        Text(
+                                            query.trim(),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            fontFamily = FontFamily.Monospace,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+
                     items(rows.size, key = { "${provider.id}-${rows[it].id}" }) { index ->
                         val entry = rows[index]
                         val isSelected = provider.id == (browseProviderId ?: activeProviderId) &&
@@ -270,6 +332,7 @@ fun ModelPickerSheet(
                             thinking = entry.reasoning ?: reasoningCapable(entry.id),
                             known = entry.reasoning != null,
                             selected = isSelected,
+                            isCustom = entry.custom,
                             ctx = ctxLabel(
                                 entry.contextTokens
                                     ?: ModelsDev.entry(devKey, entry.id)?.contextTokens,
@@ -278,6 +341,9 @@ fun ModelPickerSheet(
                                 onSelect(provider.id, entry.id)
                                 onDismiss()
                             },
+                            onDelete = if (entry.custom) {
+                                { onDeleteCustomModel(provider.id, entry.id) }
+                            } else null,
                         )
                         // Clear separation between tap targets.
                         if (index < rows.lastIndex) {
@@ -289,12 +355,33 @@ fun ModelPickerSheet(
                     }
                 }
                 item {
-                    TextButton(onClick = { onDismiss(); onManageProviders() }) {
-                        Text("Manage providers…")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth(),
+                    ) {
+                        TextButton(onClick = { showAddCustomDialog = true }) {
+                            Text("+ Custom model…")
+                        }
+                        Spacer(Modifier.weight(1f))
+                        TextButton(onClick = { onDismiss(); onManageProviders() }) {
+                            Text("Manage providers…")
+                        }
                     }
                 }
             }
         }
+    }
+
+    if (showAddCustomDialog && listedProvider != null) {
+        AddCustomModelDialog(
+            providerName = listedProvider.name,
+            onDismiss = { showAddCustomDialog = false },
+            onAdd = { modelId, reasoning ->
+                onAddCustomModel(listedProvider.id, modelId, reasoning)
+                onSelect(listedProvider.id, modelId)
+                onDismiss()
+            },
+        )
     }
 }
 
@@ -305,7 +392,9 @@ private fun ModelRow(
     known: Boolean,
     selected: Boolean,
     ctx: String?,
+    isCustom: Boolean = false,
     onClick: () -> Unit,
+    onDelete: (() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
     Row(
@@ -316,13 +405,30 @@ private fun ModelRow(
             .padding(horizontal = 4.dp, vertical = 10.dp),
     ) {
         Column(Modifier.weight(1f)) {
-            Text(
-                id,
-                style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    id,
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontFamily = FontFamily.Monospace,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f, fill = false),
+                )
+                if (isCustom) {
+                    Spacer(Modifier.width(6.dp))
+                    Surface(
+                        shape = MaterialTheme.shapes.extraSmall,
+                        color = scheme.secondaryContainer,
+                    ) {
+                        Text(
+                            "custom",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSecondaryContainer,
+                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
+                        )
+                    }
+                }
+            }
             val sub = listOfNotNull(
                 if (thinking) "thinking" else null,
                 ctx,
@@ -335,10 +441,94 @@ private fun ModelRow(
                 )
             }
         }
+        if (onDelete != null) {
+            IconButton(
+                onClick = onDelete,
+                modifier = Modifier.size(28.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.Close,
+                    contentDescription = "Remove custom model",
+                    tint = scheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp),
+                )
+            }
+            Spacer(Modifier.width(4.dp))
+        }
         if (selected) {
             Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
         }
     }
+}
+
+@Composable
+private fun AddCustomModelDialog(
+    providerName: String,
+    onDismiss: () -> Unit,
+    onAdd: (modelId: String, reasoning: Boolean?) -> Unit,
+) {
+    var modelId by remember { mutableStateOf("") }
+    var thinking by remember { mutableStateOf(false) }
+    val clean = modelId.trim()
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text("Add custom model") },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    "Add any model ID supported by $providerName.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedTextField(
+                    value = modelId,
+                    onValueChange = { modelId = it },
+                    label = { Text("Model ID") },
+                    placeholder = { Text("e.g. meta-llama/llama-3.3-70b") },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { thinking = !thinking }
+                        .padding(vertical = 4.dp),
+                ) {
+                    Checkbox(
+                        checked = thinking,
+                        onCheckedChange = { thinking = it },
+                    )
+                    Spacer(Modifier.width(8.dp))
+                    Column {
+                        Text("Reasoning model", style = MaterialTheme.typography.bodyMedium)
+                        Text(
+                            "Enables thinking level ladder for this model",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            Button(
+                enabled = clean.isNotBlank(),
+                onClick = {
+                    onAdd(clean, if (thinking) true else null)
+                    onDismiss()
+                },
+            ) {
+                Text("Add & Select")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("Cancel")
+            }
+        },
+    )
 }
 
 /** Compact context-window label for picker rows ("200K ctx", "1M ctx", "1B ctx"). */
