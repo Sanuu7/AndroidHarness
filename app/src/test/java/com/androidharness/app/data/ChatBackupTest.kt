@@ -54,6 +54,8 @@ class ChatBackupTest {
                         isError = true,
                         thinking = "hmm",
                         thinkingMs = 42,
+                        outputTokens = 520,
+                        generationMs = 10_000,
                         turnId = "t1",
                         createdAt = 2_500,
                     ),
@@ -77,6 +79,8 @@ class ChatBackupTest {
         val m = file.sessions[0].messages[0]
         assertEquals("x", m.text)
         assertEquals("[]", m.toolCallsJson)
+        assertEquals(0, m.outputTokens)
+        assertEquals(0L, m.generationMs)
     }
 
     @Test

@@ -905,6 +905,11 @@ fun ChatScreen(
                     }
                     map
                 }
+                val turnSpeeds = remember(state.messages) {
+                    state.messages.filter { it.turnId != null }
+                        .groupBy { it.turnId!! }
+                        .mapValues { (_, messages) -> turnTokensPerSecond(messages) }
+                }
                 val turnActivities = remember(state.messages) {
                     completedTurnActivities(state.messages)
                 }
@@ -1076,7 +1081,10 @@ fun ChatScreen(
                                                         showWebPreview = true
                                                     },
                                                 )
-                                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                                Row(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    verticalAlignment = Alignment.CenterVertically,
+                                                ) {
                                                     CopyIconButton(message.text)
                                                     ForkIconButton(
                                                         onClick = {
@@ -1089,6 +1097,20 @@ fun ChatScreen(
                                                         UndoIconButton(
                                                             onClick = { message.turnId?.let { confirmRewindTurn = it } },
                                                         )
+                                                    }
+                                                    if (isTurnFinal && !isTurnRunning) {
+                                                        val duration = turnFirstUserTimes[message.turnId]?.let {
+                                                            message.createdAt - it
+                                                        }
+                                                        val label = turnPerformanceLabel(duration, turnSpeeds[message.turnId])
+                                                        if (label.isNotBlank()) {
+                                                            Spacer(Modifier.weight(1f))
+                                                            Text(
+                                                                label,
+                                                                style = MaterialTheme.typography.labelSmall,
+                                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                            )
+                                                        }
                                                     }
                                                 }
                                             }

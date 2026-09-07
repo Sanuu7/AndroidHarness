@@ -45,6 +45,8 @@ data class MessageEntity(
     val isError: Boolean,
     val thinking: String = "",
     val thinkingMs: Long = 0,
+    val outputTokens: Int = 0,
+    val generationMs: Long = 0,
     val imagesJson: String = "[]",
     val turnId: String? = null,
     val createdAt: Long,
@@ -378,13 +380,22 @@ interface HarnessDao {
         SessionFileChangeEntity::class,
         MessageFtsEntity::class,
     ],
-    version = 10,
+    version = 11,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        /** Persist measured model response speed without changing existing chat history. */
+        val MIGRATION_10_11 = object : androidx.room.migration.Migration(10, 11) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE messages ADD COLUMN outputTokens INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE messages ADD COLUMN generationMs INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
+
         /** v5: per-session cache-write tokens (Anthropic cache creation). */
         val MIGRATION_4_5 = object : androidx.room.migration.Migration(4, 5) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {

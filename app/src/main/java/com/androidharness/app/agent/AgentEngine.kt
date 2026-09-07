@@ -307,6 +307,8 @@ class AgentEngine(
             var text = StringBuilder()
             var thinking = StringBuilder()
             var calls = mutableListOf<ToolCallData>()
+            var outputTokens = 0
+            var requestStartedNs = System.nanoTime()
 
             val streamEventHandler: suspend (StreamEvent) -> Unit = { event ->
                 when (event) {
@@ -335,13 +337,16 @@ class AgentEngine(
                             else -> {}
                         }
                     }
-                    is StreamEvent.Usage -> emit(
-                        AgentEvent.Usage(
-                            event.inputTokens, event.outputTokens,
-                            event.cachedInputTokens, event.cacheWriteTokens,
-                            config.model, config.name,
+                    is StreamEvent.Usage -> {
+                        outputTokens = event.outputTokens
+                        emit(
+                            AgentEvent.Usage(
+                                event.inputTokens, event.outputTokens,
+                                event.cachedInputTokens, event.cacheWriteTokens,
+                                config.model, config.name,
+                            )
                         )
-                    )
+                    }
                     is StreamEvent.Done -> lastFinishReason = event.finishReason
                     else -> {}
                 }
@@ -355,6 +360,8 @@ class AgentEngine(
                     provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
                 },
                 onAttemptStart = {
+                    requestStartedNs = System.nanoTime()
+                    outputTokens = 0
                     text = StringBuilder()
                     thinking = StringBuilder()
                     calls = mutableListOf()
@@ -377,6 +384,8 @@ class AgentEngine(
                         provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
                     },
                     onAttemptStart = {
+                        requestStartedNs = System.nanoTime()
+                        outputTokens = 0
                         text = StringBuilder()
                         thinking = StringBuilder()
                         calls = mutableListOf()
@@ -406,6 +415,8 @@ class AgentEngine(
                     text = text.toString(),
                     toolCalls = calls.toList(),
                     thinking = thinking.toString(),
+                    outputTokens = outputTokens,
+                    generationMs = ((System.nanoTime() - requestStartedNs) / 1_000_000).coerceAtLeast(1),
                 )
                 working += assistant
                 emit(AgentEvent.AssistantCommitted(assistant))
