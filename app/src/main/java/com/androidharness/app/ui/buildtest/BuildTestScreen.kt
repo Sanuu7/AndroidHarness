@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
@@ -26,16 +25,18 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.MoreVert
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -209,9 +210,6 @@ fun BuildTestScreen(
                     IconButton(onClick = onOpenTerminal) {
                         Icon(Icons.Outlined.Terminal, contentDescription = "Open terminal")
                     }
-                    IconButton(onClick = { adding = true }) {
-                        Icon(Icons.Outlined.Add, contentDescription = "Add command")
-                    }
                 },
             )
         },
@@ -220,8 +218,8 @@ fun BuildTestScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
-            verticalArrangement = Arrangement.spacedBy(14.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp, vertical = 10.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
             item {
                 RunHeroCard(
@@ -258,36 +256,31 @@ fun BuildTestScreen(
                 }
             }
 
-            item {
-                if (commands.isEmpty()) {
+            if (commands.isEmpty()) {
+                item {
                     Surface(
-                        shape = RoundedCornerShape(18.dp),
+                        shape = RoundedCornerShape(16.dp),
                         color = scheme.surfaceContainerLow,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Text(
                             "No saved checks yet. Add the command you use to test or build this project.",
-                            modifier = Modifier.padding(18.dp),
+                            modifier = Modifier.padding(14.dp),
                             style = MaterialTheme.typography.bodyMedium,
                             color = scheme.onSurfaceVariant,
                         )
                     }
-                } else {
-                    LazyRow(
-                        horizontalArrangement = Arrangement.spacedBy(10.dp),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(end = 4.dp),
-                    ) {
-                        items(commands, key = { it.id }) { command ->
-                            CommandCard(
-                                command = command,
-                                running = terminalState.busy && activeCommand?.id == command.id,
-                                enabled = shellRoot != null && !terminalState.busy,
-                                onRun = { run(command) },
-                                onEdit = { editing = command },
-                                onDelete = { saveCommands(commands.filterNot { it.id == command.id }) },
-                            )
-                        }
-                    }
+                }
+            } else {
+                items(commands, key = { it.id }) { command ->
+                    CommandCard(
+                        command = command,
+                        running = terminalState.busy && activeCommand?.id == command.id,
+                        enabled = shellRoot != null && !terminalState.busy,
+                        onRun = { run(command) },
+                        onEdit = { editing = command },
+                        onDelete = { saveCommands(commands.filterNot { it.id == command.id }) },
+                    )
                 }
             }
 
@@ -335,13 +328,13 @@ fun BuildTestScreen(
             if (runStatus == RunStatus.FAILED && activeCommand != null) {
                 item {
                     Card(
-                        shape = RoundedCornerShape(20.dp),
+                        shape = RoundedCornerShape(18.dp),
                         colors = CardDefaults.cardColors(containerColor = scheme.errorContainer.copy(alpha = 0.45f)),
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Column(
-                            modifier = Modifier.padding(18.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp),
+                            modifier = Modifier.padding(14.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
                         ) {
                             Text("Let the agent fix this", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
                             Text(
@@ -409,13 +402,13 @@ private fun RunHeroCard(
     val scheme = MaterialTheme.colorScheme
     Card(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(24.dp),
+        shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.55f)),
     ) {
         Column(
-            modifier = Modifier.padding(20.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Surface(shape = CircleShape, color = statusColor.copy(alpha = 0.14f)) {
@@ -435,7 +428,7 @@ private fun RunHeroCard(
                             RunStatus.PASSED -> "${command?.name.orEmpty()} passed"
                             RunStatus.FAILED -> "${command?.name.orEmpty()} failed"
                         },
-                        style = MaterialTheme.typography.titleLarge,
+                        style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.SemiBold,
                     )
                     Text(
@@ -472,12 +465,18 @@ private fun MetricPill(label: String, value: String, modifier: Modifier = Modifi
     val scheme = MaterialTheme.colorScheme
     Surface(
         modifier = modifier,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(12.dp),
         color = scheme.surfaceContainer,
     ) {
-        Column(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+        Column(Modifier.padding(horizontal = 9.dp, vertical = 7.dp)) {
             Text(label, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
-            Text(value, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+            Text(
+                value,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = FontWeight.SemiBold,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -492,60 +491,73 @@ private fun CommandCard(
     onDelete: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
+    var menuOpen by remember(command.id) { mutableStateOf(false) }
     Card(
-        modifier = Modifier.width(260.dp),
-        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.55f)),
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+        Row(
+            modifier = Modifier.padding(start = 12.dp, end = 6.dp, top = 10.dp, bottom = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
         ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Surface(shape = CircleShape, color = scheme.primaryContainer) {
-                    Icon(
-                        Icons.Filled.PlayArrow,
-                        contentDescription = null,
-                        tint = scheme.onPrimaryContainer,
-                        modifier = Modifier.padding(8.dp).size(18.dp),
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
+            Surface(shape = CircleShape, color = scheme.primaryContainer) {
+                Icon(
+                    Icons.Filled.PlayArrow,
+                    contentDescription = null,
+                    tint = scheme.onPrimaryContainer,
+                    modifier = Modifier.padding(8.dp).size(17.dp),
+                )
+            }
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
                 Text(
                     command.name,
-                    modifier = Modifier.weight(1f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                     style = MaterialTheme.typography.titleSmall,
                     fontWeight = FontWeight.SemiBold,
                 )
-                IconButton(onClick = onEdit, modifier = Modifier.size(34.dp)) {
-                    Icon(Icons.Outlined.Edit, contentDescription = "Edit", modifier = Modifier.size(17.dp))
-                }
-                IconButton(onClick = onDelete, modifier = Modifier.size(34.dp)) {
-                    Icon(Icons.Outlined.Delete, contentDescription = "Delete", modifier = Modifier.size(17.dp))
-                }
-            }
-            Surface(
-                shape = RoundedCornerShape(12.dp),
-                color = scheme.surfaceContainer,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
                 Text(
                     command.command,
-                    modifier = Modifier.padding(11.dp),
-                    maxLines = 2,
+                    maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.bodySmall,
+                    style = MaterialTheme.typography.labelSmall,
                     fontFamily = FontFamily.Monospace,
                     color = scheme.onSurfaceVariant,
                 )
             }
-            FilledTonalButton(onClick = onRun, enabled = enabled, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(17.dp))
-                Spacer(Modifier.width(6.dp))
+            Spacer(Modifier.width(8.dp))
+            FilledTonalButton(
+                onClick = onRun,
+                enabled = enabled,
+                modifier = Modifier.heightIn(min = 38.dp),
+            ) {
                 Text(if (running) "Running" else "Run")
+            }
+            Box {
+                IconButton(onClick = { menuOpen = true }, modifier = Modifier.size(40.dp)) {
+                    Icon(Icons.Outlined.MoreVert, contentDescription = "Command options", modifier = Modifier.size(19.dp))
+                }
+                DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+                    DropdownMenuItem(
+                        text = { Text("Edit") },
+                        leadingIcon = { Icon(Icons.Outlined.Edit, contentDescription = null) },
+                        onClick = {
+                            menuOpen = false
+                            onEdit()
+                        },
+                    )
+                    DropdownMenuItem(
+                        text = { Text("Delete") },
+                        leadingIcon = { Icon(Icons.Outlined.Delete, contentDescription = null) },
+                        onClick = {
+                            menuOpen = false
+                            onDelete()
+                        },
+                    )
+                }
             }
         }
     }
@@ -589,7 +601,7 @@ private fun LiveOutputCard(
 ) {
     val scheme = MaterialTheme.colorScheme
     Card(
-        shape = RoundedCornerShape(20.dp),
+        shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLowest),
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.55f)),
         modifier = Modifier.fillMaxWidth(),
@@ -611,7 +623,7 @@ private fun LiveOutputCard(
                 state = listState,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .heightIn(min = 180.dp, max = 340.dp)
+                    .heightIn(min = 150.dp, max = 280.dp)
                     .horizontalScroll(rememberScrollState())
                     .padding(horizontal = 14.dp, vertical = 10.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),

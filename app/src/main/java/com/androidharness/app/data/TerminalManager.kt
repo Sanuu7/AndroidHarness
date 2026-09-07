@@ -4,6 +4,7 @@ import android.content.Context
 import com.androidharness.app.agent.RunManager
 import com.androidharness.app.data.env.LinuxEnvironmentManager
 import com.androidharness.app.data.env.ShizukuManager
+import com.androidharness.app.data.env.ShizukuState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -11,6 +12,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.io.File
@@ -60,6 +62,14 @@ class TerminalManager(
     private val pendingLock = Any()
     private val pendingLines = ArrayDeque<String>()
     private var flushJob: Job? = null
+
+    init {
+        scope.launch {
+            shizuku.state.collect { state ->
+                _state.update { it.copy(privileged = state == ShizukuState.GRANTED) }
+            }
+        }
+    }
 
     /** Starts the terminal if it isn't running yet. */
     fun ensureStarted() {
@@ -240,7 +250,6 @@ class TerminalManager(
             val res = shizuku.runPrivileged(argv, env, cwd.absolutePath, timeoutMs = 120_000, maxBytes = 60_000)
             if (res == null) {
                 appendLines(listOf("# Shizuku unavailable: dropped to app tier"))
-                _state.update { it.copy(privileged = false) }
                 sendAppTier(cmd)
                 return@launch
             }

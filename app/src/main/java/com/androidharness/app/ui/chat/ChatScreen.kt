@@ -195,6 +195,7 @@ fun ChatScreen(
 
     LaunchedEffect(Unit) {
         viewModel.container.pendingAgentPrompt.filterNotNull().collect { prompt ->
+            viewModel.state.first { it.providers.isNotEmpty() && it.activeProvider != null }
             viewModel.container.pendingAgentPrompt.value = null
             viewModel.send(prompt)
         }
