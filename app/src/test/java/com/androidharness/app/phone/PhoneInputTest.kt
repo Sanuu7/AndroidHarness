@@ -14,9 +14,9 @@ class PhoneInputTest {
         assertFalse(PhoneInput.sessionAllowed("", "", false))
     }
     @Test fun mouseSourceIsExplicit() {
-        assertEquals(listOf("mouse", "tap", "20", "30"), command("click"))
+        assertEquals(listOf("touchscreen", "tap", "20", "30"), command("click"))
         assertEquals(listOf("mouse", "motionevent", "MOVE", "20", "30"), command("move"))
-        assertEquals("mouse", command("drag").first())
+        assertEquals("touchscreen", command("drag").first())
         assertEquals(listOf("mouse", "scroll", "20", "30", "--axis", "VSCROLL,-2"), command("scroll", text = "-2"))
     }
     @Test fun boundariesAndDragDestinationAreValidated() {
@@ -31,5 +31,13 @@ class PhoneInputTest {
     @Test fun textIsOneArgumentNotAShellCommand() {
         assertEquals(listOf("text", "hello%sworld;$(id)"), command("type", text = "hello world;$(id)"))
         assertEquals(listOf("keyevent", "KEYCODE_HOME"), command("key", text = "HOME"))
+    }
+    @Test fun focusedPackageParsesCurrentWindowOnly() {
+        val dump = """
+            Window #4 Window{abcd u0 com.androidharness.app/com.androidharness.app.MainActivity}
+              mCurrentFocus=Window{1234 u0 com.brave.browser/com.google.android.apps.chrome.Main}
+        """.trimIndent()
+        assertEquals("com.brave.browser", PhoneInput.focusedPackage(dump))
+        assertNull(PhoneInput.focusedPackage("Window #1 com.androidharness.app/MainActivity"))
     }
 }

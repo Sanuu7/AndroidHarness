@@ -89,15 +89,17 @@ class PhoneController(
             host.coversControls(x, y) || (action == "drag" && host.coversControls(x2, y2))
         }
         if (blocked) return@withLock ToolResult(false, "Target overlaps the floating controls. Ask the user to move the panel.")
-        withContext(Dispatchers.Main) { host.showAction(action, x, y) }
-        if (service !== host || host.paused) return@withLock ToolResult(false, "Phone control stopped or paused.")
-        val result = try {
-            shizuku.runPrivileged(arrayOf("/system/bin/input", *command.toTypedArray()), null, null, 3_000)
-        } finally {
-            if (action == "drag" || action == "click") kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
-                shizuku.runPrivileged(arrayOf("/system/bin/input", "mouse", "motionevent", "UP", "$x", "$y"), null, null, 1_000)
+        if (action in PhoneControlService.POINTER_ACTIONS) {
+            val focused = shizuku.runPrivileged(arrayOf("/system/bin/dumpsys", "window", "windows"), null, null, 2_000)
+            val focusedPackage = focused?.takeIf { it.exitCode == 0 && !it.timedOut }?.output?.let(PhoneInput::focusedPackage)
+            if (focusedPackage == context.packageName) {
+                return@withLock ToolResult(false, "AndroidHarness is currently in front. Re-open the target app before using phone control.")
             }
         }
+        withContext(Dispatchers.Main) { host.showAction(action, x, y) }
+        if (service !== host || host.paused) return@withLock ToolResult(false, "Phone control stopped or paused.")
+        val result = shizuku.runPrivileged(arrayOf("/system/bin/input", *command.toTypedArray()), null, null, 3_000)
+        if (result != null && result.exitCode == 0 && !result.timedOut && action != "move") host.noteInputCompleted()
         ToolResult(result != null && result.exitCode == 0 && !result.timedOut,
             if (result == null) "Shizuku unavailable" else if (result.exitCode != 0 || result.timedOut) "Mouse command failed: ${result.output} ${result.stderr}" else "$action completed. Take a fresh screenshot before the next decision.")
     }
@@ -112,12 +114,20 @@ object PhoneInput {
         if (action in setOf("move", "click", "drag", "scroll")) point(x, y)
         return when (action) {
             "move" -> listOf("mouse", "motionevent", "MOVE", "$x", "$y")
-            "click" -> listOf("mouse", "tap", "$x", "$y")
-            "drag" -> { point(x2, y2); listOf("mouse", "swipe", "$x", "$y", "$x2", "$y2", "350") }
+            "click" -> listOf("touchscreen", "tap", "$x", "$y")
+            "drag" -> { point(x2, y2); listOf("touchscreen", "swipe", "$x", "$y", "$x2", "$y2", "350") }
             "scroll" -> { val amount = text.toIntOrNull(); require(amount != null && amount in -10..10 && amount != 0) { "Scroll text must be a nonzero integer from -10 to 10" }; listOf("mouse", "scroll", "$x", "$y", "--axis", "VSCROLL,$amount") }
             "key" -> { require(text in setOf("BACK", "HOME", "ENTER", "DEL", "TAB", "APP_SWITCH")) { "Unsupported key" }; listOf("keyevent", "KEYCODE_$text") }
             "type" -> { require(text.length in 1..500 && text.all { it.code in 32..126 } && "%s" !in text) { "Typing supports 1-500 printable ASCII characters, excluding literal %s. Use the phone keyboard for other text." }; listOf("text", text.replace(" ", "%s")) }
             else -> throw IllegalArgumentException("Unknown phone action")
         }
+    }
+
+    fun focusedPackage(dumpsys: String): String? {
+        val line = dumpsys.lineSequence().firstOrNull {
+            it.contains("mCurrentFocus=") || it.contains("mFocusedApp=")
+        } ?: return null
+        return Regex("([A-Za-z0-9_.]+)/[A-Za-z0-9_.$]+")
+            .find(line)?.groupValues?.getOrNull(1)
     }
 }

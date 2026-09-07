@@ -22,6 +22,7 @@ import android.media.projection.MediaProjectionManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
+import android.os.HandlerThread
 import android.os.Looper
 import android.os.SystemClock
 import android.app.KeyguardManager
@@ -97,6 +98,8 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     override val viewModelStore: ViewModelStore get() = store
 
     private val handler = Handler(Looper.getMainLooper())
+    private lateinit var captureThread: HandlerThread
+    private lateinit var captureHandler: Handler
     private val container get() = (application as HarnessApp).container
     private lateinit var windows: WindowManager
 
@@ -119,6 +122,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     private var reader: ImageReader? = null
     private var frame: android.graphics.Bitmap? = null
     private var frameAt = 0L
+    @Volatile private var lastInputAt = 0L
 
     class OverlayUi {
         var paused by mutableStateOf(false)
@@ -131,6 +135,8 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
 
     override fun onCreate() {
         super.onCreate()
+        captureThread = HandlerThread("HarnessPhoneCapture").also { it.start() }
+        captureHandler = Handler(captureThread.looper)
         // Restore must happen while the lifecycle is still INITIALIZED;
         // SavedStateRegistry attach rejects anything past that stage.
         savedStateController.performRestore(null)
@@ -200,10 +206,10 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                 .getMediaProjection(android.app.Activity.RESULT_OK, consent)
             projection!!.registerCallback(object : MediaProjection.Callback() { override fun onStop() { stopSelf() } }, handler)
 
-            reader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 2)
+            reader = ImageReader.newInstance(screenWidth, screenHeight, PixelFormat.RGBA_8888, 3)
             reader!!.setOnImageAvailableListener({ source ->
                 source.acquireLatestImage()?.use { image ->
-                    if (paused || SystemClock.elapsedRealtime() - frameAt < 250) return@use
+                    if (paused || SystemClock.elapsedRealtime() - frameAt < 80) return@use
                     val plane = image.planes[0]
                     val padded = android.graphics.Bitmap.createBitmap(plane.rowStride / plane.pixelStride, image.height, android.graphics.Bitmap.Config.ARGB_8888)
                     padded.copyPixelsFromBuffer(plane.buffer)
@@ -211,7 +217,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                     if (next !== padded) padded.recycle()
                     synchronized(this) { frame?.recycle(); frame = next; frameAt = SystemClock.elapsedRealtime() }
                 }
-            }, handler)
+            }, captureHandler)
             display = projection!!.createVirtualDisplay(
                 "Harness phone control", screenWidth, screenHeight,
                 resources.displayMetrics.densityDpi,
@@ -243,8 +249,24 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     }
 
     @Synchronized
-    fun snapshot(): android.graphics.Bitmap? =
-        if (!paused && SystemClock.elapsedRealtime() - frameAt < 2_000) frame?.copy(android.graphics.Bitmap.Config.ARGB_8888, false) else null
+    private fun snapshotAfter(after: Long): android.graphics.Bitmap? =
+        if (!paused && frameAt >= after && SystemClock.elapsedRealtime() - frameAt < 5_000) {
+            frame?.copy(android.graphics.Bitmap.Config.ARGB_8888, false)
+        } else null
+
+    suspend fun snapshot(): android.graphics.Bitmap? {
+        val after = lastInputAt
+        val deadline = SystemClock.elapsedRealtime() + 1_800
+        while (SystemClock.elapsedRealtime() < deadline) {
+            snapshotAfter(after)?.let { return it }
+            delay(40)
+        }
+        return snapshotAfter(after)
+    }
+
+    fun noteInputCompleted() {
+        lastInputAt = SystemClock.elapsedRealtime()
+    }
 
     /** True when a model-driven point would land on the floating controls. */
     fun coversControls(x: Int, y: Int): Boolean {
@@ -407,6 +429,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
         display?.release()
         reader?.close()
         projection?.stop()
+        if (::captureThread.isInitialized) captureThread.quitSafely()
         synchronized(this) { frame?.recycle(); frame = null }
         panelView?.let { runCatching { windows.removeView(it) } }
         cursorView?.let { runCatching { windows.removeView(it) } }
