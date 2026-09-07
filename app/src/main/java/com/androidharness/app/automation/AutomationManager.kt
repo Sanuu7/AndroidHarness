@@ -2,6 +2,8 @@ package com.androidharness.app.automation
 
 import androidx.work.*
 import com.androidharness.app.AppContainer
+import com.androidharness.app.RunResultNotification
+import com.androidharness.app.RunResultNotifications
 import com.androidharness.app.agent.AgentMode
 import com.androidharness.app.core.Role
 import kotlinx.coroutines.*
@@ -90,6 +92,7 @@ class AutomationManager(private val c: AppContainer) {
             startedAt = System.currentTimeMillis(), status = AutomationStatus.RUNNING)
         repository.addHistory(entry)
         var sid: String? = null
+        var resultPreview: String? = null
         fun status(value: AutomationStatus, message: String?, finished: Boolean = false) {
             repository.task(id)?.let { current ->
                 repository.save(current.copy(lastStatus = value, lastMessage = message,
@@ -97,6 +100,27 @@ class AutomationManager(private val c: AppContainer) {
             }
             repository.updateHistory(entry.id) { it.copy(sessionId = sid, status = value,
                 message = message, finishedAt = if (finished) System.currentTimeMillis() else null) }
+            if (finished) sid?.let { sessionId ->
+                val preview = resultPreview?.takeIf { it.isNotBlank() }
+                    ?: message?.takeIf { it.isNotBlank() }
+                    ?: "Automation finished."
+                runCatching {
+                    RunResultNotifications.post(
+                        c.appContext,
+                        RunResultNotification(
+                            sessionId = sessionId,
+                            title = task.title,
+                            ok = value == AutomationStatus.COMPLETED || value == AutomationStatus.PASSED,
+                            summary = preview.take(4000),
+                            notificationTitle = when (value) {
+                                AutomationStatus.COMPLETED, AutomationStatus.PASSED -> "Automation done"
+                                AutomationStatus.CANCELLED -> "Automation stopped"
+                                else -> "Automation needs attention"
+                            },
+                        ),
+                    )
+                }
+            }
         }
         try {
             status(AutomationStatus.RUNNING, "Preparing workspace")
@@ -136,7 +160,8 @@ class AutomationManager(private val c: AppContainer) {
                     "Do not weaken tests to make them pass. Report evidence and any unresolved blockers.",
                     emptyList(), provider.copy(model = model), key, settings.permissionMode,
                     AgentMode.ACT, settings.maxOutputTokens, settings.maxContextTokens,
-                    settings.thinkingLevel, settings.maxIterations, workspaceOverride = fs)
+                    settings.thinkingLevel, settings.maxIterations, workspaceOverride = fs,
+                    notifyOnFinish = false)
                 var previous: String? = null
                 while (true) {
                     val live = c.runManager.live(session).value
@@ -149,6 +174,8 @@ class AutomationManager(private val c: AppContainer) {
                     }
                     delay(1000)
                 }
+                val result = c.sessions.messages(session).lastOrNull { it.role == Role.ASSISTANT }?.text
+                resultPreview = result?.trim()?.take(4000)
                 if (c.runManager.live(session).value.cancelled) {
                     status(AutomationStatus.CANCELLED, "Stopped by user.", true)
                     break
@@ -158,7 +185,6 @@ class AutomationManager(private val c: AppContainer) {
                     status(AutomationStatus.FAILED, error, true)
                     break
                 }
-                val result = c.sessions.messages(session).lastOrNull { it.role == Role.ASSISTANT }?.text
                 if (task.checkCommand.isBlank()) {
                     status(AutomationStatus.COMPLETED, result?.take(4000) ?: "Run finished without a summary.", true)
                     break

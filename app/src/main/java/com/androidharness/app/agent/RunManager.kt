@@ -249,6 +249,7 @@ class RunManager(
         thinking: ThinkingLevel,
         maxIterations: Int,
         workspaceOverride: com.androidharness.app.workspace.WorkspaceFs? = null,
+        notifyOnFinish: Boolean = true,
     ): String {
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
@@ -389,7 +390,7 @@ class RunManager(
                     allowedTools.remove(sid)
                     deltaBuffers.remove(sid)
                 }
-                notifyFinished(sid, live.value.error)
+                if (notifyOnFinish) notifyFinished(sid, live.value.error)
                 releaseKeepalive()
             }
         }

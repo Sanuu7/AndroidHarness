@@ -87,7 +87,51 @@ data class RunResultNotification(
     val title: String,
     val ok: Boolean,
     val summary: String,
+    val notificationTitle: String? = null,
 )
+
+/** Posts completed-run notifications even when [AgentService] has already stopped. */
+object RunResultNotifications {
+    fun post(context: Context, result: RunResultNotification) {
+        val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        manager.createNotificationChannel(
+            NotificationChannel(
+                AgentService.RESULTS_CHANNEL_ID,
+                "Run results",
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply { description = "Notified when a background agent run finishes" },
+        )
+        manager.notify(notificationId(result.sessionId), build(context, result))
+    }
+
+    private fun build(context: Context, result: RunResultNotification): Notification {
+        val preview = result.summary.trim().ifBlank { "Run finished" }
+        val compactPreview = preview.replace('\n', ' ').take(180)
+        val intent = Intent(context, MainActivity::class.java)
+            .putExtra(AgentService.EXTRA_SESSION_ID, result.sessionId)
+            .addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val pendingIntent = PendingIntent.getActivity(
+            context,
+            result.sessionId.hashCode(),
+            intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
+        )
+        return Notification.Builder(context, AgentService.RESULTS_CHANNEL_ID)
+            .setContentTitle(
+                result.notificationTitle ?: if (result.ok) "Run finished" else "Run needs attention",
+            )
+            .setContentText(compactPreview)
+            .setSubText(result.title)
+            .setStyle(Notification.BigTextStyle().bigText(preview.take(4000)))
+            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setAutoCancel(true)
+            .setContentIntent(pendingIntent)
+            .build()
+    }
+
+    internal fun notificationId(sessionId: String): Int =
+        AgentService.RESULT_NOTIFICATION_ID + (sessionId.hashCode() and 0x0fffffff)
+}
 
 /**
  * Foreground service that keeps the process alive while an agent run (or an
@@ -115,8 +159,7 @@ class AgentService : Service() {
         scope.launch {
             RuntimeNotifier.results.collect { result ->
                 runCatching {
-                    getSystemService(NotificationManager::class.java)
-                        .notify(resultNotificationId(), buildResultNotification(result))
+                    RunResultNotifications.post(this@AgentService, result)
                 }
             }
         }
@@ -189,7 +232,7 @@ class AgentService : Service() {
             .putExtra(EXTRA_SESSION_ID, sessionId)
             .addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
         return PendingIntent.getActivity(
-            this, 0, intent,
+            this, sessionId.hashCode(), intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
     }
@@ -202,17 +245,6 @@ class AgentService : Service() {
             .setOnlyAlertOnce(true)
             .setOngoing(true)
             .build()
-
-    private fun buildResultNotification(result: RunResultNotification): Notification =
-        Notification.Builder(this, RESULTS_CHANNEL_ID)
-            .setContentTitle(if (result.ok) "Run finished" else "Run needs attention")
-            .setContentText(result.title + ": " + result.summary)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
-            .setAutoCancel(true)
-            .setContentIntent(contentIntent(result.sessionId))
-            .build()
-
-    private fun resultNotificationId(): Int = RESULT_NOTIFICATION_ID
 
     // ------------------------------------------------------------------
     // Answerable "action needed" alerts
