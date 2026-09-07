@@ -905,14 +905,8 @@ fun ChatScreen(
                     }
                     map
                 }
-                val turnToolCalls = remember(state.messages) {
-                    val map = LinkedHashMap<String, MutableList<com.androidharness.app.core.ToolCallData>>()
-                    for (m in state.messages) {
-                        if (m.role == Role.ASSISTANT && m.toolCallId == null && m.turnId != null && m.toolCalls.isNotEmpty()) {
-                            map.getOrPut(m.turnId) { mutableListOf() }.addAll(m.toolCalls)
-                        }
-                    }
-                    map.mapValues { it.value.toList() }
+                val turnActivities = remember(state.messages) {
+                    completedTurnActivities(state.messages)
                 }
                 val skillUsedByMessage = remember(state.messages) {
                     val map = HashMap<String, List<String>>()
@@ -1037,12 +1031,26 @@ fun ChatScreen(
                                 val isTurnFinal = message.id == turnFinalAssistantIds[message.turnId]
                                 val isTurnRunning = state.busy && (message.turnId == state.currentTurnId ||
                                     (state.currentTurnId == null && message.turnId == state.messages.lastOrNull { it.turnId != null }?.turnId))
-                                val finishedTurnCalls = if (isTurnFinal && !isTurnRunning) {
-                                    turnToolCalls[message.turnId].orEmpty()
-                                } else {
-                                    emptyList()
+                                val activity = turnActivities[message.turnId].orEmpty()
+                                val hasFinishedActivity = !isTurnRunning && activity.isNotEmpty()
+                                if (hasFinishedActivity && !isTurnFinal) continue
+                                if (hasFinishedActivity) {
+                                    val userAt = turnFirstUserTimes[message.turnId]
+                                    val workedLabel = if (userAt != null) {
+                                        formatDuration((message.createdAt - userAt).coerceAtLeast(0))
+                                    } else ""
+                                    item(key = "turn-${message.turnId}-activity") {
+                                        TurnActivityCard(
+                                            calls = activity.flatMap { it.toolCalls },
+                                            results = toolResults,
+                                            fileEdits = state.fileEditsByTurn[message.turnId].orEmpty(),
+                                            workedLabel = workedLabel,
+                                            activity = activity,
+                                            onOpenFile = onOpenFile,
+                                        )
+                                    }
                                 }
-                                if (message.thinking.isNotBlank()) {
+                                if (!hasFinishedActivity && message.thinking.isNotBlank()) {
                                     item(key = "message-$messageKey-thinking") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(message.thinking, durationMs = message.thinkingMs) }
                                     }
@@ -1087,27 +1095,7 @@ fun ChatScreen(
                                         }
                                     }
                                 }
-                                if (finishedTurnCalls.isNotEmpty()) {
-                                    val userAt = turnFirstUserTimes[message.turnId]
-                                    val workedLabel = if (userAt != null) {
-                                        formatDuration((message.createdAt - userAt).coerceAtLeast(0))
-                                    } else {
-                                        ""
-                                    }
-                                    item(key = "turn-${message.turnId}-activity") {
-                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                            TurnActivityCard(
-                                                calls = finishedTurnCalls,
-                                                results = toolResults,
-                                                fileEdits = state.fileEditsByTurn[message.turnId].orEmpty(),
-                                                workedLabel = workedLabel,
-                                                onOpenFile = onOpenFile,
-                                            )
-                                        }
-                                    }
-                                } else if (isTurnRunning) {
-                                    // Keep the richer live cards while work is active. Once the turn
-                                    // finishes, the final assistant row owns one compact receipt.
+                                if (isTurnRunning) {
                                     val taskCalls = message.toolCalls.filter { it.name == "task" }
                                     val otherCalls = message.toolCalls.filter { it.name != "task" }
                                     if (taskCalls.size >= 2) {

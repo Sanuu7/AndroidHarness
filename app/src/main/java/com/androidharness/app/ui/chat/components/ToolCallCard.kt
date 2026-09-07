@@ -103,6 +103,7 @@ internal fun ToolCallCard(
             }.getOrNull()
         } else null
     }
+    val active = running && result == null
     val ok = result?.let { !it.isError }
     val scheme = MaterialTheme.colorScheme
     val success = LocalStatusColors.current.success
@@ -152,7 +153,7 @@ internal fun ToolCallCard(
                 }
                 Spacer(Modifier.width(8.dp))
                 val statusKey = when {
-                    running -> 0
+                    active -> 0
                     ok == true -> 1
                     ok == false -> 2
                     else -> 3
@@ -189,10 +190,10 @@ internal fun ToolCallCard(
                         .rotate(chevronRotation),
                 )
             }
-            if (running) {
+            if (active) {
                 ThinLinearProgress(modifier = Modifier.fillMaxWidth())
             }
-            result?.images?.takeIf { it.isNotEmpty() }?.let { imgs ->
+            result?.images?.takeIf { call.name != "read_image" && it.isNotEmpty() }?.let { imgs ->
                 Column(
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
@@ -263,7 +264,8 @@ internal fun ToolGroupCard(
     )
     val scheme = MaterialTheme.colorScheme
     val success = LocalStatusColors.current.success
-    val anyRunning = runningIds.isNotEmpty()
+    val activeIds = activeToolIds(calls, results, runningIds)
+    val anyRunning = activeIds.isNotEmpty()
     val failedCount = calls.count { results[it.id]?.isError == true }
     val doneCount = calls.count { results[it.id]?.isError == false }
     val allSubagents = calls.isNotEmpty() && calls.all { it.name == "task" }
@@ -298,7 +300,7 @@ internal fun ToolGroupCard(
                     Text(
                         when {
                             allSubagents && anyRunning ->
-                                "Running ${runningIds.size} of ${calls.size} subagents…"
+                                "Running ${activeIds.size} of ${calls.size} subagents…"
                             allSubagents -> "Spawned ${calls.size} subagents"
                             anyRunning -> "Running tools…"
                             else -> "Ran ${calls.size} tools"
@@ -313,7 +315,7 @@ internal fun ToolGroupCard(
                         }
                         if (anyRunning) {
                             if (isNotEmpty()) append(" · ")
-                            append("${runningIds.size} running")
+                            append("${activeIds.size} running")
                         }
                     }
                     if (summary.isNotEmpty()) {
@@ -359,7 +361,7 @@ internal fun ToolGroupCard(
             if (anyRunning) {
                 ThinLinearProgress(modifier = Modifier.fillMaxWidth())
             }
-            results.values.filterNotNull().map { it.images }.flatten()
+            calls.filter { it.name != "read_image" }.flatMap { results[it.id]?.images.orEmpty() }
                 .takeIf { it.isNotEmpty() }?.let { imgs ->
                     Column(
                         verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -384,14 +386,14 @@ internal fun ToolGroupCard(
                                 call = call,
                                 steps = subagentSteps[call.id].orEmpty(),
                                 result = results[call.id],
-                                running = call.id in runningIds,
+                                running = call.id in activeIds,
                                 onOpenFile = onOpenFile,
                             )
                         } else {
                             ToolCallCard(
                                 call = call,
                                 result = results[call.id],
-                                running = call.id in runningIds,
+                                running = call.id in activeIds,
                                 onOpenFile = onOpenFile,
                             )
                         }
@@ -409,9 +411,10 @@ internal fun TurnActivityCard(
     results: Map<String, ChatMessage?>,
     fileEdits: List<com.androidharness.app.data.db.FileEditEntity>,
     workedLabel: String,
+    activity: List<ChatMessage>,
     onOpenFile: (String, Int?) -> Unit,
 ) {
-    if (calls.isEmpty()) return
+    if (activity.isEmpty()) return
     var expanded by rememberSaveable(calls.joinToString(",") { it.id }) { mutableStateOf(false) }
     val rotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
@@ -501,13 +504,19 @@ internal fun TurnActivityCard(
                     modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
                 ) {
                     HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
-                    calls.forEach { call ->
-                        ToolCallCard(
-                            call = call,
-                            result = results[call.id],
-                            running = false,
-                            onOpenFile = onOpenFile,
-                        )
+                    activity.forEach { message ->
+                        if (message.thinking.isNotBlank()) {
+                            ThinkingBlock(message.thinking, durationMs = message.thinkingMs)
+                        }
+                        if (message.text.isNotBlank()) AssistantText(message.text)
+                        message.toolCalls.forEach { call ->
+                            ToolCallCard(
+                                call = call,
+                                result = results[call.id],
+                                running = false,
+                                onOpenFile = onOpenFile,
+                            )
+                        }
                     }
                 }
             }
