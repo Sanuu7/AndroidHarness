@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -42,7 +43,6 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.outlined.AutoMode
 import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Terminal
@@ -92,6 +92,7 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -110,6 +111,7 @@ import com.androidharness.app.ui.chat.ChatScreen
 import com.androidharness.app.ui.chat.ChatViewModel
 import com.androidharness.app.ui.buildtest.BuildTestScreen
 import com.androidharness.app.ui.common.HarnessMark
+import com.androidharness.app.ui.common.ProviderMark
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.files.ChangesScreen
 import com.androidharness.app.ui.files.CodeEditorScreen
@@ -275,15 +277,17 @@ fun AppNav(container: AppContainer) {
         drawerState = drawerState,
         gesturesEnabled = drawerGesturesEnabled,
         drawerContent = {
-            ModalDrawerSheet {
+            ModalDrawerSheet(
+                drawerContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+            ) {
                 Column(Modifier.fillMaxSize()) {
-                    // ----- Wordmark header (search button lives top-right) -----
+                    // ----- Wordmark header -----
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(start = 24.dp, end = 12.dp, top = 24.dp, bottom = 16.dp),
+                        modifier = Modifier.padding(start = 20.dp, end = 20.dp, top = 22.dp, bottom = 14.dp),
                     ) {
-                        HarnessMark(size = 40.dp)
-                        Spacer(Modifier.width(14.dp))
+                        HarnessMark(size = 36.dp)
+                        Spacer(Modifier.width(12.dp))
                         Column(Modifier.weight(1f)) {
                             Text(
                                 "AndroidHarness",
@@ -295,30 +299,45 @@ fun AppNav(container: AppContainer) {
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )
                         }
-                        IconButton(onClick = {
-                            searchOpen = !searchOpen
-                            if (searchOpen) {
-                                // Focus after the field enters composition.
+                    }
+
+                    if (!searchOpen) {
+                        Surface(
+                            onClick = {
+                                searchOpen = true
                                 scope.launch {
-                                    kotlinx.coroutines.delay(120)
+                                    delay(120)
                                     runCatching { searchFocus.requestFocus() }
                                     keyboard?.show()
                                 }
-                            } else {
-                                searchQuery = ""
-                                focusManager.clearFocus(force = true)
-                                keyboard?.hide()
+                            },
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+                            shape = RoundedCornerShape(14.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp),
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.padding(horizontal = 14.dp, vertical = 11.dp),
+                            ) {
+                                Icon(
+                                    Icons.Outlined.Search,
+                                    contentDescription = null,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.size(19.dp),
+                                )
+                                Spacer(Modifier.width(10.dp))
+                                Text(
+                                    "Search chats and messages",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                )
                             }
-                        }) {
-                            Icon(
-                                if (searchOpen) Icons.Filled.Close else Icons.Outlined.Search,
-                                contentDescription = if (searchOpen) "Close search" else "Search chats",
-                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
                         }
                     }
 
-                    // ----- Search field (revealed by the header button) -----
+                    // ----- Search field -----
                     AnimatedVisibility(
                         visible = searchOpen,
                         enter = fadeIn(tween(150)) + expandVertically(tween(180)),
@@ -332,25 +351,25 @@ fun AppNav(container: AppContainer) {
                                 singleLine = true,
                                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                                 trailingIcon = {
-                                    if (searchQuery.isNotEmpty()) {
-                                        IconButton(onClick = {
-                                            searchQuery = ""
-                                            runCatching { searchFocus.requestFocus() }
-                                        }) {
-                                            Icon(
-                                                Icons.Filled.Close,
-                                                contentDescription = "Clear search",
-                                                modifier = Modifier.size(17.dp),
-                                            )
-                                        }
+                                    IconButton(onClick = {
+                                        searchOpen = false
+                                        searchQuery = ""
+                                        focusManager.clearFocus(force = true)
+                                        keyboard?.hide()
+                                    }) {
+                                        Icon(
+                                            Icons.Filled.Close,
+                                            contentDescription = "Close search",
+                                            modifier = Modifier.size(18.dp),
+                                        )
                                     }
                                 },
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                                 keyboardActions = KeyboardActions(onSearch = { keyboard?.hide() }),
-                                shape = RoundedCornerShape(12.dp),
+                                shape = RoundedCornerShape(14.dp),
                                 colors = OutlinedTextFieldDefaults.colors(
-                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
-                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+                                    unfocusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                    focusedContainerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                                     unfocusedBorderColor = Color.Transparent,
                                     focusedBorderColor = Color.Transparent,
                                 ),
@@ -370,10 +389,11 @@ fun AppNav(container: AppContainer) {
                     // ----- New chat -----
                     Button(
                         onClick = { openChat(null) },
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp),
+                            .padding(horizontal = 16.dp, vertical = 8.dp)
+                            .height(46.dp),
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(19.dp))
                         Spacer(Modifier.width(8.dp))
@@ -382,45 +402,55 @@ fun AppNav(container: AppContainer) {
                     Spacer(Modifier.height(8.dp))
 
                     // ----- Workspace switcher -----
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    Surface(
+                        onClick = { showWorkspaceSheet = true },
+                        color = MaterialTheme.colorScheme.surfaceContainer,
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 4.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerHigh)
-                            .combinedClickable(onClick = { showWorkspaceSheet = true })
-                            .padding(horizontal = 12.dp, vertical = 9.dp),
+                            .padding(horizontal = 16.dp, vertical = 2.dp),
                     ) {
-                        Icon(
-                            Icons.Outlined.Folder,
-                            contentDescription = null,
-                            modifier = Modifier.size(18.dp),
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.width(10.dp))
-                        Column(Modifier.weight(1f)) {
-                            Text(
-                                currentWorkspace?.name ?: "Workspace",
-                                style = MaterialTheme.typography.titleSmall,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
-                            )
-                            Text(
-                                currentWorkspace?.let { container.workspace.describe(it).kindLabel }
-                                    ?: "Choose workspace",
-                                style = MaterialTheme.typography.labelSmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                maxLines = 1,
-                                overflow = TextOverflow.Ellipsis,
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp),
+                        ) {
+                            Surface(
+                                color = MaterialTheme.colorScheme.secondaryContainer,
+                                contentColor = MaterialTheme.colorScheme.onSecondaryContainer,
+                                shape = RoundedCornerShape(10.dp),
+                            ) {
+                                Box(Modifier.size(34.dp), contentAlignment = Alignment.Center) {
+                                    Icon(
+                                        Icons.Outlined.Folder,
+                                        contentDescription = null,
+                                        modifier = Modifier.size(18.dp),
+                                    )
+                                }
+                            }
+                            Spacer(Modifier.width(10.dp))
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    currentWorkspace?.name ?: "Workspace",
+                                    style = MaterialTheme.typography.titleSmall,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                                Text(
+                                    currentWorkspace?.let { container.workspace.describe(it).kindLabel }
+                                        ?: "Choose workspace",
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis,
+                                )
+                            }
+                            Icon(
+                                Icons.Filled.KeyboardArrowDown,
+                                contentDescription = "Switch workspace",
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                modifier = Modifier.size(18.dp),
                             )
                         }
-                        Icon(
-                            Icons.Filled.KeyboardArrowDown,
-                            contentDescription = "Switch workspace",
-                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                            modifier = Modifier.size(18.dp),
-                        )
                     }
                     Spacer(Modifier.height(4.dp))
 
@@ -574,39 +604,36 @@ fun AppNav(container: AppContainer) {
                         Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                     )
-                    DrawerRow(
-                        icon = { Icon(Icons.Outlined.CheckCircle, contentDescription = null) },
-                        title = "Build & Test",
-                        subtitle = "Saved checks and live output",
-                        onClick = {
+                    Text(
+                        "TOOLS",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontWeight = FontWeight.SemiBold,
+                        modifier = Modifier.padding(start = 20.dp, bottom = 6.dp),
+                    )
+                    QuickActionStrip(
+                        buildSelected = currentRoute == "build-test",
+                        automationSelected = currentRoute == "automation",
+                        terminalSelected = currentRoute == "terminal",
+                        onBuild = {
                             scope.launch { drawerState.close() }
                             nav.navigate("build-test")
                         },
-                    )
-                    DrawerRow(
-                        icon = { Icon(Icons.Outlined.AutoMode, contentDescription = null) },
-                        title = "Automation",
-                        subtitle = "Scheduled agent tasks",
-                        onClick = {
+                        onAutomation = {
                             scope.launch { drawerState.close() }
                             nav.navigate("automation")
                         },
-                    )
-                    DrawerRow(
-                        icon = { Icon(Icons.Outlined.Terminal, contentDescription = null) },
-                        title = "Terminal",
-                        subtitle = "Shell in this workspace",
-                        onClick = {
+                        onTerminal = {
                             scope.launch { drawerState.close() }
                             nav.navigate("terminal")
                         },
                     )
-                    DrawerRow(
-                        icon = { Icon(Icons.Outlined.Hub, contentDescription = null) },
-                        title = "Providers",
+                    Spacer(Modifier.height(8.dp))
+                    ProviderDrawerRow(
+                        selected = currentRoute == "providers",
                         subtitle = run {
                             val active = providers.firstOrNull { it.id == settings.activeProviderId }
-                            if (active == null) "Add a provider to get started"
+                            if (active == null) "Connect a model provider"
                             else "${active.name} · ${settings.activeModel?.takeIf { it.isNotBlank() } ?: active.model}"
                         },
                         onClick = {
@@ -617,7 +644,8 @@ fun AppNav(container: AppContainer) {
                     DrawerRow(
                         icon = { Icon(Icons.Outlined.Settings, contentDescription = null) },
                         title = "Settings",
-                        subtitle = "Agent, workspace, environment, appearance",
+                        subtitle = "Agent, workspace and appearance",
+                        selected = currentRoute == "settings",
                         onClick = {
                             scope.launch { drawerState.close() }
                             nav.navigate("settings")
@@ -987,16 +1015,6 @@ private fun SessionRow(
     onLongClick: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
-    val alpha by infiniteTransition.animateFloat(
-        initialValue = 0.35f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(
-            animation = tween(800, easing = LinearEasing),
-            repeatMode = RepeatMode.Reverse,
-        ),
-        label = "running_alpha",
-    )
 
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -1037,32 +1055,7 @@ private fun SessionRow(
                 )
             }
             if (running) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(top = 2.dp),
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(7.dp)
-                            .alpha(alpha)
-                            .background(scheme.primary, CircleShape),
-                    )
-                    Spacer(Modifier.width(5.dp))
-                    Text(
-                        "Working…",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.primary,
-                        fontWeight = FontWeight.SemiBold,
-                    )
-                    val total = session.totalInputTokens + session.totalOutputTokens
-                    if (total > 0) {
-                        Text(
-                            " · ${formatTokens(total)} tokens",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant,
-                        )
-                    }
-                }
+                RunningSessionStatus(session.totalInputTokens + session.totalOutputTokens)
             } else {
                 Text(
                     buildString {
@@ -1100,6 +1093,46 @@ private fun SessionRow(
                     fontWeight = FontWeight.Medium,
                 )
             }
+        }
+    }
+}
+
+@Composable
+private fun RunningSessionStatus(totalTokens: Long) {
+    val scheme = MaterialTheme.colorScheme
+    val infiniteTransition = rememberInfiniteTransition(label = "running pulse")
+    val alpha by infiniteTransition.animateFloat(
+        initialValue = 0.35f,
+        targetValue = 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(800, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse,
+        ),
+        label = "running alpha",
+    )
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.padding(top = 2.dp),
+    ) {
+        Box(
+            modifier = Modifier
+                .size(7.dp)
+                .alpha(alpha)
+                .background(scheme.primary, CircleShape),
+        )
+        Spacer(Modifier.width(5.dp))
+        Text(
+            "Working…",
+            style = MaterialTheme.typography.labelSmall,
+            color = scheme.primary,
+            fontWeight = FontWeight.SemiBold,
+        )
+        if (totalTokens > 0) {
+            Text(
+                " · ${formatTokens(totalTokens)} tokens",
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+            )
         }
     }
 }
@@ -1201,42 +1234,177 @@ private fun SessionAction(
     }
 }
 
-@OptIn(ExperimentalFoundationApi::class)
+@Composable
+private fun QuickActionStrip(
+    buildSelected: Boolean,
+    automationSelected: Boolean,
+    terminalSelected: Boolean,
+    onBuild: () -> Unit,
+    onAutomation: () -> Unit,
+    onTerminal: () -> Unit,
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp),
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        QuickActionButton(
+            icon = Icons.Outlined.CheckCircle,
+            label = "Build",
+            selected = buildSelected,
+            onClick = onBuild,
+        )
+        QuickActionButton(
+            icon = Icons.Outlined.AutoMode,
+            label = "Automate",
+            selected = automationSelected,
+            onClick = onAutomation,
+        )
+        QuickActionButton(
+            icon = Icons.Outlined.Terminal,
+            label = "Terminal",
+            selected = terminalSelected,
+            onClick = onTerminal,
+        )
+    }
+}
+
+@Composable
+private fun RowScope.QuickActionButton(
+    icon: ImageVector,
+    label: String,
+    selected: Boolean,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        color = if (selected) scheme.secondaryContainer else scheme.surfaceContainer,
+        contentColor = if (selected) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+        shape = RoundedCornerShape(14.dp),
+        modifier = Modifier.weight(1f),
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            modifier = Modifier.padding(horizontal = 4.dp, vertical = 9.dp),
+        ) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(20.dp))
+            Spacer(Modifier.height(4.dp))
+            Text(
+                label,
+                style = MaterialTheme.typography.labelMedium,
+                fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium,
+                maxLines = 1,
+            )
+        }
+    }
+}
+
+@Composable
+private fun ProviderDrawerRow(
+    selected: Boolean,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        color = if (selected) scheme.secondaryContainer else scheme.surfaceContainerHigh,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 14.dp, vertical = 2.dp),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp),
+        ) {
+            ProviderMark(size = 38.dp)
+            Spacer(Modifier.width(11.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    "Provider",
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (selected) scheme.onSecondaryContainer else scheme.onSurface,
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (selected) scheme.onSecondaryContainer.copy(alpha = 0.76f)
+                    else scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            Icon(
+                Icons.Filled.KeyboardArrowDown,
+                contentDescription = null,
+                tint = if (selected) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                modifier = Modifier
+                    .size(18.dp)
+                    .rotate(-90f),
+            )
+        }
+    }
+}
+
 @Composable
 private fun DrawerRow(
     icon: @Composable () -> Unit,
     title: String,
     subtitle: String? = null,
+    selected: Boolean = false,
     onClick: () -> Unit,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        color = if (selected) scheme.secondaryContainer else Color.Transparent,
+        shape = RoundedCornerShape(14.dp),
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 14.dp, vertical = 2.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .combinedClickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 9.dp),
+            .padding(horizontal = 14.dp, vertical = 2.dp),
     ) {
-        Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
-            icon()
-        }
-        Spacer(Modifier.width(14.dp))
-        Column {
-            Text(
-                title,
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (subtitle != null) {
-                Text(
-                    subtitle,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
-                )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+        ) {
+            Surface(
+                color = if (selected) Color.Transparent else scheme.surfaceContainer,
+                contentColor = if (selected) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                shape = RoundedCornerShape(9.dp),
+            ) {
+                Box(Modifier.size(32.dp), contentAlignment = Alignment.Center) {
+                    Box(Modifier.size(19.dp), contentAlignment = Alignment.Center) { icon() }
+                }
             }
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (selected) scheme.onSecondaryContainer else scheme.onSurface,
+                )
+                if (subtitle != null) {
+                    Text(
+                        subtitle,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (selected) scheme.onSecondaryContainer.copy(alpha = 0.76f)
+                        else scheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                }
+            }
+            Icon(
+                Icons.Filled.KeyboardArrowDown,
+                contentDescription = null,
+                tint = if (selected) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                modifier = Modifier
+                    .size(18.dp)
+                    .rotate(-90f),
+            )
         }
     }
 }
