@@ -36,9 +36,10 @@ Status: early alpha.
 - A real code editor: multi-color syntax highlighting across Kotlin, Java, Python, JS, TS, HTML, CSS, and Shell, line numbers, unlimited undo and redo, find and replace with regex, word wrap toggle, and encoding preservation.
 - Visual diff viewer: side-by-side / inline diff viewer with dual line gutters, syntax coloring, and change stats.
 - Per chat Files changed tracking: GitHub style badges and diffs for every file the agent touches, with rewind.
+- Build & Test dashboard: save project checks such as Gradle, npm, lint, and test commands, watch live output and pass/fail status, jump straight to parsed file errors, and hand a failed run to the agent for repair.
 
 **GitHub built in**
-- Continue with GitHub in Settings: authorize in your browser without creating or pasting a personal access token. Git push/pull, the bundled gh CLI, and GitHub API requests reuse the login, with automatic token renewal. Publisher setup: [GitHub OAuth backend](backend/github-oauth/README.md).
+- Login with GitHub in Settings by pasting a personal access token, or tap Get access token to create one on GitHub. AndroidHarness verifies the token before saving it in encrypted app storage. Git push/pull, the bundled gh CLI, and GitHub API requests reuse the saved token.
 - doctor --github checks the token, git transport, and the free plan's hidden protection limits in one command.
 
 **Shell tiers, not a sandbox hack**
@@ -87,18 +88,14 @@ Requires JDK 17 and the Android SDK.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-### GitHub OAuth Setup (Optional)
+### GitHub Setup (Optional)
 
-Browser login is disabled by default until configured. To enable it for your own build:
+No OAuth backend or GitHub OAuth App is required.
 
-1. Register an OAuth App on GitHub:
-   - Authorization callback URL: `com.androidharness.app.debug.oauth://github/callback` (or `com.androidharness.app.oauth://github/callback` for release)
-2. Deploy the backend token exchange service in `backend/github-oauth` (Node, Docker, or Cloudflare Worker).
-3. Set your credentials in `local.properties` (or environment variables):
-   ```properties
-   GITHUB_CLIENT_ID=your_client_id
-   GITHUB_AUTH_BACKEND=https://your-oauth-worker-domain.workers.dev
-   ```
+1. Open Settings > GitHub > Login with GitHub.
+2. Paste an existing personal access token, or tap Get access token to open GitHub's token creation page.
+3. The `repo` scope is included for repository access. Enable the optional scopes shown in the app only when you need those capabilities.
+4. Save the token. AndroidHarness verifies it with GitHub before storing it and refreshes git and `gh` authentication immediately.
 
 Run the unit tests with:
 
