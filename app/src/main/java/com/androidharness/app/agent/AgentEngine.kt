@@ -245,6 +245,7 @@ class AgentEngine(
         // Stable per-session cache routing for providers that support it.
         val requestOptions = options.copy(cacheKey = sessionId)
         var iterations = 0
+        val deterministicFailures = java.util.concurrent.ConcurrentHashMap<String, String>()
         // Termination code of the most recent streamed request, and how many
         // times a silent (reasoning-only, no answer) model has been asked to
         // actually produce its answer.
@@ -423,8 +424,10 @@ class AgentEngine(
             }
 
             // Subagents are read-only, independent and slow, run every task
-            // call in the batch CONCURRENTLY so research branches don't queue
-            // behind each other. Ordinary tools keep strict sequential order.
+            // call in the batch concurrently so research branches don't queue.
+            // Ordinary read-only calls are also allowed to overlap, but only
+            // inside contiguous safe-read groups. Writes and interactive/stateful
+            // calls form hard ordering boundaries.
             val subagentCalls = calls.filter { it.name == "task" }
             val otherCalls = calls.filterNot { it.name == "task" }
             val results = LinkedHashMap<String, ToolResult>()
@@ -457,13 +460,37 @@ class AgentEngine(
                 }
             }
 
-            for (call in otherCalls) {
-                emit(AgentEvent.ToolStarted(call))
-                results[call.id] = executeWithPermission(
-                    call, effectiveMode, sessionAllowedTools, execWorkspace,
-                    sessionId, turnId, mode, requestOptions, config, apiKey,
-                    runRegistry, resolveSubagentModel,
-                ) { emit(it) }
+            var ordinaryIndex = 0
+            while (ordinaryIndex < otherCalls.size) {
+                val first = otherCalls[ordinaryIndex]
+                if (parallelSafeReadOnly(first, runRegistry)) {
+                    val group = mutableListOf<ToolCallData>()
+                    while (ordinaryIndex < otherCalls.size && parallelSafeReadOnly(otherCalls[ordinaryIndex], runRegistry)) {
+                        group += otherCalls[ordinaryIndex++]
+                    }
+                    group.forEach { emit(AgentEvent.ToolStarted(it)) }
+                    val emitLock = Mutex()
+                    val serialEmit: suspend (AgentEvent) -> Unit = { event -> emitLock.withLock { emit(event) } }
+                    coroutineScope {
+                        group.map { call ->
+                            async {
+                                call.id to executeWithFailureGuard(
+                                    call, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
+                                    sessionId, turnId, mode, requestOptions, config, apiKey,
+                                    runRegistry, resolveSubagentModel, serialEmit,
+                                )
+                            }
+                        }.awaitAll().forEach { (id, result) -> results[id] = result }
+                    }
+                } else {
+                    ordinaryIndex++
+                    emit(AgentEvent.ToolStarted(first))
+                    results[first.id] = executeWithFailureGuard(
+                        first, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
+                        sessionId, turnId, mode, requestOptions, config, apiKey,
+                        runRegistry, resolveSubagentModel,
+                    ) { emit(it) }
+                }
             }
 
             // Commit tool messages in the model's original call order.
@@ -481,6 +508,71 @@ class AgentEngine(
                 emit(AgentEvent.ToolMessageCommitted(toolMessage))
                 emit(AgentEvent.ToolFinished(call.id, result))
             }
+        }
+    }
+
+    private fun parallelSafeReadOnly(
+        call: ToolCallData,
+        registry: com.androidharness.app.tools.ToolRegistry,
+    ): Boolean {
+        val tool = registry.get(call.name) ?: return false
+        if (!tool.isReadOnly) return false
+        return call.name !in PARALLEL_READ_EXCLUSIONS && !call.name.startsWith("browser_")
+    }
+
+    private suspend fun executeWithFailureGuard(
+        call: ToolCallData,
+        deterministicFailures: MutableMap<String, String>,
+        mode: PermissionMode,
+        sessionAllowedTools: MutableSet<String>,
+        workspace: WorkspaceFs,
+        sessionId: String,
+        turnId: String,
+        agentMode: AgentMode,
+        requestOptions: RequestOptions,
+        config: ProviderConfig,
+        apiKey: String,
+        registry: com.androidharness.app.tools.ToolRegistry,
+        resolveSubagentModel: (suspend (String) -> SubagentModelResolution)?,
+        emitEvent: suspend (AgentEvent) -> Unit,
+    ): ToolResult {
+        val signature = toolCallSignature(call)
+        deterministicFailures[signature]?.let { previous ->
+            return ToolResult(
+                false,
+                "Blocked unchanged retry: this exact ${call.name} call already failed deterministically. " +
+                    "$previous Change the inputs or inspect current state before retrying.",
+            )
+        }
+        val result = executeWithPermission(
+            call, mode, sessionAllowedTools, workspace, sessionId, turnId, agentMode,
+            requestOptions, config, apiKey, registry, resolveSubagentModel, emitEvent,
+        )
+        deterministicFailureHint(call, result)?.let { deterministicFailures[signature] = it }
+        return result
+    }
+
+    private fun toolCallSignature(call: ToolCallData): String {
+        val normalized = runCatching {
+            Json.parseToJsonElement(call.argumentsJson).toString()
+        }.getOrDefault(call.argumentsJson.trim())
+        return "${call.name}:$normalized"
+    }
+
+    private fun deterministicFailureHint(call: ToolCallData, result: ToolResult): String? {
+        if (result.ok) return null
+        val text = result.output.lowercase()
+        val editTool = call.name in setOf("edit_file", "multi_edit", "apply_patch", "write_file")
+        return when {
+            editTool && ("not found" in text || "does not match" in text || "ambiguous" in text || "patch" in text) ->
+                "Re-read the affected file and build the edit from its current contents."
+            "missing required argument" in text || "invalid tool arguments" in text || "unknown tool" in text ->
+                "Fix the tool name or arguments before retrying."
+            call.name == "shell" && ("command not found" in text || "not found" in text || "exit code 127" in text) ->
+                "The requested command or environment is unavailable; inspect env_status or use an available command."
+            "does not exist" in text || "no such file" in text || "not a directory" in text ->
+                "Inspect the current path or directory first, then retry with a valid target."
+            else -> null
         }
     }
 
@@ -1395,7 +1487,8 @@ Rules:
 - Prefer edit_file/multi_edit for targeted changes to existing files; use write_file to create or fully rewrite files; use apply_patch for multi-file diffs.
 - Use todo_write to track multi-step work and keep statuses current.
 - Use ask_user whenever a decision is genuinely the user's to make instead of guessing.
-- Tool calls in one message run in order, and each sees the workspace as of the END of the previous call: a patch or diff pre-computed before an earlier edit in the same message can be stale by the time it runs. Build patches right before applying them.
+- Independent read-only tool calls may run concurrently. Mutating, interactive, and browser-state calls keep strict ordering. Never make one read-only call depend on the result of another call in the same batch; split dependent work into another tool round.
+- Mutating calls see the workspace after earlier ordered calls complete. A patch or diff pre-computed before an earlier edit can be stale by the time it runs, so build patches right before applying them.
 - Text files follow the POSIX convention: the last line ends with a newline terminator. When patching or editing, never add an extra empty line for the file's final newline.
 - When reporting file properties like newlines or byte counts, verify with a byte check (file_info or shell tail -c 3 | xxd) rather than inferring from line counts.
 - For Android logs, exceptions, or app crash investigations, use read_logcat instead of raw shell logcat commands. It supports level, tag, package_name, and buffer filtering.
@@ -1430,7 +1523,10 @@ Rules:
                 "- FULL ACCESS MODE is active: the workspace sandbox is lifted. File tools may read and write ANY path on the device (absolute paths work), the shell has no command denylist, and cwd may be any directory. The user chose this deliberately; no permission prompts will appear. Work outside the workspace only when the task requires it, and stay careful with system directories (/system, /data/system, /vendor): a mistake there can break the device.\n",
             )
         }
-        sb.append("- After tool calls complete, either continue with more tool calls or give the user a concise summary of what you did.\n")
+        sb.append("- After tool calls complete, either continue with more tool calls or give the user the actual outcome. Lead with the result, not process narration. Mention only meaningful progress.\n")
+        sb.append("- Ground every completion claim in tool results you actually received. Never say tests/builds/checks passed unless the corresponding tool call succeeded. If a check failed or was not run, say that plainly.\n")
+        sb.append("- Keep simple asks simple. For coding work, the final answer should usually cover: what changed, what you verified, and anything still unresolved. Omit empty sections and routine implementation chatter.\n")
+        sb.append("- If a deterministic tool call fails, inspect the current state and change the inputs before retrying. Do not repeat the same failing call unchanged. Edit failures should trigger a fresh read of the affected file.\n")
         sb.append("- Never invent file contents you have not read.\n")
         sb.append("- Browser automation: when previewing or interacting with web projects via browser tools, start a local dev/http server using shell_background (e.g. python3 -m http.server 8000, npm run dev, or similar) and navigate to http://localhost:<port>.\n")
         sb.append("- Mobile UI formatting: responses are displayed on a phone touchscreen. Format text cleanly and compactly. Use standard markdown tables (| Col 1 | Col 2 |) or concise bullet lists rather than wide ASCII terminal boxes. When creating, editing, or serving HTML/web projects, host them on localhost via shell_background and include an explicit preview directive `::web-preview{target=\"http://localhost:<port>\"}` to offer the user a one-tap in-app web preview button.\n")
@@ -1492,6 +1588,7 @@ Rules:
     }.getOrNull()
 
     companion object {
+        private val PARALLEL_READ_EXCLUSIONS = setOf("ask_user", "browser_wait_for")
         const val COMPACTION_PREFIX = "[Auto-compacted context: summary of the earlier conversation]"
 
         /** How many times a silent (reasoning-only, no answer) model is asked to answer. */

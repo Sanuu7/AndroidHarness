@@ -53,6 +53,7 @@ import androidx.compose.material.icons.filled.ContentCopy
 import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.MoreHoriz
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
@@ -127,6 +128,7 @@ import com.androidharness.app.ui.chat.components.ThinkingBlock
 import com.androidharness.app.ui.chat.components.TodoCard
 import com.androidharness.app.ui.chat.components.ToolCallCard
 import com.androidharness.app.ui.chat.components.ToolGroupCard
+import com.androidharness.app.ui.chat.components.TurnActivityCard
 import com.androidharness.app.ui.chat.components.UserBubble
 import com.androidharness.app.ui.chat.components.WebPreviewSheet
 import com.androidharness.app.ui.chat.components.FloatingBrowserBubble
@@ -317,10 +319,6 @@ fun ChatScreen(
 
     // True while a finger drag is driving the list (from interactionSource).
     val gestureActive = remember { mutableStateOf(false) }
-
-    // Typewriter reveal for streaming text: characters shown so far this
-    // message. Keyed on the message id so it survives the commit handoff.
-    var revealedChars by remember(state.streamingMessageId) { mutableStateOf(0) }
 
     if (showContext) {
         ContextUsageDialog(state = state, onDismiss = { showContext = false })
@@ -734,31 +732,6 @@ fun ChatScreen(
             }
     }
 
-    // Typewriter reveal: text appears at the stream's natural pace up to a
-    // cap, so fast models don't dump whole paragraphs in a single frame.
-    // Large deltas (tool-storm bursts, restored turns) snap instantly,
-    // animating through thousands of pending chars re-renders the bubble
-    // every frame for many seconds and saturates the main thread.
-    // Committing the message shows the full text instantly.
-    val streamingTarget = state.streamingText?.length ?: 0
-    LaunchedEffect(streamingTarget) {
-        if (revealedChars > streamingTarget) revealedChars = streamingTarget
-        if (streamingTarget - revealedChars > TYPEWRITER_SNAP_THRESHOLD) {
-            revealedChars = streamingTarget
-            return@LaunchedEffect
-        }
-        while (revealedChars < streamingTarget) {
-            revealedChars += minOf(streamingTarget - revealedChars, TYPEWRITER_STEP_CHARS)
-            delay(TYPEWRITER_TICK_MS)
-        }
-    }
-
-    // Once the stream commits, the held content must equal the committed text
-    // exactly, so the live bubble swaps to the committed row pixel-identically.
-    LaunchedEffect(state.streamingCommitted) {
-        if (state.streamingCommitted) revealedChars = state.streamingText?.length ?: 0
-    }
-
     // While pinned, keep the newest content in view with small exact scrollBy
     // deltas, cheap (no scrollToItem remeasure storm) and smooth (coalesced
     // at frame-ish cadence instead of 250ms jumps).
@@ -917,7 +890,7 @@ fun ChatScreen(
                 val turnFinalAssistantIds = remember(state.messages) {
                     val map = HashMap<String, String>()
                     for (m in state.messages) {
-                        if (m.role == Role.ASSISTANT && m.turnId != null && m.id != null) {
+                        if (m.role == Role.ASSISTANT && m.toolCallId == null && m.turnId != null && m.id != null) {
                             map[m.turnId] = m.id
                         }
                     }
@@ -931,6 +904,15 @@ fun ChatScreen(
                         }
                     }
                     map
+                }
+                val turnToolCalls = remember(state.messages) {
+                    val map = LinkedHashMap<String, MutableList<com.androidharness.app.core.ToolCallData>>()
+                    for (m in state.messages) {
+                        if (m.role == Role.ASSISTANT && m.toolCallId == null && m.turnId != null && m.toolCalls.isNotEmpty()) {
+                            map.getOrPut(m.turnId) { mutableListOf() }.addAll(m.toolCalls)
+                        }
+                    }
+                    map.mapValues { it.value.toList() }
                 }
                 val skillUsedByMessage = remember(state.messages) {
                     val map = HashMap<String, List<String>>()
@@ -1027,11 +1009,22 @@ fun ChatScreen(
                                             fileChips,
                                             onLongPress = { actionsMessage = message },
                                         )
-                                        if (message.turnId in state.turnsWithCheckpoints) {
-                                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                                CopyIconButton(message.text)
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            CopyIconButton(message.text)
+                                            if (message.turnId in state.turnsWithCheckpoints) {
                                                 UndoIconButton(
                                                     onClick = { message.turnId?.let { confirmRewindTurn = it } },
+                                                )
+                                            }
+                                            IconButton(
+                                                onClick = { actionsMessage = message },
+                                                modifier = Modifier.size(28.dp),
+                                            ) {
+                                                Icon(
+                                                    Icons.Outlined.MoreHoriz,
+                                                    contentDescription = "More message actions",
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                    modifier = Modifier.size(16.dp),
                                                 )
                                             }
                                         }
@@ -1041,6 +1034,14 @@ fun ChatScreen(
                             Role.ASSISTANT -> {
                                 val canRewind = message.turnId != null &&
                                     message.turnId in state.turnsWithCheckpoints
+                                val isTurnFinal = message.id == turnFinalAssistantIds[message.turnId]
+                                val isTurnRunning = state.busy && (message.turnId == state.currentTurnId ||
+                                    (state.currentTurnId == null && message.turnId == state.messages.lastOrNull { it.turnId != null }?.turnId))
+                                val finishedTurnCalls = if (isTurnFinal && !isTurnRunning) {
+                                    turnToolCalls[message.turnId].orEmpty()
+                                } else {
+                                    emptyList()
+                                }
                                 if (message.thinking.isNotBlank()) {
                                     item(key = "message-$messageKey-thinking") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(message.thinking, durationMs = message.thinkingMs) }
@@ -1059,9 +1060,6 @@ fun ChatScreen(
                                                         used.forEach { SkillUsedBadge(it) }
                                                     }
                                                 }
-                                                val isTurnFinal = message.id == turnFinalAssistantIds[message.turnId]
-                                                val isTurnRunning = state.busy && (message.turnId == state.currentTurnId ||
-                                                    (state.currentTurnId == null && message.turnId == state.messages.lastOrNull { it.turnId != null }?.turnId))
                                                 AssistantText(
                                                     message.text,
                                                     showPreviewChip = isTurnFinal && !isTurnRunning,
@@ -1070,12 +1068,6 @@ fun ChatScreen(
                                                         showWebPreview = true
                                                     },
                                                 )
-                                                // Turn-final extras: diff chips + how
-                                                // long the whole turn took.
-                                                val edits = state.fileEditsByTurn[message.turnId].orEmpty()
-                                                if (isTurnFinal && !isTurnRunning && edits.isNotEmpty()) {
-                                                    FileEditsCard(edits, onOpenFile, Modifier.padding(top = 4.dp))
-                                                }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     CopyIconButton(message.text)
                                                     ForkIconButton(
@@ -1090,78 +1082,84 @@ fun ChatScreen(
                                                             onClick = { message.turnId?.let { confirmRewindTurn = it } },
                                                         )
                                                     }
-                                                    Spacer(Modifier.weight(1f))
-                                                    if (isTurnFinal) {
-                                                        val userAt = turnFirstUserTimes[message.turnId] ?: 0L
-                                                        val worked = formatDuration((message.createdAt - userAt).coerceAtLeast(0))
-                                                        if (worked.isNotEmpty()) {
-                                                            Text(
-                                                                worked,
-                                                                style = MaterialTheme.typography.labelSmall,
-                                                                fontFamily = FontFamily.Monospace,
-                                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                            )
-                                                        }
-                                                    }
                                                 }
                                             }
                                         }
                                     }
                                 }
-                                // Subagents get their own treatment: 2+ run
-                                // in one bounded pager card, a lone one keeps
-                                // its standalone card; other tools group as before.
-                                val taskCalls = message.toolCalls.filter { it.name == "task" }
-                                val otherCalls = message.toolCalls.filter { it.name != "task" }
-                                if (taskCalls.size >= 2) {
-                                    item(key = "message-$messageKey-subagents") {
+                                if (finishedTurnCalls.isNotEmpty()) {
+                                    val userAt = turnFirstUserTimes[message.turnId]
+                                    val workedLabel = if (userAt != null) {
+                                        formatDuration((message.createdAt - userAt).coerceAtLeast(0))
+                                    } else {
+                                        ""
+                                    }
+                                    item(key = "turn-${message.turnId}-activity") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                            SubagentPagerCard(
-                                                calls = taskCalls,
+                                            TurnActivityCard(
+                                                calls = finishedTurnCalls,
                                                 results = toolResults,
-                                                runningIds = runningIds,
-                                                subagentSteps = state.subagentSteps,
-                                                onOpen = onOpenSubagent,
-                                            )
-                                        }
-                                    }
-                                } else if (taskCalls.size == 1) {
-                                    val call = taskCalls[0]
-                                    item(key = call.id) {
-                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                            SubagentCard(
-                                                call = call,
-                                                steps = state.subagentSteps[call.id].orEmpty(),
-                                                result = toolResults[call.id],
-                                                running = call.id in runningIds,
+                                                fileEdits = state.fileEditsByTurn[message.turnId].orEmpty(),
+                                                workedLabel = workedLabel,
                                                 onOpenFile = onOpenFile,
-                                                onOpenFull = { onOpenSubagent(call.id) },
                                             )
                                         }
                                     }
-                                }
-                                if (otherCalls.size >= 3) {
-                                    item(key = "message-$messageKey-tools") {
-                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                            ToolGroupCard(
-                                                calls = otherCalls,
-                                                results = toolResults,
-                                                runningIds = runningIds,
-                                                onOpenFile = onOpenFile,
-                                                subagentSteps = state.subagentSteps,
-                                            )
+                                } else if (isTurnRunning) {
+                                    // Keep the richer live cards while work is active. Once the turn
+                                    // finishes, the final assistant row owns one compact receipt.
+                                    val taskCalls = message.toolCalls.filter { it.name == "task" }
+                                    val otherCalls = message.toolCalls.filter { it.name != "task" }
+                                    if (taskCalls.size >= 2) {
+                                        item(key = "message-$messageKey-subagents") {
+                                            Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                                SubagentPagerCard(
+                                                    calls = taskCalls,
+                                                    results = toolResults,
+                                                    runningIds = runningIds,
+                                                    subagentSteps = state.subagentSteps,
+                                                    onOpen = onOpenSubagent,
+                                                )
+                                            }
                                         }
-                                    }
-                                } else {
-                                    for (call in otherCalls) {
+                                    } else if (taskCalls.size == 1) {
+                                        val call = taskCalls[0]
                                         item(key = call.id) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
-                                                ToolCallCard(
+                                                SubagentCard(
                                                     call = call,
+                                                    steps = state.subagentSteps[call.id].orEmpty(),
                                                     result = toolResults[call.id],
                                                     running = call.id in runningIds,
                                                     onOpenFile = onOpenFile,
+                                                    onOpenFull = { onOpenSubagent(call.id) },
                                                 )
+                                            }
+                                        }
+                                    }
+                                    if (otherCalls.size >= 3) {
+                                        item(key = "message-$messageKey-tools") {
+                                            Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                                ToolGroupCard(
+                                                    calls = otherCalls,
+                                                    results = toolResults,
+                                                    runningIds = runningIds,
+                                                    onOpenFile = onOpenFile,
+                                                    subagentSteps = state.subagentSteps,
+                                                )
+                                            }
+                                        }
+                                    } else {
+                                        for (call in otherCalls) {
+                                            item(key = call.id) {
+                                                Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                                    ToolCallCard(
+                                                        call = call,
+                                                        result = toolResults[call.id],
+                                                        running = call.id in runningIds,
+                                                        onOpenFile = onOpenFile,
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -1195,7 +1193,7 @@ fun ChatScreen(
                         state.streamingText?.let { streaming ->
                             item(key = "streaming-$streamKey-text") {
                                 AssistantText(
-                                    streaming.take(revealedChars),
+                                    streaming,
                                     streaming = !state.streamingCommitted,
                                     onOpenUrl = { url ->
                                         webPreviewUrl = url
@@ -1768,12 +1766,6 @@ private fun CostDialog(
     )
 }
 
-// Typewriter reveal pacing: at each tick reveal up to this many chars, so
-// gentle streams pass through unchanged while fast bursts get smoothed.
-private const val TYPEWRITER_TICK_MS = 16L
-private const val TYPEWRITER_STEP_CHARS = 7
-// Deltas larger than this snap instead of animating (burst catch-up).
-private const val TYPEWRITER_SNAP_THRESHOLD = 220
 // Follow-scroll coalescing: during a stream the list follows the newest
 // content with small scrollBy deltas at most this often (ms between scrolls).
 private const val FOLLOW_MIN_INTERVAL_MS = 64L

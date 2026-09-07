@@ -32,62 +32,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
-import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
-
-/** Turns a tool call into a Claude Code-style status line ("Editing app.py…"). */
-fun describeToolCall(call: ToolCallData): String {
-    val args = runCatching {
-        kotlinx.serialization.json.Json.parseToJsonElement(call.argumentsJson).jsonObject
-    }.getOrNull()
-    fun arg(name: String): String? = runCatching {
-        when (val el = args?.get(name)) {
-            is kotlinx.serialization.json.JsonPrimitive -> el.content
-            is kotlinx.serialization.json.JsonArray -> el.mapNotNull {
-                (it as? kotlinx.serialization.json.JsonPrimitive)?.content
-            }.joinToString(", ")
-            else -> null
-        }
-    }.getOrNull()
-
-    return when (call.name) {
-        "write_file" -> "Creating ${arg("path") ?: "file"}…"
-        "edit_file", "multi_edit" -> "Editing ${arg("path") ?: "file"}…"
-        "apply_patch" -> "Applying patch…"
-        "read_file" -> "Reading ${arg("path") ?: "file"}…"
-        "file_info" -> "Inspecting ${arg("path") ?: "file"}…"
-        "list_dir" -> "Listing ${arg("path") ?: "."}…"
-        "search_files" -> "Finding ${arg("pattern") ?: "files"}…"
-        "grep" -> "Searching for ${arg("pattern") ?: "pattern"}…"
-        "shell" -> "Running ${arg("command")?.take(48) ?: "command"}…"
-        "shell_background" -> "Starting ${arg("command")?.take(48) ?: "server"}…"
-        "bg_list" -> "Checking background tasks…"
-        "bg_kill" -> "Stopping background task…"
-        "create_dir" -> "Creating folder ${arg("path") ?: ""}…"
-        "delete_file" -> "Deleting ${arg("path") ?: "path"}…"
-        "move_file" -> "Moving ${arg("source") ?: "file"}…"
-        "git_status" -> "Checking git status…"
-        "git_diff" -> "Reading git diff…"
-        "git_commit" -> "Committing…"
-        "web_fetch" -> "Fetching ${arg("url")?.take(48) ?: "page"}…"
-        "web_search" -> "Searching: ${arg("query")?.take(48) ?: ""}…"
-        "http_request" -> "Calling ${arg("url")?.take(48) ?: "API"}…"
-        "ask_user" -> "Asking you a question…"
-        "task" -> "Delegating: ${arg("title") ?: "research subagent"}…"
-        "memory_write" -> "Saving to memory…"
-        "todo_write" -> "Updating task list…"
-        "skill_view" -> "Loading skill ${arg("name") ?: "…"}…"
-        "skills_list" -> "Listing skills…"
-        "skill_manage" -> "Updating skill ${arg("name") ?: ""}…".trim()
-        "pkg_install" -> "Installing package ${arg("packages") ?: arg("package") ?: "…"}"
-        "pkg_search" -> "Searching packages for ${arg("query") ?: "…"}"
-        "pkg_list" -> "Listing installed packages…"
-        "read_logcat" -> "Reading logcat ${arg("tag") ?: arg("package_name") ?: ""}…".trim()
-        else -> "Running ${call.name}…"
-    }
-}
 
 /**
  * Owns agent runs in an application-wide scope, so a run survives minimizing

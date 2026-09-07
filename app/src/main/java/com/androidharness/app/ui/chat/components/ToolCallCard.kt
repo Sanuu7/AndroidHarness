@@ -23,7 +23,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.outlined.Build
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Build
@@ -53,7 +52,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import com.androidharness.app.agent.describeToolCall
+import com.androidharness.app.agent.toolPresentation
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ImageRef
 import com.androidharness.app.core.ToolCallData
@@ -94,7 +93,7 @@ internal fun ToolCallCard(
     )
     // JSON work is memoized: these cards recompose on every state emission,
     // and parsing args per frame was a measurable cost during runs.
-    val description = remember(call) { describeToolCall(call).removeSuffix("…") }
+    val presentation = remember(call, result) { toolPresentation(call, result) }
     val pretty = remember(call.argumentsJson) { prettyArgs(call.argumentsJson) }
     val patchDiff = remember(call) {
         if (call.name == "apply_patch") {
@@ -136,19 +135,20 @@ internal fun ToolCallCard(
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(
-                        call.name,
+                        presentation.title,
                         style = MaterialTheme.typography.labelLarge,
-                        fontFamily = FontFamily.Monospace,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
                     )
-                    Text(
-                        description,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
+                    presentation.detail?.let { detail ->
+                        Text(
+                            detail,
+                            style = MaterialTheme.typography.labelSmall,
+                            color = scheme.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
+                        )
+                    }
                 }
                 Spacer(Modifier.width(8.dp))
                 val statusKey = when {
@@ -209,6 +209,13 @@ internal fun ToolCallCard(
                     HorizontalDivider(
                         color = scheme.outlineVariant.copy(alpha = 0.5f),
                         modifier = Modifier.padding(bottom = 10.dp),
+                    )
+                    Text(
+                        call.name,
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = FontFamily.Monospace,
+                        color = scheme.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 6.dp),
                     )
                     if (patchDiff != null) {
                         VisualDiffViewer(
@@ -388,6 +395,119 @@ internal fun ToolGroupCard(
                                 onOpenFile = onOpenFile,
                             )
                         }
+                    }
+                }
+            }
+        }
+    }
+}
+
+/** Finished-turn receipt: one compact row by default, full semantic tool history on tap. */
+@Composable
+internal fun TurnActivityCard(
+    calls: List<ToolCallData>,
+    results: Map<String, ChatMessage?>,
+    fileEdits: List<com.androidharness.app.data.db.FileEditEntity>,
+    workedLabel: String,
+    onOpenFile: (String, Int?) -> Unit,
+) {
+    if (calls.isEmpty()) return
+    var expanded by rememberSaveable(calls.joinToString(",") { it.id }) { mutableStateOf(false) }
+    val rotation by animateFloatAsState(
+        targetValue = if (expanded) 180f else 0f,
+        animationSpec = fastEffectsSpec(),
+        label = "turn activity chevron",
+    )
+    val scheme = MaterialTheme.colorScheme
+    val success = LocalStatusColors.current.success
+    val failedCount = calls.count { results[it.id]?.isError == true }
+    val changedFiles = fileEdits.map { it.relPath }.distinct().size
+    val verificationCalls = calls.filter { toolPresentation(it, results[it.id]).kind == com.androidharness.app.agent.ToolActivityKind.VERIFY }
+    val passedChecks = verificationCalls.count { results[it.id]?.isError == false }
+    val failedChecks = verificationCalls.count { results[it.id]?.isError == true }
+    val title = buildString {
+        if (workedLabel.isNotBlank()) append("Worked for $workedLabel · ")
+        append("${calls.size} tool${if (calls.size == 1) "" else "s"}")
+        if (changedFiles > 0) append(" · $changedFiles file${if (changedFiles == 1) "" else "s"} changed")
+    }
+
+    Surface(
+        onClick = { expanded = !expanded },
+        shape = MaterialTheme.shapes.large,
+        color = scheme.surfaceContainerLow,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+            ) {
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier
+                        .size(30.dp)
+                        .background(scheme.surfaceContainerHigh, RoundedCornerShape(9.dp)),
+                ) {
+                    Icon(
+                        Icons.Outlined.Build,
+                        contentDescription = null,
+                        modifier = Modifier.size(16.dp),
+                        tint = scheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    Text(
+                        title,
+                        style = MaterialTheme.typography.labelLarge,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis,
+                    )
+                    val summary = buildString {
+                        when {
+                            failedCount > 0 -> append("$failedCount failed")
+                            else -> append("Done")
+                        }
+                        if (passedChecks > 0) append(" · $passedChecks check${if (passedChecks == 1) "" else "s"} passed")
+                        if (failedChecks > 0) append(" · $failedChecks check${if (failedChecks == 1) "" else "s"} failed")
+                    }
+                    Text(
+                        summary,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (failedCount > 0) scheme.error else scheme.onSurfaceVariant,
+                    )
+                }
+                Icon(
+                    if (failedCount > 0) Icons.Filled.Close else Icons.Filled.CheckCircle,
+                    contentDescription = if (failedCount > 0) "Completed with failures" else "Done",
+                    tint = if (failedCount > 0) scheme.error else success,
+                    modifier = Modifier.size(18.dp),
+                )
+                Icon(
+                    Icons.Filled.KeyboardArrowDown,
+                    contentDescription = if (expanded) "Collapse activity" else "Expand activity",
+                    tint = scheme.onSurfaceVariant,
+                    modifier = Modifier.padding(start = 2.dp).size(20.dp).rotate(rotation),
+                )
+            }
+            AnimatedVisibility(
+                expanded,
+                enter = expandVertically(animationSpec = fastSpatialSpec()) + fadeIn(defaultEffectsSpec()),
+                exit = shrinkVertically(animationSpec = fastSpatialSpec()) + fadeOut(defaultEffectsSpec()),
+            ) {
+                Column(
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                ) {
+                    HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
+                    calls.forEach { call ->
+                        ToolCallCard(
+                            call = call,
+                            result = results[call.id],
+                            running = false,
+                            onOpenFile = onOpenFile,
+                        )
                     }
                 }
             }

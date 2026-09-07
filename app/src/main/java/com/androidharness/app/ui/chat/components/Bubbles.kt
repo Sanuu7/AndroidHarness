@@ -27,6 +27,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -74,39 +75,74 @@ internal fun UserBubble(
             color = scheme.surfaceContainerHigh,
             contentColor = scheme.onSurface,
             shape = RoundedCornerShape(18.dp, 18.dp, 4.dp, 18.dp),
-            modifier = Modifier.widthIn(max = 320.dp).let { m ->
+            modifier = Modifier.fillMaxWidth(0.88f).widthIn(max = 560.dp).let { m ->
                 if (onLongPress != null) {
                     m.combinedClickable(onClick = {}, onLongClick = onLongPress)
                 } else m
             },
         ) {
-            Column(Modifier.padding(horizontal = 15.dp, vertical = 10.dp)) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
+            ) {
                 images.forEach { img ->
-                    Text(
-                        "📎 ${img.name}",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant,
+                    AttachmentChip(
+                        name = img.name,
+                        detail = "Image",
+                        icon = Icons.Outlined.Image,
                     )
                 }
                 fileChips.forEach { chip ->
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "📄 ${chip.name}",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.width(6.dp))
-                        Text(
-                            chip.sizeLabel,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
-                        )
-                    }
+                    AttachmentChip(
+                        name = chip.name,
+                        detail = chip.sizeLabel,
+                        icon = Icons.Outlined.Description,
+                    )
                 }
                 if (text.isNotBlank()) {
                     Text(text, style = MaterialTheme.typography.bodyLarge)
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AttachmentChip(
+    name: String,
+    detail: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        shape = RoundedCornerShape(10.dp),
+        color = scheme.surfaceContainer,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.45f)),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 9.dp, vertical = 6.dp),
+        ) {
+            Icon(
+                icon,
+                contentDescription = null,
+                tint = scheme.onSurfaceVariant,
+                modifier = Modifier.size(16.dp),
+            )
+            Spacer(Modifier.width(7.dp))
+            Text(
+                name,
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.weight(1f, fill = false),
+            )
+            Spacer(Modifier.width(7.dp))
+            Text(
+                detail,
+                style = MaterialTheme.typography.labelSmall,
+                color = scheme.onSurfaceVariant,
+            )
         }
     }
 }
