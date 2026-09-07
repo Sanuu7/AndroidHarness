@@ -41,9 +41,13 @@ class OpenAiResponsesProvider(
         options: RequestOptions,
     ): Flow<StreamEvent> {
         val body = buildRequestBody(config, systemPrompt, messages, tools, options)
-        val request = Request.Builder()
+        val requestBuilder = Request.Builder()
             .url(config.baseUrl.trimEnd('/') + "/responses")
             .header("Authorization", "Bearer $apiKey")
+        if (config.id == HarnessProvider.ID) {
+            HarnessProvider.withSession(requestBuilder, options.cacheKey)
+        }
+        val request = requestBuilder
             .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
 

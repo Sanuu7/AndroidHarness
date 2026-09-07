@@ -89,10 +89,14 @@ class AnthropicProvider(
             }
         }
 
-        val request = Request.Builder()
+        val requestBuilder = Request.Builder()
             .url(config.baseUrl.trimEnd('/') + "/v1/messages")
             .header("x-api-key", apiKey)
             .header("anthropic-version", "2023-06-01")
+        if (config.id == HarnessProvider.ID) {
+            HarnessProvider.withSession(requestBuilder, options.cacheKey)
+        }
+        val request = requestBuilder
             .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
             .build()
 

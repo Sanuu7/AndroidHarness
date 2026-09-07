@@ -7,6 +7,7 @@ import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
+import java.util.UUID
 import java.util.concurrent.TimeUnit
 
 object HarnessProvider {
@@ -14,6 +15,7 @@ object HarnessProvider {
     const val BASE_URL = "https://opencode.ai/zen/v1"
     const val DEFAULT_MODEL = "ling-3.0-flash-fin-free"
     const val KEYLESS = "harness-keyless"
+    const val SESSION_HEADER = "x-opencode-session"
     val config = ProviderConfig(ID, "Harness", ProviderType.OPENAI_COMPAT, BASE_URL, DEFAULT_MODEL)
     val fallbackModels = listOf(
         DEFAULT_MODEL, "big-pickle", "deepseek-v4-flash-free",
@@ -67,19 +69,21 @@ object HarnessProvider {
      * endpoints. Null when nothing answered, leaving the default wire.
      */
     suspend fun probeWire(model: String): ProviderType? = withContext(Dispatchers.IO) {
-        val chat = post("$BASE_URL/chat/completions", jsonBody(model))
+        val sessionId = UUID.randomUUID().toString()
+        val chat = post("$BASE_URL/chat/completions", jsonBody(model), sessionId)
         if (chat) return@withContext ProviderType.OPENAI_COMPAT
-        if (post(BASE_URL.removeSuffix("/v1") + "/v1/messages", anthropicBody(model)))
+        if (post(BASE_URL.removeSuffix("/v1") + "/v1/messages", anthropicBody(model), sessionId))
             return@withContext ProviderType.ANTHROPIC
-        if (post("$BASE_URL/responses", responsesBody(model)))
+        if (post("$BASE_URL/responses", responsesBody(model), sessionId))
             ProviderType.OPENAI_RESPONSES
         else null
     }
 
-    private fun post(url: String, body: String): Boolean = runCatching {
+    private fun post(url: String, body: String, sessionId: String): Boolean = runCatching {
         probeClient.newCall(
             Request.Builder().url(url)
                 .header("Content-Type", "application/json")
+                .header(SESSION_HEADER, sessionId)
                 .post(body.toRequestBody("application/json".toMediaType()))
                 .build()
         ).execute().use { resp ->
@@ -97,13 +101,19 @@ object HarnessProvider {
     private fun responsesBody(model: String) =
         """{"model":"$model","input":"reply with the single word ok","max_output_tokens":16}"""
 
-    fun anonymous(request: Request): Request = request.newBuilder()
-        .removeHeader("Authorization")
-        .removeHeader("x-api-key")
-        .header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
-        .header("X-Title", "Harness")
-        .header("User-Agent", "AndroidHarness")
-        .build()
+    fun withSession(builder: Request.Builder, sessionId: String?): Request.Builder =
+        builder.header(SESSION_HEADER, sessionId?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString())
+
+    fun anonymous(request: Request): Request {
+        val builder = request.newBuilder()
+            .removeHeader("Authorization")
+            .removeHeader("x-api-key")
+            .header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
+            .header("X-Title", "Harness")
+            .header("User-Agent", "AndroidHarness")
+        if (request.header(SESSION_HEADER).isNullOrBlank()) withSession(builder, null)
+        return builder.build()
+    }
 
     private val client = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
@@ -124,12 +134,15 @@ object HarnessProvider {
             val wire = wire(config.model)
             val baseUrl = if (wire == ProviderType.ANTHROPIC) BASE_URL.removeSuffix("/v1") else BASE_URL
             val routed = config.copy(type = wire, baseUrl = baseUrl)
+            val routedOptions = if (options.cacheKey.isNullOrBlank()) {
+                options.copy(cacheKey = UUID.randomUUID().toString())
+            } else options
             val provider = when (wire) {
                 ProviderType.ANTHROPIC -> AnthropicProvider(client, ProviderFactory.json)
                 ProviderType.OPENAI_RESPONSES -> OpenAiResponsesProvider(client, ProviderFactory.json)
                 else -> OpenAiCompatProvider(client, ProviderFactory.json)
             }
-            return provider.streamChat(routed, KEYLESS, systemPrompt, messages, tools, options)
+            return provider.streamChat(routed, KEYLESS, systemPrompt, messages, tools, routedOptions)
         }
     }
 }

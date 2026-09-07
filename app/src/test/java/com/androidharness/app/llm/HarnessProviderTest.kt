@@ -48,5 +48,12 @@ class HarnessProviderTest {
         assertNull(request.header("Authorization"))
         assertNull(request.header("x-api-key"))
         assertEquals("AndroidHarness", request.header("User-Agent"))
+        assertFalse(request.header(HarnessProvider.SESSION_HEADER).isNullOrBlank())
+    }
+
+    @Test fun preservesStableOpenCodeSession() {
+        val request = HarnessProvider.anonymous(Request.Builder().url(HarnessProvider.BASE_URL)
+            .header(HarnessProvider.SESSION_HEADER, "conversation-123").build())
+        assertEquals("conversation-123", request.header(HarnessProvider.SESSION_HEADER))
     }
 }

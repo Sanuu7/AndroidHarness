@@ -138,6 +138,9 @@ class OpenAiCompatProvider(
         val requestBuilder = Request.Builder()
             .url(config.baseUrl.trimEnd('/') + "/chat/completions")
             .header("Authorization", "Bearer $apiKey")
+        if (config.id == HarnessProvider.ID) {
+            HarnessProvider.withSession(requestBuilder, options.cacheKey)
+        }
         if ("openrouter.ai" in host) {
             requestBuilder.header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
             requestBuilder.header("X-Title", "Android Harness")
