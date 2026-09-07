@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.10-alpha (2026-09-07)
+
+### Added
+
+- **Scheduled background automations**: schedule recurring or interval-based prompt tasks powered by Android WorkManager. Features an AI-assisted planner that translates plain language into schedules, a bottom-sheet editor with preset schedule chips, per-automation model selection, manual run triggers, detailed run history, and completion notifications.
+- **Build & Test dashboard**: run development checks, Gradle commands, and test suites with live terminal output and Shizuku status. Build failures include a one-tap agent repair action that routes the failure logs into a new chat session for automated fixes.
+- **Built-in keyless Harness provider**: pre-configured out-of-the-box provider via the OpenCode Zen relay, granting immediate model access without API keys, complete with model probing and session tracking headers.
+- **Batch file operations**: multi-select files and folders in the file manager with a bottom action bar for batch deletion, copying, and moving via a destination folder picker.
+- **In-chat file diff viewer**: tool calls that modify files now offer an in-chat diff sheet to inspect additions and deletions directly without leaving the conversation.
+- **Responsive markdown tables**: chat messages format markdown tables into compact preview cards that expand into a dedicated full-sheet viewer with horizontal scrolling.
+- **Turn activity rollups and streamlined tool cards**: consecutive tool calls roll up into a compact activity summary with reactive expansion states, status indicators, and distinct tool icons.
+- **Response duration and token throughput**: tracks response time and tokens per second for assistant messages in database schema v11, displayed in message stats and included in chat backups.
+- **Custom model IDs**: enter arbitrary custom model identifiers directly in the model picker sheet across all supported providers.
+
+### Changed
+
+- **Navigation drawer and provider sheets redesign**: the navigation drawer adds a quick-access tool strip for Files, Terminal, Automations, and Build & Test, alongside a dedicated active provider card. Provider setup and model picker sheets feature refreshed hero cards and cleaner preset styling.
+
+### Fixed
+
+- **Thinking budget and reasoning level wiring**: enforces Claude's 1,024-token minimum reasoning budget, clamps unsupported thinking configs accurately, and maps Gemini thinking levels to API specifications.
+
 ## 0.9-alpha (2026-09-06)
 
 ### Added

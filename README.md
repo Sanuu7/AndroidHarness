@@ -10,6 +10,10 @@ Status: early alpha.
 
 **Chat with a real coding agent**
 - Full markdown chat with streaming responses, thinking blocks, and cards showing every tool call the agent makes.
+- Responsive markdown tables with compact card previews and an expandable full-sheet viewer with horizontal scroll.
+- In-chat file diff sheet to inspect file changes directly from tool call cards without leaving the conversation.
+- Turn performance metrics: tracks response duration (ms) and token generation throughput (tokens/sec) alongside token counts in turn stats.
+- Turn activity rollups and streamlined tool cards: consecutive tool calls roll up into a compact activity summary with reactive expansion states and status indicators.
 - Voice input with live waveforms and Groq Whisper cloud transcription (`whisper-large-v3` / `turbo`) or native Android speech. Tap the mic to lock recording open, or hold with slide-up lock and slide-left cancel.
 - Fork conversations from any assistant turn into a fresh session with cloned context.
 - Resume last active chat automatically on launch with shimmering skeleton loading.
@@ -19,6 +23,12 @@ Status: early alpha.
 - Long-press your own message for Retry alongside Copy and Edit, resending it as a fresh turn.
 - Ask the agent questions mid-run and answer from the notification shade or the chat.
 - Chat backup and restore: export every chat with its full message history to a JSON file and import it back on any device. The file holds chats and messages only, never API keys or settings.
+
+**Scheduled automations**
+- Define recurring or interval-based prompt tasks that run in the background via Android WorkManager.
+- AI-assisted planner translates plain English instructions into cron-like schedules and parameters.
+- Automation editor bottom sheet with quick suggestion chips, per-automation model selection, and manual run triggers.
+- Run history logs, execution status indicators, and background completion notifications.
 
 **Agent tools**
 - File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch with atomic rollback on failure. The agent reads images by filename and extracts text from attached PDFs.
@@ -32,7 +42,7 @@ Status: early alpha.
 - Todo and memory tools: a live todo list, a core memory file that loads at the start of every conversation, and topic files with search for everything else.
 
 **Files and editor**
-- A workspace file manager: create, rename, move, copy, delete, and share files and folders, with open-in-other-apps support.
+- A workspace file manager: multi-select batch operations (delete, copy, move via destination picker), create, rename, and share files and folders, with open-in-other-apps support.
 - A real code editor: multi-color syntax highlighting across Kotlin, Java, Python, JS, TS, HTML, CSS, and Shell, line numbers, unlimited undo and redo, find and replace with regex, word wrap toggle, and encoding preservation.
 - Visual diff viewer: side-by-side / inline diff viewer with dual line gutters, syntax coloring, and change stats.
 - Per chat Files changed tracking: GitHub style badges and diffs for every file the agent touches, with rewind.
@@ -50,9 +60,12 @@ Status: early alpha.
 - Foreground service keeps the agent and terminals alive while the screen is off.
 - Checkpoints and a run manager let a run survive an app restart.
 - Approve or deny sensitive actions from the notification shade, with four permission modes up to a full access mode that lifts every sandbox for workspaces you trust.
+- Redesigned navigation drawer with a quick-access tool strip (Files, Terminal, Automations, Build & Test) and a dedicated active provider card.
 
 **Model flexibility**
+- Built-in keyless Harness provider on the OpenCode Zen relay for immediate out-of-the-box model access without API keys.
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
+- Custom model IDs: enter any custom model name directly in the model picker sheet across all supported providers.
 - Live model catalog fetch with latency check, per-model price tracking, and a running cost readout, plus a total estimated cost hero on the Stats screen.
 - One global thinking ladder from Off to Ultra on every model; non native rungs resolve down the chain at request time, never rewriting your pick.
 - Per-chat dual planning: a chat menu toggle that runs Plan mode on one model and execution on another, each picked from the same model sheet, with a toast confirming which model fired and a plan card that survives app restarts.

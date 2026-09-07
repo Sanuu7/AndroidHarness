@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.BatteryChargingFull
-import androidx.compose.material.icons.outlined.Cloud
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
@@ -48,11 +47,9 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.data.env.EnvState
 import com.androidharness.app.data.env.ShizukuState
-import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
-import com.androidharness.app.ui.settings.ProviderSheet
 import com.androidharness.app.ui.theme.LocalStatusColors
 import kotlinx.coroutines.launch
 
@@ -63,7 +60,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
- * First-run setup: checklist screen. Required steps (Provider, Storage access,
+ * First-run setup: checklist screen. Required steps (Storage access
  * and Notifications) must be completed before starting the harness.
  */
 @Composable
@@ -71,22 +68,16 @@ fun SetupScreen(
     container: AppContainer,
     onFinish: () -> Unit,
 ) {
-    // The provider step is where the first API key is entered.
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
     val success = LocalStatusColors.current.success
     val lifecycleOwner = LocalLifecycleOwner.current
 
-    val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
-    val settings by container.settings.settings.collectAsStateWithLifecycle(
-        initialValue = com.androidharness.app.data.AppSettings(),
-    )
     val shizukuState by container.shizuku.state.collectAsStateWithLifecycle()
     val serviceState by container.shizuku.serviceState.collectAsStateWithLifecycle()
     val envState by container.linuxEnv.state.collectAsStateWithLifecycle()
 
-    var showProviderDialog by remember { mutableStateOf(false) }
     var storageGranted by remember {
         mutableStateOf(SystemGrants.isAllFilesAccessGranted(context))
     }
@@ -118,14 +109,11 @@ fun SetupScreen(
     }
 
     // ---- Step completion -------------------------------------------------
-    val activeProvider = providers.firstOrNull { it.id == settings.activeProviderId }
-    val hasKey = activeProvider?.let { !container.providers.apiKey(it.id).isNullOrBlank() } ?: false
-    val providerDone = activeProvider != null && hasKey
     val shizukuDone = shizukuState == ShizukuState.GRANTED && serviceState ==
         com.androidharness.app.data.env.UserServiceState.BOUND_READY
     val envDone = envState is EnvState.Ready
-    val requiredDone = providerDone && storageGranted && notifGranted
-    val completed = listOf(providerDone, storageGranted, notifGranted, shizukuDone, envDone, batteryExempt).count { it }
+    val requiredDone = storageGranted && notifGranted
+    val completed = listOf(storageGranted, notifGranted, shizukuDone, envDone, batteryExempt).count { it }
 
     Scaffold(containerColor = scheme.surface) { padding ->
         Column(
@@ -152,34 +140,18 @@ fun SetupScreen(
 
                 Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(
-                        "$completed of 6 complete",
+                        "$completed of 5 complete",
                         style = MaterialTheme.typography.labelMediumEmphasized,
                         color = scheme.onSurfaceVariant,
                     )
                     ThinLinearProgress(
-                        progress = { completed / 6f },
+                        progress = { completed / 5f },
                         modifier = Modifier.fillMaxWidth(),
                     )
                 }
                 Spacer(Modifier.size(2.dp))
 
-                // -- 1. Provider (required) --------------------------------
-                SetupStep(
-                    icon = { Icon(Icons.Outlined.Cloud, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
-                    title = "Connect an AI provider",
-                    status = when {
-                        providerDone -> "${activeProvider!!.name} · ${activeProvider.model}"
-                        else -> "Required: OpenRouter, Groq, Anthropic, Gemini, Ollama…"
-                    },
-                    complete = providerDone,
-                    optional = false,
-                ) {
-                    if (!providerDone) {
-                        Button(onClick = { showProviderDialog = true }) { Text("Connect") }
-                    }
-                }
-
-                // -- 2. Storage access (required) --------------------------
+                // -- 1. Storage access (required) --------------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.SdStorage, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Storage access",
@@ -193,7 +165,7 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 3. Notifications (required) ---------------------------
+                // -- 2. Notifications (required) ---------------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.Notifications, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Notifications",
@@ -211,7 +183,7 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 4. Shizuku (optional) ---------------------------------
+                // -- 3. Shizuku (optional) ---------------------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.Shield, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Shizuku",
@@ -236,7 +208,7 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 5. Linux environment (optional) -----------------------
+                // -- 4. Linux environment (optional) -----------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.Terminal, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Linux environment",
@@ -261,7 +233,7 @@ fun SetupScreen(
                     }
                 }
 
-                // -- 6. Battery optimization (optional) --------------------
+                // -- 5. Battery optimization (optional) --------------------
                 SetupStep(
                     icon = {
                         Icon(Icons.Outlined.BatteryChargingFull, null, Modifier.size(16.dp), scheme.onSurfaceVariant)
@@ -299,22 +271,6 @@ fun SetupScreen(
         }
     }
 
-    if (showProviderDialog) {
-        ProviderSheet(
-            existing = null,
-            existingKey = null,
-            onDismiss = { showProviderDialog = false },
-            onSave = { name, type: ProviderType, baseUrl, model, apiKey ->
-                scope.launch {
-                    val created = container.providers.add(name, type, baseUrl, model, apiKey)
-                    if (settings.activeProviderId == null) {
-                        container.settings.setActiveProvider(created.id)
-                    }
-                    showProviderDialog = false
-                }
-            },
-        )
-    }
 }
 
 @Composable

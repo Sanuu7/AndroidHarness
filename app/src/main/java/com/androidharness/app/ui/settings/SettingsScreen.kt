@@ -6,6 +6,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.Environment
 import android.provider.Settings
+import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
@@ -61,7 +62,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -73,17 +73,15 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.layout.positionInRoot
 import kotlinx.coroutines.flow.filterNotNull
-import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.math.roundToInt
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody.Companion.toRequestBody
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -142,8 +140,6 @@ private fun ghNewTokenUrl(extraScopes: Set<String>): String =
 fun SettingsScreen(
     container: AppContainer,
     onBack: () -> Unit,
-    onOpenAutomation: () -> Unit = {},
-    onOpenBuildTest: () -> Unit = {},
     onOpenStats: () -> Unit = {},
     onRunSetup: () -> Unit = {},
     onOpenSkills: () -> Unit = {},
@@ -166,32 +162,30 @@ fun SettingsScreen(
     var showAddWorkspace by remember { mutableStateOf(false) }
     var pendingDelete by remember { mutableStateOf<ProjectEntity?>(null) }
 
-    // The chat promo dialog's Configure button deep-links here and expects
-    // the screen to scroll to the planning-model card. The section's content
-    // offset is derived from window positions (self-correcting at any scroll)
-    // plus the current scroll value.
-    val scrollState = rememberScrollState()
-    var containerTop by remember { androidx.compose.runtime.mutableFloatStateOf(0f) }
-    var planningContentY by remember { androidx.compose.runtime.mutableFloatStateOf(Float.NaN) }
-    var voiceContentY by remember { androidx.compose.runtime.mutableFloatStateOf(Float.NaN) }
+    var pageName by rememberSaveable { mutableStateOf<String?>(null) }
+    val page = pageName?.let { name -> SettingsPage.entries.firstOrNull { it.name == name } }
+    var query by rememberSaveable { mutableStateOf("") }
+    val homeScroll = rememberScrollState()
+    fun goBack() {
+        when {
+            page != null -> pageName = null
+            query.isNotBlank() -> query = ""
+            else -> onBack()
+        }
+    }
+    BackHandler(enabled = page != null || query.isNotBlank()) { goBack() }
     LaunchedEffect(Unit) {
         container.pendingSettingsScroll.filterNotNull().collect { target ->
-            if (target == "planning") {
-                withTimeoutOrNull(2_000) {
-                    while (planningContentY.isNaN()) kotlinx.coroutines.delay(50)
-                }
-                if (!planningContentY.isNaN()) {
-                    scrollState.animateScrollTo(planningContentY.roundToInt().coerceAtLeast(0))
-                }
-            } else if (target == "voice") {
-                withTimeoutOrNull(2_000) {
-                    while (voiceContentY.isNaN()) kotlinx.coroutines.delay(50)
-                }
-                if (!voiceContentY.isNaN()) {
-                    scrollState.animateScrollTo(voiceContentY.roundToInt().coerceAtLeast(0))
-                }
-            }
+            settingsDeepLink(target)?.let { pageName = it.name }
             container.pendingSettingsScroll.value = null
+        }
+    }
+    fun openPage(destination: SettingsPage) {
+        when (destination) {
+            SettingsPage.SKILLS -> onOpenSkills()
+            SettingsPage.USAGE -> onOpenStats()
+            SettingsPage.SETUP -> onRunSetup()
+            else -> pageName = destination.name
         }
     }
 
@@ -205,96 +199,65 @@ fun SettingsScreen(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             AppHeader(
-                title = "Settings",
-                subtitle = "Agent, workspace, environment, appearance",
-                onBack = onBack,
+                title = page?.title ?: "Settings",
+                onBack = { goBack() },
             )
         },
     ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .verticalScroll(scrollState)
-                .onGloballyPositioned { containerTop = it.positionInRoot().y }
-                .padding(horizontal = 16.dp, vertical = 8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-            OutlinedCard(Modifier.fillMaxWidth()) {
-                TextButton(onClick = onOpenAutomation, modifier = Modifier.fillMaxWidth()) {
-                    Text("Automation · tasks, schedules and history")
+        if (page == null) {
+            SettingsHome(
+                query = query,
+                onQueryChange = { query = it },
+                onOpen = ::openPage,
+                modifier = Modifier.fillMaxSize().padding(padding).verticalScroll(homeScroll),
+            )
+        } else {
+            key(page) {
+                Column(
+                    modifier = Modifier.fillMaxSize().padding(padding)
+                        .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 16.dp),
+                    verticalArrangement = Arrangement.spacedBy(14.dp),
+                ) {
+                    SettingsPageIntro(page)
+                    when (page) {
+                        SettingsPage.MODELS -> {
+                            SettingsPanel(Modifier.fillMaxWidth()) {
+                                SettingRow(
+                                    icon = Icons.Outlined.Key,
+                                    title = "Manage providers",
+                                    subtitle = "Add connections, sign in and choose models",
+                                    onClick = onOpenProviders,
+                                    trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
+                                )
+                            }
+                            PlanningModelSection(container, settings, scope, onOpenProviders)
+                            CurrentSetupCard(settings, providers)
+                        }
+                        SettingsPage.AGENT -> AgentSection(container, settings, scope)
+                        SettingsPage.CHAT -> {
+                            ChatBehaviorSection(container, settings, scope)
+                            SlashCommandsSection(container)
+                        }
+                        SettingsPage.VOICE -> VoiceSpeechSection(container, settings, scope)
+                        SettingsPage.APPEARANCE -> AppearanceSection(container, settings, scope)
+                        SettingsPage.PRIVACY -> PrivacySection(container, settings, scope)
+                        SettingsPage.GITHUB -> GitHubSection(container)
+                        SettingsPage.SEARCH -> WebSearchSection(container)
+                        SettingsPage.MCP -> McpSection(container)
+                        SettingsPage.WORKSPACE -> WorkspaceSection(
+                            container, projects, currentProject, workspace?.displayPath, shizukuState,
+                            onAddWorkspace = { showAddWorkspace = true },
+                            onDeleteWorkspace = { pendingDelete = it },
+                            onSelectWorkspace = { id -> scope.launch { container.workspace.setActiveProject(id) } },
+                        )
+                        SettingsPage.ENVIRONMENT -> TerminalSection(container, envState, shizukuState, serviceState)
+                        SettingsPage.BACKUP -> ChatsBackupSection(container)
+                        SettingsPage.UPDATES -> UpdatesCard(container)
+                        SettingsPage.SKILLS, SettingsPage.USAGE, SettingsPage.SETUP -> Unit
+                    }
+                    Spacer(Modifier.height(16.dp))
                 }
             }
-            OutlinedCard(Modifier.fillMaxWidth()) {
-                TextButton(onClick = onOpenBuildTest, modifier = Modifier.fillMaxWidth()) {
-                    Text("Build & Test · saved checks, live output and agent fixes")
-                }
-            }
-            GitHubSection(container)
-
-            WebSearchSection(container)
-
-            Box(
-                Modifier.onGloballyPositioned { coords ->
-                    voiceContentY = coords.positionInRoot().y - containerTop + scrollState.value
-                },
-            ) {
-                VoiceSpeechSection(container = container, settings = settings, scope = scope)
-            }
-
-            McpSection(container)
-
-            Box(
-                Modifier.onGloballyPositioned { coords ->
-                    planningContentY = coords.positionInRoot().y - containerTop + scrollState.value
-                },
-            ) {
-                PlanningModelSection(
-                    container = container,
-                    settings = settings,
-                    scope = scope,
-                    onOpenProviders = onOpenProviders,
-                )
-            }
-
-            CurrentSetupCard(settings = settings, providers = providers)
-
-            AgentSection(
-                container = container,
-                settings = settings,
-                scope = scope,
-                onOpenStats = onOpenStats,
-                onRunSetup = onRunSetup,
-                onOpenSkills = onOpenSkills,
-            )
-
-            WorkspaceSection(
-                container = container,
-                projects = projects,
-                currentProject = currentProject,
-                workspacePath = workspace?.displayPath,
-                shizukuState = shizukuState,
-                onAddWorkspace = { showAddWorkspace = true },
-                onDeleteWorkspace = { pendingDelete = it },
-                onSelectWorkspace = { id -> scope.launch { container.workspace.setActiveProject(id) } },
-            )
-
-            TerminalSection(
-                container = container,
-                envState = envState,
-                shizukuState = shizukuState,
-                serviceState = serviceState,
-            )
-
-            AppearanceSection(container = container, settings = settings, scope = scope)
-            ChatBehaviorSection(container = container, settings = settings, scope = scope)
-            PrivacySection(container = container, settings = settings, scope = scope)
-            ChatsBackupSection(container)
-            SlashCommandsSection(container = container)
-
-            UpdatesCard(container = container)
-
-            Spacer(Modifier.height(8.dp))
         }
     }
 
@@ -383,7 +346,7 @@ private fun WorkspaceSection(
         }
     }
 
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(vertical = 6.dp)) {
             projects.forEachIndexed { index, project ->
                 val desc = container.workspace.describe(project)
@@ -445,7 +408,7 @@ private fun TerminalSection(
         ShizukuState.NOT_INSTALLED -> "Not installed"
     }
 
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(vertical = 4.dp)) {
             SettingRow(
                 icon = Icons.Outlined.Terminal,
@@ -507,7 +470,7 @@ private fun GitHubSection(container: AppContainer) {
     SecureScreenEffect(container, expanded)
 
     SettingsHeader("GitHub")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Key, contentDescription = null, modifier = Modifier.size(20.dp))
@@ -758,7 +721,7 @@ private fun WebSearchSection(container: AppContainer) {
     SecureScreenEffect(container, expanded)
 
     SettingsHeader("Web search")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -989,7 +952,7 @@ private fun VoiceSpeechSection(
     SecureScreenEffect(container, expanded)
 
     SettingsHeader("Voice & speech")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -1189,7 +1152,7 @@ private fun McpSection(container: AppContainer) {
     val anyConnected = servers.any { statuses[it.name]?.state == "connected" }
 
     SettingsHeader("MCP servers")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (configTampered) {
                 Text(
@@ -1575,7 +1538,7 @@ private fun McpServerDialog(
 
 @Composable
 private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit) {
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.SdStorage, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -1604,7 +1567,7 @@ private fun ShizukuCard(
     onRefresh: () -> Unit,
     onGrant: () -> Unit,
 ) {
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -1653,7 +1616,7 @@ private fun LinuxEnvironmentCard(
     var confirmUninstall by remember { mutableStateOf(false) }
     var showPackagesSheet by remember { mutableStateOf(false) }
 
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -1805,7 +1768,7 @@ private fun CurrentSetupCard(
     providers: List<com.androidharness.app.llm.ProviderConfig>,
 ) {
     val active = providers.firstOrNull { it.id == settings.activeProviderId }
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(
             Modifier.padding(horizontal = 14.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(6.dp),
@@ -1836,12 +1799,13 @@ private fun SetupLine(label: String, value: String) {
             label,
             style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.width(132.dp),
+            modifier = Modifier.weight(0.38f).padding(end = 12.dp),
         )
         Text(
             value,
             style = MaterialTheme.typography.bodySmall,
-            maxLines = 1,
+            modifier = Modifier.weight(0.62f),
+            maxLines = 2,
             overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
         )
     }
@@ -1853,13 +1817,10 @@ private fun AgentSection(
     container: AppContainer,
     settings: AppSettings,
     scope: kotlinx.coroutines.CoroutineScope,
-    onOpenStats: () -> Unit,
-    onRunSetup: () -> Unit = {},
-    onOpenSkills: () -> Unit = {},
 ) {
     SettingsHeader("Agent")
     var showAgentsDialog by remember { mutableStateOf(false) }
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 4.dp)) {
             DropdownSetting(
                 label = "Default permission mode",
@@ -1910,28 +1871,6 @@ private fun AgentSection(
                 divider = true,
             )
 
-            SettingRow(
-                icon = Icons.Outlined.AutoStories,
-                title = "Skills",
-                subtitle = "Catalog, toggles, add your own playbooks",
-                onClick = onOpenSkills,
-                divider = true,
-            )
-
-            SettingRow(
-                icon = Icons.Outlined.BarChart,
-                title = "Stats",
-                subtitle = "Tokens, cache hit rates, usage over time",
-                onClick = onOpenStats,
-                divider = true,
-            )
-
-            SettingRow(
-                icon = Icons.Outlined.Shield,
-                title = "Run setup again",
-                subtitle = "Provider, Shizuku, Linux environment, notifications",
-                onClick = onRunSetup,
-            )
         }
     }
     if (showAgentsDialog) {
@@ -2040,25 +1979,22 @@ private fun AgentsInstructionsDialog(container: AppContainer, onDismiss: () -> U
 @Composable
 private fun AppearanceSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     SettingsHeader("Appearance")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text("Theme", style = MaterialTheme.typography.titleSmall)
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                ThemeMode.entries.forEachIndexed { index, mode ->
-                    SegmentedButton(
-                        selected = settings.themeMode == mode,
-                        onClick = { scope.launch { container.settings.setThemeMode(mode) } },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = ThemeMode.entries.size),
-                    ) {
-                        // maxLines=1: the checkmark eats the segment width, a
-                        // wrapped label breaks the row.
-                        Text(
-                            mode.name.lowercase().replaceFirstChar { it.uppercase() },
-                            maxLines = 1,
+            ThemeMode.entries.chunked(2).forEach { modes ->
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                    modes.forEach { mode ->
+                        ThemeChoice(
+                            mode = mode,
+                            selected = settings.themeMode == mode,
+                            modifier = Modifier.weight(1f),
+                            onClick = { scope.launch { container.settings.setThemeMode(mode) } },
                         )
                     }
                 }
             }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
                     Text("Dynamic color", style = MaterialTheme.typography.bodyLarge)
@@ -2080,7 +2016,7 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
 @Composable
 private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     SettingsHeader("Chat behavior")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
@@ -2127,7 +2063,7 @@ private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, 
 private fun PrivacySection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val context = LocalContext.current
     SettingsHeader("Privacy")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
                 Column(Modifier.weight(1f)) {
@@ -2219,7 +2155,7 @@ private fun PlanningModelSection(
     val fallbackProviderId = settings.activeProviderId ?: providers.firstOrNull()?.id
 
     SettingsHeader("Dual planning models")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.fillMaxWidth()) {
                 Text("Separate plan and execute models", style = MaterialTheme.typography.bodyLarge)
@@ -2352,7 +2288,7 @@ private fun ModelRoleRow(label: String, model: String?, onClick: () -> Unit) {
 private fun SlashCommandsSection(container: AppContainer) {
     val scope = rememberCoroutineScope()
     SettingsHeader("Slash commands")
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             var snippetName by remember { mutableStateOf("") }
             var snippetBody by remember { mutableStateOf("") }
@@ -2404,7 +2340,7 @@ private fun BatteryCard(container: AppContainer) {
     val scope = rememberCoroutineScope()
     var exempt by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
 
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -2576,7 +2512,7 @@ private fun UpdatesCard(container: AppContainer) {
                 .getPackageInfo(container.appContext.packageName, 0).versionName
         }.getOrNull() ?: "?"
     }
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -2696,7 +2632,7 @@ private fun ChatsBackupSection(container: AppContainer) {
         }
     }
 
-    OutlinedCard(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(

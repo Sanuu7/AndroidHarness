@@ -824,8 +824,6 @@ fun AppNav(container: AppContainer) {
                 SettingsScreen(
                     container = container,
                     onBack = { nav.popBackStack() },
-                    onOpenAutomation = { nav.navigate("automation") },
-                    onOpenBuildTest = { nav.navigate("build-test") },
                     onOpenStats = { nav.navigate("stats") },
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },
