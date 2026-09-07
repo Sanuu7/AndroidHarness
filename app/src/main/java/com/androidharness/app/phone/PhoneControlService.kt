@@ -47,6 +47,17 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Mouse
+import androidx.compose.material.icons.outlined.Visibility
+import androidx.compose.material.icons.outlined.Psychology
+import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.PauseCircle
+import androidx.compose.material.icons.outlined.HourglassEmpty
+import androidx.compose.material.icons.outlined.ErrorOutline
+import androidx.compose.material.icons.outlined.Bedtime
+import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.ui.graphics.vector.ImageVector
+import kotlinx.serialization.json.*
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.FilledTonalButton
@@ -104,7 +115,10 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     private val container get() = (application as HarnessApp).container
     private lateinit var windows: WindowManager
 
-    var sessionId = ""
+    private val sessionChanges = MutableStateFlow("")
+    var sessionId: String
+        get() = sessionChanges.value
+        set(value) { sessionChanges.value = value }
     var panelView: ComposeView? = null
         private set
     private var panelParams: WindowManager.LayoutParams? = null
@@ -128,6 +142,8 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     @Volatile private var lastInputAt = 0L
 
     class OverlayUi {
+        var activity by mutableStateOf(PhoneActivity.IDLE)
+        var recentActivity by mutableStateOf<PhoneActivity?>(null)
         var expanded by mutableStateOf(false)
         var capturing by mutableStateOf(false)
         var paused by mutableStateOf(false)
@@ -154,21 +170,35 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     private fun startRunStateObserver() {
         serviceScope.launch {
-            val sessionFlow = container.runManager.runningSessionIds.map { running ->
-                running.firstOrNull() ?: sessionId
-            }.distinctUntilChanged()
-
-            sessionFlow.flatMapLatest { sid ->
+            sessionChanges.flatMapLatest { sid ->
                 if (sid.isBlank()) kotlinx.coroutines.flow.flowOf(null)
                 else container.runManager.live(sid)
             }.collect { live ->
                 if (live != null) {
                     val text = container.runManager.actionText(if (live.runningCalls.isEmpty()) live.copy(currentToolAction = null) else live)
                     ui.status = text ?: if (live.running) "Working…" else "Idle"
-                    ui.isThinking = (live.streamingThinking != null && live.streamingText.isNullOrEmpty())
+                    ui.isThinking = live.running && !live.streamingThinking.isNullOrEmpty() && live.streamingText.isNullOrEmpty()
+                    val call = live.runningCalls.lastOrNull()
+                    val phoneAction = if (call?.name == "phone_control") runCatching {
+                        Json.parseToJsonElement(call.argumentsJson).jsonObject["action"]?.jsonPrimitive?.contentOrNull
+                    }.getOrNull() else null
+                    ui.activity = when {
+                        live.error != null -> PhoneActivity.ERROR
+                        live.pendingApproval != null || live.pendingQuestion != null ||
+                            live.pendingEnvironment != null || live.pendingPlan != null || live.retryStatus != null -> PhoneActivity.WAITING
+                        !live.running -> PhoneActivity.IDLE
+                        phoneAction == "screenshot" -> PhoneActivity.SCREENSHOT
+                        phoneAction in setOf("click", "move", "drag", "scroll") -> PhoneActivity.MOUSE
+                        phoneAction in setOf("type", "key") -> PhoneActivity.TYPING
+                        call != null -> PhoneActivity.WORKING
+                        ui.isThinking -> PhoneActivity.THINKING
+                        !live.streamingText.isNullOrEmpty() -> PhoneActivity.WRITING
+                        else -> PhoneActivity.WORKING
+                    }
                 } else {
                     ui.status = "Idle"
                     ui.isThinking = false
+                    ui.activity = PhoneActivity.IDLE
                 }
             }
         }
@@ -272,6 +302,9 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                 if (captureActive) {
                     panelView?.visibility = View.VISIBLE
                     cursorView?.visibility = View.VISIBLE
+                    // The overlay is absent from the captured image. Briefly show
+                    // the eye after it returns so the user can see the activity.
+                    flashActivity(PhoneActivity.SCREENSHOT)
                 }
             }
         }
@@ -330,7 +363,16 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
         container.pendingSessionId.tryEmit(target)
     }
 
+    private val clearActivity = Runnable { ui.recentActivity = null }
+
+    private fun flashActivity(activity: PhoneActivity) {
+        ui.recentActivity = activity
+        handler.removeCallbacks(clearActivity)
+        handler.postDelayed(clearActivity, 900)
+    }
+
     fun showAction(action: String, x: Int, y: Int) {
+        flashActivity(if (action in setOf("key", "type")) PhoneActivity.TYPING else PhoneActivity.MOUSE)
         if (action in POINTER_ACTIONS) {
             cursorParams?.let { p ->
                 p.x = x; p.y = y
@@ -403,6 +445,12 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
             dynamicColor = settings?.dynamicColor ?: true,
         ) {
             val scheme = MaterialTheme.colorScheme
+            val activity = when {
+                ui.paused -> PhoneActivity.PAUSED
+                ui.capturing -> PhoneActivity.SCREENSHOT
+                ui.activity in setOf(PhoneActivity.ERROR, PhoneActivity.WAITING) -> ui.activity
+                else -> ui.recentActivity ?: ui.activity
+            }
             val statusLine = when {
                 ui.paused -> "Paused"
                 ui.capturing -> "Taking screenshot…"
@@ -421,7 +469,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                         onClick = { ui.expanded = true },
                         modifier = Modifier.size(48.dp).then(panelDragModifier()),
                     ) {
-                        Icon(Icons.Outlined.Mouse, contentDescription = "Open phone controls. Drag to move.", tint = scheme.primary)
+                        Icon(activity.icon, contentDescription = "${activity.label}. Open phone controls. Drag to move.", tint = scheme.primary)
                     }
                 } else Column(Modifier.padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 10.dp)) {
                     Row(
@@ -429,7 +477,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                         modifier = panelDragModifier(),
                     ) {
                         Icon(
-                            Icons.Outlined.Mouse, contentDescription = null,
+                            activity.icon, contentDescription = activity.label,
                             tint = scheme.primary, modifier = Modifier.size(18.dp),
                         )
                         Spacer(Modifier.width(8.dp))
@@ -512,6 +560,19 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
         private const val CHANNEL_ID = "phone_control"
         private const val NOTIFICATION_ID = 70
     }
+}
+
+enum class PhoneActivity(val label: String, val icon: ImageVector) {
+    SCREENSHOT("Taking screenshot", Icons.Outlined.Visibility),
+    THINKING("Thinking", Icons.Outlined.Psychology),
+    WORKING("Working", Icons.Outlined.Computer),
+    MOUSE("Pointer action", Icons.Outlined.Mouse),
+    TYPING("Typing", Icons.Outlined.Keyboard),
+    WRITING("Writing response", Icons.Outlined.Edit),
+    IDLE("Idle", Icons.Outlined.Bedtime),
+    PAUSED("Paused", Icons.Outlined.PauseCircle),
+    WAITING("Waiting", Icons.Outlined.HourglassEmpty),
+    ERROR("Error", Icons.Outlined.ErrorOutline),
 }
 
 /**
