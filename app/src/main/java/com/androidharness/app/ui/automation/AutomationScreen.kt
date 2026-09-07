@@ -2,8 +2,8 @@ package com.androidharness.app.ui.automation
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -671,6 +671,83 @@ private fun StatusPill(status: AutomationStatus) {
 
 private enum class AutomationEditorMode { ASK_AI, MANUAL }
 
+@Composable
+private fun AutomationModePicker(
+    mode: AutomationEditorMode,
+    onModeChange: (AutomationEditorMode) -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.spacedBy(10.dp),
+    ) {
+        AutomationModeCard(
+            title = "Ask AI",
+            subtitle = "Describe it naturally",
+            icon = Icons.Outlined.AutoAwesome,
+            selected = mode == AutomationEditorMode.ASK_AI,
+            modifier = Modifier.weight(1f),
+        ) { onModeChange(AutomationEditorMode.ASK_AI) }
+        AutomationModeCard(
+            title = "Manual",
+            subtitle = "Configure every detail",
+            icon = Icons.Outlined.Tune,
+            selected = mode == AutomationEditorMode.MANUAL,
+            modifier = Modifier.weight(1f),
+        ) { onModeChange(AutomationEditorMode.MANUAL) }
+    }
+}
+
+@Composable
+private fun AutomationModeCard(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    val borderColor = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant
+    Surface(
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(16.dp),
+        border = BorderStroke(if (selected) 1.5.dp else 1.dp, borderColor),
+        modifier = modifier,
+    ) {
+        Column(
+            modifier = Modifier.padding(horizontal = 13.dp, vertical = 12.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    icon,
+                    contentDescription = null,
+                    tint = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.weight(1f))
+                if (selected) {
+                    Icon(
+                        Icons.Outlined.CheckCircle,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(18.dp),
+                    )
+                }
+            }
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(title, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun AutomationEditorDialog(
@@ -826,22 +903,7 @@ private fun AutomationEditorDialog(
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp),
             ) {
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    SegmentedButton(
-                        selected = mode == AutomationEditorMode.ASK_AI,
-                        onClick = { mode = AutomationEditorMode.ASK_AI },
-                        shape = SegmentedButtonDefaults.itemShape(0, 2),
-                        icon = { SegmentedButtonDefaults.Icon(active = mode == AutomationEditorMode.ASK_AI) {
-                            Icon(Icons.Outlined.AutoAwesome, contentDescription = null) } },
-                    ) { Text("Ask AI") }
-                    SegmentedButton(
-                        selected = mode == AutomationEditorMode.MANUAL,
-                        onClick = { mode = AutomationEditorMode.MANUAL },
-                        shape = SegmentedButtonDefaults.itemShape(1, 2),
-                        icon = { SegmentedButtonDefaults.Icon(active = mode == AutomationEditorMode.MANUAL) {
-                            Icon(Icons.Outlined.Tune, contentDescription = null) } },
-                    ) { Text("Manual") }
-                }
+                AutomationModePicker(mode = mode, onModeChange = { mode = it })
 
                 AutomationModelSelector(
                     providerName = selectedProvider?.name,
@@ -879,10 +941,8 @@ private fun AutomationEditorDialog(
                 }
             }
 
-            Surface(
-                tonalElevation = 2.dp,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+            Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
                 Row(
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 12.dp),
                     verticalAlignment = Alignment.CenterVertically,
@@ -1065,47 +1125,61 @@ private fun AskAiAutomationEditor(
         ) {
             if (turns.isEmpty()) {
                 item {
-                    Column(
-                        modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 8.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(top = 8.dp, bottom = 6.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
                     ) {
-                        Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
+                        Surface(
+                            color = MaterialTheme.colorScheme.surface,
+                            shape = RoundedCornerShape(16.dp),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f)),
+                        ) {
                             Icon(
                                 Icons.Outlined.AutoAwesome,
                                 contentDescription = null,
-                                tint = MaterialTheme.colorScheme.onPrimaryContainer,
-                                modifier = Modifier.padding(12.dp).size(26.dp),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.padding(11.dp).size(24.dp),
                             )
                         }
-                        Text(
-                            "What should this automation do?",
-                            style = MaterialTheme.typography.titleLarge,
-                            fontWeight = FontWeight.SemiBold,
-                        )
-                        Text(
-                            "Describe the task and timing in your own words. AI will ask a short follow-up only if it needs something important.",
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(
+                                "Build an automation with AI",
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.SemiBold,
+                            )
+                            Text(
+                                "Say what it should do and when it should run.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                     }
                 }
                 item {
-                    Row(
-                        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
-                        AssistChip(
+                        Text(
+                            "QUICK START",
+                            style = MaterialTheme.typography.labelSmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                        AutomationPromptSuggestion(
+                            title = "Keep the project building",
+                            subtitle = "Every hour · find and fix build failures",
                             onClick = { onAsk("Every hour, check the project for build failures and fix them.") },
-                            label = { Text("Every hour") },
                         )
-                        AssistChip(
+                        AutomationPromptSuggestion(
+                            title = "Build a debug APK",
+                            subtitle = "Tomorrow at 8 PM · fix errors if needed",
                             onClick = { onAsk("Tomorrow at 8 PM, build the debug APK and fix any build errors.") },
-                            label = { Text("Tomorrow at 8 PM") },
                         )
-                        AssistChip(
+                        AutomationPromptSuggestion(
+                            title = "Run the test suite",
+                            subtitle = "Daily at 9 AM · fix failing tests",
                             onClick = { onAsk("Every day at 9 AM, run the project tests and fix failures.") },
-                            label = { Text("Daily at 9 AM") },
                         )
                     }
                 }
@@ -1148,10 +1222,9 @@ private fun AskAiAutomationEditor(
         }
 
         if (draft == null) {
-            Surface(
-                tonalElevation = 3.dp,
-                modifier = Modifier.fillMaxWidth(),
-            ) {
+            Column {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.55f))
+                Surface(color = MaterialTheme.colorScheme.surface, modifier = Modifier.fillMaxWidth()) {
                 OutlinedTextField(
                     value = input,
                     onValueChange = onInputChange,
@@ -1163,7 +1236,7 @@ private fun AskAiAutomationEditor(
                     maxLines = 2,
                     shape = RoundedCornerShape(18.dp),
                     trailingIcon = {
-                        FilledTonalIconButton(
+                        FilledIconButton(
                             onClick = { onAsk(input) },
                             enabled = input.isNotBlank() && !busy,
                         ) {
@@ -1172,6 +1245,39 @@ private fun AskAiAutomationEditor(
                     },
                     modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).height(88.dp),
                 )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun AutomationPromptSuggestion(
+    title: String,
+    subtitle: String,
+    onClick: () -> Unit,
+) {
+    Surface(
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(15.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 13.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            Icon(
+                Icons.Outlined.AutoAwesome,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primary,
+                modifier = Modifier.size(18.dp),
+            )
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(title, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium)
+                Text(subtitle, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }
@@ -1181,8 +1287,12 @@ private fun AskAiAutomationEditor(
 private fun AutomationAiBubble(turn: AutomationAiTurn) {
     val user = turn.role == Role.USER
     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = if (user) Arrangement.End else Arrangement.Start) {
-        Surface(color = if (user) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh,
-            shape = RoundedCornerShape(16.dp), modifier = Modifier.widthIn(max = 300.dp)) {
+        Surface(
+            color = if (user) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface,
+            shape = RoundedCornerShape(16.dp),
+            border = if (user) null else BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f)),
+            modifier = Modifier.widthIn(max = 300.dp),
+        ) {
             Text(turn.text, style = MaterialTheme.typography.bodyMedium,
                 color = if (user) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.padding(horizontal = 13.dp, vertical = 10.dp))
@@ -1192,8 +1302,8 @@ private fun AutomationAiBubble(turn: AutomationAiTurn) {
 
 @Composable
 private fun AutomationAiDraftCard(draft: AutomationAiDraft, onEditManually: () -> Unit) {
-    ElevatedCard(shape = RoundedCornerShape(18.dp),
-        colors = CardDefaults.elevatedCardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
+    OutlinedCard(shape = RoundedCornerShape(18.dp),
+        colors = CardDefaults.outlinedCardColors(containerColor = MaterialTheme.colorScheme.surface),
         modifier = Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1214,7 +1324,11 @@ private fun AutomationAiDraftCard(draft: AutomationAiDraft, onEditManually: () -
                 if (draft.checkCommand.isNotBlank()) InfoPill(Icons.Outlined.CheckCircle, "Success check")
             }
             if (draft.checkCommand.isNotBlank()) {
-                Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh, shape = RoundedCornerShape(12.dp)) {
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = RoundedCornerShape(12.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f)),
+                ) {
                     Text(draft.checkCommand, style = MaterialTheme.typography.bodySmall,
                         modifier = Modifier.fillMaxWidth().padding(10.dp))
                 }
@@ -1316,8 +1430,9 @@ private fun ManualAutomationEditor(
             }
             if (schedule == AutomationSchedule.HOURLY) {
                 Surface(
-                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                    color = MaterialTheme.colorScheme.surface,
                     shape = RoundedCornerShape(14.dp),
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.45f)),
                     modifier = Modifier.fillMaxWidth(),
                 ) {
                     Text(
@@ -1371,8 +1486,9 @@ private fun AutomationEditorSection(
     content: @Composable ColumnScope.() -> Unit,
 ) {
     Surface(
-        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        color = MaterialTheme.colorScheme.surface,
         shape = RoundedCornerShape(20.dp),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.65f)),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Column(
@@ -1380,8 +1496,17 @@ private fun AutomationEditorSection(
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Surface(color = MaterialTheme.colorScheme.surfaceContainerHighest, shape = CircleShape) {
-                    Icon(icon, contentDescription = null, modifier = Modifier.padding(7.dp).size(18.dp))
+                Surface(
+                    color = MaterialTheme.colorScheme.surface,
+                    shape = CircleShape,
+                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.75f)),
+                ) {
+                    Icon(
+                        icon,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.padding(7.dp).size(18.dp),
+                    )
                 }
                 Column(Modifier.weight(1f)) {
                     Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
@@ -1400,15 +1525,37 @@ private fun ScheduleChoiceChip(
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
-    FilterChip(
-        selected = selected,
+    Surface(
         onClick = onClick,
-        label = { Text(label) },
-        leadingIcon = if (selected) {
-            { Icon(Icons.Outlined.CheckCircle, contentDescription = null, modifier = Modifier.size(17.dp)) }
-        } else null,
+        color = MaterialTheme.colorScheme.surface,
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(
+            if (selected) 1.5.dp else 1.dp,
+            if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outlineVariant,
+        ),
         modifier = modifier,
-    )
+    ) {
+        Row(
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center,
+        ) {
+            if (selected) {
+                Icon(
+                    Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.size(17.dp),
+                )
+                Spacer(Modifier.width(6.dp))
+            }
+            Text(
+                label,
+                style = MaterialTheme.typography.labelLarge,
+                color = if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurface,
+            )
+        }
+    }
 }
 
 private fun defaultOneTimeRun(): Long =
