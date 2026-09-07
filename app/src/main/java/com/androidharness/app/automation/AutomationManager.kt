@@ -22,6 +22,9 @@ class AutomationManager(private val c: AppContainer) {
     fun save(task: AutomationTask) {
         require(task.title.isNotBlank() && task.prompt.isNotBlank())
         require(task.hour in 0..23 && task.minute in 0..59)
+        require(!task.providerId.isNullOrBlank() && !task.model.isNullOrBlank()) {
+            "Choose a model for this automation."
+        }
         repository.save(task)
         val name = "automation-schedule-${task.id}"
         when {
@@ -89,6 +92,7 @@ class AutomationManager(private val c: AppContainer) {
         val task = repository.task(id) ?: return@withLock
         if (scheduled && !task.enabled) return@withLock
         val entry = AutomationHistoryEntry(taskId = id, title = task.title,
+            providerId = task.providerId, model = task.model,
             startedAt = System.currentTimeMillis(), status = AutomationStatus.RUNNING)
         repository.addHistory(entry)
         var sid: String? = null
@@ -131,15 +135,12 @@ class AutomationManager(private val c: AppContainer) {
                 "Workspace MCP configuration needs approval in chat."
             }
             val settings = c.settings.settings.first()
-            val providerId = task.providerId ?: if (settings.planningModelsEnabled)
-                settings.executionProviderId ?: settings.activeProviderId else settings.activeProviderId
+            val providerId = task.providerId?.takeIf { it.isNotBlank() }
+                ?: error("Choose a model in Edit automation before running it.")
             val provider = c.providers.providers.first().firstOrNull { it.id == providerId }
-                ?: error("Choose a provider in Settings.")
+                ?: error("This automation's saved provider is unavailable. Choose another model in Edit automation.")
             val model = task.model?.takeIf { it.isNotBlank() }
-                ?: if (task.providerId == null) {
-                    (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
-                        ?.takeIf { it.isNotBlank() } ?: provider.model
-                } else provider.model
+                ?: error("Choose a model in Edit automation before running it.")
             val key = c.providers.apiKey(provider.id) ?: error("Provider credentials are missing.")
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
                 if (c.providers.wire(model) == null) {

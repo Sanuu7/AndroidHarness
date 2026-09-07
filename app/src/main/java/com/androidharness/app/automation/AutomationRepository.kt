@@ -43,6 +43,8 @@ data class AutomationHistoryEntry(
     val id: String = UUID.randomUUID().toString(),
     val taskId: String,
     val title: String,
+    val providerId: String? = null,
+    val model: String? = null,
     val sessionId: String? = null,
     val startedAt: Long,
     val finishedAt: Long? = null,

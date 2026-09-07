@@ -572,6 +572,8 @@ private fun HistoryCard(
                 StatusPill(entry.status)
             }
 
+            AutomationModelPill(entry.model)
+
             entry.message?.takeIf { it.isNotBlank() }?.let {
                 Text(
                     it,
@@ -596,6 +598,28 @@ private fun HistoryCard(
                     }
                 }
             }
+        }
+    }
+}
+
+@Composable
+private fun AutomationModelPill(model: String?) {
+    Surface(
+        color = MaterialTheme.colorScheme.secondaryContainer,
+        shape = CircleShape,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(5.dp),
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 6.dp),
+        ) {
+            Icon(Icons.Outlined.AutoAwesome, contentDescription = null, modifier = Modifier.size(15.dp))
+            Text(
+                model?.substringAfterLast('/') ?: "Unknown model",
+                style = MaterialTheme.typography.labelMedium,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
         }
     }
 }
@@ -676,16 +700,27 @@ private fun AutomationEditorDialog(
     var minute by remember(task) { mutableStateOf((task?.minute ?: 0).toString()) }
     var selectedProviderId by remember(task) { mutableStateOf(task?.providerId) }
     var selectedModel by remember(task) { mutableStateOf(task?.model) }
+    var modelSelectionInitialized by remember(task) {
+        mutableStateOf(task?.let { !it.providerId.isNullOrBlank() && !it.model.isNullOrBlank() } == true)
+    }
     var showModelPicker by remember { mutableStateOf(false) }
     var showProviderManager by remember { mutableStateOf(false) }
 
-    val effectiveProviderId = selectedProviderId ?: fallbackProviderId
+    val fallbackProvider = providers.firstOrNull { it.id == fallbackProviderId }
+    val fallbackModel = (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
+        ?.takeIf { it.isNotBlank() } ?: fallbackProvider?.model
+
+    LaunchedEffect(task?.id, fallbackProviderId, fallbackModel) {
+        if (!modelSelectionInitialized && fallbackProviderId != null && !fallbackModel.isNullOrBlank()) {
+            selectedProviderId = fallbackProviderId
+            selectedModel = fallbackModel
+            modelSelectionInitialized = true
+        }
+    }
+
+    val effectiveProviderId = selectedProviderId
     val selectedProvider = providers.firstOrNull { it.id == effectiveProviderId }
     val effectiveModel = selectedModel?.takeIf { it.isNotBlank() }
-        ?: if (task?.providerId == null && selectedProviderId == null) {
-            (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
-                ?.takeIf { it.isNotBlank() } ?: selectedProvider?.model
-        } else selectedProvider?.model
 
     val aiTurns = remember(task) { mutableStateListOf<AutomationAiTurn>() }
     var aiInput by remember(task) { mutableStateOf("") }
@@ -895,6 +930,7 @@ private fun AutomationEditorDialog(
             onSelect = { providerId, model ->
                 selectedProviderId = providerId
                 selectedModel = model ?: providers.firstOrNull { it.id == providerId }?.model
+                modelSelectionInitialized = true
                 showModelPicker = false
             },
             onRefreshCatalog = { providerId ->
@@ -934,6 +970,7 @@ private fun AutomationEditorDialog(
             onSetActive = { providerId ->
                 selectedProviderId = providerId
                 selectedModel = providers.firstOrNull { it.id == providerId }?.model
+                modelSelectionInitialized = true
                 showProviderManager = false
             },
             onDelete = { providerId ->
@@ -954,6 +991,7 @@ private fun AutomationEditorDialog(
                     }
                     selectedProviderId = saved.id
                     selectedModel = saved.model
+                    modelSelectionInitialized = true
                     showProviderManager = false
                 }
             },
@@ -987,13 +1025,19 @@ private fun AutomationModelSelector(
                 modifier = Modifier.size(20.dp),
             )
             Column(Modifier.weight(1f)) {
-                Text("AI model", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text("Run model", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
                     if (providerName != null && model != null) "$providerName · $model" else "Choose a provider and model",
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = FontWeight.SemiBold,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "Saved with this automation. Chat model changes won't affect it.",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 2,
                 )
             }
             Text("Change", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
