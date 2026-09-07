@@ -9,7 +9,7 @@ import kotlinx.serialization.json.Json
 import java.util.UUID
 
 @Serializable
-enum class AutomationSchedule { MANUAL, ONCE, DAILY }
+enum class AutomationSchedule { MANUAL, ONCE, HOURLY, DAILY }
 
 @Serializable
 enum class AutomationStatus { IDLE, QUEUED, RUNNING, COMPLETED, PASSED, FAILED, BLOCKED, CANCELLED }
@@ -21,6 +21,8 @@ data class AutomationTask(
     val prompt: String,
     val projectId: String,
     val projectName: String,
+    val providerId: String? = null,
+    val model: String? = null,
     val checkCommand: String = "",
     val maxAttempts: Int = 5,
     val schedule: AutomationSchedule = AutomationSchedule.MANUAL,

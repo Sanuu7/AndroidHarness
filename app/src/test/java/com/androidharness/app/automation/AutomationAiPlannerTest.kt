@@ -32,6 +32,15 @@ class AutomationAiPlannerTest {
         )
     }
 
+    @Test fun parsesHourlyDraft() {
+        val reply = AutomationAiPlanner.parse(
+            """{"type":"draft","message":"Ready","title":"Hourly check","prompt":"Check the project status","checkCommand":"","schedule":"HOURLY","date":"","hour":8,"minute":0}""",
+            zone,
+            now,
+        ) as AutomationAiReply.Draft
+        assertEquals(AutomationSchedule.HOURLY, reply.automation.schedule)
+    }
+
     @Test fun rejectsPastOneTimeDraft() {
         val result = runCatching {
             AutomationAiPlanner.parse(

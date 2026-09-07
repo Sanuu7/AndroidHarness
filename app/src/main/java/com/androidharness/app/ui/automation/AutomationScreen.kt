@@ -3,6 +3,7 @@ package com.androidharness.app.ui.automation
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -44,7 +45,10 @@ import com.androidharness.app.automation.AutomationSchedule
 import com.androidharness.app.automation.AutomationStatus
 import com.androidharness.app.automation.AutomationTask
 import com.androidharness.app.core.Role
+import com.androidharness.app.data.AppSettings
+import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.settings.ProviderManagerSheet
 import kotlinx.coroutines.launch
 import java.text.DateFormat
 import java.time.Instant
@@ -201,7 +205,7 @@ fun AutomationScreen(
                     showEditor = false
                 }
             },
-            onSave = { title, prompt, checkCommand, schedule, scheduledAt, hour, minute ->
+            onSave = { title, prompt, checkCommand, schedule, scheduledAt, hour, minute, providerId, model ->
                 act {
                     val base = editing ?: AutomationTask(
                         title = title,
@@ -218,6 +222,8 @@ fun AutomationScreen(
                             scheduledAt = scheduledAt,
                             hour = hour,
                             minute = minute,
+                            providerId = providerId,
+                            model = model,
                             enabled = true,
                         ),
                     )
@@ -438,12 +444,32 @@ private fun AutomationTaskCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
 
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+            ) {
+                Icon(
+                    Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(16.dp),
+                )
+                Text(
+                    task.model ?: "App default AI",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 InfoPill(
                     icon = Icons.Outlined.Schedule,
                     text = when (task.schedule) {
                         AutomationSchedule.MANUAL -> "Manual"
                         AutomationSchedule.ONCE -> "One time"
+                        AutomationSchedule.HOURLY -> "Every hour"
                         AutomationSchedule.DAILY -> "%02d:%02d daily".format(task.hour, task.minute)
                     },
                 )
@@ -627,8 +653,15 @@ private fun AutomationEditorDialog(
     projectName: String,
     onDismiss: () -> Unit,
     onDelete: (() -> Unit)?,
-    onSave: (String, String, String, AutomationSchedule, Long?, Int, Int) -> Unit,
+    onSave: (String, String, String, AutomationSchedule, Long?, Int, Int, String?, String?) -> Unit,
 ) {
+    val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
+    val catalogs by container.providers.catalogs.collectAsStateWithLifecycle(initialValue = emptyMap())
+    val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
+    val fallbackProviderId = if (settings.planningModelsEnabled) {
+        settings.executionProviderId ?: settings.activeProviderId
+    } else settings.activeProviderId
+
     var mode by remember(task) {
         mutableStateOf(if (task == null) AutomationEditorMode.ASK_AI else AutomationEditorMode.MANUAL)
     }
@@ -639,6 +672,18 @@ private fun AutomationEditorDialog(
     var onceAt by remember(task) { mutableLongStateOf(task?.scheduledAt ?: defaultOneTimeRun()) }
     var hour by remember(task) { mutableStateOf((task?.hour ?: 8).toString()) }
     var minute by remember(task) { mutableStateOf((task?.minute ?: 0).toString()) }
+    var selectedProviderId by remember(task) { mutableStateOf(task?.providerId) }
+    var selectedModel by remember(task) { mutableStateOf(task?.model) }
+    var showModelPicker by remember { mutableStateOf(false) }
+    var showProviderManager by remember { mutableStateOf(false) }
+
+    val effectiveProviderId = selectedProviderId ?: fallbackProviderId
+    val selectedProvider = providers.firstOrNull { it.id == effectiveProviderId }
+    val effectiveModel = selectedModel?.takeIf { it.isNotBlank() }
+        ?: if (task?.providerId == null && selectedProviderId == null) {
+            (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
+                ?.takeIf { it.isNotBlank() } ?: selectedProvider?.model
+        } else selectedProvider?.model
 
     val aiTurns = remember(task) { mutableStateListOf<AutomationAiTurn>() }
     var aiInput by remember(task) { mutableStateOf("") }
@@ -666,7 +711,14 @@ private fun AutomationEditorDialog(
         aiTurns += AutomationAiTurn(Role.USER, clean)
         aiBusy = true
         scope.launch {
-            runCatching { planner.reply(projectName, aiTurns.toList()) }
+            runCatching {
+                planner.reply(
+                    projectName = projectName,
+                    turns = aiTurns.toList(),
+                    selectedProviderId = effectiveProviderId,
+                    selectedModel = effectiveModel,
+                )
+            }
                 .onSuccess { reply ->
                     when (reply) {
                         is AutomationAiReply.Question -> aiTurns += AutomationAiTurn(Role.ASSISTANT, reply.message)
@@ -688,9 +740,11 @@ private fun AutomationEditorDialog(
     val manualCanSave = title.isNotBlank() && prompt.isNotBlank() && when (schedule) {
         AutomationSchedule.MANUAL -> true
         AutomationSchedule.ONCE -> onceAt > System.currentTimeMillis()
+        AutomationSchedule.HOURLY -> true
         AutomationSchedule.DAILY -> validTime
     }
-    val canSave = if (mode == AutomationEditorMode.ASK_AI) aiDraft != null else manualCanSave
+    val hasModel = effectiveProviderId != null && !effectiveModel.isNullOrBlank()
+    val canSave = hasModel && if (mode == AutomationEditorMode.ASK_AI) aiDraft != null else manualCanSave
 
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -717,8 +771,8 @@ private fun AutomationEditorDialog(
         },
         text = {
             Column(
-                modifier = Modifier.heightIn(max = 570.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(14.dp),
+                modifier = Modifier.heightIn(min = 480.dp, max = 570.dp).verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(18.dp),
             ) {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                     SegmentedButton(
@@ -737,6 +791,12 @@ private fun AutomationEditorDialog(
                     ) { Text("Manual") }
                 }
 
+                AutomationModelSelector(
+                    providerName = selectedProvider?.name,
+                    model = effectiveModel,
+                    onClick = { showModelPicker = true },
+                )
+
                 if (mode == AutomationEditorMode.ASK_AI) {
                     AskAiAutomationEditor(aiTurns, aiInput, { aiInput = it }, aiBusy, aiError, aiDraft, ::askAi) {
                         mode = AutomationEditorMode.MANUAL
@@ -753,10 +813,14 @@ private fun AutomationEditorDialog(
             Button(enabled = canSave, onClick = {
                 val draft = aiDraft
                 if (mode == AutomationEditorMode.ASK_AI && draft != null) {
-                    onSave(draft.title, draft.prompt, draft.checkCommand, draft.schedule, draft.scheduledAt, draft.hour, draft.minute)
+                    onSave(
+                        draft.title, draft.prompt, draft.checkCommand, draft.schedule, draft.scheduledAt,
+                        draft.hour, draft.minute, effectiveProviderId, effectiveModel,
+                    )
                 } else {
                     onSave(title.trim(), prompt.trim(), checkCommand.trim(), schedule,
-                        onceAt.takeIf { schedule == AutomationSchedule.ONCE }, hourValue ?: 8, minuteValue ?: 0)
+                        onceAt.takeIf { schedule == AutomationSchedule.ONCE }, hourValue ?: 8, minuteValue ?: 0,
+                        effectiveProviderId, effectiveModel)
                 }
             }) { Text(if (task == null) "Create automation" else "Save changes") }
         },
@@ -771,6 +835,128 @@ private fun AutomationEditorDialog(
             }
         },
     )
+
+    if (showModelPicker) {
+        ModelPickerSheet(
+            providers = providers,
+            activeProviderId = effectiveProviderId,
+            activeModel = effectiveModel,
+            catalogs = catalogs,
+            onDismiss = { showModelPicker = false },
+            onSelect = { providerId, model ->
+                selectedProviderId = providerId
+                selectedModel = model ?: providers.firstOrNull { it.id == providerId }?.model
+                showModelPicker = false
+            },
+            onRefreshCatalog = { providerId ->
+                val provider = providers.firstOrNull { it.id == providerId }
+                val key = container.providers.apiKey(providerId)
+                when {
+                    provider == null -> "Unknown provider"
+                    key.isNullOrBlank() -> "No API key for this provider"
+                    else -> when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, key)) {
+                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
+                            container.providers.saveCatalog(providerId, result.models)
+                            null
+                        }
+                        is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
+                    }
+                }
+            },
+            onAddCustomModel = { providerId, model, reasoning ->
+                scope.launch { container.providers.addCustomModel(providerId, model, reasoning) }
+            },
+            onDeleteCustomModel = { providerId, model ->
+                scope.launch { container.providers.removeCustomModel(providerId, model) }
+            },
+            onManageProviders = {
+                showModelPicker = false
+                showProviderManager = true
+            },
+        )
+    }
+
+    if (showProviderManager) {
+        ProviderManagerSheet(
+            providers = providers,
+            activeProviderId = effectiveProviderId,
+            apiKey = container.providers::apiKey,
+            onDismiss = { showProviderManager = false },
+            onSetActive = { providerId ->
+                selectedProviderId = providerId
+                selectedModel = providers.firstOrNull { it.id == providerId }?.model
+                showProviderManager = false
+            },
+            onDelete = { providerId ->
+                scope.launch { container.providers.delete(providerId) }
+                if (providerId == selectedProviderId) {
+                    selectedProviderId = null
+                    selectedModel = null
+                }
+            },
+            onSave = { existing, name, type, baseUrl, model, apiKey ->
+                scope.launch {
+                    val saved = if (existing == null) {
+                        container.providers.add(name, type, baseUrl, model, apiKey)
+                    } else {
+                        val updated = existing.copy(name = name, type = type, baseUrl = baseUrl, model = model)
+                        container.providers.update(updated, apiKey)
+                        updated
+                    }
+                    selectedProviderId = saved.id
+                    selectedModel = saved.model
+                    showProviderManager = false
+                }
+            },
+        )
+    }
+}
+
+@Composable
+private fun AutomationModelSelector(
+    providerName: String?,
+    model: String?,
+    onClick: () -> Unit,
+) {
+    OutlinedCard(
+        onClick = onClick,
+        colors = CardDefaults.outlinedCardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+        ),
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Surface(color = MaterialTheme.colorScheme.primaryContainer, shape = CircleShape) {
+                Icon(
+                    Icons.Outlined.AutoAwesome,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.padding(8.dp).size(19.dp),
+                )
+            }
+            Column(Modifier.weight(1f)) {
+                Text("Model", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    if (providerName != null && model != null) "$providerName · $model" else "Choose a provider and model",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    "Used for setup and every run",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Text("Change", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
+        }
+    }
 }
 
 @Composable
@@ -784,33 +970,49 @@ private fun AskAiAutomationEditor(
     onAsk: (String) -> Unit,
     onEditManually: () -> Unit,
 ) {
-    Surface(color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
-        shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp),
-            modifier = Modifier.padding(14.dp)) {
-            Icon(Icons.Outlined.AutoAwesome, contentDescription = null, tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.size(22.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text("Describe it naturally", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                Text("AI can work out the task, date, time, schedule, and optional success check. If something important is missing, it will ask you.",
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Text("Tell AI what you want", style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold)
+        Text(
+            "Describe the job and timing normally. AI will ask only when something important is missing.",
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+    }
+
+    if (turns.isEmpty()) {
+        Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Examples", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(
+                modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+            ) {
+            AssistChip(onClick = { onAsk("Tomorrow at 8 PM, build the debug APK and fix any build errors.") },
+                label = { Text("Tomorrow at 8 PM") },
+                leadingIcon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = null, modifier = Modifier.size(17.dp)) })
+            AssistChip(onClick = { onAsk("Every hour, check the project for build failures and fix them.") },
+                label = { Text("Every hour") },
+                leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(17.dp)) })
+            AssistChip(onClick = { onAsk("Every day at 9 AM, run the project tests and fix failures.") },
+                label = { Text("Daily at 9 AM") },
+                leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(17.dp)) })
             }
         }
     }
 
-    if (turns.isEmpty()) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Text("Try asking", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            AssistChip(onClick = { onAsk("Tomorrow at 8 PM, build the debug APK and fix any build errors.") },
-                label = { Text("Build the APK tomorrow at 8 PM") },
-                leadingIcon = { Icon(Icons.Outlined.CalendarMonth, contentDescription = null, modifier = Modifier.size(17.dp)) })
-            AssistChip(onClick = { onAsk("Every day at 9 AM, run the project tests and fix failures.") },
-                label = { Text("Run tests every day at 9 AM") },
-                leadingIcon = { Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(17.dp)) })
+    if (turns.isNotEmpty()) {
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(
+                modifier = Modifier.padding(14.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp),
+            ) {
+                turns.forEach { turn -> AutomationAiBubble(turn) }
+            }
         }
     }
-
-    turns.forEach { turn -> AutomationAiBubble(turn) }
 
     error?.let {
         Surface(color = MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth()) {
@@ -830,17 +1032,34 @@ private fun AskAiAutomationEditor(
     draft?.let { AutomationAiDraftCard(it, onEditManually) }
 
     if (draft == null) {
-        OutlinedTextField(
-            value = input, onValueChange = onInputChange, enabled = !busy,
-            placeholder = { Text(if (turns.isEmpty()) "What do you want to automate?" else "Answer AI's question…") },
-            minLines = 2, maxLines = 5, shape = RoundedCornerShape(16.dp),
-            trailingIcon = {
-                FilledTonalIconButton(onClick = { onAsk(input) }, enabled = input.isNotBlank() && !busy) {
-                    Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
-                }
-            }, modifier = Modifier.fillMaxWidth())
-        Text("Uses your current execution model. Nothing is saved until you tap Create automation.",
-            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Surface(
+            color = MaterialTheme.colorScheme.surfaceContainerLow,
+            shape = RoundedCornerShape(20.dp),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                OutlinedTextField(
+                    value = input,
+                    onValueChange = onInputChange,
+                    enabled = !busy,
+                    placeholder = { Text(if (turns.isEmpty()) "Example: every hour run the tests and fix failures" else "Answer AI's question…") },
+                    minLines = 4,
+                    maxLines = 4,
+                    shape = RoundedCornerShape(16.dp),
+                    trailingIcon = {
+                        FilledTonalIconButton(onClick = { onAsk(input) }, enabled = input.isNotBlank() && !busy) {
+                            Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
+                        }
+                    },
+                    modifier = Modifier.fillMaxWidth().height(124.dp),
+                )
+                Text(
+                    "Review the automation before it is saved.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
     }
 }
 
@@ -908,30 +1127,52 @@ private fun ManualAutomationEditor(
     val zone = remember { ZoneId.systemDefault() }
     val once = remember(onceAt, zone) { Instant.ofEpochMilli(onceAt).atZone(zone) }
 
-    OutlinedTextField(value = title, onValueChange = onTitleChange, label = { Text("Task name") },
-        placeholder = { Text("Build debug APK") }, singleLine = true, shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(value = prompt, onValueChange = onPromptChange, label = { Text("What should AndroidHarness do?") },
-        placeholder = { Text("Build the debug APK and fix any build errors.") }, minLines = 4,
-        shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth())
-    OutlinedTextField(value = checkCommand, onValueChange = onCheckCommandChange, label = { Text("Success check") },
-        placeholder = { Text("./gradlew test") }, supportingText = { Text("Optional. Exit code 0 means success; failures can be retried automatically.") },
-        shape = RoundedCornerShape(14.dp), modifier = Modifier.fillMaxWidth())
+    AutomationEditorSection(
+        title = "Task details",
+        subtitle = "What should the agent work on?",
+        icon = Icons.Outlined.AutoMode,
+    ) {
+        OutlinedTextField(
+            value = title,
+            onValueChange = onTitleChange,
+            label = { Text("Name") },
+            placeholder = { Text("Build debug APK") },
+            singleLine = true,
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth(),
+        )
+        OutlinedTextField(
+            value = prompt,
+            onValueChange = onPromptChange,
+            label = { Text("Instructions") },
+            placeholder = { Text("Build the debug APK and fix any build errors.") },
+            minLines = 4,
+            maxLines = 7,
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
 
-    Surface(color = MaterialTheme.colorScheme.surfaceContainerLow, shape = RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(9.dp)) {
-                Icon(Icons.Outlined.Schedule, contentDescription = null, modifier = Modifier.size(20.dp))
-                Column {
-                    Text("Schedule", style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
-                    Text("Choose when this automation should run.", style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+    AutomationEditorSection(
+        title = "Schedule",
+        subtitle = "When should it run?",
+        icon = Icons.Outlined.Schedule,
+    ) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    ScheduleChoiceChip("Manual", schedule == AutomationSchedule.MANUAL, Modifier.weight(1f)) {
+                        onScheduleChange(AutomationSchedule.MANUAL)
+                    }
+                    ScheduleChoiceChip("Once", schedule == AutomationSchedule.ONCE, Modifier.weight(1f)) {
+                        onScheduleChange(AutomationSchedule.ONCE)
+                    }
                 }
-            }
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                AutomationSchedule.entries.forEachIndexed { index, value ->
-                    SegmentedButton(selected = schedule == value, onClick = { onScheduleChange(value) },
-                        shape = SegmentedButtonDefaults.itemShape(index, AutomationSchedule.entries.size)) {
-                        Text(when (value) { AutomationSchedule.MANUAL -> "Manual"; AutomationSchedule.ONCE -> "Once"; AutomationSchedule.DAILY -> "Daily" })
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
+                    ScheduleChoiceChip("Hourly", schedule == AutomationSchedule.HOURLY, Modifier.weight(1f)) {
+                        onScheduleChange(AutomationSchedule.HOURLY)
+                    }
+                    ScheduleChoiceChip("Daily", schedule == AutomationSchedule.DAILY, Modifier.weight(1f)) {
+                        onScheduleChange(AutomationSchedule.DAILY)
                     }
                 }
             }
@@ -959,6 +1200,20 @@ private fun ManualAutomationEditor(
                     Text("Choose a future date and time.", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error)
                 }
             }
+            if (schedule == AutomationSchedule.HOURLY) {
+                Surface(
+                    color = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.45f),
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        "Runs every hour. The first scheduled run is about one hour after you create it.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(12.dp),
+                    )
+                }
+            }
             if (schedule == AutomationSchedule.DAILY) {
                 Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(value = hour, onValueChange = { onHourChange(it.filter(Char::isDigit).take(2)) },
@@ -975,10 +1230,71 @@ private fun ManualAutomationEditor(
                 Text("Android may delay background work slightly to respect system scheduling limits.",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+    }
+
+    AutomationEditorSection(
+        title = "Success check",
+        subtitle = "Optional verification after the agent finishes.",
+        icon = Icons.Outlined.CheckCircle,
+    ) {
+        OutlinedTextField(
+            value = checkCommand,
+            onValueChange = onCheckCommandChange,
+            label = { Text("Command") },
+            placeholder = { Text("./gradlew test") },
+            supportingText = { Text("Exit code 0 means success. Failures can be retried automatically.") },
+            shape = RoundedCornerShape(14.dp),
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+@Composable
+private fun AutomationEditorSection(
+    title: String,
+    subtitle: String,
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    Surface(
+        color = MaterialTheme.colorScheme.surfaceContainerLow,
+        shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(12.dp),
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                Surface(color = MaterialTheme.colorScheme.surfaceContainerHighest, shape = CircleShape) {
+                    Icon(icon, contentDescription = null, modifier = Modifier.padding(7.dp).size(18.dp))
+                }
+                Column(Modifier.weight(1f)) {
+                    Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
+                    Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+            content()
         }
     }
-    Text("Uses your current execution model and permission settings.", style = MaterialTheme.typography.bodySmall,
-        color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+@Composable
+private fun ScheduleChoiceChip(
+    label: String,
+    selected: Boolean,
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit,
+) {
+    FilterChip(
+        selected = selected,
+        onClick = onClick,
+        label = { Text(label) },
+        leadingIcon = if (selected) {
+            { Icon(Icons.Outlined.CheckCircle, contentDescription = null, modifier = Modifier.size(17.dp)) }
+        } else null,
+        modifier = modifier,
+    )
 }
 
 private fun defaultOneTimeRun(): Long =
@@ -987,6 +1303,7 @@ private fun defaultOneTimeRun(): Long =
 private fun draftScheduleLabel(draft: AutomationAiDraft): String = when (draft.schedule) {
     AutomationSchedule.MANUAL -> "Manual"
     AutomationSchedule.ONCE -> draft.scheduledAt?.let(::formatAutomationTime) ?: "One time"
+    AutomationSchedule.HOURLY -> "Every hour"
     AutomationSchedule.DAILY -> "%02d:%02d daily".format(draft.hour, draft.minute)
 }
 

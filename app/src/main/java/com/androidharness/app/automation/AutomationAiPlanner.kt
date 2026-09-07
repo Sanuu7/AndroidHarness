@@ -39,19 +39,27 @@ sealed interface AutomationAiReply {
 }
 
 class AutomationAiPlanner(private val c: AppContainer) {
-    suspend fun reply(projectName: String, turns: List<AutomationAiTurn>): AutomationAiReply {
+    suspend fun reply(
+        projectName: String,
+        turns: List<AutomationAiTurn>,
+        selectedProviderId: String? = null,
+        selectedModel: String? = null,
+    ): AutomationAiReply {
         require(turns.isNotEmpty()) { "Tell AI what you want to automate." }
 
         val settings = c.settings.settings.first()
-        val providerId = if (settings.planningModelsEnabled) {
+        val providerId = selectedProviderId ?: if (settings.planningModelsEnabled) {
             settings.executionProviderId ?: settings.activeProviderId
         } else {
             settings.activeProviderId
         }
         val provider = c.providers.providers.first().firstOrNull { it.id == providerId }
             ?: error("Choose an AI provider in Settings first.")
-        val model = (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
-            ?.takeIf { it.isNotBlank() } ?: provider.model
+        val model = selectedModel?.takeIf { it.isNotBlank() }
+            ?: if (selectedProviderId == null) {
+                (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
+                    ?.takeIf { it.isNotBlank() } ?: provider.model
+            } else provider.model
         val apiKey = c.providers.apiKey(provider.id)
             ?: error("Provider credentials are missing.")
 
@@ -100,10 +108,11 @@ class AutomationAiPlanner(private val c: AppContainer) {
         Supported schedules:
         - MANUAL: runs only when the user taps Run now.
         - ONCE: one future local date and time.
+        - HOURLY: runs every hour.
         - DAILY: every day at a local time.
 
         Understand natural time phrases such as "tomorrow at 8", "tonight at 11", and
-        "every day at 9 AM" using the current local date/time above. If the user asks for a repeat
+        "every hour" or "every day at 9 AM" using the current local date/time above. If the user asks for a repeat
         pattern outside the supported schedules, ask them to choose a supported schedule.
 
         Return ONLY one JSON object. No markdown and no text outside JSON.
@@ -118,14 +127,14 @@ class AutomationAiPlanner(private val c: AppContainer) {
           "title":"Short automation name",
           "prompt":"Complete autonomous agent instruction with all useful details",
           "checkCommand":"Optional shell command, otherwise empty string",
-          "schedule":"MANUAL|ONCE|DAILY",
+          "schedule":"MANUAL|ONCE|HOURLY|DAILY",
           "date":"YYYY-MM-DD for ONCE, otherwise empty string",
           "hour":0,
           "minute":0
         }
 
         For ONCE, date/hour/minute must resolve to a future instant. For DAILY, hour/minute are the
-        recurring local time. For MANUAL use hour 8 and minute 0. Never invent project requirements
+        recurring local time. For HOURLY, hour/minute are ignored. For MANUAL use hour 8 and minute 0. Never invent project requirements
         the user did not ask for.
     """.trimIndent()
 

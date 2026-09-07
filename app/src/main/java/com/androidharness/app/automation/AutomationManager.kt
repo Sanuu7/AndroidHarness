@@ -23,6 +23,16 @@ class AutomationManager(private val c: AppContainer) {
         repository.save(task)
         val name = "automation-schedule-${task.id}"
         when {
+            task.enabled && task.schedule == AutomationSchedule.HOURLY -> {
+                val next = nextHourly()
+                repository.save(task.copy(nextRunAt = next, scheduledAt = null))
+                work.enqueueUniquePeriodicWork(name, ExistingPeriodicWorkPolicy.UPDATE,
+                    PeriodicWorkRequestBuilder<AutomationWorker>(1, TimeUnit.HOURS)
+                        .setNextScheduleTimeOverride(next)
+                        .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+                        .setInputData(workDataOf(AutomationWorker.KEY_TASK_ID to task.id, "scheduled" to true))
+                        .build())
+            }
             task.enabled && task.schedule == AutomationSchedule.DAILY -> {
                 val next = nextDaily(task.hour, task.minute)
                 repository.save(task.copy(nextRunAt = next, scheduledAt = null))
@@ -97,12 +107,15 @@ class AutomationManager(private val c: AppContainer) {
                 "Workspace MCP configuration needs approval in chat."
             }
             val settings = c.settings.settings.first()
-            val providerId = if (settings.planningModelsEnabled)
+            val providerId = task.providerId ?: if (settings.planningModelsEnabled)
                 settings.executionProviderId ?: settings.activeProviderId else settings.activeProviderId
             val provider = c.providers.providers.first().firstOrNull { it.id == providerId }
                 ?: error("Choose a provider in Settings.")
-            val model = (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
-                ?.takeIf { it.isNotBlank() } ?: provider.model
+            val model = task.model?.takeIf { it.isNotBlank() }
+                ?: if (task.providerId == null) {
+                    (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
+                        ?.takeIf { it.isNotBlank() } ?: provider.model
+                } else provider.model
             val key = c.providers.apiKey(provider.id) ?: error("Provider credentials are missing.")
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
                 if (c.providers.wire(model) == null) {
@@ -181,6 +194,7 @@ class AutomationManager(private val c: AppContainer) {
         } finally {
             if (scheduled) repository.task(id)?.takeIf { it.enabled }?.let { current ->
                 when (current.schedule) {
+                    AutomationSchedule.HOURLY -> save(current)
                     AutomationSchedule.DAILY -> save(current)
                     AutomationSchedule.ONCE -> repository.save(current.copy(enabled = false, nextRunAt = null))
                     AutomationSchedule.MANUAL -> Unit
@@ -190,6 +204,9 @@ class AutomationManager(private val c: AppContainer) {
     }
 
     companion object {
+        fun nextHourly(now: ZonedDateTime = ZonedDateTime.now()): Long =
+            now.plusHours(1).toInstant().toEpochMilli()
+
         fun nextDaily(hour: Int, minute: Int, now: ZonedDateTime = ZonedDateTime.now()): Long {
             require(hour in 0..23 && minute in 0..59)
             var next = now.withHour(hour).withMinute(minute).withSecond(0).withNano(0)

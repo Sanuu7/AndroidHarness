@@ -21,9 +21,14 @@ class AutomationScheduleTest {
         val result = AutomationManager.nextDaily(8, 0, now)
         assertEquals(ZonedDateTime.parse("2026-03-08T08:00:00-04:00[America/New_York]").toInstant().toEpochMilli(), result)
     }
+    @Test fun hourlyScheduleMovesExactlyOneHourForward() {
+        val now = ZonedDateTime.parse("2026-09-07T12:30:00+05:30[Asia/Kolkata]")
+        assertEquals(now.plusHours(1).toInstant().toEpochMilli(), AutomationManager.nextHourly(now))
+    }
     @Test fun savedTaskRetainsWorkspaceAndPrompt() {
         val task = AutomationTask(title = "Build", prompt = "Run tests\nFix failures",
-            projectId = "project-a", projectName = "Project A", schedule = AutomationSchedule.DAILY)
+            projectId = "project-a", projectName = "Project A", providerId = "anthropic",
+            model = "claude-sonnet", schedule = AutomationSchedule.DAILY, createdAt = 123L)
         assertEquals(task, Json.decodeFromString<AutomationTask>(Json.encodeToString(AutomationTask.serializer(), task)))
     }
     @Test fun oneTimeTaskRetainsScheduledDate() {
