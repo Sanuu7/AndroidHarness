@@ -81,12 +81,13 @@ class PhoneController(
             host = service ?: return@withLock ToolResult(false, "Phone control service failed to start.")
         }
 
-        if (!PhoneInput.sessionAllowed(session, host.sessionId, host.paused)) return@withLock ToolResult(false, "Phone control belongs to another chat or is paused.")
+        if (host.sessionId != session) return@withLock ToolResult(false, "Phone control belongs to another chat.")
+        if (host.paused) return@withLock ToolResult(false, "Phone control is paused. Resume it using the floating controls.")
         if (!ready()) {
             withContext(Dispatchers.Main) { host.stopSelf() }
             return@withLock ToolResult(false, "Shizuku connection lost.")
         }
-        if (action == "status") return@withLock ToolResult(true, "Phone control active: ${host.screenWidth}x${host.screenHeight}. Use physical screen coordinates. Mouse actions affect other apps. Secure content cannot be captured.")
+        if (action == "status") return@withLock ToolResult(true, "Phone control active: ${host.screenWidth}x${host.screenHeight}. Use physical screen coordinates. Inputs affect other apps. A screenshot allows the first input for 30 seconds, then a non-renewing 3-second sequence in the same window. Secure content cannot be captured.")
         if (action == "screenshot") {
             observation.clear()
             val before = foreground()
@@ -103,7 +104,9 @@ class PhoneController(
             return@withLock ToolResult(true,
                 "Screen ${host.screenWidth}x${host.screenHeight}. Coordinates use these full-screen pixels. " +
                     if (before == null || before != after) "Focus changed or is unknown; take another screenshot before input."
-                    else "Inspect this image before ONE input action. Foreground: $after",
+                    else if (PhoneInput.focusedPackage("mCurrentFocus=$after") == context.packageName)
+                        "AndroidHarness is in front. Input into the controlling app is intentionally blocked; open the target app and take another screenshot."
+                    else "Inspect this image. First input expires in 30s; further inputs can reuse it for 3s after the first, with focus checked each time. Foreground: $after",
                 ImageRef(name, "image/jpeg"))
 
         }
@@ -122,10 +125,20 @@ class PhoneController(
         if (blocked) return@withLock ToolResult(false, "Target overlaps the floating controls. Ask the user to move the panel.")
         val current = foreground()
         val ownApp = current?.let { PhoneInput.focusedPackage("mCurrentFocus=$it") } == context.packageName
-        if (service !== host || host.paused || observedHost !== host || observedEpoch != host.observationEpoch ||
-            ownApp || !observation.consume(current, SystemClock.elapsedRealtime(), consume = action != "move")) {
+        val rejection = when {
+            service !== host -> "Phone control restarted or stopped. Take a new screenshot after capture resumes."
+            host.paused -> "Phone control is paused. Resume using the floating controls."
+            ownApp -> "AndroidHarness is in front. Input into the controlling app is intentionally blocked. Open the target app and take a screenshot."
+            observedHost !== host -> "No screenshot for this capture session. Take a screenshot first."
+            observedEpoch != host.observationEpoch -> "Phone controls were paused or Chat was opened since the screenshot. Take a new screenshot."
+            else -> observation.rejection(current, SystemClock.elapsedRealtime())
+        }
+        if (rejection != null) {
             observation.clear()
-            return@withLock ToolResult(false, "Input blocked: take a new screenshot of the target app. Focus changed, observation expired, or phone control paused. No input sent.")
+            return@withLock ToolResult(false, "Input blocked: $rejection No input sent.")
+        }
+        if (!observation.consume(current, SystemClock.elapsedRealtime(), consume = action != "move")) {
+            return@withLock ToolResult(false, "Input blocked: observation expired before dispatch. Take a new screenshot. No input sent.")
         }
         // Moving the drawn pointer is not an input event and must not consume
         // the observation needed by the subsequent click.
@@ -133,13 +146,20 @@ class PhoneController(
             withContext(Dispatchers.Main) { host.showAction(action, px, py) }
             return@withLock ToolResult(true, "Pointer moved. The same screenshot can be used for the next click.")
         }
-        val result = shizuku.runPrivileged(arrayOf("/system/bin/input", *command.toTypedArray()), null, null, 3_000)
+        val result = try {
+            shizuku.runPrivileged(arrayOf("/system/bin/input", *command.toTypedArray()), null, null, 3_000)
+        } catch (error: Exception) {
+            observation.clear()
+            throw error
+        }
+        if (result == null || result.exitCode != 0 || result.timedOut ||
+            action in setOf("drag", "scroll") || (action == "key" && text != "DEL")) observation.clear()
         if (result != null && result.exitCode == 0 && !result.timedOut) {
             host.noteInputCompleted()
             withContext(Dispatchers.Main) { host.showAction(action, px, py) }
         }
         ToolResult(result != null && result.exitCode == 0 && !result.timedOut,
-            if (result == null) "Shizuku unavailable" else if (result.exitCode != 0 || result.timedOut) "Mouse command failed: ${result.output} ${result.stderr}" else "$action completed. Take a fresh screenshot before the next decision.")
+            if (result == null) "Shizuku unavailable" else if (result.exitCode != 0 || result.timedOut) "Mouse command failed: ${result.output} ${result.stderr}" else "$action completed. Same-window input may reuse the observation within the non-renewing 3s sequence. Take a screenshot after navigation, submission, or a layout change.")
     }
 }
 
@@ -195,16 +215,28 @@ object PhoneInput {
         }
 }
 
-/** A screenshot authorizes one input in the same focused window, for a bounded time. */
+/** One initial input within 30s, followed by a short, non-renewing sequence. */
 class PhoneObservation {
     private var window: String? = null
     private var at = 0L
+    private var sequenceAt: Long? = null
 
-    fun record(window: String, now: Long) { this.window = window; at = now }
-    fun clear() { window = null }
+    fun record(window: String, now: Long) { this.window = window; at = now; sequenceAt = null }
+    fun clear() { window = null; sequenceAt = null }
+
+    fun rejection(current: String?, now: Long): String? = when {
+        current == null -> "Foreground window is unknown. Wait for the app transition, then take a screenshot."
+        window == null -> "No usable screenshot. Take a screenshot first."
+        current != window -> "Foreground window changed since the screenshot. Take a new screenshot of the visible app."
+        now - at !in 0..30_000 -> "Screenshot observation expired (30s). Take a new screenshot."
+        sequenceAt?.let { now - it !in 0..3_000 } == true ->
+            "Input sequence expired (3s after the first input). Take a new screenshot."
+        else -> null
+    }
+
     fun consume(current: String?, now: Long, consume: Boolean = true): Boolean {
-        val allowed = window != null && current == window && now - at in 0..30_000
-        if (consume || !allowed) clear()
-        return allowed
+        if (rejection(current, now) != null) { clear(); return false }
+        if (consume && sequenceAt == null) sequenceAt = now
+        return true
     }
 }

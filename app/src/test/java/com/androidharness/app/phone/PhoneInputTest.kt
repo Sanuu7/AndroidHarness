@@ -49,7 +49,7 @@ class PhoneInputTest {
             "mCurrentFocus=null\nmFocusedApp=ActivityRecord{a com.brave.browser/.Main}"))
     }
 
-    @Test fun observationBlocksAppSwitchDialogSwitchUnknownFocusAndRepeatedInput() {
+    @Test fun observationBlocksAppSwitchDialogSwitchAndUnknownFocus() {
         val gate = PhoneObservation()
         val brave = "Window{1 u0 com.brave.browser/.Main}"
         for (changed in listOf(null, "Window{2 u0 other.app/.Main}", "Window{3 u0 com.brave.browser/.Dialog}")) {
@@ -59,7 +59,7 @@ class PhoneInputTest {
         }
         gate.record(brave, 100)
         assertTrue(gate.consume(brave, 101))
-        assertFalse(gate.consume(brave, 102))
+        assertTrue(gate.consume(brave, 102))
         gate.record(brave, 100)
         assertFalse(gate.consume(brave, 30101))
         gate.record(brave, 100)
@@ -83,7 +83,7 @@ class PhoneInputTest {
         assertTrue(gate.consume(target, 101, consume = false))
         assertTrue(gate.consume(target, 102, consume = false))
         assertTrue(gate.consume(target, 103))
-        assertFalse(gate.consume(target, 104))
+        assertTrue(gate.consume(target, 104))
         gate.record(target, 100)
         assertFalse(gate.consume("Window{other u0 other.app/.Main}", 101, consume = false))
         assertFalse(gate.consume(target, 102))
@@ -114,5 +114,43 @@ class PhoneInputTest {
             virtual.replace("null", "Window{other u0 other.app/.Main}") +
                 "  Display: mDisplayId=0 (organized)\n  mCurrentFocus=null\n"))
         assertNull(PhoneInput.focusedWindow(virtual))
+    }
+
+    @Test fun graceWindowDoesNotRenewAndMoveDoesNotStartIt() {
+        val gate = PhoneObservation()
+        val target = "Window{a u0 com.brave.browser/.Main}"
+        gate.record(target, 100)
+        assertTrue(gate.consume(target, 1_000, consume = false))
+        assertTrue(gate.consume(target, 5_000))
+        assertTrue(gate.consume(target, 7_000))
+        assertTrue(gate.consume(target, 8_000))
+        assertTrue(gate.rejection(target, 8_001)!!.contains("3s"))
+        assertFalse(gate.consume(target, 8_001))
+        gate.record(target, 10_000)
+        assertTrue(gate.consume(target, 39_999))
+        assertTrue(gate.rejection(target, 40_001)!!.contains("30s"))
+        assertFalse(gate.consume(target, 40_001))
+    }
+
+    @Test fun blockedReasonsDistinguishMissingUnknownChangedAndExpired() {
+        val gate = PhoneObservation()
+        val target = "Window{a u0 com.brave.browser/.Main}"
+        assertTrue(gate.rejection(target, 100)!!.contains("No usable screenshot"))
+        gate.record(target, 100)
+        assertTrue(gate.rejection(null, 101)!!.contains("unknown"))
+        assertTrue(gate.rejection("Window{b u0 other.app/.Main}", 101)!!.contains("changed"))
+        assertTrue(gate.rejection(target, 30_101)!!.contains("30s"))
+        gate.record("Window{b u0 other.app/.Main}", 31_000)
+        assertTrue(gate.consume("Window{b u0 other.app/.Main}", 31_001))
+    }
+
+    @Test fun samsungNavigationEdgeIsNotClampedOrProtectedByCoordinateValidation() {
+        assertEquals(listOf("touchscreen", "tap", "500", "2280"),
+            PhoneInput.command("click", 500, 2280, -1, -1, "", 1080, 2340))
+        assertEquals(listOf("mouse", "motionevent", "MOVE", "500", "2339"),
+            PhoneInput.command("move", 500, 2339, -1, -1, "", 1080, 2340))
+        assertThrows(IllegalArgumentException::class.java) {
+            PhoneInput.command("click", 500, 2340, -1, -1, "", 1080, 2340)
+        }
     }
 }

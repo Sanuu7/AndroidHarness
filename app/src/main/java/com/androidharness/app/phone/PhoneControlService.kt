@@ -122,11 +122,14 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     private var display: VirtualDisplay? = null
     private var reader: ImageReader? = null
     private var capturedImage: android.media.Image? = null
+    @Volatile private var frameSequence = 0L
     @Volatile private var captureActive = false
     @Volatile var observationEpoch = 0L; private set
     @Volatile private var lastInputAt = 0L
 
     class OverlayUi {
+        var expanded by mutableStateOf(false)
+        var capturing by mutableStateOf(false)
         var paused by mutableStateOf(false)
         var status by mutableStateOf("Idle")
         var isThinking by mutableStateOf(false)
@@ -160,7 +163,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                 else container.runManager.live(sid)
             }.collect { live ->
                 if (live != null) {
-                    val text = container.runManager.actionText(live)
+                    val text = container.runManager.actionText(if (live.runningCalls.isEmpty()) live.copy(currentToolAction = null) else live)
                     ui.status = text ?: if (live.running) "Working…" else "Idle"
                     ui.isThinking = (live.streamingThinking != null && live.streamingText.isNullOrEmpty())
                 } else {
@@ -216,6 +219,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                     if (next != null) {
                         capturedImage?.close()
                         capturedImage = next
+                        frameSequence++
                     }
                 }
             }, captureHandler)
@@ -252,11 +256,33 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     // Retain the latest Image without throttling or converting every video frame.
     // A static display need not produce another frame after input completes.
     suspend fun snapshot(): android.graphics.Bitmap? {
+        val previous = frameSequence
+        try {
+            withContext(Dispatchers.Main) {
+                ui.capturing = true
+                panelView?.visibility = View.INVISIBLE
+                cursorView?.visibility = View.INVISIBLE
+            }
+            // Give WindowManager time to remove both overlays from the projection.
+            delay(120)
+            return captureSnapshot(previous)
+        } finally {
+            withContext(NonCancellable + Dispatchers.Main) {
+                ui.capturing = false
+                if (captureActive) {
+                    panelView?.visibility = View.VISIBLE
+                    cursorView?.visibility = View.VISIBLE
+                }
+            }
+        }
+    }
+
+    private suspend fun captureSnapshot(previous: Long): android.graphics.Bitmap? {
         delay((lastInputAt + 200 - SystemClock.elapsedRealtime()).coerceAtLeast(0))
         return withContext(captureHandler.asCoroutineDispatcher()) {
             val deadline = SystemClock.elapsedRealtime() + 1_800
-            while (captureActive && capturedImage == null && SystemClock.elapsedRealtime() < deadline) delay(40)
-            if (!captureActive || paused) return@withContext null
+            while (captureActive && (capturedImage == null || frameSequence <= previous) && SystemClock.elapsedRealtime() < deadline) delay(40)
+            if (!captureActive || paused || frameSequence <= previous) return@withContext null
             val image = capturedImage ?: return@withContext null
             val plane = image.planes[0]
             val padded = android.graphics.Bitmap.createBitmap(
@@ -294,6 +320,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
     fun togglePause() {
         observationEpoch++
         ui.paused = !ui.paused
+        ui.expanded = ui.paused
     }
 
     fun openChat() {
@@ -351,8 +378,25 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
         cursorParams = cursorLayout
     }
 
+    private fun panelDragModifier() = Modifier.pointerInput(Unit) {
+        detectDragGestures { change, dragAmount ->
+            change.consume()
+            val view = panelView ?: return@detectDragGestures
+            val p = panelParams ?: return@detectDragGestures
+            p.x = (p.x + dragAmount.x.roundToInt()).coerceIn(0, (screenWidth - view.width).coerceAtLeast(0))
+            p.y = (p.y + dragAmount.y.roundToInt()).coerceIn(0, (screenHeight - view.height).coerceAtLeast(0))
+            runCatching { windows.updateViewLayout(view, p) }
+        }
+    }
+
     @Composable
     private fun FloatingPanel() {
+        androidx.compose.runtime.LaunchedEffect(ui.expanded, ui.paused) {
+            if (ui.expanded && !ui.paused) {
+                delay(5_000)
+                ui.expanded = false
+            }
+        }
         val settings by container.settings.settings.collectAsState(initial = null)
         HarnessTheme(
             themeMode = settings?.themeMode ?: ThemeMode.SYSTEM,
@@ -361,6 +405,7 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
             val scheme = MaterialTheme.colorScheme
             val statusLine = when {
                 ui.paused -> "Paused"
+                ui.capturing -> "Taking screenshot…"
                 ui.pointerNote != null -> ui.pointerNote!!
                 else -> ui.status
             }
@@ -371,19 +416,17 @@ class PhoneControlService : Service(), LifecycleOwner, ViewModelStoreOwner, Save
                 tonalElevation = 3.dp,
                 shadowElevation = 8.dp,
             ) {
-                Column(Modifier.padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 10.dp)) {
+                if (!ui.expanded) {
+                    androidx.compose.material3.IconButton(
+                        onClick = { ui.expanded = true },
+                        modifier = Modifier.size(48.dp).then(panelDragModifier()),
+                    ) {
+                        Icon(Icons.Outlined.Mouse, contentDescription = "Open phone controls. Drag to move.", tint = scheme.primary)
+                    }
+                } else Column(Modifier.padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 10.dp)) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.pointerInput(Unit) {
-                            detectDragGestures { change, dragAmount ->
-                                change.consume()
-                                val view = panelView ?: return@detectDragGestures
-                                val p = panelParams ?: return@detectDragGestures
-                                p.x = (p.x + dragAmount.x.roundToInt()).coerceIn(0, (screenWidth - view.width).coerceAtLeast(0))
-                                p.y = (p.y + dragAmount.y.roundToInt()).coerceIn(0, (screenHeight - view.height).coerceAtLeast(0))
-                                runCatching { windows.updateViewLayout(view, p) }
-                            }
-                        },
+                        modifier = panelDragModifier(),
                     ) {
                         Icon(
                             Icons.Outlined.Mouse, contentDescription = null,
