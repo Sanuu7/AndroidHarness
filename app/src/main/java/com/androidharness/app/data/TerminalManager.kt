@@ -37,6 +37,8 @@ class TerminalManager(
         val busy: Boolean = false,
         val privileged: Boolean = false,
         val started: Boolean = false,
+        val lastCommand: String? = null,
+        val lastExitCode: Int? = null,
     )
 
     private val _state = MutableStateFlow(TerminalState())
@@ -124,7 +126,13 @@ class TerminalManager(
             // process ended
             process = null
             runManager.releaseKeepalive()
-            _state.update { it.copy(started = false, busy = false) }
+            _state.update {
+                it.copy(
+                    started = false,
+                    busy = false,
+                    lastExitCode = if (it.busy && it.lastExitCode == null) -1 else it.lastExitCode,
+                )
+            }
             appendLines(listOf("# shell exited"))
         }
     }
@@ -135,12 +143,13 @@ class TerminalManager(
             val rest = line.removePrefix("$marker:")
             val idx = rest.indexOf(':')
             if (idx > 0) {
+                val exitCode = rest.substring(0, idx).toIntOrNull()
                 val newCwd = rest.substring(idx + 1)
                 if (newCwd.isNotBlank()) {
                     cwd = File(newCwd)
-                    _state.update { it.copy(cwd = newCwd, busy = false) }
+                    _state.update { it.copy(cwd = newCwd, busy = false, lastExitCode = exitCode) }
                 } else {
-                    _state.update { it.copy(busy = false) }
+                    _state.update { it.copy(busy = false, lastExitCode = exitCode) }
                 }
             } else {
                 _state.update { it.copy(busy = false) }
@@ -186,7 +195,7 @@ class TerminalManager(
             appendLines(listOf("# still running: wait for it to finish"))
             return
         }
-        _state.update { it.copy(busy = true) }
+        _state.update { it.copy(busy = true, lastCommand = cmd, lastExitCode = null) }
         appendLines(listOf("\$ $cmd"))
 
         if (_state.value.privileged && shizuku.isGranted()) {
@@ -198,7 +207,7 @@ class TerminalManager(
 
     private fun sendAppTier(cmd: String) {
         val p = process ?: run {
-            _state.update { it.copy(busy = false) }
+            _state.update { it.copy(busy = false, lastExitCode = -1) }
             return
         }
         scope.launch {
@@ -209,7 +218,7 @@ class TerminalManager(
                 out.flush()
             } catch (e: Exception) {
                 appendLines(listOf("write failed: ${e.message}"))
-                _state.update { it.copy(busy = false) }
+                _state.update { it.copy(busy = false, lastExitCode = -1) }
             }
         }
     }
@@ -247,12 +256,17 @@ class TerminalManager(
                 val rest = markerLine.removePrefix("$marker:")
                 val idx = rest.indexOf(':')
                 if (idx > 0) {
+                    val exitCode = rest.substring(0, idx).toIntOrNull()
                     val newCwd = rest.substring(idx + 1)
                     if (newCwd.isNotBlank()) {
                         cwd = File(newCwd)
-                        _state.update { it.copy(cwd = newCwd) }
+                        _state.update { it.copy(cwd = newCwd, lastExitCode = exitCode) }
+                    } else {
+                        _state.update { it.copy(lastExitCode = exitCode) }
                     }
                 }
+            } else {
+                _state.update { it.copy(lastExitCode = res.exitCode) }
             }
             appendLines(lines.filter { it.isNotBlank() })
             _state.update { it.copy(busy = false) }

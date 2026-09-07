@@ -41,6 +41,7 @@ import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.outlined.AutoMode
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Hub
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Settings
@@ -107,6 +108,7 @@ import com.androidharness.app.data.db.ChatSearch
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.ui.chat.ChatScreen
 import com.androidharness.app.ui.chat.ChatViewModel
+import com.androidharness.app.ui.buildtest.BuildTestScreen
 import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.files.ChangesScreen
@@ -573,6 +575,15 @@ fun AppNav(container: AppContainer) {
                         color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
                     )
                     DrawerRow(
+                        icon = { Icon(Icons.Outlined.CheckCircle, contentDescription = null) },
+                        title = "Build & Test",
+                        subtitle = "Saved checks and live output",
+                        onClick = {
+                            scope.launch { drawerState.close() }
+                            nav.navigate("build-test")
+                        },
+                    )
+                    DrawerRow(
                         icon = { Icon(Icons.Outlined.AutoMode, contentDescription = null) },
                         title = "Automation",
                         subtitle = "Scheduled agent tasks",
@@ -760,11 +771,27 @@ fun AppNav(container: AppContainer) {
                     onBack = { nav.popBackStack() },
                     onOpenSession = { nav.navigate("chat/$it") })
             }
+            composable("build-test") {
+                BuildTestScreen(
+                    container = container,
+                    onBack = { nav.popBackStack() },
+                    onOpenFile = { path, line ->
+                        nav.navigate("viewer/${encode(path)}?line=$line&session=${encode(currentSessionId.orEmpty())}")
+                    },
+                    onOpenTerminal = { nav.navigate("terminal") },
+                    onFixWithAgent = { prompt ->
+                        container.pendingAgentPrompt.value = prompt
+                        scope.launch { container.settings.setLastActiveSessionId(null) }
+                        nav.navigate("chat")
+                    },
+                )
+            }
             composable("settings") {
                 SettingsScreen(
                     container = container,
                     onBack = { nav.popBackStack() },
                     onOpenAutomation = { nav.navigate("automation") },
+                    onOpenBuildTest = { nav.navigate("build-test") },
                     onOpenStats = { nav.navigate("stats") },
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },

@@ -143,6 +143,7 @@ fun SettingsScreen(
     container: AppContainer,
     onBack: () -> Unit,
     onOpenAutomation: () -> Unit = {},
+    onOpenBuildTest: () -> Unit = {},
     onOpenStats: () -> Unit = {},
     onRunSetup: () -> Unit = {},
     onOpenSkills: () -> Unit = {},
@@ -222,6 +223,11 @@ fun SettingsScreen(
             OutlinedCard(Modifier.fillMaxWidth()) {
                 TextButton(onClick = onOpenAutomation, modifier = Modifier.fillMaxWidth()) {
                     Text("Automation · tasks, schedules and history")
+                }
+            }
+            OutlinedCard(Modifier.fillMaxWidth()) {
+                TextButton(onClick = onOpenBuildTest, modifier = Modifier.fillMaxWidth()) {
+                    Text("Build & Test · saved checks, live output and agent fixes")
                 }
             }
             GitHubSection(container)

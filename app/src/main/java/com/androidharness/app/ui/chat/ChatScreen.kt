@@ -193,6 +193,13 @@ fun ChatScreen(
         }
     }
 
+    LaunchedEffect(Unit) {
+        viewModel.container.pendingAgentPrompt.filterNotNull().collect { prompt ->
+            viewModel.container.pendingAgentPrompt.value = null
+            viewModel.send(prompt)
+        }
+    }
+
     // Mode switches announce the model they will use when separate
     // planning/execution models are enabled (see Settings, Planning model).
     val toastContext = LocalContext.current
