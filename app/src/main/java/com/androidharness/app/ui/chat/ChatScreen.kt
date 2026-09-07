@@ -40,6 +40,7 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
@@ -157,6 +158,7 @@ fun ChatScreen(
     onOpenSubagent: (toolCallId: String) -> Unit,
     onOpenSettings: () -> Unit = {},
     onNavigateToSession: (sessionId: String) -> Unit = {},
+    searchMessageId: String? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
@@ -315,7 +317,29 @@ fun ChatScreen(
     // Bottom-pinning for the message list: true while the newest content
     // should stay in view; only a real user drag away from the bottom clears
     // it, programmatic scrolls (follow, jump) never touch the pin.
-    var pinnedToBottom by remember { mutableStateOf(true) }
+    var pinnedToBottom by remember { mutableStateOf(searchMessageId == null) }
+    val searchItemIndex = remember(searchMessageId) { mutableStateOf<Int?>(null) }
+    val searchTurnId = state.messages.firstOrNull { it.id == searchMessageId }?.turnId
+    var diffFile by remember { mutableStateOf<Pair<String, String>?>(null) }
+    diffFile?.let { (turnId, path) ->
+        ChatFileDiffSheet(
+            path = path,
+            loadDiff = { viewModel.fileDiff(turnId, path) },
+            onOpenFile = { diffFile = null; onOpenFile(path, null) },
+            onDismiss = { diffFile = null },
+        )
+    }
+    LaunchedEffect(searchMessageId, state.isLoadingMessages) {
+        if (searchMessageId == null || state.isLoadingMessages) return@LaunchedEffect
+        if (state.messages.none { it.id == searchMessageId }) {
+            pinnedToBottom = true
+            snackbar.showSnackbar("This message is no longer in the chat.")
+            return@LaunchedEffect
+        }
+        val index = snapshotFlow { searchItemIndex.value }.filterNotNull().first()
+        pinnedToBottom = false
+        listState.scrollToItem(index)
+    }
 
     // True while a finger drag is driving the list (from interactionSource).
     val gestureActive = remember { mutableStateOf(false) }
@@ -688,7 +712,7 @@ fun ChatScreen(
     var initialScrollDone by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(state.sessionId) {
         val sid = state.sessionId ?: return@LaunchedEffect
-        if (initialScrollDone == sid) return@LaunchedEffect
+        if (searchMessageId != null || initialScrollDone == sid) return@LaunchedEffect
         snapshotFlow { listState.layoutInfo.totalItemsCount to state.messages.size }
             .first { (total, size) -> size > 0 && total > 0 }
         if (initialScrollDone != sid) {
@@ -974,8 +998,17 @@ fun ChatScreen(
                                 contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
                                 verticalArrangement = Arrangement.spacedBy(12.dp),
                             ) {
+                                var nextItemIndex = 0
+                                fun indexedItem(
+                                    key: Any? = null,
+                                    content: @Composable LazyItemScope.() -> Unit,
+                                ) {
+                                    if (key == "search-target") searchItemIndex.value = nextItemIndex
+                                    nextItemIndex++
+                                    item(key = key, content = content)
+                                }
                                 if (state.messages.isEmpty() && state.streamingText == null) {
-                                    item {
+                                    indexedItem {
                                         EmptyState(
                                             hasProvider = state.activeProvider != null,
                                             onSuggestion = { viewModel.send(it) },
@@ -990,8 +1023,25 @@ fun ChatScreen(
                         // subagent's own page, never in the main list.
                         if (message.role == Role.ASSISTANT && message.toolCallId != null) continue
                         val messageKey = message.id ?: "${message.role.name}-${message.createdAt}-$messageIndex"
+                        if (searchMessageId != null && message.id == searchMessageId) {
+                            indexedItem(key = "search-target") {
+                                Surface(
+                                    color = MaterialTheme.colorScheme.primaryContainer,
+                                    shape = MaterialTheme.shapes.medium,
+                                    modifier = Modifier.fillMaxWidth(),
+                                ) {
+                                    Column(Modifier.padding(12.dp)) {
+                                        Text("Search result", style = MaterialTheme.typography.labelMedium)
+                                        if (message.role == Role.TOOL || message.role == Role.SYSTEM) {
+                                            Spacer(Modifier.height(8.dp))
+                                            MarkdownText(message.text)
+                                        }
+                                    }
+                                }
+                            }
+                        }
                         when (message.role) {
-                            Role.USER -> item(key = "message-$messageKey-user") {
+                            Role.USER -> indexedItem(key = "message-$messageKey-user") {
                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                     Column(horizontalAlignment = Alignment.End) {
                                         val (visibleText, fileChips) = FileAttachments.splitForDisplay(
@@ -1037,14 +1087,15 @@ fun ChatScreen(
                                 val isTurnRunning = state.busy && (message.turnId == state.currentTurnId ||
                                     (state.currentTurnId == null && message.turnId == state.messages.lastOrNull { it.turnId != null }?.turnId))
                                 val activity = turnActivities[message.turnId].orEmpty()
-                                val hasFinishedActivity = !isTurnRunning && activity.isNotEmpty()
+                                val isSearchTurn = searchMessageId != null && message.turnId == searchTurnId
+                                val hasFinishedActivity = !isTurnRunning && !isSearchTurn && activity.isNotEmpty()
                                 if (hasFinishedActivity && !isTurnFinal) continue
                                 if (hasFinishedActivity) {
                                     val userAt = turnFirstUserTimes[message.turnId]
                                     val workedLabel = if (userAt != null) {
                                         formatDuration((message.createdAt - userAt).coerceAtLeast(0))
                                     } else ""
-                                    item(key = "turn-${message.turnId}-activity") {
+                                    indexedItem(key = "turn-${message.turnId}-activity") {
                                         TurnActivityCard(
                                             calls = activity.flatMap { it.toolCalls },
                                             results = toolResults,
@@ -1056,12 +1107,12 @@ fun ChatScreen(
                                     }
                                 }
                                 if (!hasFinishedActivity && message.thinking.isNotBlank()) {
-                                    item(key = "message-$messageKey-thinking") {
+                                    indexedItem(key = "message-$messageKey-thinking") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(message.thinking, durationMs = message.thinkingMs) }
                                     }
                                 }
                                 if (message.text.isNotBlank()) {
-                                    item(key = "message-$messageKey-text") {
+                                    indexedItem(key = "message-$messageKey-text") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             Column {
                                                 val used = skillUsedByMessage[message.id].orEmpty()
@@ -1086,6 +1137,7 @@ fun ChatScreen(
                                                     FileEditsCard(
                                                         edits = edits,
                                                         onOpenFile = onOpenFile,
+                                                        onReviewFile = { path -> message.turnId?.let { diffFile = it to path } },
                                                         modifier = Modifier.padding(top = 8.dp),
                                                     )
                                                 }
@@ -1125,11 +1177,11 @@ fun ChatScreen(
                                         }
                                     }
                                 }
-                                if (isTurnRunning) {
+                                if (isTurnRunning || isSearchTurn) {
                                     val taskCalls = message.toolCalls.filter { it.name == "task" }
                                     val otherCalls = message.toolCalls.filter { it.name != "task" }
                                     if (taskCalls.size >= 2) {
-                                        item(key = "message-$messageKey-subagents") {
+                                        indexedItem(key = "message-$messageKey-subagents") {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                 SubagentPagerCard(
                                                     calls = taskCalls,
@@ -1142,7 +1194,7 @@ fun ChatScreen(
                                         }
                                     } else if (taskCalls.size == 1) {
                                         val call = taskCalls[0]
-                                        item(key = call.id) {
+                                        indexedItem(key = call.id) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                 SubagentCard(
                                                     call = call,
@@ -1156,7 +1208,7 @@ fun ChatScreen(
                                         }
                                     }
                                     if (otherCalls.size >= 3) {
-                                        item(key = "message-$messageKey-tools") {
+                                        indexedItem(key = "message-$messageKey-tools") {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                 ToolGroupCard(
                                                     calls = otherCalls,
@@ -1169,7 +1221,7 @@ fun ChatScreen(
                                         }
                                     } else {
                                         for (call in otherCalls) {
-                                            item(key = call.id) {
+                                            indexedItem(key = call.id) {
                                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                     ToolCallCard(
                                                         call = call,
@@ -1186,7 +1238,7 @@ fun ChatScreen(
                             Role.TOOL -> Unit
                             Role.SYSTEM -> {
                                 if (message.text.startsWith(com.androidharness.app.agent.ContextHygiene.COMPACTION_NOTICE_PREFIX)) {
-                                    item(key = "message-$messageKey-system") {
+                                    indexedItem(key = "message-$messageKey-system") {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             CompactionNoticeLine()
                                         }
@@ -1203,13 +1255,13 @@ fun ChatScreen(
                         val streamKey = state.streamingMessageId ?: state.currentTurnId ?: "idle"
                         state.streamingThinking?.let { thinking ->
                             if (thinking.isNotBlank()) {
-                                item(key = "streaming-$streamKey-thinking") {
+                                indexedItem(key = "streaming-$streamKey-thinking") {
                                     ThinkingBlock(thinking, live = true)
                                 }
                             }
                         }
                         state.streamingText?.let { streaming ->
-                            item(key = "streaming-$streamKey-text") {
+                            indexedItem(key = "streaming-$streamKey-text") {
                                 AssistantText(
                                     streaming,
                                     streaming = !state.streamingCommitted,
@@ -1223,7 +1275,7 @@ fun ChatScreen(
                     }
 
                     state.pendingApproval?.let { approval ->
-                        item(key = "approval") {
+                        indexedItem(key = "approval") {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 ApprovalCard(
                                     approval = approval,
@@ -1235,7 +1287,7 @@ fun ChatScreen(
                     }
 
                     state.pendingEnvironment?.let { request ->
-                        item(key = "env-install") {
+                        indexedItem(key = "env-install") {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 EnvironmentInstallCard(
                                     request = request,
@@ -1248,7 +1300,7 @@ fun ChatScreen(
                     }
 
                     state.pendingQuestion?.let { question ->
-                        item(key = "question") {
+                        indexedItem(key = "question") {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 QuestionCard(
                                     question = question,
@@ -1259,7 +1311,7 @@ fun ChatScreen(
                     }
 
                     state.pendingPlan?.let { plan ->
-                        item(key = "plan") {
+                        indexedItem(key = "plan") {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 PlanApprovalCard(
                                     plan = plan,
@@ -1539,6 +1591,7 @@ private fun UndoIconButton(onClick: () -> Unit) {
 private fun FileEditsCard(
     edits: List<com.androidharness.app.data.db.FileEditEntity>,
     onOpenFile: (path: String, line: Int?) -> Unit,
+    onReviewFile: (String) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val scheme = MaterialTheme.colorScheme
@@ -1600,7 +1653,7 @@ private fun FileEditsCard(
                             horizontalArrangement = Arrangement.spacedBy(8.dp),
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onOpenFile(path, null) }
+                                .clickable { onReviewFile(path) }
                                 .padding(horizontal = 12.dp, vertical = 8.dp),
                         ) {
                             Column(Modifier.weight(1f)) {
@@ -1623,6 +1676,7 @@ private fun FileEditsCard(
                                 }
                             }
                             DiffStatText(added, removed)
+                            TextButton(onClick = { onOpenFile(path, null) }) { Text("Open") }
                         }
                     }
                 }

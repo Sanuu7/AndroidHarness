@@ -1221,6 +1221,27 @@ class ChatViewModel(
      * the chosen turn and every later one (undo rewinds through the present),
      * plus how many messages will roll back.
      */
+    /** Read-only comparison from this turn's checkpoint to the current workspace file. */
+    suspend fun fileDiff(turnId: String, path: String): String =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val sid = sessionId ?: error("This chat is no longer available.")
+            val normalized = com.androidharness.app.workspace.normalizeRelPath(path)
+            val checkpoint = c.checkpoints.entitiesForTurns(sid, listOf(turnId)).firstOrNull {
+                com.androidharness.app.workspace.normalizeRelPath(it.relPath) == normalized
+            } ?: error("No checkpoint is available for this file.")
+            check(!checkpoint.wasDirectory) { "This change is a directory, not a text file." }
+            val before = if (checkpoint.existedBefore) {
+                String(android.util.Base64.decode(checkpoint.contentB64, android.util.Base64.DEFAULT), Charsets.UTF_8)
+            } else ""
+            val fs = c.workspace.currentOnce()
+            val node = fs.resolve(path)
+            val current = if (!node.exists) "" else {
+                check(node.isFile && node.length <= 1_000_000) { "This file is too large for an inline review." }
+                node.readText()
+            }
+            com.androidharness.app.core.Diff.unified(before, current, path)
+        }
+
     suspend fun rewindPreview(turnId: String): RewindPreview? {
         val sid = sessionId ?: return null
         val ordered = runCatching { c.checkpoints.turnsOrdered(sid) }.getOrDefault(emptyList())

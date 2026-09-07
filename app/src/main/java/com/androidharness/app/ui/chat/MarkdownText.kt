@@ -439,6 +439,9 @@ private fun TableBlock(
 ) {
     val scheme = MaterialTheme.colorScheme
     val scrollState = rememberScrollState()
+    val clipboard = LocalClipboardManager.current
+    val scope = rememberCoroutineScope()
+    var copied by remember { mutableStateOf(false) }
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
     val bodyStyle = MaterialTheme.typography.bodyMedium
@@ -454,53 +457,80 @@ private fun TableBlock(
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.6f)),
         modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
     ) {
-        BoxWithConstraints(Modifier.fillMaxWidth()) {
-            val viewport = with(density) { maxWidth.roundToPx() }
-            val padding = with(density) { 24.dp.roundToPx() }
-            val minWidth = with(density) { 88.dp.roundToPx() }
-            val maxColumnWidth = with(density) { 280.dp.roundToPx() }
-            val widths = remember(styledRows, bodyStyle, headerStyle, density, viewport, measurer) {
-                val natural = table.headers.indices.map { column ->
-                    styledRows.indices.maxOf { row ->
-                        measurer.measure(
-                            text = styledRows[row][column],
-                            style = if (row == 0) headerStyle else bodyStyle,
-                            softWrap = false,
-                        ).size.width + padding
-                    }
+        Column {
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(start = 12.dp, end = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Text(
+                    "Table · ${table.rows.size} rows",
+                    style = MaterialTheme.typography.labelMedium,
+                    color = scheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f),
+                )
+                TextButton(onClick = {
+                    clipboard.setText(AnnotatedString(tableAsTsv(styledRows.map { row -> row.map { it.text } })))
+                    copied = true
+                    scope.launch { delay(1500); copied = false }
+                }) {
+                    Icon(
+                        if (copied) Icons.Filled.Check else Icons.Filled.ContentCopy,
+                        contentDescription = null,
+                        modifier = Modifier.size(14.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text(if (copied) "Copied" else "Copy table")
                 }
-                markdownColumnWidths(natural, viewport, minWidth, maxColumnWidth)
             }
-            val tableWidth = with(density) { widths.sum().toDp() }
-            Column(Modifier.horizontalScroll(scrollState)) {
-                Column(Modifier.width(tableWidth)) {
-                    styledRows.forEachIndexed { rowIndex, row ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth().background(
-                                when {
-                                    rowIndex == 0 -> scheme.surfaceContainerHigh
-                                    rowIndex % 2 == 0 -> scheme.surfaceContainerLow.copy(alpha = 0.5f)
-                                    else -> Color.Transparent
+            HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.4f))
+            BoxWithConstraints(Modifier.fillMaxWidth()) {
+                val viewport = with(density) { maxWidth.roundToPx() }
+                val padding = with(density) { 24.dp.roundToPx() }
+                val minWidth = with(density) { 88.dp.roundToPx() }
+                val maxColumnWidth = with(density) { 280.dp.roundToPx() }
+                val widths = remember(styledRows, bodyStyle, headerStyle, density, viewport, measurer) {
+                    val natural = table.headers.indices.map { column ->
+                        styledRows.indices.maxOf { row ->
+                            measurer.measure(
+                                text = styledRows[row][column],
+                                style = if (row == 0) headerStyle else bodyStyle,
+                                softWrap = false,
+                            ).size.width + padding
+                        }
+                    }
+                    markdownColumnWidths(natural, viewport, minWidth, maxColumnWidth)
+                }
+                val tableWidth = with(density) { widths.sum().toDp() }
+                Column(Modifier.horizontalScroll(scrollState)) {
+                    Column(Modifier.width(tableWidth)) {
+                        styledRows.forEachIndexed { rowIndex, row ->
+                            Row(
+                                modifier = Modifier.fillMaxWidth().background(
+                                    when {
+                                        rowIndex == 0 -> scheme.surfaceContainerHigh
+                                        rowIndex % 2 == 0 -> scheme.surfaceContainerLow.copy(alpha = 0.5f)
+                                        else -> Color.Transparent
+                                    }
+                                ),
+                                verticalAlignment = Alignment.Top,
+                            ) {
+                                row.forEachIndexed { column, cell ->
+                                    LinkedText(
+                                        styled = cell,
+                                        style = if (rowIndex == 0) headerStyle else bodyStyle,
+                                        textAlign = table.alignments.getOrElse(column) { TextAlign.Start },
+                                        onOpenUrl = onOpenUrl,
+                                        modifier = Modifier
+                                            .width(with(density) { widths[column].toDp() })
+                                            .padding(horizontal = 12.dp, vertical = 12.dp),
+                                    )
                                 }
-                            ),
-                            verticalAlignment = Alignment.Top,
-                        ) {
-                            row.forEachIndexed { column, cell ->
-                                LinkedText(
-                                    styled = cell,
-                                    style = if (rowIndex == 0) headerStyle else bodyStyle,
-                                    textAlign = table.alignments.getOrElse(column) { TextAlign.Start },
-                                    onOpenUrl = onOpenUrl,
-                                    modifier = Modifier
-                                        .width(with(density) { widths[column].toDp() })
-                                        .padding(horizontal = 12.dp, vertical = 12.dp),
+                            }
+                            if (rowIndex < styledRows.lastIndex) {
+                                HorizontalDivider(
+                                    color = scheme.outlineVariant.copy(alpha = if (rowIndex == 0) 0.7f else 0.3f),
                                 )
                             }
-                        }
-                        if (rowIndex < styledRows.lastIndex) {
-                            HorizontalDivider(
-                                color = scheme.outlineVariant.copy(alpha = if (rowIndex == 0) 0.7f else 0.3f),
-                            )
                         }
                     }
                 }

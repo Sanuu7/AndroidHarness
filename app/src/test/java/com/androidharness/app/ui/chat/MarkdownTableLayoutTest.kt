@@ -7,6 +7,19 @@ import org.junit.Test
 
 class MarkdownTableLayoutTest {
     @Test
+    fun `table copy preserves columns and blank cells for spreadsheet paste`() {
+        assertEquals(
+            "Name\tPrice\tNotes\nTea\t2\t\nCoffee\t3\tHot drink",
+            tableAsTsv(listOf(
+                listOf("Name", "Price", "Notes"),
+                listOf("Tea", "2", ""),
+                listOf("Coffee", "3", "Hot\n\tdrink"),
+            )),
+        )
+        assertEquals("", tableAsTsv(emptyList()))
+    }
+
+    @Test
     fun `narrow columns share available space exactly`() {
         assertEquals(listOf(181, 180), markdownColumnWidths(listOf(40, 50), 361, 88, 280))
     }

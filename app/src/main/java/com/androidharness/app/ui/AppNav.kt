@@ -217,7 +217,7 @@ fun AppNav(container: AppContainer) {
     // Which session the current back stack shows, for drawer highlighting.
     val currentEntry by nav.currentBackStackEntryFlow.collectAsStateWithLifecycle(initialValue = null)
     val currentSessionId = currentEntry
-        ?.takeIf { it.destination.route == "chat/{sessionId}" }
+        ?.takeIf { it.destination.route == "chat/{sessionId}?messageId={messageId}" }
         ?.arguments?.getString("sessionId")
 
     // Track active session in DataStore whenever navigating to a chat session
@@ -263,13 +263,14 @@ fun AppNav(container: AppContainer) {
         container.pendingSessionId.collect { sid -> nav.navigate("chat/$sid") }
     }
 
-    fun openChat(sessionId: String?) {
+    fun openChat(sessionId: String?, messageId: String? = null) {
         scope.launch { drawerState.close() }
         if (sessionId == null) {
             scope.launch { container.settings.setLastActiveSessionId(null) }
             nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
         } else {
-            nav.navigate("chat/$sessionId")
+            val target = messageId?.let { "?messageId=${encode(it)}" }.orEmpty()
+            nav.navigate("chat/$sessionId$target")
         }
     }
 
@@ -541,7 +542,7 @@ fun AppNav(container: AppContainer) {
                                         hit = hit,
                                         query = searchQuery,
                                         fuzzy = fuzzySearch,
-                                        onClick = { openChat(hit.sessionId) },
+                                        onClick = { openChat(hit.sessionId, hit.messageId) },
                                     )
                                 }
                             }
@@ -701,14 +702,19 @@ fun AppNav(container: AppContainer) {
                 )
             }
             composable(
-                "chat/{sessionId}",
-                arguments = listOf(navArgument("sessionId") { type = NavType.StringType }),
+                "chat/{sessionId}?messageId={messageId}",
+                arguments = listOf(
+                    navArgument("sessionId") { type = NavType.StringType },
+                    navArgument("messageId") { type = NavType.StringType; nullable = true; defaultValue = null },
+                ),
             ) { entry ->
                 val sessionId = entry.arguments?.getString("sessionId")
+                val searchMessageId = entry.arguments?.getString("messageId")
                 val vm: ChatViewModel =
                     viewModel(factory = ChatViewModel.factory(container, sessionId))
                 ChatScreen(
                     viewModel = vm,
+                    searchMessageId = searchMessageId,
                     onOpenDrawer = {
                         focusManager.clearFocus(force = true)
                         scope.launch { drawerState.open() }

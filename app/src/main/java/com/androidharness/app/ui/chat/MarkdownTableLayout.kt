@@ -48,3 +48,9 @@ internal fun splitTableRow(row: String): List<String> {
     if (endsWithSeparator && cells.isNotEmpty()) cells.removeAt(cells.lastIndex)
     return cells
 }
+
+/** Tab-separated plain text pastes as columns in spreadsheet and document apps. */
+internal fun tableAsTsv(rows: List<List<String>>): String =
+    rows.joinToString("\n") { row ->
+        row.joinToString("\t") { cell -> cell.replace(Regex("[\\t\\r\\n]+"), " ").trim() }
+    }
