@@ -1,27 +1,25 @@
 package com.androidharness.app.ui.settings
 
 import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Layers
-import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -45,6 +43,7 @@ import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.common.ProviderMark
 import kotlinx.coroutines.launch
 
 @Composable
@@ -67,18 +66,8 @@ fun ProvidersScreen(
         topBar = {
             AppHeader(
                 title = "Providers",
-                subtitle = "Tap a row to make it active",
+                subtitle = "Connect models and choose what powers your chats",
                 onBack = onBack,
-            )
-        },
-        floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = {
-                    editing = null
-                    showDialog = true
-                },
-                icon = { Icon(Icons.Filled.Add, contentDescription = null) },
-                text = { Text("Add provider") },
             )
         },
     ) { padding ->
@@ -87,8 +76,24 @@ fun ProvidersScreen(
                 .fillMaxSize()
                 .padding(padding)
                 .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(10.dp),
         ) {
+            item {
+                FilledTonalButton(
+                    onClick = {
+                        editing = null
+                        showDialog = true
+                    },
+                    shape = RoundedCornerShape(14.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(top = 14.dp, bottom = 4.dp),
+                ) {
+                    Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Spacer(Modifier.width(8.dp))
+                    Text("Add provider")
+                }
+            }
             items(providers, key = { it.id }) { provider ->
                 ProviderCard(
                     provider = provider,
@@ -121,14 +126,31 @@ fun ProvidersScreen(
             }
             if (providers.isEmpty()) {
                 item {
-                    Text(
-                        "No providers yet. Add an OpenAI-compatible endpoint " +
-                            "(OpenAI, OpenRouter, Groq, Ollama…), Anthropic, or Gemini " +
-                            "with its API key and a model name.",
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(top = 24.dp),
-                    )
+                    Surface(
+                        color = scheme.surfaceContainerLow,
+                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 4.dp),
+                    ) {
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            modifier = Modifier.padding(horizontal = 24.dp, vertical = 28.dp),
+                        ) {
+                            ProviderMark(size = 48.dp)
+                            Text(
+                                "No providers yet",
+                                style = MaterialTheme.typography.titleSmallEmphasized,
+                                modifier = Modifier.padding(top = 12.dp),
+                            )
+                            Text(
+                                "Add a provider, connect its API key, then choose the model you want to use.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = scheme.onSurfaceVariant,
+                                modifier = Modifier.padding(top = 4.dp),
+                            )
+                        }
+                    }
                 }
             }
         }
@@ -227,29 +249,61 @@ private fun ProviderCard(
     val scheme = MaterialTheme.colorScheme
     Surface(
         onClick = onSetActive,
-        color = scheme.surface,
-        shape = MaterialTheme.shapes.large,
+        color = if (active) scheme.secondaryContainer else scheme.surfaceContainerLow,
+        shape = RoundedCornerShape(18.dp),
         border = BorderStroke(
             1.dp,
-            if (active) scheme.primary.copy(alpha = 0.5f) else scheme.outlineVariant.copy(alpha = 0.5f),
+            if (active) scheme.primary.copy(alpha = 0.3f) else scheme.outlineVariant.copy(alpha = 0.35f),
         ),
         modifier = Modifier.fillMaxWidth(),
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.padding(start = 14.dp, end = 4.dp, top = 12.dp, bottom = 12.dp),
+            modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 11.dp, bottom = 11.dp),
         ) {
+            ProviderMark(size = 42.dp)
+            Spacer(Modifier.width(12.dp))
             Column(Modifier.weight(1f)) {
-                Text(provider.name, style = MaterialTheme.typography.titleSmallEmphasized)
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        provider.name,
+                        style = MaterialTheme.typography.titleSmallEmphasized,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (active) {
+                        Spacer(Modifier.width(7.dp))
+                        Surface(
+                            color = scheme.primary.copy(alpha = 0.12f),
+                            shape = RoundedCornerShape(50),
+                        ) {
+                            Text(
+                                "Active",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = scheme.primary,
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                            )
+                        }
+                    }
+                }
                 Text(
-                    if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model else "${provider.type.label} · ${provider.model}",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = scheme.onSurfaceVariant,
-                )
-                Text(
-                    if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) "Built-in · Free" else provider.baseUrl,
+                    if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model
+                    else "${provider.type.label} · ${provider.model}",
                     style = MaterialTheme.typography.labelSmall,
-                    color = scheme.onSurfaceVariant,
+                    color = if (active) scheme.onSecondaryContainer.copy(alpha = 0.78f) else scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                val detail = when {
+                    provider.id == com.androidharness.app.llm.HarnessProvider.ID -> "Built-in · Free"
+                    catalogSize != null && catalogSize > 0 -> "$catalogSize models available"
+                    else -> provider.baseUrl
+                }
+                Text(
+                    detail,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (active) scheme.onSecondaryContainer.copy(alpha = 0.62f) else scheme.onSurfaceVariant.copy(alpha = 0.78f),
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
                 )
@@ -261,7 +315,7 @@ private fun ProviderCard(
                     tint = scheme.primary,
                     modifier = Modifier.size(18.dp),
                 )
-                Spacer(Modifier.width(4.dp))
+                Spacer(Modifier.width(2.dp))
             }
             IconButton(onClick = onBrowseModels) {
                 Icon(
@@ -281,4 +335,3 @@ private fun ProviderCard(
         }
     }
 }
-

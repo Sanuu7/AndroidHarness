@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.chat.components
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,12 +13,14 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Refresh
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.Button
@@ -53,6 +56,7 @@ import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ModelEntry
 import com.androidharness.app.llm.ModelsDev
 import com.androidharness.app.llm.reasoningCapable
+import com.androidharness.app.ui.common.ProviderMark
 import kotlinx.coroutines.launch
 
 /**
@@ -92,6 +96,19 @@ fun ModelPickerSheet(
     val effective = activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
     val listedModel = if (browseProviderId == null) effective else listedProvider?.model
     val devKey = ModelsDev.providerKeyFor(listedProvider?.baseUrl)
+    val listedCatalog = remember(listedProvider?.id, catalogs) {
+        listedProvider?.let { catalogs[it.id].orEmpty() }.orEmpty()
+    }
+    val normalizedQuery = remember(query) { query.trim().lowercase() }
+    val visibleRows = remember(listedProvider, listedCatalog, normalizedQuery, thinkOnly) {
+        val provider = listedProvider ?: return@remember emptyList()
+        buildList {
+            add(ModelEntry(provider.model, reasoning = null, contextTokens = null))
+            addAll(listedCatalog.filter { it.id != provider.model })
+        }.distinctBy { it.id }
+            .filter { normalizedQuery.isBlank() || it.id.lowercase().contains(normalizedQuery) }
+            .filter { !thinkOnly || (it.reasoning ?: reasoningCapable(it.id)) }
+    }
 
     // Opens fully expanded: half-expanded sheets trap bottom rows behind the
     // drag-to-dismiss gesture, which read as "touch not responding".
@@ -105,8 +122,14 @@ fun ModelPickerSheet(
                 .navigationBarsPadding(),
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Text("Model", style = MaterialTheme.typography.titleMediumEmphasized)
-                Spacer(Modifier.weight(1f))
+                Column(Modifier.weight(1f)) {
+                    Text("Choose model", style = MaterialTheme.typography.titleMediumEmphasized)
+                    Text(
+                        "Search, filter, or enter any model ID",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
+                }
                 IconButton(onClick = onDismiss) {
                     Icon(Icons.Filled.Close, contentDescription = "Close")
                 }
@@ -114,30 +137,38 @@ fun ModelPickerSheet(
 
             // Current selection + prominent jump to provider management.
             if (activeProvider != null && browseProviderId == null) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                Surface(
+                    color = scheme.surfaceContainerHigh,
+                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth().padding(top = 6.dp, bottom = 12.dp),
                 ) {
-                    Column(Modifier.weight(1f)) {
-                        Text(
-                            "Current",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant,
-                        )
-                        Text(
-                            "${activeProvider.name} · $effective",
-                            style = MaterialTheme.typography.titleSmallEmphasized,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    OutlinedButton(onClick = { onDismiss(); onManageProviders() }) {
-                        Text("Switch provider")
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.padding(12.dp),
+                    ) {
+                        ProviderMark(size = 42.dp)
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                activeProvider.name,
+                                style = MaterialTheme.typography.titleSmallEmphasized,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            Text(
+                                effective.orEmpty(),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = scheme.onSurfaceVariant,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                        }
+                        OutlinedButton(onClick = { onDismiss(); onManageProviders() }) {
+                            Text("Switch")
+                        }
                     }
                 }
             }
-
-            HorizontalDivider(Modifier.padding(vertical = 10.dp), color = scheme.outlineVariant.copy(alpha = 0.5f))
 
             // Thinking tiers live in the header badge, not here: the picker is
             // about WHICH model runs; the global ladder adapts to it via
@@ -151,8 +182,9 @@ fun ModelPickerSheet(
                     value = query,
                     onValueChange = { query = it },
                     placeholder = { Text("Search models") },
+                    leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium,
+                    shape = RoundedCornerShape(14.dp),
                     modifier = Modifier.weight(1f),
                 )
             }
@@ -169,14 +201,14 @@ fun ModelPickerSheet(
                 Spacer(Modifier.width(8.dp))
                 AssistChip(
                     onClick = { showAddCustomDialog = true },
-                    label = { Text("+ Custom", style = MaterialTheme.typography.labelSmall) },
+                    label = { Text("Custom model", style = MaterialTheme.typography.labelSmall) },
+                    leadingIcon = { Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp)) },
                     modifier = Modifier.padding(top = 8.dp),
                 )
                 Spacer(Modifier.weight(1f))
                 listedProvider?.let { p ->
-                    val catalog = catalogs[p.id].orEmpty()
                     Text(
-                        if (isRefreshing) "reloading…" else if (catalog.isEmpty()) "models" else "${catalog.size} models",
+                        if (isRefreshing) "reloading…" else if (listedCatalog.isEmpty()) "models" else "${listedCatalog.size} models",
                         style = MaterialTheme.typography.labelSmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -237,18 +269,17 @@ fun ModelPickerSheet(
                         )
                     }
                 } else {
-                    val catalog = catalogs[provider.id].orEmpty()
                     item(key = "autofetch") {
                         // Fetch once per sheet open when the catalog is empty.
                         LaunchedEffect(provider.id) {
-                            if (catalog.isEmpty() && !isRefreshing) {
+                            if (listedCatalog.isEmpty() && !isRefreshing) {
                                 isRefreshing = true
                                 refreshError = onRefreshCatalog(provider.id)
                                 isRefreshing = false
                             }
                         }
                     }
-                    if (isRefreshing && catalog.isEmpty()) {
+                    if (isRefreshing && listedCatalog.isEmpty()) {
                         item(key = "reloading") {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,
@@ -270,19 +301,12 @@ fun ModelPickerSheet(
                         }
                     }
 
-                    val q = query.trim().lowercase()
-                    val rows = buildList {
-                        add(ModelEntry(provider.model, reasoning = null, contextTokens = null))
-                        addAll(catalog.filter { it.id != provider.model })
-                    }.distinctBy { it.id }
-                        .filter { q.isBlank() || it.id.lowercase().contains(q) }
-                        .filter { !thinkOnly || (it.reasoning ?: reasoningCapable(it.id)) }
-
-                    if (query.isNotBlank() && rows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
+                    if (query.isNotBlank() && visibleRows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
                         item(key = "inline-custom-${query.trim()}") {
                             Surface(
-                                shape = MaterialTheme.shapes.medium,
-                                color = scheme.primaryContainer.copy(alpha = 0.5f),
+                                shape = RoundedCornerShape(14.dp),
+                                color = scheme.primaryContainer.copy(alpha = 0.6f),
+                                border = BorderStroke(1.dp, scheme.primary.copy(alpha = 0.3f)),
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(vertical = 4.dp)
@@ -323,8 +347,8 @@ fun ModelPickerSheet(
                         }
                     }
 
-                    items(rows.size, key = { "${provider.id}-${rows[it].id}" }) { index ->
-                        val entry = rows[index]
+                    items(visibleRows.size, key = { "${provider.id}-${visibleRows[it].id}" }) { index ->
+                        val entry = visibleRows[index]
                         val isSelected = provider.id == (browseProviderId ?: activeProviderId) &&
                             entry.id == (if (browseProviderId == null) effective else listedModel)
                         ModelRow(
@@ -345,13 +369,6 @@ fun ModelPickerSheet(
                                 { onDeleteCustomModel(provider.id, entry.id) }
                             } else null,
                         )
-                        // Clear separation between tap targets.
-                        if (index < rows.lastIndex) {
-                            HorizontalDivider(
-                                color = scheme.outlineVariant.copy(alpha = 0.35f),
-                                modifier = Modifier.padding(start = 4.dp),
-                            )
-                        }
                     }
                 }
                 item {
@@ -397,66 +414,78 @@ private fun ModelRow(
     onDelete: (() -> Unit)? = null,
 ) {
     val scheme = MaterialTheme.colorScheme
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        onClick = onClick,
+        color = if (selected) scheme.secondaryContainer else scheme.surface,
+        shape = RoundedCornerShape(14.dp),
+        border = if (selected) BorderStroke(1.dp, scheme.primary.copy(alpha = 0.28f)) else null,
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 10.dp),
+            .padding(vertical = 3.dp),
     ) {
-        Column(Modifier.weight(1f)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    id,
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontFamily = FontFamily.Monospace,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis,
-                    modifier = Modifier.weight(1f, fill = false),
-                )
-                if (isCustom) {
-                    Spacer(Modifier.width(6.dp))
-                    Surface(
-                        shape = MaterialTheme.shapes.extraSmall,
-                        color = scheme.secondaryContainer,
-                    ) {
-                        Text(
-                            "custom",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSecondaryContainer,
-                            modifier = Modifier.padding(horizontal = 4.dp, vertical = 1.dp),
-                        )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        id,
+                        style = MaterialTheme.typography.bodyMedium,
+                        fontFamily = FontFamily.Monospace,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f, fill = false),
+                    )
+                    if (isCustom) {
+                        Spacer(Modifier.width(6.dp))
+                        Surface(
+                            shape = RoundedCornerShape(50),
+                            color = scheme.tertiaryContainer,
+                        ) {
+                            Text(
+                                "custom",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = scheme.onTertiaryContainer,
+                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                            )
+                        }
                     }
                 }
+                val sub = listOfNotNull(
+                    if (thinking) "thinking" else null,
+                    ctx,
+                ).joinToString(" · ")
+                if (sub.isNotEmpty()) {
+                    Text(
+                        sub,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (thinking) scheme.primary else scheme.onSurfaceVariant,
+                    )
+                }
             }
-            val sub = listOfNotNull(
-                if (thinking) "thinking" else null,
-                ctx,
-            ).joinToString(" · ")
-            if (sub.isNotEmpty()) {
-                Text(
-                    sub,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (thinking) scheme.primary else scheme.onSurfaceVariant,
-                )
+            if (onDelete != null) {
+                IconButton(
+                    onClick = onDelete,
+                    modifier = Modifier.size(30.dp),
+                ) {
+                    Icon(
+                        Icons.Outlined.Close,
+                        contentDescription = "Remove custom model",
+                        tint = scheme.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp),
+                    )
+                }
+                Spacer(Modifier.width(4.dp))
             }
-        }
-        if (onDelete != null) {
-            IconButton(
-                onClick = onDelete,
-                modifier = Modifier.size(28.dp),
-            ) {
+            if (selected) {
                 Icon(
-                    Icons.Outlined.Close,
-                    contentDescription = "Remove custom model",
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier.size(16.dp),
+                    Icons.Filled.Check,
+                    contentDescription = "Selected",
+                    tint = scheme.primary,
+                    modifier = Modifier.size(20.dp),
                 )
             }
-            Spacer(Modifier.width(4.dp))
-        }
-        if (selected) {
-            Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
         }
     }
 }

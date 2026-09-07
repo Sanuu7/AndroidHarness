@@ -1,7 +1,9 @@
 package com.androidharness.app.ui.settings
 
 import androidx.compose.animation.Crossfade
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,20 +12,25 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -42,6 +49,7 @@ import com.androidharness.app.llm.ModelsDev
 import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.llm.endpointPath
+import com.androidharness.app.ui.common.ProviderMark
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import kotlinx.coroutines.launch
 
@@ -89,94 +97,131 @@ fun ProviderManagerSheet(
                         .navigationBarsPadding(),
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Text(
-                            "Providers",
-                            style = MaterialTheme.typography.titleMediumEmphasized,
-                            modifier = Modifier.weight(1f),
-                        )
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                "Providers",
+                                style = MaterialTheme.typography.titleMediumEmphasized,
+                            )
+                            Text(
+                                "Choose the service that powers this chat",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
                         IconButton(onClick = onDismiss) {
                             Icon(Icons.Filled.Close, contentDescription = "Close")
                         }
                     }
-                    Text(
-                        "Tap a row to make it active",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp),
-                    )
+                    FilledTonalButton(
+                        onClick = {
+                            editing = null
+                            showForm = true
+                        },
+                        shape = RoundedCornerShape(14.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 10.dp, bottom = 12.dp),
+                    ) {
+                        Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+                        Spacer(Modifier.width(8.dp))
+                        Text("Add provider")
+                    }
                     // Bounded height: a wrap-content LazyColumn inside a bottom
                     // sheet collapses and its drags fight the dismiss gesture.
                     LazyColumn(
                         Modifier
                             .fillMaxWidth()
                             .heightIn(max = 400.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
                     ) {
                         itemsIndexed(providers, key = { _, p -> p.id }) { index, provider ->
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
+                            val active = provider.id == activeProviderId
+                            Surface(
+                                onClick = {
+                                    onSetActive(provider.id)
+                                    onDismiss()
+                                },
+                                color = if (active) MaterialTheme.colorScheme.secondaryContainer
+                                else MaterialTheme.colorScheme.surfaceContainerLow,
+                                shape = RoundedCornerShape(16.dp),
+                                border = BorderStroke(
+                                    1.dp,
+                                    if (active) MaterialTheme.colorScheme.primary.copy(alpha = 0.3f)
+                                    else MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
+                                ),
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable {
-                                        onSetActive(provider.id)
-                                        onDismiss()
-                                    }
-                                    .padding(horizontal = 4.dp, vertical = 8.dp),
+                                    .padding(vertical = 1.dp),
                             ) {
-                                Column(Modifier.weight(1f)) {
-                                    Text(
-                                        provider.name,
-                                        style = MaterialTheme.typography.titleSmallEmphasized,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                    Text(
-                                        if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model else "${provider.type.endpointPath} · ${provider.model}",
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
-                                if (provider.id == activeProviderId) {
-                                    Icon(
-                                        Icons.Filled.CheckCircle,
-                                        contentDescription = "Active",
-                                        tint = MaterialTheme.colorScheme.primary,
-                                        modifier = Modifier.size(18.dp),
-                                    )
-                                }
-                                if (provider.id != com.androidharness.app.llm.HarnessProvider.ID) {
-                                    IconButton(onClick = {
-                                        editing = provider
-                                        showForm = true
-                                    }) {
-                                        Icon(
-                                            Icons.Outlined.Edit,
-                                            contentDescription = "Edit",
-                                            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    modifier = Modifier.padding(start = 12.dp, end = 4.dp, top = 10.dp, bottom = 10.dp),
+                                ) {
+                                    ProviderMark(size = 40.dp)
+                                    Spacer(Modifier.width(11.dp))
+                                    Column(Modifier.weight(1f)) {
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Text(
+                                                provider.name,
+                                                style = MaterialTheme.typography.titleSmallEmphasized,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis,
+                                                modifier = Modifier.weight(1f, fill = false),
+                                            )
+                                            if (active) {
+                                                Spacer(Modifier.width(6.dp))
+                                                Surface(
+                                                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.12f),
+                                                    shape = RoundedCornerShape(50),
+                                                ) {
+                                                    Text(
+                                                        "Active",
+                                                        style = MaterialTheme.typography.labelSmall,
+                                                        color = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
+                                                    )
+                                                }
+                                            }
+                                        }
+                                        Text(
+                                            if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model
+                                            else "${provider.type.endpointPath} · ${provider.model}",
+                                            style = MaterialTheme.typography.labelSmall,
+                                            color = if (active) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.76f)
+                                            else MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis,
                                         )
                                     }
-                                    IconButton(onClick = { onDelete(provider.id) }) {
+                                    if (active) {
                                         Icon(
-                                            Icons.Outlined.Delete,
-                                            contentDescription = "Delete",
-                                            tint = MaterialTheme.colorScheme.error,
+                                            Icons.Filled.CheckCircle,
+                                            contentDescription = "Active",
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier.size(19.dp),
                                         )
+                                    }
+                                    if (provider.id != com.androidharness.app.llm.HarnessProvider.ID) {
+                                        IconButton(onClick = {
+                                            editing = provider
+                                            showForm = true
+                                        }) {
+                                            Icon(
+                                                Icons.Outlined.Edit,
+                                                contentDescription = "Edit",
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            )
+                                        }
+                                        IconButton(onClick = { onDelete(provider.id) }) {
+                                            Icon(
+                                                Icons.Outlined.Delete,
+                                                contentDescription = "Delete",
+                                                tint = MaterialTheme.colorScheme.error,
+                                            )
+                                        }
                                     }
                                 }
                             }
-                            if (index < providers.lastIndex) {
-                                HorizontalDivider(
-                                    color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f),
-                                    modifier = Modifier.padding(start = 4.dp),
-                                )
-                            }
-                        }
-                        item {
-                            TextButton(onClick = {
-                                editing = null
-                                showForm = true
-                            }) { Text("Add provider") }
                         }
                         item {
                             // The local model/thinking catalog (models.dev)

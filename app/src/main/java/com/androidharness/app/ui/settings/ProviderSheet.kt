@@ -1,7 +1,9 @@
 package com.androidharness.app.ui.settings
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -10,13 +12,19 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -27,6 +35,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
@@ -45,7 +54,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
-import androidx.compose.foundation.layout.Box
+import com.androidharness.app.ui.common.ProviderMark
 import com.androidharness.app.ui.common.SecureDialogEffect
 import com.androidharness.app.llm.ModelCatalog
 import com.androidharness.app.llm.ModelEntry
@@ -230,33 +239,15 @@ internal fun ProviderSheetContent(
             .fillMaxWidth()
             .navigationBarsPadding(),
     ) {
-        // ---- Step header -----------------------------------------------------
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            if (step == AddStep.PROVIDER) {
-                Text(
-                    if (existing == null) "Add provider" else "Edit provider",
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                    modifier = Modifier.weight(1f).padding(start = 16.dp),
-                )
-                IconButton(onClick = onDismiss) {
-                    Icon(Icons.Filled.Close, contentDescription = "Close")
-                }
-            } else {
-                IconButton(onClick = {
-                    step = if (step == AddStep.MODEL) AddStep.KEY else AddStep.PROVIDER
-                }) {
-                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
-                }
-                Text(
-                    if (step == AddStep.KEY) {
-                        ("API key · ").plus(selectedLabel)
-                    } else {
-                        "Pick a model"
-                    },
-                    style = MaterialTheme.typography.titleMediumEmphasized,
-                )
-            }
-        }
+        ProviderFlowHeader(
+            step = step,
+            editing = existing != null,
+            providerLabel = selectedLabel,
+            onBack = {
+                step = if (step == AddStep.MODEL) AddStep.KEY else AddStep.PROVIDER
+            },
+            onClose = onDismiss,
+        )
 
         when (step) {
             // ================================================================
@@ -267,23 +258,30 @@ internal fun ProviderSheetContent(
                         .padding(horizontal = 16.dp),
                 ) {
                     if (catalogSyncing) {
-                        Text(
-                            "Updating model catalog…",
-                            style = MaterialTheme.typography.labelSmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                        Spacer(Modifier.height(6.dp))
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                            shape = RoundedCornerShape(10.dp),
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 8.dp),
+                        ) {
+                            Text(
+                                "Refreshing provider catalog…",
+                                style = MaterialTheme.typography.labelMedium,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
+                            )
+                        }
                     }
                     if (devProviders.isNotEmpty()) {
                         OutlinedTextField(
                             value = providerQuery,
                             onValueChange = { providerQuery = it },
                             placeholder = { Text("Search ${devProviders.size} providers") },
+                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                             singleLine = true,
-                            shape = MaterialTheme.shapes.medium,
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth(),
                         )
-                        Spacer(Modifier.height(6.dp))
+                        Spacer(Modifier.height(10.dp))
                     }
                     ProviderDirectory(
                         query = providerQuery,
@@ -333,6 +331,10 @@ internal fun ProviderSheetContent(
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp),
                 ) {
+                    SelectedProviderSummary(
+                        label = selectedLabel,
+                        subtitle = if (isCustom) effectiveBaseUrl else effectiveType.endpointPath,
+                    )
                     if (isCustom) {
                         Box {
                             OutlinedTextField(
@@ -382,14 +384,28 @@ internal fun ProviderSheetContent(
                             },
                             visualTransformation = PasswordVisualTransformation(),
                             singleLine = true,
+                            shape = RoundedCornerShape(14.dp),
                             modifier = Modifier.fillMaxWidth(),
                         )
-                    } else {
                         Text(
-                            "$selectedLabel runs locally, no API key needed.",
-                            style = MaterialTheme.typography.bodySmall,
+                            "Stored securely on this device and used only for this provider.",
+                            style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 4.dp),
                         )
+                    } else {
+                        Surface(
+                            color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.55f),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.fillMaxWidth(),
+                        ) {
+                            Text(
+                                "$selectedLabel runs locally, so no API key is needed.",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSecondaryContainer,
+                                modifier = Modifier.padding(12.dp),
+                            )
+                        }
                     }
 
                     fetchError?.let { message ->
@@ -424,35 +440,45 @@ internal fun ProviderSheetContent(
                         .fillMaxWidth()
                         .padding(horizontal = 16.dp),
                 ) {
+                    SelectedProviderSummary(
+                        label = selectedLabel,
+                        subtitle = "Choose the model this provider should use",
+                    )
+                    Spacer(Modifier.height(10.dp))
                     OutlinedTextField(
                         value = modelQuery,
                         onValueChange = { modelQuery = it },
                         placeholder = { Text("Search models or type an ID") },
+                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                         singleLine = true,
-                        shape = MaterialTheme.shapes.medium,
+                        shape = RoundedCornerShape(14.dp),
                         modifier = Modifier.fillMaxWidth(),
                     )
-                    Spacer(Modifier.height(6.dp))
+                    Spacer(Modifier.height(8.dp))
                     val q = modelQuery.trim()
-                    val filtered = displayModels.orEmpty()
-                        .filter { q.isBlank() || it.id.lowercase().contains(q.lowercase()) }
-                    Column(
+                    val filtered = remember(displayModels, q) {
+                        val lower = q.lowercase()
+                        displayModels.orEmpty()
+                            .filter { lower.isBlank() || it.id.lowercase().contains(lower) }
+                    }
+                    LazyColumn(
                         Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 360.dp)
-                            .verticalScroll(rememberScrollState()),
+                            .heightIn(max = 360.dp),
                     ) {
                         // Free-typed ID is a first-class row, not a fallback hack.
                         if (q.isNotBlank() && filtered.none { it.id == q }) {
-                            ModelPickRow(
-                                id = q,
-                                thinking = reasoningCapable(q),
-                                selected = model == q,
-                                hint = "use as typed",
-                                onClick = { model = q },
-                            )
+                            item(key = "typed-$q") {
+                                ModelPickRow(
+                                    id = q,
+                                    thinking = reasoningCapable(q),
+                                    selected = model == q,
+                                    hint = "Use custom model ID",
+                                    onClick = { model = q },
+                                )
+                            }
                         }
-                        filtered.forEach { entry ->
+                        items(filtered, key = { it.id }) { entry ->
                             ModelPickRow(
                                 id = entry.id,
                                 thinking = entry.reasoning ?: reasoningCapable(entry.id),
@@ -462,12 +488,14 @@ internal fun ProviderSheetContent(
                             )
                         }
                         if (displayModels == null && q.isBlank()) {
-                            Text(
-                                "Type a model ID above.",
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.padding(vertical = 12.dp),
-                            )
+                            item {
+                                Text(
+                                    "No catalog available yet. Type a model ID above.",
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    modifier = Modifier.padding(vertical = 18.dp),
+                                )
+                            }
                         }
                     }
 
@@ -493,6 +521,109 @@ internal fun ProviderSheetContent(
                     },
                     secondary = null,
                     onCancel = onDismiss,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProviderFlowHeader(
+    step: AddStep,
+    editing: Boolean,
+    providerLabel: String,
+    onBack: () -> Unit,
+    onClose: () -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(start = if (step == AddStep.PROVIDER) 16.dp else 4.dp, end = 4.dp, bottom = 12.dp),
+    ) {
+        if (step != AddStep.PROVIDER) {
+            IconButton(onClick = onBack) {
+                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+            }
+        }
+        Column(Modifier.weight(1f)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    when (step) {
+                        AddStep.PROVIDER -> if (editing) "Edit provider" else "Add provider"
+                        AddStep.KEY -> "Connect $providerLabel"
+                        AddStep.MODEL -> "Choose model"
+                    },
+                    style = MaterialTheme.typography.titleMediumEmphasized,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Spacer(Modifier.width(8.dp))
+                Surface(
+                    color = scheme.surfaceContainerHigh,
+                    shape = RoundedCornerShape(50),
+                ) {
+                    Text(
+                        when (step) {
+                            AddStep.PROVIDER -> "1 of 3"
+                            AddStep.KEY -> "2 of 3"
+                            AddStep.MODEL -> "3 of 3"
+                        },
+                        style = MaterialTheme.typography.labelSmall,
+                        color = scheme.onSurfaceVariant,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 3.dp),
+                    )
+                }
+            }
+            Text(
+                when (step) {
+                    AddStep.PROVIDER -> "Pick a service or connect your own endpoint"
+                    AddStep.KEY -> "Add the credentials needed to reach this provider"
+                    AddStep.MODEL -> "Search the catalog or enter a model ID"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = scheme.onSurfaceVariant,
+                maxLines = 1,
+                overflow = TextOverflow.Ellipsis,
+            )
+        }
+        IconButton(onClick = onClose) {
+            Icon(Icons.Filled.Close, contentDescription = "Close")
+        }
+    }
+}
+
+@Composable
+private fun SelectedProviderSummary(
+    label: String,
+    subtitle: String,
+) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        color = scheme.surfaceContainerHigh,
+        shape = RoundedCornerShape(16.dp),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(12.dp),
+        ) {
+            ProviderMark(size = 40.dp)
+            Spacer(Modifier.width(12.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    label,
+                    style = MaterialTheme.typography.titleSmallEmphasized,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
         }
@@ -528,39 +659,45 @@ private fun ModelPickRow(
     hint: String?,
     onClick: () -> Unit,
 ) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        onClick = onClick,
+        color = if (selected) scheme.primaryContainer.copy(alpha = 0.62f) else scheme.surface,
+        shape = RoundedCornerShape(13.dp),
+        border = if (selected) BorderStroke(1.dp, scheme.primary.copy(alpha = 0.35f)) else null,
         modifier = Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 8.dp, vertical = 9.dp),
+            .padding(vertical = 3.dp),
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                id,
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            val sub = listOfNotNull(if (thinking) "thinking" else null, hint)
-                .joinToString(" · ")
-            if (sub.isNotEmpty()) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 12.dp, vertical = 11.dp),
+        ) {
+            Column(Modifier.weight(1f)) {
                 Text(
-                    sub,
-                    style = MaterialTheme.typography.labelSmall,
-                    color = if (thinking) MaterialTheme.colorScheme.primary
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
+                    id,
+                    style = MaterialTheme.typography.titleSmall,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                val sub = listOfNotNull(if (thinking) "thinking" else null, hint)
+                    .joinToString(" · ")
+                if (sub.isNotEmpty()) {
+                    Text(
+                        sub,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = if (thinking) scheme.primary else scheme.onSurfaceVariant,
+                    )
+                }
+            }
+            if (selected) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = scheme.primary,
+                    modifier = Modifier.size(19.dp),
                 )
             }
-        }
-        if (selected) {
-            Icon(
-                Icons.Filled.CheckCircle,
-                contentDescription = "Selected",
-                tint = MaterialTheme.colorScheme.primary,
-                modifier = Modifier.height(18.dp),
-            )
         }
     }
 }
@@ -582,47 +719,52 @@ private fun ProviderDirectory(
     onSelectDev: (ModelsDev.ProviderInfo) -> Unit,
     onSelectCustom: () -> Unit,
 ) {
-    val scheme = MaterialTheme.colorScheme
-    val q = query.trim().lowercase()
-    val curated = ProviderBrands.filterNotNull()
-        .filter { q.isBlank() || it.label.lowercase().contains(q) }
-    val dev = devProviders
-        .filter { q.isBlank() || it.name.lowercase().contains(q) || it.id.contains(q) }
+    val q = remember(query) { query.trim().lowercase() }
+    val curated = remember(q) {
+        ProviderBrands.filterNotNull()
+            .filter { q.isBlank() || it.label.lowercase().contains(q) }
+    }
+    val dev = remember(q, devProviders) {
+        devProviders.filter {
+            q.isBlank() || it.name.lowercase().contains(q) || it.id.lowercase().contains(q)
+        }
+    }
 
-    Column(
+    LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 280.dp)
-            .verticalScroll(rememberScrollState()),
+            .heightIn(max = 340.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         if (q.isBlank() || "custom".contains(q)) {
-            ProviderRow(
-                title = "Custom endpoint",
-                subtitle = "Bring your own server URL",
-                selected = customSelected,
-                onClick = onSelectCustom,
-            )
-            if (curated.isNotEmpty() || dev.isNotEmpty()) {
-                HorizontalDivider(
-                    color = scheme.outlineVariant.copy(alpha = 0.35f),
-                    modifier = Modifier.padding(vertical = 4.dp),
+            item(key = "custom") {
+                ProviderRow(
+                    title = "Custom endpoint",
+                    subtitle = "Connect any compatible API or local server",
+                    selected = customSelected,
+                    custom = true,
+                    onClick = onSelectCustom,
                 )
             }
         }
         if (curated.isNotEmpty()) {
-            DirectoryLabel(if (q.isBlank()) "Popular" else "Brands")
-            curated.forEach { b ->
+            item(key = "popular-label") {
+                DirectoryLabel(if (q.isBlank()) "Popular" else "Providers")
+            }
+            items(curated, key = { "brand-${it.label}" }) { b ->
                 ProviderRow(
                     title = b.label,
-                    subtitle = if (b.needsKey) "API key required" else "Local (no API key)",
+                    subtitle = if (b.needsKey) "API key required" else "Runs locally without a key",
                     selected = b.label == selectedBrand?.label,
                     onClick = { onSelectBrand(b) },
                 )
             }
         }
         if (dev.isNotEmpty()) {
-            if (q.isBlank()) DirectoryLabel("All providers")
-            dev.forEach { info ->
+            if (q.isBlank()) {
+                item(key = "all-label") { DirectoryLabel("All providers") }
+            }
+            items(dev, key = { "dev-${it.id}" }) { info ->
                 ProviderRow(
                     title = info.name,
                     subtitle = "${info.modelCount} models",
@@ -649,40 +791,85 @@ private fun ProviderRow(
     title: String,
     subtitle: String,
     selected: Boolean,
+    custom: Boolean = false,
     onClick: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
+    Surface(
+        onClick = onClick,
+        color = if (selected) scheme.secondaryContainer else scheme.surfaceContainerLow,
+        shape = RoundedCornerShape(14.dp),
+        border = BorderStroke(
+            1.dp,
+            if (selected) scheme.primary.copy(alpha = 0.28f)
+            else scheme.outlineVariant.copy(alpha = 0.32f),
+        ),
         modifier = Modifier
             .fillMaxWidth()
-            .clip(MaterialTheme.shapes.small)
-            .clickable(onClick = onClick)
-            .padding(horizontal = 4.dp, vertical = 10.dp),
+            .padding(vertical = 2.dp),
     ) {
-        Column(Modifier.weight(1f)) {
-            Text(
-                title,
-                style = MaterialTheme.typography.bodyMedium,
-                color = if (selected) scheme.primary else scheme.onSurface,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
-            Text(
-                subtitle,
-                style = MaterialTheme.typography.labelSmall,
-                color = scheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 9.dp),
+        ) {
+            if (custom) {
+                ProviderMark(size = 38.dp)
+            } else {
+                ProviderInitial(label = title, selected = selected)
+            }
+            Spacer(Modifier.width(11.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    title,
+                    style = MaterialTheme.typography.titleSmall,
+                    color = if (selected) scheme.onSecondaryContainer else scheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+                Text(
+                    subtitle,
+                    style = MaterialTheme.typography.labelSmall,
+                    color = if (selected) scheme.onSecondaryContainer.copy(alpha = 0.72f)
+                    else scheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                )
+            }
+            if (selected) {
+                Icon(
+                    Icons.Filled.CheckCircle,
+                    contentDescription = "Selected",
+                    tint = scheme.primary,
+                    modifier = Modifier.size(19.dp),
+                )
+            }
         }
-        if (selected) {
-            Icon(
-                Icons.Filled.CheckCircle,
-                contentDescription = "Selected",
-                tint = scheme.primary,
-                modifier = Modifier.height(18.dp),
-            )
+    }
+}
+
+@Composable
+private fun ProviderInitial(
+    label: String,
+    selected: Boolean,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val initials = remember(label) {
+        label
+            .replace("(Responses)", "")
+            .split(' ', '-', '_')
+            .filter { it.isNotBlank() }
+            .take(2)
+            .joinToString("") { it.take(1).uppercase() }
+            .take(2)
+    }
+    Surface(
+        color = if (selected) scheme.primary.copy(alpha = 0.14f) else scheme.surfaceContainerHighest,
+        contentColor = if (selected) scheme.primary else scheme.onSurfaceVariant,
+        shape = RoundedCornerShape(11.dp),
+        modifier = Modifier.size(38.dp),
+    ) {
+        Box(contentAlignment = Alignment.Center) {
+            Text(initials.ifBlank { "AI" }, style = MaterialTheme.typography.labelMedium)
         }
     }
 }

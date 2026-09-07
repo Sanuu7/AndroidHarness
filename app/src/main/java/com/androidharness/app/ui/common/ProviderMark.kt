@@ -18,7 +18,7 @@ import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 
-/** A small routing mark: multiple model providers converging on one agent. */
+/** A compact provider hub mark: external model endpoints orbit one shared agent. */
 val ProviderGlyph: ImageVector = ImageVector.Builder(
     name = "ProviderGlyph",
     defaultWidth = 24.dp,
@@ -29,46 +29,42 @@ val ProviderGlyph: ImageVector = ImageVector.Builder(
     path(
         fill = null,
         stroke = SolidColor(Color.Black),
-        strokeLineWidth = 1.65f,
+        strokeLineWidth = 1.55f,
         strokeLineCap = StrokeCap.Round,
         strokeLineJoin = StrokeJoin.Round,
     ) {
-        moveTo(7.35f, 7.45f)
-        lineTo(10.15f, 10.25f)
-        moveTo(16.65f, 7.45f)
-        lineTo(13.85f, 10.25f)
-        moveTo(12f, 15.25f)
-        lineTo(12f, 17.1f)
+        moveTo(7.15f, 7.15f)
+        curveTo(8.35f, 6.0f, 10.0f, 5.35f, 12f, 5.35f)
+        curveTo(14.0f, 5.35f, 15.65f, 6.0f, 16.85f, 7.15f)
+        moveTo(6.7f, 16.15f)
+        curveTo(8.0f, 17.75f, 9.75f, 18.65f, 12f, 18.65f)
+        curveTo(14.25f, 18.65f, 16.0f, 17.75f, 17.3f, 16.15f)
     }
     path(fill = SolidColor(Color.Black)) {
-        moveTo(12f, 8.7f)
-        lineTo(15.3f, 12f)
-        lineTo(12f, 15.3f)
-        lineTo(8.7f, 12f)
+        moveTo(12f, 7.65f)
+        lineTo(13.25f, 10.75f)
+        lineTo(16.35f, 12f)
+        lineTo(13.25f, 13.25f)
+        lineTo(12f, 16.35f)
+        lineTo(10.75f, 13.25f)
+        lineTo(7.65f, 12f)
+        lineTo(10.75f, 10.75f)
         close()
     }
     path(fill = SolidColor(Color.Black)) {
-        moveTo(8.3f, 6.1f)
-        curveTo(8.3f, 7.37f, 7.27f, 8.4f, 6f, 8.4f)
-        curveTo(4.73f, 8.4f, 3.7f, 7.37f, 3.7f, 6.1f)
-        curveTo(3.7f, 4.83f, 4.73f, 3.8f, 6f, 3.8f)
-        curveTo(7.27f, 3.8f, 8.3f, 4.83f, 8.3f, 6.1f)
+        moveTo(6.85f, 4.0f)
+        curveTo(8.15f, 4.0f, 9.2f, 5.05f, 9.2f, 6.35f)
+        curveTo(9.2f, 7.65f, 8.15f, 8.7f, 6.85f, 8.7f)
+        curveTo(5.55f, 8.7f, 4.5f, 7.65f, 4.5f, 6.35f)
+        curveTo(4.5f, 5.05f, 5.55f, 4.0f, 6.85f, 4.0f)
         close()
     }
     path(fill = SolidColor(Color.Black)) {
-        moveTo(20.3f, 6.1f)
-        curveTo(20.3f, 7.37f, 19.27f, 8.4f, 18f, 8.4f)
-        curveTo(16.73f, 8.4f, 15.7f, 7.37f, 15.7f, 6.1f)
-        curveTo(15.7f, 4.83f, 16.73f, 3.8f, 18f, 3.8f)
-        curveTo(19.27f, 3.8f, 20.3f, 4.83f, 20.3f, 6.1f)
-        close()
-    }
-    path(fill = SolidColor(Color.Black)) {
-        moveTo(14.3f, 19.4f)
-        curveTo(14.3f, 20.67f, 13.27f, 21.7f, 12f, 21.7f)
-        curveTo(10.73f, 21.7f, 9.7f, 20.67f, 9.7f, 19.4f)
-        curveTo(9.7f, 18.13f, 10.73f, 17.1f, 12f, 17.1f)
-        curveTo(13.27f, 17.1f, 14.3f, 18.13f, 14.3f, 19.4f)
+        moveTo(17.15f, 4.0f)
+        curveTo(18.45f, 4.0f, 19.5f, 5.05f, 19.5f, 6.35f)
+        curveTo(19.5f, 7.65f, 18.45f, 8.7f, 17.15f, 8.7f)
+        curveTo(15.85f, 8.7f, 14.8f, 7.65f, 14.8f, 6.35f)
+        curveTo(14.8f, 5.05f, 15.85f, 4.0f, 17.15f, 4.0f)
         close()
     }
 }.build()
@@ -81,14 +77,14 @@ fun ProviderMark(
     Surface(
         color = MaterialTheme.colorScheme.primaryContainer,
         contentColor = MaterialTheme.colorScheme.onPrimaryContainer,
-        shape = RoundedCornerShape(size * 0.3f),
+        shape = RoundedCornerShape(size * 0.32f),
         modifier = modifier.size(size),
     ) {
         Box(contentAlignment = Alignment.Center) {
             Icon(
                 ProviderGlyph,
                 contentDescription = null,
-                modifier = Modifier.size(size * 0.62f),
+                modifier = Modifier.size(size * 0.64f),
             )
         }
     }
