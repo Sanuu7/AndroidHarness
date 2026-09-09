@@ -349,4 +349,28 @@ class FileToolsTest {
         assertTrue(r.output.contains("sample.txt"))
         assertFalse(r.output.contains("sample.bin"))
     }
+
+    @Test
+    fun `read_file clamps single huge line within MAX_READ_CHARS`() = runBlocking {
+        val hugeLine = "x".repeat(300_000)
+        file("huge_line.txt").writeText(hugeLine)
+        val r = ReadFileTool().execute(
+            buildJsonObject { put("path", JsonPrimitive("huge_line.txt")) },
+            ctx(),
+        )
+        assertTrue(r.ok)
+        assertTrue("Output should contain truncation marker", r.output.contains("[truncated: output exceeded 100000 chars]"))
+        assertTrue("Output length should be bounded around 100k chars, got ${r.output.length}", r.output.length < 105_000)
+    }
+
+    @Test
+    fun `clampForStorage bounds oversized text safely below CursorWindow ceiling`() {
+        val huge = "x".repeat(500_000)
+        val clamped = com.androidharness.app.data.clampForStorage(huge)
+        assertTrue(clamped.contains("[truncated for storage safety]"))
+        assertTrue("Clamped length must be below 260_000, got ${clamped.length}", clamped.length < 260_000)
+
+        val small = "regular message text"
+        assertEquals(small, com.androidharness.app.data.clampForStorage(small))
+    }
 }

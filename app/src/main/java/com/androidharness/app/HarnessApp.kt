@@ -60,6 +60,7 @@ class AppContainer(val appContext: Context) {
             AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8,
             AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11,
         )
+        .addCallback(AppDatabase.OVERSIZED_ROW_SANITIZER)
         // Only kicks in when no migration path exists (pre-v4 databases);
         // the v4→v5 path above preserves sessions and usage totals.
         .fallbackToDestructiveMigration(true)

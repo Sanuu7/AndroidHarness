@@ -134,14 +134,26 @@ class ReadFileTool : Tool {
             if (all.isEmpty()) return@withContext ToolResult(true, "(empty file)")
             val slice = all.drop(offset - 1).take(limit)
             val sb = StringBuilder()
+            var truncated = false
             for ((idx, line) in slice.withIndex()) {
-                sb.append(offset + idx).append('\t').append(line).append('\n')
-                if (sb.length > MAX_READ_CHARS) {
-                    sb.append("\n[truncated: output exceeded $MAX_READ_CHARS chars]\n")
+                val prefix = "${offset + idx}\t"
+                val remaining = MAX_READ_CHARS - sb.length
+                if (remaining <= prefix.length) {
+                    truncated = true
                     break
                 }
+                sb.append(prefix)
+                val lineBudget = MAX_READ_CHARS - sb.length
+                if (line.length > lineBudget) {
+                    sb.append(line, 0, lineBudget)
+                    truncated = true
+                    break
+                }
+                sb.append(line).append('\n')
             }
-            if (offset + slice.size - 1 < all.size) {
+            if (truncated) {
+                sb.append("\n[truncated: output exceeded $MAX_READ_CHARS chars]\n")
+            } else if (offset + slice.size - 1 < all.size) {
                 sb.append("[showing lines $offset..${offset + slice.size - 1} of ${all.size}]\n")
             }
             ToolResult(true, sb.toString().trimEnd())

@@ -387,6 +387,31 @@ abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        /**
+         * Android CursorWindow hard-caps rows at 2MB; rows exceeding the cap
+         * throw SQLiteBlobTooBigException and crash the app on startup/query.
+         * Truncate oversized rows on open so corrupted sessions self-heal.
+         */
+        val OVERSIZED_ROW_SANITIZER = object : RoomDatabase.Callback() {
+            override fun onOpen(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                super.onOpen(db)
+                runCatching {
+                    db.execSQL(
+                        "UPDATE messages SET text = substr(text, 1, 100000) || char(10) || '[truncated for storage safety]' " +
+                            "WHERE length(text) > 250000"
+                    )
+                    db.execSQL(
+                        "UPDATE messages SET thinking = substr(thinking, 1, 100000) || char(10) || '[truncated for storage safety]' " +
+                            "WHERE length(thinking) > 250000"
+                    )
+                    db.execSQL(
+                        "UPDATE messages SET toolCallsJson = '[]' " +
+                            "WHERE length(toolCallsJson) > 250000"
+                    )
+                }
+            }
+        }
+
         /** Persist measured model response speed without changing existing chat history. */
         val MIGRATION_10_11 = object : androidx.room.migration.Migration(10, 11) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {

@@ -25,6 +25,12 @@ data class MessageHit(
     val createdAt: Long,
 )
 
+internal const val MAX_PERSISTED_FIELD_CHARS = 250_000
+
+internal fun clampForStorage(s: String, max: Int = MAX_PERSISTED_FIELD_CHARS): String =
+    if (s.length <= max) s
+    else s.substring(0, max) + "\n[truncated for storage safety]"
+
 class SessionRepository(
     private val db: AppDatabase,
 ) {
@@ -109,17 +115,21 @@ class SessionRepository(
 
     suspend fun addMessage(sessionId: String, message: ChatMessage, turnId: String? = null): String {
         val id = message.id ?: UUID.randomUUID().toString()
+        val safeText = clampForStorage(message.text)
+        val safeThinking = clampForStorage(message.thinking)
+        val rawCalls = json.encodeToString(toolCallList, message.toolCalls)
+        val safeCalls = if (rawCalls.length <= MAX_PERSISTED_FIELD_CHARS) rawCalls else "[]"
         db.dao().insertMessage(
             MessageEntity(
                 id = id,
                 sessionId = sessionId,
                 role = message.role.name,
-                text = message.text,
-                toolCallsJson = json.encodeToString(toolCallList, message.toolCalls),
+                text = safeText,
+                toolCallsJson = safeCalls,
                 toolCallId = message.toolCallId,
                 toolName = message.toolName,
                 isError = message.isError,
-                thinking = message.thinking,
+                thinking = safeThinking,
                 thinkingMs = message.thinkingMs,
                 outputTokens = message.outputTokens,
                 generationMs = message.generationMs,
