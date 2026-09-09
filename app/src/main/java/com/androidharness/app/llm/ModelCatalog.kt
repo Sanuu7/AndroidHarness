@@ -75,22 +75,8 @@ object ModelCatalog {
         withContext(Dispatchers.IO) {
             val started = System.currentTimeMillis()
             try {
-                val (url, requestBuilder) = when (config.type) {
-                    // Responses is OpenAI-only; its model listing is identical.
-                    ProviderType.OPENAI_COMPAT, ProviderType.OPENAI_RESPONSES ->
-                        config.baseUrl.trimEnd('/') + "/models" to
-                            Request.Builder().header("Authorization", "Bearer $apiKey")
-
-                    ProviderType.ANTHROPIC -> config.baseUrl.trimEnd('/') + "/v1/models" to
-                        Request.Builder()
-                            .header("x-api-key", apiKey)
-                            .header("anthropic-version", "2023-06-01")
-
-                    ProviderType.GEMINI ->
-                        config.baseUrl.trimEnd('/') + "/models" to
-                            Request.Builder().header("x-goog-api-key", apiKey)
-                }
-                client.newCall(requestBuilder.url(url).build().let { if (config.id == HarnessProvider.ID) HarnessProvider.anonymous(it) else it }).execute().use { resp ->
+                val request = buildRequest(config, apiKey)
+                client.newCall(request).execute().use { resp ->
                     if (!resp.isSuccessful) {
                         return@use Result.Failed("HTTP ${resp.code}: ${resp.message}")
                     }
@@ -101,6 +87,30 @@ object ModelCatalog {
                 Result.Failed(e.message ?: "Connection failed")
             }
         }
+
+    internal fun buildRequest(config: ProviderConfig, apiKey: String): Request {
+        val (url, requestBuilder) = when (config.type) {
+            // Responses is OpenAI-only; its model listing is identical.
+            ProviderType.OPENAI_COMPAT, ProviderType.OPENAI_RESPONSES ->
+                config.baseUrl.trimEnd('/') + "/models" to
+                    Request.Builder().header("Authorization", "Bearer $apiKey")
+
+            ProviderType.ANTHROPIC -> config.baseUrl.trimEnd('/') + "/v1/models" to
+                Request.Builder()
+                    .header("x-api-key", apiKey)
+                    .header("anthropic-version", "2023-06-01")
+
+            ProviderType.GEMINI ->
+                config.baseUrl.trimEnd('/') + "/models" to
+                    Request.Builder().header("x-goog-api-key", apiKey)
+        }
+        val rawRequest = requestBuilder.url(url).build()
+        return when {
+            config.id == HarnessProvider.ID -> HarnessProvider.anonymous(rawRequest)
+            HarnessProvider.isOpenCode(config) -> HarnessProvider.withSession(rawRequest.newBuilder(), null).build()
+            else -> rawRequest
+        }
+    }
 
     /** Pure parser, unit-testable without HTTP. */
     internal fun parseCatalog(type: ProviderType, body: String): List<ModelEntry> {

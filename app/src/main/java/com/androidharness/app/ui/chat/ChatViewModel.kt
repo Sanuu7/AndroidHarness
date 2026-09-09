@@ -1418,7 +1418,7 @@ class ChatViewModel(
                     "files created/modified and their paths, key decisions, pending work and next steps. " +
                     "Output plain notes only.",
                 history, emptyList(),
-                RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF),
+                RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF, cacheKey = sid),
             ).collect { ev ->
                 when (ev) {
                     is com.androidharness.app.llm.StreamEvent.TextDelta -> summary.append(ev.text)

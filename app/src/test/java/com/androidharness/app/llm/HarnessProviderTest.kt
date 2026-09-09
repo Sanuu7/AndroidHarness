@@ -1,6 +1,8 @@
 package com.androidharness.app.llm
 
+import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -55,5 +57,55 @@ class HarnessProviderTest {
         val request = HarnessProvider.anonymous(Request.Builder().url(HarnessProvider.BASE_URL)
             .header(HarnessProvider.SESSION_HEADER, "conversation-123").build())
         assertEquals("conversation-123", request.header(HarnessProvider.SESSION_HEADER))
+    }
+
+    @Test fun isOpenCodeMatchesEndpointsAndNames() {
+        assertTrue(HarnessProvider.isOpenCode(ProviderConfig("custom-1", "Custom", ProviderType.OPENAI_COMPAT, "https://opencode.ai/zen/v1", "model")))
+        assertTrue(HarnessProvider.isOpenCode(ProviderConfig("custom-2", "Custom", ProviderType.OPENAI_COMPAT, "https://opencode.ai/v1", "model")))
+        assertTrue(HarnessProvider.isOpenCode(ProviderConfig("custom-3", "OpenCode Go", ProviderType.OPENAI_COMPAT, "https://proxy.example.com/v1", "model")))
+        assertTrue(HarnessProvider.isOpenCode(HarnessProvider.config))
+
+        assertFalse(HarnessProvider.isOpenCode(ProviderConfig("p1", "OpenAI", ProviderType.OPENAI_COMPAT, "https://api.openai.com/v1", "gpt-4o")))
+        assertFalse(HarnessProvider.isOpenCode(ProviderConfig("p2", "Anthropic", ProviderType.ANTHROPIC, "https://api.anthropic.com", "claude-3-5-sonnet")))
+        assertFalse(HarnessProvider.isOpenCode(ProviderConfig("p3", "OpenRouter", ProviderType.OPENAI_COMPAT, "https://openrouter.ai/api/v1", "auto")))
+    }
+
+    @Test fun withSessionInjectsHeaderAndUserAgent() {
+        val builder = Request.Builder().url("https://opencode.ai/zen/v1/chat/completions")
+        val req = HarnessProvider.withSession(builder, "sess-xyz").build()
+        assertEquals("sess-xyz", req.header(HarnessProvider.SESSION_HEADER))
+        assertEquals("AndroidHarness", req.header("User-Agent"))
+
+        val fallbackBuilder = Request.Builder().url("https://opencode.ai/zen/v1/chat/completions")
+        val fallbackReq = HarnessProvider.withSession(fallbackBuilder, null).build()
+        assertFalse(fallbackReq.header(HarnessProvider.SESSION_HEADER).isNullOrBlank())
+        assertEquals("AndroidHarness", fallbackReq.header("User-Agent"))
+    }
+
+    @Test fun customOpenCodeGoProviderInjectsHeadersWithoutStrippingAuth() {
+        val customConfig = ProviderConfig("custom-uuid", "OpenCode Go", ProviderType.OPENAI_COMPAT, "https://opencode.ai/zen/v1", "model")
+        val dummyBody = "{}".toRequestBody("application/json".toMediaType())
+        val req = OpenAiCompatProvider(okhttp3.OkHttpClient(), ProviderFactory.json).buildRequest(
+            customConfig,
+            "secret-token",
+            dummyBody,
+            RequestOptions(cacheKey = "my-chat-session"),
+        )
+        assertEquals("Bearer secret-token", req.header("Authorization"))
+        assertEquals("my-chat-session", req.header(HarnessProvider.SESSION_HEADER))
+        assertEquals("AndroidHarness", req.header("User-Agent"))
+    }
+
+    @Test fun modelCatalogInjectsOpenCodeHeadersWhileKeepingAuth() {
+        val customConfig = ProviderConfig("custom-uuid", "OpenCode Go", ProviderType.OPENAI_COMPAT, "https://opencode.ai/zen/v1", "model")
+        val req = ModelCatalog.buildRequest(customConfig, "secret-token")
+        assertEquals("Bearer secret-token", req.header("Authorization"))
+        assertFalse(req.header(HarnessProvider.SESSION_HEADER).isNullOrBlank())
+        assertEquals("AndroidHarness", req.header("User-Agent"))
+
+        val harnessReq = ModelCatalog.buildRequest(HarnessProvider.config, "ignored")
+        assertNull(harnessReq.header("Authorization"))
+        assertFalse(harnessReq.header(HarnessProvider.SESSION_HEADER).isNullOrBlank())
+        assertEquals("AndroidHarness", harnessReq.header("User-Agent"))
     }
 }

@@ -23,6 +23,7 @@ import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.TreeMap
 
@@ -135,19 +136,12 @@ class OpenAiCompatProvider(
             }
         }
 
-        val requestBuilder = Request.Builder()
-            .url(config.baseUrl.trimEnd('/') + "/chat/completions")
-            .header("Authorization", "Bearer $apiKey")
-        if (config.id == HarnessProvider.ID) {
-            HarnessProvider.withSession(requestBuilder, options.cacheKey)
-        }
-        if ("openrouter.ai" in host) {
-            requestBuilder.header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
-            requestBuilder.header("X-Title", "Android Harness")
-        }
-        val request = requestBuilder
-            .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
-            .build()
+        val request = buildRequest(
+            config,
+            apiKey,
+            body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()),
+            options,
+        )
 
         // Accumulates streamed tool-call fragments, keyed by CALL ID (with the
         // stream index only as a fallback). Some gateways stream parallel tool
@@ -333,6 +327,26 @@ class OpenAiCompatProvider(
         return host == "localhost" || host == "0.0.0.0" || host.startsWith("127.") ||
             host.startsWith("192.168.") || host.startsWith("10.") ||
             Regex("^172\\.(1[6-9]|2[0-9]|3[01])\\.").containsMatchIn(host)
+    }
+
+    internal fun buildRequest(
+        config: ProviderConfig,
+        apiKey: String,
+        body: RequestBody,
+        options: RequestOptions,
+    ): Request {
+        val host = config.baseUrl.lowercase()
+        val requestBuilder = Request.Builder()
+            .url(config.baseUrl.trimEnd('/') + "/chat/completions")
+            .header("Authorization", "Bearer $apiKey")
+        if (HarnessProvider.isOpenCode(config)) {
+            HarnessProvider.withSession(requestBuilder, options.cacheKey)
+        }
+        if ("openrouter.ai" in host) {
+            requestBuilder.header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
+            requestBuilder.header("X-Title", "Android Harness")
+        }
+        return requestBuilder.post(body).build()
     }
 
     /**

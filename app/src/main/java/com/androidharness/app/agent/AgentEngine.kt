@@ -306,7 +306,7 @@ class AgentEngine(
             val estimate = estimateContext(working, systemPrompt)
             emit(AgentEvent.EstimatedContext(estimate))
             if (estimate.total > (maxContextTokens * 0.8).toInt() && working.size > 6) {
-                val compacted = compact(provider, config, apiKey, working, maxContextTokens) { emit(it) }
+                val compacted = compact(provider, config, apiKey, working, maxContextTokens, sessionId) { emit(it) }
                 if (compacted != null) {
                     working.clear()
                     working.addAll(compacted)
@@ -1297,6 +1297,7 @@ class AgentEngine(
         apiKey: String,
         working: MutableList<ChatMessage>,
         maxContextTokens: Int,
+        sessionId: String? = null,
         emitEvent: suspend (AgentEvent) -> Unit,
     ): List<ChatMessage>? {
         emitEvent(AgentEvent.Compacting("Context near ${(maxContextTokens / 1000)}K. summarizing older messages"))
@@ -1319,7 +1320,7 @@ class AgentEngine(
                         "files created/modified and their paths, key decisions, pending work and next steps. " +
                         "Output plain notes only.",
                     olderClean, emptyList(),
-                    RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF),
+                    RequestOptions(maxOutputTokens = 1_500, thinking = ThinkingLevel.OFF, cacheKey = sessionId),
                 )
             },
             onAttemptStart = { summary.clear() },

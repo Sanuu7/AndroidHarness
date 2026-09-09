@@ -22,6 +22,7 @@ import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 import java.util.TreeMap
 
@@ -89,16 +90,12 @@ class AnthropicProvider(
             }
         }
 
-        val requestBuilder = Request.Builder()
-            .url(config.baseUrl.trimEnd('/') + "/v1/messages")
-            .header("x-api-key", apiKey)
-            .header("anthropic-version", "2023-06-01")
-        if (config.id == HarnessProvider.ID) {
-            HarnessProvider.withSession(requestBuilder, options.cacheKey)
-        }
-        val request = requestBuilder
-            .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
-            .build()
+        val request = buildRequest(
+            config,
+            apiKey,
+            body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()),
+            options,
+        )
 
         // content block index -> (id, name, accumulated input json)
         val toolBlocks = TreeMap<Int, Triple<String, String, StringBuilder>>()
@@ -373,5 +370,21 @@ class AnthropicProvider(
             }
         }
         return out
+    }
+
+    internal fun buildRequest(
+        config: ProviderConfig,
+        apiKey: String,
+        body: RequestBody,
+        options: RequestOptions,
+    ): Request {
+        val requestBuilder = Request.Builder()
+            .url(config.baseUrl.trimEnd('/') + "/v1/messages")
+            .header("x-api-key", apiKey)
+            .header("anthropic-version", "2023-06-01")
+        if (HarnessProvider.isOpenCode(config)) {
+            HarnessProvider.withSession(requestBuilder, options.cacheKey)
+        }
+        return requestBuilder.post(body).build()
     }
 }

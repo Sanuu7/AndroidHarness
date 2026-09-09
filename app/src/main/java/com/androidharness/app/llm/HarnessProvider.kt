@@ -16,6 +16,7 @@ object HarnessProvider {
     const val DEFAULT_MODEL = "ling-3.0-flash-fin-free"
     const val KEYLESS = "harness-keyless"
     const val SESSION_HEADER = "x-opencode-session"
+    const val USER_AGENT = "AndroidHarness"
     val config = ProviderConfig(ID, "Harness", ProviderType.OPENAI_COMPAT, BASE_URL, DEFAULT_MODEL)
     val fallbackModels = listOf(
         DEFAULT_MODEL, "big-pickle", "deepseek-v4-flash-free",
@@ -101,8 +102,16 @@ object HarnessProvider {
     private fun responsesBody(model: String) =
         """{"model":"$model","input":"reply with the single word ok","max_output_tokens":16}"""
 
+    fun isOpenCode(config: ProviderConfig): Boolean =
+        config.id == ID || isOpenCode(config.baseUrl) || "opencode" in config.name.lowercase()
+
+    fun isOpenCode(baseUrl: String): Boolean =
+        "opencode" in baseUrl.lowercase()
+
     fun withSession(builder: Request.Builder, sessionId: String?): Request.Builder =
-        builder.header(SESSION_HEADER, sessionId?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString())
+        builder
+            .header(SESSION_HEADER, sessionId?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString())
+            .header("User-Agent", USER_AGENT)
 
     fun anonymous(request: Request): Request {
         val builder = request.newBuilder()
@@ -110,8 +119,7 @@ object HarnessProvider {
             .removeHeader("x-api-key")
             .header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
             .header("X-Title", "Harness")
-            .header("User-Agent", "AndroidHarness")
-        if (request.header(SESSION_HEADER).isNullOrBlank()) withSession(builder, null)
+        withSession(builder, request.header(SESSION_HEADER))
         return builder.build()
     }
 

@@ -17,6 +17,7 @@ import kotlinx.serialization.json.putJsonObject
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
+import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
 
 /**
@@ -41,15 +42,12 @@ class OpenAiResponsesProvider(
         options: RequestOptions,
     ): Flow<StreamEvent> {
         val body = buildRequestBody(config, systemPrompt, messages, tools, options)
-        val requestBuilder = Request.Builder()
-            .url(config.baseUrl.trimEnd('/') + "/responses")
-            .header("Authorization", "Bearer $apiKey")
-        if (config.id == HarnessProvider.ID) {
-            HarnessProvider.withSession(requestBuilder, options.cacheKey)
-        }
-        val request = requestBuilder
-            .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
-            .build()
+        val request = buildRequest(
+            config,
+            apiKey,
+            body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()),
+            options,
+        )
 
         // Function-call fragments accumulate by item id: (call id, name, args)
         val acc = LinkedHashMap<String, Triple<String, String, StringBuilder>>()
@@ -71,6 +69,21 @@ class OpenAiResponsesProvider(
 
     // ------------------------------------------------------------------
     // Request building (pure, unit-tested)
+
+    internal fun buildRequest(
+        config: ProviderConfig,
+        apiKey: String,
+        body: RequestBody,
+        options: RequestOptions,
+    ): Request {
+        val requestBuilder = Request.Builder()
+            .url(config.baseUrl.trimEnd('/') + "/responses")
+            .header("Authorization", "Bearer $apiKey")
+        if (HarnessProvider.isOpenCode(config)) {
+            HarnessProvider.withSession(requestBuilder, options.cacheKey)
+        }
+        return requestBuilder.post(body).build()
+    }
 
     internal fun buildRequestBody(
         config: ProviderConfig,
