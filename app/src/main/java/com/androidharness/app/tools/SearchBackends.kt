@@ -156,13 +156,35 @@ internal class KeylessSearchBackend : SearchBackend {
     }
 
     private fun parseBrave(html: String): List<WebSearchResult> {
-        // <div id="results"> <a href="...">title</a> <p class="snippet-description">...
-        val linkRegex = Regex("(?s)<a[^>]*href=\"(https?://[^\"]+)\"[^>]*>(.{5,200}?)</a>")
+        val resultsBlock = Regex("(?s)<div[^>]*id=\"results\"[^>]*>(.*?)(?:<footer|<div[^>]*id=\"footer\"|$)")
+            .find(html)?.groupValues?.get(1) ?: return emptyList()
+
+        val snippetBlocks = Regex("(?s)<div[^>]*class=\"[^\"]*snippet[^\"]*\"[^>]*>.*?</div>\\s*</div>")
+            .findAll(resultsBlock).map { it.value }.toList()
+
+        if (snippetBlocks.isNotEmpty()) {
+            return snippetBlocks.mapNotNull { block ->
+                val linkMatch = Regex("(?s)<a[^>]*href=\"(https?://[^\"]+)\"[^>]*>(.{2,200}?)</a>").find(block)
+                    ?: return@mapNotNull null
+                val url = linkMatch.groupValues[1]
+                if (url.contains("brave.com") || url.contains("hackerone.com")) return@mapNotNull null
+                val title = cleanHtml(linkMatch.groupValues[2])
+                if (title.isBlank() || title.equals("Report a security issue", ignoreCase = true)) return@mapNotNull null
+                val snippet = Regex("(?s)class=\"[^\"]*snippet-description[^\"]*\"[^>]*>(.*?)</p>").find(block)?.groupValues?.get(1)
+                    ?: Regex("(?s)class=\"[^\"]*snippet[^\"]*\"[^>]*>(.*?)</").find(block)?.groupValues?.get(1)
+                WebSearchResult(title, url, cleanHtml(snippet.orEmpty()))
+            }.take(10)
+        }
+
+        val linkRegex = Regex("(?s)<a[^>]*href=\"(https?://[^\"]+)\"[^>]*>(.{2,200}?)</a>")
         val snippetRegex = Regex("(?s)class=\"[^\"]*snippet[^\"]*\"[^>]*>(.*?)</")
-        val snippets = snippetRegex.findAll(html).map { cleanHtml(it.groupValues[1]) }.toList()
-        return linkRegex.findAll(html).mapIndexed { idx, match ->
+        val snippets = snippetRegex.findAll(resultsBlock).map { cleanHtml(it.groupValues[1]) }.toList()
+        return linkRegex.findAll(resultsBlock).mapIndexed { idx, match ->
             WebSearchResult(cleanHtml(match.groupValues[2]), match.groupValues[1], snippets.getOrElse(idx) { "" })
-        }.filterNot { it.url.contains("brave.com") || it.title.isBlank() }.take(10).toList()
+        }.filterNot {
+            it.url.contains("brave.com") || it.url.contains("hackerone.com") ||
+                it.title.isBlank() || it.title.equals("Report a security issue", ignoreCase = true)
+        }.take(10).toList()
     }
 
     private fun parseGoogle(html: String): List<WebSearchResult> {

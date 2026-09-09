@@ -76,4 +76,47 @@ class SearchBackendTest {
         // Unknown engines fall through to the google parser, which finds nothing here.
         assertEquals(emptyList<WebSearchResult>(), KeylessSearchBackend().parse("???", "<html></html>"))
     }
+
+    @Test
+    fun `brave parser ignores footer security links and returns empty on no results`() {
+        val noResultsHtml = """
+            <html>
+                <body>
+                    <div id="results">
+                        <div class="no-results">No results found</div>
+                    </div>
+                    <footer>
+                        <a href="https://hackerone.com/brave">Report a security issue</a>
+                        <a href="https://brave.com/terms">Terms</a>
+                    </footer>
+                </body>
+            </html>
+        """.trimIndent()
+        val results = KeylessSearchBackend().parse("brave", noResultsHtml)
+        assertEquals(0, results.size)
+    }
+
+    @Test
+    fun `brave parser extracts valid search snippets inside results container`() {
+        val validHtml = """
+            <html>
+                <body>
+                    <div id="results">
+                        <div class="snippet">
+                            <a href="https://kotlinlang.org">Kotlin Programming Language</a>
+                            <p class="snippet-description">Official site for Kotlin programming language.</p>
+                        </div>
+                    </div>
+                    <footer>
+                        <a href="https://hackerone.com/brave">Report a security issue</a>
+                    </footer>
+                </body>
+            </html>
+        """.trimIndent()
+        val results = KeylessSearchBackend().parse("brave", validHtml)
+        assertEquals(1, results.size)
+        assertEquals("Kotlin Programming Language", results[0].title)
+        assertEquals("https://kotlinlang.org", results[0].url)
+        assertEquals("Official site for Kotlin programming language.", results[0].snippet)
+    }
 }

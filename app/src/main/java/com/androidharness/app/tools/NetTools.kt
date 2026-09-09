@@ -47,8 +47,12 @@ class WebSearchTool(
     private val keyless = KeylessSearchBackend()
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
-        val query = args["query"]?.jsonPrimitive?.content
+        val rawQuery = args["query"]?.jsonPrimitive?.content
             ?: throw ToolFailure("Missing required argument: query")
+        val query = rawQuery.trim()
+        if (query.isEmpty()) {
+            return ToolResult(true, "No search results for empty query.")
+        }
         val count = (args["count"]?.jsonPrimitive?.content?.toIntOrNull() ?: 8).coerceIn(1, 15)
         val requested = args["engine"]?.jsonPrimitive?.contentOrNull?.trim()?.lowercase()
             ?: "auto"

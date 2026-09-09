@@ -723,12 +723,17 @@ class BrowserController(
      */
     suspend fun evalUser(code: String, awaitPromiseMs: Long = 10_000): BrowserEvalOutcome {
         val detail = code.replace('\n', ' ').take(80)
-        var outcome = parseEvalOutcome(evalRaw(buildEvalJs(code)))
-        if (outcome.ok && outcome.value == PROMISE_SENTINEL) {
-            outcome = awaitStagedPromise(awaitPromiseMs)
+        return try {
+            var outcome = parseEvalOutcome(evalRaw(buildEvalJs(code)))
+            if (outcome.ok && outcome.value == PROMISE_SENTINEL) {
+                outcome = awaitStagedPromise(awaitPromiseMs)
+            }
+            track("eval", detail, ok = outcome.ok)
+            outcome
+        } catch (e: Exception) {
+            track("eval", detail, ok = false)
+            BrowserEvalOutcome(false, null, e.message ?: "Evaluation failed")
         }
-        track("eval", detail, ok = outcome.ok)
-        return outcome
     }
 
     private suspend fun awaitStagedPromise(timeoutMs: Long): BrowserEvalOutcome {
@@ -784,12 +789,33 @@ class BrowserController(
         }
     }
 
-    private suspend fun evalRawOn(wv: WebView, code: String): String = withContext(Dispatchers.Main) {
+    private suspend fun resetWedgedWebView(wv: WebView) = withContext(Dispatchers.Main) {
+        runCatching {
+            wv.stopLoading()
+            (wv.parent as? android.view.ViewGroup)?.removeView(wv)
+            wv.destroy()
+        }
+        if (headlessWebView === wv) {
+            headlessWebView = null
+        }
+        if (activeWebViewRef?.get() === wv) {
+            activeWebViewRef = null
+        }
+    }
+
+    private suspend fun evalRawOn(wv: WebView, code: String, timeoutMs: Long = 10_000): String = withContext(Dispatchers.Main) {
         val deferred = CompletableDeferred<String>()
         wv.evaluateJavascript(code) { result ->
             deferred.complete(result ?: "null")
         }
-        deferred.await()
+        val res = withTimeoutOrNull(timeoutMs) {
+            deferred.await()
+        }
+        if (res == null) {
+            resetWedgedWebView(wv)
+            throw IllegalStateException("evaluateJavascript timed out after ${timeoutMs}ms (WebView was wedged and has been reset)")
+        }
+        res
     }
 
     private suspend fun evalRaw(code: String): String = withContext(Dispatchers.Main) {

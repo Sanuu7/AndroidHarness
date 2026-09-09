@@ -127,8 +127,31 @@ class MoveFileTool : Tool {
             if (!from.exists) throw ToolFailure("Source does not exist: $source")
             val to = ctx.workspace.resolve(destination)
 
-            // Fast path: same directory rename
-            val sameDir = source.substringBeforeLast('/') == destination.substringBeforeLast('/')
+            val srcParts = source.trim('/').replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
+            val dstParts = destination.trim('/').replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
+            if (srcParts.isEmpty()) throw ToolFailure("Cannot move workspace root.")
+            if (dstParts.isEmpty()) throw ToolFailure("Destination cannot be workspace root.")
+            if (srcParts == dstParts) throw ToolFailure("Source and destination are the same: $source")
+
+            if (dstParts.size > srcParts.size && dstParts.subList(0, srcParts.size) == srcParts) {
+                throw ToolFailure("Cannot move '$source' into itself or a subdirectory: '$destination'")
+            }
+
+            if (from.isDirectory && srcParts.size > dstParts.size && srcParts.subList(0, dstParts.size) == dstParts) {
+                throw ToolFailure("Cannot move directory '$source' into its ancestor '$destination'")
+            }
+
+            if (to.exists && to.isDirectory) {
+                throw ToolFailure("Destination already exists and is a directory: $destination")
+            }
+
+            if (from.isDirectory && to.exists) {
+                throw ToolFailure("Destination already exists: $destination")
+            }
+
+            val srcParent = if (srcParts.size > 1) srcParts.dropLast(1).joinToString("/") else ""
+            val dstParent = if (dstParts.size > 1) dstParts.dropLast(1).joinToString("/") else ""
+            val sameDir = srcParent == dstParent
             val warn = caseCollisionWarning(ctx.workspace, to)
             if (sameDir && from.renameTo(to.name)) {
                 return@withContext ToolResult(

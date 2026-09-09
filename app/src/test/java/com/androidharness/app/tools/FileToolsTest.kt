@@ -373,4 +373,29 @@ class FileToolsTest {
         val small = "regular message text"
         assertEquals(small, com.androidharness.app.data.clampForStorage(small))
     }
+
+    @Test
+    fun `move_file refuses moving directory into its parent or ancestor`() = runBlocking {
+        file("stress2/sub2/deep").mkdirs()
+        file("stress2/sub2/deep/test.txt").writeText("content")
+
+        val msg = runExpectingFailure(MoveFileTool(), "source" to "stress2/sub2", "destination" to "stress2")
+        assertTrue("Expected ancestor/parent move rejection, got: $msg", msg.contains("ancestor") || msg.contains("exists"))
+    }
+
+    @Test
+    fun `move_file refuses moving into itself or subdirectory`() = runBlocking {
+        file("stress2/sub2").mkdirs()
+        val msg = runExpectingFailure(MoveFileTool(), "source" to "stress2", "destination" to "stress2/sub2")
+        assertTrue("Expected self/sub move rejection, got: $msg", msg.contains("subdirectory") || msg.contains("itself"))
+    }
+
+    @Test
+    fun `move_file renames within same directory`() = runBlocking {
+        file("a/old.txt").apply { parentFile?.mkdirs() }.writeText("hello")
+        val r = run(MoveFileTool(), "source" to "a/old.txt", "destination" to "a/new.txt")
+        assertTrue(r.ok)
+        assertFalse(file("a/old.txt").exists())
+        assertEquals("hello", file("a/new.txt").readText())
+    }
 }

@@ -139,8 +139,9 @@ class ApplyPatchTool : Tool {
             for (filePatch in files) {
                 when {
                     filePatch.isNewFile -> {
-                        val content = filePatch.hunks.flatMap { it.added }.joinToString("\n")
-                        val final = if (content.isNotEmpty() && filePatch.newFileHasNewline) "$content\n" else content
+                        val newline = if (patch.contains("\r\n")) "\r\n" else "\n"
+                        val content = filePatch.hunks.flatMap { it.added }.joinToString(newline)
+                        val final = if (content.isNotEmpty() && filePatch.newFileHasNewline) "$content$newline" else content
                         val node = ctx.workspace.resolve(filePatch.path)
                         if (node.exists) {
                             failures += "${filePatch.path}: cannot create, it already exists (patch it instead or delete it first)"
@@ -319,6 +320,7 @@ class ApplyPatchTool : Tool {
 
     private fun applyHunks(text: String, hunks: List<Hunk>, path: String): String {
         val endsWithNewline = text.endsWith("\n") || text.endsWith("\r")
+        val newline = if (text.contains("\r\n")) "\r\n" else "\n"
         val current = splitLines(text).toMutableList()
 
         // Pass 1: locate every hunk against the original text, simulating the
@@ -396,7 +398,7 @@ class ApplyPatchTool : Tool {
         }
 
         if (current.isEmpty()) return ""
-        return current.joinToString("\n") + (if (endsWithNewline) "\n" else "")
+        return current.joinToString(newline) + (if (endsWithNewline) newline else "")
     }
 
     /** Removes the last non-'+' entry (the phantom empty context line). */

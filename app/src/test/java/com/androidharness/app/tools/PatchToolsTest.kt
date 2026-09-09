@@ -401,4 +401,26 @@ class PatchToolsTest {
         assertTrue(msg, msg.contains("does not match the file contents"))
         assertTrue(msg, msg.contains("does not end with a newline"))
     }
+
+    @Test
+    fun `patch on CRLF file preserves CRLF line endings`() {
+        val crlfContent = "line1\r\nline2\r\nline3\r\n"
+        write("crlf.bat", crlfContent)
+        val r = apply(
+            """
+            --- a/crlf.bat
+            +++ b/crlf.bat
+            @@ -1,3 +1,3 @@
+             line1
+            -line2
+            +LINE_TWO
+             line3
+            """.trimIndent(),
+        )
+        assertTrue(r.output, r.ok)
+        val result = file("crlf.bat").readText()
+        assertEquals("line1\r\nLINE_TWO\r\nline3\r\n", result)
+        assertTrue("Must contain CRLF bytes", result.contains("\r\n"))
+        assertFalse("Must not contain standalone LF without CR", result.replace("\r\n", "").contains("\n"))
+    }
 }
