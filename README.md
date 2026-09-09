@@ -19,7 +19,7 @@ Status: early alpha.
 - Resume last active chat automatically on launch with shimmering skeleton loading.
 - Attach skills to a message or drop one in with a slash command.
 - Multiple workspaces, one workspace switcher, switch projects without losing context.
-- Queue a message while the agent is busy; it picks it up when the current run finishes.
+- Keep multiple queued instructions with edit, reorder, remove, and Send now controls. The queue persists across app restarts and is consumed at agent boundaries.
 - Long-press your own message for Retry alongside Copy and Edit, resending it as a fresh turn.
 - Ask the agent questions mid-run and answer from the notification shade or the chat.
 - Chat backup and restore: export every chat with its full message history to a JSON file and import it back on any device. The file holds chats and messages only, never API keys or settings.
@@ -45,7 +45,7 @@ Status: early alpha.
 - A workspace file manager: multi-select batch operations (delete, copy, move via destination picker), create, rename, and share files and folders, with open-in-other-apps support.
 - A real code editor: multi-color syntax highlighting across Kotlin, Java, Python, JS, TS, HTML, CSS, and Shell, line numbers, unlimited undo and redo, find and replace with regex, word wrap toggle, and encoding preservation.
 - Visual diff viewer: side-by-side / inline diff viewer with dual line gutters, syntax coloring, and change stats.
-- Per chat Files changed tracking: GitHub style badges and diffs for every file the agent touches, with rewind.
+- Per chat Files changed tracking with rewind, full-file undo, and selective section undo. Undo checks that the preview still matches the file and preserves unrelated sections.
 - Build & Test dashboard: save project checks such as Gradle, npm, lint, and test commands, watch live output and pass/fail status, jump straight to parsed file errors, and hand a failed run to the agent for repair.
 
 **GitHub built in**
@@ -58,7 +58,9 @@ Status: early alpha.
 
 **Runs that survive anything**
 - Foreground service keeps the agent and terminals alive while the screen is off.
-- Checkpoints and a run manager let a run survive an app restart.
+- Interrupted tasks show a Resume task card. Tool results are saved before the next action; completed writes are not replayed on recovery, and uncertain operations require inspecting current state.
+- Context & limits lets you edit the saved summary, pin instructions, and remove older model context while retaining the visible chat.
+- Optional task-wide token, estimated USD cost, and active-time limits include subagents and compaction. Tasks pause at request/action boundaries with progress saved; in-flight work can exceed a limit. Raise a reached limit before resuming.
 - Approve or deny sensitive actions from the notification shade, with four permission modes up to a full access mode that lifts every sandbox for workspaces you trust.
 - Redesigned navigation drawer with a quick-access tool strip (Files, Terminal, Automations, Build & Test) and a dedicated active provider card.
 
