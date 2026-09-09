@@ -292,6 +292,23 @@ class BrowserController(
             }
 
             webViewClient = object : WebViewClient() {
+                override fun onRenderProcessGone(
+                    view: WebView?,
+                    detail: android.webkit.RenderProcessGoneDetail?,
+                ): Boolean {
+                    if (headlessWebView === view) {
+                        headlessWebView = null
+                    }
+                    if (activeWebViewRef?.get() === view) {
+                        activeWebViewRef = null
+                    }
+                    runCatching {
+                        (view?.parent as? android.view.ViewGroup)?.removeView(view)
+                        view?.destroy()
+                    }
+                    return true
+                }
+
                 override fun onPageStarted(view: WebView?, url: String?, favicon: android.graphics.Bitmap?) {
                     super.onPageStarted(view, url, favicon)
                     // A fresh deferred per navigation, so action methods can await
@@ -792,10 +809,25 @@ class BrowserController(
 
     private suspend fun unwedgeWebView(wv: WebView) = withContext(Dispatchers.Main) {
         runCatching {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                wv.webViewRenderProcess?.terminate()
+            }
+        }
+        runCatching {
             wv.stopLoading()
             wv.settings.javaScriptEnabled = false
             wv.loadUrl("about:blank")
             wv.settings.javaScriptEnabled = true
+        }
+        if (headlessWebView === wv) {
+            headlessWebView = null
+        }
+        if (activeWebViewRef?.get() === wv) {
+            activeWebViewRef = null
+        }
+        runCatching {
+            (wv.parent as? android.view.ViewGroup)?.removeView(wv)
+            wv.destroy()
         }
     }
 
@@ -812,7 +844,7 @@ class BrowserController(
         }
         if (res == null) {
             unwedgeWebView(wv)
-            throw IllegalStateException("JavaScript execution timed out after ${timeoutMs}ms (infinite loop or hang). Page was reset to about:blank.")
+            throw IllegalStateException("JavaScript execution timed out after ${timeoutMs}ms (infinite loop or hang). Render process terminated.")
         }
         res
     }

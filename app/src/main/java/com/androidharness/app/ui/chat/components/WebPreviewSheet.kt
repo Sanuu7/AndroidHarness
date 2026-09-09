@@ -978,6 +978,16 @@ private fun WebPageView(
                         }
 
                         webViewClient = object : WebViewClient() {
+                            override fun onRenderProcessGone(
+                                view: WebView?,
+                                detail: android.webkit.RenderProcessGoneDetail?,
+                            ): Boolean {
+                                browserController?.unbindActiveWebView(view ?: return true)
+                                isLoading = false
+                                errorMessage = "Browser render process terminated (infinite loop or crash). Reload to resume."
+                                return true
+                            }
+
                             override fun onPageStarted(view: WebView?, url: String?, favicon: Bitmap?) {
                                 isLoading = true
                                 url?.let {

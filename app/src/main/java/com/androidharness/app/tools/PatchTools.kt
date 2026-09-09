@@ -319,8 +319,19 @@ class ApplyPatchTool : Tool {
     // -- applying --------------------------------------------------------
 
     private fun applyHunks(text: String, hunks: List<Hunk>, path: String): String {
-        val endsWithNewline = text.endsWith("\n") || text.endsWith("\r")
-        val newline = if (text.contains("\r\n")) "\r\n" else "\n"
+        val newline = when {
+            text.contains("\r\n") -> "\r\n"
+            text.contains("\n") -> "\n"
+            text.contains("\r") -> "\r"
+            else -> "\n"
+        }
+        val trailingSep = when {
+            text.endsWith("\r\n") -> "\r\n"
+            text.endsWith("\n") -> "\n"
+            text.endsWith("\r") -> "\r"
+            else -> ""
+        }
+        val endsWithNewline = trailingSep.isNotEmpty()
         val current = splitLines(text).toMutableList()
 
         // Pass 1: locate every hunk against the original text, simulating the
@@ -398,7 +409,7 @@ class ApplyPatchTool : Tool {
         }
 
         if (current.isEmpty()) return ""
-        return current.joinToString(newline) + (if (endsWithNewline) newline else "")
+        return current.joinToString(newline) + trailingSep
     }
 
     /** Removes the last non-'+' entry (the phantom empty context line). */

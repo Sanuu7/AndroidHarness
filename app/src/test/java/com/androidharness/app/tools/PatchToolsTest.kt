@@ -439,4 +439,24 @@ class PatchToolsTest {
         )
         assertTrue("Expected rejection for mismatched indentation, got: $msg", msg.contains("NOT applied"))
     }
+
+    @Test
+    fun `patch preserves bare CR line terminator without converting to CRLF`() {
+        val crContent = "line1\rline2\r"
+        write("bare_cr.txt", crContent)
+        val r = apply(
+            """
+            --- a/bare_cr.txt
+            +++ b/bare_cr.txt
+            @@ -1,2 +1,2 @@
+             line1
+            -line2
+            +LINE2
+            """.trimIndent(),
+        )
+        assertTrue(r.output, r.ok)
+        val result = file("bare_cr.txt").readText()
+        assertEquals("line1\rLINE2\r", result)
+        assertFalse("Must not inject LF byte", result.contains("\n"))
+    }
 }
