@@ -8,6 +8,7 @@ import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Rule
 import org.junit.Test
@@ -74,6 +75,20 @@ class FileToolsTest {
 
         val msg2 = runExpectingFailure(GrepTool(), "pattern" to "a{5000}")
         assertTrue("Expected rejection of large quantifier, got: $msg2", msg2.contains("quantifier") || msg2.contains("repetition"))
+    }
+
+    @Test
+    fun `grep rejects bare nested quantifier ReDoS bombs`() = runBlocking {
+        for (pattern in listOf("(z+z+)+q", "(a+)+", "(a*)*", "(a|b+)+", "([a-z]+)+")) {
+            val msg = runExpectingFailure(GrepTool(), "pattern" to pattern)
+            assertTrue("Pattern '$pattern' should be rejected as ReDoS, got: $msg", msg.contains("nested repetition"))
+        }
+
+        // Valid patterns with non-nested repetition must not be falsely rejected
+        assertNull(RegexSafety.checkReDos("(abc)+"))
+        assertNull(RegexSafety.checkReDos("(foo|bar)*"))
+        assertNull(RegexSafety.checkReDos("(\\d{4})-(\\d{2})"))
+        assertNull(RegexSafety.checkReDos("\\(\\+\\)+"))
     }
 
     @Test

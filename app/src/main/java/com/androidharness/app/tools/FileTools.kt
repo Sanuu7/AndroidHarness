@@ -547,6 +547,92 @@ internal class BudgetedCharSequence(
     override fun toString(): String = inner.toString()
 }
 
+internal object RegexSafety {
+
+    /**
+     * Statically inspects a regex pattern for nested quantifiers that trigger
+     * exponential catastrophic backtracking (ReDoS bombs like `(z+z+)+q`, `(a+)+$`, `(a*)*`).
+     * Returns null if safe, or a descriptive error message if dangerous.
+     */
+    fun checkReDos(pattern: String): String? {
+        // 1. Check for extreme repetition counts in braces {N} or {N,M}
+        val quantifiers = Regex("\\{(\\d+)(?:,\\d*)?\\}").findAll(pattern)
+            .mapNotNull { it.groupValues[1].toLongOrNull() }.toList()
+        if (quantifiers.any { it > 1_000L }) {
+            return "Regex quantifier exceeds maximum supported repetition of 1,000."
+        }
+        if (quantifiers.size >= 2 && quantifiers.reduce { a, b -> (a * b).coerceAtMost(1_000_000L) } > 100_000L) {
+            return "Regex nested repetition is too complex. Simplify the pattern."
+        }
+
+        // 2. Normalize: replace escapes (e.g. \+, \*, \(, \)) with dummy char
+        var s = pattern.replace(Regex("\\\\."), "_")
+
+        // 3. Replace character classes [...] with dummy char so literals inside brackets don't look like operators
+        s = s.replace(Regex("\\[(?:\\\\.|[^\\]])*\\]"), "_")
+
+        // 4. Track group nesting to detect nested quantifiers: (inner+)+, (inner*)*, etc.
+        class Group(var hasInnerQuantifier: Boolean = false)
+        val stack = ArrayDeque<Group>()
+
+        var i = 0
+        while (i < s.length) {
+            val c = s[i]
+            when (c) {
+                '(' -> {
+                    val isSpecial = (i + 1 < s.length && s[i + 1] == '?')
+                    stack.addLast(Group())
+                    if (isSpecial) i++
+                }
+                ')' -> {
+                    if (stack.isNotEmpty()) {
+                        val group = stack.removeLast()
+                        var nextIdx = i + 1
+                        val hasOuterQuantifier = if (nextIdx < s.length) {
+                            val nextChar = s[nextIdx]
+                            if (nextChar == '+' || nextChar == '*') {
+                                true
+                            } else if (nextChar == '{') {
+                                val closingBrace = s.indexOf('}', nextIdx)
+                                closingBrace != -1
+                            } else false
+                        } else false
+
+                        if (hasOuterQuantifier) {
+                            if (group.hasInnerQuantifier) {
+                                return "Regex contains nested repetition which causes catastrophic backtracking (e.g. '(x+)+'). Simplify the pattern."
+                            }
+                            if (stack.isNotEmpty()) {
+                                stack.last().hasInnerQuantifier = true
+                            }
+                        }
+                    }
+                }
+                '+', '*' -> {
+                    if (stack.isNotEmpty()) {
+                        stack.last().hasInnerQuantifier = true
+                    }
+                }
+                '{' -> {
+                    val closing = s.indexOf('}', i)
+                    if (closing != -1 && stack.isNotEmpty()) {
+                        val inner = s.substring(i + 1, closing)
+                        if (inner.contains(',')) {
+                            stack.last().hasInnerQuantifier = true
+                        } else {
+                            val n = inner.toIntOrNull() ?: 0
+                            if (n > 1) stack.last().hasInnerQuantifier = true
+                        }
+                    }
+                }
+            }
+            i++
+        }
+
+        return null
+    }
+}
+
 class GrepTool(
     private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET,
     private val regexTimeoutMs: Long = DEFAULT_REGEX_TIMEOUT_MS,
@@ -569,13 +655,9 @@ class GrepTool(
             val pattern = args["pattern"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: pattern")
 
-            val quantifiers = Regex("\\{(\\d+)(?:,\\d*)?\\}").findAll(pattern)
-                .mapNotNull { it.groupValues[1].toLongOrNull() }.toList()
-            if (quantifiers.any { it > 1_000L }) {
-                throw ToolFailure("Regex quantifier exceeds maximum supported repetition of 1,000.")
-            }
-            if (quantifiers.size >= 2 && quantifiers.reduce { a, b -> (a * b).coerceAtMost(1_000_000L) } > 100_000L) {
-                throw ToolFailure("Regex nested repetition is too complex. Simplify the pattern.")
+            val danger = RegexSafety.checkReDos(pattern)
+            if (danger != null) {
+                throw ToolFailure(danger)
             }
 
             val regex = try {
