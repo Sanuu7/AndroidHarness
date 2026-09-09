@@ -348,7 +348,7 @@ internal fun MainHeader(
                         onClick = { menu = false; permissionMenu = true },
                     )
                     DropdownMenuItem(
-                        text = { Text("Context usage") },
+                        text = { Text("Context & limits") },
                         leadingIcon = {
                             Icon(Icons.Outlined.QueryStats, contentDescription = null)
                         },

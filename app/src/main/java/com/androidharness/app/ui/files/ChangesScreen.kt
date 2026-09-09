@@ -28,6 +28,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.AlertDialog
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -70,7 +75,12 @@ fun ChangesScreen(
 ) {
     val scheme = MaterialTheme.colorScheme
     val colors = LocalStatusColors.current
-    val fs by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
+    val fs by produceState<com.androidharness.app.workspace.WorkspaceFs?>(null, sessionId) {
+        val projectId = container.sessions.session(sessionId)?.projectId
+        val project = container.workspace.projects.first().firstOrNull { it.id == projectId }
+        value = project?.let { container.workspace.fsFor(it) }
+    }
+    val running by container.runManager.runningSessionIds.collectAsStateWithLifecycle()
     val changes by container.sessions.fileChangesFor(sessionId)
         .collectAsStateWithLifecycle(initialValue = emptyList())
 
@@ -133,7 +143,10 @@ fun ChangesScreen(
 
             LazyColumn(Modifier.fillMaxSize()) {
                 itemsIndexed(merged, key = { _, c -> c.relPath }) { _, change ->
-                    ChangeRow(fs = fs, change = change, successColor = colors.success)
+                    ChangeRow(fs = fs, change = change, successColor = colors.success,
+                        canUndo = running.isEmpty(), onUndo = { preview, section ->
+                            container.runManager.undoSelection(sessionId, change, preview.current, preview.exists, section)
+                        })
                     HorizontalDivider(
                         color = scheme.outlineVariant.copy(alpha = 0.5f),
                         modifier = Modifier.padding(horizontal = 12.dp),
@@ -149,18 +162,41 @@ private fun ChangeRow(
     fs: com.androidharness.app.workspace.WorkspaceFs?,
     change: SessionFileChangeEntity,
     successColor: Color,
+    canUndo: Boolean,
+    onUndo: suspend (ChangeDiff, Diff.UndoSection?) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     var expanded by remember(change.relPath) { mutableStateOf(false) }
+    val scope = rememberCoroutineScope()
+    var error by remember { mutableStateOf<String?>(null) }
+    var applying by remember { mutableStateOf(false) }
+    var confirmation by remember { mutableStateOf<Pair<ChangeDiff, Diff.UndoSection?>?>(null) }
+    var refresh by remember { mutableStateOf(0) }
+    var showSections by remember { mutableStateOf(false) }
+    confirmation?.let { selection ->
+        AlertDialog(onDismissRequest = { confirmation = null },
+            title = { Text(if (selection.second == null) "Undo this file?" else "Undo this section?") },
+            text = { Text("Restore ${change.relPath} to the shown original content. Other files and chat history stay intact.") },
+            confirmButton = { TextButton(onClick = {
+                confirmation = null; applying = true; error = null
+                scope.launch {
+                    try { onUndo(selection.first, selection.second) }
+                    catch (e: Exception) { error = e.message ?: "Undo failed" }
+                    finally { applying = false; refresh++ }
+                }
+            }) { Text("Undo") } },
+            dismissButton = { TextButton(onClick = { confirmation = null }) { Text("Cancel") } })
+    }
 
     val fileName = change.relPath.substringAfterLast('/')
     val dirName = change.relPath.substringBeforeLast('/', "")
 
-    Column(Modifier.fillMaxWidth().clickable { expanded = !expanded }) {
+    Column(Modifier.fillMaxWidth()) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
+                .clickable { expanded = !expanded }
                 .padding(horizontal = 14.dp, vertical = 10.dp),
         ) {
             Box(
@@ -208,7 +244,7 @@ private fun ChangeRow(
         if (expanded) {
             val diffState = produceState<ChangeDiff?>(
                 initialValue = null,
-                change.relPath, change.updatedAt, expanded, fs,
+                change.relPath, change.updatedAt, expanded, fs, refresh,
             ) {
                 value = computeSessionDiff(fs, change)
             }
@@ -224,7 +260,32 @@ private fun ChangeRow(
                         style = MaterialTheme.typography.labelMedium,
                         color = scheme.onSurfaceVariant,
                     )
-                    else -> SessionDiffView(current.unified)
+                    else -> Column {
+                        SessionDiffView(current.unified)
+                        error?.let { Text(it, color = scheme.error, style = MaterialTheme.typography.bodySmall) }
+                        if (current.current != current.base || current.exists == change.isNew) {
+                            TextButton(onClick = { confirmation = current to null }, enabled = canUndo && !applying) {
+                                Text(if (applying) "Undoing…" else "Undo file")
+                            }
+                            if (current.sections.isNotEmpty()) TextButton(onClick = { showSections = !showSections }) {
+                                Text(if (showSections) "Hide sections" else "Review ${current.sections.size} sections")
+                            }
+                            if (showSections) Column(Modifier.heightIn(max = 280.dp).verticalScroll(rememberScrollState())) {
+                            current.sections.forEachIndexed { index, section ->
+                                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                                    Text("Section ${index + 1} · ${section.after.count { it == '\n' }} changed lines",
+                                        modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
+                                    TextButton(onClick = { confirmation = current to section }, enabled = canUndo && !applying) { Text("Undo section") }
+                                }
+                                Text((section.after.ifEmpty { section.before }).take(180), maxLines = 3,
+                                    overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace,
+                                    style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                            }
+                            }
+                            current.sectionNote?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                            if (!canUndo) Text("Pause active tasks before undoing changes.", style = MaterialTheme.typography.bodySmall)
+                        }
+                    }
                 }
             }
         }
@@ -232,29 +293,25 @@ private fun ChangeRow(
 }
 
 /** Result payload for one expanded diff computation. */
-private data class ChangeDiff(val hasBase: Boolean, val unified: String)
+private data class ChangeDiff(
+    val hasBase: Boolean, val unified: String, val base: String = "", val current: String = "",
+    val exists: Boolean = false, val sections: List<Diff.UndoSection> = emptyList(), val sectionNote: String? = null,
+)
 
 private suspend fun computeSessionDiff(
-    fs: com.androidharness.app.workspace.WorkspaceFs?,
-    change: SessionFileChangeEntity,
-): ChangeDiff {
-    val base = when {
-        !change.hasBase -> return ChangeDiff(false, "")
-        change.isNew || change.baseGzip == null -> ""
-        else -> runCatching { gunzipText(change.baseGzip!!) }.getOrDefault("")
-    }
-    val current = when {
-        change.isDeleted -> ""
-        fs == null -> return ChangeDiff(true, "")
-        else -> kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
-            runCatching {
-                val node = fs.resolve(change.relPath)
-                if (node.exists && node.isFile && node.length <= 1_000_000) node.readText() else null
-            }.getOrNull()
-        } ?: return ChangeDiff(true, "")
-    }
-    val unified = Diff.unified(base, current, change.relPath)
-    return ChangeDiff(true, unified)
+    fs: com.androidharness.app.workspace.WorkspaceFs?, change: SessionFileChangeEntity,
+): ChangeDiff = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+    if (!change.hasBase || fs == null) return@withContext ChangeDiff(false, "")
+    runCatching {
+        val base = if (change.isNew) "" else change.baseGzip?.let { gunzipText(it) }
+            ?: return@withContext ChangeDiff(false, "")
+        val node = fs.resolve(change.relPath)
+        require(!node.exists || (node.isFile && !node.isBinary() && node.length <= 1000000))
+        val current = if (node.exists) node.readText() else ""
+        val sections = runCatching { Diff.undoSections(base, current) }
+        ChangeDiff(true, Diff.unified(base, current, change.relPath), base, current, node.exists,
+            sections.getOrDefault(emptyList()), sections.exceptionOrNull()?.message)
+    }.getOrElse { ChangeDiff(false, "") }
 }
 
 private fun gunzipText(bytes: ByteArray): String =

@@ -220,14 +220,22 @@ class AgentEngine(
          */
         resolveSubagentModel: (suspend (String) -> SubagentModelResolution)? = null,
         repoMapEnabled: Boolean = true,
+        pinnedInstructions: String = "",
+        takeQueued: (suspend () -> String?)? = null,
+        durableEvent: (suspend (AgentEvent) -> Unit)? = null,
     ): Flow<AgentEvent> = channelFlow {
         // Parallel subagents emit from async children, plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
         // for exactly this. The local shim keeps every emit(...) call site.
-        suspend fun emit(event: AgentEvent) = send(event)
+        val eventMutex = Mutex()
+        suspend fun emit(event: AgentEvent) {
+            eventMutex.withLock {
+                if (durableEvent != null) durableEvent(event) else send(event)
+            }
+        }
         // Rebuilt when Full access toggles, because the path rules the model
         // is told about change with it.
-        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false, repoMapEnabled = repoMapEnabled)
+        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false, repoMapEnabled = repoMapEnabled) + if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
         var promptSandboxOff = false
         val runRegistry = registry.withExtra(extraTools)
         val tools = runRegistry.schemas(readOnlyOnly = mode == AgentMode.PLAN)
@@ -253,6 +261,10 @@ class AgentEngine(
         var answerNudges = 0
 
         while (true) {
+            kotlin.coroutines.coroutineContext[TaskBudget]?.check()
+            takeQueued?.invoke()?.let { queued ->
+                working += ChatMessage(role = Role.USER, text = queued)
+            }
             if (maxIterations > 0 && iterations++ >= maxIterations) {
                 emit(AgentEvent.Error("Stopped after $maxIterations tool iterations (safety limit)."))
                 break
@@ -279,7 +291,7 @@ class AgentEngine(
             val sandboxOff = effectiveMode == PermissionMode.FULL_ACCESS
             if (sandboxOff != promptSandboxOff) {
                 promptSandboxOff = sandboxOff
-                systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff, repoMapEnabled = repoMapEnabled)
+                systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff, repoMapEnabled = repoMapEnabled) + if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
             }
             // Open path resolution only exists on real-filesystem workspaces;
             // SAF has no shell root and stays inside its picked tree.
@@ -429,6 +441,11 @@ class AgentEngine(
                 }
                 wantsNudge -> continue
                 calls.isEmpty() -> {
+                    val next = takeQueued?.invoke()
+                    if (next != null) {
+                        working += ChatMessage(role = Role.USER, text = next)
+                        continue
+                    }
                     emit(AgentEvent.Finished(emptyAnswerReason(text.toString(), thinking.toString(), lastFinishReason)))
                     break
                 }
@@ -516,7 +533,6 @@ class AgentEngine(
                     images = listOfNotNull(result.image),
                 )
                 working += toolMessage.withImagesResolved()
-                emit(AgentEvent.ToolMessageCommitted(toolMessage))
                 emit(AgentEvent.ToolFinished(call.id, result))
             }
         }
@@ -549,11 +565,14 @@ class AgentEngine(
     ): ToolResult {
         val signature = toolCallSignature(call)
         deterministicFailures[signature]?.let { previous ->
-            return ToolResult(
+            val blocked = ToolResult(
                 false,
                 "Blocked unchanged retry: this exact ${call.name} call already failed deterministically. " +
                     "$previous Change the inputs or inspect current state before retrying.",
             )
+            emitEvent(AgentEvent.ToolMessageCommitted(ChatMessage(role = Role.TOOL, text = blocked.output,
+                toolCallId = call.id, toolName = call.name, isError = true)))
+            return blocked
         }
         val result = executeWithPermission(
             call, mode, sessionAllowedTools, workspace, sessionId, turnId, agentMode,
@@ -599,6 +618,37 @@ class AgentEngine(
      * subagents can share a serialized emitter.
      */
     private suspend fun executeWithPermission(
+        call: ToolCallData,
+        mode: PermissionMode,
+        sessionAllowedTools: MutableSet<String>,
+        workspace: WorkspaceFs,
+        sessionId: String,
+        turnId: String,
+        agentMode: AgentMode,
+        requestOptions: RequestOptions,
+        config: ProviderConfig,
+        apiKey: String,
+        registry: com.androidharness.app.tools.ToolRegistry,
+        resolveSubagentModel: (suspend (String) -> SubagentModelResolution)?,
+        emitEvent: suspend (AgentEvent) -> Unit,
+    ): ToolResult {
+        kotlin.coroutines.coroutineContext[TaskBudget]?.check()
+        val ledger = kotlin.coroutines.coroutineContext[RecoveryLedger]
+        val cached = if (registry.get(call.name)?.isReadOnly == false) ledger?.result(call) else null
+        val result = cached ?: performWithPermission(
+            call, mode, sessionAllowedTools, workspace, sessionId, turnId, agentMode,
+            requestOptions, config, apiKey, registry, resolveSubagentModel, emitEvent,
+        )
+        kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+            emitEvent(AgentEvent.ToolMessageCommitted(ChatMessage(
+                role = Role.TOOL, text = result.output, toolCallId = call.id,
+                toolName = call.name, isError = !result.ok, images = listOfNotNull(result.image),
+            )))
+        }
+        return result
+    }
+
+    private suspend fun performWithPermission(
         call: ToolCallData,
         mode: PermissionMode,
         sessionAllowedTools: MutableSet<String>,
@@ -835,6 +885,7 @@ class AgentEngine(
             }
         }
 
+        kotlin.coroutines.coroutineContext[TaskBudget]?.check()
         val startedAt = System.currentTimeMillis()
         val executed = try {
             val raw = tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS, sessionId))
@@ -866,6 +917,7 @@ class AgentEngine(
                 emitEvent(AgentEvent.EnvironmentNeeded(request))
                 if (request.response.await()) {
                     // Repaired: run the exact same command again for the model.
+                    kotlin.coroutines.coroutineContext[TaskBudget]?.check()
                     val retry = try {
                         tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS, sessionId))
                     } catch (ce: CancellationException) {

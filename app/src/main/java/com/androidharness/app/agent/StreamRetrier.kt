@@ -63,6 +63,7 @@ internal object StreamRetrier {
     ): String? {
         var attempt = 0
         while (true) {
+            kotlin.coroutines.coroutineContext[TaskBudget]?.check()
             onAttemptStart()
             var failure: String? = null
             var cause: Throwable? = null

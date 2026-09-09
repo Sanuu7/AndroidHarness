@@ -24,13 +24,61 @@ internal enum class SettingsPage(
     SETUP("Setup guide", "Revisit the app setup steps", "App & data", "onboarding notifications permissions"),
 }
 
-internal fun matchingSettingsPages(query: String): List<SettingsPage> {
-    val terms = query.trim().lowercase().split(Regex("""\s+""")).filter { it.isNotBlank() }
-    return SettingsPage.entries.filter { page ->
-        val text = "${page.title} ${page.description} ${page.group} ${page.keywords}".lowercase()
-        terms.all { it in text }
-    }
+internal data class SettingsSearchEntry(
+    val title: String,
+    val description: String,
+    val page: SettingsPage,
+    val keywords: String = "",
+    val primary: Boolean = false,
+)
+
+private val primarySettingsEntries = SettingsPage.entries.map { page ->
+    SettingsSearchEntry(page.title, page.description, page, page.keywords, primary = true)
 }
+
+private val subSettingsEntries = listOf(
+    SettingsSearchEntry("Manage providers", "Models & providers · Add connections, API keys and choose models", SettingsPage.MODELS, "provider api key openai anthropic gemini login model"),
+    SettingsSearchEntry("Dual planning models", "Models & providers · Configure separate plan and execute models", SettingsPage.MODELS, "planning plan model execute execution model"),
+    SettingsSearchEntry("Plan model", "Models & providers · Choose the model used for planning", SettingsPage.MODELS, "planning dual"),
+    SettingsSearchEntry("Execute model", "Models & providers · Choose the model used for execution", SettingsPage.MODELS, "execution dual"),
+    SettingsSearchEntry("Default permission mode", "Agent behavior · Choose approval or full-access behavior", SettingsPage.AGENT, "permissions approval full access"),
+    SettingsSearchEntry("Max context window", "Agent behavior · Set the maximum model context size", SettingsPage.AGENT, "context tokens limit"),
+    SettingsSearchEntry("Tool-call iteration limit", "Agent behavior · Limit agent tool iterations", SettingsPage.AGENT, "iterations tools max limit"),
+    SettingsSearchEntry("Project instructions (AGENTS.md)", "Agent behavior · Edit workspace instructions injected into every run", SettingsPage.AGENT, "agents instructions memory workspace prompt"),
+    SettingsSearchEntry("Resume last chat on launch", "Chat & commands · Open your most recent chat when the app starts", SettingsPage.CHAT, "startup launch chat resume"),
+    SettingsSearchEntry("Workspace code index (Repo map)", "Chat & commands · Index project symbols for agent context", SettingsPage.CHAT, "repo map code index symbols"),
+    SettingsSearchEntry("Slash commands", "Chat & commands · Manage custom slash commands", SettingsPage.CHAT, "shortcut snippets custom command"),
+    SettingsSearchEntry("Speech-to-text engine", "Voice input · Choose inbuilt recognition or Groq Whisper", SettingsPage.VOICE, "voice microphone groq whisper speech transcription"),
+    SettingsSearchEntry("Whisper model", "Voice input · Choose the Groq Whisper transcription model", SettingsPage.VOICE, "groq voice transcription"),
+    SettingsSearchEntry("Theme", "Appearance · Choose System, Light, Dark or AMOLED", SettingsPage.APPEARANCE, "dark light amoled color"),
+    SettingsSearchEntry("Dynamic color", "Appearance · Match app colors to your wallpaper", SettingsPage.APPEARANCE, "material you wallpaper colors"),
+    SettingsSearchEntry("Biometric app lock", "Privacy & security · Require fingerprint, face or device PIN", SettingsPage.PRIVACY, "fingerprint face pin authentication lock"),
+    SettingsSearchEntry("Auto-lock timeout", "Privacy & security · Choose when the app locks again", SettingsPage.PRIVACY, "biometric timeout security"),
+    SettingsSearchEntry("Allow screenshots", "Privacy & security · Control screenshot access", SettingsPage.PRIVACY, "screen capture screenshot privacy"),
+    SettingsSearchEntry("GitHub sign in", "GitHub · Connect account access for repositories", SettingsPage.GITHUB, "oauth token pat repositories login"),
+    SettingsSearchEntry("Web search backend", "Web search · Choose Keyless, Brave or Tavily", SettingsPage.SEARCH, "internet brave tavily api key keyless"),
+    SettingsSearchEntry("MCP servers", "Connected tools · Add and configure MCP integrations", SettingsPage.MCP, "tools integrations server transport"),
+    SettingsSearchEntry("Add workspace", "Workspaces · Add another project folder", SettingsPage.WORKSPACE, "folder storage project saf"),
+    SettingsSearchEntry("Shared storage", "Terminal & device · Grant read/write access to device folders", SettingsPage.ENVIRONMENT, "files storage permission all files"),
+    SettingsSearchEntry("Shizuku (ADB privileges)", "Terminal & device · Configure elevated shell access", SettingsPage.ENVIRONMENT, "adb shell system paths permission"),
+    SettingsSearchEntry("Linux environment", "Terminal & device · Configure the Linux toolchain", SettingsPage.ENVIRONMENT, "terminal packages shell environment"),
+    SettingsSearchEntry("Battery optimization", "Terminal & device · Keep background agent work alive", SettingsPage.ENVIRONMENT, "background keep alive battery"),
+    SettingsSearchEntry("Export chats", "Chat backups · Save conversations to a backup file", SettingsPage.BACKUP, "backup export history archive"),
+    SettingsSearchEntry("Import chats", "Chat backups · Restore conversations from a backup file", SettingsPage.BACKUP, "backup import restore history"),
+    SettingsSearchEntry("Check for updates", "About & updates · Check GitHub Releases for a newer build", SettingsPage.UPDATES, "version update release download"),
+)
+
+internal fun matchingSettingsEntries(query: String): List<SettingsSearchEntry> {
+    val terms = query.trim().lowercase().split(Regex("""\s+""")).filter { it.isNotBlank() }
+    if (terms.isEmpty()) return primarySettingsEntries
+    return (primarySettingsEntries + subSettingsEntries).filter { entry ->
+        val text = "${entry.title} ${entry.description} ${entry.page.title} ${entry.page.group} ${entry.keywords}".lowercase()
+        terms.all { it in text }
+    }.sortedWith(compareBy<SettingsSearchEntry> { it.primary }.thenBy { it.title })
+}
+
+internal fun matchingSettingsPages(query: String): List<SettingsPage> =
+    matchingSettingsEntries(query).map { it.page }.distinct()
 
 internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
     "planning" -> SettingsPage.MODELS

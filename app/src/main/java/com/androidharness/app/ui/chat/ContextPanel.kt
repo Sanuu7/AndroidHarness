@@ -34,6 +34,7 @@ import com.androidharness.app.ui.common.formatTokenCount
 fun ContextUsageDialog(
     state: ChatUiState,
     onDismiss: () -> Unit,
+    onContextLimits: () -> Unit,
 ) {
     val used = state.contextUsed.toLong().coerceAtLeast(0)
     val max = state.maxContextTokens.toLong()
@@ -73,7 +74,13 @@ fun ContextUsageDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         confirmButton = {
-            TextButton(onClick = onDismiss) { Text("Close") }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+            ) {
+                TextButton(onClick = onContextLimits) { Text("Context/limits") }
+                TextButton(onClick = onDismiss) { Text("Close") }
+            }
         },
         title = { Text("Context and Usage") },
         text = {

@@ -91,6 +91,7 @@ data class ChatUiState(
     val mode: AgentMode = AgentMode.ACT,
     val pendingPlan: String? = null,
     val queuedMessage: String? = null,
+    val taskControl: com.androidharness.app.agent.TaskRecord = com.androidharness.app.agent.TaskRecord(),
     val attachments: List<String> = emptyList(), // display names of picked images
     val fileAttachments: List<FileAttachment> = emptyList(),
     val maxContextTokens: Int = 1_000_000,
@@ -368,6 +369,12 @@ class ChatViewModel(
             c.shizuku.state.collect { s ->
                 _state.update { it.copy(shizukuState = s) }
             }
+        }
+
+        viewModelScope.launch {
+            sessionIdFlow.flatMapLatest { sid ->
+                if (sid == null) flowOf(com.androidharness.app.agent.TaskRecord()) else c.runManager.controls.flow(sid)
+            }.collect { record -> _state.update { it.copy(taskControl = record) } }
         }
 
         // Messages come straight from the DB flow, RunManager writes them
@@ -697,19 +704,78 @@ class ChatViewModel(
      * Stops the in-flight run, then sends the queued text as a new turn.
      * Default send-while-busy only injects at the next iteration.
      */
-    fun steerQueuedMessage() {
+    fun steerQueuedMessage() { _state.value.taskControl.queue.firstOrNull()?.let { sendQueuedNow(it.id) } }
+
+    fun editQueued(id: String, text: String) { sessionId?.let { c.runManager.editQueued(it, id, text) } }
+    fun moveQueued(id: String, offset: Int) { sessionId?.let { c.runManager.moveQueued(it, id, offset) } }
+
+    fun sendQueuedNow(id: String) {
         val sid = sessionId ?: return
-        val text = _state.value.queuedMessage?.trim().orEmpty()
-        if (text.isEmpty() || steering) return
+        if (steering) return
         steering = true
-        c.runManager.cancelQueued(sid)
         viewModelScope.launch {
             try {
                 c.runManager.stopAndJoin(sid)
-                startRun(text)
-            } finally {
-                steering = false
+                c.runManager.controls.update(sid) { record ->
+                    val selected = record.queue.firstOrNull { it.id == id }
+                    record.copy(queue = listOfNotNull(selected) + record.queue.filterNot { it.id == id })
+                }
+                val record = c.runManager.controls.flow(sid).value
+                if (record.resumable) resumeTaskNow(sid) else {
+                    val queued = record.queue.firstOrNull() ?: return@launch
+                    startRun(queued.text, queuedPromptId = queued.id)
+                }
+            } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+            finally { steering = false }
+        }
+    }
+
+    private suspend fun resumeTaskNow(sid: String) {
+        val record = c.runManager.controls.flow(sid).value
+        val provider = record.provider ?: _state.value.activeProvider
+            ?.takeIf { it.id == com.androidharness.app.llm.HarnessProvider.ID }
+            ?.let { active ->
+                _state.value.activeModel?.takeIf { it.isNotBlank() }
+                    ?.let { active.copy(model = it) } ?: active
             }
+            ?: error("Saved provider is unavailable")
+        if (record.provider == null) {
+            c.runManager.controls.update(sid) { it.copy(provider = provider) }
+        }
+        val key = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
+            com.androidharness.app.llm.HarnessProvider.KEYLESS
+        } else c.providers.apiKey(provider.id)
+        check(!key.isNullOrBlank()) { "Add the saved provider's API key before resuming" }
+        _state.update { it.copy(error = null) }
+        c.runManager.resumeTask(sid, key)
+    }
+
+    fun resumeInterruptedTask() {
+        val sid = sessionId ?: return
+        if (steering || c.runManager.isRunning(sid)) return
+        steering = true
+        viewModelScope.launch {
+            try { resumeTaskNow(sid) }
+            catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+            finally { steering = false }
+        }
+    }
+
+    fun saveTaskControls(pins: String, summary: String?, limits: com.androidharness.app.agent.TaskLimits, clearOlder: Boolean) {
+        viewModelScope.launch {
+            try {
+                val sid = sessionId ?: c.sessions.createSession("New chat", c.workspace.currentProjectOnce().id).also {
+                    sessionId = it; sessionIdFlow.value = it
+                    _state.update { state -> state.copy(sessionId = it) }
+                }
+                check(!c.runManager.isRunning(sid)) { "Pause the task before changing context or limits" }
+                val cutoff = if (clearOlder) {
+                    // Keep the latest user turn and all of its assistant/tool messages together.
+                    c.sessions.messages(sid).lastOrNull { it.role == Role.USER }?.createdAt ?: 0
+                } else c.runManager.controls.flow(sid).value.contextAfter
+                c.runManager.controls.update(sid) { it.copy(pins = pins.trim(), summaryOverride = summary,
+                    limits = limits, contextAfter = cutoff) }
+            } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
         }
     }
 
@@ -915,7 +981,7 @@ class ChatViewModel(
     // Run lifecycle (delegated to the app-scoped RunManager)
     // ------------------------------------------------------------------
 
-    private fun startRun(text: String, workspaceMcpGate: Boolean = true) {
+    private fun startRun(text: String, workspaceMcpGate: Boolean = true, queuedPromptId: String? = null) {
         val s0 = _state.value
         // Separate planning/execution models: plan-mode runs use the planning
         // slot, everything else the execution one. A slot without a provider
@@ -1000,6 +1066,7 @@ class ChatViewModel(
                 maxContextTokens = s0.maxContextTokens,
                 thinking = s0.thinkingLevel,
                 maxIterations = s0.maxIterations,
+                queuedPromptId = queuedPromptId,
             )
             if (sessionId == null) {
                 sessionId = sid

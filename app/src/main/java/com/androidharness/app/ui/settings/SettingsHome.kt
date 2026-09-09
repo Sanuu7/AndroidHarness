@@ -26,7 +26,7 @@ internal fun SettingsHome(
     modifier: Modifier = Modifier,
 ) {
     val colors = MaterialTheme.colorScheme
-    val results = remember(query) { matchingSettingsPages(query) }
+    val results = remember(query) { matchingSettingsEntries(query) }
     Column(
         modifier.padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -60,7 +60,7 @@ internal fun SettingsHome(
                 Text("Try “theme”, “voice” or “permissions”.", style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
             }
         }
-        results.groupBy { it.group }.forEach { (group, pages) ->
+        results.groupBy { it.page.group }.forEach { (group, entries) ->
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 Text(
                     group,
@@ -69,9 +69,9 @@ internal fun SettingsHome(
                     modifier = Modifier.padding(start = 4.dp),
                 )
                 SettingsPanel(Modifier.fillMaxWidth()) {
-                    pages.forEachIndexed { index, page ->
+                    entries.forEachIndexed { index, entry ->
                         Surface(
-                            onClick = { onOpen(page) },
+                            onClick = { onOpen(entry.page) },
                             color = colors.surfaceContainerLow,
                             modifier = Modifier.fillMaxWidth(),
                         ) {
@@ -84,11 +84,11 @@ internal fun SettingsHome(
                                     Modifier.size(40.dp).background(colors.surfaceContainerHigh, RoundedCornerShape(12.dp)),
                                     contentAlignment = Alignment.Center,
                                 ) {
-                                    Icon(settingsIcon(page), null, tint = colors.primary, modifier = Modifier.size(21.dp))
+                                    Icon(settingsIcon(entry.page), null, tint = colors.primary, modifier = Modifier.size(21.dp))
                                 }
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                    Text(page.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                                    Text(page.description, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                                    Text(entry.title, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
+                                    Text(entry.description, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
                                 }
                                 Icon(
                                     Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -98,7 +98,7 @@ internal fun SettingsHome(
                                 )
                             }
                         }
-                        if (index != pages.lastIndex) HorizontalDivider(
+                        if (index != entries.lastIndex) HorizontalDivider(
                             modifier = Modifier.padding(start = 70.dp, end = 16.dp),
                             color = colors.outlineVariant.copy(alpha = 0.4f),
                         )

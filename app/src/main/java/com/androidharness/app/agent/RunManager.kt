@@ -32,6 +32,8 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicInteger
 
@@ -57,6 +59,8 @@ class RunManager(
     private val mcp: com.androidharness.app.tools.mcp.McpManager? = null,
     private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
 ) {
+
+    val controls = TaskControlStore(java.io.File(context.filesDir, "task-controls"))
 
     /** Live, per-session run state the UI mirrors. */
     data class LiveRunState(
@@ -99,6 +103,7 @@ class RunManager(
 
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val lock = Any()
+    private val workspaceGuard = Mutex()
     private val states = mutableMapOf<String, MutableStateFlow<LiveRunState>>()
     private val jobs = mutableMapOf<String, Job>()
     private val injections = mutableMapOf<String, Channel<String>>()
@@ -196,7 +201,9 @@ class RunManager(
         maxIterations: Int,
         workspaceOverride: com.androidharness.app.workspace.WorkspaceFs? = null,
         notifyOnFinish: Boolean = true,
-    ): String {
+        resume: Boolean = false,
+        queuedPromptId: String? = null,
+    ): String = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
             projectId = workspace.currentProjectOnce().id,
@@ -205,7 +212,22 @@ class RunManager(
             previous.cancel()
             previous.join()
         }
-        val turnId = UUID.randomUUID().toString()
+        val prior = controls.flow(sid).value
+        val runWorkspace = workspaceOverride ?: workspace.currentOnce()
+        require(!resume || prior.workspacePath == runWorkspace.displayPath) { "Open the original workspace to resume this task" }
+        val turnId = if (resume) prior.turnId else UUID.randomUUID().toString()
+        val record = controls.update(sid) { it.copy(
+            status = "running", reason = null, provider = config, workspacePath = runWorkspace.displayPath,
+            mode = mode.name, thinking = thinking.name, maxOutput = maxOutputTokens,
+            maxContext = maxContextTokens, maxIterations = maxIterations, turnId = turnId,
+            initialPrompt = if (resume) it.initialPrompt else text,
+            initialPromptId = if (resume) it.initialPromptId else queuedPromptId ?: "$turnId-user",
+            images = if (resume) it.images else imageRefs,
+            usedTokens = if (resume) it.usedTokens else 0,
+            usedCost = if (resume) it.usedCost else 0.0,
+            elapsedMs = if (resume) it.elapsedMs else 0,
+        ) }
+        val budget = TaskBudget(record.limits, record.usedTokens, record.usedCost, record.elapsedMs)
         val channel = Channel<String>(Channel.UNLIMITED)
         synchronized(lock) {
             turnIds[sid] = turnId
@@ -217,8 +239,17 @@ class RunManager(
         val live = stateOf(sid)
         // A fresh user prompt starts a fresh task list; the store is
         // session-owned so nothing leaks across chats.
-        todoStore.beginRun(sid)
-        sessions.addMessage(sid, ChatMessage(role = Role.USER, text = text, images = imageRefs, turnId = turnId), turnId)
+        if (!resume) todoStore.beginRun(sid)
+        val recoveryMessages = if (resume) sessions.messages(sid).filter { it.turnId == turnId } else emptyList()
+        RunRecovery.missingResults(sessions.messages(sid)).forEach { sessions.addMessage(sid, it, turnId) }
+        val initialId = record.initialPromptId.ifEmpty { "$turnId-user" }
+        if (sessions.messages(sid).none { it.id == initialId }) {
+            sessions.addMessage(sid, ChatMessage(role = Role.USER, text = record.initialPrompt,
+                images = record.images, turnId = turnId, id = initialId), turnId)
+        }
+        controls.update(sid) { it.copy(queue = it.queue.filterNot { q -> q.id == initialId }) }
+        if (resume) sessions.addMessage(sid, ChatMessage(role = Role.USER,
+            text = "Resume the interrupted task from saved progress. Completed tool results are authoritative. Inspect uncertain outcomes before further actions; do not repeat completed operations."), turnId)
         // A new run replaces any plan approval still pending on this session.
         runCatching { sessions.setPendingPlan(sid, null) }
         live.update {
@@ -234,17 +265,24 @@ class RunManager(
         RuntimeNotifier.update("Working…")
 
         val history = with(sessions) {
-            ContextHygiene.forModel(messages(sid).withoutSubagentTurns())
+            RunRecovery.context(messages(sid).withoutSubagentTurns(), record)
         }
-        val job = appScope.launch {
+        val job = appScope.launch(budget + RecoveryLedger(recoveryMessages), start = kotlinx.coroutines.CoroutineStart.LAZY) {
             var promptJob: Job? = null
+            var flushJob: Job? = null
+            var completed = false
             try {
                 // SSE chunks arrive far faster than frames render; batch them so
                 // the UI updates at a steady cadence regardless of model speed.
-                launch {
+                flushJob = launch {
+                    var ticks = 0
                     while (isActive) {
                         delay(STREAM_FLUSH_MS)
                         flushDeltas(sid)
+                        if (++ticks % 75 == 0) {
+                            val usage = budget.usage()
+                            controls.update(sid) { it.copy(usedTokens = usage.first, usedCost = usage.second, elapsedMs = usage.third) }
+                        }
                     }
                 }
                 // Mirror blocking prompts into RuntimeNotifier so the foreground
@@ -255,7 +293,6 @@ class RunManager(
                         .distinctUntilChanged()
                         .collect { RuntimeNotifier.setSessionPrompts(sid, it) }
                 }
-                val runWorkspace = workspaceOverride ?: workspace.currentOnce()
                 // One catalog fetch per run serves every task `model` override;
                 // a provider that cannot list models just refuses overrides.
                 val modelResolver = SubagentModelResolver {
@@ -289,16 +326,48 @@ class RunManager(
                     extraTools = runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
                     resolveSubagentModel = modelResolver::resolve,
                     repoMapEnabled = repoMapOn,
-                ).collect { event -> handleEvent(sid, event) }
+                    pinnedInstructions = record.pins,
+                    takeQueued = { consumeQueued(sid, turnId) },
+                    durableEvent = { event ->
+                        if (event is AgentEvent.Usage) {
+                            val price = com.androidharness.app.llm.ModelPrices.estimate(
+                                model = event.model, totalInputTokens = event.inputTokens.toLong(),
+                                outputTokens = event.outputTokens.toLong(), cachedTokens = event.cachedInputTokens.toLong(),
+                                cacheWriteTokens = event.cacheWriteTokens.toLong(),
+                                providerKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(config.baseUrl),
+                            )
+                            budget.add(event.inputTokens, event.outputTokens, price)
+                            if (record.limits.cost > 0 && price == null) {
+                                controls.update(sid) { it.copy(reason = "Cost unavailable for this model") }
+                            }
+                        }
+                        handleEvent(sid, event)
+                        if (event is AgentEvent.ToolMessageCommitted || event is AgentEvent.Usage || event is AgentEvent.AssistantCommitted) {
+                            val usage = budget.usage()
+                            controls.update(sid) { it.copy(usedTokens = usage.first, usedCost = usage.second, elapsedMs = usage.third) }
+                        }
+                    },
+                ).collect { }
+                completed = live.value.error == null
+            } catch (paused: TaskPaused) {
+                controls.update(sid) { it.copy(reason = paused.reasonText) }
             } catch (ce: CancellationException) {
                 live.update { it.copy(cancelled = true) }
                 throw ce
             } catch (e: Exception) {
                 live.update { it.copy(error = e.message ?: "Unexpected error") }
             } finally {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                flushJob?.cancel()
                 promptJob?.cancel()
+                val usage = budget.usage()
+                val cancelled = live.value.cancelled
+                runCatching { controls.update(sid) { it.copy(status = if (completed || cancelled) "idle" else "paused",
+                    reason = if (completed || cancelled) null else it.reason ?: live.value.error ?: "Task interrupted",
+                    usedTokens = usage.first, usedCost = usage.second, elapsedMs = usage.third) } }
+                    .onFailure { failure -> live.update { it.copy(error = "Could not save progress: ${failure.message}") } }
                 RuntimeNotifier.setSessionPrompts(sid, emptyList())
-                val planText = if (mode == AgentMode.PLAN) {
+                val planText = if (mode == AgentMode.PLAN && completed) {
                     runCatching {
                         sessions.messages(sid).lastOrNull { it.role == Role.ASSISTANT }?.text
                     }.getOrNull()
@@ -336,13 +405,17 @@ class RunManager(
                     allowedTools.remove(sid)
                     deltaBuffers.remove(sid)
                 }
-                if (notifyOnFinish) notifyFinished(sid, live.value.error)
-                releaseKeepalive()
+                try {
+                    if (notifyOnFinish) notifyFinished(sid, if (completed) live.value.error else
+                        controls.flow(sid).value.reason ?: "Task paused")
+                } finally { releaseKeepalive() }
+                }
             }
         }
         synchronized(lock) { jobs[sid] = job }
-        return sid
-    }
+        job.start()
+        sid
+    } }
 
     private suspend fun handleEvent(sessionId: String, event: AgentEvent) {
         val live = stateOf(sessionId)
@@ -492,6 +565,7 @@ class RunManager(
             }
 
             is AgentEvent.Compacted -> {
+                controls.update(sessionId) { it.copy(summaryOverride = event.summary) }
                 live.update { it.copy(compactionNote = null) }
                 sessions.setCompaction(sessionId, event.summary, System.currentTimeMillis())
                 sessions.addMessage(sessionId, ContextHygiene.summaryMessage(event.summary))
@@ -610,21 +684,53 @@ class RunManager(
         stateOf(sessionId).update { if (it.pendingPlan == null) it.copy(pendingPlan = plan) else it }
     }
 
-    /** Queue a steering message for the running agent. Replaces any previous queued text. */
     fun inject(sessionId: String, text: String) {
-        val channel = synchronized(lock) { injections[sessionId] } ?: return
-        while (channel.tryReceive().isSuccess) { /* replace */ }
-        channel.trySend(text)
-        stateOf(sessionId).update { it.copy(queuedMessage = text) }
+        appScope.launch { controls.update(sessionId) { it.copy(queue = it.queue + QueuedPrompt(text = text)) } }
     }
 
-    /** Clears the queued steering message before the engine consumes it. */
+    fun editQueued(sessionId: String, id: String, text: String) {
+        appScope.launch { controls.update(sessionId) { it.copy(queue = it.queue.map { q ->
+            if (q.id == id) q.copy(text = text.trim()) else q
+        }.filter { q -> q.text.isNotBlank() }) } }
+    }
+
+    fun moveQueued(sessionId: String, id: String, offset: Int) {
+        appScope.launch { controls.update(sessionId) { record ->
+            val list = record.queue.toMutableList()
+            val index = list.indexOfFirst { it.id == id }
+            if (index >= 0) { val item = list.removeAt(index); list.add((index + offset).coerceIn(0, list.size), item) }
+            record.copy(queue = list)
+        } }
+    }
+
     fun cancelQueued(sessionId: String) {
-        val channel = synchronized(lock) { injections[sessionId] }
-        if (channel != null) {
-            while (channel.tryReceive().isSuccess) { /* drain */ }
+        appScope.launch { controls.update(sessionId) { it.copy(queue = emptyList()) } }
+    }
+
+    private suspend fun consumeQueued(sessionId: String, turnId: String): String? {
+        val queued = controls.flow(sessionId).value.queue.firstOrNull() ?: return null
+        // Stable id makes a death between the Room insert and queue removal recoverable.
+        if (sessions.messages(sessionId).none { it.id == queued.id }) {
+            sessions.addMessage(sessionId, ChatMessage(role = Role.USER, text = queued.text, id = queued.id), turnId)
         }
-        stateOf(sessionId).update { it.copy(queuedMessage = null) }
+        controls.update(sessionId) { it.copy(queue = it.queue.filterNot { q -> q.id == queued.id }) }
+        return queued.text
+    }
+
+    suspend fun resumeTask(sessionId: String, apiKey: String) {
+        check(!isRunning(sessionId)) { "Task is already running" }
+        val saved = controls.flow(sessionId).value
+        check(saved.resumable) { "No interrupted task to resume" }
+        val config = saved.provider ?: error("Saved provider is unavailable")
+        TaskBudget(saved.limits, saved.usedTokens, saved.usedCost, saved.elapsedMs).check()
+        val projectId = sessions.session(sessionId)?.projectId
+        val project = workspace.projects.first().firstOrNull { it.id == projectId }
+            ?: error("The original workspace is unavailable")
+        val fs = workspace.fsFor(project)
+        require(fs.displayPath == saved.workspacePath) { "The original workspace has changed" }
+        startRun(sessionId, "", emptyList(), config, apiKey, settings.settings.first().permissionMode,
+            AgentMode.valueOf(saved.mode), saved.maxOutput, saved.maxContext,
+            ThinkingLevel.valueOf(saved.thinking), saved.maxIterations, workspaceOverride = fs, resume = true)
     }
 
     // ------------------------------------------------------------------
@@ -703,6 +809,43 @@ class RunManager(
         }
         return RewindSummary(restored, failed, messagesDeleted, paths.size)
     }
+
+    suspend fun undoSelection(
+        sessionId: String,
+        change: com.androidharness.app.data.db.SessionFileChangeEntity,
+        expected: String,
+        expectedExists: Boolean,
+        section: com.androidharness.app.core.Diff.UndoSection?,
+    ) = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
+        val projectId = sessions.session(sessionId)?.projectId
+        val project = workspace.projects.first().firstOrNull { it.id == projectId }
+            ?: error("The original workspace is unavailable")
+        val fs = workspace.fsFor(project)
+        check(runningSessionIds.value.none { controls.flow(it).value.workspacePath == fs.displayPath }) {
+            "Pause tasks in this workspace before undoing changes"
+        }
+        check(change.hasBase) { "The original file content is unavailable" }
+        val node = fs.resolve(change.relPath)
+        check(!node.exists || (node.isFile && !node.isBinary() && node.length <= 1000000)) { "File cannot be safely restored" }
+        val current = if (node.exists) node.readText() else ""
+        check(node.exists == expectedExists && current == expected) { "File changed since this preview. Reopen it before undoing." }
+        val base = if (change.isNew) "" else change.baseGzip?.let {
+            java.util.zip.GZIPInputStream(it.inputStream()).bufferedReader(Charsets.UTF_8).use { reader -> reader.readText() }
+        } ?: error("The original file content is unavailable")
+        val restored = if (section == null) base else {
+            check(section in com.androidharness.app.core.Diff.undoSections(base, current)) { "Section no longer matches" }
+            com.androidharness.app.core.Diff.undoSection(current, expected, section)
+        }
+        // Retain a checkpoint of the undo itself so this action is recoverable too.
+        checkpoints.snapshot(sessionId, "undo-${UUID.randomUUID()}", fs, change.relPath)
+        if (section == null && change.isNew) {
+            check(!node.exists || node.delete()) { "Could not remove the new file" }
+        } else node.writeText(restored)
+        repoMap?.invalidate(change.relPath)
+        sessions.refreshFileChangeAfterRewind(sessionId, change.relPath, node.exists, if (node.exists) restored else null)
+        sessions.addMessage(sessionId, ChatMessage(role = Role.USER,
+            text = "I undid ${if (section == null) "all changes in" else "one changed section of"} ${change.relPath}. Inspect the current file before editing it again."))
+    } }
 
     data class RewindSummary(
         val filesRestored: Int,

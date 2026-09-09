@@ -345,7 +345,8 @@ fun ChatScreen(
     val gestureActive = remember { mutableStateOf(false) }
 
     if (showContext) {
-        ContextUsageDialog(state = state, onDismiss = { showContext = false })
+        TaskSettingsSheet(state = state, onDismiss = { showContext = false },
+            onSave = viewModel::saveTaskControls)
     }
     activeModelPickerTarget?.let { target ->
         val currentProviderId = state.selectedProviderIdFor(target) ?: state.activeProviderId
@@ -1408,13 +1409,16 @@ fun ChatScreen(
                     TodoCard(state.todos)
                 }
 
-                state.queuedMessage?.let { queued ->
-                    QueuedMessageChip(
-                        text = queued,
-                        onCancel = viewModel::cancelQueuedMessage,
-                        onSteer = viewModel::steerQueuedMessage,
-                    )
-                }
+                TaskProgressCard(
+                    record = state.taskControl, busy = state.busy,
+                    onResume = viewModel::resumeInterruptedTask,
+                    onSettings = { showContext = true },
+                )
+                MessageQueueCard(
+                    queue = state.taskControl.queue,
+                    onEdit = viewModel::editQueued, onMove = viewModel::moveQueued,
+                    onSendNow = viewModel::sendQueuedNow,
+                )
 
                 if (state.attachments.isNotEmpty()) {
                     AttachmentChips(

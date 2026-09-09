@@ -232,6 +232,45 @@ object Diff {
         return added to removed
     }
 
+    data class UndoSection(val offset: Int, val before: String, val after: String)
+
+    /** Exact text chunks, including CRLF and final newlines. Never use a truncated preview for writes. */
+    fun undoSections(base: String, current: String): List<UndoSection> {
+        fun chunks(text: String) = Regex("[^\\n]*\\n|[^\\n]+$").findAll(text).map { it.value }.toList()
+        val old = chunks(base)
+        val new = chunks(current)
+        require(old.size + new.size <= 3000 && base.length + current.length <= 1000000) {
+            "This file is too large for section undo. Use Undo file instead."
+        }
+        val sections = mutableListOf<UndoSection>()
+        var offset = 0
+        var start = 0
+        var before = StringBuilder()
+        var after = StringBuilder()
+        fun flush() {
+            if (before.isNotEmpty() || after.isNotEmpty()) {
+                sections += UndoSection(start, before.toString(), after.toString())
+                before = StringBuilder(); after = StringBuilder()
+            }
+        }
+        for ((op, chunk) in myers(old, new)) {
+            if (op == ' ') { flush(); offset += chunk.length }
+            else {
+                if (before.isEmpty() && after.isEmpty()) start = offset
+                if (op == '-') before.append(chunk) else { after.append(chunk); offset += chunk.length }
+            }
+        }
+        flush()
+        return sections
+    }
+
+    fun undoSection(current: String, expected: String, section: UndoSection): String {
+        require(current == expected) { "File changed since this preview. Refresh it before undoing." }
+        require(section.offset >= 0 && section.offset + section.after.length <= current.length &&
+            current.substring(section.offset, section.offset + section.after.length) == section.after) { "Section no longer matches" }
+        return current.replaceRange(section.offset, section.offset + section.after.length, section.before)
+    }
+
     /** Returns (op, line) where op is ' ', '-' or '+'. */
     private fun myers(a: List<String>, b: List<String>): List<Pair<Char, String>> {
         val n = a.size
