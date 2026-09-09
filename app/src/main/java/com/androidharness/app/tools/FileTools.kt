@@ -124,8 +124,16 @@ class ReadFileTool : Tool {
                 throw ToolFailure("File is ${file.length} bytes; use offset/limit to read it in chunks.")
             }
 
-            val offset = (args["offset"]?.jsonPrimitive?.intOrNull ?: 1).coerceAtLeast(1)
-            val limit = (args["limit"]?.jsonPrimitive?.intOrNull ?: 2000).coerceIn(1, 4000)
+            val rawOffset = args["offset"]?.jsonPrimitive?.intOrNull
+            if (rawOffset != null && rawOffset <= 0) {
+                throw ToolFailure("offset must be greater than 0.")
+            }
+            val rawLimit = args["limit"]?.jsonPrimitive?.intOrNull
+            if (rawLimit != null && rawLimit <= 0) {
+                throw ToolFailure("limit must be greater than 0.")
+            }
+            val offset = (rawOffset ?: 1).coerceAtLeast(1)
+            val limit = (rawLimit ?: 2000).coerceIn(1, 4000)
 
             // A UTF-8 BOM is encoding metadata, not content, never surface it
             // to the model (it leaks into line 1 and breaks exact matching).
@@ -492,9 +500,11 @@ class SearchFilesTool : Tool {
 
 /** Thrown when a regex burns through its step budget; mapped to a clean tool failure. */
 internal class RegexBudgetExceeded : RuntimeException()
+internal class RegexTimeoutExceeded : RuntimeException()
 
-/** Default charAt budget for one tool call; a few seconds of pathological backtracking on device. */
-internal const val DEFAULT_REGEX_STEP_BUDGET = 100_000_000L
+/** Default charAt budget for one tool call; bounds pathological backtracking on device. */
+internal const val DEFAULT_REGEX_STEP_BUDGET = 20_000_000L
+internal const val DEFAULT_REGEX_TIMEOUT_MS = 2_000L
 
 /**
  * Tracks regex engine steps across a whole tool call. java.util.regex reads
@@ -502,9 +512,13 @@ internal const val DEFAULT_REGEX_STEP_BUDGET = 100_000_000L
  * catastrophic backtracking: `^(a+)+$` against a crafted 36-byte file used
  * to wedge grep forever with no recovery (security QA, 2026-09-06).
  */
-internal class RegexStepBudget(internal val maxSteps: Long = DEFAULT_REGEX_STEP_BUDGET) {
+internal class RegexStepBudget(
+    internal val maxSteps: Long = DEFAULT_REGEX_STEP_BUDGET,
+    internal val timeoutMs: Long = DEFAULT_REGEX_TIMEOUT_MS,
+) {
     var steps = 0L
         internal set
+    val deadlineMs = System.currentTimeMillis() + timeoutMs
 }
 
 /**
@@ -519,7 +533,11 @@ internal class BudgetedCharSequence(
     override val length: Int get() = inner.length
 
     override fun get(index: Int): Char {
-        if (++budget.steps > budget.maxSteps) throw RegexBudgetExceeded()
+        val s = ++budget.steps
+        if (s > budget.maxSteps) throw RegexBudgetExceeded()
+        if ((s and 0x0FFF) == 0L && System.currentTimeMillis() > budget.deadlineMs) {
+            throw RegexTimeoutExceeded()
+        }
         return inner[index]
     }
 
@@ -529,7 +547,10 @@ internal class BudgetedCharSequence(
     override fun toString(): String = inner.toString()
 }
 
-class GrepTool(private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET) : Tool {
+class GrepTool(
+    private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET,
+    private val regexTimeoutMs: Long = DEFAULT_REGEX_TIMEOUT_MS,
+) : Tool {
     override val name = "grep"
     override val description =
         "Search file contents in the workspace with a regular expression. Returns matching lines as path:line: text."
@@ -547,6 +568,16 @@ class GrepTool(private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET) : 
         withContext(Dispatchers.IO) {
             val pattern = args["pattern"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: pattern")
+
+            val quantifiers = Regex("\\{(\\d+)(?:,\\d*)?\\}").findAll(pattern)
+                .mapNotNull { it.groupValues[1].toLongOrNull() }.toList()
+            if (quantifiers.any { it > 1_000L }) {
+                throw ToolFailure("Regex quantifier exceeds maximum supported repetition of 1,000.")
+            }
+            if (quantifiers.size >= 2 && quantifiers.reduce { a, b -> (a * b).coerceAtMost(1_000_000L) } > 100_000L) {
+                throw ToolFailure("Regex nested repetition is too complex. Simplify the pattern.")
+            }
+
             val regex = try {
                 Regex(pattern)
             } catch (e: Exception) {
@@ -571,7 +602,7 @@ class GrepTool(private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET) : 
 
             val matches = mutableListOf<String>()
             val skipped = mutableListOf<String>()
-            val budget = RegexStepBudget(regexStepBudget)
+            val budget = RegexStepBudget(regexStepBudget, regexTimeoutMs)
             for (node in ctx.workspace.walk(path)) {
                 if (matches.size >= MAX_GREP_MATCHES) break
                 if (!node.isFile) continue
@@ -619,6 +650,11 @@ class GrepTool(private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET) : 
                 } catch (e: RegexBudgetExceeded) {
                     throw ToolFailure(
                         "Regex exceeded its step budget while matching (pathological backtracking). " +
+                            "Simplify the pattern or narrow the search."
+                    )
+                } catch (e: RegexTimeoutExceeded) {
+                    throw ToolFailure(
+                        "Regex execution timed out (pathological backtracking). " +
                             "Simplify the pattern or narrow the search."
                     )
                 }

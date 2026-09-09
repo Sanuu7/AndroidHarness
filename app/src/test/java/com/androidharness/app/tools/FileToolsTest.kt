@@ -68,6 +68,25 @@ class FileToolsTest {
     }
 
     @Test
+    fun `grep rejects extreme regex quantifiers before matching`() = runBlocking {
+        val msg1 = runExpectingFailure(GrepTool(), "pattern" to "(z{1000}){1900}")
+        assertTrue("Expected rejection of extreme quantifier, got: $msg1", msg1.contains("quantifier") || msg1.contains("repetition"))
+
+        val msg2 = runExpectingFailure(GrepTool(), "pattern" to "a{5000}")
+        assertTrue("Expected rejection of large quantifier, got: $msg2", msg2.contains("quantifier") || msg2.contains("repetition"))
+    }
+
+    @Test
+    fun `read_file rejects non-positive limit or offset`() = runBlocking {
+        file("data.txt").writeText("line1\nline2\n")
+        val msg1 = runExpectingFailure(ReadFileTool(), "path" to "data.txt", "limit" to "0")
+        assertTrue("Expected limit > 0 error, got: $msg1", msg1.contains("limit must be greater than 0"))
+
+        val msg2 = runExpectingFailure(ReadFileTool(), "path" to "data.txt", "offset" to "-1")
+        assertTrue("Expected offset > 0 error, got: $msg2", msg2.contains("offset must be greater than 0"))
+    }
+
+    @Test
     fun `valid character classes and recursive globs still match`() = runBlocking {
         file("index.htm").writeText("text")
         file("nested").mkdirs()

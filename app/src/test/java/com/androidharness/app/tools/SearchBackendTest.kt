@@ -119,4 +119,34 @@ class SearchBackendTest {
         assertEquals("https://kotlinlang.org", results[0].url)
         assertEquals("Official site for Kotlin programming language.", results[0].snippet)
     }
+
+    @Test
+    fun `web_search rejects unknown engine and non-positive count`() = kotlinx.coroutines.runBlocking {
+        val tool = WebSearchTool(okhttp3.OkHttpClient())
+        try {
+            tool.execute(
+                kotlinx.serialization.json.buildJsonObject {
+                    put("query", kotlinx.serialization.json.JsonPrimitive("test"))
+                    put("count", kotlinx.serialization.json.JsonPrimitive(0))
+                },
+                ToolContext(com.androidharness.app.workspace.FileFs(java.io.File("/tmp"))),
+            )
+            org.junit.Assert.fail("Expected failure for count=0")
+        } catch (e: ToolFailure) {
+            assertTrue(e.message?.contains("count must be greater than 0") == true)
+        }
+
+        try {
+            tool.execute(
+                kotlinx.serialization.json.buildJsonObject {
+                    put("query", kotlinx.serialization.json.JsonPrimitive("test"))
+                    put("engine", kotlinx.serialization.json.JsonPrimitive("askjeeves"))
+                },
+                ToolContext(com.androidharness.app.workspace.FileFs(java.io.File("/tmp"))),
+            )
+            org.junit.Assert.fail("Expected failure for unknown engine")
+        } catch (e: ToolFailure) {
+            assertTrue(e.message?.contains("Unknown engine") == true)
+        }
+    }
 }

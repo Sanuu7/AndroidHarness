@@ -53,9 +53,17 @@ class WebSearchTool(
         if (query.isEmpty()) {
             return ToolResult(true, "No search results for empty query.")
         }
-        val count = (args["count"]?.jsonPrimitive?.content?.toIntOrNull() ?: 8).coerceIn(1, 15)
+        val rawCount = args["count"]?.jsonPrimitive?.content?.toIntOrNull()
+        if (rawCount != null && rawCount <= 0) {
+            throw ToolFailure("count must be greater than 0.")
+        }
+        val count = (rawCount ?: 8).coerceIn(1, 15)
         val requested = args["engine"]?.jsonPrimitive?.contentOrNull?.trim()?.lowercase()
             ?: "auto"
+        val validEngines = setOf("auto", "duckduckgo", "bing", "brave", "google")
+        if (requested !in validEngines) {
+            throw ToolFailure("Unknown engine '$requested'. Supported engines: auto, duckduckgo, bing, brave, google.")
+        }
         val searchClient = client.newBuilder()
             .readTimeout(25, TimeUnit.SECONDS)
             .build()
@@ -97,10 +105,13 @@ class WebSearchTool(
         return ToolResult(true, text.toString())
     }
 
-    private fun formatResults(results: List<WebSearchResult>, count: Int): String =
-        results.take(count).mapIndexed { idx, r ->
+    private fun formatResults(results: List<WebSearchResult>, count: Int): String {
+        val seen = HashSet<String>()
+        val distinct = results.filter { seen.add(it.url.trimEnd('/')) }
+        return distinct.take(count).mapIndexed { idx, r ->
             "${idx + 1}. ${r.title}\n   ${r.url}\n   ${r.snippet}"
         }.joinToString("\n")
+    }
 }
 
 /**
