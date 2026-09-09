@@ -92,6 +92,18 @@ class FileToolsTest {
     }
 
     @Test
+    fun `grep rejects duplicate alternatives in repeated groups`() = runBlocking {
+        for (pattern in listOf("(z|z)+q", "(a|a)+", "(a|aa)+q", "(x|y|x)*", "(a|)+")) {
+            val msg = runExpectingFailure(GrepTool(), "pattern" to pattern)
+            assertTrue("Pattern '$pattern' should be rejected, got: $msg", msg.contains("duplicate alternatives") || msg.contains("nested repetition") || msg.contains("overlapping"))
+        }
+
+        // Distinct alternatives in repeated groups must not be falsely rejected
+        assertNull(RegexSafety.checkReDos("(a|b)+"))
+        assertNull(RegexSafety.checkReDos("(cat|dog)*"))
+    }
+
+    @Test
     fun `read_file rejects non-positive limit or offset`() = runBlocking {
         file("data.txt").writeText("line1\nline2\n")
         val msg1 = runExpectingFailure(ReadFileTool(), "path" to "data.txt", "limit" to "0")

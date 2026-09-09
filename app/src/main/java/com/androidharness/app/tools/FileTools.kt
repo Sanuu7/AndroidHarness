@@ -572,7 +572,11 @@ internal object RegexSafety {
         s = s.replace(Regex("\\[(?:\\\\.|[^\\]])*\\]"), "_")
 
         // 4. Track group nesting to detect nested quantifiers: (inner+)+, (inner*)*, etc.
-        class Group(var hasInnerQuantifier: Boolean = false)
+        class Group(
+            val startIdx: Int,
+            var hasInnerQuantifier: Boolean = false,
+            var hasAlternation: Boolean = false,
+        )
         val stack = ArrayDeque<Group>()
 
         var i = 0
@@ -581,8 +585,13 @@ internal object RegexSafety {
             when (c) {
                 '(' -> {
                     val isSpecial = (i + 1 < s.length && s[i + 1] == '?')
-                    stack.addLast(Group())
+                    stack.addLast(Group(startIdx = i))
                     if (isSpecial) i++
+                }
+                '|' -> {
+                    if (stack.isNotEmpty()) {
+                        stack.last().hasAlternation = true
+                    }
                 }
                 ')' -> {
                     if (stack.isNotEmpty()) {
@@ -601,6 +610,15 @@ internal object RegexSafety {
                         if (hasOuterQuantifier) {
                             if (group.hasInnerQuantifier) {
                                 return "Regex contains nested repetition which causes catastrophic backtracking (e.g. '(x+)+'). Simplify the pattern."
+                            }
+                            if (group.hasAlternation) {
+                                val branches = s.substring(group.startIdx + 1, i).split('|')
+                                val hasOverlap = branches.size != branches.distinct().size ||
+                                    branches.any { it.isEmpty() } ||
+                                    branches.any { b1 -> branches.any { b2 -> b1 != b2 && (b1.startsWith(b2) || b2.startsWith(b1)) } }
+                                if (hasOverlap) {
+                                    return "Regex contains overlapping or duplicate alternatives in a repeated group (e.g. '(z|z)+'). Simplify the pattern."
+                                }
                             }
                             if (stack.isNotEmpty()) {
                                 stack.last().hasInnerQuantifier = true
@@ -682,79 +700,101 @@ class GrepTool(
                 }
             }
 
-            val matches = mutableListOf<String>()
-            val skipped = mutableListOf<String>()
-            val budget = RegexStepBudget(regexStepBudget, regexTimeoutMs)
-            for (node in ctx.workspace.walk(path)) {
-                if (matches.size >= MAX_GREP_MATCHES) break
-                if (!node.isFile) continue
-                if (node.length > 2_000_000) {
-                    skipped += "${node.relPath} (>2MB)"
-                    continue
-                }
-                if (node.isBinary()) continue
-                if (includeMatcher != null &&
-                    !includeMatcher.matches(java.nio.file.Path.of(node.name))
-                ) continue
-                val text = runCatching { node.readText() }.getOrNull()
-                if (text == null) {
-                    skipped += "${node.relPath} (read failed)"
-                    continue
-                }
-                val lines = splitLines(text)
-                try {
-                    lines.forEachIndexed { idx, line ->
-                        if (matches.size >= MAX_GREP_MATCHES) return@forEachIndexed
-                        val matched = if (line.length <= 65_536) {
-                            regex.containsMatchIn(BudgetedCharSequence(line, budget))
-                        } else {
-                            // Chunk long lines to prevent ART regex engine limits from dropping matches
-                            var found = false
-                            val chunkSize = 60_000
-                            val overlap = 2_000
-                            var start = 0
-                            while (start < line.length) {
-                                val end = (start + chunkSize).coerceAtMost(line.length)
-                                val sub = line.substring(start, end)
-                                if (regex.containsMatchIn(BudgetedCharSequence(sub, budget))) {
-                                    found = true
-                                    break
-                                }
-                                if (end >= line.length) break
-                                start += (chunkSize - overlap)
-                            }
-                            found
-                        }
-                        if (matched) {
-                            matches += "${node.relPath}:${idx + 1}: ${line.take(300)}"
-                        }
-                    }
-                } catch (e: RegexBudgetExceeded) {
-                    throw ToolFailure(
-                        "Regex exceeded its step budget while matching (pathological backtracking). " +
-                            "Simplify the pattern or narrow the search."
-                    )
-                } catch (e: RegexTimeoutExceeded) {
-                    throw ToolFailure(
-                        "Regex execution timed out (pathological backtracking). " +
-                            "Simplify the pattern or narrow the search."
-                    )
-                }
+            val executor = java.util.concurrent.Executors.newSingleThreadExecutor { r ->
+                Thread(r, "grep-worker").apply { isDaemon = true }
             }
+            val future = executor.submit(java.util.concurrent.Callable {
+                val matches = mutableListOf<String>()
+                val skipped = mutableListOf<String>()
+                val budget = RegexStepBudget(regexStepBudget, regexTimeoutMs)
+                for (node in ctx.workspace.walk(path)) {
+                    if (matches.size >= MAX_GREP_MATCHES) break
+                    if (!node.isFile) continue
+                    if (node.length > 2_000_000) {
+                        skipped += "${node.relPath} (>2MB)"
+                        continue
+                    }
+                    if (node.isBinary()) continue
+                    if (includeMatcher != null &&
+                        !includeMatcher.matches(java.nio.file.Path.of(node.name))
+                    ) continue
+                    val text = runCatching { node.readText() }.getOrNull()
+                    if (text == null) {
+                        skipped += "${node.relPath} (read failed)"
+                        continue
+                    }
+                    val lines = splitLines(text)
+                    try {
+                        lines.forEachIndexed { idx, line ->
+                            if (matches.size >= MAX_GREP_MATCHES) return@forEachIndexed
+                            val matched = if (line.length <= 65_536) {
+                                regex.containsMatchIn(BudgetedCharSequence(line, budget))
+                            } else {
+                                var found = false
+                                val chunkSize = 60_000
+                                val overlap = 2_000
+                                var start = 0
+                                while (start < line.length) {
+                                    val end = (start + chunkSize).coerceAtMost(line.length)
+                                    val sub = line.substring(start, end)
+                                    if (regex.containsMatchIn(BudgetedCharSequence(sub, budget))) {
+                                        found = true
+                                        break
+                                    }
+                                    if (end >= line.length) break
+                                    start += (chunkSize - overlap)
+                                }
+                                found
+                            }
+                            if (matched) {
+                                matches += "${node.relPath}:${idx + 1}: ${line.take(300)}"
+                            }
+                        }
+                    } catch (e: RegexBudgetExceeded) {
+                        throw ToolFailure(
+                            "Regex exceeded its step budget while matching (pathological backtracking). " +
+                                "Simplify the pattern or narrow the search."
+                        )
+                    } catch (e: RegexTimeoutExceeded) {
+                        throw ToolFailure(
+                            "Regex execution timed out (pathological backtracking). " +
+                                "Simplify the pattern or narrow the search."
+                        )
+                    }
+                }
 
-            val skippedNote = if (skipped.isNotEmpty()) {
-                val preview = skipped.take(3).joinToString(", ")
-                val extra = if (skipped.size > 3) " and ${skipped.size - 3} more" else ""
-                "\n[Skipped: $preview$extra]"
-            } else ""
+                val skippedNote = if (skipped.isNotEmpty()) {
+                    val preview = skipped.take(3).joinToString(", ")
+                    val extra = if (skipped.size > 3) " and ${skipped.size - 3} more" else ""
+                    "\n[Skipped: $preview$extra]"
+                } else ""
 
-            if (matches.isEmpty()) ToolResult(true, "No matches for \"$pattern\".$skippedNote")
-            else ToolResult(
-                true,
-                matches.joinToString("\n") +
-                    (if (matches.size >= MAX_GREP_MATCHES) "\n[truncated at $MAX_GREP_MATCHES matches]" else "") +
-                    skippedNote,
-            )
+                if (matches.isEmpty()) ToolResult(true, "No matches for \"$pattern\".$skippedNote")
+                else ToolResult(
+                    true,
+                    "Found ${matches.size} match(es) for \"$pattern\":\n" +
+                        matches.joinToString("\n") +
+                        (if (matches.size >= MAX_GREP_MATCHES) "\n[truncated at $MAX_GREP_MATCHES matches]" else "") +
+                        skippedNote,
+                )
+            })
+
+            try {
+                future.get(regexTimeoutMs, java.util.concurrent.TimeUnit.MILLISECONDS)
+            } catch (e: java.util.concurrent.TimeoutException) {
+                future.cancel(true)
+                executor.shutdownNow()
+                throw ToolFailure(
+                    "Regex execution timed out after ${regexTimeoutMs / 1000}s (pathological backtracking). " +
+                        "Simplify the pattern or narrow the search."
+                )
+            } catch (e: java.util.concurrent.ExecutionException) {
+                val cause = e.cause ?: e
+                if (cause is ToolFailure) throw cause
+                throw ToolFailure(cause.message ?: "Search failed")
+            } finally {
+                executor.shutdown()
+            }
         }
 }
 
