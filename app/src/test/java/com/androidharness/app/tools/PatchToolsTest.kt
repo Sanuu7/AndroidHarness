@@ -423,4 +423,20 @@ class PatchToolsTest {
         assertTrue("Must contain CRLF bytes", result.contains("\r\n"))
         assertFalse("Must not contain standalone LF without CR", result.replace("\r\n", "").contains("\n"))
     }
+
+    @Test
+    fun `patch rejects context with mismatched indentation`() {
+        write("indent.py", "def foo():\n\treturn 42\n")
+        val msg = failingApply(
+            """
+            --- a/indent.py
+            +++ b/indent.py
+            @@ -1,2 +1,2 @@
+              def foo():
+             -  return 42
+             +  return 100
+            """.trimIndent(),
+        )
+        assertTrue("Expected rejection for mismatched indentation, got: $msg", msg.contains("NOT applied"))
+    }
 }

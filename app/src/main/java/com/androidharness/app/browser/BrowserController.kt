@@ -316,6 +316,7 @@ class BrowserController(
             }
         }
         headlessWebView = wv
+        wv.loadUrl("about:blank")
         wv
     }
 
@@ -789,21 +790,19 @@ class BrowserController(
         }
     }
 
-    private suspend fun resetWedgedWebView(wv: WebView) = withContext(Dispatchers.Main) {
+    private suspend fun unwedgeWebView(wv: WebView) = withContext(Dispatchers.Main) {
         runCatching {
             wv.stopLoading()
-            (wv.parent as? android.view.ViewGroup)?.removeView(wv)
-            wv.destroy()
-        }
-        if (headlessWebView === wv) {
-            headlessWebView = null
-        }
-        if (activeWebViewRef?.get() === wv) {
-            activeWebViewRef = null
+            wv.settings.javaScriptEnabled = false
+            wv.loadUrl("about:blank")
+            wv.settings.javaScriptEnabled = true
         }
     }
 
     private suspend fun evalRawOn(wv: WebView, code: String, timeoutMs: Long = 10_000): String = withContext(Dispatchers.Main) {
+        if (wv.url.isNullOrBlank()) {
+            wv.loadUrl("about:blank")
+        }
         val deferred = CompletableDeferred<String>()
         wv.evaluateJavascript(code) { result ->
             deferred.complete(result ?: "null")
@@ -812,8 +811,8 @@ class BrowserController(
             deferred.await()
         }
         if (res == null) {
-            resetWedgedWebView(wv)
-            throw IllegalStateException("evaluateJavascript timed out after ${timeoutMs}ms (WebView was wedged and has been reset)")
+            unwedgeWebView(wv)
+            throw IllegalStateException("JavaScript execution timed out after ${timeoutMs}ms (infinite loop or hang). Page was reset to about:blank.")
         }
         res
     }

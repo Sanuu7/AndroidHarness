@@ -58,6 +58,7 @@ internal fun caseCollisionWarning(workspace: WorkspaceFs, target: FsNode): Strin
 
 private const val MAX_LIST_ENTRIES = 500
 private const val MAX_READ_CHARS = 100_000
+private const val MAX_READ_LINE_CHARS = 10_000
 private const val MAX_SEARCH_RESULTS = 300
 private const val MAX_GREP_MATCHES = 200
 
@@ -143,13 +144,16 @@ class ReadFileTool : Tool {
                     break
                 }
                 sb.append(prefix)
+                val safeLine = if (line.length > MAX_READ_LINE_CHARS) {
+                    line.substring(0, MAX_READ_LINE_CHARS) + "... [line truncated at $MAX_READ_LINE_CHARS chars]"
+                } else line
                 val lineBudget = MAX_READ_CHARS - sb.length
-                if (line.length > lineBudget) {
-                    sb.append(line, 0, lineBudget)
+                if (safeLine.length > lineBudget) {
+                    sb.append(safeLine, 0, lineBudget)
                     truncated = true
                     break
                 }
-                sb.append(line).append('\n')
+                sb.append(safeLine).append('\n')
             }
             if (truncated) {
                 sb.append("\n[truncated: output exceeded $MAX_READ_CHARS chars]\n")
@@ -552,6 +556,17 @@ class GrepTool(private val regexStepBudget: Long = DEFAULT_REGEX_STEP_BUDGET) : 
             val include = args["include"]?.jsonPrimitive?.content
             val includeMatcher = include?.let {
                 globMatcher(it)
+            }
+            if (includeMatcher != null) {
+                val targetNode = ctx.workspace.resolve(path)
+                if (targetNode.exists && targetNode.isFile &&
+                    !includeMatcher.matches(java.nio.file.Path.of(targetNode.name))
+                ) {
+                    throw ToolFailure(
+                        "Path '$path' is a file, but the 'include' filter '$include' excludes it. " +
+                            "Remove 'include' when targeting a single file, or match its filename/extension."
+                    )
+                }
             }
 
             val matches = mutableListOf<String>()

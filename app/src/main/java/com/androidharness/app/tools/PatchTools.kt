@@ -421,7 +421,6 @@ class ApplyPatchTool : Tool {
         for (level in listOf(
             FuzzyEdit.Level.EXACT,
             FuzzyEdit.Level.LINE_ENDINGS,
-            FuzzyEdit.Level.INDENTATION,
         )) {
             for (offset in 0..searchWindow) {
                 for (dir in listOf(-1, 1)) {

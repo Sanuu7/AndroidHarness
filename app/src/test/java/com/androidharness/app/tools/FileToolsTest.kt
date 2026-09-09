@@ -351,7 +351,7 @@ class FileToolsTest {
     }
 
     @Test
-    fun `read_file clamps single huge line within MAX_READ_CHARS`() = runBlocking {
+    fun `read_file clamps single huge line within MAX_READ_LINE_CHARS`() = runBlocking {
         val hugeLine = "x".repeat(300_000)
         file("huge_line.txt").writeText(hugeLine)
         val r = ReadFileTool().execute(
@@ -359,8 +359,8 @@ class FileToolsTest {
             ctx(),
         )
         assertTrue(r.ok)
-        assertTrue("Output should contain truncation marker", r.output.contains("[truncated: output exceeded 100000 chars]"))
-        assertTrue("Output length should be bounded around 100k chars, got ${r.output.length}", r.output.length < 105_000)
+        assertTrue("Output should contain line truncation marker", r.output.contains("[line truncated at 10000 chars]"))
+        assertTrue("Output length should be bounded around 10k chars, got ${r.output.length}", r.output.length < 15_000)
     }
 
     @Test
@@ -397,5 +397,12 @@ class FileToolsTest {
         assertTrue(r.ok)
         assertFalse(file("a/old.txt").exists())
         assertEquals("hello", file("a/new.txt").readText())
+    }
+
+    @Test
+    fun `grep rejects contradictory include pattern on explicit file`() = runBlocking {
+        file("foo.kt").writeText("val x = 1\n")
+        val msg = runExpectingFailure(GrepTool(), "path" to "foo.kt", "pattern" to "val", "include" to "*.txt")
+        assertTrue("Expected contradiction error, got: $msg", msg.contains("excludes it"))
     }
 }
