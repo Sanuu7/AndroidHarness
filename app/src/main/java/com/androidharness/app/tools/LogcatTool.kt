@@ -189,40 +189,58 @@ class DefaultLogcatRunner(
         return firstPid?.takeIf { it.isNotEmpty() }
     }
 
-    private fun buildLogcatArgs(query: LogcatQuery, pid: String?): List<String> {
-        val args = mutableListOf("/system/bin/logcat", "-d")
+    internal fun buildLogcatArgs(query: LogcatQuery, pid: String?): List<String> {
+        val hasFilters = !query.tag.isNullOrBlank() ||
+            query.level != "V" ||
+            !query.filter.isNullOrBlank() ||
+            !query.packageName.isNullOrBlank()
 
-        // Lines count (retrieve slightly more to allow post filtering if needed)
-        val fetchCount = if (query.filter != null || (query.packageName != null && pid == null)) {
-            (query.lines * 2).coerceIn(query.lines, ReadLogcatTool.MAX_LINES)
-        } else {
-            query.lines
+        if (!hasFilters) {
+            val args = mutableListOf("/system/bin/logcat", "-d", "-t", query.lines.toString())
+            if (!query.buffer.isNullOrBlank() && query.buffer != "default") {
+                args.addAll(listOf("-b", query.buffer))
+            }
+            return args
         }
-        args.addAll(listOf("-t", fetchCount.toString()))
 
-        // Buffer selection
+        val logcatArgs = mutableListOf("/system/bin/logcat", "-d")
         if (!query.buffer.isNullOrBlank() && query.buffer != "default") {
-            args.addAll(listOf("-b", query.buffer))
+            logcatArgs.addAll(listOf("-b", query.buffer))
         }
-
-        // PID filter if known
         if (pid != null) {
-            args.add("--pid=$pid")
+            logcatArgs.add("--pid=$pid")
         }
-
-        // Filterspec: e.g. "AndroidRuntime:E *:S" or "*:E" or "<tag>:<level>"
         val filterspec = when {
-            query.tag != null && query.tag.isNotEmpty() -> {
-                listOf("${query.tag}:${query.level}", "*:S")
-            }
-            query.level != "V" -> {
-                listOf("*:${query.level}")
-            }
+            !query.tag.isNullOrBlank() -> listOf("${query.tag}:${query.level}", "*:S")
+            query.level != "V" -> listOf("*:${query.level}")
             else -> emptyList()
         }
-        args.addAll(filterspec)
+        logcatArgs.addAll(filterspec)
 
-        return args
+        val f1 = query.filter.orEmpty()
+        val f2 = if (pid == null && !query.packageName.isNullOrBlank()) query.packageName else ""
+
+        val script = "lines=\$1; f1=\$2; f2=\$3; shift 3; " +
+            "if [ -n \"\$f1\" ] && [ -n \"\$f2\" ]; then " +
+            "/system/bin/logcat \"\$@\" | /system/bin/grep -F -i -- \"\$f1\" | /system/bin/grep -F -i -- \"\$f2\" | /system/bin/tail -n \"\$lines\"; " +
+            "elif [ -n \"\$f1\" ]; then " +
+            "/system/bin/logcat \"\$@\" | /system/bin/grep -F -i -- \"\$f1\" | /system/bin/tail -n \"\$lines\"; " +
+            "elif [ -n \"\$f2\" ]; then " +
+            "/system/bin/logcat \"\$@\" | /system/bin/grep -F -i -- \"\$f2\" | /system/bin/tail -n \"\$lines\"; " +
+            "else " +
+            "/system/bin/logcat \"\$@\" | /system/bin/tail -n \"\$lines\"; " +
+            "fi; " +
+            "exit \${PIPESTATUS[0]}"
+
+        return listOf(
+            "/system/bin/sh",
+            "-c",
+            script,
+            "_",
+            query.lines.toString(),
+            f1,
+            f2,
+        ) + logcatArgs
     }
 
     private suspend fun runPrivilegedLogcat(args: List<String>, pid: String?): LogcatRunResult {
@@ -259,8 +277,16 @@ class DefaultLogcatRunner(
                 sb.append(line).append('\n')
                 if (sb.length >= ReadLogcatTool.MAX_OUTPUT_CHARS) break
             }
-            process.waitFor(10, TimeUnit.SECONDS)
+            val finished = process.waitFor(15, TimeUnit.SECONDS)
             val output = sb.toString()
+            val exitCode = if (finished) process.exitValue() else -1
+            if (exitCode != 0 && output.isBlank()) {
+                val stderr = runCatching { process.errorStream.bufferedReader().readText() }.getOrDefault("")
+                return LogcatRunResult(
+                    ok = false,
+                    output = "logcat failed with exit code $exitCode: ${stderr.ifEmpty { output }}",
+                )
+            }
 
             val tierNote = "[note: running without Shizuku privileges; modern Android only permits reading this app's own logs. Connect Shizuku in Settings → Terminal for device-wide logcat]"
 

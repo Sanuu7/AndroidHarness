@@ -166,4 +166,65 @@ class LogcatToolTest {
         assertFalse(res.ok)
         assertEquals("logcat: unknown buffer 'invalid'", res.output)
     }
+
+    @Test
+    fun `buildLogcatArgs without filters uses direct logcat with -d and -t`() {
+        val runner = DefaultLogcatRunner(null)
+        val query = LogcatQuery(lines = 50, level = "V")
+        val args = runner.buildLogcatArgs(query, pid = null)
+        assertEquals(listOf("/system/bin/logcat", "-d", "-t", "50"), args)
+    }
+
+    @Test
+    fun `buildLogcatArgs with tag uses shell pipeline with tail and filterspec`() {
+        val runner = DefaultLogcatRunner(null)
+        val query = LogcatQuery(lines = 25, level = "V", tag = "StressTest3")
+        val args = runner.buildLogcatArgs(query, pid = null)
+        assertEquals("/system/bin/sh", args[0])
+        assertEquals("-c", args[1])
+        assertTrue(args[2].contains("tail -n \"\$lines\""))
+        assertEquals("_", args[3])
+        assertEquals("25", args[4])
+        assertEquals("", args[5])
+        assertEquals("", args[6])
+        assertEquals("/system/bin/logcat", args[7])
+        assertEquals("-d", args[8])
+        assertEquals("StressTest3:V", args[9])
+        assertEquals("*:S", args[10])
+    }
+
+    @Test
+    fun `buildLogcatArgs with filter uses shell pipeline with grep and tail`() {
+        val runner = DefaultLogcatRunner(null)
+        val query = LogcatQuery(lines = 100, level = "V", filter = "fresh-marker")
+        val args = runner.buildLogcatArgs(query, pid = null)
+        assertEquals("/system/bin/sh", args[0])
+        assertEquals("-c", args[1])
+        assertTrue(args[2].contains("grep -F -i -- \"\$f1\""))
+        assertEquals("_", args[3])
+        assertEquals("100", args[4])
+        assertEquals("fresh-marker", args[5])
+        assertEquals("", args[6])
+        assertEquals("/system/bin/logcat", args[7])
+        assertEquals("-d", args[8])
+    }
+
+    @Test
+    fun `buildLogcatArgs with level above verbose uses shell pipeline with tail and level filterspec`() {
+        val runner = DefaultLogcatRunner(null)
+        val query = LogcatQuery(lines = 100, level = "W", buffer = "system")
+        val args = runner.buildLogcatArgs(query, pid = null)
+        assertEquals("/system/bin/sh", args[0])
+        assertEquals("-c", args[1])
+        assertTrue(args[2].contains("tail -n \"\$lines\""))
+        assertEquals("_", args[3])
+        assertEquals("100", args[4])
+        assertEquals("", args[5])
+        assertEquals("", args[6])
+        assertEquals("/system/bin/logcat", args[7])
+        assertEquals("-d", args[8])
+        assertEquals("-b", args[9])
+        assertEquals("system", args[10])
+        assertEquals("*:W", args[11])
+    }
 }
