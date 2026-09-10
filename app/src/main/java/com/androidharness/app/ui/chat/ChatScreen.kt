@@ -1421,7 +1421,7 @@ fun ChatScreen(
 
                 if (state.busy) {
                     Box(Modifier.padding(horizontal = 12.dp)) {
-                        CacheUsageFooter(state.turnCacheUsage[state.currentTurnId].orEmpty())
+                        CacheUsageFooter(state.turnCacheUsage[state.currentTurnId].orEmpty(), running = true)
                     }
                 }
                 TaskProgressCard(

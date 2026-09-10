@@ -45,6 +45,10 @@ internal fun cacheUsageSummary(rows: List<UsageEventEntity>): CacheUsageSummary 
     )
 }
 
+/** Rows arrive in recorded request order; unknown latest usage must not reuse an older hit. */
+internal fun cacheIndicatorSummary(rows: List<UsageEventEntity>, running: Boolean): CacheUsageSummary =
+    cacheUsageSummary(if (running) rows.takeLast(1) else rows)
+
 /** Cache reads only; cache writes and uncached input are separate charges. */
 internal fun cacheReadCost(row: UsageEventEntity, price: ModelsDev.ModelCost?): Double? =
     if (!row.cacheReported) null
@@ -68,10 +72,11 @@ private fun cacheMoney(cost: Double): String = when {
 
 /** One quiet footer line; request-level amounts stay behind a tap, inside chat. */
 @Composable
-internal fun CacheUsageFooter(rows: List<UsageEventEntity>) {
+internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = false) {
     if (rows.isEmpty()) return
     var expanded by remember { mutableStateOf(false) }
     val summary = remember(rows) { cacheUsageSummary(rows) }
+    val indicator = remember(rows, running) { cacheIndicatorSummary(rows, running) }
     // Refresh estimates when the catalog finishes loading or changes.
     val catalog by ModelsDev.providersFlow.collectAsState()
     val prices = remember(rows, catalog) {
@@ -97,17 +102,17 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>) {
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            if (summary.rate != null) {
+            if (indicator.rate != null) {
                 Icon(
-                    if (summary.cached > 0) Icons.Filled.CheckCircle else Icons.Filled.Close,
-                    contentDescription = if (summary.cached > 0) "Cache hit" else "Cache missed",
-                    tint = if (summary.cached > 0) successColor else errorColor,
+                    if (indicator.cached > 0) Icons.Filled.CheckCircle else Icons.Filled.Close,
+                    contentDescription = if (indicator.cached > 0) "Cache hit" else "Cache missed",
+                    tint = if (indicator.cached > 0) successColor else errorColor,
                     modifier = Modifier.size(14.dp),
                 )
                 Spacer(Modifier.width(4.dp))
             }
             Text(
-                summary.label,
+                indicator.label,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -119,6 +124,8 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>) {
         if (expanded) {
             Column(Modifier.fillMaxWidth().heightIn(max = 200.dp).verticalScroll(rememberScrollState()).padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                if (running) Text("Latest request: ${indicator.label}",
+                    style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val costLabel = if (summary.cached > 0) "Cache-hit cost this turn" else "Input cost this turn"
                 Text("$costLabel: ${total?.let { "est. ${cacheMoney(it)}" } ?: "unavailable"}",
                     style = MaterialTheme.typography.bodySmall)

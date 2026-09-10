@@ -11,6 +11,28 @@ class CacheUsageTest {
             outputTokens = 50, cachedTokens = cached, cacheWriteTokens = writes, createdAt = 1,
             turnId = "t", cacheReported = reported)
 
+    @Test fun `live indicator follows hit then miss while completion combines both`() {
+        val hit = listOf(row(100, 80))
+        assertEquals("Cache hit · 80%", cacheIndicatorSummary(hit, running = true).label)
+        val mixed = hit + row(100, 0)
+        assertEquals("Cache missed", cacheIndicatorSummary(mixed, running = true).label)
+        assertEquals("Cache hit · 40%", cacheIndicatorSummary(mixed, running = false).label)
+        assertEquals(80, cacheUsageSummary(mixed).cached.toInt())
+    }
+
+    @Test fun `live indicator follows miss then hit without averaging the latest hit`() {
+        val mixed = listOf(row(900, 0), row(100, 80))
+        assertEquals("Cache hit · 80%", cacheIndicatorSummary(mixed, running = true).label)
+        assertEquals("Cache hit · 8%", cacheIndicatorSummary(mixed, running = false).label)
+    }
+
+    @Test fun `latest unreported usage cannot leave a stale hit or invent a miss`() {
+        val rows = listOf(row(100, 80), row(100, 0, reported = false))
+        assertEquals("Cache unavailable", cacheIndicatorSummary(rows, running = true).label)
+        assertEquals("Cache hit · 80% · partial", cacheIndicatorSummary(rows, running = false).label)
+        assertNull(cacheIndicatorSummary(emptyList(), running = true).rate)
+    }
+
     @Test fun `rate weights tokens across requests and counts writes as misses`() {
         val result = cacheUsageSummary(listOf(row(100, 80), row(900, 0, writes = 900)))
         assertEquals(8.0, result.rate!!, 0.00001)
