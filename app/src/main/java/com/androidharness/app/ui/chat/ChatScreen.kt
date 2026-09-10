@@ -1834,7 +1834,7 @@ private fun CostDialog(
                     state.usage.totalInput > 0 -> "${"%.1f".format(state.usage.avgCacheHitRate * 100)}%"
                     else -> "0.0%"
                 }
-                Text("Cache hit rate: $hitRateStr")
+                Text("Overall cache hit rate: $hitRateStr")
                 Text(
                     "Hit rate updates after each completed turn",
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

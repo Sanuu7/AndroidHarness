@@ -140,7 +140,7 @@ fun ContextUsageDialog(
                         state.usage.totalInput > 0 -> "%.1f%%".format(state.usage.avgCacheHitRate * 100)
                         else -> "0.0%"
                     }
-                    TokenRow("Cache hit rate", hitRateText)
+                    TokenRow("Overall cache hit rate", hitRateText)
                     Text(
                         "Hit rate updates after each completed turn",
                         style = MaterialTheme.typography.labelSmall,

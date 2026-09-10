@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.*
@@ -14,6 +16,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.data.db.UsageEventEntity
 import com.androidharness.app.llm.ModelsDev
+import com.androidharness.app.ui.theme.LocalStatusColors
 import java.util.Locale
 
 internal data class CacheUsageSummary(
@@ -86,19 +89,31 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>) {
         if (summary.cached > 0) cacheReadCost(row, prices[index]) else cacheMissCost(row, prices[index])
     }
     val total = if (costs.all { it != null }) costs.filterNotNull().sum() else null
+    val successColor = LocalStatusColors.current.success
+    val errorColor = MaterialTheme.colorScheme.error
     Column(Modifier.fillMaxWidth()) {
         Row(
             Modifier.fillMaxWidth().clickable { expanded = !expanded }.heightIn(min = 36.dp),
             horizontalArrangement = Arrangement.End,
             verticalAlignment = Alignment.CenterVertically,
         ) {
+            if (summary.rate != null) {
+                Icon(
+                    if (summary.cached > 0) Icons.Filled.CheckCircle else Icons.Filled.Close,
+                    contentDescription = if (summary.cached > 0) "Cache hit" else "Cache missed",
+                    tint = if (summary.cached > 0) successColor else errorColor,
+                    modifier = Modifier.size(14.dp),
+                )
+                Spacer(Modifier.width(4.dp))
+            }
             Text(
                 summary.label,
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore,
-                if (expanded) "Hide cache details" else "Show cache details", Modifier.size(16.dp),
+                if (expanded) "Hide cache details" else "Show cache details",
+                Modifier.padding(start = 2.dp).size(16.dp),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         if (expanded) {
@@ -114,6 +129,36 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>) {
                     style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (summary.unknown > 0) Text("${summary.unknown} requests did not report cache usage; excluded from the rate.",
                     style = MaterialTheme.typography.labelSmall)
+                if (rows.size > 1) {
+                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
+                    rows.forEachIndexed { i, r ->
+                        Row(
+                            Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                if (r.cacheReported) {
+                                    Icon(
+                                        if (r.cachedTokens > 0) Icons.Filled.CheckCircle else Icons.Filled.Close,
+                                        contentDescription = if (r.cachedTokens > 0) "Cache hit" else "Cache miss",
+                                        tint = if (r.cachedTokens > 0) successColor else errorColor,
+                                        modifier = Modifier.size(12.dp),
+                                    )
+                                    Spacer(Modifier.width(4.dp))
+                                }
+                                Text("Request ${i + 1}", style = MaterialTheme.typography.labelSmall)
+                            }
+                            Text(
+                                if (!r.cacheReported) "Not reported"
+                                else if (r.cachedTokens > 0) "${r.cachedTokens} cached"
+                                else "0 cached",
+                                style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
+                }
             }
         }
     }

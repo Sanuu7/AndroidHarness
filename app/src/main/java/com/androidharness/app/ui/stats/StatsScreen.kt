@@ -295,7 +295,7 @@ fun StatsScreen(
             // ----- Cache ----------------------------------------------------
             StatCard(title = "Cache performance") {
                 StatBig(
-                    label = "Average hit rate",
+                    label = "Overall cache hit rate",
                     value = if (bundle.input > 0) {
                         "%.1f%%".format(bundle.cached.toDouble() / bundle.input.toDouble() * 100)
                     } else "-",
