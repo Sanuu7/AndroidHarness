@@ -231,7 +231,12 @@ class ChatViewModel(
     initialSessionId: String?,
 ) : ViewModel() {
 
-    private val _state = MutableStateFlow(ChatUiState())
+    private val _state = MutableStateFlow(
+        ChatUiState(
+            sessionId = initialSessionId,
+            isLoadingMessages = initialSessionId != null,
+        )
+    )
     val state: StateFlow<ChatUiState> = _state
 
     private val _navEvents = MutableSharedFlow<NavEvent>(extraBufferCapacity = 1)
@@ -403,7 +408,6 @@ class ChatViewModel(
                     _state.update { it.copy(isLoadingMessages = false) }
                     flowOf(emptyList())
                 } else {
-                    _state.update { it.copy(isLoadingMessages = it.messages.isEmpty()) }
                     c.sessions.messagesFlow(sid)
                 }
             }.collect { msgs ->

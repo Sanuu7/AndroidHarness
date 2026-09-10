@@ -977,45 +977,37 @@ fun ChatScreen(
                         .weight(1f)
                         .fillMaxWidth(),
                 ) {
-                    AnimatedContent(
-                        targetState = state.isLoadingMessages,
-                        transitionSpec = {
-                            fadeIn(tween(220, easing = FastOutSlowInEasing)) togetherWith
-                                fadeOut(tween(160, easing = FastOutSlowInEasing))
-                        },
-                        label = "chatLoadingTransition",
-                    ) { loading ->
-                        if (loading) {
-                            ChatLoadingSkeleton(
-                                modifier = Modifier
-                                    .fillMaxSize()
-                                    .padding(horizontal = 14.dp, vertical = 16.dp),
-                            )
-                        } else {
-                            LazyColumn(
-                                state = listState,
-                                modifier = Modifier.fillMaxWidth(),
-                                contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
-                                verticalArrangement = Arrangement.spacedBy(12.dp),
+                    if (state.isLoadingMessages) {
+                        ChatLoadingSkeleton(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .padding(horizontal = 14.dp, vertical = 16.dp),
+                        )
+                    } else {
+                        LazyColumn(
+                            state = listState,
+                            modifier = Modifier.fillMaxWidth(),
+                            contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                        ) {
+                            var nextItemIndex = 0
+                            fun indexedItem(
+                                key: Any? = null,
+                                content: @Composable LazyItemScope.() -> Unit,
                             ) {
-                                var nextItemIndex = 0
-                                fun indexedItem(
-                                    key: Any? = null,
-                                    content: @Composable LazyItemScope.() -> Unit,
-                                ) {
-                                    if (key == "search-target") searchItemIndex.value = nextItemIndex
-                                    nextItemIndex++
-                                    item(key = key, content = content)
+                                if (key == "search-target") searchItemIndex.value = nextItemIndex
+                                nextItemIndex++
+                                item(key = key, content = content)
+                            }
+                            if (state.messages.isEmpty() && state.streamingText == null) {
+                                indexedItem(key = "empty-state") {
+                                    EmptyState(
+                                        hasProvider = state.activeProvider != null,
+                                        onSuggestion = { viewModel.send(it) },
+                                        onAddProvider = { activeProviderManagerTarget = ModelSelectionTarget.ACTIVE },
+                                    )
                                 }
-                                if (state.messages.isEmpty() && state.streamingText == null) {
-                                    indexedItem {
-                                        EmptyState(
-                                            hasProvider = state.activeProvider != null,
-                                            onSuggestion = { viewModel.send(it) },
-                                            onAddProvider = { activeProviderManagerTarget = ModelSelectionTarget.ACTIVE },
-                                        )
-                                    }
-                                }
+                            }
 
                     for ((messageIndex, message) in state.messages.withIndex()) {
                         // Inner subagent turns persist with the parent task's
@@ -1333,7 +1325,6 @@ fun ChatScreen(
                     }
                 }
             }
-        }
 
                 // Floating jump-to-latest button while detached from the
                 // bottom; pulses when new content lands while away.
