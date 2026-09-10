@@ -5,6 +5,7 @@ import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.mapNotNull
+import kotlinx.coroutines.flow.flow
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -97,31 +98,43 @@ class AnthropicProvider(
             options,
         )
 
+        return parseStream(ProviderFactory.sseJson(request, client))
+    }
+
+    internal fun parseStream(events: Flow<JsonElement>): Flow<StreamEvent> = flow {
         // content block index -> (id, name, accumulated input json)
         val toolBlocks = TreeMap<Int, Triple<String, String, StringBuilder>>()
-        var inputTokens = 0
+        var uncachedTokens = 0
+        var outputTokens = 0
+        var pendingUsage: StreamEvent.Usage? = null
         var cachedTokens = 0
         var cacheReported = false
         var cacheWriteTokens = 0
         var stopReason: String? = null
 
-        return ProviderFactory.sseJson(request, client).mapNotNull { el ->
+        fun updateUsage(usage: JsonObject?) {
+            if (usage == null) return
+            usage["input_tokens"]?.jsonPrimitive?.intOrNull?.let { uncachedTokens = it }
+            usage["output_tokens"]?.jsonPrimitive?.intOrNull?.let { outputTokens = it }
+            usage["cache_read_input_tokens"]?.jsonPrimitive?.intOrNull?.let {
+                cachedTokens = it
+                cacheReported = true
+            }
+            val creation = usage["cache_creation_input_tokens"]?.jsonPrimitive?.intOrNull
+                ?: usage["cache_creation"]?.jsonObjectOrAbsent()?.let { cc ->
+                    (cc["ephemeral_5m_input_tokens"]?.jsonPrimitive?.intOrNull ?: 0) +
+                        (cc["ephemeral_1h_input_tokens"]?.jsonPrimitive?.intOrNull ?: 0)
+                }
+            creation?.let { cacheWriteTokens = it }
+            pendingUsage = StreamEvent.Usage(uncachedTokens + cachedTokens + cacheWriteTokens,
+                outputTokens, cachedTokens, cacheWriteTokens, cacheReported)
+        }
+
+        events.mapNotNull { el ->
             val event = el as? JsonObject ?: return@mapNotNull null
             when (event["type"]?.jsonPrimitive?.contentOrNull) {
                 "message_start" -> {
-                    val usage = event["message"]?.jsonObjectOrAbsent()?.get("usage")?.jsonObjectOrAbsent()
-                    // Anthropic's input_tokens EXCLUDES cache reads and writes;
-                    // normalize to the total prompt size so hit-rate math is
-                    // provider-agnostic (cached + write + uncached = total).
-                    val uncached = usage?.get("input_tokens")?.jsonPrimitive?.intOrNull ?: 0
-                    cacheReported = usage?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull != null
-                    cachedTokens = usage?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull ?: 0
-                    cacheWriteTokens = usage?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
-                        ?: usage?.get("cache_creation")?.jsonObjectOrAbsent()?.let { cc ->
-                            (cc["ephemeral_5m_input_tokens"]?.jsonPrimitive?.intOrNull ?: 0) +
-                                (cc["ephemeral_1h_input_tokens"]?.jsonPrimitive?.intOrNull ?: 0)
-                        } ?: 0
-                    inputTokens = uncached + cachedTokens + cacheWriteTokens
+                    updateUsage(event["message"]?.jsonObjectOrAbsent()?.get("usage")?.jsonObjectOrAbsent())
                     null
                 }
 
@@ -173,11 +186,9 @@ class AnthropicProvider(
                 "message_delta" -> {
                     event["delta"]?.jsonObjectOrAbsent()?.get("stop_reason")
                         ?.jsonPrimitive?.contentOrNull?.let { stopReason = it }
-                    val output = event["usage"]?.jsonObjectOrAbsent()
-                        ?.get("output_tokens")?.jsonPrimitive?.intOrNull
-                    output?.let {
-                        StreamEvent.Usage(inputTokens, it, cachedTokens, cacheWriteTokens, cacheReported)
-                    }
+                    // Counts are cumulative; keep the final snapshot, never add deltas.
+                    updateUsage(event["usage"]?.jsonObjectOrAbsent())
+                    null
                 }
 
                 "message_stop" -> StreamEvent.Done(stopReason)
@@ -189,7 +200,15 @@ class AnthropicProvider(
 
                 else -> null
             }
+        }.collect { event ->
+            if (event is StreamEvent.Done) {
+                pendingUsage?.let { emit(it) }
+                pendingUsage = null
+            }
+            emit(event)
         }
+        // Some gateways close cleanly without a message_stop event.
+        pendingUsage?.let { emit(it) }
     }
 
     // ------------------------------------------------------------------

@@ -106,6 +106,9 @@ data class UsageEventEntity(
     val createdAt: Long,
     val turnId: String? = null,
     @ColumnInfo(defaultValue = "0") val cacheReported: Boolean = false,
+    val inputPrice: Double? = null,
+    val cacheReadPrice: Double? = null,
+    val cacheWritePrice: Double? = null,
 )
 
 /** Per-file line-change stats from one editing tool call, "+N −M" chips in chat. */
@@ -386,7 +389,7 @@ interface HarnessDao {
         SessionFileChangeEntity::class,
         MessageFtsEntity::class,
     ],
-    version = 12,
+    version = 13,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -419,6 +422,14 @@ abstract class AppDatabase : RoomDatabase() {
         }
 
         /** Attribute cache usage to turns; old rows keep unknown cache reporting. */
+        val MIGRATION_12_13 = object : androidx.room.migration.Migration(12, 13) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE usage_events ADD COLUMN inputPrice REAL")
+                db.execSQL("ALTER TABLE usage_events ADD COLUMN cacheReadPrice REAL")
+                db.execSQL("ALTER TABLE usage_events ADD COLUMN cacheWritePrice REAL")
+            }
+        }
+
         val MIGRATION_11_12 = object : androidx.room.migration.Migration(11, 12) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE usage_events ADD COLUMN turnId TEXT")

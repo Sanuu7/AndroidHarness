@@ -30,12 +30,26 @@ internal data class CacheUsageSummary(
     val label: String get() = when {
         rate == null -> "Cache unavailable"
         cached == 0L -> "Cache missed"
-        else -> "Cache hit · ${String.format(Locale.US, "%.0f", rate)}%"
+        else -> "Cache hit · ${cachePercentage(cached, input)}%"
     } + if (unknown > 0 && rate != null) " · partial" else ""
 }
 
+/** Two decimals, reserving 100% for a fully cached prompt and 0% for a true miss. */
+internal fun cachePercentage(cached: Long, input: Long): String = when {
+    cached == input -> "100"
+    cached * 100.0 / input < 0.01 -> "<0.01"
+    else -> java.math.BigDecimal.valueOf(cached).multiply(java.math.BigDecimal.valueOf(100))
+        .divide(java.math.BigDecimal.valueOf(input), 2, java.math.RoundingMode.HALF_UP)
+        .min(java.math.BigDecimal("99.99"))
+        .stripTrailingZeros().toPlainString()
+}
+
+internal fun validCacheUsage(row: UsageEventEntity): Boolean = row.cacheReported &&
+    row.inputTokens > 0 && row.cachedTokens in 0..row.inputTokens &&
+    row.cacheWriteTokens in 0..(row.inputTokens - row.cachedTokens)
+
 internal fun cacheUsageSummary(rows: List<UsageEventEntity>): CacheUsageSummary {
-    val known = rows.filter { it.cacheReported && it.inputTokens > 0 }
+    val known = rows.filter(::validCacheUsage)
     return CacheUsageSummary(
         input = known.sumOf { it.inputTokens },
         cached = known.sumOf { it.cachedTokens.coerceIn(0, it.inputTokens) },
@@ -50,18 +64,19 @@ internal fun cacheIndicatorSummary(rows: List<UsageEventEntity>, running: Boolea
     cacheUsageSummary(if (running) rows.takeLast(1) else rows)
 
 /** Cache reads only; cache writes and uncached input are separate charges. */
-internal fun cacheReadCost(row: UsageEventEntity, price: ModelsDev.ModelCost?): Double? =
-    if (!row.cacheReported) null
+internal fun cacheReadCost(row: UsageEventEntity, price: ModelsDev.CachePrices?): Double? =
+    if (!validCacheUsage(row)) null
     else if (row.cachedTokens <= 0) 0.0
-    else price?.let { row.cachedTokens.coerceIn(0, row.inputTokens.coerceAtLeast(0)) / 1_000_000.0 * it.cacheRead }
+    else price?.takeIf { it.read != null }?.let { row.cachedTokens.coerceIn(0, row.inputTokens.coerceAtLeast(0)) / 1_000_000.0 * it.read!! }
 
 /** Input charges on a miss include any cache creation premium, never output. */
-internal fun cacheMissCost(row: UsageEventEntity, price: ModelsDev.ModelCost?): Double? {
-    if (!row.cacheReported || row.inputTokens <= 0) return null
+internal fun cacheMissCost(row: UsageEventEntity, price: ModelsDev.CachePrices?): Double? {
+    if (!validCacheUsage(row)) return null
     val cached = row.cachedTokens.coerceIn(0, row.inputTokens)
     val writes = row.cacheWriteTokens.coerceIn(0, row.inputTokens - cached)
     val uncached = row.inputTokens - cached - writes
-    return price?.let { (uncached * it.input + writes * it.cacheWrite) / 1_000_000.0 }
+    if (writes > 0 && price?.write == null) return null
+    return price?.let { (uncached * it.input + writes * (it.write ?: 0.0)) / 1_000_000.0 }
 }
 
 private fun cacheMoney(cost: Double): String = when {
@@ -77,18 +92,8 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
     var expanded by remember { mutableStateOf(false) }
     val summary = remember(rows) { cacheUsageSummary(rows) }
     val indicator = remember(rows, running) { cacheIndicatorSummary(rows, running) }
-    // Refresh estimates when the catalog finishes loading or changes.
-    val catalog by ModelsDev.providersFlow.collectAsState()
-    val prices = remember(rows, catalog) {
-        rows.map { row ->
-            val providerKey = catalog.firstOrNull {
-                it.name.equals(row.providerName, ignoreCase = true) || it.id.equals(row.providerName, ignoreCase = true)
-            }?.id ?: ModelsDev.providerKeyFor(row.providerName)
-            val price = if (row.providerName == "Harness" && com.androidharness.app.llm.HarnessProvider.isFree(row.model)) {
-                ModelsDev.ModelCost(0.0, 0.0, 0.0, 0.0)
-            } else ModelsDev.findCost(providerKey, row.model)
-            price
-        }
+    val prices = remember(rows) {
+        rows.map { row -> row.inputPrice?.let { ModelsDev.CachePrices(it, row.cacheReadPrice, row.cacheWritePrice) } }
     }
     val costs = rows.mapIndexed { index, row ->
         if (summary.cached > 0) cacheReadCost(row, prices[index]) else cacheMissCost(row, prices[index])
@@ -112,7 +117,7 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
                 Spacer(Modifier.width(4.dp))
             }
             Text(
-                indicator.label,
+                indicator.label + if (running) " · last completed" else "",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -124,7 +129,7 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
         if (expanded) {
             Column(Modifier.fillMaxWidth().heightIn(max = 200.dp).verticalScroll(rememberScrollState()).padding(8.dp),
                 verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                if (running) Text("Latest request: ${indicator.label}",
+                if (running) Text("Last completed request: ${indicator.label}",
                     style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 val costLabel = if (summary.cached > 0) "Cache-hit cost this turn" else "Input cost this turn"
                 Text("$costLabel: ${total?.let { "est. ${cacheMoney(it)}" } ?: "unavailable"}",
@@ -145,7 +150,7 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
                             verticalAlignment = Alignment.CenterVertically,
                         ) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (r.cacheReported) {
+                                if (validCacheUsage(r)) {
                                     Icon(
                                         if (r.cachedTokens > 0) Icons.Filled.CheckCircle else Icons.Filled.Close,
                                         contentDescription = if (r.cachedTokens > 0) "Cache hit" else "Cache miss",
@@ -157,7 +162,7 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
                                 Text("Request ${i + 1}", style = MaterialTheme.typography.labelSmall)
                             }
                             Text(
-                                if (!r.cacheReported) "Not reported"
+                                if (!validCacheUsage(r)) "Unavailable"
                                 else if (r.cachedTokens > 0) "${r.cachedTokens} cached"
                                 else "0 cached",
                                 style = MaterialTheme.typography.labelSmall,

@@ -358,6 +358,7 @@ class SessionRepository(
         cacheWrite: Long,
         turnId: String? = null,
         cacheReported: Boolean = false,
+        cachePrices: com.androidharness.app.llm.ModelsDev.CachePrices? = null,
     ) {
         if (model.isBlank()) return
         db.dao().insertUsageEvent(
@@ -371,6 +372,9 @@ class SessionRepository(
                 cacheWriteTokens = cacheWrite,
                 turnId = turnId,
                 cacheReported = cacheReported,
+                inputPrice = cachePrices?.input,
+                cacheReadPrice = cachePrices?.read,
+                cacheWritePrice = cachePrices?.write,
                 createdAt = System.currentTimeMillis(),
             )
         )

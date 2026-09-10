@@ -32,10 +32,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import com.androidharness.app.ui.chat.UserScrollObserver
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
@@ -117,19 +119,21 @@ internal fun ThinkingBlock(
                 exit = fadeOut(defaultEffectsSpec()) + shrinkVertically(animationSpec = fastSpatialSpec()),
             ) {
                 val scroll = rememberScrollState()
-                var lastMax by remember { mutableIntStateOf(0) }
-                if (live) {
-                    LaunchedEffect(thinking) {
-                        val wasAtBottom = scroll.value >= lastMax - 48
-                        lastMax = scroll.maxValue
-                        if (wasAtBottom && scroll.value < scroll.maxValue) {
-                            scroll.scrollTo(scroll.maxValue)
+                var following by remember { mutableStateOf(true) }
+                val userScrollObserver = remember { UserScrollObserver { following = false } }
+                LaunchedEffect(live, following) {
+                    if (!live || !following) return@LaunchedEffect
+                    // Observe measured growth instead of racing layout on each text delta.
+                    snapshotFlow { scroll.maxValue }.collect { end ->
+                        if (following && !scroll.isScrollInProgress && end != Int.MAX_VALUE) {
+                            scroll.scrollTo(end)
                         }
                     }
                 }
                 Row(
                     Modifier
                         .padding(top = 8.dp)
+                        .nestedScroll(userScrollObserver)
                         .height(IntrinsicSize.Min),
                 ) {
                     Box(

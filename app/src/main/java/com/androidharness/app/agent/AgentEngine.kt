@@ -132,6 +132,7 @@ sealed interface AgentEvent {
         /** Display name of the provider that served them. */
         val providerName: String = "",
         val cacheReported: Boolean = false,
+        val cachePrices: com.androidharness.app.llm.ModelsDev.CachePrices? = null,
     ) : AgentEvent
     /** A transient provider failure will be retried after [delayMs]. */
     data class Retrying(val attempt: Int, val delayMs: Long, val reason: String) : AgentEvent
@@ -357,6 +358,7 @@ class AgentEngine(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
                                 config.model, config.name, cacheReported = event.cacheReported,
+                                cachePrices = com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
                             )
                         )
                     }
@@ -1186,6 +1188,7 @@ class AgentEngine(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
                                 config.model, config.name, cacheReported = event.cacheReported,
+                                cachePrices = com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
                             )
                         )
                         else -> {}
@@ -1339,6 +1342,7 @@ class AgentEngine(
                             event.inputTokens, event.outputTokens,
                             event.cachedInputTokens, event.cacheWriteTokens,
                             config.model, config.name, cacheReported = event.cacheReported,
+                                cachePrices = com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
                         )
                     )
                     else -> {}

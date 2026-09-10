@@ -550,6 +550,7 @@ class RunManager(
                     event.cacheWriteTokens.toLong(),
                     turnId = turnId,
                     cacheReported = event.cacheReported,
+                    cachePrices = event.cachePrices,
                 )
             }
 

@@ -49,6 +49,9 @@ object ModelsDev {
         val cacheWrite: Double = input, // $/1M cache write tokens
     )
 
+    /** Explicit catalog rates only, USD per million tokens. */
+    data class CachePrices(val input: Double, val read: Double?, val write: Double?)
+
     /** Per-model thinking capability as the catalog reports it. */
     data class Entry(
         /** Tri-state like ModelEntry.reasoning; false definitively means "cannot think". */
@@ -65,6 +68,7 @@ object ModelsDev {
         val contextTokens: Long? = null,
         /** Live model pricing from the models.dev catalog ($ per 1M tokens). */
         val cost: ModelCost? = null,
+        val cachePrices: CachePrices? = null,
     )
 
     /** One provider listed on models.dev: display name, endpoint, protocol hint. */
@@ -228,6 +232,24 @@ object ModelsDev {
     }
 
     /** Finds live cost information for a model across catalog providers. */
+    /** Exact provider endpoint and model only. Never borrow another provider's price. */
+    fun exactCachePrices(baseUrl: String, model: String): CachePrices? {
+        val endpoint = runCatching { java.net.URI(baseUrl) }.getOrNull() ?: return null
+        val host = endpoint.host?.lowercase() ?: return null
+        val path = endpoint.path.orEmpty().trimEnd('/')
+        val matches = providerInfos.mapNotNull { info ->
+            val api = runCatching { java.net.URI(info.api ?: "") }.getOrNull() ?: return@mapNotNull null
+            val apiPath = api.path.orEmpty().trimEnd('/')
+            if (api.host?.lowercase() != host || api.scheme != endpoint.scheme || api.port != endpoint.port ||
+                !(path == apiPath || path.startsWith("$apiPath/"))) return@mapNotNull null
+            info to apiPath.length
+        }
+        // A host may serve separately priced endpoints. Do not fall back across them.
+        val specificity = matches.maxOfOrNull { it.second } ?: return null
+        return matches.filter { it.second == specificity }
+            .mapNotNull { entries[it.first.id]?.get(model)?.cachePrices }.distinct().singleOrNull()
+    }
+
     fun findCost(providerKey: String?, modelId: String?): ModelCost? {
         if (modelId.isNullOrBlank()) return null
         // Resellers list the same model id at every price from free promo to
@@ -319,7 +341,12 @@ object ModelsDev {
                     } else null
                 } else null
 
-                models[modelId] = Entry(reasoning, effort, budget, budgetMax, toggle, ctx, cost)
+                fun explicitRate(key: String) = costObj?.get(key)?.jsonPrimitive?.doubleOrNull
+                    ?.takeIf { it.isFinite() && it >= 0 }
+                val cachePrices = explicitRate("input")?.let {
+                    CachePrices(it, explicitRate("cache_read"), explicitRate("cache_write"))
+                }
+                models[modelId] = Entry(reasoning, effort, budget, budgetMax, toggle, ctx, cost, cachePrices)
             }
             entriesMap[providerId] = models
             providersList += ProviderInfo(

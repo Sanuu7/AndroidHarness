@@ -87,6 +87,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalClipboardManager
@@ -343,6 +344,10 @@ fun ChatScreen(
 
     // True while a finger drag is driving the list (from interactionSource).
     val gestureActive = remember { mutableStateOf(false) }
+    var mainListDragged by remember { mutableStateOf(false) }
+    val userScrollObserver = remember {
+        UserScrollObserver { pinnedToBottom = false }
+    }
 
     if (showContext) {
         TaskSettingsSheet(state = state, onDismiss = { showContext = false },
@@ -726,30 +731,23 @@ fun ChatScreen(
     LaunchedEffect(listState) {
         listState.interactionSource.interactions.collect { interaction ->
             when (interaction) {
-                is DragInteraction.Start -> gestureActive.value = true
+                is DragInteraction.Start -> {
+                    gestureActive.value = true
+                    mainListDragged = true
+                }
                 is DragInteraction.Stop, is DragInteraction.Cancel -> gestureActive.value = false
             }
         }
     }
 
-    // Unpin the MOMENT a real drag moves away from the bottom: follow-scrolls
-    // fire on every layout change during a stream and would fight the gesture.
+    // Only a direct list drag settling at the end may resume following. A child
+    // scroller or programmatic layout adjustment must never re-pin the chat.
     LaunchedEffect(listState) {
-        snapshotFlow {
-            gestureActive.value &&
-                !isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = PIN_TOLERANCE_PX)
-        }.distinctUntilChanged().collect { draggedAway ->
-            if (draggedAway) pinnedToBottom = false
-        }
-    }
-
-    // Re-attach when scrolling settles at the bottom (finger release, fling
-    // end, or a programmatic scroll landing), pin, then a cheap exact snap.
-    LaunchedEffect(listState) {
-        snapshotFlow { listState.isScrollInProgress }
+        snapshotFlow { Triple(listState.isScrollInProgress, gestureActive.value, mainListDragged) }
             .distinctUntilChanged()
-            .collect { inProgress ->
-                if (inProgress || gestureActive.value) return@collect
+            .collect { (inProgress, dragging, dragged) ->
+                if (inProgress || dragging || !dragged) return@collect
+                mainListDragged = false
                 if (isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = PIN_TOLERANCE_PX)) {
                     pinnedToBottom = true
                     listState.snapToEndIfDrifted()
@@ -896,7 +894,8 @@ fun ChatScreen(
             Column(
                 modifier = Modifier
                     .fillMaxSize()
-                    .imePadding(),
+                    .imePadding()
+                    .nestedScroll(userScrollObserver),
             ) {
                 val toolResults = remember(state.messages) {
                     val map = HashMap<String, ChatMessage>(state.messages.size)
