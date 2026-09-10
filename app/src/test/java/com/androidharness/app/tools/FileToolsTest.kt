@@ -307,6 +307,20 @@ class FileToolsTest {
         assertFalse(file("f.txt").exists())
     }
 
+    @Test
+    fun `long filename returns actionable guidance on ENAMETOOLONG`() = runBlocking {
+        val longName = "a".repeat(254) + ".txt"
+        val readMsg = runExpectingFailure(ReadFileTool(), "path" to longName)
+        assertTrue(readMsg, readMsg.contains("Filename exceeds filesystem limit"))
+        assertTrue(readMsg, readMsg.contains("mv"))
+
+        val infoMsg = runExpectingFailure(FileInfoTool(), "path" to longName)
+        assertTrue(infoMsg, infoMsg.contains("Filename exceeds filesystem limit"))
+
+        val moveMsg = runExpectingFailure(MoveFileTool(), "source" to longName, "destination" to "short.txt")
+        assertTrue(moveMsg, moveMsg.contains("Filename exceeds filesystem limit"))
+    }
+
     // --- sandbox escape still blocked ---------------------------------------------
 
     @Test

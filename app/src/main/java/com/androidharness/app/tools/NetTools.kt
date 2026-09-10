@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonObject
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
+import okhttp3.MediaType
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -134,6 +135,24 @@ internal object GithubAuthPolicy {
     }
 }
 
+internal object HttpBinaryDetector {
+    fun isBinaryMediaType(mediaType: MediaType?): Boolean {
+        if (mediaType == null) return false
+        val type = mediaType.type.lowercase()
+        val subtype = mediaType.subtype.lowercase()
+        if (type == "text") return false
+        if (subtype == "svg+xml") return false
+        if (type in setOf("image", "audio", "video", "font")) return true
+        if (subtype == "json" || subtype.endsWith("+json")) return false
+        if (subtype == "xml" || subtype.endsWith("+xml")) return false
+        if (subtype == "yaml" || subtype == "x-yaml" || subtype.endsWith("+yaml")) return false
+        if (subtype == "javascript" || subtype == "x-javascript" || subtype == "ecmascript") return false
+        if (subtype == "graphql" || subtype == "x-www-form-urlencoded") return false
+        if (subtype == "sql" || subtype == "csv") return false
+        return true
+    }
+}
+
 /** Generic HTTP client for testing APIs. */
 class HttpRequestTool(
     private val client: OkHttpClient,
@@ -204,14 +223,31 @@ class HttpRequestTool(
             try {
                 reqClient.newCall(builder.build()).execute().use { resp ->
                     val sb = StringBuilder()
-                    sb.append("HTTP ").append(resp.code).append(' ').append(resp.message ?: "").append('\n')
+                    sb.append("HTTP ").append(resp.code).append(' ').append(resp.message).append('\n')
                     val headers = (0 until minOf(resp.headers.size, 12))
                         .map { resp.headers.name(it) to resp.headers.value(it) }
                     headers.forEach { (k, v) -> sb.append(k).append(": ").append(v).append('\n') }
                     sb.append('\n')
-                    val respBody = resp.body?.string() ?: ""
-                    sb.append(respBody.take(20_000))
-                    if (respBody.length > 20_000) sb.append("\n[truncated]")
+                    val body = resp.body
+                    val mediaType = body?.contentType()
+                    if (HttpBinaryDetector.isBinaryMediaType(mediaType)) {
+                        val mime = mediaType?.let { "${it.type}/${it.subtype}" } ?: "application/octet-stream"
+                        val len = if ((body?.contentLength() ?: -1L) >= 0L) {
+                            body!!.contentLength()
+                        } else {
+                            body?.bytes()?.size?.toLong() ?: 0L
+                        }
+                        sb.append("[binary content: $mime, $len bytes]")
+                    } else {
+                        val bytes = body?.bytes() ?: ByteArray(0)
+                        if (mediaType == null && bytes.isNotEmpty() && com.androidharness.app.workspace.isBinaryStream(java.io.ByteArrayInputStream(bytes))) {
+                            sb.append("[binary content: application/octet-stream, ${bytes.size} bytes]")
+                        } else {
+                            val respBody = bytes.toString(mediaType?.charset() ?: Charsets.UTF_8)
+                            sb.append(respBody.take(20_000))
+                            if (respBody.length > 20_000) sb.append("\n[truncated]")
+                        }
+                    }
                     if (attachAuth && token == null) {
                         sb.append("\n[note: no GitHub token configured; request sent anonymously; " +
                             "set one in Settings → GitHub for private repos and the 5000 req/h limit]")

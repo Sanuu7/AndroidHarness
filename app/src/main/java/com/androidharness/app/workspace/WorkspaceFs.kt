@@ -76,13 +76,19 @@ class FileFs(private val root: File) : WorkspaceFs {
         root.mkdirs()
     }
 
-    override fun resolve(path: String): FsNode {
+    override fun resolve(path: String): FsNode = try {
         val rootPath = root.canonicalFile.toPath()
         val resolved = rootPath.resolve(path).normalize()
         if (!resolved.startsWith(rootPath)) {
             throw ToolFailure("Path is outside the workspace and was blocked: $path")
         }
-        return FileFsNode(resolved.toFile(), rootPath)
+        FileFsNode(resolved.toFile(), rootPath)
+    } catch (e: Exception) {
+        if (e is ToolFailure) throw e
+        if (isNameTooLong(e, path)) {
+            throw ToolFailure(longFilenameGuidance(path))
+        }
+        throw e
     }
 
     override fun walk(path: String): Sequence<FsNode> {
@@ -123,7 +129,14 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
     override fun list(): List<FsNode> =
         file.listFiles().orEmpty().map { FileFsNode(it, rootPath) }
 
-    override fun readText(): String = file.readText()
+    override fun readText(): String = try {
+        file.readText()
+    } catch (e: Exception) {
+        if (isNameTooLong(e, file.name)) {
+            throw ToolFailure(longFilenameGuidance(file.name))
+        }
+        throw e
+    }
 
     override fun writeText(content: String) {
         if (isDirectory) {
@@ -137,6 +150,9 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
                 runCatching { fos.fd.sync() }
             }
         } catch (e: Exception) {
+            if (isNameTooLong(e, file.name)) {
+                throw ToolFailure(longFilenameGuidance(file.name))
+            }
             if (isDirectory || e.message?.contains("EISDIR") == true) {
                 throw ToolFailure("Cannot write file '$relPath': is a directory")
             }
@@ -192,8 +208,14 @@ class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsN
         return FileFsNode(created, rootPath)
     }
 
-    override fun openInputStream(): java.io.InputStream? =
+    override fun openInputStream(): java.io.InputStream? = try {
         if (exists && isFile) file.inputStream() else null
+    } catch (e: Exception) {
+        if (isNameTooLong(e, file.name)) {
+            throw ToolFailure(longFilenameGuidance(file.name))
+        }
+        throw e
+    }
 
     override fun isBinary(): Boolean {
         if (!exists || !isFile || length == 0L) return false
@@ -225,9 +247,14 @@ class UnboundedFileFs(root: File) : WorkspaceFs {
     override val shellRoot: File get() = delegate.shellRoot
     override val isSaf: Boolean get() = false
 
-    private fun openResolve(path: String): File {
-        if (path.startsWith('/')) return File(path).canonicalFile
-        return rootPath.resolve(path).normalize().toFile().canonicalFile
+    private fun openResolve(path: String): File = try {
+        if (path.startsWith('/')) File(path).canonicalFile
+        else rootPath.resolve(path).normalize().toFile().canonicalFile
+    } catch (e: Exception) {
+        if (isNameTooLong(e, path)) {
+            throw ToolFailure(longFilenameGuidance(path))
+        }
+        throw e
     }
 
     override fun resolve(path: String): FsNode =
@@ -488,4 +515,31 @@ fun isBinaryStream(stream: java.io.InputStream): Boolean {
     } catch (_: java.nio.charset.CharacterCodingException) {
         true
     }
+}
+
+/** Detects whether an exception or path indicates a filesystem ENAMETOOLONG condition. */
+fun isNameTooLong(e: Throwable? = null, path: String? = null): Boolean {
+    var cur: Throwable? = e
+    while (cur != null) {
+        val msg = cur.message?.lowercase() ?: ""
+        if ("file name too long" in msg || "enametoolong" in msg || "name too long" in msg) {
+            return true
+        }
+        cur = cur.cause
+    }
+    if (path != null) {
+        val segments = path.replace('\\', '/').split('/')
+        if (segments.any { it.toByteArray(Charsets.UTF_8).size >= 250 }) {
+            return true
+        }
+    }
+    return false
+}
+
+/** User-facing guidance when a file cannot be opened because its name exceeds filesystem limits. */
+fun longFilenameGuidance(path: String): String {
+    val leaf = path.replace('\\', '/').substringAfterLast('/')
+    return "Filename exceeds filesystem limit (255 bytes / ENAMETOOLONG): '$leaf'. " +
+        "Standard file tools cannot open or modify it directly. " +
+        "Rename the file using a shell command (e.g. `mv \"$leaf\" <shorter_name>`) to inspect or edit it."
 }

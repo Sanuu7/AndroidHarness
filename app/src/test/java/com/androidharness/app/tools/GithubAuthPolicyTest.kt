@@ -1,5 +1,6 @@
 package com.androidharness.app.tools
 
+import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -48,5 +49,33 @@ class GithubAuthPolicyTest {
         assertFalse(GithubAuthPolicy.shouldAttach(null, true))
         assertFalse(GithubAuthPolicy.shouldAttach("", null))
         assertFalse(GithubAuthPolicy.shouldAttach("   ", true))
+    }
+
+    @Test
+    fun `HttpBinaryDetector identifies binary and text media types`() {
+        val png = "image/png".toMediaTypeOrNull()
+        val jpeg = "image/jpeg".toMediaTypeOrNull()
+        val octetStream = "application/octet-stream".toMediaTypeOrNull()
+        val zip = "application/zip".toMediaTypeOrNull()
+        val pdf = "application/pdf".toMediaTypeOrNull()
+        assertTrue(HttpBinaryDetector.isBinaryMediaType(png))
+        assertTrue(HttpBinaryDetector.isBinaryMediaType(jpeg))
+        assertTrue(HttpBinaryDetector.isBinaryMediaType(octetStream))
+        assertTrue(HttpBinaryDetector.isBinaryMediaType(zip))
+        assertTrue(HttpBinaryDetector.isBinaryMediaType(pdf))
+
+        val html = "text/html; charset=utf-8".toMediaTypeOrNull()
+        val json = "application/json".toMediaTypeOrNull()
+        val githubJson = "application/vnd.github+json".toMediaTypeOrNull()
+        val xml = "application/xml".toMediaTypeOrNull()
+        val svg = "image/svg+xml".toMediaTypeOrNull()
+        val text = "text/plain".toMediaTypeOrNull()
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(html))
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(json))
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(githubJson))
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(xml))
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(svg))
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(text))
+        assertFalse(HttpBinaryDetector.isBinaryMediaType(null))
     }
 }

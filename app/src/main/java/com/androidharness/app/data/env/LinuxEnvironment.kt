@@ -1247,13 +1247,23 @@ class LinuxEnvironmentManager(
     fun startShell(command: String, cwd: File): Pair<Process, ShellTier> {
         val envAvailable = bashExecutable() != null
         val script = if (envAvailable) shimPrelude() + command else command
+        val setsid = when {
+            File("/system/bin/setsid").exists() -> "/system/bin/setsid"
+            File("/usr/bin/setsid").exists() -> "/usr/bin/setsid"
+            else -> null
+        }
         val linker = when (Build.SUPPORTED_ABIS.firstOrNull()) {
             "x86_64", "arm64-v8a" -> "/system/bin/linker64"
             else -> "/system/bin/linker"
         }
         if (envAvailable && File(linker).exists()) {
             val p = runCatching {
-                ProcessBuilder(linker, bashExecutable()!!.absolutePath, "-c", script)
+                val cmdList = if (setsid != null) {
+                    listOf(setsid, linker, bashExecutable()!!.absolutePath, "-c", script)
+                } else {
+                    listOf(linker, bashExecutable()!!.absolutePath, "-c", script)
+                }
+                ProcessBuilder(cmdList)
                     .directory(cwd)
                     .apply { environment().putAll(processEnv()) }
                     .start()
@@ -1262,14 +1272,24 @@ class LinuxEnvironmentManager(
         }
         if (envAvailable) {
             val p = runCatching {
-                ProcessBuilder(bashExecutable()!!.absolutePath, "-c", script)
+                val cmdList = if (setsid != null) {
+                    listOf(setsid, bashExecutable()!!.absolutePath, "-c", script)
+                } else {
+                    listOf(bashExecutable()!!.absolutePath, "-c", script)
+                }
+                ProcessBuilder(cmdList)
                     .directory(cwd)
                     .apply { environment().putAll(processEnv()) }
                     .start()
             }.getOrNull()
             if (p != null) return p to ShellTier.LINUX
         }
-        return ProcessBuilder("sh", "-c", command).directory(cwd).start() to ShellTier.TOYBOX
+        val toyboxCmd = if (setsid != null) {
+            listOf(setsid, "sh", "-c", command)
+        } else {
+            listOf("sh", "-c", command)
+        }
+        return ProcessBuilder(toyboxCmd).directory(cwd).start() to ShellTier.TOYBOX
     }
 
     enum class ShellTier { LINUX, TOYBOX }

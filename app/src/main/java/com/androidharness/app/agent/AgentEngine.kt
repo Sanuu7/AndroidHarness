@@ -602,6 +602,8 @@ class AgentEngine(
                 "The requested command or environment is unavailable; inspect env_status or use an available command."
             "does not exist" in text || "no such file" in text || "not a directory" in text ->
                 "Inspect the current path or directory first, then retry with a valid target."
+            "file name too long" in text || "enametoolong" in text ->
+                "The filename exceeds filesystem limits (255 bytes); rename the file via shell (mv) before accessing it."
             else -> null
         }
     }

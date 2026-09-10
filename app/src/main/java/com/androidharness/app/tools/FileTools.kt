@@ -114,61 +114,74 @@ class ReadFileTool : Tool {
         withContext(Dispatchers.IO) {
             val path = args["path"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: path")
-            val file = ctx.workspace.resolve(path)
-            if (!file.exists) throw ToolFailure("File does not exist: $path")
-            if (!file.isFile) throw ToolFailure("Not a file: $path")
-            if (file.isBinary()) {
-                throw ToolFailure("Cannot read $path: binary file (not text).")
-            }
-            if (file.length > 2_000_000 && args["offset"] == null) {
-                throw ToolFailure("File is ${file.length} bytes; use offset/limit to read it in chunks.")
-            }
-
-            val rawOffset = args["offset"]?.jsonPrimitive?.intOrNull
-            if (rawOffset != null && rawOffset <= 0) {
-                throw ToolFailure("offset must be greater than 0.")
-            }
-            val rawLimit = args["limit"]?.jsonPrimitive?.intOrNull
-            if (rawLimit != null && rawLimit <= 0) {
-                throw ToolFailure("limit must be greater than 0.")
-            }
-            val offset = (rawOffset ?: 1).coerceAtLeast(1)
-            val limit = (rawLimit ?: 2000).coerceIn(1, 4000)
-
-            // A UTF-8 BOM is encoding metadata, not content, never surface it
-            // to the model (it leaks into line 1 and breaks exact matching).
-            val raw = file.readText().removePrefix("\uFEFF")
-            if (raw.isEmpty()) return@withContext ToolResult(true, "(empty file)")
-            val all = splitLines(raw)
-            if (all.isEmpty()) return@withContext ToolResult(true, "(empty file)")
-            val slice = all.drop(offset - 1).take(limit)
-            val sb = StringBuilder()
-            var truncated = false
-            for ((idx, line) in slice.withIndex()) {
-                val prefix = "${offset + idx}\t"
-                val remaining = MAX_READ_CHARS - sb.length
-                if (remaining <= prefix.length) {
-                    truncated = true
-                    break
+            try {
+                val file = ctx.workspace.resolve(path)
+                if (!file.exists) {
+                    if (com.androidharness.app.workspace.isNameTooLong(null, path)) {
+                        throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(path))
+                    }
+                    throw ToolFailure("File does not exist: $path")
                 }
-                sb.append(prefix)
-                val safeLine = if (line.length > MAX_READ_LINE_CHARS) {
-                    line.substring(0, MAX_READ_LINE_CHARS) + "... [line truncated at $MAX_READ_LINE_CHARS chars]"
-                } else line
-                val lineBudget = MAX_READ_CHARS - sb.length
-                if (safeLine.length > lineBudget) {
-                    sb.append(safeLine, 0, lineBudget)
-                    truncated = true
-                    break
+                if (!file.isFile) throw ToolFailure("Not a file: $path")
+                if (file.isBinary()) {
+                    throw ToolFailure("Cannot read $path: binary file (not text).")
                 }
-                sb.append(safeLine).append('\n')
+                if (file.length > 2_000_000 && args["offset"] == null) {
+                    throw ToolFailure("File is ${file.length} bytes; use offset/limit to read it in chunks.")
+                }
+
+                val rawOffset = args["offset"]?.jsonPrimitive?.intOrNull
+                if (rawOffset != null && rawOffset <= 0) {
+                    throw ToolFailure("offset must be greater than 0.")
+                }
+                val rawLimit = args["limit"]?.jsonPrimitive?.intOrNull
+                if (rawLimit != null && rawLimit <= 0) {
+                    throw ToolFailure("limit must be greater than 0.")
+                }
+                val offset = (rawOffset ?: 1).coerceAtLeast(1)
+                val limit = (rawLimit ?: 2000).coerceIn(1, 4000)
+
+                // A UTF-8 BOM is encoding metadata, not content, never surface it
+                // to the model (it leaks into line 1 and breaks exact matching).
+                val raw = file.readText().removePrefix("\uFEFF")
+                if (raw.isEmpty()) return@withContext ToolResult(true, "(empty file)")
+                val all = splitLines(raw)
+                if (all.isEmpty()) return@withContext ToolResult(true, "(empty file)")
+                val slice = all.drop(offset - 1).take(limit)
+                val sb = StringBuilder()
+                var truncated = false
+                for ((idx, line) in slice.withIndex()) {
+                    val prefix = "${offset + idx}\t"
+                    val remaining = MAX_READ_CHARS - sb.length
+                    if (remaining <= prefix.length) {
+                        truncated = true
+                        break
+                    }
+                    sb.append(prefix)
+                    val safeLine = if (line.length > MAX_READ_LINE_CHARS) {
+                        line.substring(0, MAX_READ_LINE_CHARS) + "... [line truncated at $MAX_READ_LINE_CHARS chars]"
+                    } else line
+                    val lineBudget = MAX_READ_CHARS - sb.length
+                    if (safeLine.length > lineBudget) {
+                        sb.append(safeLine, 0, lineBudget)
+                        truncated = true
+                        break
+                    }
+                    sb.append(safeLine).append('\n')
+                }
+                if (truncated) {
+                    sb.append("\n[truncated: output exceeded $MAX_READ_CHARS chars]\n")
+                } else if (offset + slice.size - 1 < all.size) {
+                    sb.append("[showing lines $offset..${offset + slice.size - 1} of ${all.size}]\n")
+                }
+                ToolResult(true, sb.toString().trimEnd())
+            } catch (e: Exception) {
+                if (e is ToolFailure) throw e
+                if (com.androidharness.app.workspace.isNameTooLong(e, path)) {
+                    throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(path))
+                }
+                throw e
             }
-            if (truncated) {
-                sb.append("\n[truncated: output exceeded $MAX_READ_CHARS chars]\n")
-            } else if (offset + slice.size - 1 < all.size) {
-                sb.append("[showing lines $offset..${offset + slice.size - 1} of ${all.size}]\n")
-            }
-            ToolResult(true, sb.toString().trimEnd())
         }
 }
 
@@ -310,40 +323,53 @@ class FileInfoTool : Tool {
         withContext(Dispatchers.IO) {
             val path = args["path"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: path")
-            val node = ctx.workspace.resolve(path)
-            if (!node.exists) throw ToolFailure("Path does not exist: $path")
-            val sb = StringBuilder()
-            sb.append("path: ").append(path).append('\n')
-            sb.append("type: ").append(if (node.isDirectory) "directory" else "file").append('\n')
-            sb.append("size_bytes: ").append(node.length).append('\n')
-            if (node.isFile) {
-                val info = inspectFileInfo(node)
-                if (info.isEmpty) {
-                    sb.append("is_empty: true\n")
-                    sb.append("line_count: 0\n")
-                } else {
-                    val measuredNote =
-                        if (!info.isBinary && node.length == 0L && info.measuredBytes > 0L) {
-                            // procfs-style entry: stat undercounts, streaming told the truth.
-                            val measured = if (info.sizeTruncated) {
-                                ">= ${info.measuredBytes} bytes (scan cap reached)"
-                            } else {
-                                "${info.measuredBytes} bytes"
-                            }
-                            "size_note: stat reports 0 bytes; streamed content measures $measured\n"
-                        } else ""
-                    sb.append(measuredNote)
-                    sb.append("is_empty: ").append(info.isEmpty).append('\n')
-                    if (info.isBinary) {
-                        sb.append("is_binary: true\n")
-                        sb.append("line_count: (binary file)\n")
+            try {
+                val node = ctx.workspace.resolve(path)
+                if (!node.exists) {
+                    if (com.androidharness.app.workspace.isNameTooLong(null, path)) {
+                        throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(path))
+                    }
+                    throw ToolFailure("Path does not exist: $path")
+                }
+                val sb = StringBuilder()
+                sb.append("path: ").append(path).append('\n')
+                sb.append("type: ").append(if (node.isDirectory) "directory" else "file").append('\n')
+                sb.append("size_bytes: ").append(node.length).append('\n')
+                if (node.isFile) {
+                    val info = inspectFileInfo(node)
+                    if (info.isEmpty) {
+                        sb.append("is_empty: true\n")
+                        sb.append("line_count: 0\n")
                     } else {
-                        sb.append("line_count: ").append(info.lineCount).append('\n')
-                        sb.append("trailing_newline: ").append(info.trailingNewline).append('\n')
+                        val measuredNote =
+                            if (!info.isBinary && node.length == 0L && info.measuredBytes > 0L) {
+                                // procfs-style entry: stat undercounts, streaming told the truth.
+                                val measured = if (info.sizeTruncated) {
+                                    ">= ${info.measuredBytes} bytes (scan cap reached)"
+                                } else {
+                                    "${info.measuredBytes} bytes"
+                                }
+                                "size_note: stat reports 0 bytes; streamed content measures $measured\n"
+                            } else ""
+                        sb.append(measuredNote)
+                        sb.append("is_empty: ").append(info.isEmpty).append('\n')
+                        if (info.isBinary) {
+                            sb.append("is_binary: true\n")
+                            sb.append("line_count: (binary file)\n")
+                        } else {
+                            sb.append("line_count: ").append(info.lineCount).append('\n')
+                            sb.append("trailing_newline: ").append(info.trailingNewline).append('\n')
+                        }
                     }
                 }
+                ToolResult(true, sb.toString().trimEnd())
+            } catch (e: Exception) {
+                if (e is ToolFailure) throw e
+                if (com.androidharness.app.workspace.isNameTooLong(e, path)) {
+                    throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(path))
+                }
+                throw e
             }
-            ToolResult(true, sb.toString().trimEnd())
         }
 }
 

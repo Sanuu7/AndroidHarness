@@ -216,12 +216,25 @@ class ShellTierRouter(
                     f.getInt(process)
                 }.getOrNull()
                 if (pid != null && pid > 0) {
+                    // 1. Kill process group directly via syscall
                     runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+                    // 2. Kill by process group, session, and parent PID via pkill
+                    val pkillBin = if (File("/system/bin/pkill").exists()) "/system/bin/pkill" else "pkill"
                     runCatching {
-                        val pkill = Runtime.getRuntime().exec(arrayOf("/system/bin/pkill", "-9", "-P", pid.toString()))
-                        pkill.waitFor(1, TimeUnit.SECONDS)
+                        val pkillG = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-g", pid.toString()))
+                        pkillG.waitFor(500, TimeUnit.MILLISECONDS)
                     }
+                    runCatching {
+                        val pkillS = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-s", pid.toString()))
+                        pkillS.waitFor(500, TimeUnit.MILLISECONDS)
+                    }
+                    runCatching {
+                        val pkillP = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-P", pid.toString()))
+                        pkillP.waitFor(500, TimeUnit.MILLISECONDS)
+                    }
+                    // 3. Scan /proc for any remaining descendant / group / session processes
                     runCatching { killDescendants(pid) }
+                    // 4. Kill root process
                     runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
                 }
                 process.destroyForcibly()
@@ -268,7 +281,7 @@ class ShellTierRouter(
     private fun killDescendants(rootPid: Int) {
         val proc = File("/proc")
         val pidDirs = proc.listFiles { f -> f.isDirectory && f.name.all { it.isDigit() } } ?: return
-        val children = mutableListOf<Int>()
+        val allProcs = mutableListOf<Triple<Int, Int, Pair<Int, Int>>>()
         for (dir in pidDirs) {
             val p = dir.name.toIntOrNull() ?: continue
             if (p <= 1 || p == rootPid) continue
@@ -278,16 +291,29 @@ class ShellTierRouter(
             if (lastParen > 0 && lastParen + 2 < statContent.length) {
                 val rest = statContent.substring(lastParen + 2).trimStart()
                 val tokens = rest.split(' ')
-                if (tokens.size >= 2) {
-                    val ppid = tokens[1].toIntOrNull()
-                    if (ppid == rootPid) {
-                        children += p
-                    }
+                if (tokens.size >= 4) {
+                    val ppid = tokens[1].toIntOrNull() ?: -1
+                    val pgrp = tokens[2].toIntOrNull() ?: -1
+                    val session = tokens[3].toIntOrNull() ?: -1
+                    allProcs.add(Triple(p, ppid, Pair(pgrp, session)))
                 }
             }
         }
-        for (child in children) {
-            runCatching { killDescendants(child) }
+        val toKill = mutableSetOf<Int>()
+        val targetRoots = mutableSetOf(rootPid)
+        var changed = true
+        while (changed) {
+            changed = false
+            for ((p, ppid, pgSid) in allProcs) {
+                val (pgrp, session) = pgSid
+                if (p !in toKill && (ppid in targetRoots || pgrp in targetRoots || session in targetRoots)) {
+                    toKill.add(p)
+                    targetRoots.add(p)
+                    changed = true
+                }
+            }
+        }
+        for (child in toKill) {
             runCatching { android.system.Os.kill(-child, android.system.OsConstants.SIGKILL) }
             runCatching { android.system.Os.kill(child, android.system.OsConstants.SIGKILL) }
         }

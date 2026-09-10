@@ -123,58 +123,77 @@ class MoveFileTool : Tool {
             val destination = args["destination"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: destination")
 
-            val from = ctx.workspace.resolve(source)
-            if (!from.exists) throw ToolFailure("Source does not exist: $source")
-            val to = ctx.workspace.resolve(destination)
+            try {
+                val from = ctx.workspace.resolve(source)
+                if (!from.exists) {
+                    if (com.androidharness.app.workspace.isNameTooLong(null, source)) {
+                        throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(source))
+                    }
+                    throw ToolFailure("Source does not exist: $source")
+                }
+                if (com.androidharness.app.workspace.isNameTooLong(null, destination)) {
+                    throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(destination))
+                }
+                val to = ctx.workspace.resolve(destination)
 
-            val srcParts = source.trim('/').replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
-            val dstParts = destination.trim('/').replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
-            if (srcParts.isEmpty()) throw ToolFailure("Cannot move workspace root.")
-            if (dstParts.isEmpty()) throw ToolFailure("Destination cannot be workspace root.")
-            if (srcParts == dstParts) throw ToolFailure("Source and destination are the same: $source")
+                val srcParts = source.trim('/').replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
+                val dstParts = destination.trim('/').replace('\\', '/').split('/').filter { it.isNotEmpty() && it != "." }
+                if (srcParts.isEmpty()) throw ToolFailure("Cannot move workspace root.")
+                if (dstParts.isEmpty()) throw ToolFailure("Destination cannot be workspace root.")
+                if (srcParts == dstParts) throw ToolFailure("Source and destination are the same: $source")
 
-            if (dstParts.size > srcParts.size && dstParts.subList(0, srcParts.size) == srcParts) {
-                throw ToolFailure("Cannot move '$source' into itself or a subdirectory: '$destination'")
-            }
+                if (dstParts.size > srcParts.size && dstParts.subList(0, srcParts.size) == srcParts) {
+                    throw ToolFailure("Cannot move '$source' into itself or a subdirectory: '$destination'")
+                }
 
-            if (from.isDirectory && srcParts.size > dstParts.size && srcParts.subList(0, dstParts.size) == dstParts) {
-                throw ToolFailure("Cannot move directory '$source' into its ancestor '$destination'")
-            }
+                if (from.isDirectory && srcParts.size > dstParts.size && srcParts.subList(0, dstParts.size) == dstParts) {
+                    throw ToolFailure("Cannot move directory '$source' into its ancestor '$destination'")
+                }
 
-            if (to.exists && to.isDirectory) {
-                throw ToolFailure("Destination already exists and is a directory: $destination")
-            }
+                if (to.exists && to.isDirectory) {
+                    throw ToolFailure("Destination already exists and is a directory: $destination")
+                }
 
-            if (from.isDirectory && to.exists) {
-                throw ToolFailure("Destination already exists: $destination")
-            }
+                if (from.isDirectory && to.exists) {
+                    throw ToolFailure("Destination already exists: $destination")
+                }
 
-            val srcParent = if (srcParts.size > 1) srcParts.dropLast(1).joinToString("/") else ""
-            val dstParent = if (dstParts.size > 1) dstParts.dropLast(1).joinToString("/") else ""
-            val sameDir = srcParent == dstParent
-            val warn = caseCollisionWarning(ctx.workspace, to)
-            if (sameDir && from.renameTo(to.name)) {
-                return@withContext ToolResult(
+                val srcParent = if (srcParts.size > 1) srcParts.dropLast(1).joinToString("/") else ""
+                val dstParent = if (dstParts.size > 1) dstParts.dropLast(1).joinToString("/") else ""
+                val sameDir = srcParent == dstParent
+                val warn = caseCollisionWarning(ctx.workspace, to)
+                if (sameDir && from.renameTo(to.name)) {
+                    return@withContext ToolResult(
+                        true,
+                        buildString {
+                            append("Moved $source → $destination")
+                            if (warn != null) append('\n').append(warn)
+                        },
+                    )
+                }
+                // Slow path: copy content + delete (files only)
+                if (!from.isFile) {
+                    throw ToolFailure("Moving directories across folders is not supported; move the files individually.")
+                }
+                to.writeText(from.readText())
+                from.delete()
+                ToolResult(
                     true,
                     buildString {
                         append("Moved $source → $destination")
                         if (warn != null) append('\n').append(warn)
                     },
                 )
+            } catch (e: Exception) {
+                if (e is ToolFailure) throw e
+                if (com.androidharness.app.workspace.isNameTooLong(e, source)) {
+                    throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(source))
+                }
+                if (com.androidharness.app.workspace.isNameTooLong(e, destination)) {
+                    throw ToolFailure(com.androidharness.app.workspace.longFilenameGuidance(destination))
+                }
+                throw e
             }
-            // Slow path: copy content + delete (files only)
-            if (!from.isFile) {
-                throw ToolFailure("Moving directories across folders is not supported; move the files individually.")
-            }
-            to.writeText(from.readText())
-            from.delete()
-            ToolResult(
-                true,
-                buildString {
-                    append("Moved $source → $destination")
-                    if (warn != null) append('\n').append(warn)
-                },
-            )
         }
 }
 
@@ -205,7 +224,22 @@ class WebFetchTool(
                     if (!resp.isSuccessful) {
                         return@withContext ToolResult(false, "HTTP ${resp.code} fetching $url")
                     }
-                    val raw = resp.body?.string() ?: ""
+                    val body = resp.body
+                    val mediaType = body?.contentType()
+                    if (HttpBinaryDetector.isBinaryMediaType(mediaType)) {
+                        val mime = mediaType?.let { "${it.type}/${it.subtype}" } ?: "application/octet-stream"
+                        val len = if ((body?.contentLength() ?: -1L) >= 0L) {
+                            body!!.contentLength()
+                        } else {
+                            body?.bytes()?.size?.toLong() ?: 0L
+                        }
+                        return@withContext ToolResult(true, "[binary content: $mime, $len bytes]")
+                    }
+                    val bytes = body?.bytes() ?: ByteArray(0)
+                    if (mediaType == null && bytes.isNotEmpty() && com.androidharness.app.workspace.isBinaryStream(java.io.ByteArrayInputStream(bytes))) {
+                        return@withContext ToolResult(true, "[binary content: application/octet-stream, ${bytes.size} bytes]")
+                    }
+                    val raw = bytes.toString(mediaType?.charset() ?: Charsets.UTF_8)
                     ToolResult(true, htmlToText(raw).take(20_000))
                 }
             } catch (e: Exception) {
