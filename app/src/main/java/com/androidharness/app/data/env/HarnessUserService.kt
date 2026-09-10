@@ -276,12 +276,13 @@ class HarnessUserService() : IHarnessService.Stub() {
         val process = try {
             val wrappedCmd = if (File("/system/bin/setsid").exists()) {
                 val libDir = "${LinuxEnvironmentManager.TMP_PREFIX_BASE}/linux/lib"
+                val binDir = "${LinuxEnvironmentManager.TMP_PREFIX_BASE}/linux/bin"
                 val shBin = if (File("/system/bin/sh").exists()) "/system/bin/sh" else "sh"
                 arrayOf(
                     "/system/bin/setsid",
                     shBin,
                     "-c",
-                    "export LD_LIBRARY_PATH=\"$libDir:\$LD_LIBRARY_PATH\"; exec \"\$@\"",
+                    "export LD_LIBRARY_PATH=\"$libDir:\$LD_LIBRARY_PATH\"; export PATH=\"$binDir:\$PATH\"; exec \"\$@\"",
                     "sh",
                     *cmd,
                 )
@@ -313,55 +314,31 @@ class HarnessUserService() : IHarnessService.Stub() {
         var timedOut = false
         var exit = -1
         while (true) {
-            if (process.waitFor(200, TimeUnit.MILLISECONDS)) {
+            if (process.waitFor(50, TimeUnit.MILLISECONDS)) {
                 exit = process.exitValue()
-                reapZombies()
                 break
             }
             if (System.currentTimeMillis() - startedAt > timeoutMs) {
                 timedOut = true
-                val pid = pidOf(process)
-                if (pid != null && pid > 0) {
-                    val killBin = if (File("/system/bin/kill").exists()) "/system/bin/kill" else "kill"
-                    val pkillBin = if (File("/system/bin/pkill").exists()) "/system/bin/pkill" else "pkill"
-
-                    // 1. Kill process group directly via kill -9 -$pid and Os.kill
-                    runCatching {
-                        val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", "-$pid"))
-                        k.waitFor(500, TimeUnit.MILLISECONDS)
-                    }
-                    runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
-
-                    // 2. Kill by session ID and parent PID via pkill
-                    runCatching {
-                        val pkillS = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-s", pid.toString()))
-                        pkillS.waitFor(500, TimeUnit.MILLISECONDS)
-                    }
-                    runCatching {
-                        val pkillP = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-P", pid.toString()))
-                        pkillP.waitFor(500, TimeUnit.MILLISECONDS)
-                    }
-
-                    // 3. Scan /proc for any remaining descendant / group / session processes
-                    runCatching { killDescendants(pid) }
-
-                    // 4. Kill target process
-                    runCatching {
-                        val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", pid.toString()))
-                        k.waitFor(500, TimeUnit.MILLISECONDS)
-                    }
-                    runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
-                }
-                process.destroyForcibly()
-                process.waitFor(2, TimeUnit.SECONDS)
-                reapZombies()
                 break
             }
         }
-        // Give the gobblers time to drain whatever the process managed to
-        // write before it died, so partial output survives the timeout.
-        out.join(2000)
-        err.join(2000)
+
+        val pid = pidOf(process)
+        if (pid != null && pid > 0) {
+            if (timedOut) {
+                killGroup(pid)
+                process.destroyForcibly()
+                process.waitFor(200, TimeUnit.MILLISECONDS)
+            } else {
+                // Command finished normally: clean up any detached/orphan grandchildren in this process group
+                cleanOrphanGroup(pid)
+            }
+        }
+        reapZombies()
+
+        out.join(300)
+        err.join(300)
         reapZombies()
 
         return buildString {
@@ -390,6 +367,43 @@ class HarnessUserService() : IHarnessService.Stub() {
                 }
             }
         } catch (_: Exception) {
+        }
+    }
+
+    private fun killGroup(pid: Int) {
+        runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+        val killBin = if (File("/system/bin/kill").exists()) "/system/bin/kill" else "kill"
+        runCatching {
+            val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", "-$pid"))
+            k.waitFor(100, TimeUnit.MILLISECONDS)
+        }
+        val pkillBin = if (File("/system/bin/pkill").exists()) "/system/bin/pkill" else "pkill"
+        runCatching {
+            val pkillS = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-s", pid.toString()))
+            pkillS.waitFor(100, TimeUnit.MILLISECONDS)
+        }
+        runCatching {
+            val pkillP = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-P", pid.toString()))
+            pkillP.waitFor(100, TimeUnit.MILLISECONDS)
+        }
+        runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
+        runCatching {
+            val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", pid.toString()))
+            k.waitFor(100, TimeUnit.MILLISECONDS)
+        }
+    }
+
+    private fun cleanOrphanGroup(pid: Int) {
+        runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+        val killBin = if (File("/system/bin/kill").exists()) "/system/bin/kill" else "kill"
+        runCatching {
+            val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", "-$pid"))
+            k.waitFor(100, TimeUnit.MILLISECONDS)
+        }
+        val pkillBin = if (File("/system/bin/pkill").exists()) "/system/bin/pkill" else "pkill"
+        runCatching {
+            val pkillS = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-s", pid.toString()))
+            pkillS.waitFor(100, TimeUnit.MILLISECONDS)
         }
     }
 

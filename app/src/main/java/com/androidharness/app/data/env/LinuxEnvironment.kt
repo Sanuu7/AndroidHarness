@@ -1261,12 +1261,13 @@ class LinuxEnvironmentManager(
             val p = runCatching {
                 val bashPath = bashExecutable()!!.absolutePath
                 val libPath = File(prefix, "lib").absolutePath
+                val binPath = File(prefix, "bin").absolutePath
                 val cmdList = if (setsid != null) {
                     listOf(
                         setsid,
                         shBin,
                         "-c",
-                        "export LD_LIBRARY_PATH=\"$libPath:\$LD_LIBRARY_PATH\"; exec \"$linker\" \"$bashPath\" -c \"\$@\"",
+                        "export LD_LIBRARY_PATH=\"$libPath:\$LD_LIBRARY_PATH\"; export PATH=\"$binPath:\$PATH\"; exec \"$linker\" \"$bashPath\" -c \"\$@\"",
                         "sh",
                         script,
                     )
@@ -1284,12 +1285,13 @@ class LinuxEnvironmentManager(
             val p = runCatching {
                 val bashPath = bashExecutable()!!.absolutePath
                 val libPath = File(prefix, "lib").absolutePath
+                val binPath = File(prefix, "bin").absolutePath
                 val cmdList = if (setsid != null) {
                     listOf(
                         setsid,
                         shBin,
                         "-c",
-                        "export LD_LIBRARY_PATH=\"$libPath:\$LD_LIBRARY_PATH\"; exec \"$bashPath\" -c \"\$@\"",
+                        "export LD_LIBRARY_PATH=\"$libPath:\$LD_LIBRARY_PATH\"; export PATH=\"$binPath:\$PATH\"; exec \"$bashPath\" -c \"\$@\"",
                         "sh",
                         script,
                     )
