@@ -93,7 +93,8 @@ class ShizukuManager(
         (context.applicationInfo.flags and ApplicationInfo.FLAG_DEBUGGABLE) != 0
 
     private val appVersionCode: Int = runCatching {
-        context.packageManager.getPackageInfo(context.packageName, 0).versionCode
+        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        (pInfo.lastUpdateTime and 0x7FFFFFFF).toInt()
     }.getOrDefault(1)
 
     private val userServiceArgs = Shizuku.UserServiceArgs(

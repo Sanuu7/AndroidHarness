@@ -1252,16 +1252,26 @@ class LinuxEnvironmentManager(
             File("/usr/bin/setsid").exists() -> "/usr/bin/setsid"
             else -> null
         }
+        val shBin = if (File("/system/bin/sh").exists()) "/system/bin/sh" else "sh"
         val linker = when (Build.SUPPORTED_ABIS.firstOrNull()) {
             "x86_64", "arm64-v8a" -> "/system/bin/linker64"
             else -> "/system/bin/linker"
         }
         if (envAvailable && File(linker).exists()) {
             val p = runCatching {
+                val bashPath = bashExecutable()!!.absolutePath
+                val libPath = File(prefix, "lib").absolutePath
                 val cmdList = if (setsid != null) {
-                    listOf(setsid, linker, bashExecutable()!!.absolutePath, "-c", script)
+                    listOf(
+                        setsid,
+                        shBin,
+                        "-c",
+                        "export LD_LIBRARY_PATH=\"$libPath:\$LD_LIBRARY_PATH\"; exec \"$linker\" \"$bashPath\" -c \"\$@\"",
+                        "sh",
+                        script,
+                    )
                 } else {
-                    listOf(linker, bashExecutable()!!.absolutePath, "-c", script)
+                    listOf(linker, bashPath, "-c", script)
                 }
                 ProcessBuilder(cmdList)
                     .directory(cwd)
@@ -1272,10 +1282,19 @@ class LinuxEnvironmentManager(
         }
         if (envAvailable) {
             val p = runCatching {
+                val bashPath = bashExecutable()!!.absolutePath
+                val libPath = File(prefix, "lib").absolutePath
                 val cmdList = if (setsid != null) {
-                    listOf(setsid, bashExecutable()!!.absolutePath, "-c", script)
+                    listOf(
+                        setsid,
+                        shBin,
+                        "-c",
+                        "export LD_LIBRARY_PATH=\"$libPath:\$LD_LIBRARY_PATH\"; exec \"$bashPath\" -c \"\$@\"",
+                        "sh",
+                        script,
+                    )
                 } else {
-                    listOf(bashExecutable()!!.absolutePath, "-c", script)
+                    listOf(bashPath, "-c", script)
                 }
                 ProcessBuilder(cmdList)
                     .directory(cwd)

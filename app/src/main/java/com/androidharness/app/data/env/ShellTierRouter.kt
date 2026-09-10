@@ -216,14 +216,17 @@ class ShellTierRouter(
                     f.getInt(process)
                 }.getOrNull()
                 if (pid != null && pid > 0) {
-                    // 1. Kill process group directly via syscall
-                    runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
-                    // 2. Kill by process group, session, and parent PID via pkill
+                    val killBin = if (File("/system/bin/kill").exists()) "/system/bin/kill" else "kill"
                     val pkillBin = if (File("/system/bin/pkill").exists()) "/system/bin/pkill" else "pkill"
+
+                    // 1. Kill process group directly via kill -9 -$pid and Os.kill
                     runCatching {
-                        val pkillG = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-g", pid.toString()))
-                        pkillG.waitFor(500, TimeUnit.MILLISECONDS)
+                        val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", "-$pid"))
+                        k.waitFor(500, TimeUnit.MILLISECONDS)
                     }
+                    runCatching { android.system.Os.kill(-pid, android.system.OsConstants.SIGKILL) }
+
+                    // 2. Kill by session ID and parent PID via pkill
                     runCatching {
                         val pkillS = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-s", pid.toString()))
                         pkillS.waitFor(500, TimeUnit.MILLISECONDS)
@@ -232,9 +235,15 @@ class ShellTierRouter(
                         val pkillP = Runtime.getRuntime().exec(arrayOf(pkillBin, "-9", "-P", pid.toString()))
                         pkillP.waitFor(500, TimeUnit.MILLISECONDS)
                     }
+
                     // 3. Scan /proc for any remaining descendant / group / session processes
                     runCatching { killDescendants(pid) }
+
                     // 4. Kill root process
+                    runCatching {
+                        val k = Runtime.getRuntime().exec(arrayOf(killBin, "-9", pid.toString()))
+                        k.waitFor(500, TimeUnit.MILLISECONDS)
+                    }
                     runCatching { android.system.Os.kill(pid, android.system.OsConstants.SIGKILL) }
                 }
                 process.destroyForcibly()
@@ -314,6 +323,15 @@ class ShellTierRouter(
             }
         }
         for (child in toKill) {
+            val killBin = if (File("/system/bin/kill").exists()) "/system/bin/kill" else "kill"
+            runCatching {
+                val k1 = Runtime.getRuntime().exec(arrayOf(killBin, "-9", "-$child"))
+                k1.waitFor(200, TimeUnit.MILLISECONDS)
+            }
+            runCatching {
+                val k2 = Runtime.getRuntime().exec(arrayOf(killBin, "-9", child.toString()))
+                k2.waitFor(200, TimeUnit.MILLISECONDS)
+            }
             runCatching { android.system.Os.kill(-child, android.system.OsConstants.SIGKILL) }
             runCatching { android.system.Os.kill(child, android.system.OsConstants.SIGKILL) }
         }
