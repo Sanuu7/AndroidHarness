@@ -1163,7 +1163,14 @@ fun ChatScreen(
                                                         val duration = turnFirstUserTimes[message.turnId]?.let {
                                                             message.createdAt - it
                                                         }
-                                                        val label = turnPerformanceLabel(duration, turnSpeeds[message.turnId])
+                                                        val timestamp = message.createdAt.takeIf { it > 0 }?.let {
+                                                            android.text.format.DateFormat.getTimeFormat(toastContext)
+                                                                .format(java.util.Date(it))
+                                                        }
+                                                        val label = listOfNotNull(
+                                                            turnPerformanceLabel(duration, turnSpeeds[message.turnId]).takeIf { it.isNotBlank() },
+                                                            timestamp,
+                                                        ).joinToString(" · ")
                                                         if (label.isNotBlank()) {
                                                             Spacer(Modifier.weight(1f))
                                                             Text(
@@ -1540,7 +1547,7 @@ fun ChatScreen(
 
 /** Small copy icon with a brief check confirmation, ChatGPT-style action rows. */
 @Composable
-private fun CopyIconButton(text: String) {
+internal fun CopyIconButton(text: String) {
     var copied by remember { mutableStateOf(false) }
     val clipboard = LocalClipboardManager.current
     IconButton(onClick = {

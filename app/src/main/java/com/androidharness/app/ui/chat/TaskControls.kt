@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.chat
 
+import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.foundation.BorderStroke
@@ -20,15 +21,18 @@ import com.androidharness.app.core.Role
 
 @Composable
 fun TaskProgressCard(record: TaskRecord, busy: Boolean, onResume: () -> Unit, onSettings: () -> Unit) {
-    if (!record.resumable || busy) return
+    if (!record.resumable || record.status == "running" || busy) return
     Surface(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
         shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainer,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
         Column(Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
-            Text(if (record.status == "running") "Task interrupted" else "Task paused",
+            Text(if (record.status == "interrupted") "Task interrupted" else "Task paused",
                 style = MaterialTheme.typography.titleSmall)
-            Text(record.reason ?: "Your progress is saved. Continue from the last completed action.",
-                style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            SelectionContainer {
+                Text(record.reason ?: "Your progress is saved. Continue from the last completed action.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            record.reason?.let { CopyIconButton(it) }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onSettings) { Text("Context & limits") }
                 FilledTonalButton(onClick = onResume) { Text("Resume task") }

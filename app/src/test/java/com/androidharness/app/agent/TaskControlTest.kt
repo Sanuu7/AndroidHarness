@@ -19,6 +19,8 @@ class TaskControlTest {
         val restored = TaskControlStore(folder.root).flow("session").value
         assertEquals(listOf("edited", "first"), restored.queue.map { it.text })
         assertTrue(restored.resumable)
+        assertEquals("running", store.flow("session").value.status)
+        assertEquals("interrupted", restored.status)
     }
     @Test fun `settings and usage survive atomic replacement`() {
         val record = TaskRecord(status = "paused", pins = "Keep Kotlin", summaryOverride = "Goal",

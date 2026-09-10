@@ -45,7 +45,7 @@ data class TaskRecord(
     val usedCost: Double = 0.0,
     val elapsedMs: Long = 0,
 ) {
-    val resumable: Boolean get() = status == "running" || status == "paused"
+    val resumable: Boolean get() = status == "running" || status == "paused" || status == "interrupted"
 }
 
 /** Private app storage, atomic replacement, no credentials. Writes finish before actions proceed. */
@@ -54,7 +54,10 @@ class TaskControlStore(private val directory: File) {
     private val flows = mutableMapOf<String, MutableStateFlow<TaskRecord>>()
     @Synchronized fun flow(id: String): MutableStateFlow<TaskRecord> = flows.getOrPut(id) {
         val file = file(id)
-        MutableStateFlow(if (file.exists()) runCatching { json.decodeFromString<TaskRecord>(file.readText()) }
+        MutableStateFlow(if (file.exists()) runCatching { json.decodeFromString<TaskRecord>(file.readText()).let { saved ->
+                // Only disk restoration means a running task lost its process.
+                if (saved.status == "running") saved.copy(status = "interrupted") else saved
+            } }
             .getOrElse { TaskRecord(status = "paused", reason = "Saved task settings could not be read. Chat history is still available.") }
             else TaskRecord())
     }
