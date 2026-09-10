@@ -1,5 +1,6 @@
 package com.androidharness.app.data.db
 
+import androidx.room.ColumnInfo
 import androidx.room.Dao
 import androidx.room.Database
 import androidx.room.Delete
@@ -103,6 +104,8 @@ data class UsageEventEntity(
     val cachedTokens: Long = 0,
     val cacheWriteTokens: Long = 0,
     val createdAt: Long,
+    val turnId: String? = null,
+    @ColumnInfo(defaultValue = "0") val cacheReported: Boolean = false,
 )
 
 /** Per-file line-change stats from one editing tool call, "+N −M" chips in chat. */
@@ -310,6 +313,9 @@ interface HarnessDao {
     @Delete
     suspend fun deleteSnippet(snippet: SnippetEntity)
 
+    @Query("SELECT * FROM usage_events WHERE sessionId = :sessionId ORDER BY rowId")
+    fun usageEventsForSession(sessionId: String): Flow<List<UsageEventEntity>>
+
     // usage events (per-model attribution)
     @Insert
     suspend fun insertUsageEvent(event: UsageEventEntity)
@@ -380,7 +386,7 @@ interface HarnessDao {
         SessionFileChangeEntity::class,
         MessageFtsEntity::class,
     ],
-    version = 11,
+    version = 12,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -409,6 +415,14 @@ abstract class AppDatabase : RoomDatabase() {
                             "WHERE length(toolCallsJson) > 250000"
                     )
                 }
+            }
+        }
+
+        /** Attribute cache usage to turns; old rows keep unknown cache reporting. */
+        val MIGRATION_11_12 = object : androidx.room.migration.Migration(11, 12) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE usage_events ADD COLUMN turnId TEXT")
+                db.execSQL("ALTER TABLE usage_events ADD COLUMN cacheReported INTEGER NOT NULL DEFAULT 0")
             }
         }
 

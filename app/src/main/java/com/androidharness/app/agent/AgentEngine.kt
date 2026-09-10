@@ -131,6 +131,7 @@ sealed interface AgentEvent {
         val model: String = "",
         /** Display name of the provider that served them. */
         val providerName: String = "",
+        val cacheReported: Boolean = false,
     ) : AgentEvent
     /** A transient provider failure will be retried after [delayMs]. */
     data class Retrying(val attempt: Int, val delayMs: Long, val reason: String) : AgentEvent
@@ -355,7 +356,7 @@ class AgentEngine(
                             AgentEvent.Usage(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
-                                config.model, config.name,
+                                config.model, config.name, cacheReported = event.cacheReported,
                             )
                         )
                     }
@@ -1184,7 +1185,7 @@ class AgentEngine(
                             AgentEvent.Usage(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
-                                config.model, config.name,
+                                config.model, config.name, cacheReported = event.cacheReported,
                             )
                         )
                         else -> {}
@@ -1337,7 +1338,7 @@ class AgentEngine(
                         AgentEvent.Usage(
                             event.inputTokens, event.outputTokens,
                             event.cachedInputTokens, event.cacheWriteTokens,
-                            config.model, config.name,
+                            config.model, config.name, cacheReported = event.cacheReported,
                         )
                     )
                     else -> {}

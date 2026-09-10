@@ -89,6 +89,7 @@ sealed interface StreamEvent {
         val outputTokens: Int,
         val cachedInputTokens: Int = 0,
         val cacheWriteTokens: Int = 0,
+        val cacheReported: Boolean = false,
     ) : StreamEvent
     data class Failure(val message: String) : StreamEvent
 

@@ -108,6 +108,7 @@ class GeminiProvider(
         var inputTokens = 0
         var outputTokens = 0
         var cachedTokens = 0
+        var cacheReported = false
         var finishReason: String? = null
 
         return flow {
@@ -123,6 +124,7 @@ class GeminiProvider(
                 chunk["usageMetadata"]?.jsonObjectOrAbsent()?.let { usage ->
                     inputTokens = usage["promptTokenCount"]?.jsonPrimitive?.intOrNull ?: inputTokens
                     outputTokens = usage["candidatesTokenCount"]?.jsonPrimitive?.intOrNull ?: outputTokens
+                    cacheReported = cacheReported || usage["cachedContentTokenCount"]?.jsonPrimitive?.intOrNull != null
                     cachedTokens = usage["cachedContentTokenCount"]?.jsonPrimitive?.intOrNull ?: cachedTokens
                 }
 
@@ -164,7 +166,7 @@ class GeminiProvider(
             }
 
             if (inputTokens > 0) {
-                emit(StreamEvent.Usage(inputTokens, outputTokens, cachedTokens))
+                emit(StreamEvent.Usage(inputTokens, outputTokens, cachedTokens, cacheReported = cacheReported))
             }
             emit(StreamEvent.Done(finishReason))
         }

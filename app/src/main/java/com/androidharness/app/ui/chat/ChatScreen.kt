@@ -1181,6 +1181,9 @@ fun ChatScreen(
                                                         }
                                                     }
                                                 }
+                                                if (isTurnFinal && !isTurnRunning) {
+                                                    CacheUsageFooter(state.turnCacheUsage[message.turnId].orEmpty())
+                                                }
                                             }
                                         }
                                     }
@@ -1416,6 +1419,11 @@ fun ChatScreen(
                     TodoCard(state.todos)
                 }
 
+                if (state.busy) {
+                    Box(Modifier.padding(horizontal = 12.dp)) {
+                        CacheUsageFooter(state.turnCacheUsage[state.currentTurnId].orEmpty())
+                    }
+                }
                 TaskProgressCard(
                     record = state.taskControl, busy = state.busy,
                     onResume = viewModel::resumeInterruptedTask,

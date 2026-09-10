@@ -101,6 +101,7 @@ class AnthropicProvider(
         val toolBlocks = TreeMap<Int, Triple<String, String, StringBuilder>>()
         var inputTokens = 0
         var cachedTokens = 0
+        var cacheReported = false
         var cacheWriteTokens = 0
         var stopReason: String? = null
 
@@ -113,6 +114,7 @@ class AnthropicProvider(
                     // normalize to the total prompt size so hit-rate math is
                     // provider-agnostic (cached + write + uncached = total).
                     val uncached = usage?.get("input_tokens")?.jsonPrimitive?.intOrNull ?: 0
+                    cacheReported = usage?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull != null
                     cachedTokens = usage?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull ?: 0
                     cacheWriteTokens = usage?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
                         ?: usage?.get("cache_creation")?.jsonObjectOrAbsent()?.let { cc ->
@@ -174,7 +176,7 @@ class AnthropicProvider(
                     val output = event["usage"]?.jsonObjectOrAbsent()
                         ?.get("output_tokens")?.jsonPrimitive?.intOrNull
                     output?.let {
-                        StreamEvent.Usage(inputTokens, it, cachedTokens, cacheWriteTokens)
+                        StreamEvent.Usage(inputTokens, it, cachedTokens, cacheWriteTokens, cacheReported)
                     }
                 }
 

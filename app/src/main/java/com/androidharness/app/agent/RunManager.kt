@@ -548,6 +548,8 @@ class RunManager(
                     event.outputTokens.toLong(),
                     event.cachedInputTokens.toLong(),
                     event.cacheWriteTokens.toLong(),
+                    turnId = turnId,
+                    cacheReported = event.cacheReported,
                 )
             }
 

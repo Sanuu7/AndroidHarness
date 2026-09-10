@@ -22,6 +22,16 @@ class OpenAiResponsesProviderTest {
     private fun el(payload: String) = json.parseToJsonElement(payload)
 
     @Test
+    fun `omitted cache count differs from explicit zero`() {
+        fun usage(details: String): StreamEvent.Usage = provider.parseEvent(
+            el("""{"type":"response.completed","response":{"usage":{"input_tokens":100,"output_tokens":5$details}}}"""),
+            linkedMapOf(),
+        ).filterIsInstance<StreamEvent.Usage>().single()
+        assertFalse(usage("").cacheReported)
+        assertTrue(usage(""", "input_tokens_details":{"cached_tokens":0}""").cacheReported)
+    }
+
+    @Test
     fun `request body is stateless with instructions and flattened tool schema`() {
         val body = provider.buildRequestBody(
             config = config,
@@ -127,6 +137,7 @@ class OpenAiResponsesProviderTest {
         assertEquals(100, usage.inputTokens)
         assertEquals(42, usage.outputTokens)
         assertEquals(60, usage.cachedInputTokens)
+        assertTrue(usage.cacheReported)
 
         val callEvent = end.filterIsInstance<StreamEvent.ToolCallReady>().single()
         assertEquals("call_9", callEvent.call.id)

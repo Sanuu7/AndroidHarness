@@ -120,6 +120,8 @@ data class ChatUiState(
     val thinkingStartedAt: Long? = null,
     /** Per-turn file-edit stats ("+N −M" chips), keyed by turnId. */
     val fileEditsByTurn: Map<String, List<com.androidharness.app.data.db.FileEditEntity>> = emptyMap(),
+    /** Per-request cache stats, grouped by the owning task turn. */
+    val turnCacheUsage: Map<String, List<com.androidharness.app.data.db.UsageEventEntity>> = emptyMap(),
     /** Per-model token usage breakdown for this chat session. */
     val sessionModelUsage: List<com.androidharness.app.data.db.ModelUsagePojo> = emptyList(),
     /** Model override picked from the active provider's catalog. */
@@ -334,6 +336,13 @@ class ChatViewModel(
                 _state.update {
                     it.copy(fileEditsByTurn = edits.groupBy { e -> e.turnId })
                 }
+            }
+        }
+        viewModelScope.launch {
+            sessionIdFlow.flatMapLatest { sid ->
+                if (sid == null) flowOf(emptyList()) else c.sessions.usageEventsFor(sid)
+            }.collect { events ->
+                _state.update { it.copy(turnCacheUsage = events.filter { row -> row.turnId != null }.groupBy { row -> row.turnId!! }) }
             }
         }
         viewModelScope.launch {

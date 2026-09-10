@@ -65,7 +65,7 @@ class OpenAiCompatParsingTest {
         )
 
         assertEquals(3, final.size)
-        assertEquals(StreamEvent.Usage(100, 20, 64), final[0])
+        assertEquals(StreamEvent.Usage(100, 20, 64, cacheReported = true), final[0])
         val ready = final[1] as StreamEvent.ToolCallReady
         assertEquals("shell", ready.call.name)
         assertEquals("""{"cmd":"ls"}""", ready.call.argumentsJson)

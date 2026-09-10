@@ -217,7 +217,6 @@ class OpenAiCompatProvider(
                 ?: usage["prompt_cached_tokens"]?.jsonPrimitive?.intOrNull
                 ?: usage["cache_hit_tokens"]?.jsonPrimitive?.intOrNull
                 ?: usage["cachedContentTokenCount"]?.jsonPrimitive?.intOrNull
-                ?: 0
             val cacheWrite = promptDetails?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
                 ?: promptDetails?.get("cache_write_tokens")?.jsonPrimitive?.intOrNull
                 ?: promptDetails?.get("cache_creation_tokens")?.jsonPrimitive?.intOrNull
@@ -228,7 +227,7 @@ class OpenAiCompatProvider(
                 ?: 0
             if (input != null || output != null) {
                 println("HarnessUsage: Parsed usage: input=$input, output=$output, cached=$cached, cacheWrite=$cacheWrite, raw=$usage")
-                events += StreamEvent.Usage(input ?: 0, output ?: 0, cached, cacheWrite)
+                events += StreamEvent.Usage(input ?: 0, output ?: 0, cached ?: 0, cacheWrite, cacheReported = cached != null)
             }
         }
 

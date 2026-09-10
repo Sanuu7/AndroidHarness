@@ -356,6 +356,8 @@ class SessionRepository(
         output: Long,
         cached: Long,
         cacheWrite: Long,
+        turnId: String? = null,
+        cacheReported: Boolean = false,
     ) {
         if (model.isBlank()) return
         db.dao().insertUsageEvent(
@@ -367,10 +369,14 @@ class SessionRepository(
                 outputTokens = output,
                 cachedTokens = cached,
                 cacheWriteTokens = cacheWrite,
+                turnId = turnId,
+                cacheReported = cacheReported,
                 createdAt = System.currentTimeMillis(),
             )
         )
     }
+
+    fun usageEventsFor(sessionId: String) = db.dao().usageEventsForSession(sessionId)
 
     /** Per-model usage breakdown for a single session. */
     fun usageByModelFor(sessionId: String): Flow<List<com.androidharness.app.data.db.ModelUsagePojo>> =
