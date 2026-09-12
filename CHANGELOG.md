@@ -1,5 +1,34 @@
 # Changelog
 
+## 0.11-alpha (2026-09-12)
+
+### Added
+
+- **Prompt cache tracking across providers**: cache reads and cache writes are now captured per turn on Anthropic, OpenAI-compatible, OpenAI Responses, and Gemini, shown in the live usage indicator and kept on the finished turn summary. Turns display tick and cross markers for cache hits and misses, and the stats screen reports an overall cache hit rate. Exact per-model cache prices from the models.dev catalog are stored alongside each usage event so cached turns are costed correctly.
+- **Message timestamps**: assistant and user messages show when they were generated.
+- **Copy task reason**: interrupted and paused task cards expose the reason text for selection and one-tap copying.
+- **Binary response reporting**: web fetch and HTTP request tools detect binary bodies and return a compact `[binary content: type, bytes]` note instead of decoding garbage into the transcript.
+
+### Changed
+
+- **Clearer cache wording**: the stats and context panel label is now "overall cache hit rate" so it reads as a running total rather than the current turn.
+- **Web search quality**: results are de-duplicated by URL, an unknown engine name is rejected with the supported list, empty queries short-circuit, and the Brave parser scopes extraction to the results block and drops its own chrome pages.
+
+### Fixed
+
+- **LazyColumn measure crash on send**: the message list no longer throws during measure when a send races the initial load; the view model seeds its loading state from the requested session and item keys stay stable.
+- **Anthropic stream usage accounting**: token counts are treated as cumulative snapshots and the final usage event is emitted even when a gateway closes without `message_stop`.
+- **Interrupted tasks**: a task restored from disk that was still marked running is now shown as interrupted and can be resumed.
+- **Grep hardening**: patterns with nested quantifiers, overlapping repeated alternatives, or oversized repetition counts are rejected before execution, and matching runs under a step budget plus a wall-clock timeout on a worker thread with an explicit result count.
+- **Shell process cleanup**: timed-out commands kill their whole process group (including detached grandchildren) instead of leaking orphans, and normally finished commands clean up any orphaned group members. Setsid wrappers now export `PATH` and `LD_LIBRARY_PATH` so privileged commands resolve the bundled toolchain, and Shizuku service restarts are tracked.
+- **Browser recovery**: a wedged WebView render process is terminated and the view is rebuilt via `about:blank` without destroying the sheet, `eval` has a timeout that reports hangs instead of freezing the agent, and headless views no longer show blank pages on first use.
+- **Apply patch newline fidelity**: patches preserve CRLF and bare CR line endings for both existing files and new files.
+- **move_file validation**: refuses to move a path into itself, into a subdirectory, or into an ancestor, rejects a destination that already exists as a directory, and reports over-long filenames with guidance.
+- **read_file and file_info robustness**: negative offset and limit are rejected, very long lines are clamped with a visible marker, and over-long filenames get an actionable message instead of a raw error.
+- **Database self-repair**: oversized message rows that would throw `SQLiteBlobTooBigException` are truncated on open and clamped on write, so corrupted sessions heal instead of crashing at startup.
+- **Logcat filtered history**: tag and text filters are applied through a tail pipeline so the requested number of lines is preserved instead of being consumed by the raw head of the buffer.
+- **OpenCode relay headers**: the session and user-agent headers are applied consistently across Anthropic, OpenAI-compatible, and Responses wire formats.
+
 ## 0.10-alpha (2026-09-07)
 
 ### Added
