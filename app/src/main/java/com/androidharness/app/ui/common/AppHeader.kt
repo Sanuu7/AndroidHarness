@@ -5,7 +5,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material.icons.Icons
@@ -23,11 +23,14 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 
 /**
- * The single shared screen header: flat surface, one 60dp row, hairline divider.
+ * The single shared screen header: flat surface, one row, hairline divider.
  *
  * Every screen uses this so chat, terminal, files, settings and providers share
  * the same chrome. [onBack] shows a back arrow, [onMenu] a menu button (never
  * both); [subtitle] is a single muted line under the title.
+ *
+ * The row is `heightIn(min = 60.dp)` rather than a fixed 60 so that a large
+ * system font scale grows the header instead of clipping the title line.
  */
 @Composable
 fun AppHeader(
@@ -48,7 +51,7 @@ fun AppHeader(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .heightIn(min = 60.dp)
                 .padding(start = 4.dp, end = 8.dp),
         ) {
             when {

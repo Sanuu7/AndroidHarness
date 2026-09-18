@@ -77,7 +77,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -85,6 +84,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.db.SessionFileChangeEntity
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.workspace.FsNode
 import com.androidharness.app.workspace.WorkspaceFs
@@ -807,7 +807,7 @@ fun DiffStatText(added: Long, removed: Long, modifier: Modifier = Modifier) {
             Text(
                 "+$added",
                 style = MaterialTheme.typography.labelMedium,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 color = colors.success,
             )
         }
@@ -816,7 +816,7 @@ fun DiffStatText(added: Long, removed: Long, modifier: Modifier = Modifier) {
             Text(
                 "−$removed",
                 style = MaterialTheme.typography.labelMedium,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 color = scheme.error,
             )
         }

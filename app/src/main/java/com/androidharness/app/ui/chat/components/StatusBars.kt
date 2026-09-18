@@ -231,8 +231,10 @@ internal fun QueuedMessageChip(
             TextButton(onClick = onSteer) {
                 Text("Steer")
             }
-            IconButton(onClick = onCancel, modifier = Modifier.size(28.dp)) {
-                Icon(Icons.Filled.Close, contentDescription = "Cancel queue", modifier = Modifier.size(15.dp))
+            // 40dp not 28: this sits next to a destructive action, so it needs to
+            // be reliably hittable without growing the chip to full toolbar height.
+            IconButton(onClick = onCancel, modifier = Modifier.size(40.dp)) {
+                Icon(Icons.Filled.Close, contentDescription = "Cancel queue", modifier = Modifier.size(16.dp))
             }
         }
     }

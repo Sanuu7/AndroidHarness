@@ -61,6 +61,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.filled.AutoFixHigh
 import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material.icons.filled.Refresh
@@ -75,6 +76,8 @@ import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.Sensors
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -102,7 +105,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -114,6 +116,7 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.LocalPortProbe
 import com.androidharness.app.core.WebResourceExtractor
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.theme.fastSpatialSpec
@@ -336,7 +339,7 @@ private fun SourceHubView(
                     color = scheme.onSurfaceVariant,
                 )
             }
-            IconButton(onClick = onClose, modifier = Modifier.size(32.dp)) {
+            IconButton(onClick = onClose, modifier = Modifier.size(48.dp)) {
                 Icon(Icons.Default.Close, contentDescription = "Close", tint = scheme.onSurfaceVariant)
             }
         }
@@ -401,7 +404,7 @@ private fun SourceHubView(
                     icon = Icons.Outlined.Sensors,
                     defaultExpanded = true,
                     headerAction = {
-                        IconButton(onClick = onRescanPorts, modifier = Modifier.size(24.dp)) {
+                        IconButton(onClick = onRescanPorts, modifier = Modifier.size(40.dp)) {
                             Icon(
                                 Icons.Default.Refresh,
                                 contentDescription = "Rescan ports",
@@ -479,7 +482,7 @@ private fun SourceHubView(
                             onValueChange = { customUrlInput = it },
                             placeholder = { Text("https://...") },
                             singleLine = true,
-                            textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                            textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = HarnessMono),
                             shape = RoundedCornerShape(8.dp),
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Go),
                             keyboardActions = KeyboardActions(
@@ -559,7 +562,7 @@ private fun CollapsibleSection(
                         Text(
                             count.toString(),
                             style = MaterialTheme.typography.labelSmall,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = HarnessMono,
                             modifier = Modifier.padding(horizontal = 7.dp, vertical = 2.dp),
                         )
                     }
@@ -619,7 +622,7 @@ private fun SourceRowItem(
             Text(
                 title,
                 style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 fontWeight = FontWeight.Medium,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -656,7 +659,7 @@ private fun SourceRowItem(
                 Text(
                     badgeText,
                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp, fontWeight = FontWeight.Bold),
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = HarnessMono,
                     color = if (isLive) statusColors.success else scheme.onSurfaceVariant,
                 )
             }
@@ -698,6 +701,7 @@ private fun WebPageView(
 
     // Agent control state: banner strip + expandable activity trail
     var showAgentTrack by remember { mutableStateOf(false) }
+    var browserToolbarMenu by remember { mutableStateOf(false) }
     val controlActiveFlow = remember(browserController) {
         browserController?.isAgentControlling ?: kotlinx.coroutines.flow.MutableStateFlow(false)
     }
@@ -760,7 +764,11 @@ private fun WebPageView(
     }
 
     Column(Modifier.fillMaxSize()) {
-        // Clean Title & Action Header Bar (Spaced controls with comfortable touch targets)
+        // Browser toolbar. This used to be ten 38dp buttons in a single row,
+        // which is both under the 48dp touch minimum and wider than a phone
+        // (roughly 430dp of controls), so the trailing buttons sat off-screen.
+        // Navigation and the error-badged console stay visible; the rest live
+        // in the overflow.
         Surface(
             color = scheme.surfaceContainerLow,
             modifier = Modifier.fillMaxWidth(),
@@ -770,25 +778,20 @@ private fun WebPageView(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(horizontal = 8.dp, vertical = 8.dp),
+                    .padding(horizontal = 4.dp),
             ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    IconButton(onClick = onBackToHub, modifier = Modifier.size(38.dp)) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "All Sources", tint = scheme.onSurface, modifier = Modifier.size(20.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    IconButton(onClick = onBackToHub) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "All Sources", tint = scheme.onSurface)
                     }
 
                     IconButton(
                         onClick = { webViewRef?.let { if (it.canGoBack()) it.goBack() } },
                         enabled = canGoBack,
-                        modifier = Modifier.size(38.dp),
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "History Back",
-                            modifier = Modifier.size(19.dp),
                             tint = if (canGoBack) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.3f),
                         )
                     }
@@ -796,63 +799,27 @@ private fun WebPageView(
                     IconButton(
                         onClick = { webViewRef?.let { if (it.canGoForward()) it.goForward() } },
                         enabled = canGoForward,
-                        modifier = Modifier.size(38.dp),
                     ) {
                         Icon(
                             Icons.AutoMirrored.Filled.ArrowForward,
                             contentDescription = "History Forward",
-                            modifier = Modifier.size(19.dp),
                             tint = if (canGoForward) scheme.onSurface else scheme.onSurfaceVariant.copy(alpha = 0.3f),
                         )
                     }
 
-                    IconButton(onClick = reload, modifier = Modifier.size(38.dp)) {
-                        Icon(Icons.Default.Refresh, contentDescription = "Reload", modifier = Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
+                    IconButton(onClick = reload) {
+                        Icon(Icons.Default.Refresh, contentDescription = "Reload", tint = scheme.onSurfaceVariant)
                     }
                 }
 
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(4.dp),
-                ) {
-                    // Eruda DevTools Launcher
-                    IconButton(onClick = openDevTools, modifier = Modifier.size(38.dp)) {
-                        Icon(
-                            Icons.Outlined.DeveloperMode,
-                            contentDescription = "DevTools",
-                            modifier = Modifier.size(20.dp),
-                            tint = scheme.primary,
-                        )
-                    }
-
-                    // Open in external browser
-                    IconButton(
-                        onClick = {
-                            runCatching {
-                                if (!isWorkspaceHtml(currentUrl)) {
-                                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
-                                    context.startActivity(intent)
-                                }
-                            }
-                        },
-                        enabled = !isWorkspaceHtml(currentUrl),
-                        modifier = Modifier.size(38.dp),
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Outlined.OpenInNew,
-                            contentDescription = "Open in external browser",
-                            modifier = Modifier.size(20.dp),
-                            tint = if (!isWorkspaceHtml(currentUrl)) scheme.onSurfaceVariant else scheme.onSurfaceVariant.copy(alpha = 0.3f),
-                        )
-                    }
-
-                    // JS Console Drawer Toggle
-                    IconButton(onClick = onToggleConsole, modifier = Modifier.size(38.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    // JS Console Drawer Toggle, kept visible because the error
+                    // dot is a signal the user needs to see without opening a menu.
+                    IconButton(onClick = onToggleConsole) {
                         Box {
                             Icon(
                                 Icons.Outlined.BugReport,
                                 contentDescription = "Console",
-                                modifier = Modifier.size(20.dp),
                                 tint = if (consoleLogs.any { it.level == ConsoleMessage.MessageLevel.ERROR }) {
                                     scheme.error
                                 } else if (showConsole) {
@@ -872,17 +839,58 @@ private fun WebPageView(
                         }
                     }
 
-                    IconButton(onClick = onToggleFullscreen, modifier = Modifier.size(38.dp)) {
-                        Icon(
-                            if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
-                            contentDescription = "Fullscreen",
-                            modifier = Modifier.size(20.dp),
-                            tint = scheme.onSurfaceVariant,
-                        )
-                    }
-
-                    IconButton(onClick = onClose, modifier = Modifier.size(38.dp)) {
-                        Icon(Icons.Default.Close, contentDescription = "Close", modifier = Modifier.size(20.dp), tint = scheme.onSurfaceVariant)
+                    Box {
+                        IconButton(onClick = { browserToolbarMenu = true }) {
+                            Icon(Icons.Filled.MoreVert, contentDescription = "More browser actions", tint = scheme.onSurfaceVariant)
+                        }
+                        DropdownMenu(
+                            expanded = browserToolbarMenu,
+                            onDismissRequest = { browserToolbarMenu = false },
+                        ) {
+                            DropdownMenuItem(
+                                text = { Text("DevTools") },
+                                leadingIcon = { Icon(Icons.Outlined.DeveloperMode, contentDescription = null, tint = scheme.primary) },
+                                onClick = {
+                                    browserToolbarMenu = false
+                                    openDevTools()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Open in external browser") },
+                                leadingIcon = { Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null) },
+                                enabled = !isWorkspaceHtml(currentUrl),
+                                onClick = {
+                                    browserToolbarMenu = false
+                                    runCatching {
+                                        if (!isWorkspaceHtml(currentUrl)) {
+                                            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(currentUrl))
+                                            context.startActivity(intent)
+                                        }
+                                    }
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text(if (isFullscreen) "Exit fullscreen" else "Fullscreen") },
+                                leadingIcon = {
+                                    Icon(
+                                        if (isFullscreen) Icons.Outlined.FullscreenExit else Icons.Outlined.Fullscreen,
+                                        contentDescription = null,
+                                    )
+                                },
+                                onClick = {
+                                    browserToolbarMenu = false
+                                    onToggleFullscreen()
+                                },
+                            )
+                            DropdownMenuItem(
+                                text = { Text("Close") },
+                                leadingIcon = { Icon(Icons.Default.Close, contentDescription = null) },
+                                onClick = {
+                                    browserToolbarMenu = false
+                                    onClose()
+                                },
+                            )
+                        }
                     }
                 }
             }
@@ -1128,7 +1136,7 @@ private fun WebPageView(
                             target,
                             style = MaterialTheme.typography.labelSmall,
                             color = scheme.onSurfaceVariant,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = HarnessMono,
                         )
                     }
                 }
@@ -1240,7 +1248,7 @@ private fun WebPageView(
                             Text(
                                 "JS CONSOLE (${consoleLogs.size})",
                                 style = MaterialTheme.typography.labelSmall,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = HarnessMono,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f),
                             )
@@ -1279,12 +1287,12 @@ private fun WebPageView(
                                 }
                             }
 
-                            IconButton(onClick = { consoleLogs.clear() }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Outlined.Delete, contentDescription = "Clear logs", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                            IconButton(onClick = { consoleLogs.clear() }, modifier = Modifier.size(40.dp)) {
+                                Icon(Icons.Outlined.Delete, contentDescription = "Clear logs", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                             }
-                            Spacer(Modifier.width(6.dp))
-                            IconButton(onClick = onToggleConsole, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Close, contentDescription = "Close Console", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                            Spacer(Modifier.width(2.dp))
+                            IconButton(onClick = onToggleConsole, modifier = Modifier.size(40.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close Console", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                             }
                         }
                         HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.4f))
@@ -1300,7 +1308,7 @@ private fun WebPageView(
                                     "No console messages logged",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = scheme.onSurfaceVariant,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = HarnessMono,
                                 )
                             }
                         } else {
@@ -1331,7 +1339,7 @@ private fun WebPageView(
                                                 else -> "[LOG]"
                                             },
                                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                            fontFamily = FontFamily.Monospace,
+                                            fontFamily = HarnessMono,
                                             fontWeight = FontWeight.Bold,
                                             color = when (log.level) {
                                                 ConsoleMessage.MessageLevel.ERROR -> scheme.error
@@ -1344,14 +1352,14 @@ private fun WebPageView(
                                             Text(
                                                 log.message,
                                                 style = MaterialTheme.typography.bodySmall.copy(fontSize = 11.sp),
-                                                fontFamily = FontFamily.Monospace,
+                                                fontFamily = HarnessMono,
                                                 color = scheme.onSurface,
                                             )
                                             if (log.source != null) {
                                                 Text(
                                                     "${log.source.substringAfterLast('/')}:${log.lineNumber}",
                                                     style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                                    fontFamily = FontFamily.Monospace,
+                                                    fontFamily = HarnessMono,
                                                     color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
                                                 )
                                             }
@@ -1407,19 +1415,19 @@ private fun WebPageView(
                             Text(
                                 "AGENT ACTIVITY (${agentTracks.size})",
                                 style = MaterialTheme.typography.labelSmall,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = HarnessMono,
                                 fontWeight = FontWeight.Bold,
                                 modifier = Modifier.weight(1f),
                             )
                             IconButton(
                                 onClick = { browserController?.clearTrack() },
-                                modifier = Modifier.size(24.dp),
+                                modifier = Modifier.size(40.dp),
                             ) {
-                                Icon(Icons.Outlined.Delete, contentDescription = "Clear trail", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                                Icon(Icons.Outlined.Delete, contentDescription = "Clear trail", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                             }
-                            Spacer(Modifier.width(6.dp))
-                            IconButton(onClick = { showAgentTrack = false }, modifier = Modifier.size(24.dp)) {
-                                Icon(Icons.Default.Close, contentDescription = "Close activity", modifier = Modifier.size(14.dp), tint = scheme.onSurfaceVariant)
+                            Spacer(Modifier.width(2.dp))
+                            IconButton(onClick = { showAgentTrack = false }, modifier = Modifier.size(40.dp)) {
+                                Icon(Icons.Default.Close, contentDescription = "Close activity", modifier = Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                             }
                         }
                         HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.4f))
@@ -1435,7 +1443,7 @@ private fun WebPageView(
                                     "The agent has not touched this browser yet",
                                     style = MaterialTheme.typography.bodySmall,
                                     color = scheme.onSurfaceVariant,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = HarnessMono,
                                 )
                             }
                         } else {
@@ -1461,7 +1469,7 @@ private fun WebPageView(
                                         Text(
                                             timeFmt.format(java.util.Date(entry.timestamp)),
                                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 9.sp),
-                                            fontFamily = FontFamily.Monospace,
+                                            fontFamily = HarnessMono,
                                             color = scheme.onSurfaceVariant,
                                         )
                                         Spacer(Modifier.width(6.dp))
@@ -1480,7 +1488,7 @@ private fun WebPageView(
                                         Text(
                                             entry.detail,
                                             style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                                            fontFamily = FontFamily.Monospace,
+                                            fontFamily = HarnessMono,
                                             color = scheme.onSurfaceVariant,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis,

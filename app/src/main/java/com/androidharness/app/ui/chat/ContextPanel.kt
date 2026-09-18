@@ -17,12 +17,12 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.llm.ModelPrices
 import com.androidharness.app.ui.common.ThinLinearProgress
 
 import com.androidharness.app.ui.common.formatTokenCount
+import com.androidharness.app.ui.theme.HarnessMono
 
 /**
  * Current-context dialog, modeled on GUI harnesses like Cline: a live
@@ -155,7 +155,7 @@ fun ContextUsageDialog(
                         Text(
                             "$%.4f".format(estimatedCost ?: 0.0),
                             style = MaterialTheme.typography.titleMedium,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = HarnessMono,
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
@@ -191,7 +191,7 @@ private fun TokenRow(label: String, value: String) {
         Text(
             value,
             style = MaterialTheme.typography.bodyMedium,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
         )
     }
 }

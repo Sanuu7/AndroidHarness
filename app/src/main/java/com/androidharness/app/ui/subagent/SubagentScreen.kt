@@ -21,7 +21,6 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -36,6 +35,7 @@ import com.androidharness.app.ui.chat.components.taskArgsObject
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonPrimitive
@@ -183,7 +183,7 @@ fun SubagentScreen(
                                     Text(
                                         line,
                                         style = MaterialTheme.typography.labelSmall,
-                                        fontFamily = FontFamily.Monospace,
+                                        fontFamily = HarnessMono,
                                         color = if (index == steps.takeLast(6).lastIndex)
                                             scheme.onSurface else scheme.onSurfaceVariant,
                                         maxLines = 1,

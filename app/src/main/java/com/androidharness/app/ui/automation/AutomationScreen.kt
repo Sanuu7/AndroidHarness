@@ -1243,7 +1243,7 @@ private fun AskAiAutomationEditor(
                             Icon(Icons.AutoMirrored.Filled.Send, contentDescription = "Send")
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).height(88.dp),
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 12.dp).heightIn(min = 88.dp),
                 )
                 }
             }

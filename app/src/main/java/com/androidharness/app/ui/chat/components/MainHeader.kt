@@ -1,7 +1,6 @@
 package com.androidharness.app.ui.chat.components
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.Crossfade
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -13,7 +12,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,7 +20,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.ForkRight
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.Menu
@@ -29,12 +27,11 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.outlined.EditNote
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.ForkRight
-import androidx.compose.ui.graphics.Color
-import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material.icons.outlined.QueryStats
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.DropdownMenu
@@ -43,6 +40,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -52,13 +50,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.AgentMode
 import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.agent.ThinkingLevel
-import com.androidharness.app.agent.ThinkingSpecs
-import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.ui.theme.fastEffectsSpec
 
 /**
@@ -70,6 +68,15 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
  * shows one small accent icon instead of a pill, the workspace-files explorer
  * (migrated from the drawer) gets the header icon slot, and context usage
  * lives in the overflow menu.
+ *
+ * The thinking control collapses to a bare icon at the default level and grows
+ * into a labelled badge only when a level is actually set, because the model
+ * name on the line below is the most important text here and it was the first
+ * thing to ellipsize on a narrow screen. There is one thinking menu, opened
+ * from either the badge or the overflow row, instead of two identical ones.
+ *
+ * The row is `heightIn(min = 60.dp)`, not a fixed 60, so a large system font
+ * scale grows the header instead of clipping the title.
  */
 @Composable
 internal fun MainHeader(
@@ -99,6 +106,7 @@ internal fun MainHeader(
     var thinkingMenu by remember { mutableStateOf(false) }
     var permissionMenu by remember { mutableStateOf(false) }
     val scheme = MaterialTheme.colorScheme
+    val thinkingOn = thinkingLevel != ThinkingLevel.OFF
 
     Column(
         Modifier
@@ -109,7 +117,7 @@ internal fun MainHeader(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
-                .height(60.dp)
+                .heightIn(min = 60.dp)
                 .padding(start = 4.dp, end = 4.dp),
         ) {
             IconButton(onClick = onOpenDrawer) {
@@ -118,7 +126,7 @@ internal fun MainHeader(
             Column(
                 Modifier
                     .weight(1f)
-                    .padding(horizontal = 6.dp),
+                    .padding(horizontal = 6.dp, vertical = 6.dp),
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     if (sessionTitle.startsWith("Fork of ")) {
@@ -174,51 +182,55 @@ internal fun MainHeader(
                     )
                 }
             }
-            // Thinking Level Badge + Switcher Dropdown (to the left of Context button)
-            var thinkingBadgeMenu by remember { mutableStateOf(false) }
-            Box(
-                modifier = Modifier.padding(end = 2.dp),
-            ) {
-                androidx.compose.material3.Surface(
-                    onClick = { thinkingBadgeMenu = true },
+
+            Box(modifier = Modifier.padding(end = 2.dp)) {
+                Surface(
+                    onClick = { thinkingMenu = true },
                     shape = RoundedCornerShape(8.dp),
-                    color = if (thinkingLevel != ThinkingLevel.OFF) scheme.secondaryContainer else scheme.surfaceContainerHigh,
+                    color = if (thinkingOn) scheme.secondaryContainer else scheme.surfaceContainerHigh,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 7.dp, vertical = 4.dp),
+                        modifier = Modifier.padding(
+                            horizontal = if (thinkingOn) 7.dp else 6.dp,
+                            vertical = 4.dp,
+                        ),
                     ) {
                         Icon(
                             Icons.Outlined.Tune,
                             contentDescription = "Thinking level",
-                            modifier = Modifier.size(13.dp),
-                            tint = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+                            modifier = Modifier.size(if (thinkingOn) 13.dp else 16.dp),
+                            tint = if (thinkingOn) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
                         )
-                        Spacer(Modifier.width(3.dp))
-                        Text(
-                            thinkingLevel.label,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
-                            fontWeight = androidx.compose.ui.text.font.FontWeight.Medium,
-                        )
-                        Spacer(Modifier.width(2.dp))
-                        Icon(
-                            Icons.Filled.KeyboardArrowDown,
-                            contentDescription = null,
-                            modifier = Modifier.size(13.dp),
-                            tint = if (thinkingLevel != ThinkingLevel.OFF) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
-                        )
+                        // The label and chevron only earn their width when a
+                        // non-default level is set; at OFF the icon alone says it.
+                        if (thinkingOn) {
+                            Spacer(Modifier.width(3.dp))
+                            Text(
+                                thinkingLevel.label,
+                                style = MaterialTheme.typography.labelSmall,
+                                color = scheme.onSecondaryContainer,
+                                fontWeight = FontWeight.Medium,
+                            )
+                            Spacer(Modifier.width(2.dp))
+                            Icon(
+                                Icons.Filled.KeyboardArrowDown,
+                                contentDescription = null,
+                                modifier = Modifier.size(13.dp),
+                                tint = scheme.onSecondaryContainer,
+                            )
+                        }
                     }
                 }
 
                 DropdownMenu(
-                    expanded = thinkingBadgeMenu,
-                    onDismissRequest = { thinkingBadgeMenu = false },
+                    expanded = thinkingMenu,
+                    onDismissRequest = { thinkingMenu = false },
                 ) {
                     DropdownMenuItem(
                         text = {
                             Text(
-                                "Thinking Level",
+                                "Thinking level",
                                 style = MaterialTheme.typography.labelMedium,
                                 color = scheme.onSurfaceVariant,
                             )
@@ -241,7 +253,7 @@ internal fun MainHeader(
                             },
                             onClick = {
                                 onSetThinking(entry)
-                                thinkingBadgeMenu = false
+                                thinkingMenu = false
                             },
                         )
                     }
@@ -249,10 +261,10 @@ internal fun MainHeader(
                     DropdownMenuItem(
                         text = { Text("Switch model…") },
                         leadingIcon = {
-                            Icon(Icons.Outlined.Folder, contentDescription = null, tint = scheme.primary)
+                            Icon(Icons.Outlined.SwapHoriz, contentDescription = null, tint = scheme.primary)
                         },
                         onClick = {
-                            thinkingBadgeMenu = false
+                            thinkingMenu = false
                             onPickModel()
                         },
                     )
@@ -314,7 +326,13 @@ internal fun MainHeader(
                     )
                     DropdownMenuItem(
                         text = { Text("Thinking · ${thinkingLevel.label}") },
-                        leadingIcon = { Icon(Icons.Outlined.Tune, contentDescription = null) },
+                        leadingIcon = {
+                            Icon(
+                                Icons.Outlined.Tune,
+                                contentDescription = null,
+                                tint = if (thinkingOn) scheme.primary else scheme.onSurfaceVariant,
+                            )
+                        },
                         trailingIcon = {
                             Icon(
                                 Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -371,29 +389,6 @@ internal fun MainHeader(
                         enabled = canUndo,
                         onClick = { menu = false; onOpenUndo() },
                     )
-                }
-                DropdownMenu(expanded = thinkingMenu, onDismissRequest = { thinkingMenu = false }) {
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                "Thinking level",
-                                style = MaterialTheme.typography.labelMedium,
-                                color = scheme.onSurfaceVariant,
-                            )
-                        },
-                        onClick = {},
-                        enabled = false,
-                    )
-                    thinkingLevels.forEach { entry ->
-                        DropdownMenuItem(text = {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(entry.label, Modifier.weight(1f))
-                                if (entry == thinkingLevel) {
-                                    Icon(Icons.Filled.Check, contentDescription = "Selected", tint = scheme.primary)
-                                }
-                            }
-                        }, onClick = { onSetThinking(entry); thinkingMenu = false })
-                    }
                 }
                 DropdownMenu(expanded = permissionMenu, onDismissRequest = { permissionMenu = false }) {
                     PermissionMode.entries.forEach { entry ->

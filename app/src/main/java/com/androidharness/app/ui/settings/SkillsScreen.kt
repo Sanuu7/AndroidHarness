@@ -33,7 +33,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
@@ -44,6 +43,7 @@ import com.androidharness.app.skills.SkillParser
 import com.androidharness.app.skills.SkillSource
 import com.androidharness.app.tools.skillTemplate
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.launch
 
 @Composable
@@ -148,7 +148,7 @@ private fun SkillGroup(
                         Text(
                             skill.name,
                             style = MaterialTheme.typography.bodyMedium,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = HarnessMono,
                         )
                         Text(
                             skill.description,
@@ -205,7 +205,7 @@ private fun SkillEditorDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .heightIn(min = 260.dp, max = 420.dp),
-                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = HarnessMono),
                     label = { Text("SKILL.md") },
                 )
                 Text(

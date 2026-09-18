@@ -49,7 +49,6 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.toolPresentation
@@ -59,6 +58,7 @@ import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.common.VisualDiffViewer
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.defaultEffectsSpec
 import com.androidharness.app.ui.theme.fastEffectsSpec
@@ -214,7 +214,7 @@ internal fun ToolCallCard(
                     Text(
                         call.name,
                         style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         color = scheme.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 6.dp),
                     )

@@ -29,7 +29,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -37,6 +36,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
+import com.androidharness.app.ui.theme.HarnessMono
 import java.util.concurrent.TimeUnit
 
 private enum class StatsRange(val label: String, val days: Long?) {
@@ -161,7 +161,7 @@ fun StatsScreen(
                     Text(
                         formatTokenCount(bundle.input + bundle.output),
                         style = MaterialTheme.typography.displaySmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Text(
@@ -243,7 +243,7 @@ fun StatsScreen(
                                 Text(
                                     row.model,
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = HarnessMono,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
@@ -257,7 +257,7 @@ fun StatsScreen(
                                 Text(
                                     formatTokenCount(row.totalTokens),
                                     style = MaterialTheme.typography.bodyMedium,
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = HarnessMono,
                                     maxLines = 1,
                                 )
                                 Text(
@@ -363,7 +363,7 @@ private fun MiniStat(label: String, value: String, modifier: Modifier = Modifier
         Text(
             value,
             style = MaterialTheme.typography.titleMediumEmphasized,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
         )
         Text(
             label,
@@ -382,7 +382,7 @@ private fun StatBig(label: String, value: String, supporting: String? = null) {
             Text(
                 value,
                 style = MaterialTheme.typography.headlineMedium,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 color = MaterialTheme.colorScheme.primary,
             )
             supporting?.let {

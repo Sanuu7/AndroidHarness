@@ -44,7 +44,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.text.withStyle
@@ -55,6 +54,7 @@ import com.androidharness.app.core.Diff
 import com.androidharness.app.data.db.SessionFileChangeEntity
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.VisualDiffViewer
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.workspace.normalizeRelPath
 import java.util.zip.GZIPInputStream
@@ -278,7 +278,7 @@ private fun ChangeRow(
                                     TextButton(onClick = { confirmation = current to section }, enabled = canUndo && !applying) { Text("Undo section") }
                                 }
                                 Text((section.after.ifEmpty { section.before }).take(180), maxLines = 3,
-                                    overflow = TextOverflow.Ellipsis, fontFamily = FontFamily.Monospace,
+                                    overflow = TextOverflow.Ellipsis, fontFamily = HarnessMono,
                                     style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                             }
                             }

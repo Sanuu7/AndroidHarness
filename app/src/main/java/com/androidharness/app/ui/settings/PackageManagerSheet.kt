@@ -46,7 +46,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -55,6 +54,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.data.env.EnvState
 import com.androidharness.app.data.env.PkgMeta
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -196,9 +196,14 @@ fun PackageManagerSheet(
                         )
                         IconButton(
                             onClick = { errorMessage = null },
-                            modifier = Modifier.size(20.dp),
+                            modifier = Modifier.size(40.dp),
                         ) {
-                            Icon(Icons.Outlined.Close, contentDescription = "Dismiss", tint = scheme.error)
+                            Icon(
+                                Icons.Outlined.Close,
+                                contentDescription = "Dismiss",
+                                tint = scheme.error,
+                                modifier = Modifier.size(17.dp),
+                            )
                         }
                     }
                 }
@@ -398,7 +403,7 @@ private fun PackageItemRow(
                     Text(
                         name,
                         style = MaterialTheme.typography.titleSmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         fontWeight = FontWeight.SemiBold,
                     )
                     if (version != null) {
@@ -465,13 +470,13 @@ private fun PackageItemRow(
                     IconButton(
                         onClick = onUninstall,
                         enabled = !isBusy,
-                        modifier = Modifier.size(32.dp),
+                        modifier = Modifier.size(40.dp),
                     ) {
                         Icon(
                             Icons.Outlined.Delete,
                             contentDescription = "Uninstall",
                             tint = scheme.onSurfaceVariant,
-                            modifier = Modifier.size(16.dp),
+                            modifier = Modifier.size(17.dp),
                         )
                     }
                 }
@@ -515,7 +520,7 @@ private fun InstalledPackageRow(
             Text(
                 name,
                 style = MaterialTheme.typography.bodyMedium,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 modifier = Modifier.weight(1f),
             )
             if (isCore) {
@@ -528,13 +533,13 @@ private fun InstalledPackageRow(
                 IconButton(
                     onClick = onUninstall,
                     enabled = !isBusy,
-                    modifier = Modifier.size(28.dp),
+                    modifier = Modifier.size(40.dp),
                 ) {
                     Icon(
                         Icons.Outlined.Delete,
                         contentDescription = "Uninstall $name",
                         tint = scheme.error.copy(alpha = 0.7f),
-                        modifier = Modifier.size(15.dp),
+                        modifier = Modifier.size(17.dp),
                     )
                 }
             }

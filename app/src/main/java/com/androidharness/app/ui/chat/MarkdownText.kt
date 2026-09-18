@@ -49,13 +49,16 @@ import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextLayoutResult
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
+import com.androidharness.app.ui.files.CodeTokenColors
+import com.androidharness.app.ui.files.CodeTokenizer
+import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -584,6 +587,53 @@ private fun LinkedText(
 /** Committed code blocks render at most this many lines before an expand control. */
 private const val CODE_BLOCK_COLLAPSED_LINES = 40
 
+/** Past this many lines a block renders plain instead of tokenizing on the main thread. */
+private const val CODE_BLOCK_HIGHLIGHT_LIMIT = 400
+
+/**
+ * Tokenizes [code] with the same tokenizer the file editor uses, so a fenced block
+ * in an answer is coloured like the same file opened in the editor. Returns null
+ * when the fence names no language we know, which renders as plain monospace.
+ */
+private fun highlightedCode(
+    code: String,
+    language: String,
+    dark: Boolean,
+    plain: androidx.compose.ui.graphics.Color,
+): AnnotatedString? {
+    val lang = CodeTokenizer.langForName(language) ?: return null
+    return buildAnnotatedString {
+        var lineStart = 0
+        while (lineStart <= code.length) {
+            val newline = code.indexOf('\n', lineStart)
+            val lineEnd = if (newline < 0) code.length else newline
+            val line = code.substring(lineStart, lineEnd)
+            val tokens = CodeTokenizer.tokenizeLine(lang, line)
+            // Tokens cover only part of a line, so walk them in order and copy the
+            // gaps between them verbatim.
+            var cursor = 0
+            tokens.sortedBy { it.start }.forEach { token ->
+                val start = token.start.coerceIn(0, line.length)
+                val end = token.end.coerceIn(start, line.length)
+                if (start > cursor) append(line.substring(cursor, start))
+                if (end > start) {
+                    withStyle(androidx.compose.ui.text.SpanStyle(CodeTokenColors.of(token.type, dark, plain))) {
+                        append(line.substring(start, end))
+                    }
+                }
+                cursor = maxOf(cursor, end)
+            }
+            if (cursor < line.length) append(line.substring(cursor))
+            if (newline < 0) {
+                lineStart = code.length + 1
+            } else {
+                append('\n')
+                lineStart = newline + 1
+            }
+        }
+    }
+}
+
 @Composable
 private fun CodeBlock(code: String, language: String) {
     val scheme = MaterialTheme.colorScheme
@@ -600,6 +650,22 @@ private fun CodeBlock(code: String, language: String) {
         lines.take(CODE_BLOCK_COLLAPSED_LINES).joinToString("\n")
     } else code
     val hiddenCount = lines.size - CODE_BLOCK_COLLAPSED_LINES
+
+    // Highlighting runs on the main thread, so it stays off past a few hundred
+    // lines: an expanded multi-thousand-line dump renders plain rather than
+    // tokenizing every line to draw it once.
+    val highlighted = remember(shown, language, scheme.surface) {
+        if (lines.size > CODE_BLOCK_HIGHLIGHT_LIMIT) {
+            null
+        } else {
+            highlightedCode(
+                code = shown,
+                language = language,
+                dark = CodeTokenColors.isDarkSurface(scheme.surface),
+                plain = scheme.onSurface,
+            )
+        }
+    }
 
     Surface(
         color = scheme.surfaceContainerLowest,
@@ -631,19 +697,18 @@ private fun CodeBlock(code: String, language: String) {
                             copied = false
                         }
                     },
-                    modifier = Modifier.size(30.dp),
                 ) {
                     Icon(
                         if (copied) Icons.Filled.Check else Icons.Filled.ContentCopy,
                         contentDescription = "Copy code",
                         tint = if (copied) scheme.primary else scheme.onSurfaceVariant,
-                        modifier = Modifier.size(14.dp),
+                        modifier = Modifier.size(16.dp),
                     )
                 }
             }
             Text(
-                shown,
-                fontFamily = FontFamily.Monospace,
+                highlighted ?: AnnotatedString(shown),
+                fontFamily = HarnessMono,
                 style = MaterialTheme.typography.bodySmall,
                 color = scheme.onSurface,
                 modifier = Modifier
@@ -720,7 +785,7 @@ private fun styledText(text: String): AnnotatedString {
                         if (end > i + 1) {
                             pushStyle(
                                 SpanStyle(
-                                    fontFamily = FontFamily.Monospace,
+                                    fontFamily = HarnessMono,
                                     background = codeBackground,
                                     color = codeColor,
                                 )

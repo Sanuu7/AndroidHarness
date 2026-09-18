@@ -5,9 +5,9 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.common.VisualDiffViewer
+import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.CancellationException
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -40,7 +40,7 @@ internal fun ChatFileDiffSheet(
                 Text("File changes", style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
                 TextButton(onClick = onOpenFile) { Text("Open file") }
             }
-            Text(path, style = MaterialTheme.typography.bodyMedium, fontFamily = FontFamily.Monospace)
+            Text(path, style = MaterialTheme.typography.bodyMedium, fontFamily = HarnessMono)
             Text(
                 "Before this turn → current file",
                 style = MaterialTheme.typography.labelMedium,

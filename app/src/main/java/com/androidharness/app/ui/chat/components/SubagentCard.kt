@@ -40,7 +40,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.describeToolCall
@@ -49,6 +48,7 @@ import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.chat.MarkdownText
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.defaultEffectsSpec
 import com.androidharness.app.ui.theme.fastEffectsSpec
@@ -108,7 +108,7 @@ internal fun SubagentHeaderRow(
             Text(
                 "subagent",
                 style = MaterialTheme.typography.labelLarge,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
@@ -150,12 +150,12 @@ internal fun SubagentHeaderRow(
             }
         }
         if (onOpenFull != null) {
-            IconButton(onClick = onOpenFull, modifier = Modifier.size(26.dp)) {
+            IconButton(onClick = onOpenFull, modifier = Modifier.size(40.dp)) {
                 Icon(
                     Icons.Outlined.OpenInNew,
                     contentDescription = "Open subagent page",
                     tint = scheme.onSurfaceVariant,
-                    modifier = Modifier.size(15.dp),
+                    modifier = Modifier.size(17.dp),
                 )
             }
         }
@@ -280,7 +280,7 @@ internal fun SubagentCard(
                         Text(
                             line,
                             style = MaterialTheme.typography.labelSmall,
-                            fontFamily = FontFamily.Monospace,
+                            fontFamily = HarnessMono,
                             color = if (isLatest) MaterialTheme.colorScheme.onSurface
                                     else MaterialTheme.colorScheme.onSurfaceVariant,
                             maxLines = if (isLatest) 2 else 1,

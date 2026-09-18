@@ -43,7 +43,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.describeToolCall
@@ -51,6 +50,7 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import kotlinx.coroutines.launch
@@ -311,7 +311,7 @@ private fun SubagentPagerPage(
                     Text(
                         line,
                         style = MaterialTheme.typography.labelSmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         color = if (index == trail.lastIndex) scheme.onSurface
                                 else scheme.onSurfaceVariant,
                         maxLines = if (index == trail.lastIndex) 2 else 1,

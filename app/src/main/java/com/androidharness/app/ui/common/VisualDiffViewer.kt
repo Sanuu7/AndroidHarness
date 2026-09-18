@@ -51,7 +51,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -64,6 +63,7 @@ import com.androidharness.app.core.DiffLine
 import com.androidharness.app.core.DiffLineType
 import com.androidharness.app.core.ParsedDiff
 import com.androidharness.app.ui.files.DiffStatText
+import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastEffectsSpec
 
@@ -123,7 +123,7 @@ fun VisualDiffViewer(
                     Text(
                         diffText.ifBlank { "(empty diff)" },
                         style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         color = scheme.onSurfaceVariant,
                     )
                 }
@@ -156,7 +156,7 @@ fun VisualDiffViewer(
                                 "Diff truncated for display performance",
                                 style = MaterialTheme.typography.labelSmall,
                                 color = scheme.onSurfaceVariant,
-                                fontFamily = FontFamily.Monospace,
+                                fontFamily = HarnessMono,
                             )
                         }
                     }
@@ -197,7 +197,7 @@ private fun DiffHeaderBar(
             Text(
                 fileName,
                 style = MaterialTheme.typography.labelMedium,
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 fontWeight = FontWeight.SemiBold,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
@@ -215,13 +215,13 @@ private fun DiffHeaderBar(
         DiffStatText(added, removed)
         IconButton(
             onClick = onCopy,
-            modifier = Modifier.size(28.dp),
+            modifier = Modifier.size(40.dp),
         ) {
             Icon(
                 Icons.Default.ContentCopy,
                 contentDescription = "Copy Diff",
                 tint = scheme.onSurfaceVariant,
-                modifier = Modifier.size(14.dp),
+                modifier = Modifier.size(16.dp),
             )
         }
     }
@@ -245,7 +245,7 @@ private fun DiffHunkSection(hunk: DiffHunk) {
                 Text(
                     hunk.header,
                     style = MaterialTheme.typography.labelSmall,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = HarnessMono,
                     color = scheme.primary,
                     fontWeight = FontWeight.Medium,
                     modifier = Modifier.weight(1f),
@@ -323,7 +323,7 @@ private fun DiffLineRow(line: DiffLine) {
             Text(
                 text = line.oldNum?.toString().orEmpty(),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 color = scheme.onSurfaceVariant.copy(alpha = 0.6f),
                 textAlign = TextAlign.End,
                 modifier = Modifier.width(26.dp),
@@ -332,7 +332,7 @@ private fun DiffLineRow(line: DiffLine) {
             Text(
                 text = line.newNum?.toString().orEmpty(),
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 10.sp),
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 color = scheme.onSurfaceVariant.copy(alpha = 0.6f),
                 textAlign = TextAlign.End,
                 modifier = Modifier.width(26.dp),
@@ -341,7 +341,7 @@ private fun DiffLineRow(line: DiffLine) {
             Text(
                 text = symbol,
                 style = MaterialTheme.typography.labelSmall.copy(fontSize = 11.sp, fontWeight = FontWeight.Bold),
-                fontFamily = FontFamily.Monospace,
+                fontFamily = HarnessMono,
                 color = gutterColor,
                 textAlign = TextAlign.Center,
                 modifier = Modifier.width(12.dp),
@@ -354,7 +354,7 @@ private fun DiffLineRow(line: DiffLine) {
         Text(
             text = line.text,
             style = MaterialTheme.typography.bodySmall.copy(fontSize = 12.sp, lineHeight = 16.sp),
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
             color = when (line.type) {
                 DiffLineType.ADD -> status.success
                 DiffLineType.REMOVE -> scheme.error

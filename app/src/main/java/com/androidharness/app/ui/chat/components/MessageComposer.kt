@@ -40,7 +40,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -59,7 +59,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.scale
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -346,15 +345,18 @@ internal fun MessageComposer(
             }
         }
 
-        // Action button on the right
+        // Action button on the right.
+        //
+        // Every arm of this `when` follows the same shape: the outer Box owns the
+        // 52dp clickable area and the clip, and the inner Box carries the scale
+        // animation. A scale applied over the clickable used to shrink the tap
+        // target along with the artwork, down to ~45dp at the idle scale.
         when {
             showQueueSend -> {
                 Box(
                     modifier = Modifier
                         .size(52.dp)
-                        .scale(buttonScale)
                         .clip(RoundedCornerShape(corner))
-                        .background(MaterialTheme.colorScheme.primary)
                         .clickable {
                             haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                             onSend()
@@ -362,7 +364,19 @@ internal fun MessageComposer(
                         .semantics { contentDescription = "Queue message" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    SendGlyph(color = MaterialTheme.colorScheme.onPrimary)
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .graphicsLayer {
+                                scaleX = buttonScale
+                                scaleY = buttonScale
+                            }
+                            .clip(RoundedCornerShape(corner))
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        SendGlyph(color = MaterialTheme.colorScheme.onPrimary)
+                    }
                 }
             }
 
@@ -371,7 +385,6 @@ internal fun MessageComposer(
                     modifier = Modifier
                         .size(52.dp)
                         .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary)
                         .clickable {
                             haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                             onStopAndTranscribeGroq()
@@ -379,7 +392,15 @@ internal fun MessageComposer(
                         .semantics { contentDescription = "Transcribe voice message" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    SendGlyph(color = MaterialTheme.colorScheme.onPrimary)
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .clip(CircleShape)
+                            .background(MaterialTheme.colorScheme.primary),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        SendGlyph(color = MaterialTheme.colorScheme.onPrimary)
+                    }
                 }
             }
 
@@ -387,9 +408,7 @@ internal fun MessageComposer(
                 Box(
                     modifier = Modifier
                         .size(52.dp)
-                        .scale(buttonScale)
                         .clip(RoundedCornerShape(corner))
-                        .background(buttonColor)
                         .clickable {
                             haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                             onStop()
@@ -397,12 +416,19 @@ internal fun MessageComposer(
                         .semantics { contentDescription = "Stop" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    Icon(
-                        Icons.Filled.Stop,
-                        contentDescription = "Stop",
-                        tint = iconColor,
-                        modifier = Modifier.size(20.dp),
-                    )
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .graphicsLayer {
+                                scaleX = buttonScale
+                                scaleY = buttonScale
+                            }
+                            .clip(RoundedCornerShape(corner))
+                            .background(buttonColor),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        StopGlyph(color = iconColor)
+                    }
                 }
             }
 
@@ -410,9 +436,7 @@ internal fun MessageComposer(
                 Box(
                     modifier = Modifier
                         .size(52.dp)
-                        .scale(buttonScale)
                         .clip(RoundedCornerShape(corner))
-                        .background(buttonColor)
                         .clickable {
                             haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                             onSend()
@@ -420,7 +444,19 @@ internal fun MessageComposer(
                         .semantics { contentDescription = "Send message" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    SendGlyph(color = iconColor)
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .graphicsLayer {
+                                scaleX = buttonScale
+                                scaleY = buttonScale
+                            }
+                            .clip(RoundedCornerShape(corner))
+                            .background(buttonColor),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        SendGlyph(color = iconColor)
+                    }
                 }
             }
 
@@ -457,14 +493,24 @@ internal fun MessageComposer(
                 Box(
                     modifier = Modifier
                         .size(52.dp)
-                        .scale(buttonScale)
                         .clip(RoundedCornerShape(corner))
-                        .background(if (isInbuiltListening) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest)
                         .clickable { onToggleInbuiltVoice() }
                         .semantics { contentDescription = if (isInbuiltListening) "Stop voice input" else "Voice input" },
                     contentAlignment = Alignment.Center,
                 ) {
-                    MicGlyph(color = if (isInbuiltListening) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                    Box(
+                        modifier = Modifier
+                            .size(52.dp)
+                            .graphicsLayer {
+                                scaleX = buttonScale
+                                scaleY = buttonScale
+                            }
+                            .clip(RoundedCornerShape(corner))
+                            .background(if (isInbuiltListening) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.surfaceContainerHighest),
+                        contentAlignment = Alignment.Center,
+                    ) {
+                        MicGlyph(color = if (isInbuiltListening) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
             }
         }
@@ -822,32 +868,33 @@ private fun HuliaMicButton(
 
     Box(contentAlignment = Alignment.Center) {
         if (recording) {
-            Box(
-                modifier = Modifier
-                    .size(52.dp)
-                    .graphicsLayer {
-                        scaleX = haloScale * 1.25f
-                        scaleY = haloScale * 1.25f
-                        alpha = 0.22f
-                        translationX = dragX.coerceIn(-cancelDistancePx * 1.15f, 0f)
-                        translationY = dragY.coerceIn(-lockDistancePx, 0f)
-                    }
-                    .clip(CircleShape)
-                    .background(background),
-            )
+Box(
+            modifier = Modifier
+                .size(52.dp)
+                // Scale the ghost only: it must sit behind the real button's
+                // 48dp+ touch area, not participate in it.
+                .graphicsLayer {
+                    scaleX = haloScale * 1.25f
+                    scaleY = haloScale * 1.25f
+                    alpha = 0.22f
+                    translationX = dragX.coerceIn(-cancelDistancePx * 1.15f, 0f)
+                    translationY = dragY.coerceIn(-lockDistancePx, 0f)
+                }
+                .clip(CircleShape)
+                .background(background),
+        )
         }
 
         Box(
             modifier = Modifier
                 .size(52.dp)
+                // Drag translation stays on the interactive node so the button
+                // follows the finger, but the idle scale does not, otherwise the
+                // gesture area shrinks to ~45dp along with the artwork.
                 .graphicsLayer {
-                    scaleX = buttonScale
-                    scaleY = buttonScale
                     translationX = dragX.coerceIn(-cancelDistancePx * 1.15f, 0f)
                     translationY = dragY.coerceIn(-lockDistancePx, 0f)
                 }
-                .clip(RoundedCornerShape(corner))
-                .background(background)
                 .pointerInput(available) {
                     awaitEachGesture {
                         val down = awaitFirstDown(requireUnconsumed = false)
@@ -910,7 +957,19 @@ private fun HuliaMicButton(
                 },
             contentAlignment = Alignment.Center,
         ) {
-            MicGlyph(color = glyphColor)
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .graphicsLayer {
+                        scaleX = buttonScale
+                        scaleY = buttonScale
+                    }
+                    .clip(RoundedCornerShape(corner))
+                    .background(background),
+                contentAlignment = Alignment.Center,
+            ) {
+                MicGlyph(color = glyphColor)
+            }
         }
     }
 }
@@ -931,9 +990,7 @@ private fun ComposerLeadingButton(
         Box(
             modifier = Modifier
                 .size(52.dp)
-                .scale(0.86f)
                 .clip(RoundedCornerShape(17.dp))
-                .background(MaterialTheme.colorScheme.surfaceContainerHighest)
                 .clickable {
                     haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                     expanded = true
@@ -941,7 +998,19 @@ private fun ComposerLeadingButton(
                 .semantics { contentDescription = "Attach file or image" },
             contentAlignment = Alignment.Center,
         ) {
-            PlusGlyph(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Box(
+                modifier = Modifier
+                    .size(52.dp)
+                    .graphicsLayer {
+                        scaleX = 0.86f
+                        scaleY = 0.86f
+                    }
+                    .clip(RoundedCornerShape(17.dp))
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
+                contentAlignment = Alignment.Center,
+            ) {
+                PlusGlyph(color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
         }
 
         DropdownMenu(
@@ -958,7 +1027,7 @@ private fun ComposerLeadingButton(
             )
             DropdownMenuItem(
                 text = { Text("Any file") },
-                leadingIcon = { PlusGlyph(color = MaterialTheme.colorScheme.onSurfaceVariant, size = 18.dp) },
+                leadingIcon = { Icon(Icons.Outlined.Description, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp)) },
                 onClick = {
                     expanded = false
                     onPickFile()
@@ -998,6 +1067,29 @@ fun SendGlyph(color: Color, modifier: Modifier = Modifier, size: Dp = 22.dp) {
         drawLine(color, Offset(w / 2f, h * 0.86f), tip, weight, StrokeCap.Round)
         drawLine(color, Offset(w * 0.20f, h * 0.48f), tip, weight, StrokeCap.Round)
         drawLine(color, Offset(w * 0.80f, h * 0.48f), tip, weight, StrokeCap.Round)
+    }
+}
+
+/**
+ * Stop, drawn as a rounded outline like [SendGlyph] and [MicGlyph] rather than
+ * dropped in as a filled Material icon, so the send/stop/mic states of the same
+ * button read as one set instead of two.
+ */
+@Composable
+fun StopGlyph(color: Color, modifier: Modifier = Modifier, size: Dp = 22.dp) {
+    Canvas(modifier.size(size)) {
+        val w = this.size.width
+        val h = this.size.height
+        val weight = w * 0.115f
+        val inset = w * 0.22f
+
+        drawRoundRect(
+            color = color,
+            topLeft = Offset(inset, inset),
+            size = Size(w - inset * 2f, h - inset * 2f),
+            cornerRadius = CornerRadius(w * 0.16f),
+            style = Stroke(width = weight, join = StrokeJoin.Round),
+        )
     }
 }
 

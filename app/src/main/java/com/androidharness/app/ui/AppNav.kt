@@ -26,6 +26,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -394,7 +395,7 @@ fun AppNav(container: AppContainer) {
                         modifier = Modifier
                             .fillMaxWidth()
                             .padding(horizontal = 16.dp, vertical = 8.dp)
-                            .height(46.dp),
+                            .heightIn(min = 46.dp),
                     ) {
                         Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(19.dp))
                         Spacer(Modifier.width(8.dp))

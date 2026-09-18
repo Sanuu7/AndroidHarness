@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -435,8 +436,9 @@ fun CodeEditorScreen(
 /** Maps rich syntax highlight palette onto the editor slots based on current theme mode. */
 private fun applyEditorTheme(ed: CodeEditor, scheme: androidx.compose.material3.ColorScheme) {
     val cs = ed.colorScheme
-    val isDark = scheme.surface.red * 0.299f + scheme.surface.green * 0.587f + scheme.surface.blue * 0.114f < 0.5f
+    val isDark = CodeTokenColors.isDarkSurface(scheme.surface)
     fun set(slot: Int, color: androidx.compose.ui.graphics.Color) = cs.setColor(slot, color.toArgb())
+    fun token(type: TokenType) = CodeTokenColors.of(type, isDark, scheme.onSurface)
 
     set(EditorColorScheme.WHOLE_BACKGROUND, scheme.surface)
     set(EditorColorScheme.LINE_NUMBER_BACKGROUND, scheme.surfaceContainerLowest)
@@ -445,33 +447,19 @@ private fun applyEditorTheme(ed: CodeEditor, scheme: androidx.compose.material3.
     set(EditorColorScheme.TEXT_NORMAL, scheme.onSurface)
     set(EditorColorScheme.SELECTION_INSERT, scheme.primary.copy(alpha = 0.35f))
 
-    if (isDark) {
-        // Dark theme rich syntax palette
-        set(EditorColorScheme.HTML_TAG, androidx.compose.ui.graphics.Color(0xFF7EE787))       // HTML/XML tags (<html, <div, <meta, <!DOCTYPE) -> Mint Green
-        set(EditorColorScheme.IDENTIFIER_VAR, androidx.compose.ui.graphics.Color(0xFF79C0FF)) // HTML attributes / JSON keys (charset, name, content) -> Sky Blue
-        set(EditorColorScheme.ATTRIBUTE_NAME, androidx.compose.ui.graphics.Color(0xFFFF7B72)) // Control keywords (import, return, if, etc) -> Coral Red
-        set(EditorColorScheme.KEYWORD, androidx.compose.ui.graphics.Color(0xFF79C0FF))        // Core keywords (fun, class, val, var) -> Sky Blue
-        set(EditorColorScheme.IDENTIFIER_NAME, androidx.compose.ui.graphics.Color(0xFFFFA657))// Types / Classes -> Warm Orange
-        set(EditorColorScheme.FUNCTION_NAME, androidx.compose.ui.graphics.Color(0xFFD2A8FF))  // Functions / methods -> Soft Purple
-        set(EditorColorScheme.LITERAL, androidx.compose.ui.graphics.Color(0xFFA5D6FF))        // Strings -> Cyan/Light Blue
-        set(EditorColorScheme.ATTRIBUTE_VALUE, androidx.compose.ui.graphics.Color(0xFF7EE787))// Numbers & constants -> Mint Green
-        set(EditorColorScheme.COMMENT, androidx.compose.ui.graphics.Color(0xFF8B949E))        // Comments -> Slate Gray
-        set(EditorColorScheme.ANNOTATION, androidx.compose.ui.graphics.Color(0xFFFF9E64))     // Annotations -> Amber Orange
-        set(EditorColorScheme.OPERATOR, androidx.compose.ui.graphics.Color(0xFFFF7B72))       // Operators -> Coral Red
-    } else {
-        // Light theme rich syntax palette
-        set(EditorColorScheme.HTML_TAG, androidx.compose.ui.graphics.Color(0xFF116329))       // HTML/XML tags (<html, <div, <meta, <!DOCTYPE) -> Dark Forest Green
-        set(EditorColorScheme.IDENTIFIER_VAR, androidx.compose.ui.graphics.Color(0xFF0550AE)) // HTML attributes / JSON keys (charset, name, content) -> Royal Blue
-        set(EditorColorScheme.ATTRIBUTE_NAME, androidx.compose.ui.graphics.Color(0xFFCF222E)) // Control keywords (import, return, if, etc) -> Deep Crimson Red
-        set(EditorColorScheme.KEYWORD, androidx.compose.ui.graphics.Color(0xFF0550AE))        // Core keywords (fun, class, val, var) -> Royal Blue
-        set(EditorColorScheme.IDENTIFIER_NAME, androidx.compose.ui.graphics.Color(0xFF953800))// Types / Classes -> Rust Brown
-        set(EditorColorScheme.FUNCTION_NAME, androidx.compose.ui.graphics.Color(0xFF8250DF))  // Functions / methods -> Purple
-        set(EditorColorScheme.LITERAL, androidx.compose.ui.graphics.Color(0xFF0A3069))        // Strings -> Dark Blue
-        set(EditorColorScheme.ATTRIBUTE_VALUE, androidx.compose.ui.graphics.Color(0xFF1A7F37))// Numbers & constants -> Forest Green
-        set(EditorColorScheme.COMMENT, androidx.compose.ui.graphics.Color(0xFF6E7781))        // Comments -> Mid Gray
-        set(EditorColorScheme.ANNOTATION, androidx.compose.ui.graphics.Color(0xFFB35900))     // Annotations -> Dark Amber
-        set(EditorColorScheme.OPERATOR, androidx.compose.ui.graphics.Color(0xFFCF222E))       // Operators -> Deep Crimson Red
-    }
+    // Colors come from the palette shared with chat code blocks, so the two
+    // render the same snippet identically.
+    set(EditorColorScheme.HTML_TAG, token(TokenType.HTML_TAG))
+    set(EditorColorScheme.IDENTIFIER_VAR, token(TokenType.ATTRIBUTE_NAME))
+    set(EditorColorScheme.ATTRIBUTE_NAME, token(TokenType.KEYWORD_CONTROL))
+    set(EditorColorScheme.KEYWORD, token(TokenType.KEYWORD))
+    set(EditorColorScheme.IDENTIFIER_NAME, token(TokenType.TYPE_NAME))
+    set(EditorColorScheme.FUNCTION_NAME, token(TokenType.FUNCTION_NAME))
+    set(EditorColorScheme.LITERAL, token(TokenType.STRING))
+    set(EditorColorScheme.ATTRIBUTE_VALUE, token(TokenType.NUMBER))
+    set(EditorColorScheme.COMMENT, token(TokenType.COMMENT))
+    set(EditorColorScheme.ANNOTATION, token(TokenType.ANNOTATION))
+    set(EditorColorScheme.OPERATOR, token(TokenType.OPERATOR))
 }
 
 // ---------------------------------------------------------------------------
@@ -555,7 +543,7 @@ private fun FindBar(
                     isError = patternError,
                     textStyle = MaterialTheme.typography.bodySmall,
                     shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.weight(1f).height(54.dp),
+                    modifier = Modifier.weight(1f).heightIn(min = 54.dp),
                 )
                 Text(
                     if (matchInfo.first == 0) "-" else "${matchInfo.second + 1}/${matchInfo.first}",
@@ -589,7 +577,7 @@ private fun FindBar(
                         singleLine = true,
                         textStyle = MaterialTheme.typography.bodySmall,
                         shape = MaterialTheme.shapes.medium,
-                        modifier = Modifier.weight(1f).height(54.dp),
+                        modifier = Modifier.weight(1f).heightIn(min = 54.dp),
                     )
                     TextButton(onClick = {
                         editor?.searcher?.replaceCurrentMatch(replaceWith)

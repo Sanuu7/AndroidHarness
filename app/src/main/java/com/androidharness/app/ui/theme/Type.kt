@@ -16,6 +16,15 @@ import com.androidharness.app.R
 val GoogleSans = FontFamily(Font(R.font.google_sans_flex_variable))
 
 /**
+ * Noto Sans Mono, the Google-family monospace, for code, paths, diffs and numbers.
+ * Without it every one of those falls back to the platform's Droid Sans Mono, which
+ * reads as the oldest type in the app next to Google Sans Flex prose. Subset to
+ * Latin, punctuation and box-drawing glyphs (191 KB) with the weight axis kept, so
+ * Medium/SemiBold still render from the variable font.
+ */
+val HarnessMono = FontFamily(Font(R.font.noto_sans_mono_variable))
+
+/**
  * Tuned M3 Expressive type scale on Google Sans Flex.
  *
  * Skipped letter-spacing on large display/headline roles reads more like Google's

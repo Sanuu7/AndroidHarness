@@ -45,11 +45,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.buildAnnotatedString
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.data.update.UpdateManager
+import com.androidharness.app.ui.theme.HarnessMono
 import java.io.File
 
 /**
@@ -209,14 +209,14 @@ private fun DownloadProgress(percent: Int, mb: Float, totalMb: Float) {
         Text(
             "$percent%",
             style = MaterialTheme.typography.labelMedium,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
             color = MaterialTheme.colorScheme.primary,
         )
         Spacer(Modifier.weight(1f))
         Text(
             "$mb / $totalMb MB",
             style = MaterialTheme.typography.labelSmall,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }
@@ -262,7 +262,7 @@ private fun ReleaseNotes(release: UpdateManager.LatestRelease) {
         Text(
             "${release.apkName} · %.1f MB".format(release.apkBytes / 1_048_576f),
             style = MaterialTheme.typography.labelSmall,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
     }

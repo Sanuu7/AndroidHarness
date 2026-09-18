@@ -34,9 +34,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import com.androidharness.app.ui.theme.HarnessMono
 
 /**
  * Shared bits for chat rendering: the tool icon map, monospace blocks and
@@ -76,7 +76,7 @@ internal fun MonoBlock(text: String) {
         Text(
             text,
             style = MaterialTheme.typography.bodySmall,
-            fontFamily = FontFamily.Monospace,
+            fontFamily = HarnessMono,
             modifier = Modifier
                 .padding(10.dp)
                 .heightIn(max = 260.dp)
@@ -121,14 +121,14 @@ internal fun ClickableOutput(
                     Text(
                         "$path:$lineNum",
                         style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         color = MaterialTheme.colorScheme.primary,
                     )
                     Spacer(Modifier.width(4.dp))
                     Text(
                         content,
                         style = MaterialTheme.typography.bodySmall,
-                        fontFamily = FontFamily.Monospace,
+                        fontFamily = HarnessMono,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis,
@@ -138,7 +138,7 @@ internal fun ClickableOutput(
                 Text(
                     raw,
                     style = MaterialTheme.typography.bodySmall,
-                    fontFamily = FontFamily.Monospace,
+                    fontFamily = HarnessMono,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             }

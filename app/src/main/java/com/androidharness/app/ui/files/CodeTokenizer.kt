@@ -134,6 +134,22 @@ object CodeTokenizer {
         else -> KotlinLang
     }
 
+    /**
+     * Resolves a markdown fence language, e.g. ```kotlin or ```py, rather than a
+     * file path. Returns null for an unknown or absent language, which callers
+     * render as plain text instead of guessing at a grammar.
+     */
+    fun langForName(name: String): LangConfig? = when (name.trim().lowercase()) {
+        "kt", "kts", "kotlin", "java", "scala", "gradle", "groovy" -> KotlinLang
+        "py", "pyw", "python", "yml", "yaml" -> PythonLang
+        "js", "mjs", "cjs", "jsx", "ts", "tsx", "typescript", "javascript" -> JsTsLang
+        "html", "htm", "xml", "svg", "vue", "svelte" -> HtmlXmlLang
+        "json", "json5", "jsonc" -> JsonLang
+        "css", "scss", "sass", "less" -> CssLang
+        "sh", "bash", "zsh", "shell", "console", "toml", "ini", "cfg", "env" -> ShellLang
+        else -> null
+    }
+
     /** Tokenizes a single line based on syntax mode. */
     fun tokenizeLine(lang: LangConfig, line: String): List<Token> {
         if (line.isBlank()) return emptyList()
