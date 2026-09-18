@@ -20,6 +20,7 @@ import com.androidharness.app.workspace.WorkspaceManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import okhttp3.OkHttpClient
 import java.util.concurrent.atomic.AtomicBoolean
@@ -112,11 +113,15 @@ class AppContainer(val appContext: Context) {
             }
         }
 
+    private val cavemanSettings = AtomicReference(com.androidharness.app.data.AppSettings())
     val skills = com.androidharness.app.skills.SkillStore(
         bundled = com.androidharness.app.skills.SkillAssets.load(appContext.assets),
         userDir = java.io.File(appContext.filesDir, "skills").apply { mkdirs() },
         projectDir = { projectSkillsDir },
         disabled = { disabledSkills.get() },
+        optionalBundled = {
+            if (cavemanSettings.get().cavemanInstalled) com.androidharness.app.caveman.CavemanPolicy.skills else emptyMap()
+        },
     )
     val browser = com.androidharness.app.browser.BrowserController(appContext, images)
     val registry = ToolRegistry.default(
@@ -136,6 +141,7 @@ class AppContainer(val appContext: Context) {
         skills = skills,
         todoStore = todoStore,
         repoMap = repoMap,
+        cavemanSettings = { settings.settings.first().also { cavemanSettings.set(it); disabledSkills.set(it.disabledSkills) } },
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -180,6 +186,7 @@ class AppContainer(val appContext: Context) {
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             settings.settings.collect {
                 disabledSkills.set(it.disabledSkills)
+                cavemanSettings.set(it)
                 // The search key store moved to per-provider slots; attribute
                 // the pre-split key to whichever provider was active first.
                 if (searchKeyMigrated.compareAndSet(false, true)) {

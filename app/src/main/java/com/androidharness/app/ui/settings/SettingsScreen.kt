@@ -245,6 +245,7 @@ fun SettingsScreen(
                             SlashCommandsSection(container)
                         }
                         SettingsPage.CODE_INTELLIGENCE -> CodeIntelligenceSection(container, workspace, currentProject)
+                        SettingsPage.CAVEMAN -> CavemanSection(container, settings)
                         SettingsPage.VOICE -> VoiceSpeechSection(container, settings, scope)
                         SettingsPage.APPEARANCE -> AppearanceSection(container, settings, scope)
                         SettingsPage.PRIVACY -> PrivacySection(container, settings, scope)

@@ -11,6 +11,7 @@ class SkillStore(
     private val userDir: File,
     private val projectDir: () -> File?,
     private val disabled: () -> Set<String>,
+    private val optionalBundled: () -> Map<String, BundledSkill> = { emptyMap() },
 ) {
     data class BundledSkill(
         val relativeDir: String,
@@ -153,7 +154,7 @@ class SkillStore(
 
     private fun findAll(name: String): List<Located> {
         val out = mutableListOf<Located>()
-        bundled[name]?.let { b ->
+        (bundled + optionalBundled())[name]?.let { b ->
             parseLocated(b.content, SkillSource.BUNDLED, b.relativeDir, b.files)?.let { out += it }
         }
         scanDirFiles(userDir).filter { it.first == name }.forEach { (_, content, files, rel) ->
@@ -198,7 +199,7 @@ class SkillStore(
     }
 
     private fun scanBundled(): List<SkillMeta> =
-        bundled.values.mapNotNull { b ->
+        (bundled + optionalBundled()).values.mapNotNull { b ->
             val parsed = runCatching { SkillParser.parse(b.content) }.getOrNull() ?: return@mapNotNull null
             SkillMeta(
                 name = parsed.name,

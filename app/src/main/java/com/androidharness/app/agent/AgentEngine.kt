@@ -191,6 +191,7 @@ class AgentEngine(
     private val skills: com.androidharness.app.skills.SkillStore,
     private val todoStore: TodoStore? = null,
     private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
+    private val cavemanSettings: suspend () -> com.androidharness.app.data.AppSettings = { com.androidharness.app.data.AppSettings() },
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -237,6 +238,7 @@ class AgentEngine(
         }
         // Rebuilt when Full access toggles, because the path rules the model
         // is told about change with it.
+        var replySettings = cavemanSettings()
         var systemPrompt = systemPrompt(workspace, mode, fullAccess = false, repoMapEnabled = repoMapEnabled) + if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
         var promptSandboxOff = false
         val runRegistry = registry.withExtra(extraTools)
@@ -294,7 +296,9 @@ class AgentEngine(
             // tools this round executes.
             val effectiveMode = permissionMode()
             val sandboxOff = effectiveMode == PermissionMode.FULL_ACCESS
-            if (sandboxOff != promptSandboxOff) {
+            val nextReplySettings = cavemanSettings()
+            if (sandboxOff != promptSandboxOff || replySettings != nextReplySettings) {
+                replySettings = nextReplySettings
                 promptSandboxOff = sandboxOff
                 systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff, repoMapEnabled = repoMapEnabled) + if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
             }
@@ -307,8 +311,14 @@ class AgentEngine(
                     workspace
                 }
 
+            val requestSystemPrompt = com.androidharness.app.caveman.CavemanPolicy.apply(
+                systemPrompt,
+                installed = replySettings.cavemanInstalled,
+                intensity = replySettings.cavemanIntensity,
+                wenyan = replySettings.cavemanWenyan,
+            )
             // Auto-compact before the request grows past the context budget.
-            val estimate = estimateContext(working, systemPrompt)
+            val estimate = estimateContext(working, requestSystemPrompt)
             emit(AgentEvent.EstimatedContext(estimate))
             if (estimate.total > (maxContextTokens * 0.8).toInt() && working.size > 6) {
                 val compacted = compact(provider, config, apiKey, working, maxContextTokens, sessionId) { emit(it) }
@@ -317,7 +327,7 @@ class AgentEngine(
                     working.addAll(compacted)
                     // The window just shrank: refresh the context panel now
                     // instead of waiting for the next request's usage row.
-                    emit(AgentEvent.EstimatedContext(estimateContext(working, systemPrompt)))
+                    emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt)))
                 }
             }
 
@@ -375,7 +385,7 @@ class AgentEngine(
             // re-emitting deltas the UI already showed would duplicate output.
             var failure = StreamRetrier.run(
                 streamFor = {
-                    provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
+                    provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
                 },
                 onAttemptStart = {
                     requestStartedNs = System.nanoTime()
@@ -399,7 +409,7 @@ class AgentEngine(
                 working.addAll(stripped)
                 failure = StreamRetrier.run(
                     streamFor = {
-                        provider.streamChat(config, apiKey, systemPrompt, working, tools, requestOptions)
+                        provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
                     },
                     onAttemptStart = {
                         requestStartedNs = System.nanoTime()
@@ -1140,7 +1150,10 @@ class AgentEngine(
         val label = if (title.isNullOrBlank()) "Task" else "Task [$title]"
         step("$label: ${prompt.take(80)}")
         val provider = providerFactory(config)
-        val system =
+        // Subagent answers are folded back into the parent's context, so the
+        // reply style applies here too. Code, paths and quoted errors stay exact.
+        val caveman = cavemanSettings()
+        val system = com.androidharness.app.caveman.CavemanPolicy.apply(
             "You are a read-only research subagent inside a coding harness. " +
                 "Explore the workspace with the tools you have (read_file, list_dir, " +
                 "search_files, grep, file_info, web_fetch/search, and CodeGraph when available) to answer the task. " +
@@ -1149,7 +1162,11 @@ class AgentEngine(
                 "When reporting file properties like newlines or byte counts, inspect with file_info rather than inferring from line counts. " +
                 "Finish with a complete, self-contained answer: your final message is the " +
                 "ONLY thing returned to the caller, so include file paths, line references " +
-                "and concrete details, and no meta-commentary."
+                "and concrete details, and no meta-commentary.",
+            installed = caveman.cavemanInstalled,
+            intensity = caveman.cavemanIntensity,
+            wenyan = caveman.cavemanWenyan,
+        )
         val history = mutableListOf(ChatMessage(role = Role.USER, text = prompt))
         val ctx = ToolContext(workspace, sandboxOff)
         val subTools = subagentTools(ctx)
@@ -1433,13 +1450,24 @@ class AgentEngine(
      * outside the request loop, so nothing else recomputes it): same math as
      * the run loop, over the model-facing history slice.
      */
-    fun estimateFor(
+    suspend fun estimateFor(
         history: List<ChatMessage>,
         workspace: WorkspaceFs,
         mode: AgentMode,
         fullAccess: Boolean,
         repoMapEnabled: Boolean = true,
-    ): ContextEstimate = estimateContext(history, systemPrompt(workspace, mode, fullAccess, repoMapEnabled))
+    ): ContextEstimate {
+        val caveman = cavemanSettings()
+        return estimateContext(
+            history,
+            com.androidharness.app.caveman.CavemanPolicy.apply(
+                systemPrompt(workspace, mode, fullAccess, repoMapEnabled),
+                installed = caveman.cavemanInstalled,
+                intensity = caveman.cavemanIntensity,
+                wenyan = caveman.cavemanWenyan,
+            ),
+        )
+    }
 
     /**
      * Models pass options in wildly different shapes: string arrays, arrays of

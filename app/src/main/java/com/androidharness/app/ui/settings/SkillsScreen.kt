@@ -52,7 +52,7 @@ fun SkillsScreen(
     onBack: () -> Unit,
 ) {
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
-    val skills = remember(settings.disabledSkills) { container.skills.list() }
+    val skills = remember(settings.disabledSkills, settings.cavemanInstalled) { container.skills.list() }
     val scope = rememberCoroutineScope()
     var showAdd by remember { mutableStateOf(false) }
     var editing by remember { mutableStateOf<SkillMeta?>(null) }

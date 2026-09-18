@@ -80,6 +80,9 @@ data class AppSettings(
     val lastActiveSessionId: String? = null,
     /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
     val repoMapEnabled: Boolean = true,
+    val cavemanInstalled: Boolean = false,
+    val cavemanIntensity: com.androidharness.app.caveman.CavemanIntensity = com.androidharness.app.caveman.CavemanIntensity.OFF,
+    val cavemanWenyan: Boolean = false,
 ) {
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
@@ -126,6 +129,9 @@ class SettingsRepository(private val context: Context) {
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
         val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
+        val CAVEMAN_INSTALLED = booleanPreferencesKey("caveman_installed")
+        val CAVEMAN_INTENSITY = stringPreferencesKey("caveman_intensity")
+        val CAVEMAN_WENYAN = booleanPreferencesKey("caveman_wenyan")
     }
 
     val settings: Flow<AppSettings> = context.settingsStore.data.map { prefs ->
@@ -169,6 +175,11 @@ class SettingsRepository(private val context: Context) {
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
             repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
+            cavemanInstalled = prefs[Keys.CAVEMAN_INSTALLED] ?: false,
+            cavemanIntensity = prefs[Keys.CAVEMAN_INTENSITY]?.let {
+                runCatching { com.androidharness.app.caveman.CavemanIntensity.valueOf(it) }.getOrNull()
+            } ?: com.androidharness.app.caveman.CavemanIntensity.OFF,
+            cavemanWenyan = prefs[Keys.CAVEMAN_WENYAN] ?: false,
         )
     }
 
@@ -187,6 +198,9 @@ class SettingsRepository(private val context: Context) {
             p[Keys.GROQ_WHISPER_MODEL] = s.groqWhisperModel
             p[Keys.RESUME_LAST_CHAT] = s.resumeLastChat
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
+            p[Keys.CAVEMAN_INSTALLED] = s.cavemanInstalled
+            p[Keys.CAVEMAN_INTENSITY] = s.cavemanIntensity.name
+            p[Keys.CAVEMAN_WENYAN] = s.cavemanWenyan
             p[Keys.PLANNING_MODELS_ENABLED] = s.planningModelsEnabled
             listOf(Keys.ACTIVE_PROVIDER to s.activeProviderId, Keys.ACTIVE_MODEL to s.activeModel,
                 Keys.PLANNING_PROVIDER to s.planningProviderId, Keys.PLANNING_MODEL to s.planningModel,
@@ -313,6 +327,23 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setRepoMapEnabled(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.REPO_MAP_ENABLED] = enabled }
+    }
+
+    suspend fun setCavemanInstalled(installed: Boolean) {
+        context.settingsStore.edit {
+            it[Keys.CAVEMAN_INSTALLED] = installed
+            it[Keys.CAVEMAN_INTENSITY] = com.androidharness.app.caveman.CavemanIntensity.OFF.name
+        }
+    }
+
+    suspend fun setCavemanIntensity(intensity: com.androidharness.app.caveman.CavemanIntensity) {
+        context.settingsStore.edit {
+            if (it[Keys.CAVEMAN_INSTALLED] == true) it[Keys.CAVEMAN_INTENSITY] = intensity.name
+        }
+    }
+
+    suspend fun setCavemanWenyan(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.CAVEMAN_WENYAN] = enabled }
     }
 
     suspend fun setSkillEnabled(name: String, enabled: Boolean) {
