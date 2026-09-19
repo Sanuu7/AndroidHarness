@@ -60,12 +60,13 @@ class AutomationAiPlanner(private val c: AppContainer) {
                 (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
                     ?.takeIf { it.isNotBlank() } ?: provider.model
             } else provider.model
-        val apiKey = c.providers.apiKey(provider.id)
+        val apiKey = if (provider.id == HarnessProvider.ID) c.providers.harnessApiKey()
+        else c.providers.apiKey(provider.id)
             ?: error("Provider credentials are missing.")
 
         if (provider.id == HarnessProvider.ID) {
             if (c.providers.wire(model) == null) {
-                HarnessProvider.probeWire(model)?.let { c.providers.pinWire(model, it.name) }
+                HarnessProvider.probeWire(model, apiKey)?.let { c.providers.pinWire(model, it.name) }
             }
             HarnessProvider.pins = c.providers.harnessWires.first()
         }

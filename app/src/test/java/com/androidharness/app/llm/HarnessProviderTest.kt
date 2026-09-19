@@ -82,6 +82,15 @@ class HarnessProviderTest {
         assertEquals("AndroidHarness", fallbackReq.header("User-Agent"))
     }
 
+    @Test fun withSessionSendsFullIdentityHeaderSet() {
+        val req = HarnessProvider.withSession(
+            Request.Builder().url("https://opencode.ai/zen/v1/chat/completions"), "sess-1",
+        ).build()
+        assertFalse(req.header("x-opencode-request").isNullOrBlank())
+        assertEquals("harness", req.header("x-opencode-client"))
+        assertFalse(req.header("x-opencode-project").isNullOrBlank())
+    }
+
     @Test fun customOpenCodeGoProviderInjectsHeadersWithoutStrippingAuth() {
         val customConfig = ProviderConfig("custom-uuid", "OpenCode Go", ProviderType.OPENAI_COMPAT, "https://opencode.ai/zen/v1", "model")
         val dummyBody = "{}".toRequestBody("application/json".toMediaType())

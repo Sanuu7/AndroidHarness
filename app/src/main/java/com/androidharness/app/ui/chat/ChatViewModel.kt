@@ -756,7 +756,7 @@ class ChatViewModel(
             c.runManager.controls.update(sid) { it.copy(provider = provider) }
         }
         val key = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
-            com.androidharness.app.llm.HarnessProvider.KEYLESS
+            c.providers.harnessApiKey()
         } else c.providers.apiKey(provider.id)
         check(!key.isNullOrBlank()) { "Add the saved provider's API key before resuming" }
         _state.update { it.copy(error = null) }
@@ -1020,7 +1020,8 @@ class ChatViewModel(
                     ?: provider.model
             else -> s0.activeModel?.takeIf { it.isNotBlank() } ?: provider.model
         }
-        val apiKey = c.providers.apiKey(provider.id)
+        val apiKey = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) c.providers.harnessApiKey(s0.providers)
+        else c.providers.apiKey(provider.id)
         if (apiKey.isNullOrBlank()) {
             _state.update { it.copy(error = "Provider \"${provider.name}\" has no API key. Edit it on the Providers screen.") }
             return
@@ -1043,7 +1044,9 @@ class ChatViewModel(
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID &&
                 c.providers.wire(roleModel) == null
             ) {
-                val learned = com.androidharness.app.llm.HarnessProvider.probeWire(roleModel)
+                val learned = com.androidharness.app.llm.HarnessProvider.probeWire(
+                    roleModel, c.providers.harnessApiKey(),
+                )
                 if (learned != null) {
                     c.providers.pinWire(roleModel, learned.name)
                     com.androidharness.app.llm.HarnessProvider.pins =
@@ -1415,7 +1418,8 @@ class ChatViewModel(
     private suspend fun forceCompact() {
         val sid = sessionId ?: return
         val provider = _state.value.activeProvider ?: return
-        val apiKey = c.providers.apiKey(provider.id) ?: return
+        val apiKey = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) c.providers.harnessApiKey()
+        else c.providers.apiKey(provider.id) ?: return
         // Trigger compaction by temporarily pretending the context is full:
         // Simplest correct approach, ask the engine for a summary of all history.
         // Subagent inner turns are excluded (same rule as new runs).

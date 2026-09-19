@@ -141,10 +141,14 @@ class AutomationManager(private val c: AppContainer) {
                 ?: error("This automation's saved provider is unavailable. Choose another model in Edit automation.")
             val model = task.model?.takeIf { it.isNotBlank() }
                 ?: error("Choose a model in Edit automation before running it.")
-            val key = c.providers.apiKey(provider.id) ?: error("Provider credentials are missing.")
+            val key = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
+                c.providers.harnessApiKey()
+            } else {
+                c.providers.apiKey(provider.id) ?: error("Provider credentials are missing.")
+            }
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
                 if (c.providers.wire(model) == null) {
-                    com.androidharness.app.llm.HarnessProvider.probeWire(model)?.let {
+                    com.androidharness.app.llm.HarnessProvider.probeWire(model, key)?.let {
                         c.providers.pinWire(model, it.name)
                     }
                 }

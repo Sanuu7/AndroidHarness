@@ -57,37 +57,48 @@ object HarnessProvider {
     private fun looksAnthropicError(body: String?): Boolean =
         body?.contains("\"type\":\"error\"") == true && body.contains("\"error\"")
 
+    /** Zen's sentinel key means anonymous; anything else rides out as a Bearer. */
+    private fun realKey(apiKey: String?): String? =
+        apiKey?.takeIf { it.isNotBlank() && it != KEYLESS }
+
     private val probeClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
         .readTimeout(90, TimeUnit.SECONDS)
-        .addInterceptor { chain -> chain.proceed(anonymous(chain.request())) }
+        .addInterceptor { chain ->
+            chain.proceed(chain.request().newBuilder()
+                .header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
+                .header("X-Title", "Harness")
+                .build())
+        }
         .build()
 
     /**
-     * Anonymous probe for the wire a free model actually speaks. 2xx wins;
-     * a failed chat/completions falls through to the Anthropic and Responses
+     * Probe for the wire a model actually speaks. 2xx wins; a failed
+     * chat/completions falls through to the Anthropic and Responses
      * endpoints. Null when nothing answered, leaving the default wire.
+     * When a Zen key is available it probes keyed: anonymous probes now 403
+     * on every wire, which used to pin the wrong protocol and produce 500s.
      */
-    suspend fun probeWire(model: String): ProviderType? = withContext(Dispatchers.IO) {
+    suspend fun probeWire(model: String, apiKey: String? = null): ProviderType? = withContext(Dispatchers.IO) {
         val sessionId = UUID.randomUUID().toString()
-        val chat = post("$BASE_URL/chat/completions", jsonBody(model), sessionId)
+        val key = realKey(apiKey)
+        val chat = post("$BASE_URL/chat/completions", jsonBody(model), sessionId, key)
         if (chat) return@withContext ProviderType.OPENAI_COMPAT
-        if (post(BASE_URL.removeSuffix("/v1") + "/v1/messages", anthropicBody(model), sessionId))
+        if (post(BASE_URL.removeSuffix("/v1") + "/v1/messages", anthropicBody(model), sessionId, key))
             return@withContext ProviderType.ANTHROPIC
-        if (post("$BASE_URL/responses", responsesBody(model), sessionId))
+        if (post("$BASE_URL/responses", responsesBody(model), sessionId, key))
             ProviderType.OPENAI_RESPONSES
         else null
     }
 
-    private fun post(url: String, body: String, sessionId: String): Boolean = runCatching {
-        probeClient.newCall(
-            Request.Builder().url(url)
-                .header("Content-Type", "application/json")
-                .header(SESSION_HEADER, sessionId)
-                .post(body.toRequestBody("application/json".toMediaType()))
-                .build()
-        ).execute().use { resp ->
+    private fun post(url: String, body: String, sessionId: String, key: String?): Boolean = runCatching {
+        val builder = Request.Builder().url(url)
+            .header("Content-Type", "application/json")
+            .post(body.toRequestBody("application/json".toMediaType()))
+        withSession(builder, sessionId)
+        if (key != null) builder.header("Authorization", "Bearer $key")
+        probeClient.newCall(builder.build()).execute().use { resp ->
             val text = resp.body?.string()
             resp.isSuccessful && text != null && !looksAnthropicError(text)
         }
@@ -108,9 +119,17 @@ object HarnessProvider {
     fun isOpenCode(baseUrl: String): Boolean =
         "opencode" in baseUrl.lowercase()
 
+    /**
+     * The identity header set every Zen client is expected to send: a stable
+     * session id, a fresh per-request id, and a self-declared client name.
+     * Requests missing them come back as FreeTierError / 500 from the relay.
+     */
     fun withSession(builder: Request.Builder, sessionId: String?): Request.Builder =
         builder
             .header(SESSION_HEADER, sessionId?.takeIf { it.isNotBlank() } ?: UUID.randomUUID().toString())
+            .header("x-opencode-request", UUID.randomUUID().toString())
+            .header("x-opencode-client", "harness")
+            .header("x-opencode-project", "default")
             .header("User-Agent", USER_AGENT)
 
     fun anonymous(request: Request): Request {
@@ -130,6 +149,13 @@ object HarnessProvider {
         .addInterceptor { chain -> chain.proceed(anonymous(chain.request())) }
         .build()
 
+    /** Keyed variant: same timeouts, but the Authorization header survives. */
+    private val keyedClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .build()
+
     fun create(): LlmProvider = object : LlmProvider {
         override fun streamChat(
             config: ProviderConfig,
@@ -139,18 +165,22 @@ object HarnessProvider {
             tools: List<ToolSchema>,
             options: RequestOptions,
         ): Flow<StreamEvent> {
+            // Zen's free tier rejects anonymous calls, so a saved key rides
+            // out on the keyed client; the sentinel stays on the anonymous one.
+            val key = realKey(apiKey)
             val wire = wire(config.model)
             val baseUrl = if (wire == ProviderType.ANTHROPIC) BASE_URL.removeSuffix("/v1") else BASE_URL
             val routed = config.copy(type = wire, baseUrl = baseUrl)
             val routedOptions = if (options.cacheKey.isNullOrBlank()) {
                 options.copy(cacheKey = UUID.randomUUID().toString())
             } else options
+            val http = if (key != null) keyedClient else client
             val provider = when (wire) {
-                ProviderType.ANTHROPIC -> AnthropicProvider(client, ProviderFactory.json)
-                ProviderType.OPENAI_RESPONSES -> OpenAiResponsesProvider(client, ProviderFactory.json)
-                else -> OpenAiCompatProvider(client, ProviderFactory.json)
+                ProviderType.ANTHROPIC -> AnthropicProvider(http, ProviderFactory.json)
+                ProviderType.OPENAI_RESPONSES -> OpenAiResponsesProvider(http, ProviderFactory.json)
+                else -> OpenAiCompatProvider(http, ProviderFactory.json)
             }
-            return provider.streamChat(routed, KEYLESS, systemPrompt, messages, tools, routedOptions)
+            return provider.streamChat(routed, key ?: KEYLESS, systemPrompt, messages, tools, routedOptions)
         }
     }
 }
