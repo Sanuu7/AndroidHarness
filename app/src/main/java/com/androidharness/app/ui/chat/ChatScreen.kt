@@ -82,6 +82,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.runtime.withFrameNanos
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -1707,8 +1708,12 @@ private fun isAtBottom(info: LazyListLayoutInfo, canScrollForward: Boolean, tole
 private suspend fun LazyListState.scrollToEnd() {
     val last = layoutInfo.totalItemsCount - 1
     if (last < 0) return
-    scrollToItem(last)
-    scrollBy(FORWARD_FAR_PX)
+    // requestScrollToItem lands on the next measure pass instead of forcing a
+    // synchronous remeasure; the forced one crashed Compose when items were
+    // being removed in the same frame (LayoutNode.onChildRemoved NPE).
+    requestScrollToItem(last)
+    withFrameNanos { }
+    if (canScrollForward) scrollBy(FORWARD_FAR_PX)
 }
 
 /** Cheap exact snap to the true bottom; a no-op unless the end is composed. */
