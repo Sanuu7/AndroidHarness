@@ -1041,8 +1041,10 @@ class ChatViewModel(
         viewModelScope.launch {
             // Harness free-tier models live behind different wires per model; probe
             // once on first use and pin the winner so later requests route directly.
+            // Pooled community models always speak chat/completions, skip the probe.
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID &&
-                c.providers.wire(roleModel) == null
+                c.providers.wire(roleModel) == null &&
+                !com.androidharness.app.llm.HarnessProvider.isPooled(roleModel)
             ) {
                 val learned = com.androidharness.app.llm.HarnessProvider.probeWire(
                     roleModel, c.providers.harnessApiKey(),

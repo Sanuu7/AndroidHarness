@@ -55,9 +55,9 @@ class ProviderRepository(
             }
             .toMap().toMutableMap()
 
-        if (catalogMap[HarnessProvider.ID].isNullOrEmpty()) {
-            catalogMap[HarnessProvider.ID] = HarnessProvider.fallbackModels
-        }
+        // The harness catalog is the static anonymous pool. Overwrite whatever
+        // older fetches saved so retired zen models never resurface in the picker.
+        catalogMap[HarnessProvider.ID] = HarnessProvider.pooledModels
 
         prefs.asMap().asSequence()
             .filter { it.key.name.startsWith(CUSTOM_MODELS_PREFIX) }

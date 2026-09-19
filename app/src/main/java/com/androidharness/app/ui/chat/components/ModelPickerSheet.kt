@@ -361,6 +361,7 @@ fun ModelPickerSheet(
                                 entry.contextTokens
                                     ?: ModelsDev.entry(devKey, entry.id)?.contextTokens,
                             ),
+                            note = entry.note,
                             onClick = {
                                 onSelect(provider.id, entry.id)
                                 onDismiss()
@@ -410,6 +411,7 @@ private fun ModelRow(
     selected: Boolean,
     ctx: String?,
     isCustom: Boolean = false,
+    note: String? = null,
     onClick: () -> Unit,
     onDelete: (() -> Unit)? = null,
 ) {
@@ -455,6 +457,7 @@ private fun ModelRow(
                 val sub = listOfNotNull(
                     if (thinking) "thinking" else null,
                     ctx,
+                    note,
                 ).joinToString(" · ")
                 if (sub.isNotEmpty()) {
                     Text(

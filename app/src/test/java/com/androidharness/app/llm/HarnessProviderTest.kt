@@ -7,21 +7,35 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class HarnessProviderTest {
-    @Test fun retiredSlotsResetToDefault() {
-        assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("laguna-s-2.1-free"))
-        assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("hy3-free"))
+    @Test fun stalePicksResetToDefault() {
+        assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("ling-3.0-flash-fin-free"))
+        assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("big-pickle"))
         assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("made-up-model"))
         assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize(null))
     }
 
-    @Test fun validFreePickSurvives() {
-        assertEquals("big-pickle", HarnessProvider.sanitize("big-pickle"))
-        assertEquals("muse-spark-1.3-contributor-free", HarnessProvider.sanitize("muse-spark-1.3-contributor-free"))
+    @Test fun pooledPickSurvives() {
+        assertEquals("kilo-auto/free", HarnessProvider.sanitize("kilo-auto/free"))
+        assertEquals("openai-fast", HarnessProvider.sanitize("openai-fast"))
     }
 
     @Test fun customModelsSurviveSanitize() {
         assertEquals("my-custom-model", HarnessProvider.sanitize("my-custom-model", setOf("my-custom-model")))
         assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("my-custom-model", setOf("other")))
+    }
+
+    @Test fun pooledModelsAreAcceptedAndLabeled() {
+        assertTrue(HarnessProvider.isPooled("z-ai/glm-5.2:free"))
+        assertTrue(HarnessProvider.isPooled("openai-fast"))
+        assertFalse(HarnessProvider.isPooled("ling-3.0-flash-fin-free"))
+        assertFalse(HarnessProvider.isPooled("Qwen3.5-397B-A17B"))
+
+        assertEquals("z-ai/glm-5.2:free", HarnessProvider.sanitize("z-ai/glm-5.2:free"))
+
+        val models = HarnessProvider.models(emptyList())
+        val openaiFast = models.first { it.id == "openai-fast" }
+        assertTrue(openaiFast.note.orEmpty().contains("Pollinations"))
+        assertTrue(models.none { it.id == "nvidia/nemotron-3.5-content-safety:free" })
     }
 
     @Test fun wirePinMapping() {
@@ -35,13 +49,10 @@ class HarnessProviderTest {
         HarnessProvider.pins = emptyMap()
     }
 
-    @Test fun filtersPaidModelsButRetainsBigPickle() {
-        val models = HarnessProvider.models(listOf(ModelEntry("new-free"), ModelEntry("paid"), ModelEntry("ox-alpha-free")))
-        assertEquals(setOf("new-free", "big-pickle"), models.map { it.id }.toSet())
-    }
-
-    @Test fun emptyCatalogKeepsFallback() {
-        assertEquals(HarnessProvider.fallbackModels, HarnessProvider.models(emptyList()))
+    @Test fun catalogIsPoolOnly() {
+        val models = HarnessProvider.models(listOf(ModelEntry("ling-3.0-flash-fin-free"), ModelEntry("paid")))
+        assertEquals(HarnessProvider.pooledModels.map { it.id }, models.map { it.id })
+        assertTrue(models.none { it.id == "ling-3.0-flash-fin-free" || it.id == "big-pickle" })
     }
 
     @Test fun removesCredentialsWithoutImpersonatingAnotherClient() {

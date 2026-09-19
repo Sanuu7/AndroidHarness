@@ -65,7 +65,7 @@ class AutomationAiPlanner(private val c: AppContainer) {
             ?: error("Provider credentials are missing.")
 
         if (provider.id == HarnessProvider.ID) {
-            if (c.providers.wire(model) == null) {
+            if (c.providers.wire(model) == null && !HarnessProvider.isPooled(model)) {
                 HarnessProvider.probeWire(model, apiKey)?.let { c.providers.pinWire(model, it.name) }
             }
             HarnessProvider.pins = c.providers.harnessWires.first()

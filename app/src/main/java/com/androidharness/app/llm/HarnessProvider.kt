@@ -13,31 +13,59 @@ import java.util.concurrent.TimeUnit
 object HarnessProvider {
     const val ID = "harness"
     const val BASE_URL = "https://opencode.ai/zen/v1"
-    const val DEFAULT_MODEL = "ling-3.0-flash-fin-free"
+    const val DEFAULT_MODEL = "kilo-auto/free"
     const val KEYLESS = "harness-keyless"
     const val SESSION_HEADER = "x-opencode-session"
     const val USER_AGENT = "AndroidHarness"
     val config = ProviderConfig(ID, "Harness", ProviderType.OPENAI_COMPAT, BASE_URL, DEFAULT_MODEL)
-    val fallbackModels = listOf(
-        DEFAULT_MODEL, "big-pickle", "deepseek-v4-flash-free",
-        "mimo-v2.5-free", "nemotron-3-ultra-free", "nemotron-3.5-lightning-free",
-        "muse-spark-1.3-contributor-free", "muse-spark-1.2-contributor-free",
-    ).map { ModelEntry(it) }
 
-    /** Zen relay free slots retire without notice; drop stored picks on bump. */
-    val retired = setOf("laguna-s-2.1-free", "hy3-free")
+    /**
+     * Community upstreams that still serve anonymous, no-key free access.
+     * Each model rides its own OpenAI-compatible endpoint; the note is the
+     * published anonymous rate limit, shown in the model picker. Endpoints
+     * can die without notice, exactly like zen's keyless tier did.
+     */
+    data class Pool(val baseUrl: String, val note: String)
 
-    fun isFree(model: String): Boolean = model == "big-pickle" ||
-        (model.endsWith("-free") && model != "ox-alpha-free")
+    val pool: Map<String, Pool> = buildMap {
+        val kilo = Pool("https://api.kilo.ai/api/gateway/v1", "Kilo · ~200 req/hour per IP")
+        listOf(
+            "kilo-auto/free",
+            "deepseek/deepseek-v4-flash-0731:free",
+            "thinkingmachines/inkling-small:free",
+            "z-ai/glm-5.2:free",
+            "nvidia/nemotron-3-ultra-550b-a55b:free",
+            "nvidia/nemotron-3.5-lightning:free",
+            "nvidia/nemotron-3-super-120b-a12b:free",
+            "poolside/laguna-s-2.1:free",
+            "poolside/laguna-xs-2.1:free",
+            "inclusionai/ling-3.0-flash-vl:free",
+            "inclusionai/ling-3.0-flash-sante:free",
+            "inclusionai/ling-3.0-flash-fin:free",
+            "nex-agi/nex-n2.5-pro:free",
+            "nex-agi/nex-n2.5-mini:free",
+            "dots-studio/dots-3-note-preview:free",
+            "qwen/qwen3.8-27b:free",
+            "cohere/north-mini-code:free",
+            "liquid/lfm-2.5-2.6b:free",
+            "openrouter/free",
+        ).forEach { put(it, kilo) }
+        put("openai-fast", Pool("https://text.pollinations.ai/openai", "Pollinations · ~4 req/min per IP"))
+    }
+
+    val pooledModels: List<ModelEntry> = pool.map { (id, p) -> ModelEntry(id, note = p.note) }
+
+    fun isPooled(model: String): Boolean = pool.containsKey(model)
 
     fun sanitize(model: String?, custom: Set<String> = emptySet()): String =
-        model?.takeIf { (isFree(it) || it in custom) && it !in retired } ?: DEFAULT_MODEL
+        model?.takeIf { it in pool || it in custom } ?: DEFAULT_MODEL
 
-    fun models(entries: List<ModelEntry>): List<ModelEntry> {
-        val free = entries.filter { isFree(it.id) }
-        return if (free.isEmpty()) fallbackModels else
-            (free + ModelEntry("big-pickle")).distinctBy { it.id }.sortedBy { it.id }
-    }
+    /**
+     * The harness catalog is the anonymous pool, full stop. Zen models are no
+     * longer offered here (they need a key now); custom ids added by the user
+     * still ride the zen path with the borrowed key.
+     */
+    fun models(entries: List<ModelEntry>): List<ModelEntry> = pooledModels
 
     /**
      * The Zen relay serves one catalog behind three wires. Where Hermes pins
@@ -156,6 +184,16 @@ object HarnessProvider {
         .readTimeout(0, TimeUnit.MILLISECONDS)
         .build()
 
+    /** Anonymous community upstreams: our sentinel bearer must never ride out. */
+    private val poolClient = OkHttpClient.Builder()
+        .connectTimeout(30, TimeUnit.SECONDS)
+        .writeTimeout(60, TimeUnit.SECONDS)
+        .readTimeout(0, TimeUnit.MILLISECONDS)
+        .addInterceptor { chain ->
+            chain.proceed(chain.request().newBuilder().removeHeader("Authorization").build())
+        }
+        .build()
+
     fun create(): LlmProvider = object : LlmProvider {
         override fun streamChat(
             config: ProviderConfig,
@@ -165,6 +203,13 @@ object HarnessProvider {
             tools: List<ToolSchema>,
             options: RequestOptions,
         ): Flow<StreamEvent> {
+            // Pooled community upstreams route straight to their own endpoint
+            // on the chat/completions wire, no zen probing or session header.
+            pool[config.model]?.let { upstream ->
+                val routed = config.copy(type = ProviderType.OPENAI_COMPAT, baseUrl = upstream.baseUrl)
+                return OpenAiCompatProvider(poolClient, ProviderFactory.json)
+                    .streamChat(routed, KEYLESS, systemPrompt, messages, tools, options)
+            }
             // Zen's free tier rejects anonymous calls, so a saved key rides
             // out on the keyed client; the sentinel stays on the anonymous one.
             val key = realKey(apiKey)

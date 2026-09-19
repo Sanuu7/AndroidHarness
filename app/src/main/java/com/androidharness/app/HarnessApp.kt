@@ -176,11 +176,8 @@ class AppContainer(val appContext: Context) {
             providers.harnessWires.collect { com.androidharness.app.llm.HarnessProvider.pins = it }
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            val builtIn = com.androidharness.app.llm.HarnessProvider
-            val catalog = com.androidharness.app.llm.ModelCatalog.listModels(builtIn.config, builtIn.KEYLESS)
-            if (catalog is com.androidharness.app.llm.ModelCatalog.Result.Models) {
-                providers.saveCatalog(builtIn.ID, catalog.models)
-            }
+            // The harness catalog is the static anonymous pool now, nothing to
+            // fetch; only models.dev needs a background refresh.
             com.androidharness.app.llm.ModelsDev.refresh(appContext)
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
