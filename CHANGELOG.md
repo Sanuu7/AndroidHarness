@@ -1,5 +1,31 @@
 # Changelog
 
+## 1.0 (2026-09-19)
+
+### Added
+
+- **CodeGraph semantic code index**: the agent can install and run CodeGraph on-device (bundled Node runtime for the shell tier, installed from release archives instead of npm) and gained five new tools: `codegraph_explore` for symbol lookups with call paths, `codegraph_node`, `codegraph_impact` and `codegraph_affected` for dependency questions, and `codegraph_sync`. The MCP server syncs live with the workspace, the workspace card shows indexing progress, and a settings screen manages install, updates and telemetry.
+- **Caveman reply modes**: an optional terse reply style with its own settings screen, driven by an intensity setting and optional skills.
+- **Encrypted settings backup**: settings, provider setup and catalogs can be exported and restored as an encrypted file, separate from chat backups, with provider API keys included optionally.
+- **Remembered permission management**: a settings section lists every remembered tool permission so they can be reviewed and revoked individually.
+- **About page**: license, project links and credits.
+
+### Changed
+
+- **Harness provider is now a keyless community pool**: the built-in provider lists anonymous free models from Kilo (19 models, ~200 requests per hour per IP) and Pollinations (openai-fast, ~4 requests per minute) with each model's rate limit shown right in the picker, and defaults to the kilo-auto/free router. OpenCode Zen was dropped from the list. Zen requests now carry the full identity header set, and a saved Zen key is reused automatically for custom model ids.
+- **UI polish**: monospace font for model ids and code, larger tap targets, a quieter header, and syntax highlighting for code blocks in chat.
+- **Screenshots are allowed by default** everywhere except credential screens; the old global screen-capture block is gone.
+- **Background agent service**: long tasks keep the app alive in the background with a stop action in the notification.
+- **Build tooling security lifts**: Bouncy Castle 1.85 (cert name-constraints bypass and ASN.1 depth guard), netty 4.1.137, plus jdom2, jose4j, httpclient and commons-lang3 raised to patched releases, and Kotlin 2.4.10 so CodeQL can compile the project. None of these libraries ship inside the APK.
+
+### Fixed
+
+- **Browser navigation**: going back after a click navigation no longer skips a page, and the settle logic reads the WebView's own history list instead of guessing where a step landed. `git_commit` no longer stages runtime artifacts.
+- **Checkpoint undo**: failed checkpoints are kept so a partial undo can be retried.
+- **Redaction**: modern API key formats are caught in tool output and every result path is redacted.
+- **web_fetch and git**: CommonJS callers resolve with block boundaries kept in text mode, git config operations no longer abort, grep excerpts and HTML fetching are fixed, and browser element targeting is more reliable.
+- **explore agent**: no longer answers for a symbol that does not exist in the index.
+
 ## 0.11-alpha (2026-09-12)
 
 ### Added

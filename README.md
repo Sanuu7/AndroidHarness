@@ -4,7 +4,7 @@ A coding agent that lives on your phone.
 
 AndroidHarness is a native Android app, written in Kotlin with Jetpack Compose, that works on code projects directly from the device. It reads and edits files, runs shell commands, uses git, and chats with you about the work as it goes. No PC required.
 
-Status: early alpha.
+Status: 1.0.
 
 ## Features
 
@@ -22,7 +22,9 @@ Status: early alpha.
 - Keep multiple queued instructions with edit, reorder, remove, and Send now controls. The queue persists across app restarts and is consumed at agent boundaries.
 - Long-press your own message for Retry alongside Copy and Edit, resending it as a fresh turn.
 - Ask the agent questions mid-run and answer from the notification shade or the chat.
+- Optional Caveman reply modes: terse, compressed responses with an intensity dial and optional skill enforcement, configured in their own settings screen.
 - Chat backup and restore: export every chat with its full message history to a JSON file and import it back on any device. The file holds chats and messages only, never API keys or settings.
+- Encrypted settings backup: export provider setup, catalogs, and preferences as an encrypted file and restore them on any device, with API keys included optionally.
 
 **Scheduled automations**
 - Define recurring or interval-based prompt tasks that run in the background via Android WorkManager.
@@ -63,10 +65,11 @@ Status: early alpha.
 - Context & limits lets you edit the saved summary, pin instructions, and remove older model context while retaining the visible chat.
 - Optional task-wide token, estimated USD cost, and active-time limits include subagents and compaction. Tasks pause at request/action boundaries with progress saved; in-flight work can exceed a limit. Raise a reached limit before resuming.
 - Approve or deny sensitive actions from the notification shade, with four permission modes up to a full access mode that lifts every sandbox for workspaces you trust.
+- Remembered permission management: review every remembered tool permission in a settings section and revoke them individually.
 - Redesigned navigation drawer with a quick-access tool strip (Files, Terminal, Automations, Build & Test) and a dedicated active provider card.
 
 **Model flexibility**
-- Built-in keyless Harness provider on the OpenCode Zen relay for immediate out-of-the-box model access without API keys.
+- Built-in keyless Harness provider: anonymous free models from Kilo and Pollinations served out of the box, with each model's rate limit shown in the picker and the kilo-auto/free router as the default. No API key needed to start.
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
 - Custom model IDs: enter any custom model name directly in the model picker sheet across all supported providers.
 - Live model catalog fetch with latency check, per-model price tracking, and a running cost readout, plus a total estimated cost hero on the Stats screen.
@@ -92,7 +95,7 @@ The app ships with a library of markdown skills: git, planning, test driven deve
 
 1. Install the app.
 2. Grant storage access. On Android 11 and up the app needs "All files access" so the shell and file tools can use real filesystem paths.
-3. Add an API key in Settings.
+3. Add an API key in Settings, or start immediately with the built-in keyless Harness provider.
 4. Optional but recommended: install Shizuku or Termux so the agent can run shell commands with proper permissions.
 
 ## Build
@@ -136,6 +139,8 @@ AndroidHarness borrows ideas and design taste from open source projects across t
 - [browser-use](https://github.com/browser-use/browser-use)
 - [Termux](https://github.com/termux)
 - [Shizuku](https://github.com/RikkaApps/Shizuku)
+- [CodeGraph](https://github.com/colbymchenry/codegraph)
+- [Caveman](https://github.com/JuliusBrussee/caveman)
 - [llama.cpp](https://github.com/ggerganov/llama.cpp)
 - [sora-editor](https://github.com/Rosemoe/sora-editor)
 - [Eruda](https://github.com/liriliri/eruda)

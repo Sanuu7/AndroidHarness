@@ -2908,6 +2908,8 @@ private data class Credit(val name: String, val role: String, val url: String)
 private val BUILT_WITH = listOf(
     Credit("Termux", "Linux packages and shell tooling", "https://github.com/termux"),
     Credit("Shizuku", "Elevated shell access without root", "https://github.com/RikkaApps/Shizuku"),
+    Credit("CodeGraph", "Semantic code index behind the graph tools", "https://github.com/colbymchenry/codegraph"),
+    Credit("Caveman", "Terse reply modes, adapted from Julius Brussee's skills", "https://github.com/JuliusBrussee/caveman"),
     Credit("sora-editor", "The in-app code editor", "https://github.com/Rosemoe/sora-editor"),
     Credit("Eruda", "Devtools inside the web preview", "https://github.com/liriliri/eruda"),
 )
