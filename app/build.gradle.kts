@@ -89,7 +89,7 @@ configurations.configureEach {
         resolutionStrategy.eachDependency {
             when {
                 requested.group == "io.netty" -> useVersion("4.1.137.Final")
-                requested.group == "org.bouncycastle" -> useVersion("1.84")
+                requested.group == "org.bouncycastle" -> useVersion("1.85")
                 requested.name == "httpclient" -> useVersion("4.5.14")
                 requested.name == "commons-lang3" -> useVersion("3.18.0")
             }

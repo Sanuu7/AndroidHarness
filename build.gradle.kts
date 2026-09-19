@@ -5,9 +5,9 @@ buildscript {
             // HTTP for the SDK loader, XML for proguard, and the rest. None of
             // it reaches the app, so lifting these touches no shipped code.
             listOf(
-                "org.bouncycastle:bcprov-jdk18on:1.84" to "CVE-2025-14813, CVE-2026-5588 and CVE-2026-5598",
-                "org.bouncycastle:bcpkix-jdk18on:1.84" to "CVE-2026-5588",
-                "org.bouncycastle:bcutil-jdk18on:1.84" to "CVE-2025-14813",
+                "org.bouncycastle:bcprov-jdk18on:1.85" to "CVE-2026-8763 and the 1.85 cert name-constraints bypass",
+                "org.bouncycastle:bcpkix-jdk18on:1.85" to "aligned with bcprov",
+                "org.bouncycastle:bcutil-jdk18on:1.85" to "aligned with bcprov",
                 "org.jdom:jdom2:2.0.6.1" to "CVE-2021-33813",
                 "org.bitbucket.b_c:jose4j:0.9.6" to "CVE-2024-29371",
                 "org.apache.httpcomponents:httpclient:4.5.14" to "CVE-2020-13956",
