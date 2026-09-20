@@ -128,6 +128,7 @@ dependencies {
     implementation(libs.biometric)
     implementation(libs.fragment.ktx)
 
+    implementation("com.github.mwiede:jsch:2.28.7")
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coroutines.android)

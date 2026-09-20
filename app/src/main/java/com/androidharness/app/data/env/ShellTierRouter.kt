@@ -22,6 +22,7 @@ object PathClassifier {
 
 /** Which engine actually runs the shell command. */
 enum class ExecutionTier {
+    TERMUX_SSH,
     /** Inside Shizuku's server process: shell/root uid, can reach system paths and any folder. */
     PRIVILEGED,
 
@@ -55,6 +56,7 @@ class ShellTierRouter(
     private val context: Context,
     private val shizuku: ShizukuManager,
     private val linuxEnv: LinuxEnvironmentManager,
+    val termuxSsh: TermuxSsh? = null,
 ) {
 
     /** "All files access" (MANAGE_EXTERNAL_STORAGE). Pre-API-30 apps were not scoped. */
@@ -62,6 +64,7 @@ class ShellTierRouter(
         if (Build.VERSION.SDK_INT >= 30) Environment.isExternalStorageManager() else true
 
     fun resolveTier(cwd: File): ExecutionTier {
+        if (termuxSsh?.enabled == true) return ExecutionTier.TERMUX_SSH
         val region = PathClassifier.regionOf(cwd.absolutePath, linuxEnv.internalDataRoot.absolutePath)
         return when (region) {
             PathClassifier.Region.APP_DATA ->
@@ -104,6 +107,7 @@ class ShellTierRouter(
         // never inherits the caller's dispatcher.
         withContext(Dispatchers.IO) {
             when (val tier = resolveTier(cwd)) {
+                ExecutionTier.TERMUX_SSH -> requireNotNull(termuxSsh).run(command, cwd, timeoutMs, maxOutput)
                 ExecutionTier.PRIVILEGED -> runPrivileged(command, cwd, timeoutMs, maxOutput)
                 ExecutionTier.APP_LINUX -> runApp(command, cwd, timeoutMs, maxOutput, ExecutionTier.APP_LINUX)
                 ExecutionTier.TOYBOX -> runApp(command, cwd, timeoutMs, maxOutput, ExecutionTier.TOYBOX)

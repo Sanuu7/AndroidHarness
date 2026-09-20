@@ -83,7 +83,7 @@ class ToolRegistry(private val tools: List<Tool>) {
                 SearchFilesTool(),
                 GrepTool(),
                 ShellTool(linuxEnv, shellRouter),
-                ShellBackgroundTool(bgStore, linuxEnv),
+                ShellBackgroundTool(bgStore, linuxEnv, shellRouter),
                 EnvStatusTool(shizuku, linuxEnv, shellRouter),
                 DoctorTool(linuxEnv, shizuku, shellRouter, httpClient),
                 ReadLogcatTool(shizuku),

@@ -59,13 +59,19 @@ fun TerminalScreen(
     onBack: () -> Unit,
 ) {
     val terminal = container.terminal
+    val ssh by container.termuxSsh.config.collectAsStateWithLifecycle()
+    var showSsh by remember { mutableStateOf(false) }
+    if (showSsh) TermuxSshDialog(container) { showSsh = false }
     val state by terminal.state.collectAsStateWithLifecycle()
     val shizukuState by container.shizuku.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var input by remember { mutableStateOf("") }
     val scheme = MaterialTheme.colorScheme
 
-    LaunchedEffect(Unit) { terminal.ensureStarted() }
+    LaunchedEffect(Unit) {
+        terminal.useWorkspace(container.workspace.currentOnce().shellRoot)
+        terminal.ensureStarted()
+    }
     LaunchedEffect(state.lines.size) {
         if (state.lines.isNotEmpty()) listState.scrollToItem(state.lines.size - 1)
     }
@@ -82,9 +88,10 @@ fun TerminalScreen(
         topBar = {
             AppHeader(
                 title = "Terminal",
-                subtitle = if (state.privileged) "Shizuku (shell user)" else "App user",
+                subtitle = if (ssh.enabled) "Termux SSH · 127.0.0.1:${ssh.port}" else if (state.privileged) "Shizuku (shell user)" else "App user",
                 onBack = onBack,
                 actions = {
+                    androidx.compose.material3.TextButton(onClick = { showSsh = true }, enabled = !state.busy) { Text("SSH") }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Outlined.Shield,
@@ -95,7 +102,7 @@ fun TerminalScreen(
                         Switch(
                             checked = state.privileged && shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED,
                             onCheckedChange = { terminal.setPrivileged(it) },
-                            enabled = shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED,
+                            enabled = !ssh.enabled && shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED,
                         )
                     }
                     IconButton(onClick = { terminal.clear() }) {

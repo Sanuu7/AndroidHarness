@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 class ShellBackgroundTool(
     private val store: BgProcessStore,
     private val linuxEnv: LinuxEnvironmentManager,
+    private val router: com.androidharness.app.data.env.ShellTierRouter? = null,
 ) : Tool {
     override val name = "shell_background"
     override val description =
@@ -27,6 +28,8 @@ class ShellBackgroundTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult =
         withContext(Dispatchers.IO) {
+            if (router?.termuxSsh?.enabled == true) return@withContext ToolResult(false,
+                "Background shell is unavailable in Termux SSH mode. Use the foreground shell tool or start the server directly in Termux.")
             val rawCommand = args["command"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: command")
             val cwd = ctx.workspace.shellRoot

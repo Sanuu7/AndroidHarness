@@ -31,6 +31,7 @@ class TerminalManager(
     private val linuxEnv: LinuxEnvironmentManager,
     private val shizuku: ShizukuManager,
     private val runManager: RunManager,
+    private val termuxSsh: com.androidharness.app.data.env.TermuxSsh,
 ) {
 
     data class TerminalState(
@@ -49,6 +50,7 @@ class TerminalManager(
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private var process: Process? = null
     private var readJob: Job? = null
+    private var sshJob: Job? = null
     private var cwd: File = linuxEnv.shellFallbackRoot
 
     private val marker = "__HCTERM_DONE__"
@@ -73,8 +75,26 @@ class TerminalManager(
 
     /** Starts the terminal if it isn't running yet. */
     fun ensureStarted() {
+        if (termuxSsh.enabled) {
+            _state.update { it.copy(started = true, cwd = cwd.absolutePath) }
+            return
+        }
         if (process != null || _state.value.started) return
         startAppShell()
+    }
+
+    fun useWorkspace(root: File?) {
+        if (_state.value.busy || root == null || root == cwd) return
+        stopProcess()
+        cwd = root
+        _state.update { it.copy(started = false, cwd = root.absolutePath) }
+    }
+
+    fun connectionChanged() {
+        if (_state.value.busy) return
+        stopProcess()
+        _state.update { it.copy(started = false) }
+        ensureStarted()
     }
 
     fun setPrivileged(on: Boolean) {
@@ -109,7 +129,6 @@ class TerminalManager(
             return
         }
         runManager.acquireKeepalive()
-        cwd = linuxEnv.shellFallbackRoot
         resetLines()
         _state.update {
             it.copy(started = true, cwd = cwd.absolutePath, lines = emptyList())
@@ -208,10 +227,32 @@ class TerminalManager(
         _state.update { it.copy(busy = true, lastCommand = cmd, lastExitCode = null) }
         appendLines(listOf("\$ $cmd"))
 
-        if (_state.value.privileged && shizuku.isGranted()) {
+        if (termuxSsh.enabled) {
+            sendSsh(cmd)
+        } else if (_state.value.privileged && shizuku.isGranted()) {
             sendPrivileged(cmd)
         } else {
             sendAppTier(cmd)
+        }
+    }
+
+    private fun sendSsh(cmd: String) {
+        sshJob = scope.launch {
+            runManager.acquireKeepalive()
+            try {
+                // A fresh exec channel per command, with cwd tracked like the
+                // Shizuku tier. Shell variables do not persist between commands.
+                val quote = "'" + cmd.replace("'", "'\\''") + "'"
+                val script = "eval $quote; ec=\$?; printf '\\n$marker:%s:%s\\n' \"\$ec\" \"\$PWD\"; exit \"\$ec\""
+                val result = termuxSsh.run(script, cwd, 120_000, 60_000)
+                result.rawOutput.lines().forEach(::handleLine)
+                if (result.rawStderr.isNotBlank()) appendLines(result.rawStderr.lines())
+                if (result.timedOut) appendLines(listOf("# SSH command timed out; check Termux before retrying a modifying command"))
+                _state.update { it.copy(lastExitCode = result.exitCode) }
+            } finally {
+                _state.update { it.copy(busy = false) }
+                runManager.releaseKeepalive()
+            }
         }
     }
 
@@ -298,6 +339,8 @@ class TerminalManager(
     }
 
     private fun stopProcess() {
+        sshJob?.cancel()
+        sshJob = null
         readJob?.cancel()
         readJob = null
         process?.let { p ->

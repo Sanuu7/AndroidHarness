@@ -18,7 +18,8 @@ class ShellTool(
 ) : Tool {
     override val name = "shell"
     override val description =
-        "Run a shell command on the device. Runs with the best available native environment: " +
+        "Run a shell command on the device. Uses Termux SSH when enabled in Terminal settings; " +
+        "otherwise runs with the best available native environment: " +
         "a full Linux userspace (bash, git, python, node…) as the app when installed, " +
         "Shizuku ADB-shell privileges (plus the same toolchain) when Shizuku is connected and " +
         "the target folder needs it, otherwise toybox sh. If the active workspace is a picked " +
@@ -66,7 +67,8 @@ class ShellTool(
                 val (afterNpm, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
                 // Bug 4 fix: retarget workspace tar extractions to the
                 // exec-capable scratch dir so symlinks/exec bits survive.
-                val (afterTar, tarNote) = ExecScratchRouting.prepare(afterNpm, cwd)
+                val (afterTar, tarNote) = if (router.termuxSsh?.enabled == true) afterNpm to null
+                else ExecScratchRouting.prepare(afterNpm, cwd)
                 afterTar to listOfNotNull(npmNote, tarNote).joinToString("\n").ifBlank { null }
             }
 
@@ -99,7 +101,9 @@ class ShellTool(
             if (res.tier == ExecutionTier.PRIVILEGED) {
                 sb.append("[note: ran with Shizuku ADB-shell privileges]\n")
             }
-            if (res.timedOut) sb.append("[killed after ${timeoutSec}s timeout; output below is what was written before the kill]\n")
+            if (res.timedOut) sb.append(if (res.tier == ExecutionTier.TERMUX_SSH)
+                "[SSH channel closed after ${timeoutSec}s timeout; inspect Termux before retrying modifying commands]\n"
+                else "[killed after ${timeoutSec}s timeout; output below is what was written before the kill]\n")
             sb.append("exit code: ").append(if (res.timedOut) "killed (timeout)" else if (hasSymlinkError && res.exitCode == 0) 1 else res.exitCode).append('\n')
             val out = res.rawOutput.trimEnd()
             val err = res.rawStderr.trimEnd()
