@@ -1,21 +1,10 @@
 package com.androidharness.app.data.env
 
-import com.androidharness.app.data.KeyStoreManager
-import com.jcraft.jsch.ChannelExec
 import com.jcraft.jsch.HostKey
 import com.jcraft.jsch.HostKeyRepository
-import com.jcraft.jsch.JSch
 import com.jcraft.jsch.UserInfo
-import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.delay
-import kotlinx.coroutines.withContext
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import java.io.ByteArrayOutputStream
-import java.io.File
 import java.io.OutputStream
 import java.security.MessageDigest
 import java.util.Base64
@@ -89,67 +78,3 @@ internal class LimitedSshOutput(private val limit: Int) : OutputStream() {
     @Synchronized fun text() = bytes.toString("UTF-8") + if (truncated) "\n[output truncated]" else ""
 }
 
-/** SSH is loopback-only: no project syncing or commands on an unrelated host. */
-class TermuxSsh(private val keys: KeyStoreManager) {
-    private val json = Json { ignoreUnknownKeys = true }
-    private val _config = MutableStateFlow(runCatching {
-        keys.getKey(KEY)?.let { json.decodeFromString<TermuxSshConfig>(it) }
-    }.getOrNull() ?: TermuxSshConfig())
-    val config = _config.asStateFlow()
-    val enabled: Boolean get() = config.value.enabled
-
-    fun save(value: TermuxSshConfig) {
-        if (value.enabled) value.validate()
-        keys.putKey(KEY, json.encodeToString(TermuxSshConfig.serializer(), value))
-        _config.value = value
-    }
-
-    suspend fun run(command: String, cwd: File, timeoutMs: Int, maxOutput: Int,
-                    connection: TermuxSshConfig = config.value): ShellRunResult = withContext(Dispatchers.IO) {
-        val out = LimitedSshOutput(maxOutput.coerceAtLeast(0))
-        val err = LimitedSshOutput(maxOutput.coerceAtLeast(0))
-        var session: com.jcraft.jsch.Session? = null
-        var channel: ChannelExec? = null
-        var timedOut = false
-        try {
-            connection.validate()
-            val script = termuxCommand(command, cwd.path)
-            val client = JSch().apply { setHostKeyRepository(FingerprintRepository(connection.fingerprint)) }
-            session = client.getSession(connection.username, "127.0.0.1", connection.port).apply {
-                setPassword(connection.password.toByteArray(Charsets.UTF_8))
-                setConfig("StrictHostKeyChecking", "yes")
-                setConfig("PreferredAuthentications", "password")
-                // Match the ECDSA host key shown in the setup instructions.
-                setConfig("server_host_key", "ecdsa-sha2-nistp256,ecdsa-sha2-nistp384,ecdsa-sha2-nistp521")
-                setServerAliveInterval(15_000)
-                setServerAliveCountMax(2)
-            }
-            // Bound connect/auth separately; command timeout starts after connect.
-            session.connect(minOf(timeoutMs, 15_000).coerceAtLeast(1))
-            channel = (session.openChannel("exec") as ChannelExec).apply {
-                setCommand(script)
-                setInputStream(null)
-                setOutputStream(out)
-                setErrStream(err)
-                connect(minOf(timeoutMs, 10_000).coerceAtLeast(1))
-            }
-            val deadline = System.nanoTime() + timeoutMs.toLong() * 1_000_000
-            while (!channel.isClosed) {
-                if (System.nanoTime() >= deadline) { timedOut = true; break }
-                delay(25)
-            }
-            ShellRunResult(if (timedOut) -1 else channel.exitStatus, timedOut, out.text(), err.text(),
-                ExecutionTier.TERMUX_SSH, "[Termux SSH: uses Termux Git identity and credentials]")
-        } catch (e: CancellationException) {
-            throw e
-        } catch (e: Exception) {
-            ShellRunResult(-1, false, out.text(), err.text() + "\nTermux SSH: ${e.message}",
-                ExecutionTier.TERMUX_SSH, "Check sshd, password, host fingerprint and shared-folder access in Terminal → SSH.")
-        } finally {
-            channel?.disconnect()
-            session?.disconnect()
-        }
-    }
-
-    private companion object { const val KEY = "termux_ssh_connection" }
-}

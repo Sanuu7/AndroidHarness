@@ -70,7 +70,8 @@ class AppContainer(val appContext: Context) {
     val chatBackup = ChatBackupManager(db, appContext)
     val snippets = com.androidharness.app.data.SnippetRepository(db.dao())
 
-    val workspace = WorkspaceManager(appContext, db.dao())
+    val sshConnections = com.androidharness.app.workspace.SshConnections(keys)
+    val workspace = WorkspaceManager(appContext, db.dao(), sshConnections)
     val checkpoints = CheckpointStore(db.dao())
     val images = ImageStore(appContext)
 
@@ -80,8 +81,7 @@ class AppContainer(val appContext: Context) {
     val linuxEnv =
         com.androidharness.app.data.env.LinuxEnvironmentManager(appContext) { keys.githubToken() }
     val shizuku = com.androidharness.app.data.env.ShizukuManager(appContext)
-    val termuxSsh = com.androidharness.app.data.env.TermuxSsh(keys)
-    val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv, termuxSsh)
+    val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv)
     val codeGraph = com.androidharness.app.data.env.CodeGraphManager(linuxEnv, shellRouter)
 
     init {
@@ -157,7 +157,7 @@ class AppContainer(val appContext: Context) {
         repoMap = repoMap,
     )
     val automation = com.androidharness.app.automation.AutomationManager(this)
-    val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager, termuxSsh)
+    val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
 
     /**
      * Applies a GitHub token change end-to-end: re-materialize the prefix

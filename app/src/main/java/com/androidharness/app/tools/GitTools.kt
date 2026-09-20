@@ -168,18 +168,19 @@ private suspend fun runGit(
     ctx: ToolContext,
     command: String,
 ): ToolResult {
-    val cwd = ctx.workspace.shellRoot
+    val cwd = ctx.workspace.shellRoot ?: (ctx.workspace as? com.androidharness.app.workspace.SshFs)?.root?.let { java.io.File(it) }
         ?: return ToolResult(
             false,
             "This workspace has no real filesystem path, so git cannot run here. " +
                 "Switch to a device folder or the app workspace (Settings → Workspace).",
         )
-    var res = router.run(command, cwd, timeoutMs = 60_000, maxOutput = 24_000)
+    var res = router.runWorkspace(command, ctx.workspace, timeoutMs = 60_000, maxOutput = 24_000)
     val fullOutput = "${res.rawOutput}\n${res.rawStderr}"
-    if (res.rawOutput.contains("not found") || res.rawOutput.contains("no such file", true) && res.exitCode == 127) {
+    if (res.exitCode == 127 && (fullOutput.contains("not found") || fullOutput.contains("no such file", true))) {
         return ToolResult(
             false,
-            "git is not available here. Install the Linux environment (Settings → Terminal → Install) first.",
+            if (ctx.workspace is com.androidharness.app.workspace.SshFs) "Git is unavailable on the SSH host. Install Git there first."
+            else "git is not available here. Install the Linux environment (Settings → Terminal → Install) first.",
         )
     }
     if (res.exitCode != 0 && fullOutput.contains("not a git repository", ignoreCase = true)) {
@@ -190,14 +191,14 @@ private suspend fun runGit(
     // config once and a re-run, this is also what creates ~/.gitconfig when
     // none existed before.
     if (res.exitCode != 0 && isDubiousOwnership(fullOutput)) {
-        val fixRes = router.run(
+        val fixRes = router.runWorkspace(
             gitCmd("config --global --add safe.directory '*'"),
-            cwd,
+            ctx.workspace,
             timeoutMs = 30_000,
             maxOutput = 2_000,
         )
         if (fixRes.exitCode == 0) {
-            res = router.run(command, cwd, timeoutMs = 60_000, maxOutput = 24_000)
+            res = router.runWorkspace(command, ctx.workspace, timeoutMs = 60_000, maxOutput = 24_000)
             return buildGitResult(
                 res,
                 note = "[note: added safe.directory '*' to the global git config; the repository was owned by another uid]",
@@ -255,7 +256,7 @@ private suspend fun runGitWithRetry(
 ): ToolResult {
     var res = runGit(router, linuxEnv, ctx, command)
     var attempt = 0
-    while (!res.ok && isIndexLocked(res.output) && attempt < maxRetries) {
+    while (!res.ok && !res.output.contains("uncertain", ignoreCase = true) && isIndexLocked(res.output) && attempt < maxRetries) {
         attempt++
         kotlinx.coroutines.delay(200L * (1L shl (attempt - 1)))
         res = runGit(router, linuxEnv, ctx, command)

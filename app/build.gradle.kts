@@ -129,6 +129,8 @@ dependencies {
     implementation(libs.fragment.ktx)
 
     implementation("com.github.mwiede:jsch:2.28.7")
+    // Ed25519 SSH keys on Android versions without a matching platform provider.
+    implementation("org.bouncycastle:bcprov-jdk18on:1.85")
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coroutines.android)

@@ -852,6 +852,7 @@ private fun iconFor(node: FsNode): ImageVector = when {
 }
 
 private fun subtitleFor(node: FsNode): String = when {
+    node is com.androidharness.app.workspace.SshFs.RemoteNode && node.isDirectory -> "Remote folder"
     node.isDirectory -> try { "${node.list().size} items" } catch (_: Exception) { "" }
     else -> formatFileSize(node.length)
 }
@@ -880,7 +881,7 @@ private fun parentOf(path: String): String {
 
 /** Names present next to [childRelPath] ("src" ⇒ children of root, "" ⇒ root). */
 private fun siblingNames(fs: WorkspaceFs?, childRelPath: String): Set<String> =
-    runCatching {
+    if (fs is com.androidharness.app.workspace.SshFs) emptySet() else runCatching {
         val target = childRelPath.ifBlank { "." }
         fs?.resolve(target)?.list()?.mapTo(HashSet()) { it.name }
     }.getOrNull().orEmpty()

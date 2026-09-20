@@ -305,8 +305,11 @@ class McpManager(
         if (configs.isEmpty()) return tools
 
         val cwd = workspace.shellRoot ?: context.filesDir
-        for (config in configs) {
-            val conn = connectionFor(config, cwd) ?: continue
+        for (original in configs) {
+            val remote = (workspace as? com.androidharness.app.workspace.SshFs)?.takeUnless { original.isRemote }
+            val config = if (remote == null) original else original.copy(name = original.name + "_ssh_" +
+                java.util.UUID.nameUUIDFromBytes(workspace.displayPath.toByteArray()).toString().take(8))
+            val conn = connectionFor(config, cwd, remote) ?: continue
             tools += conn.tools.map { info ->
                 McpToolAdapter(config.name, info, conn) { disconnect(config.name) }
             }
@@ -315,14 +318,15 @@ class McpManager(
     }
 
     /** Live connection if healthy; otherwise up to two fresh connect attempts. */
-    private suspend fun connectionFor(config: McpServerConfig, cwd: File): McpConnection? =
+    private suspend fun connectionFor(config: McpServerConfig, cwd: File, remote: com.androidharness.app.workspace.SshFs? = null): McpConnection? =
         lockFor(config.name).withLock {
             synchronized(connections) { connections[config.name] }?.let { existing ->
                 if (existing.isAlive) return@withLock existing
                 synchronized(connections) { connections.remove(config.name) }
                 existing.close()
             }
-            tryConnect(config, cwd)?.let { return@withLock it }
+            tryConnect(config, cwd, remote)?.let { return@withLock it }
+            if (remote != null) return@withLock null
             // One retry: server binaries sometimes crash once on a cold start.
             tryConnect(config, cwd)?.let { return@withLock it }
             null
@@ -362,12 +366,21 @@ class McpManager(
         }
     }
 
-    private suspend fun tryConnect(config: McpServerConfig, cwd: File): McpConnection? {
+    private suspend fun tryConnect(config: McpServerConfig, cwd: File, remote: com.androidharness.app.workspace.SshFs? = null): McpConnection? {
         _statuses.update { it + (config.name to McpServerStatus("connecting")) }
         val conn = McpConnection(
             serverName = config.name,
             config = config,
-            processFactory = { cwd2 -> spawnStdio(config, cwd2) },
+            processFactory = { cwd2 ->
+                if (remote == null) spawnStdio(config, cwd2) else {
+                    val env = config.env.entries.joinToString(" ") { (k, v) ->
+                        require(k.matches(Regex("[A-Za-z_][A-Za-z0-9_]*"))) { "Invalid environment name" }
+                        "$k=${v.shellQuoted()}"
+                    }
+                    val command = (listOf(config.command) + config.args).joinToString(" ") { it.shellQuoted() }
+                    remote.connections.process(remote.location.connectionId, "env $env $command", remote.root)
+                }
+            },
             authHeader = { authHeaderFor(config.name) },
             httpClient = httpClient,
         )

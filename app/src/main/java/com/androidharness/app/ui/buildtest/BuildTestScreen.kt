@@ -151,15 +151,17 @@ fun BuildTestScreen(
     var elapsedMs by remember { mutableLongStateOf(0L) }
 
     val workspaceId = project?.id
-    val shellRoot = workspace?.shellRoot
-    val defaults = remember(workspace?.displayPath) { defaultCommands(workspace) }
+    val remote = workspace as? com.androidharness.app.workspace.SshFs
+    val shellRoot = workspace?.shellRoot ?: remote?.root?.let { java.io.File(it) }
+    var defaults by remember { mutableStateOf<List<SavedCommand>>(emptyList()) }
 
     LaunchedEffect(workspaceId) {
         val id = workspaceId ?: return@LaunchedEffect
+        defaults = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { defaultCommands(workspace) }
         commands = store.load(id, defaults)
         activeCommand = null
     }
-    LaunchedEffect(Unit) { terminal.ensureStarted() }
+    LaunchedEffect(workspace?.displayPath) { workspace?.let { terminal.useWorkspace(it) }; terminal.ensureStarted() }
     LaunchedEffect(terminalState.lines.size) {
         if (terminalState.lines.isNotEmpty()) {
             outputState.scrollToItem(terminalState.lines.lastIndex)
@@ -192,11 +194,12 @@ fun BuildTestScreen(
 
     fun run(command: SavedCommand) {
         val root = shellRoot ?: return
+        workspace?.let { terminal.useWorkspace(it) }
         terminal.clear()
         activeCommand = command
         startedAt = SystemClock.elapsedRealtime()
         elapsedMs = 0L
-        terminal.send("cd ${shellQuote(root.absolutePath)} && ${command.command}")
+        terminal.send("cd ${shellQuote(root.absolutePath)} && ${command.command}", workspace)
     }
 
     Scaffold(
@@ -727,7 +730,7 @@ private fun saved(name: String, command: String) =
 
 private fun parseErrors(lines: List<String>, workspace: WorkspaceFs?): List<BuildError> {
     if (workspace == null) return emptyList()
-    val root = workspace.shellRoot?.canonicalPath
+    val root = (workspace as? com.androidharness.app.workspace.SshFs)?.root ?: workspace.shellRoot?.canonicalPath
     val fileUri = Regex("file://(.+?):(\\d+)(?::\\d+)?")
     val colon = Regex("((?:[A-Za-z]:)?[^\\s:()]+\\.(?:kt|kts|java|xml|gradle|js|jsx|ts|tsx|py|c|cc|cpp|h|hpp)):(\\d+)(?::\\d+)?")
     val paren = Regex("([^\\s()]+\\.(?:kt|kts|java|xml|gradle|js|jsx|ts|tsx|py|c|cc|cpp|h|hpp))\\((\\d+)(?:,\\d+)?\\)")

@@ -38,7 +38,8 @@ class PkgInstallTool(
     override val isReadOnly = false
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
-        if (!isReady()) {
+        val remote = ctx.workspace as? com.androidharness.app.workspace.SshFs
+        if (remote == null && !isReady()) {
             return ToolResult(false, "Linux environment is not ready or not installed. The environment must be installed first.")
         }
         val pkgs = when (val p = args["packages"]) {
@@ -49,6 +50,12 @@ class PkgInstallTool(
             return ToolResult(false, "Missing package name(s) to install.")
         }
 
+        if (remote != null) {
+            require(pkgs.all { it.matches(Regex("[A-Za-z0-9][A-Za-z0-9+_.-]*")) }) { "Invalid package name" }
+            val names = pkgs.joinToString(" ") { com.androidharness.app.workspace.sshQuote(it) }
+            val result = remote.run("if command -v pkg >/dev/null; then pkg install -y $names; elif command -v apt-get >/dev/null; then apt-get install -y -- $names; else echo 'Install these packages with the host package manager'; exit 1; fi", timeoutMs = 600_000)
+            return ToolResult(result.exitCode == 0, result.rawOutput + result.rawStderr + "\n" + result.note.orEmpty())
+        }
         return try {
             installPackages(pkgs)
             val newlyInstalled = installedPackages().filter { it in pkgs }
@@ -89,6 +96,11 @@ class PkgSearchTool(
         val query = args["query"]?.jsonPrimitive?.content?.trim().orEmpty()
         if (query.isEmpty()) return ToolResult(false, "Query parameter is required.")
 
+        (ctx.workspace as? com.androidharness.app.workspace.SshFs)?.let { remote ->
+            val q = com.androidharness.app.workspace.sshQuote(query)
+            val r = remote.run("if command -v apt-cache >/dev/null; then apt-cache search -- $q; else echo 'Use the host package manager to search'; exit 1; fi", timeoutMs = 30_000)
+            return ToolResult(r.exitCode == 0, r.rawOutput + r.rawStderr)
+        }
         return try {
             val matches = searcher(query).take(25)
             if (matches.isEmpty()) {
@@ -128,6 +140,10 @@ class PkgListTool(
     override val isReadOnly = true
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        (ctx.workspace as? com.androidharness.app.workspace.SshFs)?.let { remote ->
+            val r = remote.run("if command -v dpkg-query >/dev/null; then dpkg-query -W; else echo 'Use the host package manager to list packages'; exit 1; fi", timeoutMs = 30_000)
+            return ToolResult(r.exitCode == 0, r.rawOutput + r.rawStderr)
+        }
         val installed = installedPackages()
         return if (installed.isEmpty()) {
             ToolResult(true, "No packages currently installed.")

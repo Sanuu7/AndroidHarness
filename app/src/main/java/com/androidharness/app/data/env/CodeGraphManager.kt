@@ -374,6 +374,7 @@ class CodeGraphManager(
         workspace?.shellRoot?.resolve(".codegraph")?.isDirectory == true
 
     fun isAvailable(workspace: WorkspaceFs): Boolean {
+        if (workspace is com.androidharness.app.workspace.SshFs) return true
         if (!linuxEnv.isReady || !binary.exists() || !isIndexed(workspace)) return false
         ensureLauncherCurrent()
         return true
@@ -854,6 +855,11 @@ class CodeGraphManager(
     // ------------------------------------------------------------------
 
     private suspend fun queryWorkspace(workspace: WorkspaceFs, command: String): CodeGraphCommandResult {
+        if (workspace is com.androidharness.app.workspace.SshFs) {
+            val result = workspace.run("test -d .codegraph && $command", timeoutMs = 180_000, maxOutput = 80_000)
+            return CodeGraphCommandResult(result.exitCode == 0, result.rawOutput + result.rawStderr +
+                if (result.exitCode != 0) "\nCodeGraph must be installed and the project indexed on the SSH host." else "")
+        }
         val ready = requireIndexed(workspace)
         if (ready != null) return ready
         val root = workspace.shellRoot!!
@@ -870,6 +876,10 @@ class CodeGraphManager(
         label: String,
         timeoutMs: Int = 180_000,
     ): CodeGraphCommandResult {
+        if (workspace is com.androidharness.app.workspace.SshFs) {
+            val result = workspace.run(command, timeoutMs = timeoutMs, maxOutput = 40_000)
+            return CodeGraphCommandResult(result.exitCode == 0, result.rawOutput + result.rawStderr)
+        }
         val root = workspace.shellRoot
             ?: return refused("CodeGraph needs a workspace with a real filesystem path.")
         if (_state.value.version == null) refresh()

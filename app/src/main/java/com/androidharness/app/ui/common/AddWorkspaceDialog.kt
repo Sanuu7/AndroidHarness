@@ -37,6 +37,20 @@ fun AddWorkspaceDialog(
     onDismiss: () -> Unit,
     onPickSaf: () -> Unit,
 ) {
+    var destination by remember { mutableStateOf<String?>(null) }
+    if (destination == "ssh") {
+        SshWorkspaceDialog(container, onDismiss = onDismiss)
+        return
+    }
+    if (destination == null) {
+        AlertDialog(onDismissRequest = onDismiss, title = { Text("Add workspace") }, text = {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = { destination = "local" }, modifier = Modifier.fillMaxWidth()) { Text("On this device") }
+                OutlinedButton(onClick = { destination = "ssh" }, modifier = Modifier.fillMaxWidth()) { Text("Connect through SSH") }
+            }
+        }, confirmButton = { TextButton(onClick = onDismiss) { Text("Cancel") } })
+        return
+    }
     val scope = rememberCoroutineScope()
     val projects = container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
     val appProject = projects.value.firstOrNull { it.kind == "APP" }

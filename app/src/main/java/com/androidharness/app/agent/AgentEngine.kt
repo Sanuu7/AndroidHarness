@@ -750,7 +750,7 @@ class AgentEngine(
 
         // Commands that need real toolchains (git/python/node/…) prompt the user
         // to install the bundled Linux environment straight from the chat.
-        if ((call.name == "shell" || call.name == "shell_background") && !linuxEnv.isReady) {
+        if ((call.name == "shell" || call.name == "shell_background") && !linuxEnv.isReady && workspace !is com.androidharness.app.workspace.SshFs) {
             val args = runCatching {
                 json.parseToJsonElement(call.argumentsJson).jsonObject
             }.getOrNull()
@@ -868,7 +868,7 @@ class AgentEngine(
             isPkgInstall -> {
                 // Mandatory confirmation: even in FULL_ACCESS or FULL_AUTO mode,
                 // package installation ALWAYS requires explicit user confirmation (Decline or Allow).
-                val preview = computePkgInstallPreview(call)
+                val preview = if (workspace is com.androidharness.app.workspace.SshFs) "Install requested packages on the SSH host for ${workspace.root}." else computePkgInstallPreview(call)
                 val request = ApprovalRequest(call, tool.description, preview, grantKey)
                 emitEvent(AgentEvent.ApprovalNeeded(request))
                 request.response.await()
@@ -929,7 +929,7 @@ class AgentEngine(
         // in chat instead of letting the model retry blindly. The presence
         // check keeps project-level failures ("vite: not found") out: those
         // are not fixable by reinstalling the toolchain.
-        if (call.name == "shell" && !executed.ok &&
+        if (call.name == "shell" && !executed.ok && workspace !is com.androidharness.app.workspace.SshFs &&
             linuxEnv.isReady && linuxEnv.state.value !is com.androidharness.app.data.env.EnvState.Failed
         ) {
             val missingTool = detectMissingHeadlineTool(executed.output)
@@ -1608,7 +1608,9 @@ Rules:
 
 """.trim()
         )
-        if (workspace.shellRoot != null) {
+        if (workspace is com.androidharness.app.workspace.SshFs) {
+            sb.append("- This is an SSH workspace at ${workspace.root}. All file tools, checkpoints, shell commands, Git, builds and background jobs operate on that host. Use its installed tools and Git credentials. Never use local Android paths or assume the built-in toolchain is available remotely. Inspect uncertain command results before retrying any modifying operation.\n")
+        } else if (workspace.shellRoot != null) {
             if (linuxEnv.isReady) {
                 sb.append("- The shell tool runs a full Linux environment (bash, git, python, node and more) with the workspace as its working directory. Call commands by their plain names (python3, git, node, ls, …): the harness launches them correctly on every execution tier. Use shell_background for long-running servers. If a required CLI package is missing (e.g. ripgrep, jq, clang, rust, tmux, tree, openjdk-17), search for it with pkg_search and install it with pkg_install (do NOT run 'apt' or 'pkg' directly in shell). Package installation will always prompt the user with a confirmation warning before downloading.\n")
             } else {
@@ -1618,19 +1620,21 @@ Rules:
             sb.append("- This workspace has no real filesystem path (cloud/SAF). File tools still work. Do NOT call shell, shell_background, or git tools, they will fail. Tell the user to switch to a device folder or the app workspace if they need a shell.\n")
         }
 
-        // Shizuku guidance: tell the agent the current state so it can guide the user.
-        when {
-            shizuku.isGranted() -> sb.append("- Shizuku is connected with ADB-shell privileges: the shell tool automatically runs as the shell user whenever the working directory needs it (system paths, shared storage), with the same toolchain. Just use shell normally.\n")
-            shizuku.state.value == com.androidharness.app.data.env.ShizukuState.RUNNING_NO_PERMISSION -> sb.append("- Shizuku is running but AndroidHarness hasn't been granted access yet. If a task needs ADB-level shell access (edit system files, access any folder, etc.), tell the user to go to Settings → Terminal and tap \"Grant Shizuku access\".\n")
-            shizuku.state.value == com.androidharness.app.data.env.ShizukuState.NOT_RUNNING -> sb.append("- Shizuku is installed but not running. If a task needs ADB-level shell access, tell the user to open the Shizuku app, start the service, then in AndroidHarness go to Settings → Terminal and tap \"Refresh status\" followed by \"Grant Shizuku access\".\n")
-            else -> {} // NOT_INSTALLED: no mention; don't distract the agent.
+        if (workspace !is com.androidharness.app.workspace.SshFs) {
+            // Shizuku guidance: tell the agent the current state so it can guide the user.
+            when {
+                shizuku.isGranted() -> sb.append("- Shizuku is connected with ADB-shell privileges: the shell tool automatically runs as the shell user whenever the working directory needs it (system paths, shared storage), with the same toolchain. Just use shell normally.\n")
+                shizuku.state.value == com.androidharness.app.data.env.ShizukuState.RUNNING_NO_PERMISSION -> sb.append("- Shizuku is running but AndroidHarness hasn't been granted access yet. If a task needs ADB-level shell access (edit system files, access any folder, etc.), tell the user to go to Settings → Terminal and tap \"Grant Shizuku access\".\n")
+                shizuku.state.value == com.androidharness.app.data.env.ShizukuState.NOT_RUNNING -> sb.append("- Shizuku is installed but not running. If a task needs ADB-level shell access, tell the user to open the Shizuku app, start the service, then in AndroidHarness go to Settings → Terminal and tap \"Refresh status\" followed by \"Grant Shizuku access\".\n")
+                else -> {} // NOT_INSTALLED: no mention; don't distract the agent.
+            }
+            sb.append(
+                "- Shell environment rules (IMPORTANT): always call commands by plain name (ls, grep, head, python3, git, node…). NEVER work around the environment yourself: do not invoke /system/bin/linker64, /apex/.../linker64, or /system/bin/toybox directly, and do not craft alternate PATHs. The harness already makes every toolchain binary runnable in every tier. " +
+                    "If a basic command fails with \"Permission denied\" or exit code 126/127, the environment is misconfigured on this device: run the env_status tool once, tell the user what it reports, and stop retrying command variants.\n",
+            )
+            sb.append("- /data/local/tmp is readable only by the shell user: never try to inspect it from the app tier, and never conclude Shizuku/toolchain state from files there; use env_status.\n")
         }
-        sb.append(
-            "- Shell environment rules (IMPORTANT): always call commands by plain name (ls, grep, head, python3, git, node…). NEVER work around the environment yourself: do not invoke /system/bin/linker64, /apex/.../linker64, or /system/bin/toybox directly, and do not craft alternate PATHs. The harness already makes every toolchain binary runnable in every tier. " +
-                "If a basic command fails with \"Permission denied\" or exit code 126/127, the environment is misconfigured on this device: run the env_status tool once, tell the user what it reports, and stop retrying command variants.\n",
-        )
-        sb.append("- /data/local/tmp is readable only by the shell user: never try to inspect it from the app tier, and never conclude Shizuku/toolchain state from files there; use env_status.\n")
-        if (fullAccess) {
+        if (fullAccess && workspace !is com.androidharness.app.workspace.SshFs) {
             sb.append(
                 "- FULL ACCESS MODE is active: the workspace sandbox is lifted. File tools may read and write ANY path on the device (absolute paths work), the shell has no command denylist, and cwd may be any directory. The user chose this deliberately; no permission prompts will appear. Work outside the workspace only when the task requires it, and stay careful with system directories (/system, /data/system, /vendor): a mistake there can break the device.\n",
             )

@@ -56,7 +56,6 @@ class ShellTierRouter(
     private val context: Context,
     private val shizuku: ShizukuManager,
     private val linuxEnv: LinuxEnvironmentManager,
-    val termuxSsh: TermuxSsh? = null,
 ) {
 
     /** "All files access" (MANAGE_EXTERNAL_STORAGE). Pre-API-30 apps were not scoped. */
@@ -64,7 +63,6 @@ class ShellTierRouter(
         if (Build.VERSION.SDK_INT >= 30) Environment.isExternalStorageManager() else true
 
     fun resolveTier(cwd: File): ExecutionTier {
-        if (termuxSsh?.enabled == true) return ExecutionTier.TERMUX_SSH
         val region = PathClassifier.regionOf(cwd.absolutePath, linuxEnv.internalDataRoot.absolutePath)
         return when (region) {
             PathClassifier.Region.APP_DATA ->
@@ -107,12 +105,18 @@ class ShellTierRouter(
         // never inherits the caller's dispatcher.
         withContext(Dispatchers.IO) {
             when (val tier = resolveTier(cwd)) {
-                ExecutionTier.TERMUX_SSH -> requireNotNull(termuxSsh).run(command, cwd, timeoutMs, maxOutput)
+                ExecutionTier.TERMUX_SSH -> error("SSH requires a captured workspace")
                 ExecutionTier.PRIVILEGED -> runPrivileged(command, cwd, timeoutMs, maxOutput)
                 ExecutionTier.APP_LINUX -> runApp(command, cwd, timeoutMs, maxOutput, ExecutionTier.APP_LINUX)
                 ExecutionTier.TOYBOX -> runApp(command, cwd, timeoutMs, maxOutput, ExecutionTier.TOYBOX)
             }
         }
+
+    suspend fun runWorkspace(command: String, workspace: com.androidharness.app.workspace.WorkspaceFs,
+                             timeoutMs: Int, maxOutput: Int): ShellRunResult {
+        if (workspace is com.androidharness.app.workspace.SshFs) return workspace.run(command, timeoutMs = timeoutMs, maxOutput = maxOutput)
+        return run(command, requireNotNull(workspace.shellRoot) { "This workspace has no shell" }, timeoutMs, maxOutput)
+    }
 
     // --- privileged tier ---------------------------------------------------
 

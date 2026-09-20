@@ -18,7 +18,7 @@ class ShellTool(
 ) : Tool {
     override val name = "shell"
     override val description =
-        "Run a shell command on the device. Uses Termux SSH when enabled in Terminal settings; " +
+        "Run a shell command on the device. Uses SSH for an SSH workspace; " +
         "otherwise runs with the best available native environment: " +
         "a full Linux userspace (bash, git, python, node…) as the app when installed, " +
         "Shizuku ADB-shell privileges (plus the same toolchain) when Shizuku is connected and " +
@@ -43,13 +43,15 @@ class ShellTool(
         withContext(Dispatchers.IO) {
             val rawCommand = args["command"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: command")
-            val root = ctx.workspace.shellRoot
+            val remote = ctx.workspace as? com.androidharness.app.workspace.SshFs
+            val root = remote?.root?.let { File(it) } ?: ctx.workspace.shellRoot
                 ?: throw ToolFailure(
                     "This workspace has no real filesystem path, so the shell cannot run here. " +
                         "Switch to a device folder or the app workspace (Settings → Workspace).",
                 )
             val cwd =
-                if (ctx.sandboxOff) resolveCwdUnchecked(args, root)
+                if (remote != null) File(remote.commandPath(args["cwd"]?.jsonPrimitive?.content ?: "."))
+                else if (ctx.sandboxOff) resolveCwdUnchecked(args, root)
                 else resolveCwd(args, root)
 
             // Full access skips the denylist re-check; the engine already
@@ -63,21 +65,21 @@ class ShellTool(
                 .coerceIn(1, 600)
 
             // Auto-append --no-bin-links for npm install on shared storage (symlinks unsupported).
-            val (command, notes) = run {
+            val (command, notes) = if (remote != null) rawCommand to null else run {
                 val (afterNpm, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
                 // Bug 4 fix: retarget workspace tar extractions to the
                 // exec-capable scratch dir so symlinks/exec bits survive.
-                val (afterTar, tarNote) = if (router.termuxSsh?.enabled == true) afterNpm to null
-                else ExecScratchRouting.prepare(afterNpm, cwd)
+                val (afterTar, tarNote) = ExecScratchRouting.prepare(afterNpm, cwd)
                 afterTar to listOfNotNull(npmNote, tarNote).joinToString("\n").ifBlank { null }
             }
 
-            val res = router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
+            val res = if (remote != null) remote.run(command, cwd.path, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
+                else router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
 
             val isSymlink = rawCommand.contains("ln ") && (rawCommand.contains("-s") || rawCommand.contains("--symbolic"))
             val hasSymlinkError = isSymlink && (res.exitCode != 0 || res.rawOutput.contains("Permission denied", true) || res.rawStderr.contains("Permission denied", true) || res.rawOutput.contains("Operation not permitted", true) || res.rawStderr.contains("Operation not permitted", true))
 
-            if (isSymlink) {
+            if (isSymlink && remote == null) {
                 // Check if ln left a stale empty regular file at destination
                 val tokens = ShellPolicy.extractTokens(rawCommand)
                 val lastToken = tokens.lastOrNull()?.trim()

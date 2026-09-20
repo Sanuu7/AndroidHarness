@@ -155,6 +155,7 @@ fun AppNav(container: AppContainer) {
         .collectAsStateWithLifecycle(initialValue = null)
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val currentWorkspace by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
+    val activeFs by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
     val allWorkspaces by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -658,7 +659,10 @@ fun AppNav(container: AppContainer) {
             }
         },
     ) {
+        Column(Modifier.fillMaxSize()) {
+        com.androidharness.app.ui.common.SshWorkspaceBar(container, activeFs as? com.androidharness.app.workspace.SshFs)
         NavHost(
+            modifier = Modifier.weight(1f),
             navController = nav,
             startDestination = startDestination,
             // Quiet transitions: a short fade with a small rise. No shared-element
@@ -852,6 +856,8 @@ fun AppNav(container: AppContainer) {
                 )
             }
         }
+    }
+
     }
 
     // Workspace switching from the drawer + chat overflow shares one sheet.

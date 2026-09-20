@@ -110,13 +110,17 @@ fun CodeEditorScreen(
     val lastSavedText = remember { mutableStateOf("") }
 
     LaunchedEffect(path, fs) {
-        val node = fs?.let { f -> runCatching { f.resolve(path) }.getOrNull() }
-        if (node == null || !node.exists || !node.isFile) {
+        if (fs == null) return@LaunchedEffect
+        val node = withContext(Dispatchers.IO) {
+            fs?.let { f -> runCatching { f.resolve(path).takeIf { it.exists && it.isFile } }.getOrNull() }
+        }
+        if (node == null) {
             loadState = Load.Failed("File not found or workspace unavailable.")
             return@LaunchedEffect
         }
-        if (node.length > MAX_EDIT_BYTES) {
-            loadState = Load.TooLarge(node.length)
+        val fileLength = withContext(Dispatchers.IO) { node.length }
+        if (fileLength > MAX_EDIT_BYTES) {
+            loadState = Load.TooLarge(fileLength)
             return@LaunchedEffect
         }
         val bytes = withContext(Dispatchers.IO) {
@@ -126,7 +130,7 @@ fun CodeEditorScreen(
             bytes == null -> loadState = Load.Failed("Could not read file.")
             else -> {
                 val dec = EditorFileCodec.decode(bytes)
-                if (dec == null) loadState = Load.Binary(node.length)
+                if (dec == null) loadState = Load.Binary(fileLength)
                 else {
                     decoded.value = dec
                     diskBaseline.value = dec.text

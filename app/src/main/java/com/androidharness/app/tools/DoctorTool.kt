@@ -51,6 +51,11 @@ class DoctorTool(
         .build()
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        (ctx.workspace as? com.androidharness.app.workspace.SshFs)?.let { remote ->
+            val res = remote.run("pwd; command -v sh; git --version; git config user.name; git config user.email; git status --short --branch", timeoutMs = 15_000, maxOutput = 8_000)
+            return ToolResult(res.exitCode == 0, "SSH workspace. Git identity and authentication are configured on this host.\n" + res.rawOutput + "\n" + res.rawStderr)
+        }
+
         val github = args["github"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() ?: true
         if (!github) {
             return ToolResult(true, "Nothing to check: pass {\"github\": true} (the default).")

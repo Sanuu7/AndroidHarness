@@ -33,6 +33,7 @@ data class PathAssessment(
 class WorkspaceManager(
     private val context: Context,
     private val dao: HarnessDao,
+    private val sshConnections: SshConnections? = null,
 ) {
     val appPrivateRoot: File =
         (context.getExternalFilesDir(null) ?: context.filesDir)
@@ -65,6 +66,8 @@ class WorkspaceManager(
     }
 
     fun fsFor(project: ProjectEntity): WorkspaceFs = when {
+        project.kind == KIND_SSH -> SshFs(requireNotNull(sshConnections),
+            kotlinx.serialization.json.Json.decodeFromString<SshLocation>(requireNotNull(project.uri)))
         project.kind == KIND_SAF && project.uri != null -> {
             val treeUri = project.uri.toUri()
             val real = SafPathResolver.resolve(treeUri)?.let { java.io.File(it) }
@@ -145,6 +148,12 @@ class WorkspaceManager(
             releaseSafPermission(project.uri)
         }
         dao.deleteProject(project)
+        if (project.kind == KIND_SSH) {
+            val id = runCatching { kotlinx.serialization.json.Json.decodeFromString<SshLocation>(requireNotNull(project.uri)).connectionId }.getOrNull()
+            if (id != null && projects.first().none {
+                it.kind == KIND_SSH && runCatching { kotlinx.serialization.json.Json.decodeFromString<SshLocation>(requireNotNull(it.uri)).connectionId }.getOrNull() == id
+            }) sshConnections?.forget(id)
+        }
     }
 
     private fun releaseSafPermission(uriString: String) {
@@ -159,6 +168,21 @@ class WorkspaceManager(
                     )
                 }
         }
+    }
+
+    suspend fun addSshProject(connection: SshConnection, root: String): ProjectEntity {
+        val location = SshLocation(connection.id, root.trimEnd('/').ifEmpty { "/" })
+        val uri = kotlinx.serialization.json.Json.encodeToString(SshLocation.serializer(), location)
+        requireNotNull(sshConnections).save(connection)
+        val existing = projects.first().firstOrNull { it.kind == KIND_SSH && it.uri == uri }
+        if (existing != null) return reactivate(existing)
+        val label = root.substringAfterLast('/').ifBlank { connection.host }
+        val project = ProjectEntity(UUID.randomUUID().toString(),
+            label + if (connection.termux) " · Termux SSH" else " · SSH",
+            KIND_SSH, uri, System.currentTimeMillis())
+        dao.insertProject(project)
+        setActiveProject(project.id)
+        return project
     }
 
     /** Adds a project backed by a real filesystem path (requires Shizuku or All files access). */
@@ -187,6 +211,11 @@ class WorkspaceManager(
         val kindSub: String
         val shellCapable: Boolean
         when (project.kind) {
+            KIND_SSH -> {
+                kindLabel = "SSH workspace"
+                kindSub = "Files, terminal and Git on the connected host"
+                shellCapable = true
+            }
             KIND_APP -> {
                 kindLabel = "App workspace"
                 kindSub = "Private app folder: shell always works, safest option"
@@ -243,6 +272,7 @@ class WorkspaceManager(
         const val KIND_APP = "APP"
         const val KIND_SAF = "SAF"
         const val KIND_SHELL = "SHELL"
+        const val KIND_SSH = "SSH"
 
         /**
          * The existing project pointing at the same folder as [kind]/[uri].
@@ -270,6 +300,7 @@ class WorkspaceManager(
             resolveSaf: (String) -> String? = { SafPathResolver.resolve(it.toUri()) },
         ): String? = when {
             kind == KIND_APP -> null
+            kind == KIND_SSH -> "$KIND_SSH:$uri"
             kind == KIND_SAF && uri != null ->
                 resolveSaf(uri)?.let { "$KIND_SHELL:${it.trimEnd('/').ifEmpty { "/" }}" }
                     ?: "$KIND_SAF:$uri"

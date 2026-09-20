@@ -59,18 +59,17 @@ fun TerminalScreen(
     onBack: () -> Unit,
 ) {
     val terminal = container.terminal
-    val ssh by container.termuxSsh.config.collectAsStateWithLifecycle()
-    var showSsh by remember { mutableStateOf(false) }
-    if (showSsh) TermuxSshDialog(container) { showSsh = false }
+    val workspace by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
+    val remote = workspace as? com.androidharness.app.workspace.SshFs
     val state by terminal.state.collectAsStateWithLifecycle()
     val shizukuState by container.shizuku.state.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
     var input by remember { mutableStateOf("") }
     val scheme = MaterialTheme.colorScheme
 
-    LaunchedEffect(Unit) {
-        terminal.useWorkspace(container.workspace.currentOnce().shellRoot)
-        terminal.ensureStarted()
+    LaunchedEffect(workspace?.displayPath, state.busy) {
+        workspace?.let { terminal.useWorkspace(it) }
+        if (workspace != null) terminal.ensureStarted()
     }
     LaunchedEffect(state.lines.size) {
         if (state.lines.isNotEmpty()) listState.scrollToItem(state.lines.size - 1)
@@ -88,10 +87,9 @@ fun TerminalScreen(
         topBar = {
             AppHeader(
                 title = "Terminal",
-                subtitle = if (ssh.enabled) "Termux SSH · 127.0.0.1:${ssh.port}" else if (state.privileged) "Shizuku (shell user)" else "App user",
+                subtitle = if (remote != null) "SSH workspace" else if (state.privileged) "Shizuku (shell user)" else "App user",
                 onBack = onBack,
                 actions = {
-                    androidx.compose.material3.TextButton(onClick = { showSsh = true }, enabled = !state.busy) { Text("SSH") }
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             Icons.Outlined.Shield,
@@ -102,7 +100,7 @@ fun TerminalScreen(
                         Switch(
                             checked = state.privileged && shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED,
                             onCheckedChange = { terminal.setPrivileged(it) },
-                            enabled = !ssh.enabled && shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED,
+                            enabled = remote == null && shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED,
                         )
                     }
                     IconButton(onClick = { terminal.clear() }) {
@@ -193,7 +191,7 @@ fun TerminalScreen(
                         cursorBrush = SolidColor(scheme.primary),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Send),
                         keyboardActions = KeyboardActions(onSend = {
-                            terminal.send(input)
+                            terminal.send(input, workspace)
                             input = ""
                         }),
                         maxLines = 1,
@@ -201,7 +199,7 @@ fun TerminalScreen(
                     Spacer(Modifier.width(6.dp))
                     IconButton(
                         onClick = {
-                            terminal.send(input)
+                            terminal.send(input, workspace)
                             input = ""
                         },
                         enabled = input.isNotBlank() && !state.busy,

@@ -29,6 +29,11 @@ class EnvStatusTool(
     override val isReadOnly = true
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        (ctx.workspace as? com.androidharness.app.workspace.SshFs)?.let { remote ->
+            val res = remote.run("pwd; command -v sh; git --version; git config user.name; git config user.email; git status --short --branch", timeoutMs = 15_000, maxOutput = 8_000)
+            return ToolResult(res.exitCode == 0, "SSH workspace. Git identity and authentication are configured on this host.\n" + res.rawOutput + "\n" + res.rawStderr)
+        }
+
         val sz = shizuku.state.value
         val szText = when (sz) {
             ShizukuState.NOT_INSTALLED -> "not installed"
@@ -45,7 +50,7 @@ class EnvStatusTool(
         val cwd = ctx.workspace.shellRoot ?: linuxEnv.shellFallbackRoot
         val tier = router.resolveTier(cwd)
         val tierText = when (tier) {
-            ExecutionTier.TERMUX_SSH -> "Termux SSH on this device (shared workspace required; Termux Git credentials)"
+            ExecutionTier.TERMUX_SSH -> "SSH workspace using host tools and credentials"
             ExecutionTier.PRIVILEGED ->
                 "Shizuku ADB-shell privileges (${if (shizuku.isTmpPrefixDeployed(linuxEnv.deployedTag())) "with the full Linux toolchain deployed to /data/local/tmp" else "system /system/bin/sh, Linux toolchain not deployed"}) in $cwd"
             ExecutionTier.APP_LINUX ->
