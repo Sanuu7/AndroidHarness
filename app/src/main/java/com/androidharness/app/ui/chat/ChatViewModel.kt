@@ -251,24 +251,30 @@ class ChatViewModel(
     private var steering = false
     /** Text of a run paused on the workspace-MCP approval dialog. */
     private var pendingRunText: String? = null
+    private var pendingReplacement: ChatMessage? = null
+    private var startingRun = false
 
     /** User approved the workspace .harness/mcp.json: remember it and run. */
     fun approveWorkspaceMcp() {
         val text = pendingRunText
+        val replacement = pendingReplacement
+        pendingReplacement = null
         pendingRunText = null
         _state.update { it.copy(pendingWorkspaceMcp = null) }
         viewModelScope.launch {
             runCatching { c.mcp.approveWorkspace(c.workspace.currentOnce()) }
-            if (text != null) startRun(text, workspaceMcpGate = false)
+            if (text != null) startRun(text, workspaceMcpGate = false, replacement = replacement)
         }
     }
 
     /** User declined: run without the workspace servers (they stay blocked). */
     fun denyWorkspaceMcp() {
         val text = pendingRunText
+        val replacement = pendingReplacement
+        pendingReplacement = null
         pendingRunText = null
         _state.update { it.copy(pendingWorkspaceMcp = null) }
-        if (text != null) startRun(text, workspaceMcpGate = false)
+        if (text != null) startRun(text, workspaceMcpGate = false, replacement = replacement)
     }
 
     /**
@@ -699,21 +705,6 @@ class ChatViewModel(
     }
 
     /**
-     * Reruns a past user message as a fresh turn. Attachments are not
-     * re-attached: the message row already displays them, and the stored
-     * workspace copies are no longer in the pending-attachment queue.
-     * No-op while a run is active (the run would swallow it into a queue).
-     */
-    fun retryMessage(text: String) {
-        val sid = sessionId ?: return
-        if (c.runManager.isRunning(sid)) {
-            _state.update { it.copy(error = "Wait for the current run to finish before retrying.") }
-            return
-        }
-        send(text)
-    }
-
-    /**
      * Stops the in-flight run, then sends the queued text as a new turn.
      * Default send-while-busy only injects at the next iteration.
      */
@@ -994,7 +985,9 @@ class ChatViewModel(
     // Run lifecycle (delegated to the app-scoped RunManager)
     // ------------------------------------------------------------------
 
-    private fun startRun(text: String, workspaceMcpGate: Boolean = true, queuedPromptId: String? = null) {
+    private fun startRun(text: String, workspaceMcpGate: Boolean = true, queuedPromptId: String? = null, replacement: ChatMessage? = null) {
+        if (startingRun) return
+        val targetSession = sessionId
         val s0 = _state.value
         // Separate planning/execution models: plan-mode runs use the planning
         // slot, everything else the execution one. A slot without a provider
@@ -1027,72 +1020,89 @@ class ChatViewModel(
             return
         }
 
-        val imageRefs = pendingAttachments.toList()
-        pendingAttachments.clear()
-        val fileItems = pendingFileAttachments.toList()
-        pendingFileAttachments.clear()
-        _state.update { it.copy(attachments = emptyList(), fileAttachments = emptyList(), error = null) }
+        val imageRefs = replacement?.images ?: pendingAttachments.toList()
+        val fileItems = if (replacement == null) pendingFileAttachments.toList() else emptyList()
+        if (replacement == null) {
+            pendingAttachments.clear()
+            pendingFileAttachments.clear()
+        }
+        _state.update { if (replacement == null) it.copy(attachments = emptyList(), fileAttachments = emptyList(), error = null)
+            else it.copy(error = null) }
         // File attachments ride after the user's text as model-readable blocks.
         val payload = FileAttachments.buildMessageSuffix(fileItems)
             .takeIf { it.isNotEmpty() }
             ?.let { suffix -> if (text.isBlank()) suffix else "$text\n\n$suffix" }
             ?: text
 
+        startingRun = true
         viewModelScope.launch {
-            // Harness free-tier models live behind different wires per model; probe
-            // once on first use and pin the winner so later requests route directly.
-            // Pooled community models always speak chat/completions, skip the probe.
-            if (provider.id == com.androidharness.app.llm.HarnessProvider.ID &&
-                c.providers.wire(roleModel) == null &&
-                !com.androidharness.app.llm.HarnessProvider.isPooled(roleModel)
-            ) {
-                val learned = com.androidharness.app.llm.HarnessProvider.probeWire(
-                    roleModel, c.providers.harnessApiKey(),
+            try {
+                // Harness free-tier models live behind different wires per model; probe
+                // once on first use and pin the winner so later requests route directly.
+                // Pooled community models always speak chat/completions, skip the probe.
+                if (provider.id == com.androidharness.app.llm.HarnessProvider.ID &&
+                    c.providers.wire(roleModel) == null &&
+                    !com.androidharness.app.llm.HarnessProvider.isPooled(roleModel)
+                ) {
+                    val learned = com.androidharness.app.llm.HarnessProvider.probeWire(
+                        roleModel, c.providers.harnessApiKey(),
+                    )
+                    if (learned != null) {
+                        c.providers.pinWire(roleModel, learned.name)
+                        com.androidharness.app.llm.HarnessProvider.pins =
+                            com.androidharness.app.llm.HarnessProvider.pins + (roleModel to learned.name)
+                    }
+                }
+                // Security gate (battery D1): a workspace .harness/mcp.json never
+                // spawns commands until this exact file content was approved. The
+                // dialog offers approve (and continue) or run without those servers.
+                if (workspaceMcpGate) {
+                    val unapproved = runCatching {
+                        c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
+                    }.getOrDefault(emptyList())
+                    if (unapproved.isNotEmpty()) {
+                        pendingRunText = payload
+                        pendingReplacement = replacement
+                        _state.update { it.copy(pendingWorkspaceMcp = unapproved.map { s -> s.name }) }
+                        return@launch
+                    }
+                }
+                // A model picked from the provider's catalog overrides its default.
+                val effectiveConfig = roleModel
+                    ?.takeIf { it.isNotBlank() }
+                    ?.let { provider.copy(model = it) } ?: provider
+                if (replacement != null) {
+                    check(targetSession != null && targetSession == sessionId) { "The active chat changed" }
+                }
+                val sid = c.runManager.startRun(
+                    sessionId = targetSession,
+                    text = payload,
+                    imageRefs = imageRefs,
+                    config = effectiveConfig,
+                    apiKey = apiKey,
+                    permissionMode = s0.permissionMode,
+                    mode = s0.mode,
+                    maxOutputTokens = s0.maxOutputTokens,
+                    maxContextTokens = s0.maxContextTokens,
+                    thinking = s0.thinkingLevel,
+                    maxIterations = s0.maxIterations,
+                    queuedPromptId = queuedPromptId,
+                    replacementMessageId = replacement?.id,
                 )
-                if (learned != null) {
-                    c.providers.pinWire(roleModel, learned.name)
-                    com.androidharness.app.llm.HarnessProvider.pins =
-                        com.androidharness.app.llm.HarnessProvider.pins + (roleModel to learned.name)
+                if (sessionId == null) {
+                    sessionId = sid
+                    sessionIdFlow.value = sid
+                    _state.update { it.copy(sessionId = sid, sessionTitle = payload.take(48)) }
+                    viewModelScope.launch {
+                        c.settings.setLastActiveSessionId(sid)
+                    }
                 }
-            }
-            // Security gate (battery D1): a workspace .harness/mcp.json never
-            // spawns commands until this exact file content was approved. The
-            // dialog offers approve (and continue) or run without those servers.
-            if (workspaceMcpGate) {
-                val unapproved = runCatching {
-                    c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
-                }.getOrDefault(emptyList())
-                if (unapproved.isNotEmpty()) {
-                    pendingRunText = payload
-                    _state.update { it.copy(pendingWorkspaceMcp = unapproved.map { s -> s.name }) }
-                    return@launch
-                }
-            }
-            // A model picked from the provider's catalog overrides its default.
-            val effectiveConfig = roleModel
-                ?.takeIf { it.isNotBlank() }
-                ?.let { provider.copy(model = it) } ?: provider
-            val sid = c.runManager.startRun(
-                sessionId = sessionId,
-                text = payload,
-                imageRefs = imageRefs,
-                config = effectiveConfig,
-                apiKey = apiKey,
-                permissionMode = s0.permissionMode,
-                mode = s0.mode,
-                maxOutputTokens = s0.maxOutputTokens,
-                maxContextTokens = s0.maxContextTokens,
-                thinking = s0.thinkingLevel,
-                maxIterations = s0.maxIterations,
-                queuedPromptId = queuedPromptId,
-            )
-            if (sessionId == null) {
-                sessionId = sid
-                sessionIdFlow.value = sid
-                _state.update { it.copy(sessionId = sid, sessionTitle = payload.take(48)) }
-                viewModelScope.launch {
-                    c.settings.setLastActiveSessionId(sid)
-                }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: "Could not start the message") }
+            } finally {
+                startingRun = false
             }
         }
     }
@@ -1397,17 +1407,8 @@ class ChatViewModel(
      * as a fresh run. The UI warns before calling this.
      */
     fun editAndResend(message: ChatMessage, newText: String) {
-        val sid = sessionId ?: return
-        val mid = message.id ?: return
-        if (newText.isBlank()) return
-        viewModelScope.launch {
-            runCatching { c.runManager.rewindAndTruncate(sid, mid) }
-                .onFailure { e ->
-                    _state.update { st -> st.copy(error = "Could not rewind: ${e.message}") }
-                    return@launch
-                }
-            startRun(newText)
-        }
+        if (sessionId == null || message.id == null || message.role != Role.USER || newText.isBlank()) return
+        startRun(newText, replacement = message)
     }
 
     // ------------------------------------------------------------------

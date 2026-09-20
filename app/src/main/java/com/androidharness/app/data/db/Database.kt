@@ -231,8 +231,10 @@ interface HarnessDao {
 
     /** Deletes [messageId] and every message after it in the session. */
     @Query(
-        "DELETE FROM messages WHERE sessionId = :sessionId AND rowid >= " +
-            "(SELECT rowid FROM messages WHERE id = :messageId)",
+        "DELETE FROM messages WHERE sessionId = :sessionId AND (createdAt > " +
+            "(SELECT createdAt FROM messages WHERE id = :messageId AND sessionId = :sessionId) " +
+            "OR (createdAt = (SELECT createdAt FROM messages WHERE id = :messageId AND sessionId = :sessionId) " +
+            "AND rowid >= (SELECT rowid FROM messages WHERE id = :messageId AND sessionId = :sessionId)))",
     )
     suspend fun deleteMessagesFrom(sessionId: String, messageId: String): Int
 

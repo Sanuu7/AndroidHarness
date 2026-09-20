@@ -450,7 +450,7 @@ fun ChatScreen(
                     TextButton(
                         onClick = {
                             actionsMessage = null
-                            viewModel.retryMessage(msg.text)
+                            confirmingEdit = msg to msg.text
                         },
                         enabled = !state.busy,
                     ) { Text("Retry") }
@@ -492,19 +492,19 @@ fun ChatScreen(
     confirmingEdit?.let { (msg, newText) ->
         AlertDialog(
             onDismissRequest = { confirmingEdit = null },
-            title = { Text("Edit this message?") },
+            title = { Text(if (newText == msg.text) "Retry this message?" else "Edit this message?") },
             text = {
                 Text(
                     "Everything after this message will be deleted, and any file changes made " +
                         "after it will be undone: files are restored to how they were at that " +
-                        "point. The edited message is then resent. This cannot be undone.",
+                        "point. The message is then resent once. This cannot be undone.",
                 )
             },
             confirmButton = {
                 Button(onClick = {
                     viewModel.editAndResend(msg, newText)
                     confirmingEdit = null
-                }) { Text("Edit & resend") }
+                }) { Text(if (newText == msg.text) "Retry" else "Edit & resend") }
             },
             dismissButton = { TextButton(onClick = { confirmingEdit = null }) { Text("Cancel") } },
         )

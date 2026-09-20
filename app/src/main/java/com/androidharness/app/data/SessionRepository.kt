@@ -544,8 +544,8 @@ class SessionRepository(
      * summary (it may reference deleted history). Used when editing a past
      * message: the conversation is truncated there and resent.
      */
-    suspend fun truncateFrom(sessionId: String, messageId: String) {
-        db.dao().deleteMessagesFrom(sessionId, messageId)
+    suspend fun truncateFrom(sessionId: String, messageId: String) = db.withTransaction {
+        check(db.dao().deleteMessagesFrom(sessionId, messageId) > 0) { "Message no longer exists in this chat" }
         db.dao().setCompaction(sessionId, "", 0)
     }
 

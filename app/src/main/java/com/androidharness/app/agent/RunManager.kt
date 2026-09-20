@@ -204,6 +204,7 @@ class RunManager(
         notifyOnFinish: Boolean = true,
         resume: Boolean = false,
         queuedPromptId: String? = null,
+        replacementMessageId: String? = null,
     ): String = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
@@ -212,6 +213,18 @@ class RunManager(
         synchronized(lock) { jobs[sid] }?.let { previous ->
             previous.cancel()
             previous.join()
+        }
+        if (replacementMessageId != null) {
+            check(!resume) { "Cannot replace a message while resuming" }
+            val projectId = sessions.session(sid)?.projectId
+            check(projectId == null || projectId == workspace.currentProjectOnce().id) {
+                "Open this chat's original workspace before editing or retrying a message"
+            }
+            val path = workspace.currentOnce().displayPath
+            check(runningSessionIds.value.none { it != sid && controls.flow(it).value.workspacePath == path }) {
+                "Pause other tasks in this workspace before editing or retrying a message"
+            }
+            rewindAndTruncate(sid, replacementMessageId)
         }
         val prior = controls.flow(sid).value
         val runWorkspace = workspaceOverride ?: workspace.currentOnce()
@@ -760,7 +773,8 @@ class RunManager(
         stopAndJoin(sessionId)
         val msgs = sessions.messages(sessionId)
         val index = msgs.indexOfFirst { it.id == messageId }
-        if (index < 0) return
+        check(index >= 0) { "This message no longer exists. Refresh the chat before retrying." }
+        check(msgs[index].role == Role.USER) { "Only user messages can be resent" }
         // distinct turns from the edited message onward, newest first
         val turnIds = msgs.drop(index).mapNotNull { it.turnId }.distinct().reversed()
         val fs = workspace.currentOnce()
