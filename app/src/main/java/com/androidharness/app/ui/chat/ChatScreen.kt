@@ -7,6 +7,7 @@ import com.androidharness.app.data.AppSettings
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.infiniteRepeatable
@@ -44,6 +45,7 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Check
@@ -61,6 +63,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -878,7 +881,7 @@ fun ChatScreen(
                 onOpenWebPreview = { showWebPreview = true },
             )
         },
-        snackbarHost = { SnackbarHost(snackbar) },
+        snackbarHost = {},
     ) { padding ->
         Box(
             modifier = Modifier
@@ -1367,6 +1370,10 @@ fun ChatScreen(
                             .padding(bottom = 8.dp),
                     )
                 }
+                val fabBottomPadding by animateDpAsState(
+                    targetValue = if (snackbar.currentSnackbarData != null) 68.dp else 10.dp,
+                    label = "fab-bottom-pad",
+                )
                 ScrollToBottomFab(
                     visible = !pinnedToBottom,
                     unread = unreadWhileAway,
@@ -1395,7 +1402,22 @@ fun ChatScreen(
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 10.dp),
+                        .padding(end = 16.dp, bottom = fabBottomPadding),
+                )
+                SnackbarHost(
+                    hostState = snackbar,
+                    modifier = Modifier
+                        .align(Alignment.BottomCenter)
+                        .padding(horizontal = 16.dp, vertical = 8.dp),
+                    snackbar = { data ->
+                        Snackbar(
+                            snackbarData = data,
+                            shape = RoundedCornerShape(14.dp),
+                            containerColor = MaterialTheme.colorScheme.inverseSurface,
+                            contentColor = MaterialTheme.colorScheme.inverseOnSurface,
+                            actionColor = MaterialTheme.colorScheme.inversePrimary,
+                        )
+                    },
                 )
                 }
 

@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.1 (2026-09-20)
+
+### Added
+
+- **SSH workspaces and connection manager**: connect to remote servers and local Termux environments over SSH via pure-Java JSch with Ed25519 support. Includes `SshFs` for SFTP-backed workspace file operations and editing, remote command execution for agent tools and background jobs, a persistent connection bar with connection status, and saved profiles in workspace settings.
+
+### Changed
+
+- **GitHub updater dialog layout**: redesigned the update popup with an expanded surface, dedicated scroll container, and pinned action buttons. Release notes render with full markdown formatting, links, and bullet points without block truncation or line caps.
+- **Unobtrusive chat toasts**: moved the "Files changed" undo prompt and checkpoint restore snackbars directly above the message composer, keeping the input field and action buttons unobstructed. The scroll-to-bottom button glides up smoothly when a toast is active.
+
+### Fixed
+
+- **Atomic message retry and edit rewind**: editing and resending a message atomically truncates subsequent chat history and database records, preventing desynced or orphaned messages when rewinding turns.
+- **Chat autoscroll stability**: snapping to the bottom during message streaming uses frame-aligned scrolling without forced remeasures, preventing Compose layout crashes during rapid message generation.
+
 ## 1.0 (2026-09-19)
 
 ### Added

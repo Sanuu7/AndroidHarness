@@ -4,7 +4,7 @@ A coding agent that lives on your phone.
 
 AndroidHarness is a native Android app, written in Kotlin with Jetpack Compose, that works on code projects directly from the device. It reads and edits files, runs shell commands, uses git, and chats with you about the work as it goes. No PC required.
 
-Status: 1.0.
+Status: 1.1.
 
 ## Features
 
@@ -54,6 +54,13 @@ Status: 1.0.
 **GitHub built in**
 - Login with GitHub in Settings by pasting a personal access token, or tap Get access token to create one on GitHub. AndroidHarness verifies the token before saving it in encrypted app storage. Git push/pull, the bundled gh CLI, and GitHub API requests reuse the saved token.
 - doctor --github checks the token, git transport, and the free plan's hidden protection limits in one command.
+
+**Remote development over SSH**
+- Connect to remote Linux machines, servers, or local Termux environments over SSH with password or private key authentication (including Ed25519 support via Bouncy Castle).
+- SFTP-backed workspace file system (`SshFs`): browse directories, read, write, edit, and view diffs on remote files directly from the app.
+- Remote agent execution: terminal commands, background shell processes, git tools, and package managers run over the remote SSH connection.
+- Persistent SSH status bar with live connection state and quick reconnect controls.
+- Saved SSH profiles in workspace settings for seamless switching between local and remote workspaces.
 
 **Shell tiers, not a sandbox hack**
 - Commands route by path: Shizuku runs privileged commands as the shell uid, the app uid runs a Termux-prefix Linux toolchain with real bash, git, python and node, and bare toybox sh is the fallback when nothing else is installed.

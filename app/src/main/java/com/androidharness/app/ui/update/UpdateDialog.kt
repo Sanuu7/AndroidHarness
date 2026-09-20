@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -16,25 +17,33 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.CloudDownload
-import androidx.compose.material.icons.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.outlined.WarningAmber
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -48,226 +57,616 @@ import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
 import com.androidharness.app.data.update.UpdateManager
+import com.androidharness.app.ui.chat.MarkdownText
 import com.androidharness.app.ui.theme.HarnessMono
 import java.io.File
 
 /**
  * Update dialog driven by [UpdateManager.Step]. Renders release notes with
- * markdown links turned into clickable spans that open in the browser,
- * download progress, Shizuku-silent vs system-installer paths, and errors.
+ * full markdown formatting, download progress, Shizuku-silent vs system-installer
+ * paths, and retryable errors.
  */
 @Composable
 fun UpdateDialog(
     step: UpdateManager.Step,
     onDismiss: () -> Unit,
     onUpdate: () -> Unit,
-    onOpenSystemInstaller: (File) -> Unit,
-    onOpenUnknownSources: () -> Unit,
+    onOpenSystemInstaller: (File) -> Unit = {},
+    onOpenUnknownSources: () -> Unit = {},
 ) {
-    val release = when (step) {
+    var lastRelease by remember { mutableStateOf<UpdateManager.LatestRelease?>(null) }
+    val currentRelease = when (step) {
         is UpdateManager.Step.Available -> step.release
         is UpdateManager.Step.Downloading -> step.release
         is UpdateManager.Step.Installing -> step.release
         is UpdateManager.Step.Error -> step.release
         else -> null
-    } ?: return
+    }
+    LaunchedEffect(currentRelease) {
+        if (currentRelease != null) lastRelease = currentRelease
+    }
+    val release = currentRelease ?: lastRelease
 
-    AlertDialog(
+    val visible = when (step) {
+        is UpdateManager.Step.Available -> true
+        is UpdateManager.Step.Downloading -> true
+        is UpdateManager.Step.Installing -> true
+        is UpdateManager.Step.Done -> true
+        is UpdateManager.Step.Error -> release != null
+        else -> false
+    }
+    if (!visible) return
+
+    val isBusy = step is UpdateManager.Step.Downloading || step is UpdateManager.Step.Installing
+
+    Dialog(
         onDismissRequest = {
-            // Don't let a stray tap cancel an in-flight install.
-            if (step !is UpdateManager.Step.Downloading && step !is UpdateManager.Step.Installing) {
-                onDismiss()
-            }
+            if (!isBusy) onDismiss()
         },
-        icon = {
-            Icon(
-                Icons.Outlined.SystemUpdate,
-                contentDescription = null,
-                tint = MaterialTheme.colorScheme.primary,
-            )
-        },
-        title = { Text(titleFor(step, release)) },
-        text = { UpdateBody(step, release) },
-        confirmButton = {
-            when (step) {
-                is UpdateManager.Step.Available -> Button(onClick = onUpdate) {
-                    Text("Update to ${release.tag}")
+        properties = DialogProperties(usePlatformDefaultWidth = false),
+    ) {
+        Surface(
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerHigh,
+            tonalElevation = 6.dp,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 24.dp)
+                .widthIn(max = 480.dp)
+                .heightIn(max = 660.dp),
+        ) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(20.dp),
+            ) {
+                UpdateHeader(
+                    step = step,
+                    release = release,
+                    isBusy = isBusy,
+                    onDismiss = onDismiss,
+                )
+
+                Spacer(Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+                Spacer(Modifier.height(14.dp))
+
+                Box(
+                    modifier = Modifier
+                        .weight(1f, fill = false)
+                        .fillMaxWidth(),
+                ) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .verticalScroll(rememberScrollState()),
+                        verticalArrangement = Arrangement.spacedBy(14.dp),
+                    ) {
+                        UpdateBodyContent(step = step, release = release)
+                    }
                 }
-                is UpdateManager.Step.Error -> if (step.message == UpdateManager.NEED_INSTALL_PERMISSION) {
-                    Button(onClick = onUpdate) { Text("Try again") }
-                } else Button(onClick = onUpdate) { Text("Retry") }
-                else -> {}
+
+                Spacer(Modifier.height(14.dp))
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f))
+                Spacer(Modifier.height(14.dp))
+
+                UpdateActions(
+                    step = step,
+                    release = release,
+                    onDismiss = onDismiss,
+                    onUpdate = onUpdate,
+                )
             }
-        },
-        dismissButton = {
-            when (step) {
-                is UpdateManager.Step.Downloading, is UpdateManager.Step.Installing -> {}
-                else -> OutlinedButton(onClick = onDismiss) { Text(dismissLabel(step)) }
-            }
-        },
-    )
+        }
+    }
 }
 
-private fun titleFor(step: UpdateManager.Step, r: UpdateManager.LatestRelease): String = when (step) {
+@Composable
+private fun UpdateHeader(
+    step: UpdateManager.Step,
+    release: UpdateManager.LatestRelease?,
+    isBusy: Boolean,
+    onDismiss: () -> Unit,
+) {
+    val icon = when (step) {
+        is UpdateManager.Step.Downloading -> Icons.Outlined.CloudDownload
+        is UpdateManager.Step.Installing -> Icons.Outlined.SystemUpdate
+        is UpdateManager.Step.Done -> Icons.Outlined.RocketLaunch
+        is UpdateManager.Step.Error -> Icons.Outlined.WarningAmber
+        else -> Icons.Outlined.SystemUpdate
+    }
+    val iconColor = when (step) {
+        is UpdateManager.Step.Done -> MaterialTheme.colorScheme.primary
+        is UpdateManager.Step.Error -> MaterialTheme.colorScheme.error
+        else -> MaterialTheme.colorScheme.primary
+    }
+    val iconBg = when (step) {
+        is UpdateManager.Step.Done -> MaterialTheme.colorScheme.primaryContainer
+        is UpdateManager.Step.Error -> MaterialTheme.colorScheme.errorContainer
+        else -> MaterialTheme.colorScheme.primaryContainer
+    }
+
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(
+            modifier = Modifier
+                .size(42.dp)
+                .clip(RoundedCornerShape(12.dp))
+                .background(iconBg),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(
+                imageVector = icon,
+                contentDescription = null,
+                tint = iconColor,
+                modifier = Modifier.size(22.dp),
+            )
+        }
+        Spacer(Modifier.width(14.dp))
+        Column(Modifier.weight(1f)) {
+            Text(
+                text = titleFor(step, release),
+                style = MaterialTheme.typography.titleMedium,
+                fontWeight = FontWeight.SemiBold,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Text(
+                text = "GitHub Releases",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (!isBusy) {
+            IconButton(
+                onClick = onDismiss,
+                modifier = Modifier.size(32.dp),
+            ) {
+                Icon(
+                    imageVector = Icons.Filled.Close,
+                    contentDescription = "Close",
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(18.dp),
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UpdateBodyContent(
+    step: UpdateManager.Step,
+    release: UpdateManager.LatestRelease?,
+) {
+    when (step) {
+        is UpdateManager.Step.Available -> {
+            if (release != null) {
+                ReleaseAvailableContent(release)
+            }
+        }
+        is UpdateManager.Step.Downloading -> {
+            DownloadProgressContent(step)
+        }
+        is UpdateManager.Step.Installing -> {
+            InstallingContent(step, release)
+        }
+        is UpdateManager.Step.Done -> {
+            DoneContent(step, release)
+        }
+        is UpdateManager.Step.Error -> {
+            ErrorContent(step, release)
+        }
+        else -> {}
+    }
+}
+
+@Composable
+private fun ReleaseAvailableContent(release: UpdateManager.LatestRelease) {
+    val context = LocalContext.current
+
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.35f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Column(
+            modifier = Modifier.padding(14.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth(),
+            ) {
+                Surface(
+                    shape = RoundedCornerShape(8.dp),
+                    color = MaterialTheme.colorScheme.primaryContainer,
+                ) {
+                    Text(
+                        text = release.tag,
+                        style = MaterialTheme.typography.labelMedium,
+                        fontFamily = HarnessMono,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onPrimaryContainer,
+                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+                    )
+                }
+                if (release.apkBytes > 0L) {
+                    Spacer(Modifier.width(8.dp))
+                    Text(
+                        text = "%.1f MB".format(release.apkBytes / 1_048_576f),
+                        style = MaterialTheme.typography.labelSmall,
+                        fontFamily = HarnessMono,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Spacer(Modifier.weight(1f))
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(8.dp))
+                        .clickable {
+                            runCatching {
+                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(release.htmlUrl)))
+                            }
+                        }
+                        .padding(horizontal = 6.dp, vertical = 4.dp),
+                ) {
+                    Text(
+                        text = "GitHub",
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary,
+                        fontWeight = FontWeight.Medium,
+                    )
+                    Spacer(Modifier.width(4.dp))
+                    Icon(
+                        Icons.AutoMirrored.Outlined.OpenInNew,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(13.dp),
+                    )
+                }
+            }
+            if (release.name.isNotBlank() && release.name != release.tag) {
+                Text(
+                    text = release.name,
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+            }
+        }
+    }
+
+    Text(
+        text = "What's new",
+        style = MaterialTheme.typography.titleSmall,
+        fontWeight = FontWeight.SemiBold,
+        color = MaterialTheme.colorScheme.onSurface,
+    )
+
+    val body = release.body.trim()
+    if (body.isBlank()) {
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Text(
+                text = "No release notes provided.",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(16.dp),
+            )
+        }
+    } else {
+        Surface(
+            shape = RoundedCornerShape(14.dp),
+            color = MaterialTheme.colorScheme.surfaceContainerLowest,
+            border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+            modifier = Modifier.fillMaxWidth(),
+        ) {
+            Box(Modifier.padding(14.dp)) {
+                MarkdownText(
+                    text = body,
+                    onOpenUrl = { url ->
+                        val finalUrl = if (!url.startsWith("http://") && !url.startsWith("https://")) {
+                            "https://github.com/Sanuu7/AndroidHarness/blob/main/$url"
+                        } else url
+                        runCatching {
+                            context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(finalUrl)))
+                        }
+                    },
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DownloadProgressContent(step: UpdateManager.Step.Downloading) {
+    val animatedProgress by animateFloatAsState(
+        targetValue = step.percent / 100f,
+        animationSpec = tween(220),
+        label = "update-download",
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalArrangement = Arrangement.spacedBy(14.dp),
+    ) {
+        Text(
+            text = "Fetching APK asset from GitHub Releases…",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+
+        LinearProgressIndicator(
+            progress = { animatedProgress },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(RoundedCornerShape(5.dp)),
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "${step.percent}%",
+                style = MaterialTheme.typography.titleSmall,
+                fontFamily = HarnessMono,
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.weight(1f))
+            Text(
+                text = "%.1f / %.1f MB".format(step.mb, step.totalMb),
+                style = MaterialTheme.typography.labelMedium,
+                fontFamily = HarnessMono,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+    }
+}
+
+@Composable
+private fun InstallingContent(step: UpdateManager.Step.Installing, release: UpdateManager.LatestRelease?) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            CircularProgressIndicator(
+                modifier = Modifier.size(28.dp),
+                strokeWidth = 3.dp,
+                color = MaterialTheme.colorScheme.primary,
+            )
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = if (step.viaShizuku) "Installing via Shizuku…" else "Opening system installer…",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = if (step.viaShizuku) {
+                        "Shizuku is installing ${release?.tag ?: "update"} silently. The app will restart when done."
+                    } else {
+                        "Confirm the package installer prompt to finish updating."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun DoneContent(step: UpdateManager.Step.Done, release: UpdateManager.LatestRelease?) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.surfaceContainerLowest,
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(
+                modifier = Modifier
+                    .size(36.dp)
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.primaryContainer),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(
+                    Icons.Outlined.CheckCircle,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer,
+                    modifier = Modifier.size(20.dp),
+                )
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = if (step.viaShizuku) "Installation complete!" else "Ready to install",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = if (step.viaShizuku) {
+                        "${release?.tag ?: "Update"} was installed via Shizuku."
+                    } else {
+                        "APK staged. Follow installer instructions."
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ErrorContent(step: UpdateManager.Step.Error, release: UpdateManager.LatestRelease?) {
+    Surface(
+        shape = RoundedCornerShape(16.dp),
+        color = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.5f),
+        border = BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.35f)),
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            modifier = Modifier.padding(16.dp),
+            verticalAlignment = Alignment.Top,
+        ) {
+            Icon(
+                Icons.Outlined.WarningAmber,
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.error,
+                modifier = Modifier.size(22.dp),
+            )
+            Spacer(Modifier.width(14.dp))
+            Column(Modifier.weight(1f)) {
+                Text(
+                    text = "Something went wrong",
+                    style = MaterialTheme.typography.titleSmall,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    text = step.message,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onErrorContainer,
+                )
+            }
+        }
+    }
+    if (release != null) {
+        Spacer(Modifier.height(8.dp))
+        LinkLine(release.htmlUrl, "Open release on GitHub →")
+    }
+}
+
+@Composable
+private fun UpdateActions(
+    step: UpdateManager.Step,
+    release: UpdateManager.LatestRelease?,
+    onDismiss: () -> Unit,
+    onUpdate: () -> Unit,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        when (step) {
+            is UpdateManager.Step.Available -> {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text("Later")
+                }
+                Spacer(Modifier.width(10.dp))
+                Button(
+                    onClick = onUpdate,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Icon(
+                        Icons.Outlined.Download,
+                        contentDescription = null,
+                        modifier = Modifier.size(18.dp),
+                    )
+                    Spacer(Modifier.width(6.dp))
+                    Text("Update to ${release?.tag ?: "latest"}")
+                }
+            }
+
+            is UpdateManager.Step.Downloading -> {
+                Text(
+                    "Downloading…",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            is UpdateManager.Step.Installing -> {
+                Text(
+                    "Installing update…",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+
+            is UpdateManager.Step.Done -> {
+                Button(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text("Done")
+                }
+            }
+
+            is UpdateManager.Step.Error -> {
+                OutlinedButton(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text("Close")
+                }
+                Spacer(Modifier.width(10.dp))
+                Button(
+                    onClick = onUpdate,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text(if (step.message == UpdateManager.NEED_INSTALL_PERMISSION) "Try again" else "Retry")
+                }
+            }
+
+            else -> {
+                Button(
+                    onClick = onDismiss,
+                    shape = RoundedCornerShape(12.dp),
+                ) {
+                    Text("Close")
+                }
+            }
+        }
+    }
+}
+
+private fun titleFor(step: UpdateManager.Step, r: UpdateManager.LatestRelease?): String = when (step) {
     is UpdateManager.Step.Checking -> "Checking for updates…"
     is UpdateManager.Step.UpToDate -> "You're up to date"
     is UpdateManager.Step.Available -> "Update available"
-    is UpdateManager.Step.Downloading -> "Downloading ${r.tag}"
+    is UpdateManager.Step.Downloading -> "Downloading update"
     is UpdateManager.Step.Installing -> if (step.viaShizuku) "Installing via Shizuku…" else "Opening installer…"
     is UpdateManager.Step.Done -> if (step.viaShizuku) "Installed!" else "Handed to installer"
     is UpdateManager.Step.Error -> "Something went wrong"
     else -> "Update"
-}
-
-private fun dismissLabel(step: UpdateManager.Step): String = when (step) {
-    is UpdateManager.Step.UpToDate -> "Nice"
-    is UpdateManager.Step.Done -> "Done"
-    is UpdateManager.Step.Error -> "Close"
-    else -> "Later"
-}
-
-@Composable
-private fun UpdateBody(step: UpdateManager.Step, r: UpdateManager.LatestRelease) {
-    Column(Modifier.fillMaxWidth()) {
-        when (step) {
-            is UpdateManager.Step.Checking -> Row(verticalAlignment = Alignment.CenterVertically) {
-                CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                Spacer(Modifier.size(12.dp))
-                Text("Asking GitHub for the latest release…")
-            }
-
-            is UpdateManager.Step.UpToDate -> Text(
-                "This build (${step.current}) matches the latest published release.",
-            )
-
-            is UpdateManager.Step.Available -> ReleaseNotes(step.release)
-
-            is UpdateManager.Step.Downloading -> DownloadProgress(step.percent, step.mb, step.totalMb)
-
-            is UpdateManager.Step.Installing -> Row(verticalAlignment = Alignment.CenterVertically) {
-                if (!step.viaShizuku) {
-                    CircularProgressIndicator(Modifier.size(18.dp), strokeWidth = 2.dp)
-                    Spacer(Modifier.size(12.dp))
-                }
-                Text(
-                    if (step.viaShizuku) {
-                        "Shizuku is installing ${r.tag} silently. The app restarts when it's done."
-                    } else {
-                        "Confirm the platform prompt to finish installing ${r.tag}."
-                    },
-                )
-            }
-
-            is UpdateManager.Step.Done -> Row(verticalAlignment = Alignment.CenterVertically) {
-                Box(
-                    Modifier
-                        .size(26.dp)
-                        .clip(CircleShape)
-                        .background(MaterialTheme.colorScheme.primary),
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Icon(
-                        Icons.Outlined.RocketLaunch,
-                        contentDescription = null,
-                        tint = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.size(16.dp),
-                    )
-                }
-                Spacer(Modifier.size(12.dp))
-                Text(if (step.viaShizuku) "${r.tag} installed via Shizuku." else "${r.tag} staged.")
-            }
-
-            is UpdateManager.Step.Error -> {
-                Text(step.message, color = MaterialTheme.colorScheme.error)
-                LinkLine(r.htmlUrl, "Open the release page on GitHub →")
-            }
-
-            else -> {}
-        }
-    }
-}
-
-@Composable
-private fun DownloadProgress(percent: Int, mb: Float, totalMb: Float) {
-    val animated by animateFloatAsState(
-        targetValue = percent / 100f,
-        animationSpec = tween(220),
-        label = "update-download",
-    )
-    Text("Fetching the new APK from GitHub Releases…", style = MaterialTheme.typography.bodyMedium)
-    Spacer(Modifier.height(14.dp))
-    LinearProgressIndicator(
-        progress = { animated },
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(8.dp)
-            .clip(RoundedCornerShape(4.dp)),
-    )
-    Spacer(Modifier.height(6.dp))
-    Row(Modifier.fillMaxWidth()) {
-        Text(
-            "$percent%",
-            style = MaterialTheme.typography.labelMedium,
-            fontFamily = HarnessMono,
-            color = MaterialTheme.colorScheme.primary,
-        )
-        Spacer(Modifier.weight(1f))
-        Text(
-            "$mb / $totalMb MB",
-            style = MaterialTheme.typography.labelSmall,
-            fontFamily = HarnessMono,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-}
-
-/** Title + clickable-link rendering of the release body. */
-@Composable
-private fun ReleaseNotes(release: UpdateManager.LatestRelease) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-            Icons.Outlined.CloudDownload,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.size(18.dp),
-        )
-        Spacer(Modifier.size(8.dp))
-        Text(
-            "${release.name.ifBlank { release.tag }} · ${release.tag}",
-            style = MaterialTheme.typography.titleSmallEmphasized,
-        )
-    }
-    Spacer(Modifier.height(10.dp))
-
-    val body = release.body.trim()
-    if (body.isBlank()) {
-        Text("No release notes provided.", style = MaterialTheme.typography.bodySmall)
-    } else {
-        val blocks = body.split("\n\n").take(4)
-        Column(
-            verticalArrangement = Arrangement.spacedBy(10.dp),
-            modifier = Modifier
-                .heightIn(max = 210.dp)
-                .verticalScroll(rememberScrollState()),
-        ) {
-            blocks.forEach { block ->
-                val linkSpans = remember(block) { parseLinks(block) }
-                SelectionAwareLinkText(linkSpans, baseStyle = MaterialTheme.typography.bodySmall)
-            }
-        }
-    }
-    if (release.apkName != null) {
-        Spacer(Modifier.height(8.dp))
-        Text(
-            "${release.apkName} · %.1f MB".format(release.apkBytes / 1_048_576f),
-            style = MaterialTheme.typography.labelSmall,
-            fontFamily = HarnessMono,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-    }
-    Spacer(Modifier.height(4.dp))
-    LinkLine(release.htmlUrl, "Full release on GitHub →")
 }
 
 @Composable
@@ -276,8 +675,13 @@ internal fun LinkLine(url: String, label: String) {
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
-            .clickable { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) }
-            .padding(vertical = 2.dp),
+            .clip(RoundedCornerShape(8.dp))
+            .clickable {
+                runCatching {
+                    ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+                }
+            }
+            .padding(vertical = 4.dp, horizontal = 2.dp),
     ) {
         Text(
             label,
@@ -287,7 +691,7 @@ internal fun LinkLine(url: String, label: String) {
         )
         Spacer(Modifier.size(4.dp))
         Icon(
-            Icons.Outlined.OpenInNew,
+            Icons.AutoMirrored.Outlined.OpenInNew,
             contentDescription = null,
             tint = MaterialTheme.colorScheme.primary,
             modifier = Modifier.size(13.dp),
@@ -298,8 +702,9 @@ internal fun LinkLine(url: String, label: String) {
 data class LinkSpan(val text: String, val url: String?)
 
 /**
- * Minimal markdown-link parser: `[label](url)` spans become url-carrying
- * chunks; bare http(s) URLs become their own links. Everything else is text.
+ * Minimal markdown-link parser retained for backwards compatibility:
+ * `[label](url)` spans become url-carrying chunks; bare http(s) URLs become
+ * their own links. Everything else is text.
  */
 internal fun parseLinks(block: String): List<LinkSpan> {
     val out = mutableListOf<LinkSpan>()
@@ -348,7 +753,6 @@ fun SelectionAwareLinkText(spans: List<LinkSpan>, baseStyle: androidx.compose.ui
                     start,
                     length,
                 )
-                // Annotation marks WHICH url this exact range maps to.
                 addStringAnnotation("URL", span.url, start, length)
             }
         }
@@ -365,3 +769,4 @@ fun SelectionAwareLinkText(spans: List<LinkSpan>, baseStyle: androidx.compose.ui
         },
     )
 }
+
