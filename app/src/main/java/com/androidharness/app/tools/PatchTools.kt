@@ -291,7 +291,10 @@ class ApplyPatchTool : Tool {
                     val actualOld = hunkLines.count { it.first != '+' }
                     val actualNew = hunkLines.count { it.first != '-' }
                     if (actualOld != oldCount || actualNew != newCount) {
-                        throw ToolFailure("Hunk line counts mismatch: $hunkHeader; found -$actualOld +$actualNew")
+                        throw ToolFailure(
+                            "Hunk $hunkHeader declares $oldCount old / $newCount new lines but its body " +
+                                "has $actualOld old / $actualNew new; fix the @@ counts or the hunk body",
+                        )
                     }
                     hunks += Hunk(
                         oldStart = oldStart,

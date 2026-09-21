@@ -53,7 +53,7 @@ class FileToolsTest {
         val before = file("patch.txt").readText()
         val message = runExpectingFailure(ApplyPatchTool(), "patch" to
             "--- a/patch.txt\n+++ b/patch.txt\n@@ -1,3 +1,2 @@\n-one\n-two\n-three\n-four\n+replacement\n")
-        assertTrue(message.contains("line counts mismatch"))
+        assertTrue(message.contains("declares 3 old / 2 new lines but its body"))
         assertEquals(before, file("patch.txt").readText())
     }
 

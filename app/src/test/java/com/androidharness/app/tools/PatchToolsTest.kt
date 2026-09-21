@@ -264,10 +264,10 @@ class PatchToolsTest {
             """
             --- a/m.txt
             +++ b/m.txt
-            @@ -1,3 +1,2 @@
+            @@ -1,2 +1,1 @@
             -duplicate line
              unique line here
-            @@ -3,1 +2,1 @@
+            @@ -3,2 +2,2 @@
              garbage context that matches nothing
             -SECOND HUNK SHOULD FAIL
             +REPLACED
@@ -293,7 +293,7 @@ class PatchToolsTest {
             @@ -1,1 +1,1 @@
             -a
             +A
-            @@ -3,1 +3,1 @@
+            @@ -3,2 +3,2 @@
              nope
             -c
             +C
@@ -316,7 +316,7 @@ class PatchToolsTest {
             +ONE
             --- a/bad.txt
             +++ b/bad.txt
-            @@ -1,1 +1,1 @@
+            @@ -1,2 +1,2 @@
              context that does not exist
             -x
             +y
@@ -432,9 +432,9 @@ class PatchToolsTest {
             --- a/indent.py
             +++ b/indent.py
             @@ -1,2 +1,2 @@
-              def foo():
-             -  return 42
-             +  return 100
+             def foo():
+            -  return 42
+            +  return 100
             """.trimIndent(),
         )
         assertTrue("Expected rejection for mismatched indentation, got: $msg", msg.contains("NOT applied"))
