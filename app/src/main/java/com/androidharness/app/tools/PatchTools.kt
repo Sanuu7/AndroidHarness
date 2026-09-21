@@ -248,7 +248,20 @@ class ApplyPatchTool : Tool {
                 var newFileHasNewline = true
                 while (i < lines.size && lines[i].startsWith("@@")) {
                     val hunkHeader = lines[i]
-                    val oldStart = Regex("-(\\d+)").find(hunkHeader)?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                    val header = Regex("^@@ -(\\d+)(?:,(\\d+))? \\+(\\d+)(?:,(\\d+))? @@(?:.*)$")
+                        .matchEntire(hunkHeader) ?: throw ToolFailure("Invalid hunk header: $hunkHeader")
+                    fun number(index: Int, default: Int? = null): Int =
+                        header.groupValues[index].let { value ->
+                            if (value.isEmpty() && default != null) default
+                            else value.toIntOrNull() ?: throw ToolFailure("Invalid hunk range: $hunkHeader")
+                        }
+                    val oldStart = number(1)
+                    val oldCount = number(2, 1)
+                    val newStart = number(3)
+                    val newCount = number(4, 1)
+                    if ((oldStart == 0 && oldCount != 0) || (newStart == 0 && newCount != 0)) {
+                        throw ToolFailure("Invalid hunk range: $hunkHeader")
+                    }
                     i++
                     val hunkLines = mutableListOf<Pair<Char, String>>()
                     while (i < lines.size) {
@@ -274,6 +287,11 @@ class ApplyPatchTool : Tool {
                             }
                         }
                         i++
+                    }
+                    val actualOld = hunkLines.count { it.first != '+' }
+                    val actualNew = hunkLines.count { it.first != '-' }
+                    if (actualOld != oldCount || actualNew != newCount) {
+                        throw ToolFailure("Hunk line counts mismatch: $hunkHeader; found -$actualOld +$actualNew")
                     }
                     hunks += Hunk(
                         oldStart = oldStart,

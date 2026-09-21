@@ -49,6 +49,23 @@ class FileInfoVirtualFileTest {
         override fun createDir(name: String): FsNode = throw UnsupportedOperationException()
     }
 
+    @Test(expected = ToolFailure::class)
+    fun `unreadable nonempty file is not reported empty`() {
+        val node = object : FsNode by ZeroStatFakeNode("denied", ByteArray(0)) {
+            override val length = 7514L
+            override fun openInputStream(): java.io.InputStream = throw java.io.IOException("EACCES")
+        }
+        inspectFileInfo(node)
+    }
+
+    @Test(expected = ToolFailure::class)
+    fun `missing stream is not reported empty`() {
+        val node = object : FsNode by ZeroStatFakeNode("denied", ByteArray(0)) {
+            override fun openInputStream(): java.io.InputStream? = null
+        }
+        inspectFileInfo(node)
+    }
+
     @Test
     fun `zero-stat node with real content reports non-empty with measured bytes`() {
         val body = buildString {

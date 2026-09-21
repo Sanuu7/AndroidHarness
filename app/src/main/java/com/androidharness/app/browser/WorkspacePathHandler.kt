@@ -26,9 +26,8 @@ class WorkspacePathHandler(
      * Maps a request path (already URL-decoded by AssetLoader, registered
      * prefix "/" stripped) to a workspace node. The synthetic "ws/" prefix is
      * stripped so both /ws/index.html and root-relative /style.css resolve
-     * from the workspace root. Blank paths (form GET submits land on "/?...")
-     * fall back to the current base document, then index.html. Traversal is
-     * rejected with a 404.
+     * from the workspace root. Blank paths resolve to the workspace index.html,
+     * never the currently loaded document. Traversal is rejected with a 404.
      */
     override fun handle(path: String): WebResourceResponse? {
         val ws = workspaceProvider()
@@ -53,7 +52,7 @@ class WorkspacePathHandler(
 
         /**
          * Normalizes a request path to a workspace-relative file path: strips
-         * the synthetic "ws/" prefix, applies the root-document fallback for
+         * the synthetic "ws/" prefix, applies the workspace index fallback for
          * the site root, and rejects traversal. Null means reject. Pure for
          * tests.
          */
@@ -63,7 +62,7 @@ class WorkspacePathHandler(
                 rel = rel.removePrefix("ws").removePrefix("/")
             }
             if (rel.isBlank()) {
-                rel = rootDoc?.takeIf { it.isNotBlank() } ?: "index.html"
+                rel = "index.html"
             }
             val segments = mutableListOf<String>()
             for (seg in rel.split('/')) {

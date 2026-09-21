@@ -162,6 +162,7 @@ class HttpRequestTool(
     override val name = "http_request"
     override val description =
         "Send an HTTP request (GET/POST/PUT/PATCH/DELETE) with optional headers and body. " +
+        "Public addresses only; localhost/private destinations are blocked and redirects are not followed. " +
         "Returns status, headers and the truncated response body. Requests to api.github.com " +
         "and uploads.github.com are authenticated with the configured GitHub token automatically " +
         "(set github_auth=false to go anonymous); github_auth=true extends auth to other " +
@@ -216,12 +217,23 @@ class HttpRequestTool(
                 else -> builder.method(method, requestBody ?: "".toRequestBody(contentType.toMediaTypeOrNull()))
             }
 
-            val reqClient = client.newBuilder()
-                .connectTimeout(15, TimeUnit.SECONDS)
-                .readTimeout(30, TimeUnit.SECONDS)
-                .build()
             try {
-                reqClient.newCall(builder.build()).execute().use { resp ->
+                val request = builder.build()
+                val addresses = PublicHttpAddresses.validate(client.dns.lookup(request.url.host))
+                val reqClient = client.newBuilder()
+                    .proxy(java.net.Proxy.NO_PROXY)
+                    .dns(object : okhttp3.Dns {
+                        override fun lookup(hostname: String): List<java.net.InetAddress> =
+                            if (hostname == request.url.host) addresses
+                            else PublicHttpAddresses.validate(client.dns.lookup(hostname))
+                    })
+                    .followRedirects(false)
+                    .followSslRedirects(false)
+                    .connectionPool(okhttp3.ConnectionPool())
+                    .connectTimeout(15, TimeUnit.SECONDS)
+                    .readTimeout(30, TimeUnit.SECONDS)
+                    .build()
+                reqClient.newCall(request).execute().use { resp ->
                     val sb = StringBuilder()
                     sb.append("HTTP ").append(resp.code).append(' ').append(resp.message).append('\n')
                     val headers = (0 until minOf(resp.headers.size, 12))

@@ -164,13 +164,14 @@ class BrowserToolsTest {
         assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("/", null))
         assertEquals("pages/about.html", WorkspacePathHandler.sanitizeRelPath("pages/about.html", null))
         assertEquals("pages/about.html", WorkspacePathHandler.sanitizeRelPath("/pages/about.html", null))
-        assertEquals("pages/index.html", WorkspacePathHandler.sanitizeRelPath("", "pages/index.html"))
-        assertEquals("pages/index.html", WorkspacePathHandler.sanitizeRelPath("/", "pages/index.html"))
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("", "pages/index.html"))
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("/", "pages/index.html"))
         // the synthetic ws/ prefix is stripped: /ws/x resolves to workspace x
         assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("ws/index.html", null))
         assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("ws", null))
-        // bare /ws/ is the site root: falls back to the current base document
-        assertEquals("pages/index.html", WorkspacePathHandler.sanitizeRelPath("ws/", "pages/index.html"))
+        assertEquals(null, WorkspacePathHandler.sanitizeRelPath("ws/..", "pages/index.html"))
+        // The workspace root must not alias the current document.
+        assertEquals("index.html", WorkspacePathHandler.sanitizeRelPath("ws/", "pages/index.html"))
         // traversal is rejected outright
         assertEquals(null, WorkspacePathHandler.sanitizeRelPath("../etc/passwd", null))
         assertEquals(null, WorkspacePathHandler.sanitizeRelPath("a/../../etc/passwd", null))

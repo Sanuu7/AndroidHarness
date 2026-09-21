@@ -41,6 +41,23 @@ class FileToolsTest {
         }
 
     @Test
+    fun `read beyond EOF reports line count`() = runBlocking {
+        file("short.txt").writeText("one\ntwo\nthree\nfour\nfive\n")
+        val result = run(ReadFileTool(), "path" to "short.txt", "offset" to "500")
+        assertTrue(result.output.contains("beyond end of file: 5 lines"))
+    }
+
+    @Test
+    fun `incorrect hunk counts leave file untouched`() = runBlocking {
+        file("patch.txt").writeText("one\ntwo\nthree\nfour\n")
+        val before = file("patch.txt").readText()
+        val message = runExpectingFailure(ApplyPatchTool(), "patch" to
+            "--- a/patch.txt\n+++ b/patch.txt\n@@ -1,3 +1,2 @@\n-one\n-two\n-three\n-four\n+replacement\n")
+        assertTrue(message.contains("line counts mismatch"))
+        assertEquals(before, file("patch.txt").readText())
+    }
+
+    @Test
     fun `malformed globs return a clean error`() = runBlocking {
         for (pattern in listOf("*.h[tm][", "[", "{a,b", "**/*[")) {
             val message = runExpectingFailure(SearchFilesTool(), "pattern" to pattern)

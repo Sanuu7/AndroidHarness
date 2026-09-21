@@ -147,6 +147,9 @@ class ReadFileTool : Tool {
                 if (raw.isEmpty()) return@withContext ToolResult(true, "(empty file)")
                 val all = splitLines(raw)
                 if (all.isEmpty()) return@withContext ToolResult(true, "(empty file)")
+                if (offset > all.size) {
+                    return@withContext ToolResult(true, "[offset $offset is beyond end of file: ${all.size} lines]")
+                }
                 val slice = all.drop(offset - 1).take(limit)
                 val sb = StringBuilder()
                 var truncated = false
@@ -217,7 +220,8 @@ private fun scanFileStream(node: FsNode, byteCap: Long, sniffBinary: Boolean): S
     val scan = StreamScan()
     val buf = ByteArray(64 * 1024)
     try {
-        node.openInputStream()?.buffered(64 * 1024)?.use { input ->
+        (node.openInputStream() ?: throw ToolFailure("Cannot read file: input stream unavailable"))
+            .buffered(64 * 1024).use { input ->
             var total = 0L
             while (total < byteCap) {
                 val want = minOf(buf.size.toLong(), byteCap - total).toInt()
@@ -244,8 +248,8 @@ private fun scanFileStream(node: FsNode, byteCap: Long, sniffBinary: Boolean): S
             scan.hasBytes = total > 0
             scan.measuredBytes = total
         }
-    } catch (_: Exception) {
-        // Unreadable stream behaves like an empty one, matching prior behavior.
+    } catch (e: Exception) {
+        throw ToolFailure("Cannot inspect file contents: ${e.message}")
     }
     return scan
 }

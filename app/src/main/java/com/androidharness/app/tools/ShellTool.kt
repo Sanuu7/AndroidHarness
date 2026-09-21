@@ -109,8 +109,8 @@ class ShellTool(
             sb.append("exit code: ").append(if (res.timedOut) "killed (timeout)" else if (hasSymlinkError && res.exitCode == 0) 1 else res.exitCode).append('\n')
             val out = res.rawOutput.trimEnd()
             val err = res.rawStderr.trimEnd()
-            if (out.isNotEmpty()) sb.append("--- stdout ---\n").append(out.truncated()).append('\n')
-            if (err.isNotEmpty()) sb.append("--- stderr ---\n").append(err.truncated()).append('\n')
+            if (out.isNotEmpty()) sb.append("stdout (JSON string): ").append(kotlinx.serialization.json.JsonPrimitive(out.truncated())).append('\n')
+            if (err.isNotEmpty()) sb.append("stderr (JSON string): ").append(kotlinx.serialization.json.JsonPrimitive(err.truncated())).append('\n')
             if (out.isEmpty() && err.isEmpty()) sb.append("(no output)")
             ToolResult(ok = !res.timedOut && res.exitCode == 0 && !hasSymlinkError, output = sb.toString().trimEnd())
         }
