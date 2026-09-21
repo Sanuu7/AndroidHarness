@@ -59,6 +59,9 @@ sora-editor = { module = "io.github.Rosemoe.sora-editor:editor", version.ref = "
 shizuku-api = { module = "dev.rikka.shizuku:api", version.ref = "shizuku" }
 shizuku-provider = { module = "dev.rikka.shizuku:provider", version.ref = "shizuku" }
 junit = { module = "junit:junit", version = "4.13.2" }
+androidx-test-runner = { module = "androidx.test:runner", version = "1.6.2" }
+androidx-test-core = { module = "androidx.test:core", version = "1.6.1" }
+androidx-test-ext-junit = { module = "androidx.test.ext:junit", version = "1.2.1" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

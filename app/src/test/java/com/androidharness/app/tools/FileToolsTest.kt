@@ -476,6 +476,65 @@ class FileToolsTest {
         assertEquals("hello", file("a/new.txt").readText())
     }
 
+    /**
+     * QA (2026-09-21): a move onto an existing file replaced it with no error
+     * and no flag, so a typo in the destination path destroyed data.
+     */
+    @Test
+    fun `move_file refuses to overwrite an existing file`() = runBlocking {
+        file("a/keep.txt").apply { parentFile?.mkdirs() }.writeText("keep me")
+        file("b/target.txt").apply { parentFile?.mkdirs() }.writeText("original")
+        val msg = runExpectingFailure(
+            MoveFileTool(),
+            "source" to "a/keep.txt",
+            "destination" to "b/target.txt",
+        )
+        assertTrue("Expected an overwrite refusal, got: $msg", msg.contains("Destination already exists"))
+        assertEquals("original", file("b/target.txt").readText())
+        assertEquals("keep me", file("a/keep.txt").readText())
+    }
+
+    @Test
+    fun `move_file overwrites only when asked to`() = runBlocking {
+        file("a/keep.txt").apply { parentFile?.mkdirs() }.writeText("replacement")
+        file("b/target.txt").apply { parentFile?.mkdirs() }.writeText("original")
+        val r = run(
+            MoveFileTool(),
+            "source" to "a/keep.txt",
+            "destination" to "b/target.txt",
+            "overwrite" to "true",
+        )
+        assertTrue(r.output, r.ok)
+        assertEquals("replacement", file("b/target.txt").readText())
+        assertFalse(file("a/keep.txt").exists())
+    }
+
+    /**
+     * QA (2026-09-21): file_info called "a\rb\rc" one line while read_file
+     * numbered three, so the two tools disagreed about the same file.
+     */
+    @Test
+    fun `file_info and read_file agree on bare CR line counts`() = runBlocking {
+        file("cr.txt").writeBytes("a\rb\rc".toByteArray())
+        val info = run(FileInfoTool(), "path" to "cr.txt")
+        assertTrue("file_info said: ${info.output}", info.output.contains("line_count: 3"))
+
+        val read = run(ReadFileTool(), "path" to "cr.txt")
+        assertTrue("read_file said: ${read.output.replace('\r', '|')}", read.output.contains("3\tc"))
+        assertEquals(3, read.output.trimEnd().lines().size)
+    }
+
+    @Test
+    fun `file_info counts CRLF once and mixed terminators correctly`() = runBlocking {
+        file("crlf.txt").writeBytes("a\r\nb\r\n".toByteArray())
+        val crlf = run(FileInfoTool(), "path" to "crlf.txt")
+        assertTrue("CRLF counted wrong: ${crlf.output}", crlf.output.contains("line_count: 2"))
+
+        file("mixed.txt").writeBytes("a\rb\r\nc\nd".toByteArray())
+        val mixed = run(FileInfoTool(), "path" to "mixed.txt")
+        assertTrue("mixed terminators counted wrong: ${mixed.output}", mixed.output.contains("line_count: 4"))
+    }
+
     @Test
     fun `grep rejects contradictory include pattern on explicit file`() = runBlocking {
         file("foo.kt").writeText("val x = 1\n")

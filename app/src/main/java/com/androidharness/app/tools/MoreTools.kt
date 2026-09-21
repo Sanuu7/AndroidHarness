@@ -106,11 +106,17 @@ class DeleteFileTool : Tool {
 
 class MoveFileTool : Tool {
     override val name = "move_file"
-    override val description = "Move or rename a file within the workspace."
+    override val description =
+        "Move or rename a file within the workspace. Refuses to overwrite an existing destination " +
+            "file unless overwrite=true."
     override val parametersSchema = Schema.obj(
         mapOf(
             "source" to Schema.string("Current path relative to the workspace root."),
             "destination" to Schema.string("New path relative to the workspace root."),
+            "overwrite" to Schema.boolean(
+                "Replace an existing destination file. Default false: the move fails instead of " +
+                    "silently destroying the file that is already there.",
+            ),
         ),
         required = listOf("source", "destination"),
     )
@@ -122,6 +128,7 @@ class MoveFileTool : Tool {
                 ?: throw ToolFailure("Missing required argument: source")
             val destination = args["destination"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: destination")
+            val overwrite = args["overwrite"]?.jsonPrimitive?.booleanOrNull ?: false
 
             try {
                 val from = ctx.workspace.resolve(source)
@@ -156,6 +163,15 @@ class MoveFileTool : Tool {
 
                 if (from.isDirectory && to.exists) {
                     throw ToolFailure("Destination already exists: $destination")
+                }
+
+                // A file destination is never replaced silently: the caller has
+                // to say so, or a typo in the destination path destroys a file
+                // it never mentioned (QA, 2026-09-21).
+                if (to.exists && !overwrite) {
+                    throw ToolFailure(
+                        "Destination already exists: $destination. Pass overwrite=true to replace it.",
+                    )
                 }
 
                 val srcParent = if (srcParts.size > 1) srcParts.dropLast(1).joinToString("/") else ""

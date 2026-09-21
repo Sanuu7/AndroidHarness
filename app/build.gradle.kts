@@ -16,6 +16,9 @@ android {
         targetSdk = 36
         versionCode = 15
         versionName = "1.1"
+        // Instrumented tests drive the real WebView (screenshots, history,
+        // promise staging), which no JVM test can exercise.
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     signingConfigs {
@@ -142,4 +145,8 @@ dependencies {
     implementation(libs.sora.editor)
 
     testImplementation(libs.junit)
+
+    androidTestImplementation(libs.androidx.test.runner)
+    androidTestImplementation(libs.androidx.test.core)
+    androidTestImplementation(libs.androidx.test.ext.junit)
 }

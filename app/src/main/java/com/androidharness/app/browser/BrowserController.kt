@@ -282,6 +282,22 @@ class BrowserController(
         return activeWebViewRef?.get()?.url ?: headlessWebView?.url
     }
 
+    /**
+     * Renders the WebView's own back/forward list for tests and diagnostics:
+     * the entries a history step is judged against are otherwise invisible, and
+     * a duplicate entry is exactly what makes a step look like it never moved.
+     */
+    internal suspend fun debugHistoryDump(): String = withContext(Dispatchers.Main) {
+        runCatching {
+            val list = getOrCreateWebView().copyBackForwardList() ?: return@runCatching "no list"
+            (0 until list.size).joinToString(" | ") { i ->
+                val item = list.getItemAtIndex(i)
+                val mark = if (i == list.currentIndex) "*" else ""
+                "$mark${item?.url?.substringAfterLast('/')}"
+            }
+        }.getOrElse { "unavailable: ${it.message}" }
+    }
+
     private suspend fun currentUrl(): String? = withContext(Dispatchers.Main) {
         runCatching { getOrCreateWebView().url }.getOrNull()
     }
@@ -1516,8 +1532,18 @@ class BrowserController(
                     window.__harnessAsync = null;
                     window.__harnessAsyncActive = true;
                     Promise.resolve(v).then(
-                        function(pv) { window.__harnessAsyncActive = false; window.__harnessAsync = JSON.stringify({ ok: true, value: pv === undefined ? null : pv }); },
-                        function(pe) { window.__harnessAsyncActive = false; window.__harnessAsync = JSON.stringify({ ok: false, error: String(pe && pe.message || pe) }); }
+                        function(pv) {
+                            try {
+                                window.__harnessAsync = JSON.stringify({ ok: true, value: pv === undefined ? null : pv });
+                            } catch (e) {
+                                window.__harnessAsync = JSON.stringify({ ok: false, error: String(e && e.message || e) });
+                            }
+                            window.__harnessAsyncActive = false;
+                        },
+                        function(pe) {
+                            window.__harnessAsync = JSON.stringify({ ok: false, error: String(pe && pe.message || pe) });
+                            window.__harnessAsyncActive = false;
+                        }
                     );
                     return { ok: true, value: "$PROMISE_SENTINEL" };
                 }
