@@ -3,6 +3,8 @@ package com.androidharness.app
 import android.app.Application
 import android.content.Context
 import android.webkit.WebView
+import androidx.compose.foundation.ComposeFoundationFlags
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.room.Room
 import com.androidharness.app.agent.AgentEngine
 import com.androidharness.app.agent.TodoStore
@@ -30,8 +32,11 @@ class HarnessApp : Application() {
     lateinit var container: AppContainer
         private set
 
+    @OptIn(ExperimentalFoundationApi::class)
     override fun onCreate() {
         super.onCreate()
+        // Paused LazyColumn prefetch crashes in LayoutNode.onChildRemoved when chat items change.
+        ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled = false
         WebView.enableSlowWholeDocumentDraw()
         container = AppContainer(this)
     }
@@ -59,7 +64,7 @@ class AppContainer(val appContext: Context) {
         .addMigrations(
             AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8,
-            AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13,
+            AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14,
         )
         .addCallback(AppDatabase.OVERSIZED_ROW_SANITIZER)
         // Only kicks in when no migration path exists (pre-v4 databases);
