@@ -41,6 +41,8 @@ data class ChatMessage(
     /** Provider-reported output and measured model request time; zero means unavailable. */
     val outputTokens: Int = 0,
     val generationMs: Long = 0,
+    val firstTokenMs: Long = 0,
+    val streamMs: Long = 0,
     val images: List<ImageRef> = emptyList(),
     /** Resolved image bytes for the current request; never persisted. */
     val imageData: List<ImageData> = emptyList(),

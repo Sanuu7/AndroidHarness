@@ -127,7 +127,7 @@ class RunManager(
 
     /**
      * Publishes buffered stream deltas into [LiveRunState]; a no-op when nothing
-     * is pending. Batching deltas here keeps the UI at ~15 updates/sec no matter
+     * is pending. Batching deltas here keeps the UI at ~30 updates/sec no matter
      * how fast the model streams.
      */
     private fun flushDeltas(sessionId: String) {
@@ -917,8 +917,8 @@ class RunManager(
     }
 
     companion object {
-        /** UI frame-cadence flush interval for streamed deltas (~15 fps). */
-        private const val STREAM_FLUSH_MS = 66L
+        /** UI refreshes at ~30 fps; network chunks are consumed independently. */
+        private const val STREAM_FLUSH_MS = 33L
 
         /**
          * The blocking prompts of [state] as answerable notification payloads.

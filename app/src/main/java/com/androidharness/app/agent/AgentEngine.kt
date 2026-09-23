@@ -336,14 +336,26 @@ class AgentEngine(
             var calls = mutableListOf<ToolCallData>()
             var outputTokens = 0
             var requestStartedNs = System.nanoTime()
+            var firstTokenNs = 0L
+            var lastTokenNs = 0L
 
             val streamEventHandler: suspend (StreamEvent) -> Unit = { event ->
                 when (event) {
                     is StreamEvent.TextDelta -> {
+                        if (event.text.isNotEmpty()) {
+                            val now = System.nanoTime()
+                            if (firstTokenNs == 0L) firstTokenNs = now
+                            lastTokenNs = now
+                        }
                         text.append(event.text)
                         emit(AgentEvent.Text(event.text))
                     }
                     is StreamEvent.ThinkingDelta -> {
+                        if (event.text.isNotEmpty()) {
+                            val now = System.nanoTime()
+                            if (firstTokenNs == 0L) firstTokenNs = now
+                            lastTokenNs = now
+                        }
                         thinking.append(event.text)
                         emit(AgentEvent.Thinking(event.text))
                     }
@@ -352,10 +364,20 @@ class AgentEngine(
                     is StreamEvent.Batch -> event.events.forEach { nested ->
                         when (nested) {
                             is StreamEvent.TextDelta -> {
+                                if (nested.text.isNotEmpty()) {
+                                    val now = System.nanoTime()
+                                    if (firstTokenNs == 0L) firstTokenNs = now
+                                    lastTokenNs = now
+                                }
                                 text.append(nested.text)
                                 emit(AgentEvent.Text(nested.text))
                             }
                             is StreamEvent.ThinkingDelta -> {
+                                if (nested.text.isNotEmpty()) {
+                                    val now = System.nanoTime()
+                                    if (firstTokenNs == 0L) firstTokenNs = now
+                                    lastTokenNs = now
+                                }
                                 thinking.append(nested.text)
                                 emit(AgentEvent.Thinking(nested.text))
                             }
@@ -390,6 +412,8 @@ class AgentEngine(
                 onAttemptStart = {
                     requestStartedNs = System.nanoTime()
                     outputTokens = 0
+                    firstTokenNs = 0L
+                    lastTokenNs = 0L
                     text = StringBuilder()
                     thinking = StringBuilder()
                     calls = mutableListOf()
@@ -414,6 +438,8 @@ class AgentEngine(
                     onAttemptStart = {
                         requestStartedNs = System.nanoTime()
                         outputTokens = 0
+                        firstTokenNs = 0L
+                        lastTokenNs = 0L
                         text = StringBuilder()
                         thinking = StringBuilder()
                         calls = mutableListOf()
@@ -445,6 +471,8 @@ class AgentEngine(
                     thinking = thinking.toString(),
                     outputTokens = outputTokens,
                     generationMs = ((System.nanoTime() - requestStartedNs) / 1_000_000).coerceAtLeast(1),
+                    firstTokenMs = if (firstTokenNs > 0L) ((firstTokenNs - requestStartedNs) / 1_000_000).coerceAtLeast(1) else 0,
+                    streamMs = if (lastTokenNs > firstTokenNs) ((lastTokenNs - firstTokenNs) / 1_000_000).coerceAtLeast(1) else 0,
                 )
                 working += assistant
                 emit(AgentEvent.AssistantCommitted(assistant))

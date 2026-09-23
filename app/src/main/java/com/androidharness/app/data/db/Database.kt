@@ -48,6 +48,8 @@ data class MessageEntity(
     val thinkingMs: Long = 0,
     val outputTokens: Int = 0,
     val generationMs: Long = 0,
+    val firstTokenMs: Long = 0,
+    val streamMs: Long = 0,
     val imagesJson: String = "[]",
     val turnId: String? = null,
     val createdAt: Long,
@@ -394,13 +396,20 @@ interface HarnessDao {
         SessionFileChangeEntity::class,
         MessageFtsEntity::class,
     ],
-    version = 13,
+    version = 14,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_13_14 = object : androidx.room.migration.Migration(13, 14) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE messages ADD COLUMN firstTokenMs INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE messages ADD COLUMN streamMs INTEGER NOT NULL DEFAULT 0")
+            }
+        }
+
         /**
          * Android CursorWindow hard-caps rows at 2MB; rows exceeding the cap
          * throw SQLiteBlobTooBigException and crash the app on startup/query.

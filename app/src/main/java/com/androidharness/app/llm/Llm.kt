@@ -3,6 +3,7 @@ package com.androidharness.app.llm
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ToolCallData
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -151,44 +152,52 @@ object ProviderFactory {
      */
     fun sseJson(request: Request, httpClient: OkHttpClient = client): Flow<JsonElement> = callbackFlow {
         val call = httpClient.newCall(request)
-        call.enqueue(object : Callback {
-            override fun onFailure(call: Call, e: IOException) {
-                close(e)
-            }
+        val reader = launch(Dispatchers.IO) {
+            try {
+                val response = kotlinx.coroutines.suspendCancellableCoroutine<Response> { continuation ->
+                    call.enqueue(object : Callback {
+                        override fun onFailure(call: Call, e: IOException) {
+                            if (continuation.isActive) continuation.resumeWith(Result.failure(e))
+                        }
 
-            override fun onResponse(call: Call, response: Response) {
+                        override fun onResponse(call: Call, response: Response) {
+                            if (continuation.isActive) continuation.resumeWith(Result.success(response))
+                            else response.close()
+                        }
+                    })
+                }
                 response.use {
                     if (!it.isSuccessful) {
-                        val errBody = try {
-                            it.body?.string()?.take(2000)
-                        } catch (_: Exception) {
-                            null
-                        }
-                        close(ApiException(it.code, errBody ?: it.message))
-                        return
+                        val errBody = try { it.body?.string()?.take(2000) } catch (_: Exception) { null }
+                        throw ApiException(it.code, errBody ?: it.message)
                     }
-                    try {
-                        val source = it.body!!.source()
-                        while (true) {
-                            val line = readSseLine(source) ?: break
-                            if (!line.startsWith("data:")) continue
-                            val payload = line.removePrefix("data:").trim()
-                            if (payload == "[DONE]") break
-                            if (payload.isEmpty()) continue
-                            try {
-                                trySend(json.parseToJsonElement(payload))
-                            } catch (_: Exception) {
-                                // skip unparseable keep-alive lines
-                            }
+                    val source = it.body!!.source()
+                    while (true) {
+                        val line = readSseLine(source) ?: break
+                        if (!line.startsWith("data:")) continue
+                        val payload = line.removePrefix("data:").trim()
+                        if (payload == "[DONE]") break
+                        if (payload.isEmpty()) continue
+                        try {
+                            send(json.parseToJsonElement(payload))
+                        } catch (e: kotlinx.coroutines.CancellationException) {
+                            throw e
+                        } catch (_: kotlinx.serialization.SerializationException) {
+                            // Skip malformed keep-alive lines, never drop valid stream chunks.
                         }
-                        close()
-                    } catch (e: Exception) {
-                        close(e)
                     }
                 }
+                close()
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                close(e)
             }
-        })
-        awaitClose { call.cancel() }
+        }
+        awaitClose {
+            call.cancel()
+            reader.cancel()
+        }
     }.flowOn(Dispatchers.IO)
 
     /**
