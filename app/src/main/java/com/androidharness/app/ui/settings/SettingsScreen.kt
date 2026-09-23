@@ -2127,6 +2127,23 @@ private fun AgentSection(
                     modifier = Modifier.padding(bottom = 8.dp),
                 )
             }
+            SettingsAnchor("Subagent action tools") {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Column(Modifier.weight(1f)) {
+                        Text("Subagent action tools", style = MaterialTheme.typography.titleSmall)
+                        Text(
+                            "Allow subagents to edit files and run commands in Act mode. " +
+                                "They follow the current permission mode; Plan mode stays read-only.",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                    Switch(
+                        checked = settings.subagentFullAccess,
+                        onCheckedChange = { scope.launch { container.settings.setSubagentFullAccess(it) } },
+                    )
+                }
+            }
             SettingsAnchor("Max context window") {
                 DropdownSetting(
                     label = "Max context window",

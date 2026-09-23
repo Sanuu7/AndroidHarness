@@ -495,7 +495,7 @@ class AgentEngine(
                 }
             }
 
-            // Subagents are read-only, independent and slow, run every task
+            // Subagents are independent and slow, run every task
             // call in the batch concurrently so research branches don't queue.
             // Ordinary read-only calls are also allowed to overlap, but only
             // inside contiguous safe-read groups. Writes and interactive/stateful
@@ -772,7 +772,8 @@ class AgentEngine(
             }
             return runSubagent(
                 prompt, title, call.id, taskConfig, apiKey, workspace, requestOptions, emitEvent,
-                sandboxOff = mode == PermissionMode.FULL_ACCESS,
+                registry, mode, sessionAllowedTools, sessionId, turnId,
+                actionTools = agentMode == AgentMode.ACT && cavemanSettings().subagentFullAccess,
             )
         }
 
@@ -1147,16 +1148,18 @@ class AgentEngine(
     // Subagents
     // ------------------------------------------------------------------
 
-    /** Tools a subagent may see: read-only, no ask_user (deadlock), no task (no nesting). */
-    private fun subagentTools(ctx: ToolContext): List<com.androidharness.app.llm.ToolSchema> =
-        registry.schemas(readOnlyOnly = true, context = ctx).filter {
+    private fun subagentTools(
+        registry: com.androidharness.app.tools.ToolRegistry,
+        ctx: ToolContext,
+        actionTools: Boolean,
+    ): List<com.androidharness.app.llm.ToolSchema> =
+        registry.schemas(readOnlyOnly = !actionTools, context = ctx).filter {
             it.name != "ask_user" && it.name != "task"
         }
 
     /**
-     * Runs a nested read-only agent to answer [prompt] and returns its final
-     * message as the tool result. The subagent explores with read-only tools
-     * in its own context; only the final answer comes back to the parent, so
+     * Runs a nested agent to answer [prompt] and returns its final
+     * message as the tool result. Only the final answer comes back to the parent, so
      * broad exploration never bloats the main conversation. Usage is
      * re-emitted so it rolls into the session totals (same as compaction).
      * Each action the subagent takes is emitted as [AgentEvent.SubagentStep]
@@ -1172,7 +1175,12 @@ class AgentEngine(
         workspace: WorkspaceFs,
         requestOptions: RequestOptions,
         emitEvent: suspend (AgentEvent) -> Unit,
-        sandboxOff: Boolean = false,
+        registry: com.androidharness.app.tools.ToolRegistry,
+        permissionMode: PermissionMode,
+        sessionAllowedTools: MutableSet<String>,
+        sessionId: String,
+        turnId: String,
+        actionTools: Boolean,
     ): ToolResult {
         suspend fun step(line: String) = emitEvent(AgentEvent.SubagentStep(parentCallId, line))
         val label = if (title.isNullOrBlank()) "Task" else "Task [$title]"
@@ -1182,10 +1190,16 @@ class AgentEngine(
         // reply style applies here too. Code, paths and quoted errors stay exact.
         val caveman = cavemanSettings()
         val system = com.androidharness.app.caveman.CavemanPolicy.apply(
-            "You are a read-only research subagent inside a coding harness. " +
-                "Explore the workspace with the tools you have (read_file, list_dir, " +
-                "search_files, grep, file_info, web_fetch/search, and CodeGraph when available) to answer the task. " +
-                "You must not modify anything, and you cannot ask questions; if something " +
+            (if (actionTools) {
+                "You are a coding subagent inside a coding harness. You may edit files and run tools " +
+                    "to complete the delegated task, under the parent run's permission mode. "
+            } else {
+                "You are a read-only research subagent inside a coding harness. " +
+                    "Explore the workspace with the tools you have (read_file, list_dir, " +
+                    "search_files, grep, file_info, web_fetch/search, and CodeGraph when available) to answer the task. " +
+                    "You must not modify anything. "
+            }) +
+                "You cannot ask questions or spawn subagents; if something " +
                 "is ambiguous, state your assumption and continue. " +
                 "When reporting file properties like newlines or byte counts, inspect with file_info rather than inferring from line counts. " +
                 "Finish with a complete, self-contained answer: your final message is the " +
@@ -1196,8 +1210,8 @@ class AgentEngine(
             wenyan = caveman.cavemanWenyan,
         )
         val history = mutableListOf(ChatMessage(role = Role.USER, text = prompt))
-        val ctx = ToolContext(workspace, sandboxOff)
-        val subTools = subagentTools(ctx)
+        val ctx = ToolContext(workspace, permissionMode == PermissionMode.FULL_ACCESS, sessionId)
+        val subTools = subagentTools(registry, ctx, actionTools)
         // No separate budget quota here: capping output made reasoning models
         // burn the cap on thinking before ever answering (reasoning streamed,
         // no answer). Subagents get the main loop's full output budget.
@@ -1311,24 +1325,30 @@ class AgentEngine(
                 }
             }
 
-            // Execute requested tools directly. The schema list only contains
-            // read-only, non-interactive tools, so no permission gating is
-            // needed. but verify defensively and refuse anything else.
+            // Verify the allowed tool set even when a provider invents a call.
             for (call in calls) {
                 step(describeToolCall(call))
                 val tool = registry.get(call.name)
                 val subStartedAt = System.currentTimeMillis()
-                val result = if (tool == null || !tool.isReadOnly || call.name == "ask_user" || call.name == "task") {
+                val result = if (tool == null || (!actionTools && !tool.isReadOnly) ||
+                    call.name == "ask_user" || call.name == "task" || !tool.isAvailable(ctx)
+                ) {
                     ToolResult(false, "${call.name} is not available to subagents.")
                 } else {
-                    val executed = try {
-                        val args = json.parseToJsonElement(call.argumentsJson).jsonObject
-                        val raw = tool.execute(args, ctx)
-                        raw.redacted()
-                    } catch (ce: CancellationException) {
-                        throw ce
-                    } catch (e: Exception) {
-                        ToolResult(false, e.message ?: "${call.name} failed").redacted()
+                    val executed = if (actionTools) {
+                        performWithPermission(
+                            call, permissionMode, sessionAllowedTools, workspace, sessionId, turnId,
+                            AgentMode.ACT, requestOptions, config, apiKey, registry, null, emitEvent,
+                        )
+                    } else {
+                        try {
+                            val args = json.parseToJsonElement(call.argumentsJson).jsonObject
+                            tool.execute(args, ctx).redacted()
+                        } catch (ce: CancellationException) {
+                            throw ce
+                        } catch (e: Exception) {
+                            ToolResult(false, e.message ?: "${call.name} failed").redacted()
+                        }
                     }
                     val elapsedMs = System.currentTimeMillis() - subStartedAt
                     if (executed.output.length < 100_000) {

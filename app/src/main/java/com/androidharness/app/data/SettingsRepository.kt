@@ -21,6 +21,7 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 @kotlinx.serialization.Serializable
 data class AppSettings(
     val permissionMode: PermissionMode = PermissionMode.CONFIRM_RISKY,
+    val subagentFullAccess: Boolean = false,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val activeProviderId: String? = null,
@@ -99,6 +100,7 @@ class SettingsRepository(private val context: Context) {
 
     private object Keys {
         val PERMISSION_MODE = stringPreferencesKey("permission_mode")
+        val SUBAGENT_FULL_ACCESS = booleanPreferencesKey("subagent_full_access")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val ACTIVE_PROVIDER = stringPreferencesKey("active_provider_id")
@@ -139,6 +141,7 @@ class SettingsRepository(private val context: Context) {
             permissionMode = prefs[Keys.PERMISSION_MODE]
                 ?.let { runCatching { PermissionMode.valueOf(it) }.getOrNull() }
                 ?: PermissionMode.CONFIRM_RISKY,
+            subagentFullAccess = prefs[Keys.SUBAGENT_FULL_ACCESS] ?: false,
             themeMode = prefs[Keys.THEME_MODE]
                 ?.let { runCatching { ThemeMode.valueOf(it) }.getOrNull() }
                 ?: ThemeMode.SYSTEM,
@@ -192,6 +195,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.MAX_OUTPUT] = s.maxOutputTokens
             p[Keys.MAX_ITERATIONS] = s.maxIterations
             p[Keys.KEEP_ALIVE] = s.keepAlive
+            p[Keys.SUBAGENT_FULL_ACCESS] = s.subagentFullAccess
             p[Keys.DISABLED_SKILLS] = s.disabledSkills
             p[Keys.WEB_SEARCH_PROVIDER] = s.webSearchProvider
             p[Keys.VOICE_ENGINE] = s.voiceEngine
@@ -216,6 +220,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setPermissionMode(mode: PermissionMode) {
         context.settingsStore.edit { it[Keys.PERMISSION_MODE] = mode.name }
+    }
+
+    suspend fun setSubagentFullAccess(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.SUBAGENT_FULL_ACCESS] = enabled }
     }
 
     suspend fun setThemeMode(mode: ThemeMode) {
