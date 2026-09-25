@@ -1,10 +1,12 @@
 # AndroidHarness
 
+<a href="https://play.google.com/store/apps/details?id=com.androidharness.app"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="72"></a>
+
 A coding agent that lives on your phone.
 
 AndroidHarness is a native Android app, written in Kotlin with Jetpack Compose, that works on code projects directly from the device. It reads and edits files, runs shell commands, uses git, and chats with you about the work as it goes. No PC required.
 
-Status: 1.1.
+Status: 1.2.
 
 ## Features
 
@@ -12,7 +14,7 @@ Status: 1.1.
 - Full markdown chat with streaming responses, thinking blocks, and cards showing every tool call the agent makes.
 - Responsive markdown tables with compact card previews and an expandable full-sheet viewer with horizontal scroll.
 - In-chat file diff sheet to inspect file changes directly from tool call cards without leaving the conversation.
-- Turn performance metrics: tracks response duration (ms) and token generation throughput (tokens/sec) alongside token counts in turn stats.
+- Turn performance metrics: response duration, token generation throughput measured over the streaming window itself, and first-token latency, alongside token counts in turn stats.
 - Turn activity rollups and streamlined tool cards: consecutive tool calls roll up into a compact activity summary with reactive expansion states and status indicators.
 - Voice input with live waveforms and Groq Whisper cloud transcription (`whisper-large-v3` / `turbo`) or native Android speech. Tap the mic to lock recording open, or hold with slide-up lock and slide-left cancel.
 - Fork conversations from any assistant turn into a fresh session with cloned context.
@@ -33,14 +35,14 @@ Status: 1.1.
 - Run history logs, execution status indicators, and background completion notifications.
 
 **Agent tools**
-- File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch with atomic rollback on failure. The agent reads images by filename and extracts text from attached PDFs.
+- File tools: read, write, edit, search, grep, list, move, delete, plus fuzzy multi-edit and apply_patch, which checks every hunk header and line count before it touches a file and rolls back atomically on failure. Moves refuse to overwrite an existing destination unless you pass `overwrite=true`. The agent reads images by filename and extracts text from attached PDFs.
 - Shell tools: run commands with timeouts, launch background processes, list and kill them, install Linux packages, and query Android logs with package, tag, level, and pattern filters.
 - Git tools: status, diff, commit, log, show, branch, checkout, push, and pull. The harness auto-configures git identity so commits never fail on "author unknown".
-- Web tools: web search through keyless engines or the Brave and Tavily APIs with a key, page fetch, raw HTTP requests with JSON bodies, and GitHub API requests that authenticate automatically.
+- Web tools: web search through keyless engines or the Brave and Tavily APIs with a key, page fetch, raw HTTP requests with JSON bodies restricted to public addresses (localhost, private and other non-public destinations are refused, DNS answers are validated before connecting, and redirects are not followed), and GitHub API requests that authenticate automatically.
 - In-app web preview: universal preview hub for localhost ports, workspace HTML files, and web links with Eruda DevTools, console logs, and one-tap bug fixing. The agent also drives the page itself through browser tools (navigate, snapshot, click, type, scroll, eval, screenshot) with a floating live-action bubble.
 - MCP tools: connect Model Context Protocol servers over stdio or HTTP, add them by pasting a Claude config or a claude mcp add command, and sign in with OAuth when the server needs it.
 - Optional CodeGraph integration: install CodeGraph from Settings, enable its local index per workspace, and let the agent explore symbols, callers/callees, change impact, affected tests, and incremental sync without separate agent configuration.
-- Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model.
+- Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model. Subagents research read-only by default; with Subagent action tools enabled they also edit files and run commands in Act mode, always under the current permission mode.
 - Skill tools: list, view, and manage the markdown skills library from inside a run.
 - Todo and memory tools: a live todo list, a core memory file that loads at the start of every conversation, and topic files with search for everything else.
 

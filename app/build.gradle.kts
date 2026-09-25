@@ -14,8 +14,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 15
-        versionName = "1.1"
+        versionCode = 16
+        versionName = "1.2"
         // Instrumented tests drive the real WebView (screenshots, history,
         // promise staging), which no JVM test can exercise.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

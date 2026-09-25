@@ -1,5 +1,28 @@
 # Changelog
 
+## 1.2 (2026-09-25)
+
+### Added
+
+- **Subagent action tools**: a Settings switch lets subagents edit files and run commands in Act mode through the same permission prompts as the main agent, so a delegated task is no longer limited to research. Plan mode stays read-only, and subagents still cannot ask questions or spawn subagents of their own.
+- **Generation speed and first-token delay**: turn footers report throughput measured over the streaming window instead of the whole request, plus how long the first token took. Both values are stored per message, carried through chat backups, and turns recorded before this release keep their request-inclusive rate, labeled as such.
+
+### Changed
+
+- **Streamed chunks are never dropped**: the SSE reader suspends while the consumer catches up instead of discarding chunks when its channel is full, so fast models cannot silently lose text. Malformed keep-alive lines are still ignored, and the chat UI redraws at 30 fps.
+- **`http_request` is public-addresses only**: localhost, private, link-local and other non-public destinations are refused, DNS answers are validated and pinned for the request, proxies are bypassed, and redirects are no longer followed, so a request cannot be bounced into the local network.
+
+### Fixed
+
+- **Chat scroll crashes**: paused-composition prefetch is disabled on LazyColumn, the LayoutNode removal path that crashed while messages streamed in.
+- **Staged promise results in browser eval**: a resolved value that cannot be JSON-encoded now reports an eval error instead of leaving the pending promise unresolved.
+- **`move_file` overwrites**: the tool refuses to replace an existing destination unless `overwrite=true`, so a mistyped destination no longer destroys the file that was already there.
+- **`file_info` line counts**: CR-only and CRLF terminators are counted the same way `read_file` counts them, so the two tools agree on the same file.
+- **Unreadable and past-the-end reads**: `file_info` reports an error instead of describing a file it cannot read as empty, and `read_file` says how long the file is when an offset runs past its end.
+- **`apply_patch` hunk validation**: hunk headers are parsed strictly and their line counts must match the body, so a malformed patch fails with a clear error instead of editing the wrong lines.
+- **Workspace browser root fallback**: blank and root paths serve the workspace index.html instead of reusing whichever document is loaded, which is what made form GET submits land on "/?...".
+- **Shell output framing**: stdout and stderr come back as JSON strings, so multi-line output, quotes and escapes cannot be mistaken for the tool's own framing.
+
 ## 1.1 (2026-09-20)
 
 ### Added
