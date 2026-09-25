@@ -1,0 +1,48 @@
+name: Bug report
+description: Something in AndroidHarness isn't working as expected.
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting this. Please remove API keys, tokens, and personal data from screenshots or logs before posting.
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: Tell us what went wrong and what you expected instead.
+      placeholder: I tried to... I expected... Instead...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: How can we reproduce it?
+      description: List the steps, starting from a fresh screen if possible.
+      placeholder: |
+        1. Open...
+        2. Tap...
+        3. See...
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: AndroidHarness version
+      placeholder: e.g. 1.2
+    validations:
+      required: true
+  - type: input
+    id: android-version
+    attributes:
+      label: Android version
+      placeholder: e.g. Android 15
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: Anything else?
+      description: Screenshots, logs, device details, or anything else that might help. Please redact private information.
+    validations:
+      required: false

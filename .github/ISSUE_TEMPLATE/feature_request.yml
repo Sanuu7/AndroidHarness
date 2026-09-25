@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest something you'd like AndroidHarness to do.
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea. A short example of when you'd use it is more useful than a long specification.
+  - type: textarea
+    id: problem
+    attributes:
+      label: What are you trying to do?
+      description: Tell us what you need or what's getting in your way.
+      placeholder: When I work on..., I have trouble...
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: What would you like to see?
+      description: Describe your idea in your own words. It's okay if you don't have a complete design.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Anything else?
+      description: Workarounds, examples, or screenshots are welcome but optional.
+    validations:
+      required: false
