@@ -54,6 +54,7 @@ object ModelPrices {
     )
 
     fun costFor(model: String, providerKey: String? = null): Cost {
+        if (com.androidharness.app.local.LocalModelCatalog.isLocal(model)) return Cost(0.0, 0.0, 0.0, 0.0)
         // 1. Check live / cached ModelsDev catalog
         ModelsDev.findCost(providerKey, model)?.let {
             val cr = if (it.input > 0) (it.cacheRead / it.input) else 0.25

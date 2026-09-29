@@ -301,7 +301,7 @@ fun ModelPickerSheet(
                         }
                     }
 
-                    if (query.isNotBlank() && visibleRows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
+                    if (!com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id) && query.isNotBlank() && visibleRows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
                         item(key = "inline-custom-${query.trim()}") {
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
@@ -377,7 +377,7 @@ fun ModelPickerSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        TextButton(onClick = { showAddCustomDialog = true }) {
+                        TextButton(onClick = { showAddCustomDialog = true }, enabled = listedProvider?.let { !com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) } == true) {
                             Text("+ Custom model…")
                         }
                         Spacer(Modifier.weight(1f))

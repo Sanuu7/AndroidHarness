@@ -239,19 +239,24 @@ class AgentEngine(
         // Rebuilt when Full access toggles, because the path rules the model
         // is told about change with it.
         var replySettings = cavemanSettings()
-        var systemPrompt = systemPrompt(workspace, mode, fullAccess = false, repoMapEnabled = repoMapEnabled) + if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
+        val localChat = com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
+        fun runSystemPrompt(fullAccess: Boolean): String =
+            (if (localChat) com.androidharness.app.local.LocalModelProvider.CHAT_PROMPT
+            else systemPrompt(workspace, mode, fullAccess = fullAccess, repoMapEnabled = repoMapEnabled)) +
+                if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
+        var systemPrompt = runSystemPrompt(false)
         var promptSandboxOff = false
         val runRegistry = registry.withExtra(extraTools)
-        val tools = runRegistry.schemas(
+        val tools = if (localChat) emptyList() else runRegistry.schemas(
             readOnlyOnly = mode == AgentMode.PLAN,
             context = ToolContext(workspace = workspace, sessionId = sessionId),
         )
-        val working = trimHistory(
+        val working = (if (localChat) history else trimHistory(
             ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
             maxContextTokens, options.maxOutputTokens,
-        ).toMutableList()
+        )).toMutableList()
         // If active model is known to be text-only, strip image data upfront
-        if (!com.androidharness.app.llm.visionCapable(config.model)) {
+        if (!localChat && !com.androidharness.app.llm.visionCapable(config.model)) {
             val sanitized = ContextHygiene.stripImages(working)
             working.clear()
             working.addAll(sanitized)
@@ -300,7 +305,7 @@ class AgentEngine(
             if (sandboxOff != promptSandboxOff || replySettings != nextReplySettings) {
                 replySettings = nextReplySettings
                 promptSandboxOff = sandboxOff
-                systemPrompt = systemPrompt(workspace, mode, fullAccess = sandboxOff, repoMapEnabled = repoMapEnabled) + if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
+                systemPrompt = runSystemPrompt(sandboxOff)
             }
             // Open path resolution only exists on real-filesystem workspaces;
             // SAF has no shell root and stays inside its picked tree.
@@ -320,7 +325,7 @@ class AgentEngine(
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, requestSystemPrompt)
             emit(AgentEvent.EstimatedContext(estimate))
-            if (estimate.total > (maxContextTokens * 0.8).toInt() && working.size > 6) {
+            if (!localChat && estimate.total > (maxContextTokens * 0.8).toInt() && working.size > 6) {
                 val compacted = compact(provider, config, apiKey, working, maxContextTokens, sessionId) { emit(it) }
                 if (compacted != null) {
                     working.clear()
@@ -423,11 +428,13 @@ class AgentEngine(
                 handleEvent = streamEventHandler,
                 retryReason = { f -> f.take(200) },
                 emitEvent = { emit(it) },
+                stallTimeoutMs = if (localChat) 600_000 else 90_000,
+                allowRetries = !localChat,
             )
 
             // Dynamic vision degradation fallback: if provider rejected image input,
             // strip images from working history and retry without failing the turn.
-            if (failure != null && isVisionError(failure) && working.any { it.imageData.isNotEmpty() }) {
+            if (!localChat && failure != null && isVisionError(failure) && working.any { it.imageData.isNotEmpty() }) {
                 val stripped = ContextHygiene.stripImages(working)
                 working.clear()
                 working.addAll(stripped)

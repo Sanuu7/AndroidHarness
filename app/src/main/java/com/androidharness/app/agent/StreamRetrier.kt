@@ -60,6 +60,7 @@ internal object StreamRetrier {
         emitEvent: suspend (AgentEvent.Retrying) -> Unit,
         sleep: suspend (Long) -> Unit = { delay(it) },
         stallTimeoutMs: Long = 90_000,
+        allowRetries: Boolean = true,
     ): String? {
         var attempt = 0
         while (true) {
@@ -79,7 +80,8 @@ internal object StreamRetrier {
                 // like any transient failure so retries can kick in. Caught
                 // before CancellationException because it subclasses it;
                 // genuine cancellation must still propagate.
-                failure = STALLED_STREAM_MESSAGE
+                failure = if (stallTimeoutMs == 90_000L) STALLED_STREAM_MESSAGE
+                    else "Generation stalled - no data received for ${stallTimeoutMs / 1000}s (timed out)"
             } catch (ce: CancellationException) {
                 throw ce
             } catch (e: Exception) {
@@ -87,7 +89,7 @@ internal object StreamRetrier {
                 failure = e.message ?: e.javaClass.simpleName
             }
 
-            val retryable = failure != null &&
+            val retryable = allowRetries && failure != null &&
                 attempt < RetryPolicy.MAX_RETRIES &&
                 !hasOutput() &&
                 RetryPolicy.isRetryable(cause, failure)

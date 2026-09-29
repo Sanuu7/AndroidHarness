@@ -1,6 +1,7 @@
 # --- Build outputs / local machine ---
 build/
 .gradle/
+.cxx/
 .kotlin/
 local.properties
 .env

@@ -252,6 +252,7 @@ fun SettingsScreen(
                             }
                             CurrentSetupCard(settings, providers)
                         }
+                        SettingsPage.LOCAL_MODELS -> LocalModelsSection(container)
                         SettingsPage.AGENT -> AgentSection(container, settings, scope)
                         SettingsPage.CHAT -> {
                             ChatBehaviorSection(container, settings, scope)

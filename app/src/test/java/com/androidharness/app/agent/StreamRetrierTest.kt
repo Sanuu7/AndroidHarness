@@ -179,6 +179,19 @@ class StreamRetrierTest {
     }
 
     @Test
+    fun `local requests can disable retries even for transient wording`() = runBlocking {
+        var attempts = 0
+        val result = StreamRetrier.run(
+            streamFor = { attempts++; flowOf(StreamEvent.Failure("timed out")) },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = { error("Local requests must not restart themselves") },
+            allowRetries = false,
+        )
+        assertEquals(1, attempts)
+        assertEquals("timed out", result)
+    }
+
+    @Test
     fun `stalled stream is treated as transient failure`() = runBlocking {
         var builds = 0
         val retries = mutableListOf<AgentEvent.Retrying>()
@@ -198,6 +211,6 @@ class StreamRetrierTest {
         )
         assertEquals(null, result)
         assertEquals(1, retries.size)
-        assertEquals(StreamRetrier.STALLED_STREAM_MESSAGE, retries[0].reason)
+        assertEquals("Generation stalled - no data received for 0s (timed out)", retries[0].reason)
     }
 }

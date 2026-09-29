@@ -57,7 +57,12 @@ class AppContainer(val appContext: Context) {
 
     val keys = KeyStoreManager(appContext)
     val settings = SettingsRepository(appContext)
-    val providers = ProviderRepository(appContext, keys)
+    val localModels = com.androidharness.app.local.LocalModelManager(appContext)
+    val providers = ProviderRepository(appContext, keys, localModels)
+
+    init {
+        ProviderFactory.localProvider = com.androidharness.app.local.LocalModelProvider(localModels)
+    }
     val screenshotPolicy = com.androidharness.app.data.ScreenshotPolicy()
 
     private val db = Room.databaseBuilder(appContext, AppDatabase::class.java, "harness.db")

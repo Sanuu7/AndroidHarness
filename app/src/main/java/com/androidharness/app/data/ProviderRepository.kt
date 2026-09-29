@@ -21,11 +21,12 @@ private val Context.providerStore by preferencesDataStore(name = "providers")
 class ProviderRepository(
     private val context: Context,
     private val keys: KeyStoreManager,
+    private val localModels: com.androidharness.app.local.LocalModelManager,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
     private val listKey = stringPreferencesKey("provider_list")
 
-    val providers: Flow<List<ProviderConfig>> = context.providerStore.data.map { prefs ->
+    val providers: Flow<List<ProviderConfig>> = kotlinx.coroutines.flow.combine(context.providerStore.data, localModels.installed) { prefs, installed ->
         val saved = prefs[listKey]?.let { raw ->
             runCatching {
                 json.decodeFromString(ListSerializer(ProviderConfig.serializer()), raw)
@@ -36,7 +37,7 @@ class ProviderRepository(
                 json.decodeFromString<List<ModelEntry>>(raw)
             }.getOrDefault(emptyList())
         }?.map { it.id }?.toSet().orEmpty()
-        listOf(HarnessProvider.config.copy(model = HarnessProvider.sanitize(saved.firstOrNull { it.id == HarnessProvider.ID }?.model, harnessCustom))) + saved.filterNot { it.id == HarnessProvider.ID }
+        listOf(HarnessProvider.config.copy(model = HarnessProvider.sanitize(saved.firstOrNull { it.id == HarnessProvider.ID }?.model, harnessCustom))) + saved.filterNot { it.id == HarnessProvider.ID || com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) || it.baseUrl.startsWith("local://") } + localModels.configs(installed)
     }
 
     /**
@@ -44,7 +45,7 @@ class ProviderRepository(
      * every model a provider offers without refetching on each open. Custom
      * models added by the user merge at the top of each list.
      */
-    val catalogs: Flow<Map<String, List<ModelEntry>>> = context.providerStore.data.map { prefs ->
+    val catalogs: Flow<Map<String, List<ModelEntry>>> = kotlinx.coroutines.flow.combine(context.providerStore.data, localModels.installed) { prefs, installed ->
         val catalogMap = prefs.asMap().asSequence()
             .filter { it.key.name.startsWith(CATALOG_PREFIX) }
             .mapNotNull { (key, value) ->
@@ -74,6 +75,9 @@ class ProviderRepository(
                 }
             }
 
+        localModels.configs(installed).forEach { config ->
+            catalogMap[config.id] = listOf(ModelEntry(config.model, reasoning = false, note = "On-device text chat"))
+        }
         catalogMap
     }
 
@@ -88,6 +92,7 @@ class ProviderRepository(
     }
 
     suspend fun addCustomModel(providerId: String, modelId: String, reasoning: Boolean? = null) {
+        if (com.androidharness.app.local.LocalModelCatalog.isLocal(providerId)) return
         val clean = modelId.trim()
         if (clean.isBlank()) return
         context.providerStore.edit { prefs ->
@@ -136,6 +141,7 @@ class ProviderRepository(
     }
 
     suspend fun update(config: ProviderConfig, apiKey: String?) {
+        if (com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)) return
         if (config.id == HarnessProvider.ID) {
             val custom = customModels(HarnessProvider.ID).map { it.id }.toSet()
             save(current().map { if (it.id == config.id) HarnessProvider.config.copy(model = HarnessProvider.sanitize(config.model, custom)) else it })
@@ -148,13 +154,21 @@ class ProviderRepository(
     }
 
     suspend fun delete(id: String) {
+        if (com.androidharness.app.local.LocalModelCatalog.isLocal(id)) {
+            localModels.remove(id.removePrefix(com.androidharness.app.local.LocalModelCatalog.PROVIDER_PREFIX))
+            return
+        }
         if (id == HarnessProvider.ID) return
         keys.removeKey(id)
         context.providerStore.edit { it.remove(catalogKey(id)) }
         save(current().filterNot { it.id == id })
     }
 
-    fun apiKey(providerId: String): String? = if (providerId == HarnessProvider.ID) HarnessProvider.KEYLESS else keys.getKey(providerId)
+    fun apiKey(providerId: String): String? = when {
+        com.androidharness.app.local.LocalModelCatalog.isLocal(providerId) -> "local"
+        providerId == HarnessProvider.ID -> HarnessProvider.KEYLESS
+        else -> keys.getKey(providerId)
+    }
 
     /**
      * Zen ended anonymous access to its free models (keyless calls get a 403
@@ -197,7 +211,7 @@ class ProviderRepository(
     private suspend fun current(): List<ProviderConfig> = providers.first()
 
     private suspend fun save(list: List<ProviderConfig>) {
-        val raw = json.encodeToString(ListSerializer(ProviderConfig.serializer()), list)
+        val raw = json.encodeToString(ListSerializer(ProviderConfig.serializer()), list.filterNot { com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) })
         context.providerStore.edit { it[listKey] = raw }
     }
 

@@ -288,7 +288,8 @@ private fun ProviderCard(
                     }
                 }
                 Text(
-                    if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model
+                    if (com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) "Local text chat"
+                    else if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) provider.model
                     else "${provider.type.label} · ${provider.model}",
                     style = MaterialTheme.typography.labelSmall,
                     color = if (active) scheme.onSecondaryContainer.copy(alpha = 0.78f) else scheme.onSurfaceVariant,
@@ -296,6 +297,7 @@ private fun ProviderCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 val detail = when {
+                    com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id) -> "On-device · Manage in Settings > Local models"
                     provider.id == com.androidharness.app.llm.HarnessProvider.ID -> "Built-in · Free"
                     catalogSize != null && catalogSize > 0 -> "$catalogSize models available"
                     else -> provider.baseUrl
@@ -324,7 +326,7 @@ private fun ProviderCard(
                     tint = scheme.onSurfaceVariant,
                 )
             }
-            if (provider.id != com.androidharness.app.llm.HarnessProvider.ID) {
+            if (provider.id != com.androidharness.app.llm.HarnessProvider.ID && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = scheme.onSurfaceVariant)
                 }

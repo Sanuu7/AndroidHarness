@@ -7,6 +7,7 @@ internal enum class SettingsPage(
     val keywords: String,
 ) {
     MODELS("Models & providers", "Connections, current model and separate planning models", "Your assistant", "api key token provider openai anthropic gemini thinking planning execution"),
+    LOCAL_MODELS("Local models", "Download models, check device fit and tune on-device inference", "Your assistant", "offline hugging face gguf llama ram memory storage cpu download uninstall context input output"),
     AGENT("Agent behavior", "Permissions, context limits and project instructions", "Your assistant", "approval full access iterations tools agents.md memory"),
     CHAT("Chat & commands", "Startup behavior, code indexing and slash commands", "Your assistant", "resume last chat launch repo map shortcuts"),
     CODE_INTELLIGENCE("CodeGraph", "Install CodeGraph and manage project indexes", "Integrations", "codegraph graph symbols callers callees impact affected index semantic code intelligence"),

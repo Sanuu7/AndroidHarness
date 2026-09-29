@@ -337,7 +337,8 @@ class RunManager(
                     maxIterations = maxIterations,
                     // Connected MCP servers ride into this run; a failing
                     // server must never block the run itself.
-                    extraTools = runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
+                    extraTools = if (com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)) emptyList()
+                        else runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
                     resolveSubagentModel = modelResolver::resolve,
                     repoMapEnabled = repoMapOn,
                     pinnedInstructions = record.pins,

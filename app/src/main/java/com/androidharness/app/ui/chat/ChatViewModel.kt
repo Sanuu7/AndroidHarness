@@ -989,6 +989,21 @@ class ChatViewModel(
         if (startingRun) return
         val targetSession = sessionId
         val s0 = _state.value
+        val selectedProviderId = when {
+            s0.dualPlanning && s0.mode == AgentMode.PLAN -> s0.planningProviderId ?: s0.activeProviderId
+            s0.dualPlanning && s0.mode == AgentMode.ACT -> s0.executionProviderId ?: s0.activeProviderId
+            else -> s0.activeProviderId
+        }
+        if (selectedProviderId != null && com.androidharness.app.local.LocalModelCatalog.isLocal(selectedProviderId) &&
+            s0.providers.none { it.id == selectedProviderId }) {
+            _state.update { it.copy(error = "The selected local model was removed. Download it again or explicitly choose another provider.") }
+            return
+        }
+        if (s0.dualPlanning && listOfNotNull(s0.activeProviderId, s0.planningProviderId, s0.executionProviderId)
+                .any(com.androidharness.app.local.LocalModelCatalog::isLocal)) {
+            _state.update { it.copy(error = "Local models support text chat only. Turn off dual planning before sending.") }
+            return
+        }
         // Separate planning/execution models: plan-mode runs use the planning
         // slot, everything else the execution one. A slot without a provider
         // falls back to the active provider, keeping its model override.
@@ -1056,7 +1071,7 @@ class ChatViewModel(
                 // Security gate (battery D1): a workspace .harness/mcp.json never
                 // spawns commands until this exact file content was approved. The
                 // dialog offers approve (and continue) or run without those servers.
-                if (workspaceMcpGate) {
+                if (workspaceMcpGate && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
                     val unapproved = runCatching {
                         c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
                     }.getOrDefault(emptyList())
@@ -1074,6 +1089,9 @@ class ChatViewModel(
                 if (replacement != null) {
                     check(targetSession != null && targetSession == sessionId) { "The active chat changed" }
                 }
+                val localLimits = if (com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
+                    kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { c.localModels.limits(provider.id.removePrefix(com.androidharness.app.local.LocalModelCatalog.PROVIDER_PREFIX)) }
+                } else null
                 val sid = c.runManager.startRun(
                     sessionId = targetSession,
                     text = payload,
@@ -1082,8 +1100,8 @@ class ChatViewModel(
                     apiKey = apiKey,
                     permissionMode = s0.permissionMode,
                     mode = s0.mode,
-                    maxOutputTokens = s0.maxOutputTokens,
-                    maxContextTokens = s0.maxContextTokens,
+                    maxOutputTokens = localLimits?.output ?: s0.maxOutputTokens,
+                    maxContextTokens = localLimits?.context ?: s0.maxContextTokens,
                     thinking = s0.thinkingLevel,
                     maxIterations = s0.maxIterations,
                     queuedPromptId = queuedPromptId,

@@ -9,6 +9,13 @@ plugins {
 android {
     namespace = "com.androidharness.app"
     compileSdk = 37
+    ndkVersion = "27.2.12479018"
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
+    }
 
     defaultConfig {
         applicationId = "com.androidharness.app"
@@ -16,6 +23,10 @@ android {
         targetSdk = 36
         versionCode = 16
         versionName = "1.2"
+        ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
+        externalNativeBuild {
+            cmake { arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" }
+        }
         // Instrumented tests drive the real WebView (screenshots, history,
         // promise staging), which no JVM test can exercise.
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

@@ -42,7 +42,12 @@ object SettingsBackupValidation {
         file.providers.forEach {
             require(it.config.id.isNotBlank() && it.config.name.length in 1..200 && it.customModels.size <= 1000) { "Invalid provider." }
             val uri = java.net.URI(it.config.baseUrl)
-            require(uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null) { "Invalid provider URL." }
+            if (com.androidharness.app.local.LocalModelCatalog.isLocal(it.config.id)) {
+                val id = it.config.id.removePrefix(com.androidharness.app.local.LocalModelCatalog.PROVIDER_PREFIX)
+                require(com.androidharness.app.local.LocalModelCatalog.find(id) != null && it.config.model == it.config.id && it.config.baseUrl == "local://$id") { "Invalid local model reference." }
+            } else {
+                require(uri.scheme in setOf("http", "https") && !uri.host.isNullOrBlank() && uri.userInfo == null) { "Invalid provider URL." }
+            }
             require(it.customModels.all { model -> model.length in 1..500 }) { "Invalid custom model." }
         }
         require(file.servers.map { it.name }.distinct().size == file.servers.size) { "Duplicate MCP servers." }
@@ -60,7 +65,10 @@ class SettingsBackup(private val c: AppContainer) {
                 permissionMode = com.androidharness.app.agent.PermissionMode.CONFIRM_RISKY,
                 biometricLockEnabled = false, biometricLockTimeoutMinutes = 0, allowScreenshots = false,
             )
-            val providers = c.providers.providers.first().map { config ->
+            val localReferences = listOfNotNull(s.activeProviderId, s.planningProviderId, s.executionProviderId)
+                .filter(com.androidharness.app.local.LocalModelCatalog::isLocal)
+                .map { it.removePrefix(com.androidharness.app.local.LocalModelCatalog.PROVIDER_PREFIX) }.toSet()
+            val providers = (c.providers.providers.first() + c.localModels.configs(localReferences)).distinctBy { it.id }.map { config ->
                 BackupProvider(config, c.providers.customModels(config.id).map { it.id },
                     if (includeKeys && config.id != HarnessProvider.ID) c.keys.getKey(config.id) else null)
             }
@@ -101,7 +109,10 @@ class SettingsBackup(private val c: AppContainer) {
         SettingsBackupValidation.validate(file)
         require(c.runManager.runningSessionIds.value.isEmpty()) { "Stop running tasks before restoring settings." }
         val ids = mutableMapOf(HarnessProvider.ID to HarnessProvider.ID)
-        file.providers.filterNot { it.config.id == HarnessProvider.ID }.forEach { entry ->
+        file.providers.filter { com.androidharness.app.local.LocalModelCatalog.isLocal(it.config.id) }.forEach { entry ->
+            ids[entry.config.id] = entry.config.id
+        }
+        file.providers.filterNot { it.config.id == HarnessProvider.ID || com.androidharness.app.local.LocalModelCatalog.isLocal(it.config.id) }.forEach { entry ->
             val p = entry.config
             val restored = c.providers.add(p.name + " (restored)", p.type, p.baseUrl, p.model, entry.apiKey.orEmpty())
             ids[p.id] = restored.id
