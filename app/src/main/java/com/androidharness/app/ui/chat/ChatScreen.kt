@@ -722,6 +722,10 @@ fun ChatScreen(
             .first { (total, size) -> size > 0 && total > 0 }
         if (initialScrollDone != sid) {
             initialScrollDone = sid
+            // One extra frame so the async loads that flip conditional children
+            // (checkpoints, file edits, todos) land before the scroll's measure
+            // pass; a mid-pass flip is what crashed "measure on deactivated node".
+            withFrameNanos { }
             listState.scrollToEnd()
         }
     }
@@ -1724,7 +1728,7 @@ private fun isAtBottom(info: LazyListLayoutInfo, canScrollForward: Boolean, tole
 /**
  * Instantly scrolls to the very end of the content, bottom padding included.
  * `scrollToItem(last)` alone only aligns the last item's TOP with the viewport
- * top when the item is taller than the viewport; the extra scrollBy (clamped
+ * top when the item is taller than the viewport; the extra snap (clamped
  * by the list itself) consumes whatever remains.
  */
 private suspend fun LazyListState.scrollToEnd() {
@@ -1735,7 +1739,11 @@ private suspend fun LazyListState.scrollToEnd() {
     // being removed in the same frame (LayoutNode.onChildRemoved NPE).
     requestScrollToItem(last)
     withFrameNanos { }
-    if (canScrollForward) scrollBy(FORWARD_FAR_PX)
+    // Consume the remaining distance with the gentle snap instead of a raw
+    // 100k px scrollBy: the big one forced a remeasure during dispatchDraw and
+    // crashed "measure is called on a deactivated node" when a conditional
+    // child flipped mid-pass.
+    snapToEndIfDrifted()
 }
 
 /** Cheap exact snap to the true bottom; a no-op unless the end is composed. */
@@ -1877,8 +1885,6 @@ private const val FOLLOW_MIN_INTERVAL_MS = 64L
 // How far off the bottom (px) a drag must go to detach the pin, and how close
 // a settle must land to re-attach it.
 private const val PIN_TOLERANCE_PX = 96
-// scrollBy clamping makes a huge forward scroll stop exactly at the end.
-private const val FORWARD_FAR_PX = 100_000f
 
 @Composable
 private fun ChatLoadingSkeleton(modifier: Modifier = Modifier) {
