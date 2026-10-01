@@ -6,7 +6,7 @@ A coding agent that lives on your phone.
 
 AndroidHarness is a native Android app, written in Kotlin with Jetpack Compose, that works on code projects directly from the device. It reads and edits files, runs shell commands, uses git, and chats with you about the work as it goes. No PC required.
 
-Status: 1.2.
+Status: 1.3.
 
 ## Features
 
@@ -80,10 +80,16 @@ Status: 1.2.
 **Model flexibility**
 - Built-in keyless Harness provider: anonymous free models from Kilo and Pollinations served out of the box, with each model's rate limit shown in the picker and the kilo-auto/free router as the default. No API key needed to start.
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
-- Custom model IDs: enter any custom model name directly in the model picker sheet across all supported providers.
+- Custom cloud model IDs: enter a custom model name directly in the model picker sheet for cloud providers. Download on-device models through Settings → Local models.
 - Live model catalog fetch with latency check, per-model price tracking, and a running cost readout, plus a total estimated cost hero on the Stats screen.
 - One global thinking ladder from Off to Ultra on every model; non native rungs resolve down the chain at request time, never rewriting your pick.
 - Per-chat dual planning: a chat menu toggle that runs Plan mode on one model and execution on another, each picked from the same model sheet, with a toast confirming which model fired and a plan card that survives app restarts.
+
+**Local models**
+
+- Download a model in Settings → Local models, or paste a public Hugging Face or direct GGUF link. Select it from the chat provider picker.
+- Check available RAM and storage, filter models by device fit, and adjust context, input, output and CPU threads.
+- Runs offline after download on compatible 64-bit devices. Text chat only; no images, agent tools or dual planning. Custom models must be single-file chat GGUFs. Speed depends on your device.
 
 **Workspace hygiene**
 - Sandboxed file access: the agent cannot read or write outside the workspace, symlinks and binary files are refused, and delete guards protect the workspace root.
@@ -104,7 +110,7 @@ The app ships with a library of markdown skills: git, planning, test driven deve
 
 1. Install the app.
 2. Grant storage access. On Android 11 and up the app needs "All files access" so the shell and file tools can use real filesystem paths.
-3. Add an API key in Settings, or start immediately with the built-in keyless Harness provider.
+3. Add an API key in Settings, start immediately with the built-in keyless Harness provider, or download an on-device model from Settings → Local models for text chat.
 4. Optional but recommended: install Shizuku or Termux so the agent can run shell commands with proper permissions.
 
 ## Build

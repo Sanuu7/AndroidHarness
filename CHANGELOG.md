@@ -1,5 +1,19 @@
 # Changelog
 
+## 1.3 (2026-10-02)
+
+### Added
+
+- **On-device local models**: download Qwen 2.5 0.5B, 1.5B, Coder 1.5B and 3B GGUF models from Settings → Local models, then select them in the chat provider picker. Replies run on the device's CPU through llama.cpp, with no API key or cloud inference charge. Inference works offline after download on compatible 64-bit devices. Local models support text chat only, without images, agent tools or dual planning.
+- **Custom models from links**: paste a public Hugging Face model page, GGUF file page or direct HTTPS `.gguf` link, choose the model file and confirm the download. Hugging Face files use pinned revisions and verified SHA-256 checksums. Direct links are checked for file size and a GGUF header, with a notice when the source provides no checksum. Custom models stay available after app restarts. Safetensors, split GGUF files and vision projectors are not supported.
+- **Local model setup and controls**: check available RAM, free storage and estimated model fit, show models outside the available-memory budget, and set context, input, output and CPU thread limits per model. Downloads show progress and support cancellation. Stop generation or remove a model and its saved limits to free storage. Memory is released after each reply; interrupted downloads restart from the beginning. A removed or unavailable local model reports an error instead of silently switching to a cloud provider.
+- **Shizuku workspace warning**: when previously granted Shizuku access becomes unavailable because the server stopped or permission was revoked, opening workspace controls or the workspace creation dialog shows “Shizuku is disabled.” A “Never show this message again” checkbox saves the choice across app restarts.
+
+### Fixed
+
+- **Crashes when opening old chats**: initial scrolling waits for pending content updates and snaps gently to the bottom instead of forcing a large remeasure, avoiding the reported deactivated layout-node crash.
+- **Crashes while scrolling streamed replies**: chat-list prefetch is disabled, tool-row keys are scoped to their message, and rows use explicit content types to prevent unstable item reuse during streaming.
+
 ## 1.2 (2026-09-25)
 
 ### Added
