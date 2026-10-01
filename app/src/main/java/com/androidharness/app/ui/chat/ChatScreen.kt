@@ -42,7 +42,6 @@ import androidx.compose.foundation.lazy.LazyItemScope
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListLayoutInfo
 import androidx.compose.foundation.lazy.LazyListState
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -161,7 +160,7 @@ fun ChatScreen(
     searchMessageId: String? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val listState = rememberLazyListState()
+    val listState = rememberChatListState()
     val snackbar = remember { SnackbarHostState() }
     var showContext by remember { mutableStateOf(false) }
     var activeModelPickerTarget by remember { mutableStateOf<ModelSelectionTarget?>(null) }
@@ -994,15 +993,16 @@ fun ChatScreen(
                         ) {
                             var nextItemIndex = 0
                             fun indexedItem(
-                                key: Any? = null,
+                                key: Any,
+                                contentType: ChatListContentType,
                                 content: @Composable LazyItemScope.() -> Unit,
                             ) {
                                 if (key == "search-target") searchItemIndex.value = nextItemIndex
                                 nextItemIndex++
-                                item(key = key, content = content)
+                                item(key = key, contentType = contentType, content = content)
                             }
                             if (state.messages.isEmpty() && state.streamingText == null) {
-                                indexedItem(key = "empty-state") {
+                                indexedItem(key = "empty-state", contentType = ChatListContentType.Empty) {
                                     EmptyState(
                                         hasProvider = state.activeProvider != null,
                                         onSuggestion = { viewModel.send(it) },
@@ -1018,7 +1018,7 @@ fun ChatScreen(
                         if (message.role == Role.ASSISTANT && message.toolCallId != null) continue
                         val messageKey = message.id ?: "${message.role.name}-${message.createdAt}-$messageIndex"
                         if (searchMessageId != null && message.id == searchMessageId) {
-                            indexedItem(key = "search-target") {
+                            indexedItem(key = "search-target", contentType = ChatListContentType.SearchTarget) {
                                 Surface(
                                     color = MaterialTheme.colorScheme.primaryContainer,
                                     shape = MaterialTheme.shapes.medium,
@@ -1035,7 +1035,7 @@ fun ChatScreen(
                             }
                         }
                         when (message.role) {
-                            Role.USER -> indexedItem(key = "message-$messageKey-user") {
+                            Role.USER -> indexedItem(key = "message-$messageKey-user", contentType = ChatListContentType.User) {
                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                     Column(horizontalAlignment = Alignment.End) {
                                         val (visibleText, fileChips) = FileAttachments.splitForDisplay(
@@ -1088,7 +1088,7 @@ fun ChatScreen(
                                     val workedLabel = if (userAt != null) {
                                         formatDuration((message.createdAt - userAt).coerceAtLeast(0))
                                     } else ""
-                                    indexedItem(key = "turn-${message.turnId}-activity") {
+                                    indexedItem(key = "turn-${message.turnId}-activity", contentType = ChatListContentType.Activity) {
                                         TurnActivityCard(
                                             calls = activity.flatMap { it.toolCalls },
                                             results = toolResults,
@@ -1100,12 +1100,12 @@ fun ChatScreen(
                                     }
                                 }
                                 if (!hasFinishedActivity && message.thinking.isNotBlank()) {
-                                    indexedItem(key = "message-$messageKey-thinking") {
+                                    indexedItem(key = "message-$messageKey-thinking", contentType = ChatListContentType.Thinking) {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) { ThinkingBlock(message.thinking, durationMs = message.thinkingMs) }
                                     }
                                 }
                                 if (message.text.isNotBlank()) {
-                                    indexedItem(key = "message-$messageKey-text") {
+                                    indexedItem(key = "message-$messageKey-text", contentType = ChatListContentType.AssistantText) {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             Column {
                                                 val used = skillUsedByMessage[message.id].orEmpty()
@@ -1184,7 +1184,7 @@ fun ChatScreen(
                                     val taskCalls = message.toolCalls.filter { it.name == "task" }
                                     val otherCalls = message.toolCalls.filter { it.name != "task" }
                                     if (taskCalls.size >= 2) {
-                                        indexedItem(key = "message-$messageKey-subagents") {
+                                        indexedItem(key = "message-$messageKey-subagents", contentType = ChatListContentType.Subagents) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                 SubagentPagerCard(
                                                     calls = taskCalls,
@@ -1197,7 +1197,7 @@ fun ChatScreen(
                                         }
                                     } else if (taskCalls.size == 1) {
                                         val call = taskCalls[0]
-                                        indexedItem(key = call.id) {
+                                        indexedItem(key = "message-$messageKey-subagent-${call.id}", contentType = ChatListContentType.Subagent) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                 SubagentCard(
                                                     call = call,
@@ -1211,7 +1211,7 @@ fun ChatScreen(
                                         }
                                     }
                                     if (otherCalls.size >= 3) {
-                                        indexedItem(key = "message-$messageKey-tools") {
+                                        indexedItem(key = "message-$messageKey-tools", contentType = ChatListContentType.Tools) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                 ToolGroupCard(
                                                     calls = otherCalls,
@@ -1224,7 +1224,7 @@ fun ChatScreen(
                                         }
                                     } else {
                                         for (call in otherCalls) {
-                                            indexedItem(key = call.id) {
+                                            indexedItem(key = "message-$messageKey-tool-${call.id}", contentType = ChatListContentType.Tool) {
                                                 Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                                     ToolCallCard(
                                                         call = call,
@@ -1241,7 +1241,7 @@ fun ChatScreen(
                             Role.TOOL -> Unit
                             Role.SYSTEM -> {
                                 if (message.text.startsWith(com.androidharness.app.agent.ContextHygiene.COMPACTION_NOTICE_PREFIX)) {
-                                    indexedItem(key = "message-$messageKey-system") {
+                                    indexedItem(key = "message-$messageKey-system", contentType = ChatListContentType.System) {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             CompactionNoticeLine()
                                         }
@@ -1258,13 +1258,13 @@ fun ChatScreen(
                         val streamKey = state.streamingMessageId ?: state.currentTurnId ?: "idle"
                         state.streamingThinking?.let { thinking ->
                             if (thinking.isNotBlank()) {
-                                indexedItem(key = "streaming-$streamKey-thinking") {
+                                indexedItem(key = "streaming-$streamKey-thinking", contentType = ChatListContentType.Thinking) {
                                     ThinkingBlock(thinking, live = true)
                                 }
                             }
                         }
                         state.streamingText?.let { streaming ->
-                            indexedItem(key = "streaming-$streamKey-text") {
+                            indexedItem(key = "streaming-$streamKey-text", contentType = ChatListContentType.AssistantText) {
                                 AssistantText(
                                     streaming,
                                     streaming = !state.streamingCommitted,
@@ -1278,7 +1278,7 @@ fun ChatScreen(
                     }
 
                     state.pendingApproval?.let { approval ->
-                        indexedItem(key = "approval") {
+                        indexedItem(key = "approval", contentType = ChatListContentType.Approval) {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 ApprovalCard(
                                     approval = approval,
@@ -1290,7 +1290,7 @@ fun ChatScreen(
                     }
 
                     state.pendingEnvironment?.let { request ->
-                        indexedItem(key = "env-install") {
+                        indexedItem(key = "env-install", contentType = ChatListContentType.Environment) {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 EnvironmentInstallCard(
                                     request = request,
@@ -1303,7 +1303,7 @@ fun ChatScreen(
                     }
 
                     state.pendingQuestion?.let { question ->
-                        indexedItem(key = "question") {
+                        indexedItem(key = "question", contentType = ChatListContentType.Question) {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 QuestionCard(
                                     question = question,
@@ -1314,7 +1314,7 @@ fun ChatScreen(
                     }
 
                     state.pendingPlan?.let { plan ->
-                        indexedItem(key = "plan") {
+                        indexedItem(key = "plan", contentType = ChatListContentType.Plan) {
                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                 PlanApprovalCard(
                                     plan = plan,

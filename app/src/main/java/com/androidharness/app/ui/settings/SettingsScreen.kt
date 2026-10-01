@@ -337,6 +337,7 @@ private fun WorkspaceSection(
     onDeleteWorkspace: (ProjectEntity) -> Unit,
     onSelectWorkspace: (String) -> Unit,
 ) {
+    com.androidharness.app.ui.common.ShizukuWorkspaceWarningEffect(container.shizuku)
     SettingsHeader("Workspace")
 
     currentProject?.let { current ->

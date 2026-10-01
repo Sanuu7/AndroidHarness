@@ -4,10 +4,10 @@ import java.io.File
 import java.io.InputStream
 import java.security.MessageDigest
 
-class LocalModelStore(private val root: File) {
+class LocalModelStore(private val root: File, private val find: (String) -> LocalModelSpec? = LocalModelCatalog::find) {
     init { check(root.isDirectory || root.mkdirs()) { "Cannot create local model storage." } }
     fun file(id: String): File {
-        require(LocalModelCatalog.find(id) != null) { "Unknown local model." }
+        require(id.matches(Regex("[a-z0-9-]{1,80}")) && find(id) != null) { "Unknown local model." }
         return File(root, "$id.gguf")
     }
     fun partial(id: String) = File(root, "${file(id).name}.part")
@@ -56,7 +56,8 @@ class LocalModelStore(private val root: File) {
             check(count == model.bytes) { "Incomplete download. Retry to download a fresh copy." }
             check(magic.contentEquals(byteArrayOf(71, 71, 85, 70))) { "Not a GGUF model." }
             val hash = digest.digest().joinToString("") { "%02x".format(it) }
-            check(hash == model.sha256) { "Model checksum mismatch. Download discarded." }
+            check(model.custom && model.sha256.isEmpty() || hash == model.sha256) { "Model checksum mismatch. Download discarded." }
+            if (model.custom) GgufMetadata.inspect(target.inputStream().use { readPrefix(it, GgufMetadata.PROBE_BYTES) })
             check(target.renameTo(file(model.id))) { "Cannot finalize model download." }
         } finally {
             clearPartial(model.id)

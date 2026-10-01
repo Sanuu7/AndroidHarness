@@ -37,6 +37,7 @@ fun AddWorkspaceDialog(
     onDismiss: () -> Unit,
     onPickSaf: () -> Unit,
 ) {
+    ShizukuWorkspaceWarningEffect(container.shizuku)
     var destination by remember { mutableStateOf<String?>(null) }
     if (destination == "ssh") {
         SshWorkspaceDialog(container, onDismiss = onDismiss)

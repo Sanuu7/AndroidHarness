@@ -33,7 +33,26 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 class LocalModelManager(private val context: Context) {
     private val root = File(context.noBackupFilesDir, "local-models")
-    private val store = LocalModelStore(root)
+    private val custom = CustomModelRegistry(root)
+    private val _models = MutableStateFlow(LocalModelCatalog.models + custom.models)
+    val models = _models.asStateFlow()
+    val catalogError get() = custom.loadError
+    fun find(id: String) = models.value.firstOrNull { it.id == id }
+    private val store = LocalModelStore(root, ::find)
+    private val resolver = CustomModelResolver()
+
+    suspend fun resolveLink(link: String) = withContext(Dispatchers.IO) { resolver.resolve(link) }
+    suspend fun inspectCustom(model: LocalModelSpec) = withContext(Dispatchers.IO) { resolver.inspect(model) }
+    suspend fun downloadCustom(model: LocalModelSpec) = withContext(Dispatchers.IO) {
+        lifecycle.withLock {
+            // Once installed, never replace its spec with metadata from a later URL probe.
+            if (find(model.id)?.let(store::installed) != true) {
+                custom.add(model)
+                _models.value = LocalModelCatalog.models + custom.models
+            }
+            download(model.id)
+        }
+    }
     private val json = Json { ignoreUnknownKeys = true }
     private val lifecycle = Mutex()
     private val inference = Mutex()
@@ -43,7 +62,7 @@ class LocalModelManager(private val context: Context) {
     private var handle = 0L
     private var activeId: String? = null
     private val blocked = mutableSetOf<String>()
-    private val _installed = MutableStateFlow(LocalModelCatalog.models.filter(store::installed).map { it.id }.toSet())
+    private val _installed = MutableStateFlow(models.value.filter(store::installed).map { it.id }.toSet())
     val installed = _installed.asStateFlow()
     private val _status = MutableStateFlow<Map<String, String>>(emptyMap())
     val status = _status.asStateFlow()
@@ -55,7 +74,7 @@ class LocalModelManager(private val context: Context) {
     init {
         kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + Dispatchers.IO).launch {
             lifecycle.withLock {
-                LocalModelCatalog.models.forEach { model ->
+                models.value.forEach { model ->
                     runCatching {
                         store.clearPartial(model.id)
                         if (store.file(model.id).exists() && !store.installed(model)) store.remove(model.id)
@@ -74,19 +93,26 @@ class LocalModelManager(private val context: Context) {
             Runtime.getRuntime().availableProcessors(), info.lowMemory)
     }
 
-    fun configs(ids: Set<String> = installed.value) = LocalModelCatalog.models.filter { it.id in ids }.map {
+    fun configs(ids: Set<String> = installed.value) = models.value.filter { it.id in ids }.map {
         ProviderConfig(LocalModelCatalog.PROVIDER_PREFIX + it.id, "Local · ${it.title}", ProviderType.OPENAI_COMPAT, "local://${it.id}", LocalModelCatalog.PROVIDER_PREFIX + it.id)
     }
 
-    fun limits(id: String): LocalModelLimits = runCatching {
-        json.decodeFromString<LocalModelLimits>(File(root, "$id.json").readText()).also { it.validate() }
-    }.getOrElse { LocalModelLimits(threads = device().cores.coerceIn(1, 4)) }
+    fun limits(id: String): LocalModelLimits {
+        val model = requireNotNull(find(id))
+        return runCatching {
+            json.decodeFromString<LocalModelLimits>(File(root, "$id.json").readText()).also { it.validate(); require(it.context <= model.maxContext) }
+        }.getOrElse {
+            LocalModelLimits(context = model.defaultContext, input = model.defaultContext * 3 / 4,
+                output = model.defaultContext / 4, threads = device().cores.coerceIn(1, 4))
+        }
+    }
 
     suspend fun saveLimits(id: String, limits: LocalModelLimits) = withContext(Dispatchers.IO) {
         lifecycle.withLock {
-            val model = requireNotNull(LocalModelCatalog.find(id))
+            val model = requireNotNull(find(id))
             check(store.installed(model)) { "Model was removed." }
             limits.validate()
+            require(limits.context <= model.maxContext) { "Context exceeds the model training limit." }
             require(device().fits(model, limits.context)) { "These limits exceed this device's estimated memory budget." }
             val target = android.util.AtomicFile(File(root, "$id.json"))
             val output = target.startWrite()
@@ -101,7 +127,7 @@ class LocalModelManager(private val context: Context) {
     }
 
     fun download(id: String) {
-        require(LocalModelCatalog.find(id) != null)
+        require(find(id) != null)
         synchronized(gate) { blocked.remove(id) }
         WorkManager.getInstance(context).enqueueUniqueWork(workName(id), ExistingWorkPolicy.KEEP,
             OneTimeWorkRequestBuilder<LocalModelDownloadWorker>().setInputData(workDataOf("modelId" to id))
@@ -111,9 +137,9 @@ class LocalModelManager(private val context: Context) {
     internal suspend fun install(id: String, stopped: () -> Boolean, progress: suspend (Long, Long) -> Unit) =
         withContext(Dispatchers.IO) {
             lifecycle.withLock {
-                val model = requireNotNull(LocalModelCatalog.find(id))
+                val model = requireNotNull(find(id))
                 if (store.installed(model)) { publishInstalled(); return@withLock }
-                check(device().fits(model)) { "This model exceeds the device's estimated memory budget." }
+                check(device().fits(model, limits(id).context)) { "This model exceeds the device's estimated memory budget." }
                 check(device().freeStorage >= model.bytes + 256L * 1024 * 1024) { "Not enough free storage for this model." }
                 synchronized(gate) {
                     check(id !in blocked && !stopped()) { "Download cancelled." }
@@ -128,7 +154,7 @@ class LocalModelManager(private val context: Context) {
                 }
                 try {
                     call.execute().use { response ->
-                        check(response.isSuccessful) { "Hugging Face returned HTTP ${response.code}. Retry later." }
+                        check(response.isSuccessful) { "Model server returned HTTP ${response.code}. Retry later." }
                         val body = checkNotNull(response.body) { "Empty download." }
                         check(body.contentLength() < 0 || body.contentLength() == model.bytes) { "Unexpected model size." }
                         var lastUpdate = 0L
@@ -170,7 +196,7 @@ class LocalModelManager(private val context: Context) {
     }
 
     suspend fun remove(id: String) = withContext(Dispatchers.IO + NonCancellable) {
-        require(LocalModelCatalog.find(id) != null)
+        require(find(id) != null)
         cancelDownload(id)
         stop(id)
         setStatus(id, "Stopping and removing")
@@ -178,6 +204,10 @@ class LocalModelManager(private val context: Context) {
             inference.withLock {
                 try {
                     store.remove(id)
+                    if (find(id)?.custom == true) {
+                        custom.remove(id)
+                        _models.value = LocalModelCatalog.models + custom.models
+                    }
                     publishInstalled()
                     setStatus(id, "Removed")
                 } catch (e: Exception) {
@@ -199,7 +229,7 @@ class LocalModelManager(private val context: Context) {
         id: String, roles: Array<String>, contents: Array<ByteArray>, outputCap: Int,
         emitBytes: suspend (ByteArray) -> Unit,
     ): IntArray = inference.withLock {
-        val model = requireNotNull(LocalModelCatalog.find(id)) { "Unknown local model." }
+        val model = requireNotNull(find(id)) { "Unknown local model." }
         val limits = withContext(Dispatchers.IO) { limits(id) }
         limits.validate()
         synchronized(gate) {
@@ -242,7 +272,7 @@ class LocalModelManager(private val context: Context) {
         }
     }
 
-    private fun publishInstalled() { _installed.value = LocalModelCatalog.models.filter(store::installed).map { it.id }.toSet() }
+    private fun publishInstalled() { _installed.value = models.value.filter(store::installed).map { it.id }.toSet() }
     private fun setStatus(id: String, text: String) { _status.update { it + (id to text) } }
     private fun workName(id: String) = "local-model-$id"
 }

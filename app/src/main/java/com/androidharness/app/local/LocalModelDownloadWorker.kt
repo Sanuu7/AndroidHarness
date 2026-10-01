@@ -18,8 +18,8 @@ import kotlinx.coroutines.launch
 class LocalModelDownloadWorker(context: Context, params: WorkerParameters) : CoroutineWorker(context, params) {
     override suspend fun doWork(): Result {
         val modelId = inputData.getString("modelId") ?: return Result.failure()
-        val model = LocalModelCatalog.find(modelId) ?: return Result.failure()
         val manager = (applicationContext as HarnessApp).container.localModels
+        val model = manager.find(modelId) ?: return Result.failure()
         return try {
             setForeground(foreground(model.title))
             kotlinx.coroutines.coroutineScope {
@@ -50,7 +50,7 @@ class LocalModelDownloadWorker(context: Context, params: WorkerParameters) : Cor
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentTitle("Downloading $title")
-            .setContentText("Hugging Face · Tap Cancel to stop the download")
+            .setContentText("Tap Cancel to stop the download")
             .setOngoing(true).setOnlyAlertOnce(true).setProgress(100, progress ?: 0, progress == null)
             .addAction(0, "Cancel", WorkManager.getInstance(applicationContext).createCancelPendingIntent(id))
             .build()

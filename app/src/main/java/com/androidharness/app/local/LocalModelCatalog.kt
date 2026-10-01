@@ -4,6 +4,7 @@ import kotlinx.serialization.Serializable
 
 const val GIB = 1_073_741_824L
 
+@Serializable
 data class LocalModelSpec(
     val id: String,
     val title: String,
@@ -16,9 +17,14 @@ data class LocalModelSpec(
     val kvBytesPerToken: Long,
     val description: String,
     val license: String = "Apache-2.0",
+    val downloadUrl: String? = null,
+    val sourcePage: String? = null,
+    val custom: Boolean = false,
+    val maxContext: Int = 8192,
 ) {
-    val url get() = "https://huggingface.co/$repository/resolve/$revision/$filename"
-    val modelPage get() = "https://huggingface.co/$repository"
+    val url get() = downloadUrl ?: "https://huggingface.co/$repository/resolve/$revision/$filename"
+    val modelPage get() = sourcePage ?: "https://huggingface.co/$repository"
+    val defaultContext get() = minOf(2048, maxContext)
     fun estimatedMemory(context: Int): Long = bytes + 640L * 1024 * 1024 + context * kvBytesPerToken
 }
 
@@ -77,9 +83,14 @@ data class LocalDeviceProfile(
         totalRam < 6 * GIB -> "Balanced"
         else -> "Higher memory"
     }
-    fun fits(model: LocalModelSpec, context: Int = 2048): Boolean =
-        supported && totalRam >= model.minimumRamGiB * GIB * 9 / 10 &&
+    fun fits(model: LocalModelSpec, context: Int = model.defaultContext): Boolean =
+        supported && context in 512..model.maxContext && totalRam >= model.minimumRamGiB * GIB * 9 / 10 &&
             model.estimatedMemory(context) <= totalRam * 55 / 100
-    fun canLoad(model: LocalModelSpec, context: Int): Boolean = fits(model, context) &&
+    fun canLoad(model: LocalModelSpec, context: Int = model.defaultContext): Boolean = fits(model, context) &&
         !lowMemory && availableRam >= model.estimatedMemory(context) + 256L * 1024 * 1024
 }
+
+// Keep installed/downloading entries accessible even when available RAM changes.
+fun visibleLocalModels(models: List<LocalModelSpec>, device: LocalDeviceProfile, showAll: Boolean,
+    retained: Set<String>, contexts: Map<String, Int> = emptyMap()): List<LocalModelSpec> =
+    models.filter { showAll || it.id in retained || device.canLoad(it, contexts[it.id] ?: it.defaultContext) }

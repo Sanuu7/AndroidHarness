@@ -114,6 +114,7 @@ fun FilesScreen(
     onOpenFile: (String) -> Unit,
     onOpenChanges: (() -> Unit)? = null,
 ) {
+    com.androidharness.app.ui.common.ShizukuWorkspaceWarningEffect(container.shizuku)
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
@@ -766,6 +767,7 @@ fun FilesScreen(
 
     // ---- workspace switcher sheet + add/delete flows ----
     if (showWorkspaceSheet) {
+        com.androidharness.app.ui.common.ShizukuWorkspaceWarningEffect(container.shizuku)
         com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
             projects = allWorkspaces,
             currentProjectId = currentWorkspace?.id,

@@ -55,6 +55,10 @@ class ShizukuManager(
     private val scope: CoroutineScope = CoroutineScope(Dispatchers.IO + SupervisorJob()),
 ) {
 
+    internal val workspaceWarning = shizukuWarningController(
+        context.getSharedPreferences("shizuku_notices", Context.MODE_PRIVATE),
+    )
+
     private val _state = MutableStateFlow(ShizukuState.NOT_INSTALLED)
     val state: StateFlow<ShizukuState> = _state.asStateFlow()
 
@@ -159,6 +163,7 @@ class ShizukuManager(
         runCatching {
             Shizuku.addRequestPermissionResultListener { _, grantResult ->
                 if (grantResult == PackageManager.PERMISSION_GRANTED) {
+                    workspaceWarning.onStatus(ShizukuState.GRANTED)
                     _state.value = ShizukuState.GRANTED
                     bindUserService()
                 }
@@ -188,6 +193,7 @@ class ShizukuManager(
             ping -> ShizukuState.RUNNING_NO_PERMISSION
             else -> ShizukuState.NOT_RUNNING
         }
+        workspaceWarning.onStatus(s)
         _state.value = s
         if (s == ShizukuState.GRANTED) bindUserService()
     }
@@ -199,11 +205,18 @@ class ShizukuManager(
             Shizuku.pingBinder() && Shizuku.checkSelfPermission() == PackageManager.PERMISSION_GRANTED
         }.getOrDefault(false)
         if (granted) {
+            workspaceWarning.onStatus(ShizukuState.GRANTED)
             _state.value = ShizukuState.GRANTED
             bindUserService()
             return
         }
         runCatching { Shizuku.requestPermission(0) }
+    }
+
+    /** Recheck the live binder instead of trusting the last displayed status. */
+    internal fun checkWorkspaceWarning() {
+        refresh()
+        workspaceWarning.checkWorkspace(_state.value)
     }
 
     /**
