@@ -86,7 +86,7 @@ internal fun MainHeader(
     mode: AgentMode,
     dualPlanning: Boolean = false,
     thinkingLevel: ThinkingLevel,
-    /** Full global ladder, every model offers every rung (Hermes-style). */
+    /** Choices for this provider; an empty list means no configurable effort. */
     thinkingLevels: List<ThinkingLevel>,
     permissionMode: PermissionMode,
     canUndo: Boolean,
@@ -183,7 +183,7 @@ internal fun MainHeader(
                 }
             }
 
-            Box(modifier = Modifier.padding(end = 2.dp)) {
+            if (thinkingLevels.isNotEmpty()) Box(modifier = Modifier.padding(end = 2.dp)) {
                 Surface(
                     onClick = { thinkingMenu = true },
                     shape = RoundedCornerShape(8.dp),

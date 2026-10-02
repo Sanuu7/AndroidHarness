@@ -112,7 +112,19 @@ object ChatGptProtocol {
             val obj = item as? JsonObject ?: return@mapNotNull null
             if (obj["visibility"]?.jsonPrimitive?.contentOrNull != "list") return@mapNotNull null
             val slug = obj["slug"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
-            ModelEntry(slug, displayName = obj["display_name"]?.jsonPrimitive?.contentOrNull, note = "Using ChatGPT plan")
+            val supported = (obj["supported_reasoning_levels"] ?: obj["supported_reasoning_efforts"]) as? JsonArray
+            val efforts = supported?.mapNotNull {
+                when (it) {
+                    is JsonObject -> (it["effort"] as? JsonPrimitive)?.contentOrNull
+                    is JsonPrimitive -> it.contentOrNull
+                    else -> null
+                }
+            }?.distinct()
+            ModelEntry(slug, displayName = obj["display_name"]?.jsonPrimitive?.contentOrNull, note = "Using ChatGPT plan",
+                reasoning = (obj["supports_reasoning"] as? JsonPrimitive)?.booleanOrNull
+                    ?: efforts?.any { it != "none" }
+                    ?: true.takeIf { ChatGptThinking.levels(ModelEntry(slug)).isNotEmpty() },
+                reasoningEfforts = efforts, defaultReasoningEffort = (obj["default_reasoning_level"] ?: obj["default_reasoning_effort"])?.jsonPrimitive?.contentOrNull)
         }?.distinctBy { it.id } ?: error("ChatGPT returned an unsupported model list.")
 
     fun requestError(code: String?, status: Int? = null): String = when {

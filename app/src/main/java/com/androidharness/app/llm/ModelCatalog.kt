@@ -29,6 +29,8 @@ data class ModelEntry(
     val custom: Boolean = false,
     val note: String? = null,
     val displayName: String? = null,
+    val reasoningEfforts: List<String>? = null,
+    val defaultReasoningEffort: String? = null,
 )
 
 /** Family-based thinking-capability hint for endpoints that don't report it. */

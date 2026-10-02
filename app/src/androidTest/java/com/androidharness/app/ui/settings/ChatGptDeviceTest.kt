@@ -11,6 +11,8 @@ import com.androidharness.app.HarnessApp
 import com.androidharness.app.MainActivity
 import com.androidharness.app.agent.*
 import com.androidharness.app.chatgpt.ChatGptProvider
+import com.androidharness.app.chatgpt.ChatGptThinking
+import com.androidharness.app.ui.chat.components.MainHeader
 import com.androidharness.app.core.*
 import com.androidharness.app.llm.*
 import com.androidharness.app.workspace.FileFs
@@ -32,11 +34,43 @@ class ChatGptDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private val container get() = (instrumentation.targetContext.applicationContext as HarnessApp).container
 
+    @Test fun thinkingMenuShowsOnlySupportedChatGptLevels() {
+        val picked = java.util.concurrent.atomic.AtomicReference<ThinkingLevel>()
+        val model = ModelEntry("gpt-6.1-sol")
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            scenario.onActivity { activity -> activity.setContent { MaterialTheme {
+                MainHeader(sessionTitle = "ChatGPT check", busy = false, pickerLabel = model.id, mode = AgentMode.ACT,
+                    thinkingLevel = ChatGptThinking.selected(model, ThinkingLevel.ULTRA)!!,
+                    thinkingLevels = ChatGptThinking.levels(model), permissionMode = PermissionMode.CONFIRM_RISKY,
+                    canUndo = false, onOpenDrawer = {}, onPickModel = {}, onOpenTerminal = {}, onSetThinking = picked::set,
+                    onSetPermission = {}, onSetMode = {}, onOpenContext = {}, onOpenUndo = {}, onOpenFiles = {})
+            } } }
+            clickText("Thinking level")
+            waitForText("Low")
+            waitForText("High")
+            waitForText("Max")
+            val root = instrumentation.uiAutomation.rootInActiveWindow
+            assertNull(find(root, "Off"))
+            assertNull(find(root, "Minimal"))
+            assertNull(find(root, "Ultra"))
+            clickText("High")
+            assertEquals(ThinkingLevel.HIGH, picked.get())
+            println("CHATGPT_THINKING_PICKER_OK: supported choices only and High selection works")
+        }
+    }
+
     /** Explicitly requested live check after the user signs in; never reads or prints credentials. */
     @Test fun signedInAccountReadsFileWithLiveModel() = runBlocking {
         assumeTrue("Pass liveChatGpt=true after signing in", InstrumentationRegistry.getArguments().getString("liveChatGpt") == "true")
         val config = withTimeout(10_000) { container.providers.providers.first { list -> list.any { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) } } }
             .first { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) }
+        println("CHATGPT_CACHED_MODEL_IDS: ${container.chatGpt.state.value.accounts.first { it.providerId == config.id }.models.map { it.id }}")
+        if (InstrumentationRegistry.getArguments().getString("refreshChatGpt") == "true") {
+            println("CHATGPT_APP_INTERNET_PERMISSION: ${instrumentation.targetContext.checkSelfPermission(android.Manifest.permission.INTERNET)}")
+            println("CHATGPT_APP_DNS_OK: ${java.net.InetAddress.getAllByName("api.openai.com").size} addresses")
+            val fresh = container.chatGpt.refreshModels(config.id)
+            println("CHATGPT_FRESH_MODEL_IDS: ${fresh.map { it.id }}")
+        }
         val root = File(instrumentation.targetContext.cacheDir, "chatgpt-live-check-${System.nanoTime()}").apply { mkdirs() }
         try {
             File(root, "fixture.txt").writeText("ANDROIDHARNESS_CHATGPT_TOOL_OK")
@@ -49,7 +83,7 @@ class ChatGptDeviceTest {
                     maxIterations = 3, repoMapEnabled = false,
                 ).collect { events += it }
             }
-            assertFalse(events.filterIsInstance<AgentEvent.Error>().toString(), events.any { it is AgentEvent.Error })
+            assertFalse("${events.filterIsInstance<AgentEvent.Error>()}; failureType=${(ProviderFactory.chatGptProvider as? ChatGptProvider)?.lastFailureType}", events.any { it is AgentEvent.Error })
             assertTrue(events.filterIsInstance<AgentEvent.ToolStarted>().any { it.call.name == "read_file" })
             assertTrue(events.filterIsInstance<AgentEvent.ToolFinished>().any { it.result.ok && it.result.output.contains("ANDROIDHARNESS_CHATGPT_TOOL_OK") })
             assertTrue(events.filterIsInstance<AgentEvent.AssistantCommitted>().any { it.message.text.contains("ANDROIDHARNESS_CHATGPT_TOOL_OK") })

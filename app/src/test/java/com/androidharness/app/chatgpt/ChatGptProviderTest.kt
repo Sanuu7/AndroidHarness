@@ -43,6 +43,15 @@ class ChatGptProviderTest {
         assertEquals("function_call_output", body.getValue("input").jsonArray[2].jsonObject.getValue("type").jsonPrimitive.content)
     }
 
+    @Test fun `selected thinking is encoded with the same supported vocabulary as the picker`() {
+        val provider = provider("")
+        fun effort(model: String, level: com.androidharness.app.agent.ThinkingLevel) = provider.body(config.copy(model = model), "sys", emptyList(), emptyList(), RequestOptions(thinking = level))["reasoning"]?.jsonObject?.get("effort")?.jsonPrimitive?.content
+        assertEquals("max", effort("gpt-6.1-sol", com.androidharness.app.agent.ThinkingLevel.ULTRA))
+        assertEquals("medium", effort("gpt-6.1-sol", com.androidharness.app.agent.ThinkingLevel.OFF))
+        assertEquals("none", effort("gpt-6-sol", com.androidharness.app.agent.ThinkingLevel.OFF))
+        assertEquals("low", effort("gpt-6-sol", com.androidharness.app.agent.ThinkingLevel.LOW))
+    }
+
     @Test fun `complete response emits a local tool call and only sends OAuth to official endpoint`() = runBlocking {
         val provider = provider(sse("""{"type":"response.output_text.delta","delta":"Checking"}""", completed("[$call]"))) { request ->
             assertEquals("https://api.openai.com/v1/responses", request.url.toString())

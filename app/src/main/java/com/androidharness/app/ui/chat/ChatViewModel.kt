@@ -1501,16 +1501,20 @@ class ChatViewModel(
     }
 
     fun setThinkingLevel(level: ThinkingLevel) {
-        // Resolve against the active model's real vocabulary (Hermes-style
-        // clamp): a non-native rung stores as the nearest weaker native one.
+        val current = _state.value
+        val requested = if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(current.activeProvider?.id)) {
+            val model = current.catalogs[current.activeProvider?.id].orEmpty().firstOrNull { it.id == current.effectiveModel }
+                ?: com.androidharness.app.llm.ModelEntry(current.effectiveModel.orEmpty())
+            com.androidharness.app.chatgpt.ChatGptThinking.selected(model, level) ?: return
+        } else level
         viewModelScope.launch {
             ThinkingSpecs.setClamped(
                 c.settings,
                 _state.value.effectiveModel,
                 com.androidharness.app.llm.ModelsDev.providerKeyFor(_state.value.activeProvider?.baseUrl),
-                level,
+                requested,
             )
-            _state.update { it.copy(thinkingLevel = c.settings.settings.firstOrNull()?.thinkingLevel ?: level) }
+            _state.update { it.copy(thinkingLevel = c.settings.settings.firstOrNull()?.thinkingLevel ?: requested) }
         }
     }
 

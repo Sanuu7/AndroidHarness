@@ -16,7 +16,11 @@ class ChatGptProvider(
     private val token: suspend (String, Boolean) -> String,
     private val client: OkHttpClient = OkHttpClient.Builder().connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(90, TimeUnit.SECONDS).callTimeout(10, TimeUnit.MINUTES).followRedirects(false).build(),
+    private val modelEntry: (String, String) -> ModelEntry? = { _, _ -> null },
 ) : LlmProvider {
+    /** Diagnostic type only, never credentials, request bodies or exception messages. */
+    @Volatile internal var lastFailureType: String? = null
+        private set
     private val responses = OpenAiResponsesProvider(client, ProviderFactory.json)
     private class StreamFinished : RuntimeException(null, null, false, false)
 
@@ -24,6 +28,13 @@ class ChatGptProvider(
         val body = responses.buildRequestBody(config, system, messages, tools, options).toMutableMap()
         body.remove("max_output_tokens")
         body.remove("user")
+        body.remove("reasoning")
+        ChatGptThinking.effort(modelEntry(config.id, config.model) ?: ModelEntry(config.model), options.thinking)?.let { effort ->
+            body["reasoning"] = buildJsonObject {
+                put("effort", effort)
+                if (effort != "none") put("summary", "auto")
+            }
+        }
         body["include"] = JsonArray(listOf(JsonPrimitive("reasoning.encrypted_content")))
         val replayReasoning = messages.flatMap { it.toolCalls }.filter { it.responseProviderId == config.id }.associate { it.id to it.responseReasoning }
         body["input"] = JsonArray(body.getValue("input").jsonArray.flatMap { item ->
@@ -122,7 +133,8 @@ class ChatGptProvider(
                 if (e.code == 401 && !retry && !received) { retry = true; continue }
                 val code = runCatching { ProviderFactory.json.parseToJsonElement(e.message.orEmpty().substringAfter(": ")).jsonObject["error"]?.jsonObject?.get("code")?.jsonPrimitive?.contentOrNull }.getOrNull()
                 emit(StreamEvent.Failure(ChatGptProtocol.requestError(code, e.code))); break
-            } catch (_: Exception) {
+            } catch (e: Exception) {
+                lastFailureType = e.javaClass.simpleName
                 emit(StreamEvent.Failure("ChatGPT could not finish. Check your connection or reconnect in Settings > Connected accounts.")); break
             }
         }

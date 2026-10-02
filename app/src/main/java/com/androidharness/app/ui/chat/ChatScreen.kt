@@ -842,12 +842,14 @@ fun ChatScreen(
     Scaffold(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
-            // The FULL global ladder for every model (Hermes-style): picking a
-            // rung the model doesn't natively speak resolves down the chain
             val currentProvider = state.activeProvider
             val currentModel = state.effectiveModel ?: currentProvider?.model
-            val thinkingLevels = remember(currentModel, currentProvider) {
-                com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
+            val chatGptPlan = com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(currentProvider?.id)
+            val modelEntry = state.catalogs[currentProvider?.id].orEmpty().firstOrNull { it.id == currentModel }
+                ?: com.androidharness.app.llm.ModelEntry(currentModel.orEmpty())
+            val thinkingLevels = remember(currentModel, currentProvider, modelEntry) {
+                if (chatGptPlan) com.androidharness.app.chatgpt.ChatGptThinking.levels(modelEntry)
+                else com.androidharness.app.agent.ThinkingSpecs.visibleLevels(
                     currentModel,
                     com.androidharness.app.llm.ModelsDev.providerKeyFor(currentProvider?.baseUrl),
                 )
@@ -865,7 +867,8 @@ fun ChatScreen(
                 },
                 mode = state.mode,
                 dualPlanning = state.dualPlanning,
-                thinkingLevel = state.thinkingLevel,
+                thinkingLevel = if (chatGptPlan) com.androidharness.app.chatgpt.ChatGptThinking.selected(modelEntry, state.thinkingLevel)
+                    ?: com.androidharness.app.agent.ThinkingLevel.OFF else state.thinkingLevel,
                 thinkingLevels = thinkingLevels,
                 permissionMode = state.permissionMode,
                 canUndo = state.turnsWithCheckpoints.isNotEmpty(),
