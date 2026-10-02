@@ -11,10 +11,10 @@ plugins {
 // NDK (GitHub's default-setup CodeQL scan, which has no editable workflow to
 // install one) only trace Kotlin and Java, so drop the whole native block when
 // the NDK is absent. Real builds install the pinned NDK and keep native code.
+// AGP resolves a pinned version only from <sdk>/ndk/<version>, so a foreign
+// ANDROID_NDK_HOME (CI images export one) must not enable the native block.
 val pinnedNdk = "27.2.12479018"
 val hasNdk: Boolean = run {
-    System.getenv("ANDROID_NDK_HOME")?.takeIf { it.isNotBlank() && File(it).isDirectory }
-        ?.let { return@run true }
     val sdk = System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }?.let { File(it) }
         ?: rootProject.file("local.properties").takeIf { it.exists() }
             ?.readLines()?.firstOrNull { it.trim().startsWith("sdk.dir=") }
