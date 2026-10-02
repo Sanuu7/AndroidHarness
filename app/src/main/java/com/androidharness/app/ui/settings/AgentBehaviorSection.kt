@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
-import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -44,7 +43,6 @@ private fun PermissionMode.description(): String = when (this) {
 internal fun AgentBehaviorSection(
     settings: AppSettings,
     onPermissionMode: (PermissionMode) -> Unit,
-    onSubagentTools: (Boolean) -> Unit,
     onContextLimit: (Int) -> Unit,
     onIterationLimit: (Int) -> Unit,
     onProjectInstructions: () -> Unit,
@@ -67,26 +65,6 @@ internal fun AgentBehaviorSection(
                     onClick = { pickerName = BehaviorPicker.PERMISSIONS.name },
                     caution = settings.permissionMode == PermissionMode.FULL_ACCESS,
                 )
-            }
-            BehaviorDivider()
-            SettingsAnchor("Subagent action tools") {
-                Row(
-                    Modifier.fillMaxWidth()
-                        .toggleable(settings.subagentFullAccess, role = Role.Switch, onValueChange = onSubagentTools)
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text("Subagent action tools", style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            "Let subagents edit and run commands in Act mode. They follow your permissions; Plan stays read-only.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(checked = settings.subagentFullAccess, onCheckedChange = null)
-                }
             }
         }
         BehaviorGroup("Run limits", Icons.Outlined.Tune) {

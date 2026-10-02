@@ -17,8 +17,8 @@ class TaskTool : Tool {
         "you get back only the subagent's final, self-contained answer. " +
         "Need several independent explorations? Issue ALL task calls in ONE message: " +
         "they run concurrently. Never serialize independent research into separate turns. " +
-        "Pass `model` to run the task on a cheaper or faster catalog model than " +
-        "this conversation uses. " +
+        "A model chosen in Sub-Agent settings is used for every subagent. Otherwise, " +
+        "pass `model` to run the task on a cheaper or faster catalog model than this conversation uses. " +
         "The subagent cannot ask you questions or spawn further subagents."
     override val parametersSchema = Schema.obj(
         mapOf(
@@ -31,7 +31,7 @@ class TaskTool : Tool {
             ),
             "model" to Schema.string(
                 "Optional model id from this provider's catalog to run the subagent on " +
-                    "(defaults to this conversation's model). Unknown ids are rejected " +
+                    "(defaults to this conversation's model). A model chosen in Sub-Agent settings takes precedence. Unknown ids are rejected " +
                     "with the list of valid ids.",
             ),
         ),

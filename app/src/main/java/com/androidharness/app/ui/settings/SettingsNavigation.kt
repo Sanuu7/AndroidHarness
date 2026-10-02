@@ -8,6 +8,7 @@ internal enum class SettingsPage(
 ) {
     CONNECTED_ACCOUNTS("Connected accounts", "Use your ChatGPT plan for coding and tools", "Special providers", "chatgpt codex subscription sign in login account plan oauth"),
     MODELS("Models & providers", "Connections, current model and separate planning models", "Your assistant", "api key token provider openai anthropic gemini thinking planning execution"),
+    SUBAGENT("Sub-Agent settings", "Choose subagent models and action tools", "Your assistant", "subagent sub-agent sub agent model provider action tools permissions edit commands"),
     LOCAL_MODELS("Local models", "Choose and manage models that run on your phone", "Your assistant", "offline hugging face gguf safetensors llama ram memory storage cpu download uninstall context input output vision images threads"),
     AGENT("Agent behavior", "Permissions, context limits and project instructions", "Your assistant", "approval full access iterations tools agents.md memory"),
     CHAT("Chat & commands", "Startup behavior, code indexing and slash commands", "Your assistant", "resume last chat launch repo map shortcuts"),
@@ -55,7 +56,8 @@ private val subSettingsEntries = listOf(
     SettingsSearchEntry("Plan model", "Models & providers · Choose the model used for planning", SettingsPage.MODELS, "planning dual", anchor = "Dual planning models"),
     SettingsSearchEntry("Execute model", "Models & providers · Choose the model used for execution", SettingsPage.MODELS, "execution dual", anchor = "Dual planning models"),
     SettingsSearchEntry("Default permission mode", "Agent behavior · Choose approval or full-access behavior", SettingsPage.AGENT, "permissions approval full access", anchor = "Default permission mode"),
-    SettingsSearchEntry("Subagent action tools", "Agent behavior · Let subagents edit files and run commands in Act mode", SettingsPage.AGENT, "subagent permissions tools commands read only plan", anchor = "Subagent action tools"),
+    SettingsSearchEntry("Subagent action tools", "Sub-Agent settings · Let subagents edit files and run commands in Act mode", SettingsPage.SUBAGENT, "subagent sub-agent permissions tools commands read only plan", anchor = "Subagent action tools"),
+    SettingsSearchEntry("Subagent model", "Sub-Agent settings · Choose a separate provider and model for subagents", SettingsPage.SUBAGENT, "subagent sub-agent model provider execution different separate", anchor = "Subagent model"),
     SettingsSearchEntry("Max context window", "Agent behavior · Set the maximum model context size", SettingsPage.AGENT, "context tokens limit", anchor = "Max context window"),
     SettingsSearchEntry("Tool-call iteration limit", "Agent behavior · Limit agent tool iterations", SettingsPage.AGENT, "iterations tools max limit", anchor = "Tool-call iteration limit"),
     SettingsSearchEntry("Project instructions (AGENTS.md)", "Agent behavior · Edit workspace instructions injected into every run", SettingsPage.AGENT, "agents instructions memory workspace prompt", anchor = "Project instructions (AGENTS.md)"),

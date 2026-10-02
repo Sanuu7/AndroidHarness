@@ -22,6 +22,8 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 data class AppSettings(
     val permissionMode: PermissionMode = PermissionMode.CONFIRM_RISKY,
     val subagentFullAccess: Boolean = false,
+    val subagentProviderId: String? = null,
+    val subagentModel: String? = null,
     val themeMode: ThemeMode = ThemeMode.SYSTEM,
     val dynamicColor: Boolean = true,
     val activeProviderId: String? = null,
@@ -103,6 +105,8 @@ class SettingsRepository(private val context: Context) {
     private object Keys {
         val PERMISSION_MODE = stringPreferencesKey("permission_mode")
         val SUBAGENT_FULL_ACCESS = booleanPreferencesKey("subagent_full_access")
+        val SUBAGENT_PROVIDER = stringPreferencesKey("subagent_provider_id")
+        val SUBAGENT_MODEL = stringPreferencesKey("subagent_model")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val ACTIVE_PROVIDER = stringPreferencesKey("active_provider_id")
@@ -171,6 +175,8 @@ class SettingsRepository(private val context: Context) {
             planningModel = prefs[Keys.PLANNING_MODEL],
             executionProviderId = prefs[Keys.EXECUTION_PROVIDER],
             executionModel = prefs[Keys.EXECUTION_MODEL],
+            subagentProviderId = prefs[Keys.SUBAGENT_PROVIDER],
+            subagentModel = prefs[Keys.SUBAGENT_MODEL],
             planningModelsPromoSeen = prefs[Keys.PLANNING_PROMO_SEEN] ?: false,
             forkPromoSeen = prefs[Keys.FORK_PROMO_SEEN] ?: false,
             biometricLockEnabled = prefs[Keys.BIOMETRIC_LOCK_ENABLED] ?: false,
@@ -213,7 +219,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.PLANNING_MODELS_ENABLED] = s.planningModelsEnabled
             listOf(Keys.ACTIVE_PROVIDER to s.activeProviderId, Keys.ACTIVE_MODEL to s.activeModel,
                 Keys.PLANNING_PROVIDER to s.planningProviderId, Keys.PLANNING_MODEL to s.planningModel,
-                Keys.EXECUTION_PROVIDER to s.executionProviderId, Keys.EXECUTION_MODEL to s.executionModel
+                Keys.EXECUTION_PROVIDER to s.executionProviderId, Keys.EXECUTION_MODEL to s.executionModel,
+                Keys.SUBAGENT_PROVIDER to s.subagentProviderId, Keys.SUBAGENT_MODEL to s.subagentModel
             ).forEach { (key, value) -> if (value == null) p.remove(key) else p[key] = value }
         }
     }
@@ -293,6 +300,19 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setSubagentModel(providerId: String?, model: String?) {
+        context.settingsStore.edit { prefs ->
+            if (providerId.isNullOrBlank()) {
+                prefs.remove(Keys.SUBAGENT_PROVIDER)
+                prefs.remove(Keys.SUBAGENT_MODEL)
+            } else {
+                prefs[Keys.SUBAGENT_PROVIDER] = providerId
+                if (model.isNullOrBlank()) prefs.remove(Keys.SUBAGENT_MODEL)
+                else prefs[Keys.SUBAGENT_MODEL] = model
+            }
+        }
+    }
+
     suspend fun setActiveProvider(id: String?) {
         context.settingsStore.edit { prefs ->
             if (id == null) prefs.remove(Keys.ACTIVE_PROVIDER)
@@ -304,7 +324,8 @@ class SettingsRepository(private val context: Context) {
         context.settingsStore.edit { prefs ->
             listOf(Keys.ACTIVE_PROVIDER to Keys.ACTIVE_MODEL,
                 Keys.PLANNING_PROVIDER to Keys.PLANNING_MODEL,
-                Keys.EXECUTION_PROVIDER to Keys.EXECUTION_MODEL).forEach { (providerKey, modelKey) ->
+                Keys.EXECUTION_PROVIDER to Keys.EXECUTION_MODEL,
+                Keys.SUBAGENT_PROVIDER to Keys.SUBAGENT_MODEL).forEach { (providerKey, modelKey) ->
                 val id = prefs[providerKey]
                 if (id != null && (com.androidharness.app.local.LocalModelCatalog.isLocal(id) || com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(id)) && id !in availableIds) {
                     if (providerKey == Keys.ACTIVE_PROVIDER) {

@@ -48,8 +48,6 @@ class AgentBehaviorDeviceTest {
             click("Default permission mode")
             click("Cancel")
             assertEquals(PermissionMode.FULL_ACCESS, state.value.permissionMode)
-            click("Subagent action tools")
-            awaitCondition { state.value.subagentFullAccess }
             click("Max context window")
             // Values previously set from chat controls must remain selectable.
             awaitNode("200K tokens")
@@ -64,6 +62,10 @@ class AgentBehaviorDeviceTest {
             awaitCondition { state.value.maxIterations == 25 }
             click("Project instructions (AGENTS.md)")
             awaitCondition { instructionsOpened }
+        }
+        launch(state, dark = true, fontScale = 1f, subagents = true).use {
+            click("Subagent action tools")
+            awaitCondition { state.value.subagentFullAccess }
         }
     }
 
@@ -87,6 +89,7 @@ class AgentBehaviorDeviceTest {
         state: MutableState<AppSettings>,
         dark: Boolean,
         fontScale: Float,
+        subagents: Boolean = false,
         onInstructions: () -> Unit = {},
     ): ActivityScenario<ChatListTestActivity> {
         val scenario = ActivityScenario.launch(ChatListTestActivity::class.java)
@@ -103,11 +106,13 @@ class AgentBehaviorDeviceTest {
                                         .verticalScroll(rememberScrollState()).padding(16.dp),
                                     verticalArrangement = Arrangement.spacedBy(20.dp),
                                 ) {
-                                    Text("Agent behavior", style = MaterialTheme.typography.titleLarge)
-                                    AgentBehaviorSection(
+                                    Text(if (subagents) "Sub-Agent settings" else "Agent behavior", style = MaterialTheme.typography.titleLarge)
+                                    if (subagents) SubagentSettingsSection(
+                                        settings = state.value,
+                                        onSubagentTools = { state.value = state.value.copy(subagentFullAccess = it) },
+                                    ) else AgentBehaviorSection(
                                         settings = state.value,
                                         onPermissionMode = { state.value = state.value.copy(permissionMode = it) },
-                                        onSubagentTools = { state.value = state.value.copy(subagentFullAccess = it) },
                                         onContextLimit = { state.value = state.value.copy(maxContextTokens = it) },
                                         onIterationLimit = { state.value = state.value.copy(maxIterations = it) },
                                         onProjectInstructions = onInstructions,

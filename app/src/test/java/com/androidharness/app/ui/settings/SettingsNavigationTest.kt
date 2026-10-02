@@ -25,6 +25,9 @@ class SettingsNavigationTest {
 
         val lock = matchingSettingsEntries("auto lock timeout").first { it.title == "Auto-lock timeout" }
         assertEquals(SettingsPage.PRIVACY, lock.page)
+        val subagent = matchingSettingsEntries("subagent model").first { it.title == "Subagent model" }
+        assertEquals(SettingsPage.SUBAGENT, subagent.page)
+        assertEquals("Subagent model", subagent.anchor)
     }
 
     @Test

@@ -38,6 +38,19 @@ class SettingsBackupValidationTest {
         assertThrows(IllegalArgumentException::class.java) {
             SettingsBackupValidation.validate(SettingsBackupFile(settings = AppSettings(planningProviderId = "missing")))
         }
+        assertThrows(IllegalArgumentException::class.java) {
+            SettingsBackupValidation.validate(SettingsBackupFile(settings = AppSettings(subagentProviderId = "missing")))
+        }
+    }
+
+    @Test fun separateSubagentModelSurvivesSettingsSerialization() {
+        val json = kotlinx.serialization.json.Json { encodeDefaults = true }
+        val settings = AppSettings(activeProviderId = "test", subagentProviderId = "research", subagentModel = "small")
+        val original = SettingsBackupFile(settings = settings, providers = listOf(provider(), provider("research")))
+        val restored = json.decodeFromString(SettingsBackupFile.serializer(), json.encodeToString(SettingsBackupFile.serializer(), original))
+        SettingsBackupValidation.validate(restored)
+        org.junit.Assert.assertEquals(settings, restored.settings)
+        org.junit.Assert.assertNull(json.decodeFromString(AppSettings.serializer(), "{}").subagentProviderId)
     }
 
     @Test fun duplicateProvidersRejected() {

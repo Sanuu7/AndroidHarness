@@ -252,6 +252,13 @@ fun SettingsScreen(
                             }
                             CurrentSetupCard(settings, providers)
                         }
+                        SettingsPage.SUBAGENT -> {
+                            SubagentModelSection(container, settings)
+                            SubagentSettingsSection(
+                                settings = settings,
+                                onSubagentTools = { scope.launch { container.settings.setSubagentFullAccess(it) } },
+                            )
+                        }
                         SettingsPage.LOCAL_MODELS -> LocalModelsSection(container)
                         SettingsPage.AGENT -> AgentSection(container, settings, scope)
                         SettingsPage.CHAT -> {
@@ -2109,7 +2116,6 @@ private fun AgentSection(
     AgentBehaviorSection(
         settings = settings,
         onPermissionMode = { scope.launch { container.settings.setPermissionMode(it) } },
-        onSubagentTools = { scope.launch { container.settings.setSubagentFullAccess(it) } },
         onContextLimit = { scope.launch { container.settings.setMaxContextTokens(it) } },
         onIterationLimit = { scope.launch { container.settings.setMaxIterations(it) } },
         onProjectInstructions = { showAgentsDialog = true },

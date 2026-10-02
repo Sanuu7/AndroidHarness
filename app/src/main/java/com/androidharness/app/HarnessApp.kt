@@ -155,7 +155,7 @@ class AppContainer(val appContext: Context) {
         searchApi = { searchApiConfig },
     )
     val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys, codeGraph)
-    val engine = AgentEngine(
+    val engine: AgentEngine = AgentEngine(
         providerFactory = { config -> ProviderFactory.create(config) },
         registry = registry,
         checkpointer = checkpoints,
@@ -166,6 +166,11 @@ class AppContainer(val appContext: Context) {
         todoStore = todoStore,
         repoMap = repoMap,
         cavemanSettings = { settings.settings.first().also { cavemanSettings.set(it); disabledSkills.set(it.disabledSkills) } },
+        configuredSubagent = {
+            com.androidharness.app.agent.SubagentConfiguration.configured(
+                settings.settings.first(), providers.providers.first(), providers::apiKey,
+            )
+        },
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -196,7 +201,7 @@ class AppContainer(val appContext: Context) {
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             combine(settings.settings, providers.providers) { saved, available -> saved to available.map { it.id }.toSet() }
                 .collect { (saved, availableIds) ->
-                    val selected = listOf(saved.activeProviderId, saved.planningProviderId, saved.executionProviderId)
+                    val selected = listOf(saved.activeProviderId, saved.planningProviderId, saved.executionProviderId, saved.subagentProviderId)
                     if (selected.any { it != null && (com.androidharness.app.local.LocalModelCatalog.isLocal(it) || com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it)) && it !in availableIds }) {
                         settings.clearMissingLocalProviderSelections(availableIds)
                     }

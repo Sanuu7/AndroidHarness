@@ -192,6 +192,7 @@ class AgentEngine(
     private val todoStore: TodoStore? = null,
     private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
     private val cavemanSettings: suspend () -> com.androidharness.app.data.AppSettings = { com.androidharness.app.data.AppSettings() },
+    private val configuredSubagent: suspend () -> SubagentConnection? = { null },
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -746,40 +747,15 @@ class AgentEngine(
                 ?: return ToolResult(false, "task requires a prompt.")
             val title = args["title"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
             val requestedModel = args["model"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
-            var taskConfig = config
-            if (requestedModel != null) {
-                val resolver = resolveSubagentModel
-                    ?: return ToolResult(
-                        false,
-                        "task `model` overrides are not available in this run. " +
-                            "Retry the task without `model`.",
-                    )
-                when (val outcome = resolver(requestedModel)) {
-                    is SubagentModelResolution.Resolved ->
-                        taskConfig = config.copy(model = outcome.modelId)
-                    is SubagentModelResolution.Unknown -> {
-                        val listing = if (outcome.available.isEmpty()) {
-                            "the provider's catalog is empty or does not support listing models"
-                        } else {
-                            outcome.available.take(25).joinToString() +
-                                if (outcome.available.size > 25) " … (+${outcome.available.size - 25} more)" else ""
-                        }
-                        return ToolResult(
-                            false,
-                            "Unknown task model '$requestedModel': $listing. " +
-                                "Retry with a listed id, or omit `model` to use ${config.model}.",
-                        )
-                    }
-                    is SubagentModelResolution.Failed ->
-                        return ToolResult(
-                            false,
-                            "Could not verify task model '$requestedModel': ${outcome.message}. " +
-                                "Retry the task, or omit `model` to use ${config.model}.",
-                        )
-                }
+            val connection = try {
+                SubagentConfiguration.forTask(config, apiKey, requestedModel, configuredSubagent, resolveSubagentModel)
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                return ToolResult(false, e.message ?: "Could not configure the subagent model.")
             }
             return runSubagent(
-                prompt, title, call.id, taskConfig, apiKey, workspace, requestOptions, emitEvent,
+                prompt, title, call.id, connection.config, connection.apiKey, workspace, requestOptions, emitEvent,
                 registry, mode, sessionAllowedTools, sessionId, turnId,
                 actionTools = agentMode == AgentMode.ACT && cavemanSettings().subagentFullAccess,
             )
@@ -1193,6 +1169,7 @@ class AgentEngine(
         suspend fun step(line: String) = emitEvent(AgentEvent.SubagentStep(parentCallId, line))
         val label = if (title.isNullOrBlank()) "Task" else "Task [$title]"
         step("$label: ${prompt.take(80)}")
+        step("Model: ${config.name} · ${config.model}")
         val provider = providerFactory(config)
         // Subagent answers are folded back into the parent's context, so the
         // reply style applies here too. Code, paths and quoted errors stay exact.
