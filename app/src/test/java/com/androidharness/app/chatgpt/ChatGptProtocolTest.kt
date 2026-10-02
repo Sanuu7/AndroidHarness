@@ -82,6 +82,7 @@ class ChatGptProtocolTest {
         val url = CompletableDeferred<String>()
         val saved = AtomicReference<String?>()
         val selected = CompletableDeferred<String>()
+        val finishSelection = CompletableDeferred<Unit>()
         val nonce = AtomicReference<String>()
         val client = mockHttp { request -> when (request.url.encodedPath) {
             "/api/accounts/oauth/token" -> {
@@ -95,22 +96,36 @@ class ChatGptProtocolTest {
             "/v1/models" -> { assertEquals("Bearer fixture-access", request.header("Authorization")); catalog() }
             else -> error("Unexpected request")
         } }
-        val accounts = ChatGptAccounts(saved::get, saved::set, { selected.complete(it.id) }, http = client, browserDispatcher = Dispatchers.Unconfined, refreshOnStart = false)
-        accounts.startSignIn { nonce.set(it.toHttpUrl().queryParameter("nonce")); url.complete(it) }
-        val auth = withTimeout(5000) { url.await() }.toHttpUrl()
-        val callback = auth.queryParameter("redirect_uri")!!.toHttpUrl().newBuilder()
-            .addQueryParameter("state", auth.queryParameter("state")).addQueryParameter("code", "fixture-code")
-            .addQueryParameter("client_id", "oaiapp_fixture").build().toString()
-        withContext(Dispatchers.IO) { (URL(callback).openConnection() as HttpURLConnection).run { assertEquals(200, responseCode); disconnect() } }
-        assertEquals("chatgpt:oaiapp_fixture", withTimeout(5000) { selected.await() })
-        assertTrue(accounts.state.value.accounts.single().connected)
-        assertTrue(accounts.state.value.showWelcome)
-        assertEquals(listOf("fixture-model"), accounts.state.value.accounts.single().models.map { it.id })
-        assertTrue(saved.get()!!.contains("fixture-refresh"))
-        val restored = ChatGptAccounts(saved::get, saved::set, {}, http = client, refreshOnStart = false)
-        assertEquals(accounts.state.value.accounts, restored.state.value.accounts)
-        accounts.dismissWelcome()
-        assertFalse(accounts.state.value.showWelcome)
+        val accounts = ChatGptAccounts(saved::get, saved::set, {
+            selected.complete(it.id)
+            // Selection can finish before sign-in publishes its welcome state.
+            finishSelection.await()
+        }, http = client, browserDispatcher = Dispatchers.Unconfined, refreshOnStart = false)
+        try {
+            accounts.startSignIn { nonce.set(it.toHttpUrl().queryParameter("nonce")); url.complete(it) }
+            val auth = withTimeout(5000) { url.await() }.toHttpUrl()
+            val callback = auth.queryParameter("redirect_uri")!!.toHttpUrl().newBuilder()
+                .addQueryParameter("state", auth.queryParameter("state")).addQueryParameter("code", "fixture-code")
+                .addQueryParameter("client_id", "oaiapp_fixture").build().toString()
+            withContext(Dispatchers.IO) { (URL(callback).openConnection() as HttpURLConnection).run { assertEquals(200, responseCode); disconnect() } }
+            assertEquals("chatgpt:oaiapp_fixture", withTimeout(5000) { selected.await() })
+            assertTrue(accounts.state.value.signingIn)
+            assertFalse(accounts.state.value.showWelcome)
+            finishSelection.complete(Unit)
+            val completed = withTimeout(5000) { accounts.state.first { !it.signingIn } }
+            assertNull(completed.error)
+            assertTrue(completed.accounts.single().connected)
+            assertTrue(completed.showWelcome)
+            assertEquals(listOf("fixture-model"), completed.accounts.single().models.map { it.id })
+            assertTrue(saved.get()!!.contains("fixture-refresh"))
+            val restored = ChatGptAccounts(saved::get, saved::set, {}, http = client, refreshOnStart = false)
+            assertEquals(completed.accounts, restored.state.value.accounts)
+            accounts.dismissWelcome()
+            assertFalse(accounts.state.value.showWelcome)
+        } finally {
+            finishSelection.complete(Unit)
+            accounts.cancelSignIn()
+        }
     }
 
     @Test fun `refresh rotation is serialized and sign out clears tokens but retains registration`() = runBlocking {
