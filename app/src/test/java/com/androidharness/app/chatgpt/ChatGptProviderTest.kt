@@ -94,6 +94,34 @@ class ChatGptProviderTest {
         assertTrue(failure.message.contains(ChatGptProtocol.USAGE_URL))
     }
 
+    @Test fun `empty completed output keeps finished streamed tools and reasoning`() = runBlocking {
+        val reasoning = """{"type":"reasoning","id":"rs_stream","encrypted_content":"opaque-stream","summary":[]}"""
+        val content = sse(
+            """{"type":"response.output_item.done","item":$reasoning}""",
+            """{"type":"response.output_item.added","item":$call}""",
+            """{"type":"response.output_item.done","item":$call}""",
+            completed(),
+        )
+        val events = provider(content).streamChat(config, "managed", "sys", emptyList(), tools, RequestOptions()).toList()
+        val ready = events.filterIsInstance<StreamEvent.ToolCallReady>().single().call
+        assertEquals("read_file", ready.name)
+        assertEquals("""{"path":"a.kt"}""", ready.argumentsJson)
+        assertEquals("opaque-stream", ready.responseReasoning.single().getValue("encrypted_content").jsonPrimitive.content)
+        assertEquals(config.id, ready.responseProviderId)
+        assertFalse(events.any { it is StreamEvent.Failure })
+    }
+
+    @Test fun `finished streamed tools are validated and never released from failed responses`() = runBlocking {
+        val done = """{"type":"response.output_item.done","item":$call}"""
+        val failed = """{"type":"response.failed","response":{"error":{"code":"server_error"}}}"""
+        val unknown = done.replace("read_file", "unknown_tool")
+        val addedOnly = """{"type":"response.output_item.added","item":$call}"""
+        listOf(sse(done, failed), sse(unknown, completed()), sse(addedOnly, completed())).forEach { content ->
+            val events = provider(content).streamChat(config, "managed", "sys", emptyList(), tools, RequestOptions()).toList()
+            assertFalse(events.any { it is StreamEvent.ToolCallReady || it is StreamEvent.ToolCallBatch })
+        }
+    }
+
     @Test fun `encrypted reasoning survives saved tool calls and is replayed before their outputs`() = runBlocking {
         val reasoning = """{"type":"reasoning","id":"rs_1","encrypted_content":"opaque-fixture","summary":[]}"""
         val provider = provider(sse(completed("[$reasoning,$call]")))

@@ -21,6 +21,8 @@ class ChatGptProvider(
     /** Diagnostic type only, never credentials, request bodies or exception messages. */
     @Volatile internal var lastFailureType: String? = null
         private set
+    @Volatile internal var lastResponseSummary: String? = null
+        private set
     private val responses = OpenAiResponsesProvider(client, ProviderFactory.json)
     private class StreamFinished : RuntimeException(null, null, false, false)
 
@@ -56,12 +58,16 @@ class ChatGptProvider(
 
     override fun streamChat(config: ProviderConfig, apiKey: String, systemPrompt: String, messages: List<ChatMessage>, tools: List<ToolSchema>, options: RequestOptions): Flow<StreamEvent> = flow {
         val requestBody = body(config, systemPrompt, messages, tools, options)
+        lastFailureType = null
+        lastResponseSummary = null
         var retry = false
         while (true) {
             val acc = LinkedHashMap<String, Triple<String, String, StringBuilder>>()
+            val finishedItems = mutableListOf<JsonObject>()
             var completed = false
             var failed = false
             var received = false
+            val eventCounts = linkedMapOf<String, Int>()
             try {
                 val access = token(config.id, retry)
                 // Never send an account token to an editable provider URL.
@@ -73,6 +79,7 @@ class ChatGptProvider(
                     received = true
                     val event = element as? JsonObject ?: return@collect
                     val type = event["type"]?.jsonPrimitive?.contentOrNull
+                    type?.let { eventCounts[it] = (eventCounts[it] ?: 0) + 1 }
                     val error = event["error"] as? JsonObject ?: (event["response"] as? JsonObject)?.get("error") as? JsonObject
                     var reasoningItems: List<JsonObject> = emptyList()
                     when {
@@ -82,6 +89,7 @@ class ChatGptProvider(
                         }
                         else -> {
                             val item = event["item"] as? JsonObject
+                            if (type == "response.output_item.done" && item != null) finishedItems += item
                             val namespace = item?.get("namespace")?.jsonPrimitive?.contentOrNull
                             if (item?.get("type")?.jsonPrimitive?.contentOrNull == "function_call" && namespace != null && namespace != ChatGptProtocol.NAMESPACE) {
                                 failed = true; acc.clear(); emit(StreamEvent.Failure("ChatGPT returned an unknown tool namespace."))
@@ -91,15 +99,19 @@ class ChatGptProvider(
                                     if (response?.get("status")?.jsonPrimitive?.contentOrNull != "completed") {
                                         failed = true; emit(StreamEvent.Failure("ChatGPT did not complete this response.")); throw StreamFinished()
                                     }
-                                    val output = response["output"] as? JsonArray
-                                    reasoningItems = output?.mapNotNull { it as? JsonObject }?.filter {
+                                    // Subscription streams may leave terminal output empty while
+                                    // output_item.done contains the completed items. Never use partial deltas.
+                                    val terminalItems = (response["output"] as? JsonArray)?.mapNotNull { it as? JsonObject }.orEmpty()
+                                    val output = terminalItems.ifEmpty { finishedItems }
+                                    lastResponseSummary = "events=$eventCounts; outputTypes=${output.map { it["type"]?.jsonPrimitive?.contentOrNull }}"
+                                    reasoningItems = output.filter {
                                         it["type"]?.jsonPrimitive?.contentOrNull == "reasoning" &&
                                             !it["encrypted_content"]?.jsonPrimitive?.contentOrNull.isNullOrBlank()
-                                    }.orEmpty()
+                                    }
                                     // Completed output is authoritative, including calls without earlier argument deltas.
-                                    if (output != null) {
+                                    run {
                                         acc.clear()
-                                        output.mapNotNull { it as? JsonObject }.filter { it["type"]?.jsonPrimitive?.contentOrNull == "function_call" }.forEach { call ->
+                                        output.filter { it["type"]?.jsonPrimitive?.contentOrNull == "function_call" }.forEach { call ->
                                             val ns = call["namespace"]?.jsonPrimitive?.contentOrNull
                                             val id = call["call_id"]?.jsonPrimitive?.contentOrNull
                                             val name = call["name"]?.jsonPrimitive?.contentOrNull

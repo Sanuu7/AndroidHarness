@@ -101,6 +101,14 @@ fun ModelPickerSheet(
         listedProvider?.let { catalogs[it.id].orEmpty() }.orEmpty()
     }
     val normalizedQuery = remember(query) { query.trim().lowercase() }
+    LaunchedEffect(listedProvider?.id) {
+        val provider = listedProvider ?: return@LaunchedEffect
+        if ((chatGptPlan || listedCatalog.isEmpty()) && !isRefreshing) {
+            isRefreshing = true
+            try { refreshError = onRefreshCatalog(provider.id) }
+            finally { isRefreshing = false }
+        }
+    }
     val visibleRows = remember(listedProvider, listedCatalog, normalizedQuery, thinkOnly, chatGptPlan) {
         val provider = listedProvider ?: return@remember emptyList()
         buildList {
@@ -281,16 +289,6 @@ fun ModelPickerSheet(
                         )
                     }
                 } else {
-                    item(key = "autofetch") {
-                        // Fetch once per sheet open when the catalog is empty.
-                        LaunchedEffect(provider.id) {
-                            if (listedCatalog.isEmpty() && !isRefreshing) {
-                                isRefreshing = true
-                                refreshError = onRefreshCatalog(provider.id)
-                                isRefreshing = false
-                            }
-                        }
-                    }
                     if (isRefreshing && listedCatalog.isEmpty()) {
                         item(key = "reloading") {
                             Row(
@@ -389,7 +387,7 @@ fun ModelPickerSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.fillMaxWidth(),
                     ) {
-                        TextButton(onClick = { showAddCustomDialog = true }, enabled = listedProvider?.let { !com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) } == true) {
+                        if (!chatGptPlan) TextButton(onClick = { showAddCustomDialog = true }, enabled = listedProvider?.let { !com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) } == true) {
                             Text("+ Custom model…")
                         }
                         Spacer(Modifier.weight(1f))

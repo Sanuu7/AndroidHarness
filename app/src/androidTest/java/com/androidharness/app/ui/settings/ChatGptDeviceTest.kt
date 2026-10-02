@@ -62,14 +62,20 @@ class ChatGptDeviceTest {
     /** Explicitly requested live check after the user signs in; never reads or prints credentials. */
     @Test fun signedInAccountReadsFileWithLiveModel() = runBlocking {
         assumeTrue("Pass liveChatGpt=true after signing in", InstrumentationRegistry.getArguments().getString("liveChatGpt") == "true")
-        val config = withTimeout(10_000) { container.providers.providers.first { list -> list.any { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) } } }
+        val scenario = ActivityScenario.launch(MainActivity::class.java)
+        try {
+        var config = withTimeout(10_000) { container.providers.providers.first { list -> list.any { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) } } }
             .first { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) }
-        println("CHATGPT_CACHED_MODEL_IDS: ${container.chatGpt.state.value.accounts.first { it.providerId == config.id }.models.map { it.id }}")
+        report("CHATGPT_CACHED_MODEL_IDS: ${container.chatGpt.state.value.accounts.first { it.providerId == config.id }.models.map { it.id }}")
         if (InstrumentationRegistry.getArguments().getString("refreshChatGpt") == "true") {
             println("CHATGPT_APP_INTERNET_PERMISSION: ${instrumentation.targetContext.checkSelfPermission(android.Manifest.permission.INTERNET)}")
             println("CHATGPT_APP_DNS_OK: ${java.net.InetAddress.getAllByName("api.openai.com").size} addresses")
             val fresh = container.chatGpt.refreshModels(config.id)
-            println("CHATGPT_FRESH_MODEL_IDS: ${fresh.map { it.id }}")
+            report("CHATGPT_FRESH_MODEL_IDS: ${fresh.map { it.id }}")
+        }
+        InstrumentationRegistry.getArguments().getString("chatGptModel")?.let { chosen ->
+            check(container.chatGpt.state.value.accounts.first { it.providerId == config.id }.models.any { it.id == chosen }) { "Requested model is not available to this account." }
+            config = config.copy(model = chosen)
         }
         val root = File(instrumentation.targetContext.cacheDir, "chatgpt-live-check-${System.nanoTime()}").apply { mkdirs() }
         try {
@@ -84,11 +90,14 @@ class ChatGptDeviceTest {
                 ).collect { events += it }
             }
             assertFalse("${events.filterIsInstance<AgentEvent.Error>()}; failureType=${(ProviderFactory.chatGptProvider as? ChatGptProvider)?.lastFailureType}", events.any { it is AgentEvent.Error })
-            assertTrue(events.filterIsInstance<AgentEvent.ToolStarted>().any { it.call.name == "read_file" })
+            val detail = "model=${config.model}; tools=${events.filterIsInstance<AgentEvent.ToolStarted>().map { it.call.name }}; replies=${events.filterIsInstance<AgentEvent.AssistantCommitted>().map { it.message.text.take(800) }}; stream=${(ProviderFactory.chatGptProvider as? ChatGptProvider)?.lastResponseSummary}; finished=${events.filterIsInstance<AgentEvent.Finished>()}"
+            report("CHATGPT_LIVE_RESULT: $detail")
+            assertTrue(detail, events.filterIsInstance<AgentEvent.ToolStarted>().any { it.call.name == "read_file" })
             assertTrue(events.filterIsInstance<AgentEvent.ToolFinished>().any { it.result.ok && it.result.output.contains("ANDROIDHARNESS_CHATGPT_TOOL_OK") })
             assertTrue(events.filterIsInstance<AgentEvent.AssistantCommitted>().any { it.message.text.contains("ANDROIDHARNESS_CHATGPT_TOOL_OK") })
             println("CHATGPT_LIVE_TOOL_OK: model=${config.model}, read_file succeeded, response completed")
         } finally { root.deleteRecursively() }
+        } finally { scenario.close() }
     }
 
     @Test fun connectedAccountsIsFirstAndShowsSignIn() {
@@ -152,6 +161,9 @@ data: {"type":"response.completed","response":{"status":"completed","output":[]}
         if (node.text?.toString() == text || node.contentDescription?.toString() == text) return node
         for (index in 0 until node.childCount) node.getChild(index)?.let { find(it, text)?.let { found -> return found } }
         return null
+    }
+    private fun report(value: String) {
+        instrumentation.sendStatus(2, android.os.Bundle().apply { putString("stream", "\n$value\n") })
     }
     private fun waitForText(text: String): AccessibilityNodeInfo {
         val deadline = SystemClock.uptimeMillis() + 10_000
