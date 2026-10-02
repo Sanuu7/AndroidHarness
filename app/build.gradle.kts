@@ -6,15 +6,36 @@ plugins {
     alias(libs.plugins.ksp)
 }
 
+// The native build needs the exact NDK version pinned below, and AGP fails
+// Gradle configuration outright when it is missing. Tooling runners without an
+// NDK (GitHub's default-setup CodeQL scan, which has no editable workflow to
+// install one) only trace Kotlin and Java, so drop the whole native block when
+// the NDK is absent. Real builds install the pinned NDK and keep native code.
+val pinnedNdk = "27.2.12479018"
+val hasNdk: Boolean = run {
+    System.getenv("ANDROID_NDK_HOME")?.takeIf { it.isNotBlank() && File(it).isDirectory }
+        ?.let { return@run true }
+    val sdk = System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }?.let { File(it) }
+        ?: rootProject.file("local.properties").takeIf { it.exists() }
+            ?.readLines()?.firstOrNull { it.trim().startsWith("sdk.dir=") }
+            ?.substringAfter("=")?.trim()?.let { File(it) }
+        ?: return@run false
+    sdk.resolve("ndk/$pinnedNdk").isDirectory
+}
+
 android {
     namespace = "com.androidharness.app"
     compileSdk = 37
-    ndkVersion = "27.2.12479018"
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1"
+    if (hasNdk) {
+        ndkVersion = pinnedNdk
+        externalNativeBuild {
+            cmake {
+                path = file("src/main/cpp/CMakeLists.txt")
+                version = "3.22.1"
+            }
         }
+    } else {
+        logger.warn("app: NDK $pinnedNdk not found, configuring without native code (libharness_local.so)")
     }
 
     defaultConfig {
@@ -23,9 +44,11 @@ android {
         targetSdk = 36
         versionCode = 17
         versionName = "1.3"
-        ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
-        externalNativeBuild {
-            cmake { arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" }
+        if (hasNdk) {
+            ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
+            externalNativeBuild {
+                cmake { arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" }
+            }
         }
         // Instrumented tests drive the real WebView (screenshots, history,
         // promise staging), which no JVM test can exercise.

@@ -38,6 +38,11 @@ jobs:
       - name: Set up Gradle (caching)
         uses: gradle/actions/setup-gradle@v6
 
+      # The runner image no longer ships the NDK version pinned in
+      # app/build.gradle.kts, and AGP refuses to configure without it.
+      - name: Install pinned NDK
+        run: "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager --install 'ndk;27.2.12479018'"
+
       - name: Run unit tests
         run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
 
