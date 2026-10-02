@@ -399,7 +399,7 @@ class AgentEngine(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
                                 config.model, config.name, cacheReported = event.cacheReported,
-                                cachePrices = com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
+                                cachePrices = if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id)) null else com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
                             )
                         )
                     }
@@ -1268,7 +1268,7 @@ class AgentEngine(
                                 event.inputTokens, event.outputTokens,
                                 event.cachedInputTokens, event.cacheWriteTokens,
                                 config.model, config.name, cacheReported = event.cacheReported,
-                                cachePrices = com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
+                                cachePrices = if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id)) null else com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
                             )
                         )
                         else -> {}
@@ -1428,7 +1428,7 @@ class AgentEngine(
                             event.inputTokens, event.outputTokens,
                             event.cachedInputTokens, event.cacheWriteTokens,
                             config.model, config.name, cacheReported = event.cacheReported,
-                                cachePrices = com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
+                                cachePrices = if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id)) null else com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
                         )
                     )
                     else -> {}

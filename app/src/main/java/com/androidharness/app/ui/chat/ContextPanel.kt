@@ -46,7 +46,9 @@ fun ContextUsageDialog(
         .coerceAtLeast(0)
     val model = state.effectiveModel
     val providerKey = state.activeProvider?.let { com.androidharness.app.llm.ModelsDev.providerKeyFor(it.baseUrl) }
-    val estimatedCost: Double? = if (state.sessionModelUsage.isNotEmpty()) {
+    val usesChatGptPlan = com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(state.activeProvider?.id) ||
+        state.sessionModelUsage.any { it.providerName.startsWith("ChatGPT · ") }
+    val estimatedCost: Double? = if (usesChatGptPlan) null else if (state.sessionModelUsage.isNotEmpty()) {
         state.sessionModelUsage.sumOf { row ->
             val pKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(row.providerName)
             ModelPrices.estimate(
@@ -153,13 +155,15 @@ fun ContextUsageDialog(
                     ) {
                         Text("Estimated cost", style = MaterialTheme.typography.bodyMedium)
                         Text(
-                            "$%.4f".format(estimatedCost ?: 0.0),
+                            if (usesChatGptPlan) "ChatGPT plan" else "$%.4f".format(estimatedCost ?: 0.0),
                             style = MaterialTheme.typography.titleMedium,
                             fontFamily = HarnessMono,
                             color = MaterialTheme.colorScheme.primary,
                         )
                     }
-                    val subText = if (state.sessionModelUsage.size > 1) {
+                    val subText = if (usesChatGptPlan) {
+                        "Review plan usage and credits in ChatGPT settings"
+                    } else if (state.sessionModelUsage.size > 1) {
                         "Sum across ${state.sessionModelUsage.size} models used in this session"
                     } else {
                         "Calculated from ${model ?: "current model"} rates"
@@ -171,7 +175,12 @@ fun ContextUsageDialog(
                     )
                 }
 
-                Text(
+                if (usesChatGptPlan) {
+                    val context = androidx.compose.ui.platform.LocalContext.current
+                    TextButton(onClick = {
+                        com.androidharness.app.ui.common.openOAuthBrowser(context, android.net.Uri.parse(com.androidharness.app.chatgpt.ChatGptProtocol.USAGE_URL))
+                    }) { Text("Manage usage") }
+                } else Text(
                     "Reasoning and thinking tokens are billed as output and are not re-sent as input.",
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),

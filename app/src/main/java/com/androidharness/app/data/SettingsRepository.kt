@@ -306,7 +306,7 @@ class SettingsRepository(private val context: Context) {
                 Keys.PLANNING_PROVIDER to Keys.PLANNING_MODEL,
                 Keys.EXECUTION_PROVIDER to Keys.EXECUTION_MODEL).forEach { (providerKey, modelKey) ->
                 val id = prefs[providerKey]
-                if (id != null && com.androidharness.app.local.LocalModelCatalog.isLocal(id) && id !in availableIds) {
+                if (id != null && (com.androidharness.app.local.LocalModelCatalog.isLocal(id) || com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(id)) && id !in availableIds) {
                     if (providerKey == Keys.ACTIVE_PROVIDER) {
                         prefs[providerKey] = com.androidharness.app.llm.HarnessProvider.ID
                     } else prefs.remove(providerKey)

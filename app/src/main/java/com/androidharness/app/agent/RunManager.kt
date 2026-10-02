@@ -344,7 +344,7 @@ class RunManager(
                     takeQueued = { consumeQueued(sid, turnId) },
                     durableEvent = { event ->
                         if (event is AgentEvent.Usage) {
-                            val price = com.androidharness.app.llm.ModelPrices.estimate(
+                            val price = if (event.providerName.startsWith("ChatGPT · ")) null else com.androidharness.app.llm.ModelPrices.estimate(
                                 model = event.model, totalInputTokens = event.inputTokens.toLong(),
                                 outputTokens = event.outputTokens.toLong(), cachedTokens = event.cachedInputTokens.toLong(),
                                 cacheWriteTokens = event.cacheWriteTokens.toLong(),

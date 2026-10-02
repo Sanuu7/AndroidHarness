@@ -136,8 +136,11 @@ object ProviderFactory {
         .build()
 
     @Volatile var localProvider: LlmProvider? = null
+    @Volatile var chatGptProvider: LlmProvider? = null
 
     fun create(config: ProviderConfig): LlmProvider = when {
+        com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id) ->
+            checkNotNull(chatGptProvider) { "ChatGPT connection is not initialized." }
         com.androidharness.app.local.LocalModelCatalog.isLocal(config.id) || config.baseUrl.startsWith("local://") ->
             checkNotNull(localProvider) { "Local inference is not initialized." }
         config.id == HarnessProvider.ID -> HarnessProvider.create()

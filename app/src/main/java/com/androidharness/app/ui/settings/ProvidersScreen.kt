@@ -297,6 +297,7 @@ private fun ProviderCard(
                     overflow = TextOverflow.Ellipsis,
                 )
                 val detail = when {
+                    com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(provider.id) -> "Using ChatGPT plan · Manage in Settings > Connected accounts"
                     com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id) -> "On-device · Manage in Settings > Local models"
                     provider.id == com.androidharness.app.llm.HarnessProvider.ID -> "Built-in · Free"
                     catalogSize != null && catalogSize > 0 -> "$catalogSize models available"
@@ -326,7 +327,7 @@ private fun ProviderCard(
                     tint = scheme.onSurfaceVariant,
                 )
             }
-            if (provider.id != com.androidharness.app.llm.HarnessProvider.ID && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
+            if (provider.id != com.androidharness.app.llm.HarnessProvider.ID && !com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(provider.id) && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
                 IconButton(onClick = onEdit) {
                     Icon(Icons.Outlined.Edit, contentDescription = "Edit", tint = scheme.onSurfaceVariant)
                 }

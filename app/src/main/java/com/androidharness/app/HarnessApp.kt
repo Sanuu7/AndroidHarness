@@ -58,9 +58,19 @@ class AppContainer(val appContext: Context) {
     val keys = KeyStoreManager(appContext)
     val settings = SettingsRepository(appContext)
     val localModels = com.androidharness.app.local.LocalModelManager(appContext)
-    val providers = ProviderRepository(appContext, keys, localModels)
+    val chatGpt = com.androidharness.app.chatgpt.ChatGptAccounts(keys::chatGptCredentials, keys::putChatGptCredentials,
+        onConnected = { config ->
+            settings.setActiveProvider(config.id)
+            settings.setActiveModel(config.model)
+        }, onDisconnected = { id ->
+            runManager.runningSessionIds.value.filter { runManager.controls.flow(it).value.provider?.id == id }
+                .forEach { runManager.stopAndJoin(it) }
+        })
+    val providers = ProviderRepository(appContext, keys, localModels, chatGpt)
 
     init {
+        ProviderFactory.chatGptProvider = com.androidharness.app.chatgpt.ChatGptProvider(chatGpt::accessToken)
+        com.androidharness.app.llm.ModelCatalog.chatGptModels = chatGpt::refreshModels
         ProviderFactory.localProvider = com.androidharness.app.local.LocalModelProvider(localModels) {
             settings.settings.first().localModelAgentContext
         }
@@ -186,7 +196,7 @@ class AppContainer(val appContext: Context) {
             combine(settings.settings, providers.providers) { saved, available -> saved to available.map { it.id }.toSet() }
                 .collect { (saved, availableIds) ->
                     val selected = listOf(saved.activeProviderId, saved.planningProviderId, saved.executionProviderId)
-                    if (selected.any { it != null && com.androidharness.app.local.LocalModelCatalog.isLocal(it) && it !in availableIds }) {
+                    if (selected.any { it != null && (com.androidharness.app.local.LocalModelCatalog.isLocal(it) || com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it)) && it !in availableIds }) {
                         settings.clearMissingLocalProviderSelections(availableIds)
                     }
                 }

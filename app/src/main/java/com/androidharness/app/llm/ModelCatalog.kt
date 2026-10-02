@@ -28,6 +28,7 @@ data class ModelEntry(
     val contextTokens: Long? = null,
     val custom: Boolean = false,
     val note: String? = null,
+    val displayName: String? = null,
 )
 
 /** Family-based thinking-capability hint for endpoints that don't report it. */
@@ -61,6 +62,8 @@ fun visionCapable(modelId: String): Boolean {
 /** Fetches the model catalog from a provider, also doubles as a connection test. */
 object ModelCatalog {
 
+    @Volatile var chatGptModels: (suspend (String) -> List<ModelEntry>)? = null
+
     private val json = Json { ignoreUnknownKeys = true }
     private val client = OkHttpClient.Builder()
         .connectTimeout(15, TimeUnit.SECONDS)
@@ -74,6 +77,12 @@ object ModelCatalog {
 
     suspend fun listModels(config: ProviderConfig, apiKey: String): Result =
         withContext(Dispatchers.IO) {
+            if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id)) {
+                return@withContext try {
+                    Result.Models(checkNotNull(chatGptModels) { "Connect ChatGPT in Settings > Connected accounts." }(config.id), 0)
+                } catch (e: kotlinx.coroutines.CancellationException) { throw e
+                } catch (e: Exception) { Result.Failed(e.message ?: "Could not refresh ChatGPT models.") }
+            }
             if (com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)) {
                 return@withContext Result.Models(listOf(ModelEntry(config.model, note = "On-device · tools and vision depend on model and projector")), 0)
             }

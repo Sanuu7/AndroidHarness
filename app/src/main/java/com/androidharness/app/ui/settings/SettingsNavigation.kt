@@ -6,6 +6,7 @@ internal enum class SettingsPage(
     val group: String,
     val keywords: String,
 ) {
+    CONNECTED_ACCOUNTS("Connected accounts", "Use your ChatGPT plan for coding and tools", "Special providers", "chatgpt codex subscription sign in login account plan oauth"),
     MODELS("Models & providers", "Connections, current model and separate planning models", "Your assistant", "api key token provider openai anthropic gemini thinking planning execution"),
     LOCAL_MODELS("Local models", "Choose and manage models that run on your phone", "Your assistant", "offline hugging face gguf safetensors llama ram memory storage cpu download uninstall context input output vision images threads"),
     AGENT("Agent behavior", "Permissions, context limits and project instructions", "Your assistant", "approval full access iterations tools agents.md memory"),
@@ -48,6 +49,7 @@ private val primarySettingsEntries = SettingsPage.entries.map { page ->
 }
 
 private val subSettingsEntries = listOf(
+    SettingsSearchEntry("Continue with ChatGPT", "Connected accounts · Use your ChatGPT plan", SettingsPage.CONNECTED_ACCOUNTS, "sign in codex subscription", anchor = "Continue with ChatGPT"),
     SettingsSearchEntry("Manage providers", "Models & providers · Add connections, API keys and choose models", SettingsPage.MODELS, "provider api key openai anthropic gemini login model", anchor = "Manage providers"),
     SettingsSearchEntry("Dual planning models", "Models & providers · Configure separate plan and execute models", SettingsPage.MODELS, "planning plan model execute execution model", anchor = "Dual planning models"),
     SettingsSearchEntry("Plan model", "Models & providers · Choose the model used for planning", SettingsPage.MODELS, "planning dual", anchor = "Dual planning models"),
@@ -98,6 +100,7 @@ internal fun matchingSettingsPages(query: String): List<SettingsPage> =
     matchingSettingsEntries(query).map { it.page }.distinct()
 
 internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
+    "chatgpt" -> SettingsPage.CONNECTED_ACCOUNTS
     "planning" -> SettingsPage.MODELS
     "voice" -> SettingsPage.VOICE
     else -> null

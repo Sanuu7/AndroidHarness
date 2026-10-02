@@ -92,6 +92,7 @@ fun ModelPickerSheet(
 
     val listedId = browseProviderId ?: activeProviderId
     val listedProvider = providers.firstOrNull { it.id == listedId }
+    val chatGptPlan = com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(listedId)
     val activeProvider = providers.firstOrNull { it.id == activeProviderId }
     val effective = activeModel?.takeIf { it.isNotBlank() } ?: activeProvider?.model
     val listedModel = if (browseProviderId == null) effective else listedProvider?.model
@@ -100,13 +101,15 @@ fun ModelPickerSheet(
         listedProvider?.let { catalogs[it.id].orEmpty() }.orEmpty()
     }
     val normalizedQuery = remember(query) { query.trim().lowercase() }
-    val visibleRows = remember(listedProvider, listedCatalog, normalizedQuery, thinkOnly) {
+    val visibleRows = remember(listedProvider, listedCatalog, normalizedQuery, thinkOnly, chatGptPlan) {
         val provider = listedProvider ?: return@remember emptyList()
         buildList {
-            add(ModelEntry(provider.model, reasoning = null, contextTokens = null))
-            addAll(listedCatalog.filter { it.id != provider.model })
+            if (chatGptPlan) addAll(listedCatalog) else {
+                add(ModelEntry(provider.model, reasoning = null, contextTokens = null))
+                addAll(listedCatalog.filter { it.id != provider.model })
+            }
         }.distinctBy { it.id }
-            .filter { normalizedQuery.isBlank() || it.id.lowercase().contains(normalizedQuery) }
+            .filter { normalizedQuery.isBlank() || (it.id.lowercase().contains(normalizedQuery) || it.displayName?.lowercase()?.contains(normalizedQuery) == true) }
             .filter { !thinkOnly || (it.reasoning ?: reasoningCapable(it.id)) }
     }
 
@@ -125,7 +128,7 @@ fun ModelPickerSheet(
                 Column(Modifier.weight(1f)) {
                     Text("Choose model", style = MaterialTheme.typography.titleMediumEmphasized)
                     Text(
-                        "Search, filter, or enter any model ID",
+                        if (chatGptPlan) "Choose a model available with your ChatGPT plan" else "Search, filter, or enter any model ID",
                         style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant,
                     )
@@ -199,7 +202,7 @@ fun ModelPickerSheet(
                     modifier = Modifier.padding(top = 8.dp),
                 )
                 Spacer(Modifier.width(8.dp))
-                AssistChip(
+                if (!chatGptPlan) AssistChip(
                     onClick = { showAddCustomDialog = true },
                     label = { Text("Custom model", style = MaterialTheme.typography.labelSmall) },
                     leadingIcon = { Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp)) },
@@ -250,6 +253,15 @@ fun ModelPickerSheet(
                 )
             }
 
+            if (chatGptPlan) {
+                val context = androidx.compose.ui.platform.LocalContext.current
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+                    Text("Using ChatGPT plan", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
+                    androidx.compose.material3.TextButton(onClick = {
+                        com.androidharness.app.ui.common.openOAuthBrowser(context, android.net.Uri.parse(com.androidharness.app.chatgpt.ChatGptProtocol.USAGE_URL))
+                    }) { Text("Manage usage") }
+                }
+            }
             // Bounded height: a wrap-content LazyColumn inside a bottom sheet
             // collapses and its drags fight the sheet's dismiss gesture.
             LazyColumn(
@@ -301,7 +313,7 @@ fun ModelPickerSheet(
                         }
                     }
 
-                    if (!com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id) && query.isNotBlank() && visibleRows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
+                    if (!chatGptPlan && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id) && query.isNotBlank() && visibleRows.none { it.id.equals(query.trim(), ignoreCase = true) }) {
                         item(key = "inline-custom-${query.trim()}") {
                             Surface(
                                 shape = RoundedCornerShape(14.dp),
@@ -352,7 +364,7 @@ fun ModelPickerSheet(
                         val isSelected = provider.id == (browseProviderId ?: activeProviderId) &&
                             entry.id == (if (browseProviderId == null) effective else listedModel)
                         ModelRow(
-                            id = entry.id,
+                            id = entry.displayName ?: entry.id,
                             thinking = entry.reasoning ?: reasoningCapable(entry.id),
                             known = entry.reasoning != null,
                             selected = isSelected,

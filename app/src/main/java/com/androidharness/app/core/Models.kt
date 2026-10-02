@@ -9,6 +9,9 @@ data class ToolCallData(
     val id: String,
     val name: String,
     val argumentsJson: String,
+    /** Opaque Responses reasoning carried with the first tool call for stateless replay. */
+    val responseReasoning: List<kotlinx.serialization.json.JsonObject> = emptyList(),
+    val responseProviderId: String? = null,
 )
 
 /** A user-attached image; bytes live in the ImageStore, keyed by [name]. */

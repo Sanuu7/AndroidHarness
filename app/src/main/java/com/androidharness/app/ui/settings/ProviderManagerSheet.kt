@@ -202,7 +202,7 @@ fun ProviderManagerSheet(
                                             modifier = Modifier.size(19.dp),
                                         )
                                     }
-                                    if (provider.id != com.androidharness.app.llm.HarnessProvider.ID && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
+                                    if (provider.id != com.androidharness.app.llm.HarnessProvider.ID && !com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(provider.id) && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
                                         IconButton(onClick = {
                                             editing = provider
                                             showForm = true

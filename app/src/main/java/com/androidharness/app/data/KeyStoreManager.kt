@@ -11,6 +11,12 @@ class KeyStoreManager(context: Context) {
 
     private val prefs = openPrefs(context)
 
+    fun chatGptCredentials(): String? = prefs.getString("chatgpt_accounts", null)
+
+    fun putChatGptCredentials(value: String) {
+        check(prefs.edit().putString("chatgpt_accounts", value).commit()) { "Could not securely save ChatGPT connection." }
+    }
+
     /**
      * The prefs file is wrapped by an AndroidKeyStore master key, so keystore
      * loss (credential reset, backup restore onto another install) makes it

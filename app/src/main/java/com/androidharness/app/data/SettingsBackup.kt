@@ -40,6 +40,7 @@ object SettingsBackupValidation {
         val ids = file.providers.map { it.config.id }.toSet() + HarnessProvider.ID
         require(listOfNotNull(s.activeProviderId, s.planningProviderId, s.executionProviderId).all { it in ids }) { "Missing provider reference." }
         file.providers.forEach {
+            require(!com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.config.id)) { "ChatGPT connections must be signed in on this device." }
             require(it.config.id.isNotBlank() && it.config.name.length in 1..200 && it.customModels.size <= 1000) { "Invalid provider." }
             val uri = java.net.URI(it.config.baseUrl)
             if (com.androidharness.app.local.LocalModelCatalog.isLocal(it.config.id)) {
@@ -60,7 +61,14 @@ class SettingsBackup(private val c: AppContainer) {
 
     suspend fun exportTo(uri: Uri, password: CharArray, includeKeys: Boolean) = withContext(Dispatchers.IO) {
         try {
-            val s = c.settings.settings.first().copy(
+            val current = c.settings.settings.first()
+            val s = current.copy(
+                activeProviderId = current.activeProviderId.takeUnless(com.androidharness.app.chatgpt.ChatGptProtocol::isProvider),
+                activeModel = current.activeModel.takeUnless { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(current.activeProviderId) },
+                planningProviderId = current.planningProviderId.takeUnless(com.androidharness.app.chatgpt.ChatGptProtocol::isProvider),
+                planningModel = current.planningModel.takeUnless { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(current.planningProviderId) },
+                executionProviderId = current.executionProviderId.takeUnless(com.androidharness.app.chatgpt.ChatGptProtocol::isProvider),
+                executionModel = current.executionModel.takeUnless { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(current.executionProviderId) },
                 pinnedSessions = emptySet(), archivedSessions = emptySet(), lastActiveSessionId = null,
                 permissionMode = com.androidharness.app.agent.PermissionMode.CONFIRM_RISKY,
                 biometricLockEnabled = false, biometricLockTimeoutMinutes = 0, allowScreenshots = false,
@@ -68,7 +76,7 @@ class SettingsBackup(private val c: AppContainer) {
             val localReferences = listOfNotNull(s.activeProviderId, s.planningProviderId, s.executionProviderId)
                 .filter(com.androidharness.app.local.LocalModelCatalog::isLocal)
                 .map { it.removePrefix(com.androidharness.app.local.LocalModelCatalog.PROVIDER_PREFIX) }.toSet()
-            val providers = (c.providers.providers.first() + c.localModels.configs(localReferences)).distinctBy { it.id }.map { config ->
+            val providers = (c.providers.providers.first() + c.localModels.configs(localReferences)).distinctBy { it.id }.filterNot { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) }.map { config ->
                 BackupProvider(config, c.providers.customModels(config.id).map { it.id },
                     if (includeKeys && config.id != HarnessProvider.ID) c.keys.getKey(config.id) else null)
             }

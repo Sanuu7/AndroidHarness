@@ -145,6 +145,7 @@ internal fun SettingsPanel(modifier: Modifier = Modifier, content: @Composable C
 }
 
 private fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
+    SettingsPage.CONNECTED_ACCOUNTS -> Icons.Outlined.AccountCircle
     SettingsPage.MODELS -> ProviderGlyph
     SettingsPage.LOCAL_MODELS -> Icons.Outlined.Memory
     SettingsPage.AGENT -> Icons.Outlined.Tune

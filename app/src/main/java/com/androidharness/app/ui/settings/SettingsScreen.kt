@@ -234,6 +234,7 @@ fun SettingsScreen(
                     ) {
                         if (page != SettingsPage.LOCAL_MODELS && page != SettingsPage.AGENT) SettingsPageIntro(page)
                     when (page) {
+                        SettingsPage.CONNECTED_ACCOUNTS -> ConnectedAccountsSection(container)
                         SettingsPage.MODELS -> {
                             SettingsPanel(Modifier.fillMaxWidth()) {
                                 SettingsAnchor("Manage providers") {
