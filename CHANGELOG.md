@@ -2,6 +2,7 @@
 
 ## Unreleased
 
+- Add Sub-Agent settings with action tools and a separate provider/model choice for subagents, independent of the main execution model.
 - Separate GGUF downloads and safetensors imports in Local models. Supported dense Qwen and Llama BPE weights convert on the device to Q4 GGUF.
 - Add file manager import for GGUF files and safetensors folders, searchable recommendations in both formats, and community abliterated models. Installed models and their settings now appear first in a simpler layout.
 - Local models can call agent and MCP tools, use dual planning, and process images with a compatible vision model and matching projector.

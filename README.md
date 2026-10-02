@@ -43,6 +43,7 @@ Status: 1.3.
 - MCP tools: connect Model Context Protocol servers over stdio or HTTP, add them by pasting a Claude config or a claude mcp add command, and sign in with OAuth when the server needs it.
 - Optional CodeGraph integration: install CodeGraph from Settings, enable its local index per workspace, and let the agent explore symbols, callers/callees, change impact, affected tests, and incremental sync without separate agent configuration.
 - Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model. Subagents research read-only by default; with Subagent action tools enabled they also edit files and run commands in Act mode, always under the current permission mode.
+  Settings → Sub-Agent settings lets you choose a separate provider and model for all subagents, or use the main agent's model. A saved subagent model takes priority over the task tool's model override.
 - Skill tools: list, view, and manage the markdown skills library from inside a run.
 - Todo and memory tools: a live todo list, a core memory file that loads at the start of every conversation, and topic files with search for everything else.
 
