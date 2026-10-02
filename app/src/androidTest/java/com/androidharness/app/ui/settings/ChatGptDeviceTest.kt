@@ -13,6 +13,7 @@ import com.androidharness.app.agent.*
 import com.androidharness.app.chatgpt.ChatGptProvider
 import com.androidharness.app.chatgpt.ChatGptThinking
 import com.androidharness.app.ui.chat.components.MainHeader
+import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.core.*
 import com.androidharness.app.llm.*
 import com.androidharness.app.workspace.FileFs
@@ -33,6 +34,52 @@ import java.io.File
 class ChatGptDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private val container get() = (instrumentation.targetContext.applicationContext as HarnessApp).container
+
+    @Test fun liveAccountReadsLimitsService() = runBlocking {
+        assumeTrue("Pass liveUsageRead=true to check limits access", InstrumentationRegistry.getArguments().getString("liveUsageRead") == "true")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            val config = withTimeout(10_000) { container.providers.providers.first { list -> list.any { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) } } }
+                .first { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) }
+            val token = container.chatGpt.accessToken(config.id)
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                val client = OkHttpClient.Builder().followRedirects(false).callTimeout(25, java.util.concurrent.TimeUnit.SECONDS).build()
+                // Read only, using the app's own credential. Never use desktop credentials or consume a reset.
+                val request = Request.Builder().url("https://chatgpt.com/backend-api/wham/usage")
+                    .header("Authorization", "Bearer $token").build()
+                client.newCall(request).execute().use { response ->
+                    val body = runCatching { Json.parseToJsonElement(response.body?.string().orEmpty()) as? JsonObject }.getOrNull()
+                    val safeFields = body?.filterKeys { key -> key in setOf("plan_type", "rate_limit", "additional_rate_limits", "rate_limits", "rate_limit_reset_credits") }
+                    val code = (body?.get("error") as? JsonObject)?.get("code")?.jsonPrimitive?.contentOrNull
+                    report("CHATGPT_LIMITS_READ: status=${response.code}; contentType=${response.body?.contentType()}; browserChallenge=${response.header("cf-mitigated") == "challenge"}; errorCode=$code; returnedFields=${body?.keys}; limits=$safeFields")
+                }
+            }
+        }
+    }
+
+    @Test fun liveAccountReportsUsageMetadata() = runBlocking {
+        assumeTrue("Pass liveUsage=true to inspect usage metadata", InstrumentationRegistry.getArguments().getString("liveUsage") == "true")
+        ActivityScenario.launch(MainActivity::class.java).use {
+            val config = withTimeout(10_000) { container.providers.providers.first { list -> list.any { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) } } }
+                .first { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) }
+            val metadata = java.util.concurrent.atomic.AtomicReference<Map<String, String>>(emptyMap())
+            val client = OkHttpClient.Builder().followRedirects(false).addNetworkInterceptor { chain ->
+                chain.proceed(chain.request()).also { response ->
+                    metadata.set(response.headers.names().filter { name ->
+                        name.startsWith("x-codex-", true) && (name.contains("primary", true) || name.contains("secondary", true) || name.contains("credits", true))
+                    }.associateWith { response.header(it).orEmpty() })
+                }
+            }.build()
+            val provider = ChatGptProvider(container.chatGpt::accessToken, client)
+            var completed = false
+            withTimeout(60_000) { provider.streamChat(config.copy(model = "gpt-6.1-sol"), "managed-oauth", "",
+                listOf(ChatMessage(Role.USER, "Reply exactly OK.")), emptyList(), RequestOptions(thinking = ThinkingLevel.LOW)).collect { event ->
+                if (event is StreamEvent.Done) completed = true
+                assertFalse("Live usage check failed", event is StreamEvent.Failure)
+            } }
+            assertTrue("Response must complete", completed)
+            report("CHATGPT_USAGE_METADATA: headers=${metadata.get()}; ${provider.lastResponseSummary}")
+        }
+    }
 
     @Test fun thinkingMenuShowsOnlySupportedChatGptLevels() {
         val picked = java.util.concurrent.atomic.AtomicReference<ThinkingLevel>()
@@ -60,6 +107,60 @@ class ChatGptDeviceTest {
     }
 
     /** Explicitly requested live check after the user signs in; never reads or prints credentials. */
+    @Test fun missingModelsRespondWithLiveAccount() = runBlocking {
+        assumeTrue("Pass probeChatGpt=true to check model access", InstrumentationRegistry.getArguments().getString("probeChatGpt") == "true")
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            val config = withTimeout(10_000) {
+                container.providers.providers.first { providers -> providers.any { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) } }
+            }.first { com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) }
+            val models = withTimeout(150_000) { container.chatGpt.discoverModels(config.id) }
+            val expected = setOf("gpt-6.1-sol", "gpt-6-sol", "gpt-6-luna")
+            assertTrue(models.map { it.id }.toString(), models.map { it.id }.containsAll(expected))
+            assertTrue(container.chatGpt.refreshModels(config.id).map { it.id }.containsAll(expected))
+            report("CHATGPT_DISCOVERY_OK: ${models.map { it.id }}; all three newer models survived refresh")
+            scenario.onActivity { activity -> activity.setContent { MaterialTheme { SettingsScreen(container, onBack = {}) } } }
+            clickText("Connected accounts")
+            waitForText("Check newer models")
+            waitForText("Using ChatGPT plan · ${models.size} models")
+            waitForText("Limits & resets")
+            waitForText("View live limits in ChatGPT")
+            waitForText("View usage")
+            report("CHATGPT_DISCOVERY_UI_OK: verified models and check control appear in settings")
+            val catalogs = withTimeout(10_000) { container.providers.catalogs.first { values ->
+                values[config.id].orEmpty().map { it.id }.containsAll(expected)
+            } }
+            val picked = java.util.concurrent.atomic.AtomicReference<String?>()
+            scenario.onActivity { activity -> activity.setContent { MaterialTheme {
+                ModelPickerSheet(providers = listOf(config), activeProviderId = config.id, activeModel = config.model,
+                    catalogs = catalogs, onDismiss = {}, onSelect = { _, model -> picked.set(model) },
+                    onRefreshCatalog = { id -> container.chatGpt.refreshModels(id); null }, onManageProviders = {})
+            } } }
+            waitForText("Choose model")
+            waitForText("Limits & resets")
+            waitForText("View live limits in ChatGPT")
+            waitForText("GPT-6.1 Sol")
+            val previousModel = models.first { it.id == "gpt-6-astra" }.let { it.displayName ?: it.id }
+            waitForText(previousModel)
+            val root = checkNotNull(instrumentation.uiAutomation.rootInActiveWindow)
+            val newestBounds = android.graphics.Rect().also { checkNotNull(find(root, "GPT-6.1 Sol")).getBoundsInScreen(it) }
+            val previousBounds = android.graphics.Rect().also { checkNotNull(find(root, previousModel)).getBoundsInScreen(it) }
+            assertTrue("Newest model should appear above GPT-6", newestBounds.top < previousBounds.top)
+            clickText("GPT-6.1 Sol")
+            instrumentation.waitForIdleSync()
+            assertEquals("gpt-6.1-sol", picked.get())
+            report("CHATGPT_PICKER_OK: GPT-6.1 Sol appears first without scrolling and is selectable")
+            val regular = config.copy(id = "regular-device-fixture", name = "Regular provider")
+            scenario.onActivity { activity -> activity.setContent { MaterialTheme {
+                ModelPickerSheet(providers = listOf(regular), activeProviderId = regular.id, activeModel = regular.model,
+                    catalogs = mapOf(regular.id to listOf(ModelEntry(regular.model))), onDismiss = {},
+                    onSelect = { _, _ -> }, onRefreshCatalog = { null }, onManageProviders = {})
+            } } }
+            waitForText("Regular provider")
+            assertNull(find(checkNotNull(instrumentation.uiAutomation.rootInActiveWindow), "Limits & resets"))
+            report("CHATGPT_LIMITS_UI_OK: usage access appears in settings and ChatGPT picker, hidden for other providers")
+        }
+    }
+
     @Test fun signedInAccountReadsFileWithLiveModel() = runBlocking {
         assumeTrue("Pass liveChatGpt=true after signing in", InstrumentationRegistry.getArguments().getString("liveChatGpt") == "true")
         val scenario = ActivityScenario.launch(MainActivity::class.java)

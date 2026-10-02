@@ -3,9 +3,15 @@ package com.androidharness.app.chatgpt
 import com.androidharness.app.llm.ModelEntry
 import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
+import com.androidharness.app.llm.RequestOptions
+import com.androidharness.app.llm.StreamEvent
+import com.androidharness.app.core.ChatMessage
+import com.androidharness.app.core.Role
+import com.androidharness.app.agent.ThinkingLevel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.*
@@ -24,6 +30,8 @@ data class ChatGptAccountState(
     val signingIn: Boolean = false,
     val error: String? = null,
     val showWelcome: Boolean = false,
+    val checkingModelsFor: String? = null,
+    val modelCheckResults: Map<String, String> = emptyMap(),
 )
 
 /** The app owns OAuth credentials; providers only ask for a current access token. */
@@ -40,6 +48,7 @@ class ChatGptAccounts(
     private val json = Json { ignoreUnknownKeys = true; encodeDefaults = true }
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val lock = Mutex()
+    private val discoveryLock = Mutex()
     private var store = read()?.let { runCatching { json.decodeFromString<ChatGptStore>(it) }.getOrNull() }
         ?: ChatGptStore("urn:uuid:${UUID.randomUUID()}").also { write(json.encodeToString(it)) }
     private val mutableState = MutableStateFlow(ChatGptAccountState())
@@ -169,11 +178,59 @@ class ChatGptAccounts(
         lock.withLock {
             val latest = registration(providerId)
             check(latest.connected && latest.accessToken == token) { "ChatGPT connection changed. Please refresh models again." }
-            replace(latest.copy(models = models))
+            replace(latest.copy(models = (models + latest.verifiedModels).distinctBy { it.id }))
             publish(null)
         }
-        models
+        stateAccount(providerId).models
     }
+
+    /** The account catalog can omit usable models. Only remember successful inference checks. */
+    suspend fun discoverModels(providerId: String): List<ModelEntry> = withContext(Dispatchers.IO) {
+        discoveryLock.withLock {
+            mutableState.value = mutableState.value.copy(checkingModelsFor = providerId, error = null)
+            try {
+                val before = lock.withLock { registration(providerId).also { check(it.connected) { "Reconnect ChatGPT to check models." } } }
+                val catalog = refreshModels(providerId)
+                // https://developers.openai.com/api/docs/models (still requires a real access check).
+                val candidates = listOf(
+                    ModelEntry("gpt-6.1-sol", reasoning = true, displayName = "GPT-6.1 Sol"),
+                    ModelEntry("gpt-6-sol", reasoning = true, displayName = "GPT-6 Sol"),
+                    ModelEntry("gpt-6-luna", reasoning = true, displayName = "GPT-6 Luna"),
+                ).filter { candidate -> catalog.none { it.id == candidate.id } }
+                val provider = ChatGptProvider(::accessToken, http)
+                var added = 0
+                for (candidate in candidates) {
+                    val events = withTimeoutOrNull(45_000) {
+                        provider.streamChat(ProviderConfig(providerId, "ChatGPT", ProviderType.OPENAI_RESPONSES, ChatGptProtocol.RESOURCE, candidate.id),
+                            "managed-oauth", "", listOf(ChatMessage(Role.USER, "Reply exactly OK.")), emptyList(),
+                            RequestOptions(thinking = ThinkingLevel.LOW)).toList()
+                    }.orEmpty()
+                    val succeeded = events.any { it is StreamEvent.Done } && events.none { it is StreamEvent.Failure } &&
+                        events.filterIsInstance<StreamEvent.TextDelta>().any { it.text.isNotBlank() }
+                    if (succeeded) lock.withLock {
+                        val latest = registration(providerId)
+                        check(latest.connected && latest.subject == before.subject) { "ChatGPT connection changed. Check models again." }
+                        val verified = (latest.verifiedModels + candidate.copy(note = "Verified with ChatGPT plan")).distinctBy { it.id }
+                        replace(latest.copy(verifiedModels = verified, models = (latest.models + verified).distinctBy { it.id }))
+                        added++
+                    }
+                }
+                val result = when {
+                    added > 0 -> "Added $added newer ${if (added == 1) "model" else "models"}."
+                    candidates.isEmpty() -> "Your checked models are up to date."
+                    else -> "No newer models could be confirmed. Check your connection or try again later."
+                }
+                mutableState.value = mutableState.value.copy(modelCheckResults = mutableState.value.modelCheckResults + (providerId to result))
+                stateAccount(providerId).models
+            } finally {
+                mutableState.value = mutableState.value.copy(checkingModelsFor = null)
+            }
+        }
+    }
+
+    fun checkNewerModels(providerId: String) { scope.launch {
+        try { discoverModels(providerId) } catch (e: CancellationException) { throw e } catch (e: Exception) { publish(safeError(e)) }
+    } }
 
     fun refresh(providerId: String) { scope.launch {
         try { refreshModels(providerId) } catch (e: CancellationException) { throw e } catch (e: Exception) { publish(safeError(e)) }
@@ -208,7 +265,7 @@ class ChatGptAccounts(
     }
 
     private fun ChatGptRegistration.withoutTokens() = copy(accessToken = null, refreshToken = null, idToken = null,
-        expiresAt = 0, earliestRefreshAt = 0, scopes = emptySet(), models = emptyList())
+        expiresAt = 0, earliestRefreshAt = 0, scopes = emptySet(), models = emptyList(), verifiedModels = emptyList())
 
     private suspend fun discovery(): JsonObject = getJson(ChatGptProtocol.DISCOVERY).also {
         require(it["issuer"]?.jsonPrimitive?.content == ChatGptProtocol.ISSUER) { "Unexpected ChatGPT authentication server." }

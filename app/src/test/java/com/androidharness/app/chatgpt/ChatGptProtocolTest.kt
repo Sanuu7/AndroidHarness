@@ -159,6 +159,43 @@ class ChatGptProtocolTest {
         put("access_token", "fixture-access"); put("refresh_token", "fixture-refresh"); put("id_token", identity)
         put("token_type", "Bearer"); put("expires_in", 3600); put("scope", ChatGptProtocol.SCOPES)
     }.toString()
+
+    @Test fun `newer models require completed inference and survive refresh and restart`() = runBlocking {
+        val id = "chatgpt:oaiapp_fixture"
+        val saved = AtomicReference<String?>(Json.encodeToString(ChatGptStore("urn:uuid:fixture", listOf(
+            ChatGptRegistration("oaiapp_fixture", issuer = ChatGptProtocol.ISSUER, subject = "user1", accessToken = "fixture-access",
+                expiresAt = System.currentTimeMillis() / 1000 + 3600, scopes = setOf(ChatGptProtocol.PLAN_SCOPE)),
+        ))))
+        val checked = mutableListOf<String>()
+        val http = OkHttpClient.Builder().addInterceptor { chain ->
+            val request = chain.request()
+            var status = 200
+            val content = if (request.url.encodedPath == "/v1/models") catalog() else {
+                assertEquals("https://api.openai.com/v1/responses", request.url.toString())
+                val buffer = okio.Buffer(); request.body!!.writeTo(buffer)
+                val model = Json.parseToJsonElement(buffer.readUtf8()).jsonObject.getValue("model").jsonPrimitive.content
+                checked += model
+                when (model) {
+                    "gpt-6.1-sol" -> "data: {\"type\":\"response.output_text.delta\",\"delta\":\"OK\"}\n\ndata: {\"type\":\"response.completed\",\"response\":{\"status\":\"completed\",\"output\":[]}}\n\n"
+                    "gpt-6-sol" -> { status = 403; "{}" }
+                    else -> "data: {\"type\":\"response.output_text.delta\",\"delta\":\"partial\"}\n\n"
+                }
+            }
+            Response.Builder().request(request).protocol(Protocol.HTTP_1_1).code(status).message("fixture")
+                .body(content.toResponseBody("text/event-stream".toMediaType())).build()
+        }.build()
+        val accounts = ChatGptAccounts(saved::get, saved::set, {}, http = http, refreshOnStart = false)
+        assertEquals(listOf("fixture-model", "gpt-6.1-sol"), accounts.discoverModels(id).map { it.id })
+        assertEquals(listOf("fixture-model", "gpt-6.1-sol"), accounts.refreshModels(id).map { it.id })
+        accounts.discoverModels(id)
+        assertEquals(1, checked.count { it == "gpt-6.1-sol" })
+        val restored = ChatGptAccounts(saved::get, saved::set, {}, http = http, refreshOnStart = false)
+        assertEquals(accounts.state.value.accounts, restored.state.value.accounts)
+        assertEquals(listOf("gpt-6.1-sol"), Json.decodeFromString<ChatGptStore>(saved.get()!!).accounts.single().verifiedModels.map { it.id })
+        accounts.signOut(id)
+        withTimeout(5000) { accounts.state.first { !it.accounts.single().connected } }
+        assertTrue(Json.decodeFromString<ChatGptStore>(saved.get()!!).accounts.single().verifiedModels.isEmpty())
+    }
     private fun discovery() = """{"issuer":"https://auth.openai.com","jwks_uri":"https://auth.openai.com/.well-known/jwks.json","revocation_endpoint":"https://auth.openai.com/api/accounts/oauth/revoke"}"""
     private fun catalog() = """{"models":[{"slug":"fixture-model","display_name":"Fixture model","visibility":"list"}]}"""
     private fun mockHttp(reply: (Request) -> String) = OkHttpClient.Builder().addInterceptor { chain ->

@@ -47,6 +47,7 @@ internal fun ConnectedAccountsSection(container: AppContainer) {
                 Text(if (account.connected) "Using ChatGPT plan · ${account.models.size} models" else "Signed out",
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (account.connected) {
+                    com.androidharness.app.ui.common.ChatGptUsageLimits()
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         FilledTonalButton(onClick = { scope.launch {
                             container.settings.setActiveProvider(account.providerId)
@@ -56,6 +57,13 @@ internal fun ConnectedAccountsSection(container: AppContainer) {
                         }
                         TextButton(onClick = { container.chatGpt.refresh(account.providerId) }) { Text("Refresh models") }
                     }
+                    TextButton(onClick = { container.chatGpt.checkNewerModels(account.providerId) }, enabled = state.checkingModelsFor == null) {
+                        Text(if (state.checkingModelsFor == account.providerId) "Checking newer models…" else "Check newer models")
+                    }
+                    if (state.checkingModelsFor == account.providerId) LinearProgressIndicator(Modifier.fillMaxWidth())
+                    state.modelCheckResults[account.providerId]?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
+                    Text("Small test requests use your ChatGPT plan.", style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     TextButton(onClick = {

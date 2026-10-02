@@ -112,7 +112,7 @@ fun ModelPickerSheet(
     val visibleRows = remember(listedProvider, listedCatalog, normalizedQuery, thinkOnly, chatGptPlan) {
         val provider = listedProvider ?: return@remember emptyList()
         buildList {
-            if (chatGptPlan) addAll(listedCatalog) else {
+            if (chatGptPlan) addAll(listedCatalog.sortedWith(newestChatGptFirst)) else {
                 add(ModelEntry(provider.model, reasoning = null, contextTokens = null))
                 addAll(listedCatalog.filter { it.id != provider.model })
             }
@@ -262,13 +262,9 @@ fun ModelPickerSheet(
             }
 
             if (chatGptPlan) {
-                val context = androidx.compose.ui.platform.LocalContext.current
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Text("Using ChatGPT plan", style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
-                    androidx.compose.material3.TextButton(onClick = {
-                        com.androidharness.app.ui.common.openOAuthBrowser(context, android.net.Uri.parse(com.androidharness.app.chatgpt.ChatGptProtocol.USAGE_URL))
-                    }) { Text("Manage usage") }
-                }
+                Text("Using ChatGPT plan", style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.padding(vertical = 8.dp))
+                com.androidharness.app.ui.common.ChatGptUsageLimits(compact = true)
             }
             // Bounded height: a wrap-content LazyColumn inside a bottom sheet
             // collapses and its drags fight the sheet's dismiss gesture.
@@ -571,6 +567,18 @@ private fun AddCustomModelDialog(
             }
         },
     )
+}
+
+private val newestChatGptFirst = Comparator<ModelEntry> { left, right ->
+    fun version(entry: ModelEntry) = entry.id.lowercase().removePrefix("gpt-")
+        .substringBefore('-').split('.').map { it.toIntOrNull() ?: 0 }
+    val leftVersion = version(left)
+    val rightVersion = version(right)
+    for (index in 0 until maxOf(leftVersion.size, rightVersion.size)) {
+        val order = rightVersion.getOrElse(index) { 0 }.compareTo(leftVersion.getOrElse(index) { 0 })
+        if (order != 0) return@Comparator order
+    }
+    0
 }
 
 /** Compact context-window label for picker rows ("200K ctx", "1M ctx", "1B ctx"). */

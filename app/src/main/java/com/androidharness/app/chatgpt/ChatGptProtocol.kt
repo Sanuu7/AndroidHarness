@@ -152,6 +152,7 @@ data class ChatGptRegistration(
     val earliestRefreshAt: Long = 0,
     val scopes: Set<String> = emptySet(),
     val models: List<ModelEntry> = emptyList(),
+    val verifiedModels: List<ModelEntry> = emptyList(),
 ) {
     val connected: Boolean get() = accessToken != null && ChatGptProtocol.PLAN_SCOPE in scopes
     override fun toString() = "ChatGptRegistration(clientId=$clientId, connected=$connected)"
