@@ -78,6 +78,7 @@ Status: 1.3.
 - Redesigned navigation drawer with a quick-access tool strip (Files, Terminal, Automations, Build & Test) and a dedicated active provider card.
 
 **Model flexibility**
+- Settings → Connected accounts → Continue with ChatGPT connects an eligible Plus or Pro plan. Choose an account model in chat and use the app's coding tools with the usual permissions. Manage usage opens ChatGPT's plan and app limits. Sign-ins stay on the device and are excluded from settings backups.
 - Built-in keyless Harness provider: anonymous free models from Kilo and Pollinations served out of the box, with each model's rate limit shown in the picker and the kilo-auto/free router as the default. No API key needed to start.
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
 - Custom cloud model IDs: enter a custom model name directly in the model picker sheet for cloud providers. Download on-device models through Settings → Local models.
