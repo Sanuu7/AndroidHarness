@@ -58,8 +58,8 @@ object GgufMetadata {
         require(!split) { "Split GGUF models are not supported. Choose a single-file GGUF." }
         val prefix = architecture ?: return Estimate()
         val context = numbers["$prefix.context_length"] ?: 8192
-        require(context >= 512) { "This model supports fewer than 512 context tokens." }
-        val fallback = Estimate(maxContext = context.coerceAtMost(8192).toInt())
+        require(context > 0) { "Invalid model context length." }
+        val fallback = Estimate(maxContext = context.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
         val layers = numbers["$prefix.block_count"] ?: return fallback
         val heads = numbers["$prefix.attention.head_count"] ?: return fallback
         val kvHeads = numbers["$prefix.attention.head_count_kv"] ?: heads
@@ -70,6 +70,6 @@ object GgufMetadata {
         if (keySize !in 1..65536 || valueSize !in 1..65536) return fallback
         val cache = (2L * layers * kvHeads * (keySize + valueSize)).coerceAtLeast(24 * 1024)
         if (cache > 64 * 1024 * 1024) return fallback
-        return Estimate(cache, context.coerceAtMost(8192).toInt())
+        return Estimate(cache, context.coerceAtMost(Int.MAX_VALUE.toLong()).toInt())
     }
 }

@@ -87,9 +87,10 @@ Status: 1.3.
 
 **Local models**
 
-- Download a model in Settings → Local models, or paste a public Hugging Face or direct GGUF link. Select it from the chat provider picker.
-- Check available RAM and storage, filter models by device fit, and adjust context, input, output and CPU threads.
-- Runs offline after download on compatible 64-bit devices. Text chat only; no images, agent tools or dual planning. Custom models must be single-file chat GGUFs. Speed depends on your device.
+- Settings → Local models has GGUF downloads and safetensors imports. Supported dense Qwen 2/2.5, Qwen 3 and Llama BPE weights are converted on the device to Q4 GGUF. Select installed models from the chat provider picker.
+- Use Import file for a GGUF, or Import folder for safetensors weights with config.json and tokenizer.json. Recommendations include small SmolLM2, Qwen 2.5 and Qwen 3 models in both formats, plus community abliterated variants. Search by name or use the Abliterated filter.
+- Check available RAM and storage, and adjust context, input, output and CPU threads. All models stay visible.
+- Runs on compatible 64-bit devices. Agent tools and dual planning are available; vision needs a compatible GGUF and matching projector. RAM, storage and context warnings offer Continue. Models run offline after setup; network tools still need a connection. Speed and tool reliability depend on the model and device.
 
 **Workspace hygiene**
 - Sandboxed file access: the agent cannot read or write outside the workspace, symlinks and binary files are refused, and delete guards protect the workspace root.
@@ -110,7 +111,7 @@ The app ships with a library of markdown skills: git, planning, test driven deve
 
 1. Install the app.
 2. Grant storage access. On Android 11 and up the app needs "All files access" so the shell and file tools can use real filesystem paths.
-3. Add an API key in Settings, start immediately with the built-in keyless Harness provider, or download an on-device model from Settings → Local models for text chat.
+3. Add an API key in Settings, start immediately with the built-in keyless Harness provider, or download an on-device model from Settings → Local models.
 4. Optional but recommended: install Shizuku or Termux so the agent can run shell commands with proper permissions.
 
 ## Build

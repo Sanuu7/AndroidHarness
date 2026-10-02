@@ -999,11 +999,6 @@ class ChatViewModel(
             _state.update { it.copy(error = "The selected local model was removed. Download it again or explicitly choose another provider.") }
             return
         }
-        if (s0.dualPlanning && listOfNotNull(s0.activeProviderId, s0.planningProviderId, s0.executionProviderId)
-                .any(com.androidharness.app.local.LocalModelCatalog::isLocal)) {
-            _state.update { it.copy(error = "Local models support text chat only. Turn off dual planning before sending.") }
-            return
-        }
         // Separate planning/execution models: plan-mode runs use the planning
         // slot, everything else the execution one. A slot without a provider
         // falls back to the active provider, keeping its model override.
@@ -1071,7 +1066,7 @@ class ChatViewModel(
                 // Security gate (battery D1): a workspace .harness/mcp.json never
                 // spawns commands until this exact file content was approved. The
                 // dialog offers approve (and continue) or run without those servers.
-                if (workspaceMcpGate && !com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
+                if (workspaceMcpGate) {
                     val unapproved = runCatching {
                         c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
                     }.getOrDefault(emptyList())

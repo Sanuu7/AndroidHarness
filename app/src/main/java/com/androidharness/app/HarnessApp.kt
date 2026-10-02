@@ -61,7 +61,9 @@ class AppContainer(val appContext: Context) {
     val providers = ProviderRepository(appContext, keys, localModels)
 
     init {
-        ProviderFactory.localProvider = com.androidharness.app.local.LocalModelProvider(localModels)
+        ProviderFactory.localProvider = com.androidharness.app.local.LocalModelProvider(localModels) {
+            settings.settings.first().localModelAgentContext
+        }
     }
     val screenshotPolicy = com.androidharness.app.data.ScreenshotPolicy()
 
@@ -180,6 +182,15 @@ class AppContainer(val appContext: Context) {
         // models.dev thinking-capability catalog: serve the cached copy
         // synchronously, then refresh in the background (weekly cadence).
         com.androidharness.app.llm.ModelsDev.load(appContext)
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            combine(settings.settings, providers.providers) { saved, available -> saved to available.map { it.id }.toSet() }
+                .collect { (saved, availableIds) ->
+                    val selected = listOf(saved.activeProviderId, saved.planningProviderId, saved.executionProviderId)
+                    if (selected.any { it != null && com.androidharness.app.local.LocalModelCatalog.isLocal(it) && it !in availableIds }) {
+                        settings.clearMissingLocalProviderSelections(availableIds)
+                    }
+                }
+        }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             // Learned wire per Harness model (chat vs anthropic vs responses),
             // persisted by the first-request probe; mirrored into memory so

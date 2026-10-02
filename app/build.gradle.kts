@@ -21,8 +21,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 16
-        versionName = "1.2"
+        versionCode = 17
+        versionName = "1.3"
         ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
         externalNativeBuild {
             cmake { arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON" }

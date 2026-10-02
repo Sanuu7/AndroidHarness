@@ -240,18 +240,19 @@ class AgentEngine(
         // is told about change with it.
         var replySettings = cavemanSettings()
         val localChat = com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
+        val agentContextEnabled = !localChat || replySettings.localModelAgentContext
         fun runSystemPrompt(fullAccess: Boolean): String =
-            (if (localChat) com.androidharness.app.local.LocalModelProvider.CHAT_PROMPT
-            else systemPrompt(workspace, mode, fullAccess = fullAccess, repoMapEnabled = repoMapEnabled)) +
+            if (!agentContextEnabled) "" else systemPrompt(workspace, mode, fullAccess = fullAccess, repoMapEnabled = repoMapEnabled) +
                 if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
         var systemPrompt = runSystemPrompt(false)
         var promptSandboxOff = false
         val runRegistry = registry.withExtra(extraTools)
-        val tools = if (localChat) emptyList() else runRegistry.schemas(
+        val tools = if (!agentContextEnabled) emptyList() else runRegistry.schemas(
             readOnlyOnly = mode == AgentMode.PLAN,
             context = ToolContext(workspace = workspace, sessionId = sessionId),
         )
-        val working = (if (localChat) history else trimHistory(
+        val chatHistory = if (agentContextEnabled) history else com.androidharness.app.local.LocalChatCodec.plainChatMessages(history)
+        val working = (if (localChat) chatHistory.map { it.withImagesResolved() } else trimHistory(
             ContextHygiene.shrinkToolResults(history.map { it.withImagesResolved() }),
             maxContextTokens, options.maxOutputTokens,
         )).toMutableList()
@@ -316,14 +317,14 @@ class AgentEngine(
                     workspace
                 }
 
-            val requestSystemPrompt = com.androidharness.app.caveman.CavemanPolicy.apply(
+            val requestSystemPrompt = if (!agentContextEnabled) "" else com.androidharness.app.caveman.CavemanPolicy.apply(
                 systemPrompt,
                 installed = replySettings.cavemanInstalled,
                 intensity = replySettings.cavemanIntensity,
                 wenyan = replySettings.cavemanWenyan,
             )
             // Auto-compact before the request grows past the context budget.
-            val estimate = estimateContext(working, requestSystemPrompt)
+            val estimate = estimateContext(working, requestSystemPrompt, tools)
             emit(AgentEvent.EstimatedContext(estimate))
             if (!localChat && estimate.total > (maxContextTokens * 0.8).toInt() && working.size > 6) {
                 val compacted = compact(provider, config, apiKey, working, maxContextTokens, sessionId) { emit(it) }
@@ -332,7 +333,7 @@ class AgentEngine(
                     working.addAll(compacted)
                     // The window just shrank: refresh the context panel now
                     // instead of waiting for the next request's usage row.
-                    emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt)))
+                    emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt, tools)))
                 }
             }
 
@@ -1486,11 +1487,12 @@ class AgentEngine(
     private fun estimateContext(
         history: List<ChatMessage>,
         systemPrompt: String,
+        tools: List<com.androidharness.app.llm.ToolSchema> = registry.schemas(),
     ): ContextEstimate {
         val messagesChars = history.sumOf {
             it.text.length + it.toolCalls.sumOf { c -> c.argumentsJson.length }
         }
-        val toolsChars = registry.schemas().sumOf {
+        val toolsChars = tools.sumOf {
             it.description.length + it.parametersJson.toString().length
         }
         return ContextEstimate(

@@ -11,19 +11,38 @@ class LocalModelsTest {
         assertEquals(LocalModelCatalog.models.size, LocalModelCatalog.models.map { it.id }.distinct().size)
         LocalModelCatalog.models.forEach {
             assertTrue(it.revision.matches(Regex("[a-f0-9]{40}")))
-            assertTrue(it.sha256.matches(Regex("[a-f0-9]{64}")))
+            if (it.format == LocalModelFormat.GGUF) assertTrue(it.sha256.matches(Regex("[a-f0-9]{64}")))
+            else {
+                assertTrue(it.assets.any { asset -> asset.filename.endsWith(".safetensors") })
+                assertTrue(it.assets.filter { asset -> asset.filename.endsWith(".safetensors") }
+                    .all { asset -> asset.sha256.matches(Regex("[a-f0-9]{64}")) })
+                assertTrue(it.assets.all { asset -> "/resolve/${it.revision}/" in asset.url && asset.bytes > 0 })
+            }
             assertTrue(it.url.startsWith("https://huggingface.co/"))
-            assertTrue(it.filename.endsWith(".gguf"))
+            assertTrue(it.filename.endsWith(if (it.format == LocalModelFormat.GGUF) ".gguf" else ".safetensors"))
         }
     }
 
     @Test fun `limits reserve output space and reject overflow`() {
         LocalModelLimits().validate()
         listOf(LocalModelLimits(context = 0), LocalModelLimits(input = Int.MAX_VALUE),
-            LocalModelLimits(output = 0), LocalModelLimits(input = 2048, output = 512),
-            LocalModelLimits(threads = 9), LocalModelLimits(context = 8193)).forEach {
+            LocalModelLimits(output = 0),
+            LocalModelLimits(threads = 0)).forEach {
             assertThrows(IllegalArgumentException::class.java) { it.validate() }
         }
+        LocalModelLimits(context = 131072, input = 98304, output = 32768, threads = 32).validate()
+        LocalModelLimits(input = 2048, output = 512).validate()
+    }
+
+    @Test fun `large models and settings produce warnings instead of changing the request`() {
+        val model = LocalModelCatalog.find("qwen-3b")!!
+        val device = LocalDeviceProfile(2 * GIB, GIB / 2, GIB / 2, "arm64-v8a", 4, true)
+        val limits = LocalModelLimits(context = 32768, input = 24576, output = 8192, threads = 16)
+        limits.validate()
+        val warnings = localModelWarnings(model, device, limits, downloading = true)
+        assertEquals(4, warnings.size)
+        assertEquals(32768, limits.context)
+        assertEquals(16, limits.threads)
     }
 
     @Test fun `recommendations distinguish architecture memory and live availability`() {
@@ -35,7 +54,7 @@ class LocalModelsTest {
         assertFalse(profile.copy(totalRam = 2 * GIB).fits(small))
         assertFalse(profile.copy(availableRam = GIB).canLoad(small, 2048))
         assertFalse(profile.copy(lowMemory = true).canLoad(small, 2048))
-        assertFalse(profile.fits(LocalModelCatalog.models.last()))
+        assertFalse(profile.fits(LocalModelCatalog.find("qwen-3b")!!))
         assertTrue(small.estimatedMemory(8192) > small.estimatedMemory(2048))
     }
 

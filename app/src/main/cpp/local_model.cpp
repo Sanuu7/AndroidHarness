@@ -1,5 +1,6 @@
 #include <jni.h>
 #include "llama.h"
+#include "local_request.h"
 #include <algorithm>
 #include <atomic>
 #include <memory>
@@ -9,7 +10,7 @@
 #include <vector>
 
 namespace {
-struct Request { std::atomic<bool> cancelled{false}; };
+using Request = LocalRequest;
 std::once_flag initialized;
 bool aborted(void * data) { return static_cast<Request *>(data)->cancelled.load(); }
 bool progress(float, void * data) { return !aborted(data); }
@@ -45,8 +46,8 @@ Java_com_androidharness_app_local_LocalNative_generate(
         auto * request = reinterpret_cast<Request *>(handle);
         std::call_once(initialized, [] { llama_backend_init(); });
         if (aborted(request)) throw std::runtime_error("Local generation stopped.");
-        if (contextSize < 512 || contextSize > 8192 || inputLimit < 1 || outputLimit < 1 ||
-            inputLimit + outputLimit > contextSize || threads < 1 || threads > 8)
+        if (contextSize < 1 || inputLimit < 1 || outputLimit < 1 ||
+            int64_t(inputLimit) + outputLimit > contextSize || threads < 1)
             throw std::runtime_error("Invalid local model limits.");
         auto params = llama_model_default_params();
         params.n_gpu_layers = 0;
@@ -58,8 +59,6 @@ Java_com_androidharness_app_local_LocalNative_generate(
             llama_model_load_from_file(path.c_str(), params), llama_model_free);
         if (!model) throw std::runtime_error("Could not load model. Free memory or reinstall the model.");
         if (aborted(request)) throw std::runtime_error("Local generation stopped.");
-        if (contextSize > llama_model_n_ctx_train(model.get()))
-            throw std::runtime_error("Context exceeds this model's trained limit.");
         const auto count = env->GetArrayLength(roles);
         if (count != env->GetArrayLength(contents)) throw std::runtime_error("Invalid chat messages.");
         std::vector<std::string> roleValues, textValues;

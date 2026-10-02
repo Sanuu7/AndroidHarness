@@ -75,7 +75,7 @@ object ModelCatalog {
     suspend fun listModels(config: ProviderConfig, apiKey: String): Result =
         withContext(Dispatchers.IO) {
             if (com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)) {
-                return@withContext Result.Models(listOf(ModelEntry(config.model, reasoning = false, note = "On-device text chat")), 0)
+                return@withContext Result.Models(listOf(ModelEntry(config.model, note = "On-device · tools and vision depend on model and projector")), 0)
             }
             val started = System.currentTimeMillis()
             try {

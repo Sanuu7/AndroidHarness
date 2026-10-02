@@ -1,0 +1,10 @@
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <!-- Read-only deterministic test data, present only in the instrumentation APK. -->
+        <provider
+            android:name="com.androidharness.app.local.LocalImportFixtureProvider"
+            android:authorities="com.androidharness.localimport.fixture"
+            android:exported="true"
+            android:grantUriPermissions="true" />
+    </application>
+</manifest>

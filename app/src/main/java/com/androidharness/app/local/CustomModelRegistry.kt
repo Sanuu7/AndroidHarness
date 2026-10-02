@@ -1,6 +1,7 @@
 package com.androidharness.app.local
 
 import java.io.File
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import kotlinx.serialization.json.Json
 
 /** Download jobs and provider IDs survive process death through this catalog. */
@@ -41,9 +42,14 @@ class CustomModelRegistry(private val root: File) {
 
     private fun validate(model: LocalModelSpec) {
         require(model.custom && model.id.matches(Regex("custom-[a-f0-9]{32}"))) { "Invalid custom model ID." }
-        require(model.bytes in 24..(128 * GIB) && model.kvBytesPerToken in 1..(64 * 1024 * 1024))
+        require(model.bytes >= 24 && model.kvBytesPerToken > 0)
         require(model.sha256.isEmpty() || model.sha256.matches(Regex("[a-f0-9]{64}")))
-        require(model.maxContext in 512..8192)
-        CustomModelResolver.parseLink(model.url)
+        require(model.maxContext > 0)
+        if (!model.localFile) CustomModelResolver.parseLink(model.url, model.format)
+        else require(model.filename.isNotBlank() && '/' !in model.filename && '\\' !in model.filename && model.filename !in listOf(".", ".."))
+        model.assets.forEach { asset ->
+            require('\\' !in asset.filename && asset.filename.split('/').all { it.isNotEmpty() && it != "." && it != ".." })
+            require(asset.bytes > 0 && (model.localFile && asset.url.isEmpty() || asset.url.toHttpUrlOrNull()?.isHttps == true))
+        }
     }
 }

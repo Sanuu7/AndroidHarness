@@ -142,6 +142,7 @@ private enum class SessionGroup(val label: String) {
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun AppNav(container: AppContainer) {
+    com.androidharness.app.ui.settings.LocalModelWarningDialog(container.localModels)
     val nav = rememberNavController()
     val drawerState = rememberDrawerState(DrawerValue.Closed)
     val scope = rememberCoroutineScope()

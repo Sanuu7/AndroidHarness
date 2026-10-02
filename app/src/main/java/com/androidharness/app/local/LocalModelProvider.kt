@@ -14,33 +14,25 @@ import java.nio.ByteBuffer
 import java.nio.CharBuffer
 import java.nio.charset.CodingErrorAction
 
-class LocalModelProvider(private val manager: LocalModelManager) : LlmProvider {
-    companion object {
-        const val CHAT_PROMPT = "You are a helpful local assistant running on the user's Android device. Answer in text. You cannot execute tools, browse, edit files, or run commands. Do not claim to have performed actions. Give code or instructions when asked."
-    }
+class LocalModelProvider(private val manager: LocalModelManager,
+    private val agentContextEnabled: suspend () -> Boolean = { false }) : LlmProvider {
     override fun streamChat(config: ProviderConfig, apiKey: String, systemPrompt: String,
         messages: List<ChatMessage>, tools: List<ToolSchema>, options: RequestOptions): Flow<StreamEvent> = flow {
         try {
             val id = config.id.removePrefix(LocalModelCatalog.PROVIDER_PREFIX)
             check(config.model == config.id) { "Choose this provider's installed model. Other model IDs cannot run locally." }
-            check(messages.none { it.images.isNotEmpty() || it.imageData.isNotEmpty() }) { "Local models support text only. Remove image attachments." }
-            val localSystem = if (tools.isEmpty()) systemPrompt else CHAT_PROMPT
-            val history = listOf(ChatMessage(Role.SYSTEM, localSystem)) + messages.map {
-                when {
-                    it.role == Role.TOOL -> ChatMessage(Role.USER, "Previous tool result (${it.toolName.orEmpty()}):\n${it.text}")
-                    it.toolCalls.isNotEmpty() -> it.copy(text = it.text + "\nPrevious tool calls: " + it.toolCalls.joinToString { call -> call.name }, toolCalls = emptyList())
-                    else -> it
-                }
+            val enabled = agentContextEnabled()
+            val chatMessages = if (enabled) messages else LocalChatCodec.plainChatMessages(messages)
+            val chatTools = if (enabled) tools else emptyList()
+            val request = LocalChatCodec.request(systemPrompt, chatMessages, chatTools,
+                options.thinking != com.androidharness.app.agent.ThinkingLevel.OFF, includeAgentContext = enabled)
+            val images = chatMessages.flatMap { it.imageData }.map {
+                android.util.Base64.decode(it.base64, android.util.Base64.DEFAULT)
+            }.toTypedArray()
+            val result = manager.generateChat(id, request.toByteArray(Charsets.UTF_8), images, options.maxOutputTokens) { bytes ->
+                for (event in LocalChatCodec.events(bytes.toString(Charsets.UTF_8))) emit(event)
             }
-            check(history.sumOf { it.text.length.toLong() } <= 2_000_000) { "Chat is too large for local inference. Start a new chat." }
-            val decoder = Utf8TokenDecoder()
-            val counts = manager.generate(id, history.map { it.role.name.lowercase() }.toTypedArray(),
-                history.map { it.text.toByteArray(Charsets.UTF_8) }.toTypedArray(), options.maxOutputTokens) { bytes ->
-                decoder.append(bytes).takeIf { it.isNotEmpty() }?.let { emit(StreamEvent.TextDelta(it)) }
-            }
-            decoder.finish().takeIf { it.isNotEmpty() }?.let { emit(StreamEvent.TextDelta(it)) }
-            emit(StreamEvent.Usage(counts[0], counts[1]))
-            emit(StreamEvent.Done(if (counts[2] == 0) "stop" else "length"))
+            for (event in LocalChatCodec.finish(result, chatTools)) emit(event)
         } catch (e: CancellationException) {
             throw e
         } catch (e: Exception) {

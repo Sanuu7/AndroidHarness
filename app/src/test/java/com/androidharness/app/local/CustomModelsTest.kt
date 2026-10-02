@@ -15,20 +15,6 @@ import org.junit.Assert.*
 import org.junit.Test
 
 class CustomModelsTest {
-    @Test fun `filter follows available RAM low memory saved context and override`() {
-        val model = LocalModelCatalog.models.first()
-        val profile = LocalDeviceProfile(8 * GIB, 2 * GIB, 8 * GIB, "arm64-v8a", 8, false)
-        assertEquals(listOf(model), visibleLocalModels(listOf(model), profile, false, emptySet()))
-        val low = profile.copy(availableRam = GIB)
-        assertTrue(visibleLocalModels(listOf(model), low, false, emptySet()).isEmpty())
-        assertEquals(listOf(model), visibleLocalModels(listOf(model), low, true, emptySet()))
-        assertEquals(listOf(model), visibleLocalModels(listOf(model), low, false, setOf(model.id)))
-        assertTrue(visibleLocalModels(listOf(model), profile.copy(lowMemory = true), false, emptySet()).isEmpty())
-        val nearLimit = profile.copy(availableRam = model.estimatedMemory(2048) + 256L * 1024 * 1024)
-        assertTrue(visibleLocalModels(listOf(model), nearLimit, false, emptySet(), mapOf(model.id to 8192)).isEmpty())
-        assertEquals(listOf(model), visibleLocalModels(listOf(model), nearLimit, false, emptySet(), mapOf(model.id to 2048)))
-    }
-
     @Test fun `links accept repo blob resolve tree direct and encoded names`() {
         assertEquals("org/model", CustomModelResolver.parseLink(" https://huggingface.co/org/model ").repository)
         assertEquals("folder/model q4.gguf", CustomModelResolver.parseLink("https://huggingface.co/org/model/blob/main/folder/model%20q4.gguf?download=true").file)
@@ -63,7 +49,8 @@ class CustomModelsTest {
         assertEquals(1024, result.maxContext)
         assertThrows(IllegalArgumentException::class.java) { GgufMetadata.inspect("<html>not a model</html>".toByteArray()) }
         assertThrows(IllegalArgumentException::class.java) { GgufMetadata.inspect(header(split = true)) }
-        assertThrows(IllegalArgumentException::class.java) { GgufMetadata.inspect(header(context = 256)) }
+        assertEquals(256, GgufMetadata.inspect(header(context = 256)).maxContext)
+        assertEquals(131072, GgufMetadata.inspect(header(context = 131072)).maxContext)
         val truncated = header().copyOf(24)
         assertEquals(256 * 1024L, GgufMetadata.inspect(truncated).kvBytesPerToken)
     }

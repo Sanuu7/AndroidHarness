@@ -39,6 +39,8 @@ class LocalModelDownloadWorker(context: Context, params: WorkerParameters) : Cor
             throw e
         } catch (e: Exception) {
             Result.failure(workDataOf("error" to (e.message ?: "Download failed")))
+        } catch (_: UnsatisfiedLinkError) {
+            Result.failure(workDataOf("error" to "On-device conversion is unavailable for this architecture. Download a preconverted GGUF instead."))
         }
     }
 

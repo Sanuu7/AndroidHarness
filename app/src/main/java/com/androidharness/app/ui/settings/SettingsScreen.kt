@@ -122,7 +122,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-private val CONTEXT_PRESETS = listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000)
 
 private val GH_OPTIONAL_SCOPES = listOf(
     Triple("workflow", "workflow", "update GitHub Actions workflow files"),
@@ -233,7 +232,7 @@ fun SettingsScreen(
                             .verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
-                        SettingsPageIntro(page)
+                        if (page != SettingsPage.LOCAL_MODELS && page != SettingsPage.AGENT) SettingsPageIntro(page)
                     when (page) {
                         SettingsPage.MODELS -> {
                             SettingsPanel(Modifier.fillMaxWidth()) {
@@ -2105,86 +2104,15 @@ private fun AgentSection(
     settings: AppSettings,
     scope: kotlinx.coroutines.CoroutineScope,
 ) {
-    SettingsHeader("Agent")
     var showAgentsDialog by remember { mutableStateOf(false) }
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 4.dp)) {
-            SettingsAnchor("Default permission mode") {
-                DropdownSetting(
-                    label = "Default permission mode",
-                    current = settings.permissionMode.label,
-                    entries = PermissionMode.entries.map { it.name to it.label },
-                    onSelect = { scope.launch { container.settings.setPermissionMode(PermissionMode.valueOf(it)) } },
-                    divider = true,
-                )
-            }
-            if (settings.permissionMode == PermissionMode.FULL_ACCESS) {
-                Text(
-                    "Full access runs every file and shell action without confirmation; " +
-                        "destructive commands are the model's judgment alone. Only the git " +
-                        "tools (commit, push, pull, checkout, branch) still document asking " +
-                        "you first. Enable only for workspaces you trust.",
-                    style = MaterialTheme.typography.bodySmall,
-                    color = FullAccessOrange,
-                    modifier = Modifier.padding(bottom = 8.dp),
-                )
-            }
-            SettingsAnchor("Subagent action tools") {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Column(Modifier.weight(1f)) {
-                        Text("Subagent action tools", style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            "Allow subagents to edit files and run commands in Act mode. " +
-                                "They follow the current permission mode; Plan mode stays read-only.",
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(
-                        checked = settings.subagentFullAccess,
-                        onCheckedChange = { scope.launch { container.settings.setSubagentFullAccess(it) } },
-                    )
-                }
-            }
-            SettingsAnchor("Max context window") {
-                DropdownSetting(
-                    label = "Max context window",
-                    current = formatTokenCount(settings.maxContextTokens.toLong()),
-                    entries = CONTEXT_PRESETS.map { it.toString() to formatTokenCount(it.toLong()) },
-                    onSelect = { scope.launch { container.settings.setMaxContextTokens(it.toInt()) } },
-                    divider = true,
-                )
-            }
-
-            SettingsAnchor("Tool-call iteration limit") {
-                DropdownSetting(
-                    label = "Tool-call iteration limit",
-                    current = if (settings.maxIterations <= 0) "Unlimited" else settings.maxIterations.toString(),
-                    entries = listOf(
-                        "0" to "Unlimited",
-                        "25" to "25",
-                        "100" to "100",
-                        "250" to "250",
-                    ),
-                    onSelect = { scope.launch { container.settings.setMaxIterations(it.toInt()) } },
-                    divider = true,
-                )
-            }
-
-            // Detected state is loaded when the dialog opens; this row just
-            // navigates there, so a light subtitle covers both cases.
-            SettingsAnchor("Project instructions (AGENTS.md)") {
-                SettingRow(
-                    icon = Icons.Outlined.Description,
-                    title = "Project instructions (AGENTS.md)",
-                    subtitle = "Injected into every run for this workspace",
-                    onClick = { showAgentsDialog = true },
-                    divider = true,
-                )
-            }
-
-        }
-    }
+    AgentBehaviorSection(
+        settings = settings,
+        onPermissionMode = { scope.launch { container.settings.setPermissionMode(it) } },
+        onSubagentTools = { scope.launch { container.settings.setSubagentFullAccess(it) } },
+        onContextLimit = { scope.launch { container.settings.setMaxContextTokens(it) } },
+        onIterationLimit = { scope.launch { container.settings.setMaxIterations(it) } },
+        onProjectInstructions = { showAgentsDialog = true },
+    )
     if (showAgentsDialog) {
         AgentsInstructionsDialog(container, onDismiss = { showAgentsDialog = false })
     }
