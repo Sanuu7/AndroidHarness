@@ -1,12 +1,20 @@
 # Changelog
 
-## Unreleased
+## 1.4 (2026-10-03)
 
-- Add Sub-Agent settings with action tools and a separate provider/model choice for subagents, independent of the main execution model.
-- Separate GGUF downloads and safetensors imports in Local models. Supported dense Qwen and Llama BPE weights convert on the device to Q4 GGUF.
-- Add file manager import for GGUF files and safetensors folders, searchable recommendations in both formats, and community abliterated models. Installed models and their settings now appear first in a simpler layout.
-- Local models can call agent and MCP tools, use dual planning, and process images with a compatible vision model and matching projector.
-- RAM, storage, training-context and CPU-thread estimates now show warnings with Continue. Models remain visible, fixed context/output/thread caps are removed, and oversized conversations can continue with a larger context.
+### Added
+
+- **Continue with ChatGPT**: Settings → Connected accounts → Continue with ChatGPT connects an eligible Plus, Pro or Go plan through the browser and lists the account's models in the chat picker. Choose one and use the app's coding tools with the usual permission prompts. A welcome card introduces the connection after sign-in, and Manage usage opens ChatGPT's plan and app limits. Sign-ins stay on the device and are excluded from settings backups.
+- **ChatGPT thinking levels**: account models support the app's thinking ladder. Each model's documented reasoning efforts map onto the scale, the header badge offers only the levels the model supports, and the model's own metadata wins over family fallbacks.
+- **Newer model checks for ChatGPT accounts**: a check in Connected accounts probes newer GPT models with a real inference round trip and adds the ones the plan confirms to the picker, reporting how many were added. Verified models survive catalog refreshes.
+- **Sub-Agent settings**: action tools and a separate provider/model choice for subagents now live in their own settings screen, independent of the main execution model. A saved subagent model takes priority over the task tool's `model` override; leaving it empty keeps the main agent's model.
+- **Safetensors imports**: separate GGUF downloads and safetensors imports in Local models. Supported dense Qwen and Llama BPE weights convert on the device to Q4 GGUF.
+- **Local model import and recommendations**: file manager import for GGUF files and safetensors folders, searchable recommendations in both formats, and community abliterated models. Installed models and their settings now appear first in a simpler layout.
+- **Local models use the agent**: local models can call agent and MCP tools, use dual planning, and process images with a compatible vision model and matching projector.
+
+### Changed
+
+- **Local model fit warnings**: RAM, storage, training-context and CPU-thread estimates now show warnings with Continue. Models remain visible, fixed context/output/thread caps are removed, and oversized conversations can continue with a larger context.
 
 ## 1.3 (2026-10-02)
 

@@ -6,7 +6,7 @@ A coding agent that lives on your phone.
 
 AndroidHarness is a native Android app, written in Kotlin with Jetpack Compose, that works on code projects directly from the device. It reads and edits files, runs shell commands, uses git, and chats with you about the work as it goes. No PC required.
 
-Status: 1.3.
+Status: 1.4.
 
 ## Features
 
@@ -79,7 +79,7 @@ Status: 1.3.
 - Redesigned navigation drawer with a quick-access tool strip (Files, Terminal, Automations, Build & Test) and a dedicated active provider card.
 
 **Model flexibility**
-- Settings → Connected accounts → Continue with ChatGPT connects an eligible Plus or Pro plan. Choose an account model in chat and use the app's coding tools with the usual permissions. Manage usage opens ChatGPT's plan and app limits. Sign-ins stay on the device and are excluded from settings backups.
+- Settings → Connected accounts → Continue with ChatGPT connects an eligible Plus, Pro or Go plan. Choose an account model in chat and use the app's coding tools with the usual permissions, with thinking levels that follow each model's supported reasoning efforts. A check in Connected accounts probes newer GPT models and adds the ones the plan confirms. Manage usage opens ChatGPT's plan and app limits. Sign-ins stay on the device and are excluded from settings backups.
 - Built-in keyless Harness provider: anonymous free models from Kilo and Pollinations served out of the box, with each model's rate limit shown in the picker and the kilo-auto/free router as the default. No API key needed to start.
 - Anthropic, Google Gemini, and any OpenAI compatible endpoint with a custom base URL.
 - Custom cloud model IDs: enter a custom model name directly in the model picker sheet for cloud providers. Download on-device models through Settings → Local models.
