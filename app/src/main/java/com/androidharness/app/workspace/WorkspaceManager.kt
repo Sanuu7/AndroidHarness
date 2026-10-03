@@ -70,8 +70,8 @@ class WorkspaceManager(
             kotlinx.serialization.json.Json.decodeFromString<SshLocation>(requireNotNull(project.uri)))
         project.kind == KIND_SAF && project.uri != null -> {
             val treeUri = project.uri.toUri()
-            val real = SafPathResolver.resolve(treeUri)?.let { java.io.File(it) }
-            if (real != null && real.isDirectory) {
+            val real = writablePickedFolder(treeUri)
+            if (real != null) {
                 FileFs(real)
             } else {
                 runCatching { SafFs(context, treeUri) }.getOrElse { FileFs(appPrivateRoot) }
@@ -84,13 +84,17 @@ class WorkspaceManager(
 
     suspend fun addSafProject(treeUri: Uri): ProjectEntity {
         val existing = findDuplicate(projects.first(), KIND_SAF, treeUri.toString())
-        if (existing != null) {
-            return reactivate(existing)
-        }
         context.contentResolver.takePersistableUriPermission(
             treeUri,
             Intent.FLAG_GRANT_READ_URI_PERMISSION or Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
         )
+        if (existing != null) {
+            // A previously direct folder may now need the picker grant. Keep its
+            // identity and history, but retain the URI instead of an inaccessible path.
+            val picked = existing.copy(kind = KIND_SAF, uri = treeUri.toString())
+            dao.setProjectLocation(picked.id, picked.kind, requireNotNull(picked.uri))
+            return reactivate(picked)
+        }
         val name = treeUri.lastPathSegment
             ?.substringAfterLast(':')
             ?.ifBlank { null } ?: "Picked folder"
@@ -106,21 +110,12 @@ class WorkspaceManager(
         return project
     }
 
-    /** Adds a folder chosen in the system picker. When the SAF tree maps to a
-     * real path on shared storage the workspace is upgraded to a SHELL
-     * project (full shell) instead of a file-tools-only SAF one.
-     */
-    suspend fun addPickedFolder(treeUri: Uri): ProjectEntity {
-        val existing = findDuplicate(projects.first(), KIND_SAF, treeUri.toString())
-        if (existing != null) {
-            return reactivate(existing)
-        }
-        val path = SafPathResolver.resolve(treeUri)
-        if (path != null && java.io.File(path).isDirectory) {
-            return addShellProject(path)
-        }
-        return addSafProject(treeUri)
-    }
+    /** Always retain the picker grant. [fsFor] enables shell access when the
+     * real path is writable, and falls back to SAF if broad access is revoked. */
+    suspend fun addPickedFolder(treeUri: Uri): ProjectEntity = addSafProject(treeUri)
+
+    private fun writablePickedFolder(treeUri: Uri): File? =
+        directFolderOrNull(SafPathResolver.resolve(treeUri))
 
     /**
      * Identity of a workspace folder for duplicate detection. A picked folder
@@ -223,18 +218,18 @@ class WorkspaceManager(
             }
             KIND_SHELL -> {
                 kindLabel = "Device folder"
-                kindSub = "Real path: full shell, needs All files access or Shizuku"
+                kindSub = "Real path: full shell, needs storage access or Shizuku"
                 shellCapable = true
             }
             else -> {
-                val real = project.uri?.let { runCatching { SafPathResolver.resolve(it.toUri()) }.getOrNull() }
-                if (real != null && java.io.File(real).isDirectory) {
+                val real = project.uri?.let { writablePickedFolder(it.toUri()) }
+                if (real != null) {
                     kindLabel = "Picked folder"
                     kindSub = "Mapped to $real. File tools and shell share this tree."
                     shellCapable = true
                 } else {
                     kindLabel = "Picked folder"
-                    kindSub = "Cloud/SAF folder: file tools only. Shell cannot run here."
+                    kindSub = "Picker access: file tools only. Use the app workspace for shell commands."
                     shellCapable = false
                 }
             }
@@ -253,7 +248,9 @@ class WorkspaceManager(
         if (!f.isDirectory) {
             return PathAssessment(directoryExists = false, region = null)
         }
-        val region = PathClassifier.regionOf(f.absolutePath, context.dataDir.absolutePath)
+        val region = PathClassifier.regionOf(
+            f.absolutePath, context.dataDir.absolutePath, context.getExternalFilesDir(null)?.absolutePath,
+        )
         return PathAssessment(directoryExists = true, region = region)
     }
 
@@ -273,6 +270,11 @@ class WorkspaceManager(
         const val KIND_SAF = "SAF"
         const val KIND_SHELL = "SHELL"
         const val KIND_SSH = "SSH"
+
+        /** A mapped path alone does not grant permission to read or write it. */
+        internal fun directFolderOrNull(path: String?): File? = runCatching {
+            path?.let { File(it) }?.takeIf { it.isDirectory && it.canRead() && it.canWrite() }
+        }.getOrNull()
 
         /**
          * The existing project pointing at the same folder as [kind]/[uri].

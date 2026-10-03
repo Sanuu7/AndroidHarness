@@ -28,8 +28,8 @@ import kotlinx.coroutines.launch
  * switcher:
  * 1. App workspace. Private folder, shell always works.
  * 2. Device folder. Browsed in-app, no typing. Full shell.
- * 3. System picker (SAF). Folders on internal storage or SD are upgraded to
- *    full shell automatically; only cloud picks stay file tools only.
+ * 3. System picker (SAF). Works without broad storage access. Directly writable
+ *    device folders are upgraded to full shell; other picks use file tools.
  */
 @Composable
 fun AddWorkspaceDialog(
@@ -127,9 +127,9 @@ fun AddWorkspaceDialog(
 
                 Text("System picker", style = MaterialTheme.typography.titleSmall)
                 Text(
-                    "Android's own folder picker. Folders on internal storage or " +
-                        "SD cards become full-shell workspaces automatically. Cloud " +
-                        "folders work with file tools only.",
+                    "Choose a folder without granting broad storage access. File tools " +
+                        "work in the selected folder. Shell commands need direct storage " +
+                        "access, or use the app workspace.",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

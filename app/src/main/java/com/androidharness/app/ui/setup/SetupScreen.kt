@@ -50,6 +50,7 @@ import com.androidharness.app.data.env.ShizukuState
 import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.ThinLinearProgress
+import com.androidharness.app.ui.common.rememberStorageAccess
 import com.androidharness.app.ui.theme.LocalStatusColors
 import kotlinx.coroutines.launch
 
@@ -60,8 +61,8 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 
 /**
- * First-run setup: checklist screen. Required steps (Storage access
- * and Notifications) must be completed before starting the harness.
+ * First-run setup: storage access is optional because the app workspace needs no grant.
+ * Notifications must be completed before starting the harness.
  */
 @Composable
 fun SetupScreen(
@@ -78,9 +79,8 @@ fun SetupScreen(
     val serviceState by container.shizuku.serviceState.collectAsStateWithLifecycle()
     val envState by container.linuxEnv.state.collectAsStateWithLifecycle()
 
-    var storageGranted by remember {
-        mutableStateOf(SystemGrants.isAllFilesAccessGranted(context))
-    }
+    val storageAccess = rememberStorageAccess()
+    val storageGranted = storageAccess.granted
     var notifGranted by remember {
         mutableStateOf(SystemGrants.isPostNotificationsGranted(context))
     }
@@ -92,7 +92,6 @@ fun SetupScreen(
     DisposableEffect(lifecycleOwner) {
         val observer = LifecycleEventObserver { _, event ->
             if (event == Lifecycle.Event.ON_RESUME) {
-                storageGranted = SystemGrants.isAllFilesAccessGranted(context)
                 notifGranted = SystemGrants.isPostNotificationsGranted(context)
                 batteryExempt = SystemGrants.isIgnoringBatteryOptimizations(context)
             }
@@ -112,7 +111,7 @@ fun SetupScreen(
     val shizukuDone = shizukuState == ShizukuState.GRANTED && serviceState ==
         com.androidharness.app.data.env.UserServiceState.BOUND_READY
     val envDone = envState is EnvState.Ready
-    val requiredDone = storageGranted && notifGranted
+    val requiredDone = notifGranted
     val completed = listOf(storageGranted, notifGranted, shizukuDone, envDone, batteryExempt).count { it }
 
     Scaffold(containerColor = scheme.surface) { padding ->
@@ -151,17 +150,17 @@ fun SetupScreen(
                 }
                 Spacer(Modifier.size(2.dp))
 
-                // -- 1. Storage access (required) --------------------------
+                // -- 1. Storage access (optional) --------------------------
                 SetupStep(
                     icon = { Icon(Icons.Outlined.SdStorage, null, Modifier.size(16.dp), scheme.onSurfaceVariant) },
                     title = "Storage access",
-                    status = if (storageGranted) "All files access granted"
-                             else "Required: grant all files access to read and edit project files",
+                    status = if (storageGranted) "Device storage access granted"
+                             else "Use the app workspace now, or grant access for device folders",
                     complete = storageGranted,
-                    optional = false,
+                    optional = true,
                 ) {
                     if (!storageGranted) {
-                        Button(onClick = { SystemGrants.openAllFilesAccess(context) }) { Text("Grant") }
+                        Button(onClick = storageAccess.request) { Text("Grant") }
                     }
                 }
 
@@ -262,9 +261,11 @@ fun SetupScreen(
                 verticalAlignment = Alignment.CenterVertically,
             ) {
                 Text(
-                    if (requiredDone) "All required steps complete" else "Complete required steps (*)",
+                    if (!requiredDone) "Allow notifications to begin"
+                    else if (storageGranted) "Ready to begin" else "Ready with the app workspace",
                     style = MaterialTheme.typography.bodySmall,
                     color = if (requiredDone) success else scheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f).padding(end = 12.dp),
                 )
                 Button(onClick = ::finish, enabled = requiredDone) { Text("Start harness") }
             }

@@ -9,6 +9,7 @@ import android.os.Build
 import android.os.PowerManager
 import android.provider.Settings
 import androidx.core.content.ContextCompat
+import com.androidharness.app.data.env.StorageAccess
 
 /**
  * Runtime permission / system-toggle checks and request intents shared by the
@@ -22,17 +23,7 @@ object SystemGrants {
                 context, Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
 
-    fun isAllFilesAccessGranted(context: Context): Boolean =
-        if (Build.VERSION.SDK_INT >= 30) {
-            android.os.Environment.isExternalStorageManager()
-        } else {
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.WRITE_EXTERNAL_STORAGE,
-            ) == PackageManager.PERMISSION_GRANTED &&
-            ContextCompat.checkSelfPermission(
-                context, Manifest.permission.READ_EXTERNAL_STORAGE,
-            ) == PackageManager.PERMISSION_GRANTED
-        }
+    fun isAllFilesAccessGranted(context: Context): Boolean = StorageAccess.isGranted(context)
 
     fun isIgnoringBatteryOptimizations(context: Context): Boolean =
         runCatching {
@@ -62,9 +53,11 @@ object SystemGrants {
      */
     fun openAllFilesAccess(context: Context) {
         val pkg = context.packageName
-        val candidates = listOf(
+        val candidates = if (Build.VERSION.SDK_INT >= 30) listOf(
             Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$pkg")),
             Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
+            Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg")),
+        ) else listOf(
             Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:$pkg")),
         )
         for (intent in candidates) {

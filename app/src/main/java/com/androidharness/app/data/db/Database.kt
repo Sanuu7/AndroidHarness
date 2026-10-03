@@ -277,6 +277,9 @@ interface HarnessDao {
     @Insert
     suspend fun insertProject(project: ProjectEntity)
 
+    @Query("UPDATE projects SET kind = :kind, uri = :uri WHERE id = :id")
+    suspend fun setProjectLocation(id: String, kind: String, uri: String)
+
     @Query("UPDATE projects SET lastUsedAt = :at WHERE id = :id")
     suspend fun touchProject(id: String, at: Long)
 

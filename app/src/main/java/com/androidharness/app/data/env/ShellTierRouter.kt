@@ -1,8 +1,6 @@
 package com.androidharness.app.data.env
 
 import android.content.Context
-import android.os.Build
-import android.os.Environment
 import com.androidharness.app.tools.ShellPolicy
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -13,8 +11,10 @@ import java.util.concurrent.TimeUnit
 object PathClassifier {
     enum class Region { APP_DATA, SHARED_STORAGE, SYSTEM }
 
-    fun regionOf(path: String, internalDataRoot: String): Region = when {
+    fun regionOf(path: String, internalDataRoot: String, externalDataRoot: String? = null): Region = when {
         path == internalDataRoot || path.startsWith("$internalDataRoot/") -> Region.APP_DATA
+        externalDataRoot != null &&
+            (path == externalDataRoot || path.startsWith("$externalDataRoot/")) -> Region.APP_DATA
         path == "/storage/emulated/0" || path.startsWith("/storage/emulated/0/") -> Region.SHARED_STORAGE
         else -> Region.SYSTEM
     }
@@ -58,12 +58,11 @@ class ShellTierRouter(
     private val linuxEnv: LinuxEnvironmentManager,
 ) {
 
-    /** "All files access" (MANAGE_EXTERNAL_STORAGE). Pre-API-30 apps were not scoped. */
-    fun isAllFilesAccess(): Boolean =
-        if (Build.VERSION.SDK_INT >= 30) Environment.isExternalStorageManager() else true
+    /** Broad shared-storage access, including runtime storage permission on Android 8–10. */
+    fun isAllFilesAccess(): Boolean = StorageAccess.isGranted(context)
 
     fun resolveTier(cwd: File): ExecutionTier {
-        val region = PathClassifier.regionOf(cwd.absolutePath, linuxEnv.internalDataRoot.absolutePath)
+        val region = regionOf(cwd)
         return when (region) {
             PathClassifier.Region.APP_DATA ->
                 if (linuxEnv.isReady) ExecutionTier.APP_LINUX else ExecutionTier.TOYBOX
@@ -80,12 +79,12 @@ class ShellTierRouter(
 
     /** A user-facing note explaining why the tier may be degraded, if so. */
     fun permissionNote(cwd: File, tier: ExecutionTier): String? {
-        val region = PathClassifier.regionOf(cwd.absolutePath, linuxEnv.internalDataRoot.absolutePath)
+        val region = regionOf(cwd)
         return when {
             tier == ExecutionTier.APP_LINUX &&
                 region == PathClassifier.Region.SHARED_STORAGE &&
                 !isAllFilesAccess() ->
-                "[note: on this Android version the app can't reach shared storage without \"All files access\": expect permission errors here. Grant it in Settings → Storage access, or start Shizuku for shell access.]"
+                "[note: shared storage access is not granted: expect permission errors here. Grant it in Settings → Storage access, use the app workspace, or start Shizuku for shell access.]"
 
             tier == ExecutionTier.TOYBOX &&
                 region == PathClassifier.Region.SYSTEM &&
@@ -95,6 +94,14 @@ class ShellTierRouter(
             else -> null
         }
     }
+
+    // The default app workspace is in getExternalFilesDir(), which needs no
+    // storage grant and should run as the app user even when Shizuku is available.
+    private fun regionOf(cwd: File): PathClassifier.Region = PathClassifier.regionOf(
+        cwd.absolutePath,
+        linuxEnv.internalDataRoot.absolutePath,
+        context.getExternalFilesDir(null)?.absolutePath,
+    )
 
     /** Executes [command] with cwd [cwd] and returns a uniform result. */
     suspend fun run(command: String, cwd: File, timeoutMs: Int, maxOutput: Int): ShellRunResult =

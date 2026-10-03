@@ -37,11 +37,11 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.Dispatchers
@@ -65,14 +65,15 @@ fun FolderPickerDialog(
     onDismiss: () -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
-    val context = LocalContext.current
     val root = remember { android.os.Environment.getExternalStorageDirectory().absolutePath }
     var currentDir by remember { mutableStateOf(root) }
     // Bumped after a grant attempt so the listing re-evaluates permissions.
     var permTick by remember { mutableIntStateOf(0) }
+    val storageAccess = rememberStorageAccess()
+    val shizukuState by container.shizuku.state.collectAsStateWithLifecycle()
 
-    val canList = container.shellRouter.isAllFilesAccess() ||
-        (container.shizuku.isGranted())
+    val canList = storageAccess.granted ||
+        shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED
 
     Dialog(
         onDismissRequest = onDismiss,
@@ -145,9 +146,7 @@ fun FolderPickerDialog(
                             color = scheme.onSurfaceVariant,
                         )
                         Button(
-                            onClick = {
-                                SystemGrants.openAllFilesAccess(context)
-                            },
+                            onClick = storageAccess.request,
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("Grant storage access") }
                         OutlinedButton(
@@ -157,13 +156,17 @@ fun FolderPickerDialog(
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("Use Shizuku instead") }
                         TextButton(
-                            onClick = { permTick++ },
+                            onClick = {
+                                storageAccess.refresh()
+                                container.shizuku.refresh()
+                                permTick++
+                            },
                             modifier = Modifier.fillMaxWidth(),
                         ) { Text("I've granted it, check again") }
                     }
                 } else {
                     // ----- Folder list -----
-                    val entries by produceState(initialValue = emptyList<String>(), currentDir, permTick) {
+                    val entries by produceState(initialValue = emptyList<String>(), currentDir, permTick, storageAccess.granted, shizukuState) {
                         value = withContext(Dispatchers.IO) {
                             runCatching {
                                 if (container.shellRouter.isAllFilesAccess()) {

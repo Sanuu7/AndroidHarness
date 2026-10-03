@@ -113,6 +113,7 @@ import com.androidharness.app.ui.common.findFragmentActivity
 import com.androidharness.app.ui.common.SecureDialogEffect
 import com.androidharness.app.ui.common.SecureScreenEffect
 import com.androidharness.app.ui.common.SystemGrants
+import com.androidharness.app.ui.common.rememberStorageAccess
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
@@ -429,8 +430,8 @@ private fun TerminalSection(
     shizukuState: ShizukuState,
     serviceState: UserServiceState,
 ) {
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val allFiles = container.shellRouter.isAllFilesAccess()
+    val storageAccess = rememberStorageAccess()
+    val allFiles = storageAccess.granted
 
     SettingsHeader("Terminal & environment")
 
@@ -438,7 +439,7 @@ private fun TerminalSection(
 
     // What the shell can reach right now.
     val appShellOk = envState is com.androidharness.app.data.env.EnvState.Ready
-    val storageText = if (allFiles) "All files ✓" else "Needs grant"
+    val storageText = if (allFiles) "Granted ✓" else "Needs grant"
     val systemText = when (shizukuState) {
         ShizukuState.GRANTED -> if (serviceState == UserServiceState.BOUND_READY) "Shizuku ✓" else "Connecting…"
         ShizukuState.RUNNING_NO_PERMISSION -> "Needs grant"
@@ -461,8 +462,8 @@ private fun TerminalSection(
                 SettingRow(
                     icon = Icons.Outlined.SdStorage,
                     title = "Shared storage",
-                    subtitle = "Read/write any folder on the device",
-                    onClick = { SystemGrants.openAllFilesAccess(context) },
+                    subtitle = "Read and write project files in shared storage",
+                    onClick = storageAccess.request,
                     divider = true,
                     trailing = {
                         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -484,7 +485,7 @@ private fun TerminalSection(
         }
     }
 
-    StorageAccessCard(allFiles = allFiles, onGrant = { SystemGrants.openAllFilesAccess(context) })
+    StorageAccessCard(allFiles = allFiles, onGrant = storageAccess.request)
     ShizukuCard(
         state = shizukuState,
         serviceState = serviceState,
@@ -1840,13 +1841,13 @@ private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit) {
                 Column(Modifier.weight(1f)) {
                     Text("Storage access", style = MaterialTheme.typography.titleSmall)
                     Text(
-                        if (allFiles) "Granted: the shell and file tools can use real paths anywhere."
-                        else "Off: outside the app's own folders, access is denied.",
+                        if (allFiles) "Granted: the shell and file tools can use shared storage."
+                        else "Optional: use the app workspace, or grant access for device folders.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                if (!allFiles && Build.VERSION.SDK_INT >= 30) {
+                if (!allFiles) {
                     Button(onClick = onGrant) { Text("Grant") }
                 }
             }
