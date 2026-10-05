@@ -2,8 +2,11 @@ package com.androidharness.app.llm
 
 import kotlinx.serialization.json.Json
 import okhttp3.OkHttpClient
+import okhttp3.RequestBody.Companion.toRequestBody
+import okhttp3.MediaType.Companion.toMediaType
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -165,5 +168,36 @@ class OpenAiCompatParsingTest {
         assertFalse(provider.supportsUsageAccounting("http://localhost:1234/v1"))
         assertFalse(provider.supportsUsageAccounting("http://192.168.1.2:8080/api"))
         assertFalse(provider.supportsUsageAccounting("http://10.0.0.5:8000/v1"))
+    }
+
+    @Test
+    fun `local server without a key sends no authorization header`() {
+        val ollama = ProviderConfig("id", "deepHermes", ProviderType.OPENAI_COMPAT, "http://127.0.0.1:11434/v1", "deepHermes")
+        val body = "{}".toRequestBody("application/json".toMediaType())
+        val options = RequestOptions()
+        // A key the user typed still rides out, so a proxy in front keeps working.
+        assertEquals(
+            "Bearer real-key",
+            provider.buildRequest(ollama, "real-key", body, options).header("Authorization"),
+        )
+        // The placeholder and a blank key must not: Ollama rejects an empty bearer.
+        assertNull(provider.buildRequest(ollama, OpenAiCompatProvider.LOCAL_KEY, body, options).header("Authorization"))
+        assertNull(provider.buildRequest(ollama, "", body, options).header("Authorization"))
+        // A remote host is unchanged.
+        val remote = ollama.copy(baseUrl = "https://api.openai.com/v1")
+        assertEquals(
+            "Bearer secret",
+            provider.buildRequest(remote, "secret", body, options).header("Authorization"),
+        )
+    }
+
+    @Test
+    fun `local address counts as keyless, a typed key still wins`() {
+        val ollama = ProviderConfig("id", "Ollama", ProviderType.OPENAI_COMPAT, "http://localhost:11434/v1", "llama3")
+        assertEquals(OpenAiCompatProvider.LOCAL_KEY, ollama.effectiveApiKey(null))
+        assertEquals(OpenAiCompatProvider.LOCAL_KEY, ollama.effectiveApiKey("  "))
+        assertEquals("proxy-key", ollama.effectiveApiKey("proxy-key"))
+        val remote = ollama.copy(baseUrl = "https://api.openai.com/v1")
+        assertEquals("", remote.effectiveApiKey(null))
     }
 }

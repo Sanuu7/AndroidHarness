@@ -6,6 +6,7 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.llm.HarnessProvider
 import com.androidharness.app.llm.ProviderFactory
+import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.llm.RequestOptions
 import com.androidharness.app.llm.StreamEvent
 import kotlinx.coroutines.flow.first
@@ -61,8 +62,8 @@ class AutomationAiPlanner(private val c: AppContainer) {
                     ?.takeIf { it.isNotBlank() } ?: provider.model
             } else provider.model
         val apiKey = if (provider.id == HarnessProvider.ID) c.providers.harnessApiKey()
-        else c.providers.apiKey(provider.id)
-            ?: error("Provider credentials are missing.")
+        else provider.effectiveApiKey(c.providers.apiKey(provider.id))
+            .takeIf { it.isNotBlank() } ?: error("Provider credentials are missing.")
 
         if (provider.id == HarnessProvider.ID) {
             if (c.providers.wire(model) == null && !HarnessProvider.isPooled(model)) {

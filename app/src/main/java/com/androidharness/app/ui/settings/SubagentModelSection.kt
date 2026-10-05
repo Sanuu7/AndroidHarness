@@ -14,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.llm.ModelCatalog
+import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import kotlinx.coroutines.launch
 
@@ -78,13 +79,16 @@ internal fun SubagentModelSection(container: AppContainer, settings: AppSettings
             val key = container.providers.apiKey(providerId)
             when {
                 provider == null -> "Unknown provider"
-                key.isNullOrBlank() -> "No API key for this provider"
-                else -> when (val result = ModelCatalog.listModels(provider, key)) {
-                    is ModelCatalog.Result.Models -> {
-                        container.providers.saveCatalog(providerId, result.models)
-                        null
+                else -> {
+                    val usable = provider.effectiveApiKey(key)
+                    if (usable.isBlank()) "No API key for this provider"
+                    else when (val result = ModelCatalog.listModels(provider, usable)) {
+                        is ModelCatalog.Result.Models -> {
+                            container.providers.saveCatalog(providerId, result.models)
+                            null
+                        }
+                        is ModelCatalog.Result.Failed -> result.message
                     }
-                    is ModelCatalog.Result.Failed -> result.message
                 }
             }
         },

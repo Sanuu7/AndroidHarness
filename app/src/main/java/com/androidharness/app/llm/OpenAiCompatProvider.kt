@@ -79,7 +79,7 @@ class OpenAiCompatProvider(
                                 reasoning.enabled?.let { put("enabled", it) }
                             }
                         }
-                } else if (!isLocalHost(host)) {
+                } else if (!Companion.isLocalHost(host)) {
                     com.androidharness.app.agent.ThinkingSpecs
                         .effortWire(config.model, options.thinking, ModelsDev.providerKeyFor(host))
                         ?.let { put("reasoning_effort", it) }
@@ -91,7 +91,7 @@ class OpenAiCompatProvider(
             if (options.cacheKey != null && supportsCacheKey(config.baseUrl)) {
                 val cleanKey = options.cacheKey.take(64)
                 put("prompt_cache_key", cleanKey)
-                if (!isLocalHost(host)) {
+                if (!Companion.isLocalHost(host)) {
                     put("user", "pc_$cleanKey")
                 }
             }
@@ -317,17 +317,6 @@ class OpenAiCompatProvider(
         acc.clear()
     }
 
-    /** True for bare-local servers (llama.cpp/Ollama/LM Studio) that reject unknown fields. */
-    internal fun isLocalHost(baseUrl: String): Boolean {
-        // strip scheme, path, then port so bare hostnames match cleanly
-        val host = baseUrl.lowercase()
-            .substringAfter("://", "").substringBefore('/')
-            .substringBefore(':')
-        return host == "localhost" || host == "0.0.0.0" || host.startsWith("127.") ||
-            host.startsWith("192.168.") || host.startsWith("10.") ||
-            Regex("^172\\.(1[6-9]|2[0-9]|3[01])\\.").containsMatchIn(host)
-    }
-
     internal fun buildRequest(
         config: ProviderConfig,
         apiKey: String,
@@ -337,7 +326,11 @@ class OpenAiCompatProvider(
         val host = config.baseUrl.lowercase()
         val requestBuilder = Request.Builder()
             .url(config.baseUrl.trimEnd('/') + "/chat/completions")
-            .header("Authorization", "Bearer $apiKey")
+        // A local server with no key must get no header at all: "Bearer local"
+        // is not a credential, and some builds reject an empty one.
+        if (apiKey.isNotBlank() && apiKey != LOCAL_KEY) {
+            requestBuilder.header("Authorization", "Bearer $apiKey")
+        }
         if (HarnessProvider.isOpenCode(config)) {
             HarnessProvider.withSession(requestBuilder, options.cacheKey)
         }
@@ -355,13 +348,13 @@ class OpenAiCompatProvider(
      * hit rates and token totals never update. Bare-local servers are excluded
      * because older llama.cpp/Ollama/LM Studio builds reject unknown fields.
      */
-    internal fun supportsUsageAccounting(baseUrl: String): Boolean = !isLocalHost(baseUrl)
+    internal fun supportsUsageAccounting(baseUrl: String): Boolean = !Companion.isLocalHost(baseUrl)
 
     /**
      * Hosts that support session KV-cache pinning via `prompt_cache_key`.
      * Sent to all remote gateways while protecting bare-local servers (Ollama, LM Studio).
      */
-    private fun supportsCacheKey(baseUrl: String): Boolean = !isLocalHost(baseUrl)
+    private fun supportsCacheKey(baseUrl: String): Boolean = !Companion.isLocalHost(baseUrl)
 
     private fun serializeMessage(m: ChatMessage): JsonObject = when (m.role) {
         Role.USER -> buildJsonObject {
@@ -437,6 +430,20 @@ class OpenAiCompatProvider(
     }
 
     companion object {
+        /** Placeholder so key checks pass for a local server that has no key. */
+        const val LOCAL_KEY = "local"
+
+        /** True for bare-local servers (llama.cpp/Ollama/LM Studio) that reject unknown fields. */
+        fun isLocalHost(baseUrl: String): Boolean {
+            // strip scheme, path, then port so bare hostnames match cleanly
+            val host = baseUrl.lowercase()
+                .substringAfter("://", "").substringBefore('/')
+                .substringBefore(':')
+            return host == "localhost" || host == "0.0.0.0" || host.startsWith("127.") ||
+                host.startsWith("192.168.") || host.startsWith("10.") ||
+                Regex("^172\\.(1[6-9]|2[0-9]|3[01])\\.").containsMatchIn(host)
+        }
+
         /** Model families that reject `max_tokens` in favor of `max_completion_tokens`. */
         private val NEW_TOKEN_PARAM_MODELS = Regex("""^(o\d|gpt-5)""")
 

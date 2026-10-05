@@ -47,6 +47,7 @@ import com.androidharness.app.automation.AutomationStatus
 import com.androidharness.app.automation.AutomationTask
 import com.androidharness.app.core.Role
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.settings.ProviderManagerSheet
@@ -998,13 +999,16 @@ private fun AutomationEditorDialog(
                 val key = container.providers.apiKey(providerId)
                 when {
                     provider == null -> "Unknown provider"
-                    key.isNullOrBlank() -> "No API key for this provider"
-                    else -> when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, key)) {
-                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
-                            container.providers.saveCatalog(providerId, result.models)
-                            null
+                    else -> {
+                        val usable = provider.effectiveApiKey(key)
+                        if (usable.isBlank()) "No API key for this provider"
+                        else when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, usable)) {
+                            is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
+                                container.providers.saveCatalog(providerId, result.models)
+                                null
+                            }
+                            is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
                         }
-                        is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
                     }
                 }
             },

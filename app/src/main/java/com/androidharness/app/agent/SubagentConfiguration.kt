@@ -2,6 +2,7 @@ package com.androidharness.app.agent
 
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.llm.ProviderConfig
+import com.androidharness.app.llm.effectiveApiKey
 
 /** Credentials travel with the selected provider and must never be logged. */
 class SubagentConnection(val config: ProviderConfig, val apiKey: String)
@@ -15,7 +16,7 @@ object SubagentConfiguration {
         val id = settings.subagentProviderId ?: return null
         val provider = providers.firstOrNull { it.id == id }
             ?: error("Subagent provider is unavailable. Choose another model in Sub-Agent settings.")
-        val key = apiKey(id)?.takeIf { it.isNotBlank() }
+        val key = provider.effectiveApiKey(apiKey(id)).takeIf { it.isNotBlank() }
             ?: error("Subagent provider needs authentication. Reconnect it in Settings.")
         val model = settings.subagentModel?.takeIf { it.isNotBlank() } ?: provider.model
         return SubagentConnection(provider.copy(model = model), key)

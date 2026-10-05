@@ -41,6 +41,7 @@ import com.androidharness.app.AppContainer
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
+import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.common.ProviderMark
@@ -214,7 +215,8 @@ fun ProvidersScreen(
                     provider == null -> "Unknown provider"
                     else -> when (
                         val result = com.androidharness.app.llm.ModelCatalog.listModels(
-                            provider, container.providers.apiKey(providerId).orEmpty(),
+                            provider,
+                            provider.effectiveApiKey(container.providers.apiKey(providerId)),
                         )
                     ) {
                         is com.androidharness.app.llm.ModelCatalog.Result.Models -> {

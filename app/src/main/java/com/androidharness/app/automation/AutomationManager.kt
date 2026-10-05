@@ -6,6 +6,7 @@ import com.androidharness.app.RunResultNotification
 import com.androidharness.app.RunResultNotifications
 import com.androidharness.app.agent.AgentMode
 import com.androidharness.app.core.Role
+import com.androidharness.app.llm.effectiveApiKey
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.Mutex
@@ -144,7 +145,8 @@ class AutomationManager(private val c: AppContainer) {
             val key = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
                 c.providers.harnessApiKey()
             } else {
-                c.providers.apiKey(provider.id) ?: error("Provider credentials are missing.")
+                provider.effectiveApiKey(c.providers.apiKey(provider.id))
+                    .takeIf { it.isNotBlank() } ?: error("Provider credentials are missing.")
             }
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
                 if (c.providers.wire(model) == null &&

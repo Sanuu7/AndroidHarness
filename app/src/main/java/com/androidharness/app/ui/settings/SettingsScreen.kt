@@ -94,6 +94,7 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.AppContainer
 import com.androidharness.app.R
 import com.androidharness.app.agent.PermissionMode
+import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ChatBackupException
 import com.androidharness.app.data.ThemeMode
@@ -2456,13 +2457,16 @@ private fun PlanningModelSection(
                 val key = container.providers.apiKey(providerId)
                 when {
                     provider == null -> "Unknown provider"
-                    key.isNullOrBlank() -> "No API key for this provider"
-                    else -> when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, key)) {
-                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
-                            container.providers.saveCatalog(providerId, result.models)
-                            null
+                    else -> {
+                        val usable = provider.effectiveApiKey(key)
+                        if (usable.isBlank()) "No API key for this provider"
+                        else when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, usable)) {
+                            is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
+                                container.providers.saveCatalog(providerId, result.models)
+                                null
+                            }
+                            is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
                         }
-                        is com.androidharness.app.llm.ModelCatalog.Result.Failed -> result.message
                     }
                 }
             },

@@ -25,6 +25,7 @@ import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.data.db.SnippetEntity
 import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
+import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.llm.RequestOptions
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
@@ -748,8 +749,8 @@ class ChatViewModel(
         }
         val key = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
             c.providers.harnessApiKey()
-        } else c.providers.apiKey(provider.id)
-        check(!key.isNullOrBlank()) { "Add the saved provider's API key before resuming" }
+        } else provider.effectiveApiKey(c.providers.apiKey(provider.id))
+        check(key.isNotBlank()) { "Add the saved provider's API key before resuming" }
         _state.update { it.copy(error = null) }
         c.runManager.resumeTask(sid, key)
     }
@@ -1024,8 +1025,8 @@ class ChatViewModel(
             else -> s0.activeModel?.takeIf { it.isNotBlank() } ?: provider.model
         }
         val apiKey = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) c.providers.harnessApiKey(s0.providers)
-        else c.providers.apiKey(provider.id)
-        if (apiKey.isNullOrBlank()) {
+        else provider.effectiveApiKey(c.providers.apiKey(provider.id))
+        if (apiKey.isBlank()) {
             _state.update { it.copy(error = "Provider \"${provider.name}\" has no API key. Edit it on the Providers screen.") }
             return
         }
@@ -1435,7 +1436,7 @@ class ChatViewModel(
         val sid = sessionId ?: return
         val provider = _state.value.activeProvider ?: return
         val apiKey = if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) c.providers.harnessApiKey()
-        else c.providers.apiKey(provider.id) ?: return
+        else provider.effectiveApiKey(c.providers.apiKey(provider.id)).takeIf { it.isNotBlank() } ?: return
         // Trigger compaction by temporarily pretending the context is full:
         // Simplest correct approach, ask the engine for a summary of all history.
         // Subagent inner turns are excluded (same rule as new runs).
@@ -1690,8 +1691,8 @@ class ChatViewModel(
     suspend fun refreshCatalog(providerId: String): String? {
         val provider = _state.value.providers.firstOrNull { it.id == providerId }
             ?: return "Unknown provider"
-        val apiKey = c.providers.apiKey(providerId)
-        if (apiKey.isNullOrBlank()) return "No API key for this provider"
+        val apiKey = provider.effectiveApiKey(c.providers.apiKey(providerId))
+        if (apiKey.isBlank()) return "No API key for this provider"
         return when (val result = com.androidharness.app.llm.ModelCatalog.listModels(provider, apiKey)) {
             is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
                 c.providers.saveCatalog(providerId, result.models)

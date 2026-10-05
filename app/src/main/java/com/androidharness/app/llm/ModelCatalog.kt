@@ -104,20 +104,21 @@ object ModelCatalog {
         }
 
     internal fun buildRequest(config: ProviderConfig, apiKey: String): Request {
+        val authed = apiKey.isNotBlank() && apiKey != OpenAiCompatProvider.LOCAL_KEY
         val (url, requestBuilder) = when (config.type) {
             // Responses is OpenAI-only; its model listing is identical.
             ProviderType.OPENAI_COMPAT, ProviderType.OPENAI_RESPONSES ->
                 config.baseUrl.trimEnd('/') + "/models" to
-                    Request.Builder().header("Authorization", "Bearer $apiKey")
+                    Request.Builder().apply { if (authed) header("Authorization", "Bearer $apiKey") }
 
             ProviderType.ANTHROPIC -> config.baseUrl.trimEnd('/') + "/v1/models" to
                 Request.Builder()
-                    .header("x-api-key", apiKey)
+                    .apply { if (authed) header("x-api-key", apiKey) }
                     .header("anthropic-version", "2023-06-01")
 
             ProviderType.GEMINI ->
                 config.baseUrl.trimEnd('/') + "/models" to
-                    Request.Builder().header("x-goog-api-key", apiKey)
+                    Request.Builder().apply { if (authed) header("x-goog-api-key", apiKey) }
         }
         val rawRequest = requestBuilder.url(url).build()
         return when {

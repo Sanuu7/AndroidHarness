@@ -29,6 +29,15 @@ enum class ProviderType(val label: String, val defaultBaseUrl: String) {
     GEMINI("Gemini", "https://generativelanguage.googleapis.com/v1beta"),
 }
 
+/**
+ * Local servers (Ollama, LM Studio, llama.cpp) need no key, and an empty
+ * `Authorization` header makes some of them reject the request. A key the user
+ * typed still rides out, so a reverse proxy in front of one keeps working.
+ */
+fun ProviderConfig.effectiveApiKey(stored: String?): String =
+    stored?.takeIf { it.isNotBlank() }
+        ?: if (OpenAiCompatProvider.isLocalHost(baseUrl)) OpenAiCompatProvider.LOCAL_KEY else ""
+
 /** Wire-endpoint naming for the protocol picker (what the API actually speaks). */
 val ProviderType.endpointPath: String
     get() = when (this) {
