@@ -5,11 +5,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -50,6 +50,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextOverflow
@@ -234,9 +235,14 @@ internal fun ProviderSheetContent(
         }
     }
 
+    // A fixed sheet height, not wrap-content. The model step used to grow past
+    // the viewport, so Save sat under the gesture bar and a downward drag
+    // dismissed the sheet instead of scrolling the form.
+    val sheetHeight = (LocalConfiguration.current.screenHeightDp * 0.92f).dp
     Column(
         Modifier
             .fillMaxWidth()
+            .height(sheetHeight)
             .navigationBarsPadding(),
     ) {
         ProviderFlowHeader(
@@ -255,6 +261,7 @@ internal fun ProviderSheetContent(
                 Column(
                     Modifier
                         .fillMaxWidth()
+                        .weight(1f)
                         .padding(horizontal = 16.dp),
                 ) {
                     if (catalogSyncing) {
@@ -327,7 +334,7 @@ internal fun ProviderSheetContent(
                 Column(
                     verticalArrangement = Arrangement.spacedBy(12.dp),
                     modifier = Modifier
-                        .weight(1f, fill = false)
+                        .weight(1f)
                         .verticalScroll(rememberScrollState())
                         .padding(horizontal = 16.dp),
                 ) {
@@ -438,6 +445,7 @@ internal fun ProviderSheetContent(
                 Column(
                     Modifier
                         .fillMaxWidth()
+                        .weight(1f)
                         .padding(horizontal = 16.dp),
                 ) {
                     SelectedProviderSummary(
@@ -464,7 +472,7 @@ internal fun ProviderSheetContent(
                     LazyColumn(
                         Modifier
                             .fillMaxWidth()
-                            .heightIn(max = 360.dp),
+                            .weight(1f),
                     ) {
                         // Free-typed ID is a first-class row, not a fallback hack.
                         if (q.isNotBlank() && filtered.none { it.id == q }) {
@@ -709,7 +717,7 @@ private fun ModelPickRow(
  * with a trailing check.
  */
 @Composable
-private fun ProviderDirectory(
+private fun ColumnScope.ProviderDirectory(
     query: String,
     devProviders: List<ModelsDev.ProviderInfo>,
     selectedBrand: ProviderBrand?,
@@ -733,7 +741,7 @@ private fun ProviderDirectory(
     LazyColumn(
         modifier = Modifier
             .fillMaxWidth()
-            .heightIn(max = 340.dp),
+            .weight(1f),
         verticalArrangement = Arrangement.spacedBy(4.dp),
     ) {
         if (q.isBlank() || "custom".contains(q)) {
