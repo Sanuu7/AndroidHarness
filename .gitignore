@@ -23,6 +23,7 @@ captures/
 
 # --- AI assistant working files ---
 .zcode/
+.zcodeignore
 .claude/
 .agents/
 .codex/
