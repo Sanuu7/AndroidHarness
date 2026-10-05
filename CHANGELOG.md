@@ -1,5 +1,16 @@
 # Changelog
 
+## 1.5 (2026-10-05)
+
+### Added
+
+- **Legacy storage access for Android 8 to 10**: runtime storage permission support (`READ_EXTERNAL_STORAGE` and `WRITE_EXTERNAL_STORAGE`) and legacy external storage access for Android 8 through 10. Forms a tiered storage ladder alongside Android 11+ all-files access. Private app workspace storage works without broad storage permissions, while the folder picker resolves real filesystem paths for external projects once granted.
+
+### Fixed
+
+- **False missing API key error for local providers**: local endpoints (Ollama, LM Studio, localhost, or LAN IPs) no longer fail with missing credential errors during chat, resumption, compaction, automations, subagents, or catalog browsing. Outgoing requests omit the Authorization header when no key is set so servers do not reject empty bearer tokens, while custom keys still pass through.
+- **Provider sheet viewport cutoff and scroll dismissal**: provider configuration and model selection sheets now fit within the visible screen height with navigation bar padding. Provider and model lists scroll independently while Save and action buttons remain pinned above system gesture insets instead of getting pushed off-screen or triggering sheet dismissal gestures.
+
 ## 1.4 (2026-10-03)
 
 ### Added
