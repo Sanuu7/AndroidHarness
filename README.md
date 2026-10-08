@@ -6,7 +6,7 @@ A coding agent that lives on your phone.
 
 AndroidHarness is a native Android app, written in Kotlin with Jetpack Compose, that works on code projects directly from the device. It reads and edits files, runs shell commands, uses git, and chats with you about the work as it goes. No PC required.
 
-Status: 1.5
+Status: 1.6
 
 ## Features
 
@@ -16,6 +16,7 @@ Status: 1.5
 - In-chat file diff sheet to inspect file changes directly from tool call cards without leaving the conversation.
 - Turn performance metrics: response duration, token generation throughput measured over the streaming window itself, and first-token latency, alongside token counts in turn stats.
 - Turn activity rollups and streamlined tool cards: consecutive tool calls roll up into a compact activity summary with reactive expansion states and status indicators.
+- A Verification card on turns that touch files or run checks, listing every build, test, or lint command with its recorded outcome: passed, failed, or unconfirmed. Checks that a later edit invalidated are marked for a recheck.
 - Voice input with live waveforms and Groq Whisper cloud transcription (`whisper-large-v3` / `turbo`) or native Android speech. Tap the mic to lock recording open, or hold with slide-up lock and slide-left cancel.
 - Fork conversations from any assistant turn into a fresh session with cloned context.
 - Resume last active chat automatically on launch with shimmering skeleton loading.
@@ -39,7 +40,7 @@ Status: 1.5
 - Shell tools: run commands with timeouts, launch background processes, list and kill them, install Linux packages, and query Android logs with package, tag, level, and pattern filters.
 - Git tools: status, diff, commit, log, show, branch, checkout, push, and pull. The harness auto-configures git identity so commits never fail on "author unknown".
 - Web tools: web search through keyless engines or the Brave and Tavily APIs with a key, page fetch, raw HTTP requests with JSON bodies restricted to public addresses (localhost, private and other non-public destinations are refused, DNS answers are validated before connecting, and redirects are not followed), and GitHub API requests that authenticate automatically.
-- In-app web preview: universal preview hub for localhost ports, workspace HTML files, and web links with Eruda DevTools, console logs, and one-tap bug fixing. The agent also drives the page itself through browser tools (navigate, snapshot, click, type, scroll, eval, screenshot) with a floating live-action bubble.
+- In-app web preview: universal preview hub for localhost ports, workspace HTML files, and web links with Eruda DevTools, console logs, and one-tap bug fixing. The agent also drives the page itself through browser tools (navigate, snapshot, click, type, scroll, eval, screenshot) with a floating live-action bubble. Select any element on the page to send its selector, computed styles, console errors, and a screenshot straight to the agent as a fix request.
 - MCP tools: connect Model Context Protocol servers over stdio or HTTP, add them by pasting a Claude config or a claude mcp add command, and sign in with OAuth when the server needs it.
 - Optional CodeGraph integration: install CodeGraph from Settings, enable its local index per workspace, and let the agent explore symbols, callers/callees, change impact, affected tests, and incremental sync without separate agent configuration.
 - Task tool: spawn subagents that work in parallel on independent chunks, each optionally on a different model. Subagents research read-only by default; with Subagent action tools enabled they also edit files and run commands in Act mode, always under the current permission mode.
@@ -51,8 +52,8 @@ Status: 1.5
 - A workspace file manager: multi-select batch operations (delete, copy, move via destination picker), create, rename, and share files and folders, with open-in-other-apps support.
 - A real code editor: multi-color syntax highlighting across Kotlin, Java, Python, JS, TS, HTML, CSS, and Shell, line numbers, unlimited undo and redo, find and replace with regex, word wrap toggle, and encoding preservation.
 - Visual diff viewer: side-by-side / inline diff viewer with dual line gutters, syntax coloring, and change stats.
-- Per chat Files changed tracking with rewind, full-file undo, and selective section undo. Undo checks that the preview still matches the file and preserves unrelated sections.
-- Build & Test dashboard: save project checks such as Gradle, npm, lint, and test commands, watch live output and pass/fail status, jump straight to parsed file errors, and hand a failed run to the agent for repair.
+- Per chat Files changed tracking with rewind, full-file undo, and selective section undo. Undo checks that the preview still matches the file and preserves unrelated sections. Ask about changes sends a whole-file diff or a single section to the agent for an explanation.
+- Build & Test dashboard: save project checks such as Gradle, npm, lint, and test commands, watch live output and pass/fail status, jump straight to parsed file errors, and hand a failed run to the agent for repair. The dashboard also detects the project's dev, start, and preview scripts, runs the chosen one, and opens the server's URL in the preview automatically, then stops the whole process tree on request.
 
 **GitHub built in**
 - Login with GitHub in Settings by pasting a personal access token, or tap Get access token to create one on GitHub. AndroidHarness verifies the token before saving it in encrypted app storage. Git push/pull, the bundled gh CLI, and GitHub API requests reuse the saved token.
