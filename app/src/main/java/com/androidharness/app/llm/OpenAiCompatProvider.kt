@@ -6,6 +6,7 @@ import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.llm.jsonArrayOrAbsent
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonElement
@@ -147,20 +148,23 @@ class OpenAiCompatProvider(
         // stream index only as a fallback). Some gateways stream parallel tool
         // calls with every fragment carrying index 0, keying by index merged
         // them into one garbled call, silently dropping the second subagent.
-        val acc = LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>()
-        val indexToId = HashMap<Int, String>()
-
         return flow {
+            val acc = LinkedHashMap<String, Triple<StringBuilder, StringBuilder, StringBuilder>>()
+            val indexToId = HashMap<Int, String>()
             // Some gateways attach a usage block to many (or every) SSE chunk
             // instead of only the final one. Counting each would multiply the
             // session totals, so keep the LAST usage seen, final counts are
             // the authoritative ones, and emit exactly one Usage per request.
             var pendingUsage: StreamEvent.Usage? = null
-            ProviderFactory.sseJson(request, client).collect { el ->
-                parseChunk(el, acc, indexToId).forEach { event ->
+            ProviderFactory.sseJson(request, client).takeWhile { el ->
+                val events = parseChunk(el, acc, indexToId)
+                events.forEach { event ->
                     if (event is StreamEvent.Usage) pendingUsage = event else emit(event)
                 }
-            }
+                // An in-band error terminates this attempt, just like a failed
+                // HTTP response. Never consume trailing deltas after it.
+                events.none { it is StreamEvent.Failure }
+            }.collect { }
             pendingUsage?.let { emit(it) }
             // Some gateways close the stream after [DONE] without ever sending
             // a finish_reason chunk, flush whatever fragments accumulated so
@@ -183,15 +187,23 @@ class OpenAiCompatProvider(
         indexToId: MutableMap<Int, String> = HashMap(),
     ): List<StreamEvent> {
         val chunk = el as? JsonObject ?: return emptyList()
+        val choice = chunk["choices"]?.jsonArrayOrAbsent()?.firstOrNull()?.jsonObjectOrAbsent()
 
         // Gateways disagree on error shape: {"error": "msg"} vs {"error": {"message": msg}}.
-        chunk["error"]?.let { err ->
+        val err = chunk["error"]?.takeUnless { it is JsonNull }
+            ?: choice?.get("error")?.takeUnless { it is JsonNull }
+        if (err != null || choice?.get("finish_reason")?.jsonPrimitive?.contentOrNull == "error") {
             val message = when (err) {
                 is JsonPrimitive -> err.contentOrNull
-                is JsonObject -> err["message"]?.jsonPrimitive?.contentOrNull
+                is JsonObject -> (err["message"] as? JsonPrimitive)?.contentOrNull
                 else -> null
             } ?: "Upstream server error"
-            return listOf(StreamEvent.Failure(message))
+            val code = ((err as? JsonObject)?.get("code") as? JsonPrimitive)?.intOrNull
+            // Incomplete arguments must never become executable tool calls,
+            // even if the gateway follows the error with [DONE] or a finish chunk.
+            acc.clear()
+            indexToId.clear()
+            return listOf(StreamEvent.Failure(message, code))
         }
 
         val events = mutableListOf<StreamEvent>()
@@ -231,7 +243,7 @@ class OpenAiCompatProvider(
             }
         }
 
-        val choice = chunk["choices"]?.jsonArrayOrAbsent()?.firstOrNull()?.jsonObjectOrAbsent() ?: return events
+        if (choice == null) return events
         val delta = choice["delta"]?.jsonObjectOrAbsent()
 
         delta?.get("content")?.let { content ->

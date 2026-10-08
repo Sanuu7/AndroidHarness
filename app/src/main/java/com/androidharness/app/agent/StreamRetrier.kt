@@ -5,6 +5,7 @@ import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.takeWhile
 import kotlinx.coroutines.flow.timeout
 import kotlin.time.Duration.Companion.milliseconds
 
@@ -67,14 +68,19 @@ internal object StreamRetrier {
             kotlin.coroutines.coroutineContext[TaskBudget]?.check()
             onAttemptStart()
             var failure: String? = null
+            var failureCode: Int? = null
             var cause: Throwable? = null
             try {
-                streamFor().stallGuard(stallTimeoutMs).collect { event ->
+                streamFor().stallGuard(stallTimeoutMs).takeWhile { event ->
                     when (event) {
-                        is StreamEvent.Failure -> failure = event.message
+                        is StreamEvent.Failure -> {
+                            failure = event.message
+                            failureCode = event.code
+                        }
                         else -> handleEvent(event)
                     }
-                }
+                    event !is StreamEvent.Failure
+                }.collect { }
             } catch (te: TimeoutCancellationException) {
                 // stallGuard: a silent gateway kept the socket open, treat
                 // like any transient failure so retries can kick in. Caught
@@ -92,12 +98,12 @@ internal object StreamRetrier {
             val retryable = allowRetries && failure != null &&
                 attempt < RetryPolicy.MAX_RETRIES &&
                 !hasOutput() &&
-                RetryPolicy.isRetryable(cause, failure)
+                RetryPolicy.isRetryable(cause, failure, failureCode)
             if (!retryable) return failure
 
             attempt++
             val delayMs = RetryPolicy.delayMs(attempt)
-            emitEvent(AgentEvent.Retrying(attempt, delayMs, retryReason(failure!!)))
+            emitEvent(AgentEvent.Retrying(attempt, delayMs, retryReason(failure)))
             sleep(delayMs)
         }
     }

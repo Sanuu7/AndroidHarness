@@ -213,4 +213,23 @@ class StreamRetrierTest {
         assertEquals(1, retries.size)
         assertEquals("Generation stalled - no data received for 0s (timed out)", retries[0].reason)
     }
+
+    @Test
+    fun `failure terminates collection immediately even when upstream stays open`() = runBlocking {
+        val seen = mutableListOf<StreamEvent>()
+        val result = StreamRetrier.run(
+            streamFor = {
+                flow {
+                    emit(StreamEvent.Failure("Invalid request", 400))
+                    emit(StreamEvent.TextDelta("must be ignored"))
+                    awaitCancellation()
+                }
+            },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = { seen += it },
+            retryReason = { it }, emitEvent = { error("400 must not retry") },
+            sleep = {}, stallTimeoutMs = 150,
+        )
+        assertEquals("Invalid request", result)
+        assertTrue(seen.isEmpty())
+    }
 }

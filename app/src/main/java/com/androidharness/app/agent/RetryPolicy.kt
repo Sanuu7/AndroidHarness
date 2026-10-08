@@ -14,7 +14,7 @@ internal object RetryPolicy {
 
     private val TRANSIENT_MESSAGE = Regex(
         "overloaded|rate.?limit|timeout|timed out|temporarily|try again|" +
-            "connection reset|connection refused|ECONNRESET|socket closed",
+            "connection reset|connection refused|ECONNRESET|socket closed|JSON error injected into SSE stream",
         RegexOption.IGNORE_CASE,
     )
 
@@ -26,9 +26,11 @@ internal object RetryPolicy {
      * Classifies a failure from its (optional) thrown cause and (optional)
      * in-stream message. [ApiException] is checked before [IOException]
      * because it subclasses it, an HTTP 400 must not retry even though it
-     * arrives as an IOException.
+     * arrives as an IOException. An explicit in-stream [code] also takes
+     * precedence over message-based guesses.
      */
-    fun isRetryable(cause: Throwable?, message: String?): Boolean {
+    fun isRetryable(cause: Throwable?, message: String?, code: Int? = null): Boolean {
+        if (code != null) return isRetryableCode(code)
         var c = cause
         while (c != null) {
             if (c is ApiException) return isRetryableCode(c.code)
