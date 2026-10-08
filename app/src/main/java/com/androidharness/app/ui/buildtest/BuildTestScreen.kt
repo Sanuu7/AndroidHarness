@@ -154,6 +154,49 @@ fun BuildTestScreen(
     val remote = workspace as? com.androidharness.app.workspace.SshFs
     val shellRoot = workspace?.shellRoot ?: remote?.root?.let { java.io.File(it) }
     var defaults by remember { mutableStateOf<List<SavedCommand>>(emptyList()) }
+    var launchScripts by remember(workspaceId) { mutableStateOf<List<String>>(emptyList()) }
+    var launchScript by remember(workspaceId) { mutableStateOf("") }
+    var staticPage by remember(workspaceId) { mutableStateOf<String?>(null) }
+    var launchMenu by remember { mutableStateOf(false) }
+    var previewTarget by remember(workspaceId) { mutableStateOf<String?>(null) }
+    var launchPending by remember(workspaceId) { mutableStateOf(false) }
+    var launchError by remember(workspaceId) { mutableStateOf<String?>(null) }
+    var launchReady by remember(workspaceId) { mutableStateOf(false) }
+    var serverCommand by remember(workspaceId) { mutableStateOf<String?>(null) }
+    val launchPrefs = remember { container.appContext.getSharedPreferences("project_launch", Context.MODE_PRIVATE) }
+
+    LaunchedEffect(workspaceId, workspace?.displayPath) {
+        val fs = workspace ?: return@LaunchedEffect
+        val detected = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val packageFile = runCatching { fs.resolve("package.json") }.getOrNull()
+            val scripts = if (packageFile?.exists == true && packageFile.length <= 1_000_000)
+                runCatching { com.androidharness.app.core.ProjectLaunch.scripts(packageFile.readText()) }
+                    .getOrDefault(emptyList()).filter { it in setOf("dev", "start", "preview") }
+            else emptyList()
+            scripts to listOf("index.html", "public/index.html").firstOrNull { runCatching { fs.resolve(it).isFile }.getOrDefault(false) }
+        }
+        launchScripts = detected.first
+        launchScript = launchPrefs.getString(workspaceId, null)?.takeIf { it in launchScripts }
+            ?: launchScripts.firstOrNull().orEmpty()
+        staticPage = detected.second
+        serverCommand = launchPrefs.getString("command_$workspaceId", null)
+        launchReady = true
+    }
+    val launchedHere = serverCommand != null && terminalState.lastCommand == serverCommand
+    LaunchedEffect(launchPending, terminalState.lines, terminalState.busy, launchedHere) {
+        if (!launchPending || !launchedHere) return@LaunchedEffect
+        val url = com.androidharness.app.core.ProjectLaunch.previewUrl(terminalState.lines.joinToString("\n"))
+        if (url != null && remote == null) { previewTarget = url; launchPending = false }
+        else if (!terminalState.busy) {
+            launchPending = false
+            launchError = "Project stopped before reporting a preview URL. Check the output below."
+        }
+    }
+    previewTarget?.let { target ->
+        com.androidharness.app.ui.chat.components.WebPreviewSheet(initialTarget = target,
+            workspace = workspace, browserController = container.browser,
+            onSendPrompt = onFixWithAgent, onDismiss = { previewTarget = null })
+    }
 
     LaunchedEffect(workspaceId) {
         val id = workspaceId ?: return@LaunchedEffect
@@ -242,6 +285,66 @@ fun BuildTestScreen(
                 )
             }
 
+            item {
+                Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp),
+                    colors = CardDefaults.cardColors(containerColor = scheme.surfaceContainerLow),
+                    border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.55f))) {
+                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text("Run & preview", style = MaterialTheme.typography.titleSmall)
+                        Text(when {
+                            !launchReady -> "Checking project files…"
+                            launchedHere && terminalState.busy -> "Development server is running in Terminal."
+                            remote != null -> "Run scripts on the SSH host. Remote previews need a reachable URL."
+                            launchScripts.isNotEmpty() -> "Runs your project script, then opens the URL reported by the server."
+                            staticPage != null -> "Open this HTML project without installing a runtime."
+                            else -> "No dev, start, or preview script found. Add a project command below."
+                        }, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        if (launchScripts.isNotEmpty()) Box {
+                            OutlinedButton(onClick = { launchMenu = true }, enabled = !terminalState.busy) {
+                                Text("Script: $launchScript", maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            DropdownMenu(expanded = launchMenu, onDismissRequest = { launchMenu = false }) {
+                                launchScripts.forEach { script -> DropdownMenuItem(text = { Text(script) }, onClick = {
+                                    launchScript = script; launchMenu = false
+                                    launchPrefs.edit().putString(workspaceId, script).apply()
+                                }) }
+                            }
+                        }
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(enabled = (!terminalState.busy && launchScript.isNotBlank() && shellRoot != null) ||
+                                (launchScripts.isEmpty() && staticPage != null), onClick = {
+                                launchError = null
+                                if (launchScripts.isEmpty()) previewTarget = staticPage else {
+                                    val root = shellRoot ?: return@Button
+                                    val npmCommand = if (remote == null && container.linuxEnv.bashExecutable() != null &&
+                                        File(container.linuxEnv.prefix, "lib/node_modules/npm/bin/npm-cli.js").isFile) {
+                                        val preload = File(container.linuxEnv.prefix, "etc/project-npm.cjs")
+                                        preload.parentFile?.mkdirs()
+                                        preload.writeText(com.androidharness.app.core.NpmLaunchShell.preload)
+                                        "node --require ${shellQuote(preload.absolutePath)} ${shellQuote(File(container.linuxEnv.prefix, "lib/node_modules/npm/bin/npm-cli.js").absolutePath)} run ${shellQuote(launchScript)}"
+                                    } else com.androidharness.app.core.ProjectLaunch.npmCommand(launchScript)
+                                    val command = "cd ${shellQuote(root.absolutePath)} && ( " +
+                                        com.androidharness.app.core.ProjectLaunch.prepare(npmCommand, true) + " )"
+                                    terminal.clear(); activeCommand = null; serverCommand = command
+                                    launchPrefs.edit().putString("command_$workspaceId", command).apply()
+                                    launchPending = remote == null
+                                    terminal.send(command, workspace)
+                                }
+                            }) { Text(if (launchScripts.isEmpty()) "Open preview" else "Run project") }
+                            if (launchedHere && terminalState.busy) {
+                                TextButton(onClick = { launchPending = false; terminal.stopTerminal(); serverCommand = null }) { Text("Stop") }
+                            }
+                        }
+                        if (launchedHere && terminalState.busy && remote == null) {
+                            val url = com.androidharness.app.core.ProjectLaunch.previewUrl(terminalState.lines.joinToString("\n"))
+                            if (url != null) TextButton(onClick = { previewTarget = url }) { Text("Open preview") }
+                            else Text("Waiting for a localhost URL in server output. Open Terminal if the server needs input.",
+                                style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        }
+                        launchError?.let { Text(it, color = scheme.error, style = MaterialTheme.typography.bodySmall) }
+                    }
+                }
+            }
             item {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -714,13 +817,13 @@ private fun defaultCommands(workspace: WorkspaceFs?): List<SavedCommand> {
             add(saved("Lint", "./gradlew lint"))
         }
         if (hasNpm) {
-            add(saved("npm test", "npm test"))
-            add(saved("npm build", "npm run build"))
-        }
-        if (isEmpty()) {
-            add(saved("Tests", "./gradlew test"))
-            add(saved("Debug build", "./gradlew assembleDebug"))
-            add(saved("npm test", "npm test"))
+            val node = workspace.resolve("package.json")
+            val scripts = if (node.length <= 1_000_000) runCatching {
+                com.androidharness.app.core.ProjectLaunch.scripts(node.readText())
+            }.getOrDefault(emptyList()) else emptyList()
+            scripts.filter { it !in setOf("dev", "start", "preview") }.forEach { script ->
+                add(saved("npm $script", com.androidharness.app.core.ProjectLaunch.npmCommand(script)))
+            }
         }
     }
 }

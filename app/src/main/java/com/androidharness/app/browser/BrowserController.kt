@@ -185,6 +185,14 @@ class BrowserController(
      * for hosts the loader does not own so callers fall through to default
      * loading.
      */
+    fun prepareWorkspacePreview(path: String, workspace: WorkspaceFs) {
+        val relative = normalizeWorkspacePath(path, workspace.shellRoot?.absolutePath)
+            ?: throw IllegalArgumentException("Unsupported workspace preview path")
+        require(workspace.resolve(relative).isFile) { "Workspace preview file is unavailable" }
+        currentWorkspace = workspace
+        baseUrlPath = relative
+    }
+
     fun interceptWorkspaceRequest(url: android.net.Uri?): WebResourceResponse? {
         if (url?.host != WorkspacePathHandler.HOST) return null
         return assetLoader.shouldInterceptRequest(url)

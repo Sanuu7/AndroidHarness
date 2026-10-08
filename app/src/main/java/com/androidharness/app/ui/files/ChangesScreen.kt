@@ -30,6 +30,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.flow.first
@@ -72,6 +73,7 @@ fun ChangesScreen(
     container: AppContainer,
     sessionId: String,
     onBack: () -> Unit,
+    onAskAgent: (String) -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     val colors = LocalStatusColors.current
@@ -144,7 +146,7 @@ fun ChangesScreen(
             LazyColumn(Modifier.fillMaxSize()) {
                 itemsIndexed(merged, key = { _, c -> c.relPath }) { _, change ->
                     ChangeRow(fs = fs, change = change, successColor = colors.success,
-                        canUndo = running.isEmpty(), onUndo = { preview, section ->
+                        canUndo = running.isEmpty(), onAskAgent = onAskAgent, onUndo = { preview, section ->
                             container.runManager.undoSelection(sessionId, change, preview.current, preview.exists, section)
                         })
                     HorizontalDivider(
@@ -164,6 +166,7 @@ private fun ChangeRow(
     successColor: Color,
     canUndo: Boolean,
     onUndo: suspend (ChangeDiff, Diff.UndoSection?) -> Unit,
+    onAskAgent: (String) -> Unit,
 ) {
     val scheme = MaterialTheme.colorScheme
     var expanded by remember(change.relPath) { mutableStateOf(false) }
@@ -173,6 +176,25 @@ private fun ChangeRow(
     var confirmation by remember { mutableStateOf<Pair<ChangeDiff, Diff.UndoSection?>?>(null) }
     var refresh by remember { mutableStateOf(0) }
     var showSections by remember { mutableStateOf(false) }
+    var questionTarget by remember { mutableStateOf<Pair<ChangeDiff, Diff.UndoSection?>?>(null) }
+    var question by remember { mutableStateOf("") }
+    questionTarget?.let { target ->
+        AlertDialog(onDismissRequest = { questionTarget = null },
+            title = { Text(if (target.second == null) "Ask about this file" else "Ask about this section") },
+            text = { Column {
+                Text(change.relPath, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    style = MaterialTheme.typography.labelMedium)
+                Spacer(Modifier.height(12.dp))
+                OutlinedTextField(value = question, onValueChange = { question = it },
+                    label = { Text("Your question") }, minLines = 2, maxLines = 5,
+                    modifier = Modifier.fillMaxWidth())
+            } },
+            confirmButton = { TextButton(enabled = question.isNotBlank(), onClick = {
+                questionTarget = null
+                onAskAgent(com.androidharness.app.core.ChangeQuestion.prompt(change.relPath, question, target.first.unified, target.second))
+            }) { Text("Ask agent") } },
+            dismissButton = { TextButton(onClick = { questionTarget = null }) { Text("Cancel") } })
+    }
     confirmation?.let { selection ->
         AlertDialog(onDismissRequest = { confirmation = null },
             title = { Text(if (selection.second == null) "Undo this file?" else "Undo this section?") },
@@ -262,6 +284,7 @@ private fun ChangeRow(
                     )
                     else -> Column {
                         SessionDiffView(current.unified)
+                        TextButton(onClick = { question = ""; questionTarget = current to null }) { Text("Ask about changes") }
                         error?.let { Text(it, color = scheme.error, style = MaterialTheme.typography.bodySmall) }
                         if (current.current != current.base || current.exists == change.isNew) {
                             TextButton(onClick = { confirmation = current to null }, enabled = canUndo && !applying) {
@@ -277,6 +300,7 @@ private fun ChangeRow(
                                         modifier = Modifier.weight(1f), style = MaterialTheme.typography.labelMedium)
                                     TextButton(onClick = { confirmation = current to section }, enabled = canUndo && !applying) { Text("Undo section") }
                                 }
+                                TextButton(onClick = { question = ""; questionTarget = current to section }) { Text("Ask about section ${index + 1}") }
                                 Text((section.after.ifEmpty { section.before }).take(180), maxLines = 3,
                                     overflow = TextOverflow.Ellipsis, fontFamily = HarnessMono,
                                     style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)

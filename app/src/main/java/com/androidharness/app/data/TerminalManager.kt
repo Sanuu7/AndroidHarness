@@ -352,6 +352,21 @@ class TerminalManager(
         val previous = synchronized(this) { process.also { process = null } }
         previous?.let { p ->
             runManager.releaseKeepalive()
+            val pid = runCatching {
+                p.javaClass.getDeclaredField("pid").apply { isAccessible = true }.getInt(p)
+            }.getOrNull() ?: Regex("pid=(\\d+)").find(p.toString())?.groupValues?.get(1)?.toIntOrNull()
+            if (pid != null && pid > 0) {
+                val children = File("/proc").listFiles().orEmpty().mapNotNull { entry ->
+                    val child = entry.name.toIntOrNull() ?: return@mapNotNull null
+                    val parent = runCatching { File(entry, "status").useLines { lines ->
+                        lines.firstOrNull { it.startsWith("PPid:") }?.substringAfter(':')?.trim()?.toIntOrNull()
+                    } }.getOrNull() ?: return@mapNotNull null
+                    child to parent
+                }
+                fun descendants(parent: Int): List<Int> = children.filter { it.second == parent }
+                    .flatMap { descendants(it.first) + it.first }
+                descendants(pid).forEach { child -> runCatching { android.system.Os.kill(child, android.system.OsConstants.SIGKILL) } }
+            }
             runCatching { p.destroyForcibly() }
             runCatching { p.waitFor(2, java.util.concurrent.TimeUnit.SECONDS) }
         }

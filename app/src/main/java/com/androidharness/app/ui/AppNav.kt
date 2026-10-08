@@ -782,6 +782,10 @@ fun AppNav(container: AppContainer) {
                     container = container,
                     sessionId = sid,
                     onBack = { nav.popBackStack() },
+                    onAskAgent = { prompt ->
+                        container.pendingAgentPrompt.value = prompt
+                        nav.navigate("chat/${encode(sid)}") { popUpTo("changes/{sessionId}") { inclusive = true } }
+                    },
                 )
             }
             composable(

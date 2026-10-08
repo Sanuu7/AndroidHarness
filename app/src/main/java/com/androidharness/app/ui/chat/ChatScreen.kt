@@ -941,6 +941,10 @@ fun ChatScreen(
                 val turnActivities = remember(state.messages) {
                     completedTurnActivities(state.messages)
                 }
+                val turnVerification = remember(state.messages) {
+                    state.messages.filter { it.turnId != null }.groupBy { it.turnId }
+                        .mapValues { (_, messages) -> com.androidharness.app.agent.VerificationEvidence.collect(messages) }
+                }
                 val skillUsedByMessage = remember(state.messages) {
                     val map = HashMap<String, List<String>>()
                     for (m in state.messages) {
@@ -1136,6 +1140,10 @@ fun ChatScreen(
                                                         onReviewFile = { path -> message.turnId?.let { diffFile = it to path } },
                                                         modifier = Modifier.padding(top = 8.dp),
                                                     )
+                                                }
+                                                if (isTurnFinal && !isTurnRunning &&
+                                                    (edits.isNotEmpty() || turnVerification[message.turnId].orEmpty().isNotEmpty())) {
+                                                    com.androidharness.app.ui.chat.components.VerificationCard(turnVerification[message.turnId].orEmpty())
                                                 }
                                                 Row(
                                                     modifier = Modifier.fillMaxWidth(),

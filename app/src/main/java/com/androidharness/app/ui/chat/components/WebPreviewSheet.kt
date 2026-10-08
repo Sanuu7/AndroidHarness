@@ -81,6 +81,8 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -698,6 +700,39 @@ private fun WebPageView(
     var canGoForward by remember { mutableStateOf(false) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
     var errorMessage by remember { mutableStateOf<String?>(null) }
+    val selectionScope = rememberCoroutineScope()
+    var pickingElement by remember { mutableStateOf(false) }
+    var selectedElement by remember { mutableStateOf<com.androidharness.app.browser.PreviewSelection?>(null) }
+    var elementRequest by remember { mutableStateOf("") }
+    var selectionScreenshot by remember { mutableStateOf<String?>(null) }
+    var capturingSelection by remember { mutableStateOf(false) }
+
+    selectedElement?.let { selection ->
+        AlertDialog(
+            onDismissRequest = { selectedElement = null },
+            title = { Text("Fix selected element") },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(selection.selector, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                        style = MaterialTheme.typography.labelMedium, fontFamily = HarnessMono)
+                    OutlinedTextField(value = elementRequest, onValueChange = { elementRequest = it },
+                        label = { Text("What should change?") }, minLines = 2, maxLines = 5,
+                        modifier = Modifier.fillMaxWidth())
+                    Text(if (capturingSelection) "Capturing page context…" else "Includes element details, styles, and available page context.",
+                        style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                }
+            },
+            confirmButton = {
+                TextButton(enabled = elementRequest.isNotBlank() && !capturingSelection, onClick = {
+                    val errors = consoleLogs.filter { it.level == ConsoleMessage.MessageLevel.ERROR }
+                        .take(5).joinToString("\n") { "${it.message} (${it.source}:${it.lineNumber})" }
+                    selectedElement = null
+                    onFixBug(selection.prompt(currentUrl, elementRequest, errors, selectionScreenshot))
+                }) { Text("Send to agent") }
+            },
+            dismissButton = { TextButton(onClick = { selectedElement = null }) { Text("Cancel") } },
+        )
+    }
 
     // Agent control state: banner strip + expandable activity trail
     var showAgentTrack by remember { mutableStateOf(false) }
@@ -727,6 +762,7 @@ private fun WebPageView(
                     // Load through the shared workspace origin instead of
                     // loadDataWithBaseURL: loadData creates a data: history
                     // entry, which pollutes back/forward for the agent.
+                    workspace?.let { browserController?.prepareWorkspacePreview(t, it) }
                     currentUrl = BrowserController.localFileUrl(t)
                     view.post {
                         view.loadUrl(currentUrl)
@@ -848,6 +884,16 @@ private fun WebPageView(
                             onDismissRequest = { browserToolbarMenu = false },
                         ) {
                             DropdownMenuItem(
+                                text = { Text(if (pickingElement) "Cancel element selection" else "Select element to fix") },
+                                leadingIcon = { Icon(Icons.Filled.AutoFixHigh, contentDescription = null) },
+                                enabled = !isLoading && errorMessage == null && !agentControlling,
+                                onClick = {
+                                    browserToolbarMenu = false
+                                    pickingElement = !pickingElement
+                                    onHideConsole()
+                                },
+                            )
+                            DropdownMenuItem(
                                 text = { Text("DevTools") },
                                 leadingIcon = { Icon(Icons.Outlined.DeveloperMode, contentDescription = null, tint = scheme.primary) },
                                 onClick = {
@@ -896,6 +942,17 @@ private fun WebPageView(
             }
         }
 
+        if (pickingElement) {
+            Surface(color = scheme.primaryContainer, modifier = Modifier.fillMaxWidth()) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.padding(start = 12.dp)) {
+                    Text("Tap the element you want to change", modifier = Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodySmall, color = scheme.onPrimaryContainer)
+                    IconButton(onClick = { pickingElement = false }) {
+                        Icon(Icons.Default.Close, contentDescription = "Cancel element selection")
+                    }
+                }
+            }
+        }
         if (isLoading) {
             ThinLinearProgress(modifier = Modifier.fillMaxWidth())
         }
@@ -954,6 +1011,33 @@ private fun WebPageView(
 
                         // Smooth fluid scrolling: prevent BottomSheet gesture interception during touch
                         setOnTouchListener { v, event ->
+                            if (pickingElement) {
+                                if (event.action == MotionEvent.ACTION_UP) {
+                                    val density = ctx.resources.displayMetrics.density
+                                    @Suppress("DEPRECATION")
+                                    val zoom = scale / density
+                                    val x = (event.x / density / zoom).toDouble().coerceAtLeast(0.0)
+                                    val y = (event.y / density / zoom).toDouble().coerceAtLeast(0.0)
+                                    evaluateJavascript(com.androidharness.app.browser.PreviewSelection.script(x, y)) { raw ->
+                                        val selection = com.androidharness.app.browser.PreviewSelection.parse(raw)
+                                        if (selection != null) {
+                                            elementRequest = ""
+                                            selectionScreenshot = null
+                                            selectedElement = selection
+                                            capturingSelection = true
+                                            selectionScope.launch {
+                                                try {
+                                                    selectionScreenshot = kotlinx.coroutines.withTimeoutOrNull(5000) {
+                                                        browserController?.screenshot(workspace)?.relPath
+                                                    }
+                                                } finally { capturingSelection = false }
+                                            }
+                                        }
+                                    }
+                                    pickingElement = false
+                                }
+                                return@setOnTouchListener true
+                            }
                             when (event.action) {
                                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_MOVE -> {
                                     v.parent?.requestDisallowInterceptTouchEvent(true)
