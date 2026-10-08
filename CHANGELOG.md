@@ -1,5 +1,21 @@
 # Changelog
 
+## 1.6 (2026-10-09)
+
+### Added
+
+- **Fix an element right from the preview**: the web preview menu adds a Select element to fix mode. Tap the element on the page, describe the change, and the agent receives the element's selector, HTML, computed styles, recent console errors, and a screenshot of the page, then edits the source and checks the result. Taps made while picking never reach the page's own handlers.
+- **Run and preview your project**: Build & Test detects the project's dev, start, and preview scripts (plus plain `index.html` projects), runs the chosen one, and opens the URL the server reports in the preview sheet on its own, with Stop to shut it down. The saved command list is built from the project's real `package.json` scripts instead of generic guesses, and the chosen script sticks per workspace.
+- **Verification cards in chat**: turns that touched files or ran a check now end with a Verification card listing every build, test, or lint command the agent actually ran with its recorded outcome: passed, failed, or unconfirmed. A passed check that came before a later edit is marked as needing a recheck. Only real tool results count, so a reply that claims tests passed without running anything shows nothing.
+- **Ask about a change**: the Files changed screen adds an Ask action on whole-file diffs and on single sections. The question carries the diff (or the before and after of the section), tells the agent to explain without editing, and lands in the chat.
+
+### Fixed
+
+- **Errors injected into SSE streams**: an error arriving mid-stream, including the `choices[0].error` and `finish_reason: error` shapes some gateways use, now parses the provider's message and code, stops the attempt at the error instead of consuming trailing deltas, and classifies retries from the real status code instead of guessing from text. Tool-call arguments accumulated before the error are discarded, so a torn stream can never hand the engine an executable half-built call.
+- **npm project scripts run on-device**: npm's child shell could not exec the bundled node from app storage, so `npm run` died with a permission error before the script started. Project launches now route npm through the same shim path every other toolchain command uses.
+- **Stop really stops the dev server**: stopping a project run kills the whole process tree, so the server no longer survives in the background holding its port.
+- **Workspace previews open on the first try**: the preview registers a workspace HTML file as its base document before loading, so opening one no longer depends on the agent having navigated there first.
+
 ## 1.5 (2026-10-05)
 
 ### Added

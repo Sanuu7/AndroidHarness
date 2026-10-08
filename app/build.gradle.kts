@@ -42,8 +42,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 19
-        versionName = "1.5"
+        versionCode = 20
+        versionName = "1.6"
         if (hasNdk) {
             ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
             externalNativeBuild {
