@@ -3,6 +3,7 @@ package com.androidharness.app.llm
 import com.androidharness.app.agent.StreamRetrier
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
+import com.androidharness.app.core.ToolCallData
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.Json
@@ -46,6 +47,43 @@ class OpenAiCompatStreamTest {
         config, "", "Help with coding.", listOf(ChatMessage(role = Role.USER, text = "Write a file.")),
         emptyList(), RequestOptions(),
     )
+
+    @Test
+    fun `continued conversation accepts object tool arguments from a compat gateway`() = runBlocking {
+        val provider = provider(listOf(
+            """{"choices":[{"delta":{"content":null,"tool_calls":[{"index":0,"id":"next","function":{"name":"write_file","arguments":{"path":"next.txt","content":"continued"}}}]}}]}""",
+            """{"choices":[{"delta":{},"finish_reason":"tool_calls"}]}""",
+        ))
+        val events = provider.streamChat(
+            ProviderConfig("llm7", "LLM7", ProviderType.OPENAI_COMPAT, "https://api.llm7.io/v1", "test-model"),
+            "", "Help with coding.",
+            listOf(
+                ChatMessage(role = Role.USER, text = "Write two files."),
+                ChatMessage(role = Role.ASSISTANT, toolCalls = listOf(ToolCallData("previous", "list_dir", "{}"))),
+                ChatMessage(role = Role.TOOL, toolCallId = "previous", text = "Directory is empty."),
+                ChatMessage(role = Role.USER, text = "Continue"),
+            ), emptyList(), RequestOptions(),
+        ).toList()
+
+        val call = events.filterIsInstance<StreamEvent.ToolCallReady>().single().call
+        assertEquals("next", call.id)
+        assertEquals("write_file", call.name)
+        assertEquals(Json.parseToJsonElement("""{"path":"next.txt","content":"continued"}"""), Json.parseToJsonElement(call.argumentsJson))
+        assertEquals(StreamEvent.Done("tool_calls"), events.last())
+        assertFalse(events.any { it is StreamEvent.Failure })
+    }
+
+    @Test
+    fun `unsupported arguments fail without releasing buffered tool calls`() = runBlocking {
+        val events = stream(provider(listOf(
+            partialCall,
+            """{"choices":[{"delta":{"tool_calls":[{"index":1,"id":"bad","function":{"name":"write_file","arguments":[]}}]}}]}""",
+            completeCall,
+        ))).toList()
+
+        assertTrue(events.single() is StreamEvent.Failure)
+        assertFalse(events.any { it is StreamEvent.ToolCallReady || it is StreamEvent.ToolCallBatch })
+    }
 
     @Test
     fun `injected SSE error discards partial tool call and all later chunks`() = runBlocking {

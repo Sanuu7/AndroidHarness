@@ -32,6 +32,40 @@ class OpenAiCompatParsingTest {
         provider.parseChunk(Json.parseToJsonElement(payload), acc, indexToId)
 
     @Test
+    fun `object tool arguments retain nested values instead of requiring a primitive`() {
+        val arguments = """{"path":"a.txt","content":"Hello\nworld","options":{"overwrite":true},"lines":[1,2],"optional":null}"""
+        parse("""{"choices":[{"delta":{"tool_calls":[{"index":0,"id":"object_call","function":{"name":"write_file","arguments":$arguments}}]}}]}""")
+
+        val finish = parse("""{"choices":[{"delta":{},"finish_reason":"tool_calls"}]}""")
+        val call = (finish.first() as StreamEvent.ToolCallReady).call
+        assertEquals("object_call", call.id)
+        assertEquals("write_file", call.name)
+        assertEquals(Json.parseToJsonElement(arguments), Json.parseToJsonElement(call.argumentsJson))
+        assertEquals(StreamEvent.Done("tool_calls"), finish.last())
+    }
+
+    @Test
+    fun `object arguments replace a previous snapshot instead of concatenating objects`() {
+        parse("""{"choices":[{"delta":{"tool_calls":[{"index":0,"id":"object_call","function":{"name":"write_file","arguments":{"path":"a.txt"}}}]}}]}""")
+        parse("""{"choices":[{"delta":{"tool_calls":[{"index":0,"function":{"arguments":{"path":"a.txt","content":"Hello"}}}]}}]}""")
+
+        val call = provider.drainAccumulated(acc).single()
+        assertEquals(Json.parseToJsonElement("""{"path":"a.txt","content":"Hello"}"""), Json.parseToJsonElement(call.argumentsJson))
+    }
+
+    @Test
+    fun `structured scalar metadata does not abort valid text and tools`() {
+        val events = parse("""{"usage":{"prompt_tokens":{},"completion_tokens":12,"cached_tokens":{},"cache_write_tokens":{}},
+            "choices":[{"finish_reason":{},"delta":{"content":[{"type":"text","text":{}},{"type":"text","text":"Hi"}],
+            "tool_calls":[{"index":{},"id":{},"function":{"name":{},"arguments":""}},
+                          {"index":1,"id":"valid","function":{"name":"list_dir","arguments":"{}"}}]}}]}""")
+        assertEquals(StreamEvent.Usage(0, 12), events.filterIsInstance<StreamEvent.Usage>().single())
+        assertEquals(StreamEvent.TextDelta("Hi"), events.filterIsInstance<StreamEvent.TextDelta>().single())
+        assertFalse(events.any { it is StreamEvent.Done })
+        assertEquals("list_dir", provider.drainAccumulated(acc).single().name)
+    }
+
+    @Test
     fun `explicit null content does not become text and tool calls still accumulate`() {
         // vLLM and friends send content:null on every tool-call fragment.
         val first = parse(

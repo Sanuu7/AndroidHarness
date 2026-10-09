@@ -17,7 +17,6 @@ import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.intOrNull
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.put
 import kotlinx.serialization.json.putJsonArray
 import kotlinx.serialization.json.putJsonObject
@@ -192,7 +191,7 @@ class OpenAiCompatProvider(
         // Gateways disagree on error shape: {"error": "msg"} vs {"error": {"message": msg}}.
         val err = chunk["error"]?.takeUnless { it is JsonNull }
             ?: choice?.get("error")?.takeUnless { it is JsonNull }
-        if (err != null || choice?.get("finish_reason")?.jsonPrimitive?.contentOrNull == "error") {
+        if (err != null || choice?.get("finish_reason")?.primitiveOrAbsent()?.contentOrNull == "error") {
             val message = when (err) {
                 is JsonPrimitive -> err.contentOrNull
                 is JsonObject -> (err["message"] as? JsonPrimitive)?.contentOrNull
@@ -211,31 +210,31 @@ class OpenAiCompatProvider(
         // Usage may ride on the final chunk together with finish_reason and
         // tool calls, collect it without skipping the rest of the chunk.
         chunk["usage"]?.jsonObjectOrAbsent()?.let { usage ->
-            val input = usage["prompt_tokens"]?.jsonPrimitive?.intOrNull
-            val output = usage["completion_tokens"]?.jsonPrimitive?.intOrNull
+            val input = usage["prompt_tokens"]?.primitiveOrAbsent()?.intOrNull
+            val output = usage["completion_tokens"]?.primitiveOrAbsent()?.intOrNull
             val promptDetails = usage["prompt_tokens_details"]?.jsonObjectOrAbsent()
                 ?: usage["input_tokens_details"]?.jsonObjectOrAbsent()
-            val cached = promptDetails?.get("cached_tokens")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("cache_read_input_tokens")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("cache_read_tokens")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("cached_prompt_tokens")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("cached_tokens_count")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("prompt_cache_hit_tokens")?.jsonPrimitive?.intOrNull
-                ?: usage["prompt_cache_hit_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cache_read_input_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cache_read_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cached_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cached_prompt_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["prompt_cached_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cache_hit_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cachedContentTokenCount"]?.jsonPrimitive?.intOrNull
-            val cacheWrite = promptDetails?.get("cache_creation_input_tokens")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("cache_write_tokens")?.jsonPrimitive?.intOrNull
-                ?: promptDetails?.get("cache_creation_tokens")?.jsonPrimitive?.intOrNull
-                ?: usage["cache_creation_input_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cache_write_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["prompt_cache_write_tokens"]?.jsonPrimitive?.intOrNull
-                ?: usage["cache_creation_tokens"]?.jsonPrimitive?.intOrNull
+            val cached = promptDetails?.get("cached_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("cache_read_input_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("cache_read_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("cached_prompt_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("cached_tokens_count")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("prompt_cache_hit_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: usage["prompt_cache_hit_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cache_read_input_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cache_read_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cached_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cached_prompt_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["prompt_cached_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cache_hit_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cachedContentTokenCount"]?.primitiveOrAbsent()?.intOrNull
+            val cacheWrite = promptDetails?.get("cache_creation_input_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("cache_write_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: promptDetails?.get("cache_creation_tokens")?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cache_creation_input_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cache_write_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["prompt_cache_write_tokens"]?.primitiveOrAbsent()?.intOrNull
+                ?: usage["cache_creation_tokens"]?.primitiveOrAbsent()?.intOrNull
                 ?: 0
             if (input != null || output != null) {
                 println("HarnessUsage: Parsed usage: input=$input, output=$output, cached=$cached, cacheWrite=$cacheWrite, raw=$usage")
@@ -257,7 +256,7 @@ class OpenAiCompatProvider(
                 // A few gateways deliver content as an array of typed parts.
                 content is JsonArray -> {
                     val text = content.joinToString("") { part ->
-                        (part as? JsonObject)?.get("text")?.jsonPrimitive?.contentOrNull.orEmpty()
+                        (part as? JsonObject)?.get("text")?.primitiveOrAbsent()?.contentOrNull.orEmpty()
                     }
                     if (text.isNotEmpty()) events += StreamEvent.TextDelta(text)
                 }
@@ -273,8 +272,8 @@ class OpenAiCompatProvider(
 
         delta?.get("tool_calls")?.jsonArrayOrAbsent()?.forEach { tcEl ->
             val tc = tcEl.jsonObjectOrAbsent() ?: return@forEach
-            val index = tc["index"]?.jsonPrimitive?.intOrNull ?: 0
-            val newId = tc["id"]?.jsonPrimitive?.contentOrNull
+            val index = tc["index"]?.primitiveOrAbsent()?.intOrNull ?: 0
+            val newId = tc["id"]?.primitiveOrAbsent()?.contentOrNull
             // Key by call id; the stream index only links fragments that carry
             // no id. A gateway that reuses index 0 for a SECOND call (new id)
             // therefore opens a new entry instead of corrupting the first.
@@ -291,12 +290,26 @@ class OpenAiCompatProvider(
                 entry.first.append(newId)
             }
             tc["function"]?.jsonObjectOrAbsent()?.let { fn ->
-                fn["name"]?.jsonPrimitive?.contentOrNull?.let { entry.second.append(it) }
-                fn["arguments"]?.jsonPrimitive?.contentOrNull?.let { entry.third.append(it) }
+                fn["name"]?.primitiveOrAbsent()?.contentOrNull?.let { entry.second.append(it) }
+                when (val arguments = fn["arguments"]) {
+                    is JsonPrimitive -> arguments.contentOrNull?.let { entry.third.append(it) }
+                    // Object arguments are a complete snapshot, not a string fragment.
+                    // Preserve nested values and replace any earlier snapshot.
+                    is JsonObject -> {
+                        entry.third.setLength(0)
+                        entry.third.append(arguments.toString())
+                    }
+                    null -> {}
+                    else -> {
+                        acc.clear()
+                        indexToId.clear()
+                        return listOf(StreamEvent.Failure("Upstream returned unsupported tool arguments; expected a JSON string or object"))
+                    }
+                }
             }
         }
 
-        choice["finish_reason"]?.jsonPrimitive?.contentOrNull?.let { finish ->
+        choice["finish_reason"]?.primitiveOrAbsent()?.contentOrNull?.let { finish ->
             val ready = drainAccumulated(acc)
             when {
                 ready.size == 1 -> events += StreamEvent.ToolCallReady(ready.first())
@@ -307,6 +320,9 @@ class OpenAiCompatProvider(
 
         return events
     }
+
+    /** Optional scalar fields from gateways may have an unexpected JSON shape. */
+    private fun JsonElement.primitiveOrAbsent(): JsonPrimitive? = this as? JsonPrimitive
 
     /** Materializes accumulated fragments into tool calls and clears [acc]. */
     internal fun drainAccumulated(
