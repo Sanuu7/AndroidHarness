@@ -22,7 +22,7 @@ Status: 1.6
 - Resume last active chat automatically on launch with shimmering skeleton loading.
 - Attach skills to a message or drop one in with a slash command.
 - Multiple workspaces, one workspace switcher, switch projects without losing context.
-- Keep multiple queued instructions with edit, reorder, remove, and Send now controls. The queue persists across app restarts and is consumed at agent boundaries.
+- Keep multiple queued instructions with edit, reorder, remove, and Send now controls. The queue persists across app restarts; each message starts after that chat's successful Run finished notification. Interruptions keep the queue waiting.
 - Long-press your own message for Retry alongside Copy and Edit, resending it as a fresh turn.
 - Ask the agent questions mid-run and answer from the notification shade or the chat.
 - Optional Caveman reply modes: terse, compressed responses with an intensity dial and optional skill enforcement, configured in their own settings screen.
@@ -73,6 +73,7 @@ Status: 1.6
 **Runs that survive anything**
 - Foreground service keeps the agent and terminals alive while the screen is off.
 - Interrupted tasks show a Resume task card. Tool results are saved before the next action; completed writes are not replayed on recovery, and uncertain operations require inspecting current state.
+- Context & limits → Recovery offers optional Auto-continue for server or connection interruptions, using the same Resume task prompt. It is off by default, with a per-task retry limit of 1–5 (default 3). User stops, task limits, and permanent errors require manual attention.
 - Context & limits lets you edit the saved summary, pin instructions, and remove older model context while retaining the visible chat.
 - Optional task-wide token, estimated USD cost, and active-time limits include subagents and compaction. Tasks pause at request/action boundaries with progress saved; in-flight work can exceed a limit. Raise a reached limit before resuming.
 - Approve or deny sensitive actions from the notification shade, with four permission modes up to a full access mode that lifts every sandbox for workspaces you trust.
