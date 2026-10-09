@@ -4,6 +4,8 @@ import android.os.SystemClock
 import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
@@ -86,12 +88,22 @@ class ChatGptDeviceTest {
         val model = ModelEntry("gpt-6.1-sol")
         ActivityScenario.launch(MainActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> activity.setContent { MaterialTheme {
+                val effort = remember { mutableStateOf(ChatGptThinking.selected(model, ThinkingLevel.ULTRA)!!) }
                 MainHeader(sessionTitle = "ChatGPT check", busy = false, pickerLabel = model.id, mode = AgentMode.ACT,
-                    thinkingLevel = ChatGptThinking.selected(model, ThinkingLevel.ULTRA)!!,
+                    thinkingLevel = effort.value,
                     thinkingLevels = ChatGptThinking.levels(model), permissionMode = PermissionMode.CONFIRM_RISKY,
-                    canUndo = false, onOpenDrawer = {}, onPickModel = {}, onOpenTerminal = {}, onSetThinking = picked::set,
-                    onSetPermission = {}, onSetMode = {}, onOpenContext = {}, onOpenUndo = {}, onOpenFiles = {})
+                    canUndo = false, onOpenDrawer = {}, onPickModel = {}, onOpenTerminal = {},
+                    onSetThinking = { effort.value = it; picked.set(it) },
+                    onSetPermission = {}, onSetMode = {}, onOpenContext = {}, onOpenUndo = {}, onOpenFiles = {},
+                    onOpenGitHub = {})
             } } }
+            val level = waitForText("Max")
+            val levelBounds = android.graphics.Rect().also(level::getBoundsInScreen)
+            val modelBounds = android.graphics.Rect().also(waitForText(model.id)::getBoundsInScreen)
+            assertTrue("Selected thinking level must be visible before opening the menu", level.isVisibleToUser && !levelBounds.isEmpty)
+            assertFalse("Model and thinking text must not overlap", android.graphics.Rect.intersects(levelBounds, modelBounds))
+            waitForText("GitHub")
+            waitForText("Workspace files")
             clickText("Thinking level")
             waitForText("Low")
             waitForText("High")
@@ -102,7 +114,17 @@ class ChatGptDeviceTest {
             assertNull(find(root, "Ultra"))
             clickText("High")
             assertEquals(ThinkingLevel.HIGH, picked.get())
-            println("CHATGPT_THINKING_PICKER_OK: supported choices only and High selection works")
+            val closeDeadline = SystemClock.uptimeMillis() + 5_000
+            while (SystemClock.uptimeMillis() < closeDeadline &&
+                find(instrumentation.uiAutomation.rootInActiveWindow, "Max") != null) SystemClock.sleep(100)
+            waitForText("High")
+            assertNull("The menu should close after selecting High", find(instrumentation.uiAutomation.rootInActiveWindow, "Max"))
+            instrumentation.uiAutomation.takeScreenshot()?.let { bitmap ->
+                val folder = File(instrumentation.targetContext.getExternalFilesDir(null), "github-test-screenshots").apply { mkdirs() }
+                File(folder, "header-thinking.png").outputStream().use { bitmap.compress(android.graphics.Bitmap.CompressFormat.PNG, 100, it) }
+                bitmap.recycle()
+            }
+            println("CHATGPT_THINKING_PICKER_OK: selected level stays visible; supported choices only; High selection updates the header")
         }
     }
 

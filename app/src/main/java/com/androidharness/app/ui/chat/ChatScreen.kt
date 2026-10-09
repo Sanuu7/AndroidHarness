@@ -134,6 +134,7 @@ import com.androidharness.app.ui.chat.components.FloatingBrowserBubble
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.common.formatDuration
 import com.androidharness.app.ui.files.DiffStatText
+import com.androidharness.app.ui.github.GitHubWorkspaceDialog
 import com.androidharness.app.ui.settings.ProviderManagerSheet
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.fastEffectsSpec
@@ -160,9 +161,19 @@ fun ChatScreen(
     searchMessageId: String? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
+    val currentProject by viewModel.container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
+    var githubProject by remember { mutableStateOf<Pair<String, String>?>(null) }
     val listState = rememberChatListState()
     val snackbar = remember { SnackbarHostState() }
     var showContext by remember { mutableStateOf(false) }
+
+    githubProject?.let { (id, name) ->
+        GitHubWorkspaceDialog(viewModel.container, id, name,
+            onOpenSettings = {
+                viewModel.container.pendingSettingsScroll.value = "github"
+                onOpenSettings()
+            }, onDismiss = { githubProject = null })
+    }
     var activeModelPickerTarget by remember { mutableStateOf<ModelSelectionTarget?>(null) }
     var activeProviderManagerTarget by remember { mutableStateOf<ModelSelectionTarget?>(null) }
     val showModelPicker = activeModelPickerTarget != null
@@ -884,6 +895,11 @@ fun ChatScreen(
                 onOpenContext = { showContext = true },
                 onOpenUndo = { showUndoDialog = true },
                 onOpenFiles = onOpenFiles,
+                canOpenGitHub = currentProject != null,
+                onOpenGitHub = {
+                    // Keep the review tied to the workspace selected when opened.
+                    currentProject?.let { githubProject = it.id to it.name }
+                },
                 onOpenWebPreview = { showWebPreview = true },
             )
         },

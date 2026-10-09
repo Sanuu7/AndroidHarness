@@ -28,6 +28,75 @@ class GitHubDeviceTest {
     private val context = instrumentation.targetContext
     private val c get() = (context.applicationContext as HarnessApp).container
 
+    @Test fun chatGitHubShortcutOpensSignInSettingsWhenDisconnected() = runBlocking {
+        assumeTrue("Use an unsigned-in emulator fixture", c.keys.githubToken() == null)
+        c.settings.setOnboardingDone(true)
+        ActivityScenario.launch(MainActivity::class.java).use {
+            assertTrue("GitHub shortcut must fit the header", visible(clickable(waitText("GitHub"))))
+            click("GitHub")
+            waitText("Sign in to GitHub")
+            click("Sign in")
+            waitText("GitHub")
+            scrollTo("Use a personal access token")
+            assertTrue(visible(clickable(waitText("Use a personal access token"))))
+            scrollTo("Sign in with GitHub")
+            assertTrue(visible(clickable(waitText("Sign in with GitHub"))))
+            screenshot("github-toolbar-sign-in")
+            println("GITHUB_CHAT_SIGN_IN_OK: reachable header shortcut opens GitHub settings with OAuth and PAT choices")
+        }
+    }
+
+    @Test fun workspaceControlsOfferImportAndRefreshTheCapturedRepository() = runBlocking {
+        assumeTrue("Pass githubGit=true to exercise the device toolchain", InstrumentationRegistry.getArguments().getString("githubGit") == "true")
+        withTimeout(300_000) { c.linuxEnv.install(c.linuxEnv.corePackages) }
+        val original = c.workspace.currentProjectOnce()
+        val root = File(context.filesDir, "github-toolbar-fixture").apply { mkdirs() }
+        val firstRoot = File(root, "first").apply { mkdirs() }
+        val secondRoot = File(root, "second").apply { mkdirs() }
+        val project = c.workspace.addShellProject(firstRoot.absolutePath)
+        var second: com.androidharness.app.data.db.ProjectEntity? = null
+        try {
+            ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+                scenario.onActivity { activity -> activity.setContent { MaterialTheme {
+                    com.androidharness.app.ui.github.GitHubPublishDialog(c, project.id, project.name, onDismiss = {})
+                } } }
+                waitEnabled("Close")
+                assertCleanSetupPanel()
+                scrollTo("Import from GitHub"); click("Import from GitHub")
+                waitText("Repository URL or owner/repository")
+                click("Close")
+                waitEnabled("Close")
+                scrollTo("Connect repository")
+                screenshot("github-toolbar-plain-folder")
+
+                c.githubRepositories.connect(FileFs(firstRoot), "example/toolbar-fixture")
+                File(firstRoot, "first-only.txt").writeText("First workspace")
+                second = c.workspace.addShellProject(secondRoot.absolutePath)
+                File(secondRoot, "second-only.txt").writeText("Another workspace")
+                scrollTo("Refresh repository"); click("Refresh repository")
+                waitEnabled("Close")
+                scrollTo("first-only.txt")
+                assertNull("Refresh must keep the captured workspace", text("second-only.txt"))
+                scrollTo("Push existing commits")
+                screenshot("github-toolbar-repository")
+
+                // If Git metadata disappears, a failed refresh must discard the old controls.
+                assertTrue(File(firstRoot, ".git").deleteRecursively())
+                scrollTo("Refresh repository"); click("Refresh repository")
+                waitEnabled("Close")
+                scrollTo("Import from GitHub")
+                assertCleanSetupPanel()
+                assertNull("Old push controls must be removed", text("Push existing commits"))
+                println("GITHUB_CHAT_WORKSPACE_OK: plain folder offers import; refresh reads its captured workspace and clears stale push controls")
+            }
+        } finally {
+            c.workspace.setActiveProject(original.id)
+            second?.let { c.workspace.deleteProject(it) }
+            c.workspace.deleteProject(project)
+            root.deleteRecursively()
+        }
+    }
+
     @Test fun publicImportUsesItsOwnPrivateWorkspace() = runBlocking {
         assumeTrue("Pass githubImport=true for a read-only public GitHub clone", InstrumentationRegistry.getArguments().getString("githubImport") == "true")
         assumeTrue("Use an unsigned-in emulator fixture", c.keys.githubToken() == null)
@@ -184,6 +253,14 @@ class GitHubDeviceTest {
         if (match(node)) return node
         for (i in 0 until node.childCount) node.getChild(i)?.let { find(it, match)?.let { result -> return result } }
         return null
+    }
+    private fun assertCleanSetupPanel() {
+        val root = requireNotNull(instrumentation.uiAutomation.rootInActiveWindow)
+        assertNull("Plain folders should show setup controls without diagnostic paragraphs", find(root) {
+            val value = it.text?.toString().orEmpty()
+            value.contains("fatal:", ignoreCase = true) || value.contains("PAT alone") ||
+                value.contains("Import a GitHub repository, or connect")
+        })
     }
     private fun text(value: String) = instrumentation.uiAutomation.rootInActiveWindow?.let { root ->
         find(root) { it.text?.toString() == value || it.contentDescription?.toString() == value }

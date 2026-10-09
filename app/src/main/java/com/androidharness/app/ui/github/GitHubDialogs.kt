@@ -39,7 +39,7 @@ private fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit, co
 }
 
 @Composable
-fun GitHubImportDialog(container: AppContainer, onDismiss: () -> Unit) {
+fun GitHubImportDialog(container: AppContainer, onDismiss: () -> Unit, onImported: () -> Unit = onDismiss) {
     val scope = rememberCoroutineScope()
     var input by remember { mutableStateOf("") }
     var repos by remember { mutableStateOf<List<String>>(emptyList()) }
@@ -84,7 +84,7 @@ fun GitHubImportDialog(container: AppContainer, onDismiss: () -> Unit) {
         Button(onClick = {
             busy = true; message = "Importing repository…"
             scope.launch {
-                try { container.githubRepositories.importRepository(input); onDismiss() }
+                try { container.githubRepositories.importRepository(input); onImported() }
                 catch (e: CancellationException) { throw e }
                 catch (e: Exception) { message = container.github.safeMessage(e) }
                 finally { busy = false }
@@ -101,6 +101,26 @@ fun GitHubImportDialog(container: AppContainer, onDismiss: () -> Unit) {
     }
 }
 
+/** Entry point from chat; both OAuth and PAT connections share the same controls. */
+@Composable
+fun GitHubWorkspaceDialog(container: AppContainer, projectId: String, projectName: String,
+    onOpenSettings: () -> Unit, onDismiss: () -> Unit) {
+    val connection by container.github.state.collectAsStateWithLifecycle()
+    if (connection.login == null) {
+        AlertDialog(
+            onDismissRequest = onDismiss,
+            title = { Text("Sign in to GitHub") },
+            text = { Text("You haven't connected GitHub yet. Sign in with GitHub or add a personal access token in Settings to import private repositories and publish your work.") },
+            confirmButton = {
+                TextButton(onClick = { onDismiss(); onOpenSettings() }) { Text("Sign in") }
+            },
+            dismissButton = { TextButton(onClick = onDismiss) { Text("Close") } },
+        )
+    } else {
+        GitHubPublishDialog(container, projectId, projectName, onDismiss)
+    }
+}
+
 @Composable
 fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName: String, onDismiss: () -> Unit) {
     val scope = rememberCoroutineScope()
@@ -113,13 +133,27 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var preset by remember { mutableStateOf(false) }
+    var importing by remember { mutableStateOf(false) }
 
     suspend fun refresh() {
+        // Failed refreshes must not leave controls targeting an old repository.
+        fs = null
+        state = null
+        paths = emptySet()
         val project = container.workspace.projects.first().firstOrNull { it.id == projectId }
             ?: error("This workspace was removed.")
         val captured = container.workspace.fsFor(project)
         fs = captured
-        val snapshot = container.githubRepositories.inspect(captured)
+        if (!container.linuxEnv.gitToolsReady) return
+        val snapshot = try { container.githubRepositories.inspect(captured) }
+        catch (e: GitHubOperationFailure) {
+            // A plain folder or an unconnected local repository needs setup controls, not an error.
+            if (e.stage == "Repository" && (e.message.orEmpty().contains("not a git repository", ignoreCase = true) ||
+                    e.message.orEmpty().contains("This workspace has no GitHub origin"))) {
+                return
+            }
+            throw e
+        }
         state = snapshot
         paths = snapshot.changes.map { it.path }.toSet()
     }
@@ -142,7 +176,14 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
     }
     LaunchedEffect(projectId) {
         busy = true
-        try { refresh() } catch (e: Exception) { message = container.github.safeMessage(e) } finally { busy = false }
+        try { refresh() }
+        catch (e: CancellationException) { throw e }
+        catch (e: Exception) { message = container.github.safeMessage(e) }
+        finally { busy = false }
+    }
+    if (importing) {
+        GitHubImportDialog(container, onDismiss = { importing = false }, onImported = onDismiss)
+        return
     }
     GitHubDialog("Commit & push", busy, onDismiss) {
         Text(projectName, style = MaterialTheme.typography.titleMedium)
@@ -187,19 +228,18 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
             OutlinedButton(onClick = { preset = true }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Save reusable push preset") }
         }
         if (state == null && !busy) {
+            OutlinedButton(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text("Import from GitHub") }
             OutlinedTextField(repositoryInput, onValueChange = { repositoryInput = it }, label = { Text("Existing GitHub repository") },
                 modifier = Modifier.fillMaxWidth())
-            Text("Connect an empty or local workspace to a repository you already created on GitHub. Existing remote history is kept; conflicting pushes will be rejected.", style = MaterialTheme.typography.bodySmall)
             OutlinedButton(onClick = { act {
                 container.githubRepositories.connect(requireNotNull(fs), repositoryInput)
                 refresh(); message = "Repository connected."
-            } }, enabled = fs != null && repositoryInput.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text("Connect repository") }
+            } }, enabled = fs?.shellRoot != null && container.linuxEnv.gitToolsReady && repositoryInput.isNotBlank(),
+                modifier = Modifier.fillMaxWidth()) { Text("Connect repository") }
         }
-        OutlinedButton(onClick = { act { refresh(); message = "Repository refreshed." } }, enabled = !busy,
+        OutlinedButton(onClick = { act { refresh(); message = null } }, enabled = !busy,
             modifier = Modifier.fillMaxWidth()) { Text("Refresh repository") }
         message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        Text("Push errors show the failing step and Git's details. A PAT alone cannot fix a wrong workspace, missing Git, an SSH remote, newer remote commits, branch rules or missing repository permissions.",
-            style = MaterialTheme.typography.bodySmall)
     }
     if (preset && state != null) GitHubPushPresetDialog(container, projectId, projectName,
         initial = GitHubPushPreset(requireNotNull(state).remoteUrl, requireNotNull(state).branch,
