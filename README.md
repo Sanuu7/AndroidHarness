@@ -56,7 +56,10 @@ Status: 1.6
 - Build & Test dashboard: save project checks such as Gradle, npm, lint, and test commands, watch live output and pass/fail status, jump straight to parsed file errors, and hand a failed run to the agent for repair. The dashboard also detects the project's dev, start, and preview scripts, runs the chosen one, and opens the server's URL in the preview automatically, then stops the whole process tree on request.
 
 **GitHub built in**
-- Login with GitHub in Settings by pasting a personal access token, or tap Get access token to create one on GitHub. AndroidHarness verifies the token before saving it in encrypted app storage. Git push/pull, the bundled gh CLI, and GitHub API requests reuse the saved token.
+- GitHub is the first integration in Settings. Sign in through GitHub's Device Flow (no auth server), or connect a personal access token. Verified credentials stay in encrypted app storage; expiring OAuth connections refresh automatically.
+- Import from GitHub clones into a separate private workspace. Browse your repositories or paste a public repository URL. The same action is available when adding a workspace.
+- Commit & push in GitHub Settings and the Files menu shows the target repository, branch and changed files. Commit selected files or retry existing commits; app history stays excluded. Failed pushes keep local work and show the failing step with recovery guidance. Successful pushes are checked against GitHub's branch.
+- Save a reusable GitHub push preset for a specific workspace, repository and branch. Run it manually, hourly or daily from Automation without an AI model. Presets stop while a task is using that workspace and record blocked or failed runs in history.
 - doctor --github checks the token, git transport, and the free plan's hidden protection limits in one command.
 
 **Remote development over SSH**
@@ -129,12 +132,13 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 
 ### GitHub Setup (Optional)
 
-No OAuth backend or GitHub OAuth App is required.
+Users can choose **Sign in with GitHub** or **Use a personal access token** in Settings > GitHub. Device sign-in displays a code to copy into GitHub in your browser. Enable workflow access only if you need to change GitHub Actions files. Fine-grained PATs must include the target repositories and **Contents: read and write**; workflow changes also need **Workflows** access. Organization approval or SSO authorization may be required.
 
-1. Open Settings > GitHub > Login with GitHub.
-2. Paste an existing personal access token, or tap Get access token to open GitHub's token creation page.
-3. The `repo` scope is included for repository access. Enable the optional scopes shown in the app only when you need those capabilities.
-4. Save the token. AndroidHarness verifies it with GitHub before storing it and refreshes git and `gh` authentication immediately.
+For local builders: register a [GitHub OAuth app](https://github.com/settings/developers), enable **Enable Device Flow**, and set `GITHUB_CLIENT_ID` in the ignored `local.properties` file. Local debug and release builds include that value in the APK. The Client ID stays out of repository source, documentation and public build workflow configuration. No client secret, callback server or auth backend is used. Builds without local configuration retain PAT login. Keep PAT available as a fallback because GitHub limits Device Flow requests for a shared OAuth app.
+
+Import needs the Linux environment installed. New clones use private app storage; broad storage permission is unnecessary. Commit & push works on device repositories with shell access and a GitHub HTTPS origin. SSH workspaces use credentials configured on their host. Push presets bind the saved repository and branch, preserve unrelated staged files, never force-push, and verify the resulting remote commit. Review files first; enabling future changes explicitly allows the preset to include later changes in that workspace.
+
+A failed custom AI automation cannot be diagnosed from its prompt alone. Open its history for the actual failure. Common causes include a wrong workspace, missing Git, an SSH remote, insufficient token permissions, newer remote commits or branch protection. Use the native push preset to avoid credentials in prompts and get step-specific Git diagnostics. A failed push can be retried with **Push existing commits**.
 
 Run the unit tests with:
 
