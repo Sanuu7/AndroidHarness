@@ -5,8 +5,10 @@ import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import org.junit.Assert.*
 import org.junit.Test
+import org.junit.After
 
 class HarnessProviderTest {
+    @After fun resetCatalog() { HarnessProvider.restoreModels(HarnessProvider.fallbackModels) }
     @Test fun stalePicksResetToDefault() {
         assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("ling-3.0-flash-fin-free"))
         assertEquals(HarnessProvider.DEFAULT_MODEL, HarnessProvider.sanitize("big-pickle"))
@@ -25,12 +27,15 @@ class HarnessProviderTest {
     }
 
     @Test fun pooledModelsAreAcceptedAndLabeled() {
-        assertTrue(HarnessProvider.isPooled("z-ai/glm-5.2:free"))
+        HarnessProvider.restoreModels(HarnessProvider.models(listOf(ModelEntry("inclusionai/ling-3.1-flash"))))
+        assertTrue(HarnessProvider.isPooled("inclusionai/ling-3.1-flash"))
+        assertFalse(HarnessProvider.isPooled("z-ai/glm-5.2:free"))
+        assertFalse(HarnessProvider.isPooled("deepseek/deepseek-v4-flash-0731:free"))
         assertTrue(HarnessProvider.isPooled("openai-fast"))
         assertFalse(HarnessProvider.isPooled("ling-3.0-flash-fin-free"))
         assertFalse(HarnessProvider.isPooled("Qwen3.5-397B-A17B"))
 
-        assertEquals("z-ai/glm-5.2:free", HarnessProvider.sanitize("z-ai/glm-5.2:free"))
+        assertEquals("inclusionai/ling-3.1-flash", HarnessProvider.sanitize("inclusionai/ling-3.1-flash"))
 
         val models = HarnessProvider.models(emptyList())
         val openaiFast = models.first { it.id == "openai-fast" }
@@ -49,10 +54,14 @@ class HarnessProviderTest {
         HarnessProvider.pins = emptyMap()
     }
 
-    @Test fun catalogIsPoolOnly() {
-        val models = HarnessProvider.models(listOf(ModelEntry("ling-3.0-flash-fin-free"), ModelEntry("paid")))
-        assertEquals(HarnessProvider.pooledModels.map { it.id }, models.map { it.id })
-        assertTrue(models.none { it.id == "ling-3.0-flash-fin-free" || it.id == "big-pickle" })
+    @Test fun refreshReplacesRetiredModelsAndKeepsMetadata() {
+        HarnessProvider.restoreModels(HarnessProvider.models(listOf(ModelEntry("retired:free"))))
+        val fresh = ModelEntry("new-free", reasoning = true, contextTokens = 128000)
+        HarnessProvider.restoreModels(HarnessProvider.models(listOf(fresh)))
+        assertFalse(HarnessProvider.isPooled("retired:free"))
+        assertEquals("new-free", HarnessProvider.sanitize("retired:free"))
+        assertEquals(fresh.copy(note = HarnessProvider.KILO_NOTE), HarnessProvider.pooledModels.first())
+        assertEquals(HarnessProvider.KILO_BASE_URL, HarnessProvider.pool["new-free"]?.baseUrl)
     }
 
     @Test fun removesCredentialsWithoutImpersonatingAnotherClient() {
@@ -125,7 +134,8 @@ class HarnessProviderTest {
 
         val harnessReq = ModelCatalog.buildRequest(HarnessProvider.config, "ignored")
         assertNull(harnessReq.header("Authorization"))
-        assertFalse(harnessReq.header(HarnessProvider.SESSION_HEADER).isNullOrBlank())
+        assertEquals(HarnessProvider.KILO_BASE_URL + "/models", harnessReq.url.toString())
+        assertNull(harnessReq.header(HarnessProvider.SESSION_HEADER))
         assertEquals("AndroidHarness", harnessReq.header("User-Agent"))
     }
 }

@@ -77,7 +77,7 @@ object ModelCatalog {
         data class Failed(val message: String) : Result
     }
 
-    suspend fun listModels(config: ProviderConfig, apiKey: String): Result =
+    suspend fun listModels(config: ProviderConfig, apiKey: String, httpClient: OkHttpClient = client): Result =
         withContext(Dispatchers.IO) {
             if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id)) {
                 return@withContext try {
@@ -91,19 +91,26 @@ object ModelCatalog {
             val started = System.currentTimeMillis()
             try {
                 val request = buildRequest(config, apiKey)
-                client.newCall(request).execute().use { resp ->
+                httpClient.newCall(request).execute().use { resp ->
                     if (!resp.isSuccessful) {
                         return@use Result.Failed("HTTP ${resp.code}: ${resp.message}")
                     }
                     val body = resp.body?.string() ?: return@use Result.Failed("Empty response")
-                    Result.Models(parseCatalog(config.type, body).let { if (config.id == HarnessProvider.ID) HarnessProvider.models(it) else it }, System.currentTimeMillis() - started)
+                    val entries = if (config.id == HarnessProvider.ID) HarnessProvider.parseKiloCatalog(body)
+                        else parseCatalog(config.type, body)
+                    Result.Models(entries, System.currentTimeMillis() - started)
                 }
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                throw e
             } catch (e: Exception) {
                 Result.Failed(e.message ?: "Connection failed")
             }
         }
 
     internal fun buildRequest(config: ProviderConfig, apiKey: String): Request {
+        if (config.id == HarnessProvider.ID) return Request.Builder()
+            .url(HarnessProvider.KILO_BASE_URL + "/models")
+            .header("User-Agent", HarnessProvider.USER_AGENT).build()
         val authed = apiKey.isNotBlank() && apiKey != OpenAiCompatProvider.LOCAL_KEY
         val (url, requestBuilder) = when (config.type) {
             // Responses is OpenAI-only; its model listing is identical.

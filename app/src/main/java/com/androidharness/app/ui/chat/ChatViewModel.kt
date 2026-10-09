@@ -1053,7 +1053,8 @@ class ChatViewModel(
                 // Pooled community models always speak chat/completions, skip the probe.
                 if (provider.id == com.androidharness.app.llm.HarnessProvider.ID &&
                     c.providers.wire(roleModel) == null &&
-                    !com.androidharness.app.llm.HarnessProvider.isPooled(roleModel)
+                    !com.androidharness.app.llm.HarnessProvider.isPooled(roleModel) &&
+                    c.providers.customModels(provider.id).any { it.id == roleModel }
                 ) {
                     val learned = com.androidharness.app.llm.HarnessProvider.probeWire(
                         roleModel, c.providers.harnessApiKey(),
@@ -1082,6 +1083,16 @@ class ChatViewModel(
                 val effectiveConfig = roleModel
                     ?.takeIf { it.isNotBlank() }
                     ?.let { provider.copy(model = it) } ?: provider
+                val resolved = c.providers.resolveHarnessConfig(effectiveConfig)
+                if (resolved.model != effectiveConfig.model) {
+                    when {
+                        s0.dualPlanning && s0.mode == AgentMode.PLAN ->
+                            c.settings.setPlanningModel(provider.id, resolved.model)
+                        s0.dualPlanning && s0.mode == AgentMode.ACT ->
+                            c.settings.setExecutionModel(provider.id, resolved.model)
+                        else -> c.settings.setActiveModel(resolved.model)
+                    }
+                }
                 if (replacement != null) {
                     check(targetSession != null && targetSession == sessionId) { "The active chat changed" }
                 }

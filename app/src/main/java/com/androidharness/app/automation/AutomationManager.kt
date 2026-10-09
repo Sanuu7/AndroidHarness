@@ -150,7 +150,8 @@ class AutomationManager(private val c: AppContainer) {
             }
             if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) {
                 if (c.providers.wire(model) == null &&
-                    !com.androidharness.app.llm.HarnessProvider.isPooled(model)
+                    !com.androidharness.app.llm.HarnessProvider.isPooled(model) &&
+                    c.providers.customModels(provider.id).any { it.id == model }
                 ) {
                     com.androidharness.app.llm.HarnessProvider.probeWire(model, key)?.let {
                         c.providers.pinWire(model, it.name)

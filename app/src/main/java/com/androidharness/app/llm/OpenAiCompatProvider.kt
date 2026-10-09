@@ -343,7 +343,8 @@ class OpenAiCompatProvider(
         if (apiKey.isNotBlank() && apiKey != LOCAL_KEY) {
             requestBuilder.header("Authorization", "Bearer $apiKey")
         }
-        if (HarnessProvider.isOpenCode(config)) {
+        if (HarnessProvider.isOpenCode(config) &&
+            (config.id != HarnessProvider.ID || HarnessProvider.isOpenCode(config.baseUrl))) {
             HarnessProvider.withSession(requestBuilder, options.cacheKey)
         }
         if ("openrouter.ai" in host) {

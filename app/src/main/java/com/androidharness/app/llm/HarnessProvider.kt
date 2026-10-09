@@ -2,7 +2,14 @@ package com.androidharness.app.llm
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.withContext
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.booleanOrNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -13,59 +20,66 @@ import java.util.concurrent.TimeUnit
 object HarnessProvider {
     const val ID = "harness"
     const val BASE_URL = "https://opencode.ai/zen/v1"
+    const val KILO_BASE_URL = "https://api.kilo.ai/api/gateway"
+    const val KILO_NOTE = "Kilo · ~200 req/hour per IP"
+    const val CATALOG_SOURCE = "kilo-free-v1"
     const val DEFAULT_MODEL = "kilo-auto/free"
     const val KEYLESS = "harness-keyless"
     const val SESSION_HEADER = "x-opencode-session"
     const val USER_AGENT = "AndroidHarness"
     val config = ProviderConfig(ID, "Harness", ProviderType.OPENAI_COMPAT, BASE_URL, DEFAULT_MODEL)
 
-    /**
-     * Community upstreams that still serve anonymous, no-key free access.
-     * Each model rides its own OpenAI-compatible endpoint; the note is the
-     * published anonymous rate limit, shown in the model picker. Endpoints
-     * can die without notice, exactly like zen's keyless tier did.
-     */
+    /** Routing for the last successful free catalog, restored from disk on startup. */
     data class Pool(val baseUrl: String, val note: String)
 
-    val pool: Map<String, Pool> = buildMap {
-        val kilo = Pool("https://api.kilo.ai/api/gateway/v1", "Kilo · ~200 req/hour per IP")
-        listOf(
-            "kilo-auto/free",
-            "deepseek/deepseek-v4-flash-0731:free",
-            "thinkingmachines/inkling-small:free",
-            "z-ai/glm-5.2:free",
-            "nvidia/nemotron-3-ultra-550b-a55b:free",
-            "nvidia/nemotron-3.5-lightning:free",
-            "nvidia/nemotron-3-super-120b-a12b:free",
-            "poolside/laguna-s-2.1:free",
-            "poolside/laguna-xs-2.1:free",
-            "inclusionai/ling-3.0-flash-vl:free",
-            "inclusionai/ling-3.0-flash-sante:free",
-            "inclusionai/ling-3.0-flash-fin:free",
-            "nex-agi/nex-n2.5-pro:free",
-            "nex-agi/nex-n2.5-mini:free",
-            "dots-studio/dots-3-note-preview:free",
-            "qwen/qwen3.8-27b:free",
-            "cohere/north-mini-code:free",
-            "liquid/lfm-2.5-2.6b:free",
-            "openrouter/free",
-        ).forEach { put(it, kilo) }
-        put("openai-fast", Pool("https://text.pollinations.ai/openai", "Pollinations · ~4 req/min per IP"))
+    private val pollinations = ModelEntry("openai-fast", note = "Pollinations · ~4 req/min per IP")
+    val fallbackModels = listOf(ModelEntry(DEFAULT_MODEL, note = KILO_NOTE), pollinations)
+    @Volatile private var availableModels = fallbackModels
+    @Volatile var customModelIds: Set<String> = emptySet()
+
+    val pooledModels: List<ModelEntry> get() = availableModels
+    val pool: Map<String, Pool> get() = availableModels.associate { entry ->
+        entry.id to if (entry.id == pollinations.id) Pool("https://text.pollinations.ai/openai", pollinations.note!!)
+        else Pool(KILO_BASE_URL, KILO_NOTE)
     }
 
-    val pooledModels: List<ModelEntry> = pool.map { (id, p) -> ModelEntry(id, note = p.note) }
+    fun restoreModels(entries: List<ModelEntry>) { availableModels = entries.toList() }
+
+    internal fun cachedModels(raw: String?, source: String?): List<ModelEntry> =
+        if (source == CATALOG_SOURCE && raw != null) {
+            runCatching { Json { ignoreUnknownKeys = true }.decodeFromString<List<ModelEntry>>(raw) }
+                .getOrNull()?.takeIf { it.isNotEmpty() } ?: fallbackModels
+        } else fallbackModels
 
     fun isPooled(model: String): Boolean = pool.containsKey(model)
 
     fun sanitize(model: String?, custom: Set<String> = emptySet()): String =
-        model?.takeIf { it in pool || it in custom } ?: DEFAULT_MODEL
+        model?.takeIf { it in pool || it in custom }
+            ?: pooledModels.firstOrNull { it.id == DEFAULT_MODEL }?.id
+            ?: pooledModels.firstOrNull { it.id != pollinations.id }?.id
+            ?: pollinations.id
 
-    /**
-     * The harness catalog is the anonymous pool, full stop. Zen models are no
-     * longer offered here (they need a key now); custom ids added by the user
-     * still ride the zen path with the borrowed key.
-     */
-    fun models(entries: List<ModelEntry>): List<ModelEntry> = pooledModels
+    /** Kilo declares free access explicitly; a :free suffix alone is insufficient. */
+    internal fun parseKiloCatalog(body: String): List<ModelEntry> {
+        val root = Json.parseToJsonElement(body).jsonObject
+        val data = requireNotNull(root["data"]?.jsonArrayOrAbsent()) { "Invalid Kilo model catalog" }
+        val allowed = data.mapNotNull { element ->
+            val entry = element as? JsonObject ?: return@mapNotNull null
+            if (entry["isFree"]?.jsonPrimitive?.booleanOrNull != true) return@mapNotNull null
+            val supportsTools = entry["supported_parameters"]?.jsonArrayOrAbsent()
+                ?.any { it.jsonPrimitive.contentOrNull == "tools" } == true
+            if (!supportsTools) return@mapNotNull null
+            entry["id"]?.jsonPrimitive?.contentOrNull
+        }.toSet()
+        val entries = ModelCatalog.parseCatalog(ProviderType.OPENAI_COMPAT, body)
+            .filter { it.id in allowed }.map { it.copy(note = KILO_NOTE) }
+        require(entries.isNotEmpty()) { "Kilo has no free models with tool support available" }
+        return models(entries)
+    }
+
+    fun models(entries: List<ModelEntry>): List<ModelEntry> =
+        (entries.filterNot { it.id == pollinations.id }.map { it.copy(note = KILO_NOTE) } + pollinations)
+            .distinctBy { it.id }
 
     /**
      * The Zen relay serves one catalog behind three wires. Where Hermes pins
@@ -194,7 +208,7 @@ object HarnessProvider {
         }
         .build()
 
-    fun create(): LlmProvider = object : LlmProvider {
+    fun create(pooledClient: OkHttpClient = poolClient): LlmProvider = object : LlmProvider {
         override fun streamChat(
             config: ProviderConfig,
             apiKey: String,
@@ -207,9 +221,12 @@ object HarnessProvider {
             // on the chat/completions wire, no zen probing or session header.
             pool[config.model]?.let { upstream ->
                 val routed = config.copy(type = ProviderType.OPENAI_COMPAT, baseUrl = upstream.baseUrl)
-                return OpenAiCompatProvider(poolClient, ProviderFactory.json)
-                    .streamChat(routed, KEYLESS, systemPrompt, messages, tools, options)
+                return OpenAiCompatProvider(pooledClient, ProviderFactory.json)
+                    .streamChat(routed, OpenAiCompatProvider.LOCAL_KEY, systemPrompt, messages, tools, options)
             }
+            if (config.model !in customModelIds) return flowOf(StreamEvent.Failure(
+                "${config.model} is no longer available in Harness. Refresh the model list and choose an available model.",
+            ))
             // Zen's free tier rejects anonymous calls, so a saved key rides
             // out on the keyed client; the sentinel stays on the anonymous one.
             val key = realKey(apiKey)

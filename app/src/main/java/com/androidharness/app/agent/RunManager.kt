@@ -53,6 +53,7 @@ class RunManager(
     private val linuxEnv: LinuxEnvironmentManager,
     private val settings: com.androidharness.app.data.SettingsRepository,
     private val todoStore: TodoStore,
+    private val providers: com.androidharness.app.data.ProviderRepository,
     /** MCP servers; tools are attached per run. Null in tests without MCP. */
     private val mcp: com.androidharness.app.tools.mcp.McpManager? = null,
     private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
@@ -206,6 +207,7 @@ class RunManager(
         queuedPromptId: String? = null,
         replacementMessageId: String? = null,
     ): String = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
+        val runConfig = providers.resolveHarnessConfig(config)
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
             projectId = workspace.currentProjectOnce().id,
@@ -231,7 +233,7 @@ class RunManager(
         require(!resume || prior.workspacePath == runWorkspace.displayPath) { "Open the original workspace to resume this task" }
         val turnId = if (resume) prior.turnId else UUID.randomUUID().toString()
         val record = controls.update(sid) { it.copy(
-            status = "running", reason = null, provider = config, workspacePath = runWorkspace.displayPath,
+            status = "running", reason = null, provider = runConfig, workspacePath = runWorkspace.displayPath,
             mode = mode.name, thinking = thinking.name, maxOutput = maxOutputTokens,
             maxContext = maxContextTokens, maxIterations = maxIterations, turnId = turnId,
             initialPrompt = if (resume) it.initialPrompt else text,
@@ -261,6 +263,10 @@ class RunManager(
             sessions.addMessage(sid, ChatMessage(role = Role.USER, text = record.initialPrompt,
                 images = record.images, turnId = turnId, id = initialId), turnId)
         }
+        if (runConfig.model != config.model) sessions.addMessage(sid, ChatMessage(
+            role = Role.ASSISTANT,
+            text = "${config.model} is no longer available in Harness. Using ${runConfig.model}.",
+        ), turnId)
         controls.update(sid) { it.copy(queue = it.queue.filterNot { q -> q.id == initialId }) }
         if (resume) sessions.addMessage(sid, ChatMessage(role = Role.USER,
             text = "Resume the interrupted task from saved progress. Completed tool results are authoritative. Inspect uncertain outcomes before further actions; do not repeat completed operations."), turnId)
@@ -310,8 +316,12 @@ class RunManager(
                 // One catalog fetch per run serves every task `model` override;
                 // a provider that cannot list models just refuses overrides.
                 val modelResolver = SubagentModelResolver {
-                    when (val r = com.androidharness.app.llm.ModelCatalog.listModels(config, apiKey)) {
-                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> r.models.map { it.id }
+                    when (val r = com.androidharness.app.llm.ModelCatalog.listModels(runConfig, apiKey)) {
+                        is com.androidharness.app.llm.ModelCatalog.Result.Models -> {
+                            if (runConfig.id == com.androidharness.app.llm.HarnessProvider.ID)
+                                providers.saveCatalog(runConfig.id, r.models)
+                            r.models.map { it.id }
+                        }
                         is com.androidharness.app.llm.ModelCatalog.Result.Failed -> error(r.message)
                     }
                 }
@@ -319,7 +329,7 @@ class RunManager(
                 engine.run(
                     sessionId = sid,
                     turnId = turnId,
-                    config = config,
+                    config = runConfig,
                     apiKey = apiKey,
                     history = history,
                     // Live read: flipping the permission mode mid-run applies
@@ -348,7 +358,7 @@ class RunManager(
                                 model = event.model, totalInputTokens = event.inputTokens.toLong(),
                                 outputTokens = event.outputTokens.toLong(), cachedTokens = event.cachedInputTokens.toLong(),
                                 cacheWriteTokens = event.cacheWriteTokens.toLong(),
-                                providerKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(config.baseUrl),
+                                providerKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(runConfig.baseUrl),
                             )
                             budget.add(event.inputTokens, event.outputTokens, price)
                             if (record.limits.cost > 0 && price == null) {

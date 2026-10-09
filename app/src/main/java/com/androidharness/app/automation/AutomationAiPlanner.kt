@@ -56,11 +56,12 @@ class AutomationAiPlanner(private val c: AppContainer) {
         }
         val provider = c.providers.providers.first().firstOrNull { it.id == providerId }
             ?: error("Choose an AI provider in Settings first.")
-        val model = selectedModel?.takeIf { it.isNotBlank() }
+        val requestedModel = selectedModel?.takeIf { it.isNotBlank() }
             ?: if (selectedProviderId == null) {
                 (if (settings.planningModelsEnabled) settings.executionModel else settings.activeModel)
                     ?.takeIf { it.isNotBlank() } ?: provider.model
             } else provider.model
+        val model = c.providers.resolveHarnessConfig(provider.copy(model = requestedModel)).model
         val apiKey = if (provider.id == HarnessProvider.ID) c.providers.harnessApiKey()
         else provider.effectiveApiKey(c.providers.apiKey(provider.id))
             .takeIf { it.isNotBlank() } ?: error("Provider credentials are missing.")

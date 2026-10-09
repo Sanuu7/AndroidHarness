@@ -2,6 +2,7 @@ package com.androidharness.app.data
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit
+import androidx.datastore.preferences.core.Preferences
 import androidx.datastore.preferences.core.stringPreferencesKey
 import androidx.datastore.preferences.preferencesDataStore
 import com.androidharness.app.llm.HarnessProvider
@@ -28,6 +29,7 @@ class ProviderRepository(
     private val listKey = stringPreferencesKey("provider_list")
 
     val providers: Flow<List<ProviderConfig>> = kotlinx.coroutines.flow.combine(context.providerStore.data, localModels.installed, chatGpt.state) { prefs, installed, accounts ->
+        HarnessProvider.restoreModels(harnessModels(prefs))
         val saved = prefs[listKey]?.let { raw ->
             runCatching {
                 json.decodeFromString(ListSerializer(ProviderConfig.serializer()), raw)
@@ -38,6 +40,7 @@ class ProviderRepository(
                 json.decodeFromString<List<ModelEntry>>(raw)
             }.getOrDefault(emptyList())
         }?.map { it.id }?.toSet().orEmpty()
+        HarnessProvider.customModelIds = harnessCustom
         accounts.accounts.filter { it.connected && it.models.isNotEmpty() }.map { it.config() } +
             listOf(HarnessProvider.config.copy(model = HarnessProvider.sanitize(saved.firstOrNull { it.id == HarnessProvider.ID }?.model, harnessCustom))) + saved.filterNot { it.id == HarnessProvider.ID || com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(it.id) || com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) || it.baseUrl.startsWith("local://") } + localModels.configs(installed)
     }
@@ -58,9 +61,7 @@ class ProviderRepository(
             }
             .toMap().toMutableMap()
 
-        // The harness catalog is the static anonymous pool. Overwrite whatever
-        // older fetches saved so retired zen models never resurface in the picker.
-        catalogMap[HarnessProvider.ID] = HarnessProvider.pooledModels
+        catalogMap[HarnessProvider.ID] = harnessModels(prefs)
 
         prefs.asMap().asSequence()
             .filter { it.key.name.startsWith(CUSTOM_MODELS_PREFIX) }
@@ -93,6 +94,13 @@ class ProviderRepository(
         return runCatching {
             json.decodeFromString<List<ModelEntry>>(raw)
         }.getOrDefault(emptyList())
+    }
+
+    suspend fun resolveHarnessConfig(config: ProviderConfig): ProviderConfig {
+        if (config.id != HarnessProvider.ID) return config
+        providers.first() // A background resume can arrive before the UI starts collecting.
+        val custom = customModels(HarnessProvider.ID).map { it.id }.toSet()
+        return config.copy(model = HarnessProvider.sanitize(config.model, custom))
     }
 
     suspend fun addCustomModel(providerId: String, modelId: String, reasoning: Boolean? = null) {
@@ -129,8 +137,16 @@ class ProviderRepository(
         context.providerStore.edit { prefs ->
             prefs[catalogKey(providerId)] =
                 json.encodeToString(ListSerializer(ModelEntry.serializer()), entries)
+            if (providerId == HarnessProvider.ID) prefs[harnessCatalogSource] = HarnessProvider.CATALOG_SOURCE
         }
+        if (providerId == HarnessProvider.ID) HarnessProvider.restoreModels(entries)
     }
+
+    // Old catalog_harness snapshots came from Zen or the hardcoded pool, not Kilo.
+    private val harnessCatalogSource = stringPreferencesKey("harness_catalog_source")
+    private fun harnessModels(prefs: Preferences): List<ModelEntry> = HarnessProvider.cachedModels(
+        prefs[catalogKey(HarnessProvider.ID)], prefs[harnessCatalogSource],
+    )
 
     suspend fun add(name: String, type: ProviderType, baseUrl: String, model: String, apiKey: String): ProviderConfig {
         val config = ProviderConfig(

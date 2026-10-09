@@ -103,7 +103,7 @@ fun ModelPickerSheet(
     val normalizedQuery = remember(query) { query.trim().lowercase() }
     LaunchedEffect(listedProvider?.id) {
         val provider = listedProvider ?: return@LaunchedEffect
-        if ((chatGptPlan || listedCatalog.isEmpty()) && !isRefreshing) {
+        if ((chatGptPlan || provider.id == com.androidharness.app.llm.HarnessProvider.ID || listedCatalog.isEmpty()) && !isRefreshing) {
             isRefreshing = true
             try { refreshError = onRefreshCatalog(provider.id) }
             finally { isRefreshing = false }

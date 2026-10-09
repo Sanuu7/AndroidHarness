@@ -66,7 +66,7 @@ class AppContainer(val appContext: Context) {
             runManager.runningSessionIds.value.filter { runManager.controls.flow(it).value.provider?.id == id }
                 .forEach { runManager.stopAndJoin(it) }
         })
-    val providers = ProviderRepository(appContext, keys, localModels, chatGpt)
+    val providers: ProviderRepository = ProviderRepository(appContext, keys, localModels, chatGpt)
 
     init {
         ProviderFactory.chatGptProvider = com.androidharness.app.chatgpt.ChatGptProvider(chatGpt::accessToken,
@@ -169,7 +169,11 @@ class AppContainer(val appContext: Context) {
         configuredSubagent = {
             com.androidharness.app.agent.SubagentConfiguration.configured(
                 settings.settings.first(), providers.providers.first(), providers::apiKey,
-            )
+            )?.let { connection ->
+                com.androidharness.app.agent.SubagentConnection(
+                    providers.resolveHarnessConfig(connection.config), connection.apiKey,
+                )
+            }
         },
     )
     val runManager = com.androidharness.app.agent.RunManager(
@@ -181,6 +185,7 @@ class AppContainer(val appContext: Context) {
         linuxEnv = linuxEnv,
         settings = settings,
         todoStore = todoStore,
+        providers = providers,
         mcp = mcp,
         repoMap = repoMap,
     )
@@ -214,8 +219,18 @@ class AppContainer(val appContext: Context) {
             providers.harnessWires.collect { com.androidharness.app.llm.HarnessProvider.pins = it }
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            // The harness catalog is the static anonymous pool now, nothing to
-            // fetch; only models.dev needs a background refresh.
+            // Restore routes before fetching; failed refreshes leave the cache intact.
+            providers.providers.first()
+            when (val result = com.androidharness.app.llm.ModelCatalog.listModels(
+                com.androidharness.app.llm.HarnessProvider.config,
+                com.androidharness.app.llm.HarnessProvider.KEYLESS,
+            )) {
+                is com.androidharness.app.llm.ModelCatalog.Result.Models ->
+                    providers.saveCatalog(com.androidharness.app.llm.HarnessProvider.ID, result.models)
+                is com.androidharness.app.llm.ModelCatalog.Result.Failed -> Unit
+            }
+        }
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             com.androidharness.app.llm.ModelsDev.refresh(appContext)
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
