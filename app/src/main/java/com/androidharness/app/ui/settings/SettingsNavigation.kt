@@ -6,6 +6,7 @@ internal enum class SettingsPage(
     val group: String,
     val keywords: String,
 ) {
+    GITHUB("GitHub", "Sign in, import repositories and publish changes", "GitHub integration", "oauth login git pat token scopes import commit push preset automation"),
     CONNECTED_ACCOUNTS("Connected accounts", "Use your ChatGPT plan for coding and tools", "Special providers", "chatgpt codex subscription sign in login account plan oauth"),
     MODELS("Models & providers", "Connections, current model and separate planning models", "Your assistant", "api key token provider openai anthropic gemini thinking planning execution"),
     SUBAGENT("Sub-Agent settings", "Choose subagent models and action tools", "Your assistant", "subagent sub-agent sub agent model provider action tools permissions edit commands"),
@@ -18,7 +19,6 @@ internal enum class SettingsPage(
     SKILLS("Skills", "Manage the playbooks your assistant can use", "Your assistant", "catalog instructions add skills"),
     APPEARANCE("Appearance", "Theme, colors and the look of your app", "Personalize", "dark light amoled system wallpaper dynamic color"),
     PRIVACY("Privacy & security", "App lock, biometrics and screenshot access", "Personalize", "fingerprint pin authentication screenshots"),
-    GITHUB("GitHub", "Connect your account and manage repository access", "Connections", "oauth login git pat token scopes"),
     SEARCH("Web search", "Search provider and API credentials", "Connections", "brave tavily keyless internet"),
     MCP("Connected tools", "Add and configure MCP servers", "Connections", "mcp integrations servers transport"),
     WORKSPACE("Workspaces", "Choose, add and manage your project folders", "Workspace & device", "storage files saf folder project remembered permissions grants revoke always"),
@@ -102,6 +102,7 @@ internal fun matchingSettingsPages(query: String): List<SettingsPage> =
     matchingSettingsEntries(query).map { it.page }.distinct()
 
 internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
+    "github" -> SettingsPage.GITHUB
     "chatgpt" -> SettingsPage.CONNECTED_ACCOUNTS
     "planning" -> SettingsPage.MODELS
     "voice" -> SettingsPage.VOICE

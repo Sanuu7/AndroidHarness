@@ -23,8 +23,13 @@ class AutomationManager(private val c: AppContainer) {
     fun save(task: AutomationTask) {
         require(task.title.isNotBlank() && task.prompt.isNotBlank())
         require(task.hour in 0..23 && task.minute in 0..59)
-        require(!task.providerId.isNullOrBlank() && !task.model.isNullOrBlank()) {
+        require(task.githubPush != null || (!task.providerId.isNullOrBlank() && !task.model.isNullOrBlank())) {
             "Choose a model for this automation."
+        }
+        task.githubPush?.let {
+            require(it.remoteUrl == com.androidharness.app.github.gitHubRepositoryUrl(it.remoteUrl) && it.branch.isNotBlank() && it.commitMessage.isNotBlank()) {
+                "Choose a GitHub repository, branch and commit message."
+            }
         }
         repository.save(task)
         val name = "automation-schedule-${task.id}"
@@ -93,7 +98,8 @@ class AutomationManager(private val c: AppContainer) {
         val task = repository.task(id) ?: return@withLock
         if (scheduled && !task.enabled) return@withLock
         val entry = AutomationHistoryEntry(taskId = id, title = task.title,
-            providerId = task.providerId, model = task.model,
+            providerId = if (task.githubPush != null) "github" else task.providerId,
+            model = task.githubPush?.let { "GitHub · ${it.branch}" } ?: task.model,
             startedAt = System.currentTimeMillis(), status = AutomationStatus.RUNNING)
         repository.addHistory(entry)
         var sid: String? = null
@@ -132,6 +138,17 @@ class AutomationManager(private val c: AppContainer) {
             val project = c.workspace.projects.first().firstOrNull { it.id == task.projectId }
                 ?: error("Workspace was removed. Edit this automation.")
             val fs = c.workspace.fsFor(project)
+            if (task.githubPush != null) {
+                sid = c.sessions.createSession(task.title, task.projectId)
+                c.sessions.addMessage(requireNotNull(sid), com.androidharness.app.core.ChatMessage(role = Role.USER,
+                    text = "GitHub push preset: ${task.githubPush.remoteUrl} · ${task.githubPush.branch}"))
+                status(AutomationStatus.RUNNING, "Checking repository and publishing changes")
+                val result = c.githubRepositories.pushPreset(fs, task.githubPush)
+                resultPreview = result
+                c.sessions.addMessage(requireNotNull(sid), com.androidharness.app.core.ChatMessage(role = Role.ASSISTANT, text = result))
+                status(AutomationStatus.PASSED, result, true)
+                return@withLock
+            }
             check(c.mcp.unapprovedWorkspaceServers(fs).isEmpty()) {
                 "Workspace MCP configuration needs approval in chat."
             }
@@ -226,7 +243,11 @@ class AutomationManager(private val c: AppContainer) {
             throw e
         } catch (e: Exception) {
             sid?.let { c.runManager.stopAndJoin(it) }
-            status(AutomationStatus.BLOCKED, e.message ?: "Could not start task.", true)
+            val message = if (task.githubPush != null) c.github.safeMessage(e) else e.message ?: "Could not start task."
+            if (task.githubPush != null) sid?.let { c.sessions.addMessage(it,
+                com.androidharness.app.core.ChatMessage(role = Role.ASSISTANT, text = message)) }
+            status(if (e is com.androidharness.app.github.GitHubOperationFailure) AutomationStatus.FAILED else AutomationStatus.BLOCKED,
+                message, true)
         } finally {
             if (scheduled) repository.task(id)?.takeIf { it.enabled }?.let { current ->
                 when (current.schedule) {

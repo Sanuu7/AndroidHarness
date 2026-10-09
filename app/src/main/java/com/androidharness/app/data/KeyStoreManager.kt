@@ -53,13 +53,13 @@ class KeyStoreManager(context: Context) {
 
     /** GitHub access token used for push/PR/private-repo access from the toolchain. */
     fun putGitHubToken(token: String) {
-        prefs.edit().putString(KEY_GITHUB, token.trim()).apply()
+        prefs.edit().remove("github_connection").putString(KEY_GITHUB, token.trim()).apply()
     }
 
     fun githubToken(): String? = prefs.getString(KEY_GITHUB, null)?.trim()?.ifBlank { null }
 
     fun removeGitHubToken() {
-        prefs.edit().remove(KEY_GITHUB).apply()
+        prefs.edit().remove("github_connection").remove(KEY_GITHUB).apply()
     }
 
     /** GitHub login name captured when a token was verified against /user. */
@@ -68,6 +68,23 @@ class KeyStoreManager(context: Context) {
     }
 
     fun githubLogin(): String? = prefs.getString(KEY_GITHUB_LOGIN, null)?.trim()?.ifBlank { null }
+
+    fun githubCredential(): com.androidharness.app.github.GitHubCredential? {
+        val saved = prefs.getString("github_connection", null)
+        if (saved != null) runCatching {
+            kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<com.androidharness.app.github.GitHubCredential>(saved)
+        }.getOrNull()?.let { return it }
+        return githubToken()?.let { com.androidharness.app.github.GitHubCredential(it, githubLogin().orEmpty()) }
+    }
+
+    fun putGitHubCredential(value: com.androidharness.app.github.GitHubCredential?) {
+        val editor = prefs.edit()
+        if (value == null) editor.remove("github_connection").remove(KEY_GITHUB).remove(KEY_GITHUB_LOGIN)
+        else editor.putString("github_connection", kotlinx.serialization.json.Json.encodeToString(
+            com.androidharness.app.github.GitHubCredential.serializer(), value))
+            .putString(KEY_GITHUB, value.token).putString(KEY_GITHUB_LOGIN, value.login)
+        check(editor.commit()) { "Could not securely save the GitHub connection." }
+    }
 
     fun removeGitHubLogin() {
         prefs.edit().remove(KEY_GITHUB_LOGIN).apply()

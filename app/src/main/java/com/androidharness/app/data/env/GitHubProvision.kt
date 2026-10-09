@@ -16,12 +16,9 @@ import java.io.File
  *    (HOME points at `<prefix>/home` in both shell tiers).
  *  - `<prefix>/etc/gitconfig` carries a git identity plus an insteadOf rewrite
  *    that injects the token into every https://github.com URL. URL rewriting
- *    is the only credential transport that works in BOTH tiers: in the app-uid
- *    tier git-spawned helpers (gh auth git-credential, git-credential-store)
- *    still cannot exec under the W^X shim. In the shell tier they work, git's
- *    compiled-in SHELL_PATH is patched to /system/bin/sh at extract time (see
- *    TermuxShellPath), so no empty `credential.helper` reset is written that
- *    would block them.
+ *    works in both execution tiers without an interactive credential helper.
+ *    Git's compiled-in SHELL_PATH is patched to /system/bin/sh at extract time
+ *    (see TermuxShellPath), and termux-exec handles native child programs.
  */
 object GitHubProvision {
 
@@ -84,6 +81,15 @@ object GitHubProvision {
                 writePrivate(f, body)
             }
         }
+    }
+
+    fun checkMaterialized(prefix: File, token: String?) {
+        val tokenFile = File(prefix, TOKEN_FILE)
+        val hostsFile = File(prefix, GH_HOSTS_FILE)
+        check(if (hasToken(token)) tokenFile.isFile && tokenFile.readText().trim() == token!!.trim()
+            else !tokenFile.exists()) { "GitHub credentials could not be applied to the local toolchain. Check storage and retry." }
+        check(if (hasToken(token)) hostsFile.isFile && hostsFile.readText() == ghHostsYaml(token)
+            else !hostsFile.exists()) { "GitHub CLI credentials could not be updated. Check storage and retry." }
     }
 
     /**

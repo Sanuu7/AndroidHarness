@@ -36,6 +36,7 @@ data class AutomationTask(
     val lastStatus: AutomationStatus = AutomationStatus.IDLE,
     val lastSessionId: String? = null,
     val lastMessage: String? = null,
+    val githubPush: com.androidharness.app.github.GitHubPushPreset? = null,
 )
 
 @Serializable

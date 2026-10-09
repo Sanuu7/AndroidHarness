@@ -71,6 +71,7 @@ fun AutomationScreen(
 
     var editing by remember { mutableStateOf<AutomationTask?>(null) }
     var showEditor by remember { mutableStateOf(false) }
+    var githubPresetProject by remember { mutableStateOf<Pair<String, String>?>(null) }
     var showHistory by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -136,6 +137,11 @@ fun AutomationScreen(
                 }
             }
 
+            item {
+                OutlinedButton(onClick = { project?.let { githubPresetProject = it.id to it.name } },
+                    enabled = project != null, modifier = Modifier.fillMaxWidth()) { Text("GitHub push preset") }
+            }
+
             error?.let { message ->
                 item {
                     Surface(
@@ -195,7 +201,15 @@ fun AutomationScreen(
         }
     }
 
-    if (showEditor) {
+    githubPresetProject?.let { (id, name) ->
+        com.androidharness.app.ui.github.GitHubPushPresetDialog(container, id, name,
+            onDismiss = { githubPresetProject = null })
+    }
+    if (showEditor && editing?.githubPush != null) {
+        val task = requireNotNull(editing)
+        com.androidharness.app.ui.github.GitHubPushPresetDialog(container, task.projectId, task.projectName,
+            task = task, onDismiss = { showEditor = false })
+    } else if (showEditor) {
         AutomationEditorDialog(
             container = container,
             task = editing,
@@ -457,7 +471,7 @@ private fun AutomationTaskCard(
                     modifier = Modifier.size(16.dp),
                 )
                 Text(
-                    task.model ?: "App default AI",
+                    if (task.githubPush != null) "GitHub · ${task.githubPush.branch}" else task.model ?: "App default AI",
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     maxLines = 1,

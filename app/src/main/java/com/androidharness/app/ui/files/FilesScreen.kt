@@ -165,6 +165,7 @@ fun FilesScreen(
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var showWorkspaceSheet by remember { mutableStateOf(false) }
     var showAddWorkspace by remember { mutableStateOf(false) }
+    var githubProject by remember { mutableStateOf<Pair<String, String>?>(null) }
     val safWorkspacePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
     ) { uri -> uri?.let { scope.launch { container.workspace.addPickedFolder(it) } } }
@@ -275,6 +276,11 @@ fun FilesScreen(
                                 Icon(Icons.Filled.MoreVert, contentDescription = "More")
                             }
                             DropdownMenu(expanded = headerMenuOpen, onDismissRequest = { headerMenuOpen = false }) {
+                                DropdownMenuItem(
+                                    text = { Text("GitHub · Commit & push") },
+                                    enabled = currentWorkspace != null,
+                                    onClick = { headerMenuOpen = false; currentWorkspace?.let { githubProject = it.id to it.name } },
+                                )
                                 DropdownMenuItem(
                                     text = { Text("Select items") },
                                     onClick = { headerMenuOpen = false; selecting = true },
@@ -766,6 +772,10 @@ fun FilesScreen(
     }
 
     // ---- workspace switcher sheet + add/delete flows ----
+    githubProject?.let { (id, name) ->
+        com.androidharness.app.ui.github.GitHubPublishDialog(container, id, name,
+            onDismiss = { githubProject = null; refreshTick++ })
+    }
     if (showWorkspaceSheet) {
         com.androidharness.app.ui.common.ShizukuWorkspaceWarningEffect(container.shizuku)
         com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(

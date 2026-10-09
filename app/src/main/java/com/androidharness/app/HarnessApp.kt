@@ -175,6 +175,7 @@ class AppContainer(val appContext: Context) {
                 )
             }
         },
+        prepareGitHub = { github.refreshIfNeeded() },
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -189,6 +190,9 @@ class AppContainer(val appContext: Context) {
         mcp = mcp,
         repoMap = repoMap,
     )
+    val github = com.androidharness.app.github.GitHubAuth(BuildConfig.GITHUB_CLIENT_ID,
+        keys::githubCredential, keys::putGitHubCredential, { refreshGitHubAuth() })
+    val githubRepositories = com.androidharness.app.github.GitHubWorkspaces(this)
     val automation = com.androidharness.app.automation.AutomationManager(this)
     val terminal = com.androidharness.app.data.TerminalManager(appContext, linuxEnv, shizuku, runManager)
 
@@ -197,7 +201,7 @@ class AppContainer(val appContext: Context) {
      * copies (token file + gitconfig rewrite), then redeploy the shell-tier
      * toolchain so the new auth is live without an app restart.
      */
-    suspend fun refreshGitHubAuth() = linuxEnv.refreshGitHub(shizuku)
+    suspend fun refreshGitHubAuth() = linuxEnv.refreshGitHub(shizuku, strict = true)
 
     init {
         // models.dev thinking-capability catalog: serve the cached copy

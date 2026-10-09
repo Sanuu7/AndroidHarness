@@ -39,9 +39,16 @@ class SettingsNavigationTest {
     }
 
     @Test
-    fun `removed shortcuts do not appear in settings navigation or search`() {
-        assertTrue(matchingSettingsPages("automation").isEmpty())
+    fun `automation search finds integrated GitHub presets and build shortcut stays removed`() {
+        assertEquals(listOf(SettingsPage.GITHUB), matchingSettingsPages("automation"))
         assertTrue(matchingSettingsPages("build test").isEmpty())
+    }
+
+    @Test
+    fun `GitHub integration is the first settings page and supports a direct link`() {
+        assertEquals(SettingsPage.GITHUB, matchingSettingsPages("").first())
+        assertEquals(SettingsPage.GITHUB, settingsDeepLink("github"))
+        assertEquals(listOf(SettingsPage.GITHUB), matchingSettingsPages("commit push"))
     }
 
     @Test

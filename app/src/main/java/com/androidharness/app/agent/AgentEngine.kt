@@ -193,6 +193,7 @@ class AgentEngine(
     private val repoMap: com.androidharness.app.repomap.RepoMapCache? = null,
     private val cavemanSettings: suspend () -> com.androidharness.app.data.AppSettings = { com.androidharness.app.data.AppSettings() },
     private val configuredSubagent: suspend () -> SubagentConnection? = { null },
+    private val prepareGitHub: suspend () -> Unit = {},
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -922,6 +923,8 @@ class AgentEngine(
         kotlin.coroutines.coroutineContext[TaskBudget]?.check()
         val startedAt = System.currentTimeMillis()
         val executed = try {
+            if (call.name in setOf("git_push", "git_pull", "http_request", "shell", "shell_background") &&
+                workspace !is com.androidharness.app.workspace.SshFs) prepareGitHub()
             val raw = tool.execute(args, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS, sessionId))
             raw.redacted()
         } catch (ce: CancellationException) {

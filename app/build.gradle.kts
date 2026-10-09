@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -14,6 +16,13 @@ plugins {
 // AGP resolves a pinned version only from <sdk>/ndk/<version>, so a foreign
 // ANDROID_NDK_HOME (CI images export one) must not enable the native block.
 val pinnedNdk = "27.2.12479018"
+val githubBuildProperties = Properties().apply {
+    rootProject.file("local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
+}
+// Load only from the ignored local build settings; never from public CI variables.
+// Device Flow never embeds an OAuth client secret or auth backend.
+val githubClientId = githubBuildProperties.getProperty("GITHUB_CLIENT_ID", "")
+require(githubClientId.matches(Regex("[A-Za-z0-9]*"))) { "Invalid GitHub OAuth Client ID" }
 val hasNdk: Boolean = run {
     val sdk = System.getenv("ANDROID_HOME")?.takeIf { it.isNotBlank() }?.let { File(it) }
         ?: rootProject.file("local.properties").takeIf { it.exists() }
@@ -44,6 +53,7 @@ android {
         targetSdk = 36
         versionCode = 20
         versionName = "1.6"
+        buildConfigField("String", "GITHUB_CLIENT_ID", "\"$githubClientId\"")
         if (hasNdk) {
             ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
             externalNativeBuild {

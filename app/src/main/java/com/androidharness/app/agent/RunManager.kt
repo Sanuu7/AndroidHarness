@@ -105,6 +105,14 @@ class RunManager(
     private val appScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
     private val lock = Any()
     private val workspaceGuard = Mutex()
+
+    /** Keep publication and run starts mutually exclusive for the captured workspace. */
+    suspend fun <T> withIdleWorkspace(fs: com.androidharness.app.workspace.WorkspaceFs, action: suspend () -> T): T = workspaceGuard.withLock {
+        check(runningSessionIds.value.none { controls.flow(it).value.workspacePath == fs.displayPath }) {
+            "A task is working in this workspace. Wait for it to finish, then retry publishing."
+        }
+        action()
+    }
     private val states = mutableMapOf<String, MutableStateFlow<LiveRunState>>()
     private val jobs = mutableMapOf<String, Job>()
     private val queueWrites = mutableMapOf<String, MutableSet<Job>>()

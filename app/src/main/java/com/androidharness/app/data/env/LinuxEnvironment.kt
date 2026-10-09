@@ -338,6 +338,8 @@ class LinuxEnvironmentManager(
     val state: StateFlow<EnvState> = _state
 
     val isReady: Boolean get() = _state.value is EnvState.Ready
+    val gitToolsReady: Boolean get() = isReady &&
+        File(prefix, "bin/git").isFile && File(prefix, "lib/libtermux-exec-ld-preload.so").isFile
 
     /**
      * Notified whenever the installed package set changes: the app wires this
@@ -373,20 +375,20 @@ class LinuxEnvironmentManager(
         .build()
 
     /** Base packages for a usable coding shell (git pulls its own deps). */
-    val corePackages = listOf("bash", "busybox", "ca-certificates", "git")
+    val corePackages = listOf("bash", "busybox", "ca-certificates", "termux-exec", "git")
 
     /** Everything a coding agent may need, used by the chat install card. */
     val fullPackages = corePackages + listOf("gh", "python", "python-pip", "nodejs", "npm")
 
     /** Installs [wanted] plus their full dependency closure. Resumes after interruptions. */
     suspend fun install(wanted: List<String>) {
-        if (_state.value is EnvState.Ready && wanted.all { installedContains(it) }) return
+        if (isReady && wanted.all { installedContains(it) && it !in brokenInstalledPackages() }) return
         withContext(Dispatchers.IO) {
             // Serialized: concurrent installs race the read-modify-write on the
             // package marker and can silently drop entries, which later reads
             // as phantom "missing" packages.
             installMutex.withLock {
-                if (_state.value is EnvState.Ready && wanted.all { installedContains(it) }) return@withLock
+                if (isReady && wanted.all { installedContains(it) && it !in brokenInstalledPackages() }) return@withLock
                 installLocked(wanted)
             }
         }
@@ -485,7 +487,7 @@ class LinuxEnvironmentManager(
             // seconds on mobile networks before the first package download.
             _state.value = EnvState.Preparing
             val index = getPackageIndex()
-            val already = installedPackages().toSet()
+            val already = installedPackages().toSet() - brokenInstalledPackages().toSet()
             val unknown = wanted.filter { it !in index }
             if (unknown.isNotEmpty()) {
                 throw IllegalArgumentException("Unknown package(s): ${unknown.joinToString(", ")}. Not found in repository.")
@@ -555,6 +557,7 @@ class LinuxEnvironmentManager(
         "bash" to listOf("bin/bash"),
         "busybox" to listOf("bin/busybox"),
         "git" to listOf("bin/git"),
+        "termux-exec" to listOf("lib/libtermux-exec-ld-preload.so"),
         "gh" to listOf("bin/gh"),
         "python" to listOf("bin/python3", "bin/python"),
         "python-pip" to listOf("bin/pip", "bin/pip3"),
@@ -639,7 +642,7 @@ class LinuxEnvironmentManager(
      * the new packages" notice until they run Update; fresh installs never
      * see it because they install the whole set at once.
      */
-    private val LATE_PACKAGES = listOf("gh")
+    private val LATE_PACKAGES = listOf("gh", "termux-exec")
 
     /** Packages from [LATE_PACKAGES] missing from an installed prefix. Empty = nothing to fetch. */
     fun latePackagesPending(): List<String> {
@@ -788,10 +791,15 @@ class LinuxEnvironmentManager(
         put("HOME", "${prefix.absolutePath}/home")
         put("TMPDIR", "${prefix.absolutePath}/tmp")
         put("PREFIX", prefix.absolutePath)
-        val termuxExec = File(prefix, "lib/libtermux-exec.so")
+        // Recent termux-exec packages split the interception library from the
+        // API library. Loading the API alone leaves Git's child execs blocked
+        // by Android's app-data execution restriction.
+        val termuxExec = File(prefix, "lib/libtermux-exec-ld-preload.so")
         if (termuxExec.exists()) {
             put("LD_PRELOAD", termuxExec.absolutePath)
             put("TERMUX__PREFIX", prefix.absolutePath)
+            put("TERMUX_APP__DATA_DIR", context.applicationInfo.dataDir)
+            put("TERMUX_APP__LEGACY_DATA_DIR", "/data/data/${context.packageName}")
         }
         put("TERM", "xterm-256color")
         put("LANG", "C.UTF-8")
@@ -969,10 +977,11 @@ class LinuxEnvironmentManager(
      * for tens of seconds and left the Settings UI stuck on "Connecting...".
      * Deploys re-stage via ensureShellDeploy when the package set changes.
      */
-    suspend fun refreshGitHub(shizuku: ShizukuManager) = withContext(Dispatchers.IO) {
+    suspend fun refreshGitHub(shizuku: ShizukuManager, strict: Boolean = false) = withContext(Dispatchers.IO) {
         materializeGitHub()
+        if (strict) GitHubProvision.checkMaterialized(prefix, githubToken())
         if (shizuku.isGranted()) {
-            runCatching { syncShellTierAuth(shizuku) }
+            if (strict) syncShellTierAuth(shizuku) else runCatching { syncShellTierAuth(shizuku) }
                 .onFailure { Log.e(TAG, "shell-tier GitHub auth sync failed", it) }
         }
         // The staging/deploy state may have changed under the cached flag;
@@ -1125,8 +1134,8 @@ class LinuxEnvironmentManager(
         // because the linker then refuses EVERY dynamically linked binary
         // (setsid, sh, bash) with `CANNOT LINK EXECUTABLE ... not found`, so
         // the whole tier looks broken instead of degraded.
-        if (File(prefix, "lib/libtermux-exec.so").exists()) {
-            put("LD_PRELOAD", "$tmpPrefix/lib/libtermux-exec.so")
+        if (File(prefix, "lib/libtermux-exec-ld-preload.so").exists()) {
+            put("LD_PRELOAD", "$tmpPrefix/lib/libtermux-exec-ld-preload.so")
         }
         put("TERMUX__PREFIX", tmpPrefix)
         put("TERM", "xterm-256color")
@@ -1206,7 +1215,7 @@ class LinuxEnvironmentManager(
             File(prefix, CODEGRAPH_VERSION_MARKER).readText().trim()
         }.getOrDefault("")
         val bundlePatchVersion = CodeGraphBundlePatches.VERSION
-        return ("v20-codegraph-p$bundlePatchVersion\n$codeGraphVersion\n" + installedPackages().sorted().joinToString("\n"))
+        return ("v21-github-exec-codegraph-p$bundlePatchVersion\n$codeGraphVersion\n" + installedPackages().sorted().joinToString("\n"))
             .let { MessageDigest.getInstance("SHA-256").digest(it.toByteArray()).joinToString("") { b -> "%02x".format(b) } }
     }
 

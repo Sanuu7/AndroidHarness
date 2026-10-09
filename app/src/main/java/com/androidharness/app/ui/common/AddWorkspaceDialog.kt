@@ -39,6 +39,10 @@ fun AddWorkspaceDialog(
 ) {
     ShizukuWorkspaceWarningEffect(container.shizuku)
     var destination by remember { mutableStateOf<String?>(null) }
+    if (destination == "github") {
+        com.androidharness.app.ui.github.GitHubImportDialog(container, onDismiss)
+        return
+    }
     if (destination == "ssh") {
         SshWorkspaceDialog(container, onDismiss = onDismiss)
         return
@@ -46,6 +50,7 @@ fun AddWorkspaceDialog(
     if (destination == null) {
         AlertDialog(onDismissRequest = onDismiss, title = { Text("Add workspace") }, text = {
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Button(onClick = { destination = "github" }, modifier = Modifier.fillMaxWidth()) { Text("Import from GitHub") }
                 Button(onClick = { destination = "local" }, modifier = Modifier.fillMaxWidth()) { Text("On this device") }
                 OutlinedButton(onClick = { destination = "ssh" }, modifier = Modifier.fillMaxWidth()) { Text("Connect through SSH") }
             }
