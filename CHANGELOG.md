@@ -1,5 +1,25 @@
 # Changelog
 
+## 1.7 (2026-10-10)
+
+### Added
+
+- **GitHub built in**: GitHub is now the first settings page. Sign in through GitHub's Device Flow, where the app shows a code to enter in your browser (no auth server involved), or connect a personal access token. Verified credentials are stored encrypted and expiring sign-ins refresh on their own.
+- **Import from GitHub**: clone a repository into its own private workspace by picking from your repository list or pasting a public URL. Import is available in Settings, when adding a workspace, and from the GitHub button in the chat header. Missing Git tools install or repair from the same dialogs.
+- **Commit & push**: review the repository, branch and changed files before publishing, commit only the files you select, and retry a failed push with Push existing commits. Unrelated staged changes stay staged, app history is excluded, nothing is force-pushed, and the pushed commit is verified against the remote branch.
+- **Push presets in Automation**: save a repository, branch and commit message as a preset and run it manually, hourly or daily without an AI model. A preset waits while a task is using that workspace and records blocked or failed runs in history.
+- **Auto-continue**: an optional Recovery setting in Context & limits resumes a task from saved progress after a server or connection interruption. The retry limit is 1 to 5 per task (default 3), it is off by default, and stops, task limits and permanent errors still wait for you.
+
+### Changed
+
+- **Harness models refresh from the live catalog**: the built-in provider fetches Kilo's free model list at startup and when the picker opens, so only models that are free right now and support tools are offered. A saved pick that retired is swapped for an available model, and a model that cannot be routed says so instead of falling back to the keyed Zen path.
+- **Queued messages wait for the run to finish**: a queued message is sent as a new run after that chat's successful Run finished notification instead of being injected into a momentary gap mid-run, so it can no longer interrupt the agent. Interruptions keep the queue waiting.
+- **Chat header on narrow screens**: the model and thinking controls move to a second row when space runs out, so the model name no longer collides with the header actions, and the thinking badge is always labelled and easier to tap.
+
+### Fixed
+
+- **Object tool arguments from compatible gateways**: providers that stream tool-call arguments as a JSON object no longer fail parsing with "JsonObject is not a JsonPrimitive" (seen on llm7.io when continuing a task). Nested values are kept, a later snapshot replaces the earlier one, and odd JSON shapes in usage or finish-reason fields no longer abort the stream.
+
 ## 1.6 (2026-10-09)
 
 ### Added
