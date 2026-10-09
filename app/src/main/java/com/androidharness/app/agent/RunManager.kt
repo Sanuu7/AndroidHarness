@@ -16,12 +16,13 @@ import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.RequestOptions
 import com.androidharness.app.workspace.WorkspaceManager
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -60,6 +61,7 @@ class RunManager(
 ) {
 
     val controls = TaskControlStore(java.io.File(context.filesDir, "task-controls"))
+    private val followUps = RunFollowUps(controls)
 
     /** Live, per-session run state the UI mirrors. */
     data class LiveRunState(
@@ -105,7 +107,7 @@ class RunManager(
     private val workspaceGuard = Mutex()
     private val states = mutableMapOf<String, MutableStateFlow<LiveRunState>>()
     private val jobs = mutableMapOf<String, Job>()
-    private val injections = mutableMapOf<String, Channel<String>>()
+    private val queueWrites = mutableMapOf<String, MutableSet<Job>>()
     private val turnIds = mutableMapOf<String, String>()
     private val allowedTools = mutableMapOf<String, MutableSet<String>>()
     private val grantStore = RememberedGrants()
@@ -207,7 +209,31 @@ class RunManager(
         queuedPromptId: String? = null,
         replacementMessageId: String? = null,
     ): String = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
-        val runConfig = providers.resolveHarnessConfig(config)
+        startRunLocked(sessionId, text, imageRefs, config, apiKey, permissionMode, mode,
+            maxOutputTokens, maxContextTokens, thinking, maxIterations, workspaceOverride,
+            notifyOnFinish, resume, queuedPromptId, replacementMessageId)
+    } }
+
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    private suspend fun startRunLocked(
+        sessionId: String?,
+        text: String,
+        imageRefs: List<ImageRef>,
+        config: ProviderConfig,
+        apiKey: String,
+        permissionMode: PermissionMode,
+        mode: AgentMode,
+        maxOutputTokens: Int,
+        maxContextTokens: Int,
+        thinking: ThinkingLevel,
+        maxIterations: Int,
+        workspaceOverride: com.androidharness.app.workspace.WorkspaceFs? = null,
+        notifyOnFinish: Boolean = true,
+        resume: Boolean = false,
+        queuedPromptId: String? = null,
+        replacementMessageId: String? = null,
+        followUpRunId: String? = null,
+    ): String {
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
             projectId = workspace.currentProjectOnce().id,
@@ -216,6 +242,7 @@ class RunManager(
             previous.cancel()
             previous.join()
         }
+        val runConfig = providers.resolveHarnessConfig(config)
         if (replacementMessageId != null) {
             check(!resume) { "Cannot replace a message while resuming" }
             val projectId = sessions.session(sid)?.projectId
@@ -228,6 +255,8 @@ class RunManager(
             }
             rewindAndTruncate(sid, replacementMessageId)
         }
+        val runId = if (followUpRunId == null) followUps.begin(sid)
+            else followUps.advance(sid, followUpRunId) ?: return sid
         val prior = controls.flow(sid).value
         val runWorkspace = workspaceOverride ?: workspace.currentOnce()
         require(!resume || prior.workspacePath == runWorkspace.displayPath) { "Open the original workspace to resume this task" }
@@ -242,12 +271,11 @@ class RunManager(
             usedTokens = if (resume) it.usedTokens else 0,
             usedCost = if (resume) it.usedCost else 0.0,
             elapsedMs = if (resume) it.elapsedMs else 0,
+            autoContinueAttempts = if (resume) it.autoContinueAttempts else 0,
         ) }
         val budget = TaskBudget(record.limits, record.usedTokens, record.usedCost, record.elapsedMs)
-        val channel = Channel<String>(Channel.UNLIMITED)
         synchronized(lock) {
             turnIds[sid] = turnId
-            injections[sid] = channel
             allowedTools[sid] = grantStore.start(sid, runWorkspace.displayPath)
             deltaBuffers[sid] = DeltaBuffers()
         }
@@ -269,7 +297,7 @@ class RunManager(
         ), turnId)
         controls.update(sid) { it.copy(queue = it.queue.filterNot { q -> q.id == initialId }) }
         if (resume) sessions.addMessage(sid, ChatMessage(role = Role.USER,
-            text = "Resume the interrupted task from saved progress. Completed tool results are authoritative. Inspect uncertain outcomes before further actions; do not repeat completed operations."), turnId)
+            text = RunRecovery.CONTINUE_PROMPT), turnId)
         // A new run replaces any plan approval still pending on this session.
         runCatching { sessions.setPendingPlan(sid, null) }
         live.update {
@@ -287,11 +315,18 @@ class RunManager(
         val history = with(sessions) {
             RunRecovery.context(messages(sid).withoutSubagentTurns(), record)
         }
-        val job = appScope.launch(budget + RecoveryLedger(recoveryMessages), start = kotlinx.coroutines.CoroutineStart.LAZY) {
+        var end: RunFollowUps.End? = null
+        val startSignal = CompletableDeferred<Unit>()
+        // Enter try/finally even if a stop lands before the worker is scheduled.
+        val job = appScope.launch(budget + RecoveryLedger(recoveryMessages), start = kotlinx.coroutines.CoroutineStart.ATOMIC) {
             var promptJob: Job? = null
             var flushJob: Job? = null
             var completed = false
+            var finishedNormally = false
+            var recoverableInterruption = false
             try {
+                startSignal.await()
+                kotlin.coroutines.coroutineContext.ensureActive()
                 // SSE chunks arrive far faster than frames render; batch them so
                 // the UI updates at a steady cadence regardless of model speed.
                 flushJob = launch {
@@ -343,7 +378,6 @@ class RunManager(
                     options = RequestOptions(maxOutputTokens = maxOutputTokens, thinking = thinking),
                     maxContextTokens = maxContextTokens,
                     mode = mode,
-                    userInjections = channel,
                     maxIterations = maxIterations,
                     // Connected MCP servers ride into this run; a failing
                     // server must never block the run itself.
@@ -351,8 +385,9 @@ class RunManager(
                     resolveSubagentModel = modelResolver::resolve,
                     repoMapEnabled = repoMapOn,
                     pinnedInstructions = record.pins,
-                    takeQueued = { consumeQueued(sid, turnId) },
                     durableEvent = { event ->
+                        if (event is AgentEvent.Finished) finishedNormally = event.reason == null
+                        if (event is AgentEvent.Error) recoverableInterruption = event.recoverable
                         if (event is AgentEvent.Usage) {
                             val price = if (event.providerName.startsWith("ChatGPT · ")) null else com.androidharness.app.llm.ModelPrices.estimate(
                                 model = event.model, totalInputTokens = event.inputTokens.toLong(),
@@ -372,7 +407,7 @@ class RunManager(
                         }
                     },
                 ).collect { }
-                completed = live.value.error == null
+                completed = finishedNormally && live.value.error == null
             } catch (paused: TaskPaused) {
                 controls.update(sid) { it.copy(reason = paused.reasonText) }
             } catch (ce: CancellationException) {
@@ -423,24 +458,63 @@ class RunManager(
                 }
                 runningSessionIds.update { it - sid }
                 synchronized(lock) {
-                    jobs.remove(sid)
-                    injections.remove(sid)
                     turnIds.remove(sid)
                     allowedTools.remove(sid)
                     grantStore.finish(sid)
                     deltaBuffers.remove(sid)
                 }
                 try {
-                    if (notifyOnFinish) notifyFinished(sid, if (completed) live.value.error else
-                        controls.flow(sid).value.reason ?: "Task paused")
+                    val result = if (notifyOnFinish) notifyFinished(sid, if (completed) live.value.error else
+                        controls.flow(sid).value.reason ?: "Task paused") else null
+                    end = RunFollowUps.End(sid, runId,
+                        finishedNotification = completed && result?.ok == true,
+                        recoverableInterruption = !completed && !cancelled && recoverableInterruption)
+
                 } finally { releaseKeepalive() }
                 }
             }
         }
-        synchronized(lock) { jobs[sid] = job }
-        job.start()
-        sid
-    } }
+        job.invokeOnCompletion {
+            synchronized(lock) { if (jobs[sid] === job) jobs.remove(sid) }
+            val ended = end ?: return@invokeOnCompletion
+            appScope.launch {
+                // Wait outside the completed job so starting its successor cannot join itself.
+                job.join()
+                // A send accepted while busy must reach durable storage before deciding what follows.
+                synchronized(lock) { queueWrites[sid]?.toList() }.orEmpty().forEach { it.join() }
+                if (ended.recoverableInterruption) delay(RetryPolicy.delayMs(controls.flow(sid).value.autoContinueAttempts + 1))
+                kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
+                    when (val action = followUps.next(ended)) {
+                        null -> Unit
+                        else -> try {
+                            val saved = controls.flow(sid).value
+                            val continuing = action is RunFollowUps.Action.Continue
+                            if (continuing) TaskBudget(saved.limits, saved.usedTokens, saved.usedCost, saved.elapsedMs).check()
+                            val prompt = (action as? RunFollowUps.Action.Send)?.prompt
+                            startRunLocked(sid, prompt?.text.orEmpty(), emptyList(), runConfig, apiKey,
+                                settings.settings.first().permissionMode, mode, maxOutputTokens,
+                                maxContextTokens, thinking, maxIterations, workspaceOverride = runWorkspace,
+                                notifyOnFinish = notifyOnFinish, resume = continuing, queuedPromptId = prompt?.id,
+                                followUpRunId = ended.runId)
+                        } catch (ce: CancellationException) { throw ce }
+                        catch (e: Exception) {
+                            val reason = "Could not ${if (action is RunFollowUps.Action.Continue) "continue task" else "send queued message"}: ${e.message}"
+                            controls.update(sid) { it.copy(status = "paused", reason = reason) }
+                            stateOf(sid).update { it.copy(error = reason) }
+                            if (notifyOnFinish) notifyFinished(sid, reason)
+                        }
+                    }
+                } }
+            }
+        }
+        synchronized(lock) {
+            jobs[sid] = job
+            // A stop during setup must also cancel the run whose job was not registered yet.
+            if (!followUps.isCurrent(sid, runId)) job.cancel()
+            startSignal.complete(Unit)
+        }
+        return sid
+    }
 
     private suspend fun handleEvent(sessionId: String, event: AgentEvent) {
         val live = stateOf(sessionId)
@@ -686,11 +760,13 @@ class RunManager(
     }
 
     fun stop(sessionId: String) {
+        followUps.stop(sessionId)
         synchronized(lock) { jobs[sessionId]?.cancel() }
     }
 
     /** Cancels every live agent run and waits for each run's cleanup. */
     suspend fun stopAllAndJoin() {
+        followUps.stopAll()
         val active = synchronized(lock) { jobs.values.toList() }
         active.forEach { it.cancel() }
         active.forEach { runCatching { it.join() } }
@@ -701,6 +777,7 @@ class RunManager(
      * [startRun] cannot race the old job's finally block.
      */
     suspend fun stopAndJoin(sessionId: String) {
+        followUps.stop(sessionId)
         val job = synchronized(lock) { jobs[sessionId] } ?: return
         job.cancel()
         job.join()
@@ -722,7 +799,17 @@ class RunManager(
     }
 
     fun inject(sessionId: String, text: String) {
-        appScope.launch { controls.update(sessionId) { it.copy(queue = it.queue + QueuedPrompt(text = text)) } }
+        val job = appScope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
+            controls.update(sessionId) { it.copy(queue = it.queue + QueuedPrompt(text = text)) }
+        }
+        synchronized(lock) { queueWrites.getOrPut(sessionId) { mutableSetOf() }.add(job) }
+        job.invokeOnCompletion { synchronized(lock) {
+            queueWrites[sessionId]?.let { pending ->
+                pending.remove(job)
+                if (pending.isEmpty()) queueWrites.remove(sessionId)
+            }
+        } }
+        job.start()
     }
 
     fun editQueued(sessionId: String, id: String, text: String) {
@@ -742,16 +829,6 @@ class RunManager(
 
     fun cancelQueued(sessionId: String) {
         appScope.launch { controls.update(sessionId) { it.copy(queue = emptyList()) } }
-    }
-
-    private suspend fun consumeQueued(sessionId: String, turnId: String): String? {
-        val queued = controls.flow(sessionId).value.queue.firstOrNull() ?: return null
-        // Stable id makes a death between the Room insert and queue removal recoverable.
-        if (sessions.messages(sessionId).none { it.id == queued.id }) {
-            sessions.addMessage(sessionId, ChatMessage(role = Role.USER, text = queued.text, id = queued.id), turnId)
-        }
-        controls.update(sessionId) { it.copy(queue = it.queue.filterNot { q -> q.id == queued.id }) }
-        return queued.text
     }
 
     suspend fun resumeTask(sessionId: String, apiKey: String) {
@@ -914,16 +991,16 @@ class RunManager(
         }
     }
 
-    private suspend fun notifyFinished(sessionId: String, error: String?) {
+    private suspend fun notifyFinished(sessionId: String, error: String?): RunResultNotification {
         val title = runCatching { sessions.session(sessionId)?.title }.getOrNull() ?: "Chat"
-        RuntimeNotifier.notifyResult(
-            RunResultNotification(
-                sessionId = sessionId,
-                title = title,
-                ok = error == null,
-                summary = if (error == null) "Run finished" else "Stopped: ${error.take(120)}",
-            ),
+        val result = RunResultNotification(
+            sessionId = sessionId,
+            title = title,
+            ok = error == null,
+            summary = if (error == null) "Run finished" else "Stopped: ${error.take(120)}",
         )
+        RuntimeNotifier.notifyResult(result)
+        return result
     }
 
     companion object {

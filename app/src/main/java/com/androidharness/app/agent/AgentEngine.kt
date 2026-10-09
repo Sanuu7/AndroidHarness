@@ -139,7 +139,7 @@ sealed interface AgentEvent {
     data class EstimatedContext(val estimate: ContextEstimate) : AgentEvent
     data class Compacting(val reason: String) : AgentEvent
     data class Compacted(val summary: String) : AgentEvent
-    data class Error(val message: String) : AgentEvent
+    data class Error(val message: String, val recoverable: Boolean = false) : AgentEvent
 
     /** One progress line from inside a running subagent (the task tool). */
     data class SubagentStep(val toolCallId: String, val line: String) : AgentEvent
@@ -225,7 +225,6 @@ class AgentEngine(
         resolveSubagentModel: (suspend (String) -> SubagentModelResolution)? = null,
         repoMapEnabled: Boolean = true,
         pinnedInstructions: String = "",
-        takeQueued: (suspend () -> String?)? = null,
         durableEvent: (suspend (AgentEvent) -> Unit)? = null,
     ): Flow<AgentEvent> = channelFlow {
         // Parallel subagents emit from async children, plain flow{} forbids
@@ -276,9 +275,6 @@ class AgentEngine(
 
         while (true) {
             kotlin.coroutines.coroutineContext[TaskBudget]?.check()
-            takeQueued?.invoke()?.let { queued ->
-                working += ChatMessage(role = Role.USER, text = queued)
-            }
             if (maxIterations > 0 && iterations++ >= maxIterations) {
                 emit(AgentEvent.Error("Stopped after $maxIterations tool iterations (safety limit)."))
                 break
@@ -412,6 +408,7 @@ class AgentEngine(
             // Request attempt loop: transient failures (429/5xx/network) are
             // retried with backoff, but ONLY while nothing has streamed yet,
             // re-emitting deltas the UI already showed would duplicate output.
+            var recoverableFailure = false
             var failure = StreamRetrier.run(
                 streamFor = {
                     provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
@@ -432,6 +429,7 @@ class AgentEngine(
                 emitEvent = { emit(it) },
                 stallTimeoutMs = if (localChat) 600_000 else 90_000,
                 allowRetries = !localChat,
+                onTerminalFailure = { recoverableFailure = it },
             )
 
             // Dynamic vision degradation fallback: if provider rejected image input,
@@ -458,6 +456,7 @@ class AgentEngine(
                     handleEvent = streamEventHandler,
                     retryReason = { f -> f.take(200) },
                     emitEvent = { emit(it) },
+                    onTerminalFailure = { recoverableFailure = it },
                 )
             }
 
@@ -489,16 +488,11 @@ class AgentEngine(
 
             when {
                 failure != null -> {
-                    emit(AgentEvent.Error(failure!!))
+                    emit(AgentEvent.Error(failure!!, recoverable = recoverableFailure))
                     break
                 }
                 wantsNudge -> continue
                 calls.isEmpty() -> {
-                    val next = takeQueued?.invoke()
-                    if (next != null) {
-                        working += ChatMessage(role = Role.USER, text = next)
-                        continue
-                    }
                     emit(AgentEvent.Finished(emptyAnswerReason(text.toString(), thinking.toString(), lastFinishReason)))
                     break
                 }

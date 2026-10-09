@@ -14,6 +14,52 @@ import java.io.IOException
 
 class StreamRetrierTest {
 
+    @Test fun `partial output server failure remains eligible for saved progress continue`() = runBlocking {
+        var recoverable: Boolean? = null
+        var hasOutput = false
+        val result = StreamRetrier.run(
+            streamFor = { flowOf(StreamEvent.TextDelta("partial progress"), StreamEvent.Failure("gateway failure", 502)) },
+            onAttemptStart = {}, hasOutput = { hasOutput }, handleEvent = { hasOutput = true },
+            retryReason = { it }, emitEvent = { error("Do not replay streamed output") },
+            onTerminalFailure = { recoverable = it },
+        )
+        assertEquals("gateway failure", result)
+        assertEquals(true, recoverable)
+    }
+
+    @Test fun `explicit permanent code overrides transient wording for continue`() = runBlocking {
+        var recoverable: Boolean? = null
+        StreamRetrier.run(
+            streamFor = { flowOf(StreamEvent.Failure("temporarily overloaded", 401)) },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = { error("Permanent failure must not retry") },
+            onTerminalFailure = { recoverable = it },
+        )
+        assertEquals(false, recoverable)
+    }
+
+    @Test fun `exhausted request retries still classify network failure for bounded continue`() = runBlocking {
+        var recoverable: Boolean? = null
+        var requests = 0
+        StreamRetrier.run(
+            streamFor = { requests++; throw IOException("disconnected") },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = {}, sleep = {}, onTerminalFailure = { recoverable = it },
+        )
+        assertEquals(RetryPolicy.MAX_RETRIES + 1, requests)
+        assertEquals(true, recoverable)
+    }
+
+    @Test fun `local failure never triggers automatic continue`() = runBlocking {
+        var recoverable: Boolean? = null
+        StreamRetrier.run(
+            streamFor = { flowOf(StreamEvent.Failure("timed out")) },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = {}, allowRetries = false, onTerminalFailure = { recoverable = it },
+        )
+        assertEquals(false, recoverable)
+    }
+
     private val noopEmit: suspend (AgentEvent.Retrying) -> Unit = {}
 
     @Test

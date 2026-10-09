@@ -349,7 +349,7 @@ fun ChatScreen(
 
     if (showContext) {
         TaskSettingsSheet(state = state, onDismiss = { showContext = false },
-            onSave = viewModel::saveTaskControls)
+            onSave = viewModel::saveTaskControls, onRecoveryChange = viewModel::saveRecoverySettings)
     }
     activeModelPickerTarget?.let { target ->
         val currentProviderId = state.selectedProviderIdFor(target) ?: state.activeProviderId

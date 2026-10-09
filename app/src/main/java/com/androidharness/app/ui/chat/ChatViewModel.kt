@@ -691,7 +691,7 @@ class ChatViewModel(
         val agentText = resolved.agentText ?: return
         val sid = sessionId
         if (sid != null && c.runManager.isRunning(sid)) {
-            // Queue the expanded text; the engine picks it up before its next turn.
+            // Queue the expanded text for this chat's successful Run finished event.
             // Local slash commands never reach here, so /cost /skills /clear keep working mid-run.
             val target = SlashCommands.dispatchTarget(isRunning = true, agentText = agentText)
             c.runManager.inject(sid, target.text)
@@ -707,7 +707,7 @@ class ChatViewModel(
 
     /**
      * Stops the in-flight run, then sends the queued text as a new turn.
-     * Default send-while-busy only injects at the next iteration.
+     * Default send-while-busy waits for this chat's Run finished event.
      */
     fun steerQueuedMessage() { _state.value.taskControl.queue.firstOrNull()?.let { sendQueuedNow(it.id) } }
 
@@ -726,10 +726,8 @@ class ChatViewModel(
                     record.copy(queue = listOfNotNull(selected) + record.queue.filterNot { it.id == id })
                 }
                 val record = c.runManager.controls.flow(sid).value
-                if (record.resumable) resumeTaskNow(sid) else {
-                    val queued = record.queue.firstOrNull() ?: return@launch
-                    startRun(queued.text, queuedPromptId = queued.id)
-                }
+                val queued = record.queue.firstOrNull() ?: return@launch
+                startRun(queued.text, queuedPromptId = queued.id)
             } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
             finally { steering = false }
         }
@@ -763,6 +761,18 @@ class ChatViewModel(
             try { resumeTaskNow(sid) }
             catch (e: Exception) { _state.update { it.copy(error = e.message) } }
             finally { steering = false }
+        }
+    }
+
+    fun saveRecoverySettings(enabled: Boolean, limit: Int) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val sid = sessionId ?: c.sessions.createSession("New chat", c.workspace.currentProjectOnce().id).also {
+                    sessionId = it; sessionIdFlow.value = it
+                    _state.update { state -> state.copy(sessionId = it) }
+                }
+                c.runManager.controls.update(sid) { it.copy(autoContinue = enabled, autoContinueLimit = limit.coerceIn(1, 5)) }
+            } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
         }
     }
 

@@ -62,6 +62,7 @@ internal object StreamRetrier {
         sleep: suspend (Long) -> Unit = { delay(it) },
         stallTimeoutMs: Long = 90_000,
         allowRetries: Boolean = true,
+        onTerminalFailure: (recoverable: Boolean) -> Unit = {},
     ): String? {
         var attempt = 0
         while (true) {
@@ -99,7 +100,10 @@ internal object StreamRetrier {
                 attempt < RetryPolicy.MAX_RETRIES &&
                 !hasOutput() &&
                 RetryPolicy.isRetryable(cause, failure, failureCode)
-            if (!retryable) return failure
+            if (!retryable) {
+                if (failure != null) onTerminalFailure(allowRetries && RetryPolicy.isRetryable(cause, failure, failureCode))
+                return failure
+            }
 
             attempt++
             val delayMs = RetryPolicy.delayMs(attempt)

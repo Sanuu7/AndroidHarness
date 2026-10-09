@@ -33,6 +33,10 @@ fun TaskProgressCard(record: TaskRecord, busy: Boolean, onResume: () -> Unit, on
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             record.reason?.let { CopyIconButton(it) }
+            if (record.autoContinue && record.autoContinueAttempts >= record.autoContinueLimit.coerceIn(1, 5)) {
+                Text("Auto-continue limit reached. Resume manually to keep going.",
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
             Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
                 TextButton(onClick = onSettings) { Text("Context & limits") }
                 FilledTonalButton(onClick = onResume) { Text("Resume task") }
@@ -63,6 +67,8 @@ fun MessageQueueCard(
                 Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, "Manage queue")
             }
             if (expanded) Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
+                Text("Sends after this chat’s Run finished notification.", modifier = Modifier.padding(12.dp),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 queue.forEachIndexed { index, item ->
                     HorizontalDivider()
                     Column(Modifier.padding(horizontal = 10.dp, vertical = 4.dp)) {
@@ -99,6 +105,7 @@ fun MessageQueueCard(
 fun TaskSettingsSheet(
     state: ChatUiState, onDismiss: () -> Unit,
     onSave: (String, String?, TaskLimits, Boolean) -> Unit,
+    onRecoveryChange: (Boolean, Int) -> Unit,
 ) {
     val record = state.taskControl
     val savedSummary = record.summaryOverride ?: state.messages.lastOrNull {
@@ -128,13 +135,14 @@ fun TaskSettingsSheet(
                     Text("Context & limits", style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
                     TextButton(onClick = { usage = true }) { Text("Usage") }
                 }
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(selected = section == 0, onClick = { section = 0 }, label = { Text("Context") })
                     FilterChip(selected = section == 1, onClick = { section = 1 }, label = { Text("Task limits") })
+                    FilterChip(selected = section == 2, onClick = { section = 2 }, label = { Text("Recovery") })
                 }
                 Column(Modifier.weight(1f, fill = false).heightIn(max = 440.dp).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (state.busy) Text("Pause the task to edit these settings.", style = MaterialTheme.typography.bodySmall)
+                    if (state.busy && section != 2) Text("Pause the task to edit these settings.", style = MaterialTheme.typography.bodySmall)
                     if (section == 0) {
                         Text("Keep the instructions that matter and choose what the agent remembers.",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -152,7 +160,7 @@ fun TaskSettingsSheet(
                             }
                             Switch(clearOlder, { clearOlder = it }, enabled = !state.busy)
                         }
-                    } else {
+                    } else if (section == 1) {
                         Text("Optional limits for the whole task, including subagents. Leave blank for unlimited.",
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         OutlinedTextField(tokens, { tokens = it }, label = { Text("Total tokens") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -167,9 +175,35 @@ fun TaskSettingsSheet(
                             "Used: ${record.usedTokens} tokens · $${"%.4f".format(record.usedCost)} · ${record.elapsedMs / 60000} min",
                             style = MaterialTheme.typography.labelMedium)
                         if (!valid) Text("Enter a positive number or leave blank.", color = MaterialTheme.colorScheme.error)
+                    } else {
+                        Row(Modifier.fillMaxWidth().clickable {
+                            onRecoveryChange(!record.autoContinue, record.autoContinueLimit)
+                        }.heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
+                            Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                                Text("Auto-continue", style = MaterialTheme.typography.bodyLarge)
+                                Text("Resume saved progress after a server or connection interruption.",
+                                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                            Switch(record.autoContinue, { onRecoveryChange(it, record.autoContinueLimit) })
+                        }
+                        Text("Uses the same prompt as Resume task. Queued messages wait until this chat finishes successfully. Stops and task limits need your attention.",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                            Text("Retry limit per task", modifier = Modifier.weight(1f))
+                            IconButton(onClick = { onRecoveryChange(record.autoContinue, record.autoContinueLimit - 1) },
+                                enabled = record.autoContinueLimit > 1) { Icon(Icons.Default.Remove, "Decrease retry limit") }
+                            Text("${record.autoContinueLimit.coerceIn(1, 5)}")
+                            IconButton(onClick = { onRecoveryChange(record.autoContinue, record.autoContinueLimit + 1) },
+                                enabled = record.autoContinueLimit < 5) { Icon(Icons.Default.Add, "Increase retry limit") }
+                        }
+                        Text("Automatic Continues used: ${record.autoContinueAttempts}. A new task resets the count.",
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Changes are saved immediately.", style = MaterialTheme.typography.labelMedium)
                     }
                 }
-                Button(onClick = {
+                if (section == 2) {
+                    Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) { Text("Done") }
+                } else Button(onClick = {
                     onSave(pins, if (summary == savedSummary && !clearOlder) record.summaryOverride else summary,
                         TaskLimits(tokens.toLongOrNull() ?: 0, cost.toDoubleOrNull() ?: 0.0, minutes.toLongOrNull() ?: 0), clearOlder)
                     onDismiss()

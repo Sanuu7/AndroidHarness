@@ -44,6 +44,9 @@ data class TaskRecord(
     val usedTokens: Long = 0,
     val usedCost: Double = 0.0,
     val elapsedMs: Long = 0,
+    val autoContinue: Boolean = false,
+    val autoContinueLimit: Int = 3,
+    val autoContinueAttempts: Int = 0,
 ) {
     val resumable: Boolean get() = status == "running" || status == "paused" || status == "interrupted"
 }
@@ -112,6 +115,7 @@ class TaskBudget(
 
 /** Close orphan tool calls without replaying operations whose outcome is unknown. */
 object RunRecovery {
+    const val CONTINUE_PROMPT = "Resume the interrupted task from saved progress. Completed tool results are authoritative. Inspect uncertain outcomes before further actions; do not repeat completed operations."
     fun missingResults(messages: List<ChatMessage>): List<ChatMessage> {
         val results = messages.filter { it.role == Role.TOOL }.mapNotNull { it.toolCallId }.toSet()
         return messages.filter { it.role == Role.ASSISTANT && it.toolCallId == null }
