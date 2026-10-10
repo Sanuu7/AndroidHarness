@@ -3,7 +3,7 @@
 <a href="https://play.google.com/store/apps/details?id=com.androidharness.app"><img src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png" alt="Get it on Google Play" height="72"></a>
 
 [![Debug build](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml/badge.svg)](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml)
-[![Version](https://img.shields.io/badge/version-1.7-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
+[![Version](https://img.shields.io/badge/version-1.8-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
 [![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3ddc84)](https://developer.android.com/about/versions/oreo)
 ![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)
 
@@ -58,6 +58,9 @@ Open a workspace, point the agent at a project, and ask for a change. `/doctor` 
 
 ### Scheduled automations
 
+- Schedule a message from the composer's actions menu: pick the date and time, how it repeats (once, daily, hourly, or manual), which chat runs it, the workspace, and the model. The chat shows its scheduled messages above the composer, and every schedule can be paused, resumed, or cancelled from the Automations screen.
+- Occurrence-safe runs: worker retries, resumes after an interruption, and app restarts never send the same prompt twice. Completed tools and queued messages stay in place, a busy chat makes the run wait its turn, and taking the chat over yourself stops the schedule for review instead of fighting your changes.
+- Unmetered-only schedules wait for a connection without a data limit, such as Wi-Fi, so a run never burns metered data.
 - Recurring or interval-based prompt tasks that run in the background through Android WorkManager.
 - An AI-assisted planner that translates plain English instructions into a cron-like schedule and its parameters.
 - An editor bottom sheet with quick suggestion chips, per-automation model selection, and manual run triggers.
@@ -88,7 +91,7 @@ Open a workspace, point the agent at a project, and ask for a change. `/doctor` 
 
 - GitHub is the first settings page. Sign in through GitHub's Device Flow (a code you enter in the browser, no auth server) or connect a personal access token. Verified credentials stay in encrypted app storage, and expiring OAuth connections refresh automatically.
 - Import a repository into its own private workspace by browsing your repositories or pasting a public URL, from Settings, the workspace picker, or the chat header.
-- Commit & push from GitHub Settings and the Files menu shows the target repository, branch, and changed files. Commit selected files or retry an existing commit with Push existing commits. App history stays excluded, nothing is force-pushed, and the pushed commit is verified against the remote branch.
+- Commit & push from GitHub Settings and the Files menu shows the target repository, branch, and changed files as a folder tree. Tap a folder to open it, long-press to select or deselect everything inside, and move around with the breadcrumb; selections survive going in and out of folders. Folder picks publish the exact changed files, so nested renames and deletions stage correctly while unrelated files are left alone. Commit selected files or retry an existing commit with Push existing commits. App history stays excluded, nothing is force-pushed, and the pushed commit is verified against the remote branch.
 - Save a GitHub push preset for a workspace, repository, and branch, then run it manually, hourly, or daily from Automation without an AI model. Presets wait while a task is using that workspace and record blocked or failed runs in history.
 - `doctor --github` checks the token, git transport, and the free plan's hidden protection limits in one command.
 
@@ -129,7 +132,7 @@ A shell policy and a secret redactor keep the agent from escaping the workspace,
 - **Built-in keyless Harness provider.** Anonymous free models from Kilo and Pollinations served out of the box, fetched from Kilo's live catalog so retired models drop out on their own, with each model's rate limit shown in the picker and the kilo-auto/free router as the default. No API key needed to start.
 - Anthropic, Google Gemini, and any OpenAI-compatible endpoint with a custom base URL.
 - Custom cloud model IDs typed directly into the model picker sheet.
-- Live model catalog fetch with latency check, per-model price tracking, and a running cost readout, plus a total estimated cost hero on the Stats screen.
+- Live model catalog fetch with latency check, per-model price tracking, and a running cost readout, plus a total estimated cost hero on the Stats screen. Stats windows (Today, 1 week, 1 month, Lifetime) count requests by the day they were made on your local calendar, so continuing an old chat never moves earlier work into today.
 - One global thinking ladder from Off to Ultra on every model. Non-native rungs resolve down the chain at request time, never rewriting your pick.
 - Per-chat dual planning: a chat menu toggle that runs Plan mode on one model and execution on another, each picked from the same model sheet, with a toast confirming which model fired and a plan card that survives app restarts.
 

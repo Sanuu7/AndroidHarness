@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.8 (2026-10-11)
+
+### Added
+
+- **Scheduled messages**: schedule a prompt from the composer through the message actions menu. Pick the date and time, how it repeats (once, every day, every hour, or only when you run it), which chat it runs in (the current one or a new chat), the workspace, and the model. The chat shows a scheduled messages row above the composer, and the Automations screen lists every schedule with Pause, Resume and Cancel. Runs are occurrence based: a worker retry, a resume after an interruption, or a process restart never sends the same prompt twice, completed tools and queued messages stay in place, and a chat that is already busy makes the run wait its turn. If you take over the chat yourself, the schedule stops and asks you to review instead of fighting your changes. A Pause action in the run notification stops a scheduled run without losing it.
+- **Wait for unmetered internet**: a schedule can require a connection without a data limit, so a run that would burn metered data waits for Wi-Fi or another unmetered network and starts when one is available. The requirement rides in WorkManager's constraints, and the run also checks the live connection, so dropping off Wi-Fi pauses the run and picks it up when the connection returns.
+- **ChatGPT account auto-switching**: connect multiple ChatGPT accounts and turn on Auto-switch at usage limit in Connected accounts. When an account rejects a request with the plan's usage limit before any answer starts streaming, the request moves to the next connected account, refreshing that account's available models and keeping the same model when it is offered, or using the account's fallback model. The switch is noted in the chat, finished tools and queued messages stay exactly as they were, and if every account is limited the task pauses instead of failing. Each account can be included or excluded, and each has its own fallback model choice. Connected accounts now lists every account with its own menu for refreshing models, checking newer models, reconnecting, and signing out.
+- **A workspace per chat**: every chat keeps its assigned workspace. Choosing a workspace in one chat applies to that chat, Files, Terminal, Build & Test and Files changed all follow the open chat, and other chats and their running tasks stay in their own projects. New chats start from the workspace that is active when you create them.
+
+### Changed
+
+- **Usage stats count requests by their own date**: Today, 1 week and 1 month now filter by when each request was made instead of when the chat was last touched, so continuing an old chat no longer pulls days of work into Today. The windows follow the local calendar (midnight to midnight, including DST changes), the screen updates live as new requests come in, and Lifetime still keeps older usage that has no per-request date.
+- **Folder browsing in Commit & push**: the file list now shows folders. Tap a folder to open it, long-press it to select or deselect everything inside, and use the breadcrumb or back arrow to move around. Selections survive going in and out of folders, and publishing a folder resolves to the exact changed files, so nested renames and deletions stage correctly while unrelated files are left alone. The commit message and publish button stay visible above long lists.
+- **ChatGPT error messages name the real problem**: a plain "too many requests" throttle shows its own message instead of claiming the plan usage limit was reached, and unsupported models, unavailable plans and expired sign-ins each get a clear message. Only the confirmed usage limit triggers account switching.
+
+### Fixed
+
+- **Model setup for catalogs with nested context windows**: providers that report a model's context window as an object (llm7.io sends `{"tokens":400000,"chars":null}`) no longer fail setup. Nested context windows and reasoning capability flags are read correctly, and malformed model entries are skipped instead of breaking the whole list.
+
 ## 1.7 (2026-10-10)
 
 ### Added
