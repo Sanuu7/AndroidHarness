@@ -23,7 +23,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 @Composable
-private fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit, content: @Composable ColumnScope.() -> Unit) {
+internal fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit,
+    footer: @Composable ColumnScope.() -> Unit = {}, content: @Composable ColumnScope.() -> Unit) {
     Dialog(onDismissRequest = { if (!busy) onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(shape = RoundedCornerShape(24.dp), modifier = Modifier.fillMaxWidth().padding(12.dp).fillMaxHeight(0.9f)) {
             Column(Modifier.padding(16.dp)) {
@@ -31,6 +32,7 @@ private fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit, co
                 Spacer(Modifier.height(12.dp))
                 Column(Modifier.weight(1f).verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
+                footer()
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp))
                 TextButton(onClick = onDismiss, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text("Close") }
             }
@@ -128,6 +130,7 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
     var fs by remember(projectId) { mutableStateOf<WorkspaceFs?>(null) }
     var state by remember(projectId) { mutableStateOf<GitHubRepoState?>(null) }
     var paths by remember(projectId) { mutableStateOf<Set<String>>(emptySet()) }
+    var directory by remember(projectId) { mutableStateOf("") }
     var commitMessage by remember { mutableStateOf("") }
     var repositoryInput by remember { mutableStateOf("") }
     var busy by remember { mutableStateOf(false) }
@@ -136,10 +139,14 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
     var importing by remember { mutableStateOf(false) }
 
     suspend fun refresh() {
+        val previousState = state
+        val previousPaths = paths
+        val previousDirectory = directory
         // Failed refreshes must not leave controls targeting an old repository.
         fs = null
         state = null
         paths = emptySet()
+        directory = ""
         val project = container.workspace.projects.first().firstOrNull { it.id == projectId }
             ?: error("This workspace was removed.")
         val captured = container.workspace.fsFor(project)
@@ -155,7 +162,12 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
             throw e
         }
         state = snapshot
-        paths = snapshot.changes.map { it.path }.toSet()
+        // Refresh keeps surviving selections only within the reviewed repository/branch.
+        if (previousState?.remoteUrl == snapshot.remoteUrl && previousState.branch == snapshot.branch) {
+            val tree = GitChangeTree(snapshot.changes)
+            paths = previousPaths.intersect(tree.paths)
+            directory = tree.survivingDirectory(previousDirectory)
+        }
     }
     fun act(action: suspend () -> Unit) {
         busy = true
@@ -164,9 +176,8 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
             catch (e: CancellationException) { throw e }
             catch (e: Exception) {
                 val failure = container.github.safeMessage(e)
-                val previouslySelected = paths
                 // A commit can succeed even when its push fails. Refresh HEAD for an immediate push retry.
-                try { refresh(); paths = previouslySelected.intersect(requireNotNull(state).changes.map { it.path }.toSet()) }
+                try { refresh() }
                 catch (cancelled: CancellationException) { throw cancelled }
                 catch (_: Exception) { }
                 message = failure
@@ -185,7 +196,16 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
         GitHubImportDialog(container, onDismiss = { importing = false }, onImported = onDismiss)
         return
     }
-    GitHubDialog("Commit & push", busy, onDismiss) {
+    GitHubDialog("Commit & push", busy, onDismiss, footer = {
+        state?.takeIf { it.changes.isNotEmpty() }?.let { snapshot ->
+            GitHubCommitFooter(paths.size, snapshot.changes.size, commitMessage, { commitMessage = it }, !busy) {
+                act {
+                    message = container.githubRepositories.publish(requireNotNull(fs), snapshot, paths, commitMessage, true)
+                    refresh()
+                }
+            }
+        }
+    }) {
         Text(projectName, style = MaterialTheme.typography.titleMedium)
         if (environment !is com.androidharness.app.data.env.EnvState.Ready || !container.linuxEnv.gitToolsReady) {
             OutlinedButton(onClick = { act {
@@ -199,27 +219,7 @@ fun GitHubPublishDialog(container: AppContainer, projectId: String, projectName:
             Text("Branch: ${snapshot.branch}", style = MaterialTheme.typography.bodySmall)
             Text("${snapshot.changes.size} changed files · app history excluded", style = MaterialTheme.typography.bodySmall)
             if (snapshot.changes.isNotEmpty()) {
-                TextButton(onClick = { paths = if (paths.isEmpty()) snapshot.changes.map { it.path }.toSet() else emptySet() },
-                    enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(if (paths.isEmpty()) "Select all files" else "Deselect all files") }
-                snapshot.changes.forEach { change ->
-                    Row(Modifier.fillMaxWidth().clickable(enabled = !busy) {
-                        paths = if (change.path in paths) paths - change.path else paths + change.path
-                    }, verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(change.path in paths, onCheckedChange = null)
-                        Column(Modifier.weight(1f)) {
-                            Text(change.path, style = MaterialTheme.typography.bodyMedium)
-                            Text(change.originalPath?.let { "Renamed from $it" } ?: change.status.trim(), style = MaterialTheme.typography.bodySmall)
-                        }
-                    }
-                }
-                OutlinedTextField(commitMessage, onValueChange = { commitMessage = it }, label = { Text("Commit message") },
-                    enabled = !busy, modifier = Modifier.fillMaxWidth())
-                Button(onClick = { act {
-                    message = container.githubRepositories.publish(requireNotNull(fs), snapshot, paths, commitMessage, true)
-                    refresh()
-                } }, enabled = !busy && paths.isNotEmpty() && commitMessage.isNotBlank(), modifier = Modifier.fillMaxWidth()) {
-                    Text("Commit selected files & push")
-                }
+                GitHubChangePicker(snapshot.changes, paths, directory, { directory = it }, { paths = it }, !busy)
             } else Text("No uncommitted changes. You can push existing local commits.", style = MaterialTheme.typography.bodySmall)
             OutlinedButton(onClick = { act {
                 message = container.githubRepositories.publish(requireNotNull(fs), snapshot, emptySet(), "", false)

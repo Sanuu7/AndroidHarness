@@ -56,6 +56,27 @@ class GitHubRepositoryTest {
         assertEquals(git("rev-parse", "HEAD").out.trim(), git("rev-parse", "refs/heads/main", cwd = remote).out.trim())
     }
 
+    @Test fun `folder selection publishes nested renames and deletions without sibling staging`() = runBlocking {
+        val repo = setup()
+        File(folder, "app/deep").mkdirs()
+        File(folder, "app/deleted.txt").writeText("delete me")
+        git("add", "app/deleted.txt"); git("commit", "-m", "Nested baseline")
+        git("mv", "base.txt", "app/renamed.txt")
+        File(folder, "app/deleted.txt").delete()
+        File(folder, "app/deep/new ' file.txt").writeText("new nested file")
+        File(folder, "app-copy").mkdirs()
+        File(folder, "app-copy/other.txt").writeText("unrelated")
+        git("add", "app-copy/other.txt")
+        val state = repo.inspect()
+        val entry = GitChangeTree(state.changes).entries("").first { it.path == "app" && it.isDirectory }
+        assertEquals(setOf("app/deleted.txt", "app/renamed.txt", "app/deep/new ' file.txt"), entry.paths)
+        repo.publish(state, entry.paths, "Publish selected folder", true)
+        assertEquals(setOf("app/renamed.txt", "app/deep/new ' file.txt"),
+            git("ls-tree", "-r", "--name-only", "HEAD").out.trim().lines().toSet())
+        assertEquals("app-copy/other.txt", git("diff", "--cached", "--name-only").out.trim())
+        assertEquals(git("rev-parse", "HEAD").out.trim(), git("rev-parse", "main", cwd = remote).out.trim())
+    }
+
     @Test fun `failed push preserves commit and retry pushes without another commit`() = runBlocking {
         val repo = setup()
         File(remote, "hooks/pre-receive").apply { writeText("#!/bin/sh\nexit 1\n"); setExecutable(true) }
