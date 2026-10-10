@@ -48,7 +48,7 @@ Open a workspace, point the agent at a project, and ask for a change. `/doctor` 
 - Voice input with live waveforms, transcribed by Groq Whisper (`whisper-large-v3` / `turbo`) or native Android speech. Tap the mic to lock recording, or hold with slide-up lock and slide-left cancel.
 - Fork any assistant turn into a fresh session with cloned context.
 - The last active chat resumes automatically on launch behind shimmering skeleton loading.
-- Multiple workspaces with one switcher, so you can move between projects without losing context.
+- Each chat keeps its assigned workspace. Choose it from Files or the sidebar; other chats and their running tasks stay in their own projects.
 - Message queue for follow-ups, with edit, reorder, remove, and Send now. The queue persists across app restarts, each message starts after that chat's successful Run finished notification, and interruptions keep it waiting.
 - Long-press your own message for Retry, Copy, and Edit. Retry resends it as a fresh turn.
 - The agent can ask you something mid-run, and you can answer from the notification shade or the chat.
