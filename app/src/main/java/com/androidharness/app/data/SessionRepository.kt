@@ -535,6 +535,10 @@ class SessionRepository(
     fun usageByModelSince(since: Long): Flow<List<com.androidharness.app.data.db.ModelUsagePojo>> =
         db.dao().usageByModelSince(since)
 
+    /** Stats windows use each request's date, independently of chat activity. */
+    fun statsUsageBetween(since: Long, until: Long): Flow<List<com.androidharness.app.data.db.StatsUsagePojo>> =
+        db.dao().statsUsageBetween(since, until)
+
     suspend fun setCompaction(sessionId: String, summary: String, before: Long) {
         db.dao().setCompaction(sessionId, summary, before)
     }

@@ -33,58 +33,23 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
-import com.androidharness.app.data.db.SessionEntity
+import com.androidharness.app.data.SessionRepository
 import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.theme.HarnessMono
-import java.util.concurrent.TimeUnit
-
-private enum class StatsRange(val label: String, val days: Long?) {
-    DAY("1 day", 1),
-    WEEK("1 week", 7),
-    MONTH("1 month", 30),
-    LIFETIME("Lifetime", null),
-}
+import androidx.compose.runtime.key
+import androidx.compose.runtime.produceState
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.repeatOnLifecycle
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.combine
 
 /** How the per-model attribution rows are ordered. */
 private enum class StatsSort(val label: String) {
     TOKENS("Tokens"),
     PRICE("Price"),
     REQUESTS("Requests"),
-}
-
-private data class StatsBundle(
-    val input: Long,
-    val output: Long,
-    val cached: Long,
-    val cacheWrite: Long,
-    val requests: Long,
-    val sessionCount: Int,
-    /** Best per-session cache hit rate in the window (0..1), only sessions with input. */
-    val peakHitRate: Double?,
-) {
-    /**
-     * Fresh prompt tokens: total input minus cache reads/writes, matching
-     * pi/pi-mono's Usage.input semantics (caches reported separately).
-     */
-    val freshInput: Long get() = (input - cached - cacheWrite).coerceAtLeast(0)
-}
-
-private fun List<SessionEntity>.bundle(): StatsBundle {
-    var input = 0L; var output = 0L; var cached = 0L; var cacheWrite = 0L; var requests = 0L
-    var peak: Double? = null
-    for (s in this) {
-        input += s.totalInputTokens
-        output += s.totalOutputTokens
-        cached += s.totalCachedTokens
-        cacheWrite += s.totalCacheWriteTokens
-        requests += s.requestCount
-        if (s.totalInputTokens > 0) {
-            val rate = s.totalCachedTokens.toDouble() / s.totalInputTokens.toDouble()
-            if (peak == null || rate > peak) peak = rate
-        }
-    }
-    return StatsBundle(input, output, cached, cacheWrite, requests, size, peak)
 }
 
 /**
@@ -96,17 +61,35 @@ fun StatsScreen(
     container: AppContainer,
     onBack: () -> Unit,
 ) {
-    val sessions by container.sessions.sessions.collectAsStateWithLifecycle(initialValue = emptyList())
+    StatsScreen(container.sessions, onBack)
+}
+
+@Composable
+internal fun StatsScreen(repository: SessionRepository, onBack: () -> Unit) {
     var range by remember { mutableStateOf(StatsRange.WEEK) }
     var sort by remember { mutableStateOf(StatsSort.TOKENS) }
     var minRequests by remember { mutableStateOf(0) }
-
-    val cutoff = range.days?.let { System.currentTimeMillis() - TimeUnit.DAYS.toMillis(it) } ?: 0L
-    val bundle = remember(sessions, cutoff) {
-        (if (cutoff > 0) sessions.filter { it.updatedAt >= cutoff } else sessions).bundle()
+    val lifecycle = LocalLifecycleOwner.current.lifecycle
+    val now by produceState(System.currentTimeMillis(), lifecycle) {
+        lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                value = System.currentTimeMillis()
+                delay(60_000)
+            }
+        }
     }
-    val byModel by container.sessions.usageByModelSince(cutoff)
-        .collectAsStateWithLifecycle(initialValue = emptyList())
+    val window = range.window(now)
+    val includeUndated = range == StatsRange.LIFETIME
+    val statsFlow = remember(repository, window, range) {
+        combine(repository.sessions, repository.statsUsageBetween(window.since, window.until)) { sessions, rows ->
+            statsSnapshot(rows, sessions.takeIf { includeUndated })
+        }
+    }
+    val stats = key(window, range) {
+        statsFlow.collectAsStateWithLifecycle(initialValue = StatsSnapshot()).value
+    }
+    val bundle = stats.bundle
+    val byModel = stats.byModel
 
     // Window total at list prices: same per-row math as the By model card,
     // summed, so the hero and the rows can never disagree. Null when no
@@ -154,6 +137,9 @@ fun StatsScreen(
                     ) { Text(r.label) }
                 }
             }
+
+            Text("Date filters count requests made in that period. Earlier undated usage is kept in Lifetime.",
+                style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
             // ----- Hero: one number that answers "how much have I run" ------
             OutlinedCard(Modifier.fillMaxWidth()) {

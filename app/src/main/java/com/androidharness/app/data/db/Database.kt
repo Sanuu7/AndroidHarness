@@ -161,6 +161,18 @@ data class TurnFirstPojo(
     val firstAt: Long,
 )
 
+/** Request totals in a date window, retaining session and model attribution. */
+data class StatsUsagePojo(
+    val sessionId: String,
+    val providerName: String,
+    val model: String,
+    val inputTokens: Long,
+    val outputTokens: Long,
+    val cachedTokens: Long,
+    val cacheWriteTokens: Long,
+    val requests: Long,
+)
+
 /** Aggregated per (provider, model) usage within a time window. */
 data class ModelUsagePojo(    val providerName: String,
     val model: String,
@@ -344,6 +356,15 @@ interface HarnessDao {
     // usage events (per-model attribution)
     @Insert
     suspend fun insertUsageEvent(event: UsageEventEntity)
+
+    @Query(
+        "SELECT sessionId, providerName, model, SUM(inputTokens) AS inputTokens, " +
+            "SUM(outputTokens) AS outputTokens, SUM(cachedTokens) AS cachedTokens, " +
+            "SUM(cacheWriteTokens) AS cacheWriteTokens, COUNT(*) AS requests " +
+            "FROM usage_events WHERE createdAt >= :since AND createdAt < :until " +
+            "GROUP BY sessionId, providerName, model"
+    )
+    fun statsUsageBetween(since: Long, until: Long): Flow<List<StatsUsagePojo>>
 
     @Query(
         "SELECT providerName, model, SUM(inputTokens) AS inputTokens, " +
