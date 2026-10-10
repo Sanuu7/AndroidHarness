@@ -81,11 +81,13 @@ class ChatGptProvider(
                     val type = event["type"]?.jsonPrimitive?.contentOrNull
                     type?.let { eventCounts[it] = (eventCounts[it] ?: 0) + 1 }
                     val error = event["error"] as? JsonObject ?: (event["response"] as? JsonObject)?.get("error") as? JsonObject
+                        ?: event.takeIf { type == "error" }
                     var reasoningItems: List<JsonObject> = emptyList()
                     when {
                         error != null || type in setOf("error", "response.failed", "response.incomplete") -> {
                             failed = true; acc.clear()
-                            emit(StreamEvent.Failure(ChatGptProtocol.requestError(error?.get("code")?.jsonPrimitive?.contentOrNull)))
+                            val code = error?.get("code")?.jsonPrimitive?.contentOrNull
+                            emit(failure(code))
                         }
                         else -> {
                             val item = event["item"] as? JsonObject
@@ -144,11 +146,16 @@ class ChatGptProvider(
             } catch (e: ApiException) {
                 if (e.code == 401 && !retry && !received) { retry = true; continue }
                 val code = runCatching { ProviderFactory.json.parseToJsonElement(e.message.orEmpty().substringAfter(": ")).jsonObject["error"]?.jsonObject?.get("code")?.jsonPrimitive?.contentOrNull }.getOrNull()
-                emit(StreamEvent.Failure(ChatGptProtocol.requestError(code, e.code))); break
+                emit(failure(code, e.code)); break
             } catch (e: Exception) {
                 lastFailureType = e.javaClass.simpleName
                 emit(StreamEvent.Failure("ChatGPT could not finish. Check your connection or reconnect in Settings > Connected accounts.")); break
             }
         }
     }
+
+    private fun failure(code: String?, status: Int? = null) = StreamEvent.Failure(
+        ChatGptProtocol.requestError(code, status ?: ChatGptProtocol.errorStatus(code)), status ?: ChatGptProtocol.errorStatus(code), code,
+        retryable = false.takeIf { code == ChatGptAutoSwitch.USAGE_LIMIT },
+    )
 }

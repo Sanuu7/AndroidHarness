@@ -112,6 +112,9 @@ data class ContextEstimate(
 }
 
 sealed interface AgentEvent {
+    data class ProviderChanged(val config: com.androidharness.app.llm.ProviderConfig, val reason: String) : AgentEvent
+    /** Includes independently configured subagents so disconnecting stops every affected run. */
+    data class ProviderUsed(val providerId: String) : AgentEvent
     data class Text(val delta: String) : AgentEvent
     data class Thinking(val delta: String) : AgentEvent
     data class ToolStarted(val call: ToolCallData) : AgentEvent
@@ -228,6 +231,7 @@ class AgentEngine(
         pinnedInstructions: String = "",
         durableEvent: (suspend (AgentEvent) -> Unit)? = null,
     ): Flow<AgentEvent> = channelFlow {
+        var config = config
         // Parallel subagents emit from async children, plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
         // for exactly this. The local shim keeps every emit(...) call site.
@@ -325,7 +329,10 @@ class AgentEngine(
             val estimate = estimateContext(working, requestSystemPrompt, tools)
             emit(AgentEvent.EstimatedContext(estimate))
             if (!localChat && estimate.total > (maxContextTokens * 0.8).toInt() && working.size > 6) {
-                val compacted = compact(provider, config, apiKey, working, maxContextTokens, sessionId) { emit(it) }
+                val compacted = compact(provider, config, apiKey, working, maxContextTokens, sessionId) {
+                    if (it is AgentEvent.ProviderChanged) config = it.config
+                    emit(it)
+                }
                 if (compacted != null) {
                     working.clear()
                     working.addAll(compacted)
@@ -345,6 +352,10 @@ class AgentEngine(
 
             val streamEventHandler: suspend (StreamEvent) -> Unit = { event ->
                 when (event) {
+                    is StreamEvent.ProviderChanged -> {
+                        config = event.config
+                        emit(AgentEvent.ProviderChanged(event.config, event.reason))
+                    }
                     is StreamEvent.TextDelta -> {
                         if (event.text.isNotEmpty()) {
                             val now = System.nanoTime()
@@ -1163,7 +1174,9 @@ class AgentEngine(
         turnId: String,
         actionTools: Boolean,
     ): ToolResult {
+        var config = config
         suspend fun step(line: String) = emitEvent(AgentEvent.SubagentStep(parentCallId, line))
+        emitEvent(AgentEvent.ProviderUsed(config.id))
         val label = if (title.isNullOrBlank()) "Task" else "Task [$title]"
         step("$label: ${prompt.take(80)}")
         step("Model: ${config.name} · ${config.model}")
@@ -1224,6 +1237,11 @@ class AgentEngine(
                 hasOutput = { text.isNotEmpty() || calls.isNotEmpty() },
                 handleEvent = { event ->
                     when (event) {
+                        is StreamEvent.ProviderChanged -> {
+                            config = event.config
+                            emitEvent(AgentEvent.ProviderUsed(config.id))
+                            step(event.reason)
+                        }
                         is StreamEvent.TextDelta -> text.append(event.text)
                         is StreamEvent.ThinkingDelta -> subThinking.append(event.text)
                         is StreamEvent.ToolCallReady -> calls += event.call
@@ -1366,6 +1384,7 @@ class AgentEngine(
         sessionId: String? = null,
         emitEvent: suspend (AgentEvent) -> Unit,
     ): List<ChatMessage>? {
+        var config = config
         emitEvent(AgentEvent.Compacting("Context near ${(maxContextTokens / 1000)}K. summarizing older messages"))
 
         // keep the most recent messages; never start the kept slice on a TOOL message
@@ -1393,6 +1412,10 @@ class AgentEngine(
             hasOutput = { summary.isNotBlank() },
             handleEvent = { event ->
                 when (event) {
+                    is StreamEvent.ProviderChanged -> {
+                        config = event.config
+                        emitEvent(AgentEvent.ProviderChanged(event.config, event.reason))
+                    }
                     is StreamEvent.TextDelta -> summary.append(event.text)
                     is StreamEvent.Batch -> event.events.forEach { nested ->
                         if (nested is StreamEvent.TextDelta) summary.append(nested.text)

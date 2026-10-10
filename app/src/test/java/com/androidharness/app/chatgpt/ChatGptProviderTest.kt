@@ -92,6 +92,30 @@ class ChatGptProviderTest {
         val failure = provider("""{"error":{"code":"subscription_sharing_usage_limit_exceeded"}}""", 429)
             .streamChat(config, "managed", "sys", emptyList(), emptyList(), RequestOptions()).toList().filterIsInstance<StreamEvent.Failure>().single()
         assertTrue(failure.message.contains(ChatGptProtocol.USAGE_URL))
+        assertEquals("subscription_sharing_usage_limit_exceeded", failure.errorCode)
+        assertEquals(429, failure.code)
+        assertEquals(false, failure.retryable)
+    }
+
+    @Test fun `stream failures preserve exact usage code and generic throttling stays distinct`() = runBlocking {
+        val quota = provider(sse("""{"type":"response.failed","response":{"error":{"code":"subscription_sharing_usage_limit_exceeded"}}}"""))
+            .streamChat(config, "managed", "", emptyList(), emptyList(), RequestOptions()).toList().filterIsInstance<StreamEvent.Failure>().single()
+        assertEquals("subscription_sharing_usage_limit_exceeded", quota.errorCode)
+        assertEquals(false, quota.retryable)
+        val topLevel = provider(sse("""{"type":"error","code":"subscription_sharing_usage_limit_exceeded","message":"Limit reached"}"""))
+            .streamChat(config, "managed", "", emptyList(), emptyList(), RequestOptions()).toList().filterIsInstance<StreamEvent.Failure>().single()
+        assertEquals(quota.errorCode, topLevel.errorCode)
+        assertEquals(false, topLevel.retryable)
+        val unsupported = provider(sse("""{"type":"error","code":"subscription_sharing_unsupported_capability","param":"model"}"""))
+            .streamChat(config, "managed", "", emptyList(), emptyList(), RequestOptions()).toList().filterIsInstance<StreamEvent.Failure>().single()
+        assertEquals(400, unsupported.code)
+        assertEquals("subscription_sharing_unsupported_capability", unsupported.errorCode)
+        val throttled = provider("""{"error":{"code":"rate_limit_exceeded"}}""", 429)
+            .streamChat(config, "managed", "", emptyList(), emptyList(), RequestOptions()).toList().filterIsInstance<StreamEvent.Failure>().single()
+        assertEquals("rate_limit_exceeded", throttled.errorCode)
+        assertEquals(429, throttled.code)
+        assertNull(throttled.retryable)
+        assertFalse(throttled.message.contains("usage limit", true))
     }
 
     @Test fun `empty completed output keeps finished streamed tools and reasoning`() = runBlocking {

@@ -11,6 +11,7 @@ import com.androidharness.app.agent.ThinkingLevel
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.toList
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -21,7 +22,8 @@ import java.io.IOException
 import java.util.UUID
 import java.util.concurrent.TimeUnit
 
-data class ChatGptAccount(val providerId: String, val label: String, val connected: Boolean, val models: List<ModelEntry>) {
+data class ChatGptAccount(val providerId: String, val label: String, val connected: Boolean, val models: List<ModelEntry>,
+    val useForAutoSwitch: Boolean = true, val fallbackModel: String? = null, val usageLimited: Boolean = false) {
     fun config() = ProviderConfig(providerId, "ChatGPT · $label", ProviderType.OPENAI_RESPONSES, ChatGptProtocol.RESOURCE, models.first().id)
 }
 
@@ -32,6 +34,7 @@ data class ChatGptAccountState(
     val showWelcome: Boolean = false,
     val checkingModelsFor: String? = null,
     val modelCheckResults: Map<String, String> = emptyMap(),
+    val autoSwitch: Boolean = false,
 )
 
 /** The app owns OAuth credentials; providers only ask for a current access token. */
@@ -62,9 +65,10 @@ class ChatGptAccounts(
     }
 
     private fun publish(error: String? = mutableState.value.error) {
-        mutableState.value = mutableState.value.copy(accounts = store.accounts.mapIndexed { index, entry ->
-            ChatGptAccount(ChatGptProtocol.providerId(entry.clientId), "${entry.email ?: "Account"} · ${index + 1}", entry.connected, entry.models)
-        }, error = error)
+        mutableState.update { it.copy(accounts = store.accounts.mapIndexed { index, entry ->
+            ChatGptAccount(ChatGptProtocol.providerId(entry.clientId), "${entry.email ?: "Account"} · ${index + 1}", entry.connected, entry.models,
+                entry.useForAutoSwitch, entry.fallbackModel, entry.usageLimitedAt != null)
+        }, autoSwitch = store.autoSwitch, error = error) }
     }
 
     private fun save(updated: ChatGptStore) {
@@ -144,6 +148,73 @@ class ChatGptAccounts(
 
     fun stateAccount(providerId: String) = state.value.accounts.first { it.providerId == providerId }
 
+    suspend fun setAutoSwitch(enabled: Boolean) = lock.withLock { save(store.copy(autoSwitch = enabled)) }
+
+    suspend fun setFallback(providerId: String, enabled: Boolean, model: String?) = lock.withLock {
+        val account = registration(providerId)
+        require(model == null || account.models.any { it.id == model }) { "Choose a model offered by this account." }
+        replace(account.copy(useForAutoSwitch = enabled, fallbackModel = model))
+    }
+
+    suspend fun recordUsageLimit(providerId: String) = lock.withLock {
+        replace(registration(providerId).copy(usageLimitedAt = System.currentTimeMillis()))
+    }
+
+    suspend fun recordUsageSuccess(providerId: String) = lock.withLock {
+        val account = registration(providerId)
+        if (account.usageLimitedAt != null) replace(account.copy(usageLimitedAt = null))
+    }
+
+    /** Manual selection preserves a supported current model, then uses this account's preference. */
+    suspend fun selectAccount(providerId: String, currentModel: String): ProviderConfig {
+        val offered = refreshModels(providerId, includeVerified = false)
+        return lock.withLock {
+            val account = registration(providerId)
+            check(account.connected) { "Reconnect ChatGPT to use this account." }
+            val model = fallbackModel(account.copy(models = offered), currentModel) ?: error("This account did not offer any models.")
+            stateAccount(providerId).config().copy(model = model.id)
+        }
+    }
+
+    suspend fun nextAccount(current: ProviderConfig, attempted: Set<String>, system: String,
+        messages: List<ChatMessage>, tools: List<com.androidharness.app.llm.ToolSchema>): ProviderConfig? {
+        val ordered = lock.withLock {
+            if (!store.autoSwitch) return null
+            val accounts = store.accounts
+            val start = accounts.indexOfFirst { ChatGptProtocol.providerId(it.clientId) == current.id }
+            (accounts.drop(start + 1) + accounts.take(start + 1)).map { ChatGptProtocol.providerId(it.clientId) }
+        }
+        val hasImages = messages.any { it.images.isNotEmpty() }
+        val estimatedTokens = (system.length.toLong() + messages.sumOf { it.text.length.toLong() +
+            it.toolCalls.sumOf { call -> call.argumentsJson.length.toLong() } } + tools.sumOf { it.parametersJson.toString().length.toLong() }) / 4
+        for (id in ordered) {
+            if (id in attempted) continue
+            val candidate = state.value.accounts.firstOrNull { it.providerId == id } ?: continue
+            if (!candidate.connected || !candidate.useForAutoSwitch) continue
+            try {
+                val offered = refreshModels(id, includeVerified = false)
+                val config = lock.withLock {
+                    val account = registration(id)
+                    if (!store.autoSwitch || !account.connected || !account.useForAutoSwitch) return@withLock null
+                    val model = fallbackModel(account.copy(models = offered), current.model) { model ->
+                        (!hasImages || com.androidharness.app.llm.visionCapable(model.id)) &&
+                            (model.contextTokens == null || model.contextTokens > estimatedTokens + 4096)
+                    } ?: return@withLock null
+                    stateAccount(id).config().copy(model = model.id)
+                }
+                if (config != null) return config
+            } catch (e: CancellationException) { throw e }
+            catch (_: Exception) { /* One unavailable account must not prevent trying the next. */ }
+        }
+        return null
+    }
+
+    private fun fallbackModel(account: ChatGptRegistration, currentModel: String,
+        compatible: (ModelEntry) -> Boolean = { true }): ModelEntry? {
+        val models = account.models.filter(compatible)
+        return models.firstOrNull { it.id == currentModel } ?: models.firstOrNull { it.id == account.fallbackModel } ?: models.firstOrNull()
+    }
+
     suspend fun accessToken(providerId: String, forceRefresh: Boolean = false): String = withContext(Dispatchers.IO) {
         lock.withLock {
             val account = registration(providerId)
@@ -167,7 +238,7 @@ class ChatGptAccounts(
         }
     }
 
-    suspend fun refreshModels(providerId: String): List<ModelEntry> = withContext(Dispatchers.IO) {
+    suspend fun refreshModels(providerId: String, includeVerified: Boolean = true): List<ModelEntry> = withContext(Dispatchers.IO) {
         // Check the session again before publishing, so logout cannot resurrect access.
         val token = accessToken(providerId)
         val request = Request.Builder().url(ChatGptProtocol.RESOURCE + "/models").header("Authorization", "Bearer $token").build()
@@ -181,7 +252,7 @@ class ChatGptAccounts(
             replace(latest.copy(models = (models + latest.verifiedModels).distinctBy { it.id }))
             publish(null)
         }
-        stateAccount(providerId).models
+        if (includeVerified) stateAccount(providerId).models else models
     }
 
     /** The account catalog can omit usable models. Only remember successful inference checks. */

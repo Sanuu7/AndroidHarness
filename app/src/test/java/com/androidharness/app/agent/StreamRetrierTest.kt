@@ -14,6 +14,20 @@ import java.io.IOException
 
 class StreamRetrierTest {
 
+    @Test fun `confirmed subscription usage limit never retries or automatically continues`() = runBlocking {
+        var requests = 0
+        var recoverable: Boolean? = null
+        val result = StreamRetrier.run(
+            streamFor = { requests++; flowOf(StreamEvent.Failure("Usage limit reached", 429,
+                "subscription_sharing_usage_limit_exceeded", retryable = false)) },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = { error("Must not retry exhausted accounts") }, onTerminalFailure = { recoverable = it },
+        )
+        assertEquals("Usage limit reached", result)
+        assertEquals(1, requests)
+        assertEquals(false, recoverable)
+    }
+
     @Test fun `partial output server failure remains eligible for saved progress continue`() = runBlocking {
         var recoverable: Boolean? = null
         var hasOutput = false

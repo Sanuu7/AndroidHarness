@@ -102,7 +102,10 @@ sealed interface StreamEvent {
         val cacheReported: Boolean = false,
     ) : StreamEvent
     /** [code] is the provider's error status, even when the SSE HTTP response is 200. */
-    data class Failure(val message: String, val code: Int? = null) : StreamEvent
+    data class Failure(val message: String, val code: Int? = null, val errorCode: String? = null,
+        val retryable: Boolean? = null) : StreamEvent
+    /** A consented account/model change before any response output. */
+    data class ProviderChanged(val config: ProviderConfig, val reason: String) : StreamEvent
 
     /**
      * Emitted once per request when the stream terminates. [finishReason] is

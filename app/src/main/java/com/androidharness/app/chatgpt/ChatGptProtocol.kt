@@ -128,16 +128,31 @@ object ChatGptProtocol {
         }?.distinctBy { it.id } ?: error("ChatGPT returned an unsupported model list.")
 
     fun requestError(code: String?, status: Int? = null): String = when {
-        code == "subscription_sharing_usage_limit_exceeded" || status == 429 -> "ChatGPT usage limit reached. Manage usage in ChatGPT settings: $USAGE_URL"
-        code == "subscription_sharing_usage_unavailable" -> "ChatGPT plan usage is unavailable. Check this app's access in ChatGPT settings: $USAGE_URL"
+        code == "subscription_sharing_usage_limit_exceeded" -> "ChatGPT usage limit reached. Manage usage in ChatGPT settings: $USAGE_URL"
+        status == 429 -> "ChatGPT is receiving too many requests. Please try again shortly."
+        code in setOf("subscription_sharing_usage_unavailable", "subscription_sharing_user_unavailable") ->
+            "ChatGPT is temporarily unavailable. Please try again shortly."
+        code == "subscription_sharing_unsupported_capability" -> "ChatGPT does not support this model or request feature. Choose another model."
         status == 401 -> "ChatGPT sign-in expired. Reconnect in Settings > Connected accounts."
         status == 403 -> "ChatGPT has not allowed this request. Check plan access and the selected model in ChatGPT settings: $USAGE_URL"
         else -> "ChatGPT could not complete this request${status?.let { " (HTTP $it)" }.orEmpty()}. Please try again."
     }
+
+    /** Error events can arrive inside HTTP-200 streams; their documented codes still govern recovery. */
+    fun errorStatus(code: String?): Int? = when (code) {
+        "subscription_sharing_usage_limit_exceeded" -> 429
+        "subscription_sharing_unsupported_capability" -> 400
+        "subscription_sharing_invalid_user" -> 401
+        "subscription_sharing_user_not_eligible", "subscription_sharing_route_not_supported",
+        "chatpass_v2_scope_not_authorized", "chatpass_v2_invalid_authorization_context" -> 403
+        "subscription_sharing_usage_unavailable", "subscription_sharing_user_unavailable" -> 503
+        else -> null
+    }
 }
 
 @Serializable
-internal data class ChatGptStore(val hostId: String, val accounts: List<ChatGptRegistration> = emptyList(), val welcomeSeen: Boolean = false)
+internal data class ChatGptStore(val hostId: String, val accounts: List<ChatGptRegistration> = emptyList(),
+    val welcomeSeen: Boolean = false, val autoSwitch: Boolean = false)
 
 @Serializable
 data class ChatGptRegistration(
@@ -153,6 +168,9 @@ data class ChatGptRegistration(
     val scopes: Set<String> = emptySet(),
     val models: List<ModelEntry> = emptyList(),
     val verifiedModels: List<ModelEntry> = emptyList(),
+    val useForAutoSwitch: Boolean = true,
+    val fallbackModel: String? = null,
+    val usageLimitedAt: Long? = null,
 ) {
     val connected: Boolean get() = accessToken != null && ChatGptProtocol.PLAN_SCOPE in scopes
     override fun toString() = "ChatGptRegistration(clientId=$clientId, connected=$connected)"

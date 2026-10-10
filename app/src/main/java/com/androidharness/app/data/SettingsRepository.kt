@@ -320,6 +320,23 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    suspend fun setActiveSelection(providerId: String, model: String) {
+        context.settingsStore.edit { prefs ->
+            prefs[Keys.ACTIVE_PROVIDER] = providerId
+            prefs[Keys.ACTIVE_MODEL] = model
+        }
+    }
+
+    /** A background switch must not overwrite a newer choice made in the model picker. */
+    suspend fun switchActiveSelection(from: com.androidharness.app.llm.ProviderConfig, to: com.androidharness.app.llm.ProviderConfig) {
+        context.settingsStore.edit { prefs ->
+            if (prefs[Keys.ACTIVE_PROVIDER] == from.id && (prefs[Keys.ACTIVE_MODEL] == null || prefs[Keys.ACTIVE_MODEL] == from.model)) {
+                prefs[Keys.ACTIVE_PROVIDER] = to.id
+                prefs[Keys.ACTIVE_MODEL] = to.model
+            }
+        }
+    }
+
     suspend fun clearMissingLocalProviderSelections(availableIds: Set<String>) {
         context.settingsStore.edit { prefs ->
             listOf(Keys.ACTIVE_PROVIDER to Keys.ACTIVE_MODEL,

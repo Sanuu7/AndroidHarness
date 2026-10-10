@@ -290,6 +290,7 @@ class RunManager(
         val turnId = if (resume) prior.turnId else UUID.randomUUID().toString()
         val record = controls.update(sid) { it.copy(
             status = "running", reason = null, provider = runConfig, workspacePath = runWorkspace.displayPath,
+            usedProviderIds = (if (resume) it.usedProviderIds else emptySet()) + runConfig.id,
             mode = mode.name, thinking = thinking.name, maxOutput = maxOutputTokens,
             maxContext = maxContextTokens, maxIterations = maxIterations, turnId = turnId,
             initialPrompt = if (resume) it.initialPrompt else text,
@@ -521,7 +522,7 @@ class RunManager(
                             val continuing = action is RunFollowUps.Action.Continue
                             if (continuing) TaskBudget(saved.limits, saved.usedTokens, saved.usedCost, saved.elapsedMs).check()
                             val prompt = (action as? RunFollowUps.Action.Send)?.prompt
-                            startRunLocked(sid, prompt?.text.orEmpty(), emptyList(), runConfig, apiKey,
+                            startRunLocked(sid, prompt?.text.orEmpty(), emptyList(), saved.provider ?: runConfig, apiKey,
                                 settings.settings.first().permissionMode, mode, maxOutputTokens,
                                 maxContextTokens, thinking, maxIterations, workspaceOverride = runWorkspace,
                                 notifyOnFinish = notifyOnFinish, resume = continuing, queuedPromptId = prompt?.id,
@@ -682,6 +683,15 @@ class RunManager(
                     cachePrices = event.cachePrices,
                 )
             }
+
+            is AgentEvent.ProviderChanged -> {
+                controls.flow(sessionId).value.provider?.let { settings.switchActiveSelection(it, event.config) }
+                controls.update(sessionId) { it.copy(provider = event.config, usedProviderIds = it.usedProviderIds + event.config.id) }
+                sessions.addMessage(sessionId, ChatMessage(role = Role.SYSTEM, text = event.reason, turnId = turnId))
+                live.update { it.copy(retryStatus = event.reason) }
+            }
+
+            is AgentEvent.ProviderUsed -> controls.update(sessionId) { it.copy(usedProviderIds = it.usedProviderIds + event.providerId) }
 
             is AgentEvent.Retrying -> {
                 val seconds = (event.delayMs / 1000.0).let { if (it < 1) "<1" else "%.0f".format(it) }

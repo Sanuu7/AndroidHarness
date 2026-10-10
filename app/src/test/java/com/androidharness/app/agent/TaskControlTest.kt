@@ -24,7 +24,8 @@ class TaskControlTest {
     }
     @Test fun `settings and usage survive atomic replacement`() {
         val record = TaskRecord(status = "paused", pins = "Keep Kotlin", summaryOverride = "Goal",
-            limits = TaskLimits(100, 0.2, 5), usedTokens = 44, usedCost = 0.1, elapsedMs = 30000)
+            limits = TaskLimits(100, 0.2, 5), usedTokens = 44, usedCost = 0.1, elapsedMs = 30000,
+            usedProviderIds = setOf("chatgpt:main", "chatgpt:subagent"))
         TaskControlStore(folder.root).update("session") { record }
         assertEquals(record, TaskControlStore(folder.root).flow("session").value)
     }

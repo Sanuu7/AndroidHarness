@@ -26,6 +26,7 @@ data class TaskRecord(
     val status: String = "idle",
     val reason: String? = null,
     val provider: ProviderConfig? = null,
+    val usedProviderIds: Set<String> = emptySet(),
     val workspacePath: String = "",
     val mode: String = "ACT",
     val thinking: String = "OFF",

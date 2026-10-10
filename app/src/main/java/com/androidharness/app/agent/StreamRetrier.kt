@@ -70,6 +70,7 @@ internal object StreamRetrier {
             onAttemptStart()
             var failure: String? = null
             var failureCode: Int? = null
+            var retryAllowed = true
             var cause: Throwable? = null
             try {
                 streamFor().stallGuard(stallTimeoutMs).takeWhile { event ->
@@ -77,6 +78,7 @@ internal object StreamRetrier {
                         is StreamEvent.Failure -> {
                             failure = event.message
                             failureCode = event.code
+                            retryAllowed = event.retryable != false
                         }
                         else -> handleEvent(event)
                     }
@@ -96,12 +98,12 @@ internal object StreamRetrier {
                 failure = e.message ?: e.javaClass.simpleName
             }
 
-            val retryable = allowRetries && failure != null &&
+            val retryable = allowRetries && retryAllowed && failure != null &&
                 attempt < RetryPolicy.MAX_RETRIES &&
                 !hasOutput() &&
                 RetryPolicy.isRetryable(cause, failure, failureCode)
             if (!retryable) {
-                if (failure != null) onTerminalFailure(allowRetries && RetryPolicy.isRetryable(cause, failure, failureCode))
+                if (failure != null) onTerminalFailure(allowRetries && retryAllowed && RetryPolicy.isRetryable(cause, failure, failureCode))
                 return failure
             }
 
