@@ -13,6 +13,9 @@ class SkillStore(
     private val disabled: () -> Set<String>,
     private val optionalBundled: () -> Map<String, BundledSkill> = { emptyMap() },
 ) {
+    /** A fixed project directory keeps one chat's catalog independent of the selected workspace. */
+    fun forProject(directory: File?): SkillStore = SkillStore(bundled, userDir, { directory }, disabled, optionalBundled)
+
     data class BundledSkill(
         val relativeDir: String,
         val content: String,

@@ -42,6 +42,22 @@ class SkillStoreTest {
         )
     }
 
+    @Test fun `project scoped skills stay bound when the selected workspace changes`() {
+        val alpha = tmp.newFolder("alpha")
+        val beta = tmp.newFolder("beta")
+        java.io.File(alpha, "git").apply { mkdirs(); resolve("SKILL.md").writeText(skill("git", "repo", "Alpha instructions")) }
+        java.io.File(beta, "git").apply { mkdirs(); resolve("SKILL.md").writeText(skill("git", "repo", "Beta instructions")) }
+        var selected = alpha
+        val base = SkillStore(emptyMap(), tmp.newFolder("shared"), { selected }, { emptySet() })
+        val a = base.forProject(alpha)
+        val b = base.forProject(beta)
+        selected = beta
+        assertTrue(a.view("git").getOrThrow().content.contains("Alpha instructions"))
+        assertTrue(b.view("git").getOrThrow().content.contains("Beta instructions"))
+        assertTrue(base.view("git").getOrThrow().content.contains("Beta instructions"))
+        assertTrue(base.forProject(null).list().isEmpty())
+    }
+
     @Test
     fun `catalog lists enabled bundled skills grouped by category`() {
         val catalog = store().catalog()

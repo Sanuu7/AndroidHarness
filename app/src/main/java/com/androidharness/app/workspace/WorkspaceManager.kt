@@ -10,6 +10,10 @@ import com.androidharness.app.data.env.PathClassifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.distinctUntilChanged
 import java.io.File
 import java.util.UUID
 
@@ -52,6 +56,35 @@ class WorkspaceManager(
 
     suspend fun currentProjectOnce(): ProjectEntity = currentProject.first()
 
+    /** The recent workspace is only a default for new chats. Existing chats own their assignment. */
+    fun projectForChat(sessionId: String?): Flow<ProjectEntity?> = if (sessionId == null) currentProject else flow {
+        val session = dao.session(sessionId)
+        if (session != null && session.projectId == null) {
+            dao.bindSessionProject(sessionId, currentProjectOnce().id)
+        }
+        emitAll(combine(dao.sessionFlow(sessionId), projects) { saved, available ->
+            available.firstOrNull { it.id == saved?.projectId }
+        }.distinctUntilChanged { previous, next ->
+            previous?.copy(lastUsedAt = 0) == next?.copy(lastUsedAt = 0)
+        })
+    }
+
+    fun forChat(sessionId: String?): Flow<WorkspaceFs?> = projectForChat(sessionId)
+        .map { project -> project?.let { runCatching { fsFor(it) }.getOrNull() } }
+
+    suspend fun projectForSession(sessionId: String): ProjectEntity =
+        projectForChat(sessionId).first() ?: error("This chat's workspace is unavailable. Choose a workspace for this chat.")
+
+    suspend fun forSession(sessionId: String): WorkspaceFs = fsFor(projectForSession(sessionId))
+
+    /** Call through RunManager, which guards active tasks and saved file changes. */
+    suspend fun assignSession(sessionId: String, projectId: String) {
+        requireNotNull(dao.session(sessionId)) { "This chat no longer exists" }
+        requireNotNull(dao.project(projectId)) { "This workspace no longer exists" }
+        dao.setSessionProject(sessionId, projectId)
+        setActiveProject(projectId)
+    }
+
     private suspend fun ensureDefaultProject(existing: List<ProjectEntity>): ProjectEntity {
         // migrate: first access creates the app workspace project
         val project = existing.firstOrNull() ?: ProjectEntity(
@@ -74,7 +107,7 @@ class WorkspaceManager(
             if (real != null) {
                 FileFs(real)
             } else {
-                runCatching { SafFs(context, treeUri) }.getOrElse { FileFs(appPrivateRoot) }
+                SafFs(context, treeUri)
             }
         }
         project.kind == KIND_SHELL && project.uri != null ->
@@ -139,6 +172,9 @@ class WorkspaceManager(
      */
     suspend fun deleteProject(project: ProjectEntity) {
         if (project.kind == KIND_APP) return
+        check(dao.projectSessionCount(project.id) == 0) {
+            "This workspace belongs to saved chats. Delete those chats before removing it."
+        }
         if (project.kind == KIND_SAF && project.uri != null) {
             releaseSafPermission(project.uri)
         }

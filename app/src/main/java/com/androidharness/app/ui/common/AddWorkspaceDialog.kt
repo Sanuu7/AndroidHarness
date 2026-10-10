@@ -36,15 +36,19 @@ fun AddWorkspaceDialog(
     container: AppContainer,
     onDismiss: () -> Unit,
     onPickSaf: () -> Unit,
+    onSelected: (String) -> Unit = {},
 ) {
     ShizukuWorkspaceWarningEffect(container.shizuku)
     var destination by remember { mutableStateOf<String?>(null) }
+    val selectionScope = rememberCoroutineScope()
     if (destination == "github") {
-        com.androidharness.app.ui.github.GitHubImportDialog(container, onDismiss)
+        com.androidharness.app.ui.github.GitHubImportDialog(container, onDismiss, onImported = {
+            selectionScope.launch { onSelected(container.workspace.currentProjectOnce().id); onDismiss() }
+        })
         return
     }
     if (destination == "ssh") {
-        SshWorkspaceDialog(container, onDismiss = onDismiss)
+        SshWorkspaceDialog(container, onDismiss = onDismiss, onSelected = onSelected)
         return
     }
     if (destination == null) {
@@ -72,7 +76,7 @@ fun AddWorkspaceDialog(
             assessment.region == PathClassifier.Region.APP_DATA ->
                 error = "That is the app's own private storage. Use the app workspace instead."
             else -> scope.launch {
-                container.workspace.addShellProject(trimmed)
+                onSelected(container.workspace.addShellProject(trimmed).id)
                 onDismiss()
             }
         }
@@ -108,7 +112,10 @@ fun AddWorkspaceDialog(
                 )
                 Button(
                     onClick = {
-                        if (appProject != null) scope.launch { container.workspace.setActiveProject(appProject.id) }
+                        if (appProject != null) scope.launch {
+                            container.workspace.setActiveProject(appProject.id)
+                            onSelected(appProject.id)
+                        }
                         onDismiss()
                     },
                     modifier = Modifier.fillMaxWidth(),

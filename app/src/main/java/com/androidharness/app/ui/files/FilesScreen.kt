@@ -119,7 +119,7 @@ fun FilesScreen(
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
     val statusSuccess = LocalStatusColors.current.success
-    val fs by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
+    val fs by remember(sessionId) { container.workspace.forChat(sessionId) }.collectAsStateWithLifecycle(initialValue = null)
 
     var currentPath by remember { mutableStateOf(".") }
     var refreshTick by remember { mutableIntStateOf(0) }
@@ -159,16 +159,27 @@ fun FilesScreen(
     val activeChanges = mergedChanges.filter { !it.isDeleted }
 
     // ---- workspace switcher (same sheet the drawer and chat overflow use) ----
-    val currentWorkspace by container.workspace.currentProject
+    val currentWorkspace by remember(sessionId) { container.workspace.projectForChat(sessionId) }
         .collectAsStateWithLifecycle(initialValue = null)
     val allWorkspaces by container.workspace.projects
         .collectAsStateWithLifecycle(initialValue = emptyList())
     var showWorkspaceSheet by remember { mutableStateOf(false) }
     var showAddWorkspace by remember { mutableStateOf(false) }
+    fun selectWorkspace(id: String) {
+        scope.launch {
+            try {
+                if (sessionId == null) container.workspace.setActiveProject(id)
+                else container.runManager.assignWorkspace(sessionId, id)
+            } catch (e: Exception) { loadError = e.message }
+        }
+    }
     var githubProject by remember { mutableStateOf<Pair<String, String>?>(null) }
     val safWorkspacePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
-    ) { uri -> uri?.let { scope.launch { container.workspace.addPickedFolder(it) } } }
+    ) { uri -> uri?.let { scope.launch {
+        try { selectWorkspace(container.workspace.addPickedFolder(it).id) }
+        catch (e: Exception) { loadError = e.message }
+    } } }
 
     // A workspace switch restarts the listing at its root.
     LaunchedEffect(fs) {
@@ -781,21 +792,26 @@ fun FilesScreen(
         com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
             projects = allWorkspaces,
             currentProjectId = currentWorkspace?.id,
+            chatWorkspace = sessionId != null,
             describe = { container.workspace.describe(it) },
             onSelect = { id ->
-                scope.launch { container.workspace.setActiveProject(id) }
+                selectWorkspace(id)
                 showWorkspaceSheet = false
             },
             onAdd = { showAddWorkspace = true },
             onDismiss = { showWorkspaceSheet = false },
             onDelete = { project ->
-                scope.launch { container.workspace.deleteProject(project) }
+                scope.launch {
+                    try { container.workspace.deleteProject(project) }
+                    catch (e: Exception) { toast(e.message ?: "Could not remove workspace") }
+                }
             },
         )
     }
     if (showAddWorkspace) {
         com.androidharness.app.ui.common.AddWorkspaceDialog(
             container = container,
+            onSelected = ::selectWorkspace,
             onDismiss = { showAddWorkspace = false },
             onPickSaf = {
                 showAddWorkspace = false

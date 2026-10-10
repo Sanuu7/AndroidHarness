@@ -77,11 +77,8 @@ fun ChangesScreen(
 ) {
     val scheme = MaterialTheme.colorScheme
     val colors = LocalStatusColors.current
-    val fs by produceState<com.androidharness.app.workspace.WorkspaceFs?>(null, sessionId) {
-        val projectId = container.sessions.session(sessionId)?.projectId
-        val project = container.workspace.projects.first().firstOrNull { it.id == projectId }
-        value = project?.let { container.workspace.fsFor(it) }
-    }
+    val fs by remember(sessionId) { container.workspace.forChat(sessionId) }
+        .collectAsStateWithLifecycle(initialValue = null)
     val running by container.runManager.runningSessionIds.collectAsStateWithLifecycle()
     val changes by container.sessions.fileChangesFor(sessionId)
         .collectAsStateWithLifecycle(initialValue = emptyList())
@@ -146,7 +143,7 @@ fun ChangesScreen(
             LazyColumn(Modifier.fillMaxSize()) {
                 itemsIndexed(merged, key = { _, c -> c.relPath }) { _, change ->
                     ChangeRow(fs = fs, change = change, successColor = colors.success,
-                        canUndo = running.isEmpty(), onAskAgent = onAskAgent, onUndo = { preview, section ->
+                        canUndo = fs != null && running.none { container.runManager.controls.flow(it).value.workspacePath == fs?.displayPath }, onAskAgent = onAskAgent, onUndo = { preview, section ->
                             container.runManager.undoSelection(sessionId, change, preview.current, preview.exists, section)
                         })
                     HorizontalDivider(

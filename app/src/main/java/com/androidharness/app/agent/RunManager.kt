@@ -113,6 +113,16 @@ class RunManager(
         }
         action()
     }
+
+    suspend fun assignWorkspace(sessionId: String, projectId: String) = workspaceGuard.withLock {
+        if (sessions.session(sessionId)?.projectId == projectId) return@withLock
+        check(!isRunning(sessionId)) { "Wait for this chat's task to finish before changing its workspace." }
+        check(!controls.flow(sessionId).value.resumable) { "Resume or stop this chat's saved task before changing its workspace." }
+        check(checkpoints.turnsWithCheckpoints(sessionId).isEmpty() && sessions.fileChangesFor(sessionId).first().isEmpty()) {
+            "This chat has saved file changes. Start a new chat to work in another workspace."
+        }
+        workspace.assignSession(sessionId, projectId)
+    }
     private val states = mutableMapOf<String, MutableStateFlow<LiveRunState>>()
     private val jobs = mutableMapOf<String, Job>()
     private val queueWrites = mutableMapOf<String, MutableSet<Job>>()
@@ -251,13 +261,14 @@ class RunManager(
             previous.join()
         }
         val runConfig = providers.resolveHarnessConfig(config)
+        val assignedWorkspace = workspace.forSession(sid)
+        require(workspaceOverride == null || workspaceOverride.displayPath == assignedWorkspace.displayPath) {
+            "This chat's workspace changed while preparing the request. Send the message again."
+        }
+        val runWorkspace = workspaceOverride ?: assignedWorkspace
         if (replacementMessageId != null) {
             check(!resume) { "Cannot replace a message while resuming" }
-            val projectId = sessions.session(sid)?.projectId
-            check(projectId == null || projectId == workspace.currentProjectOnce().id) {
-                "Open this chat's original workspace before editing or retrying a message"
-            }
-            val path = workspace.currentOnce().displayPath
+            val path = runWorkspace.displayPath
             check(runningSessionIds.value.none { it != sid && controls.flow(it).value.workspacePath == path }) {
                 "Pause other tasks in this workspace before editing or retrying a message"
             }
@@ -266,7 +277,6 @@ class RunManager(
         val runId = if (followUpRunId == null) followUps.begin(sid)
             else followUps.advance(sid, followUpRunId) ?: return sid
         val prior = controls.flow(sid).value
-        val runWorkspace = workspaceOverride ?: workspace.currentOnce()
         require(!resume || prior.workspacePath == runWorkspace.displayPath) { "Open the original workspace to resume this task" }
         val turnId = if (resume) prior.turnId else UUID.randomUUID().toString()
         val record = controls.update(sid) { it.copy(
@@ -845,10 +855,7 @@ class RunManager(
         check(saved.resumable) { "No interrupted task to resume" }
         val config = saved.provider ?: error("Saved provider is unavailable")
         TaskBudget(saved.limits, saved.usedTokens, saved.usedCost, saved.elapsedMs).check()
-        val projectId = sessions.session(sessionId)?.projectId
-        val project = workspace.projects.first().firstOrNull { it.id == projectId }
-            ?: error("The original workspace is unavailable")
-        val fs = workspace.fsFor(project)
+        val fs = workspace.forSession(sessionId)
         require(fs.displayPath == saved.workspacePath) { "The original workspace has changed" }
         startRun(sessionId, "", emptyList(), config, apiKey, settings.settings.first().permissionMode,
             AgentMode.valueOf(saved.mode), saved.maxOutput, saved.maxContext,
@@ -872,7 +879,7 @@ class RunManager(
         check(msgs[index].role == Role.USER) { "Only user messages can be resent" }
         // distinct turns from the edited message onward, newest first
         val turnIds = msgs.drop(index).mapNotNull { it.turnId }.distinct().reversed()
-        val fs = workspace.currentOnce()
+        val fs = workspace.forSession(sessionId)
         for (tid in turnIds) {
             val result = checkpoints.rewind(sessionId, tid, fs)
             check(result.failed == 0) { "Some files could not be restored. History and failed checkpoints were kept; retry undo." }
@@ -888,12 +895,15 @@ class RunManager(
      * rows of the removed turns are dropped, and cumulative change counters
      * are recomputed against the session baseline.
      */
-    suspend fun rewindFromTurn(sessionId: String, turnId: String): RewindSummary {
+    suspend fun rewindFromTurn(sessionId: String, turnId: String): RewindSummary = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
+        val fs = workspace.forSession(sessionId)
+        check(runningSessionIds.value.none { controls.flow(it).value.workspacePath == fs.displayPath }) {
+            "Pause tasks in this workspace before undoing changes"
+        }
         val ordered = checkpoints.turnsOrdered(sessionId)
         val idx = ordered.indexOfFirst { it.turnId == turnId }
         val affectedTurns = if (idx >= 0) ordered.drop(idx).map { it.turnId } else listOf(turnId)
 
-        val fs = workspace.currentOnce()
         var restored = 0
         var failed = 0
         val paths = LinkedHashSet<String>()
@@ -933,8 +943,8 @@ class RunManager(
                 sessions.refreshFileChangeAfterRewind(sessionId, path, exists, text)
             }
         }
-        return RewindSummary(restored, failed, messagesDeleted, paths.size)
-    }
+        RewindSummary(restored, failed, messagesDeleted, paths.size)
+    } }
 
     suspend fun undoSelection(
         sessionId: String,
@@ -943,10 +953,7 @@ class RunManager(
         expectedExists: Boolean,
         section: com.androidharness.app.core.Diff.UndoSection?,
     ) = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
-        val projectId = sessions.session(sessionId)?.projectId
-        val project = workspace.projects.first().firstOrNull { it.id == projectId }
-            ?: error("The original workspace is unavailable")
-        val fs = workspace.fsFor(project)
+        val fs = workspace.forSession(sessionId)
         check(runningSessionIds.value.none { controls.flow(it).value.workspacePath == fs.displayPath }) {
             "Pause tasks in this workspace before undoing changes"
         }

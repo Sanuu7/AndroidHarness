@@ -182,6 +182,18 @@ interface HarnessDao {
     @Query("SELECT * FROM sessions WHERE id = :id")
     suspend fun session(id: String): SessionEntity?
 
+    @Query("SELECT * FROM sessions WHERE id = :id")
+    fun sessionFlow(id: String): Flow<SessionEntity?>
+
+    @Query("UPDATE sessions SET projectId = :projectId WHERE id = :id")
+    suspend fun setSessionProject(id: String, projectId: String)
+
+    @Query("UPDATE sessions SET projectId = :projectId WHERE id = :id AND projectId IS NULL")
+    suspend fun bindSessionProject(id: String, projectId: String)
+
+    @Query("SELECT COUNT(*) FROM sessions WHERE projectId = :projectId")
+    suspend fun projectSessionCount(projectId: String): Int
+
     @Insert
     suspend fun insertSession(session: SessionEntity)
 

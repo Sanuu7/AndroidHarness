@@ -101,7 +101,7 @@ fun CodeEditorScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
-    val fs by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
+    val fs by remember(sessionId) { container.workspace.forChat(sessionId) }.collectAsStateWithLifecycle(initialValue = null)
 
     // ---- load state ----
     var loadState by remember(path) { mutableStateOf<Load>(Load.Loading) }

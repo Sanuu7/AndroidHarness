@@ -161,7 +161,7 @@ fun ChatScreen(
     searchMessageId: String? = null,
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val currentProject by viewModel.container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
+    val currentProject by viewModel.activeWorkspace.collectAsStateWithLifecycle(initialValue = null)
     var githubProject by remember { mutableStateOf<Pair<String, String>?>(null) }
     val listState = rememberChatListState()
     val snackbar = remember { SnackbarHostState() }
@@ -417,7 +417,7 @@ fun ChatScreen(
         )
     }
     if (showWebPreview) {
-        val fs by viewModel.container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
+        val fs by viewModel.workspaceFs.collectAsStateWithLifecycle(initialValue = null)
         WebPreviewSheet(
             initialTarget = webPreviewUrl,
             workspace = fs,

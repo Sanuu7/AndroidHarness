@@ -12,10 +12,11 @@ class RepoMapCache {
         val symbols: List<SymbolInfo>,
     )
 
-    private val fileCache = ConcurrentHashMap<String, CachedFile>()
+    private data class FileKey(val workspace: String, val relPath: String)
+    private val fileCache = ConcurrentHashMap<FileKey, CachedFile>()
 
     fun invalidate(relPath: String) {
-        fileCache.remove(relPath)
+        fileCache.keys.filter { it.relPath == relPath }.forEach { fileCache.remove(it) }
     }
 
     fun clear() {
@@ -33,15 +34,16 @@ class RepoMapCache {
                 val entries = mutableListOf<FileEntry>()
                 for (node in nodes) {
                     val path = node.relPath
+                    val key = FileKey(workspace.displayPath, path)
                     val len = node.length
-                    val cached = fileCache[path]
+                    val cached = fileCache[key]
 
                     val symbols = if (cached != null && cached.length == len) {
                         cached.symbols
                     } else {
                         val content = runCatching { node.readText() }.getOrDefault("")
                         val extracted = RepoSymbolExtractor.extract(path, content)
-                        fileCache[path] = CachedFile(len, extracted)
+                        fileCache[key] = CachedFile(len, extracted)
                         extracted
                     }
                     entries += FileEntry(path, symbols)

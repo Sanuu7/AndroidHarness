@@ -39,6 +39,12 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.filterNotNull
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.launch
 
 data class UsageStats(
@@ -245,6 +251,24 @@ class ChatViewModel(
 
     private var sessionId: String? = initialSessionId
     private val sessionIdFlow = MutableStateFlow(initialSessionId)
+    val activeWorkspace = sessionIdFlow.flatMapLatest { c.workspace.projectForChat(it) }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    val workspaceFs = activeWorkspace.map { project -> project?.let { runCatching { c.workspace.fsFor(it) }.getOrNull() } }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, null)
+    private val sessionCreation = Mutex()
+
+    private suspend fun ensureSession(title: String = "New chat"): String = sessionCreation.withLock {
+        sessionId ?: c.sessions.createSession(title, c.workspace.currentProjectOnce().id).also { sid ->
+            sessionId = sid
+            sessionIdFlow.value = sid
+            _state.update { it.copy(sessionId = sid, sessionTitle = title) }
+            c.settings.setLastActiveSessionId(sid)
+        }
+    }
+
+    private suspend fun chatWorkspace() = c.workspace.forSession(ensureSession())
+    private fun chatSkills() = c.skills.forProject(workspaceFs.value?.shellRoot?.resolve(".harness/skills"))
+
     private var pendingAttachments = mutableListOf<ImageRef>()
     private val pendingFileAttachments = mutableListOf<FileAttachment>()
     /** Workspace key the @-mention file list was built for (empty until loaded). */
@@ -253,6 +277,7 @@ class ChatViewModel(
     /** Text of a run paused on the workspace-MCP approval dialog. */
     private var pendingRunText: String? = null
     private var pendingReplacement: ChatMessage? = null
+    private var pendingMcpWorkspace: com.androidharness.app.workspace.WorkspaceFs? = null
     private var startingRun = false
 
     /** User approved the workspace .harness/mcp.json: remember it and run. */
@@ -263,8 +288,14 @@ class ChatViewModel(
         pendingRunText = null
         _state.update { it.copy(pendingWorkspaceMcp = null) }
         viewModelScope.launch {
-            runCatching { c.mcp.approveWorkspace(c.workspace.currentOnce()) }
-            if (text != null) startRun(text, workspaceMcpGate = false, replacement = replacement)
+            val approved = runCatching {
+                val workspace = requireNotNull(pendingMcpWorkspace)
+                check(workspace.displayPath == chatWorkspace().displayPath) { "The workspace changed. Send your message again to review its servers." }
+                c.mcp.approveWorkspace(workspace)
+            }
+            pendingMcpWorkspace = null
+            if (approved.isFailure) _state.update { it.copy(error = approved.exceptionOrNull()?.message) }
+            else if (text != null) startRun(text, workspaceMcpGate = false, replacement = replacement)
         }
     }
 
@@ -272,6 +303,7 @@ class ChatViewModel(
     fun denyWorkspaceMcp() {
         val text = pendingRunText
         val replacement = pendingReplacement
+        pendingMcpWorkspace = null
         pendingReplacement = null
         pendingRunText = null
         _state.update { it.copy(pendingWorkspaceMcp = null) }
@@ -373,12 +405,14 @@ class ChatViewModel(
         }
         viewModelScope.launch {
             c.settings.settings.collect {
-                _state.update { st -> st.copy(skills = c.skills.list()) }
+                _state.update { st -> st.copy(skills = chatSkills().list()) }
             }
         }
         viewModelScope.launch {
-            c.workspace.currentProject.collect { project ->
-                _state.update { it.copy(workspaceName = project.name, skills = c.skills.list()) }
+            activeWorkspace.collect { project ->
+                mentionCacheKey = null
+                val store = c.skills.forProject(project?.let { runCatching { c.workspace.fsFor(it).shellRoot?.resolve(".harness/skills") }.getOrNull() })
+                _state.update { it.copy(workspaceName = project?.name ?: "Workspace unavailable", skills = store.list(), mentionFiles = emptyList()) }
             }
         }
         viewModelScope.launch {
@@ -495,7 +529,7 @@ class ChatViewModel(
                         com.androidharness.app.agent.ContextHygiene.forModel(
                             with(c.sessions) { historyFor(initialSessionId).second.withoutSubagentTurns() },
                         ),
-                        c.workspace.currentOnce(),
+                        chatWorkspace(),
                         _state.value.mode,
                         _state.value.permissionMode == PermissionMode.FULL_ACCESS,
                     )
@@ -638,9 +672,9 @@ class ChatViewModel(
         val resolved = if (trimmed.startsWith("/")) {
             SlashCommands.resolve(
                 input = trimmed,
-                skillNames = c.skills.slashNames(),
+                skillNames = chatSkills().slashNames(),
                 snippetBodies = _state.value.snippets.associate { it.name to it.body },
-                skillContent = { name -> c.skills.view(name).getOrNull()?.content },
+                skillContent = { name -> chatSkills().view(name).getOrNull()?.content },
             )
         } else {
             SlashCommands.Result(SlashCommands.Kind.PLAIN, agentText = trimmed)
@@ -660,7 +694,7 @@ class ChatViewModel(
                 return
             }
             SlashCommands.Kind.SKILLS -> {
-                _state.update { it.copy(showSkillsSheet = true, skills = c.skills.list()) }
+                _state.update { it.copy(showSkillsSheet = true, skills = chatSkills().list()) }
                 return
             }
             SlashCommands.Kind.ENV -> {
@@ -767,10 +801,7 @@ class ChatViewModel(
     fun saveRecoverySettings(enabled: Boolean, limit: Int) {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
             try {
-                val sid = sessionId ?: c.sessions.createSession("New chat", c.workspace.currentProjectOnce().id).also {
-                    sessionId = it; sessionIdFlow.value = it
-                    _state.update { state -> state.copy(sessionId = it) }
-                }
+                val sid = ensureSession()
                 c.runManager.controls.update(sid) { it.copy(autoContinue = enabled, autoContinueLimit = limit.coerceIn(1, 5)) }
             } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
         }
@@ -779,10 +810,7 @@ class ChatViewModel(
     fun saveTaskControls(pins: String, summary: String?, limits: com.androidharness.app.agent.TaskLimits, clearOlder: Boolean) {
         viewModelScope.launch {
             try {
-                val sid = sessionId ?: c.sessions.createSession("New chat", c.workspace.currentProjectOnce().id).also {
-                    sessionId = it; sessionIdFlow.value = it
-                    _state.update { state -> state.copy(sessionId = it) }
-                }
+                val sid = ensureSession()
                 check(!c.runManager.isRunning(sid)) { "Pause the task before changing context or limits" }
                 val cutoff = if (clearOlder) {
                     // Keep the latest user turn and all of its assistant/tool messages together.
@@ -811,7 +839,7 @@ class ChatViewModel(
     }
 
     fun openSkillsSheet() {
-        _state.update { it.copy(showSkillsSheet = true, skills = c.skills.list()) }
+        _state.update { it.copy(showSkillsSheet = true, skills = chatSkills().list()) }
     }
 
     // ------------------------------------------------------------------
@@ -899,7 +927,7 @@ class ChatViewModel(
         if (index < pendingFileAttachments.size) pendingFileAttachments.removeAt(index)
         removed.workspacePath?.let { path ->
             viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-                runCatching { c.workspace.currentOnce().resolve(path).delete() }
+                runCatching { chatWorkspace().resolve(path).delete() }
             }
         }
         _state.update { it.copy(fileAttachments = it.fileAttachments.toMutableList().apply { removeAt(index) }) }
@@ -908,7 +936,7 @@ class ChatViewModel(
     /** Workspace file list for the @-mention picker, cached per workspace. */
     fun loadMentionFiles() {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
-            val fs = runCatching { c.workspace.currentOnce() }.getOrNull() ?: return@launch
+            val fs = runCatching { chatWorkspace() }.getOrNull() ?: return@launch
             if (fs.displayPath == mentionCacheKey) return@launch
             val files = runCatching {
                 fs.walk("")
@@ -939,7 +967,7 @@ class ChatViewModel(
         if (size != null && size > cap) {
             throw IllegalStateException("file is larger than ${FileAttachments.humanBytes(cap)}")
         }
-        val fs = c.workspace.currentOnce()
+        val fs = chatWorkspace()
         val dir = fs.resolve(".harness/attachments")
         dir.mkdirs()
         val safe = name.replace(Regex("[^A-Za-z0-9._\\- ()]"), "_").take(80).ifBlank { "file" }
@@ -1058,6 +1086,8 @@ class ChatViewModel(
         startingRun = true
         viewModelScope.launch {
             try {
+                val boundSession = targetSession ?: ensureSession(payload.take(48))
+                val runWorkspace = c.workspace.forSession(boundSession)
                 // Harness free-tier models live behind different wires per model; probe
                 // once on first use and pin the winner so later requests route directly.
                 // Pooled community models always speak chat/completions, skip the probe.
@@ -1080,11 +1110,12 @@ class ChatViewModel(
                 // dialog offers approve (and continue) or run without those servers.
                 if (workspaceMcpGate) {
                     val unapproved = runCatching {
-                        c.mcp.unapprovedWorkspaceServers(c.workspace.currentOnce())
+                        c.mcp.unapprovedWorkspaceServers(runWorkspace)
                     }.getOrDefault(emptyList())
                     if (unapproved.isNotEmpty()) {
                         pendingRunText = payload
                         pendingReplacement = replacement
+                        pendingMcpWorkspace = runWorkspace
                         _state.update { it.copy(pendingWorkspaceMcp = unapproved.map { s -> s.name }) }
                         return@launch
                     }
@@ -1110,7 +1141,7 @@ class ChatViewModel(
                     kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { c.localModels.limits(provider.id.removePrefix(com.androidharness.app.local.LocalModelCatalog.PROVIDER_PREFIX)) }
                 } else null
                 val sid = c.runManager.startRun(
-                    sessionId = targetSession,
+                    sessionId = boundSession,
                     text = payload,
                     imageRefs = imageRefs,
                     config = effectiveConfig,
@@ -1121,6 +1152,7 @@ class ChatViewModel(
                     maxContextTokens = localLimits?.context ?: s0.maxContextTokens,
                     thinking = s0.thinkingLevel,
                     maxIterations = s0.maxIterations,
+                    workspaceOverride = runWorkspace,
                     queuedPromptId = queuedPromptId,
                     replacementMessageId = replacement?.id,
                 )
@@ -1363,7 +1395,7 @@ class ChatViewModel(
             val before = if (checkpoint.existedBefore) {
                 String(android.util.Base64.decode(checkpoint.contentB64, android.util.Base64.DEFAULT), Charsets.UTF_8)
             } else ""
-            val fs = c.workspace.currentOnce()
+            val fs = chatWorkspace()
             val node = fs.resolve(path)
             val current = if (!node.exists) "" else {
                 check(node.isFile && node.length <= 1_000_000) { "This file is too large for an inline review." }
@@ -1397,7 +1429,7 @@ class ChatViewModel(
                 )
             }
 
-        val fs = c.workspace.currentOnce()
+        val fs = chatWorkspace()
         val files = (sums.keys + existedBefore.keys).map { path ->
             val acc = sums[path] ?: longArrayOf(0, 0)
             val created = existedBefore[path] == false
@@ -1501,7 +1533,7 @@ class ChatViewModel(
                     com.androidharness.app.agent.ContextHygiene.forModel(
                         with(c.sessions) { historyFor(sid).second.withoutSubagentTurns() },
                     ),
-                    c.workspace.currentOnce(),
+                    chatWorkspace(),
                     _state.value.mode,
                     _state.value.permissionMode == PermissionMode.FULL_ACCESS,
                 )
@@ -1691,18 +1723,20 @@ class ChatViewModel(
     val workspaces: Flow<List<com.androidharness.app.data.db.ProjectEntity>>
         get() = c.workspace.projects
 
-    val activeWorkspace: Flow<com.androidharness.app.data.db.ProjectEntity>
-        get() = c.workspace.currentProject
-
-    fun workspaceDescription(project: com.androidharness.app.data.db.ProjectEntity) =
-        c.workspace.describe(project)
+    fun workspaceDescription(project: com.androidharness.app.data.db.ProjectEntity) = c.workspace.describe(project)
 
     fun setWorkspace(projectId: String) {
-        viewModelScope.launch { c.workspace.setActiveProject(projectId) }
+        viewModelScope.launch {
+            try { c.runManager.assignWorkspace(ensureSession(), projectId) }
+            catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+        }
     }
 
     fun addSafWorkspace(uri: Uri) {
-        viewModelScope.launch { c.workspace.addPickedFolder(uri) }
+        viewModelScope.launch {
+            try { c.runManager.assignWorkspace(ensureSession(), c.workspace.addPickedFolder(uri).id) }
+            catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+        }
     }
 
     /**

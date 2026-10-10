@@ -50,6 +50,7 @@ fun WorkspaceSwitcherSheet(
     onAdd: () -> Unit,
     onDismiss: () -> Unit,
     onDelete: ((ProjectEntity) -> Unit)? = null,
+    chatWorkspace: Boolean = false,
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     ModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
@@ -61,9 +62,9 @@ fun WorkspaceSwitcherSheet(
         ) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
-                    Text("Workspace", style = MaterialTheme.typography.titleMediumEmphasized)
+                    Text(if (chatWorkspace) "Chat workspace" else "Workspace", style = MaterialTheme.typography.titleMediumEmphasized)
                     Text(
-                        "Where the agent reads and writes files",
+                        if (chatWorkspace) "Assigned to this chat" else "Default for new chats",
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

@@ -133,11 +133,12 @@ fun BuildTestScreen(
     onOpenFile: (String, Int) -> Unit,
     onOpenTerminal: () -> Unit,
     onFixWithAgent: (String) -> Unit,
+    sessionId: String? = null,
 ) {
     val terminal = container.terminal
     val terminalState by terminal.state.collectAsStateWithLifecycle()
-    val workspace by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
-    val project by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
+    val workspace by remember(sessionId) { container.workspace.forChat(sessionId) }.collectAsStateWithLifecycle(initialValue = null)
+    val project by remember(sessionId) { container.workspace.projectForChat(sessionId) }.collectAsStateWithLifecycle(initialValue = null)
     val scheme = MaterialTheme.colorScheme
     val statusColors = LocalStatusColors.current
     val store = remember { BuildCommandStore(container.appContext) }

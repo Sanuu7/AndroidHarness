@@ -27,7 +27,7 @@ class SkillViewTool(
         val name = args["name"]?.jsonPrimitive?.content?.trim()
             ?: throw ToolFailure("Missing required argument: name")
         val filePath = args["file_path"]?.jsonPrimitive?.content
-        val viewed = store.view(name, filePath).getOrElse { err ->
+        val viewed = store.forProject(ctx.workspace.shellRoot?.resolve(".harness/skills")).view(name, filePath).getOrElse { err ->
             return ToolResult(false, err.message ?: "Skill '$name' not found.")
         }
         val origin = when (viewed.source) {
@@ -68,7 +68,7 @@ class SkillsListTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         val category = args["category"]?.jsonPrimitive?.content?.trim()?.ifBlank { null }
-        val skills = store.list().filter { category == null || it.category == category }
+        val skills = store.forProject(ctx.workspace.shellRoot?.resolve(".harness/skills")).list().filter { category == null || it.category == category }
         if (skills.isEmpty()) {
             return ToolResult(true, "No skills found" + if (category != null) " in '$category'." else ".")
         }
@@ -134,7 +134,7 @@ class SkillManageTool(
                     ?: throw ToolFailure("patch requires old_string.")
                 val new = args["new_string"]?.jsonPrimitive?.content
                     ?: throw ToolFailure("patch requires new_string.")
-                store.patchUserOrCopy(name, old, new).fold(
+                store.forProject(ctx.workspace.shellRoot?.resolve(".harness/skills")).patchUserOrCopy(name, old, new).fold(
                     onSuccess = { ToolResult(true, it) },
                     onFailure = { ToolResult(false, it.message ?: "Patch failed.") },
                 )

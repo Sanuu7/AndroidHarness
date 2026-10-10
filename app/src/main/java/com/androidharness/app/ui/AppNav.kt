@@ -155,8 +155,6 @@ fun AppNav(container: AppContainer) {
         .map { it as AppSettings? }
         .collectAsStateWithLifecycle(initialValue = null)
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
-    val currentWorkspace by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
-    val activeFs by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
     val allWorkspaces by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
     val keyboard = LocalSoftwareKeyboardController.current
 
@@ -219,9 +217,29 @@ fun AppNav(container: AppContainer) {
 
     // Which session the current back stack shows, for drawer highlighting.
     val currentEntry by nav.currentBackStackEntryFlow.collectAsStateWithLifecycle(initialValue = null)
-    val currentSessionId = currentEntry
-        ?.takeIf { it.destination.route == "chat/{sessionId}?messageId={messageId}" }
-        ?.arguments?.getString("sessionId")
+    var draftSessionId by remember { mutableStateOf<String?>(null) }
+    val currentSessionId = when (currentEntry?.destination?.route) {
+        "chat/{sessionId}?messageId={messageId}" -> currentEntry?.arguments?.getString("sessionId")
+        "chat" -> draftSessionId
+        else -> null
+    }
+    val workspaceSessionId = currentSessionId
+        ?: currentEntry?.arguments?.getString("sessionId")
+        ?: currentEntry?.arguments?.getString("session")?.takeIf { it.isNotBlank() }
+    val currentWorkspace by remember(workspaceSessionId) { container.workspace.projectForChat(workspaceSessionId) }
+        .collectAsStateWithLifecycle(initialValue = null)
+    val activeFs by remember(workspaceSessionId) { container.workspace.forChat(workspaceSessionId) }
+        .collectAsStateWithLifecycle(initialValue = null)
+    var workspaceError by remember { mutableStateOf<String?>(null) }
+    fun selectWorkspace(id: String) {
+        val sid = workspaceSessionId
+        scope.launch {
+            try {
+                if (sid == null) container.workspace.setActiveProject(id)
+                else container.runManager.assignWorkspace(sid, id)
+            } catch (e: Exception) { workspaceError = e.message }
+        }
+    }
 
     // Track active session in DataStore whenever navigating to a chat session
     androidx.compose.runtime.LaunchedEffect(currentSessionId) {
@@ -259,7 +277,10 @@ fun AppNav(container: AppContainer) {
     // System folder picker for adding a SAF workspace from the drawer.
     val safWorkspacePicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
-    ) { uri -> uri?.let { scope.launch { container.workspace.addPickedFolder(it) } } }
+    ) { uri -> uri?.let { scope.launch {
+        try { selectWorkspace(container.workspace.addPickedFolder(it).id) }
+        catch (e: Exception) { workspaceError = e.message }
+    } } }
 
     // Run-result notifications deep-link into the session's chat.
     androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -269,6 +290,7 @@ fun AppNav(container: AppContainer) {
     fun openChat(sessionId: String?, messageId: String? = null) {
         scope.launch { drawerState.close() }
         if (sessionId == null) {
+            draftSessionId = null
             scope.launch { container.settings.setLastActiveSessionId(null) }
             nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
         } else {
@@ -616,12 +638,12 @@ fun AppNav(container: AppContainer) {
                         modifier = Modifier.padding(start = 20.dp, bottom = 6.dp),
                     )
                     QuickActionStrip(
-                        buildSelected = currentRoute == "build-test",
+                        buildSelected = currentRoute?.startsWith("build-test") == true,
                         automationSelected = currentRoute == "automation",
-                        terminalSelected = currentRoute == "terminal",
+                        terminalSelected = currentRoute?.startsWith("terminal") == true,
                         onBuild = {
                             scope.launch { drawerState.close() }
-                            nav.navigate("build-test")
+                            nav.navigate("build-test?session=${encode(workspaceSessionId.orEmpty())}")
                         },
                         onAutomation = {
                             scope.launch { drawerState.close() }
@@ -629,7 +651,7 @@ fun AppNav(container: AppContainer) {
                         },
                         onTerminal = {
                             scope.launch { drawerState.close() }
-                            nav.navigate("terminal")
+                            nav.navigate("terminal?session=${encode(workspaceSessionId.orEmpty())}")
                         },
                     )
                     Spacer(Modifier.height(8.dp))
@@ -681,6 +703,8 @@ fun AppNav(container: AppContainer) {
         ) {
             composable("chat") {
                 val vm: ChatViewModel = viewModel(factory = ChatViewModel.factory(container, null))
+                val draftState by vm.state.collectAsStateWithLifecycle()
+                androidx.compose.runtime.LaunchedEffect(draftState.sessionId) { draftSessionId = draftState.sessionId }
                 ChatScreen(
                     viewModel = vm,
                     onOpenDrawer = {
@@ -688,14 +712,15 @@ fun AppNav(container: AppContainer) {
                         scope.launch { drawerState.open() }
                     },
                     onOpenFile = { path, line ->
-                        nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=")
+                        nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=${encode(vm.state.value.sessionId.orEmpty())}")
                     },
                     onNewChat = {
+                        draftSessionId = null
                         scope.launch { container.settings.setLastActiveSessionId(null) }
                         nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
                     },
-                    onOpenTerminal = { nav.navigate("terminal") },
-                    onOpenFiles = { nav.navigate("files") },
+                    onOpenTerminal = { nav.navigate("terminal?session=${encode(vm.state.value.sessionId.orEmpty())}") },
+                    onOpenFiles = { nav.navigate("files?session=${encode(vm.state.value.sessionId.orEmpty())}") },
                     onOpenSubagent = { callId ->
                         vm.state.value.sessionId?.let { sid ->
                             nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
@@ -730,11 +755,12 @@ fun AppNav(container: AppContainer) {
                         nav.navigate("viewer/${encode(path)}?line=${line ?: 0}&session=${encode(sid.orEmpty())}")
                     },
                     onNewChat = {
+                        draftSessionId = null
                         scope.launch { container.settings.setLastActiveSessionId(null) }
                         nav.navigate("chat") { popUpTo("chat") { inclusive = true } }
                     },
-                    onOpenTerminal = { nav.navigate("terminal") },
-                    onOpenFiles = { nav.navigate("files") },
+                    onOpenTerminal = { nav.navigate("terminal?session=${encode(vm.state.value.sessionId.orEmpty())}") },
+                    onOpenFiles = { nav.navigate("files?session=${encode(vm.state.value.sessionId.orEmpty())}") },
                     onOpenSubagent = { callId ->
                         vm.state.value.sessionId?.let { sid ->
                             nav.navigate("subagent/${encode(sid)}/${encode(callId)}")
@@ -760,18 +786,19 @@ fun AppNav(container: AppContainer) {
                     onBack = { nav.popBackStack() },
                 )
             }
-            composable("terminal") {
-                TerminalScreen(container = container, onBack = { nav.popBackStack() })
+            composable("terminal?session={session}", arguments = listOf(navArgument("session") { defaultValue = "" })) { entry ->
+                TerminalScreen(container = container, sessionId = entry.arguments?.getString("session")?.takeIf { it.isNotBlank() }, onBack = { nav.popBackStack() })
             }
-            composable("files") {
+            composable("files?session={session}", arguments = listOf(navArgument("session") { defaultValue = "" })) { entry ->
+                val filesSessionId = entry.arguments?.getString("session")?.takeIf { it.isNotBlank() }
                 FilesScreen(
                     container = container,
-                    sessionId = currentSessionId,
+                    sessionId = filesSessionId,
                     onBack = { nav.popBackStack() },
                     onOpenFile = { path ->
-                        nav.navigate("viewer/${encode(path)}?line=0&session=${encode(currentSessionId.orEmpty())}")
+                        nav.navigate("viewer/${encode(path)}?line=0&session=${encode(filesSessionId.orEmpty())}")
                     },
-                    onOpenChanges = currentSessionId?.let { sid ->
+                    onOpenChanges = filesSessionId?.let { sid ->
                         { nav.navigate("changes/${encode(sid)}") }
                     },
                 )
@@ -815,18 +842,20 @@ fun AppNav(container: AppContainer) {
                     onBack = { nav.popBackStack() },
                     onOpenSession = { nav.navigate("chat/$it") })
             }
-            composable("build-test") {
+            composable("build-test?session={session}", arguments = listOf(navArgument("session") { defaultValue = "" })) { entry ->
+                val buildSessionId = entry.arguments?.getString("session")?.takeIf { it.isNotBlank() }
                 BuildTestScreen(
                     container = container,
+                    sessionId = buildSessionId,
                     onBack = { nav.popBackStack() },
                     onOpenFile = { path, line ->
-                        nav.navigate("viewer/${encode(path)}?line=$line&session=${encode(currentSessionId.orEmpty())}")
+                        nav.navigate("viewer/${encode(path)}?line=$line&session=${encode(buildSessionId.orEmpty())}")
                     },
-                    onOpenTerminal = { nav.navigate("terminal") },
+                    onOpenTerminal = { nav.navigate("terminal?session=${encode(workspaceSessionId.orEmpty())}") },
                     onFixWithAgent = { prompt ->
                         container.pendingAgentPrompt.value = prompt
-                        scope.launch { container.settings.setLastActiveSessionId(null) }
-                        nav.navigate("chat")
+                        if (buildSessionId != null) nav.navigate("chat/${encode(buildSessionId)}")
+                        else { draftSessionId = null; nav.navigate("chat") }
                     },
                 )
             }
@@ -873,18 +902,27 @@ fun AppNav(container: AppContainer) {
         com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
             projects = allWorkspaces,
             currentProjectId = currentWorkspace?.id,
+            chatWorkspace = workspaceSessionId != null,
             describe = { container.workspace.describe(it) },
-            onSelect = { id -> scope.launch { container.workspace.setActiveProject(id) } },
+            onSelect = ::selectWorkspace,
             onAdd = { showAddWorkspace = true },
             onDismiss = { showWorkspaceSheet = false },
             onDelete = { project ->
-                scope.launch { container.workspace.deleteProject(project) }
+                scope.launch {
+                    try { container.workspace.deleteProject(project) }
+                    catch (e: Exception) { workspaceError = e.message }
+                }
             },
         )
+    }
+    workspaceError?.let { message ->
+        AlertDialog(onDismissRequest = { workspaceError = null }, title = { Text("Workspace") },
+            text = { Text(message) }, confirmButton = { TextButton(onClick = { workspaceError = null }) { Text("OK") } })
     }
     if (showAddWorkspace) {
         com.androidharness.app.ui.common.AddWorkspaceDialog(
             container = container,
+            onSelected = ::selectWorkspace,
             onDismiss = { showAddWorkspace = false },
             onPickSaf = {
                 showAddWorkspace = false

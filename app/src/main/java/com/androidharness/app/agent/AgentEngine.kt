@@ -1689,7 +1689,7 @@ Rules:
                     "- Once you present your plan in your text response, STOP immediately. Do not attempt to call any mutating tools or ask for permission.\n"
             )
         }
-        val catalog = skills.catalog()
+        val catalog = skills.forProject(workspace.shellRoot?.resolve(".harness/skills")).catalog()
         if (catalog.isNotBlank()) sb.append('\n').append(catalog).append('\n')
         agentsFile?.let {
             sb.append("\n# AGENTS.md (project instructions)\n").append(it).append('\n')
