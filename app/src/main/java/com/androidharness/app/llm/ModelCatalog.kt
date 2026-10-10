@@ -5,11 +5,11 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -142,24 +142,30 @@ object ModelCatalog {
         return when (type) {
             ProviderType.OPENAI_COMPAT, ProviderType.OPENAI_RESPONSES, ProviderType.ANTHROPIC ->
                 root["data"]?.jsonArrayOrAbsent()?.mapNotNull { el ->
-                    val obj = el as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
-                    val id = obj["id"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
+                    val obj = el as? JsonObject ?: return@mapNotNull null
+                    val id = (obj["id"] as? JsonPrimitive)?.takeIf { it.isString }
+                        ?.contentOrNull?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     // OpenRouter-style capability reporting; absent elsewhere.
                     val reasoning = obj["supported_parameters"]?.jsonArrayOrAbsent()?.let { params ->
                         params.any { p ->
-                            p.jsonPrimitive.contentOrNull?.contains("reasoning") == true
+                            (p as? JsonPrimitive)?.contentOrNull?.contains("reasoning") == true
                         }
-                    } ?: obj["reasoning"]?.jsonPrimitive?.booleanOrNull
-                    val ctx = (obj["context_length"] ?: obj["max_tokens"] ?: obj["context_window"])
-                        ?.jsonPrimitive?.longOrNull
+                    } ?: (obj["reasoning"] as? JsonPrimitive)?.booleanOrNull
+                        ?: (obj["capabilities"]?.jsonObjectOrAbsent()?.get("reasoning") as? JsonPrimitive)?.booleanOrNull
+                    // llm7 reports {"tokens":400000,"chars":null} rather than
+                    // a scalar context_window. Unknown metadata must not block setup.
+                    val window = obj["context_window"]
+                    val ctx = sequenceOf(obj["context_length"], obj["max_tokens"], window,
+                        window.jsonObjectOrAbsent()?.get("tokens"))
+                        .mapNotNull { (it as? JsonPrimitive)?.longOrNull }.firstOrNull()
                     ModelEntry(id, reasoning, ctx)
                 } ?: emptyList()
 
             ProviderType.GEMINI ->
                 root["models"]?.jsonArrayOrAbsent()?.mapNotNull { el ->
-                    val obj = el as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
-                    val name = obj["name"]?.jsonPrimitive?.contentOrNull
-                        ?.removePrefix("models/") ?: return@mapNotNull null
+                    val obj = el as? JsonObject ?: return@mapNotNull null
+                    val name = (obj["name"] as? JsonPrimitive)?.takeIf { it.isString }?.contentOrNull
+                        ?.removePrefix("models/")?.takeIf { it.isNotBlank() } ?: return@mapNotNull null
                     ModelEntry(name, reasoning = reasoningCapable(name))
                 } ?: emptyList()
         }.sortedBy { it.id }
