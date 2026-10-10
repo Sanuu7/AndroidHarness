@@ -35,6 +35,8 @@ data class TaskRecord(
     val turnId: String = "",
     val initialPrompt: String = "",
     val initialPromptId: String = "",
+    val automationRunId: String? = null,
+    val completed: Boolean = false,
     val images: List<com.androidharness.app.core.ImageRef> = emptyList(),
     val queue: List<QueuedPrompt> = emptyList(),
     val pins: String = "",

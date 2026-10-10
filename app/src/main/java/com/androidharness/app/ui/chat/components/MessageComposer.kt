@@ -38,6 +38,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Description
@@ -130,6 +131,8 @@ internal fun MessageComposer(
     onCancelGroqRecord: () -> Unit = {},
     onStopAndTranscribeGroq: () -> Unit = {},
     hasAttachments: Boolean = false,
+    onSchedule: (() -> Unit)? = null,
+    scheduleUnavailableReason: String? = null,
     modifier: Modifier = Modifier,
 ) {
     val haptics = LocalHapticFeedback.current
@@ -208,6 +211,8 @@ internal fun MessageComposer(
             ComposerLeadingButton(
                 onPickImage = onAttachImage,
                 onPickFile = onAttachFile,
+                onSchedule = onSchedule,
+                scheduleUnavailableReason = scheduleUnavailableReason,
             )
         }
 
@@ -982,6 +987,8 @@ Box(
 private fun ComposerLeadingButton(
     onPickImage: () -> Unit,
     onPickFile: () -> Unit,
+    onSchedule: (() -> Unit)?,
+    scheduleUnavailableReason: String?,
 ) {
     val haptics = LocalHapticFeedback.current
     var expanded by remember { mutableStateOf(false) }
@@ -995,7 +1002,7 @@ private fun ComposerLeadingButton(
                     haptics.performHapticFeedback(HapticFeedbackType.Confirm)
                     expanded = true
                 }
-                .semantics { contentDescription = "Attach file or image" },
+                .semantics { contentDescription = "Message actions" },
             contentAlignment = Alignment.Center,
         ) {
             Box(
@@ -1033,6 +1040,20 @@ private fun ComposerLeadingButton(
                     onPickFile()
                 },
             )
+            if (onSchedule != null) {
+                androidx.compose.material3.HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        androidx.compose.foundation.layout.Column {
+                            Text("Schedule message")
+                            scheduleUnavailableReason?.let { Text(it, style = MaterialTheme.typography.labelSmall) }
+                        }
+                    },
+                    leadingIcon = { Icon(androidx.compose.material.icons.Icons.Outlined.Schedule, null) },
+                    enabled = scheduleUnavailableReason == null,
+                    onClick = { expanded = false; onSchedule() },
+                )
+            }
         }
     }
 }

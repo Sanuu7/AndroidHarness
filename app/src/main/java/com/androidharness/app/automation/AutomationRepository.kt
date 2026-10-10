@@ -12,7 +12,7 @@ import java.util.UUID
 enum class AutomationSchedule { MANUAL, ONCE, HOURLY, DAILY }
 
 @Serializable
-enum class AutomationStatus { IDLE, QUEUED, RUNNING, COMPLETED, PASSED, FAILED, BLOCKED, CANCELLED }
+enum class AutomationStatus { IDLE, QUEUED, RUNNING, COMPLETED, PASSED, FAILED, BLOCKED, CANCELLED, PAUSED }
 
 @Serializable
 data class AutomationTask(
@@ -37,6 +37,24 @@ data class AutomationTask(
     val lastSessionId: String? = null,
     val lastMessage: String? = null,
     val githubPush: com.androidharness.app.github.GitHubPushPreset? = null,
+    val targetSessionId: String? = null,
+    val unmeteredOnly: Boolean = false,
+    val activeRun: AutomationRun? = null,
+    val lastFinishedOccurrence: String? = null,
+)
+
+/** One occurrence survives worker retries without sending its prompt twice. */
+@Serializable
+data class AutomationRun(
+    val id: String = UUID.randomUUID().toString(),
+    val historyId: String = id,
+    val occurrence: String,
+    val sessionId: String,
+    val startedAt: Long = System.currentTimeMillis(),
+    val attempt: Int = 1,
+    val agentStarted: Boolean = false,
+    val checking: Boolean = false,
+    val feedback: String = "",
 )
 
 @Serializable
@@ -71,8 +89,15 @@ class AutomationRepository(context: Context) {
         val next = _tasks.value.toMutableList()
         val index = next.indexOfFirst { it.id == task.id }
         if (index >= 0) next[index] = task else next.add(0, task)
+        check(prefs.edit().putString("tasks", json.encodeToString(taskSerializer, next)).commit()) { "Could not save schedule" }
         _tasks.value = next
-        prefs.edit().putString("tasks", json.encodeToString(taskSerializer, next)).apply()
+    }
+
+    internal fun updateTask(id: String, transform: (AutomationTask) -> AutomationTask): AutomationTask? = synchronized(lock) {
+        val current = task(id) ?: return@synchronized null
+        val next = transform(current)
+        save(next)
+        next
     }
 
     fun delete(id: String) = synchronized(lock) {

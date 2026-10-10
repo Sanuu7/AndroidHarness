@@ -226,10 +226,13 @@ class RunManager(
         resume: Boolean = false,
         queuedPromptId: String? = null,
         replacementMessageId: String? = null,
+        onlyIfIdle: Boolean = false,
+        automationRunId: String? = null,
     ): String = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
         startRunLocked(sessionId, text, imageRefs, config, apiKey, permissionMode, mode,
             maxOutputTokens, maxContextTokens, thinking, maxIterations, workspaceOverride,
-            notifyOnFinish, resume, queuedPromptId, replacementMessageId)
+            notifyOnFinish, resume, queuedPromptId, replacementMessageId,
+            onlyIfIdle = onlyIfIdle, automationRunId = automationRunId)
     } }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -251,11 +254,17 @@ class RunManager(
         queuedPromptId: String? = null,
         replacementMessageId: String? = null,
         followUpRunId: String? = null,
+        onlyIfIdle: Boolean = false,
+        automationRunId: String? = null,
     ): String {
         val sid = sessionId ?: sessions.createSession(
             text.take(48),
             projectId = workspace.currentProjectOnce().id,
         )
+        if (onlyIfIdle && isRunning(sid)) throw RunBusyException()
+        if (resume && automationRunId != null) {
+            check(controls.flow(sid).value.automationRunId == automationRunId) { "This chat has moved on. Open it to review the interrupted schedule." }
+        }
         synchronized(lock) { jobs[sid] }?.let { previous ->
             previous.cancel()
             previous.join()
@@ -285,6 +294,8 @@ class RunManager(
             maxContext = maxContextTokens, maxIterations = maxIterations, turnId = turnId,
             initialPrompt = if (resume) it.initialPrompt else text,
             initialPromptId = if (resume) it.initialPromptId else queuedPromptId ?: "$turnId-user",
+            automationRunId = if (resume) it.automationRunId else automationRunId,
+            completed = false,
             images = if (resume) it.images else imageRefs,
             usedTokens = if (resume) it.usedTokens else 0,
             usedCost = if (resume) it.usedCost else 0.0,
@@ -439,7 +450,7 @@ class RunManager(
                 promptJob?.cancel()
                 val usage = budget.usage()
                 val cancelled = live.value.cancelled
-                runCatching { controls.update(sid) { it.copy(status = if (completed || cancelled) "idle" else "paused",
+                runCatching { controls.update(sid) { it.copy(status = if (completed || cancelled) "idle" else "paused", completed = completed,
                     reason = if (completed || cancelled) null else it.reason ?: live.value.error ?: "Task interrupted",
                     usedTokens = usage.first, usedCost = usage.second, elapsedMs = usage.third) } }
                     .onFailure { failure -> live.update { it.copy(error = "Could not save progress: ${failure.message}") } }
@@ -495,6 +506,7 @@ class RunManager(
         job.invokeOnCompletion {
             synchronized(lock) { if (jobs[sid] === job) jobs.remove(sid) }
             val ended = end ?: return@invokeOnCompletion
+            if (record.automationRunId != null) return@invokeOnCompletion
             appScope.launch {
                 // Wait outside the completed job so starting its successor cannot join itself.
                 job.join()
@@ -849,7 +861,31 @@ class RunManager(
         appScope.launch { controls.update(sessionId) { it.copy(queue = emptyList()) } }
     }
 
-    suspend fun resumeTask(sessionId: String, apiKey: String) {
+    /** Release a completed schedule before advancing messages accepted while it was busy. */
+    internal suspend fun finishScheduledRun(sessionId: String, ownerId: String, apiKey: String) =
+        kotlinx.coroutines.withContext(Dispatchers.IO) {
+            synchronized(lock) { queueWrites[sessionId]?.toList() }.orEmpty().forEach { it.join() }
+            workspaceGuard.withLock {
+                val saved = controls.flow(sessionId).value
+                if (saved.automationRunId != ownerId || isRunning(sessionId) || saved.status != "idle" || !saved.completed) return@withLock
+                controls.update(sessionId) { it.copy(automationRunId = null) }
+                val prompt = saved.queue.firstOrNull() ?: return@withLock
+                try {
+                    val config = saved.provider ?: error("Saved provider is unavailable")
+                    startRunLocked(sessionId, prompt.text, emptyList(), config, apiKey,
+                        settings.settings.first().permissionMode, AgentMode.valueOf(saved.mode), saved.maxOutput,
+                        saved.maxContext, ThinkingLevel.valueOf(saved.thinking), saved.maxIterations,
+                        workspaceOverride = workspace.forSession(sessionId), queuedPromptId = prompt.id, onlyIfIdle = true)
+                } catch (ce: CancellationException) { throw ce }
+                catch (e: Exception) {
+                    val reason = "Could not send queued message: ${e.message}"
+                    controls.update(sessionId) { it.copy(status = "paused", reason = reason) }
+                    stateOf(sessionId).update { it.copy(error = reason) }
+                }
+            }
+        }
+
+    suspend fun resumeTask(sessionId: String, apiKey: String, automationRunId: String? = null, notifyOnFinish: Boolean = true) {
         check(!isRunning(sessionId)) { "Task is already running" }
         val saved = controls.flow(sessionId).value
         check(saved.resumable) { "No interrupted task to resume" }
@@ -859,7 +895,8 @@ class RunManager(
         require(fs.displayPath == saved.workspacePath) { "The original workspace has changed" }
         startRun(sessionId, "", emptyList(), config, apiKey, settings.settings.first().permissionMode,
             AgentMode.valueOf(saved.mode), saved.maxOutput, saved.maxContext,
-            ThinkingLevel.valueOf(saved.thinking), saved.maxIterations, workspaceOverride = fs, resume = true)
+            ThinkingLevel.valueOf(saved.thinking), saved.maxIterations, workspaceOverride = fs, resume = true,
+            onlyIfIdle = true, automationRunId = automationRunId, notifyOnFinish = notifyOnFinish)
     }
 
     // ------------------------------------------------------------------
@@ -1059,3 +1096,5 @@ class RunManager(
             }
     }
 }
+
+class RunBusyException : IllegalStateException("Waiting for this chat to finish")

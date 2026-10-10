@@ -34,6 +34,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -148,6 +149,7 @@ import kotlinx.coroutines.launch
  * owns state wiring, dialogs, and the message list assembly.
  */
 @Composable
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 fun ChatScreen(
     viewModel: ChatViewModel,
     onOpenDrawer: () -> Unit,
@@ -186,10 +188,46 @@ fun ChatScreen(
     // user last typed. composerText mirrors value.text for the readers.
     var composerValue by remember { mutableStateOf(TextFieldValue("")) }
     val composerText = composerValue.text
+    val scheduleKeyboard = androidx.compose.ui.platform.LocalSoftwareKeyboardController.current
+    var scheduleDraft by remember { mutableStateOf<com.androidharness.app.automation.AutomationTask?>(null) }
+    var scheduledComposerText by remember { mutableStateOf<String?>(null) }
+    var showScheduledList by remember { mutableStateOf(false) }
+    var createdScheduleIds by remember { mutableStateOf(setOf<String>()) }
+    val automations by viewModel.container.automation.repository.tasks.collectAsStateWithLifecycle()
+    val scheduleConnection by viewModel.container.automation.connection.collectAsStateWithLifecycle()
+    val scheduleNow by produceState(System.currentTimeMillis()) {
+        while (true) { value = System.currentTimeMillis(); delay(60_000) }
+    }
+    val chatSchedules = automations.filter { task ->
+        (state.sessionId != null && task.targetSessionId == state.sessionId || task.id in createdScheduleIds) &&
+            (task.enabled || task.activeRun != null) && task.lastStatus != com.androidharness.app.automation.AutomationStatus.CANCELLED
+    }
     fun setComposerText(new: String, cursor: Int = new.length) {
         composerValue = TextFieldValue(new, TextRange(cursor.coerceIn(0, new.length)))
     }
     var attachedSkill by remember { mutableStateOf<String?>(null) }
+    scheduleDraft?.let { task ->
+        com.androidharness.app.ui.automation.ScheduleMessageSheet(viewModel.container, task,
+            onDismiss = { scheduleDraft = null; scheduledComposerText = null },
+            onSaved = { saved ->
+                if (scheduledComposerText != null && composerText == scheduledComposerText) setComposerText("")
+                if (saved.targetSessionId == null) createdScheduleIds = createdScheduleIds + saved.id
+            })
+    }
+    if (showScheduledList) androidx.compose.material3.ModalBottomSheet(
+        onDismissRequest = { showScheduledList = false },
+        sheetState = androidx.compose.material3.rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
+        Text("Scheduled messages", style = MaterialTheme.typography.titleLarge, modifier = Modifier.padding(horizontal = 20.dp, vertical = 8.dp))
+        androidx.compose.foundation.lazy.LazyColumn(Modifier.fillMaxWidth().heightIn(max = 420.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(bottom = 24.dp)) {
+            items(chatSchedules.size) { index ->
+                val task = chatSchedules[index]
+                com.androidharness.app.ui.automation.ScheduledMessageRow(listOf(task), scheduleConnection, scheduleNow) {
+                    showScheduledList = false; scheduleDraft = task
+                }
+            }
+        }
+    }
     val isAgentControllingBrowser by viewModel.container.browser.isAgentControlling.collectAsStateWithLifecycle(initialValue = false)
     val browserActionTracks by viewModel.container.browser.actionTrack.collectAsStateWithLifecycle(initialValue = emptyList())
 
@@ -1491,6 +1529,9 @@ fun ChatScreen(
                 }
 
                 AgentStatusBar(action = state.currentAction, busy = state.busy)
+                com.androidharness.app.ui.automation.ScheduledMessageRow(chatSchedules, scheduleConnection, scheduleNow) {
+                    if (chatSchedules.size == 1) scheduleDraft = chatSchedules.first() else showScheduledList = true
+                }
                 MessageComposer(
                     busy = state.busy,
                     value = composerValue,
@@ -1508,6 +1549,24 @@ fun ChatScreen(
                             attachedSkill = null
                             slashExpanded = false
                         }
+                    },
+                    onSchedule = {
+                        currentProject?.let { project ->
+                            scheduleDraft = com.androidharness.app.automation.AutomationTask(
+                                title = composerText.trim().lineSequence().first().take(64), prompt = composerText.trim(),
+                                projectId = project.id, projectName = project.name, targetSessionId = state.sessionId,
+                                providerId = state.activeProvider?.id, model = state.effectiveModel,
+                                schedule = com.androidharness.app.automation.AutomationSchedule.ONCE,
+                                unmeteredOnly = toastContext.getSharedPreferences("schedule_preferences", android.content.Context.MODE_PRIVATE).getBoolean("unmetered", false))
+                            scheduledComposerText = composerText
+                            scheduleKeyboard?.hide()
+                        }
+                    },
+                    scheduleUnavailableReason = when {
+                        composerText.isBlank() -> "Write a message first"
+                        attachedSkill != null || state.attachments.isNotEmpty() || state.fileAttachments.isNotEmpty() -> "Schedule a text message without attachments"
+                        currentProject == null -> "Choose a workspace first"
+                        else -> null
                     },
                     onStop = viewModel::stop,
                     onAttachImage = { galleryLauncher.launch("image/*") },

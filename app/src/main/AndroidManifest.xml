@@ -115,6 +115,7 @@
         <receiver
             android:name=".agent.NotificationActionReceiver"
             android:exported="false" />
+        <receiver android:name=".automation.AutomationActionReceiver" android:exported="false" />
         <service android:name="androidx.work.impl.foreground.SystemForegroundService" android:foregroundServiceType="dataSync" tools:node="merge" />
     </application>
 

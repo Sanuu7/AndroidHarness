@@ -67,10 +67,15 @@ fun AutomationScreen(
     val manager = container.automation
     val tasks by manager.repository.tasks.collectAsStateWithLifecycle()
     val history by manager.repository.history.collectAsStateWithLifecycle()
+    val connection by manager.connection.collectAsStateWithLifecycle()
+    val now by androidx.compose.runtime.produceState(System.currentTimeMillis()) {
+        while (true) { value = System.currentTimeMillis(); kotlinx.coroutines.delay(60_000) }
+    }
     val project by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
 
     var editing by remember { mutableStateOf<AutomationTask?>(null) }
     var showEditor by remember { mutableStateOf(false) }
+    var advancedEditor by remember { mutableStateOf(false) }
     var githubPresetProject by remember { mutableStateOf<Pair<String, String>?>(null) }
     var showHistory by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -106,8 +111,10 @@ fun AutomationScreen(
                     runCount = history.size,
                     onCreate = {
                         editing = null
+                        advancedEditor = false
                         showEditor = true
                     },
+                    onCreateAutomation = { editing = null; advancedEditor = true; showEditor = true },
                     createEnabled = project != null,
                 )
             }
@@ -194,6 +201,8 @@ fun AutomationScreen(
                             },
                             onStop = { act { manager.cancel(task.id) } },
                             onOpen = { task.lastSessionId?.let(onOpenSession) },
+                            onToggle = { act { if (task.enabled) manager.pause(task.id) else manager.resumeSchedule(task.id) } },
+                            statusText = scheduleStatus(task, connection, now),
                         )
                     }
                 }
@@ -209,6 +218,8 @@ fun AutomationScreen(
         val task = requireNotNull(editing)
         com.androidharness.app.ui.github.GitHubPushPresetDialog(container, task.projectId, task.projectName,
             task = task, onDismiss = { showEditor = false })
+    } else if (showEditor && (editing?.let { it.schedule != AutomationSchedule.MANUAL } ?: !advancedEditor)) {
+        ScheduleMessageSheet(container, editing, onDismiss = { showEditor = false })
     } else if (showEditor) {
         AutomationEditorDialog(
             container = container,
@@ -257,8 +268,10 @@ private fun AutomationSummaryCard(
     scheduledCount: Int,
     runCount: Int,
     onCreate: () -> Unit,
+    onCreateAutomation: () -> Unit,
     createEnabled: Boolean,
 ) {
+    var showCreateMenu by remember { mutableStateOf(false) }
     Surface(
         color = MaterialTheme.colorScheme.surfaceContainerLow,
         shape = RoundedCornerShape(20.dp),
@@ -300,8 +313,9 @@ private fun AutomationSummaryCard(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
+                Box {
                 FilledTonalButton(
-                    onClick = onCreate,
+                    onClick = { showCreateMenu = true },
                     enabled = createEnabled,
                     shape = RoundedCornerShape(12.dp),
                     contentPadding = PaddingValues(horizontal = 14.dp, vertical = 10.dp),
@@ -309,6 +323,15 @@ private fun AutomationSummaryCard(
                     Icon(Icons.Filled.Add, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text("New")
+                }
+                DropdownMenu(showCreateMenu, { showCreateMenu = false }) {
+                    DropdownMenuItem(text = { Text("Scheduled message") },
+                        leadingIcon = { Icon(Icons.Outlined.Schedule, null) },
+                        onClick = { showCreateMenu = false; onCreate() })
+                    DropdownMenuItem(text = { Text("Automation with checks") },
+                        leadingIcon = { Icon(Icons.Outlined.AutoMode, null) },
+                        onClick = { showCreateMenu = false; onCreateAutomation() })
+                }
                 }
             }
 
@@ -402,13 +425,21 @@ private fun EmptyStateCard(
 }
 
 @Composable
+@OptIn(androidx.compose.foundation.layout.ExperimentalLayoutApi::class)
 private fun AutomationTaskCard(
     task: AutomationTask,
     onRun: () -> Unit,
     onEdit: () -> Unit,
     onStop: () -> Unit,
     onOpen: () -> Unit,
+    onToggle: () -> Unit,
+    statusText: String,
 ) {
+    var confirmCancel by remember { mutableStateOf(false) }
+    if (confirmCancel) AlertDialog(onDismissRequest = { confirmCancel = false }, title = { Text("Cancel this schedule?") },
+        text = { Text("Future runs will stop. Chat history and completed work will stay available.") },
+        confirmButton = { TextButton(onClick = { confirmCancel = false; onStop() }) { Text("Cancel schedule") } },
+        dismissButton = { TextButton(onClick = { confirmCancel = false }) { Text("Keep schedule") } })
     ElevatedCard(
         shape = RoundedCornerShape(20.dp),
         colors = CardDefaults.elevatedCardColors(
@@ -447,12 +478,13 @@ private fun AutomationTaskCard(
                         task.projectName,
                         style = MaterialTheme.typography.labelMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
                     )
                 }
-                StatusPill(task.lastStatus)
             }
 
-            Text(
+            if (task.prompt != task.title) Text(
                 task.prompt,
                 maxLines = 3,
                 overflow = TextOverflow.Ellipsis,
@@ -479,7 +511,12 @@ private fun AutomationTaskCard(
                 )
             }
 
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            androidx.compose.foundation.layout.FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                StatusPill(task.lastStatus, when {
+                    statusText.startsWith("Scheduled") -> "Scheduled"
+                    statusText.startsWith("Waiting") -> "Waiting"
+                    else -> statusText
+                })
                 InfoPill(
                     icon = Icons.Outlined.Schedule,
                     text = when (task.schedule) {
@@ -489,19 +526,22 @@ private fun AutomationTaskCard(
                         AutomationSchedule.DAILY -> "%02d:%02d daily".format(task.hour, task.minute)
                     },
                 )
-                if (task.schedule != AutomationSchedule.MANUAL) {
+                if (task.enabled && task.nextRunAt != null) {
                     InfoPill(
                         icon = Icons.Outlined.CheckCircle,
-                        text = when {
-                            !task.enabled -> "Paused"
-                            task.nextRunAt != null -> "Next ${formatAutomationTime(task.nextRunAt)}"
-                            else -> "Active"
-                        },
+                        text = "Next ${formatAutomationTime(requireNotNull(task.nextRunAt))}",
                     )
                 }
             }
 
-            task.lastMessage?.takeIf { it.isNotBlank() }?.let { message ->
+            Text(if (task.unmeteredOnly) "Unmetered only" else "Any internet", style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+            task.targetSessionId?.let { Text("Continues an existing chat", style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            if (statusText.startsWith("Waiting")) Text(statusText, style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.primary)
+
+            task.lastMessage?.takeIf { it.isNotBlank() && it != statusText && !statusText.startsWith("Waiting") }?.let { message ->
                 Surface(
                     color = MaterialTheme.colorScheme.surfaceContainerLow,
                     shape = RoundedCornerShape(12.dp),
@@ -526,21 +566,24 @@ private fun AutomationTaskCard(
                 FilledTonalButton(
                     onClick = onRun,
                     shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp),
                     modifier = Modifier.weight(1f),
                 ) {
                     Icon(Icons.Filled.PlayArrow, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text("Run now")
                 }
-                OutlinedButton(onClick = onEdit, shape = RoundedCornerShape(12.dp)) {
+                OutlinedButton(onClick = onEdit, shape = RoundedCornerShape(12.dp),
+                    contentPadding = PaddingValues(horizontal = 12.dp, vertical = 8.dp), modifier = Modifier.weight(1f)) {
                     Icon(Icons.Outlined.Edit, contentDescription = null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text("Edit")
                 }
-                if (task.lastStatus == AutomationStatus.RUNNING || task.lastStatus == AutomationStatus.QUEUED) {
-                    IconButton(onClick = onStop) {
-                        Icon(Icons.Outlined.StopCircle, contentDescription = "Stop automation")
-                    }
+            }
+            if (task.schedule != AutomationSchedule.MANUAL && task.lastStatus != AutomationStatus.CANCELLED) {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    TextButton(onClick = onToggle, modifier = Modifier.weight(1f)) { Text(if (task.enabled) "Pause" else "Resume") }
+                    TextButton(onClick = { confirmCancel = true }, modifier = Modifier.weight(1f)) { Text("Cancel") }
                 }
             }
 
@@ -660,7 +703,7 @@ private fun formatAutomationTime(timestamp: Long): String =
     DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT).format(Date(timestamp))
 
 @Composable
-private fun StatusPill(status: AutomationStatus) {
+private fun StatusPill(status: AutomationStatus, label: String = status.label()) {
     val isPositive = status == AutomationStatus.COMPLETED || status == AutomationStatus.PASSED
     val isProblem = status == AutomationStatus.FAILED || status == AutomationStatus.BLOCKED || status == AutomationStatus.CANCELLED
     val container = when {
@@ -676,7 +719,7 @@ private fun StatusPill(status: AutomationStatus) {
 
     Surface(color = container, shape = CircleShape) {
         Text(
-            status.label(),
+            label,
             style = MaterialTheme.typography.labelSmall,
             color = content,
             modifier = Modifier.padding(horizontal = 9.dp, vertical = 5.dp),
