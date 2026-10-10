@@ -51,8 +51,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 20
-        versionName = "1.6"
+        versionCode = 21
+        versionName = "1.7"
         buildConfigField("String", "GITHUB_CLIENT_ID", "\"$githubClientId\"")
         if (hasNdk) {
             ndk { abiFilters += listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64") }
