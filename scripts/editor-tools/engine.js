@@ -20,7 +20,12 @@ const json = getJson({ schemaRequestService: () => Promise.reject(new Error('Rem
 json.configure({ validate: false, allowComments: true });
 const ext = name => name.split('.').pop().toLowerCase();
 const isScript = name => /\.(?:[cm]?[jt]sx?)$/i.test(name);
-const absolute = name => `/project/${name}`;
+const absolute = name => {
+  const resolved = `/project/${name}`;
+  if (!cleanPath(name) || resolved.split('/').some(p => p === '..' || p === '.') || !resolved.startsWith('/project/'))
+    throw new Error('Invalid workspace path.');
+  return resolved;
+};
 const uri = name => `file://${absolute(name).split('/').map(encodeURIComponent).join('/')}`;
 function relative(name) {
   const decoded = name.startsWith('file:') ? decodeURIComponent(new URL(name).pathname) : name;
