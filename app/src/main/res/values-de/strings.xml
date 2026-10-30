@@ -958,6 +958,9 @@
     <string name="dhizuku_denied">Zugriff verweigert · Zugriff in Dhizuku erlauben</string>
     <string name="dhizuku_error">Verbindung fehlgeschlagen · Dhizuku prüfen und erneut versuchen</string>
     <string name="settings_language_sinhala">සිංහල</string>
+    <string name="refresh_rate_title">Bildwiederholrate</string>
+    <string name="refresh_rate_hint">Höhere Raten wirken flüssiger, verbrauchen aber mehr Akku.</string>
+    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass (experimentell)</string>
     <string name="glass_description">Glas-Effekte für Navigation, Bedienelemente und Karten.</string>
     <string name="glass_enable">Milchglas</string>

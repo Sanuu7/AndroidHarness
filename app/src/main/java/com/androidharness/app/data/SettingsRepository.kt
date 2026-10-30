@@ -36,6 +36,8 @@ data class AppSettings(
     val customPalettes: List<CustomThemePalette> = emptyList(),
     val activeCustomPaletteId: String? = null,
     val harnessCanvas: HarnessCanvasSettings = HarnessCanvasSettings(),
+    /** Requested screen refresh rate in Hz; 0 means the fastest the screen offers. */
+    val refreshRateHz: Int = 0,
     val harnessGlassEnabled: Boolean = false,
     val harnessLiquidGlass: Boolean = false,
     val harnessGlassTransparency: Float = 0.5f,
@@ -212,6 +214,7 @@ class SettingsRepository(private val context: Context) {
         val CUSTOM_PALETTES = stringPreferencesKey("custom_palettes")
         val ACTIVE_CUSTOM_PALETTE = stringPreferencesKey("active_custom_palette")
         val HARNESS_CANVAS = stringPreferencesKey("harness_canvas")
+        val REFRESH_RATE_HZ = intPreferencesKey("refresh_rate_hz")
         val HARNESS_GLASS_ENABLED = booleanPreferencesKey("harness_glass_enabled")
         val HARNESS_LIQUID_GLASS = booleanPreferencesKey("harness_liquid_glass")
         val HARNESS_GLASS_TRANSPARENCY = floatPreferencesKey("harness_glass_transparency")
@@ -314,6 +317,7 @@ class SettingsRepository(private val context: Context) {
             customPalettes = runCatching { kotlinx.serialization.json.Json.decodeFromString<List<CustomThemePalette>>(prefs[Keys.CUSTOM_PALETTES] ?: "[]") }.getOrDefault(emptyList()),
             activeCustomPaletteId = prefs[Keys.ACTIVE_CUSTOM_PALETTE],
             harnessCanvas = runCatching { kotlinx.serialization.json.Json.decodeFromString<HarnessCanvasSettings>(prefs[Keys.HARNESS_CANVAS] ?: "{}") }.getOrDefault(HarnessCanvasSettings()),
+            refreshRateHz = prefs[Keys.REFRESH_RATE_HZ] ?: 0,
             harnessGlassEnabled = prefs[Keys.HARNESS_GLASS_ENABLED] ?: false,
             harnessLiquidGlass = prefs[Keys.HARNESS_LIQUID_GLASS] ?: false,
             harnessGlassTransparency = (prefs[Keys.HARNESS_GLASS_TRANSPARENCY] ?: .5f).let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f },
@@ -412,6 +416,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.CUSTOM_PALETTES] = kotlinx.serialization.json.Json.encodeToString(s.customPalettes)
             s.activeCustomPaletteId?.let { p[Keys.ACTIVE_CUSTOM_PALETTE] = it } ?: p.remove(Keys.ACTIVE_CUSTOM_PALETTE)
             p[Keys.HARNESS_CANVAS] = kotlinx.serialization.json.Json.encodeToString(s.harnessCanvas)
+            p[Keys.REFRESH_RATE_HZ] = s.refreshRateHz
             p[Keys.HARNESS_GLASS_ENABLED] = s.harnessGlassEnabled
             p[Keys.HARNESS_LIQUID_GLASS] = s.harnessLiquidGlass
             p[Keys.HARNESS_GLASS_TRANSPARENCY] = s.harnessGlassTransparency.let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f }
@@ -570,6 +575,10 @@ class SettingsRepository(private val context: Context) {
             prefs[Keys.CUSTOM_PALETTES] = kotlinx.serialization.json.Json.encodeToString(saved.filterNot { it.id == id })
             if (prefs[Keys.ACTIVE_CUSTOM_PALETTE] == id) prefs.remove(Keys.ACTIVE_CUSTOM_PALETTE)
         }
+    }
+
+    suspend fun setRefreshRateHz(hz: Int) {
+        context.settingsStore.edit { it[Keys.REFRESH_RATE_HZ] = hz }
     }
 
     suspend fun setHarnessGlassEnabled(enabled: Boolean) {

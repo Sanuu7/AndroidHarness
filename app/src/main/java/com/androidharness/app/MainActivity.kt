@@ -43,6 +43,7 @@ import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.ScreenshotPolicy
 import com.androidharness.app.data.update.UpdateIntents
 import com.androidharness.app.ui.AppNav
+import com.androidharness.app.ui.common.RefreshRate
 import com.androidharness.app.ui.theme.HarnessTheme
 import com.androidharness.app.ui.update.UpdateDialog
 import androidx.lifecycle.lifecycleScope
@@ -93,6 +94,10 @@ class MainActivity : AppCompatActivity() {
                 liquidGlass = currentSettings.harnessLiquidGlass,
                 glassTransparency = currentSettings.harnessGlassTransparency,
             ) {
+                LaunchedEffect(currentSettings.refreshRateHz) {
+                    applyRefreshRate(currentSettings.refreshRateHz)
+                }
+
                 // Auto update check shortly after launch, once per process.
                 LaunchedEffect(Unit) {
                     kotlinx.coroutines.delay(4_000)
@@ -205,6 +210,24 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private var currentRefreshRateHz = 0
+
+    /**
+     * A window that states no refresh rate preference is often pinned to
+     * 60 Hz by the vendor's policy, so ask for a rate explicitly: the one the
+     * user picked, or the fastest the screen offers.
+     */
+    private fun applyRefreshRate(hz: Int) {
+        currentRefreshRateHz = hz
+        val (modeId, rate) = RefreshRate.request(this, hz)
+        val attrs = window.attributes
+        if (attrs.preferredDisplayModeId == modeId && attrs.preferredRefreshRate == rate) return
+        window.attributes = attrs.apply {
+            preferredDisplayModeId = modeId
+            preferredRefreshRate = rate
+        }
+    }
+
     private var lastPausedTimestamp: Long = 0L
 
     override fun onStart() {
@@ -218,29 +241,9 @@ class MainActivity : AppCompatActivity() {
         lastPausedTimestamp = System.currentTimeMillis()
     }
 
-    /**
-     * Compose draws at whatever rate the window asks for, and a window that
-     * states no preference is often pinned to 60 Hz by the vendor's refresh
-     * policy. Ask for the fastest mode that keeps the current resolution.
-     */
-    private fun requestHighRefreshRate() {
-        @Suppress("DEPRECATION")
-        val display = if (Build.VERSION.SDK_INT >= 30) display else windowManager.defaultDisplay
-        display ?: return
-        val current = display.mode
-        val best = display.supportedModes
-            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
-            .maxByOrNull { it.refreshRate } ?: return
-        if (best.refreshRate <= current.refreshRate && window.attributes.preferredDisplayModeId == best.modeId) return
-        window.attributes = window.attributes.apply {
-            preferredDisplayModeId = best.modeId
-            preferredRefreshRate = best.refreshRate
-        }
-    }
-
     override fun onResume() {
         super.onResume()
-        requestHighRefreshRate()
+        applyRefreshRate(currentRefreshRateHz)
         com.androidharness.app.data.env.adb.WirelessAdbService.resume(this)
         container.shizuku.refresh()
         container.dhizuku.refresh()

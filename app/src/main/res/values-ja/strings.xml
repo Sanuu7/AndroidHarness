@@ -957,6 +957,9 @@
     <string name="dhizuku_denied">アクセスが拒否されました · Dhizuku でアクセスを許可してください</string>
     <string name="dhizuku_error">接続に失敗しました · Dhizuku を確認して再試行してください</string>
     <string name="settings_language_sinhala">සිංහල</string>
+    <string name="refresh_rate_title">リフレッシュレート</string>
+    <string name="refresh_rate_hint">高いほど滑らかですが、バッテリーを多く消費します。</string>
+    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass(実験的)</string>
     <string name="glass_description">ナビゲーション、コントロール、カードにガラス効果を適用します。</string>
     <string name="glass_enable">すりガラス</string>

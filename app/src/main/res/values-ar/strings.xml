@@ -962,6 +962,9 @@
     <string name="dhizuku_denied">تم رفض الوصول · امنح الإذن في Dhizuku</string>
     <string name="dhizuku_error">فشل الاتصال · تحقق من Dhizuku وحاول مجدداً</string>
     <string name="settings_language_sinhala">සිංහල</string>
+    <string name="refresh_rate_title">معدل التحديث</string>
+    <string name="refresh_rate_hint">المعدلات الأعلى أكثر سلاسة لكنها تستهلك بطارية أكثر.</string>
+    <string name="refresh_rate_hz">%1$d هرتز</string>
     <string name="glass_title">AHarness Glass (تجريبي)</string>
     <string name="glass_description">تأثيرات زجاجية للتنقل وعناصر التحكم والبطاقات.</string>
     <string name="glass_enable">زجاج مصنفر</string>

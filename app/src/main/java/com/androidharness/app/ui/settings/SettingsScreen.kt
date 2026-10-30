@@ -133,6 +133,7 @@ import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.openOAuthBrowser
 import com.androidharness.app.ui.common.AddWorkspaceDialog
 import com.androidharness.app.ui.common.BiometricAuth
+import com.androidharness.app.ui.common.RefreshRate
 import com.androidharness.app.ui.common.TtsTermsDialog
 import com.androidharness.app.ui.common.findFragmentActivity
 import com.androidharness.app.ui.common.SecureDialogEffect
@@ -2767,10 +2768,34 @@ private fun AgentsInstructionsDialog(container: AppContainer, onDismiss: () -> U
 private fun AppearanceSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     SettingsHeader(uiContext.getString(R.string.settings_page_appearance_title))
-    WorkspaceLayoutSection(settings.workspaceLayout) { scope.launch { container.settings.setWorkspaceLayout(it) } }
-    SettingsAnchor(R.string.glass_title) {
-        HarnessGlassSection(settings, container.settings)
+    val refreshOptions = remember { RefreshRate.options(uiContext) }
+    if (refreshOptions.isNotEmpty()) {
+        SettingsAnchor(R.string.refresh_rate_title) {
+            SettingsPanel(Modifier.fillMaxWidth()) {
+                val selected = settings.refreshRateHz.takeIf { it in refreshOptions } ?: refreshOptions.last()
+                Column(Modifier.fillMaxWidth().padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.refresh_rate_title), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.refresh_rate_hint),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        refreshOptions.forEachIndexed { index, hz ->
+                            SegmentedButton(
+                                selected = selected == hz,
+                                onClick = {
+                                    // The fastest option is stored as 0 so it keeps following the screen.
+                                    scope.launch { container.settings.setRefreshRateHz(if (hz == refreshOptions.last()) 0 else hz) }
+                                },
+                                shape = SegmentedButtonDefaults.itemShape(index = index, count = refreshOptions.size),
+                            ) { Text(stringResource(R.string.refresh_rate_hz, hz)) }
+                        }
+                    }
+                }
+            }
+        }
     }
+    WorkspaceLayoutSection(settings.workspaceLayout) { scope.launch { container.settings.setWorkspaceLayout(it) } }
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SettingsAnchor(R.string.settings_anchor_theme) {
@@ -2816,6 +2841,9 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
     }
     SettingsAnchor(R.string.theme_canvas_title) {
         HarnessCanvasSection(settings.harnessCanvas, container.settings)
+    }
+    SettingsAnchor(R.string.glass_title) {
+        HarnessGlassSection(settings, container.settings)
     }
 }
 

@@ -990,6 +990,9 @@
     <string name="dhizuku_denied">Access denied · grant access in Dhizuku</string>
     <string name="dhizuku_error">Connection failed · check Dhizuku and try again</string>
     <string name="settings_language_sinhala">සිංහල</string>
+    <string name="refresh_rate_title">Refresh rate</string>
+    <string name="refresh_rate_hint">Higher rates look smoother but use more battery.</string>
+    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass (Experimental)</string>
     <string name="glass_description">Glass effects for navigation, controls, and cards.</string>
     <string name="glass_enable">Frosted glass</string>

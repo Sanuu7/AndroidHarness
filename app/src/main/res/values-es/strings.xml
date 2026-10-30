@@ -958,6 +958,9 @@
     <string name="dhizuku_denied">Acceso denegado · permite el acceso en Dhizuku</string>
     <string name="dhizuku_error">Error de conexión · revisa Dhizuku e inténtalo de nuevo</string>
     <string name="settings_language_sinhala">සිංහල</string>
+    <string name="refresh_rate_title">Tasa de refresco</string>
+    <string name="refresh_rate_hint">Las tasas más altas se ven más fluidas pero gastan más batería.</string>
+    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass (experimental)</string>
     <string name="glass_description">Efectos de cristal para la navegación, los controles y las tarjetas.</string>
     <string name="glass_enable">Cristal esmerilado</string>
