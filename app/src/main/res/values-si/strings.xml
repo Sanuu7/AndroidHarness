@@ -958,9 +958,6 @@
     <string name="dhizuku_denied">"ප් රවේශය ප් රතික්ෂේප කිරීම · ප් රවේශය ලබා දීම Dhizuku"</string>
     <string name="dhizuku_error">"සම්බන්ධතාවය අසාර්ථක වී ඇත · චෙක් කරන්න Dhizuku නැවතත් උත්සාහ කරන්න"</string>
     <string name="settings_language_sinhala">"සිංහල"</string>
-    <string name="refresh_rate_title">ප්‍රබෝධන වේගය</string>
-    <string name="refresh_rate_hint">ඉහළ වේග වඩා සුමටයි, නමුත් බැටරිය වැඩියෙන් භාවිත කරයි.</string>
-    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass (පරීක්ෂණාත්මක)</string>
     <string name="glass_description">සංචාලනය, පාලක සහ කාඩ්පත් සඳහා වීදුරු ප්‍රභාව.</string>
     <string name="glass_enable">මීදුම් වීදුරු</string>

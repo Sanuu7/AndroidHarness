@@ -94,10 +94,6 @@ class MainActivity : AppCompatActivity() {
                 liquidGlass = currentSettings.harnessLiquidGlass,
                 glassTransparency = currentSettings.harnessGlassTransparency,
             ) {
-                LaunchedEffect(currentSettings.refreshRateHz) {
-                    applyRefreshRate(currentSettings.refreshRateHz)
-                }
-
                 // Auto update check shortly after launch, once per process.
                 LaunchedEffect(Unit) {
                     kotlinx.coroutines.delay(4_000)
@@ -210,22 +206,14 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    private var currentRefreshRateHz = 0
-
     /**
      * A window that states no refresh rate preference is often pinned to
-     * 60 Hz by the vendor's policy, so ask for a rate explicitly: the one the
-     * user picked, or the fastest the screen offers.
+     * 60 Hz by the vendor's policy, so ask for the fastest mode the screen has.
      */
-    private fun applyRefreshRate(hz: Int) {
-        currentRefreshRateHz = hz
-        val (modeId, rate) = RefreshRate.request(this, hz)
-        val attrs = window.attributes
-        if (attrs.preferredDisplayModeId == modeId && attrs.preferredRefreshRate == rate) return
-        window.attributes = attrs.apply {
-            preferredDisplayModeId = modeId
-            preferredRefreshRate = rate
-        }
+    private fun requestFastestRefreshRate() {
+        val modeId = RefreshRate.fastestModeId(this)
+        if (window.attributes.preferredDisplayModeId == modeId) return
+        window.attributes = window.attributes.apply { preferredDisplayModeId = modeId }
     }
 
     private var lastPausedTimestamp: Long = 0L
@@ -243,7 +231,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        applyRefreshRate(currentRefreshRateHz)
+        requestFastestRefreshRate()
         com.androidharness.app.data.env.adb.WirelessAdbService.resume(this)
         container.shizuku.refresh()
         container.dhizuku.refresh()

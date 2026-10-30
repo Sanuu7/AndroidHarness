@@ -988,9 +988,6 @@
     <string name="dhizuku_denied">访问被拒绝 · 请在 Dhizuku 中授权</string>
     <string name="dhizuku_error">连接失败 · 请检查 Dhizuku 后重试</string>
     <string name="settings_language_sinhala">සිංහල</string>
-    <string name="refresh_rate_title">刷新率</string>
-    <string name="refresh_rate_hint">刷新率越高越流畅，但更耗电。</string>
-    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass(实验性)</string>
     <string name="glass_description">为导航、控件和卡片添加玻璃效果。</string>
     <string name="glass_enable">毛玻璃</string>

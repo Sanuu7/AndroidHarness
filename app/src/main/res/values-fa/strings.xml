@@ -958,9 +958,6 @@
     <string name="dhizuku_denied">دسترسی رد شد · در Dhizuku مجوز بدهید</string>
     <string name="dhizuku_error">اتصال ناموفق · Dhizuku را بررسی و دوباره تلاش کنید</string>
     <string name="settings_language_sinhala">සිංහල</string>
-    <string name="refresh_rate_title">نرخ تازه‌سازی</string>
-    <string name="refresh_rate_hint">نرخ‌های بالاتر روان‌تر هستند اما باتری بیشتری مصرف می‌کنند.</string>
-    <string name="refresh_rate_hz">%1$d هرتز</string>
     <string name="glass_title">AHarness Glass (آزمایشی)</string>
     <string name="glass_description">افکت‌های شیشه‌ای برای پیمایش، کنترل‌ها و کارت‌ها.</string>
     <string name="glass_enable">شیشه مات</string>

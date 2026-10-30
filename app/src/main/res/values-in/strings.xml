@@ -957,9 +957,6 @@
     <string name="dhizuku_denied">Akses ditolak · izinkan akses di Dhizuku</string>
     <string name="dhizuku_error">Koneksi gagal · periksa Dhizuku dan coba lagi</string>
     <string name="settings_language_sinhala">සිංහල</string>
-    <string name="refresh_rate_title">Kecepatan refresh</string>
-    <string name="refresh_rate_hint">Kecepatan lebih tinggi terlihat lebih mulus tetapi lebih boros baterai.</string>
-    <string name="refresh_rate_hz">%1$d Hz</string>
     <string name="glass_title">AHarness Glass (Eksperimental)</string>
     <string name="glass_description">Efek kaca untuk navigasi, kontrol, dan kartu.</string>
     <string name="glass_enable">Kaca buram</string>
