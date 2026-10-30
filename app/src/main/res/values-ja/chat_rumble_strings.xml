@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">チャットが思考、ツール呼び出し、返信の作成など次のステップに進むたびに振動で知らせます。</string>
+    <string name="rumble_strength">強さ</string>
+    <string name="rumble_feel">感触</string>
+    <string name="rumble_feel_crisp">シャープ</string>
+    <string name="rumble_feel_smooth">なめらか</string>
+    <string name="rumble_try">試す</string>
+    <string name="rumble_hint">端末のタッチ振動の設定に従います。チャットのみに適用されます。</string>
+</resources>

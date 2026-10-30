@@ -23,6 +23,8 @@
 
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
+    <!-- AH Rumble: haptic pulses as a Chat turn changes step. -->
+    <uses-permission android:name="android.permission.VIBRATE" />
 
     <!-- Make audio recording hardware optional so devices without a built-in
          microphone (Android TV, displays, kiosks) are not excluded by Play. -->

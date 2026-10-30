@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">Rasakan getaran setiap kali Chat berpindah ke langkah baru, seperti berpikir, memanggil alat, atau menulis jawaban.</string>
+    <string name="rumble_strength">Kekuatan</string>
+    <string name="rumble_feel">Nuansa</string>
+    <string name="rumble_feel_crisp">Tajam</string>
+    <string name="rumble_feel_smooth">Halus</string>
+    <string name="rumble_try">Coba rasakan</string>
+    <string name="rumble_hint">Mengikuti pengaturan getaran sentuh di ponsel Anda. Hanya berlaku untuk Chat.</string>
+</resources>

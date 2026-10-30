@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">اشعر بنبضة اهتزاز كلما انتقلت المحادثة إلى خطوة جديدة، مثل التفكير أو استدعاء أداة أو كتابة الرد.</string>
+    <string name="rumble_strength">القوة</string>
+    <string name="rumble_feel">الإحساس</string>
+    <string name="rumble_feel_crisp">حاد</string>
+    <string name="rumble_feel_smooth">ناعم</string>
+    <string name="rumble_try">جرّبها</string>
+    <string name="rumble_hint">يتبع إعداد اهتزاز اللمس في هاتفك. يؤثر على المحادثة فقط.</string>
+</resources>

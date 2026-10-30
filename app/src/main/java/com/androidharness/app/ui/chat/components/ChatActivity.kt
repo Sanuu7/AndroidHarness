@@ -48,6 +48,7 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.RumbleCue
 import com.androidharness.app.ui.common.TextButton
 
 /** One chronological disclosure for a Chat turn; the final answer stays outside. */
@@ -66,6 +67,7 @@ internal fun ChatActivity(
     reasoningTokens: Int? = null,
     turnStartedAt: Long? = null,
     onOpenUrl: (String) -> Unit = {},
+    onStep: (RumbleCue) -> Unit = {},
 ) {
     val entries = remember(messages, runningCalls, streamingThinking, streamId, streamingCommentary) {
         ChatActivityPresentation.timeline(messages, runningCalls, streamingThinking, streamId, streamingCommentary)
@@ -95,6 +97,20 @@ internal fun ChatActivity(
         live -> stringResource(R.string.chat_thinking)
         seconds > 0 && !showThinkingMetrics -> stringResource(R.string.chat_thought_seconds, seconds)
         else -> stringResource(R.string.chat_thought)
+    }
+    // Each step change of a live turn is felt once; a row that merely scrolls back into view stays silent.
+    val step = when {
+        !live -> null
+        showToolPhase && active != null -> RumbleCue.TOOL_START to active.id
+        completedPhase -> (if (lastTool!!.result?.isError == true) RumbleCue.TOOL_FAILED else RumbleCue.TOOL_DONE) to lastTool.call.id
+        writing -> RumbleCue.WRITE to null
+        else -> RumbleCue.THINK to null
+    }
+    var seenStep by remember { mutableStateOf(step) }
+    LaunchedEffect(step) {
+        if (step == seenStep) return@LaunchedEffect
+        seenStep = step
+        if (step != null) onStep(step.first)
     }
     ChatActivityRow(title, if (live && showToolPhase) (active ?: lastTool?.call?.takeIf { completedPhase })?.name else null, live, entries.isNotEmpty(), followLatest = live, autoExpand = autoExpand,
         progress = research,

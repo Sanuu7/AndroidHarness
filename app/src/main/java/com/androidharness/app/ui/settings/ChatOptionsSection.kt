@@ -41,6 +41,9 @@ internal fun ChatOptionsSection(
     onChatStart: (ChatStartMode) -> Unit,
     onKeepThinkingCollapsed: (Boolean) -> Unit,
     onImageFrequency: (ImageFrequency) -> Unit,
+    onRumbleEnabled: (Boolean) -> Unit = {},
+    onRumbleStrength: (Int) -> Unit = {},
+    onRumbleSmoothness: (Int) -> Unit = {},
     onInstructions: suspend (String) -> Unit,
     agentCount: Int = 0,
     onManageAgents: () -> Unit = {},
@@ -111,6 +114,9 @@ internal fun ChatOptionsSection(
             }
             Switch(checked = settings.chatKeepThinkingCollapsed, onCheckedChange = null)
         }
+    }
+    SettingsAnchor(R.string.rumble_title) {
+        RumbleSection(settings, onRumbleEnabled, onRumbleStrength, onRumbleSmoothness)
     }
     SettingsAnchor(R.string.settings_image_frequency) {
         ChoicePanel(

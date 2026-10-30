@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">Feel a pulse whenever a Chat moves to a new step, like thinking, a tool call or writing the reply.</string>
+    <string name="rumble_strength">Strength</string>
+    <string name="rumble_feel">Feel</string>
+    <string name="rumble_feel_crisp">Crisp</string>
+    <string name="rumble_feel_smooth">Smooth</string>
+    <string name="rumble_try">Feel it</string>
+    <string name="rumble_hint">Follows your phone\'s touch vibration setting. Only affects Chat.</string>
+    <string name="rumble_percent" translatable="false">%1$d%%</string>
+</resources>

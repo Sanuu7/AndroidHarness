@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">هر بار که گفتگو به مرحله‌ای تازه می‌رود، مثل فکر کردن، فراخوانی ابزار یا نوشتن پاسخ، یک لرزش حس کنید.</string>
+    <string name="rumble_strength">شدت</string>
+    <string name="rumble_feel">حس</string>
+    <string name="rumble_feel_crisp">تیز</string>
+    <string name="rumble_feel_smooth">نرم</string>
+    <string name="rumble_try">امتحان کن</string>
+    <string name="rumble_hint">از تنظیم لرزش لمسی گوشی شما پیروی می‌کند. فقط روی گفتگو اثر دارد.</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">Spüre einen Impuls, wenn ein Chat zum nächsten Schritt wechselt, etwa Denken, Werkzeugaufruf oder Antwort schreiben.</string>
+    <string name="rumble_strength">Stärke</string>
+    <string name="rumble_feel">Gefühl</string>
+    <string name="rumble_feel_crisp">Knackig</string>
+    <string name="rumble_feel_smooth">Weich</string>
+    <string name="rumble_try">Ausprobieren</string>
+    <string name="rumble_hint">Folgt der Touch-Vibrationseinstellung deines Telefons. Gilt nur für Chat.</string>
+</resources>

@@ -22,6 +22,9 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 @kotlinx.serialization.Serializable
 enum class ProgressBarStyle { FLAT, SQUIGGLY }
 
+const val RUMBLE_DEFAULT_STRENGTH = 60
+const val RUMBLE_DEFAULT_SMOOTHNESS = 60
+
 @kotlinx.serialization.Serializable
 data class AppSettings(
     val permissionMode: PermissionMode = PermissionMode.CONFIRM_RISKY,
@@ -127,6 +130,12 @@ data class AppSettings(
     /** Chat opens a fresh conversation unless the user asks to continue the latest one. */
     val chatStart: ChatStartMode = ChatStartMode.NEW_CHAT,
     val chatKeepThinkingCollapsed: Boolean = true,
+    /** AH Rumble: a haptic pulse whenever a Chat turn moves to a new step. */
+    val rumbleEnabled: Boolean = true,
+    /** 0..100 percent of the motor's amplitude. */
+    val rumbleStrength: Int = RUMBLE_DEFAULT_STRENGTH,
+    /** 0 is a crisp tick, 100 is a long soft swell. */
+    val rumbleSmoothness: Int = RUMBLE_DEFAULT_SMOOTHNESS,
     /** Default image appetite for chats that have not overridden it. */
     val chatImageFrequency: ImageFrequency = ImageFrequency.DEFAULT,
     val chatInstructions: String = "",
@@ -267,6 +276,9 @@ class SettingsRepository(private val context: Context) {
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val START_SCREEN = stringPreferencesKey("start_screen")
         val CHAT_KEEP_THINKING_COLLAPSED = booleanPreferencesKey("chat_keep_thinking_collapsed")
+        val RUMBLE_ENABLED = booleanPreferencesKey("rumble_enabled")
+        val RUMBLE_STRENGTH = intPreferencesKey("rumble_strength")
+        val RUMBLE_SMOOTHNESS = intPreferencesKey("rumble_smoothness")
         val CHAT_IMAGE_FREQUENCY = stringPreferencesKey("chat_image_frequency")
         val CHAT_INSTRUCTIONS = stringPreferencesKey("chat_instructions")
         val CHAT_AGENTS = stringPreferencesKey("chat_agents")
@@ -377,6 +389,9 @@ class SettingsRepository(private val context: Context) {
             startScreen = StartScreen.fromStored(prefs[Keys.START_SCREEN]),
             chatStart = ChatStartMode.fromStored(prefs[Keys.CHAT_START]),
             chatKeepThinkingCollapsed = prefs[Keys.CHAT_KEEP_THINKING_COLLAPSED] ?: true,
+            rumbleEnabled = prefs[Keys.RUMBLE_ENABLED] ?: true,
+            rumbleStrength = (prefs[Keys.RUMBLE_STRENGTH] ?: RUMBLE_DEFAULT_STRENGTH).coerceIn(0, 100),
+            rumbleSmoothness = (prefs[Keys.RUMBLE_SMOOTHNESS] ?: RUMBLE_DEFAULT_SMOOTHNESS).coerceIn(0, 100),
             chatInstructions = prefs[Keys.CHAT_INSTRUCTIONS].orEmpty(),
             chatAgents = ChatAgentProfile.decodeList(prefs[Keys.CHAT_AGENTS]),
             chatImageFrequency = prefs[Keys.CHAT_IMAGE_FREQUENCY]?.let {
@@ -450,6 +465,9 @@ class SettingsRepository(private val context: Context) {
             p[Keys.START_SCREEN] = s.startScreen.name
             p[Keys.CHAT_START] = s.chatStart.name
             p[Keys.CHAT_KEEP_THINKING_COLLAPSED] = s.chatKeepThinkingCollapsed
+            p[Keys.RUMBLE_ENABLED] = s.rumbleEnabled
+            p[Keys.RUMBLE_STRENGTH] = s.rumbleStrength.coerceIn(0, 100)
+            p[Keys.RUMBLE_SMOOTHNESS] = s.rumbleSmoothness.coerceIn(0, 100)
             p[Keys.CHAT_IMAGE_FREQUENCY] = s.chatImageFrequency.name
             p[Keys.CHAT_INSTRUCTIONS] = s.chatInstructions.take(ConversationConfig.MAX_INSTRUCTIONS_CHARS)
             p[Keys.CHAT_AGENTS] = ChatAgentProfile.encodeList(s.chatAgents)
@@ -910,6 +928,18 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setChatKeepThinkingCollapsed(value: Boolean) {
         context.settingsStore.edit { it[Keys.CHAT_KEEP_THINKING_COLLAPSED] = value }
+    }
+
+    suspend fun setRumbleEnabled(value: Boolean) {
+        context.settingsStore.edit { it[Keys.RUMBLE_ENABLED] = value }
+    }
+
+    suspend fun setRumbleStrength(value: Int) {
+        context.settingsStore.edit { it[Keys.RUMBLE_STRENGTH] = value.coerceIn(0, 100) }
+    }
+
+    suspend fun setRumbleSmoothness(value: Int) {
+        context.settingsStore.edit { it[Keys.RUMBLE_SMOOTHNESS] = value.coerceIn(0, 100) }
     }
 
     suspend fun setChatImageFrequency(value: ImageFrequency) {

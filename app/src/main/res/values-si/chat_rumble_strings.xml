@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">චැට් එකක් සිතීම, මෙවලමක් කැඳවීම හෝ පිළිතුර ලිවීම වැනි නව පියවරකට යන සෑම විටම කම්පනයක් දැනෙන්න.</string>
+    <string name="rumble_strength">ශක්තිය</string>
+    <string name="rumble_feel">දැනීම</string>
+    <string name="rumble_feel_crisp">තියුණු</string>
+    <string name="rumble_feel_smooth">සුමට</string>
+    <string name="rumble_try">උත්සාහ කරන්න</string>
+    <string name="rumble_hint">ඔබේ දුරකථනයේ ස්පර්ශ කම්පන සැකසුම අනුගමනය කරයි. චැට් සඳහා පමණක් බලපායි.</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">当聊天进入新的步骤时（如思考、调用工具或撰写回复），手机会震动提示。</string>
+    <string name="rumble_strength">强度</string>
+    <string name="rumble_feel">手感</string>
+    <string name="rumble_feel_crisp">清脆</string>
+    <string name="rumble_feel_smooth">柔和</string>
+    <string name="rumble_try">试一试</string>
+    <string name="rumble_hint">遵循手机的触感振动设置。仅对聊天生效。</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rumble_title">AH Rumble</string>
+    <string name="rumble_desc">Чувствуйте вибрацию, когда чат переходит к новому шагу: размышлению, вызову инструмента или написанию ответа.</string>
+    <string name="rumble_strength">Сила</string>
+    <string name="rumble_feel">Ощущение</string>
+    <string name="rumble_feel_crisp">Резкая</string>
+    <string name="rumble_feel_smooth">Мягкая</string>
+    <string name="rumble_try">Попробовать</string>
+    <string name="rumble_hint">Учитывает настройку вибрации при касании на телефоне. Действует только в чате.</string>
+</resources>
