@@ -98,8 +98,8 @@ android {
             // APK installs without a release keystore. Swap to a dedicated
             // signing config before any public/Play distribution.
             signingConfig = signingConfigs.getByName("debug")
-            isMinifyEnabled = false
-            isShrinkResources = false
+            isMinifyEnabled = true
+            isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
         debug {

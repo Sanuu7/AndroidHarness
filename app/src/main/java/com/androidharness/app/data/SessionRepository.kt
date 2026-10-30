@@ -9,10 +9,13 @@ import com.androidharness.app.data.db.AppDatabase
 import com.androidharness.app.data.db.ChatSearch
 import com.androidharness.app.data.db.MessageEntity
 import com.androidharness.app.data.db.MessagePosition
+import com.androidharness.app.data.db.SavedAnswerEntity
+import com.androidharness.app.data.db.SavedAnswerRow
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.data.db.UsageEventEntity
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
@@ -101,6 +104,30 @@ class SessionRepository(
     /** Full message list (for UI). */
     suspend fun messages(sessionId: String): List<ChatMessage> =
         db.dao().messages(sessionId).map { it.toChatMessageCached() }
+
+    /** Ids of this chat's saved answers, so each answer's bookmark reflects the stored state. */
+    fun savedAnswerIds(sessionId: String): Flow<Set<String>> =
+        db.dao().savedAnswerIds(sessionId).map { it.toSet() }.distinctUntilChanged().flowOn(Dispatchers.IO)
+
+    /** Every saved answer, newest saved first, with a short excerpt instead of the full text. */
+    fun savedAnswers(): Flow<List<SavedAnswerRow>> = db.dao().savedAnswers().flowOn(Dispatchers.IO)
+
+    suspend fun savedAnswerText(messageId: String): String? = db.dao().savedAnswer(messageId)?.text
+
+    /** Keeps a copy of the answer's text, so the bookmark survives regenerating or rewinding the chat. */
+    suspend fun saveAnswer(sessionId: String, message: ChatMessage) {
+        val id = message.id ?: return
+        db.dao().saveAnswer(SavedAnswerEntity(id, sessionId, message.text.take(MAX_PERSISTED_FIELD_CHARS), message.createdAt, System.currentTimeMillis()))
+    }
+
+    suspend fun unsaveAnswer(messageId: String) = db.dao().unsaveAnswer(messageId)
+
+    /** Removes a saved answer and hands back its stored copy, so an Undo can put it back exactly. */
+    suspend fun removeSavedAnswer(messageId: String): SavedAnswerEntity? = db.withTransaction {
+        db.dao().savedAnswer(messageId).also { db.dao().unsaveAnswer(messageId) }
+    }
+
+    suspend fun restoreSavedAnswer(answer: SavedAnswerEntity) = db.dao().saveAnswer(answer)
 
     suspend fun toolOutput(sessionId: String, toolCallId: String): String? = db.dao().toolOutput(sessionId, toolCallId)
 
@@ -839,6 +866,7 @@ class SessionRepository(
         db.withTransaction {
             targets.forEach { session ->
                 db.dao().deleteChatAnswerVersions(session.id)
+                db.dao().deleteSavedAnswers(session.id)
                 db.dao().deleteMessages(session.id)
                 db.dao().deleteCheckpoints(session.id)
                 db.dao().deleteUsageEvents(session.id)

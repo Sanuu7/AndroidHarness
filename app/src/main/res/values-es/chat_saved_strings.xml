@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">Guardadas</string>
+    <string name="sidebar_saved_answers">Respuestas guardadas</string>
+    <string name="sidebar_saved_count_description">Respuestas guardadas, %1$d</string>
+    <string name="sidebar_saved_answer">Respuesta guardada</string>
+    <string name="sidebar_open_in_chat">Abrir en el chat</string>
+    <string name="sidebar_remove_saved">Quitar de guardadas</string>
+    <string name="chat_save_answer">Guardar respuesta</string>
+    <string name="chat_answer_saved">Respuesta guardada</string>
+    <string name="chat_answer_unsaved">Quitada de guardadas</string>
+</resources>

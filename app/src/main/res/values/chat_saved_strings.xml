@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">Saved</string>
+    <string name="sidebar_saved_answers">Saved answers</string>
+    <string name="sidebar_saved_count_description">Saved answers, %1$d</string>
+    <string name="sidebar_saved_answer">Saved answer</string>
+    <string name="sidebar_open_in_chat">Open in chat</string>
+    <string name="sidebar_remove_saved">Remove from saved</string>
+    <string name="chat_save_answer">Save answer</string>
+    <string name="chat_answer_saved">Answer saved</string>
+    <string name="chat_answer_unsaved">Removed from saved</string>
+</resources>

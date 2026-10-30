@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">المحفوظة</string>
+    <string name="sidebar_saved_answers">الإجابات المحفوظة</string>
+    <string name="sidebar_saved_count_description">الإجابات المحفوظة، %1$d</string>
+    <string name="sidebar_saved_answer">إجابة محفوظة</string>
+    <string name="sidebar_open_in_chat">فتح في الدردشة</string>
+    <string name="sidebar_remove_saved">إزالة من المحفوظات</string>
+    <string name="chat_save_answer">حفظ الإجابة</string>
+    <string name="chat_answer_saved">تم حفظ الإجابة</string>
+    <string name="chat_answer_unsaved">تمت الإزالة من المحفوظات</string>
+</resources>

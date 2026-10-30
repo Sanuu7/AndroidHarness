@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">Tersimpan</string>
+    <string name="sidebar_saved_answers">Jawaban tersimpan</string>
+    <string name="sidebar_saved_count_description">Jawaban tersimpan, %1$d</string>
+    <string name="sidebar_saved_answer">Jawaban tersimpan</string>
+    <string name="sidebar_open_in_chat">Buka di chat</string>
+    <string name="sidebar_remove_saved">Hapus dari tersimpan</string>
+    <string name="chat_save_answer">Simpan jawaban</string>
+    <string name="chat_answer_saved">Jawaban disimpan</string>
+    <string name="chat_answer_unsaved">Dihapus dari tersimpan</string>
+</resources>

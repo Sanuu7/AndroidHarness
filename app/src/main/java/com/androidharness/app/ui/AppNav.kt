@@ -258,6 +258,8 @@ fun AppNav(container: AppContainer) {
     val runningSessionIds by container.runManager.runningSessionIds.collectAsStateWithLifecycle()
 
     var actionsSession by remember { mutableStateOf<SessionEntity?>(null) }
+    var viewingSavedAnswer by remember { mutableStateOf<com.androidharness.app.data.db.SavedAnswerRow?>(null) }
+    val savedAnswerRows by remember { container.sessions.savedAnswers() }.collectAsStateWithLifecycle(initialValue = emptyList())
     var renamingSession by remember { mutableStateOf<SessionEntity?>(null) }
     var renamingProject by remember { mutableStateOf<ProjectEntity?>(null) }
     var deletingProject by remember { mutableStateOf<ProjectEntity?>(null) }
@@ -479,6 +481,8 @@ fun AppNav(container: AppContainer) {
             onChatActions = { actionsSession = it }, onAction = ::sidebarAction,
             selectedChats = selectedChatIds.toSet(), onSelectedChatsChange = { selectedChatIds = it.toList() },
             onSelectedChatsAction = ::selectedChatAction, selectionBusy = batchBusy,
+            savedAnswers = if (activeConversation.isChat) savedAnswerRows.filter { row -> sessions.any { it.id == row.sessionId } } else emptyList(),
+            onOpenSavedAnswer = { viewingSavedAnswer = it },
             onBuild = { navigateFromSidebar { nav.navigate("build-test?session=${encode(workspaceSessionId.orEmpty())}&project=${encode(workspaceProjectId.orEmpty())}") } },
             onTerminal = { navigateFromSidebar { nav.navigate("terminal?session=${encode(workspaceSessionId.orEmpty())}&project=${encode(workspaceProjectId.orEmpty())}") } },
             onAutomation = { navigateFromSidebar { nav.navigate("automation") { launchSingleTop = true } } },
@@ -1036,6 +1040,25 @@ fun AppNav(container: AppContainer) {
     }
 
     // Long-press session actions.
+    viewingSavedAnswer?.let { answer ->
+        SavedAnswerSheet(
+            answer = answer,
+            chatTitle = sessions.firstOrNull { it.id == answer.sessionId }?.title.orEmpty(),
+            loadText = container.sessions::savedAnswerText,
+            onOpenChat = { viewingSavedAnswer = null; navigateFromSidebar { openChat(answer.sessionId, answer.messageId) } },
+            onRemove = {
+                viewingSavedAnswer = null
+                scope.launch {
+                    val removed = container.sessions.removeSavedAnswer(answer.messageId)
+                    sidebarSnackbar.currentSnackbarData?.dismiss()
+                    val result = sidebarSnackbar.showSnackbar(uiContext.getString(R.string.chat_answer_unsaved), actionLabel = uiContext.getString(R.string.ui_undo))
+                    if (result == androidx.compose.material3.SnackbarResult.ActionPerformed && removed != null) container.sessions.restoreSavedAnswer(removed)
+                }
+            },
+            onDismiss = { viewingSavedAnswer = null },
+        )
+    }
+
     actionsSession?.let { session ->
         val pinned = session.id in settings.pinnedSessions
         val archived = session.id in settings.archivedSessions

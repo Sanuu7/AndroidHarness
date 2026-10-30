@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">ذخیره‌شده</string>
+    <string name="sidebar_saved_answers">پاسخ‌های ذخیره‌شده</string>
+    <string name="sidebar_saved_count_description">پاسخ‌های ذخیره‌شده، %1$d</string>
+    <string name="sidebar_saved_answer">پاسخ ذخیره‌شده</string>
+    <string name="sidebar_open_in_chat">باز کردن در گفتگو</string>
+    <string name="sidebar_remove_saved">حذف از ذخیره‌شده‌ها</string>
+    <string name="chat_save_answer">ذخیره پاسخ</string>
+    <string name="chat_answer_saved">پاسخ ذخیره شد</string>
+    <string name="chat_answer_unsaved">از ذخیره‌شده‌ها حذف شد</string>
+</resources>

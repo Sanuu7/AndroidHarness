@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">保存済み</string>
+    <string name="sidebar_saved_answers">保存した回答</string>
+    <string name="sidebar_saved_count_description">保存した回答、%1$d件</string>
+    <string name="sidebar_saved_answer">保存した回答</string>
+    <string name="sidebar_open_in_chat">チャットで開く</string>
+    <string name="sidebar_remove_saved">保存から削除</string>
+    <string name="chat_save_answer">回答を保存</string>
+    <string name="chat_answer_saved">回答を保存しました</string>
+    <string name="chat_answer_unsaved">保存から削除しました</string>
+</resources>

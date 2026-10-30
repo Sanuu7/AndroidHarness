@@ -225,6 +225,9 @@ private fun ChatScreenContent(
             ?: kotlinx.coroutines.flow.flowOf(emptyMap())
     }.collectAsStateWithLifecycle(initialValue = emptyMap())
     val globalSettings by viewModel.container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
+    val savedAnswerIds by remember(state.sessionId) {
+        state.sessionId?.let { viewModel.container.sessions.savedAnswerIds(it) } ?: kotlinx.coroutines.flow.flowOf(emptySet())
+    }.collectAsStateWithLifecycle(initialValue = emptySet())
     val showChatStartControls = state.conversation.isChat && state.conversationReady && !state.isLoadingMessages &&
         state.messages.isEmpty() && !state.busy && state.streamingText == null
     val effectiveImageFrequency = com.androidharness.app.core.ChatExperience
@@ -520,6 +523,25 @@ private fun ChatScreenContent(
         mutableStateOf<List<com.androidharness.app.core.ChatActivityPresentation.Source>?>(null)
     }
     val scope = rememberCoroutineScope()
+
+    /** Bookmarks an answer in place, with a snackbar that can take it back. */
+    fun toggleSavedAnswer(message: com.androidharness.app.core.ChatMessage) {
+        val sessionId = state.sessionId ?: return
+        val messageId = message.id ?: return
+        val sessions = viewModel.container.sessions
+        val wasSaved = messageId in savedAnswerIds
+        scope.launch {
+            if (wasSaved) sessions.unsaveAnswer(messageId) else sessions.saveAnswer(sessionId, message)
+            snackbar.currentSnackbarData?.dismiss()
+            val result = snackbar.showSnackbar(
+                uiContext.getString(if (wasSaved) R.string.chat_answer_unsaved else R.string.chat_answer_saved),
+                actionLabel = uiContext.getString(R.string.ui_undo), duration = SnackbarDuration.Short,
+            )
+            if (result == SnackbarResult.ActionPerformed) {
+                if (wasSaved) sessions.saveAnswer(sessionId, message) else sessions.unsaveAnswer(messageId)
+            }
+        }
+    }
 
     fun chooseChatAgent(agent: com.androidharness.app.data.ChatAgentProfile?) {
         if (agent != null) viewModel.startAgentChat(agent, composerValue.text)
@@ -1811,6 +1833,10 @@ private fun ChatScreenContent(
                                                 com.androidharness.app.ui.chat.components.ChatSources(conversationTurn) { url -> webPreviewUrl = url; showWebPreview = true }
                                                 Row(verticalAlignment = Alignment.CenterVertically) {
                                                     CopyIconButton(replyText)
+                                                    message.id?.let { id ->
+                                                        com.androidharness.app.ui.chat.components.SaveAnswerIconButton(
+                                                            saved = id in savedAnswerIds, onToggle = { toggleSavedAnswer(message) })
+                                                    }
                                                     message.id?.let { id -> SpeakIconButton(
                                                         active = ttsState.messageId == id,
                                                         preparing = ttsState.messageId == id && ttsState.phase == TtsPhase.PREPARING,

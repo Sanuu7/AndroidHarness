@@ -70,6 +70,29 @@ data class ChatAnswerVersionEntity(
     val createdAt: Long,
 )
 
+/**
+ * A chat answer the user bookmarked. The text is a copy taken when it was saved, so the answer
+ * outlives regenerating, editing or rewinding the chat it came from. Keyed by the message id, so
+ * saving the same answer twice is one row.
+ */
+@Entity(tableName = "saved_answers", indices = [Index("sessionId"), Index("savedAt")])
+data class SavedAnswerEntity(
+    @PrimaryKey val messageId: String,
+    val sessionId: String,
+    val text: String,
+    val answeredAt: Long,
+    val savedAt: Long,
+)
+
+/** What the sidebar list needs: a bounded excerpt, never the full text of every saved answer. */
+data class SavedAnswerRow(
+    val messageId: String,
+    val sessionId: String,
+    val excerpt: String,
+    val answeredAt: Long,
+    val savedAt: Long,
+)
+
 /** Stable ordering even when several messages share a millisecond. No schema change. */
 data class MessagePosition(val createdAt: Long, val rowId: Long, val turnId: String?)
 
@@ -326,6 +349,7 @@ interface HarnessDao {
             "The project's chats changed. Close this dialog and review deletion again."
         }
         chats.forEach { chat ->
+            deleteSavedAnswers(chat.id)
             deleteMessages(chat.id)
             deleteCheckpoints(chat.id)
             deleteUsageEvents(chat.id)
@@ -429,6 +453,24 @@ interface HarnessDao {
 
     @Query("DELETE FROM chat_answer_versions WHERE sessionId = :sessionId")
     suspend fun deleteChatAnswerVersions(sessionId: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun saveAnswer(answer: SavedAnswerEntity)
+
+    @Query("DELETE FROM saved_answers WHERE messageId = :messageId")
+    suspend fun unsaveAnswer(messageId: String)
+
+    @Query("DELETE FROM saved_answers WHERE sessionId = :sessionId")
+    suspend fun deleteSavedAnswers(sessionId: String)
+
+    @Query("SELECT messageId FROM saved_answers WHERE sessionId = :sessionId")
+    fun savedAnswerIds(sessionId: String): Flow<List<String>>
+
+    @Query("SELECT messageId, sessionId, substr(text, 1, 1200) AS excerpt, answeredAt, savedAt FROM saved_answers ORDER BY savedAt DESC")
+    fun savedAnswers(): Flow<List<SavedAnswerRow>>
+
+    @Query("SELECT * FROM saved_answers WHERE messageId = :messageId")
+    suspend fun savedAnswer(messageId: String): SavedAnswerEntity?
 
     @Query("SELECT * FROM messages WHERE sessionId = :sessionId AND turnId = :turnId AND role = 'ASSISTANT' AND toolCallsJson != '[]'")
     suspend fun toolMessagesForTurn(sessionId: String, turnId: String): List<MessageEntity>
@@ -700,14 +742,22 @@ interface HarnessDao {
         MessageFtsEntity::class,
         MemoryEntity::class,
         ChatAnswerVersionEntity::class,
+        SavedAnswerEntity::class,
     ],
-    version = 24,
+    version = 25,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_24_25 = object : androidx.room.migration.Migration(24, 25) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS saved_answers (messageId TEXT NOT NULL PRIMARY KEY, sessionId TEXT NOT NULL, text TEXT NOT NULL, answeredAt INTEGER NOT NULL, savedAt INTEGER NOT NULL)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_saved_answers_sessionId ON saved_answers(sessionId)")
+                db.execSQL("CREATE INDEX IF NOT EXISTS index_saved_answers_savedAt ON saved_answers(savedAt)")
+            }
+        }
         val MIGRATION_23_24 = object : androidx.room.migration.Migration(23, 24) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE memories ADD COLUMN agentId TEXT")

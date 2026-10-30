@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">Gespeichert</string>
+    <string name="sidebar_saved_answers">Gespeicherte Antworten</string>
+    <string name="sidebar_saved_count_description">Gespeicherte Antworten, %1$d</string>
+    <string name="sidebar_saved_answer">Gespeicherte Antwort</string>
+    <string name="sidebar_open_in_chat">Im Chat öffnen</string>
+    <string name="sidebar_remove_saved">Aus Gespeichertem entfernen</string>
+    <string name="chat_save_answer">Antwort speichern</string>
+    <string name="chat_answer_saved">Antwort gespeichert</string>
+    <string name="chat_answer_unsaved">Aus Gespeichertem entfernt</string>
+</resources>

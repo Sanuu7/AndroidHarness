@@ -59,6 +59,7 @@ import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.theme.expressiveEffectsSpec
 import com.androidharness.app.ui.theme.expressiveSpatialSpec
+import com.androidharness.app.data.db.SavedAnswerRow
 
 internal enum class SidebarProjectAction { OPEN, RENAME, PIN, ARCHIVE, DELETE }
 internal enum class SidebarChatAction { SELECT, RENAME, PIN, ARCHIVE, DETAILS, DELETE }
@@ -113,13 +114,18 @@ internal fun ProjectNavigationSidebar(
     onSelectedChatsChange: (Set<String>) -> Unit = {},
     onSelectedChatsAction: (Set<String>, SidebarChatAction) -> Unit = { _, _ -> },
     selectionBusy: Boolean = false,
+    savedAnswers: List<SavedAnswerRow> = emptyList(),
+    onOpenSavedAnswer: (SavedAnswerRow) -> Unit = {},
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scheme = MaterialTheme.colorScheme
     val glass = LocalHarnessGlass.current.mode != HarnessGlassMode.OFF
     var expandedProjects by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var showArchived by rememberSaveable { mutableStateOf(false) }
-    LaunchedEffect(projectsView, chatOnly) { showArchived = false }
+    var showSaved by rememberSaveable { mutableStateOf(false) }
+    LaunchedEffect(projectsView, chatOnly) { showArchived = false; showSaved = false }
+    // The Saved button only exists while something is saved, so leave its list rather than strand an empty one.
+    LaunchedEffect(savedAnswers.isEmpty()) { if (savedAnswers.isEmpty()) showSaved = false }
     var toolsOpen by rememberSaveable { mutableStateOf(false) }
     val density = LocalDensity.current
     var footerHeight by remember { mutableStateOf(0.dp) }
@@ -135,6 +141,7 @@ internal fun ProjectNavigationSidebar(
     val selecting = selection.isNotEmpty() || selectionBusy
     val selectableIds = when {
         query.isNotBlank() -> (matching.map { it.id } + messageHits.map { it.sessionId }).toSet() intersect sessions.mapTo(mutableSetOf()) { it.id }
+        showSaved -> emptySet()
         projectsView -> sessions.filter { it.id !in archived && it.projectId in expandedProjects && projects.any { p -> p.id == it.projectId && (p.id in projectArchives) == showArchived } }.mapTo(mutableSetOf()) { it.id }
         showArchived -> grouped.archived.mapTo(mutableSetOf()) { it.id }
         else -> sessions.filter { it.id !in archived }.mapTo(mutableSetOf()) { it.id }
@@ -232,16 +239,11 @@ internal fun ProjectNavigationSidebar(
                                 }
                             }
                         })
-                    if (chatOnly) TextButton(
-                        onClick = { onQueryChange(""); showArchived = !showArchived },
-                        modifier = Modifier.align(Alignment.End).padding(horizontal = 14.dp),
-                    ) {
-                        Icon(if (showArchived) Icons.AutoMirrored.Outlined.ArrowBack else Icons.Outlined.Archive,
-                            null, Modifier.size(18.dp))
-                        Spacer(Modifier.width(8.dp))
-                        Text(uiContext.getString(if (showArchived) R.string.ui_back_to_active else R.string.ui_archived_chats,
-                            uiContext.getString(R.string.ui_chats)))
-                    }
+                    if (chatOnly) SidebarCollectionButtons(
+                        savedCount = savedAnswers.size, showSaved = showSaved, showArchived = showArchived,
+                        onToggleSaved = { onQueryChange(""); showArchived = false; showSaved = !showSaved },
+                        onToggleArchived = { onQueryChange(""); showSaved = false; showArchived = !showArchived },
+                    )
                     if (!chatOnly) Row(Modifier.fillMaxWidth().padding(start = 14.dp, end = 8.dp, top = 2.dp, bottom = 4.dp),
                         verticalAlignment = Alignment.CenterVertically) {
                         FlowRow(Modifier.weight(1f).harnessGlass(scheme.surfaceContainer, RoundedCornerShape(if (glass) 24.dp else 12.dp)).padding(3.dp),
@@ -337,6 +339,14 @@ internal fun ProjectNavigationSidebar(
                         if (visibleProjects.isEmpty()) item {
                             Text(if (showArchived) uiContext.getString(R.string.ui_no_archived_projects) else uiContext.getString(R.string.ui_add_a_project_to_organize_its_chats),
                                 Modifier.padding(20.dp), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        }
+                    } else if (showSaved) {
+                        item { SidebarSectionHeader(uiContext.getString(R.string.sidebar_saved_answers), true, null) }
+                        items(savedAnswers, key = { "saved:${it.messageId}" }) { answer ->
+                            SavedAnswerListRow(
+                                answer, sessions.firstOrNull { it.id == answer.sessionId }?.title.orEmpty(),
+                                Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()),
+                            ) { keyboard?.hide(); onOpenSavedAnswer(answer) }
                         }
                     } else if (showArchived) {
                         item { SidebarSectionHeader(uiContext.getString(R.string.ui_archived_chats), true, null) }

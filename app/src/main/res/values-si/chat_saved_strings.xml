@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">සුරැකි</string>
+    <string name="sidebar_saved_answers">සුරැකි පිළිතුරු</string>
+    <string name="sidebar_saved_count_description">සුරැකි පිළිතුරු, %1$d</string>
+    <string name="sidebar_saved_answer">සුරැකි පිළිතුර</string>
+    <string name="sidebar_open_in_chat">කතාබහේ විවෘත කරන්න</string>
+    <string name="sidebar_remove_saved">සුරැකිවලින් ඉවත් කරන්න</string>
+    <string name="chat_save_answer">පිළිතුර සුරකින්න</string>
+    <string name="chat_answer_saved">පිළිතුර සුරැකිණි</string>
+    <string name="chat_answer_unsaved">සුරැකිවලින් ඉවත් කළා</string>
+</resources>

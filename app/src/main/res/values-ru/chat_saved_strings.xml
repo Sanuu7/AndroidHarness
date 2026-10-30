@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">Сохранённые</string>
+    <string name="sidebar_saved_answers">Сохранённые ответы</string>
+    <string name="sidebar_saved_count_description">Сохранённые ответы, %1$d</string>
+    <string name="sidebar_saved_answer">Сохранённый ответ</string>
+    <string name="sidebar_open_in_chat">Открыть в чате</string>
+    <string name="sidebar_remove_saved">Убрать из сохранённых</string>
+    <string name="chat_save_answer">Сохранить ответ</string>
+    <string name="chat_answer_saved">Ответ сохранён</string>
+    <string name="chat_answer_unsaved">Убрано из сохранённых</string>
+</resources>

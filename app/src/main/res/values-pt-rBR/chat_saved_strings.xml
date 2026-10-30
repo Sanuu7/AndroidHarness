@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">Salvas</string>
+    <string name="sidebar_saved_answers">Respostas salvas</string>
+    <string name="sidebar_saved_count_description">Respostas salvas, %1$d</string>
+    <string name="sidebar_saved_answer">Resposta salva</string>
+    <string name="sidebar_open_in_chat">Abrir no chat</string>
+    <string name="sidebar_remove_saved">Remover dos salvos</string>
+    <string name="chat_save_answer">Salvar resposta</string>
+    <string name="chat_answer_saved">Resposta salva</string>
+    <string name="chat_answer_unsaved">Removida dos salvos</string>
+</resources>
