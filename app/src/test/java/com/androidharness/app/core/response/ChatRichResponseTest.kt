@@ -87,4 +87,25 @@ After"""
         val previewNode = (RichResponse.parse(ChatRichResponse.normalize(preview)).single() as RichResponse.Part.Content).node as RichResponse.Node.Preview
         assertEquals("<p>Hello</p>", previewNode.html)
     }
+
+    @Test fun attributeDirectivesTakeTheirBodyAsText() {
+        val reply = """Bottom line
+::callout{tone="info" title="Key takeaway"}
+The risk comes mainly from *smoking* it.
+Avoiding smoke removes the exposure.
+::
+:::card{title="Next step"}
+Talk to a doctor.
+:::
+After"""
+        val parts = RichResponse.parse(ChatRichResponse.normalize(reply))
+        val nodes = parts.filterIsInstance<RichResponse.Part.Content>().map { it.node }
+        val callout = nodes[0] as RichResponse.Node.Callout
+        assertEquals("Key takeaway", callout.title)
+        assertEquals("info", callout.tone)
+        assertEquals("The risk comes mainly from *smoking* it.\nAvoiding smoke removes the exposure.", callout.text)
+        assertEquals("Talk to a doctor.", (nodes[1] as RichResponse.Node.Card).text)
+        assertTrue((parts.last() as RichResponse.Part.Markdown).text.contains("After"))
+        assertTrue(parts.none { it is RichResponse.Part.Markdown && it.text.contains("::") })
+    }
 }

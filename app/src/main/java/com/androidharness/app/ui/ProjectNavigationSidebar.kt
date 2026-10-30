@@ -154,9 +154,10 @@ internal fun ProjectNavigationSidebar(
     @Composable fun Footer() {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
         Column(Modifier.fillMaxWidth().onSizeChanged { footerHeight = with(density) { it.height.toDp() } }
-            .padding(horizontal = 10.dp, vertical = 8.dp)) {
+            .padding(horizontal = if (glass) 14.dp else 10.dp, vertical = if (glass) 12.dp else 8.dp),
+            verticalArrangement = Arrangement.spacedBy(if (glass) 8.dp else 0.dp)) {
             if (!chatOnly) SidebarNavRow(uiContext.getString(R.string.ui_tools), Icons.Outlined.Widgets, expanded = toolsOpen, onClick = { toolsOpen = !toolsOpen })
-            if (toolsOpen && !chatOnly) Column(Modifier.padding(start = 16.dp)) {
+            if (toolsOpen && !chatOnly) Column(Modifier.padding(start = 16.dp), verticalArrangement = Arrangement.spacedBy(if (glass) 8.dp else 0.dp)) {
                 SidebarNavRow("Terminal", Icons.Outlined.Terminal, currentRoute?.startsWith("terminal") == true, onClick = onTerminal)
                 SidebarNavRow("Build & test", Icons.Outlined.Build, currentRoute?.startsWith("build-test") == true, onClick = onBuild)
                 SidebarNavRow(uiContext.getString(R.string.ui_scheduled_tasks), Icons.Outlined.Schedule, currentRoute == "automation", onClick = onAutomation)
@@ -201,9 +202,10 @@ internal fun ProjectNavigationSidebar(
                             if (chatOnly) com.androidharness.app.data.ConversationKind.CHAT else com.androidharness.app.data.ConversationKind.CODE),
                         sectionSwitchEnabled, onSelectSection)
                     Button(onClick = onNewChat, enabled = projectCreationEnabled,
-                        colors = if (glass) ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent) else ButtonDefaults.buttonColors(), shape = RoundedCornerShape(if (LocalHarnessGlass.current.mode != HarnessGlassMode.OFF) 28.dp else 11.dp),
+                        colors = if (glass) ButtonDefaults.buttonColors(containerColor = androidx.compose.ui.graphics.Color.Transparent,
+                            contentColor = scheme.onPrimaryContainer) else ButtonDefaults.buttonColors(), shape = RoundedCornerShape(if (LocalHarnessGlass.current.mode != HarnessGlassMode.OFF) 28.dp else 11.dp),
                         modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 4.dp).heightIn(min = 44.dp)
-                            .then(if (glass) Modifier.harnessGlass(scheme.primary, RoundedCornerShape(28.dp)) else Modifier)) {
+                            .then(if (glass) Modifier.harnessGlass(scheme.primaryContainer, RoundedCornerShape(28.dp)) else Modifier)) {
                         Icon(Icons.Outlined.EditNote, null, Modifier.size(19.dp)); Spacer(Modifier.width(8.dp))
                         Text(uiContext.getString(if (chatOnly) R.string.settings_telegram_new_chat else R.string.conversation_new_code_chat), style = MaterialTheme.typography.labelLarge)
                     }
@@ -444,12 +446,13 @@ private fun SidebarNavRow(label: String, icon: ImageVector, selected: Boolean = 
     expanded: Boolean? = null, onClick: () -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val glass = LocalHarnessGlass.current.mode != HarnessGlassMode.OFF
     Surface(onClick = onClick, color = if (selected) scheme.surfaceContainerHigh else scheme.surface,
-        shape = RoundedCornerShape(9.dp), modifier = Modifier.fillMaxWidth().semantics {
+        shape = RoundedCornerShape(if (glass) 24.dp else 9.dp), modifier = Modifier.fillMaxWidth().semantics {
             this.selected = selected; expanded?.let { stateDescription = if (it) uiContext.getString(R.string.ui_expanded) else uiContext.getString(R.string.ui_collapsed) }
         }) {
-        Row(Modifier.heightIn(min = 44.dp).padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+        Row(Modifier.heightIn(min = if (glass) 50.dp else 44.dp).padding(horizontal = if (glass) 16.dp else 10.dp, vertical = 8.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(if (glass) 12.dp else 10.dp)) {
             Icon(icon, null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
             Column(Modifier.weight(1f)) {
                 Text(label, style = MaterialTheme.typography.bodySmall)

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">اختر مستودعًا</string>
+    <string name="github_import_destination">يستورد نسخة إلى مساحة عمل خاصة على هذا الجهاز.</string>
+    <string name="github_import_loading">جارٍ تحميل مستودعاتك…</string>
+    <string name="github_import_empty">لم يتم العثور على مستودعات لهذا الحساب. يمكنك أيضًا الاستيراد عبر URL.</string>
+    <string name="github_import_by_url">الاستيراد عبر URL</string>
+    <string name="github_import_confirm_title">استيراد مستودع؟</string>
+    <string name="github_import_confirm_body">هل أنت متأكد من استيراد %1$s إلى مساحة عمل جديدة على هذا الجهاز؟</string>
+    <string name="github_import_preparing">جارٍ تحضير الاستيراد…</string>
+    <string name="github_import_success">تم استيراد %1$s</string>
+    <string name="github_import_open_workspace">فتح مساحة العمل</string>
+</resources>

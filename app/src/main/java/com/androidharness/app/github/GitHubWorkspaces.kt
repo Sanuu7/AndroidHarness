@@ -128,8 +128,9 @@ class GitHubWorkspaces(private val c: AppContainer) : PullRequestPublisher {
             // leave a registered workspace pointing at a deleted clone.
             withContext(NonCancellable) {
                 val project = c.workspace.addShellProject(folder.absolutePath, activate)
-                onRegistered(project.id)
                 registered = true
+                c.workspace.renameProject(project.id, name.take(100))
+                onRegistered(project.id)
             }
             "Imported $name into its own workspace."
         } finally {

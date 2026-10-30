@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">Pilih repositori</string>
+    <string name="github_import_destination">Mengimpor salinan ke ruang kerjanya sendiri di perangkat ini.</string>
+    <string name="github_import_loading">Memuat repositori Anda…</string>
+    <string name="github_import_empty">Tidak ada repositori untuk akun ini. Anda juga bisa mengimpor lewat URL.</string>
+    <string name="github_import_by_url">Impor lewat URL</string>
+    <string name="github_import_confirm_title">Impor repositori?</string>
+    <string name="github_import_confirm_body">Yakin ingin mengimpor %1$s ke ruang kerja baru di perangkat ini?</string>
+    <string name="github_import_preparing">Menyiapkan impor…</string>
+    <string name="github_import_success">%1$s diimpor</string>
+    <string name="github_import_open_workspace">Buka ruang kerja</string>
+</resources>

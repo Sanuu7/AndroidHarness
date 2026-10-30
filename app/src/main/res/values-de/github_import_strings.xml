@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">Repository auswählen</string>
+    <string name="github_import_destination">Importiert eine Kopie in einen eigenen Arbeitsbereich auf diesem Gerät.</string>
+    <string name="github_import_loading">Deine Repositories werden geladen…</string>
+    <string name="github_import_empty">Für dieses Konto wurden keine Repositories gefunden. Du kannst auch per URL importieren.</string>
+    <string name="github_import_by_url">Per URL importieren</string>
+    <string name="github_import_confirm_title">Repository importieren?</string>
+    <string name="github_import_confirm_body">Möchtest du %1$s wirklich in einen neuen Arbeitsbereich auf diesem Gerät importieren?</string>
+    <string name="github_import_preparing">Import wird vorbereitet…</string>
+    <string name="github_import_success">%1$s importiert</string>
+    <string name="github_import_open_workspace">Arbeitsbereich öffnen</string>
+</resources>

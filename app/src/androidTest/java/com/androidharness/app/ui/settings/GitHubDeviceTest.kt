@@ -177,6 +177,9 @@ class GitHubDeviceTest {
             assertTrue(clickable(waitText("Verify & connect")).isVisibleToUser)
             scrollTo("Cancel"); click("Cancel")
             scrollTo("Import from GitHub"); click("Import from GitHub")
+            if (c.github.state.value.login != null) {
+                scrollTo("Import by URL"); click("Import by URL")
+            }
             scrollTo("Import repository")
             assertTrue(clickable(waitText("Import repository")).isVisibleToUser)
             screenshot("github-import")

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">Выберите репозиторий</string>
+    <string name="github_import_destination">Импортирует копию в отдельную рабочую область на этом устройстве.</string>
+    <string name="github_import_loading">Загрузка ваших репозиториев…</string>
+    <string name="github_import_empty">Для этой учётной записи репозитории не найдены. Можно также импортировать по URL.</string>
+    <string name="github_import_by_url">Импорт по URL</string>
+    <string name="github_import_confirm_title">Импортировать репозиторий?</string>
+    <string name="github_import_confirm_body">Вы уверены, что хотите импортировать %1$s в новую рабочую область на этом устройстве?</string>
+    <string name="github_import_preparing">Подготовка импорта…</string>
+    <string name="github_import_success">%1$s импортирован</string>
+    <string name="github_import_open_workspace">Открыть рабочую область</string>
+</resources>

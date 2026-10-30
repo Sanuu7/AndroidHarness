@@ -78,15 +78,16 @@ internal object ChatRichResponse {
                 if (fence == null) fence = marker
                 else if (trimmed.all { it == fence.first() } && marker.length >= fence.length) fence = null
             }
-            val type = trimmed.removePrefix("::")
-            if (fence == null && trimmed == "::$type" && type in setOf("card", "callout", "profile", "preview")) {
-                val end = (i + 1 until lines.size).firstOrNull { lines[it].trim() == "::" }
+            val head = if (fence == null) directiveHead.matchEntire(trimmed) else null
+            if (head != null) {
+                val (colons, type, attributes) = head.destructured
+                val end = (i + 1 until lines.size).firstOrNull { lines[it].trim() == colons }
                 if (end == null) {
                     if (streaming) out.append("```harness-ui\n") else out.append(lines.drop(i).joinToString("\n"))
                     break
                 }
                 val body = lines.subList(i + 1, end).joinToString("\n")
-                val json = directiveJson(type, body)
+                val json = directiveJson(type, body, attributes)
                 if (json != null && RichResponse.decode(json) != null) out.append("```harness-ui\n").append(json).append("\n```")
                 else out.append("```harness-ui\n{}\n```")
                 i = end + 1
@@ -99,7 +100,11 @@ internal object ChatRichResponse {
         return out.toString()
     }
 
-    private fun directiveJson(type: String, body: String): String? {
+    // `::callout`, `::callout{tone="info" title="Key takeaway"}`, or the same with `:::`.
+    private val directiveHead = Regex("""^(:{2,3})(card|callout|profile|preview)(?:\{(.*)\})?$""")
+    private val directiveAttribute = Regex("""([a-z_]+)\s*=\s*"((?:[^"\\]|\\.)*)"""")
+
+    private fun directiveJson(type: String, body: String, attributes: String = ""): String? {
         if (body.length > RichResponse.MAX_JSON_CHARS) return null
         val allowed = when (type) {
             "profile" -> setOf("name", "subtitle", "description", "image", "image_source", "facts", "sources")
@@ -108,9 +113,20 @@ internal object ChatRichResponse {
             else -> setOf("title", "text")
         }
         val fields = linkedMapOf<String, StringBuilder>()
+        for (attribute in directiveAttribute.findAll(attributes)) {
+            val key = attribute.groupValues[1]
+            if (key !in allowed || key in fields) return null
+            fields[key] = StringBuilder(attribute.groupValues[2].replace("\\\"", "\""))
+        }
+        val field = Regex("^\\s*([a-z_]+):\\s*(.*)$")
+        val firstLine = body.lines().firstOrNull { it.isNotBlank() }
+        // With attributes in the header, a card or callout body may be plain text rather than `key: value` lines.
+        val plainText = type in setOf("card", "callout") && "text" !in fields && firstLine != null &&
+            field.matchEntire(firstLine)?.groupValues?.get(1) !in allowed
+        if (plainText) fields["text"] = StringBuilder(body)
         var current: StringBuilder? = null
-        for (line in body.lines()) {
-            val match = Regex("^\\s*([a-z_]+):\\s*(.*)$").matchEntire(line)
+        if (!plainText) for (line in body.lines()) {
+            val match = field.matchEntire(line)
             if (match != null && match.groupValues[1] in allowed) {
                 val key = match.groupValues[1]
                 if (key in fields) return null

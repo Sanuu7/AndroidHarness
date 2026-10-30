@@ -15,6 +15,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.path
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.androidharness.app.ui.theme.LocalHarnessGlass
 
 /**
  * The Harness brand mark: a terminal prompt ("❯_").
@@ -60,9 +61,11 @@ fun HarnessMark(
     size: Dp,
     modifier: Modifier = Modifier,
 ) {
+    // Harness Glass clears the surface role, so the glyph falls back to the glass base color.
+    val ink = MaterialTheme.colorScheme.surface.takeIf { it.alpha > 0f } ?: LocalHarnessGlass.current.surface
     Surface(
         color = MaterialTheme.colorScheme.onSurface,
-        contentColor = MaterialTheme.colorScheme.surface,
+        contentColor = ink,
         shape = RoundedCornerShape(size * 0.28f),
         modifier = modifier.size(size),
     ) {

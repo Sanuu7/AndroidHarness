@@ -290,7 +290,8 @@ fun FilesScreen(
         containerColor = scheme.surface,
         topBar = {
             AppHeader(
-                title = if (selecting) "${selectedNodes.size} selected" else uiContext.getString(R.string.ui_files),
+                title = if (selecting) "${selectedNodes.size} selected"
+                    else currentWorkspace?.name?.takeIf { projectId != null } ?: uiContext.getString(R.string.ui_files),
                 subtitle = if (currentPath == ".") fs?.displayPath.orEmpty()
                 else "${fs?.displayPath.orEmpty().substringAfterLast('/')}/$currentPath",
                 onBack = { if (selecting) closeSelection() else onBack() },

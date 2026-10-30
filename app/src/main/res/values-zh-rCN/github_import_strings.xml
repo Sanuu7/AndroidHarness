@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">选择一个仓库</string>
+    <string name="github_import_destination">将副本导入到此设备上的独立工作区。</string>
+    <string name="github_import_loading">正在加载你的仓库…</string>
+    <string name="github_import_empty">未找到此账户的仓库。你也可以通过 URL 导入。</string>
+    <string name="github_import_by_url">通过 URL 导入</string>
+    <string name="github_import_confirm_title">导入仓库？</string>
+    <string name="github_import_confirm_body">确定要将 %1$s 导入到此设备上的新工作区吗？</string>
+    <string name="github_import_preparing">正在准备导入…</string>
+    <string name="github_import_success">已导入 %1$s</string>
+    <string name="github_import_open_workspace">打开工作区</string>
+</resources>

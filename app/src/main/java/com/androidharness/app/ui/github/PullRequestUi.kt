@@ -56,6 +56,7 @@ import com.androidharness.app.ui.common.CatalogLoadingIndicator
 import com.androidharness.app.ui.common.ToolCallProgress
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.ui.theme.HarnessGlassSurface as Surface
 import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch

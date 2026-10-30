@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">リポジトリを選択</string>
+    <string name="github_import_destination">このデバイス上の専用ワークスペースにコピーをインポートします。</string>
+    <string name="github_import_loading">リポジトリを読み込み中…</string>
+    <string name="github_import_empty">このアカウントのリポジトリが見つかりません。URL からインポートすることもできます。</string>
+    <string name="github_import_by_url">URL からインポート</string>
+    <string name="github_import_confirm_title">リポジトリをインポートしますか？</string>
+    <string name="github_import_confirm_body">%1$s をこのデバイスの新しいワークスペースにインポートしますか？</string>
+    <string name="github_import_preparing">インポートを準備中…</string>
+    <string name="github_import_success">%1$s をインポートしました</string>
+    <string name="github_import_open_workspace">ワークスペースを開く</string>
+</resources>

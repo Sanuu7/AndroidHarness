@@ -62,6 +62,8 @@ class AppContainer(val appContext: Context) {
     /** Deep-link channel: run-result notifications deliver a session id here. */
     val pendingSessionId = kotlinx.coroutines.flow.MutableSharedFlow<String>(extraBufferCapacity = 1)
     val pendingSubagentChat = kotlinx.coroutines.flow.MutableStateFlow<Pair<String, String>?>(null)
+    /** Successful repository imports open their own files, independent of the old chat's workspace. */
+    val pendingImportedWorkspace = kotlinx.coroutines.flow.MutableStateFlow<String?>(null)
 
     /** Share-target channel: content awaiting a regular Chat destination and draft import. */
     val pendingShare = kotlinx.coroutines.flow.MutableStateFlow<com.androidharness.app.data.PendingShare?>(null)

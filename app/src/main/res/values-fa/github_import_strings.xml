@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">یک مخزن انتخاب کنید</string>
+    <string name="github_import_destination">یک نسخه را به فضای کاری جداگانه در این دستگاه واردات می‌کند.</string>
+    <string name="github_import_loading">مخازن شما بارگذاری می‌شوند…</string>
+    <string name="github_import_empty">برای این حساب مخزنی یافت نشد. می‌توانید از طریق URL هم واردات کنید.</string>
+    <string name="github_import_by_url">واردات از URL</string>
+    <string name="github_import_confirm_title">مخزن واردات شود؟</string>
+    <string name="github_import_confirm_body">مطمئنید که می‌خواهید %1$s را در فضای کاری جدیدی در این دستگاه واردات کنید؟</string>
+    <string name="github_import_preparing">آماده‌سازی واردات…</string>
+    <string name="github_import_success">%1$s واردات شد</string>
+    <string name="github_import_open_workspace">باز کردن فضای کاری</string>
+</resources>

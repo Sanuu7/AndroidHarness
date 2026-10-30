@@ -8,7 +8,16 @@ import android.view.accessibility.AccessibilityNodeInfo
 import androidx.activity.compose.setContent
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import com.androidharness.app.data.ThemeMode
+import com.androidharness.app.ui.theme.HarnessGlassMode
+import com.androidharness.app.ui.theme.HarnessTheme
+import com.androidharness.app.ui.theme.LocalHarnessGlassScene
+import com.androidharness.app.ui.theme.recordHarnessGlassScene
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import com.androidharness.app.HarnessApp
@@ -28,6 +37,47 @@ import java.io.File
 class GitHubChangePickerDeviceTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val context = instrumentation.targetContext
+
+    @Test fun glassGitHubDialogKeepsItsOwnReadablePanelAndCommitControls() {
+        if (android.os.Build.VERSION.SDK_INT < 33) return
+        instrumentation.uiAutomation.serviceInfo = instrumentation.uiAutomation.serviceInfo.apply {
+            flags = flags or android.accessibilityservice.AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
+        }
+        for (mode in listOf(HarnessGlassMode.FROSTED, HarnessGlassMode.LIQUID)) {
+            var published: Set<String>? = null
+            withPicker(listOf(GitChange("README.md", " M")), { published = it }, mode) {
+                await("Folder selection fixture")
+                tap("Select README.md")
+                await("1 of 1 files selected")
+                val edit = awaitNode { it.className?.toString() == "android.widget.EditText" }
+                assertTrue(edit.performAction(AccessibilityNodeInfo.ACTION_CLICK))
+                SystemClock.sleep(300)
+                assertTrue(edit.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, android.os.Bundle().apply {
+                    putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, "Glass layout fixture")
+                }))
+                awaitNode { matches(it, "Commit selected files & push") && actionNode(it).isEnabled }
+                val keyboard = Rect()
+                val deadline = SystemClock.uptimeMillis() + 5000
+                while (SystemClock.uptimeMillis() < deadline) {
+                    val window = instrumentation.uiAutomation.windows.firstOrNull { it.type == android.view.accessibility.AccessibilityWindowInfo.TYPE_INPUT_METHOD }
+                    if (window != null) { window.getBoundsInScreen(keyboard); break }
+                    SystemClock.sleep(100)
+                }
+                assertFalse("The typing check needs a visible keyboard", keyboard.isEmpty)
+                for (label in listOf("Commit & push", "Commit selected files & push", "Close")) {
+                    val bounds = Rect().also { await(label).getBoundsInScreen(it) }
+                    assertTrue("$label must remain above the keyboard", bounds.top >= 0 && bounds.bottom <= keyboard.top)
+                }
+                screenshot("github-${mode.name.lowercase()}-keyboard")
+                instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
+                SystemClock.sleep(300)
+                assertTrue(visible(await("Close")))
+                screenshot("github-${mode.name.lowercase()}-panel")
+                tap("Commit selected files & push")
+                assertEquals(setOf("README.md"), published)
+            }
+        }
+    }
 
     @Test fun folderLongPressAndNavigationPreserveSelectionsAndPublishExactFiles() {
         val changes = listOf(GitChange("app/src/Main.kt", " M"), GitChange("app/src/deleted.kt", " D"),
@@ -94,7 +144,8 @@ class GitHubChangePickerDeviceTest {
         }
     }
 
-    private fun withPicker(changes: List<GitChange>, onPublish: (Set<String>) -> Unit = {}, block: () -> Unit) = runBlocking {
+    private fun withPicker(changes: List<GitChange>, onPublish: (Set<String>) -> Unit = {},
+        mode: HarnessGlassMode = HarnessGlassMode.OFF, block: () -> Unit) = runBlocking {
         val container = (context.applicationContext as HarnessApp).container
         val saved = container.settings.settings.first()
         container.settings.setOnboardingDone(true)
@@ -104,10 +155,14 @@ class GitHubChangePickerDeviceTest {
         }
         val activity = instrumentation.startActivitySync(Intent(context, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)) as MainActivity
         try {
-            instrumentation.runOnMainSync { activity.setContent { MaterialTheme {
+            instrumentation.runOnMainSync { activity.setContent { HarnessTheme(themeMode = ThemeMode.DARK,
+                dynamicColor = false, glassEnabled = mode != HarnessGlassMode.OFF, liquidGlass = mode == HarnessGlassMode.LIQUID) {
                 var directory by remember { mutableStateOf("") }
                 var selected by remember { mutableStateOf<Set<String>>(emptySet()) }
                 var message by remember { mutableStateOf("") }
+                Column(Modifier.fillMaxSize().recordHarnessGlassScene(LocalHarnessGlassScene.current).background(Color(0xFF224060))) {
+                    repeat(40) { Text("Workspace conversation behind GitHub · $it", color = Color.White) }
+                }
                 GitHubDialog("Commit & push", false, {}, footer = {
                     GitHubCommitFooter(selected.size, changes.size, message, { message = it }, true) { onPublish(selected) }
                 }) {

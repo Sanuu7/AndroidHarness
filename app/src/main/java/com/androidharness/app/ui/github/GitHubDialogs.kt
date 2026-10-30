@@ -25,13 +25,30 @@ import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import androidx.compose.ui.graphics.Color
+import com.androidharness.app.ui.theme.HarnessGlassMode
+import com.androidharness.app.ui.theme.HarnessGlassSurface as Surface
+import com.androidharness.app.ui.theme.HarnessGlassAlertDialog as AlertDialog
+import com.androidharness.app.ui.theme.LocalHarnessGlass
+import com.androidharness.app.ui.theme.LocalHarnessGlassBackdrop
+import com.androidharness.app.ui.theme.harnessGlassOverlay
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 @Composable
 internal fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit,
     footer: @Composable ColumnScope.() -> Unit = {}, content: @Composable ColumnScope.() -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    Dialog(onDismissRequest = { if (!busy) onDismiss() }, properties = DialogProperties(usePlatformDefaultWidth = false)) {
-        Surface(shape = RoundedCornerShape(24.dp), modifier = Modifier.fillMaxWidth().padding(12.dp).fillMaxHeight(0.9f)) {
+    val glass = LocalHarnessGlass.current.mode != HarnessGlassMode.OFF
+    val shape = RoundedCornerShape(if (glass) 28.dp else 24.dp)
+    val panelBackdrop = if (glass) rememberLayerBackdrop() else null
+    Dialog(onDismissRequest = { if (!busy) onDismiss() },
+        properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        androidx.compose.material3.Surface(shape = shape,
+            color = if (glass) Color.Transparent else MaterialTheme.colorScheme.surface,
+            contentColor = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.fillMaxWidth().safeDrawingPadding().imePadding().padding(12.dp).fillMaxHeight(0.9f)
+                .then(if (glass) Modifier.harnessGlassOverlay(shape, exportedBackdrop = panelBackdrop) else Modifier)) {
+            CompositionLocalProvider(LocalHarnessGlassBackdrop provides (panelBackdrop ?: LocalHarnessGlassBackdrop.current)) {
             Column(Modifier.padding(16.dp)) {
                 Text(title, style = MaterialTheme.typography.titleLarge)
                 Spacer(Modifier.height(12.dp))
@@ -41,77 +58,39 @@ internal fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit,
                 if (busy) AppLinearProgressIndicator(Modifier.fillMaxWidth().padding(top = 8.dp))
                 TextButton(onClick = onDismiss, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(uiContext.getString(R.string.settings_action_close)) }
             }
+            }
         }
     }
 }
 
 @Composable
 fun GitHubImportDialog(container: AppContainer, onDismiss: () -> Unit, onImported: () -> Unit = onDismiss,
-    activateWorkspace: Boolean = true, onProjectImported: (String) -> Unit = {}) {
+    activateWorkspace: Boolean = true, onProjectImported: ((String) -> Unit)? = null) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val scope = rememberCoroutineScope()
-    var input by remember { mutableStateOf("") }
-    var repos by remember { mutableStateOf<List<String>>(emptyList()) }
-    var page by remember { mutableIntStateOf(1) }
-    var more by remember { mutableStateOf(true) }
-    var busy by remember { mutableStateOf(false) }
-    var message by remember { mutableStateOf<String?>(null) }
-    val environment by container.linuxEnv.state.collectAsStateWithLifecycle()
-    val gitToolsReady = environment is com.androidharness.app.data.env.EnvState.Ready && container.linuxEnv.gitToolsReady
-    fun load() {
-        busy = true
-        scope.launch {
-            try {
-                val next = container.githubRepositories.listRepositories(page)
-                repos = (repos + next).distinct(); page++; more = next.size == 30; message = null
-            } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { message = container.github.safeMessage(e) }
-            finally { busy = false }
-        }
-    }
-    GitHubDialog(uiContext.getString(R.string.settings_github_import), busy, onDismiss) {
-        Text(uiContext.getString(R.string.ui_clone_a_repository_into_its_own_private),
-            style = MaterialTheme.typography.bodySmall)
-        if (!gitToolsReady) {
-            Text(uiContext.getString(R.string.ui_install_git_tools_once_to_import_repositories), style = MaterialTheme.typography.bodySmall)
-            OutlinedButton(onClick = {
-                busy = true; message = uiContext.getString(R.string.ui_installing_git_tools)
-                scope.launch {
-                    try {
-                        container.linuxEnv.install(container.linuxEnv.corePackages).getOrThrow()
-                        check(container.linuxEnv.gitToolsReady) { (container.linuxEnv.state.value as? com.androidharness.app.data.env.EnvState.Failed)?.message ?: uiContext.getString(R.string.ui_git_tools_could_not_be_installed_retry) }
-                        message = uiContext.getString(R.string.ui_git_tools_ready)
+    val connection by container.github.state.collectAsStateWithLifecycle()
+    key(connection.login) {
+        GitHubImportPicker(connection.login,
+            loadRepositories = { page -> container.githubRepositories.listRepositories(page) },
+            importRepository = { repository, progress ->
+                if (!container.linuxEnv.gitToolsReady) {
+                    progress(uiContext.getString(R.string.github_import_preparing))
+                    container.linuxEnv.install(container.linuxEnv.corePackages).getOrThrow()
+                    check(container.linuxEnv.gitToolsReady) {
+                        (container.linuxEnv.state.value as? com.androidharness.app.data.env.EnvState.Failed)?.message
+                            ?: uiContext.getString(R.string.ui_git_tools_could_not_be_installed_retry)
                     }
-                    catch (e: CancellationException) { throw e }
-                    catch (e: Exception) { message = container.github.safeMessage(e) }
-                    finally { busy = false }
                 }
-            }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(uiContext.getString(R.string.ui_install_git_tools)) }
-        }
-        OutlinedTextField(input, onValueChange = { input = it }, label = { Text(uiContext.getString(R.string.ui_repository_url_or_owner_repository)) },
-            enabled = !busy, modifier = Modifier.fillMaxWidth())
-        Button(onClick = {
-            busy = true; message = uiContext.getString(R.string.ui_importing_repository)
-            scope.launch {
-                try {
-                    var projectId: String? = null
-                    container.githubRepositories.importRepository(input, activateWorkspace) { projectId = it }
-                    projectId?.let(onProjectImported)
-                    onImported()
-                }
-                catch (e: CancellationException) { throw e }
-                catch (e: Exception) { message = container.github.safeMessage(e) }
-                finally { busy = false }
-            }
-        }, enabled = !busy && gitToolsReady && input.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(uiContext.getString(R.string.ui_import_repository)) }
-        message?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
-        HorizontalDivider()
-        OutlinedButton(onClick = ::load, enabled = !busy && more, modifier = Modifier.fillMaxWidth()) {
-            Text(if (repos.isEmpty()) uiContext.getString(R.string.ui_browse_my_repositories) else uiContext.getString(R.string.ui_load_more_repositories))
-        }
-        repos.forEach { repo ->
-            OutlinedButton(onClick = { input = repo }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(repo) }
-        }
+                progress(uiContext.getString(R.string.ui_importing_repository))
+                var projectId: String? = null
+                container.githubRepositories.importRepository(repository, activateWorkspace) { projectId = it }
+                requireNotNull(projectId)
+            },
+            errorMessage = container.github::safeMessage,
+            onImported = { projectId ->
+                if (onProjectImported != null) onProjectImported(projectId)
+                else container.pendingImportedWorkspace.value = projectId
+                onImported()
+            }, onDismiss = onDismiss)
     }
 }
 

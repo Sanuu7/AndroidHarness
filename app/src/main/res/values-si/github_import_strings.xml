@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">repository එකක් තෝරන්න</string>
+    <string name="github_import_destination">මෙම උපාංගයේ වෙනම වැඩබිමකට පිටපතක් ආයාත කරයි.</string>
+    <string name="github_import_loading">ඔබේ repositories පූරණය වෙමින්…</string>
+    <string name="github_import_empty">මෙම ගිණුමට repositories හමු නොවිණි. URL එකකින් ද ආයාත කළ හැක.</string>
+    <string name="github_import_by_url">URL එකකින් ආයාත කරන්න</string>
+    <string name="github_import_confirm_title">repository එක ආයාත කරන්නද?</string>
+    <string name="github_import_confirm_body">%1$s මෙම උපාංගයේ නව වැඩබිමකට ආයාත කිරීමට අවශ්‍ය බව විශ්වාසද?</string>
+    <string name="github_import_preparing">ආයාතය සූදානම් කරමින්…</string>
+    <string name="github_import_success">%1$s ආයාත කරන ලදී</string>
+    <string name="github_import_open_workspace">වැඩබිම විවෘත කරන්න</string>
+</resources>

@@ -314,6 +314,16 @@ fun AppNav(container: AppContainer) {
     androidx.compose.runtime.LaunchedEffect(Unit) {
         container.pendingSessionId.collect { sid -> nav.navigateToConversation("chat/$sid") }
     }
+    androidx.compose.runtime.LaunchedEffect(container) {
+        container.pendingImportedWorkspace.collect { projectId ->
+            if (projectId != null) {
+                container.pendingImportedWorkspace.compareAndSet(projectId, null)
+                desktopGuard.navigate {
+                    nav.navigate("files?project=${encode(projectId)}") { launchSingleTop = true }
+                }
+            }
+        }
+    }
     androidx.compose.runtime.LaunchedEffect(Unit) {
         container.pendingSettingsScroll.collect { target ->
             if (target != null && nav.currentDestination?.route != "settings") nav.navigate("settings") { launchSingleTop = true }

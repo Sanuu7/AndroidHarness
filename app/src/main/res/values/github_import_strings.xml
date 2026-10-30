@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">Choose a repository</string>
+    <string name="github_import_destination">Import a copy into its own workspace on this device.</string>
+    <string name="github_import_loading">Loading your repositories…</string>
+    <string name="github_import_empty">No repositories found for this account. You can also import by URL.</string>
+    <string name="github_import_by_url">Import by URL</string>
+    <string name="github_import_confirm_title">Import repository?</string>
+    <string name="github_import_confirm_body">Are you sure you want to import %1$s into a new workspace on this device?</string>
+    <string name="github_import_preparing">Preparing import…</string>
+    <string name="github_import_success">Imported %1$s</string>
+    <string name="github_import_open_workspace">Open workspace</string>
+</resources>
