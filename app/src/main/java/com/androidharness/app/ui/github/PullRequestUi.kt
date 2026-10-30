@@ -65,6 +65,11 @@ import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.Switch
+import com.androidharness.app.ui.common.TextButton
 
 internal fun copyPullRequestLink(context: Context, url: String) {
     context.getSystemService(ClipboardManager::class.java)?.setPrimaryClip(ClipData.newPlainText("Pull request", url))

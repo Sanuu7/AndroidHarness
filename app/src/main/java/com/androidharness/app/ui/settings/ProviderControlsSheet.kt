@@ -22,6 +22,9 @@ import com.androidharness.app.llm.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.RadioButton
 
 /** A null connection edits the global proxy. Secrets stay local until Save succeeds. */
 @OptIn(ExperimentalMaterial3Api::class)

@@ -19,6 +19,7 @@ import com.androidharness.app.llm.effectiveApiKey
 import com.androidharness.app.R
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun SubagentModelSection(container: AppContainer, settings: AppSettings) {

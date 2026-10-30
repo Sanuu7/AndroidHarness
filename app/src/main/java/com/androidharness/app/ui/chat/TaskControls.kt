@@ -20,6 +20,10 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.*
 import com.androidharness.app.core.Role
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 fun TaskProgressCard(record: TaskRecord, busy: Boolean, onResume: () -> Unit, onSettings: () -> Unit) {

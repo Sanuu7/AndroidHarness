@@ -29,6 +29,10 @@ import com.androidharness.app.llm.*
 import com.androidharness.app.ui.common.ModelReasoningIcon
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /** Editing is a draft. Search and provider switches never discard checks; Save commits every edited provider. */
 @OptIn(ExperimentalMaterial3Api::class)

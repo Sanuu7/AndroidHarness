@@ -19,6 +19,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.BuildConfig
 import com.androidharness.app.R
 import com.androidharness.app.local.*
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun LocalGpuSupportCard(manager: LocalModelManager) {

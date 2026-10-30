@@ -28,7 +28,6 @@ import androidx.compose.material.icons.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -60,6 +59,7 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
+import com.androidharness.app.ui.common.IconButton
 
 /** Parses the task tool's arguments; null when they aren't valid JSON. */
 internal fun taskArgsObject(argumentsJson: String): JsonObject? =

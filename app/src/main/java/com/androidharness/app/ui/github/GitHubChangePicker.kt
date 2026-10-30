@@ -24,6 +24,9 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.github.GitChange
 import com.androidharness.app.github.GitChangeTree
 import com.androidharness.app.github.toggleGitPaths
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun GitHubChangePicker(

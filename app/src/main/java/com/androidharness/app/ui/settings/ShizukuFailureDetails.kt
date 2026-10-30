@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.*
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -18,6 +17,7 @@ import com.androidharness.app.R
 import com.androidharness.app.data.env.ShizukuConnectionFailure
 import com.androidharness.app.data.env.ShizukuStartupReport
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ShizukuFailureDetails(failure: ShizukuConnectionFailure?, report: () -> String,

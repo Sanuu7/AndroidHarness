@@ -27,6 +27,8 @@ import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
 import com.androidharness.app.artifacts.ArtifactWebView
 import com.androidharness.app.artifacts.ChatArtifact
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /** Content-sized conversation surface; artifact versioning/export controls remain in ArtifactCard. */
 @Composable

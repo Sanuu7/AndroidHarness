@@ -14,6 +14,7 @@ import com.androidharness.app.R
 import com.androidharness.app.local.*
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ProjectorDialog(model: LocalModelSpec, manager: LocalModelManager, onDismiss: () -> Unit) {

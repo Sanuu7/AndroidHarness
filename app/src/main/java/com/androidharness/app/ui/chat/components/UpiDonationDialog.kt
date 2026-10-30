@@ -51,6 +51,9 @@ import com.androidharness.app.ui.theme.expressiveEffectsSpec
 import com.androidharness.app.ui.theme.expressiveSpatialSpec
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun UpiDonationRow() {

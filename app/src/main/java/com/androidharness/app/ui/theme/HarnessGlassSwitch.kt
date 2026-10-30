@@ -20,6 +20,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import kotlin.math.abs
+import com.androidharness.app.ui.common.Switch
 
 /** Keep the standard control when glass is off; glass tracks retain switch semantics and dragging. */
 @Composable

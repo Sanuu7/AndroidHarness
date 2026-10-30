@@ -43,7 +43,6 @@ import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -99,6 +98,8 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.launch
 import androidx.compose.ui.layout.onSizeChanged
+import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.TextButton
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
@@ -1239,7 +1240,7 @@ internal fun MessageHitRow(
             .padding(horizontal = 12.dp, vertical = 9.dp),
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
-            if (selectionChecked != null) androidx.compose.material3.Checkbox(selectionChecked, onCheckedChange = null, modifier = Modifier.padding(end = 8.dp).size(24.dp))
+            if (selectionChecked != null) Checkbox(selectionChecked, onCheckedChange = null, modifier = Modifier.padding(end = 8.dp).size(24.dp))
             Text(
                 hit.sessionTitle.ifBlank { uiContext.getString(R.string.ui_chat) },
                 style = MaterialTheme.typography.labelSmall,

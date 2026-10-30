@@ -34,6 +34,7 @@ import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.combine
+import com.androidharness.app.ui.common.TextButton
 
 private enum class StatsSort(val label: String) { TOKENS("Tokens"), PRICE("Price"), REQUESTS("Requests") }
 private data class UsageView(val stats: StatsSnapshot = StatsSnapshot(), val code: CodeActivityTotals = CodeActivityTotals())

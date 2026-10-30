@@ -83,8 +83,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -125,6 +123,8 @@ import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.theme.fastSpatialSpec
 import com.androidharness.app.workspace.WorkspaceFs
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 enum class WebPreviewStage {
     SOURCE_HUB,

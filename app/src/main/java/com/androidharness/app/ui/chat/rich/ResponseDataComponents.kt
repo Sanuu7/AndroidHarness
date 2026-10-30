@@ -29,6 +29,9 @@ import com.androidharness.app.ui.chat.AnswerTableSurface
 import com.androidharness.app.ui.chat.AnswerTableScrollHint
 import com.androidharness.app.R
 import com.androidharness.app.core.response.RichResponse
+import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /** Latest explicitly changed component state can accompany a normally typed follow-up. */
 internal val LocalResponseContext = compositionLocalOf<((String, String) -> Unit)?> { null }

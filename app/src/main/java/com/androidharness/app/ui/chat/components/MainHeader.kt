@@ -12,7 +12,6 @@ import com.androidharness.app.ui.common.ExpressiveDropdownMenuItem as DropdownMe
 
 import com.androidharness.app.ui.common.localizedOption
 import com.androidharness.app.ui.common.localizedThinkingOption
-import androidx.compose.material3.TextButton
 import androidx.compose.material.icons.filled.Add
 
 import androidx.compose.foundation.background
@@ -85,6 +84,7 @@ import com.androidharness.app.agent.ThinkingLevel
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.common.BiometricAuth
 import com.androidharness.app.ui.common.ExpressiveIconButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Phones keep the model and thinking controls together in one row.

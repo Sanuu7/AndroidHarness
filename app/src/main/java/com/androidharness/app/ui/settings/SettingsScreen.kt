@@ -64,26 +64,20 @@ import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import kotlinx.coroutines.flow.filterNotNull
@@ -147,6 +141,12 @@ import com.androidharness.app.tools.mcp.McpServerConfig
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.RadioButton
+import com.androidharness.app.ui.common.TextButton
 
 
 @Composable

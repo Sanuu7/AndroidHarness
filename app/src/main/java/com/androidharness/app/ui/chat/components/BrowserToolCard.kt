@@ -21,6 +21,7 @@ import com.androidharness.app.browser.BrowserToolActivity
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.ui.common.FilledTonalButton
 
 /** Browser activity is text-only in chat. Watch is the only entry to the page. */
 @Composable

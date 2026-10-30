@@ -30,6 +30,7 @@ import androidx.compose.ui.semantics.semantics
 import com.androidharness.app.R
 import com.androidharness.app.ui.common.ProviderGlyph
 import androidx.compose.ui.unit.dp
+import com.androidharness.app.ui.common.IconButton
 
 @Composable
 internal fun SettingsHome(

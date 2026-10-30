@@ -58,6 +58,10 @@ import com.androidharness.app.ui.common.SecureDialogEffect
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable internal fun TelegramSection(container: AppContainer) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current

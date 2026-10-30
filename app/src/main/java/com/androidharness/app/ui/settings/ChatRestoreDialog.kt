@@ -17,6 +17,8 @@ import com.androidharness.app.data.ChatBackupManager
 import com.androidharness.app.data.ChatImportPreview
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ChatRestoreDialog(container: AppContainer, preview: ChatImportPreview, onDismiss: () -> Unit,

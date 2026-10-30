@@ -20,6 +20,7 @@ import io.github.rosemoe.sora.widget.CodeEditor
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.*
+import com.androidharness.app.ui.common.Button
 
 internal enum class SmartEditorAction(val title: String, val operation: String) {
     OUTLINE("Code outline", "outline"), DEFINITION("Go to Definition", "definition"),

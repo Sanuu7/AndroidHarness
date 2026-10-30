@@ -26,6 +26,8 @@ import com.androidharness.app.data.HarnessCanvasStore
 import com.androidharness.app.data.SettingsRepository
 import com.androidharness.app.ui.theme.HarnessCanvasBackdrop
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun HarnessCanvasSection(settings: HarnessCanvasSettings, repository: SettingsRepository) {

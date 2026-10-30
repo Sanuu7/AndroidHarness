@@ -25,15 +25,12 @@ import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.Button
-import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,6 +55,9 @@ import com.androidharness.app.ui.common.PackageInstallProgress
 import com.androidharness.app.ui.common.packageProgress
 import com.androidharness.app.ui.common.VisualDiffViewer
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * One shared skeleton for every "agent needs you" card (approvals, plans,

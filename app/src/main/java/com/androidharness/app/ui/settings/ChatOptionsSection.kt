@@ -31,6 +31,8 @@ import kotlinx.coroutines.launch
 import com.androidharness.app.data.StartScreen
 import com.androidharness.app.ui.common.imageFrequencyDescription
 import com.androidharness.app.ui.common.imageFrequencyLabel
+import com.androidharness.app.ui.common.RadioButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ChatOptionsSection(

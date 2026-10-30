@@ -11,6 +11,7 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.common.VisualDiffViewer
 import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.CancellationException
+import com.androidharness.app.ui.common.TextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

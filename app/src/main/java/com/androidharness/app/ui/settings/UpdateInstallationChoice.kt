@@ -12,6 +12,7 @@ import com.androidharness.app.data.update.UpdateInstallMethod
 import com.androidharness.app.data.update.UpdateManager
 import com.androidharness.app.ui.common.ExpressiveDropdownMenu
 import com.androidharness.app.ui.common.ExpressiveDropdownMenuItem
+import com.androidharness.app.ui.common.OutlinedButton
 
 @Composable
 internal fun UpdateInstallationChoice(c: AppContainer) {

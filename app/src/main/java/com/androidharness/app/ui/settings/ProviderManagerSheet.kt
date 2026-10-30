@@ -35,6 +35,9 @@ import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Provider management without leaving the conversation: a fully-expanded

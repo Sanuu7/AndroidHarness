@@ -41,6 +41,8 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 import okhttp3.OkHttpClient
 import java.util.concurrent.TimeUnit
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun TroubleshootingSection(container: AppContainer, onOpen: (SettingsPage) -> Unit) {

@@ -37,6 +37,8 @@ import com.androidharness.app.R
 import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.ui.common.BiometricAuth
 import com.androidharness.app.ui.common.formatTokenCount
+import com.androidharness.app.ui.common.RadioButton
+import com.androidharness.app.ui.common.TextButton
 
 private enum class BehaviorPicker { PERMISSIONS, CONTEXT, ITERATIONS }
 

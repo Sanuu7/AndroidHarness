@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.update
 
-import androidx.compose.material3.TextButton
 import androidx.compose.ui.res.stringResource
 
 import com.androidharness.app.R
@@ -37,13 +36,10 @@ import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.RocketLaunch
 import androidx.compose.material.icons.outlined.SystemUpdate
 import androidx.compose.material.icons.outlined.WarningAmber
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -67,6 +63,10 @@ import com.androidharness.app.data.update.UpdateManager
 import com.androidharness.app.ui.chat.MarkdownText
 import com.androidharness.app.ui.theme.HarnessMono
 import java.io.File
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Update dialog driven by [UpdateManager.Step]. Renders release notes with

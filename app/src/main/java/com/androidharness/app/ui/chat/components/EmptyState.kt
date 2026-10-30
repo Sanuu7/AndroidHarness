@@ -47,7 +47,6 @@ import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material.icons.outlined.Lightbulb
 import androidx.compose.material.icons.outlined.EditNote
-import androidx.compose.material3.Button
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -69,6 +68,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.R
 import kotlinx.coroutines.delay
+import com.androidharness.app.ui.common.Button
 
 /**
  * First-run / new-chat screen.

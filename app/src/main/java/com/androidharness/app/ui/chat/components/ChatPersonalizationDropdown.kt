@@ -26,6 +26,7 @@ import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.text.style.TextOverflow
 import com.androidharness.app.R
+import com.androidharness.app.ui.common.TextButton
 
 /** Outside the transcript so scrolling content can never cover its touch target. */
 @Composable

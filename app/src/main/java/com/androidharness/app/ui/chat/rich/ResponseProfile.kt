@@ -33,6 +33,8 @@ import com.androidharness.app.ui.chat.MarkdownText
 import com.androidharness.app.ui.chat.RemoteContentLoader
 import com.androidharness.app.ui.chat.components.ImageViewerDialog
 import com.androidharness.app.ui.theme.expressiveSpatialSpec
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ResponseProfile(profile: RichResponse.Node.Profile, onOpenUrl: ((String) -> Unit)?) {

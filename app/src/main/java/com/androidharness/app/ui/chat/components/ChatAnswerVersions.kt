@@ -18,6 +18,8 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.data.SessionRepository
 import com.androidharness.app.ui.chat.CopyIconButton
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

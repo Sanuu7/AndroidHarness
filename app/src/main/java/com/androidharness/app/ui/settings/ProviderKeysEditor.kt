@@ -27,6 +27,8 @@ import com.androidharness.app.R
 import com.androidharness.app.llm.ProviderApiKey
 import com.androidharness.app.llm.ProviderKeyPool
 import com.androidharness.app.ui.common.ExpressiveIconButton
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.OutlinedButton
 
 /** The same draft editor is used by Add, Edit and Connection controls. */
 @Composable

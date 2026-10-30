@@ -14,14 +14,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -38,6 +35,9 @@ import com.androidharness.app.R
 import com.androidharness.app.data.ConversationConfig
 import com.androidharness.app.data.ImageFrequency
 import com.androidharness.app.ui.common.imageFrequencyLabel
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.RadioButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Per-chat instructions and the personalization switch. Personalization off

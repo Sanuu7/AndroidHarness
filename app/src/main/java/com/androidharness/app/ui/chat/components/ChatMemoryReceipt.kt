@@ -19,6 +19,7 @@ import com.androidharness.app.data.db.MemoryEntity
 import com.androidharness.app.ui.settings.MemoryEditDialog
 import com.androidharness.app.ui.settings.sectionLabel
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.TextButton
 
 /** A saved/updated receipt only. Supplied-memory metadata stays out of the transcript. */
 @OptIn(ExperimentalMaterial3Api::class)

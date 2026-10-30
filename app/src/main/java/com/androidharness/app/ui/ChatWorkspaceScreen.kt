@@ -36,6 +36,7 @@ import com.androidharness.app.ui.files.*
 import com.androidharness.app.ui.github.GitHubWorkspaceDialog
 import com.androidharness.app.ui.terminal.TerminalScreen
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.IconButton
 
 @Composable
 fun ChatWorkspaceScreen(

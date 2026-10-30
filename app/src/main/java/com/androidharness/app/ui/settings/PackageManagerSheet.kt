@@ -24,12 +24,10 @@ import androidx.compose.material.icons.outlined.Storage
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.Search
-import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -60,6 +58,8 @@ import com.androidharness.app.ui.common.packageProgress
 import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.IconButton
 
 private val POPULAR_PACKAGES = listOf(
     "ripgrep" to "Ultra-fast line-oriented regex search (rg)",

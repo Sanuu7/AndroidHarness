@@ -13,6 +13,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.R
 import com.androidharness.app.ui.chat.*
+import com.androidharness.app.ui.common.IconButton
 
 @Composable
 internal fun ChatAttachmentReadiness(state: ChatUiState, onRemoveImage: (Int) -> Unit,

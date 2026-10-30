@@ -27,6 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.QuestionRequest
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.RadioButton
+import com.androidharness.app.ui.common.TextButton
 
 /** A pending question stays in the conversation; selecting an option never submits it. */
 @Composable

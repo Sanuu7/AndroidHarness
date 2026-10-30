@@ -9,7 +9,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Bookmark
 import androidx.compose.material.icons.outlined.BookmarkBorder
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconToggleButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -31,6 +30,7 @@ import com.androidharness.app.R
 import com.androidharness.app.ui.theme.expressiveEffectsSpec
 import com.androidharness.app.ui.theme.expressiveSpatialSpec
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.IconToggleButton
 
 /**
  * Bookmark control in an answer's action row. Saving pops the glyph in with a bouncy spring, fades

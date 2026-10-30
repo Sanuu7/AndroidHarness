@@ -30,6 +30,9 @@ import com.androidharness.app.ui.common.SecureScreenEffect
 import com.androidharness.app.ui.settings.SettingsPanel
 import kotlinx.coroutines.*
 import java.security.SecureRandom
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun SyncSettingsSection(c: AppContainer) {

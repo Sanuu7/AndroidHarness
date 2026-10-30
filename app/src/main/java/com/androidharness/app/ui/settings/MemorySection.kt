@@ -31,6 +31,9 @@ import com.androidharness.app.data.MemoryScope
 import com.androidharness.app.data.db.MemoryEntity
 import com.androidharness.app.data.db.ProjectEntity
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun MemoryOptionsSection(

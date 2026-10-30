@@ -38,12 +38,10 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.PlayArrow
 import androidx.compose.material.icons.outlined.RadioButtonUnchecked
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -67,6 +65,8 @@ import com.androidharness.app.ui.chat.SlashCommands
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.theme.fastSpatialSpec
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Slim live-activity strip above the composer: one small gently-pulsing accent

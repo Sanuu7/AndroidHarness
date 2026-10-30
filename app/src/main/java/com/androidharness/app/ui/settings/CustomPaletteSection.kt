@@ -38,6 +38,9 @@ import com.androidharness.app.data.parseThemeHex
 import com.androidharness.app.data.themeHex
 import com.androidharness.app.ui.theme.colorScheme
 import java.util.UUID
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun CustomPaletteSection(

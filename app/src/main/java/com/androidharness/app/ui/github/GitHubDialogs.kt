@@ -33,6 +33,10 @@ import com.androidharness.app.ui.theme.LocalHarnessGlass
 import com.androidharness.app.ui.theme.LocalHarnessGlassBackdrop
 import com.androidharness.app.ui.theme.harnessGlassOverlay
 import com.kyant.backdrop.backdrops.rememberLayerBackdrop
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun GitHubDialog(title: String, busy: Boolean, onDismiss: () -> Unit,

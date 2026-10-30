@@ -12,7 +12,6 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -28,6 +27,7 @@ import com.androidharness.app.R
 import com.androidharness.app.data.ProgressBarStyle
 import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import com.androidharness.app.ui.theme.LocalProgressBarStyle
+import com.androidharness.app.ui.common.RadioButton
 
 @Composable
 internal fun ProgressBarStyleSection(selectedStyle: ProgressBarStyle, onSelect: (ProgressBarStyle) -> Unit) {

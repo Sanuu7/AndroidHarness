@@ -21,6 +21,10 @@ import com.androidharness.app.ui.github.*
 import com.androidharness.app.ui.common.SecureScreenEffect
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun GitHubIntegrationSection(container: AppContainer) {

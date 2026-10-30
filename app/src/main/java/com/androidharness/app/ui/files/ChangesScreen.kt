@@ -30,7 +30,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.AlertDialog
 import kotlinx.coroutines.launch
@@ -60,6 +59,7 @@ import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.workspace.normalizeRelPath
 import java.util.zip.GZIPInputStream
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * GitHub-style "Files changed" review for one chat session: every file the

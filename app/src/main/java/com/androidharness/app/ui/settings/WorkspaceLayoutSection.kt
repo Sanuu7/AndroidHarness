@@ -13,6 +13,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.R
 import com.androidharness.app.data.WorkspaceLayoutMode
+import com.androidharness.app.ui.common.RadioButton
 
 @Composable
 internal fun WorkspaceLayoutSection(selected: WorkspaceLayoutMode, onSelect: (WorkspaceLayoutMode) -> Unit) {

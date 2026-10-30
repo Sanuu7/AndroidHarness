@@ -35,7 +35,6 @@ import androidx.compose.material.icons.outlined.History
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material.icons.outlined.Language
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.ripple
 import androidx.compose.ui.draw.clip
 import com.androidharness.app.ui.common.expressivePressFeedback
@@ -63,6 +62,7 @@ import com.androidharness.app.ui.chat.MarkdownText
 import com.androidharness.app.ui.common.DotLoading
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.ui.common.IconButton
 
 /**
  * User messages are neutral gray bubbles (not the old accent-filled ones) so the

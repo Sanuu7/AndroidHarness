@@ -11,6 +11,7 @@ import com.androidharness.app.R
 import com.androidharness.app.local.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun LocalGpuInformation(manager: LocalModelManager) {

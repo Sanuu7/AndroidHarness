@@ -41,6 +41,8 @@ import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ConceptAttachmentChip(attachment: com.androidharness.app.artifacts.ArtifactAttachment, onRemove: () -> Unit) {

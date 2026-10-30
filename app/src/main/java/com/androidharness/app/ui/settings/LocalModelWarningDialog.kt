@@ -12,6 +12,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.R
 import com.androidharness.app.local.LocalModelManager
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun LocalModelWarningDialog(manager: LocalModelManager) {

@@ -31,7 +31,6 @@ import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -57,6 +56,8 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.AppContainer
 import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.theme.HarnessMono
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Full-screen interactive terminal. The shell process lives in TerminalManager
@@ -128,7 +129,7 @@ fun TerminalScreen(
             }
             Text(uiContext.getString(R.string.ui_auto_root_shizuku_normal_both_shizuku_for), style = androidx.compose.material3.MaterialTheme.typography.bodySmall)
         } },
-        confirmButton = { androidx.compose.material3.TextButton(onClick = { showAccess = false }) { Text(uiContext.getString(R.string.settings_action_done)) } },
+        confirmButton = { TextButton(onClick = { showAccess = false }) { Text(uiContext.getString(R.string.settings_action_done)) } },
     )
 
     Scaffold(

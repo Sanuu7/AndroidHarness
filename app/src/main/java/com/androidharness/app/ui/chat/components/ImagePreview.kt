@@ -18,7 +18,6 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Image
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -47,6 +46,7 @@ import com.androidharness.app.core.ImageRef
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.io.File
+import com.androidharness.app.ui.common.IconButton
 
 /** Decodes a stored attachment at a bounded size; never loads the full photo for a chip. */
 internal fun loadSampledImage(file: File, maxEdge: Int): ImageBitmap? {

@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.SwapHoriz
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
@@ -40,6 +39,7 @@ import com.androidharness.app.data.ModelShortcuts
 import com.androidharness.app.data.ModelVisibility
 import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.ui.theme.HarnessGlassAlertDialog
+import com.androidharness.app.ui.common.TextButton
 
 /**
  * Models offered for a one-off retry: the user's favourites, then the ones they picked

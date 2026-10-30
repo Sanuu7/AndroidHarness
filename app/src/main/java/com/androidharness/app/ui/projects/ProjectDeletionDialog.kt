@@ -13,6 +13,7 @@ import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.workspace.ProjectDeletionPreview
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun ProjectDeletionDialog(

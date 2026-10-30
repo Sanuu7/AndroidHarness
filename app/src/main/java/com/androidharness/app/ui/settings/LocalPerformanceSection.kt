@@ -27,6 +27,9 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.withContext
 import java.util.Locale
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.FilledTonalIconButton
+import com.androidharness.app.ui.common.TextButton
 
 internal class PerformanceDashboardState {
     var hardware: HardwareSnapshot? = null

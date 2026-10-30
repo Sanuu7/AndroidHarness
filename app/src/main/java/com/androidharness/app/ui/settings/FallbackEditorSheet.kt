@@ -26,6 +26,9 @@ import com.androidharness.app.R
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 @Composable
 internal fun FallbackSettingsSection(container: AppContainer, policy: FallbackPolicy) {

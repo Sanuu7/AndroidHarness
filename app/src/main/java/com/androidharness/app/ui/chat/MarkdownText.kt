@@ -39,11 +39,9 @@ import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material.icons.outlined.OpenInFull
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
@@ -97,6 +95,8 @@ import com.androidharness.app.ui.files.CodeTokenizer
 import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.androidharness.app.ui.common.IconButton
+import com.androidharness.app.ui.common.TextButton
 
 /** False when this chat is set to "No image"; stray image blocks become links. */
 internal val LocalChatImagesEnabled = compositionLocalOf { true }

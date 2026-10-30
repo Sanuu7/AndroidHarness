@@ -11,6 +11,8 @@ import com.androidharness.app.R
 import com.androidharness.app.data.env.DhizukuManager
 import com.androidharness.app.data.env.DhizukuStatus
 import kotlinx.coroutines.delay
+import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.OutlinedButton
 
 @Composable
 internal fun DhizukuCard(manager: DhizukuManager) {
