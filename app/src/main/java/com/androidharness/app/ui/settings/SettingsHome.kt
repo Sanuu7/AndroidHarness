@@ -31,6 +31,7 @@ import com.androidharness.app.R
 import com.androidharness.app.ui.common.ProviderGlyph
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.common.IconButton
+import androidx.compose.material.icons.outlined.Vibration
 
 @Composable
 internal fun SettingsHome(
@@ -230,6 +231,7 @@ internal fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
     SettingsPage.SKILLS -> Icons.Outlined.AutoStories
     SettingsPage.APPEARANCE -> Icons.Outlined.Palette
     SettingsPage.PRIVACY -> Icons.Outlined.Shield
+    SettingsPage.RUMBLE -> Icons.Outlined.Vibration
     SettingsPage.GITHUB -> Icons.Outlined.Code
     SettingsPage.SEARCH -> Icons.Outlined.TravelExplore
     SettingsPage.MCP -> Icons.Outlined.Extension

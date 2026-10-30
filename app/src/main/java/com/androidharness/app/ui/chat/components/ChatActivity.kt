@@ -48,7 +48,7 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.ui.common.IconButton
-import com.androidharness.app.ui.common.RumbleCue
+import com.androidharness.app.data.RumbleCue
 import com.androidharness.app.ui.common.TextButton
 
 /** One chronological disclosure for a Chat turn; the final answer stays outside. */

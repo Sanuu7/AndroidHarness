@@ -23,6 +23,7 @@ import com.androidharness.app.data.audio.TtsError
 import com.androidharness.app.data.audio.TtsPhase
 import com.androidharness.app.ui.common.TtsTermsDialog
 import com.androidharness.app.ui.common.rememberRumble
+import com.androidharness.app.data.RumbleCue
 import com.androidharness.app.ui.common.rumbleStyle
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.FastOutSlowInEasing
@@ -1579,7 +1580,13 @@ private fun ChatScreenContent(
                 // the final answer. Blocks queue so they never cut each other off.
                 val appSettings by viewModel.container.settings.settings
                     .collectAsStateWithLifecycle(initialValue = AppSettings())
-                val rumble = rememberRumble(appSettings.rumbleStyle)
+                val rumblePlayer = rememberRumble(appSettings.rumbleStyle)
+                val rumbleInScope by androidx.compose.runtime.rememberUpdatedState(
+                    if (state.conversation.isChat) appSettings.rumbleInChat else appSettings.rumbleInCode)
+                val rumble = remember(rumblePlayer) { { cue: RumbleCue -> if (rumbleInScope) rumblePlayer(cue) } }
+                RumbleDirector(busy = state.busy, failed = state.error != null,
+                    waitingPrompt = state.pendingApproval ?: state.pendingQuestion,
+                    runningCalls = state.runningCalls, codeTools = !state.conversation.isChat, play = rumble)
                 var autoSpokenIds by remember { mutableStateOf<Set<String>>(emptySet()) }
                 LaunchedEffect(appSettings.ttsAlwaysSpeak, state.sessionId) {
                     autoSpokenIds = if (appSettings.ttsAlwaysSpeak) {

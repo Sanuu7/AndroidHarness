@@ -22,9 +22,6 @@ enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 @kotlinx.serialization.Serializable
 enum class ProgressBarStyle { FLAT, SQUIGGLY }
 
-const val RUMBLE_DEFAULT_STRENGTH = 60
-const val RUMBLE_DEFAULT_SMOOTHNESS = 60
-
 @kotlinx.serialization.Serializable
 data class AppSettings(
     val permissionMode: PermissionMode = PermissionMode.CONFIRM_RISKY,
@@ -136,6 +133,15 @@ data class AppSettings(
     val rumbleStrength: Int = RUMBLE_DEFAULT_STRENGTH,
     /** 0 is a crisp tick, 100 is a long soft swell. */
     val rumbleSmoothness: Int = RUMBLE_DEFAULT_SMOOTHNESS,
+    val rumbleEngine: RumbleEngine = RumbleEngine.AUTO,
+    /** Chat turns pulse by default; Code runs many tools, so it is opt-in. */
+    val rumbleInChat: Boolean = true,
+    val rumbleInCode: Boolean = false,
+    /** Pulses closer together than this are dropped so bursts stay calm. */
+    val rumbleSpacingMs: Int = RUMBLE_DEFAULT_SPACING_MS,
+    val rumbleSkipOnBatterySaver: Boolean = true,
+    /** Per-cue overrides keyed by [RumbleCue] name. */
+    val rumbleCues: Map<String, RumbleCueConfig> = emptyMap(),
     /** Default image appetite for chats that have not overridden it. */
     val chatImageFrequency: ImageFrequency = ImageFrequency.DEFAULT,
     val chatInstructions: String = "",
@@ -279,6 +285,12 @@ class SettingsRepository(private val context: Context) {
         val RUMBLE_ENABLED = booleanPreferencesKey("rumble_enabled")
         val RUMBLE_STRENGTH = intPreferencesKey("rumble_strength")
         val RUMBLE_SMOOTHNESS = intPreferencesKey("rumble_smoothness")
+        val RUMBLE_ENGINE = stringPreferencesKey("rumble_engine")
+        val RUMBLE_IN_CHAT = booleanPreferencesKey("rumble_in_chat")
+        val RUMBLE_IN_CODE = booleanPreferencesKey("rumble_in_code")
+        val RUMBLE_SPACING = intPreferencesKey("rumble_spacing_ms")
+        val RUMBLE_BATTERY_SAVER = booleanPreferencesKey("rumble_skip_on_battery_saver")
+        val RUMBLE_CUES = stringPreferencesKey("rumble_cues")
         val CHAT_IMAGE_FREQUENCY = stringPreferencesKey("chat_image_frequency")
         val CHAT_INSTRUCTIONS = stringPreferencesKey("chat_instructions")
         val CHAT_AGENTS = stringPreferencesKey("chat_agents")
@@ -392,6 +404,12 @@ class SettingsRepository(private val context: Context) {
             rumbleEnabled = prefs[Keys.RUMBLE_ENABLED] ?: true,
             rumbleStrength = (prefs[Keys.RUMBLE_STRENGTH] ?: RUMBLE_DEFAULT_STRENGTH).coerceIn(0, 100),
             rumbleSmoothness = (prefs[Keys.RUMBLE_SMOOTHNESS] ?: RUMBLE_DEFAULT_SMOOTHNESS).coerceIn(0, 100),
+            rumbleEngine = prefs[Keys.RUMBLE_ENGINE]?.let { runCatching { RumbleEngine.valueOf(it) }.getOrNull() } ?: RumbleEngine.AUTO,
+            rumbleInChat = prefs[Keys.RUMBLE_IN_CHAT] ?: true,
+            rumbleInCode = prefs[Keys.RUMBLE_IN_CODE] ?: false,
+            rumbleSpacingMs = (prefs[Keys.RUMBLE_SPACING] ?: RUMBLE_DEFAULT_SPACING_MS).coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS),
+            rumbleSkipOnBatterySaver = prefs[Keys.RUMBLE_BATTERY_SAVER] ?: true,
+            rumbleCues = decodeRumbleCues(prefs[Keys.RUMBLE_CUES]),
             chatInstructions = prefs[Keys.CHAT_INSTRUCTIONS].orEmpty(),
             chatAgents = ChatAgentProfile.decodeList(prefs[Keys.CHAT_AGENTS]),
             chatImageFrequency = prefs[Keys.CHAT_IMAGE_FREQUENCY]?.let {
@@ -468,6 +486,12 @@ class SettingsRepository(private val context: Context) {
             p[Keys.RUMBLE_ENABLED] = s.rumbleEnabled
             p[Keys.RUMBLE_STRENGTH] = s.rumbleStrength.coerceIn(0, 100)
             p[Keys.RUMBLE_SMOOTHNESS] = s.rumbleSmoothness.coerceIn(0, 100)
+            p[Keys.RUMBLE_ENGINE] = s.rumbleEngine.name
+            p[Keys.RUMBLE_IN_CHAT] = s.rumbleInChat
+            p[Keys.RUMBLE_IN_CODE] = s.rumbleInCode
+            p[Keys.RUMBLE_SPACING] = s.rumbleSpacingMs.coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS)
+            p[Keys.RUMBLE_BATTERY_SAVER] = s.rumbleSkipOnBatterySaver
+            p[Keys.RUMBLE_CUES] = encodeRumbleCues(s.rumbleCues)
             p[Keys.CHAT_IMAGE_FREQUENCY] = s.chatImageFrequency.name
             p[Keys.CHAT_INSTRUCTIONS] = s.chatInstructions.take(ConversationConfig.MAX_INSTRUCTIONS_CHARS)
             p[Keys.CHAT_AGENTS] = ChatAgentProfile.encodeList(s.chatAgents)
@@ -940,6 +964,44 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setRumbleSmoothness(value: Int) {
         context.settingsStore.edit { it[Keys.RUMBLE_SMOOTHNESS] = value.coerceIn(0, 100) }
+    }
+
+    suspend fun setRumbleEngine(value: RumbleEngine) {
+        context.settingsStore.edit { it[Keys.RUMBLE_ENGINE] = value.name }
+    }
+
+    suspend fun setRumbleInChat(value: Boolean) {
+        context.settingsStore.edit { it[Keys.RUMBLE_IN_CHAT] = value }
+    }
+
+    suspend fun setRumbleInCode(value: Boolean) {
+        context.settingsStore.edit { it[Keys.RUMBLE_IN_CODE] = value }
+    }
+
+    suspend fun setRumbleSpacing(value: Int) {
+        context.settingsStore.edit { it[Keys.RUMBLE_SPACING] = value.coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS) }
+    }
+
+    suspend fun setRumbleSkipOnBatterySaver(value: Boolean) {
+        context.settingsStore.edit { it[Keys.RUMBLE_BATTERY_SAVER] = value }
+    }
+
+    /** Saving a cue that matches its default drops the override. */
+    suspend fun setRumbleCue(cue: RumbleCue, config: RumbleCueConfig) {
+        context.settingsStore.edit { prefs ->
+            val saved = decodeRumbleCues(prefs[Keys.RUMBLE_CUES]).toMutableMap()
+            if (config == RumbleCueConfig(cue.defaultPattern, cue.defaultLevel)) saved.remove(cue.name) else saved[cue.name] = config
+            prefs[Keys.RUMBLE_CUES] = encodeRumbleCues(saved)
+        }
+    }
+
+    suspend fun resetRumble() {
+        context.settingsStore.edit { prefs ->
+            listOf(Keys.RUMBLE_ENABLED, Keys.RUMBLE_STRENGTH, Keys.RUMBLE_SMOOTHNESS, Keys.RUMBLE_IN_CHAT, Keys.RUMBLE_IN_CODE,
+                Keys.RUMBLE_SPACING, Keys.RUMBLE_BATTERY_SAVER).forEach { prefs.remove(it) }
+            prefs.remove(Keys.RUMBLE_ENGINE)
+            prefs.remove(Keys.RUMBLE_CUES)
+        }
     }
 
     suspend fun setChatImageFrequency(value: ImageFrequency) {

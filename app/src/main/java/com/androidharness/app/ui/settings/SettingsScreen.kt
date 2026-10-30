@@ -293,9 +293,6 @@ fun SettingsScreen(
                             onChatStart = { value -> scope.launch { container.settings.setChatStart(value) } },
                             onKeepThinkingCollapsed = { value -> scope.launch { container.settings.setChatKeepThinkingCollapsed(value) } },
                             onImageFrequency = { value -> scope.launch { container.settings.setChatImageFrequency(value) } },
-                            onRumbleEnabled = { value -> scope.launch { container.settings.setRumbleEnabled(value) } },
-                            onRumbleStrength = { value -> scope.launch { container.settings.setRumbleStrength(value) } },
-                            onRumbleSmoothness = { value -> scope.launch { container.settings.setRumbleSmoothness(value) } },
                             onInstructions = { container.settings.setChatInstructions(it) },
                             agentCount = settings.chatAgents.size,
                             onManageAgents = { showChatAgents = true },
@@ -357,6 +354,7 @@ fun SettingsScreen(
                         SettingsPage.CAVEMAN -> CavemanSection(container, settings)
                         SettingsPage.VOICE -> VoiceSpeechSection(container, settings, scope)
                         SettingsPage.APPEARANCE -> AppearanceSection(container, settings, scope)
+                        SettingsPage.RUMBLE -> RumbleSection(settings, container.settings)
                         SettingsPage.PRIVACY -> PrivacySection(container, settings, scope)
                         SettingsPage.GITHUB -> GitHubIntegrationSection(container)
                         SettingsPage.SEARCH -> WebSearchSection(container)

@@ -72,7 +72,7 @@ class SettingsNavigationTest {
         val displayGroups = settingsDisplayGroups(matchingSettingsEntries("", settingsTestStrings()), "")
         assertEquals(listOf(R.string.settings_group_special_providers, R.string.settings_group_personalize), displayGroups.keys.take(2))
         assertEquals(listOf(SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.CHAT_OPTIONS,
-            SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.PRIVACY), displayGroups.getValue(R.string.settings_group_personalize).map { it.page })
+            SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.RUMBLE, SettingsPage.PRIVACY), displayGroups.getValue(R.string.settings_group_personalize).map { it.page })
         val groups = displayGroups.values.toList()
         assertEquals(listOf(SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER), groups.first().map { it.page })
         assertTrue(groups.drop(1).any { group -> group.any { it.page == SettingsPage.GITHUB } })

@@ -1,12 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="settings_page_rumble_title">AH Rumble</string>
+    <string name="settings_page_rumble_desc">Haptic pulses as chats think, call tools and finish</string>
     <string name="rumble_title">AH Rumble</string>
-    <string name="rumble_desc">Feel a pulse whenever a Chat moves to a new step, like thinking, a tool call or writing the reply.</string>
+    <string name="rumble_desc">Feel a pulse when a conversation moves to a new step, like thinking, a tool call, writing the reply or finishing.</string>
+    <string name="rumble_where_title">Where it rumbles</string>
+    <string name="rumble_in_chat">Chat</string>
+    <string name="rumble_in_chat_desc">Pulse during Chat turns.</string>
+    <string name="rumble_in_code">Code</string>
+    <string name="rumble_in_code_desc">Pulse as Code runs tools. Off by default because Code can run many tools.</string>
     <string name="rumble_strength">Strength</string>
     <string name="rumble_feel">Feel</string>
     <string name="rumble_feel_crisp">Crisp</string>
     <string name="rumble_feel_smooth">Smooth</string>
     <string name="rumble_try">Feel it</string>
-    <string name="rumble_hint">Follows your phone\'s touch vibration setting. Only affects Chat.</string>
+    <string name="rumble_hint">Follows your phone\'s touch vibration setting.</string>
+    <string name="rumble_engine_title">Haptic engine</string>
+    <string name="rumble_engine_status_system">This phone supports Android\'s built-in haptic effects.</string>
+    <string name="rumble_engine_status_custom">This phone doesn\'t support built-in haptic effects, so the custom waveform is used.</string>
+    <string name="rumble_engine_auto">Automatic</string>
+    <string name="rumble_engine_auto_desc">Use built-in effects when the phone supports them, otherwise the custom waveform.</string>
+    <string name="rumble_engine_system">Built-in effects</string>
+    <string name="rumble_engine_system_desc">Android\'s own tuned haptics (Android 11 or later). Falls back to custom if unsupported.</string>
+    <string name="rumble_engine_custom">Custom waveform</string>
+    <string name="rumble_engine_custom_desc">Our own pulse, shaped by Strength and Feel, on any phone with a vibration motor.</string>
+    <string name="rumble_events_title">Events</string>
+    <string name="rumble_events_desc">Choose the pattern and level for each moment.</string>
+    <string name="rumble_cue_think">Thinking</string>
+    <string name="rumble_cue_think_desc">The model goes back to thinking.</string>
+    <string name="rumble_cue_tool_start">Tool starts</string>
+    <string name="rumble_cue_tool_start_desc">A tool call begins, like a search or an image read.</string>
+    <string name="rumble_cue_tool_done">Tool finished</string>
+    <string name="rumble_cue_tool_done_desc">A tool call returns.</string>
+    <string name="rumble_cue_tool_failed">Tool failed</string>
+    <string name="rumble_cue_tool_failed_desc">A tool call ends in an error.</string>
+    <string name="rumble_cue_write">Writing reply</string>
+    <string name="rumble_cue_write_desc">The answer starts to stream.</string>
+    <string name="rumble_cue_answer_done">Answer finished</string>
+    <string name="rumble_cue_answer_done_desc">The turn is complete.</string>
+    <string name="rumble_cue_approval">Needs you</string>
+    <string name="rumble_cue_approval_desc">An approval or a question is waiting.</string>
+    <string name="rumble_pattern_off">Off</string>
+    <string name="rumble_pattern_soft_tick">Soft tick</string>
+    <string name="rumble_pattern_tick">Tick</string>
+    <string name="rumble_pattern_click">Click</string>
+    <string name="rumble_pattern_double_click">Double click</string>
+    <string name="rumble_pattern_triple_tick">Triple tick</string>
+    <string name="rumble_pattern_thud">Thud</string>
+    <string name="rumble_pattern_swell">Swell</string>
+    <string name="rumble_pattern_rise">Rise</string>
+    <string name="rumble_level">Level</string>
+    <string name="rumble_play_cue">Feel %1$s</string>
+    <string name="rumble_fine_tuning_title">Fine tuning</string>
+    <string name="rumble_spacing">Minimum spacing</string>
+    <string name="rumble_spacing_ms" translatable="false">%1$d ms</string>
+    <string name="rumble_spacing_hint">Pulses closer together than this are skipped, so bursts of tool calls stay calm.</string>
+    <string name="rumble_battery_saver">Pause in battery saver</string>
+    <string name="rumble_battery_saver_desc">Skip pulses while battery saver is on.</string>
+    <string name="rumble_reset">Reset AH Rumble</string>
     <string name="rumble_percent" translatable="false">%1$d%%</string>
 </resources>
