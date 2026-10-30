@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">Android %1$s හෝ නව අනුවාදයක් අවශ්‍යයි</string>
+    <string name="settings_requires_vibrator">මෙම උපාංගයේ කම්පන මෝටරයක් නැත</string>
+    <string name="rumble_unsupported">මෙම උපාංගයේ කම්පන මෝටරයක් නොමැති නිසා AH Rumble මෙහි ක්‍රියා නොකරයි.</string>
+</resources>

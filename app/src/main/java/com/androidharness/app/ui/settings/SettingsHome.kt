@@ -107,6 +107,7 @@ internal fun SettingsHome(
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                     Text(stringResource(entry.title), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
                                     Text(stringResource(entry.description), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                                    SettingsAvailabilityTag(rememberSettingsAvailability(entry), Modifier.padding(top = 2.dp))
                                 }
                                 Icon(
                                     Icons.AutoMirrored.Filled.KeyboardArrowRight,

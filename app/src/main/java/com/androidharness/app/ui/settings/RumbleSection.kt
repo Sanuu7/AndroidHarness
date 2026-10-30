@@ -17,6 +17,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.contentDescription
@@ -27,6 +28,7 @@ import com.androidharness.app.data.AppSettings
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.RumbleCue
 import com.androidharness.app.ui.common.RumbleStyle
+import com.androidharness.app.ui.common.deviceHasVibrator
 import com.androidharness.app.ui.common.rememberRumblePreview
 import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import kotlinx.coroutines.delay
@@ -42,6 +44,8 @@ internal fun RumbleSection(
     onSmoothness: (Int) -> Unit,
 ) {
     val preview = rememberRumblePreview()
+    val context = LocalContext.current
+    val hasMotor = remember(context) { deviceHasVibrator(context) }
     val scope = rememberCoroutineScope()
     var strength by remember(settings.rumbleStrength) { mutableFloatStateOf(settings.rumbleStrength.toFloat()) }
     var smoothness by remember(settings.rumbleSmoothness) { mutableFloatStateOf(settings.rumbleSmoothness.toFloat()) }
@@ -57,7 +61,9 @@ internal fun RumbleSection(
                 }
                 Switch(checked = settings.rumbleEnabled, onCheckedChange = null)
             }
-            if (settings.rumbleEnabled) {
+            if (!hasMotor) Text(stringResource(R.string.rumble_unsupported), style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.error)
+            if (settings.rumbleEnabled && hasMotor) {
                 val strengthLabel = stringResource(R.string.rumble_strength)
                 Column {
                     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {

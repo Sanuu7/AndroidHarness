@@ -242,6 +242,10 @@ internal data class SettingsSearchEntry(
      * control itself renders, so the pair can never drift apart.
      */
     @StringRes val anchor: Int? = null,
+    /** API level the control needs; below it the result stays findable but is labelled as unavailable. */
+    val minSdk: Int = 0,
+    /** The control only does something on a phone with a vibration motor. */
+    val needsVibrator: Boolean = false,
 )
 
 internal val settingsHomePages = listOf(
@@ -277,7 +281,14 @@ private val searchableSettingsEntries = SettingsPage.entries.map { page ->
 
 private val subSettingsEntries = listOfNotNull(
     SettingsSearchEntry(R.string.glass_title, R.string.glass_description, SettingsPage.APPEARANCE,
-        "aharness harness glass frosted liquid blur refraction experimental appearance transparent translucent", anchor = R.string.glass_title),
+        "aharness harness glass frosted liquid blur refraction experimental appearance transparent translucent", anchor = R.string.glass_title,
+        minSdk = android.os.Build.VERSION_CODES.S),
+    SettingsSearchEntry(R.string.glass_liquid, R.string.glass_liquid_hint, SettingsPage.APPEARANCE,
+        "liquid glass refraction lens blur aharness harness experimental android 13", anchor = R.string.glass_title,
+        minSdk = android.os.Build.VERSION_CODES.TIRAMISU),
+    SettingsSearchEntry(R.string.rumble_title, R.string.rumble_desc, SettingsPage.CHAT_OPTIONS,
+        "ah rumble haptics haptic vibration vibrate buzz feedback tool calls thinking strength smooth crisp motor",
+        anchor = R.string.rumble_title, needsVibrator = true),
     SettingsSearchEntry(R.string.chat_agents_title, R.string.chat_agents_description, SettingsPage.CHAT_OPTIONS,
         "personal agents persona assistant knowledge skills tools model tutor researcher", anchor = R.string.chat_agents_title),
     SettingsSearchEntry(R.string.background_run_title, R.string.background_run_description, SettingsPage.BACKGROUND, "background running leave minimize", anchor = R.string.background_run_title),
@@ -303,13 +314,14 @@ private val subSettingsEntries = listOfNotNull(
         "chat start new last resume continue fresh blank conversation launch startup",
         anchor = R.string.settings_chat_start,
     ),
-    if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.BAKLAVA) SettingsSearchEntry(
+    SettingsSearchEntry(
         R.string.settings_search_live_updates_title,
         R.string.settings_search_live_updates_desc,
         SettingsPage.BACKGROUND,
         "live activity updates now bar samsung one ui pixel hyperos coloros oxygenos originos magicos status bar lock screen notification foreground",
         anchor = R.string.settings_agent_live_updates,
-    ) else null,
+        minSdk = android.os.Build.VERSION_CODES.BAKLAVA,
+    ),
     SettingsSearchEntry(
         R.string.settings_language_contribute_title,
         R.string.settings_language_contribute_description,
@@ -506,6 +518,7 @@ private val subSettingsEntries = listOfNotNull(
         SettingsPage.APPEARANCE,
         "material you wallpaper colors",
         anchor = R.string.settings_anchor_dynamic_color,
+        minSdk = android.os.Build.VERSION_CODES.S,
     ),
     SettingsSearchEntry(
         R.string.settings_search_app_lock_title,

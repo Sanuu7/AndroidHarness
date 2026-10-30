@@ -61,13 +61,18 @@ private const val GAP_MS = 70L
 private const val MIN_AMPLITUDE = 14
 private const val MIN_SPACING_MS = 90L
 
+private fun systemVibrator(context: Context): Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
+    context.getSystemService(VibratorManager::class.java)?.defaultVibrator
+} else {
+    @Suppress("DEPRECATION") context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
+}
+
+/** Tablets, emulators and some TVs have no motor at all; AH Rumble says so instead of silently doing nothing. */
+internal fun deviceHasVibrator(context: Context): Boolean = systemVibrator(context)?.hasVibrator() == true
+
 /** Plays [RumbleCue]s on the phone's vibrator, following the system's touch-feedback setting. */
 internal class Rumble(context: Context) {
-    private val vibrator: Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
-        context.getSystemService(VibratorManager::class.java)?.defaultVibrator
-    } else {
-        @Suppress("DEPRECATION") context.getSystemService(Context.VIBRATOR_SERVICE) as? Vibrator
-    }
+    private val vibrator: Vibrator? = systemVibrator(context)
     private var lastPlayed = 0L
 
     @Suppress("DEPRECATION")

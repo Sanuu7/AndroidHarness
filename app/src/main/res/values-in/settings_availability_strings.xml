@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">Memerlukan Android %1$s atau lebih baru</string>
+    <string name="settings_requires_vibrator">Perangkat ini tidak memiliki motor getar</string>
+    <string name="rumble_unsupported">Perangkat ini tidak memiliki motor getar, jadi AH Rumble tidak dapat berjalan di sini.</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">يتطلب Android %1$s أو أحدث</string>
+    <string name="settings_requires_vibrator">لا يوجد محرك اهتزاز في هذا الجهاز</string>
+    <string name="rumble_unsupported">لا يحتوي هذا الجهاز على محرك اهتزاز، لذا لا يمكن تشغيل AH Rumble هنا.</string>
+</resources>

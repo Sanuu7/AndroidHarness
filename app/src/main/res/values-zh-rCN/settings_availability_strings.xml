@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">需要 Android %1$s 或更高版本</string>
+    <string name="settings_requires_vibrator">此设备没有振动马达</string>
+    <string name="rumble_unsupported">此设备没有振动马达，因此无法使用 AH Rumble。</string>
+</resources>

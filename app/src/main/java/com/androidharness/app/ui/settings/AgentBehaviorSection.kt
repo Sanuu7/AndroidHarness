@@ -278,7 +278,18 @@ private fun BehaviorDivider() {
 @Composable
 internal fun LiveUpdatesSetting(settings: AppSettings, onLiveUpdates: (Boolean) -> Unit) {
     val context = LocalContext.current
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA) {
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.BAKLAVA) {
+        // Keep the control findable so search results never land on an empty spot.
+        BehaviorGroup(stringResource(R.string.settings_agent_group_live_updates), Icons.Outlined.Notifications) {
+            SettingsAnchor(R.string.settings_agent_live_updates) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(stringResource(R.string.settings_agent_live_updates), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.settings_live_state_unsupported), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    } else {
         BehaviorGroup(stringResource(R.string.settings_agent_group_live_updates), Icons.Outlined.Notifications) {
             SettingsAnchor(R.string.settings_agent_live_updates) {
                 val vendor = remember { liveUpdateVendor }

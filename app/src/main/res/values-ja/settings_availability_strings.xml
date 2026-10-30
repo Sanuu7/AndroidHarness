@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">Android %1$s 以降が必要です</string>
+    <string name="settings_requires_vibrator">この端末には振動モーターがありません</string>
+    <string name="rumble_unsupported">この端末には振動モーターがないため、AH Rumble は使用できません。</string>
+</resources>

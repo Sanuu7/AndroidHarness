@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">Требуется Android %1$s или новее</string>
+    <string name="settings_requires_vibrator">В этом устройстве нет вибромотора</string>
+    <string name="rumble_unsupported">В этом устройстве нет вибромотора, поэтому AH Rumble здесь не работает.</string>
+</resources>

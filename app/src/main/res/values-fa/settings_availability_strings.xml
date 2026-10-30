@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">نیازمند Android %1$s یا جدیدتر</string>
+    <string name="settings_requires_vibrator">این دستگاه موتور لرزش ندارد</string>
+    <string name="rumble_unsupported">این دستگاه موتور لرزش ندارد، بنابراین AH Rumble در اینجا کار نمی‌کند.</string>
+</resources>
