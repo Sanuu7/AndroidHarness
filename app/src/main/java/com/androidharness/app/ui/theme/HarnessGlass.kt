@@ -110,9 +110,11 @@ private fun rememberCaptureScene(backgroundOnly: Boolean = false, demandDriven: 
 }
 
 /** Rasterize native content once. Every lens reuses the texture instead of replaying
- * WebView functors into additional Vulkan targets (which can crash the render thread). */
+ * WebView functors into additional Vulkan targets (which can crash the render thread).
+ * Its own layer keeps parent redraws, such as every frame of the drawer animation, from
+ * re-running this recording and re-rasterizing every WebView and table in the scene. */
 internal fun Modifier.recordHarnessGlassScene(scene: HarnessGlassScene?, fadeTop: Float = 0f, fadeBottom: Float = 0f): Modifier =
-    if (scene == null) this else onGloballyPositioned { scene.coordinates = it }.drawWithCache {
+    if (scene == null) this else graphicsLayer().onGloballyPositioned { scene.coordinates = it }.drawWithCache {
         val height = size.height.coerceAtLeast(1f)
         val start = (fadeTop / height).coerceIn(0f, .45f)
         val end = (1f - fadeBottom / height).coerceIn(.55f, 1f)
