@@ -857,6 +857,11 @@
     <string name="chat_answer_version">"%1$d من %2$d"</string>
     <string name="chat_recovery_explanation">"توقف الرد قبل اكتماله. تابع من الرد المحفوظ أو أعد محاولة السؤال بإجابة جديدة."</string>
     <string name="chat_retry_reply">"إعادة محاولة الإجابة"</string>
+    <string name="chat_retry_with_model">"إعادة المحاولة بنموذج آخر"</string>
+    <string name="chat_retry_same_desc">"التشغيل مرة أخرى بالنموذج الحالي"</string>
+    <string name="chat_retry_model_hint">"النماذج التي أضفتها إلى المفضلة أو اخترتها سابقًا."</string>
+    <string name="chat_retry_no_models">"لا توجد نماذج أخرى بعد. اختر نماذج من محدد النماذج وستظهر هنا."</string>
+    <string name="chat_retry_model_unavailable">"هذا النموذج لم يعد متاحًا. اختر نموذجًا آخر."</string>
     <string name="chat_thinking_estimated_tokens">"نحو %1$d رمز"</string>
     <string name="chat_thinking_tokens_compact">"%1$s رمز"</string>
     <string name="chat_memories_used">"الذاكرة المستخدمة · %1$d"</string>

@@ -883,6 +883,11 @@
     <string name="chat_answer_version">%1$d / %2$d</string>
     <string name="chat_recovery_explanation">回复在完成前中断。可以从已保存的回复继续，或重新回答这个问题。</string>
     <string name="chat_retry_reply">重试回答</string>
+    <string name="chat_retry_with_model">用其他模型重试</string>
+    <string name="chat_retry_same_desc">用当前模型再运行一次</string>
+    <string name="chat_retry_model_hint">你收藏或之前选过的模型。</string>
+    <string name="chat_retry_no_models">还没有其他模型。在模型选择器中选择模型后,它们会显示在这里。</string>
+    <string name="chat_retry_model_unavailable">该模型已不可用,请选择其他模型。</string>
     <string name="chat_thinking_estimated_tokens">约 %1$d 个 token</string>
     <string name="chat_thinking_tokens_compact">%1$s 个 token</string>
     <string name="chat_memories_used">已使用记忆 · %1$d</string>

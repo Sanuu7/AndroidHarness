@@ -864,6 +864,11 @@
     <string name="chat_answer_version">"%1$d von %2$d"</string>
     <string name="chat_recovery_explanation">"Die Antwort wurde vor dem Ende abgebrochen. Setze mit der gespeicherten Antwort fort oder stelle die Frage mit einer neuen Antwort erneut."</string>
     <string name="chat_retry_reply">"Antwort wiederholen"</string>
+    <string name="chat_retry_with_model">"Mit anderem Modell wiederholen"</string>
+    <string name="chat_retry_same_desc">"Mit dem aktuellen Modell erneut ausführen"</string>
+    <string name="chat_retry_model_hint">"Modelle, die du markiert oder zuvor gewählt hast."</string>
+    <string name="chat_retry_no_models">"Noch keine anderen Modelle. Wähle Modelle in der Modellauswahl, dann erscheinen sie hier."</string>
+    <string name="chat_retry_model_unavailable">"Dieses Modell ist nicht mehr verfügbar. Wähle ein anderes."</string>
     <string name="chat_thinking_estimated_tokens">"~%1$d Token"</string>
     <string name="chat_thinking_tokens_compact">"%1$s Token"</string>
     <string name="chat_memories_used">"Erinnerung verwendet · %1$d"</string>

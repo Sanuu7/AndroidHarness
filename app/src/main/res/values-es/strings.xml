@@ -864,6 +864,11 @@
     <string name="chat_answer_version">"%1$d de %2$d"</string>
     <string name="chat_recovery_explanation">"La respuesta se detuvo antes de terminar. Continúa desde la respuesta guardada o vuelve a intentar la pregunta con una respuesta nueva."</string>
     <string name="chat_retry_reply">"Reintentar respuesta"</string>
+    <string name="chat_retry_with_model">"Reintentar con otro modelo"</string>
+    <string name="chat_retry_same_desc">"Ejecutar de nuevo con el modelo actual"</string>
+    <string name="chat_retry_model_hint">"Modelos que marcaste como favoritos o elegiste antes."</string>
+    <string name="chat_retry_no_models">"Aún no hay otros modelos. Elige modelos en el selector de modelos y aparecerán aquí."</string>
+    <string name="chat_retry_model_unavailable">"Ese modelo ya no está disponible. Elige otro."</string>
     <string name="chat_thinking_estimated_tokens">"~%1$d tokens"</string>
     <string name="chat_thinking_tokens_compact">"%1$s tokens"</string>
     <string name="chat_memories_used">"Memoria usada · %1$d"</string>

@@ -864,6 +864,11 @@
     <string name="chat_answer_version">"%1$d از %2$d"</string>
     <string name="chat_recovery_explanation">"پاسخ قبل از اتمام متوقف شد. از پاسخ ذخیره شده ادامه دهید یا سؤال را با یک پاسخ جدید دوباره امتحان کنید."</string>
     <string name="chat_retry_reply">"پاسخ را دوباره امتحان کنید"</string>
+    <string name="chat_retry_with_model">"تلاش دوباره با مدل دیگر"</string>
+    <string name="chat_retry_same_desc">"اجرای دوباره با مدل فعلی"</string>
+    <string name="chat_retry_model_hint">"مدل‌هایی که ستاره‌دار کرده‌اید یا قبلاً انتخاب کرده‌اید."</string>
+    <string name="chat_retry_no_models">"هنوز مدل دیگری وجود ندارد. مدل‌ها را در انتخابگر مدل انتخاب کنید تا اینجا نمایش داده شوند."</string>
+    <string name="chat_retry_model_unavailable">"این مدل دیگر در دسترس نیست. مدل دیگری انتخاب کنید."</string>
     <string name="chat_thinking_estimated_tokens">"~%1$d نشانه ها"</string>
     <string name="chat_thinking_tokens_compact">"نشانه های %1$s"</string>
     <string name="chat_memories_used">"حافظه استفاده شده · %1$d"</string>

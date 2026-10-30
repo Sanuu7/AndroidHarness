@@ -852,6 +852,11 @@
     <string name="chat_answer_version">"%1$d dari %2$d"</string>
     <string name="chat_recovery_explanation">"Respons berhenti sebelum selesai. Lanjutkan dari respons tersimpan, atau coba ulang pertanyaan dengan jawaban baru."</string>
     <string name="chat_retry_reply">"Coba ulang jawaban"</string>
+    <string name="chat_retry_with_model">"Coba ulang dengan model lain"</string>
+    <string name="chat_retry_same_desc">"Jalankan lagi dengan model saat ini"</string>
+    <string name="chat_retry_model_hint">"Model yang Anda favoritkan atau pilih sebelumnya."</string>
+    <string name="chat_retry_no_models">"Belum ada model lain. Pilih model di pemilih model dan model itu akan muncul di sini."</string>
+    <string name="chat_retry_model_unavailable">"Model itu tidak tersedia lagi. Pilih model lain."</string>
     <string name="chat_thinking_estimated_tokens">"~%1$d token"</string>
     <string name="chat_thinking_tokens_compact">"%1$s token"</string>
     <string name="chat_memories_used">"Memori digunakan · %1$d"</string>

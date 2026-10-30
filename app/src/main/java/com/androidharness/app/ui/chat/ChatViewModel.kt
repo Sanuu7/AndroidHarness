@@ -1184,11 +1184,28 @@ class ChatViewModel(
     // Run lifecycle (delegated to the app-scoped RunManager)
     // ------------------------------------------------------------------
 
-    private fun startRun(text: String, workspaceMcpGate: Boolean = true, queuedPromptId: String? = null, replacement: ChatMessage? = null): Boolean {
+    /**
+     * [retryModel] runs this one turn on another model without changing the chat's own
+     * model selection, and disables silent fallback so the answer comes from that model.
+     */
+    private fun startRun(
+        text: String,
+        workspaceMcpGate: Boolean = true,
+        queuedPromptId: String? = null,
+        replacement: ChatMessage? = null,
+        retryModel: com.androidharness.app.data.ModelShortcut? = null,
+    ): Boolean {
         if (selectingAnswerVersion || startingRun || compactionJob?.isActive == true || !_state.value.conversationReady || _state.value.conversationSaving) return false
         if (replacement == null) attachmentBlockReason()?.let { reason -> _state.update { it.copy(error = reason) }; return false }
         val targetSession = sessionId
         val s0 = _state.value
+        val retryChoice = retryModel?.let { pick ->
+            s0.providers.firstOrNull { it.id == pick.providerId }?.let { it to pick.modelId }
+        }
+        if (retryModel != null && retryChoice == null) {
+            _state.update { it.copy(error = c.appContext.getString(R.string.chat_retry_model_unavailable)) }
+            return false
+        }
         if (!s0.modelSelectionReady || s0.modelSelectionBusy) {
             _state.update { it.copy(error = c.appContext.getString(R.string.ui_model_selection_is_being_saved_try_sending)) }
             return false
@@ -1202,11 +1219,11 @@ class ChatViewModel(
             s0.dualPlanning && s0.mode == AgentMode.ACT -> s0.executionProviderId ?: s0.activeProviderId
             else -> s0.activeProviderId
         }
-        if (!s0.sameModelAcrossChats && selectedProviderId != null && s0.providers.none { it.id == selectedProviderId }) {
+        if (retryChoice == null && !s0.sameModelAcrossChats && selectedProviderId != null && s0.providers.none { it.id == selectedProviderId }) {
             _state.update { it.copy(error = c.appContext.getString(R.string.ui_this_chat_s_provider_is_unavailable_choose)) }
             return false
         }
-        if (selectedProviderId != null && com.androidharness.app.local.LocalModelCatalog.isLocal(selectedProviderId) &&
+        if (retryChoice == null && selectedProviderId != null && com.androidharness.app.local.LocalModelCatalog.isLocal(selectedProviderId) &&
             s0.providers.none { it.id == selectedProviderId }) {
             _state.update { it.copy(error = c.appContext.getString(R.string.ui_the_selected_local_model_was_removed_download)) }
             return false
@@ -1214,7 +1231,7 @@ class ChatViewModel(
         // Separate planning/execution models: plan-mode runs use the planning
         // slot, everything else the execution one. A slot without a provider
         // falls back to the active provider, keeping its model override.
-        val provider = when {
+        val provider = retryChoice?.first ?: when {
             s0.dualPlanning && s0.mode == AgentMode.PLAN && s0.planningProviderId != null ->
                 s0.providers.firstOrNull { it.id == s0.planningProviderId } ?: s0.activeProvider
             s0.dualPlanning && s0.mode == AgentMode.ACT && s0.executionProviderId != null ->
@@ -1224,7 +1241,7 @@ class ChatViewModel(
             _state.update { it.copy(error = c.appContext.getString(R.string.ui_no_provider_configured_add_one_from_the)) }
             return false
         }
-        val roleModel = when {
+        val roleModel = retryChoice?.second ?: when {
             s0.dualPlanning && s0.mode == AgentMode.PLAN ->
                 s0.planningModel?.takeIf { it.isNotBlank() }
                     ?: s0.providers.firstOrNull { it.id == s0.planningProviderId }?.model
@@ -1308,7 +1325,7 @@ class ChatViewModel(
                 check(s0.sameModelAcrossChats || resolved.model == effectiveConfig.model) {
                     c.appContext.getString(R.string.ui_this_chat_s_model_is_no_longer)
                 }
-                if (resolved.model != effectiveConfig.model) {
+                if (resolved.model != effectiveConfig.model && retryChoice == null) {
                     when {
                         s0.dualPlanning && s0.mode == AgentMode.PLAN ->
                             c.settings.setPlanningModel(provider.id, resolved.model)
@@ -1338,7 +1355,7 @@ class ChatViewModel(
                     workspaceOverride = runWorkspace,
                     queuedPromptId = queuedPromptId,
                     replacementMessageId = replacement?.id,
-                    allowModelFallback = s0.sameModelAcrossChats,
+                    allowModelFallback = s0.sameModelAcrossChats && retryChoice == null,
                 )
                 if (sessionId == null) {
                     sessionId = sid
@@ -1807,15 +1824,15 @@ class ChatViewModel(
      * message, truncates the conversation there, then resends the edited text
      * as a fresh run. The UI warns before calling this.
      */
-    fun editAndResend(message: ChatMessage, newText: String) {
+    fun editAndResend(message: ChatMessage, newText: String, retryModel: com.androidharness.app.data.ModelShortcut? = null) {
         if (sessionId == null || message.id == null || message.role != Role.USER || newText.isBlank()) return
-        startRun(newText, replacement = message)
+        startRun(newText, replacement = message, retryModel = retryModel)
     }
 
-    fun retryLatestResponse() {
+    fun retryLatestResponse(retryModel: com.androidharness.app.data.ModelShortcut? = null) {
         if (_state.value.busy || !_state.value.conversation.isChat) return
         val question = _state.value.messages.lastOrNull { it.role == Role.USER } ?: return
-        editAndResend(question, question.text)
+        editAndResend(question, question.text, retryModel)
     }
 
     fun selectAnswerVersion(expectedUserId: String, versionId: String) {
@@ -1838,11 +1855,11 @@ class ChatViewModel(
     }
 
     /** Re-runs the question behind [message], replacing its answer in place. */
-    fun regenerate(message: ChatMessage) {
+    fun regenerate(message: ChatMessage, retryModel: com.androidharness.app.data.ModelShortcut? = null) {
         if (_state.value.busy || message.role != Role.ASSISTANT) return
         val question = com.androidharness.app.core.ChatTurnActions
             .userMessageFor(_state.value.messages, message.turnId) ?: return
-        editAndResend(question, question.text)
+        editAndResend(question, question.text, retryModel)
     }
 
     private var draftSaveJob: kotlinx.coroutines.Job? = null

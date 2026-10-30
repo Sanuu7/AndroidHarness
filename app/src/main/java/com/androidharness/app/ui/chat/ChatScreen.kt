@@ -506,6 +506,8 @@ private fun ChatScreenContent(
     val clipboard = LocalClipboardManager.current
     var actionsMessage by remember { mutableStateOf<ChatMessage?>(null) }
     var editingMessage by remember { mutableStateOf<ChatMessage?>(null) }
+    // Set while the retry choice (same model or another) is open; runs the chosen retry.
+    var retryRequest by remember { mutableStateOf<((com.androidharness.app.data.ModelShortcut?) -> Unit)?>(null) }
     var confirmingEdit by remember { mutableStateOf<Pair<ChatMessage, String>?>(null) }
     var showUndoDialog by remember { mutableStateOf(false) }
     // Chosen checkpoint awaiting confirmation with a per-file preview.
@@ -811,6 +813,17 @@ private fun ChatScreenContent(
     }
     if (state.showCostDialog) {
         CostDialog(state = state, onDismiss = viewModel::dismissCostDialog)
+    }
+
+    retryRequest?.let { runRetry ->
+        com.androidharness.app.ui.chat.components.ChatRetryDialog(
+            providers = state.providers,
+            activeProviderId = state.activeProviderId,
+            activeModel = state.activeModel,
+            onRetry = { retryRequest = null; runRetry(null) },
+            onRetryWith = { choice -> retryRequest = null; runRetry(choice) },
+            onDismiss = { retryRequest = null },
+        )
     }
 
     // Long-press menu for YOUR messages (agent text is directly selectable,
@@ -1804,7 +1817,7 @@ private fun ChatScreenContent(
                                                         onClick = { viewModel.container.tts.toggle(id, replyText) }) }
                                                     if (message.turnId != null && message.turnId == latestUserTurnId) {
                                                         IconButton(
-                                                            onClick = { viewModel.regenerate(message) },
+                                                            onClick = { retryRequest = { model -> viewModel.regenerate(message, model) } },
                                                             enabled = !state.busy && !state.conversationSaving,
                                                         ) {
                                                             Icon(Icons.Outlined.Refresh, uiContext.getString(R.string.ui_regenerate),
@@ -2086,7 +2099,7 @@ private fun ChatScreenContent(
                             com.androidharness.app.ui.chat.components.ChatRecovery(
                                 state.taskControl.reason,
                                 onContinue = viewModel::resumeInterruptedTask,
-                                onRetry = viewModel::retryLatestResponse)
+                                onRetry = { retryRequest = { model -> viewModel.retryLatestResponse(model) } })
                             state.sessionId?.let { sid ->
                                 com.androidharness.app.ui.chat.components.ChatAnswerVersions(
                                     sid, state.messages, viewModel.container.sessions, enabled = true,

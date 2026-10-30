@@ -855,6 +855,11 @@
     <string name="chat_answer_version">"%1$d из %2$d"</string>
     <string name="chat_recovery_explanation">"Ответ прервался до завершения. Продолжите сохранённый ответ или повторите вопрос, чтобы получить новый."</string>
     <string name="chat_retry_reply">"Повторить ответ"</string>
+    <string name="chat_retry_with_model">"Повторить с другой моделью"</string>
+    <string name="chat_retry_same_desc">"Запустить снова с текущей моделью"</string>
+    <string name="chat_retry_model_hint">"Модели, которые вы отметили или выбирали раньше."</string>
+    <string name="chat_retry_no_models">"Других моделей пока нет. Выберите модели в списке моделей, и они появятся здесь."</string>
+    <string name="chat_retry_model_unavailable">"Эта модель больше недоступна. Выберите другую."</string>
     <string name="chat_thinking_estimated_tokens">"Токены: ~%1$d"</string>
     <string name="chat_thinking_tokens_compact">"%1$s токенов"</string>
     <string name="chat_memories_used">"Использовано записей памяти: %1$d"</string>

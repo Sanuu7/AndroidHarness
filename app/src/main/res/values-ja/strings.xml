@@ -863,6 +863,11 @@
     <string name="chat_answer_version">"%1$d / %2$d"</string>
     <string name="chat_recovery_explanation">"返信が完了前に停止しました。保存された応答から続行するか、新しい回答で質問を再試行してください。"</string>
     <string name="chat_retry_reply">"回答を再試行"</string>
+    <string name="chat_retry_with_model">"別のモデルで再試行"</string>
+    <string name="chat_retry_same_desc">"現在のモデルでもう一度実行します"</string>
+    <string name="chat_retry_model_hint">"お気に入りに登録したモデルと、以前選んだモデルです。"</string>
+    <string name="chat_retry_no_models">"ほかのモデルはまだありません。モデルピッカーでモデルを選ぶと、ここに表示されます。"</string>
+    <string name="chat_retry_model_unavailable">"そのモデルは利用できなくなりました。別のモデルを選んでください。"</string>
     <string name="chat_thinking_estimated_tokens">"約%1$dトークン"</string>
     <string name="chat_thinking_tokens_compact">"%1$sトークン"</string>
     <string name="chat_memories_used">"使用されたメモリ · %1$d"</string>

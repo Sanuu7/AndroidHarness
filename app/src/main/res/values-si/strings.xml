@@ -864,6 +864,11 @@
     <string name="chat_answer_version">"%1$d කතන්දර %2$d"</string>
     <string name="chat_recovery_explanation">"පිළිතුර අවසන් වීමට පෙර නතර වී ඇත. සුරක්ෂිත පිළිතුර සිට දිගටම, හෝ නව පිළිතුරක් සමඟ ප්රශ්නය ඉවත් කරන්න."</string>
     <string name="chat_retry_reply">"Reply ප් රතිචාරයක්"</string>
+    <string name="chat_retry_with_model">"වෙනත් මාදිලියකින් නැවත උත්සාහ කරන්න"</string>
+    <string name="chat_retry_same_desc">"දැනට ඇති මාදිලියෙන් නැවත ධාවනය කරන්න"</string>
+    <string name="chat_retry_model_hint">"ඔබ තරු ලකුණු කළ හෝ කලින් තෝරාගත් මාදිලි."</string>
+    <string name="chat_retry_no_models">"තවම වෙනත් මාදිලි නැත. මාදිලි තේරීමෙන් මාදිලි තෝරන්න, ඒවා මෙහි පෙන්වයි."</string>
+    <string name="chat_retry_model_unavailable">"එම මාදිලිය තවදුරටත් නොමැත. වෙනත් එකක් තෝරන්න."</string>
     <string name="chat_thinking_estimated_tokens">"~%1$d ටොකන්"</string>
     <string name="chat_thinking_tokens_compact">"%1$s ටොකන්"</string>
     <string name="chat_memories_used">"භාවිත කළ මතකය · %1$d"</string>
