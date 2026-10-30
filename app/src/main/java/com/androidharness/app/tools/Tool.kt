@@ -109,6 +109,7 @@ class ToolRegistry(private val tools: List<Tool>) {
                 DoctorTool(linuxEnv, shizuku, shellRouter, httpClient),
                 ReadLogcatTool(shizuku, router = shellRouter),
                 PkgInstallTool(linuxEnv),
+                AndroidSdkInstallTool(linuxEnv),
                 PkgSearchTool(linuxEnv),
                 PkgListTool(linuxEnv),
                 BgListTool(bgStore),

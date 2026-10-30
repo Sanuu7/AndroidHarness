@@ -218,8 +218,29 @@ class MainActivity : AppCompatActivity() {
         lastPausedTimestamp = System.currentTimeMillis()
     }
 
+    /**
+     * Compose draws at whatever rate the window asks for, and a window that
+     * states no preference is often pinned to 60 Hz by the vendor's refresh
+     * policy. Ask for the fastest mode that keeps the current resolution.
+     */
+    private fun requestHighRefreshRate() {
+        @Suppress("DEPRECATION")
+        val display = if (Build.VERSION.SDK_INT >= 30) display else windowManager.defaultDisplay
+        display ?: return
+        val current = display.mode
+        val best = display.supportedModes
+            .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
+            .maxByOrNull { it.refreshRate } ?: return
+        if (best.refreshRate <= current.refreshRate && window.attributes.preferredDisplayModeId == best.modeId) return
+        window.attributes = window.attributes.apply {
+            preferredDisplayModeId = best.modeId
+            preferredRefreshRate = best.refreshRate
+        }
+    }
+
     override fun onResume() {
         super.onResume()
+        requestHighRefreshRate()
         com.androidharness.app.data.env.adb.WirelessAdbService.resume(this)
         container.shizuku.refresh()
         container.dhizuku.refresh()

@@ -67,7 +67,7 @@ internal fun toolIcon(name: String): ImageVector = when (name) {
     "todo_write" -> Icons.Outlined.Checklist
     "memory_write" -> Icons.Outlined.EditNote
     "bg_list", "bg_kill" -> Icons.Outlined.Terminal
-    "pkg_install", "pkg_search", "pkg_list" -> Icons.Outlined.Inventory2
+    "pkg_install", "pkg_search", "pkg_list", "android_sdk_install" -> Icons.Outlined.Inventory2
     "skill_view", "skills_list", "skill_manage" -> Icons.Outlined.AutoStories
     "visual_guide" -> Icons.Outlined.Palette
     else -> Icons.Outlined.Build

@@ -96,7 +96,7 @@ internal fun ToolCallCard(
     packageProgress: com.androidharness.app.data.env.PackageInstallStatus? = null,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    if (call.name == "pkg_install") {
+    if (call.name == "pkg_install" || call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME) {
         PackageInstallCard(call, result, running, awaitingApproval, packageProgress)
         return
     }

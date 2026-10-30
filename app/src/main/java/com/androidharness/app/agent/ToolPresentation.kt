@@ -213,6 +213,18 @@ fun toolPresentation(call: ToolCallData, result: ChatMessage? = null): ToolPrese
                 kind = ToolActivityKind.EDIT,
             )
         }
+        "android_sdk_install" -> {
+            val api = arg("platform") ?: "35"
+            ToolPresentation(
+                when {
+                    result == null -> "Install Android build tools (API $api)"
+                    result.isError -> "Android build tools failed"
+                    else -> "Installed Android build tools (API $api)"
+                },
+                "Installing Android build tools…",
+                kind = ToolActivityKind.EDIT,
+            )
+        }
         "pkg_search" -> {
             val query = arg("query") ?: "packages"
             ToolPresentation("Searched packages", "Searching packages for $query…", query, ToolActivityKind.SEARCH)

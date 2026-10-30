@@ -111,7 +111,7 @@ internal fun ApprovalCard(
     onDeny: () -> Unit,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val isPkg = approval.call.name == "pkg_install"
+    val isPkg = approval.call.name == "pkg_install" || approval.call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
     val isPullRequest = approval.call.name == "github_create_pull_request"
     val scheme = MaterialTheme.colorScheme
     ActionCard(

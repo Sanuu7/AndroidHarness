@@ -12,6 +12,7 @@ Use plain commands through `shell`, `shell_background` or the terminal. Do not i
 
 Load the `android-build` skill when it is available. Inspect the project's wrapper, build configuration and first actual error. Java, D8, the SDK/platform, native resource tools, signing tools and a compatible Gradle/Android plugin are separate requirements. Do not conclude that a phone cannot build APKs because one prerequisite is missing.
 
+- When the build tools are missing, call `android_sdk_install`. It installs OpenJDK, D8, aapt2, apksigner (and Gradle with `gradle=true`) plus `android.jar` under `$HOME/android-sdk/platforms/android-<api>/` behind one approval card. It works the same in the GitHub and Google Play builds because the packages come from the same repository `pkg_install` uses.
 - Verify `java -version`; use a JDK compatible with that project's build system.
 - For a manual DEX workflow, verify `d8 --version`. The current repository's D8 package depends on OpenJDK 21; use `pkg_search` to inspect the available package and `pkg_install` to install it when needed.
 - The D8/R8 JAR belongs at `$PREFIX/share/java/d8.jar`, and the APK signing JAR at `$PREFIX/share/java/apksigner.jar`. Never use `/data/data/com.termux/...` inside AndroidHarness.

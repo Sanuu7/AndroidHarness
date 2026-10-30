@@ -1076,12 +1076,17 @@ class AgentEngine(
         }
         val baseGrantKey = com.androidharness.app.tools.ShellPolicy.grantKey(call.name, command)
         val grantKey = route.binding?.let { "workspace:${it.id}:$baseGrantKey" } ?: baseGrantKey
-        val isPkgInstall = call.name == "pkg_install"
+        val isSdkInstall = call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
+        val isPkgInstall = call.name == "pkg_install" || isSdkInstall
         val approved = when {
             isPkgInstall -> {
                 // Mandatory confirmation: even in FULL_ACCESS or FULL_AUTO mode,
                 // package installation ALWAYS requires explicit user confirmation (Decline or Allow).
-                val preview = if (workspace is com.androidharness.app.workspace.SshFs) "Install requested packages on the SSH host for ${workspace.root}." else computePkgInstallPreview(call)
+                val preview = when {
+                    workspace is com.androidharness.app.workspace.SshFs -> "Install requested packages on the SSH host for ${workspace.root}."
+                    isSdkInstall -> com.androidharness.app.tools.AndroidSdkInstallTool.preview(call.argumentsJson)
+                    else -> computePkgInstallPreview(call)
+                }
                 val request = ApprovalRequest(call, route.label?.let { "$it · ${tool.description}" } ?: tool.description, preview, grantKey)
                 emitEvent(AgentEvent.ApprovalNeeded(request))
                 request.response.await()
@@ -1974,7 +1979,7 @@ Rules:
         )
         sb.append("\n").append(com.androidharness.app.core.response.RichResponse.INSTRUCTIONS).append("\n")
         sb.append("- The live environment section is refreshed before each model request with workspace identities, device connections, runtime paths, package state and the exact exposed tools. Follow it instead of inferring access from a skill example or another chat.\n")
-        sb.append("- For Android APK builds, load the android-build skill when available. General Linux readiness is not proof of a Java/D8/SDK installation; verify the actual compiler/build results.\n")
+        sb.append("- For Android APK builds, load the android-build skill when available. General Linux readiness is not proof of a Java/D8/SDK installation; when the tools are missing, call android_sdk_install (one approval card) instead of installing packages one by one, and verify the actual compiler/build results.\n")
         if (fullAccess && !multiWorkspace && !workspace.isSaf && workspace !is com.androidharness.app.workspace.SshFs) {
             sb.append(
                 "- FULL ACCESS MODE is active: the workspace sandbox is lifted. File tools may read and write ANY path on the device (absolute paths work), the shell has no command denylist, and cwd may be any directory. The user chose this deliberately; no permission prompts will appear. Work outside the workspace only when the task requires it, and stay careful with system directories (/system, /data/system, /vendor): a mistake there can break the device.\n",
