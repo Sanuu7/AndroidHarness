@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Caveman-Stufe</string>
+    <string name="as_activity_finding">Einstellungen werden gesucht</string>
+    <string name="as_activity_found">Einstellungen gesucht</string>
+    <string name="as_activity_changing">Einstellungen werden geändert</string>
+    <string name="as_activity_changed">Einstellungen geändert</string>
+    <string name="as_undo">Rückgängig</string>
+    <string name="as_undo_all">Alle rückgängig</string>
+    <string name="as_redo">Wiederholen</string>
+    <string name="as_open_settings">Einstellungen öffnen</string>
+    <string name="as_open_setting">Einstellung öffnen</string>
+    <string name="as_title_changed">Einstellungen geändert</string>
+    <string name="as_title_undone">Änderungen rückgängig gemacht</string>
+    <string name="as_title_needs_you">Eine Einstellung braucht dich</string>
+    <string name="as_title_not_changed">Einstellungen nicht geändert</string>
+    <string name="as_state_undone">Rückgängig gemacht</string>
+    <string name="as_state_moved_on">Seitdem erneut geändert</string>
+    <string name="as_on">An</string>
+    <string name="as_off">Aus</string>
+    <string name="as_unlimited">Unbegrenzt</string>
+    <string name="as_custom_palette">Eigene Palette</string>
+    <string name="as_empty">Keine</string>
+    <string name="as_needs_you_label">Braucht dich · %1$s</string>
+    <string name="as_group">Einstellungen aus dem Chat</string>
+    <string name="as_setting_title">Agent darf Einstellungen ändern</string>
+    <string name="as_access_off">Aus</string>
+    <string name="as_access_off_desc">Der Agent kann Einstellungen nachschlagen und dir zeigen, aber nicht ändern.</string>
+    <string name="as_access_ask">Jedes Mal fragen</string>
+    <string name="as_access_ask_desc">Jede Änderung wartet im Chat auf deine Zustimmung.</string>
+    <string name="as_access_allowed">Erlaubt</string>
+    <string name="as_access_allowed_desc">Änderungen gelten sofort, mit einer Karte zum Rückgängigmachen. Sensible wie die App-Sperre fragen trotzdem.</string>
+    <string name="as_picker_detail">Bitte im Chat oder in Code darum, eine Einstellung ein- oder auszuschalten, einen Regler zu verschieben oder eine Farbpalette zu erstellen. Sensible Einstellungen fragen immer zuerst, und API-Schlüssel bleiben unerreichbar.</string>
+    <string name="as_search_desc">Einstellungen ändern, indem du im Chat oder in Code fragst</string>
+    <string name="tip_ask_settings" formatted="false">Bitte mich, eine Einstellung zu ändern, etwa „Rumble auf 70 %“ oder „mach eine Petrol-Palette“. Eine Karte zeigt die Änderung, mit Rückgängig.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">%1$d Änderung</item>
+        <item quantity="other">%1$d Änderungen</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d braucht dich</item>
+        <item quantity="other">%1$d brauchen dich</item>
+    </plurals>
+</resources>

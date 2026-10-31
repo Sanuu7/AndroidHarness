@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Уровень Caveman</string>
+    <string name="as_activity_finding">Ищу настройки</string>
+    <string name="as_activity_found">Настройки найдены</string>
+    <string name="as_activity_changing">Меняю настройки</string>
+    <string name="as_activity_changed">Настройки изменены</string>
+    <string name="as_undo">Отменить</string>
+    <string name="as_undo_all">Отменить все</string>
+    <string name="as_redo">Вернуть</string>
+    <string name="as_open_settings">Открыть настройки</string>
+    <string name="as_open_setting">Открыть настройку</string>
+    <string name="as_title_changed">Настройки изменены</string>
+    <string name="as_title_undone">Изменения отменены</string>
+    <string name="as_title_needs_you">Настройке нужно ваше участие</string>
+    <string name="as_title_not_changed">Настройки не изменены</string>
+    <string name="as_state_undone">Отменено</string>
+    <string name="as_state_moved_on">С тех пор изменено снова</string>
+    <string name="as_on">Вкл.</string>
+    <string name="as_off">Выкл.</string>
+    <string name="as_unlimited">Без ограничений</string>
+    <string name="as_custom_palette">Своя палитра</string>
+    <string name="as_empty">Нет</string>
+    <string name="as_needs_you_label">Нужны вы · %1$s</string>
+    <string name="as_group">Настройки из чата</string>
+    <string name="as_setting_title">Разрешить агенту менять настройки</string>
+    <string name="as_access_off">Выкл.</string>
+    <string name="as_access_off_desc">Агент может находить настройки и показывать их вам, но не менять.</string>
+    <string name="as_access_ask">Спрашивать каждый раз</string>
+    <string name="as_access_ask_desc">Каждое изменение ждёт вашего одобрения в чате.</string>
+    <string name="as_access_allowed">Разрешено</string>
+    <string name="as_access_allowed_desc">Изменения применяются сразу, с карточкой отмены. Важные, например блокировка приложения, всё равно спрашивают.</string>
+    <string name="as_picker_detail">Попросите в Chat или Code включить или выключить настройку, сдвинуть ползунок или создать цветовую палитру. Важные настройки всегда сначала спрашивают, а API-ключи агенту недоступны.</string>
+    <string name="as_search_desc">Меняйте настройки, попросив в Chat или Code</string>
+    <string name="tip_ask_settings" formatted="false">Попросите меня изменить настройку, например «поставь вибрацию на 70%» или «сделай бирюзовую палитру». Карточка покажет, что изменилось, с кнопкой отмены.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">%1$d изменение</item>
+        <item quantity="few">%1$d изменения</item>
+        <item quantity="many">%1$d изменений</item>
+        <item quantity="other">%1$d изменения</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d ждёт вас</item>
+        <item quantity="few">%1$d ждут вас</item>
+        <item quantity="many">%1$d ждут вас</item>
+        <item quantity="other">%1$d ждут вас</item>
+    </plurals>
+</resources>

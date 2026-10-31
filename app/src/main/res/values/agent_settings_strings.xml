@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Caveman level</string>
+    <string name="as_activity_finding">Looking up settings</string>
+    <string name="as_activity_found">Looked up settings</string>
+    <string name="as_activity_changing">Changing settings</string>
+    <string name="as_activity_changed">Changed settings</string>
+    <string name="as_undo">Undo</string>
+    <string name="as_undo_all">Undo all</string>
+    <string name="as_redo">Redo</string>
+    <string name="as_open_settings">Open settings</string>
+    <string name="as_open_setting">Open setting</string>
+    <string name="as_title_changed">Settings changed</string>
+    <string name="as_title_undone">Changes undone</string>
+    <string name="as_title_needs_you">A setting needs you</string>
+    <string name="as_title_not_changed">Settings not changed</string>
+    <string name="as_state_undone">Undone</string>
+    <string name="as_state_moved_on">Changed again since</string>
+    <string name="as_on">On</string>
+    <string name="as_off">Off</string>
+    <string name="as_unlimited">Unlimited</string>
+    <string name="as_custom_palette">Custom palette</string>
+    <string name="as_empty">None</string>
+    <string name="as_needs_you_label">Needs you · %1$s</string>
+    <string name="as_group">Settings from chat</string>
+    <string name="as_setting_title">Let the agent change settings</string>
+    <string name="as_access_off">Off</string>
+    <string name="as_access_off_desc">The agent can look settings up and point you to them, but not change them.</string>
+    <string name="as_access_ask">Ask every time</string>
+    <string name="as_access_ask_desc">Every change waits for your approval in the chat.</string>
+    <string name="as_access_allowed">Allowed</string>
+    <string name="as_access_allowed_desc">Changes apply right away with an Undo card. Sensitive ones, like the app lock, still ask.</string>
+    <string name="as_picker_detail">Ask in Chat or Code to turn a setting on or off, move a slider or make a color palette. Sensitive settings always ask first, and API keys stay out of reach.</string>
+    <string name="as_search_desc">Change settings by asking in Chat or Code</string>
+    <string name="tip_ask_settings" formatted="false">Ask me to change a setting, like “set rumble to 70%” or “make a teal palette”. A card shows what changed, with Undo.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">%1$d change</item>
+        <item quantity="other">%1$d changes</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d needs you</item>
+        <item quantity="other">%1$d need you</item>
+    </plurals>
+</resources>

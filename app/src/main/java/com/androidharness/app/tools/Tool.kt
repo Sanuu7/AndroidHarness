@@ -1,6 +1,7 @@
 package com.androidharness.app.tools
 
 import com.androidharness.app.workspace.WorkspaceFs
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.add
 import kotlinx.serialization.json.buildJsonObject
@@ -35,6 +36,7 @@ data class ToolResult(
     val artifact: com.androidharness.app.artifacts.ChatArtifact? = null,
     val execution: List<com.androidharness.app.data.env.ExecutionReceipt> = emptyList(),
     val research: com.androidharness.app.core.ResearchReceipt? = null,
+    val settings: com.androidharness.app.core.SettingsReceipt? = null,
 )
 
 class ToolFailure(message: String) : Exception(message)
@@ -95,6 +97,7 @@ class ToolRegistry(private val tools: List<Tool>) {
             deviceAccess: com.androidharness.app.data.env.DeviceAccessManager? = null,
             pullRequests: (() -> com.androidharness.app.github.PullRequestPublisher?)? = null,
             sessionMessages: suspend (String) -> List<com.androidharness.app.core.ChatMessage> = { emptyList() },
+            appSettings: com.androidharness.app.data.SettingsRepository? = null,
         ): ToolRegistry {
             val baseTools = mutableListOf<Tool>(
                 ListDirTool(),
@@ -150,6 +153,11 @@ class ToolRegistry(private val tools: List<Tool>) {
                 CodeGraphAffectedTool(codeGraph),
                 CodeGraphSyncTool(codeGraph),
             )
+            if (appSettings != null) {
+                val read: suspend () -> com.androidharness.app.data.AppSettings = { appSettings.settings.first() }
+                baseTools += AppSettingsFindTool(read)
+                baseTools += AppSettingsChangeTool(appSettings, read)
+            }
             if (dhizuku != null && deviceAccess != null) baseTools += DeviceOwnerShellTool(dhizuku, deviceAccess)
             if (pullRequests != null) baseTools += GitHubCreatePullRequestTool(pullRequests, sessionMessages)
             if (artifactLoader != null) {

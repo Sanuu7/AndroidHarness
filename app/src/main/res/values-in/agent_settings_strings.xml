@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Tingkat Caveman</string>
+    <string name="as_activity_finding">Mencari pengaturan</string>
+    <string name="as_activity_found">Pengaturan dicari</string>
+    <string name="as_activity_changing">Mengubah pengaturan</string>
+    <string name="as_activity_changed">Pengaturan diubah</string>
+    <string name="as_undo">Urungkan</string>
+    <string name="as_undo_all">Urungkan semua</string>
+    <string name="as_redo">Ulangi</string>
+    <string name="as_open_settings">Buka pengaturan</string>
+    <string name="as_open_setting">Buka pengaturan ini</string>
+    <string name="as_title_changed">Pengaturan diubah</string>
+    <string name="as_title_undone">Perubahan diurungkan</string>
+    <string name="as_title_needs_you">Satu pengaturan perlu Anda</string>
+    <string name="as_title_not_changed">Pengaturan tidak diubah</string>
+    <string name="as_state_undone">Diurungkan</string>
+    <string name="as_state_moved_on">Sudah diubah lagi sejak itu</string>
+    <string name="as_on">Aktif</string>
+    <string name="as_off">Nonaktif</string>
+    <string name="as_unlimited">Tanpa batas</string>
+    <string name="as_custom_palette">Palet kustom</string>
+    <string name="as_empty">Tidak ada</string>
+    <string name="as_needs_you_label">Perlu Anda · %1$s</string>
+    <string name="as_group">Pengaturan dari chat</string>
+    <string name="as_setting_title">Izinkan agen mengubah pengaturan</string>
+    <string name="as_access_off">Nonaktif</string>
+    <string name="as_access_off_desc">Agen bisa mencari pengaturan dan menunjukkannya kepada Anda, tetapi tidak bisa mengubahnya.</string>
+    <string name="as_access_ask">Selalu tanya</string>
+    <string name="as_access_ask_desc">Setiap perubahan menunggu persetujuan Anda di chat.</string>
+    <string name="as_access_allowed">Diizinkan</string>
+    <string name="as_access_allowed_desc">Perubahan langsung berlaku dengan kartu Urungkan. Yang sensitif, seperti kunci aplikasi, tetap bertanya.</string>
+    <string name="as_picker_detail">Minta di Chat atau Code untuk menyalakan atau mematikan pengaturan, menggeser slider, atau membuat palet warna. Pengaturan sensitif selalu bertanya dulu, dan kunci API tetap tidak terjangkau.</string>
+    <string name="as_search_desc">Ubah pengaturan dengan meminta di Chat atau Code</string>
+    <string name="tip_ask_settings" formatted="false">Minta saya mengubah pengaturan, misalnya “atur getaran ke 70%” atau “buat palet teal”. Sebuah kartu menunjukkan perubahannya, dengan Urungkan.</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">%1$d perubahan</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">%1$d perlu Anda</item>
+    </plurals>
+</resources>

@@ -766,7 +766,7 @@ class AgentEngine(
                 toolName = call.name,
                 isError = !result.ok,
                 images = listOfNotNull(result.image), artifact = result.artifact,
-                generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
+                generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings),
             )
             // Side questions see each finished result while the rest still run.
             fun publishResults() = publishSide(working + calls.mapNotNull { call -> results[call.id]?.let { toolMessage(call, it) } })
@@ -966,7 +966,7 @@ class AgentEngine(
                     val message = ChatMessage(
                         role = Role.TOOL, text = result.output, toolCallId = call.id, toolName = call.name,
                         isError = !result.ok, images = listOfNotNull(result.image),
-                        generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
+                        generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings),
                     )
                     working += if (imageInput) message.withImagesResolved() else message
                     send(SideEvent.ToolFinished(message))
@@ -1111,7 +1111,7 @@ class AgentEngine(
             emitEvent(AgentEvent.ToolMessageCommitted(ChatMessage(
                 role = Role.TOOL, text = result.output, toolCallId = call.id,
                 toolName = call.name, isError = !result.ok, images = listOfNotNull(result.image), artifact = result.artifact,
-                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
+                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings),
             )))
         }
         return result
@@ -1163,7 +1163,8 @@ class AgentEngine(
                 ?: com.androidharness.app.llm.visionCapable(config.model))
 
         // The model sometimes tries to modify files in plan mode, refuse cleanly.
-        if (agentMode == AgentMode.PLAN && !tool.isReadOnly) {
+        // Settings changes touch no files, so Plan mode does not block them.
+        if (agentMode == AgentMode.PLAN && !tool.isReadOnly && tool !is com.androidharness.app.tools.AppSettingsChangeTool) {
             return ToolResult(
                 false,
                 "Plan mode is active: ${call.name} was rejected. Modifying files is not allowed in Plan mode. Finish your turn and present your plan for user approval.",
@@ -1297,6 +1298,15 @@ class AgentEngine(
                     computeDiffPreview(call, workspace) ?: command?.take(400), "config:${runConfig?.config?.fingerprint}:$grantKey")
                 emitEvent(AgentEvent.ApprovalNeeded(request))
                 request.response.await()
+            }
+            tool is com.androidharness.app.tools.AppSettingsChangeTool -> {
+                // The tool decides: sensitive settings ask in every mode, the rest follow the user's choice.
+                val preview = tool.approvalPreview(parsedArgs, mode)
+                if (preview == null) true else {
+                    val request = ApprovalRequest(call, "Change app settings", preview, "app_settings:${call.id}")
+                    emitEvent(AgentEvent.ApprovalNeeded(request))
+                    request.response.await()
+                }
             }
             isPkgInstall -> {
                 // Mandatory confirmation: even in FULL_ACCESS or FULL_AUTO mode,
@@ -1859,7 +1869,7 @@ class AgentEngine(
                     toolName = call.name,
                     isError = !result.ok,
                     images = listOfNotNull(result.image), artifact = result.artifact,
-                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
+                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings),
                 )
                 history += toolMessage.withImagesResolved()
                 emitEvent(AgentEvent.SubagentMessageCommitted(parentCallId, toolMessage))

@@ -457,6 +457,13 @@ private val subSettingsEntries = listOfNotNull(
         anchor = R.string.tips_setting_title,
     ),
     SettingsSearchEntry(
+        R.string.as_setting_title,
+        R.string.as_search_desc,
+        SettingsPage.AGENT,
+        "agent change settings from chat ask assistant control toggle slider palette",
+        anchor = R.string.as_setting_title,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_project_instructions_title,
         R.string.settings_search_project_instructions_desc,
         SettingsPage.AGENT,

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Nivel de Caveman</string>
+    <string name="as_activity_finding">Buscando ajustes</string>
+    <string name="as_activity_found">Ajustes consultados</string>
+    <string name="as_activity_changing">Cambiando ajustes</string>
+    <string name="as_activity_changed">Ajustes cambiados</string>
+    <string name="as_undo">Deshacer</string>
+    <string name="as_undo_all">Deshacer todo</string>
+    <string name="as_redo">Rehacer</string>
+    <string name="as_open_settings">Abrir ajustes</string>
+    <string name="as_open_setting">Abrir ajuste</string>
+    <string name="as_title_changed">Ajustes cambiados</string>
+    <string name="as_title_undone">Cambios deshechos</string>
+    <string name="as_title_needs_you">Un ajuste te necesita</string>
+    <string name="as_title_not_changed">Ajustes sin cambios</string>
+    <string name="as_state_undone">Deshecho</string>
+    <string name="as_state_moved_on">Cambiado de nuevo desde entonces</string>
+    <string name="as_on">Activado</string>
+    <string name="as_off">Desactivado</string>
+    <string name="as_unlimited">Sin límite</string>
+    <string name="as_custom_palette">Paleta personalizada</string>
+    <string name="as_empty">Ninguno</string>
+    <string name="as_needs_you_label">Te necesita · %1$s</string>
+    <string name="as_group">Ajustes desde el chat</string>
+    <string name="as_setting_title">Permitir que el agente cambie ajustes</string>
+    <string name="as_access_off">Desactivado</string>
+    <string name="as_access_off_desc">El agente puede consultar los ajustes y llevarte a ellos, pero no cambiarlos.</string>
+    <string name="as_access_ask">Preguntar siempre</string>
+    <string name="as_access_ask_desc">Cada cambio espera tu aprobación en el chat.</string>
+    <string name="as_access_allowed">Permitido</string>
+    <string name="as_access_allowed_desc">Los cambios se aplican al momento con una tarjeta para deshacer. Los sensibles, como el bloqueo de la app, siguen preguntando.</string>
+    <string name="as_picker_detail">Pide en Chat o Code que active o desactive un ajuste, mueva un control deslizante o cree una paleta de colores. Los ajustes sensibles siempre preguntan antes y las claves API quedan fuera de su alcance.</string>
+    <string name="as_search_desc">Cambia ajustes pidiéndolo en Chat o Code</string>
+    <string name="tip_ask_settings" formatted="false">Pídeme cambiar un ajuste, como «pon la vibración al 70 %» o «crea una paleta verde azulado». Una tarjeta muestra lo que cambió, con Deshacer.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">%1$d cambio</item>
+        <item quantity="other">%1$d cambios</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d te necesita</item>
+        <item quantity="other">%1$d te necesitan</item>
+    </plurals>
+</resources>

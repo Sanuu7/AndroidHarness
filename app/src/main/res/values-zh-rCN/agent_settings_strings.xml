@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Caveman 级别</string>
+    <string name="as_activity_finding">正在查找设置</string>
+    <string name="as_activity_found">已查找设置</string>
+    <string name="as_activity_changing">正在更改设置</string>
+    <string name="as_activity_changed">已更改设置</string>
+    <string name="as_undo">撤消</string>
+    <string name="as_undo_all">全部撤消</string>
+    <string name="as_redo">重做</string>
+    <string name="as_open_settings">打开设置</string>
+    <string name="as_open_setting">打开此设置</string>
+    <string name="as_title_changed">设置已更改</string>
+    <string name="as_title_undone">更改已撤消</string>
+    <string name="as_title_needs_you">有设置需要你处理</string>
+    <string name="as_title_not_changed">设置未更改</string>
+    <string name="as_state_undone">已撤消</string>
+    <string name="as_state_moved_on">之后又被更改</string>
+    <string name="as_on">开</string>
+    <string name="as_off">关</string>
+    <string name="as_unlimited">不限</string>
+    <string name="as_custom_palette">自定义调色板</string>
+    <string name="as_empty">无</string>
+    <string name="as_needs_you_label">需要你 · %1$s</string>
+    <string name="as_group">在聊天中更改设置</string>
+    <string name="as_setting_title">允许智能体更改设置</string>
+    <string name="as_access_off">关</string>
+    <string name="as_access_off_desc">智能体可以查找设置并引导你前往，但不能更改。</string>
+    <string name="as_access_ask">每次询问</string>
+    <string name="as_access_ask_desc">每项更改都会在聊天中等待你的批准。</string>
+    <string name="as_access_allowed">允许</string>
+    <string name="as_access_allowed_desc">更改会立即生效，并显示可撤消的卡片。应用锁等敏感设置仍会询问。</string>
+    <string name="as_picker_detail">在 Chat 或 Code 中提出，即可开关设置、调整滑块或创建调色板。敏感设置总会先询问，API 密钥始终无法访问。</string>
+    <string name="as_search_desc">在 Chat 或 Code 中提出即可更改设置</string>
+    <string name="tip_ask_settings" formatted="false">可以让我更改设置，比如“把振动调到 70%”或“做一个青色调色板”。卡片会显示改了什么，并可撤消。</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">%1$d 项更改</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">%1$d 项需要你</item>
+    </plurals>
+</resources>

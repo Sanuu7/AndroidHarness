@@ -1789,6 +1789,19 @@ private fun ChatScreenContent(
                                 )
                             }
                         }
+                        message.generation.settings?.takeIf { message.role == Role.TOOL }?.let { receipt ->
+                            indexedItem(key = "message-$messageKey-settings", contentType = ChatListContentType.Artifact) {
+                                com.androidharness.app.ui.chat.components.SettingsChangeCard(
+                                    receipt = receipt,
+                                    settings = globalSettings,
+                                    repository = viewModel.container.settings,
+                                    onOpen = { page, anchor ->
+                                        viewModel.container.pendingSettingsScroll.value = settingsTarget(page, anchor)
+                                        onOpenSettings()
+                                    },
+                                )
+                            }
+                        }
                         when (message.role) {
                             Role.USER -> {
                                 if (message.turnId != null && message.turnId == latestUserTurnId) latestTurnStarted = true

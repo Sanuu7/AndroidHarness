@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Caveman මට්ටම</string>
+    <string name="as_activity_finding">සැකසුම් සොයමින්</string>
+    <string name="as_activity_found">සැකසුම් සෙව්වා</string>
+    <string name="as_activity_changing">සැකසුම් වෙනස් කරමින්</string>
+    <string name="as_activity_changed">සැකසුම් වෙනස් කළා</string>
+    <string name="as_undo">අහෝසි කරන්න</string>
+    <string name="as_undo_all">සියල්ල අහෝසි කරන්න</string>
+    <string name="as_redo">නැවත කරන්න</string>
+    <string name="as_open_settings">සැකසුම් විවෘත කරන්න</string>
+    <string name="as_open_setting">සැකසුම විවෘත කරන්න</string>
+    <string name="as_title_changed">සැකසුම් වෙනස් කළා</string>
+    <string name="as_title_undone">වෙනස්කම් අහෝසි කළා</string>
+    <string name="as_title_needs_you">සැකසුමකට ඔබ අවශ්‍යයි</string>
+    <string name="as_title_not_changed">සැකසුම් වෙනස් නොකළා</string>
+    <string name="as_state_undone">අහෝසි කළා</string>
+    <string name="as_state_moved_on">ඉන්පසු නැවත වෙනස් කර ඇත</string>
+    <string name="as_on">සක්‍රිය</string>
+    <string name="as_off">අක්‍රිය</string>
+    <string name="as_unlimited">සීමාවක් නැත</string>
+    <string name="as_custom_palette">අභිරුචි වර්ණ තලය</string>
+    <string name="as_empty">කිසිවක් නැත</string>
+    <string name="as_needs_you_label">ඔබ අවශ්‍යයි · %1$s</string>
+    <string name="as_group">චැට් එකෙන් සැකසුම්</string>
+    <string name="as_setting_title">නියෝජිතයාට සැකසුම් වෙනස් කිරීමට ඉඩ දෙන්න</string>
+    <string name="as_access_off">අක්‍රිය</string>
+    <string name="as_access_off_desc">නියෝජිතයාට සැකසුම් සොයා ඔබට පෙන්විය හැකි නමුත් ඒවා වෙනස් කළ නොහැක.</string>
+    <string name="as_access_ask">සෑම විටම අසන්න</string>
+    <string name="as_access_ask_desc">සෑම වෙනස්කමක්ම චැට් එකේ ඔබේ අනුමැතිය එනතුරු රැඳී සිටී.</string>
+    <string name="as_access_allowed">ඉඩ දී ඇත</string>
+    <string name="as_access_allowed_desc">වෙනස්කම් වහාම යෙදෙන අතර අහෝසි කිරීමේ කාඩ්පතක් පෙන්වයි. යෙදුම් අගුල වැනි සංවේදී ඒවා තවමත් අසයි.</string>
+    <string name="as_picker_detail">සැකසුමක් සක්‍රිය හෝ අක්‍රිය කිරීමට, ස්ලයිඩරයක් චලනය කිරීමට හෝ වර්ණ තලයක් සෑදීමට Chat හෝ Code තුළ ඉල්ලන්න. සංවේදී සැකසුම් සෑම විටම පළමුව අසන අතර API යතුරු ළඟා විය නොහැක.</string>
+    <string name="as_search_desc">Chat හෝ Code තුළ ඉල්ලා සැකසුම් වෙනස් කරන්න</string>
+    <string name="tip_ask_settings" formatted="false">සැකසුමක් වෙනස් කරන්න මගෙන් ඉල්ලන්න, උදාහරණයක් ලෙස “කම්පනය 70% කරන්න” හෝ “ටීල් වර්ණ තලයක් හදන්න”. වෙනස් වූ දේ අහෝසි කිරීමේ විකල්පය සමඟ කාඩ්පතක පෙන්වයි.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">වෙනස්කම් %1$d</item>
+        <item quantity="other">වෙනස්කම් %1$d</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d කට ඔබ අවශ්‍යයි</item>
+        <item quantity="other">%1$d කට ඔබ අවශ්‍යයි</item>
+    </plurals>
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Nível do Caveman</string>
+    <string name="as_activity_finding">Procurando configurações</string>
+    <string name="as_activity_found">Configurações consultadas</string>
+    <string name="as_activity_changing">Alterando configurações</string>
+    <string name="as_activity_changed">Configurações alteradas</string>
+    <string name="as_undo">Desfazer</string>
+    <string name="as_undo_all">Desfazer tudo</string>
+    <string name="as_redo">Refazer</string>
+    <string name="as_open_settings">Abrir configurações</string>
+    <string name="as_open_setting">Abrir configuração</string>
+    <string name="as_title_changed">Configurações alteradas</string>
+    <string name="as_title_undone">Alterações desfeitas</string>
+    <string name="as_title_needs_you">Uma configuração precisa de você</string>
+    <string name="as_title_not_changed">Configurações não alteradas</string>
+    <string name="as_state_undone">Desfeito</string>
+    <string name="as_state_moved_on">Alterado de novo desde então</string>
+    <string name="as_on">Ativado</string>
+    <string name="as_off">Desativado</string>
+    <string name="as_unlimited">Sem limite</string>
+    <string name="as_custom_palette">Paleta personalizada</string>
+    <string name="as_empty">Nenhum</string>
+    <string name="as_needs_you_label">Precisa de você · %1$s</string>
+    <string name="as_group">Configurações pelo chat</string>
+    <string name="as_setting_title">Deixar o agente alterar configurações</string>
+    <string name="as_access_off">Desativado</string>
+    <string name="as_access_off_desc">O agente pode consultar as configurações e levar você até elas, mas não alterá-las.</string>
+    <string name="as_access_ask">Perguntar sempre</string>
+    <string name="as_access_ask_desc">Cada alteração espera sua aprovação no chat.</string>
+    <string name="as_access_allowed">Permitido</string>
+    <string name="as_access_allowed_desc">As alterações valem na hora, com um cartão para desfazer. As sensíveis, como o bloqueio do app, ainda perguntam.</string>
+    <string name="as_picker_detail">Peça no Chat ou no Code para ativar ou desativar uma configuração, mover um controle deslizante ou criar uma paleta de cores. Configurações sensíveis sempre perguntam antes, e as chaves de API ficam fora de alcance.</string>
+    <string name="as_search_desc">Altere configurações pedindo no Chat ou no Code</string>
+    <string name="tip_ask_settings" formatted="false">Peça para eu alterar uma configuração, como “deixe a vibração em 70%” ou “crie uma paleta verde-azulada”. Um cartão mostra o que mudou, com Desfazer.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">%1$d alteração</item>
+        <item quantity="other">%1$d alterações</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d precisa de você</item>
+        <item quantity="other">%1$d precisam de você</item>
+    </plurals>
+</resources>

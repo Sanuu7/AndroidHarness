@@ -35,6 +35,8 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.SteeringMode
+import com.androidharness.app.data.AgentSettingsAccess
+import androidx.compose.material.icons.outlined.Tune
 import com.androidharness.app.R
 import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.ui.common.BiometricAuth
@@ -42,7 +44,21 @@ import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
 
-private enum class BehaviorPicker { PERMISSIONS, CONTEXT, ITERATIONS, STEERING }
+private enum class BehaviorPicker { PERMISSIONS, CONTEXT, ITERATIONS, STEERING, AGENT_SETTINGS }
+
+@Composable
+private fun AgentSettingsAccess.title(): String = when (this) {
+    AgentSettingsAccess.OFF -> stringResource(R.string.as_access_off)
+    AgentSettingsAccess.ASK -> stringResource(R.string.as_access_ask)
+    AgentSettingsAccess.ALLOWED -> stringResource(R.string.as_access_allowed)
+}
+
+@Composable
+private fun AgentSettingsAccess.description(): String = when (this) {
+    AgentSettingsAccess.OFF -> stringResource(R.string.as_access_off_desc)
+    AgentSettingsAccess.ASK -> stringResource(R.string.as_access_ask_desc)
+    AgentSettingsAccess.ALLOWED -> stringResource(R.string.as_access_allowed_desc)
+}
 
 private data class BehaviorChoice(val key: String, val title: String, val description: String)
 
@@ -79,6 +95,7 @@ internal fun AgentBehaviorSection(
     showLiveUpdates: Boolean = true,
     onSteeringMode: (SteeringMode) -> Unit = {},
     onRunTips: (Boolean) -> Unit = {},
+    onAgentSettingsAccess: (AgentSettingsAccess) -> Unit = {},
     /**
      * Test/preview override for the device-owner check guarding full access.
      * Production callers leave this null so the real biometric/PIN prompt runs.
@@ -153,6 +170,16 @@ internal fun AgentBehaviorSection(
                 }
             }
         }
+        BehaviorGroup(stringResource(R.string.as_group), Icons.Outlined.Tune) {
+            SettingsAnchor(R.string.as_setting_title) {
+                BehaviorValueRow(
+                    title = stringResource(R.string.as_setting_title),
+                    value = settings.agentSettingsAccess.title(),
+                    description = settings.agentSettingsAccess.description(),
+                    onClick = { pickerName = BehaviorPicker.AGENT_SETTINGS.name },
+                )
+            }
+        }
         if (showLiveUpdates) LiveUpdatesSetting(settings, onLiveUpdates)
         BehaviorGroup(stringResource(R.string.settings_agent_instructions_group), Icons.Outlined.Description) {
             SettingsAnchor(R.string.settings_anchor_project_instructions) {
@@ -193,6 +220,12 @@ internal fun AgentBehaviorSection(
                 description = stringResource(R.string.steering_picker_detail)
                 selected = settings.steeringMode.name
                 choices = SteeringMode.entries.map { BehaviorChoice(it.name, it.title(), it.description()) }
+            }
+            BehaviorPicker.AGENT_SETTINGS -> {
+                title = stringResource(R.string.as_setting_title)
+                description = stringResource(R.string.as_picker_detail)
+                selected = settings.agentSettingsAccess.name
+                choices = AgentSettingsAccess.entries.reversed().map { BehaviorChoice(it.name, it.title(), it.description()) }
             }
             BehaviorPicker.ITERATIONS -> {
                 title = stringResource(R.string.settings_anchor_tool_iterations)
@@ -249,6 +282,7 @@ internal fun AgentBehaviorSection(
                                             BehaviorPicker.CONTEXT -> onContextLimit(choice.key.toInt())
                                             BehaviorPicker.ITERATIONS -> onIterationLimit(choice.key.toInt())
                                             BehaviorPicker.STEERING -> onSteeringMode(SteeringMode.valueOf(choice.key))
+                                            BehaviorPicker.AGENT_SETTINGS -> onAgentSettingsAccess(AgentSettingsAccess.valueOf(choice.key))
                                         }
                                         pickerName = null
                                     },

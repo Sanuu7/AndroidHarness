@@ -34,6 +34,8 @@ internal object RunTips {
     // Interleaved by topic so consecutive tips feel different.
     val all: List<RunTip> = listOf(
         RunTip("btw", R.string.tip_btw),
+        RunTip("ask_settings", R.string.tip_ask_settings, page = SettingsPage.AGENT, anchor = R.string.as_setting_title,
+            relevant = { it.agentSettingsAccess != com.androidharness.app.data.AgentSettingsAccess.OFF }),
         RunTip("steer_auto", R.string.tip_steer_auto, page = SettingsPage.AGENT, anchor = R.string.settings_anchor_steering,
             relevant = { it.steeringMode == SteeringMode.AH_AUTO }),
         RunTip("steer_after", R.string.tip_steer_after, page = SettingsPage.AGENT, anchor = R.string.settings_anchor_steering,

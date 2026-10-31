@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">مستوى Caveman</string>
+    <string name="as_activity_finding">جارٍ البحث عن الإعدادات</string>
+    <string name="as_activity_found">تم البحث عن الإعدادات</string>
+    <string name="as_activity_changing">جارٍ تغيير الإعدادات</string>
+    <string name="as_activity_changed">تم تغيير الإعدادات</string>
+    <string name="as_undo">تراجع</string>
+    <string name="as_undo_all">تراجع عن الكل</string>
+    <string name="as_redo">إعادة</string>
+    <string name="as_open_settings">فتح الإعدادات</string>
+    <string name="as_open_setting">فتح الإعداد</string>
+    <string name="as_title_changed">تم تغيير الإعدادات</string>
+    <string name="as_title_undone">تم التراجع عن التغييرات</string>
+    <string name="as_title_needs_you">إعداد يحتاج إليك</string>
+    <string name="as_title_not_changed">لم تتغير الإعدادات</string>
+    <string name="as_state_undone">تم التراجع</string>
+    <string name="as_state_moved_on">تغيّر مرة أخرى منذ ذلك الحين</string>
+    <string name="as_on">تشغيل</string>
+    <string name="as_off">إيقاف</string>
+    <string name="as_unlimited">بلا حد</string>
+    <string name="as_custom_palette">لوحة ألوان مخصصة</string>
+    <string name="as_empty">لا شيء</string>
+    <string name="as_needs_you_label">يحتاج إليك · %1$s</string>
+    <string name="as_group">الإعدادات من الدردشة</string>
+    <string name="as_setting_title">السماح للوكيل بتغيير الإعدادات</string>
+    <string name="as_access_off">إيقاف</string>
+    <string name="as_access_off_desc">يستطيع الوكيل البحث عن الإعدادات وإرشادك إليها، لكن لا يغيّرها.</string>
+    <string name="as_access_ask">السؤال في كل مرة</string>
+    <string name="as_access_ask_desc">ينتظر كل تغيير موافقتك في الدردشة.</string>
+    <string name="as_access_allowed">مسموح</string>
+    <string name="as_access_allowed_desc">تُطبَّق التغييرات فورًا مع بطاقة للتراجع. أما الحساسة مثل قفل التطبيق فتسأل دائمًا.</string>
+    <string name="as_picker_detail">اطلب في Chat أو Code تشغيل إعداد أو إيقافه، أو تحريك شريط تمرير، أو إنشاء لوحة ألوان. الإعدادات الحساسة تسأل أولًا دائمًا، ومفاتيح API تبقى بعيدة المنال.</string>
+    <string name="as_search_desc">غيّر الإعدادات بطلب ذلك في Chat أو Code</string>
+    <string name="tip_ask_settings" formatted="false">اطلب مني تغيير إعداد، مثل «اضبط الاهتزاز على 70%» أو «أنشئ لوحة ألوان فيروزية». تعرض بطاقة ما تغيّر مع زر التراجع.</string>
+    <plurals name="as_changes_count">
+        <item quantity="zero">%1$d تغيير</item>
+        <item quantity="one">تغيير واحد (%1$d)</item>
+        <item quantity="two">تغييران (%1$d)</item>
+        <item quantity="few">%1$d تغييرات</item>
+        <item quantity="many">%1$d تغييرًا</item>
+        <item quantity="other">%1$d تغيير</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="zero">%1$d يحتاج إليك</item>
+        <item quantity="one">واحد يحتاج إليك (%1$d)</item>
+        <item quantity="two">اثنان يحتاجان إليك (%1$d)</item>
+        <item quantity="few">%1$d تحتاج إليك</item>
+        <item quantity="many">%1$d تحتاج إليك</item>
+        <item quantity="other">%1$d تحتاج إليك</item>
+    </plurals>
+</resources>

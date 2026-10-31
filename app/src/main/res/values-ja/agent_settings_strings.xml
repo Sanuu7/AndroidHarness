@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">Caveman のレベル</string>
+    <string name="as_activity_finding">設定を検索中</string>
+    <string name="as_activity_found">設定を検索しました</string>
+    <string name="as_activity_changing">設定を変更中</string>
+    <string name="as_activity_changed">設定を変更しました</string>
+    <string name="as_undo">元に戻す</string>
+    <string name="as_undo_all">すべて元に戻す</string>
+    <string name="as_redo">やり直す</string>
+    <string name="as_open_settings">設定を開く</string>
+    <string name="as_open_setting">この設定を開く</string>
+    <string name="as_title_changed">設定を変更しました</string>
+    <string name="as_title_undone">変更を元に戻しました</string>
+    <string name="as_title_needs_you">操作が必要な設定があります</string>
+    <string name="as_title_not_changed">設定は変更されていません</string>
+    <string name="as_state_undone">元に戻しました</string>
+    <string name="as_state_moved_on">その後さらに変更されています</string>
+    <string name="as_on">オン</string>
+    <string name="as_off">オフ</string>
+    <string name="as_unlimited">無制限</string>
+    <string name="as_custom_palette">カスタムパレット</string>
+    <string name="as_empty">なし</string>
+    <string name="as_needs_you_label">要対応 · %1$s</string>
+    <string name="as_group">チャットから設定</string>
+    <string name="as_setting_title">エージェントに設定の変更を許可</string>
+    <string name="as_access_off">オフ</string>
+    <string name="as_access_off_desc">エージェントは設定を調べて案内できますが、変更はできません。</string>
+    <string name="as_access_ask">毎回確認</string>
+    <string name="as_access_ask_desc">すべての変更はチャットであなたの承認を待ちます。</string>
+    <string name="as_access_allowed">許可</string>
+    <string name="as_access_allowed_desc">変更はすぐに反映され、元に戻すカードが表示されます。アプリのロックなど重要な設定は引き続き確認します。</string>
+    <string name="as_picker_detail">Chat や Code で頼むと、設定のオン・オフ、スライダーの調整、カラーパレットの作成ができます。重要な設定は必ず先に確認し、API キーには触れません。</string>
+    <string name="as_search_desc">Chat や Code で頼んで設定を変更</string>
+    <string name="tip_ask_settings" formatted="false">「振動を 70% に」や「ティールのパレットを作って」のように設定の変更を頼めます。変更内容はカードに表示され、元に戻すこともできます。</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">%1$d 件の変更</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">%1$d 件の要対応</item>
+    </plurals>
+</resources>

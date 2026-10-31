@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">سطح Caveman</string>
+    <string name="as_activity_finding">در حال جستجوی تنظیمات</string>
+    <string name="as_activity_found">تنظیمات جستجو شد</string>
+    <string name="as_activity_changing">در حال تغییر تنظیمات</string>
+    <string name="as_activity_changed">تنظیمات تغییر کرد</string>
+    <string name="as_undo">واگرد</string>
+    <string name="as_undo_all">واگرد همه</string>
+    <string name="as_redo">انجام دوباره</string>
+    <string name="as_open_settings">باز کردن تنظیمات</string>
+    <string name="as_open_setting">باز کردن این تنظیم</string>
+    <string name="as_title_changed">تنظیمات تغییر کرد</string>
+    <string name="as_title_undone">تغییرات واگرد شد</string>
+    <string name="as_title_needs_you">یک تنظیم به شما نیاز دارد</string>
+    <string name="as_title_not_changed">تنظیمات تغییر نکرد</string>
+    <string name="as_state_undone">واگرد شد</string>
+    <string name="as_state_moved_on">از آن زمان دوباره تغییر کرده</string>
+    <string name="as_on">روشن</string>
+    <string name="as_off">خاموش</string>
+    <string name="as_unlimited">نامحدود</string>
+    <string name="as_custom_palette">پالت سفارشی</string>
+    <string name="as_empty">هیچ</string>
+    <string name="as_needs_you_label">به شما نیاز دارد · %1$s</string>
+    <string name="as_group">تنظیمات از گفتگو</string>
+    <string name="as_setting_title">اجازه به عامل برای تغییر تنظیمات</string>
+    <string name="as_access_off">خاموش</string>
+    <string name="as_access_off_desc">عامل می‌تواند تنظیمات را پیدا کند و شما را به آن‌ها برساند، اما نمی‌تواند تغییرشان دهد.</string>
+    <string name="as_access_ask">هر بار بپرس</string>
+    <string name="as_access_ask_desc">هر تغییر در گفتگو منتظر تأیید شما می‌ماند.</string>
+    <string name="as_access_allowed">مجاز</string>
+    <string name="as_access_allowed_desc">تغییرات فوراً اعمال می‌شوند و کارتی برای واگرد نمایش داده می‌شود. موارد حساس مثل قفل برنامه همچنان می‌پرسند.</string>
+    <string name="as_picker_detail">در Chat یا Code بخواهید تنظیمی را روشن یا خاموش کند، لغزنده‌ای را جابه‌جا کند یا پالت رنگی بسازد. تنظیمات حساس همیشه اول می‌پرسند و کلیدهای API دور از دسترس می‌مانند.</string>
+    <string name="as_search_desc">تنظیمات را با درخواست در Chat یا Code تغییر دهید</string>
+    <string name="tip_ask_settings">از من بخواهید تنظیمی را تغییر دهم، مثلاً «لرزش را روی ۷۰٪ بگذار» یا «یک پالت فیروزه‌ای بساز». کارتی تغییرات را با گزینهٔ واگرد نشان می‌دهد.</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">%1$d تغییر</item>
+        <item quantity="other">%1$d تغییر</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">%1$d مورد به شما نیاز دارد</item>
+        <item quantity="other">%1$d مورد به شما نیاز دارد</item>
+    </plurals>
+</resources>

@@ -2663,6 +2663,7 @@ private fun AgentSection(
         showLiveUpdates = false,
         onSteeringMode = { scope.launch { container.settings.setSteeringMode(it) } },
         onRunTips = { scope.launch { container.settings.setRunTipsEnabled(it) } },
+        onAgentSettingsAccess = { scope.launch { container.settings.setAgentSettingsAccess(it) } },
     )
     if (showAgentsDialog) {
         AgentsInstructionsDialog(container, onDismiss = { showAgentsDialog = false })
