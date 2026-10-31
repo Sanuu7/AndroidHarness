@@ -104,6 +104,11 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
     var search by rememberSaveable { mutableStateOf("") }
     var onlyAbliterated by rememberSaveable { mutableStateOf(false) }
     var showAll by rememberSaveable(format, search, onlyAbliterated) { mutableStateOf(false) }
+    var hubSource by rememberSaveable { mutableStateOf(false) }
+    var hubTarget by remember { mutableStateOf<HubModel?>(null) }
+    var resumable by remember { mutableStateOf<Map<String, Long>>(emptyMap()) }
+    var storage by remember { mutableStateOf<LocalStorageReport?>(null) }
+    var capability by remember { mutableStateOf<LocalDeviceCapability?>(null) }
     fun importFiles(uri: android.net.Uri, kind: LocalModelFormat) {
         importJob = scope.launch {
             importProgress = uiContext.getString(R.string.ui_checking_model_files)
@@ -130,6 +135,20 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
             delay(3000)
         }
     }
+    val workStates = work.map { it.id to it.state }
+    LaunchedEffect(catalog, installed, workStates) {
+        while (true) {
+            withContext(Dispatchers.IO) {
+                resumable = catalog.filter { it.id !in installed }
+                    .associate { it.id to runCatching { manager.resumableBytes(it) }.getOrDefault(0L) }.filterValues { it > 0 }
+                storage = runCatching { manager.storageReport() }.getOrNull()
+            }
+            delay(3000)
+        }
+    }
+    LaunchedEffect(panel == 1) {
+        if (panel == 1 && capability == null) capability = withContext(Dispatchers.IO) { readDeviceCapability(context, manager.device()) }
+    }
     fun activeWork(model: LocalModelSpec) = work.firstOrNull { !it.state.isFinished && "model:${model.id}" in it.tags }
     fun removeNow(model: LocalModelSpec) {
         scope.launch {
@@ -144,6 +163,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
         settings.activeProviderId == LocalModelCatalog.PROVIDER_PREFIX + it.id
     }
     val transfers = catalog.filter { it.id !in installed && activeWork(it) != null }
+    val paused = catalog.filter { it.id !in installed && activeWork(it) == null && (resumable[it.id] ?: 0L) > 0 }
 
     PrimaryTabRow(selectedTabIndex = panel.coerceIn(0, 2), divider = {}) {
         listOf(R.string.local_library, R.string.local_browse, R.string.device_performance).forEachIndexed { index, title ->
@@ -251,13 +271,43 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
                 }
             })
     }
-    if (transfers.isNotEmpty()) {
+    if (transfers.isNotEmpty() || paused.isNotEmpty()) {
         Text(stringResource(R.string.settings_local_models_downloads), style = MaterialTheme.typography.titleMedium)
+        Text(stringResource(R.string.local_downloads_resume_note), style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         transfers.forEach { model ->
             LocalModelCard(model, contexts[model.id] ?: model.defaultContext, device,
                 transfer = activeWork(model), status = statuses[model.id], enabled = busy == null,
-                onPrimary = { removeNow(model) }, onDetails = { details = model })
+                onPrimary = { manager.cancelDownload(model.id) }, onDiscard = { removeNow(model) }, onDetails = { details = model })
         }
+        paused.forEach { model ->
+            val latest = work.filter { "model:${model.id}" in it.tags }.maxByOrNull { it.generation }
+            val failure = latest?.takeIf { it.state == WorkInfo.State.FAILED }?.outputData?.getString("error")
+            LocalModelCard(model, contexts[model.id] ?: model.defaultContext, device,
+                paused = true, pausedBytes = resumable[model.id] ?: 0L, status = statuses[model.id] ?: failure, enabled = busy == null,
+                onPrimary = { manager.download(model.id) }, onDiscard = { removeNow(model) }, onDetails = { details = model })
+        }
+    }
+    storage?.let { report ->
+        LocalStorageCard(report, device.freeStorage, canClearPaused = paused.isNotEmpty(), enabled = busy == null,
+            onClearPaused = {
+                scope.launch {
+                    busy = "storage"
+                    try { paused.forEach { manager.remove(it.id) } }
+                    catch (e: CancellationException) { throw e }
+                    catch (e: Exception) { message = e.message }
+                    finally { busy = null }
+                }
+            },
+            onClearLeftovers = {
+                scope.launch {
+                    busy = "storage"
+                    try { message = context.getString(R.string.local_storage_cleaned, size(manager.clearLeftovers())) }
+                    catch (e: CancellationException) { throw e }
+                    catch (e: Exception) { message = e.message }
+                    finally { busy = null }
+                }
+            })
     }
     LocalExperimentalSwitch(container)
     if (experimental) LocalGpuSupportCard(manager)
@@ -295,34 +345,57 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
             Text(if (format != LocalModelFormat.SAFETENSORS) uiContext.getString(R.string.ui_import_file) else uiContext.getString(R.string.ui_import_folder))
         }
     }
-    Text(stringResource(R.string.settings_local_models_recommendations), style = MaterialTheme.typography.titleSmall)
-    OutlinedTextField(search, { search = it }, placeholder = { Text(stringResource(R.string.settings_local_models_search)) }, singleLine = true,
+    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        FilterChip(selected = !hubSource, onClick = { hubSource = false }, label = { Text(stringResource(R.string.local_hub_curated)) })
+        FilterChip(selected = hubSource, onClick = { hubSource = true }, label = { Text(stringResource(R.string.local_hub_search_tab)) },
+            leadingIcon = { Icon(Icons.Default.Search, null, Modifier.size(18.dp)) })
+    }
+    if (!hubSource) {
+        val suggestions = capability?.let { LocalModelSuggestions.suggest(it, catalog, installed, format) }.orEmpty()
+        if (search.isBlank() && !onlyAbliterated) {
+            SuggestionsHeader(capability, suggestions.isNotEmpty())
+            suggestions.forEach { pick ->
+                val model = pick.model
+                val latest = work.filter { "model:${model.id}" in it.tags }.maxByOrNull { it.generation }
+                val failure = latest?.takeIf { it.state == WorkInfo.State.FAILED }?.outputData?.getString("error")
+                LocalModelCard(model, contexts[model.id] ?: model.defaultContext, device, badge = suggestionKindLabel(pick.kind),
+                    status = failure ?: suggestionReason(pick.kind), enabled = busy == null && activeWork(model) == null && model.id !in resumable,
+                    onPrimary = { download = model }, onDetails = { details = model })
+            }
+        }
+        Text(stringResource(R.string.settings_local_models_recommendations), style = MaterialTheme.typography.titleSmall)
+    }
+    OutlinedTextField(search, { search = it }, placeholder = { Text(stringResource(
+        if (!hubSource) R.string.settings_local_models_search
+        else if (format == LocalModelFormat.GGUF) R.string.local_hub_search_hint_gguf else R.string.local_hub_search_hint_safetensors)) }, singleLine = true,
         leadingIcon = { Icon(Icons.Default.Search, null) }, trailingIcon = {
             if (search.isNotEmpty()) IconButton(onClick = { search = "" }) { Icon(Icons.Default.Close, uiContext.getString(R.string.ui_clear_model_search)) }
         }, modifier = Modifier.fillMaxWidth())
-    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        FilterChip(selected = !onlyAbliterated, onClick = { onlyAbliterated = false }, label = { Text(stringResource(R.string.settings_local_models_filter_all)) })
-        FilterChip(selected = onlyAbliterated, onClick = { onlyAbliterated = true }, label = { Text(stringResource(R.string.settings_local_models_filter_abliterated)) })
+    if (hubSource) HubSearchPanel(manager, format, device, search) { hubTarget = it } else {
+        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            FilterChip(selected = !onlyAbliterated, onClick = { onlyAbliterated = false }, label = { Text(stringResource(R.string.settings_local_models_filter_all)) })
+            FilterChip(selected = onlyAbliterated, onClick = { onlyAbliterated = true }, label = { Text(stringResource(R.string.settings_local_models_filter_abliterated)) })
+        }
+        val recommendations = catalog.filter { model ->
+            model.format == format && !model.localFile && model.id !in installed && activeWork(model) == null && model.id !in resumable &&
+                (!onlyAbliterated || model.abliterated) && search.trim().split(Regex("\\s+")).all { term ->
+                    "${model.title} ${model.description} ${model.repository}".contains(term, ignoreCase = true)
+                }
+        }
+        if (recommendations.isEmpty()) Text(stringResource(R.string.settings_local_models_search_empty), style = MaterialTheme.typography.bodySmall)
+        (if (showAll) recommendations else recommendations.take(6)).forEach { model ->
+            val latest = work.filter { "model:${model.id}" in it.tags }.maxByOrNull { it.generation }
+            val failure = latest?.takeIf { it.state == WorkInfo.State.FAILED }?.outputData?.getString("error")
+            LocalModelCard(model, contexts[model.id] ?: model.defaultContext, device, status = failure,
+                enabled = busy == null, onPrimary = { download = model }, onDetails = { details = model })
+        }
+        if (!showAll && recommendations.size > 6) TextButton(onClick = { showAll = true }, modifier = Modifier.fillMaxWidth()) {
+            Text(stringResource(R.string.settings_local_models_show_all, recommendations.size.toString()))
+        }
+        if (onlyAbliterated) Text(stringResource(R.string.settings_local_models_abliterated_note),
+            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
-    val recommendations = catalog.filter { model ->
-        model.format == format && !model.localFile && model.id !in installed && activeWork(model) == null &&
-            (!onlyAbliterated || model.abliterated) && search.trim().split(Regex("\\s+")).all { term ->
-                "${model.title} ${model.description} ${model.repository}".contains(term, ignoreCase = true)
-            }
-    }
-    if (recommendations.isEmpty()) Text(stringResource(R.string.settings_local_models_search_empty), style = MaterialTheme.typography.bodySmall)
-    (if (showAll) recommendations else recommendations.take(6)).forEach { model ->
-        val latest = work.filter { "model:${model.id}" in it.tags }.maxByOrNull { it.generation }
-        val failure = latest?.takeIf { it.state == WorkInfo.State.FAILED }?.outputData?.getString("error")
-        LocalModelCard(model, contexts[model.id] ?: model.defaultContext, device, status = failure,
-            enabled = busy == null, onPrimary = { download = model }, onDetails = { details = model })
-    }
-    if (!showAll && recommendations.size > 6) TextButton(onClick = { showAll = true }, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.settings_local_models_show_all, recommendations.size.toString()))
-    }
-    if (onlyAbliterated) Text(stringResource(R.string.settings_local_models_abliterated_note),
-        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    if (format == LocalModelFormat.SAFETENSORS) {
+    if (format == LocalModelFormat.SAFETENSORS && !hubSource) {
         Text(stringResource(R.string.settings_local_models_safetensors_note),
             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -364,6 +437,10 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
     }
     if (customDialog) CustomModelDialog(manager, format, onDismiss = { customDialog = false },
         onDownload = { customDialog = false; download = it })
+    hubTarget?.let { hit ->
+        CustomModelDialog(manager, hit.format, initialLink = hit.url, onDismiss = { hubTarget = null },
+            onDownload = { hubTarget = null; download = it })
+    }
     removing?.let { model ->
         AlertDialog(onDismissRequest = { removing = null }, title = { Text(stringResource(R.string.settings_local_models_remove_title)) },
             text = { Text(stringResource(R.string.settings_local_models_remove_message, model.title)) },
@@ -379,8 +456,9 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
 internal fun LocalModelCard(model: LocalModelSpec, context: Int, device: LocalDeviceProfile,
     selected: Boolean = false, installed: Boolean = false, working: Boolean = false,
     loaded: Boolean = false, unloading: Boolean = false, stopEnabled: Boolean = true,
-    transfer: WorkInfo? = null, status: String? = null, enabled: Boolean,
-    onPrimary: () -> Unit, onDetails: () -> Unit, onSettings: (() -> Unit)? = null,
+    transfer: WorkInfo? = null, paused: Boolean = false, pausedBytes: Long = 0, badge: String? = null,
+    status: String? = null, enabled: Boolean,
+    onPrimary: () -> Unit, onDetails: () -> Unit, onSettings: (() -> Unit)? = null, onDiscard: (() -> Unit)? = null,
     onImageSupport: (() -> Unit)? = null, onRemove: (() -> Unit)? = null, onStop: (() -> Unit)? = null) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     var menu by remember { mutableStateOf(false) }
@@ -420,6 +498,7 @@ internal fun LocalModelCard(model: LocalModelSpec, context: Int, device: LocalDe
                 Text(model.description, style = MaterialTheme.typography.bodySmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                badge?.let { LocalModelBadge(it, positive = true) }
                 if (selected) LocalModelBadge(uiContext.getString(R.string.settings_selected), positive = true)
                 if (installed && (selected || working)) {
                     LocalModelBadge(stringResource(if (unloading) R.string.local_unloading else if (loaded) R.string.local_loaded else if (working) R.string.local_loading else R.string.local_not_loaded), positive = loaded && !unloading)
@@ -438,14 +517,19 @@ internal fun LocalModelCard(model: LocalModelSpec, context: Int, device: LocalDe
                     Text(stringResource(R.string.settings_local_models_downloaded, size(received), size(total)), style = MaterialTheme.typography.bodySmall)
                 } else AppLinearProgressIndicator(Modifier.fillMaxWidth())
             }
+            if (paused && model.downloadBytes > 0) {
+                AppLinearProgressIndicator(progress = { (pausedBytes.toFloat() / model.downloadBytes).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+                Text(stringResource(R.string.local_paused_status, size(pausedBytes), size(model.downloadBytes)), style = MaterialTheme.typography.bodySmall)
+            }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 if (!selected || !installed || !working) Button(onClick = onPrimary, enabled = enabled, shapes = ButtonDefaults.shapes()) {
-                    Text(if (transfer != null) uiContext.getString(R.string.ui_cancel_download) else if (installed && selected) uiContext.getString(R.string.local_load_model) else if (installed) uiContext.getString(R.string.ui_use_in_chat) else uiContext.getString(R.string.ui_download))
+                    Text(if (transfer != null) uiContext.getString(R.string.local_pause) else if (paused) uiContext.getString(R.string.local_resume) else if (installed && selected) uiContext.getString(R.string.local_load_model) else if (installed) uiContext.getString(R.string.ui_use_in_chat) else uiContext.getString(R.string.ui_download))
                 }
                 onSettings?.let { action -> OutlinedButton(onClick = action, enabled = enabled) {
                     Icon(Icons.Default.Tune, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_local_models_settings))
                 } }
+                onDiscard?.let { action -> OutlinedButton(onClick = action, enabled = enabled) { Text(stringResource(R.string.local_discard)) } }
                 if (working) onStop?.let { action -> OutlinedButton(onClick = action, enabled = stopEnabled) { Text(stringResource(R.string.local_stop_unload)) } }
             }
         }
@@ -619,25 +703,42 @@ private fun LocalNumberField(label: String, value: String, unit: String, help: S
         singleLine = true, enabled = enabled, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number), modifier = Modifier.fillMaxWidth())
 }
 
-private fun size(bytes: Long): String = if (bytes < 1_000_000_000L) String.format(Locale.US, "%.0f MB", bytes / 1_000_000.0)
+internal fun size(bytes: Long): String = if (bytes < 1_000_000_000L) String.format(Locale.US, "%.0f MB", bytes / 1_000_000.0)
     else String.format(Locale.US, "%.1f GB", bytes / 1_000_000_000.0)
 
 @Composable
-internal fun CustomModelDialog(manager: LocalModelManager, format: LocalModelFormat = LocalModelFormat.GGUF, onDismiss: () -> Unit, onDownload: (LocalModelSpec) -> Unit) {
+internal fun CustomModelDialog(manager: LocalModelManager, format: LocalModelFormat = LocalModelFormat.GGUF, initialLink: String = "",
+    onDismiss: () -> Unit, onDownload: (LocalModelSpec) -> Unit) {
     CustomModelLinkDialog(resolve = { manager.resolveLink(it, format) }, inspect = manager::inspectCustom, format = format,
-        device = manager::device, onDismiss = onDismiss, onDownload = onDownload)
+        device = manager::device, onDismiss = onDismiss, onDownload = onDownload, initialLink = initialLink)
 }
 
 @Composable
 internal fun CustomModelLinkDialog(resolve: suspend (String) -> List<LocalModelSpec>,
     inspect: suspend (LocalModelSpec) -> LocalModelSpec, device: () -> LocalDeviceProfile,
-    onDismiss: () -> Unit, onDownload: (LocalModelSpec) -> Unit, format: LocalModelFormat = LocalModelFormat.GGUF) {
+    onDismiss: () -> Unit, onDownload: (LocalModelSpec) -> Unit, format: LocalModelFormat = LocalModelFormat.GGUF,
+    initialLink: String = "") {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    var link by remember { mutableStateOf("") }
+    var link by remember { mutableStateOf(initialLink) }
     var candidates by remember { mutableStateOf<List<LocalModelSpec>>(emptyList()) }
     var error by remember { mutableStateOf<String?>(null) }
     var loading by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
+    val profile = remember { device() }
+    fun findFiles() {
+        loading = true; error = null; candidates = emptyList()
+        scope.launch {
+            try {
+                candidates = resolve(link).sortedByDescending { it.bytes }
+                if (candidates.isEmpty()) error = uiContext.getString(R.string.ui_no_supported_model_files_were_found_at)
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.ui_could_not_find_model_files) }
+            finally { loading = false }
+        }
+    }
+    // A repository chosen from Hugging Face search opens with its files already listed.
+    LaunchedEffect(initialLink) { if (initialLink.isNotBlank()) findFiles() }
+    val bestFit = candidates.filter { LocalModelSuggestions.runsOn(profile, it) }.maxByOrNull { it.bytes }
     AlertDialog(onDismissRequest = onDismiss, title = { Text(if (format == LocalModelFormat.GGUF) uiContext.getString(R.string.ui_add_gguf) else uiContext.getString(R.string.ui_import_safetensors)) }, text = {
         Column(Modifier.heightIn(max = 440.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(if (format == LocalModelFormat.GGUF) uiContext.getString(R.string.ui_paste_a_hugging_face_page_or_a)
@@ -651,7 +752,11 @@ internal fun CustomModelLinkDialog(resolve: suspend (String) -> List<LocalModelS
             candidates.forEach { model ->
                 Surface(shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                     Column(Modifier.fillMaxWidth().padding(12.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(model.filename.substringAfterLast('/'), style = MaterialTheme.typography.bodyMedium)
+                        Text(if (model.format == LocalModelFormat.SAFETENSORS) model.repository else model.filename.substringAfterLast('/'),
+                            style = MaterialTheme.typography.bodyMedium)
+                        if (model === bestFit) Text(stringResource(R.string.local_best_fit), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
+                        else if (!LocalModelSuggestions.runsOn(profile, model)) Text(stringResource(R.string.settings_local_models_badge_may_exceed),
+                            style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(size(model.downloadBytes), style = MaterialTheme.typography.bodySmall, modifier = Modifier.weight(1f))
                             TextButton(enabled = !loading, onClick = {
@@ -668,15 +773,6 @@ internal fun CustomModelLinkDialog(resolve: suspend (String) -> List<LocalModelS
                 }
             }
         }
-    }, confirmButton = { TextButton(enabled = link.isNotBlank() && !loading, onClick = {
-        loading = true; error = null; candidates = emptyList()
-        scope.launch {
-            try {
-                candidates = resolve(link)
-                if (candidates.isEmpty()) error = uiContext.getString(R.string.ui_no_supported_model_files_were_found_at)
-            } catch (e: CancellationException) { throw e }
-            catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.ui_could_not_find_model_files) }
-            finally { loading = false }
-        }
-    }) { Text(stringResource(R.string.settings_local_models_find_files)) } }, dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } })
+    }, confirmButton = { TextButton(enabled = link.isNotBlank() && !loading, onClick = ::findFiles
+    ) { Text(stringResource(R.string.settings_local_models_find_files)) } }, dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } })
 }

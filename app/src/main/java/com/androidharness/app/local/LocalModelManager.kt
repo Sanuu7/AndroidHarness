@@ -7,7 +7,9 @@ import android.provider.DocumentsContract
 import android.os.Build
 import android.os.Process
 import android.os.StatFs
+import androidx.work.Constraints
 import androidx.work.ExistingWorkPolicy
+import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.workDataOf
@@ -38,6 +40,7 @@ import okhttp3.Call
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import java.io.File
+import java.io.InputStream
 import java.security.MessageDigest
 import java.util.UUID
 import java.util.concurrent.TimeUnit
@@ -123,7 +126,7 @@ class LocalModelManager(private val context: Context) {
             lifecycle.withLock {
                 models.value.forEach { model ->
                     runCatching {
-                        store.clearPartial(model.id)
+                        store.discardStale(model)
                         if (store.file(model.id).exists() && !store.installed(model)) store.remove(model.id)
                     }.onFailure { setStatus(model.id, it.message ?: "Storage cleanup failed") }
                 }
@@ -178,6 +181,7 @@ class LocalModelManager(private val context: Context) {
         synchronized(gate) { blocked.remove(id) }
         WorkManager.getInstance(context).enqueueUniqueWork(workName(id), ExistingWorkPolicy.KEEP,
             OneTimeWorkRequestBuilder<LocalModelDownloadWorker>().setInputData(workDataOf("modelId" to id))
+                .setConstraints(Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
                 .addTag("local-model-download").addTag("model:$id").build())
     }
 
@@ -194,41 +198,61 @@ class LocalModelManager(private val context: Context) {
                     check(id !in blocked && !stopped()) { "Download cancelled." }
                     cancelled.set(false)
                 }
-                setStatus(id, "Connecting")
-                val call = client.newCall(Request.Builder().url(model.url).build())
-                synchronized(gate) {
-                    check(id !in blocked && !stopped() && !cancelled.get()) { "Download cancelled." }
-                    downloadCall = call
-                    activeId = id
-                }
+                val resume = store.resumableBytes(model)
+                setStatus(id, if (resume > 0) "Resuming" else "Connecting")
                 try {
-                    call.execute().use { response ->
-                        check(response.isSuccessful) { "Model server returned HTTP ${response.code}. Retry later." }
-                        val body = checkNotNull(response.body) { "Empty download." }
-                        check(body.contentLength() < 0 || body.contentLength() == model.bytes) { "Unexpected model size." }
-                        var lastUpdate = 0L
-                        body.byteStream().use { input ->
-                            store.install(model, input, { cancelled.get() || stopped() }) { count ->
-                                val now = System.currentTimeMillis()
-                                if (now - lastUpdate >= 500 || count == model.bytes) {
-                                    lastUpdate = now
-                                    setStatus(id, if (count == model.bytes) "Verifying" else "Downloading ${count * 100 / model.bytes}%")
-                                    kotlinx.coroutines.runBlocking { progress(count, model.bytes) }
-                                }
+                    var lastUpdate = 0L
+                    transfer(id, model.url, model.bytes, resume, stopped) { input, offset ->
+                        store.install(model, input, { cancelled.get() || stopped() }, { count ->
+                            val now = System.currentTimeMillis()
+                            if (now - lastUpdate >= 500 || count == model.bytes) {
+                                lastUpdate = now
+                                setStatus(id, if (count == model.bytes) "Verifying" else "Downloading ${count * 100 / model.bytes}%")
+                                kotlinx.coroutines.runBlocking { progress(count, model.bytes) }
                             }
-                        }
+                        }, offset)
                     }
                     publishInstalled()
                     progress(model.bytes, model.bytes)
                     setStatus(id, "Installed")
                 } catch (e: Exception) {
-                    setStatus(id, if (cancelled.get() || stopped()) "Cancelled" else e.message ?: "Download failed")
+                    setStatus(id, if (cancelled.get() || stopped()) "Paused" else e.message ?: "Download failed")
                     throw e
                 } finally {
                     synchronized(gate) { if (activeId == id) { downloadCall = null; activeId = null } }
                 }
             }
         }
+
+    /**
+     * Opens [url] and hands the body to [consume] together with the offset the bytes start at. Asks to continue
+     * from [existing] and falls back to a full download when the server cannot honour the range.
+     */
+    private fun transfer(modelId: String, url: String, total: Long, existing: Long, stopped: () -> Boolean,
+        consume: (InputStream, Long) -> Unit) {
+        var offset = existing
+        while (true) {
+            val call = client.newCall(Request.Builder().url(url).apply { if (offset > 0) header("Range", "bytes=$offset-") }.build())
+            synchronized(gate) {
+                check(modelId !in blocked && !stopped() && !cancelled.get()) { "Download cancelled." }
+                downloadCall = call; activeId = modelId
+            }
+            try {
+                val restart = call.execute().use { response ->
+                    val range = parseContentRange(response.header("Content-Range"))
+                    val resumed = offset > 0 && response.code == 206 && range?.first == offset && range.total == total
+                    if (offset > 0 && (response.code == 416 || response.code == 206 && !resumed)) return@use true
+                    check(response.isSuccessful) { "Model server returned HTTP ${response.code}. Retry later." }
+                    val body = checkNotNull(response.body) { "Empty download." }
+                    check(resumed || body.contentLength() < 0 || body.contentLength() == total) { "Unexpected model size." }
+                    consume(body.byteStream(), if (resumed) offset else 0L)
+                    false
+                }
+                if (!restart) return
+                offset = 0
+            } finally { synchronized(gate) { downloadCall = null } }
+        }
+    }
 
     internal fun interruptDownload(id: String) {
         synchronized(gate) {
@@ -248,7 +272,7 @@ class LocalModelManager(private val context: Context) {
                 check(response.isSuccessful) { "Model source returned HTTP ${response.code}." }
                 val body = checkNotNull(response.body)
                 check(body.contentLength() < 0 || body.contentLength() == asset.bytes) { "Model source changed file size." }
-                body.byteStream().use { source -> store.installAsset(asset, source, target, { cancelled.get() || stopped() }, progress) }
+                body.byteStream().use { source -> store.installAsset(asset, source, target, { cancelled.get() || stopped() }, progress = progress) }
             }
         } finally { synchronized(gate) { downloadCall = null } }
     }
@@ -260,19 +284,29 @@ class LocalModelManager(private val context: Context) {
         }
         val source = store.sourceDirectory(model.id)
         val target = store.partial(model.id)
+        // Paused downloads and dropped connections keep the downloaded files so the next attempt can continue.
+        var keepSource = true
+        var converting = false
         try {
             source.mkdirs()
             var completed = 0L
             val total = model.assets.sumOf { it.bytes }
             model.assets.forEach { asset ->
-                setStatus(model.id, "Downloading ${asset.filename}")
+                val finished = File(source, asset.filename)
+                // A file with its final name was verified before it was renamed, so it is never fetched twice.
+                if (finished.isFile && finished.length() == asset.bytes) { completed += asset.bytes; return@forEach }
+                val part = File(source, asset.filename + ".part")
+                val existing = part.takeIf { it.isFile && it.length() < asset.bytes }?.length() ?: 0L
+                setStatus(model.id, if (existing > 0) "Resuming ${asset.filename}" else "Downloading ${asset.filename}")
                 var lastUpdate = 0L
-                transferAsset(model.id, asset, File(source, asset.filename), stopped) { count ->
-                    val now = System.currentTimeMillis()
-                    if (now - lastUpdate >= 500 || count == asset.bytes) {
-                        lastUpdate = now
-                        setStatus(model.id, "Downloading ${(completed + count) * 100 / total}%")
-                        kotlinx.coroutines.runBlocking { progress(completed + count, total) }
+                transfer(model.id, asset.url, asset.bytes, existing, stopped) { input, offset ->
+                    store.installAsset(asset, input, finished, { cancelled.get() || stopped() }, part, offset) { count ->
+                        val now = System.currentTimeMillis()
+                        if (now - lastUpdate >= 500 || count == asset.bytes) {
+                            lastUpdate = now
+                            setStatus(model.id, "Downloading ${(completed + count) * 100 / total}%")
+                            kotlinx.coroutines.runBlocking { progress(completed + count, total) }
+                        }
                     }
                 }
                 completed += asset.bytes
@@ -283,6 +317,7 @@ class LocalModelManager(private val context: Context) {
                     handle = LocalNative.create(); _running.value = model.id
                 }
                 try {
+                    converting = true
                     setStatus(model.id, "Converting safetensors to Q4 GGUF")
                     LocalNative.convertSafetensors(handle, source.absolutePath.toByteArray(), target.absolutePath.toByteArray(), limits(model.id).threads)
                     check(!cancelled.get() && !stopped()) { "Conversion cancelled." }
@@ -293,11 +328,15 @@ class LocalModelManager(private val context: Context) {
             custom.add(converted)
             _models.value = catalogModels()
             check(target.renameTo(store.file(model.id))) { "Could not finalize converted model." }
+            keepSource = false
             publishInstalled(); setStatus(model.id, "Installed · converted to Q4 GGUF")
             progress(total, total)
-        } catch (e: Exception) { setStatus(model.id, e.message ?: "Conversion failed"); throw e }
+        } catch (e: Exception) {
+            if (converting && !cancelled.get() && !stopped() && model.id !in blocked) keepSource = false
+            setStatus(model.id, e.message ?: "Conversion failed"); throw e
+        }
         finally {
-            store.clearPartial(model.id)
+            if (keepSource) { target.delete(); File(root, "${target.name}.unquantized").delete() } else store.clearPartial(model.id)
             synchronized(gate) { activeId = null; downloadCall = null }
         }
     }
@@ -723,6 +762,15 @@ class LocalModelManager(private val context: Context) {
             _loaded.value = models.value.firstOrNull { store.file(it.id).absolutePath == cachedPath }?.id
         }
     }
+
+    fun storageReport(): LocalStorageReport = store.usage(models.value)
+    fun resumableBytes(model: LocalModelSpec): Long = store.resumableBytes(model)
+    /** Frees files that belong to no known model. Returns the bytes released. */
+    suspend fun clearLeftovers(): Long = withContext(Dispatchers.IO) { store.clearOrphans(models.value.map { it.id }.toSet()) }
+
+    private val hub = HuggingFaceSearch()
+    suspend fun searchHub(query: String, format: LocalModelFormat, sort: HubSort, limit: Int): List<HubModel> =
+        withContext(Dispatchers.IO) { hub.search(query, format, sort, limit) }
 
     private fun publishInstalled() { _installed.value = models.value.filter(store::installed).map { it.id }.toSet() }
     private fun setStatus(id: String, text: String) { _status.update { it + (id to text) } }

@@ -41,6 +41,10 @@ class LocalModelDownloadWorker(context: Context, params: WorkerParameters) : Cor
             Result.retry()
         } catch (e: CancellationException) {
             throw e
+        } catch (e: java.io.IOException) {
+            // A dropped connection keeps the bytes already stored, so a retry continues instead of starting over.
+            if (runAttemptCount < MAX_NETWORK_RETRIES) Result.retry()
+            else Result.failure(workDataOf("error" to (e.message ?: "Connection lost. Resume the download to continue.")))
         } catch (e: Exception) {
             Result.failure(workDataOf("error" to (e.message ?: "Download failed")))
         } catch (_: UnsatisfiedLinkError) {
@@ -56,13 +60,16 @@ class LocalModelDownloadWorker(context: Context, params: WorkerParameters) : Cor
         val notification = NotificationCompat.Builder(applicationContext, CHANNEL)
             .setSmallIcon(android.R.drawable.stat_sys_download)
             .setContentTitle("Downloading $title")
-            .setContentText("Tap Cancel to stop the download")
+            .setContentText("Pause keeps what is downloaded. Resume it from Settings.")
             .setOngoing(true).setOnlyAlertOnce(true).setProgress(100, progress ?: 0, progress == null)
-            .addAction(0, "Cancel", WorkManager.getInstance(applicationContext).createCancelPendingIntent(id))
+            .addAction(0, "Pause", WorkManager.getInstance(applicationContext).createCancelPendingIntent(id))
             .build()
         return if (Build.VERSION.SDK_INT >= 29) ForegroundInfo(id.hashCode(), notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC)
         else ForegroundInfo(id.hashCode(), notification)
     }
 
-    private companion object { const val CHANNEL = "local-model-downloads" }
+    private companion object {
+        const val CHANNEL = "local-model-downloads"
+        const val MAX_NETWORK_RETRIES = 5
+    }
 }

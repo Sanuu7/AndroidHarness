@@ -73,19 +73,19 @@ class LocalModelsTest {
         store.remove(model.id)
     }
 
-    @Test fun `bad checksum truncation oversize and invalid magic leave no files`() = temporary { root ->
+    @Test fun `bad checksum oversize and invalid magic leave no files`() = temporary { root ->
         val data = "GGUFfixture".toByteArray()
         val model = fixture(data)
         val store = LocalModelStore(root)
         for ((spec, body) in listOf(model.copy(sha256 = "0".repeat(64)) to data,
-            model to data.dropLast(1).toByteArray(), model to (data + 1), fixture("HTMLfixture".toByteArray()) to "HTMLfixture".toByteArray())) {
+            model to (data + 1), fixture("HTMLfixture".toByteArray()) to "HTMLfixture".toByteArray())) {
             assertThrows(IllegalStateException::class.java) { store.install(spec, body.inputStream(), { false }, {}) }
             assertFalse(store.file(model.id).exists())
             assertFalse(store.partial(model.id).exists())
         }
     }
 
-    @Test fun `cancellation during transfer deletes partial bytes`() = temporary { root ->
+    @Test fun `cancellation during transfer keeps the partial bytes so the download can resume`() = temporary { root ->
         val data = "GGUFfixture".toByteArray()
         val model = fixture(data)
         val store = LocalModelStore(root)
@@ -94,7 +94,16 @@ class LocalModelsTest {
             store.install(model, data.inputStream(), { cancelled }, { cancelled = true })
         }
         assertFalse(store.file(model.id).exists())
-        assertFalse(store.partial(model.id).exists())
+        assertTrue(store.partial(model.id).exists())
+    }
+
+    @Test fun `a stream that ends early keeps its bytes for resume`() = temporary { root ->
+        val data = "GGUFfixture".toByteArray()
+        val model = fixture(data)
+        val store = LocalModelStore(root)
+        assertThrows(IllegalStateException::class.java) { store.install(model, data.dropLast(1).toByteArray().inputStream(), { false }, {}) }
+        assertEquals(data.size - 1L, store.partial(model.id).length())
+        assertFalse(store.file(model.id).exists())
     }
 
     @Test fun `store rejects path traversal and preserves installed files`() = temporary { root ->
