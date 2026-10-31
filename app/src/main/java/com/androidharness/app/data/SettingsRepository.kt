@@ -134,14 +134,15 @@ data class AppSettings(
     /** 0 is a crisp tick, 100 is a long soft swell. */
     val rumbleSmoothness: Int = RUMBLE_DEFAULT_SMOOTHNESS,
     val rumbleEngine: RumbleEngine = RumbleEngine.AUTO,
-    /** Chat turns pulse by default; Code runs many tools, so it is opt-in. */
     val rumbleInChat: Boolean = true,
-    val rumbleInCode: Boolean = false,
+    val rumbleInCode: Boolean = true,
     /** Pulses closer together than this are dropped so bursts stay calm. */
     val rumbleSpacingMs: Int = RUMBLE_DEFAULT_SPACING_MS,
     val rumbleSkipOnBatterySaver: Boolean = true,
     /** Per-cue overrides keyed by [RumbleCue] name. */
     val rumbleCues: Map<String, RumbleCueConfig> = emptyMap(),
+    /** Which hand-tuned set of event patterns applies where no override is saved; picked at random on first run. */
+    val rumbleCombo: Int = RUMBLE_DEFAULT_COMBO,
     /** Default image appetite for chats that have not overridden it. */
     val chatImageFrequency: ImageFrequency = ImageFrequency.DEFAULT,
     val chatInstructions: String = "",
@@ -291,6 +292,7 @@ class SettingsRepository(private val context: Context) {
         val RUMBLE_SPACING = intPreferencesKey("rumble_spacing_ms")
         val RUMBLE_BATTERY_SAVER = booleanPreferencesKey("rumble_skip_on_battery_saver")
         val RUMBLE_CUES = stringPreferencesKey("rumble_cues")
+        val RUMBLE_COMBO = intPreferencesKey("rumble_combo")
         val CHAT_IMAGE_FREQUENCY = stringPreferencesKey("chat_image_frequency")
         val CHAT_INSTRUCTIONS = stringPreferencesKey("chat_instructions")
         val CHAT_AGENTS = stringPreferencesKey("chat_agents")
@@ -406,10 +408,11 @@ class SettingsRepository(private val context: Context) {
             rumbleSmoothness = (prefs[Keys.RUMBLE_SMOOTHNESS] ?: RUMBLE_DEFAULT_SMOOTHNESS).coerceIn(0, 100),
             rumbleEngine = prefs[Keys.RUMBLE_ENGINE]?.let { runCatching { RumbleEngine.valueOf(it) }.getOrNull() } ?: RumbleEngine.AUTO,
             rumbleInChat = prefs[Keys.RUMBLE_IN_CHAT] ?: true,
-            rumbleInCode = prefs[Keys.RUMBLE_IN_CODE] ?: false,
+            rumbleInCode = prefs[Keys.RUMBLE_IN_CODE] ?: true,
             rumbleSpacingMs = (prefs[Keys.RUMBLE_SPACING] ?: RUMBLE_DEFAULT_SPACING_MS).coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS),
             rumbleSkipOnBatterySaver = prefs[Keys.RUMBLE_BATTERY_SAVER] ?: true,
             rumbleCues = decodeRumbleCues(prefs[Keys.RUMBLE_CUES]),
+            rumbleCombo = (prefs[Keys.RUMBLE_COMBO] ?: RUMBLE_DEFAULT_COMBO).coerceIn(0, RUMBLE_COMBO_COUNT - 1),
             chatInstructions = prefs[Keys.CHAT_INSTRUCTIONS].orEmpty(),
             chatAgents = ChatAgentProfile.decodeList(prefs[Keys.CHAT_AGENTS]),
             chatImageFrequency = prefs[Keys.CHAT_IMAGE_FREQUENCY]?.let {
@@ -492,6 +495,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.RUMBLE_SPACING] = s.rumbleSpacingMs.coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS)
             p[Keys.RUMBLE_BATTERY_SAVER] = s.rumbleSkipOnBatterySaver
             p[Keys.RUMBLE_CUES] = encodeRumbleCues(s.rumbleCues)
+            p[Keys.RUMBLE_COMBO] = s.rumbleCombo.coerceIn(0, RUMBLE_COMBO_COUNT - 1)
             p[Keys.CHAT_IMAGE_FREQUENCY] = s.chatImageFrequency.name
             p[Keys.CHAT_INSTRUCTIONS] = s.chatInstructions.take(ConversationConfig.MAX_INSTRUCTIONS_CHARS)
             p[Keys.CHAT_AGENTS] = ChatAgentProfile.encodeList(s.chatAgents)
@@ -990,7 +994,8 @@ class SettingsRepository(private val context: Context) {
     suspend fun setRumbleCue(cue: RumbleCue, config: RumbleCueConfig) {
         context.settingsStore.edit { prefs ->
             val saved = decodeRumbleCues(prefs[Keys.RUMBLE_CUES]).toMutableMap()
-            if (config == RumbleCueConfig(cue.defaultPattern, cue.defaultLevel)) saved.remove(cue.name) else saved[cue.name] = config
+            val combo = (prefs[Keys.RUMBLE_COMBO] ?: RUMBLE_DEFAULT_COMBO).coerceIn(0, RUMBLE_COMBO_COUNT - 1)
+            if (config == rumbleComboConfig(combo, cue)) saved.remove(cue.name) else saved[cue.name] = config
             prefs[Keys.RUMBLE_CUES] = encodeRumbleCues(saved)
         }
     }
@@ -1001,7 +1006,27 @@ class SettingsRepository(private val context: Context) {
                 Keys.RUMBLE_SPACING, Keys.RUMBLE_BATTERY_SAVER).forEach { prefs.remove(it) }
             prefs.remove(Keys.RUMBLE_ENGINE)
             prefs.remove(Keys.RUMBLE_CUES)
+            prefs[Keys.RUMBLE_COMBO] = kotlin.random.Random.nextInt(RUMBLE_COMBO_COUNT)
         }
+    }
+
+    /** A fresh install gets a random set of event patterns once, then keeps it. */
+    suspend fun ensureRumbleCombo() {
+        context.settingsStore.edit { prefs ->
+            if (Keys.RUMBLE_COMBO !in prefs) prefs[Keys.RUMBLE_COMBO] = kotlin.random.Random.nextInt(RUMBLE_COMBO_COUNT)
+        }
+    }
+
+    /** Rolls a different set than the current one and clears the per-event overrides. Returns the new set. */
+    suspend fun shuffleRumbleCombo(): Int {
+        var next = RUMBLE_DEFAULT_COMBO
+        context.settingsStore.edit { prefs ->
+            val current = (prefs[Keys.RUMBLE_COMBO] ?: RUMBLE_DEFAULT_COMBO).coerceIn(0, RUMBLE_COMBO_COUNT - 1)
+            next = (0 until RUMBLE_COMBO_COUNT).filter { it != current }.random()
+            prefs[Keys.RUMBLE_COMBO] = next
+            prefs.remove(Keys.RUMBLE_CUES)
+        }
+        return next
     }
 
     suspend fun setChatImageFrequency(value: ImageFrequency) {

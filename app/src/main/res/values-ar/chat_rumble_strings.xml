@@ -8,7 +8,7 @@
     <string name="rumble_in_chat">المحادثة</string>
     <string name="rumble_in_chat_desc">نبضات أثناء أدوار المحادثة.</string>
     <string name="rumble_in_code">الكود</string>
-    <string name="rumble_in_code_desc">نبضات أثناء تشغيل الكود للأدوات. متوقف افتراضيًا لأن الكود قد يشغّل أدوات كثيرة.</string>
+    <string name="rumble_in_code_desc">نبضات أثناء تشغيل الكود للأدوات.</string>
     <string name="rumble_strength">القوة</string>
     <string name="rumble_feel">الإحساس</string>
     <string name="rumble_feel_crisp">حاد</string>
@@ -25,7 +25,10 @@
     <string name="rumble_engine_custom">شكل موجي مخصص</string>
     <string name="rumble_engine_custom_desc">نبضتنا الخاصة، تتشكل بالقوة والإحساس، على أي هاتف فيه محرك اهتزاز.</string>
     <string name="rumble_events_title">الأحداث</string>
-    <string name="rumble_events_desc">اختر النمط والمستوى لكل لحظة.</string>
+    <string name="rumble_events_desc">يبدأ بمجموعة عشوائية من الأنماط. اخلط للحصول على مجموعة أخرى، أو اختر النمط والمستوى لكل لحظة.</string>
+    <string name="rumble_shuffle">اخلط</string>
+    <string name="rumble_advanced_title">متقدم</string>
+    <string name="rumble_advanced_desc">القوة والإحساس والمحرك والأحداث والضبط الدقيق. القيم الافتراضية مضبوطة مسبقًا.</string>
     <string name="rumble_cue_think">التفكير</string>
     <string name="rumble_cue_think_desc">يعود النموذج إلى التفكير.</string>
     <string name="rumble_cue_tool_start">بدء أداة</string>

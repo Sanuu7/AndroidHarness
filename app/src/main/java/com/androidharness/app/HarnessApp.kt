@@ -45,6 +45,7 @@ class HarnessApp : Application() {
         ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled = false
         WebView.enableSlowWholeDocumentDraw()
         container = AppContainer(this)
+        memoryScope.launch { container.settings.ensureRumbleCombo() }
     }
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)

@@ -3,7 +3,10 @@ package com.androidharness.app.ui.common
 import com.androidharness.app.data.RumbleCue
 import com.androidharness.app.data.RumbleCueConfig
 import com.androidharness.app.data.RumblePattern
+import com.androidharness.app.data.RUMBLE_COMBO_COUNT
+import com.androidharness.app.data.RUMBLE_DEFAULT_COMBO
 import com.androidharness.app.data.configFor
+import com.androidharness.app.data.rumbleComboConfig
 import com.androidharness.app.data.decodeRumbleCues
 import com.androidharness.app.data.encodeRumbleCues
 import org.junit.Assert.assertEquals
@@ -89,9 +92,21 @@ class RumbleWaveformTest {
         val saved = mapOf("TOOL_START" to RumbleCueConfig(RumblePattern.THUD, 40))
         val round = decodeRumbleCues(encodeRumbleCues(saved))
         assertEquals(RumbleCueConfig(RumblePattern.THUD, 40), round.configFor(RumbleCue.TOOL_START))
-        assertEquals(RumbleCueConfig(RumbleCue.THINK.defaultPattern, RumbleCue.THINK.defaultLevel), round.configFor(RumbleCue.THINK))
+        assertEquals(rumbleComboConfig(RUMBLE_DEFAULT_COMBO, RumbleCue.THINK), round.configFor(RumbleCue.THINK))
+        assertEquals(rumbleComboConfig(3, RumbleCue.THINK), round.configFor(RumbleCue.THINK, 3))
         assertNotNull(decodeRumbleCues("not json"))
         assertTrue(decodeRumbleCues("""{"GONE":{"pattern":"TICK","level":10}}""").isEmpty())
         assertEquals(100, decodeRumbleCues("""{"THINK":{"pattern":"TICK","level":900}}""").getValue("THINK").level)
+    }
+
+    @Test
+    fun `every combination covers all moments and keeps the key signals apart`() {
+        for (combo in 0 until RUMBLE_COMBO_COUNT) {
+            val configs = RumbleCue.entries.map { rumbleComboConfig(combo, it) }
+            configs.forEach { assertTrue(it.pattern != RumblePattern.OFF && it.level in 1..100) }
+            val signals = listOf(RumbleCue.TOOL_FAILED, RumbleCue.ANSWER_DONE, RumbleCue.APPROVAL).map { rumbleComboConfig(combo, it).pattern }
+            assertEquals("combo $combo reuses a signal pattern", signals.size, signals.toSet().size)
+        }
+        assertEquals(rumbleComboConfig(RUMBLE_COMBO_COUNT - 1, RumbleCue.WRITE), rumbleComboConfig(99, RumbleCue.WRITE))
     }
 }

@@ -30,16 +30,17 @@ internal data class RumbleStyle(
     val strength: Int,
     val smoothness: Int,
     val engine: RumbleEngine = RumbleEngine.AUTO,
-    val spacingMs: Int = 90,
+    val spacingMs: Int = com.androidharness.app.data.RUMBLE_DEFAULT_SPACING_MS,
     val skipOnBatterySaver: Boolean = true,
     val cues: Map<String, RumbleCueConfig> = emptyMap(),
+    val combo: Int = com.androidharness.app.data.RUMBLE_DEFAULT_COMBO,
 ) {
-    fun config(cue: RumbleCue) = cues.configFor(cue)
+    fun config(cue: RumbleCue) = cues.configFor(cue, combo)
 }
 
 internal val AppSettings.rumbleStyle: RumbleStyle
     get() = RumbleStyle(rumbleEnabled, rumbleStrength, rumbleSmoothness, rumbleEngine, rumbleSpacingMs,
-        rumbleSkipOnBatterySaver, rumbleCues)
+        rumbleSkipOnBatterySaver, rumbleCues, rumbleCombo)
 
 /** Timings and amplitudes for [VibrationEffect.createWaveform]; amplitude 0 is a gap. */
 internal class RumbleWaveform(val timings: LongArray, val amplitudes: IntArray)

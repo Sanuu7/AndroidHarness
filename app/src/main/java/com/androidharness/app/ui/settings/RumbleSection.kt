@@ -11,7 +11,14 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.clickable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -128,10 +135,34 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
                 ToggleRow(R.string.rumble_in_code, R.string.rumble_in_code_desc, settings.rumbleInCode, true) {
                     scope.launch { repository.setRumbleInCode(it) }
                 }
+                OutlinedButton(onClick = {
+                    scope.launch {
+                        feel(RumbleCue.TOOL_START)
+                        delay(350)
+                        feel(RumbleCue.TOOL_DONE)
+                    }
+                }) { Text(stringResource(R.string.rumble_try)) }
             }
         }
     }
 
+    val highlight = LocalSettingsHighlight.current
+    val advancedAnchors = remember { setOf(R.string.rumble_strength, R.string.rumble_engine_title, R.string.rumble_events_title, R.string.rumble_fine_tuning_title) }
+    var advanced by rememberSaveable { mutableStateOf(highlight in advancedAnchors) }
+    LaunchedEffect(highlight) { if (highlight in advancedAnchors) advanced = true }
+    SettingsPanel(Modifier.fillMaxWidth()) {
+        Row(Modifier.fillMaxWidth().clickable(onClickLabel = null, role = Role.Button) { advanced = !advanced }.padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.rumble_advanced_title), style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.rumble_advanced_desc), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+            Icon(if (advanced) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
+        }
+    }
+    AnimatedVisibility(advanced) {
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
     SettingsAnchor(R.string.rumble_strength) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -158,13 +189,6 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
-                OutlinedButton(onClick = {
-                    scope.launch {
-                        feel(RumbleCue.TOOL_START)
-                        delay(350)
-                        feel(RumbleCue.TOOL_DONE)
-                    }
-                }) { Text(stringResource(R.string.rumble_try)) }
             }
         }
     }
@@ -201,14 +225,27 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
     SettingsAnchor(R.string.rumble_events_title) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(stringResource(R.string.rumble_events_title), style = MaterialTheme.typography.titleSmall)
-                    Text(stringResource(R.string.rumble_events_desc), style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.rumble_events_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.rumble_events_desc), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    OutlinedButton(onClick = {
+                        scope.launch {
+                            val combo = repository.shuffleRumbleCombo()
+                            val shuffled = style().copy(combo = combo, cues = emptyMap())
+                            preview(shuffled.config(RumbleCue.TOOL_START), shuffled)
+                            delay(350)
+                            preview(shuffled.config(RumbleCue.TOOL_DONE), shuffled)
+                            delay(450)
+                            preview(shuffled.config(RumbleCue.ANSWER_DONE), shuffled)
+                        }
+                    }) { Text(stringResource(R.string.rumble_shuffle)) }
                 }
                 RumbleCue.entries.forEachIndexed { index, cue ->
                     if (index > 0) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f))
-                    CueEditor(cue, settings.rumbleCues.configFor(cue), onChange = { config ->
+                    CueEditor(cue, settings.rumbleCues.configFor(cue, settings.rumbleCombo), onChange = { config ->
                         scope.launch { repository.setRumbleCue(cue, config) }
                     }, onFeel = { config -> preview(config, style()) })
                 }
@@ -242,6 +279,8 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
                 TextButton(onClick = { scope.launch { repository.resetRumble() } }) { Text(stringResource(R.string.rumble_reset)) }
             }
         }
+    }
+    }
     }
 }
 
