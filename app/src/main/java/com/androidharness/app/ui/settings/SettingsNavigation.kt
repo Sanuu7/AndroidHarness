@@ -450,6 +450,13 @@ private val subSettingsEntries = listOfNotNull(
         anchor = R.string.settings_anchor_steering,
     ),
     SettingsSearchEntry(
+        R.string.tips_setting_title,
+        R.string.tips_search_desc,
+        SettingsPage.AGENT,
+        "tips hints suggestions help hide turn off disable onboarding learn features",
+        anchor = R.string.tips_setting_title,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_project_instructions_title,
         R.string.settings_search_project_instructions_desc,
         SettingsPage.AGENT,
@@ -727,7 +734,20 @@ internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
     "coding" -> SettingsPage.CODING
     "background", "notifications" -> SettingsPage.BACKGROUND
     "storage" -> SettingsPage.STORAGE
-    else -> null
+    else -> parseSettingsTarget(target)?.first
+}
+
+/**
+ * Deep link to any page, optionally scrolled to one control. Only ever kept
+ * in memory for the current process, so carrying the resource id is safe.
+ */
+internal fun settingsTarget(page: SettingsPage, @StringRes anchor: Int? = null): String = "page:${page.name}:${anchor ?: 0}"
+
+private fun parseSettingsTarget(target: String): Pair<SettingsPage, Int?>? {
+    val parts = target.split(':')
+    if (parts.size != 3 || parts[0] != "page") return null
+    val page = SettingsPage.entries.firstOrNull { it.name == parts[1] } ?: return null
+    return page to parts[2].toIntOrNull()?.takeIf { it != 0 }
 }
 
 /** The control a deep link should scroll to and tint, if it names a specific one. */
@@ -735,7 +755,7 @@ internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
 internal fun settingsDeepLinkAnchor(target: String): Int? = when (target) {
     "planning" -> R.string.settings_anchor_dual_planning
     "voice" -> R.string.settings_anchor_stt
-    else -> null
+    else -> parseSettingsTarget(target)?.second
 }
 
 /** The control a search result should scroll to, or null when it opens a whole page. */

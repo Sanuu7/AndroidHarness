@@ -22,6 +22,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.SteeringMode
+import com.androidharness.app.ui.chat.components.RunTipHost
+import com.androidharness.app.ui.settings.settingsTarget
 import com.androidharness.app.data.audio.TtsError
 import com.androidharness.app.data.audio.TtsPhase
 import com.androidharness.app.ui.common.TtsTermsDialog
@@ -2388,6 +2390,17 @@ private fun ChatScreenContent(
                     record = state.taskControl, busy = state.busy,
                     onResume = viewModel::resumeInterruptedTask,
                     onSettings = { showContext = true },
+                )
+                RunTipHost(
+                    busy = state.busy,
+                    isChat = state.conversation.isChat,
+                    settings = globalSettings,
+                    onShown = { cursor -> scope.launch { viewModel.container.settings.setRunTipCursor(cursor) } },
+                    onOpen = { tip ->
+                        tip.page?.let { viewModel.container.pendingSettingsScroll.value = settingsTarget(it, tip.anchor) }
+                        onOpenSettings()
+                    },
+                    onTurnOff = { scope.launch { viewModel.container.settings.setRunTipsEnabled(false) } },
                 )
                 MessageQueueCard(
                     queue = state.taskControl.queue,

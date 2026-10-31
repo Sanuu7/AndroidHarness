@@ -236,7 +236,7 @@ class SubagentRuns(
         val active = values.value.filter { it.sessionId == sessionId }.mapNotNull { jobs[key(sessionId, it.id)] }
         active.forEach { it.cancel() }; active.joinAll()
     }
-    suspend fun stopAllAndJoin() { ready.await(); val active = jobs.values.toList(); active.forEach { it.cancel() }; active.joinAll() }
+    suspend fun stopAllAndJoin() { ready.await(); val active = ArrayList(jobs.values); active.forEach { it.cancel() }; active.joinAll() }
 
     /** Caller persists these messages before acknowledging; a crash cannot silently lose a result. */
     suspend fun pending(sessionId: String) = list(sessionId).filter { it.background && !it.status.active && !it.delivered }

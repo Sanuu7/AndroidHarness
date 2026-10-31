@@ -155,6 +155,12 @@ data class AppSettings(
     val searchDepth: SearchDepth = SearchDepth.AUTO,
     /** What sending a message does while the agent works. */
     val steeringMode: SteeringMode = SteeringMode.AH_AUTO,
+    /** Occasional tips about features and settings while the agent works. */
+    val runTipsEnabled: Boolean = true,
+    /** What the agent may do when asked to change a setting from a conversation. */
+    val agentSettingsAccess: AgentSettingsAccess = AgentSettingsAccess.ALLOWED,
+    /** Position in the tip rotation, so tips do not repeat until all were shown. */
+    val runTipCursor: Int = 0,
     /** Master switch for section memories and legacy project notes. */
     val memoryEnabled: Boolean = true,
     val chatMemoryEnabled: Boolean = true,
@@ -305,6 +311,9 @@ class SettingsRepository(private val context: Context) {
         val CODE_START = stringPreferencesKey("code_start")
         val SEARCH_DEPTH = stringPreferencesKey("search_depth")
         val STEERING_MODE = stringPreferencesKey("steering_mode")
+        val RUN_TIPS_ENABLED = booleanPreferencesKey("run_tips_enabled")
+        val AGENT_SETTINGS_ACCESS = stringPreferencesKey("agent_settings_access")
+        val RUN_TIP_CURSOR = intPreferencesKey("run_tip_cursor")
         val CHAT_MEMORY_ENABLED = booleanPreferencesKey("chat_memory_enabled")
         val CODE_MEMORY_ENABLED = booleanPreferencesKey("code_memory_enabled")
         val CHAT_RECALL_CODE_MEMORY = booleanPreferencesKey("chat_recall_code_memory")
@@ -429,6 +438,9 @@ class SettingsRepository(private val context: Context) {
                 ?: if (prefs[Keys.RESUME_LAST_CHAT] ?: true) CodeStartMode.LAST_CODE else CodeStartMode.NEW_CODE,
             searchDepth = SearchDepth.fromStored(prefs[Keys.SEARCH_DEPTH]),
             steeringMode = SteeringMode.fromStored(prefs[Keys.STEERING_MODE]),
+            runTipsEnabled = prefs[Keys.RUN_TIPS_ENABLED] ?: true,
+            agentSettingsAccess = AgentSettingsAccess.fromStored(prefs[Keys.AGENT_SETTINGS_ACCESS]),
+            runTipCursor = prefs[Keys.RUN_TIP_CURSOR] ?: 0,
             chatMemoryEnabled = prefs[Keys.CHAT_MEMORY_ENABLED] ?: true,
             codeMemoryEnabled = prefs[Keys.CODE_MEMORY_ENABLED] ?: true,
             chatRecallCodeMemory = prefs[Keys.CHAT_RECALL_CODE_MEMORY] ?: false,
@@ -511,6 +523,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.CODE_START] = s.codeStart.name
             p[Keys.SEARCH_DEPTH] = s.searchDepth.name
             p[Keys.STEERING_MODE] = s.steeringMode.name
+            p[Keys.RUN_TIPS_ENABLED] = s.runTipsEnabled
+            p[Keys.AGENT_SETTINGS_ACCESS] = s.agentSettingsAccess.name
             p[Keys.CHAT_MEMORY_ENABLED] = s.chatMemoryEnabled
             p[Keys.CODE_MEMORY_ENABLED] = s.codeMemoryEnabled
             p[Keys.CHAT_RECALL_CODE_MEMORY] = s.chatRecallCodeMemory
@@ -1094,6 +1108,18 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setSteeringMode(mode: SteeringMode) {
         context.settingsStore.edit { it[Keys.STEERING_MODE] = mode.name }
+    }
+
+    suspend fun setRunTipsEnabled(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.RUN_TIPS_ENABLED] = enabled }
+    }
+
+    suspend fun setAgentSettingsAccess(access: AgentSettingsAccess) {
+        context.settingsStore.edit { it[Keys.AGENT_SETTINGS_ACCESS] = access.name }
+    }
+
+    suspend fun setRunTipCursor(cursor: Int) {
+        context.settingsStore.edit { it[Keys.RUN_TIP_CURSOR] = cursor }
     }
 
     suspend fun setLastConversationKind(value: ConversationKind) {

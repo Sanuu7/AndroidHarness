@@ -78,6 +78,7 @@ internal fun AgentBehaviorSection(
     onLiveUpdates: (Boolean) -> Unit,
     showLiveUpdates: Boolean = true,
     onSteeringMode: (SteeringMode) -> Unit = {},
+    onRunTips: (Boolean) -> Unit = {},
     /**
      * Test/preview override for the device-owner check guarding full access.
      * Production callers leave this null so the real biometric/PIN prompt runs.
@@ -135,6 +136,21 @@ internal fun AgentBehaviorSection(
                     description = settings.steeringMode.description(),
                     onClick = { pickerName = BehaviorPicker.STEERING.name },
                 )
+            }
+            BehaviorDivider()
+            SettingsAnchor(R.string.tips_setting_title) {
+                Row(
+                    Modifier.fillMaxWidth().clickable(role = Role.Switch) { onRunTips(!settings.runTipsEnabled) }.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.tips_setting_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.tips_setting_desc), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = settings.runTipsEnabled, onCheckedChange = null)
+                }
             }
         }
         if (showLiveUpdates) LiveUpdatesSetting(settings, onLiveUpdates)
