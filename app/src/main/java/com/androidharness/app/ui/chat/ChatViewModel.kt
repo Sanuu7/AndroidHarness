@@ -36,6 +36,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flatMapLatest
@@ -310,7 +311,11 @@ class ChatViewModel(
     }
 
     private suspend fun chatWorkspace() = c.workspace.forSession(ensureSession())
-    private fun chatSkills() = c.skills.forProject(workspaceFs.value?.shellRoot?.resolve(".harness/skills"))
+    private var configuredSkills: Pair<String, com.androidharness.app.skills.SkillStore>? = null
+    private fun chatSkills(): com.androidharness.app.skills.SkillStore {
+        val fs = workspaceFs.value ?: return c.skills.forProject(null)
+        return configuredSkills?.takeIf { it.first == fs.displayPath }?.second ?: c.skills.forWorkspace(fs)
+    }
 
     private var pendingAttachments = mutableListOf<ImageRef>()
     private val pendingFileAttachments = mutableListOf<FileAttachment>()
@@ -322,6 +327,7 @@ class ChatViewModel(
     private var pendingRunText: String? = null
     private var pendingReplacement: ChatMessage? = null
     private var pendingMcpWorkspace: com.androidharness.app.workspace.WorkspaceFs? = null
+    private var pendingConfigFingerprint: String? = null
     private var startingRun = false
 
     /** User approved the workspace .harness/mcp.json: remember it and run. */
@@ -335,7 +341,13 @@ class ChatViewModel(
             val approved = runCatching {
                 val workspace = requireNotNull(pendingMcpWorkspace)
                 check(workspace.displayPath == chatWorkspace().displayPath) { c.appContext.getString(R.string.ui_the_workspace_changed_send_your_message_again) }
-                c.mcp.approveWorkspace(workspace)
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    val snapshot = c.configuration.load(workspace)
+                    check(c.mcp.approvalFingerprint(workspace, snapshot) == pendingConfigFingerprint) {
+                        "Project tools changed while approval was open. Send your message again to review them."
+                    }
+                    c.mcp.approveWorkspace(workspace, snapshot)
+                }
             }
             pendingMcpWorkspace = null
             if (approved.isFailure) _state.update { it.copy(error = approved.exceptionOrNull()?.message) }
@@ -433,15 +445,29 @@ class ChatViewModel(
         }
         viewModelScope.launch {
             c.settings.settings.collect {
-                _state.update { st -> st.copy(skills = chatSkills().list(), showLiveCode = it.showLiveCode) }
+                _state.update { st -> st.copy(showLiveCode = it.showLiveCode) }
             }
         }
         viewModelScope.launch {
             activeWorkspace.collect { project ->
                 mentionCacheKey = null
-                val store = c.skills.forProject(project?.let { runCatching { c.workspace.fsFor(it).shellRoot?.resolve(".harness/skills") }.getOrNull() })
-                _state.update { it.copy(workspaceName = project?.name ?: "Workspace unavailable", skills = store.list(), mentionFiles = emptyList()) }
+                _state.update { it.copy(workspaceName = project?.name ?: "Workspace unavailable", mentionFiles = emptyList()) }
             }
+        }
+        viewModelScope.launch {
+            combine(workspaceFs, c.settings.settings.map { it.disabledSkills }.distinctUntilChanged(), c.configuration.revision) { fs, _, _ -> fs }
+                .collectLatest { fs ->
+                    if (fs == null) return@collectLatest
+                    val store = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        val base = c.skills.forWorkspace(fs)
+                        try {
+                            (if (_state.value.conversation.isChat) base else base.configured(c.configuration.load(fs))).freeze()
+                        } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+                        catch (_: Exception) { base.freeze() }
+                    }
+                    configuredSkills = fs.displayPath to store
+                    _state.update { it.copy(skills = store.list()) }
+                }
         }
         viewModelScope.launch {
             c.linuxEnv.state.collect { envState ->
@@ -1306,9 +1332,11 @@ class ChatViewModel(
                 // spawns commands until this exact file content was approved. The
                 // dialog offers approve (and continue) or run without those servers.
                 if (workspaceMcpGate && !s0.conversation.isChat) {
-                    val unapproved = runCatching {
-                        c.mcp.unapprovedWorkspaceServers(runWorkspace)
-                    }.getOrDefault(emptyList())
+                    val unapproved = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                        val snapshot = c.configuration.load(runWorkspace)
+                        pendingConfigFingerprint = c.mcp.approvalFingerprint(runWorkspace, snapshot)
+                        c.mcp.unapprovedWorkspaceServers(runWorkspace, snapshot)
+                    }
                     if (unapproved.isNotEmpty()) {
                         pendingRunText = payload
                         pendingReplacement = replacement

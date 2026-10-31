@@ -12,10 +12,21 @@ class SkillStore(
     private val projectDir: () -> File?,
     private val disabled: () -> Set<String>,
     private val optionalBundled: () -> Map<String, BundledSkill> = { emptyMap() },
+    private val configuredSkills: Map<String, BundledSkill> = emptyMap(),
+    private val configuration: com.androidharness.app.config.HarnessConfig? = null,
 ) {
+    private var frozen: List<Located>? = null
+    fun freeze(): SkillStore {
+        if (frozen == null) frozen = list().flatMap { findAll(it.name) }
+        return this
+    }
     /** A fixed project directory keeps one chat's catalog independent of the selected workspace. */
     fun forProject(directory: File?): SkillStore = SkillStore(bundled, userDir, { directory }, disabled, optionalBundled)
+    fun configured(config: com.androidharness.app.config.HarnessConfig): SkillStore =
+        if (!config.present) this else SkillStore(bundled, userDir, { null }, disabled, optionalBundled, config.skills, config)
+
     fun forWorkspace(workspace: com.androidharness.app.workspace.WorkspaceFs): SkillStore {
+        if (configuration != null) return this
         val primary = (workspace as? com.androidharness.app.workspace.ChatWorkspaceFs)?.primary?.fs ?: workspace
         return forProject(primary.shellRoot?.resolve(".harness/skills"))
     }
@@ -27,15 +38,20 @@ class SkillStore(
     )
 
     fun list(): List<SkillMeta> {
+        frozen?.let { entries -> return entries.groupBy { it.meta.name }.values.mapNotNull(::pickWinner)
+            .map { it.meta.copy(enabled = it.meta.name !in disabled() && configuration?.skillEnabled(it.meta.name) != false) }
+            .sortedWith(compareBy({ it.category }, { it.name })) }
         val byName = linkedMapOf<String, SkillMeta>()
         scanBundled().forEach { byName[it.name] = it }
         scanDir(userDir, SkillSource.USER).forEach { byName[it.name] = it }
         projectDir()?.let { dir ->
             scanDir(dir, SkillSource.PROJECT).forEach { byName[it.name] = it }
         }
+        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files)?.meta }
+            .forEach { byName[it.name] = it }
         val off = disabled()
         return byName.values
-            .map { it.copy(enabled = it.name !in off) }
+            .map { it.copy(enabled = it.name !in off && configuration?.skillEnabled(it.name) != false) }
             .sortedWith(compareBy({ it.category }, { it.name }))
     }
 
@@ -63,7 +79,7 @@ class SkillStore(
         if (key.isEmpty()) return Result.failure(SkillParseException("Missing skill name."))
         if (".." in key) return Result.failure(SkillParseException("Path traversal is not allowed."))
 
-        if (key in disabled()) {
+        if (key in disabled() || configuration?.skillEnabled(key) == false) {
             return Result.failure(
                 SkillParseException("Skill '$key' is disabled. Enable it in Settings → Skills."),
             )
@@ -160,6 +176,7 @@ class SkillStore(
     )
 
     private fun findAll(name: String): List<Located> {
+        frozen?.let { return it.filter { located -> located.meta.name == name } }
         val out = mutableListOf<Located>()
         (bundled + optionalBundled())[name]?.let { b ->
             parseLocated(b.content, SkillSource.BUNDLED, b.relativeDir, b.files)?.let { out += it }
@@ -171,6 +188,9 @@ class SkillStore(
             scanDirFiles(dir).filter { it.first == name }.forEach { (_, content, files, rel) ->
                 parseLocated(content, SkillSource.PROJECT, rel, files)?.let { out += it }
             }
+        }
+        configuredSkills[name]?.let { b ->
+            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files)?.let { out += it }
         }
         return out
     }

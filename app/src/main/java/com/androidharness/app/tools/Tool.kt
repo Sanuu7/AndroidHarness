@@ -20,6 +20,8 @@ data class ToolContext(
     /** Scoped to this call by the engine; never shared across chats or concurrent installs. */
     val onPackageProgress: suspend (com.androidharness.app.data.env.PackageInstallStatus) -> Unit = {},
     val imageInputAllowed: Boolean = true,
+    val configuration: com.androidharness.app.config.HarnessConfig? = null,
+    val skills: com.androidharness.app.skills.SkillStore? = null,
 )
 
 data class ToolResult(
@@ -52,6 +54,7 @@ class ToolRegistry(private val tools: List<Tool>) {
     private val byName = tools.associateBy { it.name }
 
     fun get(name: String): Tool? = byName[name]
+    fun filter(predicate: (Tool) -> Boolean): ToolRegistry = ToolRegistry(byName.values.filter(predicate))
 
     fun restrictedTo(names: Set<String>?): ToolRegistry =
         if (names == null) this else ToolRegistry(tools.filter { it.name in names })

@@ -27,7 +27,7 @@ class SkillViewTool(
         val name = args["name"]?.jsonPrimitive?.content?.trim()
             ?: throw ToolFailure("Missing required argument: name")
         val filePath = args["file_path"]?.jsonPrimitive?.content
-        val viewed = store.forWorkspace(ctx.workspace).view(name, filePath).getOrElse { err ->
+        val viewed = (ctx.skills ?: store.forWorkspace(ctx.workspace)).view(name, filePath).getOrElse { err ->
             return ToolResult(false, err.message ?: "Skill '$name' not found.")
         }
         val origin = when (viewed.source) {
@@ -68,7 +68,7 @@ class SkillsListTool(
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         val category = args["category"]?.jsonPrimitive?.content?.trim()?.ifBlank { null }
-        val skills = store.forWorkspace(ctx.workspace).list().filter { category == null || it.category == category }
+        val skills = (ctx.skills ?: store.forWorkspace(ctx.workspace)).list().filter { category == null || it.category == category }
         if (skills.isEmpty()) {
             return ToolResult(true, "No skills found" + if (category != null) " in '$category'." else ".")
         }

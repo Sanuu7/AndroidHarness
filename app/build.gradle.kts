@@ -239,6 +239,7 @@ dependencies {
     implementation("io.github.vvb2060.ndk:boringssl:20250114")
     implementation(libs.okhttp)
     implementation(libs.kotlinx.serialization.json)
+    implementation("androidx.javascriptengine:javascriptengine:1.1.0")
     // CEL compiles and checks optional per-model reasoning request mappings on device.
     implementation("dev.cel:cel:0.14.0")
     implementation(libs.coroutines.android)

@@ -580,6 +580,9 @@ class RunManager(
                     }
                 }
                 val repoMapOn = runCatching { settings.settings.first().repoMapEnabled }.getOrDefault(true)
+                val projectConfiguration = if (conversation.isChat) com.androidharness.app.config.HarnessConfig() else
+                    kotlinx.coroutines.withContext(Dispatchers.IO) { mcp?.configuration(runWorkspace) ?: engine.configuration(runWorkspace) }
+                val projectToolsApproved = conversation.isChat || mcp?.isWorkspaceApproved(runWorkspace, projectConfiguration) == true
                 engine.run(
                     sessionId = sid,
                     turnId = turnId,
@@ -606,7 +609,9 @@ class RunManager(
                     maxIterations = maxIterations,
                     // Connected MCP servers ride into this run; a failing
                     // server must never block the run itself.
-                    extraTools = if (conversation.isChat || runWorkspace is ChatWorkspaceFs) emptyList() else runCatching { mcp?.activeTools(runWorkspace) }.getOrNull().orEmpty(),
+                    extraTools = if (conversation.isChat || runWorkspace is ChatWorkspaceFs) emptyList() else mcp?.activeTools(runWorkspace, projectConfiguration, settings.settings.first().permissionMode, "$sid:$turnId").orEmpty(),
+                    projectConfiguration = projectConfiguration,
+                    pluginsApproved = projectToolsApproved,
                     resolveSubagentModel = modelResolver::resolve,
                     repoMapEnabled = repoMapOn,
                     pinnedInstructions = record.pins,
@@ -644,6 +649,7 @@ class RunManager(
                 live.update { it.copy(error = e.message ?: "Unexpected error") }
             } finally {
                 kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                mcp?.releaseWorkspaceTools("$sid:$turnId")
                 compactionSnapshots.remove(sid)
                 flushJob?.cancel()
                 usageJob?.cancel()

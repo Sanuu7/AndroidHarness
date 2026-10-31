@@ -81,6 +81,8 @@ class AppContainer(val appContext: Context) {
     val keys = KeyStoreManager(appContext)
     init { com.androidharness.app.llm.ProviderNetwork.settings = keys::providerProxy }
     val settings = SettingsRepository(appContext)
+    val configuration = com.androidharness.app.config.HarnessConfigRepository(appContext, keys)
+    val pluginHooks = com.androidharness.app.config.PluginHooks(appContext)
     internal val runtimePolicy = AppRuntimePolicy(appContext, settings)
     /** Reads assistant replies with Android TTS or Groq PlayAI. */
     val tts = com.androidharness.app.data.audio.TtsController(appContext, settings, keys)
@@ -239,7 +241,7 @@ class AppContainer(val appContext: Context) {
         pullRequests = { githubRepositories },
         sessionMessages = { sessions.messages(it) },
     )
-    val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys, codeGraph)
+    val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys, codeGraph, configuration)
     val github = com.androidharness.app.github.GitHubAuth(BuildConfig.GITHUB_CLIENT_ID,
         keys::githubCredential, keys::putGitHubCredential, { refreshGitHubAuth() })
     fun routedProvider(): com.androidharness.app.llm.LlmProvider =
@@ -273,6 +275,8 @@ class AppContainer(val appContext: Context) {
         linuxEnv = linuxEnv,
         shizuku = shizuku,
         skills = skills,
+        resolveConfiguration = { configuration.load(it) },
+        pluginHooks = pluginHooks,
         todoStore = todoStore,
         repoMap = repoMap,
         cavemanSettings = { settings.settings.first().also { cavemanSettings.set(it); disabledSkills.set(it.disabledSkills) } },

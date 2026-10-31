@@ -10,7 +10,7 @@ object WorkspaceToolRouting {
     private val fileTools = setOf("list_dir", "read_file", "file_info", "write_file", "edit_file", "multi_edit",
         "apply_patch", "search_files", "grep", "create_dir", "delete_file", "move_file", "read_image",
         "memory_write", "memory_read", "memory_search", "file_history", "file_restore")
-    private val independentTools = setOf("search_agent_knowledge", "read_chat_text", "zoom_chat_image", "offer_code_handoff", "create_artifact", "read_artifact", "read_tool_output", "ask_user", "task", "todo_write", "web_fetch", "web_search", "http_request", "read_logcat", "browser_open_external", "remember", "recall", "github_api", "github_search", "github_file", "skill_view", "skills_list", "visual_guide")
+    private val independentTools = setOf("reference_read", "search_agent_knowledge", "read_chat_text", "zoom_chat_image", "offer_code_handoff", "create_artifact", "read_artifact", "read_tool_output", "ask_user", "task", "todo_write", "web_fetch", "web_search", "http_request", "read_logcat", "browser_open_external", "remember", "recall", "github_api", "github_search", "github_file", "skill_view", "skills_list", "visual_guide")
     private fun requiresCommandPath(name: String) = name == "shell" || name == "shell_background" || name.startsWith("git_")
 
     fun available(tool: Tool, ctx: ToolContext): Boolean {

@@ -8,8 +8,8 @@ import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /** Topic file names available under .harness/memory (empty when none). */
-fun listMemoryTopics(workspace: WorkspaceFs): List<String> = runCatching {
-    val dir = workspace.resolve(MemoryTopics.DIR)
+fun listMemoryTopics(workspace: WorkspaceFs, directory: String = MemoryTopics.DIR): List<String> = runCatching {
+    val dir = workspace.resolve(directory)
     if (!dir.exists || !dir.isDirectory) return emptyList()
     dir.list()
         .filter { it.isFile && it.name.endsWith(".md") }
@@ -45,7 +45,7 @@ class MemoryReadTool : Tool {
         withContext(Dispatchers.IO) {
             val topic = args["topic"]?.jsonPrimitive?.content?.trim()
             if (!topic.isNullOrEmpty()) {
-                val path = MemoryTopics.topicPath(topic)
+                val path = MemoryTopics.topicPath(topic)?.replaceFirst(MemoryTopics.DIR, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR)
                     ?: throw ToolFailure(
                         "Invalid topic '$topic'. Use letters, digits, '-' or '_' (max 48 chars).",
                     )
@@ -53,19 +53,19 @@ class MemoryReadTool : Tool {
                     ?: return@withContext ToolResult(
                         false,
                         "No memory recorded for topic '$topic' yet. Topics on disk: " +
-                            (listMemoryTopics(ctx.workspace).joinToString(", ").ifEmpty { "none" }) + ".",
+                            (listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).joinToString(", ").ifEmpty { "none" }) + ".",
                     )
                 return@withContext ToolResult(true, content)
             }
 
-            val core = readMemoryNode(ctx.workspace, MemoryWriteTool.MEMORY_PATH)
-            val topics = listMemoryTopics(ctx.workspace)
+            val core = readMemoryNode(ctx.workspace, (ctx.configuration?.memory?.file ?: MemoryWriteTool.MEMORY_PATH))
+            val topics = listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR)
             ToolResult(
                 true,
                 buildString {
-                    append("# Core memory (${MemoryWriteTool.MEMORY_PATH})\n")
+                    append("# Core memory (${(ctx.configuration?.memory?.file ?: MemoryWriteTool.MEMORY_PATH)})\n")
                     append(core?.takeIf { it.isNotBlank() } ?: "(empty)")
-                    append("\n\n# Topic files (${MemoryTopics.DIR}/)\n")
+                    append("\n\n# Topic files (${ctx.configuration?.memory?.topics ?: MemoryTopics.DIR}/)\n")
                     if (topics.isEmpty()) append("(none)")
                     else topics.forEach { append("- ${it}.md\n") }
                 },
@@ -96,9 +96,9 @@ class MemorySearchTool : Tool {
             val needle = query.lowercase()
 
             val files = buildList {
-                add(MemoryWriteTool.MEMORY_PATH to (readMemoryNode(ctx.workspace, MemoryWriteTool.MEMORY_PATH) ?: ""))
-                listMemoryTopics(ctx.workspace).forEach { topic ->
-                    add("${MemoryTopics.DIR}/$topic.md" to (readMemoryNode(ctx.workspace, "${MemoryTopics.DIR}/$topic.md") ?: ""))
+                add((ctx.configuration?.memory?.file ?: MemoryWriteTool.MEMORY_PATH) to (readMemoryNode(ctx.workspace, (ctx.configuration?.memory?.file ?: MemoryWriteTool.MEMORY_PATH)) ?: ""))
+                listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).forEach { topic ->
+                    add("${ctx.configuration?.memory?.topics ?: MemoryTopics.DIR}/$topic.md" to (readMemoryNode(ctx.workspace, "${ctx.configuration?.memory?.topics ?: MemoryTopics.DIR}/$topic.md") ?: ""))
                 }
             }
 
@@ -120,7 +120,7 @@ class MemorySearchTool : Tool {
                 ToolResult(
                     false,
                     "No memory matches '${query.take(80)}'. Topics on disk: " +
-                        (listMemoryTopics(ctx.workspace).joinToString(", ").ifEmpty { "none" }) + ".",
+                        (listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).joinToString(", ").ifEmpty { "none" }) + ".",
                 )
             } else {
                 val truncated = if (matches.length >= 8_000) "\n[truncated]" else ""

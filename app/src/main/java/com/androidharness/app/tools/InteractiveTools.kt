@@ -65,9 +65,9 @@ class MemoryWriteTool : Tool {
         val topic = args["topic"]?.jsonPrimitive?.content?.trim()
 
         val path = if (topic.isNullOrEmpty()) {
-            MEMORY_PATH
+            ctx.configuration?.memory?.file ?: MEMORY_PATH
         } else {
-            com.androidharness.app.agent.MemoryTopics.strictTopicPath(topic)
+            com.androidharness.app.agent.MemoryTopics.strictTopicPath(topic)?.replaceFirst(com.androidharness.app.agent.MemoryTopics.DIR, ctx.configuration?.memory?.topics ?: com.androidharness.app.agent.MemoryTopics.DIR)
                 ?: throw ToolFailure(
                     "Invalid topic '$topic'. Topics must already be 1-48 chars of lowercase " +
                         "letters, digits, '-' or '_'; invalid names are refused, not renamed. " +
@@ -82,7 +82,11 @@ class MemoryWriteTool : Tool {
 
         val node = ctx.workspace.resolve(path)
         val existing = if (node.exists && node.isFile) node.readText() else ""
-        val next = com.androidharness.app.agent.MemoryNotes.write(existing, content, mode, maxChars)
+        val next = com.androidharness.app.agent.MemoryNotes.write(existing, content, mode, maxChars).let { text ->
+            if (topic.isNullOrEmpty() && ctx.configuration?.present == true)
+                text.trimEnd().lineSequence().toList().takeLast(ctx.configuration.memory.maxLines).joinToString("\n").trimEnd() + "\n"
+            else text
+        }
         node.writeText(next)
         return ToolResult(true, "Memory ${if (mode == "replace") "replaced" else "updated"} ($path).")
     }

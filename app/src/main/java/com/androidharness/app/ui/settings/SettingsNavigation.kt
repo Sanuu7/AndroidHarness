@@ -92,6 +92,13 @@ internal enum class SettingsPage(
         R.string.settings_group_your_assistant,
         "offline hugging face gguf safetensors llama ram memory storage cpu download uninstall context input output vision images threads",
     ),
+    CONFIGURATION(
+        R.string.config_title,
+        R.string.config_description,
+        R.string.settings_group_coding,
+        "harness.json harness.jsonc project global configuration instructions references plugins mcp schema variables secrets",
+        onHome = false,
+    ),
     AGENT(
         R.string.settings_page_agent_title,
         R.string.settings_page_agent_desc,
@@ -272,7 +279,7 @@ internal fun settingsDisplayGroups(entries: List<SettingsSearchEntry>, query: St
 }
 
 internal val settingsCodingPages = listOf(
-    SettingsPage.SUBAGENT, SettingsPage.AGENT, SettingsPage.CHAT, SettingsPage.SKILLS,
+    SettingsPage.SUBAGENT, SettingsPage.AGENT, SettingsPage.CONFIGURATION, SettingsPage.CHAT, SettingsPage.SKILLS,
     SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN, SettingsPage.WORKSPACE, SettingsPage.ENVIRONMENT,
 )
 
@@ -702,6 +709,7 @@ internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
     "planning" -> SettingsPage.MODELS
     "voice" -> SettingsPage.VOICE
     "telegram" -> SettingsPage.TELEGRAM
+    "configuration", "config" -> SettingsPage.CONFIGURATION
     "agent" -> SettingsPage.AGENT
     "coding" -> SettingsPage.CODING
     "background", "notifications" -> SettingsPage.BACKGROUND

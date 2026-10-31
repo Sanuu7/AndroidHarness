@@ -38,6 +38,7 @@ class McpManager(
     private val linuxEnv: LinuxEnvironmentManager,
     private val keys: KeyStoreManager,
     private val codeGraph: com.androidharness.app.data.env.CodeGraphManager? = null,
+    private val configuration: com.androidharness.app.config.HarnessConfigRepository? = null,
 ) {
 
     private val json = Json { ignoreUnknownKeys = true; prettyPrint = true }
@@ -59,6 +60,29 @@ class McpManager(
     val statuses: StateFlow<Map<String, McpServerStatus>> = _statuses
 
     private val connections = HashMap<String, McpConnection>()
+    private val workspaceLeases = HashMap<String, MutableSet<String>>()
+    private val workspaceUsers = HashMap<String, Int>()
+
+    /** Project command servers live only as long as runs that captured their exact definition. */
+    fun releaseWorkspaceTools(leaseId: String) {
+        synchronized(connections) {
+            workspaceLeases.remove(leaseId).orEmpty().forEach { name ->
+                val remaining = (workspaceUsers[name] ?: 1) - 1
+                if (remaining > 0) workspaceUsers[name] = remaining
+                else {
+                    workspaceUsers.remove(name)
+                    connections.remove(name)?.close()
+                    _statuses.update { it - name }
+                }
+            }
+        }
+    }
+    private fun retainWorkspaceTool(leaseId: String, name: String) {
+        synchronized(connections) {
+            if (workspaceLeases.getOrPut(leaseId) { mutableSetOf() }.add(name))
+                workspaceUsers[name] = (workspaceUsers[name] ?: 0) + 1
+        }
+    }
 
     /** Serializes connection creation per server so a startup reconnect and
      * an early run cannot spawn two processes for the same name. */
@@ -114,6 +138,7 @@ class McpManager(
     }
 
     private suspend fun persist(list: List<McpServerConfig>) {
+        _servers.value.filter { previous -> list.none { it == previous } }.forEach { disconnect(it.name) }
         _servers.value = list
         ioLock.withLock {
             withContext(Dispatchers.IO) {
@@ -215,10 +240,14 @@ class McpManager(
     fun statusFor(name: String): McpServerStatus? = _statuses.value[name]
 
     /** Per-workspace `.harness/mcp.json` configs (ecosystem-standard format). */
-    fun workspaceConfigs(workspace: WorkspaceFs): List<McpServerConfig> = runCatching {
+    fun configuration(workspace: WorkspaceFs): com.androidharness.app.config.HarnessConfig =
+        configuration?.load(workspace) ?: com.androidharness.app.config.HarnessConfigLoader().load(workspace)
+
+    fun workspaceConfigs(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): List<McpServerConfig> {
         val node = workspace.resolve(McpNames.WORKSPACE_CONFIG)
-        if (node.exists && node.isFile) McpConfigParser.parse(node.readText()) else emptyList()
-    }.getOrDefault(emptyList())
+        val legacy = if (node.exists && node.isFile) McpConfigParser.parse(node.readText()) else emptyList()
+        return legacy.filterNot { old -> snapshot.servers.any { it.name.equals(old.name, true) } } + snapshot.servers
+    }
 
     // --- Workspace config approval (security-battery D1) -------------------------
 
@@ -236,26 +265,34 @@ class McpManager(
     private fun approvalKey(workspace: WorkspaceFs, configText: String): String =
         "${workspace.shellRoot?.absolutePath ?: workspace.displayPath}:${sha256(configText)}"
 
-    private fun workspaceConfigText(workspace: WorkspaceFs): String? = runCatching {
+    private fun workspaceConfigText(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig): String? {
         val node = workspace.resolve(McpNames.WORKSPACE_CONFIG)
-        if (node.exists && node.isFile) node.readText() else null
-    }.getOrNull()
+        val legacy = if (node.exists && node.isFile) node.readText() else null
+        if (!snapshot.present) return legacy
+        // Bind resolved transport settings as well: changing a secret/file substitution invalidates approval.
+        val transports = json.encodeToString(kotlinx.serialization.builtins.ListSerializer(McpServerConfig.serializer()), snapshot.servers)
+        return legacy.orEmpty() + "\nHarness configuration\n" + snapshot.trustPayload + "\n" + sha256(transports)
+    }
 
     /** True when this exact workspace config was approved by the user. */
-    fun isWorkspaceApproved(workspace: WorkspaceFs): Boolean {
-        val text = workspaceConfigText(workspace) ?: return true
+    fun isWorkspaceApproved(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): Boolean {
+        val text = workspaceConfigText(workspace, snapshot) ?: return true
         return workspaceApprovals.containsKey(approvalKey(workspace, text))
     }
 
     /** Workspace servers that would auto-run but have not been approved yet. */
-    fun unapprovedWorkspaceServers(workspace: WorkspaceFs): List<McpServerConfig> {
-        if (isWorkspaceApproved(workspace)) return emptyList()
-        return workspaceConfigs(workspace)
+    fun unapprovedWorkspaceServers(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): List<McpServerConfig> {
+        if (isWorkspaceApproved(workspace, snapshot)) return emptyList()
+        return workspaceConfigs(workspace, snapshot).filter { it.enabled } +
+            snapshot.plugins.map { McpServerConfig(name = "Plugin: ${it.name}") }
     }
 
     /** Records user approval for this exact workspace config content. */
-    fun approveWorkspace(workspace: WorkspaceFs) {
-        val text = workspaceConfigText(workspace) ?: return
+    fun approvalFingerprint(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): String =
+        sha256(workspaceConfigText(workspace, snapshot).orEmpty())
+
+    fun approveWorkspace(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)) {
+        val text = workspaceConfigText(workspace, snapshot) ?: return
         workspaceApprovals = workspaceApprovals +
             (approvalKey(workspace, text) to System.currentTimeMillis())
         runCatching {
@@ -276,10 +313,10 @@ class McpManager(
      * spawns commands until a chat dialog says so. Global servers are
      * unaffected by the gate.
      */
-    suspend fun activeTools(workspace: WorkspaceFs): List<Tool> {
+    suspend fun activeTools(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace), permissionMode: com.androidharness.app.agent.PermissionMode = com.androidharness.app.agent.PermissionMode.FULL_AUTO, leaseId: String? = null): List<Tool> {
         val global = _servers.value.filter { it.enabled }
-        val approved = isWorkspaceApproved(workspace)
-        val ws = workspaceConfigs(workspace)
+        val approved = isWorkspaceApproved(workspace, snapshot)
+        val ws = workspaceConfigs(workspace, snapshot).filter { it.enabled }
             .filter { ws -> global.none { it.name.equals(ws.name, ignoreCase = true) } }
         if (!approved) {
             // Record why the workspace tools are absent so Settings/health
@@ -288,15 +325,30 @@ class McpManager(
                 _statuses.update {
                     it + (ws.name to McpServerStatus(
                         "blocked",
-                        error = "Workspace .harness/mcp.json needs approval in chat before it can run.",
+                        error = "Project tools need approval in chat or Configuration settings before they can run.",
                     ))
                 }
             }
         }
-        val configs = global + if (approved) ws else emptyList()
+        val configs = (global + if (approved) ws else emptyList()).filter { server ->
+            val startup = object : Tool {
+                override val name = if (server.isRemote) "http_request" else "shell"
+                override val description = "MCP startup"
+                override val parametersSchema = kotlinx.serialization.json.JsonObject(emptyMap())
+                override val isReadOnly = false
+                override suspend fun execute(args: kotlinx.serialization.json.JsonObject, ctx: com.androidharness.app.tools.ToolContext) = error("Not executable")
+            }
+            val profile = snapshot.agents[snapshot.defaultAgent]
+            val blocked = com.androidharness.app.config.ConfigToolPolicy.permission(snapshot, startup, permissionMode) == "deny" ||
+                profile?.tools?.any { (rule, enabled) -> !enabled && com.androidharness.app.config.ConfigToolPolicy.matches(rule, startup) } == true
+            if (blocked) _statuses.update { it + (server.name to McpServerStatus("blocked", error = "Project configuration blocks this server's startup.")) }
+            !blocked
+        }
         val tools = mutableListOf<Tool>()
         try {
-            codeGraph?.agentTools(workspace)?.let { tools.addAll(it) }
+            val automaticCommandsAllowed = permissionMode == com.androidharness.app.agent.PermissionMode.FULL_ACCESS ||
+                snapshot.permissions.values.none { it in setOf("ask", "deny") }
+            if (automaticCommandsAllowed) codeGraph?.agentTools(workspace)?.let { tools.addAll(it) }
         } catch (e: kotlinx.coroutines.CancellationException) {
             throw e
         } catch (e: Exception) {
@@ -307,11 +359,14 @@ class McpManager(
         val cwd = workspace.shellRoot ?: context.filesDir
         for (original in configs) {
             val remote = (workspace as? com.androidharness.app.workspace.SshFs)?.takeUnless { original.isRemote }
-            val config = if (remote == null) original else original.copy(name = original.name + "_ssh_" +
-                java.util.UUID.nameUUIDFromBytes(workspace.displayPath.toByteArray()).toString().take(8))
+            val isProject = ws.any { it.name == original.name }
+            val identity = if (!isProject && remote == null) original.name else original.name + "_ws_" + sha256(
+                workspace.displayPath + json.encodeToString(McpServerConfig.serializer(), original)).take(12)
+            val config = original.copy(name = identity)
+            if (isProject && leaseId != null) retainWorkspaceTool(leaseId, config.name)
             val conn = connectionFor(config, cwd, remote) ?: continue
             tools += conn.tools.map { info ->
-                McpToolAdapter(config.name, info, conn) { disconnect(config.name) }
+                McpToolAdapter(original.name, info, conn) { disconnect(config.name) }
             }
         }
         return tools
@@ -325,10 +380,16 @@ class McpManager(
                 synchronized(connections) { connections.remove(config.name) }
                 existing.close()
             }
-            tryConnect(config, cwd, remote)?.let { return@withLock it }
+            tryConnect(config, cwd, remote)?.let { connected ->
+                synchronized(connections) { connections[config.name] = connected }
+                return@withLock connected
+            }
             if (remote != null) return@withLock null
             // One retry: server binaries sometimes crash once on a cold start.
-            tryConnect(config, cwd)?.let { return@withLock it }
+            tryConnect(config, cwd)?.let { connected ->
+                synchronized(connections) { connections[config.name] = connected }
+                return@withLock connected
+            }
             null
         }
 
@@ -395,6 +456,9 @@ class McpManager(
             conn.close()
             recordAuth(config.name, e)
             return null
+        } catch (e: kotlinx.coroutines.CancellationException) {
+            conn.close()
+            throw e
         } catch (e: Exception) {
             conn.close()
             _statuses.update {

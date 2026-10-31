@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.channelFlow
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.put
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.booleanOrNull
 import kotlinx.serialization.json.jsonArray
@@ -239,6 +240,8 @@ class AgentEngine(
     private val deviceAccess: com.androidharness.app.data.env.DeviceAccessManager? = null,
     private val universalMemory: com.androidharness.app.data.MemoryRepository? = null,
     private val chatOnlyTools: List<com.androidharness.app.tools.Tool> = emptyList(),
+    private val resolveConfiguration: suspend (WorkspaceFs) -> com.androidharness.app.config.HarnessConfig = { com.androidharness.app.config.HarnessConfigLoader().load(it) },
+    private val pluginHooks: com.androidharness.app.config.PluginHooks? = null,
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -246,6 +249,8 @@ class AgentEngine(
     private val recallToolNames = setOf("search_chats", "recent_chats", "read_chat_snippet")
     private val memoryToolNames = com.androidharness.app.data.MemoryRepository.toolNames +
         setOf("memory_write", "memory_read", "memory_search")
+
+    suspend fun configuration(workspace: WorkspaceFs) = withContext(kotlinx.coroutines.Dispatchers.IO) { resolveConfiguration(workspace) }
 
     fun run(
         sessionId: String,
@@ -282,7 +287,23 @@ class AgentEngine(
         chatImageFrequency: com.androidharness.app.data.ImageFrequency = com.androidharness.app.data.ImageFrequency.DEFAULT,
         chatInstructions: String = "",
         subagentRuns: SubagentRuns? = null,
+        projectConfiguration: com.androidharness.app.config.HarnessConfig? = null,
+        pluginsApproved: Boolean = false,
     ): Flow<AgentEvent> = channelFlow {
+        val loadedConfig = if (conversation.isChat) com.androidharness.app.config.HarnessConfig()
+            else projectConfiguration ?: configuration(workspace)
+        val projectConfig = if (pluginsApproved) loadedConfig else loadedConfig.copy(plugins = emptyList())
+        val selectedSkillStore = withContext(kotlinx.coroutines.Dispatchers.IO) {
+            skills.forWorkspace(workspace).configured(projectConfig).freeze()
+        }
+        val runContext = com.androidharness.app.config.ConfigRunContext(projectConfig, selectedSkillStore, pluginHooks)
+        withContext(runContext) {
+        suspend fun hook(name: String, event: kotlinx.serialization.json.JsonObject = kotlinx.serialization.json.JsonObject(emptyMap())) =
+            pluginHooks?.invoke(projectConfig.plugins, name, event) ?: com.androidharness.app.config.HookResult()
+        val startNotes = hook("session.start").instructions + hook("message.received", kotlinx.serialization.json.buildJsonObject {
+            put("message", runContext.redact(history.lastOrNull { it.role == Role.USER }?.text.orEmpty()).take(32_000))
+        }).instructions
+        try {
         var config = config
         // Parallel subagents emit from async children, plain flow{} forbids
         // cross-coroutine emission even when serialized, channelFlow exists
@@ -306,7 +327,7 @@ class AgentEngine(
             if (!agentContextEnabled) "" else if (conversation.isChat) chatSystemPrompt(sessionId, searchDepth, conversation, chatImageFrequency, chatInstructions, memoryQuery) { memories ->
                 suppliedMemories = memories.map { com.androidharness.app.core.SuppliedMemory(it.id, it.text) }
             } else systemPrompt(workspace, mode, fullAccess = fullAccess, repoMapEnabled = repoMapEnabled, sessionId = sessionId, memoryQuery = memoryQuery, memoryAllowed = conversation.personalizationEnabled) +
-                if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions"
+                (if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions") + startNotes
         var systemPrompt = runSystemPrompt(false)
         var promptSandboxOff = false
         val memoryOn = universalMemory?.isEnabled(sessionId) == true && conversation.personalizationEnabled
@@ -341,7 +362,7 @@ class AgentEngine(
         val turnImages = com.androidharness.app.tools.ChatImageTurnInventory(working)
         var visionAvailable = imageCapable
         val runRegistry = (if (conversation.isChat) registry.withExtra(chatOnlyTools + com.androidharness.app.tools.chatAgentTools(conversation.agent) + listOfNotNull(scopedSearch, scopedFetch, scopedBrowser?.forImageInput { visionAvailable }) +
-            if (imageCapable) listOf(com.androidharness.app.tools.ChatImageZoomTool(imageStore) { working.toList() }.forInventory(turnImages::sources), com.androidharness.app.tools.ViewChatImageTool(imageStore) { working.toList() }.forInventory(turnImages::sources)) else emptyList()) else registry.withExtra(extraTools +
+            if (imageCapable) listOf(com.androidharness.app.tools.ChatImageZoomTool(imageStore) { working.toList() }.forInventory(turnImages::sources), com.androidharness.app.tools.ViewChatImageTool(imageStore) { working.toList() }.forInventory(turnImages::sources)) else emptyList()) else registry.withExtra(extraTools + (if (projectConfig.references.isEmpty()) emptyList() else listOf(com.androidharness.app.config.ConfigReferenceReadTool(projectConfig))) +
             if (subagentRuns == null) emptyList() else com.androidharness.app.tools.subagentControlTools(subagentRuns, sessionId)))
             .restrictedTo(conversation.allowedTools)
             .let { if (conversation.isChat && searchDepth == com.androidharness.app.data.SearchDepth.OFF) it.without(setOf("web_search")) else it }
@@ -416,12 +437,13 @@ class AgentEngine(
                     workspace
                 }
 
-            var roundRegistry = if (conversation.isChat && !visionAvailable)
-                runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry
+            var roundRegistry = (if (conversation.isChat && !visionAvailable)
+                runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry)
+                .filter { !runContext.denies(it) && com.androidharness.app.config.ConfigToolPolicy.permission(projectConfig, it, effectiveMode) != "deny" }
             val searchConfiguration = (roundRegistry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.configurationNote()
             var tools = if (!agentContextEnabled) emptyList() else roundRegistry.schemas(
                 readOnlyOnly = mode == AgentMode.PLAN,
-                context = ToolContext(execWorkspace, sandboxOff, sessionId),
+                context = ToolContext(execWorkspace, sandboxOff, sessionId, configuration = projectConfig, skills = runContext.skills),
             )
             val environment = if (agentContextEnabled)
                 runtimeEnvironment(workspace, sessionId, mode, effectiveMode, tools, conversation.isChat) +
@@ -438,6 +460,9 @@ class AgentEngine(
                 intensity = replySettings.cavemanIntensity,
                 wenyan = replySettings.cavemanWenyan,
             )
+            if (agentContextEnabled) requestSystemPrompt += runContext.drainInstructions() + hook("prompt.before", kotlinx.serialization.json.buildJsonObject {
+                put("agent", runContext.agent); put("iteration", iterations)
+            }).instructions
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, requestSystemPrompt, tools)
             emit(AgentEvent.EstimatedContext(estimate))
@@ -799,6 +824,10 @@ class AgentEngine(
                 emit(AgentEvent.ToolFinished(call.id, result))
             }
         }
+        } finally {
+            withContext(kotlinx.coroutines.NonCancellable) { hook("session.end") }
+        }
+        }
     }
 
     private fun parallelSafeReadOnly(
@@ -894,13 +923,21 @@ class AgentEngine(
         subagentRuns: SubagentRuns? = null,
     ): ToolResult {
         kotlin.coroutines.coroutineContext[TaskBudget]?.check()
+        val runConfig = kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]
+        val before = runConfig?.hooks?.invoke(runConfig.config.plugins, "tool.before", kotlinx.serialization.json.buildJsonObject {
+            put("tool", call.name); put("arguments", runConfig.redact(call.argumentsJson).take(16_000))
+        })
+        before?.instructions?.takeIf(String::isNotBlank)?.let { runConfig?.pendingInstructions?.add(it) }
         val ledger = kotlin.coroutines.coroutineContext[RecoveryLedger]
         val cached = if (registry.get(call.name)?.isReadOnly == false) ledger?.result(call) else null
-        val result = cached ?: performWithPermission(
+        val result = (if (before?.denied != null) ToolResult(false, "Plugin blocked ${call.name}: ${before.denied}") else cached ?: performWithPermission(
             call, mode, sessionAllowedTools, workspace, sessionId, turnId, agentMode,
             requestOptions, config, apiKey, registry, resolveSubagentModel, emitEvent,
             subagentRuns = subagentRuns,
-        )
+        )).let { result -> result.copy(output = runConfig?.redact(result.output) ?: result.output) }
+        runConfig?.hooks?.invoke(runConfig.config.plugins, "tool.after", kotlinx.serialization.json.buildJsonObject {
+            put("tool", call.name); put("ok", result.ok)
+        })?.instructions?.takeIf(String::isNotBlank)?.let { runConfig.pendingInstructions.add(it) }
         kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
             emitEvent(AgentEvent.ToolMessageCommitted(ChatMessage(
                 role = Role.TOOL, text = result.output, toolCallId = call.id,
@@ -938,6 +975,10 @@ class AgentEngine(
     ): ToolResult {
         val tool = registry.get(call.name)
             ?: return ToolResult(false, "Unknown tool: ${call.name}")
+        val runConfig = kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]
+        if (runConfig?.denies(tool) == true) return ToolResult(false, "${call.name} is disabled by this Code agent's tool rules.")
+        val configPermission = runConfig?.config?.let { com.androidharness.app.config.ConfigToolPolicy.permission(it, tool, mode) } ?: "allow"
+        if (configPermission == "deny") return ToolResult(false, "${call.name} is denied by project configuration.")
         val checkpointWorkspace = workspace
         val parsedArgs = try { json.parseToJsonElement(call.argumentsJson).jsonObject }
         catch (e: Exception) { return ToolResult(false, "Invalid tool arguments: ${e.message}") }
@@ -947,6 +988,8 @@ class AgentEngine(
         val sandboxOff = mode == PermissionMode.FULL_ACCESS && checkpointWorkspace !is ChatWorkspaceFs
         val toolContext = ToolContext(workspace, sandboxOff, sessionId,
             onPackageProgress = { emitEvent(AgentEvent.PackageProgress(call.id, it)) },
+            configuration = runConfig?.config,
+            skills = runConfig?.skills,
             imageInputAllowed = requestOptions.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.imageInput
                 ?: com.androidharness.app.llm.visionCapable(config.model))
 
@@ -978,10 +1021,11 @@ class AgentEngine(
             } catch (e: Exception) {
                 return ToolResult(false, e.message ?: "Could not configure the subagent model.")
             }
+            val childContext = args["agent"]?.jsonPrimitive?.contentOrNull?.let { runConfig?.child(it) } ?: runConfig
             val execute: suspend (suspend (AgentEvent) -> Unit) -> ToolResult = { events ->
-                runSubagent(prompt, title, call.id, connection.config, connection.apiKey, workspace, requestOptions, events,
+                withContext(childContext ?: kotlin.coroutines.EmptyCoroutineContext) { runSubagent(prompt, title, call.id, connection.config, connection.apiKey, workspace, requestOptions, events,
                     registry, mode, sessionAllowedTools, sessionId, turnId,
-                    actionTools = !background && agentMode == AgentMode.ACT && cavemanSettings().subagentFullAccess)
+                    actionTools = !background && agentMode == AgentMode.ACT && cavemanSettings().subagentFullAccess) }
             }
             val runs = subagentRuns ?: return execute(emitEvent)
             val run = SubagentRun(sessionId, turnId, call, title ?: "Subagent", prompt,
@@ -1079,6 +1123,12 @@ class AgentEngine(
         val isSdkInstall = call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
         val isPkgInstall = call.name == "pkg_install" || isSdkInstall
         val approved = when {
+            configPermission == "ask" -> {
+                val request = ApprovalRequest(call, "Project configuration requires confirmation · ${tool.description}",
+                    computeDiffPreview(call, workspace) ?: command?.take(400), "config:${runConfig?.config?.fingerprint}:$grantKey")
+                emitEvent(AgentEvent.ApprovalNeeded(request))
+                request.response.await()
+            }
             isPkgInstall -> {
                 // Mandatory confirmation: even in FULL_ACCESS or FULL_AUTO mode,
                 // package installation ALWAYS requires explicit user confirmation (Decline or Allow).
@@ -1463,14 +1513,16 @@ class AgentEngine(
                 "ONLY thing returned to the caller, so include file paths, line references " +
                 "and concrete details, and no meta-commentary." +
                 ((workspace as? ChatWorkspaceFs)?.let(WorkspaceToolRouting::instructions) ?: "") +
-                HarnessEnvironmentPrompt.skillGuide(skills.forWorkspace(workspace)
+                HarnessEnvironmentPrompt.skillGuide((kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]?.skills ?: skills.forWorkspace(workspace))
                     .view(HarnessEnvironmentPrompt.SKILL).getOrNull()?.content),
             installed = caveman.cavemanInstalled,
             intensity = caveman.cavemanIntensity,
             wenyan = caveman.cavemanWenyan,
         )
         val history = mutableListOf(ChatMessage(role = Role.USER, text = prompt))
-        val ctx = ToolContext(workspace, permissionMode == PermissionMode.FULL_ACCESS, sessionId)
+        val runConfig = kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]
+        val ctx = ToolContext(workspace, permissionMode == PermissionMode.FULL_ACCESS, sessionId,
+            configuration = runConfig?.config, skills = runConfig?.skills)
         // No separate budget quota here: capping output made reasoning models
         // burn the cap on thinking before ever answering (reasoning streamed,
         // no answer). Subagents get the main loop's full output budget.
@@ -1498,8 +1550,8 @@ class AgentEngine(
                     emitEvent(AgentEvent.SubagentPreview(parentCallId, text.takeLast(360).toString()))
                 }
             }
-            val subTools = subagentTools(registry, ctx, actionTools)
-            val liveSystem = system + runtimeEnvironment(workspace, sessionId,
+            val subTools = subagentTools(registry.filter { runConfig?.denies(it) != true && (runConfig == null || com.androidharness.app.config.ConfigToolPolicy.permission(runConfig.config, it, permissionMode) != "deny") }, ctx, actionTools)
+            val liveSystem = system + (runConfig?.config?.prompt(runConfig.agent) ?: "") + runtimeEnvironment(workspace, sessionId,
                 if (actionTools) AgentMode.ACT else AgentMode.PLAN, permissionMode, subTools)
             val managedFallback = kotlin.coroutines.coroutineContext[com.androidharness.app.llm.FallbackRun]?.policy()?.enabled == true
 
@@ -1618,25 +1670,10 @@ class AgentEngine(
                 ) {
                     ToolResult(false, "${call.name} is not available to subagents.")
                 } else {
-                    val executed = if (actionTools) {
-                        performWithPermission(
-                            call, permissionMode, sessionAllowedTools, workspace, sessionId, turnId,
-                            AgentMode.ACT, requestOptions, config, apiKey, registry, null, emitEvent,
-                        )
-                    } else {
-                        try {
-                            val args = json.parseToJsonElement(call.argumentsJson).jsonObject
-                            val route = WorkspaceToolRouting.route(tool, args, workspace, ctx)
-                            val execute = suspend { tool.execute(args, ctx.copy(workspace = route.workspace,
-                                sandboxOff = ctx.sandboxOff && workspace !is ChatWorkspaceFs)).redacted() }
-                            val result = deviceAccess?.traceTool(route.binding?.id ?: (route.workspace as? ChatWorkspaceFs)?.primaryId, sessionId, args["access"]?.jsonPrimitive?.content == "root", args["access"]?.jsonPrimitive?.content == "shizuku", execute) ?: execute()
-                            route.label?.let { result.copy(output = "[Workspace: $it]\n${result.output}") } ?: result
-                        } catch (ce: CancellationException) {
-                            throw ce
-                        } catch (e: Exception) {
-                            ToolResult(false, e.message ?: "${call.name} failed").redacted()
-                        }
-                    }
+                    val executed = executeWithPermission(
+                        call, permissionMode, sessionAllowedTools, workspace, sessionId, turnId,
+                        if (actionTools) AgentMode.ACT else AgentMode.PLAN, requestOptions, config, apiKey, registry, null, { event -> if (event !is AgentEvent.ToolMessageCommitted) emitEvent(event) },
+                    )
                     val elapsedMs = System.currentTimeMillis() - subStartedAt
                     if (executed.output.length < 100_000) {
                         val secs = elapsedMs / 1000.0
@@ -1945,11 +1982,19 @@ class AgentEngine(
             return systemPrompt(workspace.fileAccess(workspace.primary), mode, false, repoMapEnabled = false, multiWorkspace = true, sessionId = sessionId, selectedSkills = selectedSkills, memoryQuery = memoryQuery, memoryAllowed = memoryAllowed) +
                 WorkspaceToolRouting.instructions(workspace)
         }
-        val agentsFile = readWorkspaceDoc(workspace, "AGENTS.md")
-            ?: readWorkspaceDoc(workspace, "HARNESS.md")
+        val runConfig = kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]
+        val projectConfig = runConfig?.config
+        val agentsFile = if (projectConfig?.present == true) null else readWorkspaceDoc(workspace, "AGENTS.md")
+            ?: if (projectConfig?.present == true) null else readWorkspaceDoc(workspace, "HARNESS.md")
         // The master switch covers both universal memory and legacy workspace notes.
         val memoryOn = memoryAllowed && universalMemory?.isEnabled(sessionId) != false
-        val memory = if (memoryOn) readWorkspaceDoc(workspace, "memory") else null
+        val memory = if (memoryOn && projectConfig?.memory?.autoRecall != false) {
+            if (projectConfig?.present == true) runCatching {
+                val node = workspace.resolve(projectConfig.memory.file)
+                if (node.exists && node.isFile && node.length <= 64_000)
+                    MemoryNotes.load(node.readText().lineSequence().take(projectConfig.memory.maxLines).joinToString("\n")) else null
+            }.getOrNull() else readWorkspaceDoc(workspace, "memory")
+        } else null
 
         val sb = StringBuilder()
         sb.append(
@@ -2005,12 +2050,28 @@ Rules:
                     "- Once you present your plan in your text response, STOP immediately. Do not attempt to call any mutating tools or ask for permission.\n"
             )
         }
-        val catalog = selectedSkills.catalog()
+        val effectiveSkills = runConfig?.skills ?: selectedSkills
+        val catalog = effectiveSkills.catalog()
         if (catalog.isNotBlank()) sb.append('\n').append(catalog).append('\n')
-        val guide = selectedSkills.view(HarnessEnvironmentPrompt.SKILL).getOrNull()
+        val guide = effectiveSkills.view(HarnessEnvironmentPrompt.SKILL).getOrNull()
         sb.append(HarnessEnvironmentPrompt.skillGuide(guide?.content))
         agentsFile?.let {
             sb.append("\n# AGENTS.md (project instructions)\n").append(it).append('\n')
+        }
+        if (projectConfig?.present == true) {
+            sb.append(projectConfig.prompt(runConfig.agent))
+            val loaded = mutableSetOf<String>()
+            var autoChars = 0
+            projectConfig.autoLoad.forEach { pattern ->
+                val matches = effectiveSkills.enabled().filter { com.androidharness.app.config.ConfigGlob.matches(pattern, it.name) }
+                require(matches.isNotEmpty()) { "Auto-loaded skill '$pattern' is missing or disabled." }
+                matches.filter { loaded.add(it.name) }.forEach { meta ->
+                    val content = effectiveSkills.view(meta.name).getOrThrow().content
+                    autoChars += content.length
+                    require(autoChars <= 32_000) { "Auto-loaded skill instructions exceed 32,000 characters. Load fewer skills automatically." }
+                    sb.append("\n# Auto-loaded skill: ${meta.name}\n").append(content).append('\n')
+                }
+            }
         }
         memory?.let {
             sb.append("\n# Agent memory (from previous sessions)\n").append(it).append('\n')
@@ -2022,13 +2083,13 @@ Rules:
         // Topic files are only listed by name: long-form notes stay on disk
         // and out of the prompt; the model retrieves them on demand.
         val memoryTopics = if (memoryOn) runCatching {
-            com.androidharness.app.tools.listMemoryTopics(workspace)
+            com.androidharness.app.tools.listMemoryTopics(workspace, projectConfig?.memory?.topics ?: MemoryTopics.DIR)
         }.getOrDefault(emptyList()) else emptyList()
         if (memoryTopics.isNotEmpty()) {
             sb.append("\nLong-term memory topic files on disk (retrieve with memory_read, search with memory_search): ")
                 .append(memoryTopics.joinToString(", ")).append('\n')
         }
-        if (repoMapEnabled) {
+        if (repoMapEnabled && (fullAccess || projectConfig?.permissions?.values?.none { it in setOf("ask", "deny") } != false)) {
             val map = runCatching {
                 kotlinx.coroutines.runBlocking { repoMap?.getMap(workspace, maxChars = 10_000) }
             }.getOrNull()

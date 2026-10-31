@@ -36,6 +36,7 @@ class TaskTool : Tool {
             "title" to Schema.string(
                 "Short label shown on the subagent's progress, e.g. 'Find config sources'.",
             ),
+            "agent" to Schema.string("Optional named Code agent profile from harness.json. Its tool restrictions also apply to this task."),
             "model" to Schema.string(
                 "Optional model id from this provider's catalog to run the subagent on " +
                     "(defaults to this conversation's model). A model chosen in Sub-Agent settings takes precedence. Unknown ids are rejected " +
