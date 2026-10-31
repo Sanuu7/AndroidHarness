@@ -22,7 +22,6 @@ import com.androidharness.app.workspace.WorkspaceFs
 import com.androidharness.app.workspace.workspacePaths
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CompletableDeferred
-import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
@@ -155,7 +154,8 @@ sealed interface AgentEvent {
     data class EnvironmentNeeded(val request: EnvironmentRequest) : AgentEvent
     data class AssistantCommitted(val message: ChatMessage) : AgentEvent
     data class ToolMessageCommitted(val message: ChatMessage) : AgentEvent
-    data class UserMessageInjected(val text: String) : AgentEvent
+    /** A message the user sent mid-run, already saved to the chat by the [SteeringInbox]. */
+    data class UserMessageInjected(val message: ChatMessage) : AgentEvent
     data class Usage(
         val inputTokens: Int,
         val outputTokens: Int,
@@ -271,7 +271,8 @@ class AgentEngine(
         options: RequestOptions,
         maxContextTokens: Int,
         mode: AgentMode,
-        userInjections: Channel<String>? = null,
+        /** Messages the user sends while this run works, read between steps. */
+        steering: SteeringInbox? = null,
         /** Hard cap on tool-call iterations; 0 or negative = unlimited. */
         maxIterations: Int = 0,
         /** Run-scoped tools (e.g. connected MCP servers) on top of the registry. */
@@ -384,6 +385,14 @@ class AgentEngine(
         var answerNudges = 0
         var researchNudges = 0
         var roundsWithoutTodoUpdate = 0
+        suspend fun takeSteering(): Boolean {
+            val messages = steering?.take().orEmpty()
+            for (message in messages) {
+                working += Steering.forModel(message)
+                emit(AgentEvent.UserMessageInjected(message))
+            }
+            return messages.isNotEmpty()
+        }
 
         while (true) {
             kotlin.coroutines.coroutineContext[TaskBudget]?.check()
@@ -406,14 +415,10 @@ class AgentEngine(
                 iterations++ // tracked for nothing, unlimited mode
             }
 
-            // Messages typed while the agent was running steer the next turn.
-            userInjections?.let { channel ->
-                while (true) {
-                    val queued = channel.tryReceive().getOrNull() ?: break
-                    working += ChatMessage(role = Role.USER, text = queued)
-                    emit(AgentEvent.UserMessageInjected(queued))
-                }
-            }
+            // Messages sent while the previous step ran join here, after its
+            // tool results and before the next request, so nothing in flight
+            // is interrupted and the cached prefix stays unchanged.
+            if (iterations > 1) takeSteering()
             val shrunk = ContextHygiene.shrinkToolResults(working)
             working.clear()
             working.addAll(shrunk)
@@ -742,6 +747,8 @@ class AgentEngine(
                     break
                 }
                 wantsNudge || wantsResearchNudge -> continue
+                // A message sent during the final answer keeps the task going in this turn.
+                calls.isEmpty() && takeSteering() -> continue
                 calls.isEmpty() -> {
                     emit(AgentEvent.Finished(emptyAnswerReason(text.toString(), thinking.toString(), lastFinishReason, reasoningTokens)))
                     break

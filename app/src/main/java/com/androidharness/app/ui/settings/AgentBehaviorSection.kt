@@ -15,6 +15,7 @@ import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Security
@@ -33,6 +34,7 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.PermissionMode
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.SteeringMode
 import com.androidharness.app.R
 import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.ui.common.BiometricAuth
@@ -40,9 +42,21 @@ import com.androidharness.app.ui.common.formatTokenCount
 import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
 
-private enum class BehaviorPicker { PERMISSIONS, CONTEXT, ITERATIONS }
+private enum class BehaviorPicker { PERMISSIONS, CONTEXT, ITERATIONS, STEERING }
 
 private data class BehaviorChoice(val key: String, val title: String, val description: String)
+
+@Composable
+private fun SteeringMode.title(): String = when (this) {
+    SteeringMode.AH_AUTO -> stringResource(R.string.steering_mode_auto)
+    SteeringMode.AFTER_TASK -> stringResource(R.string.steering_mode_after_task)
+}
+
+@Composable
+private fun SteeringMode.description(): String = when (this) {
+    SteeringMode.AH_AUTO -> stringResource(R.string.steering_mode_auto_desc)
+    SteeringMode.AFTER_TASK -> stringResource(R.string.steering_mode_after_task_desc)
+}
 
 @Composable
 private fun PermissionMode.description(): String = when (this) {
@@ -63,6 +77,7 @@ internal fun AgentBehaviorSection(
     onProjectInstructions: () -> Unit,
     onLiveUpdates: (Boolean) -> Unit,
     showLiveUpdates: Boolean = true,
+    onSteeringMode: (SteeringMode) -> Unit = {},
     /**
      * Test/preview override for the device-owner check guarding full access.
      * Production callers leave this null so the real biometric/PIN prompt runs.
@@ -112,6 +127,16 @@ internal fun AgentBehaviorSection(
                 )
             }
         }
+        BehaviorGroup(stringResource(R.string.steering_group), Icons.AutoMirrored.Outlined.Send) {
+            SettingsAnchor(R.string.settings_anchor_steering) {
+                BehaviorValueRow(
+                    title = stringResource(R.string.settings_anchor_steering),
+                    value = settings.steeringMode.title(),
+                    description = settings.steeringMode.description(),
+                    onClick = { pickerName = BehaviorPicker.STEERING.name },
+                )
+            }
+        }
         if (showLiveUpdates) LiveUpdatesSetting(settings, onLiveUpdates)
         BehaviorGroup(stringResource(R.string.settings_agent_instructions_group), Icons.Outlined.Description) {
             SettingsAnchor(R.string.settings_anchor_project_instructions) {
@@ -146,6 +171,12 @@ internal fun AgentBehaviorSection(
                     .distinct().sorted().map {
                         BehaviorChoice(it.toString(), stringResource(R.string.settings_agent_context_value, formatTokenCount(it.toLong())), "")
                     }
+            }
+            BehaviorPicker.STEERING -> {
+                title = stringResource(R.string.settings_anchor_steering)
+                description = stringResource(R.string.steering_picker_detail)
+                selected = settings.steeringMode.name
+                choices = SteeringMode.entries.map { BehaviorChoice(it.name, it.title(), it.description()) }
             }
             BehaviorPicker.ITERATIONS -> {
                 title = stringResource(R.string.settings_anchor_tool_iterations)
@@ -201,6 +232,7 @@ internal fun AgentBehaviorSection(
                                             }
                                             BehaviorPicker.CONTEXT -> onContextLimit(choice.key.toInt())
                                             BehaviorPicker.ITERATIONS -> onIterationLimit(choice.key.toInt())
+                                            BehaviorPicker.STEERING -> onSteeringMode(SteeringMode.valueOf(choice.key))
                                         }
                                         pickerName = null
                                     },

@@ -117,7 +117,7 @@ object ContextHygiene {
             it.role == Role.SYSTEM && it.text.startsWith(AgentEngine.COMPACTION_PREFIX)
         }
         val sliced = if (lastSummary >= 0) history.subList(lastSummary, history.size) else history
-        return shrinkToolResults(sliced)
+        return shrinkToolResults(sliced).map(Steering::forModel)
     }
 
     private fun truncate(text: String, maxChars: Int, toolCallId: String?): String {

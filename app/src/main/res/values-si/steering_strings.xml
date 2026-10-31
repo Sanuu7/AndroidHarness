@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">නියෝජිතයා වැඩ කරන අතරතුර</string>
+    <string name="settings_anchor_steering">කාර්යය අතරතුර යවන පණිවිඩ</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">නියෝජිතයා වත්මන් පියවරෙන් පසු ඔබේ පණිවිඩය කියවා වැඩ දිගටම කරයි. ක්‍රියාත්මක වන මෙවලම් කිසිවිටෙක බාධා නොකෙරේ. කාර්යය දැනටමත් අවසන් නම්, පණිවිඩය ඊළඟ වාරය ආරම්භ කරයි.</string>
+    <string name="steering_mode_after_task">කාර්යයෙන් පසු</string>
+    <string name="steering_mode_after_task_desc">මුළු කාර්යයම අවසන් වන තුරු ඔබේ පණිවිඩය රැඳී සිට, පසුව නව වාරයක් ආරම්භ කරයි.</string>
+    <string name="steering_picker_detail">නියෝජිතයා වැඩ කරන අතරතුර පණිවිඩයක් යවන විට සිදුවන දේ තෝරන්න. පෝලිමේ ඇති පණිවිඩයක දැන් යවන්න එබීමෙන් සෑම විටම නියෝජිතයා නවතා එය වහාම යවයි.</string>
+    <string name="steering_search_desc">ක්‍රියාත්මක නියෝජිතයා මෙහෙයවන්න, නැතහොත් කාර්යය අවසන් වන තුරු රැඳී සිටින්න</string>
+    <string name="steering_queue_next_step">නියෝජිතයා වත්මන් පියවරෙන් පසු මේවා කියවයි.</string>
+    <string name="steering_queue_badge">ඊළඟ පියවරේදී කියවේ</string>
+</resources>

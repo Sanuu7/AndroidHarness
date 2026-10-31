@@ -153,6 +153,8 @@ data class AppSettings(
     val codeStart: CodeStartMode = CodeStartMode.LAST_CODE,
     /** Web research effort for Chat turns. */
     val searchDepth: SearchDepth = SearchDepth.AUTO,
+    /** What sending a message does while the agent works. */
+    val steeringMode: SteeringMode = SteeringMode.AH_AUTO,
     /** Master switch for section memories and legacy project notes. */
     val memoryEnabled: Boolean = true,
     val chatMemoryEnabled: Boolean = true,
@@ -302,6 +304,7 @@ class SettingsRepository(private val context: Context) {
         val CHAT_START = stringPreferencesKey("chat_start")
         val CODE_START = stringPreferencesKey("code_start")
         val SEARCH_DEPTH = stringPreferencesKey("search_depth")
+        val STEERING_MODE = stringPreferencesKey("steering_mode")
         val CHAT_MEMORY_ENABLED = booleanPreferencesKey("chat_memory_enabled")
         val CODE_MEMORY_ENABLED = booleanPreferencesKey("code_memory_enabled")
         val CHAT_RECALL_CODE_MEMORY = booleanPreferencesKey("chat_recall_code_memory")
@@ -425,6 +428,7 @@ class SettingsRepository(private val context: Context) {
             codeStart = prefs[Keys.CODE_START]?.let { CodeStartMode.fromStored(it) }
                 ?: if (prefs[Keys.RESUME_LAST_CHAT] ?: true) CodeStartMode.LAST_CODE else CodeStartMode.NEW_CODE,
             searchDepth = SearchDepth.fromStored(prefs[Keys.SEARCH_DEPTH]),
+            steeringMode = SteeringMode.fromStored(prefs[Keys.STEERING_MODE]),
             chatMemoryEnabled = prefs[Keys.CHAT_MEMORY_ENABLED] ?: true,
             codeMemoryEnabled = prefs[Keys.CODE_MEMORY_ENABLED] ?: true,
             chatRecallCodeMemory = prefs[Keys.CHAT_RECALL_CODE_MEMORY] ?: false,
@@ -506,6 +510,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.CHAT_AGENTS] = ChatAgentProfile.encodeList(s.chatAgents)
             p[Keys.CODE_START] = s.codeStart.name
             p[Keys.SEARCH_DEPTH] = s.searchDepth.name
+            p[Keys.STEERING_MODE] = s.steeringMode.name
             p[Keys.CHAT_MEMORY_ENABLED] = s.chatMemoryEnabled
             p[Keys.CODE_MEMORY_ENABLED] = s.codeMemoryEnabled
             p[Keys.CHAT_RECALL_CODE_MEMORY] = s.chatRecallCodeMemory
@@ -1085,6 +1090,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setSearchDepth(depth: SearchDepth) {
         context.settingsStore.edit { it[Keys.SEARCH_DEPTH] = depth.name }
+    }
+
+    suspend fun setSteeringMode(mode: SteeringMode) {
+        context.settingsStore.edit { it[Keys.STEERING_MODE] = mode.name }
     }
 
     suspend fun setLastConversationKind(value: ConversationKind) {

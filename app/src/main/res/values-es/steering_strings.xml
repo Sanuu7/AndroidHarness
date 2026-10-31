@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">Mientras el agente trabaja</string>
+    <string name="settings_anchor_steering">Mensajes enviados durante una tarea</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">El agente lee tu mensaje después de su paso actual y sigue trabajando. Las herramientas en curso nunca se interrumpen. Si la tarea ya terminó, el mensaje inicia el siguiente turno.</string>
+    <string name="steering_mode_after_task">Después de la tarea</string>
+    <string name="steering_mode_after_task_desc">Tu mensaje espera hasta que termine toda la tarea y luego inicia un turno nuevo.</string>
+    <string name="steering_picker_detail">Elige qué pasa cuando envías un mensaje mientras el agente trabaja. Enviar ahora en un mensaje en cola siempre detiene al agente y lo envía de inmediato.</string>
+    <string name="steering_search_desc">Guía al agente mientras trabaja o espera a que termine la tarea</string>
+    <string name="steering_queue_next_step">El agente los lee después de su paso actual.</string>
+    <string name="steering_queue_badge">Se lee en el siguiente paso</string>
+</resources>

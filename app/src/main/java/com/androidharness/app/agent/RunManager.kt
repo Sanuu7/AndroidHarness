@@ -503,6 +503,7 @@ class RunManager(
         ), turnId)
         if (!resume && conversation.draftText.isNotBlank()) sessions.saveConversation(sid, conversation.copy(draftText = ""))
         controls.update(sid) { it.copy(queue = it.queue.filterNot { q -> q.id == initialId }) }
+        dropDeliveredSteering(sid)
         if (resume) sessions.addMessage(sid, ChatMessage(role = Role.USER,
             text = RunRecovery.CONTINUE_PROMPT,
             id = if (conversation.isChat) RunRecovery.CHAT_CONTINUATION_ID_PREFIX + UUID.randomUUID() else null), turnId)
@@ -618,6 +619,7 @@ class RunManager(
                     repoMapEnabled = repoMapOn,
                     pinnedInstructions = record.pins,
                     subagentRuns = subagents,
+                    steering = steeringInbox(sid, turnId),
                     durableEvent = { event ->
                         if (event is AgentEvent.Finished) finishedNormally = event.reason == null
                         if (event is AgentEvent.Error) recoverableInterruption = event.recoverable
@@ -729,6 +731,7 @@ class RunManager(
                 synchronized(lock) { queueWrites[sid]?.toList() }.orEmpty().forEach { it.join() }
                 if (ended.recoverableInterruption) delay(RetryPolicy.delayMs(controls.flow(sid).value.autoContinueAttempts + 1))
                 kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
+                    dropDeliveredSteering(sid)
                     when (val action = followUps.next(ended)) {
                         null -> Unit
                         else -> try {
@@ -913,10 +916,8 @@ class RunManager(
                 }
             }
 
-            is AgentEvent.UserMessageInjected -> {
-                sessions.addMessage(sessionId, ChatMessage(role = Role.USER, text = event.text), turnId)
-                live.update { it.copy(queuedMessage = null) }
-            }
+            // Already saved by the steering inbox, before it left the queue.
+            is AgentEvent.UserMessageInjected -> live.update { it.copy(queuedMessage = null) }
 
             is AgentEvent.Usage -> {
                 if (event.parentCallId == null) live.update { st -> st.copy(reasoningTokens = event.reasoningTokens, codeDrafts = st.codeDrafts.mapValues { (_, draft) ->
@@ -1166,6 +1167,36 @@ class RunManager(
     fun seedPendingPlan(sessionId: String, plan: String?) {
         if (plan.isNullOrBlank()) return
         stateOf(sessionId).update { if (it.pendingPlan == null) it.copy(pendingPlan = plan) else it }
+    }
+
+    /**
+     * AH Auto: the running task reads queued messages between steps. Each one
+     * is saved to the chat before it leaves the queue. If the process dies in
+     * between, [dropDeliveredSteering] finds the saved copy, so it is never
+     * sent twice. After task leaves the queue alone for the next turn.
+     */
+    private fun steeringInbox(sessionId: String, turnId: String) = SteeringInbox {
+        if (settings.settings.first().steeringMode != com.androidharness.app.data.SteeringMode.AH_AUTO) return@SteeringInbox emptyList()
+        synchronized(lock) { queueWrites[sessionId]?.toList() }.orEmpty().forEach { it.join() }
+        val queue = controls.flow(sessionId).value.queue
+        if (queue.isEmpty()) return@SteeringInbox emptyList()
+        val saved = sessions.messages(sessionId).mapNotNullTo(HashSet()) { it.id }
+        val messages = queue.map { prompt ->
+            ChatMessage(role = Role.USER, text = prompt.text, id = Steering.messageId(prompt.id), turnId = turnId).also {
+                if (it.id !in saved) sessions.addMessage(sessionId, it, turnId)
+            }
+        }
+        val taken = queue.mapTo(HashSet()) { it.id }
+        controls.update(sessionId) { record -> record.copy(queue = record.queue.filterNot { it.id in taken }) }
+        messages
+    }
+
+    private suspend fun dropDeliveredSteering(sessionId: String) {
+        val queue = controls.flow(sessionId).value.queue
+        if (queue.isEmpty()) return
+        val saved = sessions.messages(sessionId).mapNotNullTo(HashSet()) { it.id }
+        if (queue.none { Steering.messageId(it.id) in saved }) return
+        controls.update(sessionId) { record -> record.copy(queue = record.queue.filterNot { Steering.messageId(it.id) in saved }) }
     }
 
     fun inject(sessionId: String, text: String) {

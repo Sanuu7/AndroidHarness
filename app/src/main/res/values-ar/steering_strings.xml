@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">أثناء عمل الوكيل</string>
+    <string name="settings_anchor_steering">الرسائل المرسلة أثناء المهمة</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">يقرأ الوكيل رسالتك بعد خطوته الحالية ويواصل العمل. لا تتم مقاطعة الأدوات الجارية أبدًا. إذا انتهت المهمة، تبدأ الرسالة الدور التالي.</string>
+    <string name="steering_mode_after_task">بعد المهمة</string>
+    <string name="steering_mode_after_task_desc">تنتظر رسالتك حتى تنتهي المهمة بالكامل، ثم تبدأ دورًا جديدًا.</string>
+    <string name="steering_picker_detail">اختر ما يحدث عند إرسال رسالة أثناء عمل الوكيل. يؤدي «أرسل الآن» على رسالة في قائمة الانتظار دائمًا إلى إيقاف الوكيل وإرسالها فورًا.</string>
+    <string name="steering_search_desc">وجّه الوكيل أثناء عمله، أو انتظر حتى تنتهي المهمة</string>
+    <string name="steering_queue_next_step">يقرأ الوكيل هذه الرسائل بعد خطوته الحالية.</string>
+    <string name="steering_queue_badge">تُقرأ في الخطوة التالية</string>
+</resources>

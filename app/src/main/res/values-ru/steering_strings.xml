@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">Пока агент работает</string>
+    <string name="settings_anchor_steering">Сообщения во время задачи</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">Агент прочитает ваше сообщение после текущего шага и продолжит работу. Запущенные инструменты никогда не прерываются. Если задача уже завершена, сообщение начнёт следующий ход.</string>
+    <string name="steering_mode_after_task">После задачи</string>
+    <string name="steering_mode_after_task_desc">Сообщение ждёт, пока вся задача не завершится, а затем начинает новый ход.</string>
+    <string name="steering_picker_detail">Выберите, что происходит, когда вы отправляете сообщение во время работы агента. «Отправить сейчас» для сообщения в очереди всегда останавливает агента и сразу отправляет его.</string>
+    <string name="steering_search_desc">Направлять работающего агента или ждать завершения задачи</string>
+    <string name="steering_queue_next_step">Агент прочитает их после текущего шага.</string>
+    <string name="steering_queue_badge">Будет прочитано на следующем шаге</string>
+</resources>

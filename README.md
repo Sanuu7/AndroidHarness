@@ -259,6 +259,7 @@ The app-tier shell and the terminal run bundled Bash directly on Android 8 and 9
 - Attach a skill to a message, or pull one in with a slash command.
 - `/clear`, `/compact`, `/cost`, `/doctor`, `/init`, `/plan`, `/skills`, `/btw`, plus any skill or snippet by name. `/plan` flips the agent into Plan mode and loads the planning skill automatically.
 - `/btw` asks a quick side question while the agent keeps working. It replays the main task's latest request unchanged, so the answer sees every file and decision so far and is served from the same prompt cache, with the hit rate shown under the answer. It can use read-only tools, its usage counts toward the chat's cost, and the question and answer never join the conversation. While a task runs, typing a message also shows a /btw button next to queue.
+- Messages you send while the agent works steer it. With **AH Auto** (the default), the agent reads them after its current step, once the running tools finish, and keeps going in the same turn; a message sent during the final answer keeps the task going, and one sent after it ends starts the next turn. Nothing running is interrupted, and the earlier context stays cached. Switch to **After task** in Settings > Agent to make them wait for the whole task instead. Send now on a queued message still stops the agent and sends it right away.
 
 ## FAQ
 

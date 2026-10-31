@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">エージェントの作業中</string>
+    <string name="settings_anchor_steering">タスク中に送ったメッセージ</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">エージェントは現在のステップの後にメッセージを読み、そのまま作業を続けます。実行中のツールが中断されることはありません。タスクがすでに終わっていれば、メッセージが次のターンを始めます。</string>
+    <string name="steering_mode_after_task">タスクの後</string>
+    <string name="steering_mode_after_task_desc">メッセージはタスク全体が終わるまで待ち、その後新しいターンを始めます。</string>
+    <string name="steering_picker_detail">エージェントの作業中にメッセージを送ったときの動作を選びます。キュー内のメッセージで「今すぐ送信」を押すと、常にエージェントを止めてすぐに送信します。</string>
+    <string name="steering_search_desc">作業中のエージェントに指示するか、タスクの完了を待つ</string>
+    <string name="steering_queue_next_step">エージェントは現在のステップの後にこれらを読みます。</string>
+    <string name="steering_queue_badge">次のステップで読まれます</string>
+</resources>

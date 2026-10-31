@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">While the agent works</string>
+    <string name="settings_anchor_steering">Messages sent mid-task</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">The agent reads your message after its current step and keeps going. Running tools are never interrupted. If the task already ended, the message starts the next turn.</string>
+    <string name="steering_mode_after_task">After task</string>
+    <string name="steering_mode_after_task_desc">Your message waits until the whole task finishes, then starts a new turn.</string>
+    <string name="steering_picker_detail">Choose what happens when you send a message while the agent is working. Send now on a queued message always stops the agent and sends it right away.</string>
+    <string name="steering_search_desc">Steer the running agent, or wait for the task to finish</string>
+    <string name="steering_queue_next_step">The agent reads these after its current step.</string>
+    <string name="steering_queue_badge">Read at the next step</string>
+</resources>

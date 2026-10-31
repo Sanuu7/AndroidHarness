@@ -443,6 +443,13 @@ private val subSettingsEntries = listOfNotNull(
         anchor = R.string.settings_anchor_tool_iterations,
     ),
     SettingsSearchEntry(
+        R.string.settings_anchor_steering,
+        R.string.steering_search_desc,
+        SettingsPage.AGENT,
+        "steer steering queue message while running busy interrupt ah auto after task",
+        anchor = R.string.settings_anchor_steering,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_project_instructions_title,
         R.string.settings_search_project_instructions_desc,
         SettingsPage.AGENT,

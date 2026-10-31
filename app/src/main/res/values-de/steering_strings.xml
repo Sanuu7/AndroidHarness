@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">Während der Agent arbeitet</string>
+    <string name="settings_anchor_steering">Nachrichten während einer Aufgabe</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">Der Agent liest deine Nachricht nach seinem aktuellen Schritt und macht weiter. Laufende Tools werden nie unterbrochen. Ist die Aufgabe schon beendet, startet die Nachricht die nächste Runde.</string>
+    <string name="steering_mode_after_task">Nach der Aufgabe</string>
+    <string name="steering_mode_after_task_desc">Deine Nachricht wartet, bis die ganze Aufgabe fertig ist, und startet dann eine neue Runde.</string>
+    <string name="steering_picker_detail">Lege fest, was passiert, wenn du eine Nachricht sendest, während der Agent arbeitet. Jetzt senden bei einer wartenden Nachricht stoppt den Agenten immer und sendet sie sofort.</string>
+    <string name="steering_search_desc">Den laufenden Agenten lenken oder auf das Ende der Aufgabe warten</string>
+    <string name="steering_queue_next_step">Der Agent liest diese nach seinem aktuellen Schritt.</string>
+    <string name="steering_queue_badge">Wird im nächsten Schritt gelesen</string>
+</resources>

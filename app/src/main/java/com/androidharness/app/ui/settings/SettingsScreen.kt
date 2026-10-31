@@ -2661,6 +2661,7 @@ private fun AgentSection(
         onProjectInstructions = { showAgentsDialog = true },
         onLiveUpdates = { scope.launch { container.settings.setLiveUpdatesEnabled(it) } },
         showLiveUpdates = false,
+        onSteeringMode = { scope.launch { container.settings.setSteeringMode(it) } },
     )
     if (showAgentsDialog) {
         AgentsInstructionsDialog(container, onDismiss = { showAgentsDialog = false })

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">هنگام کار عامل</string>
+    <string name="settings_anchor_steering">پیام‌های ارسال‌شده در میانهٔ کار</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">عامل پیام شما را بعد از مرحلهٔ فعلی می‌خواند و به کار ادامه می‌دهد. ابزارهای در حال اجرا هرگز قطع نمی‌شوند. اگر کار تمام شده باشد، پیام نوبت بعدی را شروع می‌کند.</string>
+    <string name="steering_mode_after_task">بعد از کار</string>
+    <string name="steering_mode_after_task_desc">پیام شما تا پایان کامل کار منتظر می‌ماند و سپس نوبت تازه‌ای را شروع می‌کند.</string>
+    <string name="steering_picker_detail">انتخاب کنید وقتی هنگام کار عامل پیامی می‌فرستید چه اتفاقی بیفتد. «اکنون ارسال کنید» روی پیام در صف، همیشه عامل را متوقف می‌کند و آن را فوراً می‌فرستد.</string>
+    <string name="steering_search_desc">هدایت عامل در حین کار، یا صبر تا پایان کار</string>
+    <string name="steering_queue_next_step">عامل این‌ها را بعد از مرحلهٔ فعلی می‌خواند.</string>
+    <string name="steering_queue_badge">در مرحلهٔ بعد خوانده می‌شود</string>
+</resources>

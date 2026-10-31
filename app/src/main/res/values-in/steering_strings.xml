@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">Saat agen bekerja</string>
+    <string name="settings_anchor_steering">Pesan yang dikirim di tengah tugas</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">Agen membaca pesan Anda setelah langkah saat ini lalu melanjutkan. Alat yang sedang berjalan tidak pernah diinterupsi. Jika tugas sudah selesai, pesan memulai giliran berikutnya.</string>
+    <string name="steering_mode_after_task">Setelah tugas</string>
+    <string name="steering_mode_after_task_desc">Pesan Anda menunggu sampai seluruh tugas selesai, lalu memulai giliran baru.</string>
+    <string name="steering_picker_detail">Pilih apa yang terjadi saat Anda mengirim pesan ketika agen bekerja. Kirim sekarang pada pesan antrean selalu menghentikan agen dan langsung mengirimnya.</string>
+    <string name="steering_search_desc">Arahkan agen yang sedang berjalan, atau tunggu tugas selesai</string>
+    <string name="steering_queue_next_step">Agen membacanya setelah langkah saat ini.</string>
+    <string name="steering_queue_badge">Dibaca di langkah berikutnya</string>
+</resources>

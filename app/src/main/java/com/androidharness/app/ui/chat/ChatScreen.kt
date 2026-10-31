@@ -21,6 +21,7 @@ import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.SteeringMode
 import com.androidharness.app.data.audio.TtsError
 import com.androidharness.app.data.audio.TtsPhase
 import com.androidharness.app.ui.common.TtsTermsDialog
@@ -2392,6 +2393,7 @@ private fun ChatScreenContent(
                     queue = state.taskControl.queue,
                     onEdit = viewModel::editQueued, onMove = viewModel::moveQueued,
                     onSendNow = viewModel::sendQueuedNow,
+                    readAtNextStep = state.busy && globalSettings.steeringMode == SteeringMode.AH_AUTO,
                 )
 
                 if (desktopLayout) {

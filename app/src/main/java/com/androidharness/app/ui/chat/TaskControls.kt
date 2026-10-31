@@ -56,6 +56,8 @@ fun TaskProgressCard(record: TaskRecord, busy: Boolean, onResume: () -> Unit, on
 fun MessageQueueCard(
     queue: List<QueuedPrompt>, onEdit: (String, String) -> Unit,
     onMove: (String, Int) -> Unit, onSendNow: (String) -> Unit,
+    /** AH Auto while a run works: the agent reads these at its next step. */
+    readAtNextStep: Boolean = false,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     if (queue.isEmpty()) return
@@ -69,13 +71,15 @@ fun MessageQueueCard(
                 .heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).padding(vertical = 8.dp)) {
                     Text(uiContext.getString(R.string.ui_queued_extra69, (queue.size).toString()), style = MaterialTheme.typography.labelLarge)
+                    if (readAtNextStep) Text(uiContext.getString(R.string.steering_queue_badge), style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.primary)
                     if (!expanded) Text(com.androidharness.app.core.response.UserMessageContent.visibleText(queue.first().text), maxLines = 1, overflow = TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Icon(if (expanded) Icons.Default.ExpandLess else Icons.Default.ExpandMore, uiContext.getString(R.string.ui_manage_queue))
             }
             if (expanded) Column(Modifier.heightIn(max = 240.dp).verticalScroll(rememberScrollState())) {
-                Text(uiContext.getString(R.string.ui_sends_after_this_chat_s_run_finished), modifier = Modifier.padding(12.dp),
+                Text(uiContext.getString(if (readAtNextStep) R.string.steering_queue_next_step else R.string.ui_sends_after_this_chat_s_run_finished), modifier = Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 queue.forEachIndexed { index, item ->
                     HorizontalDivider()

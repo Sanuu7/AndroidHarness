@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">智能体工作时</string>
+    <string name="settings_anchor_steering">任务进行中发送的消息</string>
+    <string name="steering_mode_auto">AH Auto</string>
+    <string name="steering_mode_auto_desc">智能体会在当前步骤结束后读取你的消息并继续工作，正在运行的工具不会被打断。如果任务已经结束，这条消息会开始下一轮。</string>
+    <string name="steering_mode_after_task">任务结束后</string>
+    <string name="steering_mode_after_task_desc">你的消息会等到整个任务完成，再开始新的一轮。</string>
+    <string name="steering_picker_detail">选择在智能体工作时发送消息会发生什么。对排队消息点“立即发送”总会停止智能体并马上发送。</string>
+    <string name="steering_search_desc">在智能体运行时引导它，或等待任务完成</string>
+    <string name="steering_queue_next_step">智能体会在当前步骤结束后读取这些消息。</string>
+    <string name="steering_queue_badge">将在下一步读取</string>
+</resources>
