@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">AndroidHarness を学ぶ</string>
+    <string name="learn_description">できることをやさしく段階的に学べるガイドです。</string>
+    <string name="learn_group">はじめに</string>
+    <string name="learn_entry_hint">自分のペースで学べるガイド</string>
+    <string name="learn_entry_action">ガイドを見る</string>
+    <string name="learn_hero_title">少しのヒントで、\nできることが大きく広がる。</string>
+    <string name="learn_hero_body">最初のチャットから始めても、やりたいことへ直接進んでもOK。各レッスンには手順、知っておきたい限界、困ったときの対処が入っています。</string>
+    <string name="learn_offline">オフラインで利用可 · チュートリアルは英語</string>
+    <string name="learn_progress">%2$d レッスン中 %1$d を学習済み</string>
+    <string name="learn_search">何を学びますか？</string>
+    <string name="learn_clear_search">チュートリアル検索をクリア</string>
+    <string name="learn_all">すべてのレッスン</string>
+    <string name="learn_saved">保存済み</string>
+    <string name="learn_start">基本から始める</string>
+    <string name="learn_start_hint">初めてですか？この 3 つのレッスンで始められます。</string>
+    <string name="learn_results">%1$d 件のレッスン</string>
+    <string name="learn_empty_title">別の言葉で検索してみましょう</string>
+    <string name="learn_empty_body">「API キー」「GitHub」「ローカルモデル」「MCP」などで試してください。「すべてのレッスン」に切り替えて一覧から探すこともできます。</string>
+    <string name="learn_saved_empty_title">レッスンを取っておく</string>
+    <string name="learn_saved_empty_body">レッスン内のしおりを使うと、あとでここから開けます。</string>
+    <string name="learn_reset_filters">すべてのレッスンを表示</string>
+    <string name="learn_location">場所</string>
+    <string name="learn_before">始める前に</string>
+    <string name="learn_steps">やってみましょう</string>
+    <string name="learn_outcome">できるようになること</string>
+    <string name="learn_limits">知っておきたいこと</string>
+    <string name="learn_fixes">うまくいかないとき</string>
+    <string name="learn_example">こう聞いてみる</string>
+    <string name="learn_copy_example">例をコピー</string>
+    <string name="learn_copied">例をコピーしました</string>
+    <string name="learn_open_section">アプリで試す</string>
+    <string name="learn_links">公式ヘルプ</string>
+    <string name="learn_links_hint">このリンクはブラウザーで開き、インターネット接続が必要です。プロバイダーのページは変わることがあります。支払う前に表示される規約と料金を確認してください。</string>
+    <string name="learn_related">次のステップにおすすめ</string>
+    <string name="learn_mark_complete">学習済みにする</string>
+    <string name="learn_complete">学習済み · タップで解除</string>
+    <string name="learn_completed_label">学習済み</string>
+    <string name="learn_bookmark">このレッスンを保存</string>
+    <string name="learn_bookmarked">保存したレッスンを削除</string>
+    <string name="learn_link_failed">ブラウザーを開けませんでした。リンクをコピーして使えます。</string>
+    <string name="learn_copy_link">リンクをコピー</string>
+    <string name="learn_load_failed">ガイドを開けませんでした。設定を閉じてからもう一度お試しください。</string>
+</resources>

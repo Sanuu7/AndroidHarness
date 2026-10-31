@@ -312,7 +312,7 @@ internal object AgentSettingsCatalog {
         AgentSetting("allow_screenshots", R.string.settings_search_screenshots_title, SettingsPage.PRIVACY, SettingKind.Toggle,
             "Allow screenshots and the recents preview.", keywords = "screenshot recents privacy secure", sensitive = true,
             read = { it.allowScreenshots.toString() }, write = { r, v -> r.setAllowScreenshots(bool(v)) }),
-    )
+    ).filter { com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS || it.key !in setOf("frosted_glass", "liquid_glass", "glass_transparency") }
 
     private val byKey = all.associateBy { it.key }
 

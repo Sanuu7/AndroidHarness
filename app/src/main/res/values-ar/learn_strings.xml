@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">تعرّف على AndroidHarness</string>
+    <string name="learn_description">أدليل ودية خطوة بخطوة لكل ما يمكنك فعله هنا.</string>
+    <string name="learn_group">ابدأ من هنا</string>
+    <string name="learn_entry_hint">دليلك، على وقتك</string>
+    <string name="learn_entry_action">استكشف الدليل</string>
+    <string name="learn_hero_title">قليل من التوجيه،\nوإمكانيات كثيرة.</string>
+    <string name="learn_hero_body">ابدأ بأول محادثة لك، أو انتقل مباشرة إلى ما تريد فعله. كل درس يتضمن خطوات، وحدودًا مفيدة، ومساعدة إذا تعثّرت.</string>
+    <string name="learn_offline">متاح دون اتصال · الدروس بالإنجليزية</string>
+    <string name="learn_progress">تعلمت %1$d من %2$d دروس</string>
+    <string name="learn_search">ماذا تريد أن تتعلم؟</string>
+    <string name="learn_clear_search">مسح بحث الدروس</string>
+    <string name="learn_all">كل الدروس</string>
+    <string name="learn_saved">المحفوظة</string>
+    <string name="learn_start">ابدأ بالأساسيات</string>
+    <string name="learn_start_hint">جديد هنا؟ هذه الدروس الثلاثة سترافقك في البداية.</string>
+    <string name="learn_results">%1$d دروس</string>
+    <string name="learn_empty_title">لنجرّب بحثًا آخر</string>
+    <string name="learn_empty_body">جرّب «مفتاح API» أو «GitHub» أو «نموذج محلي» أو «MCP». يمكنك أيضًا التبديل إلى «كل الدروس» لتصفح كل شيء.</string>
+    <string name="learn_saved_empty_title">احتفظ بدرس في متناولك</string>
+    <string name="learn_saved_empty_body">استخدم الإشارة المرجعية داخل الدرس لتجده هنا لاحقًا.</string>
+    <string name="learn_reset_filters">عرض كل الدروس</string>
+    <string name="learn_location">إلى أين تذهب</string>
+    <string name="learn_before">قبل أن تبدأ</string>
+    <string name="learn_steps">لنفعله</string>
+    <string name="learn_outcome">ما يجب أن تراه</string>
+    <string name="learn_limits">من الجيد أن تعرف</string>
+    <string name="learn_fixes">إذا تعثّرت</string>
+    <string name="learn_example">جرّب أن تقول هذا</string>
+    <string name="learn_copy_example">نسخ المثال</string>
+    <string name="learn_copied">تم نسخ المثال</string>
+    <string name="learn_open_section">جرّبه في التطبيق</string>
+    <string name="learn_links">المساعدة الرسمية</string>
+    <string name="learn_links_hint">تُفتح هذه الروابط في متصفحك وتحتاج اتصالًا بالإنترنت. قد تتغير صفحات مزودي الخدمة؛ راجع الشروط والسعر المعروضين قبل الدفع.</string>
+    <string name="learn_related">خطوة تالية مفيدة</string>
+    <string name="learn_mark_complete">وضع علامة تم التعلم</string>
+    <string name="learn_complete">تم التعلم · اضغط للتراجع</string>
+    <string name="learn_completed_label">تم التعلم</string>
+    <string name="learn_bookmark">احفظ هذا الدرس</string>
+    <string name="learn_bookmarked">إزالة الدرس المحفوظ</string>
+    <string name="learn_link_failed">تعذّر فتح المتصفح. يمكنك نسخ الرابط بدلًا من ذلك.</string>
+    <string name="learn_copy_link">نسخ الرابط</string>
+    <string name="learn_load_failed">تعذّر فتح الدليل. أغلق الإعدادات وحاول مرة أخرى.</string>
+</resources>

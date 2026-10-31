@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">了解 AndroidHarness</string>
+    <string name="learn_description">简明易懂的分步指南，带你了解这里的所有功能。</string>
+    <string name="learn_group">从这里开始</string>
+    <string name="learn_entry_hint">按你的节奏学习的指南</string>
+    <string name="learn_entry_action">浏览指南</string>
+    <string name="learn_hero_title">一点指引，\n无限可能。</string>
+    <string name="learn_hero_body">从第一次聊天开始，或直接跳到你想做的事。每节课都包含步骤、实用限制和卡住时的帮助。</string>
+    <string name="learn_offline">可离线使用 · 教程为英文</string>
+    <string name="learn_progress">已学习 %2$d 节中的 %1$d 节</string>
+    <string name="learn_search">想学点什么？</string>
+    <string name="learn_clear_search">清除教程搜索</string>
+    <string name="learn_all">全部课程</string>
+    <string name="learn_saved">已保存</string>
+    <string name="learn_start">从基础开始</string>
+    <string name="learn_start_hint">第一次用？这三节课能带你入门。</string>
+    <string name="learn_results">%1$d 节课程</string>
+    <string name="learn_empty_title">换个关键词试试</string>
+    <string name="learn_empty_body">试试“API 密钥”“GitHub”“本地模型”或“MCP”。也可以切换到“全部课程”浏览所有内容。</string>
+    <string name="learn_saved_empty_title">把课程留到以后看</string>
+    <string name="learn_saved_empty_body">在课程里点收藏，之后就能在这里找到它。</string>
+    <string name="learn_reset_filters">显示全部课程</string>
+    <string name="learn_location">去哪里操作</string>
+    <string name="learn_before">开始之前</string>
+    <string name="learn_steps">动手做</string>
+    <string name="learn_outcome">完成后的效果</string>
+    <string name="learn_limits">需要知道的</string>
+    <string name="learn_fixes">遇到问题怎么办</string>
+    <string name="learn_example">试试这样说</string>
+    <string name="learn_copy_example">复制示例</string>
+    <string name="learn_copied">示例已复制</string>
+    <string name="learn_open_section">在应用中试试</string>
+    <string name="learn_links">官方帮助</string>
+    <string name="learn_links_hint">这些链接会在浏览器中打开，需要联网。服务商页面可能变化；付款前请先查看页面上的条款和价格。</string>
+    <string name="learn_related">建议的下一步</string>
+    <string name="learn_mark_complete">标记为已学</string>
+    <string name="learn_complete">已学 · 点按可撤销</string>
+    <string name="learn_completed_label">已学</string>
+    <string name="learn_bookmark">收藏本课</string>
+    <string name="learn_bookmarked">取消收藏本课</string>
+    <string name="learn_link_failed">无法打开浏览器。你可以改为复制链接。</string>
+    <string name="learn_copy_link">复制链接</string>
+    <string name="learn_load_failed">无法打开指南。请关闭设置后重试。</string>
+</resources>

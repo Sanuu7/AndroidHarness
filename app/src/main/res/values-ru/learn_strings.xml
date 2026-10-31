@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">Знакомство с AndroidHarness</string>
+    <string name="learn_description">Понятные пошаговые руководства ко всем возможностям приложения.</string>
+    <string name="learn_group">Начните здесь</string>
+    <string name="learn_entry_hint">Ваше руководство в вашем темпе</string>
+    <string name="learn_entry_action">Открыть руководство</string>
+    <string name="learn_hero_title">Немного подсказок —\nморе возможностей.</string>
+    <string name="learn_hero_body">Начните с первого чата или сразу перейдите к тому, что хотите сделать. В каждом уроке есть шаги, полезные ограничения и помощь, если что-то не получается.</string>
+    <string name="learn_offline">Доступно офлайн · уроки на английском</string>
+    <string name="learn_progress">Изучено уроков: %1$d из %2$d</string>
+    <string name="learn_search">Чему вы хотите научиться?</string>
+    <string name="learn_clear_search">Очистить поиск по урокам</string>
+    <string name="learn_all">Все уроки</string>
+    <string name="learn_saved">Сохранённые</string>
+    <string name="learn_start">Начните с основ</string>
+    <string name="learn_start_hint">Впервые здесь? Эти три урока помогут начать.</string>
+    <string name="learn_results">Уроков: %1$d</string>
+    <string name="learn_empty_title">Попробуйте другой запрос</string>
+    <string name="learn_empty_body">Попробуйте «API-ключ», «GitHub», «локальная модель» или «MCP». Можно также открыть «Все уроки» и посмотреть всё.</string>
+    <string name="learn_saved_empty_title">Держите урок под рукой</string>
+    <string name="learn_saved_empty_body">Нажмите закладку в уроке, чтобы позже найти его здесь.</string>
+    <string name="learn_reset_filters">Показать все уроки</string>
+    <string name="learn_location">Где это находится</string>
+    <string name="learn_before">Перед началом</string>
+    <string name="learn_steps">Приступим</string>
+    <string name="learn_outcome">Что вы должны увидеть</string>
+    <string name="learn_limits">Полезно знать</string>
+    <string name="learn_fixes">Если что-то не получается</string>
+    <string name="learn_example">Попробуйте сказать так</string>
+    <string name="learn_copy_example">Скопировать пример</string>
+    <string name="learn_copied">Пример скопирован</string>
+    <string name="learn_open_section">Попробовать в приложении</string>
+    <string name="learn_links">Официальная справка</string>
+    <string name="learn_links_hint">Ссылки открываются в браузере и требуют интернета. Страницы провайдеров меняются; перед оплатой проверьте условия и цену на самой странице.</string>
+    <string name="learn_related">Полезный следующий шаг</string>
+    <string name="learn_mark_complete">Отметить как изученное</string>
+    <string name="learn_complete">Изучено · нажмите, чтобы отменить</string>
+    <string name="learn_completed_label">Изучено</string>
+    <string name="learn_bookmark">Сохранить этот урок</string>
+    <string name="learn_bookmarked">Убрать из сохранённых</string>
+    <string name="learn_link_failed">Не удалось открыть браузер. Можно скопировать ссылку.</string>
+    <string name="learn_copy_link">Скопировать ссылку</string>
+    <string name="learn_load_failed">Не удалось открыть руководство. Закройте настройки и попробуйте снова.</string>
+</resources>

@@ -157,6 +157,7 @@ fun SettingsScreen(
     onRunSetup: () -> Unit = {},
     onOpenSkills: () -> Unit = {},
     onOpenProviders: () -> Unit = {},
+    onOpenLearnDestination: (com.androidharness.app.ui.learn.LearnDestination) -> Unit = {},
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
@@ -195,6 +196,12 @@ fun SettingsScreen(
 
     var pageName by rememberSaveable { mutableStateOf<String?>(null) }
     var pageHistory by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var learnLessonId by rememberSaveable { mutableStateOf<String?>(null) }
+    var learnLessonHistory by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var learnQuery by rememberSaveable { mutableStateOf("") }
+    var learnCategory by rememberSaveable { mutableStateOf<String?>(null) }
+    var learnSavedOnly by rememberSaveable { mutableStateOf(false) }
+    val learnState = androidx.compose.runtime.saveable.rememberSaveableStateHolder()
     val desktop = com.androidharness.app.ui.LocalDesktopLayout.current
     val page = pageName?.let { name -> SettingsPage.entries.firstOrNull { it.name == name } }
         ?: if (desktop) SettingsPage.APPEARANCE else null
@@ -211,6 +218,10 @@ fun SettingsScreen(
     val homeScroll = rememberScrollState()
     fun goBack() {
         when {
+            page == SettingsPage.LEARN && learnLessonId != null -> {
+                learnLessonId = learnLessonHistory.lastOrNull()
+                learnLessonHistory = learnLessonHistory.dropLast(1)
+            }
             pageHistory.isNotEmpty() -> { pageName = pageHistory.last(); pageHistory = pageHistory.dropLast(1); highlight = null }
             desktop -> onBack()
             page != null -> pageName = null
@@ -239,7 +250,7 @@ fun SettingsScreen(
             SettingsPage.SETUP -> onRunSetup()
             else -> {
                 val current = pageName
-                if (desktop && !(page == SettingsPage.CODING && destination in settingsCodingPages)) pageHistory = emptyList()
+                if (desktop && page != SettingsPage.LEARN && !(page == SettingsPage.CODING && destination in settingsCodingPages)) pageHistory = emptyList()
                 else if (current != null && current != destination.name) pageHistory = pageHistory + current
                 pageName = destination.name
             }
@@ -281,11 +292,23 @@ fun SettingsScreen(
                 SettingsHighlightScope(highlight) {
                     Column(
                         modifier = Modifier.then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
-                            .fillMaxSize().then(if (page == SettingsPage.LOCAL_MODELS || page == SettingsPage.CONFIGURATION || page == SettingsPage.PLUGINS) Modifier else Modifier.verticalScroll(rememberScrollState())).padding(horizontal = 16.dp, vertical = 16.dp),
+                            .fillMaxSize().then(if (page == SettingsPage.LEARN || page == SettingsPage.LOCAL_MODELS || page == SettingsPage.CONFIGURATION || page == SettingsPage.PLUGINS) Modifier else Modifier.verticalScroll(rememberScrollState()))
+                            .then(if (page == SettingsPage.LEARN) Modifier else Modifier.padding(horizontal = 16.dp, vertical = 16.dp)),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
-                        if (page != SettingsPage.LOCAL_MODELS && page != SettingsPage.CONFIGURATION && page != SettingsPage.PLUGINS && page != SettingsPage.AGENT && page != SettingsPage.TELEGRAM && page != SettingsPage.STORAGE && page != SettingsPage.ENVIRONMENT) SettingsPageIntro(page)
+                        if (page != SettingsPage.LEARN && page != SettingsPage.LOCAL_MODELS && page != SettingsPage.CONFIGURATION && page != SettingsPage.PLUGINS && page != SettingsPage.AGENT && page != SettingsPage.TELEGRAM && page != SettingsPage.STORAGE && page != SettingsPage.ENVIRONMENT) SettingsPageIntro(page)
                     when (page) {
+                        SettingsPage.LEARN -> learnState.SaveableStateProvider("guide") { com.androidharness.app.ui.learn.LearnSection(
+                            lessonId = learnLessonId, query = learnQuery, category = learnCategory, savedOnly = learnSavedOnly,
+                            onQueryChange = { learnQuery = it }, onCategoryChange = { learnCategory = it },
+                            onSavedOnlyChange = { learnSavedOnly = it },
+                            onLesson = { id ->
+                                if (id == null) learnLessonHistory = emptyList()
+                                else learnLessonId?.takeIf { it != id }?.let { learnLessonHistory = learnLessonHistory + it }
+                                learnLessonId = id
+                            },
+                            onOpenSettings = { openPage(it) }, onOpenDestination = onOpenLearnDestination,
+                        ) }
                         SettingsPage.LANGUAGE -> LanguageSection()
                         SettingsPage.CHAT_OPTIONS -> ChatOptionsSection(
                             settings,
@@ -385,7 +408,7 @@ fun SettingsScreen(
                         SettingsPage.ABOUT -> AboutSection(container)
                         SettingsPage.SKILLS, SettingsPage.USAGE, SettingsPage.SETUP -> Unit
                     }
-                        if (page != SettingsPage.LOCAL_MODELS) Spacer(Modifier.height(16.dp))
+                        if (page != SettingsPage.LEARN && page != SettingsPage.LOCAL_MODELS) Spacer(Modifier.height(16.dp))
                     }
                 }
             }
@@ -2820,8 +2843,10 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
     SettingsAnchor(R.string.theme_canvas_title) {
         HarnessCanvasSection(settings.harnessCanvas, container.settings)
     }
-    SettingsAnchor(R.string.glass_title) {
-        HarnessGlassSection(settings, container.settings)
+    if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) {
+        SettingsAnchor(R.string.glass_title) {
+            HarnessGlassSection(settings, container.settings)
+        }
     }
 }
 

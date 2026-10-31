@@ -47,6 +47,7 @@ internal fun SettingsHome(
         modifier.padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
+        if (query.isBlank()) com.androidharness.app.ui.learn.LearnEntryCard(onClick = { onOpen(SettingsPage.LEARN, null) })
         OutlinedTextField(
             value = query,
             onValueChange = onQueryChange,
@@ -76,7 +77,7 @@ internal fun SettingsHome(
                 Text(stringResource(R.string.settings_search_empty_hint), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
             }
         }
-        settingsDisplayGroups(results, query).forEach { (group, entries) ->
+        settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).forEach { (group, entries) ->
             Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                 val showHeader = entries.size > 1
                 if (showHeader) Text(
@@ -140,6 +141,9 @@ internal fun DesktopSettingsNavigation(
     val results = remember(query, context) { matchingSettingsEntries(query, context) }
     Surface(modifier, color = scheme.surfaceContainerLow, contentColor = scheme.onSurface) {
         Column(Modifier.fillMaxSize().semantics { contentDescription = context.getString(R.string.settings_search_categories) }) {
+            com.androidharness.app.ui.learn.LearnEntryCard(
+                onClick = { onOpen(SettingsPage.LEARN, null) }, compact = true, modifier = Modifier.padding(12.dp),
+            )
             OutlinedTextField(query, onQueryChange, singleLine = true,
                 placeholder = { Text(stringResource(R.string.settings_search_placeholder), style = MaterialTheme.typography.bodySmall) },
                 leadingIcon = { Icon(Icons.Outlined.Search, null, Modifier.size(18.dp)) },
@@ -152,7 +156,7 @@ internal fun DesktopSettingsNavigation(
             LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
                 if (results.isEmpty()) item { Text(stringResource(R.string.settings_search_empty_title), Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
-                settingsDisplayGroups(results, query).forEach { (group, entries) ->
+                settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).forEach { (group, entries) ->
                     if (entries.size > 1) {
                         item { Text(stringResource(group), Modifier.padding(start = 12.dp, top = 16.dp, bottom = 6.dp),
                             style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant) }
@@ -214,6 +218,7 @@ internal fun SettingsPanel(modifier: Modifier = Modifier, content: @Composable C
 }
 
 internal fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
+    SettingsPage.LEARN -> Icons.Outlined.AutoStories
     SettingsPage.LANGUAGE -> Icons.Outlined.Translate
     SettingsPage.CHAT_OPTIONS -> Icons.Outlined.ChatBubbleOutline
     SettingsPage.MEMORY -> Icons.Outlined.Memory

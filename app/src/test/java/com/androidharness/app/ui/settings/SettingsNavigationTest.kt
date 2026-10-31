@@ -64,17 +64,15 @@ class SettingsNavigationTest {
     }
 
     @Test
-    fun `connected accounts is first and GitHub integration still supports a direct link`() {
-        assertEquals(SettingsPage.CONNECTED_ACCOUNTS, matchingSettingsPages("", settingsTestStrings()).first())
-        assertEquals(SettingsPage.NINE_ROUTER, matchingSettingsPages("", settingsTestStrings())[1])
-        assertEquals(SettingsPage.LANGUAGE, matchingSettingsPages("", settingsTestStrings())[2])
-        assertEquals(SettingsPage.APPEARANCE, matchingSettingsPages("", settingsTestStrings())[3])
+    fun `learn leads settings and existing account shortcuts retain their order`() {
+        assertEquals(listOf(SettingsPage.LEARN, SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER,
+            SettingsPage.LANGUAGE, SettingsPage.APPEARANCE), matchingSettingsPages("", settingsTestStrings()).take(5))
         val displayGroups = settingsDisplayGroups(matchingSettingsEntries("", settingsTestStrings()), "")
-        assertEquals(listOf(R.string.settings_group_special_providers, R.string.settings_group_personalize), displayGroups.keys.take(2))
+        assertEquals(listOf(R.string.learn_group, R.string.settings_group_special_providers, R.string.settings_group_personalize), displayGroups.keys.take(3))
         assertEquals(listOf(SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.CHAT_OPTIONS,
             SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.RUMBLE, SettingsPage.PRIVACY), displayGroups.getValue(R.string.settings_group_personalize).map { it.page })
         val groups = displayGroups.values.toList()
-        assertEquals(listOf(SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER), groups.first().map { it.page })
+        assertEquals(listOf(SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER), displayGroups.getValue(R.string.settings_group_special_providers).map { it.page })
         assertTrue(groups.drop(1).any { group -> group.any { it.page == SettingsPage.GITHUB } })
         assertEquals(SettingsPage.LANGUAGE, settingsDeepLink("language"))
         assertEquals(SettingsPage.GITHUB, settingsDeepLink("github"))

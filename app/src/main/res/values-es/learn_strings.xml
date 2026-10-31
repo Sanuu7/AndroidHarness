@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">Aprende a usar AndroidHarness</string>
+    <string name="learn_description">Guías sencillas paso a paso para todo lo que puedes hacer aquí.</string>
+    <string name="learn_group">Empieza aquí</string>
+    <string name="learn_entry_hint">Tu guía, a tu ritmo</string>
+    <string name="learn_entry_action">Explorar la guía</string>
+    <string name="learn_hero_title">Un poco de guía.\nMuchas posibilidades.</string>
+    <string name="learn_hero_body">Empieza con tu primer chat o ve directo a lo que quieres hacer. Cada lección incluye pasos, límites útiles y ayuda si te atascas.</string>
+    <string name="learn_offline">Disponible sin conexión · Tutoriales en inglés</string>
+    <string name="learn_progress">%1$d de %2$d lecciones aprendidas</string>
+    <string name="learn_search">¿Qué te gustaría aprender?</string>
+    <string name="learn_clear_search">Borrar la búsqueda del tutorial</string>
+    <string name="learn_all">Todas las lecciones</string>
+    <string name="learn_saved">Guardadas</string>
+    <string name="learn_start">Empieza con lo básico</string>
+    <string name="learn_start_hint">¿Nuevo por aquí? Estas tres lecciones te pondrán en marcha.</string>
+    <string name="learn_results">%1$d lecciones</string>
+    <string name="learn_empty_title">Probemos otra búsqueda</string>
+    <string name="learn_empty_body">Prueba «clave de API», «GitHub», «modelo local» o «MCP». También puedes cambiar a «Todas las lecciones» para verlo todo.</string>
+    <string name="learn_saved_empty_title">Ten una lección a mano</string>
+    <string name="learn_saved_empty_body">Usa el marcador de una lección para encontrarla aquí más tarde.</string>
+    <string name="learn_reset_filters">Mostrar todas las lecciones</string>
+    <string name="learn_location">A dónde ir</string>
+    <string name="learn_before">Antes de empezar</string>
+    <string name="learn_steps">Vamos a ello</string>
+    <string name="learn_outcome">Lo que deberías ver</string>
+    <string name="learn_limits">Bueno saber</string>
+    <string name="learn_fixes">Si te atascas</string>
+    <string name="learn_example">Prueba a decir esto</string>
+    <string name="learn_copy_example">Copiar ejemplo</string>
+    <string name="learn_copied">Ejemplo copiado</string>
+    <string name="learn_open_section">Pruébalo en la app</string>
+    <string name="learn_links">Ayuda oficial</string>
+    <string name="learn_links_hint">Estos enlaces se abren en tu navegador y necesitan conexión a internet. Las páginas de los proveedores pueden cambiar; revisa los términos y el precio antes de pagar.</string>
+    <string name="learn_related">Un buen siguiente paso</string>
+    <string name="learn_mark_complete">Marcar como aprendida</string>
+    <string name="learn_complete">Aprendida · toca para deshacer</string>
+    <string name="learn_completed_label">Aprendida</string>
+    <string name="learn_bookmark">Guardar esta lección</string>
+    <string name="learn_bookmarked">Quitar lección guardada</string>
+    <string name="learn_link_failed">No se pudo abrir el navegador. Puedes copiar el enlace en su lugar.</string>
+    <string name="learn_copy_link">Copiar enlace</string>
+    <string name="learn_load_failed">No se pudo abrir la guía. Cierra Ajustes e inténtalo de nuevo.</string>
+</resources>

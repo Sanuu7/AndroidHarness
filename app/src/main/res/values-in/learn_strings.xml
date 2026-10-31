@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">Pelajari AndroidHarness</string>
+    <string name="learn_description">Panduan langkah demi langkah yang ramah untuk semua yang bisa Anda lakukan di sini.</string>
+    <string name="learn_group">Mulai di sini</string>
+    <string name="learn_entry_hint">Panduan Anda, dengan kecepatan Anda sendiri</string>
+    <string name="learn_entry_action">Jelajahi panduan</string>
+    <string name="learn_hero_title">Sedikit bimbingan.\nBanyak kemungkinan.</string>
+    <string name="learn_hero_body">Mulai dari chat pertama, atau langsung ke hal yang ingin Anda lakukan. Setiap pelajaran berisi langkah, batasan yang berguna, dan bantuan saat buntu.</string>
+    <string name="learn_offline">Tersedia offline · Tutorial dalam bahasa Inggris</string>
+    <string name="learn_progress">%1$d dari %2$d pelajaran dipelajari</string>
+    <string name="learn_search">Ingin belajar apa?</string>
+    <string name="learn_clear_search">Bersihkan pencarian tutorial</string>
+    <string name="learn_all">Semua pelajaran</string>
+    <string name="learn_saved">Disimpan</string>
+    <string name="learn_start">Mulai dari dasar</string>
+    <string name="learn_start_hint">Baru di sini? Tiga pelajaran ini akan memandu Anda.</string>
+    <string name="learn_results">%1$d pelajaran</string>
+    <string name="learn_empty_title">Coba kata kunci lain</string>
+    <string name="learn_empty_body">Coba "kunci API", "GitHub", "model lokal", atau "MCP". Anda juga bisa beralih ke "Semua pelajaran" untuk melihat semuanya.</string>
+    <string name="learn_saved_empty_title">Simpan pelajaran favorit</string>
+    <string name="learn_saved_empty_body">Gunakan penanda di dalam pelajaran untuk menemukannya lagi di sini.</string>
+    <string name="learn_reset_filters">Tampilkan semua pelajaran</string>
+    <string name="learn_location">Ke mana pergi</string>
+    <string name="learn_before">Sebelum mulai</string>
+    <string name="learn_steps">Mari lakukan</string>
+    <string name="learn_outcome">Yang akan Anda lihat</string>
+    <string name="learn_limits">Baik untuk diketahui</string>
+    <string name="learn_fixes">Jika buntu</string>
+    <string name="learn_example">Coba ucapkan ini</string>
+    <string name="learn_copy_example">Salin contoh</string>
+    <string name="learn_copied">Contoh disalin</string>
+    <string name="learn_open_section">Coba di aplikasi</string>
+    <string name="learn_links">Bantuan resmi</string>
+    <string name="learn_links_hint">Tautan ini terbuka di browser dan butuh koneksi internet. Halaman penyedia bisa berubah; periksa syarat dan harga yang tertera sebelum membayar.</string>
+    <string name="learn_related">Langkah berikutnya yang berguna</string>
+    <string name="learn_mark_complete">Tandai sudah dipelajari</string>
+    <string name="learn_complete">Sudah dipelajari · ketuk untuk batal</string>
+    <string name="learn_completed_label">Sudah dipelajari</string>
+    <string name="learn_bookmark">Simpan pelajaran ini</string>
+    <string name="learn_bookmarked">Hapus dari simpanan</string>
+    <string name="learn_link_failed">Browser tidak bisa dibuka. Anda bisa menyalin tautannya sebagai gantinya.</string>
+    <string name="learn_copy_link">Salin tautan</string>
+    <string name="learn_load_failed">Panduan tidak bisa dibuka. Tutup Pengaturan lalu coba lagi.</string>
+</resources>

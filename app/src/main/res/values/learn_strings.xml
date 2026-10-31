@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">Learn AndroidHarness</string>
+    <string name="learn_description">Friendly, step-by-step guides to everything you can do here.</string>
+    <string name="learn_group">Start here</string>
+    <string name="learn_entry_hint">Your guide, at your pace</string>
+    <string name="learn_entry_action">Explore the guide</string>
+    <string name="learn_hero_title">A little guidance.\nA lot of possibilities.</string>
+    <string name="learn_hero_body">Start with your first chat, or jump straight to the thing you want to do. Every lesson includes steps, useful limits, and help when you get stuck.</string>
+    <string name="learn_offline">Available offline · Tutorials in English</string>
+    <string name="learn_progress">%1$d of %2$d lessons learned</string>
+    <string name="learn_search">What would you like to learn?</string>
+    <string name="learn_clear_search">Clear tutorial search</string>
+    <string name="learn_all">All lessons</string>
+    <string name="learn_saved">Saved</string>
+    <string name="learn_start">Start with the basics</string>
+    <string name="learn_start_hint">New here? These three lessons will get you going.</string>
+    <string name="learn_results">%1$d lessons</string>
+    <string name="learn_empty_title">Let’s try another search</string>
+    <string name="learn_empty_body">Try “API key”, “GitHub”, “local model”, or “MCP”. You can also switch to All lessons to browse everything.</string>
+    <string name="learn_saved_empty_title">Keep a lesson handy</string>
+    <string name="learn_saved_empty_body">Use the bookmark in a lesson to find it here later.</string>
+    <string name="learn_reset_filters">Show all lessons</string>
+    <string name="learn_location">Where to go</string>
+    <string name="learn_before">Before you start</string>
+    <string name="learn_steps">Let’s do it</string>
+    <string name="learn_outcome">What you should see</string>
+    <string name="learn_limits">Good to know</string>
+    <string name="learn_fixes">If you get stuck</string>
+    <string name="learn_example">Try saying this</string>
+    <string name="learn_copy_example">Copy example</string>
+    <string name="learn_copied">Example copied</string>
+    <string name="learn_open_section">Try it in the app</string>
+    <string name="learn_links">Official help</string>
+    <string name="learn_links_hint">These links open in your browser and need an internet connection. Provider pages can change; check the terms and price shown before paying.</string>
+    <string name="learn_related">A useful next step</string>
+    <string name="learn_mark_complete">Mark as learned</string>
+    <string name="learn_complete">Learned · tap to undo</string>
+    <string name="learn_completed_label">Learned</string>
+    <string name="learn_bookmark">Save this lesson</string>
+    <string name="learn_bookmarked">Remove saved lesson</string>
+    <string name="learn_link_failed">Couldn’t open the browser. You can copy the link instead.</string>
+    <string name="learn_copy_link">Copy link</string>
+    <string name="learn_load_failed">The guide couldn’t be opened. Close Settings and try again.</string>
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">آشنایی با AndroidHarness</string>
+    <string name="learn_description">راهنماهای گام‌به‌گام و ساده برای همه کاری که اینجا می‌توانید بکنید.</string>
+    <string name="learn_group">از اینجا شروع کنید</string>
+    <string name="learn_entry_hint">راهنمای شما، با سرعت خودتان</string>
+    <string name="learn_entry_action">کاوش در راهنما</string>
+    <string name="learn_hero_title">کمی راهنمایی،\nخیلی امکانات.</string>
+    <string name="learn_hero_body">با نخستین گفتگو شروع کنید یا مستقیم بروید سراغ کاری که می‌خواهید. هر درس شامل مراحل، محدودیت‌های کاربردی و کمک هنگام گیر کردن است.</string>
+    <string name="learn_offline">بدون اینترنت هم موجود است · آموزش‌ها به انگلیسی</string>
+    <string name="learn_progress">%1$d درس از %2$d درس یاد گرفته شده</string>
+    <string name="learn_search">دوست دارید چه چیزی یاد بگیرید؟</string>
+    <string name="learn_clear_search">پاک کردن جستجوی آموزش</string>
+    <string name="learn_all">همه درس‌ها</string>
+    <string name="learn_saved">ذخیره‌شده‌ها</string>
+    <string name="learn_start">از پایه شروع کنید</string>
+    <string name="learn_start_hint">تازه رسیده‌اید؟ این سه درس شما را راه می‌اندازد.</string>
+    <string name="learn_results">%1$d درس</string>
+    <string name="learn_empty_title">بیایید جستجوی دیگری امتحان کنیم</string>
+    <string name="learn_empty_body">«کلید API»، «GitHub»، «مدل محلی» یا «MCP» را امتحان کنید. می‌توانید به «همه درس‌ها» بروید و همه را ببینید.</string>
+    <string name="learn_saved_empty_title">یک درس را دم دست داشته باشید</string>
+    <string name="learn_saved_empty_body">نشانک درس را بزنید تا بعداً همین‌جا پیدایش کنید.</string>
+    <string name="learn_reset_filters">نمایش همه درس‌ها</string>
+    <string name="learn_location">کجا برویم</string>
+    <string name="learn_before">پیش از شروع</string>
+    <string name="learn_steps">انجامش بدهیم</string>
+    <string name="learn_outcome">چیزی که باید ببینید</string>
+    <string name="learn_limits">خوب است بدانید</string>
+    <string name="learn_fixes">اگر گیر کردید</string>
+    <string name="learn_example">این را امتحان کنید</string>
+    <string name="learn_copy_example">کپی مثال</string>
+    <string name="learn_copied">مثال کپی شد</string>
+    <string name="learn_open_section">در برنامه امتحانش کنید</string>
+    <string name="learn_links">راهنمای رسمی</string>
+    <string name="learn_links_hint">این پیوندها در مرورگر باز می‌شوند و به اینترنت نیاز دارند. صفحه‌های ارائه‌دهنده‌ها ممکن است تغییر کند؛ پیش از پرداخت، شرایط و قیمت را روی همان صفحه بررسی کنید.</string>
+    <string name="learn_related">قدم بعدی مفید</string>
+    <string name="learn_mark_complete">علامت‌گذاری به‌عنوان یادگرفته</string>
+    <string name="learn_complete">یاد گرفته شد · برای برگرداندن ضربه بزنید</string>
+    <string name="learn_completed_label">یاد گرفته شد</string>
+    <string name="learn_bookmark">ذخیره این درس</string>
+    <string name="learn_bookmarked">حذف درس ذخیره‌شده</string>
+    <string name="learn_link_failed">مرورگر باز نشد. می‌توانید به‌جای آن پیوند را کپی کنید.</string>
+    <string name="learn_copy_link">کپی پیوند</string>
+    <string name="learn_load_failed">راهنما باز نشد. تنظیمات را ببندید و دوباره تلاش کنید.</string>
+</resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">AndroidHarness ඉගෙන ගන්න</string>
+    <string name="learn_description">මෙහි කළ හැකි සියල්ල සඳහා පියවරෙන් පියවර මිත්‍රශීලී මාර්ගෝපදේශ.</string>
+    <string name="learn_group">මෙතැනින් පටන් ගන්න</string>
+    <string name="learn_entry_hint">ඔබේ වේගයට ඔබේ මාර්ගෝපදේශය</string>
+    <string name="learn_entry_action">මාර්ගෝපදේශය පිරික්සන්න</string>
+    <string name="learn_hero_title">ටිකක් මඟ පෙන්වීම.\nවිශාල හැකියාවන්.</string>
+    <string name="learn_hero_body">ඔබේ පළමු chat එකෙන් පටන් ගන්න, නැතහොත් කිරීමට අවශ්‍ය දේට කෙලින්ම යන්න. සෑම පාඩමකම පියවර, ප්‍රයෝජනවත් සීමා සහ අමාරු වූ විට උදව් ඇතුළත් වේ.</string>
+    <string name="learn_offline">නොබැඳිව ලද හැක · නිබන්ධන ඉංග්‍රීසි බසින්</string>
+    <string name="learn_progress">පාඩම් %2$d න් %1$d ක් ඉගෙන ගත්තා</string>
+    <string name="learn_search">ඉගෙන ගැනීමට කැමති දේ?</string>
+    <string name="learn_clear_search">නිබන්ධන සෙවීම හිස් කරන්න</string>
+    <string name="learn_all">සියලු පාඩම්</string>
+    <string name="learn_saved">සුරැකි</string>
+    <string name="learn_start">මූලික කරුණුවලින් පටන් ගන්න</string>
+    <string name="learn_start_hint">අලුත්ද? මේ පාඩම් තුන ඔබව පටන් ගන්වයි.</string>
+    <string name="learn_results">පාඩම් %1$d</string>
+    <string name="learn_empty_title">වෙනත් සෙවුමක් උත්සාහ කරමු</string>
+    <string name="learn_empty_body">"API key", "GitHub", "local model" හෝ "MCP" උත්සාහ කරන්න. සියල්ල පිරික්සීමට "සියලු පාඩම්" වෙත මාරු විය හැක.</string>
+    <string name="learn_saved_empty_title">පාඩමක් ලඟ තබා ගන්න</string>
+    <string name="learn_saved_empty_body">පාඩමක bookmark එක භාවිත කරන්න, පසුව මෙතැනින් සොයාගත හැක.</string>
+    <string name="learn_reset_filters">සියලු පාඩම් පෙන්වන්න</string>
+    <string name="learn_location">කොහෙද යන්නේ</string>
+    <string name="learn_before">පටන් ගැනීමට පෙර</string>
+    <string name="learn_steps">කරමු</string>
+    <string name="learn_outcome">ඔබ දැකිය යුතු දේ</string>
+    <string name="learn_limits">දැනගෙන සිටිය හොඳයි</string>
+    <string name="learn_fixes">අමාරු නම්</string>
+    <string name="learn_example">මෙහෙම කියලා බලන්න</string>
+    <string name="learn_copy_example">උදාහරණය පිටපත් කරන්න</string>
+    <string name="learn_copied">උදාහරණය පිටපත් විය</string>
+    <string name="learn_open_section">App එකේ උත්සාහ කරන්න</string>
+    <string name="learn_links">නිල උදව්</string>
+    <string name="learn_links_hint">මේ සබැඳි browser එකේ විවෘත වන අතර අන්තර්ජාලය අවශ්‍යයි. Provider පිටු වෙනස් විය හැක; ගෙවීමට පෙර පෙන්වන කොන්දේසි සහ මිල පරීක්ෂා කරන්න.</string>
+    <string name="learn_related">ඊළඟ පියවරක් ලෙස හොඳයි</string>
+    <string name="learn_mark_complete">ඉගෙනගත් බවට සලකුණු කරන්න</string>
+    <string name="learn_complete">ඉගෙනගත් · ඉවත් කිරීමට තට්ටු කරන්න</string>
+    <string name="learn_completed_label">ඉගෙනගත්</string>
+    <string name="learn_bookmark">මේ පාඩම සුරකින්න</string>
+    <string name="learn_bookmarked">සුරැකි පාඩම ඉවත් කරන්න</string>
+    <string name="learn_link_failed">Browser විවෘත කළ නොහැක. ඒ වෙනුවට සබැඳිය පිටපත් කරගත හැක.</string>
+    <string name="learn_copy_link">සබැඳිය පිටපත් කරන්න</string>
+    <string name="learn_load_failed">මාර්ගෝපදේශය විවෘත කළ නොහැක. සැකසුම් වසා නැවත උත්සාහ කරන්න.</string>
+</resources>

@@ -25,6 +25,10 @@ internal enum class SettingsPage(
     /** False for pages that live inside a hub page (Coding) instead of the settings home. */
     val onHome: Boolean = true,
 ) {
+    LEARN(
+        R.string.learn_title, R.string.learn_description, R.string.learn_group,
+        "learn tutorial guide help study getting started how to android harness features instructions",
+    ),
     LANGUAGE(
         R.string.settings_page_language_title,
         R.string.settings_page_language_desc,
@@ -267,6 +271,7 @@ internal data class SettingsSearchEntry(
 )
 
 internal val settingsHomePages = listOf(
+    SettingsPage.LEARN,
     SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER,
     SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.CHAT_OPTIONS,
     SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.RUMBLE, SettingsPage.PRIVACY,
@@ -298,12 +303,12 @@ private val searchableSettingsEntries = SettingsPage.entries.map { page ->
 }
 
 private val subSettingsEntries = listOfNotNull(
-    SettingsSearchEntry(R.string.glass_title, R.string.glass_description, SettingsPage.APPEARANCE,
+    if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) SettingsSearchEntry(R.string.glass_title, R.string.glass_description, SettingsPage.APPEARANCE,
         "aharness harness glass frosted liquid blur refraction experimental appearance transparent translucent", anchor = R.string.glass_title,
-        minSdk = android.os.Build.VERSION_CODES.S),
-    SettingsSearchEntry(R.string.glass_liquid, R.string.glass_liquid_hint, SettingsPage.APPEARANCE,
+        minSdk = android.os.Build.VERSION_CODES.S) else null,
+    if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) SettingsSearchEntry(R.string.glass_liquid, R.string.glass_liquid_hint, SettingsPage.APPEARANCE,
         "liquid glass refraction lens blur aharness harness experimental android 13", anchor = R.string.glass_title,
-        minSdk = android.os.Build.VERSION_CODES.TIRAMISU),
+        minSdk = android.os.Build.VERSION_CODES.TIRAMISU) else null,
     SettingsSearchEntry(R.string.rumble_title, R.string.rumble_desc, SettingsPage.RUMBLE,
         "ah rumble haptics haptic vibration vibrate buzz feedback tool calls thinking motor on off",
         anchor = R.string.rumble_title, needsVibrator = true),
@@ -724,6 +729,7 @@ internal fun matchingSettingsPages(query: String, text: (Int) -> String): List<S
     matchingSettingsEntries(query, text).map { it.page }.distinct()
 
 internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
+    "learn" -> SettingsPage.LEARN
     "chat-agents" -> SettingsPage.CHAT_OPTIONS
     "sync" -> SettingsPage.SYNC
     "ftp-server" -> SettingsPage.FTP_SERVER

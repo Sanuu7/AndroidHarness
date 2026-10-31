@@ -12,16 +12,14 @@ class DeviceSupportTest {
         matchingSettingsEntries(query, text).firstOrNull { it.minSdk == minSdk }
 
     @Test
-    fun `liquid glass is searchable and labelled as needing Android 13`() {
-        val liquid = entry("liquid glass", 33)
-        assertNotNull(liquid)
-        assertEquals(SettingsAvailability.NeedsAndroid("13"), settingsAvailability(liquid!!, sdk = 31, hasVibrator = true))
-        assertEquals(SettingsAvailability.Available, settingsAvailability(liquid, sdk = 33, hasVibrator = true))
+    fun `unreleased glass controls stay hidden at every Android version`() {
+        assertTrue(matchingSettingsEntries("liquid glass", text).isEmpty())
+        assertTrue(matchingSettingsEntries("frosted glass", text).isEmpty())
     }
 
     @Test
     fun `Android 8 sees every newer feature as unavailable but still findable`() {
-        for ((query, sdk) in listOf("frosted glass" to 31, "dynamic color" to 31, "live activities" to 36)) {
+        for ((query, sdk) in listOf("dynamic color" to 31, "live activities" to 36)) {
             val found = entry(query, sdk)
             assertNotNull("$query should stay searchable", found)
             assertTrue(settingsAvailability(found!!, sdk = 26, hasVibrator = true) is SettingsAvailability.NeedsAndroid)

@@ -63,7 +63,9 @@ fun HarnessTheme(
     // AMOLED blacks out the surface roles but keeps the accent roles, so a
     // wallpaper-derived primary survives the switch to true black.
     val colorScheme = if (themeMode == ThemeMode.AMOLED) base.amoledSurfaces() else base
-    val glass = HarnessGlassStyle(HarnessGlassMode.resolve(glassEnabled, liquidGlass, Build.VERSION.SDK_INT), colorScheme.surface, glassTransparency)
+    val glass = HarnessGlassStyle(HarnessGlassMode.resolve(
+        glassEnabled && com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS,
+        liquidGlass, Build.VERSION.SDK_INT), colorScheme.surface, glassTransparency)
 
     CompositionLocalProvider(
         LocalStatusColors provides (if (dark) StatusDark else StatusLight),

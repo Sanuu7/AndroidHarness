@@ -939,6 +939,18 @@ fun AppNav(container: AppContainer) {
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },
                     onOpenProviders = { nav.navigate("providers") },
+                    onOpenLearnDestination = { destination ->
+                        when (destination) {
+                            com.androidharness.app.ui.learn.LearnDestination.CHAT -> openChat(null, kind = com.androidharness.app.data.ConversationKind.CHAT)
+                            com.androidharness.app.ui.learn.LearnDestination.CODE -> openChat(null, kind = com.androidharness.app.data.ConversationKind.CODE)
+                            com.androidharness.app.ui.learn.LearnDestination.PROJECTS -> nav.navigate("projects")
+                            com.androidharness.app.ui.learn.LearnDestination.FILES -> nav.navigate("files?project=${encode(workspaceProjectId.orEmpty())}")
+                            com.androidharness.app.ui.learn.LearnDestination.TERMINAL -> nav.navigate("terminal?project=${encode(workspaceProjectId.orEmpty())}")
+                            com.androidharness.app.ui.learn.LearnDestination.BUILD_TEST -> nav.navigate("build-test?project=${encode(workspaceProjectId.orEmpty())}")
+                            com.androidharness.app.ui.learn.LearnDestination.AUTOMATION -> nav.navigate("automation")
+                            com.androidharness.app.ui.learn.LearnDestination.PROVIDERS -> nav.navigate("providers")
+                        }
+                    },
                 )
             }
             composable("skills") {

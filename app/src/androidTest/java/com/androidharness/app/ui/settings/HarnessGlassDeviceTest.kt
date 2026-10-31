@@ -60,6 +60,11 @@ class HarnessGlassDeviceTest {
     private val context = instrumentation.targetContext
     private val repository get() = (context.applicationContext as HarnessApp).container.settings
 
+    @org.junit.Before fun requiresAvailableGlassFeature() {
+        // These are opt-in experiment tests; LearnGuideDeviceTest verifies the hidden/off state.
+        assumeTrue(com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS)
+    }
+
     @Test fun providerConnectionFormKeepsItsControlsWorkingOnSharedGlass() {
         assumeTrue(Build.VERSION.SDK_INT >= 33)
         val provider = com.androidharness.app.llm.ProviderConfig("glass-form", "Glass connection",
