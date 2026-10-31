@@ -3,8 +3,27 @@ package com.androidharness.app.data.update
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import org.junit.Assert.assertEquals
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.jsonArray
 
 class UpdateManagerTest {
+    @Test fun `release tag wins over marketing name and trailing dates`() {
+        assertEquals("v3.2-release", UpdateManager.releaseVersion("v3.2-release", "AndroidHarness October 31 2026"))
+        assertTrue(UpdateManager.isNewer("3.2 (build 2026-10-31)", "3.1"))
+        assertFalse(UpdateManager.isNewer("3.1 (build 2026-10-31)", "3.2"))
+    }
+
+    @Test fun `selects highest compatible version including prereleases instead of first entry`() {
+        val entries = Json.parseToJsonElement("""[
+          {"tag_name":"v2.9","name":"Older release republished today","assets":[{"name":"app.apk","browser_download_url":"https://github.com/app.apk"}]},
+          {"tag_name":"v3.2","name":"October 31 2026","prerelease":true,"assets":[{"name":"app.apk","browser_download_url":"https://github.com/app.apk"}]},
+          {"tag_name":"v9.0","draft":true,"assets":[{"name":"app.apk","browser_download_url":"https://github.com/app.apk"}]},
+          {"tag_name":"v8.0","assets":[{"name":"app-x86_64.apk","browser_download_url":"https://github.com/app.apk"}]},
+          {"tag_name":"v7.0","assets":[]}
+        ]""").jsonArray
+        assertEquals("3.2", UpdateManager.selectRelease(entries, listOf("arm64-v8a"))?.tag)
+    }
 
     @Test
     fun `tag styles used by this repo parse correctly`() {

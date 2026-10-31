@@ -8,6 +8,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.sync.withLock
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlin.coroutines.resume
+import kotlin.coroutines.resumeWithException
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
@@ -85,40 +89,38 @@ class UpdateManager(
             "update",
         ).apply { mkdirs() }
 
-    /** Manual flag so a Settings-triggered check always surfaces its result. */
-    @Volatile private var manualCheck = false
+    private val foregroundChecks = ForegroundUpdateChecks()
 
-    suspend fun check(manual: Boolean = false): Unit = withContext(Dispatchers.IO) {
-        manualCheck = manual || manualCheck
-        val current = runCatching {
-            context.packageManager.getPackageInfo(context.packageName, 0).versionName ?: ""
-        }.getOrDefault("")
-        val alreadyRunning = when (val s = _step.value) {
-            is Step.Checking, is Step.Downloading, is Step.Installing -> true
-            else ->
-                // Auto checks shouldn't nag again over an existing dialog.
-                !manual && (s is Step.Available || s is Step.Error)
-        }
-        if (alreadyRunning) return@withContext
-        try {
-            _step.value = Step.Checking
-            val release = fetchLatest()
-            val newer = release != null && isNewer(release.name.ifBlank { release.tag }, current)
-            when {
-                release == null -> _step.value =
-                    if (manualCheck) Step.Error("No published release found yet.") else Step.Idle
-                newer -> _step.value = Step.Available(release)
-                manualCheck -> _step.value = Step.UpToDate(current)
-                else -> _step.value = Step.Idle
-            }
-        } catch (e: Exception) {
-            if (manualCheck) {
-                _step.value = Step.Error(e.message ?: "Update check failed")
-            } else {
+    suspend fun checkOnForeground() = foregroundChecks.run { check() }
+
+    /** Manual checks always report their outcome; automatic failures stay quiet and retry. */
+    suspend fun check(manual: Boolean = false): Boolean = withContext(Dispatchers.IO) {
+        if (_step.value is Step.Downloading || _step.value is Step.Installing) return@withContext true
+        operation.withLock {
+            val state = _step.value
+            if (state is Step.Downloading || state is Step.Installing ||
+                !manual && (state is Step.Available || state is Step.Error && state.release != null)) return@withLock true
+            val current = runCatching {
+                context.packageManager.getPackageInfo(context.packageName, 0).versionName.orEmpty()
+            }.getOrDefault("")
+            try {
+                _step.value = Step.Checking
+                val release = fetchLatest()
+                _step.value = when {
+                    release == null -> if (manual) Step.Error("No published release with a compatible APK found.") else Step.Idle
+                    isNewer(releaseVersion(release.tag, release.name), current) -> Step.Available(release)
+                    manual -> Step.UpToDate(current)
+                    else -> Step.Idle
+                }
+                true
+            } catch (e: kotlinx.coroutines.CancellationException) {
                 _step.value = Step.Idle
+                throw e
+            } catch (e: Exception) {
+                if (!manual) android.util.Log.w("AppUpdater", "Automatic update check failed", e)
+                _step.value = if (manual) Step.Error(e.message ?: "Update check failed") else Step.Idle
+                false
             }
-        } finally {
-            manualCheck = false
         }
     }
 
@@ -127,51 +129,32 @@ class UpdateManager(
         cancelled.set(true); activeCall?.cancel(); _step.value = Step.Idle
     }
 
-    private fun fetchLatest(): LatestRelease? {
-        // NOTE: /releases/latest EXCLUDES prereleases, every release in this
-        // repo ships as pre-release, so query the list instead. It arrives
-        // newest-first (by created date); drafts are skipped.
-        val req = Request.Builder()
-            .url(RELEASES_API)
-            .header("Accept", "application/vnd.github+json")
-            .build()
-        client.newCall(req).execute().use { resp ->
-            if (!resp.isSuccessful) throw IllegalStateException("GitHub API HTTP ${resp.code}")
-            val arr = json.parseToJsonElement(resp.body!!.string()).jsonArray
-            for (el in arr) {
-                val root = el.jsonObject
-                if (root["draft"]?.jsonPrimitive?.content == "true") continue
-                return parseRelease(root) ?: continue
-            }
-            return null
+    private suspend fun fetchLatest(): LatestRelease? {
+        // Include pre-releases, but do not assume GitHub's creation order is version order.
+        val request = Request.Builder().url("$RELEASES_API?per_page=100")
+            .header("Accept", "application/vnd.github+json").build()
+        val body = suspendCancellableCoroutine<String> { continuation ->
+            val call = client.newCall(request)
+            call.timeout().timeout(20, TimeUnit.SECONDS)
+            continuation.invokeOnCancellation { call.cancel() }
+            call.enqueue(object : okhttp3.Callback {
+                override fun onFailure(call: okhttp3.Call, e: java.io.IOException) {
+                    if (continuation.isActive) continuation.resumeWithException(e)
+                }
+                override fun onResponse(call: okhttp3.Call, response: okhttp3.Response) {
+                    response.use {
+                        try {
+                            check(it.isSuccessful) { "GitHub API HTTP ${it.code}" }
+                            val text = requireNotNull(it.body) { "Empty release response" }.string()
+                            if (continuation.isActive) continuation.resume(text)
+                        } catch (e: Exception) {
+                            if (continuation.isActive) continuation.resumeWithException(e)
+                        }
+                    }
+                }
+            })
         }
-    }
-
-    private fun parseRelease(root: kotlinx.serialization.json.JsonObject): LatestRelease? {
-        val tag = root["tag_name"]?.jsonPrimitive?.content.orEmpty().removePrefix("v")
-        val name = root["name"]?.jsonPrimitive?.content.orEmpty()
-        val body = root["body"]?.jsonPrimitive?.content.orEmpty()
-        val url = root["html_url"]?.jsonPrimitive?.content.orEmpty()
-        var apkUrl: String? = null
-        var apkName: String? = null
-        var apkBytes = 0L
-        var apkSha256: String? = null
-        root["assets"]?.jsonArray?.forEach { el ->
-            val a = el.jsonObject
-            val assetName = a["name"]?.jsonPrimitive?.content.orEmpty()
-            val lower = assetName.lowercase()
-            val knownAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
-            val assetAbi = knownAbis.firstOrNull { lower.contains(it) }
-            val supported = assetAbi == null || assetAbi in android.os.Build.SUPPORTED_ABIS
-            if (assetName.endsWith(".apk", ignoreCase = true) && supported && apkUrl == null) {
-                apkUrl = a["browser_download_url"]?.jsonPrimitive?.content
-                apkName = assetName
-                apkBytes = a["size"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
-                apkSha256 = a["digest"]?.jsonPrimitive?.content?.removePrefix("sha256:")?.takeIf { it.matches(Regex("[0-9a-fA-F]{64}")) }
-            }
-        }
-        if (tag.isBlank()) return null
-        return LatestRelease(tag, name.ifBlank { tag }, body, url, apkUrl, apkName, apkBytes, apkSha256)
+        return selectRelease(json.parseToJsonElement(body).jsonArray, android.os.Build.SUPPORTED_ABIS.toList())
     }
 
     /** Stage under a fixed name, never a filename supplied by a release asset. */
@@ -297,13 +280,58 @@ class UpdateManager(
 
         /**
          * Pulls the version core out of arbitrary release names/tags by scanning
-         * digit runs anywhere in the string and taking the last: "Alpha-v0.3"
+         * a dotted version core first, without mistaking trailing build dates for versions: "Alpha-v0.3"
          * (the repo's tag shape), "0.3-alpha", "v1.2.3", "Alpha v0.31".
          */
         private fun parseParts(version: String): List<Int>? =
-            VERSION_CORE_RE.findAll(version).lastOrNull()
-                ?.value?.split('.')?.map { it.toIntOrNull() ?: 0 }
+            (VERSION_CORE_RE.find(version)?.value ?: version.trim().takeIf { it.matches(Regex("(?i)(?:v|alpha-v)?[0-9]+")) }
+                    ?.replace(Regex("(?i)^(?:alpha-v|v)"), ""))
+                ?.split('.')?.map { it.toIntOrNull() ?: 0 }
 
-        private val VERSION_CORE_RE = Regex("""\d+(?:\.\d+)*""")
+        internal fun releaseVersion(tag: String, name: String): String =
+            tag.takeIf { parseParts(it) != null } ?: name
+
+        internal fun selectRelease(roots: kotlinx.serialization.json.JsonArray, supportedAbis: List<String>): LatestRelease? {
+            var best: LatestRelease? = null
+            for (element in roots) {
+                val root = element as? kotlinx.serialization.json.JsonObject ?: continue
+                if (root["draft"]?.jsonPrimitive?.content == "true") continue
+                val candidate = runCatching { parseRelease(root, supportedAbis) }.getOrNull() ?: continue
+                if (candidate.apkUrl == null || parseParts(releaseVersion(candidate.tag, candidate.name)) == null) continue
+                val previous = best
+                if (previous == null || isNewer(releaseVersion(candidate.tag, candidate.name), releaseVersion(previous.tag, previous.name))) best = candidate
+            }
+            return best
+        }
+
+        private fun parseRelease(root: kotlinx.serialization.json.JsonObject, supportedAbis: List<String>): LatestRelease? {
+            val tag = root["tag_name"]?.jsonPrimitive?.content.orEmpty().removePrefix("v")
+            val name = root["name"]?.jsonPrimitive?.content.orEmpty()
+            val body = root["body"]?.jsonPrimitive?.content.orEmpty()
+            val url = root["html_url"]?.jsonPrimitive?.content.orEmpty()
+            var apkUrl: String? = null
+            var apkName: String? = null
+            var apkBytes = 0L
+            var apkSha256: String? = null
+            root["assets"]?.jsonArray?.forEach { el ->
+                val a = el.jsonObject
+                val assetName = a["name"]?.jsonPrimitive?.content.orEmpty()
+                val lower = assetName.lowercase()
+                val knownAbis = listOf("arm64-v8a", "armeabi-v7a", "x86_64", "x86")
+                val assetAbi = knownAbis.firstOrNull { lower.contains(it) }
+                val supported = assetAbi == null || assetAbi in supportedAbis
+                if (assetName.endsWith(".apk", ignoreCase = true) && supported && apkUrl == null) {
+                    apkUrl = a["browser_download_url"]?.jsonPrimitive?.content
+                    apkName = assetName
+                    apkBytes = a["size"]?.jsonPrimitive?.content?.toLongOrNull() ?: 0L
+                    apkSha256 = a["digest"]?.jsonPrimitive?.content?.removePrefix("sha256:")?.takeIf { it.matches(Regex("[0-9a-fA-F]{64}")) }
+                }
+            }
+            if (tag.isBlank()) return null
+            return LatestRelease(tag, name.ifBlank { tag }, body, url, apkUrl, apkName, apkBytes, apkSha256)
+        }
+
+
+        private val VERSION_CORE_RE = Regex("""\d+(?:\.\d+)+""")
     }
 }

@@ -46,6 +46,8 @@ import com.androidharness.app.ui.common.RefreshRate
 import com.androidharness.app.ui.theme.HarnessTheme
 import com.androidharness.app.ui.update.UpdateDialog
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import java.io.File
@@ -64,6 +66,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         container = (application as HarnessApp).container
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.RESUMED) {
+                kotlinx.coroutines.delay(2_000)
+                container.updates.checkOnForeground()
+            }
+        }
 
         lifecycleScope.launch {
             if (container.settings.settings.first().notificationsEnabled && Build.VERSION.SDK_INT >= 33 &&
@@ -94,12 +102,6 @@ class MainActivity : AppCompatActivity() {
                 liquidGlass = currentSettings.harnessLiquidGlass,
                 glassTransparency = currentSettings.harnessGlassTransparency,
             ) {
-                // Auto update check shortly after launch, once per process.
-                LaunchedEffect(Unit) {
-                    kotlinx.coroutines.delay(4_000)
-                    container.updates.check(manual = false)
-                }
-
                 // Biometric lock prompt on start / when enabled.
                 LaunchedEffect(currentSettings.biometricLockEnabled) {
                     if (!currentSettings.biometricLockEnabled) {
