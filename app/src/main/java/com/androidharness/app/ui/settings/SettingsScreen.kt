@@ -281,10 +281,10 @@ fun SettingsScreen(
                 SettingsHighlightScope(highlight) {
                     Column(
                         modifier = Modifier.then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
-                            .fillMaxSize().then(if (page == SettingsPage.LOCAL_MODELS || page == SettingsPage.CONFIGURATION) Modifier else Modifier.verticalScroll(rememberScrollState())).padding(horizontal = 16.dp, vertical = 16.dp),
+                            .fillMaxSize().then(if (page == SettingsPage.LOCAL_MODELS || page == SettingsPage.CONFIGURATION || page == SettingsPage.PLUGINS) Modifier else Modifier.verticalScroll(rememberScrollState())).padding(horizontal = 16.dp, vertical = 16.dp),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
-                        if (page != SettingsPage.LOCAL_MODELS && page != SettingsPage.CONFIGURATION && page != SettingsPage.AGENT && page != SettingsPage.TELEGRAM && page != SettingsPage.STORAGE && page != SettingsPage.ENVIRONMENT) SettingsPageIntro(page)
+                        if (page != SettingsPage.LOCAL_MODELS && page != SettingsPage.CONFIGURATION && page != SettingsPage.PLUGINS && page != SettingsPage.AGENT && page != SettingsPage.TELEGRAM && page != SettingsPage.STORAGE && page != SettingsPage.ENVIRONMENT) SettingsPageIntro(page)
                     when (page) {
                         SettingsPage.LANGUAGE -> LanguageSection()
                         SettingsPage.CHAT_OPTIONS -> ChatOptionsSection(
@@ -345,6 +345,7 @@ fun SettingsScreen(
                             )
                         }
                         SettingsPage.LOCAL_MODELS -> LocalModelsSection(container, scrollContent = true)
+                        SettingsPage.PLUGINS -> PluginManagerSection(container)
                         SettingsPage.CONFIGURATION -> ConfigurationSection(container)
                         SettingsPage.AGENT -> AgentSection(container, settings, scope)
                         SettingsPage.CHAT -> {
@@ -2632,7 +2633,7 @@ private fun SetupLine(label: String, value: String) {
 internal fun CodingSection(onOpen: (SettingsPage) -> Unit) {
     val groups = listOf(
         R.string.settings_coding_workflow to listOf(SettingsPage.AGENT, SettingsPage.CONFIGURATION, SettingsPage.SUBAGENT, SettingsPage.CHAT),
-        R.string.settings_coding_intelligence to listOf(SettingsPage.SKILLS, SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN),
+        R.string.settings_coding_intelligence to listOf(SettingsPage.PLUGINS, SettingsPage.SKILLS, SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN),
         R.string.settings_coding_execution to listOf(SettingsPage.WORKSPACE, SettingsPage.ENVIRONMENT),
     )
     groups.forEach { (title, pages) ->

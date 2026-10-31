@@ -304,7 +304,7 @@ class UnboundedFileFs(root: File) : WorkspaceFs {
 
 class SafFs(
     private val context: Context,
-    treeUri: Uri,
+    val treeUri: Uri,
 ) : WorkspaceFs {
     private val root: DocumentFile? = DocumentFile.fromTreeUri(context, treeUri)
 

@@ -31,6 +31,7 @@ data class McpServerConfig(
     val url: String? = null,
     /** Static request headers for http/sse (e.g. manually supplied API keys). */
     val headers: Map<String, String> = emptyMap(),
+    @kotlinx.serialization.Transient val deviceLocal: Boolean = false,
 ) {
     val isRemote: Boolean get() = type == "http" || type == "sse"
 }

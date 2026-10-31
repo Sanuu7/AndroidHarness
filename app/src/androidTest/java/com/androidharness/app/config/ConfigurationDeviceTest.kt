@@ -316,7 +316,10 @@ class ConfigurationDeviceTest {
             return null
         }
         while (SystemClock.uptimeMillis() < deadline) {
-            find(instrumentation.uiAutomation.rootInActiveWindow)?.let { return it }
+            val automation = instrumentation.uiAutomation
+            val root = automation.rootInActiveWindow ?: automation.windows.mapNotNull { it.root }
+                .firstOrNull { it.packageName == instrumentation.targetContext.packageName }
+            find(root)?.let { return it }
             SystemClock.sleep(100)
         }
         error("Timed out waiting for configuration UI")

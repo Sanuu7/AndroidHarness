@@ -11,11 +11,12 @@ import kotlinx.serialization.json.*
 import java.io.File
 
 /** App-owned bindings stay off the shared project file. Secrets use the existing encrypted store. */
-class HarnessConfigRepository(private val context: Context, private val keys: KeyStoreManager) {
+class HarnessConfigRepository(private val context: Context, private val keys: KeyStoreManager,
+    private val plugins: com.androidharness.app.plugins.PluginManager? = null,
+    val revision: kotlinx.coroutines.flow.MutableStateFlow<Long> = kotlinx.coroutines.flow.MutableStateFlow(0L)) {
     private val home = configFileAccess(FileFs(context.filesDir))
     private val bindingsFile = File(context.filesDir, "config-bindings.json")
     private val saveLock = Mutex()
-    val revision = kotlinx.coroutines.flow.MutableStateFlow(0L)
     private val json = Json { prettyPrint = true }
     private fun bindings(): JsonObject {
         if (!bindingsFile.exists()) return JsonObject(emptyMap())
@@ -78,7 +79,7 @@ class HarnessConfigRepository(private val context: Context, private val keys: Ke
         }
         val primary = if (workspace is ChatWorkspaceFs) workspace.fileAccess(workspace.primary) else workspace
         val result = HarnessConfigLoader(draft(home, globalDraft), folders().mapValues { ConfigDocumentFs(context, Uri.parse(it.value)) },
-            appHome = FileFs(File(context.filesDir, "config/home")), environment = { variables[it] ?: System.getenv(it) }, secret = { keys.localSecret("harness_config_$it")?.takeIf(String::isNotEmpty) })
+            appHome = FileFs(File(context.filesDir, "config/home")), managedPlugins = plugins?.configurationSources(workspace).orEmpty(), environment = { variables[it] ?: System.getenv(it) }, secret = { keys.localSecret("harness_config_$it")?.takeIf(String::isNotEmpty) })
             .load(draft(primary, projectDraft), variables["HARNESS_CONFIG"] ?: System.getenv("HARNESS_CONFIG"),
                 variables["HARNESS_CONFIG_CONTENT"] ?: System.getenv("HARNESS_CONFIG_CONTENT"))
         if (result.autoLoad.isNotEmpty()) {

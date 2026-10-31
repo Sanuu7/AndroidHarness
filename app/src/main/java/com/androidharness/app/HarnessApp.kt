@@ -81,7 +81,10 @@ class AppContainer(val appContext: Context) {
     val keys = KeyStoreManager(appContext)
     init { com.androidharness.app.llm.ProviderNetwork.settings = keys::providerProxy }
     val settings = SettingsRepository(appContext)
-    val configuration = com.androidharness.app.config.HarnessConfigRepository(appContext, keys)
+    private val configurationRevision = kotlinx.coroutines.flow.MutableStateFlow(0L)
+    val pluginManager = com.androidharness.app.plugins.PluginManager(appContext, configurationRevision,
+        com.androidharness.app.plugins.PluginDownloads(githubToken = { github.accessToken() }))
+    val configuration = com.androidharness.app.config.HarnessConfigRepository(appContext, keys, pluginManager, configurationRevision)
     val pluginHooks = com.androidharness.app.config.PluginHooks(appContext)
     internal val runtimePolicy = AppRuntimePolicy(appContext, settings)
     /** Reads assistant replies with Android TTS or Groq PlayAI. */

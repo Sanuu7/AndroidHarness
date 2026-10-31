@@ -358,13 +358,15 @@ class McpManager(
 
         val cwd = workspace.shellRoot ?: context.filesDir
         for (original in configs) {
-            val remote = (workspace as? com.androidharness.app.workspace.SshFs)?.takeUnless { original.isRemote }
+            val remote = (workspace as? com.androidharness.app.workspace.SshFs)?.takeUnless { original.isRemote || original.deviceLocal }
             val isProject = ws.any { it.name == original.name }
+            // An approved attempt now has its workspace-specific status; retire the earlier approval notice.
+            if (isProject) _statuses.update { it - original.name }
             val identity = if (!isProject && remote == null) original.name else original.name + "_ws_" + sha256(
-                workspace.displayPath + json.encodeToString(McpServerConfig.serializer(), original)).take(12)
+                workspace.displayPath + original.deviceLocal + json.encodeToString(McpServerConfig.serializer(), original)).take(12)
             val config = original.copy(name = identity)
             if (isProject && leaseId != null) retainWorkspaceTool(leaseId, config.name)
-            val conn = connectionFor(config, cwd, remote) ?: continue
+            val conn = connectionFor(config, if (original.deviceLocal) context.filesDir else cwd, remote) ?: continue
             tools += conn.tools.map { info ->
                 McpToolAdapter(original.name, info, conn) { disconnect(config.name) }
             }

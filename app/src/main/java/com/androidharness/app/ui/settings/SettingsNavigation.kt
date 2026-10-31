@@ -92,6 +92,11 @@ internal enum class SettingsPage(
         R.string.settings_group_your_assistant,
         "offline hugging face gguf safetensors llama ram memory storage cpu download uninstall context input output vision images threads",
     ),
+    PLUGINS(
+        R.string.pm_title, R.string.pm_description, R.string.settings_group_coding,
+        "plugins marketplace discover installed npm github bundle install update uninstall hooks instructions skills mcp",
+        onHome = false,
+    ),
     CONFIGURATION(
         R.string.config_title,
         R.string.config_description,
@@ -279,7 +284,7 @@ internal fun settingsDisplayGroups(entries: List<SettingsSearchEntry>, query: St
 }
 
 internal val settingsCodingPages = listOf(
-    SettingsPage.SUBAGENT, SettingsPage.AGENT, SettingsPage.CONFIGURATION, SettingsPage.CHAT, SettingsPage.SKILLS,
+    SettingsPage.SUBAGENT, SettingsPage.AGENT, SettingsPage.CONFIGURATION, SettingsPage.PLUGINS, SettingsPage.CHAT, SettingsPage.SKILLS,
     SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN, SettingsPage.WORKSPACE, SettingsPage.ENVIRONMENT,
 )
 
@@ -709,6 +714,7 @@ internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
     "planning" -> SettingsPage.MODELS
     "voice" -> SettingsPage.VOICE
     "telegram" -> SettingsPage.TELEGRAM
+    "plugins", "plugin-manager" -> SettingsPage.PLUGINS
     "configuration", "config" -> SettingsPage.CONFIGURATION
     "agent" -> SettingsPage.AGENT
     "coding" -> SettingsPage.CODING

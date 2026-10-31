@@ -1,5 +1,13 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <permission android:name="com.androidharness.fixture.READ_PLUGIN_DOCUMENTS" android:protectionLevel="signature" />
     <application>
+        <provider
+            android:name="com.androidharness.app.plugins.PluginImportFixtureProvider"
+            android:enabled="${localImportFixtureEnabled}"
+            android:authorities="com.androidharness.pluginimport.fixture"
+            android:readPermission="com.androidharness.fixture.READ_PLUGIN_DOCUMENTS"
+            android:exported="true"
+            android:grantUriPermissions="true" />
         <!-- Read-only deterministic test data, present only in the instrumentation APK. -->
         <provider
             android:name="com.androidharness.app.local.LocalImportFixtureProvider"

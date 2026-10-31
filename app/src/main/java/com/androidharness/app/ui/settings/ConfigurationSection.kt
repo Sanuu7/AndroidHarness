@@ -68,7 +68,8 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
             catch (e: Exception) { error = e.message }
         }
     }
-    LaunchedEffect(fs?.displayPath, global, refresh) {
+    val configRevision by container.configuration.revision.collectAsStateWithLifecycle()
+    LaunchedEffect(fs?.displayPath, global, refresh, configRevision) {
         loading = true; error = null; snapshot = null; document = null; approved = false
         if (fs != null) {
             try {

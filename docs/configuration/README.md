@@ -8,10 +8,12 @@ Open **Settings → Coding → Configuration**. Project edits the selected works
 
 Layers, from lowest to highest priority:
 
-1. App-private `config/harness.json` or `config/harness.jsonc`.
-2. The primary Code workspace's `harness.json` or `harness.jsonc`.
-3. `HARNESS_CONFIG`, a path relative to the primary workspace (also accepts connected folders and app home).
-4. `HARNESS_CONFIG_CONTENT`, inline JSONC relative to the primary workspace.
+1. Enabled global plugins installed through the plugin manager.
+2. App-private `config/harness.json` or `config/harness.jsonc`.
+3. Enabled plugins installed for the primary Code workspace.
+4. The primary Code workspace's `harness.json` or `harness.jsonc`.
+5. `HARNESS_CONFIG`, a path relative to the primary workspace (also accepts connected folders and app home).
+6. `HARNESS_CONFIG_CONTENT`, inline JSONC relative to the primary workspace.
 
 Set these variables in the Global tab's Variables and secrets section, or in the process environment used to launch the Android app. Variables exported in a separate Termux/Linux shell do not automatically reach an already-running Android application.
 
@@ -93,7 +95,9 @@ Workspace memory paths are always relative to the Code workspace, even in a glob
 
 ## Restricted plugins
 
-A bundle contains `plugin.json`, a standalone CommonJS entry, and optional skill folders:
+Use **Settings → Coding → Plugins** to discover, review, install, update, disable and uninstall bundles from npm, GitHub, archives or a phone folder. The [plugin manager guide](plugin-manager.md) describes the bundle format, scopes and installation behavior. Installed bundles can contribute skills, prompt instructions, MCP definitions and optional isolated hooks.
+
+A hook bundle contains `plugin.json`, a standalone CommonJS entry, and optional skill folders:
 
 ```json
 {"name":"review-policy","version":"1","entry":"index.js","hooks":["prompt.before","tool.before"],"skills":["skills"]}
@@ -106,7 +110,7 @@ module.exports = {
 };
 ```
 
-Configure `plugins.paths` with directories containing bundles, or a bundle directory itself. `enable` and `disable` filter by plugin name. `plugins.npm` resolves already-installed packages under `node_modules` beside the declaring config. Package names (including scoped names) are accepted; version/URL specs and automatic installation are not. Install dependencies explicitly through the existing terminal/package workflow. Package entries must be standalone bundles; Node's `require`, filesystem APIs and network APIs are unavailable in the hook engine.
+For file-based configuration, set `plugins.paths` to directories containing bundles, or a bundle directory itself. `enable` and `disable` filter by plugin name. `plugins.npm` resolves already-installed packages under `node_modules` beside the declaring config; it accepts package names and does not download them. The separate plugin manager can download npm versions/tags and keeps an app-private installation registry without editing these config files. Packages must contain compatible standalone bundles; Node's `require`, filesystem APIs and network APIs are unavailable in the hook engine.
 
 Hooks: `session.start`, `message.received`, `prompt.before`, `tool.before`, `tool.after`, `session.end`. Export functions by these exact keys. They can return a promise. Return `{instructions: "..."}` to contribute bounded run instructions, or `{deny: "reason"}` from `tool.before` to veto a call. Results cannot grant permission, change arguments, run commands or expose new tools. Tool events include redacted arguments before execution and success status afterward; prompt events include profile and iteration metadata. Each call gets a fresh isolate, so plugins must be pure and have no cross-hook global state. End-hook instruction results are discarded.
 

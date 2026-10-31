@@ -66,6 +66,7 @@ class HarnessConfigLoader(
     appHome: WorkspaceFs? = null,
     private val environment: (String) -> String? = { null },
     private val secret: (String) -> String? = { null },
+    private val managedPlugins: List<ConfigSource> = emptyList(),
 ) {
     private val home = home?.let(::bounded)
     private val appHome = (appHome ?: home)?.let(::bounded)
@@ -175,7 +176,18 @@ class HarnessConfigLoader(
     fun load(workspace: WorkspaceFs, overrideFile: String? = null, inline: String? = null): HarnessConfig {
         sources.clear(); warnings.clear(); sensitiveValues.clear(); readBytes = 0
         val primary = bounded(if (workspace is ChatWorkspaceFs) workspace.fileAccess(workspace.primary) else workspace)
-        var merged: ConfigValue? = home?.let { discover(it, "config/", "Global") }
+        var merged: ConfigValue? = null
+        fun managed(project: Boolean) {
+            managedPlugins.filter { it.id.startsWith(if (project) "Managed/Project/" else "Managed/Global/") }.forEach { src ->
+                sources[src.id] = src.copy(fs = bounded(src.fs))
+                val parsed = ConfigDocument.parse(src.text, src.id)
+                ConfigValidation.validate(parsed, mapOf(src.id to src.text), complete = false)
+                merged = ConfigDocument.merge(merged, parsed)
+            }
+        }
+        managed(false)
+        home?.let { discover(it, "config/", "Global") }?.let { merged = ConfigDocument.merge(merged, it) }
+        managed(true)
         discover(primary, "", "Project")?.let { merged = ConfigDocument.merge(merged, it) }
         overrideFile?.takeIf { it.isNotBlank() }?.let { file ->
             val base = ConfigSource("Override base", "", primary)
@@ -195,7 +207,9 @@ class HarnessConfigLoader(
         val root = merged ?: return HarnessConfig()
         ConfigValidation.validate(root, sources.mapValues { it.value.text })
         val automatic = listOf("AGENTS.md", "HARNESS.md").filter { primary.resolve(it).let { n -> n.exists && n.isFile } }.map { primary to it }
-        val instructions = instructionFiles(root["instructions"]?.items.orEmpty(), automatic)
+        val rootInstructions = instructionFiles(root["instructions"]?.items.orEmpty(), automatic)
+        val pluginInstructions = mutableListOf<ConfigFile>()
+        val pluginServers = linkedMapOf<String, ConfigValue>()
         val refs = root["references"]?.items.orEmpty().flatMap { ref ->
             val p = ref["path"]!!
             files(p, ref["glob"]?.json?.jsonPrimitive?.booleanOrNull == true).map { (fs, file) ->
@@ -233,15 +247,14 @@ class HarnessConfigLoader(
             }
         }
         // Explicit paths supplement the conventional project directory, with deterministic precedence.
-        root["skills"]?.get("paths")?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
         val plugins = mutableListOf<ConfigPlugin>()
         val pluginSettings = root["plugins"]
         fun plugin(baseFs: WorkspaceFs, base: String) {
             val manifestPath = "$base/plugin.json"
             if (!baseFs.resolve(manifestPath).exists) return
-            val id = "Plugin/$base"
+            val id = "Plugin/${HarnessConfig.digest(baseFs.displayPath).take(12)}/$base"
             val manifest = source(baseFs, manifestPath, id)
-            require(manifest.fields.keys.all { it in setOf("name", "version", "entry", "hooks", "skills") }) { "$manifestPath has an unknown property." }
+            require(manifest.fields.keys.all { it in setOf("name", "version", "description", "author", "homepage", "entry", "hooks", "skills", "instructions", "mcp") }) { "$manifestPath has an unknown property." }
             require(manifest["hooks"] == null || manifest["hooks"]!!.json is JsonArray && manifest["hooks"]!!.items.all { it.string() != null }) { "$manifestPath hooks must be an array of event names." }
             require(manifest["skills"] == null || manifest["skills"]!!.json is JsonArray && manifest["skills"]!!.items.all { it.string() != null }) { "$manifestPath skills must be an array of paths." }
             val name = manifest["name"]?.string() ?: error("$manifestPath needs a name.")
@@ -249,6 +262,34 @@ class HarnessConfigLoader(
             val disable = pluginSettings?.get("disable")?.strings().orEmpty()
             if (disable.any { ConfigGlob.matches(it, name) } || enable.isNotEmpty() && enable.none { ConfigGlob.matches(it, name) }) return
             manifest["skills"]?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
+            manifest["instructions"]?.let { field ->
+                require(field.json is JsonArray && field.items.all { it.string() != null && !it.string().orEmpty().startsWith('!') }) {
+                    "$manifestPath instructions must be an array of bundle-relative files."
+                }
+                pluginInstructions += instructionFiles(field.items)
+            }
+            manifest["mcp"]?.let { servers ->
+                val check = "{\"mcp\":${servers.json}}"
+                ConfigValidation.validate(ConfigDocument.parse(check, manifestPath), mapOf(manifestPath to check))
+                val namespace = name.lowercase().replace(Regex("[^a-z0-9_]"), "_").take(10) + "_" + HarnessConfig.digest(name).take(4)
+                servers.fields.filterValues { it.json !is JsonNull }.forEach { (key, value) ->
+                    val qualified = namespace + "_" + key.lowercase().replace('-', '_').take(8) + "_" + HarnessConfig.digest(key).take(6)
+                    require(qualified !in pluginServers) { "Plugin MCP names collide: $name / $key" }
+                    fun bundleVariables(v: ConfigValue): ConfigValue {
+                        if (v.string() != null) {
+                            val original = v.string()!!
+                            val folder = baseFs.shellRoot?.resolve(base)?.canonicalPath
+                            val needsFolder = original.contains("{plugin:root}")
+                            require(!needsFolder || folder != null) { "Bundled MCP files require a real folder. Install this plugin through the manager." }
+                            return if (!needsFolder) v else v.copy(json = JsonPrimitive(original.replace("{plugin:root}", folder!!)))
+                        }
+                        val fields = v.fields.mapValues { bundleVariables(it.value) }
+                        val items = v.items.map(::bundleVariables)
+                        return v.copy(json = when (v.json) { is JsonObject -> JsonObject(fields.mapValues { it.value.json }); is JsonArray -> JsonArray(items.map { it.json }); else -> v.json }, fields = fields, items = items)
+                    }
+                    pluginServers[qualified] = bundleVariables(value)
+                }
+            }
             val hooks = manifest["hooks"]?.strings().orEmpty().toSet()
             require(hooks.all { it in setOf("session.start", "message.received", "prompt.before", "tool.before", "tool.after", "session.end") }) { "$manifestPath has an unsupported hook." }
             if (hooks.isNotEmpty()) {
@@ -272,13 +313,16 @@ class HarnessConfigLoader(
             plugin(fs, base)
         }
         require(plugins.map { it.name }.distinct().size == plugins.size && plugins.size <= 16) { "Plugin names must be unique; at most 16 executable plugins." }
+        root["skills"]?.get("paths")?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
         val standardSkills = primary.resolve(".harness/skills")
         if (standardSkills.exists && standardSkills.isDirectory) skillDir(primary, ".harness/skills")
         val agents = root["agents"]?.fields.orEmpty().filterValues { it.json !is JsonNull }.mapValues { (name, v) ->
             ConfigAgent(name, v["description"]?.string().orEmpty(), instructionFiles(v["instructions"]?.items.orEmpty()),
                 v["tools"]?.fields.orEmpty().mapValues { it.value.json.jsonPrimitive.boolean })
         }
-        val servers = root["mcp"]?.fields.orEmpty().filterValues { it.json !is JsonNull }.map { (name, v) ->
+        val instructions = (pluginInstructions + rootInstructions).distinctBy { it.source to it.path }
+        require(instructions.sumOf { it.text.length } <= 64_000) { "Combined plugin and project instructions exceed 64,000 characters." }
+        val servers = (pluginServers + root["mcp"]?.fields.orEmpty()).filterValues { it.json !is JsonNull }.map { (name, v) ->
             val enabled = v["enabled"]?.json?.jsonPrimitive?.booleanOrNull ?: true
             fun resolved(value: ConfigValue): String = if (enabled) expand(value) else value.string().orEmpty()
             val command = v["command"]
@@ -294,7 +338,7 @@ class HarnessConfigLoader(
             val type = if (remote) (v["type"]?.string()?.takeIf { it in setOf("http", "sse") } ?: "http") else "stdio"
             McpServerConfig(name, words.firstOrNull().orEmpty(), words.drop(1) + v["args"]?.items.orEmpty().map(::resolved),
                 v["env"]?.fields.orEmpty().mapValues { resolved(it.value) }, enabled,
-                type, url, v["headers"]?.fields.orEmpty().mapValues { resolved(it.value) })
+                type, url, v["headers"]?.fields.orEmpty().mapValues { resolved(it.value) }, deviceLocal = v.source.startsWith("Plugin/"))
         }
         val mem = root["memory"]
         return HarnessConfig(root, sources.values.filter { it.id != "Override base" }, instructions, refs, skillFiles,

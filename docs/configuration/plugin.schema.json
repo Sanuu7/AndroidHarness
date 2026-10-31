@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "AndroidHarness plugin bundle",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "version"],
+  "anyOf": [
+    {"required": ["instructions"], "properties": {"instructions": {"minItems": 1}}},
+    {"required": ["skills"], "properties": {"skills": {"minItems": 1}}},
+    {"required": ["hooks"], "properties": {"hooks": {"minItems": 1}}},
+    {"required": ["mcp"], "properties": {"mcp": {"type": "object", "minProperties": 1}}}
+  ],
+  "if": {"required": ["hooks"], "properties": {"hooks": {"minItems": 1}}},
+  "then": {"required": ["entry"]},
+  "properties": {
+    "name": {"type": "string", "pattern": "^[a-z0-9][a-z0-9-]{0,63}$"},
+    "version": {"type": "string", "minLength": 1, "maxLength": 80},
+    "description": {"type": "string", "maxLength": 2000},
+    "author": {"type": "string"},
+    "homepage": {"type": "string"},
+    "entry": {"type": "string", "pattern": "\\.js$"},
+    "instructions": {"$ref": "#/$defs/paths"},
+    "skills": {"$ref": "#/$defs/paths"},
+    "hooks": {"type": "array", "uniqueItems": true, "items": {"enum": ["session.start", "message.received", "prompt.before", "tool.before", "tool.after", "session.end"]}},
+    "mcp": {"$ref": "../harness.schema.json#/properties/mcp"}
+  },
+  "$defs": {
+    "paths": {"type": "array", "maxItems": 32, "items": {"type": "string", "minLength": 1}}
+  }
+}

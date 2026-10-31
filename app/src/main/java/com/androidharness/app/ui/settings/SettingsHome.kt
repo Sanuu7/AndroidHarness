@@ -223,6 +223,7 @@ internal fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
     SettingsPage.MODELS -> ProviderGlyph
     SettingsPage.SUBAGENT -> Icons.Outlined.AccountTree
     SettingsPage.LOCAL_MODELS -> Icons.Outlined.Memory
+    SettingsPage.PLUGINS -> Icons.Outlined.Extension
     SettingsPage.CONFIGURATION -> Icons.Outlined.DataObject
     SettingsPage.AGENT -> Icons.Outlined.Tune
     SettingsPage.CHAT -> Icons.Outlined.ChatBubbleOutline
