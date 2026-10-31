@@ -109,4 +109,19 @@ class RumbleWaveformTest {
         }
         assertEquals(rumbleComboConfig(RUMBLE_COMBO_COUNT - 1, RumbleCue.WRITE), rumbleComboConfig(99, RumbleCue.WRITE))
     }
+
+    @Test
+    fun `a flow breathes slowly and a visual feels different from prose`() {
+        val writing = flowSpec(RumbleFlow.WRITING)
+        val visual = flowSpec(RumbleFlow.VISUAL)
+        assertTrue(writing.periodMs >= 1_000 && visual.periodMs > writing.periodMs)
+        assertTrue(visual.steps.size > writing.steps.size)
+        assertTrue(writing.fallback != visual.fallback)
+        listOf(writing, visual).forEach { spec ->
+            assertEquals(PRIMITIVE_SLOW_RISE, spec.steps.first { it.primitive == PRIMITIVE_SLOW_RISE }.primitive)
+            assertTrue(spec.steps.all { it.scale in .1f..1f && it.delayMs >= 0 })
+            assertTrue(spec.level in 1..100)
+            assertTrue(rumbleWaveform(spec.fallback, spec.level, 100) != null)
+        }
+    }
 }

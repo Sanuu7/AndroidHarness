@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">Mischen</string>
     <string name="rumble_advanced_title">Erweitert</string>
     <string name="rumble_advanced_desc">Stärke, Gefühl, Engine, Ereignisse und Feinabstimmung. Die Standardwerte sind bereits abgestimmt.</string>
+    <string name="rumble_flow_title">Rumble beim Schreiben</string>
+    <string name="rumble_flow_desc">Ein sanftes, beruhigendes Rumble, solange eine Chat-Antwort eintrifft. Reichhaltige Visualisierungen bekommen ein eigenes, langsameres Rumble. Nur im Chat.</string>
+    <string name="rumble_flow_status_system">Nutzt die erweiterte Haptik deines Telefons.</string>
+    <string name="rumble_flow_status_custom">Dieses Telefon hat keine erweiterte Haptik, daher werden die eigenen Impulse von AH Rumble verwendet.</string>
+    <string name="rumble_flow_try">Fluss spüren</string>
     <string name="rumble_cue_think">Denken</string>
     <string name="rumble_cue_think_desc">Das Modell denkt wieder nach.</string>
     <string name="rumble_cue_tool_start">Werkzeug startet</string>

@@ -52,8 +52,11 @@ import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
+import com.androidharness.app.ui.common.RumbleFlow
 import com.androidharness.app.ui.common.deviceHasVibrator
+import com.androidharness.app.ui.common.deviceSupportsFlowHaptics
 import com.androidharness.app.ui.common.deviceSupportsSystemHaptics
+import com.androidharness.app.ui.common.rememberRumbleFlowPreview
 import com.androidharness.app.ui.common.rememberRumblePreview
 import com.androidharness.app.ui.common.rumbleStyle
 import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
@@ -108,6 +111,9 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
     var strength by remember(settings.rumbleStrength) { mutableFloatStateOf(settings.rumbleStrength.toFloat()) }
     var smoothness by remember(settings.rumbleSmoothness) { mutableFloatStateOf(settings.rumbleSmoothness.toFloat()) }
     var spacing by remember(settings.rumbleSpacingMs) { mutableFloatStateOf(settings.rumbleSpacingMs.toFloat()) }
+    val flowPreview = rememberRumbleFlowPreview()
+    val flowSystem = remember(context) { deviceSupportsFlowHaptics(context) }
+    var tryingFlow by remember { mutableStateOf(false) }
     fun style() = settings.rumbleStyle.copy(enabled = true, strength = strength.roundToInt(), smoothness = smoothness.roundToInt())
     fun feel(cue: RumbleCue) = preview(style().config(cue), style())
 
@@ -142,6 +148,29 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
                         feel(RumbleCue.TOOL_DONE)
                     }
                 }) { Text(stringResource(R.string.rumble_try)) }
+            }
+        }
+    }
+
+    SettingsAnchor(R.string.rumble_flow_title) {
+        SettingsPanel(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                ToggleRow(R.string.rumble_flow_title, R.string.rumble_flow_desc, settings.rumbleFlow, settings.rumbleInChat) {
+                    scope.launch { repository.setRumbleFlow(it) }
+                }
+                val advanced = flowSystem && settings.rumbleEngine != RumbleEngine.CUSTOM
+                Text(stringResource(if (advanced) R.string.rumble_flow_status_system else R.string.rumble_flow_status_custom),
+                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                OutlinedButton(enabled = !tryingFlow, onClick = {
+                    scope.launch {
+                        tryingFlow = true
+                        try {
+                            val playing = style()
+                            repeat(3) { delay(flowPreview(RumbleFlow.WRITING, playing)) }
+                            repeat(2) { delay(flowPreview(RumbleFlow.VISUAL, playing)) }
+                        } finally { tryingFlow = false }
+                    }
+                }) { Text(stringResource(R.string.rumble_flow_try)) }
             }
         }
     }

@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">අහඹු කරන්න</string>
     <string name="rumble_advanced_title">උසස්</string>
     <string name="rumble_advanced_desc">ශක්තිය, හැඟීම, එන්ජිම, සිදුවීම් සහ සියුම් සැකසුම. පෙරනිමි දැනටමත් සකසා ඇත.</string>
+    <string name="rumble_flow_title">ලියන අතරතුර කම්පනය</string>
+    <string name="rumble_flow_desc">සංවාද පිළිතුරක් පැමිණෙන තාක් සුමට, සැනසිලිදායක කම්පනයක්. පොහොසත් දෘශ්‍ය සඳහා තමන්ගේම සෙමින් කම්පනයක් ඇත. සංවාදයට පමණි.</string>
+    <string name="rumble_flow_status_system">ඔබේ දුරකථනයේ උසස් හැප්ටික් භාවිතා කරයි.</string>
+    <string name="rumble_flow_status_custom">මෙම දුරකථනයේ උසස් හැප්ටික් නැති නිසා AH Rumble හි ම ස්පන්දන භාවිතා කෙරේ.</string>
+    <string name="rumble_flow_try">ගලනය දැනෙන්න බලන්න</string>
     <string name="rumble_cue_think">සිතීම</string>
     <string name="rumble_cue_think_desc">මාදිලිය නැවත සිතීමට පටන් ගනී.</string>
     <string name="rumble_cue_tool_start">මෙවලම ආරම්භ</string>

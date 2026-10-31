@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">اخلط</string>
     <string name="rumble_advanced_title">متقدم</string>
     <string name="rumble_advanced_desc">القوة والإحساس والمحرك والأحداث والضبط الدقيق. القيم الافتراضية مضبوطة مسبقًا.</string>
+    <string name="rumble_flow_title">اهتزاز أثناء الكتابة</string>
+    <string name="rumble_flow_desc">اهتزاز ناعم ومريح ما دام رد الدردشة يصل. المحتوى المرئي الغني له اهتزاز أبطأ خاص به. في الدردشة فقط.</string>
+    <string name="rumble_flow_status_system">يتم استخدام الاهتزاز المتقدم في هاتفك.</string>
+    <string name="rumble_flow_status_custom">هذا الهاتف لا يدعم الاهتزاز المتقدم، لذا تُستخدم نبضات AH Rumble الخاصة.</string>
+    <string name="rumble_flow_try">جرّب الانسيابية</string>
     <string name="rumble_cue_think">التفكير</string>
     <string name="rumble_cue_think_desc">يعود النموذج إلى التفكير.</string>
     <string name="rumble_cue_tool_start">بدء أداة</string>

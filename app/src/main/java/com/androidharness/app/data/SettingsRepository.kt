@@ -136,6 +136,8 @@ data class AppSettings(
     val rumbleEngine: RumbleEngine = RumbleEngine.AUTO,
     val rumbleInChat: Boolean = true,
     val rumbleInCode: Boolean = true,
+    /** A smooth rumble for as long as a Chat reply streams in; rich visuals get their own. Chat only. */
+    val rumbleFlow: Boolean = true,
     /** Pulses closer together than this are dropped so bursts stay calm. */
     val rumbleSpacingMs: Int = RUMBLE_DEFAULT_SPACING_MS,
     val rumbleSkipOnBatterySaver: Boolean = true,
@@ -289,6 +291,7 @@ class SettingsRepository(private val context: Context) {
         val RUMBLE_ENGINE = stringPreferencesKey("rumble_engine")
         val RUMBLE_IN_CHAT = booleanPreferencesKey("rumble_in_chat")
         val RUMBLE_IN_CODE = booleanPreferencesKey("rumble_in_code")
+        val RUMBLE_FLOW = booleanPreferencesKey("rumble_flow")
         val RUMBLE_SPACING = intPreferencesKey("rumble_spacing_ms")
         val RUMBLE_BATTERY_SAVER = booleanPreferencesKey("rumble_skip_on_battery_saver")
         val RUMBLE_CUES = stringPreferencesKey("rumble_cues")
@@ -409,6 +412,7 @@ class SettingsRepository(private val context: Context) {
             rumbleEngine = prefs[Keys.RUMBLE_ENGINE]?.let { runCatching { RumbleEngine.valueOf(it) }.getOrNull() } ?: RumbleEngine.AUTO,
             rumbleInChat = prefs[Keys.RUMBLE_IN_CHAT] ?: true,
             rumbleInCode = prefs[Keys.RUMBLE_IN_CODE] ?: true,
+            rumbleFlow = prefs[Keys.RUMBLE_FLOW] ?: true,
             rumbleSpacingMs = (prefs[Keys.RUMBLE_SPACING] ?: RUMBLE_DEFAULT_SPACING_MS).coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS),
             rumbleSkipOnBatterySaver = prefs[Keys.RUMBLE_BATTERY_SAVER] ?: true,
             rumbleCues = decodeRumbleCues(prefs[Keys.RUMBLE_CUES]),
@@ -492,6 +496,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.RUMBLE_ENGINE] = s.rumbleEngine.name
             p[Keys.RUMBLE_IN_CHAT] = s.rumbleInChat
             p[Keys.RUMBLE_IN_CODE] = s.rumbleInCode
+            p[Keys.RUMBLE_FLOW] = s.rumbleFlow
             p[Keys.RUMBLE_SPACING] = s.rumbleSpacingMs.coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS)
             p[Keys.RUMBLE_BATTERY_SAVER] = s.rumbleSkipOnBatterySaver
             p[Keys.RUMBLE_CUES] = encodeRumbleCues(s.rumbleCues)
@@ -982,6 +987,10 @@ class SettingsRepository(private val context: Context) {
         context.settingsStore.edit { it[Keys.RUMBLE_IN_CODE] = value }
     }
 
+    suspend fun setRumbleFlow(value: Boolean) {
+        context.settingsStore.edit { it[Keys.RUMBLE_FLOW] = value }
+    }
+
     suspend fun setRumbleSpacing(value: Int) {
         context.settingsStore.edit { it[Keys.RUMBLE_SPACING] = value.coerceIn(RUMBLE_MIN_SPACING_MS, RUMBLE_MAX_SPACING_MS) }
     }
@@ -1002,7 +1011,7 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun resetRumble() {
         context.settingsStore.edit { prefs ->
-            listOf(Keys.RUMBLE_ENABLED, Keys.RUMBLE_STRENGTH, Keys.RUMBLE_SMOOTHNESS, Keys.RUMBLE_IN_CHAT, Keys.RUMBLE_IN_CODE,
+            listOf(Keys.RUMBLE_ENABLED, Keys.RUMBLE_STRENGTH, Keys.RUMBLE_SMOOTHNESS, Keys.RUMBLE_IN_CHAT, Keys.RUMBLE_IN_CODE, Keys.RUMBLE_FLOW,
                 Keys.RUMBLE_SPACING, Keys.RUMBLE_BATTERY_SAVER).forEach { prefs.remove(it) }
             prefs.remove(Keys.RUMBLE_ENGINE)
             prefs.remove(Keys.RUMBLE_CUES)

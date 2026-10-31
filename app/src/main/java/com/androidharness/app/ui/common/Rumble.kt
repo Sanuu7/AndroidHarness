@@ -126,11 +126,42 @@ internal fun systemSteps(pattern: RumblePattern, smoothness: Int): List<RumbleSt
 internal const val PRIMITIVE_CLICK = 1
 internal const val PRIMITIVE_THUD = 2
 internal const val PRIMITIVE_QUICK_RISE = 4
+internal const val PRIMITIVE_SLOW_RISE = 5
 internal const val PRIMITIVE_QUICK_FALL = 6
 internal const val PRIMITIVE_TICK = 7
 internal const val PRIMITIVE_LOW_TICK = 8
 
 private const val MIN_AMPLITUDE = 14
+
+/** What a continuous rumble is marking: reply text streaming in, or a rich visual being written. */
+internal enum class RumbleFlow { WRITING, VISUAL }
+
+/** One primitive of a breath: [scale] is relative to the flow's peak, [delayMs] the pause before it. */
+internal class FlowStep(val primitive: Int, val scale: Float, val delayMs: Int = 0)
+
+/**
+ * A flow is a slow breath repeated for as long as the work lasts. [steps] is the breath on phones with
+ * advanced haptics, [fallback] the pattern AH Rumble builds itself everywhere else; each repeats every
+ * [periodMs] / [fallbackPeriodMs]. [level] is a percentage of the overall strength.
+ */
+internal class FlowSpec(
+    val steps: List<FlowStep>,
+    val periodMs: Long,
+    val fallback: RumblePattern,
+    val fallbackPeriodMs: Long,
+    val level: Int,
+)
+
+/** Writing is one long, soft swell; a visual adds a two-tick ripple ahead of a deeper, slower swell. */
+internal fun flowSpec(flow: RumbleFlow): FlowSpec = when (flow) {
+    RumbleFlow.WRITING -> FlowSpec(
+        steps = listOf(FlowStep(PRIMITIVE_SLOW_RISE, 1f), FlowStep(PRIMITIVE_QUICK_FALL, .6f)),
+        periodMs = 1_400, fallback = RumblePattern.SWELL, fallbackPeriodMs = 1_100, level = 70)
+    RumbleFlow.VISUAL -> FlowSpec(
+        steps = listOf(FlowStep(PRIMITIVE_LOW_TICK, .6f), FlowStep(PRIMITIVE_LOW_TICK, .8f, 70),
+            FlowStep(PRIMITIVE_SLOW_RISE, 1f, 90), FlowStep(PRIMITIVE_QUICK_FALL, .5f)),
+        periodMs = 2_200, fallback = RumblePattern.RISE, fallbackPeriodMs = 1_800, level = 65)
+}
 
 private fun systemVibrator(context: Context): Vibrator? = if (Build.VERSION.SDK_INT >= 31) {
     context.getSystemService(VibratorManager::class.java)?.defaultVibrator
@@ -149,10 +180,18 @@ internal fun deviceSupportsSystemHaptics(context: Context): Boolean {
         PRIMITIVE_QUICK_FALL, PRIMITIVE_TICK, PRIMITIVE_LOW_TICK)
 }
 
+/** Whether this phone has the built-in primitives a flow breath needs (Android 11+ with a capable motor). */
+internal fun deviceSupportsFlowHaptics(context: Context): Boolean {
+    if (Build.VERSION.SDK_INT < 30) return false
+    val vibrator = systemVibrator(context)?.takeIf { it.hasVibrator() } ?: return false
+    return vibrator.areAllPrimitivesSupported(PRIMITIVE_SLOW_RISE, PRIMITIVE_QUICK_FALL, PRIMITIVE_LOW_TICK)
+}
+
 /** Plays [RumbleCue]s on the phone's vibrator, following the system's touch-feedback setting. */
 internal class Rumble(private val context: Context) {
     private val vibrator: Vibrator? = systemVibrator(context)
     private val systemHaptics: Boolean by lazy(LazyThreadSafetyMode.NONE) { deviceSupportsSystemHaptics(context) }
+    private val flowHaptics: Boolean by lazy(LazyThreadSafetyMode.NONE) { deviceSupportsFlowHaptics(context) }
     private var lastPlayed = 0L
 
     /** A preview ignores the on/off switch, battery saver and spacing so the settings page always answers a tap. */
@@ -160,7 +199,6 @@ internal class Rumble(private val context: Context) {
         play(style.config(cue), style, preview)
     }
 
-    @Suppress("DEPRECATION")
     fun play(config: RumbleCueConfig, style: RumbleStyle, preview: Boolean = false) {
         val vibrator = vibrator?.takeIf { it.hasVibrator() } ?: return
         if (config.pattern == RumblePattern.OFF || config.level <= 0 || style.strength <= 0) return
@@ -173,6 +211,40 @@ internal class Rumble(private val context: Context) {
         }
         val strength = (style.strength * config.level / 100f).roundToInt().coerceIn(1, 100)
         val effect = runCatching { effectFor(vibrator, config.pattern, strength, style) }.getOrNull() ?: return
+        vibrate(vibrator, effect)
+    }
+
+    /**
+     * One breath of a flow, then the time to wait before the next. It is silent (but still returns the
+     * wait) when AH Rumble is off, strength is zero or battery saver is on, so a caller can simply loop.
+     * Nothing here cancels what is playing: the next breath, or a cue, replaces it.
+     */
+    fun breathe(flow: RumbleFlow, style: RumbleStyle, preview: Boolean = false): Long {
+        val spec = flowSpec(flow)
+        val useSystem = style.engine != RumbleEngine.CUSTOM && flowHaptics && Build.VERSION.SDK_INT >= 30
+        val wait = if (useSystem) spec.periodMs else spec.fallbackPeriodMs
+        val vibrator = vibrator?.takeIf { it.hasVibrator() } ?: return wait
+        if (style.strength <= 0) return wait
+        if (!preview) {
+            if (!style.enabled) return wait
+            if (style.skipOnBatterySaver && context.getSystemService(PowerManager::class.java)?.isPowerSaveMode == true) return wait
+        }
+        val effect = runCatching {
+            if (useSystem) {
+                val base = style.strength * spec.level / 10_000f
+                val composition = VibrationEffect.startComposition()
+                spec.steps.forEach { composition.addPrimitive(it.primitive, (it.scale * base).coerceIn(.05f, 1f), it.delayMs) }
+                composition.compose()
+            } else {
+                waveformEffect(vibrator, rumbleWaveform(spec.fallback, (style.strength * spec.level / 100f).roundToInt().coerceIn(1, 100), 100))
+            }
+        }.getOrNull() ?: return wait
+        vibrate(vibrator, effect)
+        return wait
+    }
+
+    @Suppress("DEPRECATION")
+    private fun vibrate(vibrator: Vibrator, effect: VibrationEffect) {
         runCatching {
             if (Build.VERSION.SDK_INT >= 33) {
                 vibrator.vibrate(effect, VibrationAttributes.createForUsage(VibrationAttributes.USAGE_TOUCH))
@@ -184,6 +256,13 @@ internal class Rumble(private val context: Context) {
         }
     }
 
+    private fun waveformEffect(vibrator: Vibrator, wave: RumbleWaveform?): VibrationEffect? {
+        wave ?: return null
+        val amplitudes = if (vibrator.hasAmplitudeControl()) wave.amplitudes
+        else IntArray(wave.amplitudes.size) { if (wave.amplitudes[it] > 0) VibrationEffect.DEFAULT_AMPLITUDE else 0 }
+        return VibrationEffect.createWaveform(wave.timings, amplitudes, -1)
+    }
+
     private fun effectFor(vibrator: Vibrator, pattern: RumblePattern, strength: Int, style: RumbleStyle): VibrationEffect? {
         val useSystem = style.engine != RumbleEngine.CUSTOM && systemHaptics && Build.VERSION.SDK_INT >= 30
         if (useSystem) {
@@ -192,10 +271,7 @@ internal class Rumble(private val context: Context) {
             systemSteps(pattern, style.smoothness).forEach { composition.addPrimitive(it.primitive, scale, it.delayMs) }
             return composition.compose()
         }
-        val wave = rumbleWaveform(pattern, strength, style.smoothness) ?: return null
-        val amplitudes = if (vibrator.hasAmplitudeControl()) wave.amplitudes
-        else IntArray(wave.amplitudes.size) { if (wave.amplitudes[it] > 0) VibrationEffect.DEFAULT_AMPLITUDE else 0 }
-        return VibrationEffect.createWaveform(wave.timings, amplitudes, -1)
+        return waveformEffect(vibrator, rumbleWaveform(pattern, strength, style.smoothness))
     }
 }
 
@@ -214,4 +290,21 @@ internal fun rememberRumblePreview(): (RumbleCueConfig, RumbleStyle) -> Unit {
     val context = LocalContext.current.applicationContext
     val rumble = remember(context) { Rumble(context) }
     return remember(rumble) { { config, style -> rumble.play(config, style, preview = true) } }
+}
+
+/** One breath of a flow with the latest [style]; returns how long to wait before the next. */
+@Composable
+internal fun rememberRumbleFlow(style: RumbleStyle): (RumbleFlow) -> Long {
+    val context = LocalContext.current.applicationContext
+    val rumble = remember(context) { Rumble(context) }
+    val current by rememberUpdatedState(style)
+    return remember(rumble) { { flow -> rumble.breathe(flow, current) } }
+}
+
+/** A breath with explicit settings regardless of the saved on/off switch, for the settings page. */
+@Composable
+internal fun rememberRumbleFlowPreview(): (RumbleFlow, RumbleStyle) -> Long {
+    val context = LocalContext.current.applicationContext
+    val rumble = remember(context) { Rumble(context) }
+    return remember(rumble) { { flow, style -> rumble.breathe(flow, style, preview = true) } }
 }

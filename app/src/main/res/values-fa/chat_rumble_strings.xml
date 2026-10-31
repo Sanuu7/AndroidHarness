@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">تصادفی</string>
     <string name="rumble_advanced_title">پیشرفته</string>
     <string name="rumble_advanced_desc">شدت، حس، موتور، رویدادها و تنظیم دقیق. پیش‌فرض‌ها از قبل تنظیم شده‌اند.</string>
+    <string name="rumble_flow_title">لرزش هنگام نوشتن</string>
+    <string name="rumble_flow_desc">لرزشی نرم و آرام‌بخش تا زمانی که پاسخ گفتگو در حال رسیدن است. محتوای تصویری غنی لرزش آهسته‌تر خودش را دارد. فقط در گفتگو.</string>
+    <string name="rumble_flow_status_system">از لرزش پیشرفته گوشی شما استفاده می‌شود.</string>
+    <string name="rumble_flow_status_custom">این گوشی لرزش پیشرفته ندارد، پس به‌جای آن از ضربه‌های خود AH Rumble استفاده می‌شود.</string>
+    <string name="rumble_flow_try">جریان را حس کن</string>
     <string name="rumble_cue_think">فکر کردن</string>
     <string name="rumble_cue_think_desc">مدل دوباره شروع به فکر کردن می‌کند.</string>
     <string name="rumble_cue_tool_start">شروع ابزار</string>

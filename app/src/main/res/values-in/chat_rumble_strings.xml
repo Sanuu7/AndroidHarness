@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">Acak</string>
     <string name="rumble_advanced_title">Lanjutan</string>
     <string name="rumble_advanced_desc">Kekuatan, nuansa, mesin, kejadian, dan penyetelan halus. Nilai bawaan sudah disetel.</string>
+    <string name="rumble_flow_title">Getar saat menulis</string>
+    <string name="rumble_flow_desc">Getaran lembut dan menenangkan selama balasan Obrolan masuk. Visual kaya punya getaran sendiri yang lebih lambat. Hanya untuk Obrolan.</string>
+    <string name="rumble_flow_status_system">Menggunakan haptik canggih di ponsel Anda.</string>
+    <string name="rumble_flow_status_custom">Ponsel ini tidak punya haptik canggih, jadi denyut bawaan AH Rumble yang dipakai.</string>
+    <string name="rumble_flow_try">Rasakan alirannya</string>
     <string name="rumble_cue_think">Berpikir</string>
     <string name="rumble_cue_think_desc">Model kembali berpikir.</string>
     <string name="rumble_cue_tool_start">Alat mulai</string>

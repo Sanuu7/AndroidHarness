@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.verticalScroll
 import com.androidharness.app.artifacts.ArtifactAttachment
+import com.androidharness.app.core.response.ChatRichResponse
 import com.androidharness.app.core.response.ResponseAttachment
+import com.androidharness.app.core.response.RichResponse
 import com.androidharness.app.core.response.UserMessageContent
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -22,7 +24,9 @@ import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.audio.TtsError
 import com.androidharness.app.data.audio.TtsPhase
 import com.androidharness.app.ui.common.TtsTermsDialog
+import com.androidharness.app.ui.common.RumbleFlow
 import com.androidharness.app.ui.common.rememberRumble
+import com.androidharness.app.ui.common.rememberRumbleFlow
 import com.androidharness.app.data.RumbleCue
 import com.androidharness.app.ui.common.rumbleStyle
 import androidx.compose.animation.AnimatedVisibility
@@ -1584,9 +1588,21 @@ private fun ChatScreenContent(
                 val rumbleInScope by androidx.compose.runtime.rememberUpdatedState(
                     if (state.conversation.isChat) appSettings.rumbleInChat else appSettings.rumbleInCode)
                 val rumble = remember(rumblePlayer) { { cue: RumbleCue -> if (rumbleInScope) rumblePlayer(cue) } }
+                val rumbleBreath = rememberRumbleFlow(appSettings.rumbleStyle)
+                // Chat only: prose streaming in breathes one way, a rich visual being written another.
+                val flowing = state.conversation.isChat && state.busy && !state.streamingCommitted && !state.streamingText.isNullOrBlank()
+                val streamingVisual = flowing && remember(state.streamingText) {
+                    RichResponse.isBuildingVisual(ChatRichResponse.normalize(state.streamingText.orEmpty(), true))
+                }
+                val rumbleFlowPhase = when {
+                    !flowing || !appSettings.rumbleFlow || !appSettings.rumbleInChat -> null
+                    streamingVisual -> RumbleFlow.VISUAL
+                    else -> RumbleFlow.WRITING
+                }
                 RumbleDirector(busy = state.busy, failed = state.error != null,
                     waitingPrompt = state.pendingApproval ?: state.pendingQuestion,
-                    runningCalls = state.runningCalls, codeTools = !state.conversation.isChat, play = rumble)
+                    runningCalls = state.runningCalls, codeTools = !state.conversation.isChat, play = rumble,
+                    flow = rumbleFlowPhase, breathe = rumbleBreath)
                 var autoSpokenIds by remember { mutableStateOf<Set<String>>(emptySet()) }
                 LaunchedEffect(appSettings.ttsAlwaysSpeak, state.sessionId) {
                     autoSpokenIds = if (appSettings.ttsAlwaysSpeak) {

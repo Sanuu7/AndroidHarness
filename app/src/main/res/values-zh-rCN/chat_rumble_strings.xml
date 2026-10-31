@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">随机</string>
     <string name="rumble_advanced_title">高级</string>
     <string name="rumble_advanced_desc">强度、手感、引擎、事件和精细调节。默认值已调好。</string>
+    <string name="rumble_flow_title">书写时震动</string>
+    <string name="rumble_flow_desc">聊天回复到来期间持续柔和舒缓的震动。丰富的可视内容有自己更缓慢的震动。仅限聊天。</string>
+    <string name="rumble_flow_status_system">正在使用手机的高级触觉反馈。</string>
+    <string name="rumble_flow_status_custom">此手机没有高级触觉反馈，因此改用 AH Rumble 自带的脉冲。</string>
+    <string name="rumble_flow_try">感受节奏</string>
     <string name="rumble_cue_think">思考</string>
     <string name="rumble_cue_think_desc">模型重新开始思考。</string>
     <string name="rumble_cue_tool_start">工具开始</string>

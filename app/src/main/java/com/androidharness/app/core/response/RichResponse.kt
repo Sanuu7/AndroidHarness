@@ -83,6 +83,14 @@ object RichResponse {
         data object Divider : Node
     }
 
+    /** True while the last rich fence of streaming [text] is still open, i.e. a visual is being written. */
+    fun isBuildingVisual(text: String): Boolean {
+        val start = text.lastIndexOf("```harness")
+        if (start < 0) return false
+        val lineStart = text.lastIndexOf('\n', start) + 1
+        return parse(text.substring(lineStart), streaming = true).lastOrNull().let { it is Part.Pending || it is Part.PendingVisual }
+    }
+
     /** Recognized fences are withheld until complete. A normal code fence is never interpreted as UI. */
     fun parse(text: String, streaming: Boolean = false): List<Part> {
         if (!hasRichFence(text, streaming)) return listOf(Part.Markdown(text))

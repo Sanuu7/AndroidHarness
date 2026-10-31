@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">Embaralhar</string>
     <string name="rumble_advanced_title">Avançado</string>
     <string name="rumble_advanced_desc">Força, toque, motor, eventos e ajuste fino. Os padrões já estão ajustados.</string>
+    <string name="rumble_flow_title">Vibração enquanto escreve</string>
+    <string name="rumble_flow_desc">Uma vibração suave e relaxante enquanto uma resposta do Chat chega. Visuais ricos têm uma vibração própria, mais lenta. Apenas no Chat.</string>
+    <string name="rumble_flow_status_system">Usando a háptica avançada do seu celular.</string>
+    <string name="rumble_flow_status_custom">Este celular não tem háptica avançada, então são usados os pulsos próprios do AH Rumble.</string>
+    <string name="rumble_flow_try">Sentir o fluxo</string>
     <string name="rumble_cue_think">Pensando</string>
     <string name="rumble_cue_think_desc">O modelo volta a pensar.</string>
     <string name="rumble_cue_tool_start">Ferramenta inicia</string>

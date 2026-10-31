@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">シャッフル</string>
     <string name="rumble_advanced_title">詳細設定</string>
     <string name="rumble_advanced_desc">強さ、感触、エンジン、イベント、微調整。初期設定は調整済みです。</string>
+    <string name="rumble_flow_title">書いている間の振動</string>
+    <string name="rumble_flow_desc">チャットの返信が届いている間、なめらかで心地よい振動が続きます。リッチなビジュアルには、よりゆっくりした専用の振動があります。チャットのみ。</string>
+    <string name="rumble_flow_status_system">お使いのスマートフォンの高度なハプティクスを使用しています。</string>
+    <string name="rumble_flow_status_custom">この端末には高度なハプティクスがないため、AH Rumble独自のパルスを使用します。</string>
+    <string name="rumble_flow_try">流れを感じる</string>
     <string name="rumble_cue_think">思考</string>
     <string name="rumble_cue_think_desc">モデルが再び考え始めたとき。</string>
     <string name="rumble_cue_tool_start">ツール開始</string>

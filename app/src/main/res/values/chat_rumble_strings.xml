@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">Shuffle</string>
     <string name="rumble_advanced_title">Advanced</string>
     <string name="rumble_advanced_desc">Strength, feel, engine, events and fine tuning. The defaults are already tuned.</string>
+    <string name="rumble_flow_title">Rumble while it writes</string>
+    <string name="rumble_flow_desc">A smooth, soothing rumble for as long as a Chat reply is coming in. Rich visuals get their own slower rumble. Chat only.</string>
+    <string name="rumble_flow_status_system">Using your phone\'s advanced haptics.</string>
+    <string name="rumble_flow_status_custom">This phone has no advanced haptics, so AH Rumble\'s own pulses are used instead.</string>
+    <string name="rumble_flow_try">Feel the flow</string>
     <string name="rumble_cue_think">Thinking</string>
     <string name="rumble_cue_think_desc">The model goes back to thinking.</string>
     <string name="rumble_cue_tool_start">Tool starts</string>

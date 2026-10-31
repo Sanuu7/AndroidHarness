@@ -29,6 +29,11 @@
     <string name="rumble_shuffle">Перемешать</string>
     <string name="rumble_advanced_title">Дополнительно</string>
     <string name="rumble_advanced_desc">Сила, ощущение, движок, события и тонкая настройка. Значения по умолчанию уже настроены.</string>
+    <string name="rumble_flow_title">Вибрация во время ответа</string>
+    <string name="rumble_flow_desc">Плавная, успокаивающая вибрация, пока приходит ответ в Чате. У насыщенных визуальных элементов своя, более медленная вибрация. Только в Чате.</string>
+    <string name="rumble_flow_status_system">Используется расширенная тактильная отдача телефона.</string>
+    <string name="rumble_flow_status_custom">В этом телефоне нет расширенной тактильной отдачи, поэтому используются собственные импульсы AH Rumble.</string>
+    <string name="rumble_flow_try">Почувствовать поток</string>
     <string name="rumble_cue_think">Размышление</string>
     <string name="rumble_cue_think_desc">Модель снова начинает думать.</string>
     <string name="rumble_cue_tool_start">Инструмент запущен</string>
