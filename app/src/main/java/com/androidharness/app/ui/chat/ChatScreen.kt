@@ -843,6 +843,16 @@ private fun ChatScreenContent(
     if (state.showCostDialog) {
         CostDialog(state = state, onDismiss = viewModel::dismissCostDialog)
     }
+    val sideQuestion by viewModel.sideQuestion.collectAsStateWithLifecycle()
+    sideQuestion?.let { side ->
+        com.androidharness.app.ui.chat.components.SideQuestionSheet(
+            state = side,
+            onAsk = { viewModel.askAside(it) },
+            onStop = viewModel::stopAside,
+            onDismiss = viewModel::dismissAside,
+            onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true },
+        )
+    }
 
     retryRequest?.let { runRetry ->
         com.androidharness.app.ui.chat.components.ChatRetryDialog(
@@ -2468,6 +2478,15 @@ private fun ChatScreenContent(
                         else -> null
                     },
                     onStop = viewModel::stop,
+                    // Typed while the agent works: ask it aside instead of queueing.
+                    onAskAside = if (attachedSkill == null && attachedConcept == null && attachedResponse == null) fun() {
+                        val asked = if (SlashCommands.isSideQuestion(composerText)) viewModel.send(composerText) else viewModel.askAside(composerText)
+                        if (asked) {
+                            setComposerText("")
+                            viewModel.saveDraft("", immediate = true)
+                            slashExpanded = false
+                        }
+                    } else null,
                     onAttachImage = { galleryLauncher.launch("image/*") },
                     onAttachFile = { fileLauncher.launch("*/*") },
                     voiceEngine = state.voiceEngine,

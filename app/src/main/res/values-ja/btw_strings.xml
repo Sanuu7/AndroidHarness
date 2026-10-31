@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">ところで</string>
+    <string name="btw_source_live">ライブコンテキスト</string>
+    <string name="btw_source_saved">保存済みの履歴</string>
+    <string name="btw_private">チャットには追加されません</string>
+    <string name="btw_empty_hint">現在のタスクについて何でも質問できます。回答はエージェントがすでに読んだ内容と決定を使い、プロンプトキャッシュを再利用し、会話には加わりません。</string>
+    <string name="btw_input_hint">サイド質問をする</string>
+    <string name="btw_input_again">別のサイド質問をする</string>
+    <string name="btw_ask">質問</string>
+    <string name="btw_stop">停止</string>
+    <string name="btw_copy">コピー</string>
+    <string name="btw_copied">回答をコピーしました</string>
+    <string name="btw_stopped">停止しました</string>
+    <string name="btw_retrying">再試行中 · %1$s</string>
+    <string name="btw_cold_note">メモリにライブリクエストがないため、この回答はプロンプトキャッシュなしで保存済みの会話を読みます。</string>
+    <string name="btw_composer_action">ところで質問する</string>
+    <string name="btw_error_empty_chat">まずメッセージを送信してから、それについてサイド質問をしてください。</string>
+    <string name="btw_error_local_busy">ローカルモデルは一度に1件のリクエストに応答します。現在の返信が終わってから質問してください。</string>
+    <string name="btw_error_no_key">質問する前にこのプロバイダーの API キーを追加してください。</string>
+    <string name="btw_error_generic">サイド質問に失敗しました。</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">読み取り専用ツール呼び出し %1$d 件</item>
+    </plurals>
+</resources>

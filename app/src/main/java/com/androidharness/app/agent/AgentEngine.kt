@@ -245,6 +245,9 @@ class AgentEngine(
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
+    /** The latest request per chat, for side questions that reuse its cached prefix. */
+    val sideContexts = SideContexts()
+
     /** The universal tools plus the legacy workspace-note tools. */
     private val recallToolNames = setOf("search_chats", "recent_chats", "read_chat_snippet")
     private val memoryToolNames = com.androidharness.app.data.MemoryRepository.toolNames +
@@ -488,6 +491,11 @@ class AgentEngine(
                 }
             }
 
+            // Mirrors what this round sends, so /btw replays the same cached prefix.
+            fun publishSide(messages: List<ChatMessage> = working) = sideContexts.publish(SideContext(
+                sessionId, turnId, config, apiKey, requestSystemPrompt, tools, messages.toList(), requestOptions,
+                roundRegistry, execWorkspace, sandboxOff, effectiveMode, runContext))
+
             var text = StringBuilder()
             var thinking = StringBuilder()
             var calls = mutableListOf<ToolCallData>()
@@ -605,6 +613,7 @@ class AgentEngine(
 
             var failure = StreamRetrier.run(
                 streamFor = {
+                    publishSide()
                     provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
                 },
                 onAttemptStart = {
@@ -646,6 +655,7 @@ class AgentEngine(
                 }
                 failure = StreamRetrier.run(
                     streamFor = {
+                        publishSide()
                         provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
                     },
                     onAttemptStart = {
@@ -722,6 +732,7 @@ class AgentEngine(
                     ),
                 ).let { it.copy(generation = it.generation.copy(state = responseState?.boundTo(it))) }
                 working += assistant
+                publishSide()
                 emit(AgentEvent.AssistantCommitted(assistant))
             }
 
@@ -741,6 +752,17 @@ class AgentEngine(
             // such as todo_write must run at their requested position, including
             // before a slow subagent batch, so progress is visible during work.
             val results = LinkedHashMap<String, ToolResult>()
+            fun toolMessage(call: ToolCallData, result: ToolResult) = ChatMessage(
+                role = Role.TOOL,
+                text = result.output,
+                toolCallId = call.id,
+                toolName = call.name,
+                isError = !result.ok,
+                images = listOfNotNull(result.image), artifact = result.artifact,
+                generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
+            )
+            // Side questions see each finished result while the rest still run.
+            fun publishResults() = publishSide(working + calls.mapNotNull { call -> results[call.id]?.let { toolMessage(call, it) } })
             var ordinaryIndex = 0
             while (ordinaryIndex < calls.size) {
                 val first = calls[ordinaryIndex]
@@ -775,6 +797,7 @@ class AgentEngine(
                             }
                         }.awaitAll().forEach { (id, result) -> results[id] = result }
                     }
+                    publishResults()
                 } else if (parallelSafeReadOnly(first, roundRegistry)) {
                     val group = mutableListOf<ToolCallData>()
                     while (ordinaryIndex < calls.size && calls[ordinaryIndex].name != "task" && parallelSafeReadOnly(calls[ordinaryIndex], roundRegistry)) {
@@ -794,6 +817,7 @@ class AgentEngine(
                             }
                         }.awaitAll().forEach { (id, result) -> results[id] = result }
                     }
+                    publishResults()
                 } else {
                     ordinaryIndex++
                     emit(AgentEvent.ToolStarted(first))
@@ -802,6 +826,7 @@ class AgentEngine(
                         sessionId, turnId, mode, requestOptions, config, apiKey,
                         roundRegistry, resolveSubagentModel,
                     ) { emit(it) }
+                    publishResults()
                 }
             }
 
@@ -811,16 +836,7 @@ class AgentEngine(
             // Commit tool messages in the model's original call order.
             for (call in calls) {
                 val result = results.getValue(call.id)
-                val toolMessage = ChatMessage(
-                    role = Role.TOOL,
-                    text = result.output,
-                    toolCallId = call.id,
-                    toolName = call.name,
-                    isError = !result.ok,
-                    images = listOfNotNull(result.image), artifact = result.artifact,
-                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
-                )
-                working += toolMessage.withImagesResolved()
+                working += toolMessage(call, result).withImagesResolved()
                 emit(AgentEvent.ToolFinished(call.id, result))
             }
         }
@@ -828,6 +844,152 @@ class AgentEngine(
             withContext(kotlinx.coroutines.NonCancellable) { hook("session.end") }
         }
         }
+    }
+
+    /**
+     * Answers a side question on [context] without touching the chat. The
+     * request reuses the main loop's system prompt, tool schemas, messages and
+     * reasoning options unchanged, so the cached prefix is read instead of
+     * billed again. Only read-only tools run, and nothing is persisted.
+     */
+    fun askAside(context: SideContext, question: String): Flow<SideEvent> = channelFlow {
+        withContext(context.runContext ?: kotlin.coroutines.EmptyCoroutineContext) {
+            var config = context.config
+            val provider = providerFactory(config)
+            val local = com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
+            val imageInput = context.options.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.imageInput
+                ?: com.androidharness.app.llm.visionCapable(config.model)
+            val working = SideQuestion.requestMessages(context, question).toMutableList()
+            for (round in 1..SideQuestion.MAX_ROUNDS) {
+                val lastRound = round == SideQuestion.MAX_ROUNDS
+                if (lastRound) working += ChatMessage(role = Role.USER, text = SideQuestion.ROUND_LIMIT_NOTE)
+                var text = StringBuilder()
+                var thinking = StringBuilder()
+                var calls = mutableListOf<ToolCallData>()
+                var responseState: com.androidharness.app.core.ProviderMessageState? = null
+                var timing = ThinkingTiming()
+                var finishReason: String? = null
+                var outputTokens = 0
+                var reasoningTokens: Int? = null
+                var started = false
+                var requestStartedNs = System.nanoTime()
+
+                suspend fun observe(event: StreamEvent) {
+                    if (event.hasResponseOutput()) started = true
+                    when (event) {
+                        is StreamEvent.Batch -> event.events.forEach { observe(it) }
+                        is StreamEvent.TextDelta -> { text.append(event.text); send(SideEvent.Text(event.text)) }
+                        is StreamEvent.ThinkingDelta -> { thinking.append(event.text); send(SideEvent.Thinking(event.text)) }
+                        is StreamEvent.ToolCallReady -> calls += event.call
+                        is StreamEvent.ToolCallBatch -> calls += event.calls
+                        is StreamEvent.ResponseState -> responseState = event.state
+                        is StreamEvent.ProviderChanged -> { config = event.config; send(SideEvent.ProviderChanged(event.config)) }
+                        is StreamEvent.Retrying -> send(SideEvent.Retrying(event.attempt, event.reason))
+                        is StreamEvent.Usage -> {
+                            outputTokens = event.outputTokens
+                            reasoningTokens = event.reasoningTokens
+                            send(SideEvent.Usage(AgentEvent.Usage(
+                                event.inputTokens, event.outputTokens, event.cachedInputTokens, event.cacheWriteTokens,
+                                config.model, config.name, cacheReported = event.cacheReported,
+                                reasoningTokens = event.reasoningTokens,
+                                providerKey = com.androidharness.app.llm.ModelsDev.providerKeyFor(config.baseUrl),
+                                cachePrices = if (com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id)) null
+                                    else com.androidharness.app.llm.ModelsDev.exactCachePrices(config.baseUrl, config.model),
+                            )))
+                        }
+                        is StreamEvent.Done -> finishReason = event.finishReason
+                        else -> Unit
+                    }
+                }
+
+                val failure = StreamRetrier.run(
+                    streamFor = { provider.streamChat(config, context.apiKey, context.systemPrompt, working.toList(), context.tools, context.options) },
+                    onAttemptStart = {
+                        text = StringBuilder(); thinking = StringBuilder(); calls = mutableListOf()
+                        responseState = null; timing = ThinkingTiming(); finishReason = null
+                        outputTokens = 0; reasoningTokens = null; started = false
+                        requestStartedNs = System.nanoTime()
+                    },
+                    hasOutput = { started || text.isNotEmpty() || thinking.isNotEmpty() || calls.isNotEmpty() },
+                    handleEvent = { event ->
+                        val previous = timing
+                        timing = timing.observe(event, ThinkingTiming.now())
+                        observe(event)
+                        if (timing != previous) send(SideEvent.ThinkingProgress(timing))
+                    },
+                    retryReason = { it.take(200) },
+                    emitEvent = { send(SideEvent.Retrying(it.attempt, it.reason)) },
+                    stallTimeoutMs = if (local) 600_000 else 90_000,
+                    allowRetries = !local,
+                )
+                if (failure != null) {
+                    send(SideEvent.Failed(failure))
+                    return@withContext
+                }
+                if (text.isBlank() && calls.isEmpty()) {
+                    send(SideEvent.Finished(emptyAnswerReason(text.toString(), thinking.toString(), finishReason, reasoningTokens)))
+                    return@withContext
+                }
+                val assistant = ChatMessage(
+                    role = Role.ASSISTANT,
+                    text = text.toString(),
+                    toolCalls = calls.toList(),
+                    thinking = thinking.toString(),
+                    thinkingMs = timing.durationMs(ThinkingTiming.now()),
+                    outputTokens = outputTokens,
+                    generationMs = ((System.nanoTime() - requestStartedNs) / 1_000_000).coerceAtLeast(1),
+                    generation = com.androidharness.app.core.GenerationMetadata(reasoningTokens = reasoningTokens, model = config.model),
+                ).let { it.copy(generation = it.generation.copy(state = responseState?.boundTo(it))) }
+                working += assistant
+                send(SideEvent.AssistantCommitted(assistant))
+                if (calls.isEmpty()) {
+                    send(SideEvent.Finished())
+                    return@withContext
+                }
+                calls.forEach { send(SideEvent.ToolStarted(it)) }
+                val results = coroutineScope {
+                    calls.map { call ->
+                        async {
+                            call to if (lastRound) ToolResult(false, SideQuestion.ROUND_LIMIT_NOTE)
+                                else executeAside(call, context, imageInput)
+                        }
+                    }.awaitAll()
+                }
+                for ((call, result) in results) {
+                    val message = ChatMessage(
+                        role = Role.TOOL, text = result.output, toolCallId = call.id, toolName = call.name,
+                        isError = !result.ok, images = listOfNotNull(result.image),
+                        generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research),
+                    )
+                    working += if (imageInput) message.withImagesResolved() else message
+                    send(SideEvent.ToolFinished(message))
+                }
+            }
+            send(SideEvent.Finished("The side question used its tool budget before answering. Ask a narrower question."))
+        }
+    }
+
+    private suspend fun executeAside(call: ToolCallData, context: SideContext, imageInput: Boolean): ToolResult {
+        val scoped = context.registry.get(call.name) ?: return ToolResult(false, "Unknown tool: ${call.name}")
+        if (!SideQuestion.allows(scoped)) return ToolResult(false, SideQuestion.refusal(call.name))
+        // Chat research tools count against the main turn's source budget; side reads use the unscoped ones.
+        val tool = if (call.name == "web_search" || call.name == "web_fetch") registry.get(call.name) ?: scoped else scoped
+        val runConfig = context.runContext
+        if (runConfig?.denies(tool) == true) return ToolResult(false, "${call.name} is disabled by this Code agent's tool rules.")
+        val permission = runConfig?.config?.let { com.androidharness.app.config.ConfigToolPolicy.permission(it, tool, context.permissionMode) } ?: "allow"
+        if (permission != "allow" || context.permissionMode == PermissionMode.CONFIRM_ALL) return ToolResult(false,
+            "${call.name} needs approval here, and side questions never ask for it. Answer from the context you already have.")
+        val args = try { json.parseToJsonElement(call.argumentsJson).jsonObject }
+            catch (e: Exception) { return ToolResult(false, "Invalid tool arguments: ${e.message}") }
+        val route = try { WorkspaceToolRouting.route(tool, args, context.workspace, ToolContext(context.workspace, context.sandboxOff, context.sessionId)) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { return ToolResult(false, e.message ?: "Workspace access was denied.") }
+        val toolContext = ToolContext(route.workspace, context.sandboxOff, context.sessionId,
+            configuration = runConfig?.config, skills = runConfig?.skills, imageInputAllowed = imageInput)
+        val result = try { tool.execute(args, toolContext) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { ToolResult(false, e.message ?: "${call.name} failed.") }
+        return result.redacted().let { it.copy(output = runConfig?.redact(it.output) ?: it.output) }
     }
 
     private fun parallelSafeReadOnly(

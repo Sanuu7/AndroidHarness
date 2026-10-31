@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">بالمناسبة</string>
+    <string name="btw_source_live">سياق مباشر</string>
+    <string name="btw_source_saved">سجل محفوظ</string>
+    <string name="btw_private">لا يُضاف إلى الدردشة</string>
+    <string name="btw_empty_hint">اسأل عن أي شيء يخص المهمة الحالية. تستخدم الإجابة ما قرأه الوكيل وقرره بالفعل، وتعيد استخدام ذاكرة التخزين المؤقت للموجّه، ولا تنضم إلى المحادثة أبدًا.</string>
+    <string name="btw_input_hint">اطرح سؤالًا جانبيًا</string>
+    <string name="btw_input_again">اطرح سؤالًا جانبيًا آخر</string>
+    <string name="btw_ask">اسأل</string>
+    <string name="btw_stop">إيقاف</string>
+    <string name="btw_copy">نسخ</string>
+    <string name="btw_copied">تم نسخ الإجابة</string>
+    <string name="btw_stopped">تم الإيقاف</string>
+    <string name="btw_retrying">إعادة المحاولة · %1$s</string>
+    <string name="btw_cold_note">لا يوجد طلب مباشر في الذاكرة، لذا تقرأ هذه الإجابة المحادثة المحفوظة دون ذاكرة التخزين المؤقت للموجّه.</string>
+    <string name="btw_composer_action">اسأل بالمناسبة</string>
+    <string name="btw_error_empty_chat">أرسل رسالة أولًا، ثم اطرح سؤالًا جانبيًا عنها.</string>
+    <string name="btw_error_local_busy">تجيب النماذج المحلية عن طلب واحد في كل مرة. اسأل بعد انتهاء الرد الحالي.</string>
+    <string name="btw_error_no_key">أضف مفتاح API لهذا المزوّد قبل السؤال.</string>
+    <string name="btw_error_generic">فشل السؤال الجانبي.</string>
+    <plurals name="btw_tool_count">
+        <item quantity="zero">%1$d استدعاء لأدوات القراءة فقط</item>
+        <item quantity="one">%1$d استدعاء لأداة قراءة فقط</item>
+        <item quantity="two">%1$d استدعاءان لأدوات القراءة فقط</item>
+        <item quantity="few">%1$d استدعاءات لأدوات القراءة فقط</item>
+        <item quantity="many">%1$d استدعاءً لأدوات القراءة فقط</item>
+        <item quantity="other">%1$d استدعاء لأدوات القراءة فقط</item>
+    </plurals>
+</resources>

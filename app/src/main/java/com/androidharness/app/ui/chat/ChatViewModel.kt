@@ -382,6 +382,12 @@ class ChatViewModel(
     private var heldStream: HeldStream? = null
     private var compactionJob: kotlinx.coroutines.Job? = null
 
+    /** The open /btw sheet; held apart from [state] so its token stream redraws only the sheet. */
+    private val _sideQuestion = MutableStateFlow<SideQuestionUi?>(null)
+    val sideQuestion: StateFlow<SideQuestionUi?> = _sideQuestion
+    private var sideJob: kotlinx.coroutines.Job? = null
+    private var sideGeneration = 0
+
     init {
         viewModelScope.launch {
             sessionIdFlow.flatMapLatest(c.chatModels::observe).collect(::applyModelState)
@@ -799,6 +805,8 @@ class ChatViewModel(
 
     /** True when the composer can consume the draft, including local commands and queued messages. */
     fun send(rawText: String): Boolean {
+        // Answered aside on the live context; never queued, injected or saved.
+        if (SlashCommands.isSideQuestion(rawText)) return askAside(rawText.trim().removeRange(0, SlashCommands.SIDE_COMMAND.length))
         if (compactionJob?.isActive == true) {
             _state.update { it.copy(error = c.appContext.getString(R.string.ui_wait_for_compaction_to_finish_or_stop)) }
             return false
@@ -844,6 +852,7 @@ class ChatViewModel(
                 _state.update { it.copy(showEnvSheet = true) }
                 return true
             }
+            SlashCommands.Kind.BTW -> return askAside(resolved.sideQuestion.orEmpty())
             SlashCommands.Kind.UNKNOWN -> {
                 _state.update { it.copy(error = resolved.error) }
                 return false
@@ -987,6 +996,87 @@ class ChatViewModel(
 
     fun dismissCostDialog() {
         _state.update { it.copy(showCostDialog = false) }
+    }
+
+    /**
+     * Asks [question] on the main task's latest request, so the answer sees
+     * everything the agent has read and decided and reuses its prompt cache.
+     * A blank question opens the sheet ready for typing.
+     */
+    fun askAside(question: String): Boolean {
+        val sid = sessionId
+        if (sid == null) {
+            _state.update { it.copy(error = c.appContext.getString(R.string.btw_error_empty_chat)) }
+            return false
+        }
+        val text = question.trim()
+        sideJob?.cancel()
+        val generation = ++sideGeneration
+        if (text.isEmpty()) {
+            _sideQuestion.value = SideQuestionUi()
+            return true
+        }
+        val starting = SideQuestionUi(question = text, running = true, startedAt = System.currentTimeMillis())
+        _sideQuestion.value = starting
+        fun publish(ui: SideQuestionUi) { if (generation == sideGeneration) _sideQuestion.value = ui }
+        sideJob = viewModelScope.launch {
+            var ui = starting
+            try {
+                val context = c.runManager.sideContext(sid) ?: coldAsideContext(sid)
+                ui = ui.copy(warm = context.warm, capturedAt = context.capturedAt, model = context.config.model)
+                publish(ui)
+                val events = kotlinx.coroutines.channels.Channel<com.androidharness.app.agent.SideEvent>(kotlinx.coroutines.channels.Channel.UNLIMITED)
+                launch {
+                    try {
+                        c.runManager.askAside(context, text).collect { events.send(it) }
+                        events.close()
+                    } catch (e: kotlinx.coroutines.CancellationException) {
+                        events.close()
+                        throw e
+                    } catch (e: Exception) {
+                        events.close(e)
+                    }
+                }
+                // Drain everything already streamed, then redraw once per frame budget.
+                for (first in events) {
+                    ui = SideQuestionReducer.reduce(ui, first)
+                    while (true) ui = SideQuestionReducer.reduce(ui, events.tryReceive().getOrNull() ?: break)
+                    publish(ui)
+                    kotlinx.coroutines.delay(SIDE_FLUSH_MS)
+                }
+                ui = SideQuestionReducer.finish(ui)
+            } catch (e: kotlinx.coroutines.CancellationException) {
+                ui = SideQuestionReducer.finish(ui).copy(stopped = true)
+                throw e
+            } catch (e: Exception) {
+                ui = SideQuestionReducer.finish(ui).copy(error = e.message ?: c.appContext.getString(R.string.btw_error_generic))
+            } finally {
+                publish(ui)
+            }
+        }
+        return true
+    }
+
+    fun stopAside() { sideJob?.cancel() }
+
+    fun dismissAside() {
+        sideJob?.cancel()
+        sideGeneration++
+        _sideQuestion.value = null
+    }
+
+    private suspend fun coldAsideContext(sid: String): com.androidharness.app.agent.SideContext {
+        val current = _state.value
+        val provider = current.activeProvider?.let { it.copy(model = current.effectiveModel ?: it.model) }
+            ?: error(c.appContext.getString(R.string.ui_no_provider_configured_add_one_from_the))
+        val key = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            if (provider.id == com.androidharness.app.llm.HarnessProvider.ID) c.providers.harnessApiKey()
+            else provider.effectiveApiKey(c.providers.apiKey(provider.id))
+        }
+        check(key.isNotBlank() || com.androidharness.app.local.LocalModelCatalog.isLocal(provider.id)) {
+            c.appContext.getString(R.string.btw_error_no_key)
+        }
+        return c.runManager.coldSideContext(sid, provider, key, current.maxContextTokens)
     }
 
     fun dismissSkillsSheet() {
@@ -2154,6 +2244,8 @@ class ChatViewModel(
     companion object {
         /** Max time a just-committed stream may be held while Room delivers the row. */
         private const val HOLD_TIMEOUT_MS = 2_000L
+        /** Side answers batch their deltas to about 30 redraws a second. */
+        private const val SIDE_FLUSH_MS = 32L
 
         fun factory(container: AppContainer, sessionId: String?, kind: com.androidharness.app.data.ConversationKind = com.androidharness.app.data.ConversationKind.CODE) = viewModelFactory {
             initializer { ChatViewModel(container, sessionId, kind) }

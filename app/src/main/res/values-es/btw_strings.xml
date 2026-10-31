@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">Por cierto</string>
+    <string name="btw_source_live">Contexto en vivo</string>
+    <string name="btw_source_saved">Historial guardado</string>
+    <string name="btw_private">No se añade al chat</string>
+    <string name="btw_empty_hint">Pregunta lo que quieras sobre la tarea actual. La respuesta usa lo que el agente ya leyó y decidió, reutiliza su caché de prompts y nunca entra en la conversación.</string>
+    <string name="btw_input_hint">Haz una pregunta aparte</string>
+    <string name="btw_input_again">Haz otra pregunta aparte</string>
+    <string name="btw_ask">Preguntar</string>
+    <string name="btw_stop">Detener</string>
+    <string name="btw_copy">Copiar</string>
+    <string name="btw_copied">Respuesta copiada</string>
+    <string name="btw_stopped">Detenido</string>
+    <string name="btw_retrying">Reintentando · %1$s</string>
+    <string name="btw_cold_note">No hay una solicitud activa en memoria, así que esta respuesta lee la conversación guardada sin la caché de prompts.</string>
+    <string name="btw_composer_action">Preguntar aparte</string>
+    <string name="btw_error_empty_chat">Envía primero un mensaje y luego haz una pregunta aparte sobre él.</string>
+    <string name="btw_error_local_busy">Los modelos locales responden una solicitud a la vez. Pregunta cuando termine la respuesta actual.</string>
+    <string name="btw_error_no_key">Añade la clave de API de este proveedor antes de preguntar.</string>
+    <string name="btw_error_generic">La pregunta aparte falló.</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">%1$d llamada de herramienta de solo lectura</item>
+        <item quantity="other">%1$d llamadas de herramientas de solo lectura</item>
+    </plurals>
+</resources>

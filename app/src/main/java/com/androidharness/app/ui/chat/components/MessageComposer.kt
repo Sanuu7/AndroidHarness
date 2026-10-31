@@ -181,6 +181,8 @@ internal fun MessageComposer(
     onSchedule: (() -> Unit)? = null,
     scheduleUnavailableReason: String? = null,
     chatOnly: Boolean = false,
+    /** Shown beside the queue button while busy: ask the typed text as a /btw side question. */
+    onAskAside: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     attachments: @Composable () -> Unit = {},
 ) {
@@ -540,7 +542,9 @@ internal fun MessageComposer(
                 // The held mic retains its node and position until release or lock.
                 Box(Modifier.width(voiceSlotWidth.coerceAtLeast(0.dp)), contentAlignment = Alignment.Center) {
                     // Expose a touch target only after the slot has fully reopened.
-                    if (!voiceSlot.currentState && !voiceSlot.targetState) voice()
+                    if (!voiceSlot.currentState && !voiceSlot.targetState) {
+                        if (showQueueSend && !isGroqActive && onAskAside != null) AskAsideButton(actionSize, onAskAside) else voice()
+                    }
                 }
                 Box(Modifier.width(slotSize), contentAlignment = Alignment.Center) {
                     when {
@@ -592,6 +596,25 @@ internal fun MessageComposer(
                 RoundedCornerShape(if (isGroqActive) 24.dp else 14.dp))) { recorderContent() }
     }
 
+}
+
+/** Tonal twin of the queue button; the answer opens in the /btw sheet and never joins the chat. */
+@Composable
+private fun AskAsideButton(size: Dp, onClick: () -> Unit) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    ExpressiveIconButton(preserveFill = true,
+        onClick = { haptics.performHapticFeedback(HapticFeedbackType.Confirm); onClick() },
+        modifier = Modifier.size(size).testTag("composer-ask-aside")
+            .semantics { contentDescription = uiContext.getString(R.string.btw_composer_action) },
+        shape = RoundedCornerShape(size / 2),
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = MaterialTheme.colorScheme.tertiaryContainer,
+            contentColor = MaterialTheme.colorScheme.onTertiaryContainer,
+        ),
+    ) {
+        Icon(painterResource(R.drawable.ic_chat_btw), null, Modifier.size(19.dp))
+    }
 }
 
 // ---------------------------------------------------------------------------

@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">راستی</string>
+    <string name="btw_source_live">زمینهٔ زنده</string>
+    <string name="btw_source_saved">تاریخچهٔ ذخیره‌شده</string>
+    <string name="btw_private">به گفتگو اضافه نمی‌شود</string>
+    <string name="btw_empty_hint">هر سؤالی دربارهٔ کار فعلی بپرسید. پاسخ از آنچه عامل خوانده و تصمیم گرفته استفاده می‌کند، حافظهٔ نهان پرامپت را دوباره به کار می‌برد و هرگز وارد گفتگو نمی‌شود.</string>
+    <string name="btw_input_hint">یک سؤال جانبی بپرسید</string>
+    <string name="btw_input_again">یک سؤال جانبی دیگر بپرسید</string>
+    <string name="btw_ask">بپرس</string>
+    <string name="btw_stop">توقف</string>
+    <string name="btw_copy">کپی</string>
+    <string name="btw_copied">پاسخ کپی شد</string>
+    <string name="btw_stopped">متوقف شد</string>
+    <string name="btw_retrying">تلاش دوباره · %1$s</string>
+    <string name="btw_cold_note">درخواست زنده‌ای در حافظه نیست، پس این پاسخ گفتگوی ذخیره‌شده را بدون حافظهٔ نهان پرامپت می‌خواند.</string>
+    <string name="btw_composer_action">راستی بپرس</string>
+    <string name="btw_error_empty_chat">اول یک پیام بفرستید، سپس دربارهٔ آن سؤال جانبی بپرسید.</string>
+    <string name="btw_error_local_busy">مدل‌های محلی هر بار به یک درخواست پاسخ می‌دهند. پس از پایان پاسخ فعلی بپرسید.</string>
+    <string name="btw_error_no_key">پیش از پرسیدن، کلید API این ارائه‌دهنده را اضافه کنید.</string>
+    <string name="btw_error_generic">سؤال جانبی ناموفق بود.</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">%1$d فراخوانی ابزار فقط‌خواندنی</item>
+        <item quantity="other">%1$d فراخوانی ابزار فقط‌خواندنی</item>
+    </plurals>
+</resources>

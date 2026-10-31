@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">Omong-omong</string>
+    <string name="btw_source_live">Konteks langsung</string>
+    <string name="btw_source_saved">Riwayat tersimpan</string>
+    <string name="btw_private">Tidak ditambahkan ke chat</string>
+    <string name="btw_empty_hint">Tanyakan apa saja tentang tugas saat ini. Jawaban memakai apa yang sudah dibaca dan diputuskan agen, memakai ulang cache prompt-nya, dan tidak pernah masuk ke percakapan.</string>
+    <string name="btw_input_hint">Ajukan pertanyaan sampingan</string>
+    <string name="btw_input_again">Ajukan pertanyaan sampingan lain</string>
+    <string name="btw_ask">Tanya</string>
+    <string name="btw_stop">Hentikan</string>
+    <string name="btw_copy">Salin</string>
+    <string name="btw_copied">Jawaban disalin</string>
+    <string name="btw_stopped">Dihentikan</string>
+    <string name="btw_retrying">Mencoba lagi · %1$s</string>
+    <string name="btw_cold_note">Tidak ada permintaan langsung di memori, jadi jawaban ini membaca percakapan tersimpan tanpa cache prompt.</string>
+    <string name="btw_composer_action">Tanya omong-omong</string>
+    <string name="btw_error_empty_chat">Kirim pesan dulu, lalu ajukan pertanyaan sampingan tentangnya.</string>
+    <string name="btw_error_local_busy">Model lokal menjawab satu permintaan dalam satu waktu. Tanyakan setelah balasan saat ini selesai.</string>
+    <string name="btw_error_no_key">Tambahkan kunci API penyedia ini sebelum bertanya.</string>
+    <string name="btw_error_generic">Pertanyaan sampingan gagal.</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">%1$d panggilan alat hanya-baca</item>
+    </plurals>
+</resources>

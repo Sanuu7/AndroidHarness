@@ -33,6 +33,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.flow.combine
@@ -1250,6 +1252,7 @@ class RunManager(
      */
     suspend fun rewindAndTruncate(sessionId: String, messageId: String) {
         stopAndJoin(sessionId)
+        engine.sideContexts.clear(sessionId)
         val msgs = sessions.messages(sessionId)
         val index = msgs.indexOfFirst { it.id == messageId }
         check(index >= 0) { "This message no longer exists. Refresh the chat before retrying." }
@@ -1276,6 +1279,7 @@ class RunManager(
      * are recomputed against the session baseline.
      */
     suspend fun rewindFromTurn(sessionId: String, turnId: String): RewindSummary = kotlinx.coroutines.withContext(Dispatchers.IO + kotlinx.coroutines.NonCancellable) { workspaceGuard.withLock {
+        engine.sideContexts.clear(sessionId)
         val fs = workspace.forSession(sessionId)
         check(!workspaceBusy(fs)) {
             "Pause tasks in this workspace before undoing changes"
@@ -1373,6 +1377,59 @@ class RunManager(
     // ------------------------------------------------------------------
 
     /** Active work may appear in Live Activities; passive services may not. */
+    /** The request the main loop last sent on this chat, while this process still holds it. */
+    fun sideContext(sessionId: String): SideContext? = engine.sideContexts[sessionId]
+
+    /**
+     * A side context rebuilt from saved history when no live request exists,
+     * such as after the app restarted. It has no tools and no warm cache.
+     */
+    suspend fun coldSideContext(sessionId: String, config: ProviderConfig, apiKey: String, maxContextTokens: Int): SideContext =
+        kotlinx.coroutines.withContext(Dispatchers.IO) {
+            val runConfig = providers.resolveHarnessConfig(config)
+            val history = with(sessions) { RunRecovery.context(historyFor(sessionId).second.withoutSubagentTurns(), controls.flow(sessionId).value) }
+            check(history.any { it.role == Role.USER || it.role == Role.ASSISTANT }) {
+                context.getString(com.androidharness.app.R.string.btw_error_empty_chat)
+            }
+            val outputTokens = minOf(4_096, (maxContextTokens / 8).coerceAtLeast(512))
+            val chars = ((maxContextTokens - outputTokens - 2_048) * 3L).coerceIn(8_000L, 600_000L).toInt()
+            SideContext(
+                sessionId = sessionId, turnId = "", config = runConfig, apiKey = apiKey,
+                systemPrompt = SideQuestion.COLD_SYSTEM_PROMPT, tools = emptyList(),
+                messages = SideQuestion.coldMessages(history, chars),
+                options = RequestOptions(maxOutputTokens = outputTokens, cacheKey = sessionId, modelCatalogs = providers.catalogs.first()),
+                registry = com.androidharness.app.tools.ToolRegistry(emptyList()),
+                workspace = workspace.forSession(sessionId), sandboxOff = false,
+                permissionMode = PermissionMode.CONFIRM_RISKY, runContext = null, warm = false,
+            )
+        }
+
+    /**
+     * Streams a side question. Usage lands in the chat's cost totals under its
+     * own turn id, so it never moves a main turn's cache footer, and nothing
+     * else about the exchange is written anywhere.
+     */
+    fun askAside(context: SideContext, question: String): kotlinx.coroutines.flow.Flow<SideEvent> {
+        val sid = context.sessionId
+        check(!(com.androidharness.app.local.LocalModelCatalog.isLocal(context.config.id) && isRunning(sid))) {
+            this.context.getString(com.androidharness.app.R.string.btw_error_local_busy)
+        }
+        val turnId = SIDE_TURN_PREFIX + UUID.randomUUID()
+        val fallback = com.androidharness.app.llm.FallbackRun(context.config) {
+            val chat = controls.flow(sid).value
+            com.androidharness.app.llm.effectiveFallback(settings.settings.first().fallbackPolicy, chat.fallbackMode, chat.fallbackOverride)
+        }
+        return engine.askAside(context, question).onEach { event ->
+            if (event is SideEvent.Usage) with(event.usage) {
+                sessions.addUsage(sid, inputTokens.toLong(), outputTokens.toLong(), cachedInputTokens.toLong(), cacheWriteTokens.toLong())
+                sessions.recordUsage(sid, providerName, model, inputTokens.toLong(), outputTokens.toLong(),
+                    cachedInputTokens.toLong(), cacheWriteTokens.toLong(), turnId = turnId,
+                    cacheReported = cacheReported, cachePrices = cachePrices)
+            }
+            if (event is SideEvent.ProviderChanged) controls.update(sid) { it.copy(usedProviderIds = it.usedProviderIds + event.config.id) }
+        }.flowOn(Dispatchers.IO + fallback)
+    }
+
     fun acquireKeepalive() = keepalive.acquire()
     fun releaseKeepalive() = keepalive.release()
     fun acquireBackgroundKeepalive() = keepalive.acquire(activeTask = false)
@@ -1391,6 +1448,9 @@ class RunManager(
     }
 
     companion object {
+        /** Usage rows of side questions; never a real turn, so no main footer picks them up. */
+        const val SIDE_TURN_PREFIX = "btw:"
+
         /** UI refreshes at ~30 fps; network chunks are consumed independently. */
         private const val STREAM_FLUSH_MS = 16L
 

@@ -9,7 +9,7 @@ import com.androidharness.app.skills.buildSlashSkillMessage
 object SlashCommands {
 
     enum class Kind {
-        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV,
+        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW,
     }
 
     enum class Dispatch { START, QUEUE }
@@ -18,6 +18,8 @@ object SlashCommands {
         val kind: Kind,
         val agentText: String? = null,
         val error: String? = null,
+        /** /btw: the side question, blank when the sheet should open empty. */
+        val sideQuestion: String? = null,
     ) {
         val startsAgent: Boolean get() = agentText != null
     }
@@ -143,7 +145,7 @@ object SlashCommands {
         if (trimmed.isEmpty() || !trimmed.startsWith("/")) {
             return Result(Kind.PLAIN, agentText = trimmed.ifEmpty { null })
         }
-        val parts = trimmed.split(" ", limit = 2)
+        val parts = trimmed.split(WHITESPACE, limit = 2)
         val command = parts[0].lowercase()
         val argument = parts.getOrNull(1).orEmpty()
         return when (command) {
@@ -153,6 +155,8 @@ object SlashCommands {
             "/doctor" -> Result(Kind.DOCTOR, agentText = DOCTOR_PROMPT)
             "/skills" -> Result(Kind.SKILLS)
             "/env" -> Result(Kind.ENV)
+            // Never starts or queues an agent turn: answered aside, kept out of history.
+            SIDE_COMMAND -> Result(Kind.BTW, sideQuestion = argument.trim())
             "/init" -> Result(Kind.INIT, agentText = INIT_PROMPT)
             // /plan ALWAYS activates Plan mode AND loads the bundled plan
             // skill, the model gets the full planning procedure plus whatever
@@ -183,6 +187,13 @@ object SlashCommands {
         }
     }
 
+    const val SIDE_COMMAND = "/btw"
+    private val WHITESPACE = Regex("\\s+")
+
+    /** Chat mode skips slash commands, except this one that never reaches the agent. */
+    fun isSideQuestion(input: String): Boolean =
+        input.trim().split(WHITESPACE, limit = 2)[0].lowercase() == SIDE_COMMAND
+
     fun dispatchTarget(isRunning: Boolean, agentText: String): Target =
         Target(if (isRunning) Dispatch.QUEUE else Dispatch.START, agentText)
 
@@ -199,6 +210,7 @@ object SlashCommands {
             } else ""
             return Pick.AttachSkill(entryCommand.removePrefix("/"), leftover)
         }
+        if (kind == Kind.BTW) return Pick.Insert("$entryCommand ")
         if (kind == Kind.PLAN) {
             // Stay in the composer: "/plan" stays put so the user can append
             // the instruction and hit send themselves. No auto-send.

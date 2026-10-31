@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">පැති ප්‍රශ්නය</string>
+    <string name="btw_source_live">සජීවී සන්දර්භය</string>
+    <string name="btw_source_saved">සුරැකි ඉතිහාසය</string>
+    <string name="btw_private">කතාබහට එක් නොවේ</string>
+    <string name="btw_empty_hint">වත්මන් කාර්යය ගැන ඕනෑම දෙයක් අසන්න. පිළිතුර නියෝජිතයා දැනටමත් කියවූ සහ තීරණය කළ දේ භාවිත කරයි, එහි prompt හැඹිලිය නැවත භාවිත කරයි, සහ කිසිදා සංවාදයට එක් නොවේ.</string>
+    <string name="btw_input_hint">පැති ප්‍රශ්නයක් අසන්න</string>
+    <string name="btw_input_again">තවත් පැති ප්‍රශ්නයක් අසන්න</string>
+    <string name="btw_ask">අසන්න</string>
+    <string name="btw_stop">නවත්වන්න</string>
+    <string name="btw_copy">පිටපත් කරන්න</string>
+    <string name="btw_copied">පිළිතුර පිටපත් විය</string>
+    <string name="btw_stopped">නැවැත්විණි</string>
+    <string name="btw_retrying">නැවත උත්සාහ කරමින් · %1$s</string>
+    <string name="btw_cold_note">මතකයේ සජීවී ඉල්ලීමක් නැති නිසා, මෙම පිළිතුර prompt හැඹිලිය නොමැතිව සුරැකි සංවාදය කියවයි.</string>
+    <string name="btw_composer_action">පැති ප්‍රශ්නයක් අසන්න</string>
+    <string name="btw_error_empty_chat">පළමුව පණිවිඩයක් යවා, පසුව ඒ ගැන පැති ප්‍රශ්නයක් අසන්න.</string>
+    <string name="btw_error_local_busy">දේශීය මාදිලි වරකට එක් ඉල්ලීමකට පිළිතුරු දෙයි. වත්මන් පිළිතුර අවසන් වූ පසු අසන්න.</string>
+    <string name="btw_error_no_key">ඇසීමට පෙර මෙම සපයන්නාගේ API යතුර එක් කරන්න.</string>
+    <string name="btw_error_generic">පැති ප්‍රශ්නය අසාර්ථක විය.</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">කියවීමට පමණක් මෙවලම් ඇමතුම් %1$d</item>
+        <item quantity="other">කියවීමට පමණක් මෙවලම් ඇමතුම් %1$d</item>
+    </plurals>
+</resources>

@@ -257,7 +257,8 @@ The app-tier shell and the terminal run bundled Bash directly on Android 8 and 9
 
 - The app ships with a library of markdown skills (git, planning, test driven development, systematic debugging, web design, on-device Android builds, the AndroidHarness environment, and more) that the agent loads on demand. They are plain markdown files, so they are easy to edit and you can add your own.
 - Attach a skill to a message, or pull one in with a slash command.
-- `/clear`, `/compact`, `/cost`, `/doctor`, `/init`, `/plan`, `/skills`, plus any skill or snippet by name. `/plan` flips the agent into Plan mode and loads the planning skill automatically.
+- `/clear`, `/compact`, `/cost`, `/doctor`, `/init`, `/plan`, `/skills`, `/btw`, plus any skill or snippet by name. `/plan` flips the agent into Plan mode and loads the planning skill automatically.
+- `/btw` asks a quick side question while the agent keeps working. It replays the main task's latest request unchanged, so the answer sees every file and decision so far and is served from the same prompt cache, with the hit rate shown under the answer. It can use read-only tools, its usage counts toward the chat's cost, and the question and answer never join the conversation. While a task runs, typing a message also shows a /btw button next to queue.
 
 ## FAQ
 

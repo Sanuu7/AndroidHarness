@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">顺便问一下</string>
+    <string name="btw_source_live">实时上下文</string>
+    <string name="btw_source_saved">已保存的历史</string>
+    <string name="btw_private">不会加入聊天</string>
+    <string name="btw_empty_hint">可以就当前任务提出任何问题。回答会使用智能体已经读取和决定的内容，复用其提示缓存，且永远不会加入对话。</string>
+    <string name="btw_input_hint">提一个旁支问题</string>
+    <string name="btw_input_again">再提一个旁支问题</string>
+    <string name="btw_ask">提问</string>
+    <string name="btw_stop">停止</string>
+    <string name="btw_copy">复制</string>
+    <string name="btw_copied">已复制回答</string>
+    <string name="btw_stopped">已停止</string>
+    <string name="btw_retrying">正在重试 · %1$s</string>
+    <string name="btw_cold_note">内存中没有实时请求，因此此回答会在不使用提示缓存的情况下读取已保存的对话。</string>
+    <string name="btw_composer_action">顺便问一下</string>
+    <string name="btw_error_empty_chat">请先发送一条消息，然后再就此提出旁支问题。</string>
+    <string name="btw_error_local_busy">本地模型一次只处理一个请求。请在当前回复完成后再提问。</string>
+    <string name="btw_error_no_key">提问前请先添加此提供方的 API 密钥。</string>
+    <string name="btw_error_generic">旁支问题失败。</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">%1$d 次只读工具调用</item>
+    </plurals>
+</resources>

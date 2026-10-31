@@ -166,4 +166,28 @@ class SlashCommandsTest {
         assertTrue(custom.agentText!!.contains("CUSTOM PLAN PROCEDURE"))
         assertTrue(custom.agentText!!.contains("ship it"))
     }
+
+    @Test
+    fun `btw stays local and carries the side question`() {
+        val result = resolve("/btw why did it pick Room?")
+        assertEquals(SlashCommands.Kind.BTW, result.kind)
+        assertFalse(result.startsAgent)
+        assertEquals("why did it pick Room?", result.sideQuestion)
+        assertEquals("", resolve("/btw").sideQuestion)
+    }
+
+    @Test
+    fun `btw is recognised on any whitespace and in any case`() {
+        assertTrue(SlashCommands.isSideQuestion("/btw what changed"))
+        assertTrue(SlashCommands.isSideQuestion("  /BTW\nwhat changed"))
+        assertTrue(SlashCommands.isSideQuestion("/btw"))
+        assertFalse(SlashCommands.isSideQuestion("/btwx"))
+        assertFalse(SlashCommands.isSideQuestion("btw what changed"))
+        assertEquals("multi\nline", resolve("/btw\nmulti\nline").sideQuestion)
+    }
+
+    @Test
+    fun `picking btw waits for the question`() {
+        assertEquals(SlashCommands.Pick.Insert("/btw "), SlashCommands.pickAction("/btw", "/bt", SlashCommands.Kind.BTW))
+    }
 }

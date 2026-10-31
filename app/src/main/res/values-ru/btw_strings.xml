@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">Кстати</string>
+    <string name="btw_source_live">Живой контекст</string>
+    <string name="btw_source_saved">Сохранённая история</string>
+    <string name="btw_private">Не попадает в чат</string>
+    <string name="btw_empty_hint">Спросите что угодно о текущей задаче. Ответ использует то, что агент уже прочитал и решил, повторно использует его кеш промптов и не попадает в разговор.</string>
+    <string name="btw_input_hint">Задать побочный вопрос</string>
+    <string name="btw_input_again">Задать ещё один побочный вопрос</string>
+    <string name="btw_ask">Спросить</string>
+    <string name="btw_stop">Остановить</string>
+    <string name="btw_copy">Копировать</string>
+    <string name="btw_copied">Ответ скопирован</string>
+    <string name="btw_stopped">Остановлено</string>
+    <string name="btw_retrying">Повтор · %1$s</string>
+    <string name="btw_cold_note">Активного запроса в памяти нет, поэтому ответ читает сохранённый разговор без кеша промптов.</string>
+    <string name="btw_composer_action">Спросить между делом</string>
+    <string name="btw_error_empty_chat">Сначала отправьте сообщение, затем задайте о нём побочный вопрос.</string>
+    <string name="btw_error_local_busy">Локальные модели обрабатывают по одному запросу. Спросите, когда текущий ответ завершится.</string>
+    <string name="btw_error_no_key">Добавьте API-ключ этого провайдера, прежде чем спрашивать.</string>
+    <string name="btw_error_generic">Побочный вопрос не удался.</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">%1$d вызов инструмента для чтения</item>
+        <item quantity="few">%1$d вызова инструментов для чтения</item>
+        <item quantity="many">%1$d вызовов инструментов для чтения</item>
+        <item quantity="other">%1$d вызова инструментов для чтения</item>
+    </plurals>
+</resources>

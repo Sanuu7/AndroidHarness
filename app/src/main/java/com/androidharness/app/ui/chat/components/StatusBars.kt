@@ -333,6 +333,7 @@ internal fun SlashSuggestions(
             add(SlashEntry("/clear", "New chat", "Start a fresh conversation", SlashCommands.Kind.CLEAR))
             add(SlashEntry("/compact", "Compact", "Summarize older context", SlashCommands.Kind.COMPACT))
             add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
+            add(SlashEntry(SlashCommands.SIDE_COMMAND, "By the way", "Ask aside on the live context, kept out of the chat", SlashCommands.Kind.BTW))
             add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))
             add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
             add(SlashEntry("/plan", "Plan mode", "Load the plan skill and switch to Plan mode", SlashCommands.Kind.PLAN))
