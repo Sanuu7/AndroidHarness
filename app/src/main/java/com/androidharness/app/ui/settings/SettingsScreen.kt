@@ -99,6 +99,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.input.KeyboardType
@@ -915,12 +916,17 @@ private fun WebSearchSection(container: AppContainer) {
         "tavily" -> "Tavily API"
         else -> uiContext.getString(R.string.ui_keyless)
     }
-    var keyDraft by remember { mutableStateOf("") }
+    // Null while the key list is closed; the pasted keys are only on screen while it is open.
+    var draft by remember { mutableStateOf<com.androidharness.app.llm.ProviderKeyPool?>(null) }
     var keyEpoch by remember { mutableStateOf(0) }
-    var expanded by remember { mutableStateOf(false) }
     var checking by remember { mutableStateOf(false) }
     var status by remember { mutableStateOf<String?>(null) }
-    val hasKey = remember(provider, keyEpoch) { container.keys.searchApiKey(provider) != null }
+    val saved = remember(provider, keyEpoch) {
+        runCatching { container.keys.searchKeyPool(provider) }.getOrDefault(com.androidharness.app.llm.ProviderKeyPool())
+    }
+    val enabledKeys = saved.keys.count { it.enabled }
+    val hasKey = enabledKeys > 0
+    val expanded = draft != null
     val keyUrl = if (provider == "brave") "https://brave.com/search/api/" else "https://app.tavily.com/home"
 
     // The pasted key is only on screen while the entry form is open.
@@ -942,6 +948,7 @@ private fun WebSearchSection(container: AppContainer) {
                     Text(
                         when {
                             provider == "keyless" -> uiContext.getString(R.string.ui_public_search_engines_no_setup)
+                            enabledKeys > 1 -> pluralStringResource(R.plurals.search_keys_saved, enabledKeys, enabledKeys, providerName)
                             hasKey -> uiContext.getString(R.string.ui_key_saved, (providerName).toString())
                             else -> uiContext.getString(R.string.ui_no_key_yet_keyless_fallback, (providerName).toString())
                         },
@@ -966,9 +973,8 @@ private fun WebSearchSection(container: AppContainer) {
                             selected = provider == value,
                             onClick = {
                                 if (provider != value) {
-                                    expanded = false
+                                    draft = null
                                     status = null
-                                    keyDraft = ""
                                     scope.launch { container.settings.setWebSearchProvider(value) }
                                 }
                             },
@@ -1012,29 +1018,35 @@ private fun WebSearchSection(container: AppContainer) {
                         Spacer(Modifier.width(6.dp))
                         Text(stringResource(R.string.settings_provider_get_api_key))
                     }
-                    OutlinedTextField(
-                        value = keyDraft,
-                        onValueChange = { keyDraft = it },
-                        label = { Text(if (hasKey) uiContext.getString(R.string.ui_replace_api_key) else uiContext.getString(R.string.ui_paste_api_key)) },
-                        placeholder = { Text(if (provider == "brave") "BSA…" else "tvly-…") },
-                        singleLine = true,
-                        modifier = Modifier.fillMaxWidth(),
+                    Text(
+                        stringResource(R.string.search_keys_rotation_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
+                    draft?.let { pool -> ProviderKeysEditor(pool, onChange = { draft = it; status = null }, enabled = !checking) }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Button(
-                            enabled = keyDraft.isNotBlank() && !checking,
+                            enabled = !checking,
                             onClick = {
+                                val pool = draft ?: return@Button
+                                pool.error()?.let { status = it; return@Button }
                                 checking = true
                                 status = uiContext.getString(R.string.ui_checking_that_key_with, (providerName).toString())
                                 scope.launch {
-                                    val key = keyDraft.trim()
-                                    val error = withContext(Dispatchers.IO) { checkSearchKey(provider, key) }
+                                    // Only keys that are new or changed cost a check request.
+                                    val error = withContext(Dispatchers.IO) {
+                                        pool.keys.withIndex().firstNotNullOfOrNull { (index, key) ->
+                                            if (!key.enabled || saved.keys.any { it.value == key.value }) null
+                                            else checkSearchKey(provider, key.value)?.let { uiContext.getString(R.string.search_key_check_failed, index + 1, it) }
+                                        }
+                                    }
                                     if (error == null) {
-                                        withContext(Dispatchers.IO) { container.keys.putSearchApiKey(provider, key) }
-                                        keyDraft = ""
-                                        expanded = false
-                                        status = uiContext.getString(R.string.ui_key_verified_and_saved)
-                                        keyEpoch++
+                                        val stored = runCatching { withContext(Dispatchers.IO) { container.keys.putSearchKeyPool(provider, pool) } }
+                                        if (stored.isSuccess) {
+                                            draft = null
+                                            status = uiContext.getString(R.string.search_keys_verified_and_saved)
+                                            keyEpoch++
+                                        } else status = stored.exceptionOrNull()?.message
                                     } else {
                                         status = error
                                     }
@@ -1043,8 +1055,7 @@ private fun WebSearchSection(container: AppContainer) {
                             },
                         ) { Text(if (checking) uiContext.getString(R.string.ui_checking) else uiContext.getString(R.string.ui_save_and_check)) }
                         TextButton(onClick = {
-                            expanded = false
-                            keyDraft = ""
+                            draft = null
                             status = null
                         }) { Text(stringResource(R.string.settings_action_cancel)) }
                     }
@@ -1057,12 +1068,11 @@ private fun WebSearchSection(container: AppContainer) {
                     }
                 }
 
-                hasKey -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                saved.keys.isNotEmpty() -> Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(onClick = {
-                        expanded = true
-                        keyDraft = ""
+                        draft = saved
                         status = null
-                    }) { Text(stringResource(R.string.settings_provider_replace_key)) }
+                    }) { Text(stringResource(R.string.search_manage_keys)) }
                     OutlinedButton(onClick = {
                         scope.launch {
                             withContext(Dispatchers.IO) { container.keys.removeSearchApiKey(provider) }
@@ -1078,8 +1088,7 @@ private fun WebSearchSection(container: AppContainer) {
                         }
                     }) { Text(stringResource(R.string.settings_provider_get_api_key)) }
                     OutlinedButton(onClick = {
-                        expanded = true
-                        keyDraft = ""
+                        draft = com.androidharness.app.llm.ProviderKeyPool(listOf(com.androidharness.app.llm.ProviderApiKey(value = "")))
                         status = null
                     }) { Text(stringResource(R.string.settings_provider_have_key)) }
                 }

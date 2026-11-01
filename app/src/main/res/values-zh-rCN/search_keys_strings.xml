@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">%1$d 个密钥已保存</item>
+        <item quantity="other">%1$d 个密钥已保存</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">最多可保存 20 个密钥。当某个密钥被拒绝、限流或额度用尽时，会自动使用下一个已启用的密钥。</string>
+    <string name="search_key_check_failed">密钥 %1$d：%2$s</string>
+    <string name="search_keys_verified_and_saved">密钥已验证并保存</string>
+    <string name="search_manage_keys">管理密钥</string>
+</resources>

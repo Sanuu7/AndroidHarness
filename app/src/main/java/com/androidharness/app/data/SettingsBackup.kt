@@ -21,6 +21,8 @@ data class SettingsBackupFile(
     val providers: List<BackupProvider> = emptyList(),
     val servers: List<McpServerConfig> = emptyList(),
     val searchKeys: Map<String, String> = emptyMap(),
+    /** Every saved search key with its rotation switch; [searchKeys] keeps the first one for older readers. */
+    val searchKeyPools: Map<String, com.androidharness.app.llm.ProviderKeyPool> = emptyMap(),
     val groqKey: String? = null,
     val memories: List<BackupMemory> = emptyList(),
     val providerProxy: com.androidharness.app.llm.ProviderProxy = com.androidharness.app.llm.ProviderProxy(),
@@ -139,6 +141,7 @@ object SettingsBackupValidation {
         check(file.settings.providerOrder.size <= 100 && file.settings.disabledProviderIds.size <= 100 &&
             (file.settings.providerOrder + file.settings.disabledProviderIds).all { it.length <= 500 }, SettingsBackupProblem.PROVIDERS)
         check(file.searchKeys.keys.all { it in setOf("brave", "tavily") }, SettingsBackupProblem.SEARCH)
+        check(file.searchKeyPools.all { (name, pool) -> name in setOf("brave", "tavily") && pool.error() == null }, SettingsBackupProblem.SEARCH)
         val s = file.settings
         check(s.customPalettes.size <= 24 && s.customPalettes.all { it.valid() } && s.customPalettes.map { it.id }.distinct().size == s.customPalettes.size &&
             (s.activeCustomPaletteId == null || s.customPalettes.any { it.id == s.activeCustomPaletteId }), SettingsBackupProblem.APPEARANCE)
@@ -199,7 +202,7 @@ internal fun legacyCodeStart(file: SettingsBackupFile, text: String): SettingsBa
 class SettingsBackup(private val c: AppContainer) {
     private val json = Json { encodeDefaults = true; ignoreUnknownKeys = true }
 
-    private fun credential(read: () -> String?): String? = try { read() }
+    private fun <T> credential(read: () -> T?): T? = try { read() }
         catch (e: Exception) { throw SettingsBackupCredentialsException(e) }
 
     suspend fun exportTo(uri: Uri, password: CharArray, includeKeys: Boolean) = withContext(Dispatchers.IO) {
@@ -219,6 +222,9 @@ class SettingsBackup(private val c: AppContainer) {
             val file = SettingsBackupFile(settings = s, providers = providers,
                 servers = if (includeKeys) c.mcp.servers.value.map { it.copy(enabled = false) } else emptyList(),
                 searchKeys = if (includeKeys) listOf("brave", "tavily").mapNotNull { name -> credential { c.keys.searchApiKey(name) }?.let { name to it } }.toMap() else emptyMap(),
+                searchKeyPools = if (includeKeys) listOf("brave", "tavily").mapNotNull { name ->
+                    credential { c.keys.searchKeyPool(name) }?.takeIf { it.keys.isNotEmpty() }?.let { name to it }
+                }.toMap() else emptyMap(),
                 groqKey = if (includeKeys) credential { c.keys.groqApiKey() } else null,
                 memories = c.memory.memories.first().map { it.toBackupMemory() },
                 providerProxy = c.keys.providerProxy(null).let { if (includeKeys) it else it.withoutCredentials() })
@@ -274,6 +280,7 @@ class SettingsBackup(private val c: AppContainer) {
             c.keys.putProviderControls(HarnessProvider.ID, null, entry.proxy)
         }
         if (file.servers.isNotEmpty()) c.mcp.importDisabledServers(file.servers)
+        file.searchKeyPools.forEach { (name, pool) -> if (c.keys.searchApiKey(name) == null) c.keys.putSearchKeyPool(name, pool) }
         file.searchKeys.forEach { (name, key) -> if (c.keys.searchApiKey(name) == null) c.keys.putSearchApiKey(name, key) }
         file.groqKey?.let { if (c.keys.groqApiKey() == null) c.keys.putGroqApiKey(it) }
         val s = file.settings

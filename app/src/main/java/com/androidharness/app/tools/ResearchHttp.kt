@@ -25,8 +25,9 @@ import okhttp3.Callback
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 
-internal class ResearchHttpFailure(val status: Int, val retryAfterMs: Long, host: String) : IOException(
+internal class ResearchHttpFailure(val status: Int, val retryAfterMs: Long, val host: String, keysTried: Int = 1) : IOException(
     buildString {
+        if (keysTried > 1) append("All ").append(keysTried).append(" saved API keys were refused; the last one returned ")
         append("HTTP ").append(status).append(" from ").append(host).append(". ")
         when (status) {
             401 -> append("Authentication failed. Check the selected search API key or sign-in; do not retry unchanged credentials. ")

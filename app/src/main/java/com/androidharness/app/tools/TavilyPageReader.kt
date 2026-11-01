@@ -33,7 +33,7 @@ internal object TavilyPageReader {
 
     suspend fun extract(client: OkHttpClient, config: SearchApiConfig, url: String,
         advanced: Boolean, images: Boolean): ExtractedPage {
-        val cacheKey = ResearchHttp.credentialIdentity(config.apiKey) + ":" + canonicalResultUrl(url)
+        val cacheKey = config.credentialIdentity() + ":" + canonicalResultUrl(url)
         synchronized(failures) { failures[cacheKey] }?.takeIf { System.currentTimeMillis() - it.first < 60000 }?.let {
             throw TavilyPageUnavailable(it.second + " (recent extraction failure cached; no new API request)")
         }
@@ -44,10 +44,12 @@ internal object TavilyPageReader {
             put("include_images", images)
             put("timeout", 20)
         }
-        val request = Request.Builder().url("https://api.tavily.com/extract")
-            .header("Authorization", "Bearer ${config.apiKey}")
-            .post(payload.toString().toRequestBody("application/json".toMediaType())).build()
-        val body = ResearchHttp.read(client, request) { ResearchHttp.bodyText(it) }
+        val body = withKeyFailover(config.keys) { apiKey ->
+            val request = Request.Builder().url("https://api.tavily.com/extract")
+                .header("Authorization", "Bearer $apiKey")
+                .post(payload.toString().toRequestBody("application/json".toMediaType())).build()
+            ResearchHttp.read(client, request) { ResearchHttp.bodyText(it) }
+        }
         val obj = runCatching { json.parseToJsonElement(body).jsonObject }.getOrNull()
             ?: throw TavilyPageUnavailable("Tavily Extract returned an invalid response.")
         val rows = (obj["results"] as? JsonArray).orEmpty()

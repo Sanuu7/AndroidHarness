@@ -220,17 +220,27 @@ class AppContainer(val appContext: Context) {
         get() {
             val provider = webSearchProvider.get()
             if (provider == "keyless") return null
-            return keys.searchApiKey(provider)?.let {
-                com.androidharness.app.tools.SearchApiConfig(provider, it)
-            }
+            return searchApiConfigFor(provider, rotate = false).takeIf { it.keys.isNotEmpty() }
         }
+
+    /**
+     * Enabled keys in this call's order: rotation moves the start key, the rest are
+     * failover. Tool descriptions read it without [rotate] so they do not skip a turn.
+     */
+    private fun searchApiConfigFor(provider: String, rotate: Boolean = true): com.androidharness.app.tools.SearchApiConfig {
+        val pool = runCatching { keys.searchKeyPool(provider) }.getOrNull()
+            ?: return com.androidharness.app.tools.SearchApiConfig(provider, keys.searchApiKey(provider).orEmpty())
+        val ordered = (if (rotate) com.androidharness.app.llm.RotatingKeyProvider.orderedKeys("search:$provider", pool)
+            else pool.keys.filter { it.enabled }).map { it.value }
+        return com.androidharness.app.tools.SearchApiConfig(provider, ordered.firstOrNull().orEmpty(), ordered.drop(1))
+    }
 
     private suspend fun resolveSearchApiConfig(): com.androidharness.app.tools.SearchApiConfig? {
         val provider = settings.settings.first().webSearchProvider
         keys.migrateLegacySearchKey(provider)
         webSearchProvider.set(provider)
         if (provider == "keyless") return null
-        return com.androidharness.app.tools.SearchApiConfig(provider, keys.searchApiKey(provider).orEmpty())
+        return searchApiConfigFor(provider)
     }
 
     private val cavemanSettings = AtomicReference(com.androidharness.app.data.AppSettings())

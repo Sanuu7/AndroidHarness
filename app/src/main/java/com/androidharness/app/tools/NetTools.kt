@@ -135,13 +135,13 @@ class WebSearchTool(
 
         val notes = StringBuilder()
         val apiConfig = refreshApi()
-        if (apiConfig != null && apiConfig.apiKey.isBlank()) return ToolResult(false,
-            "${apiConfig.provider} search API is selected but its saved key is missing. Add or replace the key in Web search settings.")
+        if (apiConfig != null && apiConfig.keys.isEmpty()) return ToolResult(false,
+            "${apiConfig.provider} search API is selected but it has no enabled saved key. Add or turn on a key in Web search settings.")
         val apiBackend = searchBackendFor(apiConfig)
         val cacheKey = listOf(
             apiBackend?.label ?: "keyless", query, count, options.engine,
             options.freshness, options.language, options.country, options.deep,
-            apiConfig?.apiKey?.let(ResearchHttp::credentialIdentity),
+            apiConfig?.credentialIdentity(),
         ).joinToString("|")
         WebResultCache.getSearch(cacheKey)?.let { cached ->
             val suffix = (cached.via?.let { "\n[via $it]" } ?: "") + "\n[cached search; no new API request]"

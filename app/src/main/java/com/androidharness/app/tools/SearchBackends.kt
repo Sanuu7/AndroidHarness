@@ -45,12 +45,40 @@ internal data class SearchOptions(
 /**
  * The user's search API choice: provider id ("brave" | "tavily") plus the key
  * from encrypted storage. Null means the keyless HTML engines are used.
+ * [fallbackKeys] are the other enabled keys of the pool, tried in order when
+ * [apiKey] is rejected or out of quota.
  */
 // Manual toString: the generated one embeds the raw key, and a stray
 // Log.d(config) would leak a live Brave/Tavily key to logcat.
-data class SearchApiConfig(val provider: String, val apiKey: String) {
+data class SearchApiConfig(val provider: String, val apiKey: String, val fallbackKeys: List<String> = emptyList()) {
+    /** Every usable key, the preferred one first. */
+    val keys: List<String> get() = (listOf(apiKey) + fallbackKeys).filter { it.isNotBlank() }.distinct()
+
+    /** Stable across rotation order, so caches survive the start key moving on each call. */
+    internal fun credentialIdentity(): String = ResearchHttp.credentialIdentity(keys.sorted().joinToString("\n"))
+
     override fun toString(): String =
-        "SearchApiConfig(provider=$provider, apiKey=${if (apiKey.isEmpty()) "<unset>" else "<redacted>"})"
+        "SearchApiConfig(provider=$provider, apiKey=${if (apiKey.isEmpty()) "<unset>" else "<redacted>"}, keys=${keys.size})"
+}
+
+/** A key rejection or limit that another saved key of the same provider may not share. */
+internal fun ResearchHttpFailure.keySpecific(): Boolean = status in setOf(401, 402, 403, 429, 432, 433)
+
+/**
+ * Runs [block] with each key in turn until one is not rejected for a key-specific
+ * reason. A key still in cooldown fails at once without a request, so spent keys
+ * are skipped quickly. The last failure is rethrown when every key was refused.
+ */
+internal suspend fun <T> withKeyFailover(keys: List<String>, block: suspend (String) -> T): T {
+    require(keys.isNotEmpty()) { "No API key" }
+    var last: ResearchHttpFailure? = null
+    for (key in keys) {
+        try { return block(key) }
+        catch (e: ResearchHttpFailure) { if (!e.keySpecific()) throw e; last = e }
+    }
+    val failure = last!!
+    if (keys.size == 1) throw failure
+    throw ResearchHttpFailure(failure.status, failure.retryAfterMs, failure.host, keys.size)
 }
 
 /**
@@ -72,8 +100,8 @@ internal interface SearchBackend {
 /** Picks the backend for a user configuration; null = keyless scraping. */
 internal fun searchBackendFor(config: SearchApiConfig?): SearchBackend? =
     when (config?.provider?.trim()?.lowercase()) {
-        "brave" -> config.apiKey.takeIf { it.isNotBlank() }?.let { BraveApiBackend(it) }
-        "tavily" -> config.apiKey.takeIf { it.isNotBlank() }?.let { TavilyApiBackend(it) }
+        "brave" -> config.keys.takeIf { it.isNotEmpty() }?.let { BraveApiBackend(it) }
+        "tavily" -> config.keys.takeIf { it.isNotEmpty() }?.let { TavilyApiBackend(it) }
         else -> null
     }
 
@@ -284,7 +312,8 @@ internal class KeylessSearchBackend : SearchBackend {
 }
 
 /** Brave Search API (api.search.brave.com), key passed as X-Subscription-Token. */
-internal class BraveApiBackend(private val apiKey: String) : SearchBackend {
+internal class BraveApiBackend(private val apiKeys: List<String>) : SearchBackend {
+    constructor(apiKey: String) : this(listOf(apiKey))
     override val label = "Brave Search API"
 
     override suspend fun fetch(
@@ -300,13 +329,15 @@ internal class BraveApiBackend(private val apiKey: String) : SearchBackend {
             options.language?.trim()?.takeIf { it.isNotBlank() }?.let { append("&search_lang=").append(it) }
             options.country?.trim()?.takeIf { it.isNotBlank() }?.let { append("&country=").append(it.uppercase()) }
         }
-        val body = ResearchHttp.read(client,
-            Request.Builder()
-                .url(url)
-                .header("Accept", "application/json")
-                .header("X-Subscription-Token", apiKey)
-                .build()
-        ) { resp -> ResearchHttp.bodyText(resp) }
+        val body = withKeyFailover(apiKeys) { apiKey ->
+            ResearchHttp.read(client,
+                Request.Builder()
+                    .url(url)
+                    .header("Accept", "application/json")
+                    .header("X-Subscription-Token", apiKey)
+                    .build()
+            ) { resp -> ResearchHttp.bodyText(resp) }
+        }
         SearchOutcome(BraveSearchParser.parse(body), via = label)
     }
 }
@@ -330,7 +361,8 @@ internal object BraveSearchParser {
 }
 
 /** Tavily Search API (api.tavily.com), key in the JSON body. */
-internal class TavilyApiBackend(private val apiKey: String) : SearchBackend {
+internal class TavilyApiBackend(private val apiKeys: List<String>) : SearchBackend {
+    constructor(apiKey: String) : this(listOf(apiKey))
     override val label = "Tavily Search API"
 
     override suspend fun fetch(
@@ -346,13 +378,15 @@ internal class TavilyApiBackend(private val apiKey: String) : SearchBackend {
             put("include_raw_content", options.deep)
             tavilyTimeRange(options.freshness)?.let { put("time_range", it) }
         }
-        val body = ResearchHttp.read(client,
-            Request.Builder()
-                .url("https://api.tavily.com/search")
-                .header("Authorization", "Bearer $apiKey")
-                .post(payload.toString().toRequestBody("application/json".toMediaTypeOrNull()))
-                .build()
-        ) { resp -> ResearchHttp.bodyText(resp) }
+        val body = withKeyFailover(apiKeys) { apiKey ->
+            ResearchHttp.read(client,
+                Request.Builder()
+                    .url("https://api.tavily.com/search")
+                    .header("Authorization", "Bearer $apiKey")
+                    .post(payload.toString().toRequestBody("application/json".toMediaTypeOrNull()))
+                    .build()
+            ) { resp -> ResearchHttp.bodyText(resp) }
+        }
         TavilySearchParser.cachePages(body)
         SearchOutcome(TavilySearchParser.parse(body), via = label)
     }

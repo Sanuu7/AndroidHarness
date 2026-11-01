@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">%2$s · %1$d key saved</item>
+        <item quantity="other">%2$s · %1$d keys saved</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">You can save up to 20 keys. When a key is rejected, rate limited or out of credits, the next enabled key is used automatically.</string>
+    <string name="search_key_check_failed">Key %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">Keys verified and saved</string>
+    <string name="search_manage_keys">Manage keys</string>
+</resources>

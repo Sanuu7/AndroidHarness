@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">%1$d chave salva</item>
+        <item quantity="other">%1$d chaves salvas</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">Você pode salvar até 20 chaves. Quando uma chave é rejeitada, limitada ou fica sem créditos, a próxima chave ativada é usada automaticamente.</string>
+    <string name="search_key_check_failed">Chave %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">Chaves verificadas e salvas</string>
+    <string name="search_manage_keys">Gerenciar chaves</string>
+</resources>

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="zero">تم حفظ %1$d من المفاتيح</item>
+        <item quantity="one">تم حفظ %1$d من المفاتيح</item>
+        <item quantity="two">تم حفظ %1$d من المفاتيح</item>
+        <item quantity="few">تم حفظ %1$d من المفاتيح</item>
+        <item quantity="many">تم حفظ %1$d من المفاتيح</item>
+        <item quantity="other">تم حفظ %1$d من المفاتيح</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">يمكنك حفظ حتى 20 مفتاحًا. عند رفض مفتاح أو تقييده أو نفاد رصيده، يُستخدم المفتاح التالي المفعّل تلقائيًا.</string>
+    <string name="search_key_check_failed">المفتاح %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">تم التحقق من المفاتيح وحفظها</string>
+    <string name="search_manage_keys">إدارة المفاتيح</string>
+</resources>

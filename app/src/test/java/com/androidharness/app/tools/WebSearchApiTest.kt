@@ -115,6 +115,54 @@ class WebSearchApiTest {
         assertTrue(result.output.contains("not replaced"))
     }
 
+    @Test fun tavilyMovesToTheNextSavedKeyWhenOneIsRejectedOrOutOfCredits() = runBlocking {
+        val id = java.util.UUID.randomUUID()
+        val revoked = "tvly-revoked-$id"
+        val spent = "tvly-spent-$id"
+        val good = "tvly-good-$id"
+        val sent = mutableListOf<String?>()
+        val tool = WebSearchTool(client { request ->
+            val auth = request.header("Authorization")
+            sent += auth
+            when (auth) {
+                "Bearer $revoked" -> reply(request, """{"detail":"invalid key"}""", code = 401)
+                "Bearer $spent" -> reply(request, """{"detail":"usage limit"}""", code = 432)
+                else -> reply(request, """{"results":[{"title":"Tavily result","url":"https://tavily.test/rotated","content":"Snippet"}]}""")
+            }
+        }, { SearchApiConfig("tavily", revoked, listOf(spent, good)) })
+        val result = tool.execute(query("rotation $id"), context)
+        assertTrue(result.ok)
+        assertEquals(listOf("Bearer $revoked", "Bearer $spent", "Bearer $good"), sent)
+        assertTrue(result.output.contains("https://tavily.test/rotated"))
+        assertFalse(result.output.contains(good))
+    }
+
+    @Test fun everySavedKeyRefusedIsReportedAsSuch() = runBlocking {
+        val id = java.util.UUID.randomUUID()
+        val tool = WebSearchTool(client { request -> reply(request, """{"detail":"rate limited"}""", code = 429) },
+            { SearchApiConfig("tavily", "tvly-a-$id", listOf("tvly-b-$id")) })
+        val result = tool.execute(query("all refused $id"), context)
+        assertFalse(result.ok)
+        assertTrue(result.output.contains("All 2 saved API keys were refused"))
+        assertFalse(result.output.contains("tvly-a-$id"))
+    }
+
+    @Test fun serverErrorsDoNotBurnTheOtherKeys() = runBlocking {
+        val id = java.util.UUID.randomUUID()
+        var requests = 0
+        val tool = WebSearchTool(client { request -> requests++; reply(request, "{}", code = 500) },
+            { SearchApiConfig("tavily", "tvly-a-$id", listOf("tvly-b-$id")) })
+        val result = tool.execute(query("server error $id"), context)
+        assertFalse(result.ok)
+        assertEquals(1, requests)
+    }
+
+    @Test fun searchCacheIsSharedAcrossRotationOrder() {
+        assertEquals(SearchApiConfig("tavily", "a", listOf("b")).credentialIdentity(),
+            SearchApiConfig("tavily", "b", listOf("a")).credentialIdentity())
+        assertFalse(SearchApiConfig("tavily", "a", listOf("b")).toString().contains("b"))
+    }
+
     @Test fun backendSelectionRequiresAProviderAndAKey() {
         assertEquals("Brave Search API", searchBackendFor(SearchApiConfig("brave", "key"))?.label)
         assertEquals("Tavily Search API", searchBackendFor(SearchApiConfig("tavily", "key"))?.label)

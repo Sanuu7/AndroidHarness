@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">%1$d Schlüssel gespeichert</item>
+        <item quantity="other">%1$d Schlüssel gespeichert</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">Sie können bis zu 20 Schlüssel speichern. Wird ein Schlüssel abgelehnt, gedrosselt oder ist er aufgebraucht, wird automatisch der nächste aktivierte Schlüssel verwendet.</string>
+    <string name="search_key_check_failed">Schlüssel %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">Schlüssel geprüft und gespeichert</string>
+    <string name="search_manage_keys">Schlüssel verwalten</string>
+</resources>

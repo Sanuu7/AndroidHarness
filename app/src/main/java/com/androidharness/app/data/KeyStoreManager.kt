@@ -160,14 +160,44 @@ class KeyStoreManager(context: Context) {
      * single key lives in [KEY_SEARCH_API] until [migrateLegacySearchKey].
      */
     @Synchronized fun putSearchApiKey(provider: String, key: String) {
-        check(prefs.edit().putString(searchKeySlot(provider), key.trim()).commit()) { "Could not save the search API key." }
+        putSearchKeyPool(provider, searchKeyPool(provider).replaceDefault(key.trim()))
     }
 
+    /** The first enabled key, which is also what older readers of the single slot see. */
     fun searchApiKey(provider: String): String? =
         prefs.getString(searchKeySlot(provider), null)?.trim()?.ifBlank { null }
 
     @Synchronized fun removeSearchApiKey(provider: String) {
-        check(prefs.edit().remove(searchKeySlot(provider)).commit()) { "Could not remove the search API key." }
+        check(prefs.edit().remove(searchKeySlot(provider)).remove(searchPoolSlot(provider)).commit()) { "Could not remove the search API key." }
+    }
+
+    /**
+     * Up to [com.androidharness.app.llm.ProviderKeyPool.MAX_KEYS] keys per search
+     * provider. Before pools existed the provider had one key in its single slot,
+     * which reads back as a one-key pool.
+     */
+    fun searchKeyPool(provider: String): com.androidharness.app.llm.ProviderKeyPool {
+        val raw = prefs.getString(searchPoolSlot(provider), null)
+        if (raw != null) return try {
+            kotlinx.serialization.json.Json.decodeFromString<com.androidharness.app.llm.ProviderKeyPool>(raw).also {
+                check(it.error() == null)
+            }
+        } catch (_: Exception) { throw IllegalStateException("Saved search API keys could not be read. Reopen Web search settings.") }
+        return com.androidharness.app.llm.ProviderKeyPool(searchApiKey(provider)?.let {
+            listOf(com.androidharness.app.llm.ProviderApiKey(id = "primary", value = it))
+        }.orEmpty())
+    }
+
+    @Synchronized fun putSearchKeyPool(provider: String, pool: com.androidharness.app.llm.ProviderKeyPool) {
+        require(pool.error() == null) { pool.error().orEmpty() }
+        val edit = prefs.edit()
+        if (pool.keys.isEmpty()) edit.remove(searchPoolSlot(provider)).remove(searchKeySlot(provider))
+        else {
+            edit.putString(searchPoolSlot(provider), kotlinx.serialization.json.Json.encodeToString(com.androidharness.app.llm.ProviderKeyPool.serializer(), pool))
+            val first = pool.keys.firstOrNull { it.enabled }?.value
+            if (first == null) edit.remove(searchKeySlot(provider)) else edit.putString(searchKeySlot(provider), first)
+        }
+        check(edit.commit()) { "Could not save the search API keys." }
     }
 
     /** One-time: attribute the pre-split single key to [provider]'s slot. */
@@ -182,6 +212,7 @@ class KeyStoreManager(context: Context) {
     }
 
     private fun searchKeySlot(provider: String) = "${KEY_SEARCH_API}_$provider"
+    private fun searchPoolSlot(provider: String) = "search_keys:$provider"
 
     /**
      * Per-server MCP OAuth state (discovered endpoints + tokens) as a JSON

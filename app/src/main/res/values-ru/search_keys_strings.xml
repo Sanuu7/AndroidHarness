@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">Сохранено ключей: %1$d</item>
+        <item quantity="few">Сохранено ключей: %1$d</item>
+        <item quantity="many">Сохранено ключей: %1$d</item>
+        <item quantity="other">Сохранено ключей: %1$d</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">Можно сохранить до 20 ключей. Если ключ отклонён, ограничен по частоте или исчерпан, автоматически используется следующий включённый ключ.</string>
+    <string name="search_key_check_failed">Ключ %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">Ключи проверены и сохранены</string>
+    <string name="search_manage_keys">Управление ключами</string>
+</resources>

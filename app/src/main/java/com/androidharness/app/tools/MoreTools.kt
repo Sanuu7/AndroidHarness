@@ -282,7 +282,7 @@ class WebFetchTool(
         }
         val fetchClient = client.newBuilder().readTimeout(30, TimeUnit.SECONDS).build()
         var extractionNote = ""
-        val api = refreshApi()?.takeIf { it.provider == "tavily" && it.apiKey.isNotBlank() }
+        val api = refreshApi()?.takeIf { it.provider == "tavily" && it.keys.isNotEmpty() }
         if (api != null && TavilyPageReader.publicUrl(url)) {
             try {
                 val page = TavilyPageReader.extract(fetchClient, api, url,

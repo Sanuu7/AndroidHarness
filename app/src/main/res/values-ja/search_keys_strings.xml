@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="other">%1$d 個のキー保存済み</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">キーは最大 20 個保存できます。キーが拒否されたり、レート制限やクレジット切れのときは、有効な次のキーが自動的に使われます。</string>
+    <string name="search_key_check_failed">キー %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">キーを確認して保存しました</string>
+    <string name="search_manage_keys">キーを管理</string>
+</resources>

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">%1$d کلید ذخیره شد</item>
+        <item quantity="other">%1$d کلید ذخیره شد</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">می‌توانید تا 20 کلید ذخیره کنید. وقتی کلیدی رد شود، محدود شود یا اعتبارش تمام شود، به‌طور خودکار کلید فعال بعدی استفاده می‌شود.</string>
+    <string name="search_key_check_failed">کلید %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">کلیدها تأیید و ذخیره شدند</string>
+    <string name="search_manage_keys">مدیریت کلیدها</string>
+</resources>

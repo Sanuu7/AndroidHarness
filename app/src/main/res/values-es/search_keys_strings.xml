@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">%1$d clave guardada</item>
+        <item quantity="other">%1$d claves guardadas</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">Puedes guardar hasta 20 claves. Cuando una clave es rechazada, está limitada o sin crédito, se usa automáticamente la siguiente clave activada.</string>
+    <string name="search_key_check_failed">Clave %1$d: %2$s</string>
+    <string name="search_keys_verified_and_saved">Claves verificadas y guardadas</string>
+    <string name="search_manage_keys">Administrar claves</string>
+</resources>
