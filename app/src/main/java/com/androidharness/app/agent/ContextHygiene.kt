@@ -16,6 +16,23 @@ object ContextHygiene {
     const val STALE_TOOL_CHARS = 4_000
 
     /**
+     * Stepped-truncation granularity (Step 3).
+     *
+     * The index below which tool results are truncated advances only in
+     * multiples of K.  Between n and n+K-1 tool results the truncation
+     * boundary is constant, so the history seen by the provider stays
+     * byte-identical across consecutive rounds and the prefix cache is not
+     * broken every time a new tool result is appended.
+     *
+     * Image eviction (MAX_CONTEXT_IMAGES = 2) operates on a count-based
+     * budget, not on a positional index, so it cannot be stepped the same
+     * way.  Because MAX_CONTEXT_IMAGES is small and images are much rarer
+     * than text tool results, the marginal cache impact is negligible; it
+     * is documented here rather than stepped.
+     */
+    const val STEPPED_K = 10
+
+    /**
      * Maximum number of recent images to keep in model context across the
      * older conversation. Every image in the newest tool batch is additionally
      * retained for the next request so a fresh inspection is never silently dropped.
@@ -29,7 +46,13 @@ object ContextHygiene {
         maxImages: Int = MAX_CONTEXT_IMAGES,
     ): List<ChatMessage> {
         val toolIndices = history.indices.filter { history[it].role == Role.TOOL }
-        val keepFull = toolIndices.takeLast(recentFull).toSet()
+        // Stepped boundary: advance the truncation point only every STEPPED_K new tool
+        // results so the set of truncated messages stays identical for K rounds, keeping
+        // the history seen by the provider byte-identical and the prefix cache intact.
+        val n = toolIndices.size
+        val keepStart = if (n <= recentFull) 0
+        else ((n - recentFull) / STEPPED_K) * STEPPED_K
+        val keepFull = toolIndices.drop(keepStart).toSet()
         // Every image in the latest tool batch must reach the very next model
         // request. The normal image budget applies to older context only.
         val latestAssistant = history.indexOfLast { it.role == Role.ASSISTANT && it.toolCallId == null }
