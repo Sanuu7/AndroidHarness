@@ -92,7 +92,11 @@ class AnthropicProvider(
                 })
             }
             putJsonArray("messages") {
-                applyCacheBreakpoints(serializeMessages(messages, config)).forEach { add(it) }
+                // Exclude the ephemeral volatile-tail message from the rolling
+                // cache-breakpoint so the stable prefix remains cacheable.
+                val ephemeralCount = if (messages.lastOrNull()?.ephemeral == true) 1 else 0
+                applyCacheBreakpoints(serializeMessages(messages, config), ephemeralCount)
+                    .forEach { add(it) }
             }
             if (tools.isNotEmpty()) {
                 val sortedTools = tools.sortedBy { it.name }
@@ -281,9 +285,25 @@ class AnthropicProvider(
      *    cached, so a stale session degrades to a partial hit instead of a
      *    full miss.
      */
-    internal fun applyCacheBreakpoints(messages: List<JsonObject>): List<JsonObject> {
+    /**
+     * Places Anthropic prompt-cache breakpoints on serialised messages.
+     *
+     * Two breakpoints are placed:
+     * 1. An anchor on the first user message (stable across turns).
+     * 2. A rolling breakpoint on the last *non-ephemeral* message so that
+     *    the volatile tail (which changes every round) is never used as the
+     *    cache write target — preserving the cache for the stable prefix.
+     *
+     * [ephemeralTailCount] is the number of trailing messages that are
+     * ephemeral/volatile and must be excluded from breakpoint candidacy.
+     */
+    internal fun applyCacheBreakpoints(
+        messages: List<JsonObject>,
+        ephemeralTailCount: Int = 0,
+    ): List<JsonObject> {
         if (messages.isEmpty()) return messages
-        val last = messages.lastIndex
+        // Rolling breakpoint: last message that is NOT part of the ephemeral tail.
+        val last = (messages.lastIndex - ephemeralTailCount).coerceAtLeast(0)
         val firstUser = messages.indexOfFirst {
             it["role"]?.jsonPrimitive?.contentOrNull == "user"
         }.takeIf { it in 0 until last } ?: -1
@@ -337,6 +357,38 @@ class AnthropicProvider(
             when (messages[i].role) {
                 Role.USER -> {
                     val m = messages[i]
+                    // An ephemeral volatile-tail message must not create a second
+                    // consecutive user turn (Anthropic rejects that). Instead,
+                    // append its text as an extra block inside the preceding user
+                    // message, or emit it as a standalone user message when there
+                    // is no preceding user message to merge into.
+                    if (m.ephemeral && out.isNotEmpty() &&
+                        out.last()["role"]?.jsonPrimitive?.contentOrNull == "user"
+                    ) {
+                        val prev = out.removeLast()
+                        val prevContent = prev["content"]
+                        val tailBlock = buildJsonObject {
+                            put("type", "text")
+                            put("text", m.text)
+                        }
+                        val mergedContent = when (prevContent) {
+                            is JsonPrimitive -> buildJsonArray {
+                                add(buildJsonObject {
+                                    put("type", "text")
+                                    put("text", prevContent.content)
+                                })
+                                add(tailBlock)
+                            }
+                            is JsonArray -> JsonArray(prevContent.toMutableList() + tailBlock)
+                            else -> buildJsonArray { add(tailBlock) }
+                        }
+                        out += buildJsonObject {
+                            put("role", "user")
+                            put("content", mergedContent)
+                        }
+                        i++
+                        continue
+                    }
                     out += if (m.imageData.isEmpty()) {
                         buildJsonObject {
                             put("role", "user")

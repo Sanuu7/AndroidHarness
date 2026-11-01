@@ -75,4 +75,11 @@ data class ChatMessage(
     val createdAt: Long = 0,
     val artifact: com.androidharness.app.artifacts.ChatArtifact? = null,
     val generation: GenerationMetadata = GenerationMetadata(),
+    /**
+     * True for the volatile-tail message injected per request to carry
+     * runtime context (environment, todos, memory) without polluting the
+     * stable cached prefix. Never persisted to the database; excluded from
+     * recentMemoryQuery so it cannot change the memory-recall query.
+     */
+    val ephemeral: Boolean = false,
 )
