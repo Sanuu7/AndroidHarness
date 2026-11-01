@@ -25,6 +25,8 @@ internal class EditorBuffer {
     val baseline = mutableStateOf("")
     val saved = mutableStateOf("")
     val editing = mutableStateOf(false)
+    /** Markdown view mode the user picked for this file; null until they choose. */
+    val markdownPreview = mutableStateOf<Boolean?>(null)
     val dirty = mutableStateOf(false)
     val saving = mutableStateOf(false)
     val decoded = mutableStateOf<EditorFileCodec.Decoded?>(null)
