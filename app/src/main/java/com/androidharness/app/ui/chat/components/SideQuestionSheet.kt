@@ -115,8 +115,10 @@ internal fun SideQuestionSheet(
             ) {
                 SideQuestionHeader(state, onStop, onDismiss)
                 Spacer(Modifier.size(12.dp))
+                // Weighted so the body gives up height when the keyboard opens; a fixed
+                // cap alone pushed the input row below the keyboard.
                 Column(
-                    Modifier.fillMaxWidth().heightIn(max = maxBody).verticalScroll(scroll)
+                    Modifier.weight(1f, fill = false).fillMaxWidth().heightIn(max = maxBody).verticalScroll(scroll)
                         .animateContentSize(expressiveSpatialSpec()),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
