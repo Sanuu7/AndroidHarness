@@ -87,7 +87,7 @@ class PluginStore(private val root: File, private val onChanged: () -> Unit = {}
         val destination = packages.resolve(dirName)
         require(prepared.root.renameTo(destination)) { "Cannot store plugin files. Nothing was changed." }
         val record = InstalledPlugin(old?.id ?: UUID.randomUUID().toString(), checked.name, checked.version, checked.description,
-            prepared.origin, prepared.revision, scope, scopeLabel, dirName, prepared.digest, old?.enabled ?: true)
+            prepared.origin, prepared.revision, scope, scopeLabel, dirName, prepared.digest, old?.enabled ?: true, format = checked.format)
         try { write(records.filterNot { it.id == old?.id } + record) }
         catch (e: Exception) { destination.deleteRecursively(); throw e }
         record

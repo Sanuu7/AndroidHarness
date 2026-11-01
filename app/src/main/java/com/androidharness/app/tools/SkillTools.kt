@@ -17,7 +17,7 @@ class SkillViewTool(
     override val parametersSchema = Schema.obj(
         mapOf(
             "name" to Schema.string("Skill name from the catalog, e.g. systematic-debugging."),
-            "file_path" to Schema.string("Optional supporting file inside the skill (references/, templates/, scripts/, assets/)."),
+            "file_path" to Schema.string("Optional supporting file inside the skill, as listed under its supporting files."),
         ),
         required = listOf("name"),
     )

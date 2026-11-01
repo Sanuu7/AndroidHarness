@@ -83,9 +83,25 @@ class AppContainer(val appContext: Context) {
     val settings = SettingsRepository(appContext)
     private val configurationRevision = kotlinx.coroutines.flow.MutableStateFlow(0L)
     val pluginManager = com.androidharness.app.plugins.PluginManager(appContext, configurationRevision,
-        com.androidharness.app.plugins.PluginDownloads(githubToken = { github.accessToken() }))
+        com.androidharness.app.plugins.PluginDownloads(githubToken = { github.accessToken() })) { pluginRuntime }
+    private val pluginRuntime by lazy {
+        object : com.androidharness.app.plugins.PluginRuntime {
+            override val ready get() = linuxEnv.isReady
+            override suspend fun available(wanted: List<String>): List<String> {
+                val index = linuxEnv.getPackageIndex()
+                // A fresh environment needs its core shell before any runtime can start.
+                val core = if (linuxEnv.bashExecutable() == null) linuxEnv.corePackages else emptyList()
+                return (core + wanted).distinct().filter { it in index }
+            }
+            override suspend fun install(packages: List<String>, requester: String,
+                progress: suspend (com.androidharness.app.data.env.PackageInstallStatus) -> Unit) {
+                if (packages.isNotEmpty()) linuxEnv.install(packages, requester, progress).getOrThrow()
+            }
+            override fun process(command: String) = linuxEnv.shellProcessBuilder(command)
+        }
+    }
     val configuration = com.androidharness.app.config.HarnessConfigRepository(appContext, keys, pluginManager, configurationRevision)
-    val pluginHooks = com.androidharness.app.config.PluginHooks(appContext)
+    val pluginHooks = com.androidharness.app.config.PluginHooks(appContext) { linuxEnv.shellProcessBuilder(it) }
     internal val runtimePolicy = AppRuntimePolicy(appContext, settings)
     /** Reads assistant replies with Android TTS or Groq PlayAI. */
     val tts = com.androidharness.app.data.audio.TtsController(appContext, settings, keys)

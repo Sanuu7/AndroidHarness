@@ -10,7 +10,9 @@ data class ConfigSource(val id: String, val text: String, val fs: WorkspaceFs, v
 data class ConfigFile(val source: String, val path: String, val text: String)
 data class ConfigReference(val title: String, val path: String, val source: String, val fs: WorkspaceFs)
 data class ConfigAgent(val name: String, val description: String, val instructions: List<ConfigFile>, val tools: Map<String, Boolean>)
-data class ConfigPlugin(val name: String, val script: String, val hooks: Set<String>)
+/** A command hook runs [command] in the Linux shell when [event] fires; [source] keeps the original event name for its payload. */
+data class ConfigCommandHook(val event: String, val command: String, val matcher: String = "", val timeout: Int = 60, val source: String = "")
+data class ConfigPlugin(val name: String, val script: String, val hooks: Set<String>, val commands: List<ConfigCommandHook> = emptyList(), val root: String = "")
 data class ConfigMemory(val file: String = ".harness/memory.md", val topics: String = ".harness/memory",
     val autoRecall: Boolean = true, val maxLines: Int = 120)
 
@@ -100,7 +102,7 @@ class HarnessConfigLoader(
         } ?: error("Cannot read $path")
         require(bytes.size <= cap) { "$path exceeds ${cap / 1024} KiB." }
         readBytes += bytes.size
-        require(readBytes <= 2 * 1024 * 1024) { "Configuration files exceed the 2 MiB total limit." }
+        require(readBytes <= 8 * 1024 * 1024) { "Configuration files exceed the 8 MiB total limit." }
         return Charsets.UTF_8.newDecoder().decode(java.nio.ByteBuffer.wrap(bytes)).toString()
     }
     private fun source(fs: WorkspaceFs, path: String, id: String): ConfigValue {
@@ -224,37 +226,45 @@ class HarnessConfigLoader(
             if (!scannedSkillDirs.add(fs.displayPath to directory)) return
             val dir = fs.resolve(directory)
             require(dir.exists && dir.isDirectory) { "Skill folder is missing: $directory" }
-            require(dir.list().size <= 128) { "A skill folder may have at most 128 entries." }
-            dir.list().filter { it.isDirectory }.sortedBy { it.name }.forEach { child ->
-                val base = "$directory/${child.name}"; val md = "$base/SKILL.md"
+            // A skills entry may name one skill folder or a folder of skill folders.
+            val single = fs.resolve("$directory/SKILL.md").let { it.exists && it.isFile }
+            val bases = if (single) listOf(directory) else {
+                require(dir.list().size <= 1024) { "A skill folder may have at most 1024 entries." }
+                dir.list().filter { it.isDirectory }.sortedBy { it.name }.map { "$directory/${it.name}" }
+            }
+            bases.forEach { base ->
+                val md = "$base/SKILL.md"
                 if (fs.resolve(md).let { it.exists && it.isFile }) {
-                    val content = read(fs, md, 64 * 1024)
-                    val parsed = com.androidharness.app.skills.SkillParser.parse(content)
+                    val content = read(fs, md, 256 * 1024)
+                    val parsed = runCatching { com.androidharness.app.skills.SkillParser.parse(content) }
+                        .getOrElse { warnings += "Skipped skill $base: ${it.message}"; return@forEach }
+                    // Real folders are read on demand, so large skills with data files cost nothing at load time.
+                    val folder = fs.shellRoot?.resolve(base)?.canonicalFile?.takeIf { it.isDirectory }
                     val support = linkedMapOf<String, String>()
-                    fun scan(folder: String, depth: Int) {
-                        require(depth <= 8 && support.size < 128) { "Too many supporting skill files: $base" }
-                        val n = fs.resolve("$base/$folder")
+                    fun scan(sub: String, depth: Int) {
+                        if (depth > 8 || support.size >= 128) return
+                        val n = fs.resolve("$base/$sub")
                         if (!n.exists || !n.isDirectory) return
                         n.list().sortedBy { it.name }.forEach { f ->
-                            require(support.size < 128) { "Too many supporting skill files: $base" }
-                            if (f.isFile) support["$folder/${f.name}"] = read(fs, "$base/$folder/${f.name}", 64 * 1024)
-                            else if (f.isDirectory) scan("$folder/${f.name}", depth + 1)
+                            if (support.size >= 128) return
+                            if (f.isFile && f.length <= 64 * 1024) support["$sub/${f.name}"] = read(fs, "$base/$sub/${f.name}", 64 * 1024)
+                            else if (f.isDirectory) scan("$sub/${f.name}", depth + 1)
                         }
                     }
-                    SkillStore.SUPPORT_DIRS.forEach { scan(it, 0) }
-                    skillFiles[parsed.name] = SkillStore.BundledSkill(base, content, support)
+                    if (folder == null) SkillStore.SUPPORT_DIRS.forEach { scan(it, 0) }
+                    skillFiles[parsed.name] = SkillStore.BundledSkill(base, content, support, folder?.path)
                 }
             }
         }
         // Explicit paths supplement the conventional project directory, with deterministic precedence.
         val plugins = mutableListOf<ConfigPlugin>()
+        val pluginAgents = linkedMapOf<String, ConfigAgent>()
         val pluginSettings = root["plugins"]
         fun plugin(baseFs: WorkspaceFs, base: String) {
             val manifestPath = "$base/plugin.json"
             if (!baseFs.resolve(manifestPath).exists) return
             val id = "Plugin/${HarnessConfig.digest(baseFs.displayPath).take(12)}/$base"
             val manifest = source(baseFs, manifestPath, id)
-            require(manifest.fields.keys.all { it in setOf("name", "version", "description", "author", "homepage", "entry", "hooks", "skills", "instructions", "mcp") }) { "$manifestPath has an unknown property." }
             require(manifest["hooks"] == null || manifest["hooks"]!!.json is JsonArray && manifest["hooks"]!!.items.all { it.string() != null }) { "$manifestPath hooks must be an array of event names." }
             require(manifest["skills"] == null || manifest["skills"]!!.json is JsonArray && manifest["skills"]!!.items.all { it.string() != null }) { "$manifestPath skills must be an array of paths." }
             val name = manifest["name"]?.string() ?: error("$manifestPath needs a name.")
@@ -267,6 +277,10 @@ class HarnessConfigLoader(
                     "$manifestPath instructions must be an array of bundle-relative files."
                 }
                 pluginInstructions += instructionFiles(field.items)
+            }
+            manifest["agents"]?.fields.orEmpty().filterValues { it.json !is JsonNull }.forEach { (agent, v) ->
+                if (agent !in pluginAgents) pluginAgents[agent] = ConfigAgent(agent, v["description"]?.string().orEmpty(),
+                    instructionFiles(v["instructions"]?.items.orEmpty()), v["tools"]?.fields.orEmpty().mapValues { it.value.json.jsonPrimitive.booleanOrNull ?: true })
             }
             manifest["mcp"]?.let { servers ->
                 val check = "{\"mcp\":${servers.json}}"
@@ -290,12 +304,18 @@ class HarnessConfigLoader(
                     pluginServers[qualified] = bundleVariables(value)
                 }
             }
+            val events = setOf("session.start", "message.received", "prompt.before", "tool.before", "tool.after", "session.end")
             val hooks = manifest["hooks"]?.strings().orEmpty().toSet()
-            require(hooks.all { it in setOf("session.start", "message.received", "prompt.before", "tool.before", "tool.after", "session.end") }) { "$manifestPath has an unsupported hook." }
-            if (hooks.isNotEmpty()) {
-                val entry = manifest["entry"] ?: error("$manifestPath needs an entry for hooks.")
-                val target = path(entry)
-                plugins += ConfigPlugin(name, read(target.first, target.second, 64 * 1024), hooks)
+            require(hooks.all { it in events }) { "$manifestPath has an unsupported hook." }
+            val commands = manifest["commandHooks"]?.items.orEmpty().mapNotNull { hook ->
+                val event = hook["event"]?.string()?.takeIf { it in events } ?: return@mapNotNull null
+                ConfigCommandHook(event, hook["command"]?.string()?.takeIf(String::isNotBlank) ?: return@mapNotNull null, hook["matcher"]?.string().orEmpty(),
+                    hook["timeout"]?.json?.jsonPrimitive?.intOrNull?.coerceIn(1, 600) ?: 60, hook["source"]?.string().orEmpty())
+            }
+            val folder = baseFs.shellRoot?.resolve(base)?.canonicalPath.orEmpty()
+            if (hooks.isNotEmpty() || commands.isNotEmpty()) {
+                val script = if (hooks.isEmpty()) "" else path(manifest["entry"] ?: error("$manifestPath needs an entry for hooks.")).let { read(it.first, it.second, 64 * 1024) }
+                plugins += ConfigPlugin(name, script, hooks, if (folder.isNotBlank()) commands else emptyList(), folder)
             }
         }
         pluginSettings?.get("paths")?.items.orEmpty().forEach { v ->
@@ -312,11 +332,11 @@ class HarnessConfigLoader(
             require(fs.resolve("$base/plugin.json").exists) { "Plugin package $name is not installed. Install it in the config folder's node_modules, then reload." }
             plugin(fs, base)
         }
-        require(plugins.map { it.name }.distinct().size == plugins.size && plugins.size <= 16) { "Plugin names must be unique; at most 16 executable plugins." }
+        require(plugins.map { it.name }.distinct().size == plugins.size && plugins.size <= 32) { "Plugin names must be unique; at most 32 plugins with hooks." }
         root["skills"]?.get("paths")?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
         val standardSkills = primary.resolve(".harness/skills")
         if (standardSkills.exists && standardSkills.isDirectory) skillDir(primary, ".harness/skills")
-        val agents = root["agents"]?.fields.orEmpty().filterValues { it.json !is JsonNull }.mapValues { (name, v) ->
+        val agents = pluginAgents + root["agents"]?.fields.orEmpty().filterValues { it.json !is JsonNull }.mapValues { (name, v) ->
             ConfigAgent(name, v["description"]?.string().orEmpty(), instructionFiles(v["instructions"]?.items.orEmpty()),
                 v["tools"]?.fields.orEmpty().mapValues { it.value.json.jsonPrimitive.boolean })
         }
@@ -348,6 +368,6 @@ class HarnessConfigLoader(
             agents, root["default_agent"]?.string() ?: "default",
             ConfigMemory(mem?.get("file")?.string() ?: ".harness/memory.md", mem?.get("topics_dir")?.string() ?: ".harness/memory",
                 mem?.get("auto_recall")?.json?.jsonPrimitive?.booleanOrNull ?: true, mem?.get("max_core_lines")?.json?.jsonPrimitive?.intOrNull ?: 120),
-            plugins, warnings.toList(), sources.values.joinToString("\n") { "${it.id}\n${it.text}" } + plugins.joinToString { it.script }, sensitiveValues.toSet())
+            plugins, warnings.toList(), sources.values.joinToString("\n") { "${it.id}\n${it.text}" } + plugins.joinToString { it.script + it.commands.joinToString("\n") { c -> "${c.event} ${c.matcher} ${c.command}" } }, sensitiveValues.toSet())
     }
 }

@@ -51,27 +51,40 @@ object SkillParser {
     }
 
     /**
-     * Tiny YAML mapping parser for the fields we actually use.
-     * Handles `key: value` and `key: "quoted value"`. Nested maps are ignored.
+     * Tiny YAML mapping parser for the top-level scalar fields skills use.
+     * Handles `key: value`, quoted values, block scalars (`|`, `>`, with chomping marks)
+     * and plain values continued on more-indented lines. Nested maps and lists are ignored.
      */
-    private fun parseSimpleYaml(yaml: String): Map<String, String> {
+    fun parseSimpleYaml(yaml: String): Map<String, String> {
         val out = mutableMapOf<String, String>()
-        yaml.lineSequence().forEach { line ->
+        val lines = yaml.lines()
+        var i = 0
+        while (i < lines.size) {
+            val line = lines[i++]
             val trimmed = line.trim()
-            if (trimmed.isEmpty() || trimmed.startsWith("#")) return@forEach
-            if (trimmed.startsWith("-")) return@forEach
+            if (trimmed.isEmpty() || trimmed.startsWith("#") || trimmed.startsWith("-") || line.first().isWhitespace()) continue
             val colon = trimmed.indexOf(':')
-            if (colon <= 0) return@forEach
+            if (colon <= 0) continue
             val key = trimmed.substring(0, colon).trim()
             var value = trimmed.substring(colon + 1).trim()
+            val continuation = mutableListOf<String>()
+            while (i < lines.size && (lines[i].isBlank() || lines[i].first().isWhitespace())) continuation += lines[i++]
+            val block = Regex("^([|>])[+-]?\\d?$").find(value)
+            if (block != null) {
+                val body = continuation.dropLastWhile { it.isBlank() }
+                val indent = body.filter { it.isNotBlank() }.minOfOrNull { it.length - it.trimStart().length } ?: 0
+                val text = body.map { if (it.isBlank()) "" else it.drop(indent) }
+                value = if (block.groupValues[1] == "|") text.joinToString("\n")
+                    else text.joinToString("\n").split("\n\n").joinToString("\n") { it.replace('\n', ' ') }
+            } else if (continuation.any { it.isNotBlank() } && value.isNotEmpty() && value.first() !in "[{") {
+                value = (listOf(value) + continuation.map { it.trim() }.filter { it.isNotEmpty() }).joinToString(" ")
+            }
             if (value.startsWith("\"") && value.endsWith("\"") && value.length >= 2) {
-                value = value.substring(1, value.length - 1)
+                value = value.substring(1, value.length - 1).replace("\\\"", "\"").replace("\\n", " ")
             } else if (value.startsWith("'") && value.endsWith("'") && value.length >= 2) {
-                value = value.substring(1, value.length - 1)
+                value = value.substring(1, value.length - 1).replace("''", "'")
             }
-            if (key.isNotEmpty() && value.isNotEmpty() && key !in out) {
-                out[key] = value
-            }
+            if (key.isNotEmpty() && value.isNotEmpty() && key !in out) out[key] = value.trim()
         }
         return out
     }

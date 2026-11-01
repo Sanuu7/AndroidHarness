@@ -66,29 +66,56 @@ class PluginManagerTest {
         val npm = tmp.newFolder(); PluginArchives.extract(tar(), npm)
         assertEquals("{}", npm.resolve("package/plugin.json").readText())
     }
-    @Test fun `archive traversal absolute paths windows paths and duplicate names are rejected`() {
-        listOf("../escaped", "/absolute", "C:/windows", "dir/../../escaped", "dir\\file").forEach { path ->
-            val out = tmp.newFolder()
-            fails { PluginArchives.extract(zip(path to byteArrayOf(1)), out) }
-            assertFalse(out.exists())
+    @Test fun `archive traversal absolute paths windows paths and duplicate names are skipped without escaping`() {
+        listOf("../escaped", "/absolute", "C:/windows", "dir/../../escaped").forEach { path ->
+            val parent = tmp.newFolder(); val out = parent.resolve("out")
+            val skipped = PluginArchives.extract(zip(path to byteArrayOf(1), "keep.txt" to byteArrayOf(2)), out)
+            assertTrue(path, skipped.isNotEmpty())
+            assertEquals(listOf("keep.txt"), out.walkTopDown().filter { it.isFile }.map { it.relativeTo(out).path }.toList())
+            assertEquals(listOf("out"), parent.list()!!.toList())
         }
-        fails { PluginArchives.extract(zip("readme" to byteArrayOf(1), "README" to byteArrayOf(2)), tmp.newFolder()) }
+        val windows = tmp.newFolder()
+        assertTrue(PluginArchives.extract(zip("dir\\file" to byteArrayOf(1)), windows).isEmpty())
+        assertTrue(windows.resolve("dir/file").isFile)
+        val out = tmp.newFolder()
+        val skipped = PluginArchives.extract(zip("readme" to byteArrayOf(1), "README" to byteArrayOf(2)), out)
+        assertEquals(1, skipped.size)
+        assertEquals(1, out.listFiles()!!.size)
     }
-    @Test fun `zip symlinks tar links and special files are rejected`() {
+    @Test fun `links pointing outside the bundle and special files are skipped`() {
         for (kind in listOf(TarConstants.LF_SYMLINK, TarConstants.LF_LINK, TarConstants.LF_CHR)) {
-            fails { PluginArchives.extract(tar(kind), tmp.newFolder()) }
+            val parent = tmp.newFolder(); val out = parent.resolve("out")
+            assertTrue(PluginArchives.extract(tar(kind), out).isNotEmpty())
+            assertFalse(out.resolve("package/link").exists())
+            assertEquals(listOf("out"), parent.list()!!.toList())
         }
         val archive = tmp.newFile()
         ZipArchiveOutputStream(archive).use { out ->
             out.putArchiveEntry(ZipArchiveEntry("link").apply { unixMode = 0xA1FF })
             out.write("../../outside".toByteArray()); out.closeArchiveEntry(); out.finish()
         }
-        fails { PluginArchives.extract(archive, tmp.newFolder()) }
+        val out = tmp.newFolder()
+        assertTrue(PluginArchives.extract(archive, out).isNotEmpty())
+        assertFalse(out.resolve("link").exists())
+    }
+    @Test fun `links inside the bundle are copied as regular files`() {
+        val archive = tmp.newFile()
+        ZipArchiveOutputStream(archive).use { out ->
+            out.putArchiveEntry(ZipArchiveEntry("data/styles.csv")); out.write("a,b".toByteArray()); out.closeArchiveEntry()
+            out.putArchiveEntry(ZipArchiveEntry("gallery/styles.csv").apply { unixMode = 0xA1FF })
+            out.write("../data/styles.csv".toByteArray()); out.closeArchiveEntry(); out.finish()
+        }
+        val out = tmp.newFolder()
+        assertTrue(PluginArchives.extract(archive, out).isEmpty())
+        assertEquals("a,b", out.resolve("gallery/styles.csv").readText())
     }
     @Test fun `expanded file size is bounded even when zip size metadata is absent`() {
-        val archive = zip("bomb" to ByteArray(PluginArchives.MAX_FILE.toInt() + 1))
-        assertTrue(archive.length() < 100_000)
-        fails { PluginArchives.extract(archive, tmp.newFolder()) }
+        val archive = zip("bomb" to ByteArray(PluginArchives.MAX_FILE.toInt() + 1), "keep.txt" to byteArrayOf(1))
+        assertTrue(archive.length() < 200_000)
+        val out = tmp.newFolder()
+        assertEquals(1, PluginArchives.extract(archive, out).size)
+        assertFalse(out.resolve("bomb").exists())
+        assertTrue(out.resolve("keep.txt").exists())
     }
     @Test fun `npm integrity prefers SHA512 and rejects altered bytes`() {
         val archive = tmp.newFile().apply { writeText("package bytes") }

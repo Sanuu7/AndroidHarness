@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.*
@@ -24,6 +26,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
@@ -49,16 +53,17 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     var tab by rememberSaveable { mutableIntStateOf(0) }
     val listState = androidx.compose.foundation.lazy.rememberLazyListState()
     LaunchedEffect(tab) { listState.scrollToItem(0) }
-    var source by rememberSaveable { mutableStateOf("npm") }
-    var target by rememberSaveable { mutableStateOf("") }
-    var ref by rememberSaveable { mutableStateOf("") }
-    var subfolder by rememberSaveable { mutableStateOf("") }
+    var input by rememberSaveable { mutableStateOf("") }
     var scopeFilter by rememberSaveable { mutableStateOf("all") }
+    var kindFilter by rememberSaveable { mutableStateOf("all") }
     var installed by remember { mutableStateOf<List<InstalledPlugin>>(emptyList()) }
-    var listings by remember { mutableStateOf<List<PluginListing>>(emptyList()) }
+    var sections by remember { mutableStateOf<List<CatalogSection>?>(null) }
+    var expanded by remember { mutableStateOf(setOf<String>()) }
     var query by rememberSaveable { mutableStateOf("") }
-    var searched by remember { mutableStateOf(false) }
+    var marketInput by rememberSaveable { mutableStateOf("") }
+    var marketList by remember { mutableStateOf(manager.marketplaces.list()) }
     var loading by remember { mutableStateOf(true) }
+    var searching by remember { mutableStateOf(false) }
     var registryBroken by remember { mutableStateOf(false) }
     var resetRegistry by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
@@ -67,11 +72,13 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     var error by remember { mutableStateOf<String?>(null) }
     var notice by remember { mutableStateOf<String?>(null) }
     var prepared by remember { mutableStateOf<PreparedPlugin?>(null) }
+    var choices by remember { mutableStateOf<List<PluginListing>?>(null) }
+    var installer by remember { mutableStateOf<PluginRequest.RunInstaller?>(null) }
     var reviewWorkspace by remember { mutableStateOf<WorkspaceFs?>(null) }
     var reviewLabel by remember { mutableStateOf("") }
-    var update by remember { mutableStateOf<InstalledPlugin?>(null) }
     var deleting by remember { mutableStateOf<InstalledPlugin?>(null) }
     var details by remember { mutableStateOf<Pair<InstalledPlugin, PluginContents>?>(null) }
+    val failed = stringResource(R.string.pm_failed)
 
     LaunchedEffect(manager, revision) {
         loading = true
@@ -80,17 +87,47 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
         catch (e: Exception) { error = e.message; registryBroken = true }
         finally { loading = false }
     }
-    fun prepare(origin: PluginOrigin, replacing: InstalledPlugin? = update) {
+    fun search() {
+        if (searching) return
+        scope.launch {
+            searching = true
+            try { sections = manager.search(query) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { error = e.message }
+            finally { searching = false }
+        }
+    }
+    LaunchedEffect(tab) { if (tab == 1 && sections == null) search() }
+    /** Runs one plugin operation with shared progress, cancellation and the three outcomes a bundle can have. */
+    fun launch(replacing: InstalledPlugin? = null, block: suspend () -> Unit) {
         if (busy) return
         val captured = fs
         reviewWorkspace = captured
         reviewLabel = replacing?.scopeLabel ?: project?.name ?: captured?.displayPath.orEmpty()
         operation = scope.launch {
             busy = true; error = null; notice = null
-            try { prepared = manager.prepare(origin, replacing) { progress = it } }
+            try { block() }
             catch (e: CancellationException) { throw e }
-            catch (e: Exception) { error = e.message ?: container.appContext.getString(R.string.pm_failed) }
+            catch (e: MarketplaceChoices) { choices = e.listings }
+            catch (e: InstallerNeeded) { installer = PluginRequest.RunInstaller(e.command, "", e.message.orEmpty()) }
+            catch (e: Exception) { error = e.message ?: failed }
             finally { busy = false; progress = null; operation = null }
+        }
+    }
+    fun prepare(origin: PluginOrigin, replacing: InstalledPlugin? = null) = launch(replacing) {
+        prepared = manager.prepare(origin, replacing) { progress = it }
+    }
+    fun submit(text: String) = launch {
+        progress = PluginProgress("Resolving source")
+        when (val request = manager.request(text)) {
+            is PluginRequest.Install -> prepared = manager.prepare(request.origin) { progress = it }
+            is PluginRequest.RunInstaller -> installer = request
+            is PluginRequest.MarketplaceAdded -> {
+                marketList = manager.marketplaces.list()
+                notice = container.appContext.getString(R.string.pm_marketplace_added, request.source.repo, request.listings.size)
+                choices = request.listings
+                sections = null
+            }
         }
     }
     fun retain(uri: Uri) { runCatching { container.appContext.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } }
@@ -102,7 +139,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     }
     DisposableEffect(prepared) {
         val captured = prepared
-        onDispose { if (captured != null) container.editorScope.launch(Dispatchers.IO) { manager.discard(captured) } }
+        onDispose { if (captured != null) container.editorScope.launch(Dispatchers.IO) { runCatching { manager.discard(captured) } } }
     }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PrimaryScrollableTabRow(selectedTabIndex = tab, edgePadding = 0.dp, containerColor = MaterialTheme.colorScheme.surface) {
@@ -111,7 +148,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
             }
         }
         LazyColumn(Modifier.fillMaxWidth().weight(1f), state = listState, verticalArrangement = Arrangement.spacedBy(12.dp), contentPadding = PaddingValues(bottom = 24.dp)) {
-            item {
+            if (tab != 1) item {
                 Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.primaryContainer) {
                     Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(Icons.Outlined.Extension, null, Modifier.size(28.dp))
@@ -122,15 +159,22 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
             }
             if (loading || busy) item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    LinearProgressIndicator(Modifier.fillMaxWidth())
+                    val status = progress?.packages
+                    if (status != null && status.packages.isNotEmpty())
+                        LinearProgressIndicator(progress = { status.completed.size.toFloat() / status.packages.size }, modifier = Modifier.fillMaxWidth())
+                    else LinearProgressIndicator(Modifier.fillMaxWidth())
                     progress?.let { p ->
                         val label = when (p.stage) {
                             "Downloading" -> R.string.pm_downloading
                             "Checking bundle" -> R.string.pm_checking
                             "Reading archive", "Reading folder" -> R.string.pm_reading
+                            "Installing runtime" -> R.string.pm_installing_runtime
+                            "Running installer" -> R.string.pm_running_installer
                             else -> R.string.pm_resolving
                         }
                         Text(stringResource(label), style = MaterialTheme.typography.labelLarge)
+                        if (p.detail.isNotBlank()) Text(p.detail, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        status?.currentPackage?.let { Text(it, style = MaterialTheme.typography.bodySmall) }
                         if (p.bytes > 0) Text("${p.bytes / 1024} KiB${p.total?.let { " / ${it / 1024} KiB" }.orEmpty()}", style = MaterialTheme.typography.bodySmall)
                     }
                     if (operation != null) TextButton(onClick = { operation?.cancel() }) { Text(stringResource(android.R.string.cancel)) }
@@ -162,7 +206,8 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                                     Text(record.name, style = MaterialTheme.typography.titleMedium)
-                                    Text(record.version + " · " + if (record.scope == "global") stringResource(R.string.config_global) else record.scopeLabel,
+                                    Text(listOfNotNull(record.version, record.format.takeIf(String::isNotBlank),
+                                        if (record.scope == "global") stringResource(R.string.config_global) else record.scopeLabel).joinToString(" · "),
                                         style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                 }
                                 val label = stringResource(R.string.pm_enable_named, record.name)
@@ -174,7 +219,8 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                                     finally { busy = false }
                                 } }, enabled = !busy, modifier = Modifier.semantics { contentDescription = label })
                             }
-                            if (record.description.isNotBlank()) Text(if (record.origin.kind == "builtin") starterDescription(record.name) else record.description, style = MaterialTheme.typography.bodyMedium)
+                            if (record.description.isNotBlank()) Text(if (record.origin.kind == "builtin") starterDescription(record.name) else record.description,
+                                style = MaterialTheme.typography.bodyMedium, maxLines = 4, overflow = TextOverflow.Ellipsis)
                             Text(pluginOriginLabel(record.origin), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                                 TextButton(onClick = { scope.launch {
@@ -182,13 +228,9 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                                     catch (e: CancellationException) { throw e }
                                     catch (e: Exception) { error = e.message }
                                 } }, enabled = !busy) { Text(stringResource(R.string.pm_details)) }
-                                TextButton(onClick = {
-                                    update = record
-                                    source = record.origin.kind.takeIf { it in setOf("npm", "github") } ?: "local"
-                                    target = if (source == "npm") record.origin.target + "@" + record.origin.ref.ifBlank { "latest" } else record.origin.target
-                                    ref = record.origin.ref; subfolder = record.origin.subdirectory
-                                    if (record.origin.kind == "builtin") prepare(record.origin, record) else tab = 2
-                                }, enabled = !busy) { Text(stringResource(R.string.pm_update)) }
+                                if (record.origin.kind !in setOf("archive", "folder")) TextButton(onClick = { prepare(record.origin, record) }, enabled = !busy) {
+                                    Text(stringResource(R.string.pm_update))
+                                }
                                 IconButton(onClick = { deleting = record }, enabled = !busy) {
                                     Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.pm_uninstall_named, record.name))
                                 }
@@ -198,55 +240,89 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                     item { Text(stringResource(R.string.pm_next_run), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
                 }
                 1 -> {
-                    item { Text(stringResource(R.string.pm_starters), style = MaterialTheme.typography.titleMedium) }
-                    items(PluginStarters.listings, key = { "starter-${it.name}" }) { listing ->
-                        PluginListingCard(listing, !busy) { update = null; prepare(listing.origin, null) }
+                    item {
+                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                            OutlinedTextField(query, { query = it.take(160) }, Modifier.fillMaxWidth(), singleLine = true,
+                                label = { Text(stringResource(R.string.pm_search_hint)) },
+                                leadingIcon = { Icon(Icons.Outlined.Search, null) },
+                                keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search), keyboardActions = KeyboardActions(onSearch = { search() }))
+                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                listOf("all" to R.string.pm_all, "skill" to R.string.pm_kind_skills, "plugin" to R.string.pm_kind_plugins, "mcp" to R.string.pm_kind_mcp).forEach { (key, label) ->
+                                    FilterChip(selected = kindFilter == key, onClick = { kindFilter = key }, label = { Text(stringResource(label)) })
+                                }
+                                AssistChip(onClick = { search() }, enabled = !searching, label = { Text(stringResource(R.string.pm_search)) })
+                            }
+                            if (searching) LinearProgressIndicator(Modifier.fillMaxWidth())
+                        }
+                    }
+                    val catalog = listOf(CatalogSection(container.appContext.getString(R.string.pm_starters), PluginStarters.listings)) + sections.orEmpty()
+                    catalog.forEach { section ->
+                        val shown = section.listings.filter { kindFilter == "all" || it.kind == kindFilter }
+                        if (shown.isEmpty() && section.error == null) return@forEach
+                        val open = section.title in expanded
+                        item(key = "section-${section.title}") {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(section.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                                if (shown.size > 6) TextButton(onClick = { expanded = if (open) expanded - section.title else expanded + section.title }) {
+                                    Text(if (open) stringResource(R.string.pm_show_less) else stringResource(R.string.pm_show_all, shown.size))
+                                }
+                            }
+                        }
+                        section.error?.let { item(key = "error-${section.title}") { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) } }
+                        items(if (open) shown else shown.take(6), key = { "${section.title}-${it.name}-${it.origin.target}-${it.origin.subdirectory}" }) { listing ->
+                            PluginListingCard(listing, !busy) { prepare(listing.origin) }
+                        }
                     }
                     item {
                         PluginPanel {
-                            Text(stringResource(R.string.pm_community), style = MaterialTheme.typography.titleMedium)
-                            Text(stringResource(R.string.pm_community_hint), style = MaterialTheme.typography.bodyMedium)
-                            OutlinedTextField(query, { query = it.take(160) }, Modifier.fillMaxWidth(), label = { Text(stringResource(R.string.pm_search_hint)) }, singleLine = true, enabled = !busy)
-                            OutlinedButton(onClick = { operation = scope.launch {
-                                busy = true; error = null
-                                try { listings = manager.search(query); searched = true }
-                                catch (e: CancellationException) { throw e }
+                            Text(stringResource(R.string.pm_marketplaces), style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.pm_marketplaces_hint), style = MaterialTheme.typography.bodyMedium)
+                            marketList.forEach { market ->
+                                Row(verticalAlignment = Alignment.CenterVertically) {
+                                    Column(Modifier.weight(1f)) {
+                                        Text(market.name.ifBlank { market.repo }, style = MaterialTheme.typography.bodyMedium)
+                                        Text(market.repo, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                    }
+                                    IconButton(onClick = { manager.removeMarketplace(market.repo); marketList = manager.marketplaces.list(); sections = null; search() }, enabled = !busy) {
+                                        Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.pm_remove_marketplace, market.repo))
+                                    }
+                                }
+                            }
+                            OutlinedTextField(marketInput, { marketInput = it.take(300) }, Modifier.fillMaxWidth(), singleLine = true, enabled = !busy,
+                                label = { Text(stringResource(R.string.pm_marketplace_field)) })
+                            OutlinedButton(onClick = {
+                                try { manager.addMarketplace(marketInput); marketInput = ""; marketList = manager.marketplaces.list(); sections = null; search() }
                                 catch (e: Exception) { error = e.message }
-                                finally { busy = false; operation = null }
-                            } }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_search)) }
+                            }, enabled = !busy && marketInput.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_add_marketplace)) }
                         }
                     }
-                    if (searched && listings.isEmpty()) item { Text(stringResource(R.string.pm_no_results), style = MaterialTheme.typography.bodyMedium) }
-                    items(listings, key = { "npm-${it.name}" }) { listing -> PluginListingCard(listing, !busy) { update = null; prepare(listing.origin, null) } }
                 }
                 2 -> {
                     item {
                         PluginPanel {
-                            Text(stringResource(if (update == null) R.string.pm_add_title else R.string.pm_update_title), style = MaterialTheme.typography.titleLarge)
-                            update?.let { Text(it.name, style = MaterialTheme.typography.labelLarge) }
-                            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                listOf("npm", "github", "local").forEach { kind ->
-                                    FilterChip(selected = source == kind, onClick = { source = kind; target = ""; ref = ""; subfolder = "" }, enabled = !busy,
-                                        label = { Text(when (kind) { "npm" -> "npm"; "github" -> "GitHub"; else -> stringResource(R.string.pm_local) }) })
-                                }
+                            Text(stringResource(R.string.pm_add_title), style = MaterialTheme.typography.titleLarge)
+                            Text(stringResource(R.string.pm_paste_hint), style = MaterialTheme.typography.bodyMedium)
+                            OutlinedTextField(input, { input = it.take(4000) }, Modifier.fillMaxWidth(), enabled = !busy, minLines = 2, maxLines = 6,
+                                label = { Text(stringResource(R.string.pm_paste_label)) }, textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace))
+                            Button(onClick = { submit(input) }, enabled = !busy && input.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_review)) }
+                            Text(stringResource(R.string.pm_examples), style = MaterialTheme.typography.titleSmall)
+                            listOf("npx -y @modelcontextprotocol/server-memory", "npx skills add anthropics/skills --skill pdf",
+                                "/plugin marketplace add anthropics/claude-plugins-official", "/plugin install superpowers@superpowers-marketplace",
+                                "https://github.com/nextlevelbuilder/ui-ux-pro-max-skill", "npm i @scope/package@1.2.0",
+                                "claude mcp add --transport http context7 https://mcp.context7.com/mcp", "uvx mcp-server-fetch").forEach { example ->
+                                Text(example, Modifier.fillMaxWidth(), style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant)
                             }
-                            Text(stringResource(when (source) { "npm" -> R.string.pm_npm_hint; "github" -> R.string.pm_github_hint; else -> R.string.pm_local_hint }), style = MaterialTheme.typography.bodyMedium)
-                            if (source != "local") {
-                                OutlinedTextField(target, { target = it.take(256) }, Modifier.fillMaxWidth(), enabled = !busy, singleLine = true,
-                                    label = { Text(stringResource(if (source == "npm") R.string.pm_package else R.string.pm_repository)) })
-                                if (source == "github") {
-                                    OutlinedTextField(ref, { ref = it.take(200) }, Modifier.fillMaxWidth(), enabled = !busy, singleLine = true, label = { Text(stringResource(R.string.pm_ref)) })
-                                    OutlinedTextField(subfolder, { subfolder = it.take(256) }, Modifier.fillMaxWidth(), enabled = !busy, singleLine = true, label = { Text(stringResource(R.string.pm_subfolder)) })
-                                }
-                                Button(onClick = { prepare(PluginOrigin(source, target.trim(), if (source == "github") ref.trim() else "", subfolder.trim())) },
-                                    enabled = !busy && target.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_review)) }
-                            } else {
-                                OutlinedButton(onClick = { archivePicker.launch(arrayOf("*/*")) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                                    Text(stringResource(R.string.pm_choose_archive))
-                                }
-                                OutlinedButton(onClick = { folderPicker.launch(null) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_choose_folder)) }
+                        }
+                    }
+                    item {
+                        PluginPanel {
+                            Text(stringResource(R.string.pm_local), style = MaterialTheme.typography.titleMedium)
+                            Text(stringResource(R.string.pm_local_hint), style = MaterialTheme.typography.bodyMedium)
+                            OutlinedButton(onClick = { archivePicker.launch(arrayOf("*/*")) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
+                                Text(stringResource(R.string.pm_choose_archive))
                             }
-                            if (update != null) TextButton(onClick = { update = null; target = ""; ref = ""; subfolder = "" }, enabled = !busy) { Text(stringResource(R.string.pm_cancel_update)) }
+                            OutlinedButton(onClick = { folderPicker.launch(null) }, enabled = !busy, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_choose_folder)) }
                         }
                     }
                 }
@@ -255,16 +331,44 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     }
     prepared?.let { candidate ->
         PluginInstallDialog(candidate, reviewWorkspace, reviewLabel, manager, installed.firstOrNull { it.id == candidate.replacing }, busy,
-            onDismiss = { if (!busy) prepared = null }, onInstall = { destination, label -> scope.launch {
-                busy = true; error = null
-                try {
-                    manager.install(candidate, destination, label)
-                    prepared = null; update = null; tab = 0
-                    notice = container.appContext.getString(R.string.pm_installed_notice, candidate.contents.name)
-                } catch (e: CancellationException) { throw e }
-                catch (e: Exception) { error = e.message; prepared = null }
-                finally { busy = false }
-            } })
+            onDismiss = { if (!busy) prepared = null }, onInstall = { destination, label ->
+                operation = scope.launch {
+                    busy = true; error = null
+                    try {
+                        val (_, runtimeProblem) = manager.install(candidate, destination, label) { progress = it }
+                        prepared = null; tab = 0; input = ""
+                        notice = container.appContext.getString(R.string.pm_installed_notice, candidate.contents.name) +
+                            runtimeProblem?.let { "\n\n" + container.appContext.getString(R.string.pm_runtime_problem, it) }.orEmpty()
+                    } catch (e: CancellationException) { prepared = null; throw e }
+                    catch (e: Exception) { error = e.message; prepared = null }
+                    finally { busy = false; progress = null; operation = null }
+                }
+            })
+    }
+    choices?.let { listings -> AlertDialog(onDismissRequest = { choices = null }, title = { Text(stringResource(R.string.pm_choose_plugin)) }, text = {
+        Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Text(stringResource(R.string.pm_choose_plugin_hint, listings.size), style = MaterialTheme.typography.bodyMedium)
+            listings.forEach { listing ->
+                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(listing.name, style = MaterialTheme.typography.titleSmall)
+                    if (listing.description.isNotBlank()) Text(listing.description, style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis)
+                    TextButton(onClick = { choices = null; prepare(listing.origin) }) { Text(stringResource(R.string.pm_review)) }
+                }
+            }
+        }
+    }, confirmButton = { TextButton(onClick = { choices = null }) { Text(stringResource(R.string.pm_close)) } }) }
+    installer?.let { request ->
+        var command by remember(request) { mutableStateOf(request.command) }
+        AlertDialog(onDismissRequest = { installer = null }, title = { Text(stringResource(R.string.pm_installer_title)) }, text = {
+            Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(request.reason, style = MaterialTheme.typography.bodyMedium)
+                OutlinedTextField(command, { command = it.take(2000) }, Modifier.fillMaxWidth(), minLines = 2,
+                    label = { Text(stringResource(R.string.pm_installer_command)) }, textStyle = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace))
+                Text(stringResource(R.string.pm_installer_hint), style = MaterialTheme.typography.bodySmall)
+            }
+        }, confirmButton = { TextButton(onClick = { installer = null; prepare(PluginOrigin("installer", command.trim(), name = request.packageName.substringAfterLast('/'))) },
+            enabled = command.isNotBlank()) { Text(stringResource(R.string.pm_installer_run)) } },
+            dismissButton = { TextButton(onClick = { installer = null }) { Text(stringResource(android.R.string.cancel)) } })
     }
     if (resetRegistry) AlertDialog(onDismissRequest = { resetRegistry = false }, title = { Text(stringResource(R.string.pm_reset)) },
         text = { Text(stringResource(R.string.pm_reset_hint)) }, confirmButton = { TextButton(onClick = { scope.launch {
@@ -303,17 +407,35 @@ private fun PluginMessage(message: String, error: Boolean) {
 }
 
 @Composable
+private fun kindLabel(kind: String): String = stringResource(when (kind) {
+    "skill" -> R.string.pm_kind_skill; "mcp" -> R.string.pm_kind_mcp; else -> R.string.pm_kind_plugin
+})
+
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
 private fun PluginListingCard(listing: PluginListing, enabled: Boolean, review: () -> Unit) = PluginPanel {
-    Text(listing.name, style = MaterialTheme.typography.titleMedium)
-    Text(if (listing.builtIn) starterDescription(listing.name) else listing.description, style = MaterialTheme.typography.bodyMedium)
-    Text(if (listing.builtIn) stringResource(R.string.pm_built_in) else "npm · ${listing.publisher}", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(listing.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        if (listing.version.isNotBlank()) Text(listing.version, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+    }
+    Text(if (listing.builtIn) starterDescription(listing.name) else listing.description, style = MaterialTheme.typography.bodyMedium, maxLines = 3, overflow = TextOverflow.Ellipsis)
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        SuggestionChip(onClick = {}, enabled = false, label = { Text(kindLabel(listing.kind)) })
+        if (listing.category.isNotBlank()) SuggestionChip(onClick = {}, enabled = false, label = { Text(listing.category) })
+    }
+    Text(if (listing.builtIn) stringResource(R.string.pm_built_in) else listOf(listing.source, listing.publisher).filter(String::isNotBlank).joinToString(" · "),
+        style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     OutlinedButton(onClick = review, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_review)) }
 }
 
 @Composable
 private fun pluginOriginLabel(origin: PluginOrigin): String = when (origin.kind) {
     "npm" -> "npm · ${origin.target}@${origin.ref.ifBlank { "latest" }}"
-    "github" -> "GitHub · ${origin.target} · ${origin.ref}${origin.subdirectory.takeIf(String::isNotBlank)?.let { " / $it" }.orEmpty()}"
+    "github" -> "GitHub · ${origin.target}${origin.ref.takeIf(String::isNotBlank)?.let { " · $it" }.orEmpty()}${origin.subdirectory.takeIf(String::isNotBlank)?.let { " / $it" }.orEmpty()}" +
+        origin.marketplace.takeIf { it.isNotBlank() && it != origin.target }?.let { " · $it" }.orEmpty()
+    "url" -> origin.target
+    "mcp" -> stringResource(R.string.pm_mcp_config)
+    "installer" -> origin.target
     "builtin" -> stringResource(R.string.pm_built_in)
     "archive" -> stringResource(R.string.pm_local_archive)
     else -> stringResource(R.string.pm_local_folder)
@@ -321,15 +443,21 @@ private fun pluginOriginLabel(origin: PluginOrigin): String = when (origin.kind)
 
 @Composable
 private fun PluginContentsView(contents: PluginContents) {
+    Text(contents.format, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     listOf(R.string.config_instructions to contents.instructions, R.string.config_skills to contents.skills,
-        R.string.config_servers to contents.servers, R.string.pm_hooks to contents.hooks).forEach { (label, values) ->
+        R.string.pm_agents to contents.agents, R.string.config_servers to contents.servers, R.string.pm_hooks to contents.hooks,
+        R.string.pm_command_hooks to contents.commandHooks, R.string.pm_runtimes to contents.runtimes).forEach { (label, values) ->
         if (values.isNotEmpty()) {
             Text(stringResource(label), style = MaterialTheme.typography.titleSmall)
-            values.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+            values.take(60).forEach { Text(it, style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis) }
+            if (values.size > 60) Text("+${values.size - 60}", style = MaterialTheme.typography.bodySmall)
         }
     }
-    if (contents.needsRuntime) Text(stringResource(R.string.pm_runtime_hint), style = MaterialTheme.typography.bodySmall)
-    if (contents.warnings.isNotEmpty()) Text(stringResource(R.string.pm_scripts_hint), style = MaterialTheme.typography.bodySmall)
+    if (contents.runtimes.isNotEmpty()) Text(stringResource(R.string.pm_runtime_hint), style = MaterialTheme.typography.bodySmall)
+    if (contents.warnings.isNotEmpty()) {
+        Text(stringResource(R.string.pm_notes), style = MaterialTheme.typography.titleSmall)
+        contents.warnings.forEach { Text(it, style = MaterialTheme.typography.bodySmall) }
+    }
 }
 
 @Composable
@@ -353,6 +481,7 @@ private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceF
         } else Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(candidate.contents.name, style = MaterialTheme.typography.titleLarge)
             Text(candidate.contents.version, style = MaterialTheme.typography.labelLarge)
+            if (candidate.contents.description.isNotBlank()) Text(candidate.contents.description, style = MaterialTheme.typography.bodyMedium, maxLines = 6, overflow = TextOverflow.Ellipsis)
             Text(pluginOriginLabel(candidate.origin), style = MaterialTheme.typography.bodySmall)
             Text(candidate.revision, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
             PluginContentsView(candidate.contents)

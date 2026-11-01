@@ -65,7 +65,7 @@ class PluginDownloadsTest {
         override fun close() { server.close(); worker.join(1000) }
     }
 
-    @Test fun `npm resolves scoped package and tag verifies archive and searches with compatibility keyword`() = runBlocking {
+    @Test fun `npm resolves scoped package and tag verifies archive and searches npm by text`() = runBlocking {
         Registry().use { registry ->
             val bytes = "registry archive".toByteArray()
             val integrity = "sha512-" + Base64.getEncoder().encodeToString(MessageDigest.getInstance("SHA-512").digest(bytes))
@@ -90,7 +90,7 @@ class PluginDownloadsTest {
             assertEquals(listOf("@team/plugin"), listings.map { it.name })
             assertEquals("team", listings.single().publisher)
             assertFalse(listings.single().builtIn)
-            assertTrue(registry.requests.last().first.contains("keywords%3Aandroidharness-plugin"))
+            assertTrue(registry.requests.last().first.contains("text=review"))
             assertTrue(registry.requests.all { it.second == null })
         }
     }
@@ -155,7 +155,7 @@ class PluginDownloadsTest {
             try {
                 registry.downloads().download(ResolvedPluginDownload(PluginOrigin("npm", "test-plugin"), "1", registry.url), tmp.newFile())
                 fail("Oversize response must be refused")
-            } catch (e: IllegalArgumentException) { assertTrue(e.message.orEmpty().contains("25 MiB")) }
+            } catch (e: IllegalArgumentException) { assertTrue(e.message.orEmpty().contains("200 MiB")) }
             try {
                 PluginDownloads(npmRegistry = registry.url).resolve(PluginOrigin("npm", "test-plugin"))
                 fail("HTTP must not be allowed outside explicit test transport")

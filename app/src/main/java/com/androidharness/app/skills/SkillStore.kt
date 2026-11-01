@@ -31,10 +31,12 @@ class SkillStore(
         return forProject(primary.shellRoot?.resolve(".harness/skills"))
     }
 
+    /** [directory] is the skill's real folder when it has one; its files are then listed and read on demand. */
     data class BundledSkill(
         val relativeDir: String,
         val content: String,
         val files: Map<String, String> = emptyMap(),
+        val directory: String? = null,
     )
 
     fun list(): List<SkillMeta> {
@@ -47,7 +49,7 @@ class SkillStore(
         projectDir()?.let { dir ->
             scanDir(dir, SkillSource.PROJECT).forEach { byName[it.name] = it }
         }
-        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files)?.meta }
+        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files, it.directory)?.meta }
             .forEach { byName[it.name] = it }
         val off = disabled()
         return byName.values
@@ -104,7 +106,7 @@ class SkillStore(
                 ?: return Result.failure(
                     SkillParseException(
                         "File '$filePath' not found in skill '$key'. " +
-                            "Use a path under references/, templates/, scripts/, or assets/.",
+                            "Use a path from the skill's supporting files list.",
                     ),
                 )
             return Result.success(
@@ -119,12 +121,16 @@ class SkillStore(
             )
         }
 
+        val header = winner.directory?.let { folder ->
+            "Skill folder: ${folder.path}\nScripts, data and other files named in this skill are in that folder. " +
+                "Run its scripts from there, even where the text below shows another path such as .claude/skills/${winner.meta.name}/.\n\n"
+        }.orEmpty()
         return Result.success(
             SkillView(
                 name = winner.meta.name,
                 description = winner.meta.description,
                 category = winner.meta.category,
-                content = winner.content,
+                content = header + winner.content,
                 source = winner.meta.source,
                 linkedFiles = winner.linkedFiles,
             ),
@@ -173,6 +179,7 @@ class SkillStore(
         val content: String,
         val linkedFiles: List<String>,
         val support: Map<String, String>,
+        val directory: File? = null,
     )
 
     private fun findAll(name: String): List<Located> {
@@ -190,7 +197,7 @@ class SkillStore(
             }
         }
         configuredSkills[name]?.let { b ->
-            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files)?.let { out += it }
+            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files, b.directory)?.let { out += it }
         }
         return out
     }
@@ -212,8 +219,10 @@ class SkillStore(
         source: SkillSource,
         relativeDir: String,
         files: Map<String, String>,
+        directory: String? = null,
     ): Located? {
         val parsed = runCatching { SkillParser.parse(content) }.getOrNull() ?: return null
+        val folder = directory?.let(::File)?.takeIf { it.isDirectory }
         val meta = SkillMeta(
             name = parsed.name,
             description = parsed.catalogDescription,
@@ -222,6 +231,12 @@ class SkillStore(
             relativeDir = relativeDir,
             enabled = true,
         )
+        if (folder != null) {
+            val listed = folder.walkTopDown().onEnter { it == folder || !it.name.startsWith(".") && it.name !in setOf("node_modules", "__pycache__") }
+                .filter { it.isFile && it.name != "SKILL.md" }.take(MAX_LISTED + 1)
+                .map { it.relativeTo(folder).invariantSeparatorsPath }.sorted().toList()
+            return Located(meta, parsed.raw, listed.take(MAX_LISTED), files, folder)
+        }
         return Located(meta, parsed.raw, files.keys.sorted(), files)
     }
 
@@ -275,6 +290,12 @@ class SkillStore(
     private fun readSupportFile(located: Located, filePath: String): String? {
         val cleaned = filePath.trim().replace('\\', '/').trimStart('/')
         if (cleaned.contains("..")) return null
+        located.directory?.let { folder ->
+            val file = folder.resolve(cleaned).canonicalFile
+            if (!file.toPath().startsWith(folder.canonicalFile.toPath()) || !file.isFile) return null
+            if (file.length() > MAX_SUPPORT_READ) return "File is ${file.length() / 1024} KiB, too large to show here. Path: ${file.path}"
+            return file.readText()
+        }
         val root = cleaned.substringBefore('/')
         if (root !in SUPPORT_DIRS) return null
         return located.support[cleaned]
@@ -301,6 +322,8 @@ class SkillStore(
 
     companion object {
         val SUPPORT_DIRS = setOf("references", "templates", "scripts", "assets")
+        private const val MAX_LISTED = 300
+        private const val MAX_SUPPORT_READ = 256 * 1024
 
         fun loadBundledFromAssets(read: (String) -> String?, list: (String) -> List<String>): Map<String, BundledSkill> {
             val root = "skills"
