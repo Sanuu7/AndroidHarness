@@ -92,11 +92,26 @@ class AnthropicProvider(
                 })
             }
             putJsonArray("messages") {
-                // Exclude the ephemeral volatile-tail message from the rolling
-                // cache-breakpoint so the stable prefix remains cacheable.
-                val ephemeralCount = if (messages.lastOrNull()?.ephemeral == true) 1 else 0
-                applyCacheBreakpoints(serializeMessages(messages, config), ephemeralCount)
-                    .forEach { add(it) }
+                // Determine how the volatile tail (if any) was serialised.
+                //
+                // Standalone tail  → ephemeralTailCount=1, tailMergedLastBlocks=0
+                //   Rolling breakpoint goes on the message BEFORE the tail message.
+                //
+                // Merged tail (tail's text block was appended into the preceding
+                // tool-result user message by serializeMessages) →
+                //   ephemeralTailCount=0, tailMergedLastBlocks=1
+                //   Rolling breakpoint goes on that merged user message, anchored
+                //   on its last tool_result block — never on the volatile text.
+                val hasTail = messages.lastOrNull()?.ephemeral == true
+                val tailMerged = hasTail &&
+                    messages.getOrNull(messages.lastIndex - 1)?.role == com.androidharness.app.core.Role.TOOL
+                val ephemeralTailCount = if (hasTail && !tailMerged) 1 else 0
+                val tailMergedLastBlocks = if (tailMerged) 1 else 0
+                applyCacheBreakpoints(
+                    serializeMessages(messages, config),
+                    ephemeralTailCount,
+                    tailMergedLastBlocks,
+                ).forEach { add(it) }
             }
             if (tools.isNotEmpty()) {
                 val sortedTools = tools.sortedBy { it.name }
@@ -290,36 +305,50 @@ class AnthropicProvider(
      *
      * Two breakpoints are placed:
      * 1. An anchor on the first user message (stable across turns).
-     * 2. A rolling breakpoint on the last *non-ephemeral* message so that
-     *    the volatile tail (which changes every round) is never used as the
-     *    cache write target — preserving the cache for the stable prefix.
+     * 2. A rolling breakpoint on the last message that is eligible for caching.
      *
-     * [ephemeralTailCount] is the number of trailing messages that are
-     * ephemeral/volatile and must be excluded from breakpoint candidacy.
+     * Two modes for the volatile tail:
+     * - **Standalone tail** ([ephemeralTailCount] = 1): the tail is a separate
+     *   message at the end; rolling breakpoint goes on the message before it.
+     * - **Merged tail** ([tailMergedLastBlocks] = 1): the tail's text block was
+     *   merged into the last message (a user/tool-result turn); the rolling
+     *   breakpoint goes on THAT message but anchors on the last non-ephemeral
+     *   block inside it, skipping the merged volatile text block.
+     *
+     * This ensures the volatile content is never written into the cache while
+     * maximising the stable prefix that IS cached.
      */
     internal fun applyCacheBreakpoints(
         messages: List<JsonObject>,
         ephemeralTailCount: Int = 0,
+        tailMergedLastBlocks: Int = 0,
     ): List<JsonObject> {
         if (messages.isEmpty()) return messages
-        // Rolling breakpoint: last message that is NOT part of the ephemeral tail.
+        // Rolling breakpoint: last message not consumed by the standalone tail.
         val last = (messages.lastIndex - ephemeralTailCount).coerceAtLeast(0)
         val firstUser = messages.indexOfFirst {
             it["role"]?.jsonPrimitive?.contentOrNull == "user"
         }.takeIf { it in 0 until last } ?: -1
         return messages.mapIndexed { index, msg ->
             when (index) {
-                last, firstUser -> withCacheBreakpoint(msg)
+                last -> withCacheBreakpoint(msg, skipLastBlocks = tailMergedLastBlocks)
+                firstUser -> withCacheBreakpoint(msg)
                 else -> msg
             }
         }
     }
 
-    /** Returns [msg] with `cache_control: ephemeral` on its last cacheable block. */
-    internal fun withCacheBreakpoint(msg: JsonObject): JsonObject {
+    /**
+     * Returns [msg] with `cache_control: ephemeral` on its last cacheable block.
+     *
+     * [skipLastBlocks] is the number of trailing blocks in a content array that
+     * must NOT be the anchor target — used when the volatile tail's text block
+     * was merged into this message as its last element.
+     */
+    internal fun withCacheBreakpoint(msg: JsonObject, skipLastBlocks: Int = 0): JsonObject {
         val content = msg["content"] ?: return msg
         val marked: JsonElement = when (content) {
-            is JsonPrimitive -> buildJsonArray {
+            is JsonPrimitive -> if (skipLastBlocks > 0) return msg else buildJsonArray {
                 add(buildJsonObject {
                     put("type", "text")
                     put("text", content.content)
@@ -329,11 +358,14 @@ class AnthropicProvider(
 
             is JsonArray -> {
                 // Anthropic rejects cache_control on thinking blocks; anchor on
-                // the last ordinary block (text / tool_use / tool_result / image).
-                val anchor = content.indexOfLast { el ->
+                // the last ordinary block, excluding the [skipLastBlocks] merged
+                // volatile blocks at the tail.
+                val eligibleUntil = content.size - skipLastBlocks
+                val anchor = (eligibleUntil - 1 downTo 0).firstOrNull { i ->
+                    val el = content[i]
                     el is JsonObject &&
                         el["type"]?.jsonPrimitive?.contentOrNull !in setOf("thinking", "redacted_thinking")
-                }
+                } ?: -1
                 if (anchor < 0) return msg
                 JsonArray(content.mapIndexed { i, el ->
                     if (i == anchor && el is JsonObject && !el.containsKey("cache_control")) {
