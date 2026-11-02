@@ -1103,7 +1103,11 @@ class AgentEngine(
             call, mode, sessionAllowedTools, workspace, sessionId, turnId, agentMode,
             requestOptions, config, apiKey, registry, resolveSubagentModel, emitEvent,
             subagentRuns = subagentRuns,
-        )).let { result -> result.copy(output = runConfig?.redact(result.output) ?: result.output) }
+        )).let { result -> result.copy(output = runConfig?.redact(result.output) ?: result.output) }.let { result ->
+            // Leading with the tool name keeps this out of the unchanged-retry cache.
+            val hint = if (result.ok) null else registry.get(call.name)?.let { emptyArgumentsHint(call.name, call.argumentsJson, it.parametersSchema) }
+            if (hint == null) result else result.copy(output = "$hint\n${result.output}")
+        }
         runConfig?.hooks?.invoke(runConfig.config.plugins, "tool.after", kotlinx.serialization.json.buildJsonObject {
             put("tool", call.name); put("ok", result.ok)
         })?.instructions?.takeIf(String::isNotBlank)?.let { runConfig.pendingInstructions.add(it) }
