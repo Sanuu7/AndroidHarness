@@ -248,6 +248,12 @@ class AgentEngine(
     /** The latest request per chat, for side questions that reuse its cached prefix. */
     val sideContexts = SideContexts()
 
+    /**
+     * Caches the stable Code-mode system prompt across executions of the same
+     * session.  Chat-mode prompts are not cached here.
+     */
+    private val frozenSystemCache = FrozenSystemCache()
+
     /** The universal tools plus the legacy workspace-note tools. */
     private val recallToolNames = setOf("search_chats", "recent_chats", "read_chat_snippet")
     private val memoryToolNames = com.androidharness.app.data.MemoryRepository.toolNames +
@@ -304,6 +310,11 @@ class AgentEngine(
         withContext(runContext) {
         suspend fun hook(name: String, event: kotlinx.serialization.json.JsonObject = kotlinx.serialization.json.JsonObject(emptyMap())) =
             pluginHooks?.invoke(projectConfig.plugins, name, event) ?: com.androidharness.app.config.HookResult()
+        // Plugin one-time instructions for this execution.  Computed once per
+        // run() call but deliberately moved to the volatile tail (not the system)
+        // so they do not break the frozen system cache: message.received contains
+        // the new user message text, which would invalidate the system on every
+        // new execution if left there.
         val startNotes = hook("session.start").instructions + hook("message.received", kotlinx.serialization.json.buildJsonObject {
             put("message", runContext.redact(history.lastOrNull { it.role == Role.USER }?.text.orEmpty()).take(32_000))
         }).instructions
@@ -327,10 +338,44 @@ class AgentEngine(
         val agentContextEnabled = !localChat || replySettings.localModelAgentContext
         var suppliedMemories = emptyList<com.androidharness.app.core.SuppliedMemory>()
         var memoryQuery = recentMemoryQuery(history)
-        suspend fun runSystemPrompt(fullAccess: Boolean): String =
-            if (!agentContextEnabled) "" else if (conversation.isChat) chatSystemPrompt(sessionId, searchDepth, conversation, chatImageFrequency, chatInstructions)
-            else systemPrompt(workspace, mode, fullAccess = fullAccess, repoMapEnabled = repoMapEnabled, sessionId = sessionId, memoryAllowed = conversation.personalizationEnabled) +
-                (if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions") + startNotes
+
+        /**
+         * Returns the stable Code-mode system prompt, using the per-session
+         * frozen cache so the text stays byte-identical across executions.
+         *
+         * The cache is keyed by a hash of all inputs that belong in the stable
+         * system (fullAccess flag, Caveman settings, provider, model, pinned
+         * instructions, skill names).  Any change in those inputs produces a
+         * cache miss and a fresh build.  The cache is also invalidated after
+         * compaction ([compactionHappened]).
+         *
+         * Note: [startNotes] (plugin hooks that include the new user message)
+         * are intentionally NOT included here — they go in the volatile tail.
+         */
+        suspend fun runSystemPrompt(fullAccess: Boolean): String {
+            if (!agentContextEnabled) return ""
+            if (conversation.isChat) return chatSystemPrompt(sessionId, searchDepth, conversation, chatImageFrequency, chatInstructions)
+            val cacheKey = FrozenSystemCache.buildKey(
+                fullAccess = fullAccess,
+                cavemanInstalled = replySettings.cavemanInstalled,
+                cavemanIntensity = replySettings.cavemanIntensity.name,
+                cavemanWenyan = replySettings.cavemanWenyan,
+                providerId = config.id,
+                modelId = config.model,
+                pinnedInstructions = pinnedInstructions,
+                enabledSkillNames = selectedSkillStore.enabled().map { it.name },
+            )
+            frozenSystemCache.get(sessionId, cacheKey)?.let { return it }
+            val fresh = systemPrompt(
+                workspace, mode, fullAccess = fullAccess,
+                repoMapEnabled = repoMapEnabled, sessionId = sessionId,
+                selectedSkills = selectedSkillStore,
+                memoryAllowed = conversation.personalizationEnabled,
+            ) + (if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions")
+            frozenSystemCache.put(sessionId, cacheKey, fresh)
+            return fresh
+        }
+
         var systemPrompt = runSystemPrompt(false)
         var promptSandboxOff = false
         // Set to true after compaction so the stable prompt is rebuilt once
@@ -549,10 +594,13 @@ class AgentEngine(
                         }
                     }
                 }
-                // Plugin/hook instructions: these may change between rounds
+                // Plugin/hook instructions: these may change between rounds.
+                // startNotes (session.start + message.received) are included here
+                // on every round so the model has context, but because they live
+                // in the tail they do not invalidate the frozen system cache.
                 val drain = runContext.drainInstructions() + hook("prompt.before", kotlinx.serialization.json.buildJsonObject {
                     put("agent", runContext.agent); put("iteration", iterations)
-                }).instructions
+                }).instructions + startNotes
                 if (drain.isNotBlank()) append("\n\n").append(drain)
             }
             val volatileTail: ChatMessage? = volatileTailText.takeIf { it.isNotBlank() }?.let { tailText ->
@@ -589,6 +637,9 @@ class AgentEngine(
                     working.clear()
                     working.addAll(compacted)
                     compactionHappened = true
+                    // Invalidate the frozen system cache: after compaction the
+                    // repo map and workspace state may have changed.
+                    frozenSystemCache.invalidate(sessionId)
                     // Clear the CachePrefix session snapshot: post-compaction the
                     // stable prompt will be rebuilt and the baseline resets.
                     if (sessionId != null) CachePrefixLogger.clearSession(sessionId)

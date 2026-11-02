@@ -92,26 +92,31 @@ class AnthropicProvider(
                 })
             }
             putJsonArray("messages") {
-                // Determine how the volatile tail (if any) was serialised.
+                // Detect whether the ephemeral volatile tail was merged into the
+                // preceding serialised message by inspecting the serialised output
+                // itself — not the input ChatMessage roles.  serializeMessages()
+                // merges the tail when the previous *serialised* message already
+                // has role="user" (e.g. a tool-result turn OR a standalone user
+                // message), producing one fewer serialised message than inputs.
                 //
-                // Standalone tail  → ephemeralTailCount=1, tailMergedLastBlocks=0
-                //   Rolling breakpoint goes on the message BEFORE the tail message.
+                // Standalone tail  → serialised count == input count (tail emitted
+                //   as a separate user message after an assistant turn).
+                //   ephemeralTailCount=1, tailMergedLastBlocks=0.
                 //
-                // Merged tail (tail's text block was appended into the preceding
-                // tool-result user message by serializeMessages) →
-                //   ephemeralTailCount=0, tailMergedLastBlocks=1
-                //   Rolling breakpoint goes on that merged user message, anchored
-                //   on its last tool_result block — never on the volatile text.
+                // Merged tail      → serialised count == input count - 1 (tail text
+                //   block was appended into the preceding user message).
+                //   ephemeralTailCount=0, tailMergedLastBlocks=1.
+                //
+                // Rolling breakpoint: always on the last message that belongs to the
+                // stable history, anchored on the last non-volatile block so the
+                // volatile tail content is never written to the cache.
                 val hasTail = messages.lastOrNull()?.ephemeral == true
-                val tailMerged = hasTail &&
-                    messages.getOrNull(messages.lastIndex - 1)?.role == com.androidharness.app.core.Role.TOOL
+                val serialized = serializeMessages(messages, config)
+                val tailMerged = hasTail && serialized.size < messages.size
                 val ephemeralTailCount = if (hasTail && !tailMerged) 1 else 0
                 val tailMergedLastBlocks = if (tailMerged) 1 else 0
-                applyCacheBreakpoints(
-                    serializeMessages(messages, config),
-                    ephemeralTailCount,
-                    tailMergedLastBlocks,
-                ).forEach { add(it) }
+                applyCacheBreakpoints(serialized, ephemeralTailCount, tailMergedLastBlocks)
+                    .forEach { add(it) }
             }
             if (tools.isNotEmpty()) {
                 val sortedTools = tools.sortedBy { it.name }
