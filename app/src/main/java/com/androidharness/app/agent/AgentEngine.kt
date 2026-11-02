@@ -254,6 +254,13 @@ class AgentEngine(
      */
     private val frozenSystemCache = FrozenSystemCache()
 
+    /**
+     * Evicts the frozen system prompt for [sessionId].
+     * Call when a session is deleted or archived so the LRU entry is freed
+     * immediately rather than waiting for natural eviction at capacity.
+     */
+    fun invalidateSystemCache(sessionId: String) = frozenSystemCache.invalidate(sessionId)
+
     /** The universal tools plus the legacy workspace-note tools. */
     private val recallToolNames = setOf("search_chats", "recent_chats", "read_chat_snippet")
     private val memoryToolNames = com.androidharness.app.data.MemoryRepository.toolNames +
@@ -355,7 +362,8 @@ class AgentEngine(
         suspend fun runSystemPrompt(fullAccess: Boolean): String {
             if (!agentContextEnabled) return ""
             if (conversation.isChat) return chatSystemPrompt(sessionId, searchDepth, conversation, chatImageFrequency, chatInstructions)
-            val cacheKey = FrozenSystemCache.buildKey(
+            val inputs = SystemKeyInputs(
+                mode = mode.name,
                 fullAccess = fullAccess,
                 cavemanInstalled = replySettings.cavemanInstalled,
                 cavemanIntensity = replySettings.cavemanIntensity.name,
@@ -364,16 +372,18 @@ class AgentEngine(
                 modelId = config.model,
                 pinnedInstructions = pinnedInstructions,
                 enabledSkillNames = selectedSkillStore.enabled().map { it.name },
-            )
-            frozenSystemCache.get(sessionId, cacheKey)?.let { return it }
-            val fresh = systemPrompt(
-                workspace, mode, fullAccess = fullAccess,
-                repoMapEnabled = repoMapEnabled, sessionId = sessionId,
-                selectedSkills = selectedSkillStore,
+                repoMapEnabled = repoMapEnabled,
                 memoryAllowed = conversation.personalizationEnabled,
-            ) + (if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions")
-            frozenSystemCache.put(sessionId, cacheKey, fresh)
-            return fresh
+                workspaceDisplayPath = workspace.displayPath,
+            )
+            return frozenSystemCache.getOrBuild(sessionId, inputs) {
+                systemPrompt(
+                    workspace, mode, fullAccess = fullAccess,
+                    repoMapEnabled = repoMapEnabled, sessionId = sessionId,
+                    selectedSkills = selectedSkillStore,
+                    memoryAllowed = conversation.personalizationEnabled,
+                ) + (if (pinnedInstructions.isBlank()) "" else "\n\nPinned user instructions:\n$pinnedInstructions")
+            }
         }
 
         var systemPrompt = runSystemPrompt(false)
@@ -2437,7 +2447,9 @@ Rules:
             }
         }
         memory?.let {
-            sb.append("\n# Agent memory (from previous sessions)\n").append(it).append('\n')
+            sb.append("\n# Agent memory (from previous sessions)\n")
+            sb.append("Snapshot from the start of this session. For the live file use memory_read.\n")
+            sb.append(it).append('\n')
         }
         // NOTE: universalMemory.promptBlock is intentionally absent here.
         // Its result depends on the memory-recall query which changes with every
@@ -2458,7 +2470,9 @@ Rules:
                 kotlinx.coroutines.runBlocking { repoMap?.getMap(workspace, maxChars = 10_000) }
             }.getOrNull()
             if (!map.isNullOrBlank()) {
-                sb.append("\n# Repository Map (codebase index)\n").append(map).append('\n')
+                sb.append("\n# Repository Map (codebase index)\n")
+                sb.append("Snapshot from the start of this session. For the current file list use list_dir or search_files.\n")
+                sb.append(map).append('\n')
             }
         }
         return sb.toString()

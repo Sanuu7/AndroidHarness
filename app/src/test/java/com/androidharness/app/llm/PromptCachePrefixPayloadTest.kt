@@ -1,7 +1,6 @@
 package com.androidharness.app.llm
 
 import com.androidharness.app.agent.ContextHygiene
-import com.androidharness.app.agent.FrozenSystemCache
 import com.androidharness.app.agent.TodoItem
 import com.androidharness.app.agent.TodoPrompt
 import com.androidharness.app.core.ChatMessage
@@ -19,7 +18,6 @@ import kotlinx.serialization.json.put
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNotEquals
-import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -103,80 +101,8 @@ class PromptCachePrefixPayloadTest {
     // FrozenSystemCache: same key → same text, different key → miss       //
     // ------------------------------------------------------------------ //
 
-    @Test fun `FrozenSystemCache: same key returns cached text`() {
-        val cache = FrozenSystemCache()
-        val key = FrozenSystemCache.buildKey(
-            fullAccess = false,
-            cavemanInstalled = false, cavemanIntensity = "OFF", cavemanWenyan = false,
-            providerId = "deepseek", modelId = "deepseek-chat",
-            pinnedInstructions = "",
-            enabledSkillNames = listOf("android-build", "git"),
-        )
-        cache.put("session-1", key, "stable system text")
-        assertEquals("stable system text", cache.get("session-1", key))
-    }
-
-    @Test fun `FrozenSystemCache: different key is a cache miss`() {
-        val cache = FrozenSystemCache()
-        val key1 = FrozenSystemCache.buildKey(
-            fullAccess = false,
-            cavemanInstalled = false, cavemanIntensity = "OFF", cavemanWenyan = false,
-            providerId = "deepseek", modelId = "deepseek-chat",
-            pinnedInstructions = "",
-            enabledSkillNames = listOf("git"),
-        )
-        val key2 = FrozenSystemCache.buildKey(  // differs: fullAccess=true
-            fullAccess = true,
-            cavemanInstalled = false, cavemanIntensity = "OFF", cavemanWenyan = false,
-            providerId = "deepseek", modelId = "deepseek-chat",
-            pinnedInstructions = "",
-            enabledSkillNames = listOf("git"),
-        )
-        assertNotEquals("keys must differ when fullAccess changes", key1, key2)
-        cache.put("session-1", key1, "text with sandbox off")
-        assertNotNull(cache.get("session-1", key1))
-        assertEquals("cache miss on different key", null, cache.get("session-1", key2))
-    }
-
-    @Test fun `FrozenSystemCache: volatile inputs do not affect the key`() {
-        // Memory query, todo list, repo-map content, and startNotes are all
-        // volatile — they go in the tail, not the cache key.  Two executions
-        // that differ only in these inputs must produce the same key.
-        val baseKey = FrozenSystemCache.buildKey(
-            fullAccess = false,
-            cavemanInstalled = false, cavemanIntensity = "OFF", cavemanWenyan = false,
-            providerId = "deepseek", modelId = "deepseek-chat",
-            pinnedInstructions = "",
-            enabledSkillNames = listOf("git"),
-        )
-        // Simulate execution A: memory query = "prev question"
-        // Simulate execution B: memory query = "new question" (new user message)
-        // → same key because memoryQuery is not part of the key
-        val keyRunA = baseKey
-        val keyRunB = baseKey
-        assertEquals("volatile inputs must not change the cache key", keyRunA, keyRunB)
-    }
-
-    @Test fun `FrozenSystemCache: invalidate clears the entry`() {
-        val cache = FrozenSystemCache()
-        val key = FrozenSystemCache.buildKey(
-            false, false, "OFF", false, "ds", "ds-chat", "", listOf("git"),
-        )
-        cache.put("s1", key, "text")
-        assertNotNull(cache.get("s1", key))
-        cache.invalidate("s1")
-        assertEquals("should be null after invalidation", null, cache.get("s1", key))
-    }
-
-    @Test fun `FrozenSystemCache: model change produces cache miss`() {
-        val key1 = FrozenSystemCache.buildKey(
-            false, false, "OFF", false, "deepseek", "deepseek-chat", "", emptyList(),
-        )
-        val key2 = FrozenSystemCache.buildKey(
-            false, false, "OFF", false, "deepseek", "deepseek-reasoner", "", emptyList(),
-        )
-        assertNotEquals("model change must produce different key", key1, key2)
-    }
+    // FrozenSystemCache focused tests are in FrozenSystemCacheTest.kt.
+    // The helpers below (anthropicBody / deepSeekBody) exercise the payload shape.
 
     // ------------------------------------------------------------------ //
     // Anthropic: stable system + tools + shared history prefix            //
