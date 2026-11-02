@@ -334,7 +334,7 @@ private fun BehaviorValueRow(
     caution: Boolean = false,
 ) {
     Row(
-        Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).padding(16.dp),
+        Modifier.fillMaxWidth().settingsAnchor(title).clickable(role = Role.Button, onClick = onClick).padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(12.dp),
     ) {

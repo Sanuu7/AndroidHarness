@@ -259,7 +259,8 @@ internal enum class SettingsPage(
 
 internal data class SettingsSearchEntry(
     @StringRes val title: Int,
-    @StringRes val description: Int,
+    /** One line under the title; null for a setting whose label says enough, where the page path shows instead. */
+    @StringRes val description: Int?,
     val page: SettingsPage,
     val keywords: String = "",
     val primary: Boolean = false,
@@ -274,6 +275,11 @@ internal data class SettingsSearchEntry(
     val minSdk: Int = 0,
     /** The control only does something on a phone with a vibration motor. */
     val needsVibrator: Boolean = false,
+    /**
+     * Titles of the collapsed sections that hold the control, outermost first.
+     * They open on arrival, and they are shown as the result's path.
+     */
+    val within: List<Int> = emptyList(),
 )
 
 internal val settingsHomePages = listOf(
@@ -308,439 +314,90 @@ private val searchableSettingsEntries = SettingsPage.entries.map { page ->
     SettingsSearchEntry(page.title, page.description, page, page.keywords, primary = true)
 }
 
-private val subSettingsEntries = listOfNotNull(
-    if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) SettingsSearchEntry(R.string.glass_title, R.string.glass_description, SettingsPage.APPEARANCE,
-        "aharness harness glass frosted liquid blur refraction experimental appearance transparent translucent", anchor = R.string.glass_title,
-        minSdk = android.os.Build.VERSION_CODES.S) else null,
-    if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) SettingsSearchEntry(R.string.glass_liquid, R.string.glass_liquid_hint, SettingsPage.APPEARANCE,
-        "liquid glass refraction lens blur aharness harness experimental android 13", anchor = R.string.glass_title,
-        minSdk = android.os.Build.VERSION_CODES.TIRAMISU) else null,
-    SettingsSearchEntry(R.string.rumble_title, R.string.rumble_desc, SettingsPage.RUMBLE,
-        "ah rumble haptics haptic vibration vibrate buzz feedback tool calls thinking motor on off",
-        anchor = R.string.rumble_title, needsVibrator = true),
-    SettingsSearchEntry(R.string.rumble_engine_title, R.string.rumble_engine_auto_desc, SettingsPage.RUMBLE,
-        "rumble haptic engine system effects primitives android 11 waveform custom automatic", anchor = R.string.rumble_engine_title,
-        needsVibrator = true),
-    SettingsSearchEntry(R.string.rumble_events_title, R.string.rumble_events_desc, SettingsPage.RUMBLE,
-        "rumble pattern tick click thud swell rise double triple tool thinking approval answer finished level per event",
-        anchor = R.string.rumble_events_title, needsVibrator = true),
-    SettingsSearchEntry(R.string.rumble_flow_title, R.string.rumble_flow_desc, SettingsPage.RUMBLE,
-        "rumble flow smooth soothing continuous streaming writing reply typing visuals rich response widget breathe haptic vibration chat",
-        anchor = R.string.rumble_flow_title, needsVibrator = true),
-    SettingsSearchEntry(R.string.rumble_in_code, R.string.rumble_in_code_desc, SettingsPage.RUMBLE,
-        "rumble code coding tools haptic vibration", anchor = R.string.rumble_where_title, needsVibrator = true),
-    SettingsSearchEntry(R.string.chat_agents_title, R.string.chat_agents_description, SettingsPage.CHAT_OPTIONS,
-        "personal agents persona assistant knowledge skills tools model tutor researcher", anchor = R.string.chat_agents_title),
-    SettingsSearchEntry(R.string.background_run_title, R.string.background_run_description, SettingsPage.BACKGROUND, "background running leave minimize", anchor = R.string.background_run_title),
-    SettingsSearchEntry(R.string.background_notifications_title, R.string.background_notifications_description, SettingsPage.BACKGROUND, "notifications alerts", anchor = R.string.background_notifications_title),
-    SettingsSearchEntry(
-        R.string.chat_global_instructions,
-        R.string.chat_global_instructions_desc,
-        SettingsPage.CHAT_OPTIONS,
-        "global chat instructions custom personalization prompt default override replace",
-        anchor = R.string.chat_global_instructions,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_start_screen,
-        R.string.settings_page_chat_options_desc,
-        SettingsPage.CHAT_OPTIONS,
-        "default ui selection code chat last selected start screen launch startup",
-        anchor = R.string.settings_start_screen,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_chat_start,
-        R.string.settings_page_chat_options_desc,
-        SettingsPage.CHAT_OPTIONS,
-        "chat start new last resume continue fresh blank conversation launch startup",
-        anchor = R.string.settings_chat_start,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_live_updates_title,
-        R.string.settings_search_live_updates_desc,
-        SettingsPage.BACKGROUND,
-        "live activity updates now bar samsung one ui pixel hyperos coloros oxygenos originos magicos status bar lock screen notification foreground",
-        anchor = R.string.settings_agent_live_updates,
-        minSdk = android.os.Build.VERSION_CODES.BAKLAVA,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_language_contribute_title,
-        R.string.settings_language_contribute_description,
-        SettingsPage.LANGUAGE,
-        "translation translate contribute community poeditor language",
-        anchor = R.string.settings_language_contribute_title,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_progress_bar_title,
-        R.string.settings_search_progress_bar_desc,
-        SettingsPage.APPEARANCE,
-        "progress loading indicator animation expressive flat squiggly wavy",
-        anchor = R.string.settings_anchor_progress_bar_style,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_fallbacks_title,
-        R.string.settings_search_fallbacks_desc,
-        SettingsPage.MODELS,
-        "fallback failover retry retries quota ZDR privacy chain",
-        anchor = R.string.settings_anchor_fallbacks,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_continue_chatgpt_title,
-        R.string.settings_search_continue_chatgpt_desc,
-        SettingsPage.CONNECTED_ACCOUNTS,
-        "sign in codex subscription",
-        anchor = R.string.settings_anchor_continue_chatgpt,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_manage_providers_title,
-        R.string.settings_search_manage_providers_desc,
-        SettingsPage.MODELS,
-        "provider api key openai anthropic gemini login model",
-        anchor = R.string.settings_anchor_manage_providers,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_dual_planning_title,
-        R.string.settings_search_dual_planning_desc,
-        SettingsPage.MODELS,
-        "planning plan model execute execution model",
-        anchor = R.string.settings_anchor_dual_planning,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_plan_model_title,
-        R.string.settings_search_plan_model_desc,
-        SettingsPage.MODELS,
-        "planning dual",
-        anchor = R.string.settings_anchor_dual_planning,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_execute_model_title,
-        R.string.settings_search_execute_model_desc,
-        SettingsPage.MODELS,
-        "execution dual",
-        anchor = R.string.settings_anchor_dual_planning,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_permission_mode_title,
-        R.string.settings_search_permission_mode_desc,
-        SettingsPage.AGENT,
-        "permissions approval full access",
-        anchor = R.string.settings_anchor_default_permission,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_subagent_tools_title,
-        R.string.settings_search_subagent_tools_desc,
-        SettingsPage.SUBAGENT,
-        "subagent sub-agent permissions tools commands read only plan",
-        anchor = R.string.settings_anchor_subagent_tools,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_subagent_model_title,
-        R.string.settings_search_subagent_model_desc,
-        SettingsPage.SUBAGENT,
-        "subagent sub-agent model provider execution different separate",
-        anchor = R.string.settings_anchor_subagent_model,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_max_context_title,
-        R.string.settings_search_max_context_desc,
-        SettingsPage.AGENT,
-        "context tokens limit",
-        anchor = R.string.settings_anchor_max_context,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_tool_iterations_title,
-        R.string.settings_search_tool_iterations_desc,
-        SettingsPage.AGENT,
-        "iterations tools max limit",
-        anchor = R.string.settings_anchor_tool_iterations,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_anchor_steering,
-        R.string.steering_search_desc,
-        SettingsPage.AGENT,
-        "steer steering queue message while running busy interrupt ah auto after task",
-        anchor = R.string.settings_anchor_steering,
-    ),
-    SettingsSearchEntry(
-        R.string.tips_setting_title,
-        R.string.tips_search_desc,
-        SettingsPage.AGENT,
-        "tips hints suggestions help hide turn off disable onboarding learn features",
-        anchor = R.string.tips_setting_title,
-    ),
-    SettingsSearchEntry(
-        R.string.as_setting_title,
-        R.string.as_search_desc,
-        SettingsPage.AGENT,
-        "agent change settings from chat ask assistant control toggle slider palette",
-        anchor = R.string.as_setting_title,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_project_instructions_title,
-        R.string.settings_search_project_instructions_desc,
-        SettingsPage.AGENT,
-        "agents instructions memory workspace prompt",
-        anchor = R.string.settings_anchor_project_instructions,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_start_code_title,
-        R.string.settings_search_start_code_desc,
-        SettingsPage.CODING,
-        "startup launch chat resume continue code coding new last conversation",
-        anchor = R.string.settings_start_code,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_show_live_code_title,
-        R.string.settings_search_show_live_code_desc,
-        SettingsPage.CHAT,
-        "writing streaming diff added removed tokens",
-        anchor = R.string.settings_anchor_show_live_code,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_repo_map_title,
-        R.string.settings_search_repo_map_desc,
-        SettingsPage.CHAT,
-        "repo map code index symbols",
-        anchor = R.string.settings_anchor_repo_map,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_codegraph_title,
-        R.string.settings_search_codegraph_desc,
-        SettingsPage.CODE_INTELLIGENCE,
-        "codegraph explore node impact affected sync semantic graph",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_codegraph_index_title,
-        R.string.settings_search_codegraph_index_desc,
-        SettingsPage.CODE_INTELLIGENCE,
-        "project workspace initialize reindex graph",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_slash_commands_title,
-        R.string.settings_search_slash_commands_desc,
-        SettingsPage.CHAT,
-        "shortcut snippets custom command",
-        anchor = R.string.settings_anchor_slash_commands,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_stt_title,
-        R.string.settings_search_stt_desc,
-        SettingsPage.VOICE,
-        "voice microphone groq whisper speech transcription",
-        anchor = R.string.settings_anchor_stt,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_whisper_title,
-        R.string.settings_search_whisper_desc,
-        SettingsPage.VOICE,
-        "groq voice transcription",
-        anchor = R.string.settings_anchor_whisper,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_tts_title,
-        R.string.settings_search_tts_desc,
-        SettingsPage.VOICE,
-        "tts text to speech read aloud speak replies voice output groq playai",
-        anchor = R.string.settings_anchor_tts,
-    ),
-    SettingsSearchEntry(
-        R.string.live_settings_model,
-        R.string.live_settings_model_desc,
-        SettingsPage.LIVE_MODE,
-        "live mode fast light model voice",
-        anchor = R.string.live_settings_model,
-    ),
-    SettingsSearchEntry(
-        R.string.live_settings_access,
-        R.string.live_settings_access_desc,
-        SettingsPage.LIVE_MODE,
-        "live mode read only edit files start tasks permissions",
-        anchor = R.string.live_settings_access,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_theme_title,
-        R.string.settings_search_theme_desc,
-        SettingsPage.APPEARANCE,
-        "dark light amoled color",
-        anchor = R.string.settings_anchor_theme,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_layout_title,
-        R.string.settings_search_layout_desc,
-        SettingsPage.APPEARANCE,
-        "landscape tablet split panes wide desktop",
-        anchor = R.string.settings_anchor_layout,
-    ),
-    SettingsSearchEntry(
-        R.string.theme_color_palette,
-        R.string.theme_color_hint,
-        SettingsPage.APPEARANCE,
-        "theme material you colors palette blue ocean indigo lavender orchid rose coral amber lime forest teal slate",
-        anchor = R.string.settings_anchor_dynamic_color,
-    ),
-    SettingsSearchEntry(
-        R.string.theme_custom_title, R.string.theme_custom_hint, SettingsPage.APPEARANCE,
-        "custom color picker palette hex hue saturation brightness create edit accent highlight",
-        anchor = R.string.theme_custom_title,
-    ),
-    SettingsSearchEntry(
-        R.string.theme_canvas_title, R.string.theme_canvas_description, SettingsPage.APPEARANCE,
-        "harness canvas background wallpaper photo image dimming dim chat code adapt colors",
-        anchor = R.string.theme_canvas_title,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_dynamic_color_title,
-        R.string.settings_search_dynamic_color_desc,
-        SettingsPage.APPEARANCE,
-        "material you wallpaper colors",
-        anchor = R.string.settings_anchor_dynamic_color,
-        minSdk = android.os.Build.VERSION_CODES.S,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_app_lock_title,
-        R.string.settings_search_app_lock_desc,
-        SettingsPage.PRIVACY,
-        "fingerprint face pin authentication lock",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_autolock_title,
-        R.string.settings_search_autolock_desc,
-        SettingsPage.PRIVACY,
-        "biometric timeout security",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_screenshots_title,
-        R.string.settings_search_screenshots_desc,
-        SettingsPage.PRIVACY,
-        "screen capture screenshot privacy",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_github_title,
-        R.string.settings_search_github_desc,
-        SettingsPage.GITHUB,
-        "oauth token pat repositories login",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_web_title,
-        R.string.settings_search_web_desc,
-        SettingsPage.SEARCH,
-        "internet brave tavily api key keyless",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_mcp_title,
-        R.string.settings_search_mcp_desc,
-        SettingsPage.MCP,
-        "tools integrations server transport",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_add_workspace_title,
-        R.string.settings_search_add_workspace_desc,
-        SettingsPage.WORKSPACE,
-        "folder storage project saf",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_shared_storage_title,
-        R.string.settings_search_shared_storage_desc,
-        SettingsPage.ENVIRONMENT,
-        "files storage permission all files",
-        anchor = R.string.settings_anchor_shared_storage,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_shizuku_title,
-        R.string.settings_search_shizuku_desc,
-        SettingsPage.ENVIRONMENT,
-        "adb shell system paths permission",
-        anchor = R.string.settings_anchor_system_paths,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_linux_title,
-        R.string.settings_search_linux_desc,
-        SettingsPage.ENVIRONMENT,
-        "terminal packages shell environment",
-        anchor = R.string.settings_anchor_app_shell,
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_battery_title,
-        R.string.settings_search_battery_desc,
-        SettingsPage.ENVIRONMENT,
-        "background keep alive battery",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_export_title,
-        R.string.settings_search_export_desc,
-        SettingsPage.BACKUP,
-        "backup export history archive",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_import_title,
-        R.string.settings_search_import_desc,
-        SettingsPage.BACKUP,
-        "backup import restore history",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_updates_title,
-        R.string.settings_search_updates_desc,
-        SettingsPage.UPDATES,
-        "version update release download",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_license_title,
-        R.string.settings_search_license_desc,
-        SettingsPage.ABOUT,
-        "mit copyright permissive open source",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_credits_title,
-        R.string.settings_search_credits_desc,
-        SettingsPage.ABOUT,
-        "thanks acknowledgements inspirations projects",
-    ),
-    SettingsSearchEntry(
-        R.string.settings_search_author_title,
-        R.string.settings_search_author_desc,
-        SettingsPage.ABOUT,
-        "sanuu github repository maintainer source code",
-    ),
-)
+/** Every searchable entry: each page, then each setting inside one. */
+internal val allSettingsEntries: List<SettingsSearchEntry> by lazy { searchableSettingsEntries + settingsControlEntries }
 
 /**
- * Entries matching every whitespace-separated term of [query]. Titles and
- * descriptions are resolved through [context] so a search works in whichever
- * language the app is currently running in, while [SettingsSearchEntry.keywords]
- * stay in English so the original vocabulary keeps working everywhere.
+ * Ranked search over [entries]. Titles and descriptions are resolved through
+ * [text] so a search works in whichever language the app is running in, and
+ * again through [englishText] so the English names keep working everywhere,
+ * like [SettingsSearchEntry.keywords], which stay in English.
+ *
+ * A setting ranks above the page that holds it, and a page that only matched
+ * through its keywords steps aside when one of its own settings matched at
+ * least as well, so searching for a control lands on the control.
  */
-internal fun matchingSettingsEntries(query: String, context: Context): List<SettingsSearchEntry> {
-    val english = context.createConfigurationContext(Configuration(context.resources.configuration).apply {
-        setLocale(Locale.ENGLISH)
-    })
-    return matchingSettingsEntries(query, text = { context.getString(it) }, englishText = { english.getString(it) })
+internal class SettingsSearchIndex(
+    entries: List<SettingsSearchEntry>,
+    text: (Int) -> String,
+    englishText: ((Int) -> String)? = null,
+) {
+    private class Indexed(val entry: SettingsSearchEntry, val fields: List<SettingsSearch.Field>, val order: String)
+
+    private val indexed = entries.map { entry ->
+        val fields = buildList {
+            fun label(@StringRes id: Int?, weight: Double) {
+                if (id == null) return
+                val local = text(id)
+                add(SettingsSearch.Field(local, weight))
+                englishText?.invoke(id)?.takeIf { it != local }?.let { add(SettingsSearch.Field(it, weight * 0.95)) }
+            }
+            label(entry.title, 1.0)
+            add(SettingsSearch.Field(entry.keywords, 0.7))
+            if (!entry.primary) label(entry.page.title, 0.5)
+            entry.within.forEach { label(it, 0.5) }
+            label(entry.description, 0.45)
+            label(entry.page.group, 0.3)
+        }
+        Indexed(entry, fields, text(entry.title))
+    }
+
+    fun search(query: String): List<SettingsSearchEntry> {
+        val terms = SettingsSearch.terms(query)
+        if (terms.isEmpty()) return homeSettingsEntries
+        return rank(terms, fuzzy = false).ifEmpty { rank(terms, fuzzy = true) }
+    }
+
+    private fun rank(terms: List<String>, fuzzy: Boolean): List<SettingsSearchEntry> {
+        val scored = indexed.mapNotNull { item ->
+            var total = 0.0
+            for (term in terms) {
+                val best = item.fields.maxOf { it.weight * SettingsSearch.quality(term, it, fuzzy) }
+                if (best <= 0.0) return@mapNotNull null
+                total += best
+            }
+            item to total
+        }
+        val bestSetting = scored.filter { !it.first.entry.primary }
+            .groupBy { it.first.entry.page }
+            .mapValues { (_, matches) -> matches.maxOf { it.second } }
+        return scored
+            .filterNot { (item, score) -> item.entry.primary && (bestSetting[item.entry.page] ?: -1.0) >= score }
+            .sortedWith(
+                compareByDescending<Pair<Indexed, Double>> { it.second }
+                    .thenBy { it.first.entry.primary }
+                    .thenBy { it.first.order.length }
+                    .thenBy { it.first.order },
+            )
+            .map { it.first.entry }
+    }
 }
+
+/** The index for the language the app is running in, plus English unless that already is English. */
+internal fun settingsSearchIndex(context: Context): SettingsSearchIndex {
+    val english = if (context.resources.configuration.locales[0].language == Locale.ENGLISH.language) null
+    else context.createConfigurationContext(Configuration(context.resources.configuration).apply { setLocale(Locale.ENGLISH) })
+    return SettingsSearchIndex(allSettingsEntries, { context.getString(it) }, english?.let { e -> { e.getString(it) } })
+}
+
+internal fun matchingSettingsEntries(query: String, context: Context): List<SettingsSearchEntry> =
+    settingsSearchIndex(context).search(query)
 
 internal fun matchingSettingsEntries(
     query: String,
     text: (Int) -> String,
     englishText: ((Int) -> String)? = null,
-): List<SettingsSearchEntry> {
-    val terms = query.trim().lowercase().split(Regex("""\s+""")).filter { it.isNotBlank() }
-    if (terms.isEmpty()) return homeSettingsEntries
-    fun haystack(entry: SettingsSearchEntry): String = buildString {
-        append(text(entry.title)).append(' ')
-        append(text(entry.description)).append(' ')
-        append(text(entry.page.title)).append(' ')
-        append(text(entry.page.group)).append(' ')
-        englishText?.let { english ->
-            listOf(entry.title, entry.description, entry.page.title, entry.page.group).forEach {
-                append(english(it)).append(' ')
-            }
-        }
-        append(entry.keywords)
-    }.lowercase()
-    return (searchableSettingsEntries + subSettingsEntries)
-        .filter { entry -> terms.all { it in haystack(entry) } }
-        .sortedWith(
-            compareBy<SettingsSearchEntry> { it.primary }
-                .thenBy { text(it.title) },
-        )
-}
+): List<SettingsSearchEntry> = SettingsSearchIndex(allSettingsEntries, text, englishText).search(query)
 
 internal fun matchingSettingsPages(query: String, context: Context): List<SettingsPage> =
     matchingSettingsEntries(query, context).map { it.page }.distinct()
@@ -792,9 +449,7 @@ internal fun settingsDeepLinkAnchor(target: String): Int? = when (target) {
     else -> parseSettingsTarget(target)?.second
 }
 
-/** The control a search result should scroll to, or null when it opens a whole page. */
-@StringRes
-internal fun settingsAnchorFor(title: String, context: Context): Int? =
-    subSettingsEntries.firstOrNull { entry ->
-        entry.anchor != null && context.getString(entry.title) == title
-    }?.anchor
+/** Collapsed sections to open so the control behind [anchor] is visible. */
+internal fun settingsRevealFor(@StringRes anchor: Int?): Set<Int> =
+    if (anchor == null) emptySet()
+    else allSettingsEntries.firstOrNull { it.anchor == anchor && it.within.isNotEmpty() }?.within?.toSet().orEmpty()

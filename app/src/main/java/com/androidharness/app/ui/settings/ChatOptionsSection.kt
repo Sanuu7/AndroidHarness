@@ -104,7 +104,7 @@ internal fun ChatOptionsSection(
         )
     }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().toggleable(value = settings.chatKeepThinkingCollapsed, role = Role.Switch, onValueChange = onKeepThinkingCollapsed).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().settingsAnchor(R.string.chat_keep_thinking_collapsed).toggleable(value = settings.chatKeepThinkingCollapsed, role = Role.Switch, onValueChange = onKeepThinkingCollapsed).padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Column(Modifier.weight(1f).padding(end = 12.dp)) {
                 Text(stringResource(R.string.chat_keep_thinking_collapsed), style = MaterialTheme.typography.titleSmall)
                 Text(stringResource(R.string.chat_keep_thinking_collapsed_desc), style = MaterialTheme.typography.bodySmall)

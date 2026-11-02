@@ -74,7 +74,7 @@ internal fun GitHubIntegrationSection(container: AppContainer) {
                 }
                 if (container.github.clientId.isBlank()) Text(stringResource(R.string.settings_github_signin_unavailable),
                     style = MaterialTheme.typography.bodySmall)
-                Row {
+                Row(Modifier.settingsAnchor(R.string.settings_github_allow_workflows)) {
                     Checkbox(workflow, onCheckedChange = { workflow = it })
                     Text(stringResource(R.string.settings_github_allow_workflows), modifier = Modifier.weight(1f).padding(top = 12.dp))
                 }
@@ -108,7 +108,7 @@ internal fun GitHubIntegrationSection(container: AppContainer) {
                 modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.settings_github_disconnect)) }
         }
     }
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_github_repositories)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(stringResource(R.string.settings_github_repositories), style = MaterialTheme.typography.titleMedium)
             Button(onClick = { importing = true }, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.settings_github_import)) }

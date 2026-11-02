@@ -70,7 +70,7 @@ internal fun SettingsBackupSection(container: AppContainer) {
         includeKeys = false
     }
     SecureScreenEffect(container, source != null || destination != null || preview != null || busy)
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_backup_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.settings_backup_title), style = MaterialTheme.typography.titleSmall)
             Text(stringResource(R.string.settings_backup_desc),

@@ -42,7 +42,8 @@ internal fun SettingsHome(
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
-    val results = remember(query, context) { matchingSettingsEntries(query, context) }
+    val index = remember(context) { settingsSearchIndex(context) }
+    val results = remember(query, index) { index.search(query) }
     Column(
         modifier.padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -108,7 +109,12 @@ internal fun SettingsHome(
                                 }
                                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                                     Text(stringResource(entry.title), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium)
-                                    Text(stringResource(entry.description), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                                    settingsResultPath(entry)?.let { path ->
+                                        Text(path, style = MaterialTheme.typography.labelMedium, color = colors.primary)
+                                    }
+                                    entry.description?.let {
+                                        Text(stringResource(it), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                                    }
                                     SettingsAvailabilityTag(rememberSettingsAvailability(entry), Modifier.padding(top = 2.dp))
                                 }
                                 Icon(
@@ -138,7 +144,8 @@ internal fun DesktopSettingsNavigation(
 ) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
-    val results = remember(query, context) { matchingSettingsEntries(query, context) }
+    val index = remember(context) { settingsSearchIndex(context) }
+    val results = remember(query, index) { index.search(query) }
     Surface(modifier, color = scheme.surfaceContainerLow, contentColor = scheme.onSurface) {
         Column(Modifier.fillMaxSize().semantics { contentDescription = context.getString(R.string.settings_search_categories) }) {
             com.androidharness.app.ui.learn.LearnEntryCard(
@@ -161,7 +168,7 @@ internal fun DesktopSettingsNavigation(
                         item { Text(stringResource(group), Modifier.padding(start = 12.dp, top = 16.dp, bottom = 6.dp),
                             style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant) }
                     }
-                    items(entries, key = { "${it.page}:${it.title}" }) { entry ->
+                    items(entries, key = { "${it.page}:${it.title}:${it.anchor}" }) { entry ->
                         val active = entry.page == selected || entry.page == SettingsPage.CODING && selected in settingsCodingPages
                         Surface(onClick = { onOpen(entry.page, entry.anchor) },
                             color = if (active) scheme.secondaryContainer else scheme.surfaceContainerLow,
@@ -172,8 +179,14 @@ internal fun DesktopSettingsNavigation(
                                 if (entry.page == SettingsPage.MEMORY)
                                     Icon(painterResource(R.drawable.ic_brain), null, Modifier.size(18.dp))
                                 else Icon(settingsIcon(entry.page), null, Modifier.size(18.dp))
-                                Text(stringResource(entry.title), style = MaterialTheme.typography.labelLarge, maxLines = 2,
-                                    overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
+                                Column(Modifier.weight(1f)) {
+                                    Text(stringResource(entry.title), style = MaterialTheme.typography.labelLarge, maxLines = 2,
+                                        overflow = TextOverflow.Ellipsis)
+                                    settingsResultPath(entry)?.let { path ->
+                                        Text(path, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                            color = if (active) scheme.onSecondaryContainer else scheme.onSurfaceVariant)
+                                    }
+                                }
                             }
                         }
                     }
@@ -181,6 +194,18 @@ internal fun DesktopSettingsNavigation(
             }
         }
     }
+}
+
+/** Where a setting lives, such as "Coding › Environment › Advanced device access"; null for a page itself. */
+@Composable
+internal fun settingsResultPath(entry: SettingsSearchEntry): String? {
+    if (entry.primary) return null
+    val parts = buildList {
+        if (!entry.page.onHome) add(stringResource(SettingsPage.CODING.title))
+        add(stringResource(entry.page.title))
+        entry.within.forEach { add(stringResource(it)) }
+    }
+    return parts.joinToString(" › ")
 }
 
 @Composable

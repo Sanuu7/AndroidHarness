@@ -18,7 +18,7 @@ internal fun RememberedPermissionsSection(container: AppContainer) {
     val workspace by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
     val selected = grants.filter { it.workspacePath == workspace?.displayPath }
     SecureScreenEffect(container, selected.isNotEmpty())
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_permissions_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(stringResource(R.string.settings_permissions_title), style = MaterialTheme.typography.titleSmall)
             Text(stringResource(R.string.settings_permissions_note),

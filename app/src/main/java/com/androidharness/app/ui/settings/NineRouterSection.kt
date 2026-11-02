@@ -130,7 +130,7 @@ internal fun NineRouterPanel(
                 }
                 if (installed) {
                     HorizontalDivider()
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Row(Modifier.settingsAnchor(R.string.nine_router_auto_start), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                         Column(Modifier.weight(1f)) {
                             Text(stringResource(R.string.nine_router_auto_start), style = MaterialTheme.typography.titleSmall)
                             Text(stringResource(R.string.nine_router_auto_start_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"මෝටර් රථය Fallback"</string>
     <string name="settings_root_access_mode">"ප් රවේශය"</string>
     <string name="settings_root_temp_mode">"තාවකාලික root mode"</string>
+    <string name="settings_root_app_workspace_privileged">"යෙදුම් වැඩපිළිවෙළ තුළ විශේෂිත Shell"</string>
+    <string name="settings_root_app_workspace_privileged_off">"රැහැන් රහිත ADB, Shizuku හෝ root සම්බන්ධ වී තිබුණත්, යෙදුම් වැඩපිළිවෙළේ විධාන යෙදුම් පරිශීලක ලෙස ක්‍රියාත්මක වේ."</string>
+    <string name="settings_root_app_workspace_privileged_on">"යෙදුම් වැඩපිළිවෙළේ විධාන ප්‍රවේශ මාදිලිය අනුගමනය කරයි, එබැවින් ඒවා රැහැන් රහිත ADB, Shizuku හෝ root මගින් ක්‍රියාත්මක වේ. යෙදුමේ පෞද්ගලික දත්ත ෆෝල්ඩරය තවමත් යෙදුම් පරිශීලක භාවිත කරයි."</string>
     <string name="settings_root_temp_use">"තාවකාලික root භාවිතය"</string>
     <string name="settings_root_temp_note">"සෑම යෙදුම නැවත සම්බන්ධ කිරීමට ආරම්භ කිරීමෙන් පසු එක් වරක් මතු ප්‍රවේශය ලබා දීම. මෙම නැවත නැවත නැවත නැවත භාවිතා සීමාවන්."</string>
     <string name="settings_root_project_permissions">"ව්‍යාපෘතියේ root අවසරය"</string>

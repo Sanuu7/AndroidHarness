@@ -54,9 +54,10 @@ internal fun SettingsDisclosure(icon: ImageVector, title: String, subtitle: Stri
     initiallyExpanded: Boolean = false, forceExpanded: Boolean = false, content: @Composable ColumnScope.() -> Unit) {
     var expanded by rememberSaveable(title) { mutableStateOf(initiallyExpanded) }
     val highlight = LocalSettingsHighlight.current
-    LaunchedEffect(highlight, forceExpanded) { if (forceExpanded || highlight in anchors) expanded = true }
+    val revealed = settingsRevealed(title)
+    LaunchedEffect(highlight, forceExpanded, revealed) { if (forceExpanded || revealed || highlight in anchors) expanded = true }
     Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        SettingsFeatureRow(icon, title, subtitle, { expanded = !expanded }, expanded)
+        SettingsAnchor(title) { SettingsFeatureRow(icon, title, subtitle, { expanded = !expanded }, expanded) }
         AnimatedVisibility(expanded, enter = fadeIn() + expandVertically(expressiveSpatialSpec()),
             exit = fadeOut() + shrinkVertically(expressiveSpatialSpec())) {
             Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
@@ -66,6 +67,6 @@ internal fun SettingsDisclosure(icon: ImageVector, title: String, subtitle: Stri
 
 @Composable
 internal fun SettingsGroupHeading(@StringRes title: Int) {
-    Text(stringResource(title), Modifier.padding(start = 4.dp, top = 10.dp, bottom = 2.dp),
+    Text(stringResource(title), Modifier.settingsAnchor(title).padding(start = 4.dp, top = 10.dp, bottom = 2.dp),
         style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
 }

@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"Fallback automático"</string>
     <string name="settings_root_access_mode">"Modo de acesso"</string>
     <string name="settings_root_temp_mode">"Modo root temporário"</string>
+    <string name="settings_root_app_workspace_privileged">"Shell privilegiado na área de trabalho do app"</string>
+    <string name="settings_root_app_workspace_privileged_off">"Os comandos na área de trabalho do app são executados como o usuário do app, mesmo com ADB sem fio, Shizuku ou root conectados."</string>
+    <string name="settings_root_app_workspace_privileged_on">"Os comandos na área de trabalho do app seguem o modo de acesso, então são executados pelo ADB sem fio, Shizuku ou root. A pasta de dados privada do app continua usando o usuário do app."</string>
     <string name="settings_root_temp_use">"Uso temporário do root"</string>
     <string name="settings_root_temp_note">"Conceda acesso root uma vez após cada inicialização do app para reconectar. Reativar isso restaura os limites por uso."</string>
     <string name="settings_root_project_permissions">"Permissões root do projeto"</string>

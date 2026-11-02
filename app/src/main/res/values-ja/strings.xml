@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"自動フォールバック"</string>
     <string name="settings_root_access_mode">"アクセスモード"</string>
     <string name="settings_root_temp_mode">"一時Rootモード"</string>
+    <string name="settings_root_app_workspace_privileged">"アプリワークスペースの特権シェル"</string>
+    <string name="settings_root_app_workspace_privileged_off">"ワイヤレス ADB、Shizuku、Root が接続されていても、アプリワークスペースのコマンドはアプリユーザーとして実行されます。"</string>
+    <string name="settings_root_app_workspace_privileged_on">"アプリワークスペースのコマンドはアクセスモードに従い、ワイヤレス ADB、Shizuku、Root が実行します。アプリのプライベートデータフォルダは引き続きアプリユーザーを使用します。"</string>
     <string name="settings_root_temp_use">"一時Root使用"</string>
     <string name="settings_root_temp_note">"再接続するにはアプリ起動後に毎回一度Rootアクセスを許可してください。これを再度オンにすると、使用ごとの制限が復元されます。"</string>
     <string name="settings_root_project_permissions">"プロジェクトRoot権限"</string>

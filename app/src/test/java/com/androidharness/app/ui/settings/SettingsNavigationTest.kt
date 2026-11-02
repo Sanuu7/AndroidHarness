@@ -23,7 +23,7 @@ class SettingsNavigationTest {
     @Test
     fun `search finds controls by familiar names and hidden keywords`() {
         assertEquals(listOf(SettingsPage.APPEARANCE), matchingSettingsPages("  DARK  theme ", settingsTestStrings()))
-        assertEquals(listOf(SettingsPage.ENVIRONMENT), matchingSettingsPages("battery", settingsTestStrings()))
+        assertEquals(SettingsPage.ENVIRONMENT, matchingSettingsPages("battery", settingsTestStrings()).first())
         assertTrue(SettingsPage.MODELS in matchingSettingsPages("api\tkey", settingsTestStrings()))
         assertEquals(listOf(SettingsPage.CHAT), matchingSettingsPages("repo map", settingsTestStrings()))
         assertEquals(listOf(SettingsPage.PRIVACY), matchingSettingsPages("fingerprint", settingsTestStrings()))

@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"Automatischer Fallback"</string>
     <string name="settings_root_access_mode">"Zugriffsmodus"</string>
     <string name="settings_root_temp_mode">"Temporärer Root-Modus"</string>
+    <string name="settings_root_app_workspace_privileged">"Privilegierte Shell im App-Arbeitsbereich"</string>
+    <string name="settings_root_app_workspace_privileged_off">"Befehle im App-Arbeitsbereich laufen als App-Benutzer, auch mit verbundenem Drahtlos-ADB, Shizuku oder Root."</string>
+    <string name="settings_root_app_workspace_privileged_on">"Befehle im App-Arbeitsbereich folgen dem Zugriffsmodus, werden also von Drahtlos-ADB, Shizuku oder Root ausgeführt. Der private Datenordner der App nutzt weiterhin den App-Benutzer."</string>
     <string name="settings_root_temp_use">"Temporäre Root-Nutzung"</string>
     <string name="settings_root_temp_note">"Gewähre nach jedem App-Start einmal Root-Zugriff, um die Verbindung wiederherzustellen. Wenn du dies wieder aktivierst, werden die Beschränkungen pro Nutzung wiederhergestellt."</string>
     <string name="settings_root_project_permissions">"Projekt-Root-Berechtigungen"</string>

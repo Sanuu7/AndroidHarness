@@ -18,7 +18,7 @@ import com.androidharness.app.ui.common.OutlinedButton
 internal fun DhizukuCard(manager: DhizukuManager) {
     val connection by manager.state.collectAsStateWithLifecycle()
     LaunchedEffect(manager) { while (true) { manager.refresh(); delay(3_000) } }
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.dhizuku_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.dhizuku_title), style = MaterialTheme.typography.titleSmall)
             Text(stringResource(when (connection.status) {

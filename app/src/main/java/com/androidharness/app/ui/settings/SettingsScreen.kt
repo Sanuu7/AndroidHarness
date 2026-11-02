@@ -94,6 +94,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
@@ -290,10 +291,14 @@ fun SettingsScreen(
             )
         } else {
             key(page) {
-                SettingsHighlightScope(highlight) {
+                val lazyPage = page == SettingsPage.LEARN || page == SettingsPage.LOCAL_MODELS || page == SettingsPage.CONFIGURATION || page == SettingsPage.PLUGINS
+                val pageScroll = rememberScrollState()
+                val scroller = remember(pageScroll) { SettingsScroller(pageScroll) }
+                val reveal = remember(highlight) { settingsRevealFor(highlight) }
+                SettingsHighlightScope(highlight, reveal, scroller.takeUnless { lazyPage }) {
                     Column(
                         modifier = Modifier.then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
-                            .fillMaxSize().then(if (page == SettingsPage.LEARN || page == SettingsPage.LOCAL_MODELS || page == SettingsPage.CONFIGURATION || page == SettingsPage.PLUGINS) Modifier else Modifier.verticalScroll(rememberScrollState()))
+                            .fillMaxSize().then(if (lazyPage) Modifier else Modifier.onGloballyPositioned { scroller.viewport = it }.verticalScroll(pageScroll))
                             .then(if (page == SettingsPage.LEARN) Modifier else Modifier.padding(horizontal = 16.dp, vertical = 16.dp)),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
                     ) {
@@ -548,7 +553,7 @@ private fun WorkspaceSection(
         }
         Button(
             onClick = onAddWorkspace,
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp),
+            modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_add_workspace_title).padding(horizontal = 14.dp, vertical = 10.dp),
         ) {
             Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
@@ -680,7 +685,7 @@ private fun CodeIntelligenceSection(
     }
 
     SettingsHeader("CodeGraph")
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_codegraph_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -889,7 +894,7 @@ private fun CodeIntelligenceSection(
         }
     }
 
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_codegraph_agent_integration)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(stringResource(R.string.settings_codegraph_agent_integration), style = MaterialTheme.typography.titleSmall)
             Text(
@@ -934,7 +939,7 @@ private fun WebSearchSection(container: AppContainer) {
     SecureScreenEffect(container, expanded)
 
     SettingsHeader(uiContext.getString(R.string.settings_page_search_title))
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_web_backend_label)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -1200,7 +1205,7 @@ private fun VoiceSpeechSection(
 
     // One key serves both Whisper (input) and PlayAI (output).
     if (isGroq || isTtsGroq) {
-        SettingsPanel(Modifier.fillMaxWidth()) {
+        SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_groq_key)) {
             Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Icon(
@@ -1472,6 +1477,7 @@ private fun VoiceSpeechSection(
             if (isTtsGroq) {
                 Text(
                     stringResource(R.string.settings_tts_model),
+                    Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_model),
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -1489,6 +1495,7 @@ private fun VoiceSpeechSection(
 
             Text(
                 stringResource(R.string.settings_tts_voice),
+                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_voice),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -1504,6 +1511,7 @@ private fun VoiceSpeechSection(
 
             Text(
                 stringResource(R.string.settings_tts_speed),
+                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_speed),
                 style = MaterialTheme.typography.labelMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -1522,7 +1530,7 @@ private fun VoiceSpeechSection(
                     }
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.settingsAnchor(R.string.settings_tts_always_speak), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
                     Text(stringResource(R.string.settings_tts_always_speak), style = MaterialTheme.typography.titleSmall)
                     Text(
@@ -1748,7 +1756,7 @@ private fun McpSection(container: AppContainer) {
     val anyConnected = servers.any { statuses[it.name]?.state == "connected" }
 
     SettingsHeader(uiContext.getString(R.string.settings_search_mcp_title))
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_mcp_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (configTampered) {
                 Text(
@@ -1861,7 +1869,7 @@ private fun McpSection(container: AppContainer) {
                 }
             }
 
-            OutlinedButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_action_add_server)) {
                 Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.settings_action_add_server))
@@ -2261,7 +2269,7 @@ private fun WirelessAdbSection(container: AppContainer) {
         }
     }
 
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.wireless_adb_section_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Terminal, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
@@ -2910,7 +2918,7 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
     SettingsHeader(uiContext.getString(R.string.ui_privacy))
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_app_lock_title)) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_search_app_lock_title), style = MaterialTheme.typography.bodyLarge)
                     Text(
@@ -2947,7 +2955,7 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
                 )
             }
             if (settings.biometricLockEnabled) {
-                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Column(Modifier.settingsAnchor(R.string.settings_search_autolock_title), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                     Text(stringResource(R.string.settings_search_autolock_title), style = MaterialTheme.typography.labelLarge)
                     val timeouts = listOf(0 to uiContext.getString(R.string.ui_instant), 1 to "1m", 5 to "5m", 15 to "15m")
                     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
@@ -2964,7 +2972,7 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
                 }
             }
             HorizontalDivider()
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_screenshots_title)) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_search_screenshots_title), style = MaterialTheme.typography.bodyLarge)
                     Text(
@@ -3204,7 +3212,7 @@ private fun BatteryCard(container: AppContainer) {
 
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.settingsAnchor(R.string.settings_env_keep_alive), verticalAlignment = Alignment.CenterVertically) {
                 Icon(Icons.Outlined.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
@@ -3220,7 +3228,7 @@ private fun BatteryCard(container: AppContainer) {
                     onCheckedChange = { scope.launch { container.settings.setKeepAlive(it) } },
                 )
             }
-            Row(verticalAlignment = Alignment.CenterVertically) {
+            Row(Modifier.settingsAnchor(R.string.settings_search_battery_title), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_search_battery_title), style = MaterialTheme.typography.bodyLarge)
                     Text(
@@ -3294,6 +3302,7 @@ private fun SettingsRow(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
+            .settingsAnchor(title)
             .clickable(enabled = onClick != null) { onClick?.invoke() }
             .padding(horizontal = 14.dp, vertical = 12.dp),
     ) {
@@ -3390,7 +3399,7 @@ private fun UpdatesCard(container: AppContainer) {
     val step by container.updates.step.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val version = remember(container) { appVersionLabel(container.appContext) }
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_page_updates_title)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
@@ -3728,7 +3737,7 @@ private fun ChatsBackupSection(container: AppContainer) {
             restorePreview = null
             report(uiContext.getString(R.string.ui_imported_chats_messages_already_present, (result.sessions).toString(), (result.messages).toString(), (result.memories).toString(), (result.skipped).toString()))
         }) }
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_backup_chat_backup)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(

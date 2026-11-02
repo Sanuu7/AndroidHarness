@@ -181,7 +181,7 @@ class BgProcessStore(
         id: Int, command: String, monitored: String, cwd: File, log: File, exit: File, sessionId: String?,
     ): Started {
         val result = access.execute(
-            appWorkspace = access.isAppWorkspace(cwd),
+            appWorkspace = access.pinsAppUser(cwd),
             normal = {
                 val process = linuxEnv.shellProcessBuilder(monitored).directory(cwd)
                     .redirectOutput(ProcessBuilder.Redirect.appendTo(log)).redirectErrorStream(true).start()

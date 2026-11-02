@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"Akses cadangan otomatis"</string>
     <string name="settings_root_access_mode">"Mode akses"</string>
     <string name="settings_root_temp_mode">"Mode root sementara"</string>
+    <string name="settings_root_app_workspace_privileged">"Shell istimewa di ruang kerja aplikasi"</string>
+    <string name="settings_root_app_workspace_privileged_off">"Perintah di ruang kerja aplikasi berjalan sebagai pengguna aplikasi, meski ADB Nirkabel, Shizuku, atau root tersambung."</string>
+    <string name="settings_root_app_workspace_privileged_on">"Perintah di ruang kerja aplikasi mengikuti mode akses, sehingga dijalankan oleh ADB Nirkabel, Shizuku, atau root. Folder data pribadi aplikasi tetap memakai pengguna aplikasi."</string>
     <string name="settings_root_temp_use">"Penggunaan root sementara"</string>
     <string name="settings_root_temp_note">"Berikan akses root sekali setelah setiap aplikasi dimulai untuk terhubung ulang. Mengaktifkan kembali opsi ini memulihkan batas per penggunaan."</string>
     <string name="settings_root_project_permissions">"Izin root proyek"</string>

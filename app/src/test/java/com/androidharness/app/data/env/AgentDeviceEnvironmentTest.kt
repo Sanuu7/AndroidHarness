@@ -77,6 +77,14 @@ class AgentDeviceEnvironmentTest {
         assertTrue(paused.contains("Default command route: unavailable"))
     }
 
+    @Test fun unpinnedAppWorkspaceFollowsTheAccessMode() {
+        val text = state(AccessMode.SHIZUKU, uid = 2000, wirelessPaired = true, wirelessConnected = true,
+            wirelessActive = true).describe(false, true, appOwned = true)
+        assertTrue(text.contains("Default command route: built-in Wireless ADB shell, UID 2000"))
+        assertTrue(text.contains("follow the access mode above instead of the app UID"))
+        assertFalse(text.contains("app-owned workspace uses the app UID"))
+    }
+
     @Test fun rootStartedShizukuDoesNotInventADirectRootGrant() {
         val text = state(shizuku = true, uid = 0).describe(false, true)
         assertTrue(text.contains("root allowed for this project/chat: false"))

@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"بديل تلقائي"</string>
     <string name="settings_root_access_mode">"وضع الوصول"</string>
     <string name="settings_root_temp_mode">"وضع الروت المؤقت"</string>
+    <string name="settings_root_app_workspace_privileged">"صدفة مميزة في مساحة عمل التطبيق"</string>
+    <string name="settings_root_app_workspace_privileged_off">"تُنفَّذ أوامر مساحة عمل التطبيق بوصفها مستخدم التطبيق، حتى مع اتصال ADB اللاسلكي أو Shizuku أو root."</string>
+    <string name="settings_root_app_workspace_privileged_on">"تتبع أوامر مساحة عمل التطبيق وضع الوصول، لذا ينفّذها ADB اللاسلكي أو Shizuku أو root. ويظل مجلد البيانات الخاص بالتطبيق يستخدم مستخدم التطبيق."</string>
     <string name="settings_root_temp_use">"استخدام مؤقت للروت"</string>
     <string name="settings_root_temp_note">"امنح صلاحيات الروت مرة واحدة بعد كل بدء للتطبيق لإعادة الاتصال. يعيد تفعيل هذا الخيار حدود كل استخدام."</string>
     <string name="settings_root_project_permissions">"أذونات الروت للمشاريع"</string>

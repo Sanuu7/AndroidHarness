@@ -2370,7 +2370,7 @@ Rules:
                         val appOwned = deviceAccess?.isAppWorkspace(fs.shellRoot!!) ?: (com.androidharness.app.data.env.PathClassifier.regionOf(
                             fs.shellRoot!!.path, linuxEnv.internalDataRoot.path, linuxEnv.shellFallbackRoot.parentFile?.path,
                         ) == com.androidharness.app.data.env.PathClassifier.Region.APP_DATA)
-                        if (device != null) append(device.describe(appOwned, linuxEnv.isReady))
+                        if (device != null) append(device.describe(deviceAccess?.pinsAppUser(fs.shellRoot!!) ?: appOwned, linuxEnv.isReady, appOwned))
                         else {
                             append("Local filesystem. Direct-root status is not supplied by this runner. ")
                             append(shizukuAgentStatus(shizuku.state.value, shizuku.serviceState.value, shizuku.isServiceReady())

@@ -59,7 +59,7 @@ internal fun RootAccessSection(container: AppContainer) {
 
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Row(Modifier.settingsAnchor(R.string.settings_root_title), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Icon(Icons.Outlined.AdminPanelSettings, null, tint = MaterialTheme.colorScheme.primary)
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_root_title), style = MaterialTheme.typography.titleMedium)
@@ -105,14 +105,14 @@ internal fun RootAccessSection(container: AppContainer) {
                 } }, enabled = !busy, modifier = buttonModifier, contentPadding = PaddingValues(horizontal = 12.dp, vertical = 10.dp)) { Text(stringResource(R.string.settings_root_check_access)) }
             })
             HorizontalDivider()
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_auto_fallback)) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
                     Text(stringResource(R.string.settings_root_auto_fallback), style = MaterialTheme.typography.titleSmall)
                     Text(if (prefs.mode == AccessMode.AUTO) uiContext.getString(R.string.ui_always_on_root_shizuku_normal) else uiContext.getString(R.string.ui_root_shizuku_normal), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Switch(checked = prefs.mode == AccessMode.AUTO || prefs.autoFallback, enabled = prefs.mode != AccessMode.AUTO, onCheckedChange = { scope.launch { access.store.setFallback(it) } })
             }
-            Text(stringResource(R.string.settings_root_access_mode), style = MaterialTheme.typography.titleSmall)
+            Text(stringResource(R.string.settings_root_access_mode), Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_access_mode), style = MaterialTheme.typography.titleSmall)
             AccessModeChoices(prefs.mode) { scope.launch { access.store.setMode(it) } }
             Text(when {
                 prefs.mode == AccessMode.AUTO -> uiContext.getString(R.string.ui_auto_chooses_available_access_root_then_shizuku)
@@ -120,7 +120,17 @@ internal fun RootAccessSection(container: AppContainer) {
                 !prefs.autoFallback && prefs.mode != AccessMode.NORMAL -> uiContext.getString(R.string.ui_commands_fail_if_the_selected_access_is)
                 else -> uiContext.getString(R.string.ui_fallback_applies_before_a_command_starts_interrupted)
             }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_app_workspace_privileged)) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(R.string.settings_root_app_workspace_privileged), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(if (prefs.appWorkspacePrivileged) R.string.settings_root_app_workspace_privileged_on
+                        else R.string.settings_root_app_workspace_privileged_off),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = prefs.appWorkspacePrivileged, enabled = prefs.mode != AccessMode.NORMAL,
+                    onCheckedChange = { scope.launch { access.store.setAppWorkspacePrivileged(it) } })
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_temp_mode)) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
                     Text(stringResource(R.string.settings_root_temp_mode), style = MaterialTheme.typography.titleSmall)
                     Text(if (prefs.temporaryRoot) uiContext.getString(R.string.ui_root_is_limited_to_an_app_session)
@@ -147,7 +157,7 @@ internal fun RootAccessSection(container: AppContainer) {
                 Text(allowance, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             } else Text(stringResource(R.string.settings_root_temp_note),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            OutlinedButton(onClick = { projectPicker = true }, enabled = prefs.temporaryRoot, modifier = Modifier.fillMaxWidth()) {
+            OutlinedButton(onClick = { projectPicker = true }, enabled = prefs.temporaryRoot, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_project_permissions)) {
                 Icon(Icons.Outlined.Folder, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_root_project_permissions), Modifier.weight(1f))
                 Text(stringResource(R.string.settings_root_project_count, projects.count { it.id in prefs.rootProjects }.toString()), style = MaterialTheme.typography.labelMedium)
@@ -156,7 +166,7 @@ internal fun RootAccessSection(container: AppContainer) {
                 style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             AccessActionPair(first = { buttonModifier ->
                 FilledTonalButton(onClick = { browser = true }, enabled = root.status == RootStatus.READY || shizukuUid == 0,
-                    modifier = buttonModifier) { Text(stringResource(R.string.settings_root_browser)) }
+                    modifier = buttonModifier.settingsAnchor(R.string.settings_root_browser)) { Text(stringResource(R.string.settings_root_browser)) }
             }, second = { buttonModifier ->
                 OutlinedButton(onClick = { report = access.report() }, modifier = buttonModifier) { Text(stringResource(R.string.settings_root_diagnostics)) }
             })

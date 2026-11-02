@@ -37,6 +37,8 @@ data class AccessPreferences(
     val rootProjects: Set<String> = emptySet(),
     /** When false, an active root connection may be used everywhere without a per-session grant. */
     val temporaryRoot: Boolean = true,
+    /** When true, app-owned workspaces follow [mode] instead of always running as the app user. */
+    val appWorkspacePrivileged: Boolean = false,
 )
 
 data class AccessDecision(val backend: DeviceBackend?, val reason: String? = null, val uid: Int? = null)

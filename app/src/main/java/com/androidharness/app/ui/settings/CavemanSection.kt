@@ -137,7 +137,7 @@ internal fun CavemanSection(container: AppContainer, settings: AppSettings) {
 
 @Composable
 private fun CavemanPanel(title: String, content: @Composable ColumnScope.() -> Unit) {
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(title)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(title, style = MaterialTheme.typography.titleSmall)
             content()

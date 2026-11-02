@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"Автоматический переход на другой способ доступа"</string>
     <string name="settings_root_access_mode">"Режим доступа"</string>
     <string name="settings_root_temp_mode">"Временный root-доступ"</string>
+    <string name="settings_root_app_workspace_privileged">"Привилегированная оболочка в рабочей области приложения"</string>
+    <string name="settings_root_app_workspace_privileged_off">"Команды в рабочей области приложения выполняются от имени пользователя приложения, даже если подключены беспроводной ADB, Shizuku или root."</string>
+    <string name="settings_root_app_workspace_privileged_on">"Команды в рабочей области приложения подчиняются режиму доступа, поэтому их выполняет беспроводной ADB, Shizuku или root. Закрытая папка данных приложения по-прежнему использует пользователя приложения."</string>
     <string name="settings_root_temp_use">"Использование временного root-доступа"</string>
     <string name="settings_root_temp_note">"После каждого запуска приложения один раз предоставьте root-доступ для подключения. При повторном включении временного режима ограничения использования восстановятся."</string>
     <string name="settings_root_project_permissions">"Разрешения root для проектов"</string>

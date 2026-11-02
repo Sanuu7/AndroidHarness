@@ -444,6 +444,9 @@
     <string name="settings_root_auto_fallback">自动回退</string>
     <string name="settings_root_access_mode">访问模式</string>
     <string name="settings_root_temp_mode">临时 Root 模式</string>
+    <string name="settings_root_app_workspace_privileged">应用工作区中的特权 Shell</string>
+    <string name="settings_root_app_workspace_privileged_off">即使连接了无线 ADB、Shizuku 或 Root，应用工作区命令仍以应用用户身份运行。</string>
+    <string name="settings_root_app_workspace_privileged_on">应用工作区命令将遵循访问模式，由无线 ADB、Shizuku 或 Root 运行。应用的私有数据文件夹仍使用应用用户。</string>
     <string name="settings_root_temp_use">临时 Root 使用</string>
     <string name="settings_root_temp_note">每次启动应用后需授予一次 Root 访问权限以重新连接。重新开启此项会恢复按次使用的限制。</string>
     <string name="settings_root_project_permissions">项目 Root 权限</string>

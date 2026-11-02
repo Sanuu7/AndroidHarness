@@ -131,7 +131,7 @@ import com.androidharness.app.ui.common.TextButton
             setup.enabled -> localizedOption(runtime.label)
             else -> uiContext.getString(R.string.ui_off)
         }
-        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
+        Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_telegram_enable)) {
             val enableCd = stringResource(R.string.settings_telegram_enable)
             Row(Modifier.weight(1f).semantics { contentDescription = enableCd }
                 .toggleable(value = setup.enabled, enabled = canEnable, role = Role.Switch,
@@ -243,7 +243,7 @@ import com.androidharness.app.ui.common.TextButton
             FilterChip(selected = setup.mode == "ACT", enabled = !busy && canConfigure && setup.ownerId != null, onClick = { action(uiContext.getString(R.string.ui_act_mode_selected)) { manager.setMode("ACT") } }, label = { Text(stringResource(R.string.settings_telegram_act)) })
         }
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f))
-        Row(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onPermissions).padding(vertical = 8.dp),
+        Row(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_telegram_permissions).clickable(role = Role.Button, onClick = onPermissions).padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
             Icon(Icons.Outlined.Security, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Column(Modifier.weight(1f)) {

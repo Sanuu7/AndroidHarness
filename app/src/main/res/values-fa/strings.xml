@@ -424,6 +424,9 @@
     <string name="settings_root_auto_fallback">"بازگشت خودکار"</string>
     <string name="settings_root_access_mode">"حالت دسترسی"</string>
     <string name="settings_root_temp_mode">حالت موقت Root</string>
+    <string name="settings_root_app_workspace_privileged">پوسته دارای دسترسی ویژه در فضای کاری برنامه</string>
+    <string name="settings_root_app_workspace_privileged_off">فرمان‌های فضای کاری برنامه به‌عنوان کاربر برنامه اجرا می‌شوند، حتی با اتصال ADB بی‌سیم، Shizuku یا Root.</string>
+    <string name="settings_root_app_workspace_privileged_on">فرمان‌های فضای کاری برنامه از حالت دسترسی پیروی می‌کنند، بنابراین ADB بی‌سیم، Shizuku یا Root آن‌ها را اجرا می‌کند. پوشه داده خصوصی برنامه همچنان از کاربر برنامه استفاده می‌کند.</string>
     <string name="settings_root_temp_use">استفادهٔ موقت از Root</string>
     <string name="settings_root_temp_note">پس از هر بار راه‌اندازی برنامه، برای اتصال مجدد یک بار دسترسی Root را بدهید. فعال کردن دوبارهٔ این گزینه، محدودیت‌های هر بار استفاده را بازمی‌گرداند.</string>
     <string name="settings_root_project_permissions">مجوزهای Root پروژه</string>

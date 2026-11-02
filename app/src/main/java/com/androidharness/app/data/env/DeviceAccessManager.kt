@@ -171,7 +171,17 @@ class DeviceAccessManager(
 
     internal fun isAppWorkspace(cwd: File): Boolean = PathClassifier.regionOf(cwd.path, linuxEnv.internalDataRoot.path, context.getExternalFilesDir(null)?.path) == PathClassifier.Region.APP_DATA
 
-    internal suspend fun liveTier(cwd: File): ExecutionTier = when (select(isAppWorkspace(cwd)).backend) {
+    /**
+     * True when ordinary commands in [cwd] run as the app user. The private
+     * data dir always does, since the ADB shell user cannot enter it; other
+     * app-owned folders follow the access mode once the user allows it.
+     */
+    internal suspend fun pinsAppUser(cwd: File): Boolean {
+        if (PathClassifier.regionOf(cwd.path, linuxEnv.internalDataRoot.path) == PathClassifier.Region.APP_DATA) return true
+        return isAppWorkspace(cwd) && !store.preferences.first().appWorkspacePrivileged
+    }
+
+    internal suspend fun liveTier(cwd: File): ExecutionTier = when (select(pinsAppUser(cwd)).backend) {
         DeviceBackend.ROOT -> ExecutionTier.ROOT
         DeviceBackend.SHIZUKU -> ExecutionTier.PRIVILEGED
         else -> if (linuxEnv.isReady) ExecutionTier.APP_LINUX else ExecutionTier.TOYBOX

@@ -446,6 +446,9 @@
     <string name="settings_root_auto_fallback">Auto fallback</string>
     <string name="settings_root_access_mode">Access mode</string>
     <string name="settings_root_temp_mode">Temporary root mode</string>
+    <string name="settings_root_app_workspace_privileged">Privileged shell in app workspace</string>
+    <string name="settings_root_app_workspace_privileged_off">App workspace commands run as the app user, even with Wireless ADB, Shizuku or root connected.</string>
+    <string name="settings_root_app_workspace_privileged_on">App workspace commands follow the access mode, so Wireless ADB, Shizuku or root runs them. The app\'s private data folder still uses the app user.</string>
     <string name="settings_root_temp_use">Temporary root use</string>
     <string name="settings_root_temp_note">Grant root access once after each app start to reconnect. Turning this back on restores the per-use limits.</string>
     <string name="settings_root_project_permissions">Project root permissions</string>

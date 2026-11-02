@@ -176,11 +176,11 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
     }
 
     val highlight = LocalSettingsHighlight.current
-    val advancedAnchors = remember { setOf(R.string.rumble_strength, R.string.rumble_engine_title, R.string.rumble_events_title, R.string.rumble_fine_tuning_title) }
+    val advancedAnchors = remember { setOf(R.string.rumble_strength, R.string.rumble_engine_title, R.string.rumble_events_title, R.string.rumble_fine_tuning_title, R.string.rumble_battery_saver) }
     var advanced by rememberSaveable { mutableStateOf(highlight in advancedAnchors) }
     LaunchedEffect(highlight) { if (highlight in advancedAnchors) advanced = true }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Row(Modifier.fillMaxWidth().clickable(onClickLabel = null, role = Role.Button) { advanced = !advanced }.padding(16.dp),
+        Row(Modifier.fillMaxWidth().settingsAnchor(R.string.rumble_advanced_title).clickable(onClickLabel = null, role = Role.Button) { advanced = !advanced }.padding(16.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.rumble_advanced_title), style = MaterialTheme.typography.titleSmall)
@@ -315,7 +315,7 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
 
 @Composable
 private fun ToggleRow(@StringRes title: Int, @StringRes description: Int, checked: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit) {
-    Row(Modifier.fillMaxWidth().toggleable(checked, enabled = enabled, role = Role.Switch, onValueChange = onChange),
+    Row(Modifier.fillMaxWidth().settingsAnchor(title).toggleable(checked, enabled = enabled, role = Role.Switch, onValueChange = onChange),
         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
         Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(stringResource(title), style = MaterialTheme.typography.titleSmall)

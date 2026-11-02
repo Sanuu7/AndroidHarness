@@ -18,7 +18,11 @@ internal data class AgentDeviceEnvironment(
     /** The live privileged route is the built-in ADB shell rather than the Shizuku app. */
     val wirelessActive: Boolean = false,
 ) {
-    fun describe(appWorkspace: Boolean, linuxReady: Boolean): String = buildString {
+    /**
+     * [appWorkspace] is true when ordinary commands here are pinned to the app
+     * user; [appOwned] says whether the folder belongs to the app at all.
+     */
+    fun describe(appWorkspace: Boolean, linuxReady: Boolean, appOwned: Boolean = appWorkspace): String = buildString {
         val shizukuPresent = shizukuState != ShizukuState.NOT_INSTALLED || shizukuService != UserServiceState.NOT_BOUND
         val wirelessPresent = wirelessPaired || wirelessConnected
         append("Access mode: ${preferences.mode.label}; fallback: ${preferences.mode == AccessMode.AUTO || preferences.autoFallback}; privileged commands: ${if (paused) "paused" else "enabled"}.\n")
@@ -52,7 +56,8 @@ internal data class AgentDeviceEnvironment(
             null -> "unavailable: ${decision.reason}"
         })
         append(". This is a snapshot, not an execution receipt; identity and permission are rechecked before each action.\n")
-        if (appWorkspace) append("The app-owned workspace uses the app UID for ordinary development even when root, Shizuku or Wireless ADB is connected.\n")
+        if (appWorkspace) append("The app-owned workspace uses the app UID for ordinary development even when root, Shizuku or Wireless ADB is connected. The user can change this with Settings > Environment > Advanced device access > Privileged shell in app workspace.\n")
+        else if (appOwned) append("The user turned on Privileged shell in app workspace, so ordinary commands in this app-owned workspace follow the access mode above instead of the app UID.\n")
         append("Use shell access=\"shizuku\" to pin Android system commands to the privileged shell (Shizuku or built-in Wireless ADB); it never falls back to root or the app UID. Use access=\"root\" only for a task that needs UID 0 and an allowed root grant. Never invoke su/sudo to bypass access routing. A root-started Shizuku server can itself have UID 0; that does not grant direct-root permission.\n")
         if (!rootReady && !shizukuReady) append("Neither privileged runner is ready. Ordinary app-UID work remains available where Android storage permissions permit; privilege is not required for every coding task.\n")
     }

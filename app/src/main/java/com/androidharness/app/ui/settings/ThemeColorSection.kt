@@ -53,7 +53,7 @@ internal fun ThemeColorSection(
         if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
     } else palette.colorScheme(dark)
     Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
-        Row(Modifier.fillMaxWidth().toggleable(
+        Row(Modifier.fillMaxWidth().settingsAnchor(R.string.theme_wallpaper_colors).toggleable(
             value = useWallpaper && wallpaperAvailable, enabled = wallpaperAvailable,
             role = Role.Switch, onValueChange = onWallpaperChange,
         ).padding(vertical = 4.dp), verticalAlignment = Alignment.CenterVertically,
@@ -66,7 +66,7 @@ internal fun ThemeColorSection(
             }
             Switch(checked = useWallpaper && wallpaperAvailable, onCheckedChange = null, enabled = wallpaperAvailable)
         }
-        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+        Column(Modifier.fillMaxWidth().settingsAnchor(R.string.theme_color_palette), verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(stringResource(R.string.theme_color_palette), style = MaterialTheme.typography.titleSmall)
             Text(stringResource(R.string.theme_color_hint), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }

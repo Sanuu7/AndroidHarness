@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.transfer
 
+import com.androidharness.app.ui.settings.settingsAnchor
 import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
@@ -256,7 +257,7 @@ private fun TransferField(value: String, onChange: (String) -> Unit, label: Int,
 }
 @Composable
 private fun TransferToggle(label: String, checked: Boolean, onChange: (Boolean) -> Unit, enabled: Boolean = true) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange), verticalAlignment = Alignment.CenterVertically) {
+    Row(Modifier.fillMaxWidth().settingsAnchor(label).heightIn(min = 48.dp).toggleable(value = checked, enabled = enabled, role = Role.Switch, onValueChange = onChange), verticalAlignment = Alignment.CenterVertically) {
         Text(label, Modifier.weight(1f)); Spacer(Modifier.width(8.dp)); Switch(checked, onCheckedChange = null, enabled = enabled)
     }
 }
