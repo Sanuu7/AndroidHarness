@@ -121,6 +121,8 @@ data class AppSettings(
     val ttsAlwaysSpeak: Boolean = false,
     /** The one-time voice configuration promo dialog was dismissed. */
     val voicePromoSeen: Boolean = false,
+    /** Experimental hands-free voice planning. Device-local, never restored from a backup. */
+    val liveMode: LiveModeSettings = LiveModeSettings(),
     /** Legacy Code resume toggle kept for old backups; codeStart is authoritative. */
     val resumeLastChat: Boolean = true,
     val startScreen: StartScreen = StartScreen.LAST_SELECTED,
@@ -290,6 +292,7 @@ class SettingsRepository(private val context: Context) {
         val TTS_SPEED = floatPreferencesKey("tts_speed")
         val TTS_ALWAYS_SPEAK = booleanPreferencesKey("tts_always_speak")
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
+        val LIVE_MODE = stringPreferencesKey("live_mode")
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val START_SCREEN = stringPreferencesKey("start_screen")
         val CHAT_KEEP_THINKING_COLLAPSED = booleanPreferencesKey("chat_keep_thinking_collapsed")
@@ -414,6 +417,7 @@ class SettingsRepository(private val context: Context) {
             ttsSpeed = prefs[Keys.TTS_SPEED] ?: 1f,
             ttsAlwaysSpeak = prefs[Keys.TTS_ALWAYS_SPEAK] ?: false,
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
+            liveMode = liveModeFrom(prefs[Keys.LIVE_MODE]),
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
             startScreen = StartScreen.fromStored(prefs[Keys.START_SCREEN]),
             chatStart = ChatStartMode.fromStored(prefs[Keys.CHAT_START]),
@@ -740,6 +744,19 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setTtsAlwaysSpeak(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.TTS_ALWAYS_SPEAK] = enabled }
+    }
+
+    private fun liveModeFrom(raw: String?): LiveModeSettings =
+        raw?.let { runCatching { kotlinx.serialization.json.Json { ignoreUnknownKeys = true }.decodeFromString<LiveModeSettings>(it) }.getOrNull() }
+            ?: LiveModeSettings()
+
+    suspend fun updateLiveMode(transform: (LiveModeSettings) -> LiveModeSettings) {
+        context.settingsStore.edit { prefs ->
+            val next = transform(liveModeFrom(prefs[Keys.LIVE_MODE])).let {
+                it.copy(silenceMs = it.silenceMs.coerceIn(LiveModeSettings.MIN_SILENCE_MS, LiveModeSettings.MAX_SILENCE_MS))
+            }
+            prefs[Keys.LIVE_MODE] = kotlinx.serialization.json.Json.encodeToString(LiveModeSettings.serializer(), next)
+        }
     }
 
     suspend fun setVoicePromoSeen(seen: Boolean) {

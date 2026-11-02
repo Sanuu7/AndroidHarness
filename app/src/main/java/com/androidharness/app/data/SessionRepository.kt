@@ -262,7 +262,9 @@ class SessionRepository(
         val firstChatTitle = if (message.role == Role.USER && !db.dao().hasUserMessage(sessionId)) {
             db.dao().session(sessionId)?.takeIf { ConversationConfig.decode(it.conversationJson).isChat &&
                 it.title.trim() in setOf("New chat", "Chat", "新建对话") }
-                ?.let { com.androidharness.app.core.ChatExperience.title(message.text).takeIf(String::isNotBlank) }
+                ?.let { com.androidharness.app.core.ChatExperience.title(
+                    if (com.androidharness.app.agent.LiveTranscript.isTranscript(message)) com.androidharness.app.agent.LiveTranscript.titleSource(message.text)
+                    else message.text).takeIf(String::isNotBlank) }
         } else null
         val id = message.id ?: UUID.randomUUID().toString()
         val safeText = clampForStorage(message.text)
@@ -304,6 +306,19 @@ class SessionRepository(
         db.dao().touchSession(sessionId, System.currentTimeMillis())
         if (firstChatTitle != null) db.dao().updateSession(sessionId, firstChatTitle, System.currentTimeMillis())
         id
+    }
+
+    suspend fun messageExists(messageId: String): Boolean = db.dao().messageExists(messageId)
+
+    suspend fun isLastMessage(sessionId: String, messageId: String): Boolean = db.dao().lastMessageId(sessionId) == messageId
+
+    /** Writes a Live Mode transcript message, rewriting it in place when it already exists. */
+    suspend fun saveLiveTranscript(sessionId: String, messageId: String, text: String) = db.withTransaction {
+        if (db.dao().messageExists(messageId)) {
+            db.dao().updateMessageText(messageId, clampForStorage(text))
+            synchronized(messageCache) { messageCache.remove(messageId) }
+            db.dao().touchSession(sessionId, System.currentTimeMillis())
+        } else addMessage(sessionId, ChatMessage(role = Role.USER, text = text, id = messageId))
     }
 
     suspend fun renameSession(id: String, title: String) {

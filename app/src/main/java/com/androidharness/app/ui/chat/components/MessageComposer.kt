@@ -183,6 +183,8 @@ internal fun MessageComposer(
     chatOnly: Boolean = false,
     /** Shown beside the queue button while busy: ask the typed text as a /btw side question. */
     onAskAside: (() -> Unit)? = null,
+    /** Opens hands-free Live Mode; null while the experiment is switched off. */
+    onLiveMode: (() -> Unit)? = null,
     modifier: Modifier = Modifier,
     attachments: @Composable () -> Unit = {},
 ) {
@@ -263,6 +265,7 @@ internal fun MessageComposer(
                 onPickFile = onAttachFile,
                 onSchedule = onSchedule,
                 scheduleUnavailableReason = scheduleUnavailableReason,
+                onLiveMode = onLiveMode,
                 size = actionSize,
             )
         }
@@ -551,6 +554,15 @@ internal fun MessageComposer(
                         isGroqLocked -> trailing()
                         isGroqActive -> Spacer(Modifier.size(actionSize))
                         canSend || showStopOnly -> trailing()
+                        onLiveMode != null -> ExpressiveIconButton(preserveFill = true,
+                            onClick = { haptics.performHapticFeedback(HapticFeedbackType.Confirm); onLiveMode() },
+                            modifier = Modifier.size(actionSize).semantics { contentDescription = uiContext.getString(R.string.live_start) },
+                            shape = CircleShape,
+                            colors = IconButtonDefaults.iconButtonColors(
+                                containerColor = MaterialTheme.colorScheme.primary,
+                                contentColor = MaterialTheme.colorScheme.onPrimary)) {
+                            LiveGlyph(color = MaterialTheme.colorScheme.onPrimary)
+                        }
                         else -> ExpressiveIconButton(preserveFill = true, onClick = {}, enabled = false,
                             modifier = Modifier.size(actionSize).semantics { contentDescription = uiContext.getString(R.string.ui_send_message) },
                             shape = CircleShape,
@@ -865,6 +877,7 @@ private fun ComposerLeadingButton(
     onPickFile: () -> Unit,
     onSchedule: (() -> Unit)?,
     scheduleUnavailableReason: String?,
+    onLiveMode: (() -> Unit)?,
     size: Dp = 52.dp,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
@@ -906,6 +919,20 @@ private fun ComposerLeadingButton(
                     onPickFile()
                 },
             )
+            if (onLiveMode != null) {
+                androidx.compose.material3.HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        androidx.compose.foundation.layout.Column {
+                            Text(uiContext.getString(R.string.live_title))
+                            Text(uiContext.getString(R.string.live_experimental), style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.tertiary)
+                        }
+                    },
+                    leadingIcon = { LiveGlyph(color = MaterialTheme.colorScheme.onSurfaceVariant, size = 18.dp) },
+                    onClick = { expanded = false; onLiveMode() },
+                )
+            }
             if (onSchedule != null) {
                 androidx.compose.material3.HorizontalDivider()
                 DropdownMenuItem(
@@ -944,6 +971,20 @@ private fun DiscardRecordingButton(onClick: () -> Unit, size: Dp = 52.dp, transc
 // ---------------------------------------------------------------------------
 // Glyphs (Cleanly drawn with round-capped strokes)
 // ---------------------------------------------------------------------------
+
+/** Four bars of uneven height, the Live Mode mark. */
+@Composable
+fun LiveGlyph(color: Color, modifier: Modifier = Modifier, size: Dp = 20.dp) {
+    Canvas(modifier.size(size)) {
+        val w = this.size.width
+        val h = this.size.height
+        val weight = w * 0.12f
+        listOf(0.38f, 0.72f, 0.52f, 0.30f).forEachIndexed { index, height ->
+            val x = w * (0.2f + index * 0.2f)
+            drawLine(color, Offset(x, h * (0.5f - height / 2f)), Offset(x, h * (0.5f + height / 2f)), weight, StrokeCap.Round)
+        }
+    }
+}
 
 @Composable
 fun SendGlyph(color: Color, modifier: Modifier = Modifier, size: Dp = 22.dp) {

@@ -1737,6 +1737,70 @@
       "keywords": ""
     },
     {
+      "id": "live-mode",
+      "category": "chat",
+      "title": "Plan out loud with Live Mode",
+      "summary": "Talk through an idea hands-free while a fast model answers out loud. Experimental.",
+      "location": "Settings → Live Mode; conversation → the Live Mode button on an empty message box, or the + menu.",
+      "before": [
+        "Turn on Live Mode in Settings. It is experimental and off by default.",
+        "Grant microphone permission when Android asks. Groq Whisper also needs a Groq key in Voice & speech."
+      ],
+      "steps": [
+        {
+          "title": "Pick a fast model",
+          "body": "In Settings → Live Mode, choose a light model for spoken replies, or keep the chat's model. The main agent keeps its own model, so a running task is not affected."
+        },
+        {
+          "title": "Choose what it may do",
+          "body": "Talk only uses no tools. Read only can look at files to answer. Read and start tasks can also hand a plan to the main agent when you say go ahead, and the agent then works with the chat's usual permissions."
+        },
+        {
+          "title": "Start talking",
+          "body": "Open Live Mode from the empty message box or the + menu and speak. There is no send button: when you stop talking it answers out loud, then listens again. Tap the orb to interrupt a reply, or use pause when you need quiet."
+        },
+        {
+          "title": "Use the conversation later",
+          "body": "Each Live session is saved to the chat as one collapsible card. The agent reads it with the rest of the chat, so you can say \"build what we planned\" without repeating yourself."
+        }
+      ],
+      "outcome": "A spoken planning session the agent can see in the chat, and optionally a task handed to the main agent.",
+      "limits": [
+        "This is an early, experimental feature. Noisy rooms, long pauses and some speech engines can cut you off or mishear words.",
+        "While a task is running, the saved conversation waits until the task finishes, so it never interrupts the agent mid-step.",
+        "Live Mode pauses when the app goes to the background."
+      ],
+      "fixes": [
+        {
+          "problem": "It answers before I finish",
+          "solution": "Raise Pause before replying in Settings → Live Mode."
+        },
+        {
+          "problem": "It never hears me",
+          "solution": "Check microphone permission and the speech-to-text engine in Voice & speech. Try Groq Whisper if the system recognizer is missing."
+        }
+      ],
+      "related": [
+        "voice",
+        "privacy",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LIVE_MODE",
+          "label": "Set up Live Mode"
+        }
+      ],
+      "sources": [
+        "agent/LiveMode.kt",
+        "ui/chat/LiveModeSession.kt",
+        "ui/chat/LiveListener.kt",
+        "ui/settings/LiveModeSection.kt"
+      ],
+      "keywords": "live mode hands free voice conversation talk planning realtime"
+    },
+    {
       "id": "assistant-settings",
       "category": "chat",
       "title": "Ask the assistant to adjust app settings",

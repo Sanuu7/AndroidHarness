@@ -388,6 +388,10 @@ class ChatViewModel(
     private var sideJob: kotlinx.coroutines.Job? = null
     private var sideGeneration = 0
 
+    /** The open Live Mode conversation, if any. */
+    private val _live = MutableStateFlow<LiveModeSession?>(null)
+    val live: StateFlow<LiveModeSession?> = _live
+
     init {
         viewModelScope.launch {
             sessionIdFlow.flatMapLatest(c.chatModels::observe).collect(::applyModelState)
@@ -1055,6 +1059,36 @@ class ChatViewModel(
             }
         }
         return true
+    }
+
+    /** Starts hands-free Live Mode on this chat, creating the chat first when it is still a draft. */
+    fun openLive() {
+        if (_live.value != null) return
+        viewModelScope.launch {
+            val sid = try { ensureSession() } catch (e: kotlinx.coroutines.CancellationException) { throw e } catch (e: Exception) {
+                _state.update { it.copy(error = e.message ?: c.appContext.getString(R.string.live_error_generic)) }
+                return@launch
+            }
+            val current = _state.value
+            val session = LiveModeSession(
+                c, viewModelScope, sid,
+                chatProvider = { _state.value.activeProvider?.let { it.copy(model = _state.value.effectiveModel ?: it.model) } },
+                maxContextTokens = current.maxContextTokens,
+                sendToAgent = ::send,
+            )
+            _live.value = session
+            session.start()
+        }
+    }
+
+    fun closeLive() {
+        _live.value?.close()
+        _live.value = null
+    }
+
+    override fun onCleared() {
+        _live.value?.close()
+        super.onCleared()
     }
 
     fun stopAside() { sideJob?.cancel() }

@@ -235,6 +235,7 @@ internal fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
     SettingsPage.CODE_INTELLIGENCE -> Icons.Outlined.AccountTree
     SettingsPage.CAVEMAN -> Icons.Outlined.ShortText
     SettingsPage.VOICE -> Icons.Outlined.Mic
+    SettingsPage.LIVE_MODE -> Icons.Outlined.GraphicEq
     SettingsPage.SKILLS -> Icons.Outlined.AutoStories
     SettingsPage.APPEARANCE -> Icons.Outlined.Palette
     SettingsPage.PRIVACY -> Icons.Outlined.Shield

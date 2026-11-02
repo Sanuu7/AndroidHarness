@@ -379,6 +379,7 @@ fun SettingsScreen(
                         SettingsPage.CODE_INTELLIGENCE -> CodeIntelligenceSection(container, workspace, currentProject)
                         SettingsPage.CAVEMAN -> CavemanSection(container, settings)
                         SettingsPage.VOICE -> VoiceSpeechSection(container, settings, scope)
+                        SettingsPage.LIVE_MODE -> LiveModeSection(container, settings, onOpenVoice = { openPage(SettingsPage.VOICE) })
                         SettingsPage.APPEARANCE -> AppearanceSection(container, settings, scope)
                         SettingsPage.RUMBLE -> RumbleSection(settings, container.settings)
                         SettingsPage.PRIVACY -> PrivacySection(container, settings, scope)

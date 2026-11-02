@@ -77,7 +77,7 @@ object SettingsBackupPolicy {
             lastConversationKind = ConversationKind.CODE,
             permissionMode = com.androidharness.app.agent.PermissionMode.CONFIRM_RISKY,
             biometricLockEnabled = false, biometricLockTimeoutMinutes = 0, allowScreenshots = false,
-            localModelExperimental = false,
+            localModelExperimental = false, liveMode = LiveModeSettings(),
         )
 
     /** Older v1 files can contain local references; ignore them before preview and restore. */

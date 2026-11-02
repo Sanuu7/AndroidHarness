@@ -248,6 +248,9 @@ class AgentEngine(
     /** The latest request per chat, for side questions that reuse its cached prefix. */
     val sideContexts = SideContexts()
 
+    /** The app's own tools a side request may read with when no run has published a scoped set. */
+    fun asideRegistry(): ToolRegistry = registry.filter(SideQuestion::allows)
+
     /** The universal tools plus the legacy workspace-note tools. */
     private val recallToolNames = setOf("search_chats", "recent_chats", "read_chat_snippet")
     private val memoryToolNames = com.androidharness.app.data.MemoryRepository.toolNames +
@@ -871,14 +874,29 @@ class AgentEngine(
      * reasoning options unchanged, so the cached prefix is read instead of
      * billed again. Only read-only tools run, and nothing is persisted.
      */
-    fun askAside(context: SideContext, question: String): Flow<SideEvent> = channelFlow {
+    fun askAside(context: SideContext, question: String): Flow<SideEvent> =
+        streamAside(context, SideQuestion.requestMessages(context, question))
+
+    /**
+     * The side-question loop over an explicit request. Live Mode sends its own
+     * multi-turn conversation here; [allows] picks the tools that may run and
+     * [intercept] answers calls the caller handles itself, such as handing work
+     * to the main agent.
+     */
+    fun streamAside(
+        context: SideContext,
+        initial: List<ChatMessage>,
+        allows: (com.androidharness.app.tools.Tool) -> Boolean = SideQuestion::allows,
+        refusal: (String) -> String = SideQuestion::refusal,
+        intercept: (suspend (ToolCallData) -> ToolResult?)? = null,
+    ): Flow<SideEvent> = channelFlow {
         withContext(context.runContext ?: kotlin.coroutines.EmptyCoroutineContext) {
             var config = context.config
             val provider = providerFactory(config)
             val local = com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
             val imageInput = context.options.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.imageInput
                 ?: com.androidharness.app.llm.visionCapable(config.model)
-            val working = SideQuestion.requestMessages(context, question).toMutableList()
+            val working = initial.toMutableList()
             for (round in 1..SideQuestion.MAX_ROUNDS) {
                 val lastRound = round == SideQuestion.MAX_ROUNDS
                 if (lastRound) working += ChatMessage(role = Role.USER, text = SideQuestion.ROUND_LIMIT_NOTE)
@@ -970,7 +988,7 @@ class AgentEngine(
                     calls.map { call ->
                         async {
                             call to if (lastRound) ToolResult(false, SideQuestion.ROUND_LIMIT_NOTE)
-                                else executeAside(call, context, imageInput)
+                                else intercept?.invoke(call) ?: executeAside(call, context, imageInput, allows, refusal)
                         }
                     }.awaitAll()
                 }
@@ -988,9 +1006,15 @@ class AgentEngine(
         }
     }
 
-    private suspend fun executeAside(call: ToolCallData, context: SideContext, imageInput: Boolean): ToolResult {
+    private suspend fun executeAside(
+        call: ToolCallData,
+        context: SideContext,
+        imageInput: Boolean,
+        allows: (com.androidharness.app.tools.Tool) -> Boolean,
+        refusal: (String) -> String,
+    ): ToolResult {
         val scoped = context.registry.get(call.name) ?: return ToolResult(false, "Unknown tool: ${call.name}")
-        if (!SideQuestion.allows(scoped)) return ToolResult(false, SideQuestion.refusal(call.name))
+        if (!allows(scoped)) return ToolResult(false, refusal(call.name))
         // Chat research tools count against the main turn's source budget; side reads use the unscoped ones.
         val tool = if (call.name == "web_search" || call.name == "web_fetch") registry.get(call.name) ?: scoped else scoped
         val runConfig = context.runContext

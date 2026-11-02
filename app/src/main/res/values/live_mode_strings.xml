@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="live_title">Live Mode</string>
+    <string name="live_experimental">Experimental</string>
+    <string name="live_start">Start Live Mode</string>
+    <string name="live_end">End Live Mode</string>
+    <string name="live_pause">Pause listening</string>
+    <string name="live_resume">Resume listening</string>
+    <string name="live_interrupt">Stop and listen</string>
+    <string name="live_send_plan">Send the plan to the agent</string>
+    <string name="live_empty_hint">Just start talking. Live Mode listens, answers out loud, and saves the conversation to this chat.</string>
+
+    <string name="live_status_starting">Getting ready…</string>
+    <string name="live_status_listening">Listening</string>
+    <string name="live_status_hearing">Go on, I\'m listening</string>
+    <string name="live_status_transcribing">Catching that…</string>
+    <string name="live_status_thinking">Thinking…</string>
+    <string name="live_status_reading">Looking at your files…</string>
+    <string name="live_status_speaking">Speaking. Tap to interrupt</string>
+    <string name="live_status_paused">Paused. Tap to keep talking</string>
+
+    <string name="live_access_talk_short">Talk only</string>
+    <string name="live_access_read_short">Read only</string>
+    <string name="live_access_tasks_short">Can start tasks</string>
+
+    <string name="live_handoff_default_brief">Implement what we planned in the Live Mode conversation. Use the decisions from it, and ask me before guessing on anything it left open.</string>
+    <string name="live_handoff_sent">Sent to the agent</string>
+    <string name="live_handoff_failed">The chat couldn\'t take the plan right now. Try again from the chat.</string>
+
+    <string name="live_error_generic">Live Mode stopped. Tap to try again.</string>
+    <string name="live_error_permission">Live Mode needs microphone access.</string>
+    <string name="live_error_no_recognizer">This device has no speech recognizer. Switch to Groq Whisper in Voice settings.</string>
+    <string name="live_error_recognizer_network">Speech recognition can\'t reach its service. Check your connection and tap to try again.</string>
+    <string name="live_error_no_groq_key">Groq Whisper needs an API key. Add one in Voice settings.</string>
+    <string name="live_error_transcription">Couldn\'t transcribe that.</string>
+    <string name="live_error_microphone">The microphone couldn\'t start: %1$s</string>
+    <string name="live_error_model_missing">The Live Mode model\'s provider is gone. Pick another model in Live Mode settings.</string>
+
+    <string name="live_transcript_title">Live Mode conversation</string>
+    <string name="live_transcript_expand">Show conversation</string>
+    <string name="live_transcript_collapse">Hide conversation</string>
+    <plurals name="live_transcript_count">
+        <item quantity="one">%1$d exchange</item>
+        <item quantity="other">%1$d exchanges</item>
+    </plurals>
+
+    <string name="settings_page_live_desc">Hands-free voice planning on a fast model</string>
+    <string name="live_settings_enable">Live Mode</string>
+    <string name="live_settings_enable_desc">Talk through ideas without tapping send. Replies are read aloud and the whole conversation is saved to the chat, so the agent can act on it later.</string>
+    <string name="live_settings_experimental_note">This is an early version. Expect rough edges with noisy rooms, long pauses and some speech engines. Start it from the button on an empty message box, or from the + menu while a task runs.</string>
+    <string name="live_settings_model">Live Mode model</string>
+    <string name="live_settings_model_chat">Use the chat\'s model</string>
+    <string name="live_settings_model_choose">Choose the Live Mode model</string>
+    <string name="live_settings_model_desc">A fast, light model keeps spoken replies quick. The main agent keeps its own model, so a running task is not affected.</string>
+    <string name="live_settings_access">What Live Mode can do</string>
+    <string name="live_settings_access_desc">Live Mode never edits files or runs commands itself. To act, it hands the plan to the main agent, which works with this chat\'s usual permissions and approvals.</string>
+    <string name="live_access_talk">Talk only</string>
+    <string name="live_access_talk_desc">No tools. Fastest replies, from the conversation alone.</string>
+    <string name="live_access_read">Read only</string>
+    <string name="live_access_read_desc">Can read files and search to answer, never changes anything.</string>
+    <string name="live_access_tasks">Read and start tasks</string>
+    <string name="live_access_tasks_desc">When you say go ahead, it sends the plan to the main agent to build. You can also send it with the button in Live Mode.</string>
+    <string name="live_settings_speak">Speak replies</string>
+    <string name="live_settings_speak_desc">Read each reply aloud with your Voice settings. The microphone waits until it finishes.</string>
+    <string name="live_settings_silence">Pause before replying</string>
+    <string name="live_settings_silence_desc">How long you can stop talking before Live Mode answers. Raise it if it cuts you off mid-thought.</string>
+    <string name="live_settings_seconds">%1$s s</string>
+    <string name="live_settings_engines">Speech to text: %1$s</string>
+    <string name="live_engine_system">System recognizer</string>
+    <string name="live_engine_groq">Groq Whisper</string>
+    <string name="live_settings_open_voice">Voice settings</string>
+</resources>

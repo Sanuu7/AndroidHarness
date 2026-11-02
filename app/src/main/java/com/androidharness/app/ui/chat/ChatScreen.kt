@@ -846,6 +846,10 @@ private fun ChatScreenContent(
     if (state.showCostDialog) {
         CostDialog(state = state, onDismiss = viewModel::dismissCostDialog)
     }
+    val liveSession by viewModel.live.collectAsStateWithLifecycle()
+    liveSession?.let { session ->
+        LiveModeOverlay(session, onClose = viewModel::closeLive)
+    }
     val sideQuestion by viewModel.sideQuestion.collectAsStateWithLifecycle()
     sideQuestion?.let { side ->
         com.androidharness.app.ui.chat.components.SideQuestionSheet(
@@ -1307,6 +1311,16 @@ private fun ChatScreenContent(
     ) { uri: Uri? -> uri?.let { viewModel.attachFile(it) } }
 
     val voiceController = rememberVoiceInputController(viewModel.container)
+    val livePermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
+        if (granted) viewModel.openLive()
+        else scope.launch { snackbar.showSnackbar(uiContext.getString(R.string.live_error_permission)) }
+    }
+    val startLive: (() -> Unit)? = if (!globalSettings.liveMode.enabled) null else fun() {
+        voiceController.releaseAll()
+        if (androidx.core.content.ContextCompat.checkSelfPermission(toastContext, android.Manifest.permission.RECORD_AUDIO) ==
+            android.content.pm.PackageManager.PERMISSION_GRANTED) viewModel.openLive()
+        else livePermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
+    }
     var pendingLockedRecord by remember { mutableStateOf(false) }
     val audioPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -1803,7 +1817,11 @@ private fun ChatScreenContent(
                             }
                         }
                         when (message.role) {
-                            Role.USER -> {
+                            Role.USER -> if (com.androidharness.app.agent.LiveTranscript.isTranscript(message)) {
+                                indexedItem(key = "message-$messageKey-live", contentType = ChatListContentType.User) {
+                                    LiveTranscriptCard(messageKey, message.text)
+                                }
+                            } else {
                                 if (message.turnId != null && message.turnId == latestUserTurnId) latestTurnStarted = true
                                 val userIndex = nextItemIndex
                                 indexedItem(key = "message-$messageKey-user", contentType = ChatListContentType.User) {
@@ -2517,6 +2535,7 @@ private fun ChatScreenContent(
                     } else null,
                     onAttachImage = { galleryLauncher.launch("image/*") },
                     onAttachFile = { fileLauncher.launch("*/*") },
+                    onLiveMode = startLive,
                     voiceEngine = state.voiceEngine,
                     groqRecordState = voiceController.groqRecordState,
                     recordingDurationMs = voiceController.recordingDurationMs,

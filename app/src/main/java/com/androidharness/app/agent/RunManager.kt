@@ -1461,6 +1461,101 @@ class RunManager(
         }.flowOn(Dispatchers.IO + fallback)
     }
 
+    /**
+     * The fixed part of a Live Mode request: the live model, its tools and a
+     * snapshot of the chat as a bounded transcript. Read tools come from the
+     * chat's latest run when there is one, so they see the same workspace.
+     */
+    suspend fun liveContext(
+        sessionId: String,
+        config: ProviderConfig,
+        apiKey: String,
+        maxContextTokens: Int,
+        access: com.androidharness.app.data.LiveModeAccess,
+    ): Pair<SideContext, String?> = kotlinx.coroutines.withContext(Dispatchers.IO) {
+        val runConfig = providers.resolveHarnessConfig(config)
+        val warm = engine.sideContexts[sessionId]
+        val fs = warm?.workspace ?: workspace.forSession(sessionId)
+        val sandboxOff = warm?.sandboxOff ?: false
+        val registry = if (access == com.androidharness.app.data.LiveModeAccess.TALK) com.androidharness.app.tools.ToolRegistry(emptyList())
+            else (warm?.registry?.filter(SideQuestion::allows) ?: engine.asideRegistry())
+        val tools = registry.schemas(context = com.androidharness.app.tools.ToolContext(fs, sandboxOff, sessionId)) +
+            listOfNotNull(LiveMode.startTaskSchema().takeIf { access == com.androidharness.app.data.LiveModeAccess.START_TASKS })
+        val history = with(sessions) { RunRecovery.context(historyFor(sessionId).second.withoutSubagentTurns(), controls.flow(sessionId).value) }
+        val chars = ((maxContextTokens - LiveMode.MAX_OUTPUT_TOKENS - 4_096) * 3L).coerceIn(8_000L, LiveMode.MAX_TRANSCRIPT_CHARS.toLong()).toInt()
+        val transcript = history.takeIf { it.any { m -> m.role == Role.USER || m.role == Role.ASSISTANT } }
+            ?.let { SideQuestion.coldMessages(it, chars).single().text }
+        SideContext(
+            sessionId = sessionId, turnId = "", config = runConfig, apiKey = apiKey,
+            systemPrompt = LiveMode.systemPrompt(access), tools = tools, messages = emptyList(),
+            options = RequestOptions(maxOutputTokens = LiveMode.MAX_OUTPUT_TOKENS, cacheKey = "live-$sessionId",
+                modelCatalogs = providers.catalogs.first()),
+            registry = registry, workspace = fs, sandboxOff = sandboxOff,
+            permissionMode = PermissionMode.CONFIRM_RISKY, runContext = null, warm = false,
+        ) to transcript
+    }
+
+    private data class LiveCard(val messageId: String, val from: Int, val until: Int)
+    private val liveCards = java.util.concurrent.ConcurrentHashMap<String, LiveCard>()
+    private val liveSaves = java.util.concurrent.ConcurrentHashMap<String, Job>()
+    private val liveSaveLock = Mutex()
+
+    /**
+     * Saves a Live Mode conversation into the chat once no task is running, so
+     * a working agent is never interrupted and its tool history stays intact.
+     * The card is rewritten while it is the newest message; after the chat
+     * moves on, later exchanges start a new card below. A newer call replaces
+     * a save still waiting for the run to end. Runs on the app scope so
+     * closing the chat does not lose it.
+     */
+    fun saveLiveTranscript(sessionId: String, liveId: String, exchanges: List<LiveExchange>): Job? {
+        if (exchanges.isEmpty()) return null
+        val job = appScope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
+            stateOf(sessionId).first { !it.running }
+            kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
+                liveSaveLock.withLock {
+                    val card = liveCards[liveId] ?: LiveCard(LiveTranscript.messageId(liveId), 0, 0)
+                    // A replaced save can still reach the lock after its successor.
+                    if (exchanges.size < card.until) return@withLock
+                    val target = if (!sessions.messageExists(card.messageId) || sessions.isLastMessage(sessionId, card.messageId)) card
+                        else LiveCard(LiveTranscript.messageId(UUID.randomUUID().toString()), card.until, card.until)
+                    val slice = exchanges.drop(target.from)
+                    if (slice.isEmpty()) return@withLock
+                    sessions.saveLiveTranscript(sessionId, target.messageId, LiveTranscript.format(slice))
+                    liveCards[liveId] = target.copy(until = exchanges.size)
+                }
+            }
+        }
+        liveSaves.put(liveId, job)?.cancel()
+        job.invokeOnCompletion { liveSaves.remove(liveId, job) }
+        job.start()
+        return job
+    }
+
+    /** One Live Mode reply. Usage counts toward the chat under its own turn id, like a side question. */
+    fun askLive(
+        context: SideContext,
+        messages: List<ChatMessage>,
+        intercept: suspend (ToolCallData) -> com.androidharness.app.tools.ToolResult?,
+    ): kotlinx.coroutines.flow.Flow<SideEvent> {
+        val sid = context.sessionId
+        check(!(com.androidharness.app.local.LocalModelCatalog.isLocal(context.config.id) && isRunning(sid))) {
+            this.context.getString(com.androidharness.app.R.string.btw_error_local_busy)
+        }
+        val turnId = LiveMode.TURN_PREFIX + UUID.randomUUID()
+        return engine.streamAside(context, messages,
+            refusal = { name -> "$name is not available in Live Mode. Answer from what you already know." },
+            intercept = intercept,
+        ).onEach { event ->
+            if (event is SideEvent.Usage) with(event.usage) {
+                sessions.addUsage(sid, inputTokens.toLong(), outputTokens.toLong(), cachedInputTokens.toLong(), cacheWriteTokens.toLong())
+                sessions.recordUsage(sid, providerName, model, inputTokens.toLong(), outputTokens.toLong(),
+                    cachedInputTokens.toLong(), cacheWriteTokens.toLong(), turnId = turnId,
+                    cacheReported = cacheReported, cachePrices = cachePrices)
+            }
+        }.flowOn(Dispatchers.IO)
+    }
+
     fun acquireKeepalive() = keepalive.acquire()
     fun releaseKeepalive() = keepalive.release()
     fun acquireBackgroundKeepalive() = keepalive.acquire(activeTask = false)

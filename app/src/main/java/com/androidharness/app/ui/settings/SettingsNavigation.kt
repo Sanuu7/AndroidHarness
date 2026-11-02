@@ -142,6 +142,12 @@ internal enum class SettingsPage(
         R.string.settings_group_your_assistant,
         "microphone groq whisper transcription speech tts text to speech read aloud voice output",
     ),
+    LIVE_MODE(
+        R.string.live_title,
+        R.string.settings_page_live_desc,
+        R.string.settings_group_your_assistant,
+        "live mode hands free voice conversation talk planning experimental realtime spoken",
+    ),
     SKILLS(
         R.string.settings_page_skills_title,
         R.string.settings_page_skills_desc,
@@ -275,7 +281,7 @@ internal val settingsHomePages = listOf(
     SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER,
     SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.CHAT_OPTIONS,
     SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.RUMBLE, SettingsPage.PRIVACY,
-    SettingsPage.MODELS, SettingsPage.LOCAL_MODELS, SettingsPage.VOICE,
+    SettingsPage.MODELS, SettingsPage.LOCAL_MODELS, SettingsPage.VOICE, SettingsPage.LIVE_MODE,
     SettingsPage.GITHUB, SettingsPage.SEARCH, SettingsPage.MCP,
     SettingsPage.TELEGRAM, SettingsPage.SYNC, SettingsPage.FTP_SERVER,
     SettingsPage.BACKGROUND, SettingsPage.STORAGE,
@@ -537,6 +543,20 @@ private val subSettingsEntries = listOfNotNull(
         anchor = R.string.settings_anchor_tts,
     ),
     SettingsSearchEntry(
+        R.string.live_settings_model,
+        R.string.live_settings_model_desc,
+        SettingsPage.LIVE_MODE,
+        "live mode fast light model voice",
+        anchor = R.string.live_settings_model,
+    ),
+    SettingsSearchEntry(
+        R.string.live_settings_access,
+        R.string.live_settings_access_desc,
+        SettingsPage.LIVE_MODE,
+        "live mode read only edit files start tasks permissions",
+        anchor = R.string.live_settings_access,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_theme_title,
         R.string.settings_search_theme_desc,
         SettingsPage.APPEARANCE,
@@ -740,6 +760,7 @@ internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
     "chatgpt" -> SettingsPage.CONNECTED_ACCOUNTS
     "planning" -> SettingsPage.MODELS
     "voice" -> SettingsPage.VOICE
+    "live", "live-mode" -> SettingsPage.LIVE_MODE
     "telegram" -> SettingsPage.TELEGRAM
     "plugins", "plugin-manager" -> SettingsPage.PLUGINS
     "configuration", "config" -> SettingsPage.CONFIGURATION

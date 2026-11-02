@@ -478,6 +478,15 @@ interface HarnessDao {
     @Query("UPDATE messages SET toolCallsJson = :calls WHERE id = :messageId")
     suspend fun updateToolCalls(messageId: String, calls: String)
 
+    @Query("UPDATE messages SET text = :text WHERE id = :messageId")
+    suspend fun updateMessageText(messageId: String, text: String)
+
+    @Query("SELECT EXISTS(SELECT 1 FROM messages WHERE id = :messageId)")
+    suspend fun messageExists(messageId: String): Boolean
+
+    @Query("SELECT id FROM messages WHERE sessionId = :sessionId ORDER BY createdAt DESC, rowid DESC LIMIT 1")
+    suspend fun lastMessageId(sessionId: String): String?
+
     /** Deletes [messageId] and every message after it in the session. */
     @Query(
         "DELETE FROM messages WHERE sessionId = :sessionId AND (createdAt > " +
