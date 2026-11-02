@@ -67,6 +67,22 @@ class ChatExperienceTest {
         assertNull(ChatExperience.modelLabel("/"))
     }
 
+    @Test fun answerHasImageSeesMarkdownBareAndComponentPictures() {
+        assertTrue(ChatExperience.answerHasImage("Intro\n\n![Eiffel Tower](https://example.com/tower.jpg)"))
+        assertTrue(ChatExperience.answerHasImage("![Upload](harness-image:img_1)"))
+        assertTrue(ChatExperience.answerHasImage("Look:\nhttps://example.com/photo.webp\n"))
+        assertTrue(ChatExperience.answerHasImage("```harness-ui\n{\"type\":\"profile\",\"name\":\"A\",\"image\":\"https://example.com/a.png\"}\n```"))
+        assertTrue(ChatExperience.answerHasImage("```harness-ui\n{\"type\": \"gallery\",\"images\":[]}\n```"))
+        assertFalse(ChatExperience.answerHasImage("Plain answer with a [link](https://example.com/page)."))
+    }
+
+    @Test fun alwaysImagePromptAsksForAPictureInTheFirstAnswer() {
+        val always = ChatExperience.imageFrequencyPrompt(com.androidharness.app.data.ImageFrequency.ALWAYS)
+        assertTrue(always.contains("first answer in a chat must have one"))
+        assertTrue(always.contains("images=true"))
+        assertFalse(ChatExperience.SYSTEM_PROMPT.contains("skip decorative pictures"))
+    }
+
     @Test fun imageFrequencyPromptStatesTheChatSetting() {
         val none = ChatExperience.imageFrequencyPrompt(com.androidharness.app.data.ImageFrequency.NONE)
         assertTrue(none.contains("Images are turned off"))

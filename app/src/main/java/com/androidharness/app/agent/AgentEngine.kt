@@ -384,6 +384,10 @@ class AgentEngine(
         var lastFinishReason: String? = null
         var answerNudges = 0
         var researchNudges = 0
+        var imageNudges = 0
+        val alwaysImages = conversation.isChat && com.androidharness.app.core.ChatExperience
+            .effectiveImageFrequency(conversation.imageFrequency, chatImageFrequency) == com.androidharness.app.data.ImageFrequency.ALWAYS
+        val firstChatAnswer = history.count { it.role == Role.USER } <= 1
         var roundsWithoutTodoUpdate = 0
         suspend fun takeSteering(): Boolean {
             val messages = steering?.take().orEmpty()
@@ -705,6 +709,11 @@ class AgentEngine(
                 conversation.isChat && researchBudget != null && researchBudget.minReads > 0 &&
                 researchBudget.used > 0 && researchBudget.pagesRead < researchBudget.minReads &&
                 researchNudges < MAX_RESEARCH_NUDGES
+            // Always-images chats get one more try when a real answer arrives without a picture.
+            val wantsImageNudge = !wantsNudge && !wantsResearchNudge && failure == null && calls.isEmpty() &&
+                alwaysImages && imageNudges < MAX_IMAGE_NUDGES && text.isNotBlank() &&
+                (firstChatAnswer || text.length >= com.androidharness.app.core.ChatExperience.IMAGE_NUDGE_MIN_CHARS) &&
+                !com.androidharness.app.core.ChatExperience.answerHasImage(text.toString())
             if (wantsNudge) {
                 answerNudges++
                 working += ChatMessage(role = Role.USER, text = ANSWER_NUDGE)
@@ -713,6 +722,9 @@ class AgentEngine(
                 working += ChatMessage(role = Role.USER, text =
                     com.androidharness.app.core.ChatExperience.researchReadNudge(
                         searchDepth, researchBudget.pagesRead, researchBudget.minReads))
+            } else if (wantsImageNudge) {
+                imageNudges++
+                working += ChatMessage(role = Role.USER, text = com.androidharness.app.core.ChatExperience.IMAGE_NUDGE)
             } else if (!answerless) {
                 val followUps = if (conversation.isChat)
                     com.androidharness.app.core.FollowUpSuggestions.extract(text.toString())
@@ -746,7 +758,7 @@ class AgentEngine(
                     emit(AgentEvent.Error(failure!!, recoverable = recoverableFailure))
                     break
                 }
-                wantsNudge || wantsResearchNudge -> continue
+                wantsNudge || wantsResearchNudge || wantsImageNudge -> continue
                 // A message sent during the final answer keeps the task going in this turn.
                 calls.isEmpty() && takeSteering() -> continue
                 calls.isEmpty() -> {
@@ -2374,6 +2386,9 @@ Rules:
 
         /** How many times a research turn is sent back to read pages before answering. */
         const val MAX_RESEARCH_NUDGES = 2
+
+        /** How many times an Always-images chat answer without a picture is sent back for one. */
+        const val MAX_IMAGE_NUDGES = 1
         private val ANSWER_NUDGE =
             "Your previous reply ended without any visible answer: it was likely cut off " +
                 "mid-generation. Respond now with your actual answer (or the tool calls you intended)."

@@ -234,16 +234,32 @@ private val bareImageUrlRegex = Regex(
 )
 private val inlineImageRegex = Regex("!\\[([^\\]]*)]\\(((?:https?://|harness-image:)[^)\\s]+)\\)")
 
+/**
+ * Models often separate paragraphs with a single newline. A full sentence line
+ * ends its paragraph so the answer gets paragraph spacing; short lines such as
+ * addresses, verse or label/value pairs stay together.
+ */
+internal fun splitRunOnParagraphs(lines: List<String>): List<List<String>> {
+    val groups = mutableListOf<MutableList<String>>(mutableListOf())
+    lines.forEachIndexed { index, line ->
+        groups.last() += line
+        val text = line.trim()
+        if (index < lines.lastIndex && text.length >= RUN_ON_PARAGRAPH_CHARS && text.last() in ".!?。！？")
+            groups += mutableListOf<String>()
+    }
+    return groups.filter { it.isNotEmpty() }
+}
+
+private const val RUN_ON_PARAGRAPH_CHARS = 80
+
 private fun parseBlocks(text: String): List<Block> {
     val out = mutableListOf<Block>()
     val lines = text.split('\n')
     var i = 0
     val paraBuf = mutableListOf<String>()
 
-    fun flushParagraph() {
-        if (paraBuf.isEmpty()) return
-        val joined = paraBuf.joinToString("\n").trimEnd()
-        paraBuf.clear()
+    fun emitParagraph(paragraphLines: List<String>) {
+        val joined = paragraphLines.joinToString("\n").trimEnd()
         val trimmed = joined.trim()
         standaloneImageRegex.matchEntire(trimmed)?.let {
             out += Block.Image(it.groupValues[2], it.groupValues[1])
@@ -278,6 +294,12 @@ private fun parseBlocks(text: String): List<Block> {
             return
         }
         out += Block.Paragraph(joined)
+    }
+
+    fun flushParagraph() {
+        if (paraBuf.isEmpty()) return
+        splitRunOnParagraphs(paraBuf).forEach(::emitParagraph)
+        paraBuf.clear()
     }
 
     while (i < lines.size) {
@@ -462,9 +484,10 @@ private fun MarkdownBlocks(
             }
 
             is Block.LinkPreview -> if (!media || live) {
-                Text(
+                // The bare address autolinks, so it stays tappable while streaming.
+                ParagraphText(
                     if (block.label.isNotBlank()) "${block.label}: ${block.url}" else block.url,
-                    style = MaterialTheme.typography.bodyLarge,
+                    onOpenUrl, linkIcons = false, math = false,
                 )
             } else if (linkCards < 3 && onOpenUrl != null) {
                 linkCards++
@@ -906,16 +929,32 @@ private fun CodeBlock(code: String, language: String, copySource: (() -> String)
 private val linkRegex = Regex("""\[([^\]]+)]\((?:<([^>\n]+)>|([^\s)]+))\)""")
 
 /**
- * Inline links are citations by default, so they collapse to a link icon. A
- * link whose label is the address itself is an explicit URL the reader should
- * see, so it stays as text.
+ * A link that trails prose is a citation and collapses to a link icon. A link
+ * that opens its line or list item, follows a colon, or is labelled with the
+ * address itself is the thing the reader asked for, so its label stays visible.
  */
-private fun isCitationLink(label: String, url: String): Boolean {
+internal fun isCitationLink(label: String, url: String, before: String = "x"): Boolean {
     val text = label.trim()
     if (text.isEmpty()) return true
     if (text.equals(url.trim(), ignoreCase = true)) return false
     if (text.startsWith("http://", ignoreCase = true) || text.startsWith("https://", ignoreCase = true)) return false
+    val lead = before.substringAfterLast('\n').trimEnd { it.isWhitespace() || it in "*~_" }
+    if (lead.isEmpty() || lead.endsWith(':')) return false
     return true
+}
+
+/** Bare addresses in prose; trailing sentence punctuation is not part of the URL. */
+private val bareUrlInTextRegex = Regex("""https?://[^\s<>\[\]"`]*[^\s<>\[\]"`.,;:!?'*_)]""")
+
+/** The bare URL starting at [start], or null. A closing parenthesis stays when it balances one in the URL. */
+internal fun bareUrlAt(text: String, start: Int, end: Int = text.length): String? {
+    if (start > 0 && (text[start - 1].isLetterOrDigit() || text[start - 1] == '/')) return null
+    val match = bareUrlInTextRegex.matchAt(text, start) ?: return null
+    var url = match.value.take(end - start)
+    if (url.length < match.value.length) return null
+    val next = start + url.length
+    if (next < end && text[next] == ')' && url.count { it == '(' } > url.count { it == ')' }) url += ")"
+    return url
 }
 
 /** External links go to the system browser; chats route localhost to their preview. */
@@ -1033,7 +1072,7 @@ private fun styled(
                             val file = if (fileLinks) WorkspaceFileReference.fromLink(url) else null
                             if (file != null) {
                                 appendFile(label, file)
-                            } else if (linkIcons && isCitationLink(label, url)) {
+                            } else if (linkIcons && isCitationLink(label, url, normalized.substring(0, i))) {
                                 // A cited site becomes a small chain icon; the label
                                 // stays as alternate text for copying and selection.
                                 val id = "inline-link-${linkIndex++}"
@@ -1119,6 +1158,16 @@ private fun styled(
                             val file = files.getValue(i)
                             appendFile(normalized.substring(file.range), file.reference)
                             i = file.range.last + 1
+                        }
+
+                        normalized.startsWith("http", i) && bareUrlAt(normalized, i, to) != null -> {
+                            val url = bareUrlAt(normalized, i, to)!!
+                            pushStringAnnotation(tag = "url", annotation = url)
+                            pushStyle(SpanStyle(color = linkColor, textDecoration = TextDecoration.Underline))
+                            append(url)
+                            pop()
+                            pop()
+                            i += url.length
                         }
 
                         math && normalized.startsWith("\\(", i) -> {
