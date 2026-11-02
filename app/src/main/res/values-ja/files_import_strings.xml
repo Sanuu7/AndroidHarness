@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"ファイルをインポート"</string>
+    <string name="files_import_folder">"フォルダをインポート"</string>
+    <string name="files_import_done">"%2$s 件中 %1$s 件をインポートしました"</string>
+    <string name="files_import_failed">"ファイルをインポートできませんでした"</string>
+</resources>

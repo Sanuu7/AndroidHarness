@@ -39,6 +39,8 @@ import androidx.compose.material.icons.outlined.DataObject
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Difference
 import androidx.compose.material.icons.outlined.DriveFileRenameOutline
+import androidx.compose.material.icons.outlined.DriveFolderUpload
+import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderZip
 import androidx.compose.material.icons.outlined.Image
@@ -86,7 +88,6 @@ import com.androidharness.app.ui.common.AppHeader
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.workspace.FsNode
-import com.androidharness.app.workspace.WorkspaceFs
 import com.androidharness.app.workspace.normalizeRelPath
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -142,7 +143,7 @@ fun FilesScreen(
     var filterActive by remember { mutableStateOf(false) }
     var loading by remember { mutableStateOf(true) }
     var loadError by remember { mutableStateOf<String?>(null) }
-    var entries by remember { mutableStateOf<List<FsNode>>(emptyList()) }
+    var entries by remember { mutableStateOf<List<FileRow>>(emptyList()) }
 
     var selecting by remember(sessionId, projectId, workspaceKey, currentPath) { mutableStateOf(false) }
     var selectedPaths by remember(sessionId, projectId, workspaceKey, currentPath) { mutableStateOf<Set<String>>(emptySet()) }
@@ -151,7 +152,7 @@ fun FilesScreen(
     var batchTargets by remember(sessionId, projectId, workspaceKey) { mutableStateOf<List<FsNode>>(emptyList()) }
     var batchErrors by remember { mutableStateOf<List<String>>(emptyList()) }
     val visibleEntries = if (filter.isBlank()) entries else entries.filter { it.name.contains(filter, ignoreCase = true) }
-    val selectedNodes = entries.filter { it.relPath in selectedPaths }
+    val selectedNodes = entries.filter { it.relPath in selectedPaths }.map { it.node }
     fun toggleSelection(node: FsNode) {
         if (batchBusy) return
         selecting = true
@@ -213,7 +214,7 @@ fun FilesScreen(
         entries = withContext(Dispatchers.IO) {
             runCatching {
                 val dir = f.resolve(currentPath)
-                if (!dir.isDirectory) emptyList() else dir.list()
+                if (!dir.isDirectory) emptyList() else dir.list().map { it.toRow() }
             }.getOrElse { e ->
                 loadError = e.message ?: uiContext.getString(R.string.ui_could_not_list, (currentPath).toString())
                 emptyList()
@@ -255,6 +256,35 @@ fun FilesScreen(
                 batchBusy = false
             }
         }
+    }
+
+    var importing by remember { mutableStateOf(false) }
+    fun importPicked(uris: List<android.net.Uri>, tree: Boolean) {
+        val f = fs ?: return
+        if (uris.isEmpty() || importing) return
+        val target = currentPath
+        importing = true
+        scope.launch {
+            try {
+                val dir = withContext(Dispatchers.IO) { f.resolve(target) }
+                val result = FileOps.importDocuments(context, uris, dir, tree)
+                batchErrors = result.failures.map { (name, reason) -> "$name: $reason" }
+                toast(uiContext.getString(R.string.files_import_done, result.completed.size.toString(), uris.size.toString()))
+            } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                throw cancelled
+            } catch (error: Exception) {
+                batchErrors = listOf(error.message ?: uiContext.getString(R.string.files_import_failed))
+            } finally {
+                importing = false
+                refreshTick++
+            }
+        }
+    }
+    val importFilesPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenMultipleDocuments()) { uris ->
+        importPicked(uris, tree = false)
+    }
+    val importFolderPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri ->
+        uri?.let { importPicked(listOf(it), tree = true) }
     }
 
     // ---- action targets ----
@@ -347,6 +377,18 @@ fun FilesScreen(
                                     text = { Text(uiContext.getString(R.string.ui_new_folder)) },
                                     leadingIcon = { Icon(Icons.Outlined.CreateNewFolder, null) },
                                     onClick = { headerMenuOpen = false; creatingFolder = true },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(uiContext.getString(R.string.files_import_files)) },
+                                    leadingIcon = { Icon(Icons.Outlined.FileUpload, null) },
+                                    enabled = fs != null && !importing,
+                                    onClick = { headerMenuOpen = false; importFilesPicker.launch(arrayOf("*/*")) },
+                                )
+                                DropdownMenuItem(
+                                    text = { Text(uiContext.getString(R.string.files_import_folder)) },
+                                    leadingIcon = { Icon(Icons.Outlined.DriveFolderUpload, null) },
+                                    enabled = fs != null && !importing,
+                                    onClick = { headerMenuOpen = false; importFolderPicker.launch(null) },
                                 )
                             }
                         }
@@ -444,6 +486,8 @@ fun FilesScreen(
                 )
             }
 
+            if (importing) AppLinearProgressIndicator(Modifier.fillMaxWidth())
+
             loadError?.let { err ->
                 Text(
                     err,
@@ -486,9 +530,10 @@ fun FilesScreen(
 
                     val visible = visibleEntries
 
-                    items(visible, key = { it.relPath }) { node ->
-                        val nodeKey = normalizeRelPath(node.relPath)
-                        val change = if (node.isFile) activeChanges.firstOrNull {
+                    items(visible, key = { it.relPath }) { row ->
+                        val node = row.node
+                        val nodeKey = normalizeRelPath(row.relPath)
+                        val change = if (row.isFile) activeChanges.firstOrNull {
                             it.relPath == nodeKey ||
                                 nodeKey.endsWith("/${it.relPath}") ||
                                 it.relPath.endsWith("/$nodeKey")
@@ -497,18 +542,18 @@ fun FilesScreen(
                         Column(
                             Modifier
                                 .fillMaxWidth()
-                                .background(if (node.relPath in selectedPaths) scheme.primaryContainer.copy(alpha = 0.45f) else Color.Transparent)
+                                .background(if (row.relPath in selectedPaths) scheme.primaryContainer.copy(alpha = 0.45f) else Color.Transparent)
                                 .combinedClickable(
                                     enabled = !batchBusy,
                                     onClick = {
                                         if (selecting) {
                                             toggleSelection(node)
-                                        } else if (node.isDirectory) {
+                                        } else if (row.isDirectory) {
                                             filter = ""
                                             filterActive = false
-                                            currentPath = node.relPath
+                                            currentPath = row.relPath
                                         } else {
-                                            onOpenFile(node.relPath)
+                                            onOpenFile(row.relPath)
                                         }
                                     },
                                     onLongClick = { toggleSelection(node) },
@@ -522,42 +567,42 @@ fun FilesScreen(
                             ) {
                                 if (selecting) {
                                     Checkbox(
-                                        checked = node.relPath in selectedPaths,
+                                        checked = row.relPath in selectedPaths,
                                         enabled = !batchBusy,
                                         onCheckedChange = { toggleSelection(node) },
                                     )
                                 }
                                 Icon(
-                                    iconFor(node),
+                                    iconFor(row),
                                     contentDescription = null,
                                     modifier = Modifier.size(19.dp),
-                                    tint = tintFor(node, change, scheme, statusSuccess),
+                                    tint = tintFor(row, change, scheme, statusSuccess),
                                 )
                                 Spacer(Modifier.width(14.dp))
                                 Column(Modifier.weight(1f)) {
                                     Text(
-                                        node.name,
+                                        row.name,
                                         style = MaterialTheme.typography.bodyLarge,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis,
-                                        color = if (node.isFile && change != null) statusSuccess
+                                        color = if (row.isFile && change != null) statusSuccess
                                         else Color.Unspecified,
                                     )
                                     Text(
-                                        subtitleFor(node),
+                                        subtitleFor(row),
                                         style = MaterialTheme.typography.labelSmall,
                                         color = scheme.onSurfaceVariant,
                                     )
                                 }
-                                if (node.isFile && change != null) {
+                                if (row.isFile && change != null) {
                                     DiffStatText(change.added, change.removed)
                                 }
                                 if (!selecting) {
                                     IconButton(onClick = { menuNode = node }) {
-                                        Icon(Icons.Filled.MoreVert, contentDescription = uiContext.getString(R.string.settings_provider_actions_cd, (node.name).toString()))
+                                        Icon(Icons.Filled.MoreVert, contentDescription = uiContext.getString(R.string.settings_provider_actions_cd, (row.name).toString()))
                                     }
                                 }
-                                if (node.isDirectory && !selecting) {
+                                if (row.isDirectory && !selecting) {
                                     Spacer(Modifier.width(10.dp))
                                     Icon(
                                         Icons.AutoMirrored.Filled.KeyboardArrowRight,
@@ -674,11 +719,10 @@ fun FilesScreen(
 
     // ---- rename / create / delete / destination dialogs ----
     renamingNode?.let { node ->
-        val parentRel = node.relPath.substringBeforeLast('/', "")
         NameDialog(
             title = uiContext.getString(R.string.ui_rename_770, (node.name).toString()),
             initialName = node.name,
-            takenNames = siblingNames(fs, parentRel) - setOf(node.name),
+            takenNames = entries.mapTo(HashSet()) { it.name } - setOf(node.name),
             confirmLabel = uiContext.getString(R.string.ui_rename),
             onDismiss = { renamingNode = null },
             onConfirm = { newName ->
@@ -694,7 +738,7 @@ fun FilesScreen(
         NameDialog(
             title = uiContext.getString(R.string.ui_new_folder),
             initialName = "",
-            takenNames = siblingNames(fs, currentPath),
+            takenNames = entries.mapTo(HashSet()) { it.name },
             confirmLabel = uiContext.getString(R.string.ui_create),
             onDismiss = { creatingFolder = false },
             onConfirm = { name ->
@@ -710,7 +754,7 @@ fun FilesScreen(
         NameDialog(
             title = uiContext.getString(R.string.ui_new_file),
             initialName = "",
-            takenNames = siblingNames(fs, currentPath),
+            takenNames = entries.mapTo(HashSet()) { it.name },
             confirmLabel = uiContext.getString(R.string.ui_create),
             onDismiss = { creatingFile = false },
             onConfirm = { name ->
@@ -911,9 +955,27 @@ private fun SheetAction(icon: ImageVector, title: String, tint: Color = Material
     }
 }
 
-private fun iconFor(node: FsNode): ImageVector = when {
-    node.isDirectory -> Icons.Outlined.Folder
-    else -> when (node.name.substringAfterLast('.', "").lowercase()) {
+/** One listing entry, read once on the IO thread so drawing never touches the filesystem. */
+internal class FileRow(
+    val node: FsNode,
+    val relPath: String,
+    val name: String,
+    val isDirectory: Boolean,
+    val isFile: Boolean,
+    val size: Long,
+    val childCount: Int?,
+)
+
+private fun FsNode.toRow(): FileRow {
+    val directory = isDirectory
+    // A real folder answers its child count with one read. SAF and SSH would need a full listing per row.
+    val children = if (directory) (this as? com.androidharness.app.workspace.FileFsNode)?.file?.list()?.size else null
+    return FileRow(this, relPath, name, directory, !directory && isFile, if (directory) 0L else length, children)
+}
+
+private fun iconFor(row: FileRow): ImageVector = when {
+    row.isDirectory -> Icons.Outlined.Folder
+    else -> when (row.name.substringAfterLast('.', "").lowercase()) {
         "kt", "kts", "java", "py", "js", "ts", "jsx", "tsx", "c", "cpp", "h", "gradle" -> Icons.Outlined.Code
         "json", "xml", "yaml", "yml", "toml", "ini" -> Icons.Outlined.DataObject
         "png", "jpg", "jpeg", "gif", "webp", "svg" -> Icons.Outlined.Image
@@ -924,10 +986,10 @@ private fun iconFor(node: FsNode): ImageVector = when {
     }
 }
 
-private fun subtitleFor(node: FsNode): String = when {
-    node is com.androidharness.app.workspace.SshFs.RemoteNode && node.isDirectory -> "Remote folder"
-    node.isDirectory -> try { "${node.list().size} items" } catch (_: Exception) { "" }
-    else -> formatFileSize(node.length)
+private fun subtitleFor(row: FileRow): String = when {
+    row.node is com.androidharness.app.workspace.SshFs.RemoteNode && row.isDirectory -> "Remote folder"
+    row.isDirectory -> row.childCount?.let { "$it items" } ?: "Folder"
+    else -> formatFileSize(row.size)
 }
 
 internal fun formatFileSize(bytes: Long): String = when {
@@ -937,12 +999,12 @@ internal fun formatFileSize(bytes: Long): String = when {
 }
 
 private fun tintFor(
-    node: FsNode,
+    row: FileRow,
     change: SessionFileChangeEntity?,
     scheme: androidx.compose.material3.ColorScheme,
     success: Color,
 ): Color = when {
-    change == null || node.isDirectory -> scheme.onSurfaceVariant
+    change == null || row.isDirectory -> scheme.onSurfaceVariant
     change.isNew -> success
     else -> success.copy(alpha = 0.85f)
 }
@@ -951,13 +1013,6 @@ private fun parentOf(path: String): String {
     val segments = path.split('/').filter { it.isNotBlank() }
     return if (segments.size <= 1) "." else segments.dropLast(1).joinToString("/")
 }
-
-/** Names present next to [childRelPath] ("src" ⇒ children of root, "" ⇒ root). */
-private fun siblingNames(fs: WorkspaceFs?, childRelPath: String): Set<String> =
-    if (fs is com.androidharness.app.workspace.SshFs) emptySet() else runCatching {
-        val target = childRelPath.ifBlank { "." }
-        fs?.resolve(target)?.list()?.mapTo(HashSet()) { it.name }
-    }.getOrNull().orEmpty()
 
 // ---------------------------------------------------------------------------
 // Shared name-entry dialog (rename + new file/folder)

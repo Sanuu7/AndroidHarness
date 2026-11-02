@@ -121,21 +121,21 @@ class FileFs(private val root: File) : WorkspaceFs {
 }
 
 class FileFsNode(val file: File, private val rootPath: java.nio.file.Path) : FsNode {
-    override val relPath: String
-        get() {
-            // Full access mode resolves nodes outside this root; relativizing
-            // then throws (other drive) or yields an ugly "../.." climb.
-            // Render those as their absolute path instead.
-            val rel = runCatching {
-                rootPath.relativize(file.canonicalFile.toPath()).toString()
-            }.getOrNull()
-            return when {
-                rel == null -> file.absolutePath
-                rel.isBlank() -> "."
-                rel.startsWith("..") -> file.absolutePath
-                else -> rel
-            }
+    // Canonicalizing stats every path segment, which is slow on shared storage, so do it once per node.
+    override val relPath: String by lazy {
+        // Full access mode resolves nodes outside this root; relativizing
+        // then throws (other drive) or yields an ugly "../.." climb.
+        // Render those as their absolute path instead.
+        val rel = runCatching {
+            rootPath.relativize(file.canonicalFile.toPath()).toString()
+        }.getOrNull()
+        when {
+            rel == null -> file.absolutePath
+            rel.isBlank() -> "."
+            rel.startsWith("..") -> file.absolutePath
+            else -> rel
         }
+    }
     override val name: String get() = file.name
     private fun attributes(): java.nio.file.attribute.BasicFileAttributes? = try {
         java.nio.file.Files.readAttributes(file.toPath(), java.nio.file.attribute.BasicFileAttributes::class.java)

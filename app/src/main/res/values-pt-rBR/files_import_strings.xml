@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Importar arquivos"</string>
+    <string name="files_import_folder">"Importar pasta"</string>
+    <string name="files_import_done">"%1$s de %2$s itens importados"</string>
+    <string name="files_import_failed">"Não foi possível importar os arquivos"</string>
+</resources>

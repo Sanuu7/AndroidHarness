@@ -1303,12 +1303,12 @@ private fun ChatScreenContent(
     }
 
     val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let { viewModel.attachImage(it) } }
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> -> uris.forEach { viewModel.attachImage(it) } }
 
     val fileLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetContent()
-    ) { uri: Uri? -> uri?.let { viewModel.attachFile(it) } }
+        ActivityResultContracts.GetMultipleContents()
+    ) { uris: List<Uri> -> uris.forEach { viewModel.attachFile(it) } }
 
     val voiceController = rememberVoiceInputController(viewModel.container)
     val livePermissionLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->

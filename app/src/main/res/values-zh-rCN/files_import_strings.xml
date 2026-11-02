@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">导入文件</string>
+    <string name="files_import_folder">导入文件夹</string>
+    <string name="files_import_done">已导入 %1$s 项，共 %2$s 项</string>
+    <string name="files_import_failed">无法导入文件</string>
+</resources>

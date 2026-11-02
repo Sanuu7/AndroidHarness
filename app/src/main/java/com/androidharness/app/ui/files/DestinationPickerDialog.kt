@@ -55,11 +55,13 @@ internal fun DestinationPickerDialog(
 
     LaunchedEffect(fs, dir) {
         val f = fs ?: return@LaunchedEffect
-        dirs = runCatching {
-            f.resolve(dir).list()
-                .filter { it.isDirectory && !it.name.startsWith(".") }
-                .sortedBy { it.name.lowercase() }
-        }.getOrDefault(emptyList())
+        dirs = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            runCatching {
+                f.resolve(dir).list()
+                    .filter { it.isDirectory && !it.name.startsWith(".") }
+                    .sortedBy { it.name.lowercase() }
+            }.getOrDefault(emptyList())
+        }
     }
 
     AlertDialog(

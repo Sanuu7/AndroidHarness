@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"استيراد ملفات"</string>
+    <string name="files_import_folder">"استيراد مجلد"</string>
+    <string name="files_import_done">"تم استيراد %1$s من %2$s عناصر"</string>
+    <string name="files_import_failed">"تعذّر استيراد الملفات"</string>
+</resources>

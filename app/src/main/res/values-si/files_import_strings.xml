@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Import ගොනු"</string>
+    <string name="files_import_folder">"Import ෆෝල්ඩරය"</string>
+    <string name="files_import_done">"%2$s අයිතමවලින් %1$s Import කරන ලදි"</string>
+    <string name="files_import_failed">"ගොනු Import කළ නොහැක"</string>
+</resources>

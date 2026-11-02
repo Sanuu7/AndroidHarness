@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"وارد کردن فایل‌ها"</string>
+    <string name="files_import_folder">"وارد کردن پوشه"</string>
+    <string name="files_import_done">"%1$s از %2$s مورد وارد شد"</string>
+    <string name="files_import_failed">"فایل‌ها وارد نشدند"</string>
+</resources>

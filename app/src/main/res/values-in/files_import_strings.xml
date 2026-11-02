@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Impor berkas"</string>
+    <string name="files_import_folder">"Impor folder"</string>
+    <string name="files_import_done">"%1$s dari %2$s item diimpor"</string>
+    <string name="files_import_failed">"Tidak dapat mengimpor berkas"</string>
+</resources>

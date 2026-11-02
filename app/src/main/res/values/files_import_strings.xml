@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">Import files</string>
+    <string name="files_import_folder">Import folder</string>
+    <string name="files_import_done">Imported %1$s of %2$s items</string>
+    <string name="files_import_failed">Could not import files</string>
+</resources>

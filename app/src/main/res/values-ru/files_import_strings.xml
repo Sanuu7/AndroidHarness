@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Импорт файлов"</string>
+    <string name="files_import_folder">"Импорт папки"</string>
+    <string name="files_import_done">"Импортировано %1$s из %2$s элементов"</string>
+    <string name="files_import_failed">"Не удалось импортировать файлы"</string>
+</resources>

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import androidx.core.content.FileProvider
+import androidx.documentfile.provider.DocumentFile
 import com.androidharness.app.tools.ToolFailure
 import com.androidharness.app.workspace.FsNode
 import kotlinx.coroutines.ensureActive
@@ -91,6 +92,49 @@ object FileOps {
             }
             FileBatchResult(completed, failures)
         }
+
+    /**
+     * Copies documents picked in another app into [destDir]. Picked names never overwrite
+     * existing ones, and a picked folder ([tree]) is copied with all its contents.
+     */
+    internal suspend fun importDocuments(context: Context, uris: List<Uri>, destDir: FsNode, tree: Boolean = false): FileBatchResult =
+        withContext(Dispatchers.IO) {
+            require(destDir.isDirectory) { "Target is not a folder" }
+            val taken = destDir.list().mapTo(HashSet()) { it.name }
+            val completed = mutableSetOf<String>()
+            val failures = linkedMapOf<String, String>()
+            for (uri in uris) {
+                kotlinx.coroutines.currentCoroutineContext().ensureActive()
+                val doc = if (tree) DocumentFile.fromTreeUri(context, uri) else DocumentFile.fromSingleUri(context, uri)
+                val name = importName(doc?.name ?: uri.lastPathSegment?.substringAfterLast('/'))
+                try {
+                    val targetName = uniqueWithin(name) { it !in taken }
+                    taken += targetName
+                    importDocument(context, requireNotNull(doc) { "Could not open $name" }, destDir, targetName)
+                    completed += targetName
+                } catch (cancelled: kotlinx.coroutines.CancellationException) {
+                    throw cancelled
+                } catch (error: Exception) {
+                    failures[name] = error.message ?: "Import failed"
+                }
+            }
+            FileBatchResult(completed, failures)
+        }
+
+    private fun importDocument(context: Context, doc: DocumentFile, destDir: FsNode, name: String) {
+        if (doc.isDirectory) {
+            val dir = destDir.createDir(name)
+            // Children of one source folder already have distinct names.
+            for (child in doc.listFiles()) importDocument(context, child, dir, importName(child.name))
+        } else {
+            val target = destDir.createFile(name)
+            context.contentResolver.openInputStream(doc.uri)?.use { target.writeFrom(it) }
+                ?: throw ToolFailure("Could not read $name")
+        }
+    }
+
+    private fun importName(raw: String?): String =
+        raw.orEmpty().replace('/', '_').replace('\u0000', '_').trim().takeIf { it.isNotEmpty() && it != "." && it != ".." } ?: "file"
 
     /** Files share as separate attachments; selections containing folders share as one ZIP. */
     suspend fun shareMany(context: Context, nodes: List<FsNode>) {
