@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Tahap Caveman"</string>
+    <string name="as_activity_finding">"Sedang mencari tetapan"</string>
+    <string name="as_activity_found">"Tetapan ditemukan"</string>
+    <string name="as_activity_changing">"Sedang mengubah tetapan"</string>
+    <string name="as_activity_changed">"Tetapan diubah"</string>
+    <string name="as_undo">"Buat asal"</string>
+    <string name="as_undo_all">"Buat asal semua"</string>
+    <string name="as_redo">"Buat semula"</string>
+    <string name="as_open_settings">"Buka tetapan"</string>
+    <string name="as_open_setting">"Buka tetapan"</string>
+    <string name="as_title_changed">"Tetapan berubah"</string>
+    <string name="as_title_undone">"Perubahan dibuat asal"</string>
+    <string name="as_title_needs_you">"Tetapan memerlukan anda"</string>
+    <string name="as_title_not_changed">"Tetapan tidak berubah"</string>
+    <string name="as_state_undone">"Dibuat asal"</string>
+    <string name="as_state_moved_on">"Berubah lagi sejak"</string>
+    <string name="as_on">"hidup"</string>
+    <string name="as_off">"Mati"</string>
+    <string name="as_unlimited">"Tidak terhad"</string>
+    <string name="as_custom_palette">"Palet tersuai"</string>
+    <string name="as_empty">"tiada"</string>
+    <string name="as_needs_you_label">"Memerlukan anda · %1$s"</string>
+    <string name="as_group">"Tetapan daripada sembang"</string>
+    <string name="as_setting_title">"Biarkan ejen menukar tetapan"</string>
+    <string name="as_access_off">"Mati"</string>
+    <string name="as_access_off_desc">"Ejen boleh melihat tetapan dan menunjukkan anda kepadanya, tetapi tidak mengubahnya."</string>
+    <string name="as_access_ask">"Tanya setiap masa"</string>
+    <string name="as_access_ask_desc">"Setiap perubahan menunggu kelulusan anda dalam sembang."</string>
+    <string name="as_access_allowed">"dibenarkan"</string>
+    <string name="as_access_allowed_desc">"Perubahan berlaku serta-merta dengan kad Buat asal. Yang sensitif, seperti kunci apl, masih bertanya."</string>
+    <string name="as_picker_detail">"Minta dalam Chat atau Code untuk menghidupkan atau mematikan tetapan, menggerakkan peluncur atau membuat palet warna. Tetapan sensitif sentiasa bertanya dahulu dan kunci API kekal di luar jangkauan."</string>
+    <string name="as_search_desc">"Tukar tetapan dengan bertanya dalam Chat atau Code"</string>
+    <string name="tip_ask_settings" formatted="false">"Minta saya menukar tetapan, seperti \"tetapkan gemuruh kepada 70%\" atau \"buat palet teal\". Kad menunjukkan perkara yang berubah, dengan Buat Asal."</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">"%1$d berubah"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">"%1$d memerlukan anda"</item>
+    </plurals>
+</resources>

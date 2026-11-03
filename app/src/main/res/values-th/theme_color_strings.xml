@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"ชุดสี"</string>
+    <string name="theme_color_hint">"เลือกชุดสีเพื่อระบายสีแอปของคุณ"</string>
+    <string name="theme_wallpaper_colors">"สีวอลเปเปอร์"</string>
+    <string name="theme_wallpaper_hint">"ทำตามสี Material You ในโทรศัพท์ของคุณ"</string>
+    <string name="theme_wallpaper_unavailable">"สีวอลเปเปอร์ต้องใช้ Android 12 หรือใหม่กว่า เลือกชุดสีด้านล่าง"</string>
+    <string name="theme_palette_blue">"Harness สีน้ำเงิน"</string>
+    <string name="theme_palette_ocean">"มหาสมุทร"</string>
+    <string name="theme_palette_indigo">"สีคราม"</string>
+    <string name="theme_palette_lavender">"ลาเวนเดอร์"</string>
+    <string name="theme_palette_orchid">"กล้วยไม้"</string>
+    <string name="theme_palette_rose">"โรส"</string>
+    <string name="theme_palette_coral">"ปะการัง"</string>
+    <string name="theme_palette_amber">"อำพัน"</string>
+    <string name="theme_palette_lime">"มะนาว"</string>
+    <string name="theme_palette_forest">"ป่า"</string>
+    <string name="theme_palette_teal">"นกเป็ดน้ำ"</string>
+    <string name="theme_palette_slate">"กระดานชนวน"</string>
+</resources>

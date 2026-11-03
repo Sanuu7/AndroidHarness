@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"Seç"</string>
+    <string name="sidebar_selected_count">"%1$d seçildi"</string>
+    <string name="sidebar_select_all">"Tümünü seç"</string>
+    <string name="sidebar_clear_selection">"Seçimi temizle"</string>
+    <string name="sidebar_exit_selection">"Seçimden çık"</string>
+    <string name="sidebar_select_chat">"%1$s\'yi seçin"</string>
+    <string name="sidebar_details">"Ayrıntılar"</string>
+    <string name="sidebar_other_chats">"Diğer sohbetler"</string>
+    <string name="sidebar_model_unavailable">"Kullanılamıyor"</string>
+    <string name="sidebar_delete_selected">"Seçilen sohbetler silinsin mi?"</string>
+    <string name="sidebar_delete_selected_message">"Bu sohbetler ve konuşma geçmişleri silinsin mi? Bu geri alınamaz."</string>
+    <string name="sidebar_delete_running">"Bu sohbetlerdeki görevlerin yürütülmesi durdurulacak."</string>
+    <string name="sidebar_selection_error">"Bu işlem tamamlanamadı. Lütfen tekrar deneyin."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="one">"%1$d sohbetleri arşivlendi"</item>
+        <item quantity="other">"%1$d sohbetleri arşivlendi"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="one">"%1$d sohbetleri geri yüklendi"</item>
+        <item quantity="other">"%1$d sohbetleri geri yüklendi"</item>
+    </plurals>
+</resources>

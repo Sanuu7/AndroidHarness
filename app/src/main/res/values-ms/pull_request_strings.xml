@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"Membuka permintaan tarik…"</string>
+    <string name="pr_tool_opened">"Permintaan tarik dibuka #%1$d"</string>
+    <string name="pr_tool_existing">"Permintaan tarik #%1$d sudah dibuka"</string>
+    <string name="pr_tool_failed">"Permintaan tarik tidak dibuka"</string>
+    <string name="pr_tool_waiting">"Menunggu kelulusan anda"</string>
+    <string name="pr_draft">"Draf"</string>
+    <string name="pr_counts">"Commit: %1$d · Fail: %2$d"</string>
+    <string name="pr_open_on_github">"Buka pada GitHub"</string>
+    <string name="pr_copy_link">"Salin pautan"</string>
+    <string name="pr_link_copied">"Pautan disalin"</string>
+    <string name="pr_open_failed">"Tiada apl boleh membuka pautan. Ia telah disalin sebaliknya."</string>
+    <string name="pr_approval_title">"Buka permintaan tarik?"</string>
+    <string name="pr_approval_body">"Mencipta permintaan tarik pada GitHub daripada cabang ditolak. Tiada apa-apa yang ditolak atau digabungkan."</string>
+    <string name="pr_approval_base">"Ke %1$s"</string>
+    <string name="pr_approval_default_base">"Ke dalam cabang lalai"</string>
+    <string name="pr_create">"Buat permintaan tarik"</string>
+    <string name="pr_create_draft">"Buat permintaan tarik draf"</string>
+    <string name="pr_entry_body">"Cadangkan commit pada cabang ini yang telah dihantar untuk disemak di GitHub."</string>
+    <string name="pr_loading">"Membandingkan cabang ini dengan GitHub…"</string>
+    <string name="pr_title_label">"Tajuk"</string>
+    <string name="pr_description_label">"Penerangan"</string>
+    <string name="pr_rewrite_description">"Tulis semula huraian"</string>
+    <string name="pr_base_label">"Cabang asas"</string>
+    <string name="pr_draft_label">"Buka sebagai draf"</string>
+    <string name="pr_draft_body">"Penyemak boleh melihatnya, tetapi ia tidak boleh digabungkan sehingga anda menandainya sebagai sedia."</string>
+    <string name="pr_include_checks">"Sertakan semakan daripada sembang ini"</string>
+    <string name="pr_include_checks_body">"Menambah hasil binaan, ujian dan lint yang direkodkan dalam perbualan ini."</string>
+    <string name="pr_existing_body">"Tolakan baharu ke %1$s mengemas kini permintaan tarik ini secara automatik."</string>
+    <string name="pr_not_pushed_title">"Branch belum lagi menggunakan GitHub"</string>
+    <string name="pr_out_of_date_title">"GitHub mempunyai salinan lama cabang ini"</string>
+    <string name="pr_push_body">"Hantar %1$s supaya GitHub menerima commit terkini anda."</string>
+    <string name="pr_push_branch">"Tolak cabang"</string>
+    <string name="pr_pushed">"Cabang ditolak."</string>
+    <string name="pr_uncommitted_title">"Perubahan yang belum di-commit: %1$d"</string>
+    <string name="pr_uncommitted_body">"Perubahan ini tidak akan disertakan sehingga anda membuat commit dan menghantarnya."</string>
+    <string name="pr_behind_title">"Commit lebih baharu pada %1$s: %2$d"</string>
+    <string name="pr_behind_body">"Cabang ini belum termasuk mereka lagi. Pengulas mungkin meminta anda mengemas kininya."</string>
+    <string name="pr_no_commits_title">"Belum ada apa-apa untuk dicadangkan"</string>
+    <string name="pr_no_commits_body">"%1$s tidak mempunyai commit yang belum ada pada %2$s."</string>
+    <string name="pr_commits_header">"Commit"</string>
+    <string name="pr_more">"Lagi: %1$d"</string>
+    <string name="pr_created_title">"Permintaan tarik #%1$d dibuka"</string>
+    <string name="pr_created_draft_title">"Draf permintaan tarik #%1$d dibuka"</string>
+    <string name="pr_retry">"Cuba lagi"</string>
+</resources>

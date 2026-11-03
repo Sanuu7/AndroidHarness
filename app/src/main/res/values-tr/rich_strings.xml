@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"Satırları filtrele"</string>
+    <string name="rich_no_rows">"Eşleşen satır yok"</string>
+    <string name="rich_previous">"Önceki"</string>
+    <string name="rich_next">"Sonraki"</string>
+    <string name="rich_discuss_rows">"Seçili satırları tartışın"</string>
+    <string name="rich_discuss_rows_prompt">"Seçtiğim satırları karşılaştır."</string>
+    <string name="rich_discuss_tab">"Bu sekme hakkında soru sor"</string>
+    <string name="rich_discuss_tab_prompt">"%1$s sekmesini açıklayın."</string>
+    <string name="rich_copy">"Kopyala"</string>
+    <string name="rich_copied">"Kopyalandı"</string>
+    <string name="rich_share">"Paylaş"</string>
+    <string name="rich_share_unavailable">"Bu metni paylaşacak uygulama mevcut değil."</string>
+    <string name="rich_images_hidden">"Bu sohbet için resimler devre dışı bırakıldı."</string>
+    <string name="rich_expand_image">"Resmi genişlet"</string>
+    <string name="rich_open_source">"Açık kaynak"</string>
+    <string name="rich_discuss_image">"Bu görseli sor"</string>
+    <string name="rich_discuss_image_prompt">"Seçtiğim resmi açıklayın."</string>
+    <string name="rich_reported_status">"Bildirildi: %1$s"</string>
+    <string name="rich_passed">"Geçti"</string>
+    <string name="rich_failed">"Başarısız"</string>
+    <string name="rich_unverified">"Doğrulanmamış"</string>
+    <string name="rich_open_file">"Dosyayı aç"</string>
+    <string name="rich_show_less">"Daha az göster"</string>
+    <string name="rich_show_all">"Tümünü göster"</string>
+    <string name="rich_changes">"Değişiklikler"</string>
+    <string name="rich_before">"Önce"</string>
+    <string name="rich_after">"Sonra"</string>
+    <string name="rich_change_count">"%1$d eklendi · %2$d kaldırıldı"</string>
+    <string name="rich_discuss_diff">"Bu değişiklikleri tartışın"</string>
+    <string name="rich_discuss_diff_prompt">"Bu karşılaştırmayı ve değiş tokuşlarını açıklayın."</string>
+    <string name="rich_input_range">"%1$s\'den %2$s\'ye"</string>
+    <string name="rich_result_unavailable">"Girişleri veya formülü kontrol edin"</string>
+    <string name="rich_reset">"Sıfırla"</string>
+    <string name="rich_discuss_values">"Bu değerleri sorun"</string>
+    <string name="rich_discuss_values_prompt">"Sonucu mevcut değerlerimi kullanarak açıklayın."</string>
+    <string name="rich_chart_range">"Görünür aralık"</string>
+    <string name="rich_reset_range">"Tüm aralığı göster"</string>
+    <string name="rich_chart_label">"Etiket"</string>
+    <string name="rich_discuss_chart">"Bu grafiği sorun"</string>
+    <string name="rich_discuss_chart_prompt">"Seçtiğim grafik noktasını ve görünür veri kümelerini açıklayın."</string>
+    <string name="rich_select_point">"%1$s\'yi seçin"</string>
+    <string name="rich_selected_count">"%1$d seçildi"</string>
+    <string name="rich_clear_selection">"Seçimi temizle"</string>
+    <string name="rich_adjust_input">"%1$s\'yi ayarlayın"</string>
+</resources>

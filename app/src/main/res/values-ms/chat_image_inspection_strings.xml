@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_viewing_image">"Sedang meneliti imej"</string>
+    <string name="chat_viewed_image">"Imej telah diteliti"</string>
+    <string name="chat_image_failed">"Tidak dapat memeriksa imej"</string>
+</resources>

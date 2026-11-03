@@ -984,4 +984,7 @@
     <string name="glass_transparency_percent">"%1$d%%"</string>
     <string name="glass_transparency_hint">"Trượt sang phải để có kính trong hơn. Xem trước các bản cập nhật khi bạn kéo; sự lựa chọn của bạn được áp dụng khi bạn phát hành. Các nút hành động và cửa sổ bật lên giữ màu sắc dễ đọc."</string>
     <string name="settings_language_vietnamese">"Tiếng Việt"</string>
+    <string name="settings_language_turkish">Türkçe</string>
+    <string name="settings_language_malay">Bahasa Melayu</string>
+    <string name="settings_language_thai">ไทย</string>
 </resources>

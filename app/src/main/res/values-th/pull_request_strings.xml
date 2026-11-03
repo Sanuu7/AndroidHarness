@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"กำลังเปิดคำขอดึง..."</string>
+    <string name="pr_tool_opened">"เปิดคำขอดึง #%1$d"</string>
+    <string name="pr_tool_existing">"คำขอดึง #%1$d เปิดอยู่แล้ว"</string>
+    <string name="pr_tool_failed">"ไม่ได้เปิดคำขอดึง"</string>
+    <string name="pr_tool_waiting">"รอการอนุมัติของคุณ"</string>
+    <string name="pr_draft">"ร่าง"</string>
+    <string name="pr_counts">"Commit: %1$d · ไฟล์: %2$d"</string>
+    <string name="pr_open_on_github">"เปิดบน GitHub"</string>
+    <string name="pr_copy_link">"คัดลอกลิงก์"</string>
+    <string name="pr_link_copied">"คัดลอกลิงก์แล้ว"</string>
+    <string name="pr_open_failed">"ไม่มีแอปใดที่สามารถเปิดลิงก์ได้ เลยถูกคัดลอกมาแทน"</string>
+    <string name="pr_approval_title">"เปิดคำขอดึง?"</string>
+    <string name="pr_approval_body">"สร้างคำขอดึงบน GitHub จากสาขาที่พุช ไม่มีอะไรถูกผลักหรือรวมเข้าด้วยกัน"</string>
+    <string name="pr_approval_base">"เข้า %1$s"</string>
+    <string name="pr_approval_default_base">"เข้าสู่สาขาเริ่มต้น"</string>
+    <string name="pr_create">"สร้างคำขอดึง"</string>
+    <string name="pr_create_draft">"สร้างคำขอดึงแบบร่าง"</string>
+    <string name="pr_entry_body">"เสนอการคอมมิตแบบพุชของสาขานี้เพื่อตรวจสอบ GitHub"</string>
+    <string name="pr_loading">"เปรียบเทียบสาขานี้กับ GitHub…"</string>
+    <string name="pr_title_label">"ชื่อเรื่อง"</string>
+    <string name="pr_description_label">"คำอธิบาย"</string>
+    <string name="pr_rewrite_description">"เขียนคำอธิบายใหม่"</string>
+    <string name="pr_base_label">"สาขาฐาน"</string>
+    <string name="pr_draft_label">"เปิดเป็นแบบร่าง"</string>
+    <string name="pr_draft_body">"ผู้ตรวจสอบสามารถดูได้ แต่ไม่สามารถรวมเข้าด้วยกันได้จนกว่าคุณจะทำเครื่องหมายว่าพร้อม"</string>
+    <string name="pr_include_checks">"รวมเช็คจากแชทนี้ด้วย"</string>
+    <string name="pr_include_checks_body">"เพิ่มผลลัพธ์การสร้าง การทดสอบ และขุยที่บันทึกไว้ในการสนทนานี้"</string>
+    <string name="pr_existing_body">"การพุชใหม่ไปยัง %1$s จะอัปเดตคำขอการดึงนี้โดยอัตโนมัติ"</string>
+    <string name="pr_not_pushed_title">"สาขายังไม่อยู่บน GitHub"</string>
+    <string name="pr_out_of_date_title">"GitHub มีสำเนาเก่ากว่าของสาขานี้"</string>
+    <string name="pr_push_body">"กด %1$s เพื่อให้ GitHub มีคอมมิตล่าสุดของคุณ"</string>
+    <string name="pr_push_branch">"ดันสาขา"</string>
+    <string name="pr_pushed">"แบรนช์ดัน."</string>
+    <string name="pr_uncommitted_title">"การเปลี่ยนแปลงที่ไม่มีข้อผูกมัด: %1$d"</string>
+    <string name="pr_uncommitted_body">"พวกเขาจะไม่รวมไว้จนกว่าคุณจะยอมรับและผลักดันพวกเขา"</string>
+    <string name="pr_behind_title">"ใหม่กว่ากระทำกับ %1$s: %2$d"</string>
+    <string name="pr_behind_body">"สาขานี้ยังไม่รวมพวกเขา ผู้ตรวจสอบอาจขอให้คุณอัปเดต"</string>
+    <string name="pr_no_commits_title">"ยังไม่มีสิ่งใดจะเสนอ"</string>
+    <string name="pr_no_commits_body">"%1$s ไม่มีข้อผูกพันที่ยังไม่มีบน %2$s"</string>
+    <string name="pr_commits_header">"Commit"</string>
+    <string name="pr_more">"เพิ่มเติม: %1$d"</string>
+    <string name="pr_created_title">"เปิดคำขอดึง #%1$d แล้ว"</string>
+    <string name="pr_created_draft_title">"เปิดคำขอดึงแบบร่าง #%1$d แล้ว"</string>
+    <string name="pr_retry">"ลองอีกครั้ง"</string>
+</resources>

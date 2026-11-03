@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"Pasang dan urus penghala model tempatan"</string>
+    <string name="nine_router_intro">"Jalankan 9Router pada telefon ini dan uruskan pembekal, model dan penghalaannya dalam penyemak imbas anda. Menggunakan rantai alat AndroidHarness Linux."</string>
+    <string name="nine_router_setup">"Sediakan persekitaran anda"</string>
+    <string name="nine_router_not_installed">"Sedia untuk dipasang"</string>
+    <string name="nine_router_ready">"Dipasang · Dihentikan"</string>
+    <string name="nine_router_running">"Berjalan pada telefon ini"</string>
+    <string name="nine_router_starting">"Bermula 9Router…"</string>
+    <string name="nine_router_stopping">"Menghentikan 9Router…"</string>
+    <string name="nine_router_installing">"Memasang…"</string>
+    <string name="nine_router_updating">"Mengemas kini 9Router…"</string>
+    <string name="nine_router_uninstalling">"Menyahpasang 9Router…"</string>
+    <string name="nine_router_connecting">"Menambahkan pada pembekal…"</string>
+    <string name="nine_router_removing">"Mengalih keluar daripada pembekal…"</string>
+    <string name="nine_router_install_linux">"Pasang rantai alat Linux"</string>
+    <string name="nine_router_install">"Pasang 9Router"</string>
+    <string name="nine_router_start">"Mulakan 9Router"</string>
+    <string name="nine_router_stop">"Berhenti"</string>
+    <string name="nine_router_show_details">"Tunjukkan butiran"</string>
+    <string name="nine_router_hide_details">"Sembunyikan butiran"</string>
+    <string name="nine_router_open_dashboard">"Buka papan pemuka dalam penyemak imbas"</string>
+    <string name="nine_router_browser_error">"Tiada pelayar boleh membuka papan pemuka 9Router."</string>
+    <string name="nine_router_version">"Versi %1$s"</string>
+    <string name="nine_router_check_update">"Semak kemas kini"</string>
+    <string name="nine_router_checking">"Menyemak…"</string>
+    <string name="nine_router_update">"Kemas kini kepada %1$s"</string>
+    <string name="nine_router_auto_start">"Automula 9Router"</string>
+    <string name="nine_router_auto_start_body">"Mulakan penghala yang dipasang apabila AndroidHarness dibuka."</string>
+    <string name="nine_router_add_provider">"Tambahkan 9Router kepada pembekal"</string>
+    <string name="nine_router_refresh_provider">"Muat semula pembekal 9Router"</string>
+    <string name="nine_router_provider_body">"Memulakan 9Router jika perlu dan mengisi titik akhir setempat dan kunci API secara automatik. Model yang disambungkan tersedia dalam pemilih model Chat dan Code."</string>
+    <string name="nine_router_remove_provider">"Alih keluar daripada pembekal"</string>
+    <string name="nine_router_remove_provider_body">"Keluarkan sambungan 9Router daripada AndroidHarness. Penghala dan akaunnya akan kekal dipasang."</string>
+    <string name="nine_router_uninstall">"Nyahpasang 9Router"</string>
+    <string name="nine_router_uninstall_title">"Nyahpasang sepenuhnya 9Router?"</string>
+    <string name="nine_router_uninstall_body">"Menghentikan 9Router dan memadamkan pemasangannya, akaun yang disimpan, kekunci API penghala, konfigurasi, cache, keutamaan automula dan sambungan pembekal aplikasi. Ini tidak boleh dibuat asal. Rangkaian alat Linux yang dikongsi kekal tersedia untuk ciri lain."</string>
+</resources>

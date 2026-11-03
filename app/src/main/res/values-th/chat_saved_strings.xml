@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">"ที่บันทึกไว้"</string>
+    <string name="sidebar_saved_answers">"คำตอบที่บันทึกไว้"</string>
+    <string name="sidebar_saved_count_description">"คำตอบที่บันทึกไว้ %1$d"</string>
+    <string name="sidebar_saved_answer">"บันทึกคำตอบแล้ว"</string>
+    <string name="sidebar_open_in_chat">"เปิดในการสนทนา"</string>
+    <string name="sidebar_remove_saved">"ลบออกจากที่บันทึกไว้"</string>
+    <string name="chat_save_answer">"บันทึกคำตอบ"</string>
+    <string name="chat_answer_saved">"บันทึกคำตอบแล้ว"</string>
+    <string name="chat_answer_unsaved">"ลบออกจากที่บันทึกไว้แล้ว"</string>
+</resources>

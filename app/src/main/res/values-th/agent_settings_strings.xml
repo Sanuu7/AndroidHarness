@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"ระดับ Caveman"</string>
+    <string name="as_activity_finding">"กำลังค้นหาการตั้งค่า"</string>
+    <string name="as_activity_found">"ค้นหาการตั้งค่าแล้ว"</string>
+    <string name="as_activity_changing">"กำลังเปลี่ยนการตั้งค่า"</string>
+    <string name="as_activity_changed">"เปลี่ยนการตั้งค่าแล้ว"</string>
+    <string name="as_undo">"เลิกทำ"</string>
+    <string name="as_undo_all">"เลิกทำทั้งหมด"</string>
+    <string name="as_redo">"ทำซ้ำ"</string>
+    <string name="as_open_settings">"เปิดการตั้งค่า"</string>
+    <string name="as_open_setting">"เปิดการตั้งค่า"</string>
+    <string name="as_title_changed">"มีการเปลี่ยนแปลงการตั้งค่า"</string>
+    <string name="as_title_undone">"ยกเลิกการเปลี่ยนแปลงแล้ว"</string>
+    <string name="as_title_needs_you">"การตั้งค่าต้องการคุณ"</string>
+    <string name="as_title_not_changed">"การตั้งค่าไม่เปลี่ยนแปลง"</string>
+    <string name="as_state_undone">"เลิกทำ"</string>
+    <string name="as_state_moved_on">"เปลี่ยนอีกแล้วตั้งแต่."</string>
+    <string name="as_on">"เปิด"</string>
+    <string name="as_off">"ปิด"</string>
+    <string name="as_unlimited">"ไม่จำกัด"</string>
+    <string name="as_custom_palette">"ชุดสีที่กำหนดเอง"</string>
+    <string name="as_empty">"ไม่มี"</string>
+    <string name="as_needs_you_label">"ต้องการคุณ · %1$s"</string>
+    <string name="as_group">"การตั้งค่าจากการแชท"</string>
+    <string name="as_setting_title">"ให้เอเจนต์เปลี่ยนการตั้งค่า"</string>
+    <string name="as_access_off">"ปิด"</string>
+    <string name="as_access_off_desc">"เจ้าหน้าที่สามารถค้นหาการตั้งค่าและชี้ให้คุณดูได้ แต่ไม่สามารถเปลี่ยนแปลงได้"</string>
+    <string name="as_access_ask">"ถามทุกครั้ง."</string>
+    <string name="as_access_ask_desc">"การเปลี่ยนแปลงทุกครั้งจะรอการอนุมัติจากคุณในการแชท"</string>
+    <string name="as_access_allowed">"ได้รับอนุญาต"</string>
+    <string name="as_access_allowed_desc">"การเปลี่ยนแปลงมีผลทันทีด้วยการ์ดเลิกทำ ส่วนที่มีความละเอียดอ่อน เช่น การล็อกแอป ยังคงถามอยู่"</string>
+    <string name="as_picker_detail">"ถามใน Chat หรือ Code เพื่อเปิดหรือปิดการตั้งค่า เลื่อนแถบเลื่อน หรือสร้างชุดสี การตั้งค่าที่ละเอียดอ่อนจะถามก่อนเสมอ และปุ่ม API จะไม่สามารถเข้าถึงได้"</string>
+    <string name="as_search_desc">"เปลี่ยนการตั้งค่าโดยถามใน Chat หรือ Code"</string>
+    <string name="tip_ask_settings" formatted="false">"ขอให้ฉันเปลี่ยนการตั้งค่า เช่น “ตั้งค่าเสียงดังก้องเป็น 70%” หรือ “สร้างชุดสีสีน้ำเงินอมเขียว” การ์ดจะแสดงสิ่งที่เปลี่ยนแปลงพร้อมเลิกทำ"</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">"การเปลี่ยนแปลง %1$d"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">"%1$d ต้องการคุณ"</item>
+    </plurals>
+</resources>

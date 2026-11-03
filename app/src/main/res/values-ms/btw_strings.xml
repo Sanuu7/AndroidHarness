@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"Sambil itu"</string>
+    <string name="btw_source_live">"Konteks langsung"</string>
+    <string name="btw_source_saved">"Sejarah yang disimpan"</string>
+    <string name="btw_private">"Tidak ditambahkan pada sembang"</string>
+    <string name="btw_empty_hint">"Tanya apa-apa tentang tugas semasa. Jawapan menggunakan maklumat yang telah dibaca dan diputuskan oleh ejen, menggunakan semula cache arahannya dan tidak ditambahkan pada perbualan utama."</string>
+    <string name="btw_input_hint">"Tanya soalan sampingan"</string>
+    <string name="btw_input_again">"Tanya soalan sampingan yang lain"</string>
+    <string name="btw_ask">"Tanya"</string>
+    <string name="btw_stop">"Berhenti"</string>
+    <string name="btw_copy">"salin"</string>
+    <string name="btw_copied">"Jawapan disalin"</string>
+    <string name="btw_stopped">"Berhenti"</string>
+    <string name="btw_retrying">"Mencuba semula · %1$s"</string>
+    <string name="btw_cold_note">"Tiada permintaan langsung dalam ingatan, jadi jawapan ini membaca perbualan yang disimpan tanpa cache gesaan."</string>
+    <string name="btw_composer_action">"Tanya dengan cara"</string>
+    <string name="btw_error_empty_chat">"Hantar mesej dahulu, kemudian tanya soalan sampingan mengenainya."</string>
+    <string name="btw_error_local_busy">"Model tempatan menjawab satu permintaan pada satu masa. Tanya selepas balasan semasa selesai."</string>
+    <string name="btw_error_no_key">"Tambahkan kunci API pembekal ini sebelum bertanya."</string>
+    <string name="btw_error_generic">"Soalan sampingan gagal."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">"Panggilan alat baca sahaja %1$d"</item>
+    </plurals>
+</resources>

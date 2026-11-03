@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"ในขณะที่เอเจนต์ทำงาน"</string>
+    <string name="settings_anchor_steering">"ข้อความที่ส่งระหว่างงาน"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"เอเจนต์จะอ่านข้อความของคุณหลังจากขั้นตอนปัจจุบันและดำเนินการต่อ เครื่องมือที่ทำงานอยู่จะไม่ถูกขัดจังหวะ หากงานสิ้นสุดลงแล้ว ข้อความจะเริ่มต้นในเทิร์นถัดไป"</string>
+    <string name="steering_mode_after_task">"หลังภารกิจ"</string>
+    <string name="steering_mode_after_task_desc">"ข้อความของคุณจะรอจนกว่างานทั้งหมดจะเสร็จสิ้น จากนั้นจึงเริ่มเทิร์นใหม่"</string>
+    <string name="steering_picker_detail">"เลือกสิ่งที่จะเกิดขึ้นเมื่อคุณส่งข้อความในขณะที่เอเจนต์กำลังทำงาน ส่งทันทีในข้อความที่อยู่ในคิวจะหยุดเอเจนต์และส่งทันที"</string>
+    <string name="steering_search_desc">"คัดท้ายเอเจนต์ที่รันอยู่ หรือรอให้งานเสร็จสิ้น"</string>
+    <string name="steering_queue_next_step">"เอเจนต์จะอ่านสิ่งเหล่านี้หลังจากขั้นตอนปัจจุบัน"</string>
+    <string name="steering_queue_badge">"โปรดอ่านขั้นตอนต่อไป"</string>
+</resources>

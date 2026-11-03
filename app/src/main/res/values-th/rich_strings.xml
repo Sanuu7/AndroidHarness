@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"กรองแถว"</string>
+    <string name="rich_no_rows">"ไม่มีแถวที่ตรงกัน"</string>
+    <string name="rich_previous">"ก่อนหน้า"</string>
+    <string name="rich_next">"ถัดไป"</string>
+    <string name="rich_discuss_rows">"อภิปรายแถวที่เลือก"</string>
+    <string name="rich_discuss_rows_prompt">"เปรียบเทียบแถวที่ฉันเลือก"</string>
+    <string name="rich_discuss_tab">"ถามเรื่องแทปนี้ครับ"</string>
+    <string name="rich_discuss_tab_prompt">"อธิบายแท็บ %1$s"</string>
+    <string name="rich_copy">"คัดลอก"</string>
+    <string name="rich_copied">"คัดลอกแล้ว"</string>
+    <string name="rich_share">"แบ่งปัน"</string>
+    <string name="rich_share_unavailable">"ไม่มีแอปสำหรับแชร์ข้อความนี้"</string>
+    <string name="rich_images_hidden">"รูปภาพถูกปิดสำหรับการแชทนี้"</string>
+    <string name="rich_expand_image">"ขยายรูปภาพ"</string>
+    <string name="rich_open_source">"โอเพ่นซอร์ส"</string>
+    <string name="rich_discuss_image">"ถามเรื่องภาพนี้ครับ"</string>
+    <string name="rich_discuss_image_prompt">"อธิบายภาพที่ฉันเลือก"</string>
+    <string name="rich_reported_status">"รายงานแล้ว: %1$s"</string>
+    <string name="rich_passed">"ผ่านไป"</string>
+    <string name="rich_failed">"ล้มเหลว"</string>
+    <string name="rich_unverified">"ไม่ได้รับการยืนยัน"</string>
+    <string name="rich_open_file">"เปิดไฟล์"</string>
+    <string name="rich_show_less">"แสดงน้อยลง"</string>
+    <string name="rich_show_all">"แสดงทั้งหมด"</string>
+    <string name="rich_changes">"การเปลี่ยนแปลง"</string>
+    <string name="rich_before">"ก่อน"</string>
+    <string name="rich_after">"หลังจากนั้น"</string>
+    <string name="rich_change_count">"เพิ่ม %1$d แล้ว · ลบ %2$d แล้ว"</string>
+    <string name="rich_discuss_diff">"หารือเกี่ยวกับการเปลี่ยนแปลงเหล่านี้"</string>
+    <string name="rich_discuss_diff_prompt">"อธิบายการเปรียบเทียบนี้และข้อดีข้อเสีย"</string>
+    <string name="rich_input_range">"%1$s ถึง %2$s"</string>
+    <string name="rich_result_unavailable">"ตรวจสอบอินพุตหรือสูตร"</string>
+    <string name="rich_reset">"รีเซ็ต"</string>
+    <string name="rich_discuss_values">"ถามเกี่ยวกับคุณค่าเหล่านี้"</string>
+    <string name="rich_discuss_values_prompt">"อธิบายผลลัพธ์โดยใช้ค่าปัจจุบันของฉัน"</string>
+    <string name="rich_chart_range">"ช่วงที่มองเห็นได้"</string>
+    <string name="rich_reset_range">"แสดงเต็มช่วง"</string>
+    <string name="rich_chart_label">"ป้ายกำกับ"</string>
+    <string name="rich_discuss_chart">"ถามเกี่ยวกับแผนภูมินี้"</string>
+    <string name="rich_discuss_chart_prompt">"อธิบายจุดแผนภูมิที่เลือกและชุดข้อมูลที่มองเห็นได้"</string>
+    <string name="rich_select_point">"เลือก %1$s"</string>
+    <string name="rich_selected_count">"เลือก %1$d แล้ว"</string>
+    <string name="rich_clear_selection">"ล้างการเลือก"</string>
+    <string name="rich_adjust_input">"ปรับ %1$s"</string>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"เลือกคลังโค้ด"</string>
+    <string name="github_import_destination">"นำเข้าสำเนาไปยังพื้นที่ทำงานของตัวเองบนอุปกรณ์นี้"</string>
+    <string name="github_import_loading">"กำลังโหลดคลังโค้ดของคุณ…"</string>
+    <string name="github_import_empty">"ไม่พบคลังโค้ดสำหรับบัญชีนี้ คุณสามารถนำเข้าผ่าน URL ได้เช่นกัน"</string>
+    <string name="github_import_by_url">"นำเข้าผ่าน URL"</string>
+    <string name="github_import_confirm_title">"นำเข้าคลังโค้ดหรือไม่?"</string>
+    <string name="github_import_confirm_body">"คุณแน่ใจหรือไม่ว่าต้องการนำเข้า %1$s ไปยังพื้นที่ทำงานใหม่บนอุปกรณ์นี้?"</string>
+    <string name="github_import_preparing">"กำลังเตรียมนำเข้า..."</string>
+    <string name="github_import_success">"นำเข้า %1$s"</string>
+    <string name="github_import_open_workspace">"เปิดพื้นที่ทำงาน"</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"ตัวเลือกตาราง"</string>
+    <string name="rich_select_rows">"เลือกแถว"</string>
+    <string name="rich_stop_selecting_rows">"หยุดการเลือก"</string>
+    <string name="rich_sort_rows">"จัดเรียงแถว"</string>
+</resources>

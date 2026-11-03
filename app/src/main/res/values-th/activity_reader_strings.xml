@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"เปิดมุมมองแบบเต็ม"</string>
+    <string name="chat_activity_tool_details">"เปิดรายละเอียดเครื่องมือ"</string>
+    <string name="chat_activity_input">"อินพุต"</string>
+    <string name="chat_activity_output">"เอาท์พุต"</string>
+    <string name="chat_activity_output_preview">"ดูตัวอย่างผลลัพธ์"</string>
+    <string name="chat_activity_more">"เพิ่มเติมด้านล่าง"</string>
+    <string name="chat_activity_latest">"ล่าสุด"</string>
+    <string name="chat_activity_copy">"คัดลอกข้อความ"</string>
+    <string name="chat_activity_copied">"คัดลอกแล้ว"</string>
+</resources>

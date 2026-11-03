@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"Yerel model yönlendiriciyi kurun ve yönetin"</string>
+    <string name="nine_router_intro">"Bu telefonda 9Router\'yi çalıştırın ve sağlayıcılarını, modellerini ve yönlendirmesini tarayıcınızda yönetin. AndroidHarness Linux araç zincirini kullanır."</string>
+    <string name="nine_router_setup">"Ortamınızı ayarlayın"</string>
+    <string name="nine_router_not_installed">"Kuruluma hazır"</string>
+    <string name="nine_router_ready">"Yüklendi · Durduruldu"</string>
+    <string name="nine_router_running">"Bu telefonda çalışıyor"</string>
+    <string name="nine_router_starting">"9Router başlatılıyor…"</string>
+    <string name="nine_router_stopping">"9Router durduruluyor…"</string>
+    <string name="nine_router_installing">"Yükleniyor…"</string>
+    <string name="nine_router_updating">"9Router güncelleniyor…"</string>
+    <string name="nine_router_uninstalling">"9Router kaldırılıyor…"</string>
+    <string name="nine_router_connecting">"Sağlayıcılara ekleniyor…"</string>
+    <string name="nine_router_removing">"Sağlayıcılardan kaldırılıyor…"</string>
+    <string name="nine_router_install_linux">"Linux araç zincirini yükleyin"</string>
+    <string name="nine_router_install">"9Router\'yi yükleyin"</string>
+    <string name="nine_router_start">"9Router\'yi başlat"</string>
+    <string name="nine_router_stop">"Durdur"</string>
+    <string name="nine_router_show_details">"Ayrıntıları göster"</string>
+    <string name="nine_router_hide_details">"Ayrıntıları gizle"</string>
+    <string name="nine_router_open_dashboard">"Kontrol panelini tarayıcıda aç"</string>
+    <string name="nine_router_browser_error">"9Router kontrol panelini hiçbir tarayıcı açamadı."</string>
+    <string name="nine_router_version">"Sürüm %1$s"</string>
+    <string name="nine_router_check_update">"Güncellemeleri kontrol edin"</string>
+    <string name="nine_router_checking">"Kontrol ediliyor…"</string>
+    <string name="nine_router_update">"%1$s\'ye güncelleme"</string>
+    <string name="nine_router_auto_start">"Otomatik başlatma 9Router"</string>
+    <string name="nine_router_auto_start_body">"AndroidHarness açıldığında kurulu yönlendiriciyi başlatın."</string>
+    <string name="nine_router_add_provider">"Sağlayıcılara 9Router ekleyin"</string>
+    <string name="nine_router_refresh_provider">"9Router sağlayıcısını yenileyin"</string>
+    <string name="nine_router_provider_body">"Gerekirse 9Router\'yi başlatır ve yerel uç noktasını ve API anahtarını otomatik olarak doldurur. Bağlı modeller Chat ve Code model seçicilerde kullanılabilir hale gelir."</string>
+    <string name="nine_router_remove_provider">"Sağlayıcılardan kaldır"</string>
+    <string name="nine_router_remove_provider_body">"9Router bağlantılarını AndroidHarness\'den çıkarın. Yönlendirici ve hesapları yüklü kalacaktır."</string>
+    <string name="nine_router_uninstall">"9Router\'yi kaldırın"</string>
+    <string name="nine_router_uninstall_title">"9Router tamamen kaldırılsın mı?"</string>
+    <string name="nine_router_uninstall_body">"9Router\'yi durdurur ve kurulumunu, kayıtlı hesaplarını, yönlendirici API anahtarlarını, yapılandırmayı, önbelleği, otomatik başlatma tercihini ve uygulama sağlayıcı bağlantılarını siler. Bu geri alınamaz. Paylaşılan Linux araç zinciri diğer özellikler için kullanılabilir durumda kalır."</string>
+</resources>

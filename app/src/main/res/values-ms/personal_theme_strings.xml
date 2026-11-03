@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"Palet anda"</string>
+    <string name="theme_custom_add">"Buat palet"</string>
+    <string name="theme_custom_edit">"Edit palet"</string>
+    <string name="theme_custom_name">"Nama palet"</string>
+    <string name="theme_custom_default">"Palet saya"</string>
+    <string name="theme_custom_hint">"Pilih warna anda. Material mencipta rona terang dan gelap yang boleh dibaca."</string>
+    <string name="theme_custom_main">"Warna utama"</string>
+    <string name="theme_custom_accent">"Warna aksen"</string>
+    <string name="theme_custom_highlight">"Serlahkan"</string>
+    <string name="theme_custom_hex">"Warna hex"</string>
+    <string name="theme_custom_invalid_hex">"Masukkan enam digit heks, seperti 6750A4."</string>
+    <string name="theme_custom_hue">"Hue"</string>
+    <string name="theme_custom_saturation">"Ketepuan"</string>
+    <string name="theme_custom_brightness">"Kecerahan"</string>
+    <string name="theme_custom_automatic">"Tetapkan semula warna aksen"</string>
+    <string name="theme_custom_save">"Simpan dan gunakan"</string>
+    <string name="theme_custom_limit">"Anda mempunyai 24 palet. Edit atau alih keluar satu untuk mencipta satu lagi."</string>
+    <string name="theme_custom_delete">"Padamkan palet"</string>
+    <string name="theme_custom_delete_message">"Alih keluar palet yang disimpan ini? Apl akan kembali ke pratetap yang dipilih jika palet ini aktif."</string>
+    <string name="theme_custom_preview">"Pratonton palet"</string>
+    <string name="theme_canvas_title">"Harness Kanvas"</string>
+    <string name="theme_canvas_description">"Latar belakang anda sendiri untuk Chat dan Code."</string>
+    <string name="theme_canvas_add">"Tambah imej"</string>
+    <string name="theme_canvas_change">"Tukar imej"</string>
+    <string name="theme_canvas_remove">"Alih keluar imej"</string>
+    <string name="theme_canvas_enabled">"Tunjukkan Kanvas Harness"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"Peredupan imej"</string>
+    <string name="theme_canvas_dim_hint">"Pudarkan imej ke dalam tema anda untuk teks yang lebih jelas."</string>
+    <string name="theme_canvas_colors">"Padankan warna Kanvas"</string>
+    <string name="theme_canvas_colors_hint">"Bina palet warna apl anda daripada imej ini."</string>
+    <string name="theme_canvas_working">"Menyediakan Kanvas anda…"</string>
+    <string name="theme_canvas_error">"Tidak dapat menggunakan imej itu. Cuba foto lain di bawah 32 MB."</string>
+    <string name="theme_canvas_empty">"Tambahkan foto atau karya seni untuk menjadikan ruang ini milik anda."</string>
+    <string name="theme_canvas_preview_message">"Perbualan anda, Kanvas anda."</string>
+    <string name="theme_canvas_preview_reply">"Buat sendiri di rumah."</string>
+    <string name="theme_canvas_color_area">"Kawasan warna"</string>
+</resources>

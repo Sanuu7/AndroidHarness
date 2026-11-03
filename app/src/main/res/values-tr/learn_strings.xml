@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"AndroidHarness rehberi"</string>
+    <string name="learn_description">"Burada yapabilecekleriniz için anlaşılır, adım adım rehberler."</string>
+    <string name="learn_group">"Buradan başlayın"</string>
+    <string name="learn_entry_hint">"Kendi hızınızda öğrenin"</string>
+    <string name="learn_entry_action">"Kılavuzu keşfedin"</string>
+    <string name="learn_hero_title">"Biraz rehberlik.\nBirçok olasılık."</string>
+    <string name="learn_hero_body">"İlk sohbetinizle başlayın veya doğrudan yapmak istediğiniz şeye geçin. Her derste adımlar, kullanışlı sınırlar ve takılıp kaldığınızda yardım bulunur."</string>
+    <string name="learn_offline">"Çevrimdışı kullanılabilir · Dersler İngilizcedir"</string>
+    <string name="learn_progress">"%2$d dersin %1$d tanesi öğrenildi"</string>
+    <string name="learn_search">"Ne öğrenmek istersin?"</string>
+    <string name="learn_clear_search">"Eğitim aramasını temizle"</string>
+    <string name="learn_all">"Tüm dersler"</string>
+    <string name="learn_saved">"Kaydedildi"</string>
+    <string name="learn_start">"Temel bilgilerle başlayın"</string>
+    <string name="learn_start_hint">"Burada yeni misin? Bu üç ders sizi harekete geçirecek."</string>
+    <string name="learn_results">"%1$d ders"</string>
+    <string name="learn_empty_title">"Başka bir arama deneyelim"</string>
+    <string name="learn_empty_body">"“API anahtarı”, “GitHub”, “yerel model” veya “MCP” aramayı deneyin. Tümünü görmek için Tüm dersler bölümüne de geçebilirsiniz."</string>
+    <string name="learn_saved_empty_title">"Bir dersi elinizin altında tutun"</string>
+    <string name="learn_saved_empty_body">"Bir derse yer işareti ekleyerek onu daha sonra burada bulabilirsiniz."</string>
+    <string name="learn_reset_filters">"Tüm dersleri göster"</string>
+    <string name="learn_location">"Nereye gitmeli"</string>
+    <string name="learn_before">"Başlamadan önce"</string>
+    <string name="learn_steps">"Hadi başlayalım"</string>
+    <string name="learn_outcome">"Görmeniz gereken sonuç"</string>
+    <string name="learn_limits">"Bilmeniz gerekenler"</string>
+    <string name="learn_fixes">"Takılırsanız"</string>
+    <string name="learn_example">"Şunu söylemeyi deneyin"</string>
+    <string name="learn_copy_example">"Örneği kopyala"</string>
+    <string name="learn_copied">"Örnek kopyalandı"</string>
+    <string name="learn_open_section">"Uygulamada deneyin"</string>
+    <string name="learn_links">"Resmî yardım"</string>
+    <string name="learn_links_hint">"Bu bağlantılar tarayıcıda açılır ve internet bağlantısı gerektirir. Sağlayıcı sayfaları değişebilir; ödeme yapmadan önce gösterilen koşulları ve fiyatı kontrol edin."</string>
+    <string name="learn_related">"Yararlı bir sonraki adım"</string>
+    <string name="learn_mark_complete">"Öğrenildi olarak işaretle"</string>
+    <string name="learn_complete">"Öğrenildi · geri almak için dokunun"</string>
+    <string name="learn_completed_label">"Öğrenildi"</string>
+    <string name="learn_bookmark">"Bu dersi kaydet"</string>
+    <string name="learn_bookmarked">"Kaydedilen dersi kaldır"</string>
+    <string name="learn_link_failed">"Tarayıcı açılamadı. Bunun yerine bağlantıyı kopyalayabilirsiniz."</string>
+    <string name="learn_copy_link">"Bağlantıyı kopyala"</string>
+    <string name="learn_load_failed">"Kılavuz açılamadı. Ayarları kapatıp tekrar deneyin."</string>
+</resources>

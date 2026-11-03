@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Caveman seviyesi"</string>
+    <string name="as_activity_finding">"Ayarlar aranıyor"</string>
+    <string name="as_activity_found">"Ayarlar bulundu"</string>
+    <string name="as_activity_changing">"Ayarlar değiştiriliyor"</string>
+    <string name="as_activity_changed">"Ayarlar değiştirildi"</string>
+    <string name="as_undo">"Geri al"</string>
+    <string name="as_undo_all">"Tümünü geri al"</string>
+    <string name="as_redo">"Yinele"</string>
+    <string name="as_open_settings">"Ayarları aç"</string>
+    <string name="as_open_setting">"Ayarı aç"</string>
+    <string name="as_title_changed">"Ayarlar değiştirildi"</string>
+    <string name="as_title_undone">"Geri alınan değişiklikler"</string>
+    <string name="as_title_needs_you">"Bir ortamın sana ihtiyacı var"</string>
+    <string name="as_title_not_changed">"Ayarlar değiştirilmedi"</string>
+    <string name="as_state_undone">"Geri alındı"</string>
+    <string name="as_state_moved_on">"O zamandan beri tekrar değişti"</string>
+    <string name="as_on">"Açık"</string>
+    <string name="as_off">"Kapalı"</string>
+    <string name="as_unlimited">"Sınırsız"</string>
+    <string name="as_custom_palette">"Özel palet"</string>
+    <string name="as_empty">"Yok"</string>
+    <string name="as_needs_you_label">"Sana ihtiyacı var · %1$s"</string>
+    <string name="as_group">"Sohbetten ayarlar"</string>
+    <string name="as_setting_title">"Ajanın ayarları değiştirmesine izin ver"</string>
+    <string name="as_access_off">"Kapalı"</string>
+    <string name="as_access_off_desc">"Ajan ayarlara bakabilir ve sizi onlara yönlendirebilir ancak bunları değiştiremez."</string>
+    <string name="as_access_ask">"Her zaman sor"</string>
+    <string name="as_access_ask_desc">"Her değişiklik sohbette onayınızı bekler."</string>
+    <string name="as_access_allowed">"İzin verildi"</string>
+    <string name="as_access_allowed_desc">"Geri Al kartıyla değişiklikler hemen uygulanır. Uygulama kilidi gibi hassas olanlar hâlâ soruyor."</string>
+    <string name="as_picker_detail">"Chat veya Code\'den bir ayarı açmanızı veya kapatmanızı, kaydırıcıyı hareket ettirmenizi veya renk paleti oluşturmanızı isteyin. Hassas ayarlar her zaman önce sorulur ve API tuşları erişilemez durumda kalır."</string>
+    <string name="as_search_desc">"Chat veya Code\'de sorarak ayarları değiştirin"</string>
+    <string name="tip_ask_settings" formatted="false">"Benden \"gürültüyü %70\'e ayarla\" veya \"turkuaz paleti yap\" gibi bir ayarı değiştirmemi iste. Geri Al seçeneğiyle nelerin değiştiğini gösteren bir kart."</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">"%1$d değişiklikleri"</item>
+        <item quantity="other">"%1$d değişiklikleri"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">"%1$d\'nin sana ihtiyacı var"</item>
+        <item quantity="other">"%1$d\'nin sana ihtiyacı var"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Android %1$s veya üzeri gerekiyor"</string>
+    <string name="settings_requires_vibrator">"Bu cihazda titreşim motoru yok"</string>
+    <string name="rumble_unsupported">"Bu cihazın titreşim motoru yok, dolayısıyla AH Rumble burada çalışamaz."</string>
+</resources>

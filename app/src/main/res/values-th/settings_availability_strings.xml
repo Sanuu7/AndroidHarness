@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"ต้องการ Android %1$s หรือใหม่กว่า"</string>
+    <string name="settings_requires_vibrator">"ไม่มีมอเตอร์สั่นบนอุปกรณ์นี้"</string>
+    <string name="rumble_unsupported">"อุปกรณ์นี้ไม่มีมอเตอร์สั่น ดังนั้น AH Rumble จึงไม่สามารถทำงานที่นี่ได้"</string>
+</resources>

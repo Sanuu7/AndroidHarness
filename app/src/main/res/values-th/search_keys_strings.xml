@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="other">"%2$s · บันทึกคีย์แล้ว %1$d รายการ"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"คุณบันทึกคีย์ได้สูงสุด 20 คีย์ เมื่อคีย์ถูกปฏิเสธ ถูกจำกัดอัตราคำขอ หรือเครดิตหมด ระบบจะใช้คีย์ถัดไปที่เปิดใช้งานโดยอัตโนมัติ"</string>
+    <string name="search_key_check_failed">"คีย์ %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"คีย์ได้รับการตรวจสอบและบันทึกแล้ว"</string>
+    <string name="search_manage_keys">"จัดการคีย์"</string>
+</resources>

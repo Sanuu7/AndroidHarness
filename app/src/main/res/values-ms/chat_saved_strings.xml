@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">"Disimpan"</string>
+    <string name="sidebar_saved_answers">"Jawapan yang disimpan"</string>
+    <string name="sidebar_saved_count_description">"Jawapan yang disimpan, %1$d"</string>
+    <string name="sidebar_saved_answer">"Jawapan disimpan"</string>
+    <string name="sidebar_open_in_chat">"Buka dalam sembang"</string>
+    <string name="sidebar_remove_saved">"Alih keluar daripada disimpan"</string>
+    <string name="chat_save_answer">"Simpan jawapan"</string>
+    <string name="chat_answer_saved">"Jawapan disimpan"</string>
+    <string name="chat_answer_unsaved">"Dialih keluar daripada disimpan"</string>
+</resources>

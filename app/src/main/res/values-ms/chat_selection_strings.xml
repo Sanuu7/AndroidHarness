@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"Pilih"</string>
+    <string name="sidebar_selected_count">"%1$d dipilih"</string>
+    <string name="sidebar_select_all">"Pilih semua"</string>
+    <string name="sidebar_clear_selection">"Kosongkan pilihan"</string>
+    <string name="sidebar_exit_selection">"Keluar dari pemilihan"</string>
+    <string name="sidebar_select_chat">"Pilih %1$s"</string>
+    <string name="sidebar_details">"Butiran"</string>
+    <string name="sidebar_other_chats">"Sembang lain"</string>
+    <string name="sidebar_model_unavailable">"Tidak tersedia"</string>
+    <string name="sidebar_delete_selected">"Padamkan sembang yang dipilih?"</string>
+    <string name="sidebar_delete_selected_message">"Padamkan sembang ini dan sejarah perbualan mereka? Ini tidak boleh dibuat asal."</string>
+    <string name="sidebar_delete_running">"Menjalankan tugas dalam sembang ini akan dihentikan."</string>
+    <string name="sidebar_selection_error">"Tidak dapat menyelesaikan tindakan ini. Sila cuba lagi."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="other">"Sembang %1$d diarkibkan"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="other">"Sembang %1$d dipulihkan"</item>
+    </plurals>
+</resources>

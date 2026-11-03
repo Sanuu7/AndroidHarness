@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"Pilih repositori"</string>
+    <string name="github_import_destination">"Import salinan ke dalam ruang kerjanya sendiri pada peranti ini."</string>
+    <string name="github_import_loading">"Memuatkan repositori anda…"</string>
+    <string name="github_import_empty">"Tiada repositori ditemui untuk akaun ini. Anda juga boleh mengimport melalui URL."</string>
+    <string name="github_import_by_url">"Import melalui URL"</string>
+    <string name="github_import_confirm_title">"Import repositori?"</string>
+    <string name="github_import_confirm_body">"Adakah anda pasti mahu mengimport %1$s ke dalam ruang kerja baharu pada peranti ini?"</string>
+    <string name="github_import_preparing">"Menyediakan import…"</string>
+    <string name="github_import_success">"Diimport %1$s"</string>
+    <string name="github_import_open_workspace">"Buka ruang kerja"</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Memerlukan Android %1$s atau lebih baru"</string>
+    <string name="settings_requires_vibrator">"Tiada motor getaran pada peranti ini"</string>
+    <string name="rumble_unsupported">"Peranti ini tidak mempunyai motor getaran, jadi AH Rumble tidak boleh berjalan di sini."</string>
+</resources>

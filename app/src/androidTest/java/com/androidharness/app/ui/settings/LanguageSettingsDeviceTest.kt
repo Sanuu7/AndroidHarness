@@ -295,6 +295,114 @@ class LanguageSettingsDeviceTest {
         }
     }
 
+    @Test fun turkishSelectionSurvivesRecreationAndReturnsToSystemDefault() {
+        val original = AppCompatDelegate.getApplicationLocales()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            try {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }
+                openLanguage(scenario)
+                scrollTo("Türkçe")
+                click("Türkçe")
+                awaitText(label(R.string.settings_page_language_title, "tr"))
+                scenario.onActivity {
+                    assertEquals("tr", it.resources.configuration.locales[0].language)
+                    assertEquals("tr", AppCompatDelegate.getApplicationLocales().toLanguageTags())
+                    assertEquals(android.view.View.LAYOUT_DIRECTION_LTR, it.resources.configuration.layoutDirection)
+                    assertEquals("Uygulama dili", it.getString(R.string.settings_page_language_title))
+                    assertEquals("Modeller ve sağlayıcılar", it.getString(R.string.settings_page_models_title))
+                    assertEquals("1 kullanılabilir model", it.resources.getQuantityString(R.plurals.settings_accounts_models_available, 1, 1))
+                    assertEquals("2 kullanılabilir model", it.resources.getQuantityString(R.plurals.settings_accounts_models_available, 2, 2))
+                    assertEquals("Groq · 2 anahtar kaydedildi", it.resources.getQuantityString(R.plurals.search_keys_saved, 2, 2, "Groq"))
+                    assertEquals(it.getString(R.string.ui_installed), it.getString(R.string.pm_installed))
+                }
+                screenshot("language-turkish-phone.png")
+                scenario.recreate()
+                scrollTo("Türkçe")
+                scenario.onActivity { assertEquals("tr", it.resources.configuration.locales[0].language) }
+                var chosen = find("Türkçe")
+                while (chosen != null && !chosen.isCheckable) chosen = chosen.parent
+                assertTrue("Turkish remains selected after recreation", chosen?.isChecked == true)
+                scrollTo(label(R.string.settings_language_system, "tr"))
+                click(label(R.string.settings_language_system, "tr"))
+                scenario.onActivity { assertTrue(AppCompatDelegate.getApplicationLocales().isEmpty) }
+            } finally {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(original) }
+            }
+        }
+    }
+
+    @Test fun malaySelectionSurvivesRecreationAndReturnsToSystemDefault() {
+        val original = AppCompatDelegate.getApplicationLocales()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            try {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }
+                openLanguage(scenario)
+                scrollTo("Bahasa Melayu")
+                click("Bahasa Melayu")
+                awaitText(label(R.string.settings_page_language_title, "ms"))
+                scenario.onActivity {
+                    assertEquals("ms", it.resources.configuration.locales[0].language)
+                    assertEquals("ms", AppCompatDelegate.getApplicationLocales().toLanguageTags())
+                    assertEquals(android.view.View.LAYOUT_DIRECTION_LTR, it.resources.configuration.layoutDirection)
+                    assertEquals("Bahasa apl", it.getString(R.string.settings_page_language_title))
+                    assertEquals("Model dan penyedia", it.getString(R.string.settings_page_models_title))
+                    assertEquals("1 model tersedia", it.resources.getQuantityString(R.plurals.settings_accounts_models_available, 1, 1))
+                    assertEquals("2 model tersedia", it.resources.getQuantityString(R.plurals.settings_accounts_models_available, 2, 2))
+                    assertEquals("Groq · 2 kunci disimpan", it.resources.getQuantityString(R.plurals.search_keys_saved, 2, 2, "Groq"))
+                    assertEquals(it.getString(R.string.ui_installed), it.getString(R.string.pm_installed))
+                }
+                screenshot("language-malay-phone.png")
+                scenario.recreate()
+                scrollTo("Bahasa Melayu")
+                scenario.onActivity { assertEquals("ms", it.resources.configuration.locales[0].language) }
+                var chosen = find("Bahasa Melayu")
+                while (chosen != null && !chosen.isCheckable) chosen = chosen.parent
+                assertTrue("Malay remains selected after recreation", chosen?.isChecked == true)
+                scrollTo(label(R.string.settings_language_system, "ms"))
+                click(label(R.string.settings_language_system, "ms"))
+                scenario.onActivity { assertTrue(AppCompatDelegate.getApplicationLocales().isEmpty) }
+            } finally {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(original) }
+            }
+        }
+    }
+
+    @Test fun thaiSelectionSurvivesRecreationAndReturnsToSystemDefault() {
+        val original = AppCompatDelegate.getApplicationLocales()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            try {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }
+                openLanguage(scenario)
+                scrollTo("ไทย")
+                click("ไทย")
+                awaitText(label(R.string.settings_page_language_title, "th"))
+                scenario.onActivity {
+                    assertEquals("th", it.resources.configuration.locales[0].language)
+                    assertEquals("th", AppCompatDelegate.getApplicationLocales().toLanguageTags())
+                    assertEquals(android.view.View.LAYOUT_DIRECTION_LTR, it.resources.configuration.layoutDirection)
+                    assertEquals("ภาษาของแอป", it.getString(R.string.settings_page_language_title))
+                    assertEquals("โมเดลและผู้ให้บริการ", it.getString(R.string.settings_page_models_title))
+                    assertEquals("มีโมเดลที่พร้อมใช้งาน 1 โมเดล", it.resources.getQuantityString(R.plurals.settings_accounts_models_available, 1, 1))
+                    assertEquals("มีโมเดลที่พร้อมใช้งาน 2 โมเดล", it.resources.getQuantityString(R.plurals.settings_accounts_models_available, 2, 2))
+                    assertEquals("Groq · บันทึกคีย์แล้ว 2 รายการ", it.resources.getQuantityString(R.plurals.search_keys_saved, 2, 2, "Groq"))
+                    assertEquals(it.getString(R.string.ui_installed), it.getString(R.string.pm_installed))
+                }
+                screenshot("language-thai-phone.png")
+                scenario.recreate()
+                scrollTo("ไทย")
+                scenario.onActivity { assertEquals("th", it.resources.configuration.locales[0].language) }
+                var chosen = find("ไทย")
+                while (chosen != null && !chosen.isCheckable) chosen = chosen.parent
+                assertTrue("Thai remains selected after recreation", chosen?.isChecked == true)
+                scrollTo(label(R.string.settings_language_system, "th"))
+                click(label(R.string.settings_language_system, "th"))
+                scenario.onActivity { assertTrue(AppCompatDelegate.getApplicationLocales().isEmpty) }
+            } finally {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(original) }
+            }
+        }
+    }
+
     @Test fun contributionButtonOpensThePublicProjectAtLargeFont() {
         var opened: String? = null
         var action = ""

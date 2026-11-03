@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"Buka paparan penuh"</string>
+    <string name="chat_activity_tool_details">"Buka butiran alat"</string>
+    <string name="chat_activity_input">"Input"</string>
+    <string name="chat_activity_output">"Keluaran"</string>
+    <string name="chat_activity_output_preview">"Pratonton keluaran"</string>
+    <string name="chat_activity_more">"Lagi di bawah"</string>
+    <string name="chat_activity_latest">"Terkini"</string>
+    <string name="chat_activity_copy">"Salin teks"</string>
+    <string name="chat_activity_copied">"disalin"</string>
+</resources>

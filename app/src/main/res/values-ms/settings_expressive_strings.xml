@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"Ejen &amp; aliran kerja"</string>
+    <string name="settings_coding_intelligence">"Kemahiran &amp; kecerdasan"</string>
+    <string name="settings_coding_execution">"Ruang kerja &amp; pelaksanaan"</string>
+    <string name="settings_device_connections">"Sambungan"</string>
+    <string name="settings_device_tools">"Alat &amp; tetapan lanjutan"</string>
+    <string name="settings_linux_optional">"Alat pilihan untuk projek yang memerlukan Linux"</string>
+    <string name="settings_device_advanced">"Akses peranti lanjutan"</string>
+    <string name="settings_device_advanced_summary">"Kawalan pemilik akar dan peranti"</string>
+    <string name="settings_device_background">"Latar belakang &amp; bateri"</string>
+    <string name="settings_device_background_summary">"Pastikan sesi terminal dan kerja ejen berjalan"</string>
+    <string name="settings_connection_help">"Bagaimana untuk menyambung"</string>
+    <string name="settings_connection_options">"Pilihan sambungan"</string>
+    <string name="wireless_adb_disconnect">"Putuskan sambungan"</string>
+    <string name="wireless_adb_connection_kept">"Disambungkan · tersedia sehingga anda memutuskan sambungan"</string>
+    <string name="wireless_adb_auto_reconnecting">"Menyambung semula ke penyahpepijatan wayarles yang disimpan"</string>
+    <string name="rich_profile_details">"Butiran"</string>
+    <string name="rich_profile_sources">"Sumber"</string>
+    <string name="settings_disclosure_expanded">"Dikembangkan"</string>
+    <string name="settings_disclosure_collapsed">"Runtuh"</string>
+    <string name="settings_terminal_access">"Akses terminal"</string>
+    <string name="wireless_adb_compact_summary">"Perintah peranti, dengan penyambungan semula automatik"</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"เอเจนต์และเวิร์กโฟลว์"</string>
+    <string name="settings_coding_intelligence">"ทักษะและสติปัญญา"</string>
+    <string name="settings_coding_execution">"พื้นที่ทำงานและการดำเนินการ"</string>
+    <string name="settings_device_connections">"การเชื่อมต่อ"</string>
+    <string name="settings_device_tools">"เครื่องมือและการตั้งค่าขั้นสูง"</string>
+    <string name="settings_linux_optional">"เครื่องมือเสริมสำหรับโปรเจ็กต์ที่ต้องการ Linux"</string>
+    <string name="settings_device_advanced">"การเข้าถึงอุปกรณ์ขั้นสูง"</string>
+    <string name="settings_device_advanced_summary">"การควบคุมรูทและเจ้าของอุปกรณ์"</string>
+    <string name="settings_device_background">"พื้นหลังและแบตเตอรี่"</string>
+    <string name="settings_device_background_summary">"ทำให้เซสชันเทอร์มินัลและเจ้าหน้าที่ทำงานต่อไป"</string>
+    <string name="settings_connection_help">"วิธีการเชื่อมต่อ"</string>
+    <string name="settings_connection_options">"ตัวเลือกการเชื่อมต่อ"</string>
+    <string name="wireless_adb_disconnect">"ตัดการเชื่อมต่อ"</string>
+    <string name="wireless_adb_connection_kept">"เชื่อมต่อแล้ว · ใช้งานได้จนกว่าคุณจะยกเลิกการเชื่อมต่อ"</string>
+    <string name="wireless_adb_auto_reconnecting">"กำลังเชื่อมต่อใหม่เพื่อแก้ไขจุดบกพร่องไร้สายที่บันทึกไว้"</string>
+    <string name="rich_profile_details">"รายละเอียด"</string>
+    <string name="rich_profile_sources">"แหล่งที่มา"</string>
+    <string name="settings_disclosure_expanded">"ขยายแล้ว"</string>
+    <string name="settings_disclosure_collapsed">"ยุบแล้ว"</string>
+    <string name="settings_terminal_access">"การเข้าถึงเทอร์มินัล"</string>
+    <string name="wireless_adb_compact_summary">"คำสั่งอุปกรณ์พร้อมการเชื่อมต่อใหม่อัตโนมัติ"</string>
+</resources>

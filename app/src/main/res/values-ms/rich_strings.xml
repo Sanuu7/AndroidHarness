@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"Tapis baris"</string>
+    <string name="rich_no_rows">"Tiada baris yang sepadan"</string>
+    <string name="rich_previous">"Sebelumnya"</string>
+    <string name="rich_next">"Seterusnya"</string>
+    <string name="rich_discuss_rows">"Bincangkan baris yang dipilih"</string>
+    <string name="rich_discuss_rows_prompt">"Bandingkan baris yang saya pilih."</string>
+    <string name="rich_discuss_tab">"Tanya tentang tab ini"</string>
+    <string name="rich_discuss_tab_prompt">"Terangkan tab %1$s."</string>
+    <string name="rich_copy">"salin"</string>
+    <string name="rich_copied">"disalin"</string>
+    <string name="rich_share">"Kongsi"</string>
+    <string name="rich_share_unavailable">"Tiada apl tersedia untuk berkongsi teks ini."</string>
+    <string name="rich_images_hidden">"Imej dimatikan untuk sembang ini."</string>
+    <string name="rich_expand_image">"Kembangkan imej"</string>
+    <string name="rich_open_source">"Sumber terbuka"</string>
+    <string name="rich_discuss_image">"Tanya tentang gambar ini"</string>
+    <string name="rich_discuss_image_prompt">"Terangkan imej yang saya pilih."</string>
+    <string name="rich_reported_status">"Dilaporkan: %1$s"</string>
+    <string name="rich_passed">"lulus"</string>
+    <string name="rich_failed">"gagal"</string>
+    <string name="rich_unverified">"Tidak disahkan"</string>
+    <string name="rich_open_file">"Buka fail"</string>
+    <string name="rich_show_less">"Tunjukkan lebih sedikit"</string>
+    <string name="rich_show_all">"Tunjukkan semua"</string>
+    <string name="rich_changes">"Perubahan"</string>
+    <string name="rich_before">"Sebelum ini"</string>
+    <string name="rich_after">"Selepas"</string>
+    <string name="rich_change_count">"%1$d ditambah · %2$d dialih keluar"</string>
+    <string name="rich_discuss_diff">"Bincangkan perubahan ini"</string>
+    <string name="rich_discuss_diff_prompt">"Terangkan perbandingan ini dan ganti ruginya."</string>
+    <string name="rich_input_range">"%1$s hingga %2$s"</string>
+    <string name="rich_result_unavailable">"Semak input atau formula"</string>
+    <string name="rich_reset">"Tetapkan semula"</string>
+    <string name="rich_discuss_values">"Tanya tentang nilai-nilai ini"</string>
+    <string name="rich_discuss_values_prompt">"Terangkan keputusan menggunakan nilai semasa saya."</string>
+    <string name="rich_chart_range">"Julat yang boleh dilihat"</string>
+    <string name="rich_reset_range">"Tunjukkan julat penuh"</string>
+    <string name="rich_chart_label">"Label"</string>
+    <string name="rich_discuss_chart">"Tanya tentang carta ini"</string>
+    <string name="rich_discuss_chart_prompt">"Terangkan titik carta pilihan saya dan set data yang boleh dilihat."</string>
+    <string name="rich_select_point">"Pilih %1$s"</string>
+    <string name="rich_selected_count">"%1$d dipilih"</string>
+    <string name="rich_clear_selection">"Kosongkan pilihan"</string>
+    <string name="rich_adjust_input">"Laraskan %1$s"</string>
+</resources>

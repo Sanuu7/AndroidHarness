@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"Paletleriniz"</string>
+    <string name="theme_custom_add">"Palet oluştur"</string>
+    <string name="theme_custom_edit">"Paleti düzenle"</string>
+    <string name="theme_custom_name">"Palet adı"</string>
+    <string name="theme_custom_default">"Benim paletim"</string>
+    <string name="theme_custom_hint">"Renklerinizi seçin. Material okunabilir açık ve koyu gölgeler oluşturur."</string>
+    <string name="theme_custom_main">"Ana renk"</string>
+    <string name="theme_custom_accent">"Vurgu rengi"</string>
+    <string name="theme_custom_highlight">"Vurgula"</string>
+    <string name="theme_custom_hex">"Altıgen renk"</string>
+    <string name="theme_custom_invalid_hex">"6750A4 gibi altı onaltılık rakam girin."</string>
+    <string name="theme_custom_hue">"Renk tonu"</string>
+    <string name="theme_custom_saturation">"Doygunluk"</string>
+    <string name="theme_custom_brightness">"Parlaklık"</string>
+    <string name="theme_custom_automatic">"Vurgulu renkleri sıfırla"</string>
+    <string name="theme_custom_save">"Kaydet ve uygula"</string>
+    <string name="theme_custom_limit">"24 paletiniz var. Başka bir tane oluşturmak için birini düzenleyin veya kaldırın."</string>
+    <string name="theme_custom_delete">"Paleti sil"</string>
+    <string name="theme_custom_delete_message">"Bu kayıtlı palet kaldırılsın mı? Bu palet etkinse uygulama seçilen ön ayara geri döner."</string>
+    <string name="theme_custom_preview">"Palet önizlemesi"</string>
+    <string name="theme_canvas_title">"Harness Kanvas"</string>
+    <string name="theme_canvas_description">"Chat ve Code için kendi arka planınız."</string>
+    <string name="theme_canvas_add">"Resim ekle"</string>
+    <string name="theme_canvas_change">"Resmi değiştir"</string>
+    <string name="theme_canvas_remove">"Resmi kaldır"</string>
+    <string name="theme_canvas_enabled">"Harness Kanvasını Göster"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"Görüntü karartma"</string>
+    <string name="theme_canvas_dim_hint">"Daha net metin için görseli temanıza dönüştürün."</string>
+    <string name="theme_canvas_colors">"Kanvas renklerini eşleştir"</string>
+    <string name="theme_canvas_colors_hint">"Bu görüntüden uygulamanızın renk paletini oluşturun."</string>
+    <string name="theme_canvas_working">"Kanvasınızı Hazırlıyoruz…"</string>
+    <string name="theme_canvas_error">"Bu görsel kullanılamadı. 32 MB\'ın altında başka bir fotoğraf deneyin."</string>
+    <string name="theme_canvas_empty">"Bu alanı kendinize ait kılmak için bir fotoğraf veya sanat eseri ekleyin."</string>
+    <string name="theme_canvas_preview_message">"Konuşmalarınız, Kanvasınız."</string>
+    <string name="theme_canvas_preview_reply">"Kendinizi evinizdeymiş gibi hissedin."</string>
+    <string name="theme_canvas_color_area">"Renk alanı"</string>
+</resources>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"ชุดสีของคุณ"</string>
+    <string name="theme_custom_add">"สร้างชุดสี"</string>
+    <string name="theme_custom_edit">"แก้ไขชุดสี"</string>
+    <string name="theme_custom_name">"ชื่อชุดสี"</string>
+    <string name="theme_custom_default">"ชุดสีของฉัน"</string>
+    <string name="theme_custom_hint">"เลือกสีของคุณ Material สร้างแสงและเฉดสีเข้มที่อ่านง่าย"</string>
+    <string name="theme_custom_main">"สีหลัก"</string>
+    <string name="theme_custom_accent">"สีเน้น"</string>
+    <string name="theme_custom_highlight">"ไฮไลท์"</string>
+    <string name="theme_custom_hex">"สีฐานสิบหก"</string>
+    <string name="theme_custom_invalid_hex">"ป้อนเลขฐานสิบหกหกหลัก เช่น 6750A4"</string>
+    <string name="theme_custom_hue">"เว้"</string>
+    <string name="theme_custom_saturation">"ความอิ่มตัว"</string>
+    <string name="theme_custom_brightness">"ความสว่าง"</string>
+    <string name="theme_custom_automatic">"รีเซ็ตสีที่ถูกเน้น"</string>
+    <string name="theme_custom_save">"บันทึกและนำไปใช้"</string>
+    <string name="theme_custom_limit">"คุณมี 24 ชุดสี แก้ไขหรือลบอันหนึ่งเพื่อสร้างอันอื่น"</string>
+    <string name="theme_custom_delete">"ลบชุดสี"</string>
+    <string name="theme_custom_delete_message">"ลบชุดสีที่บันทึกไว้นี้ไหม แอปจะกลับสู่ค่าที่ตั้งไว้ล่วงหน้าที่เลือกไว้หากชุดสีนี้ทำงานอยู่"</string>
+    <string name="theme_custom_preview">"ดูตัวอย่างชุดสี"</string>
+    <string name="theme_canvas_title">"ผ้าใบ Harness"</string>
+    <string name="theme_canvas_description">"ฉากหลังของคุณเองสำหรับ Chat และ Code"</string>
+    <string name="theme_canvas_add">"เพิ่มรูปภาพ"</string>
+    <string name="theme_canvas_change">"เปลี่ยนภาพ"</string>
+    <string name="theme_canvas_remove">"ลบรูปภาพ"</string>
+    <string name="theme_canvas_enabled">"แสดงแคนวาส Harness"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"ภาพลดแสง"</string>
+    <string name="theme_canvas_dim_hint">"เฟดรูปภาพให้เป็นธีมของคุณเพื่อให้ข้อความชัดเจนยิ่งขึ้น"</string>
+    <string name="theme_canvas_colors">"จับคู่สีแคนวาส"</string>
+    <string name="theme_canvas_colors_hint">"สร้างชุดสีของแอปจากรูปภาพนี้"</string>
+    <string name="theme_canvas_working">"กำลังเตรียมแคนวาสของคุณ..."</string>
+    <string name="theme_canvas_error">"ไม่สามารถใช้รูปภาพนั้นได้ ลองรูปภาพอื่นที่มีขนาดไม่เกิน 32 MB"</string>
+    <string name="theme_canvas_empty">"เพิ่มรูปภาพหรืองานศิลปะเพื่อทำให้พื้นที่นี้เป็นของคุณ"</string>
+    <string name="theme_canvas_preview_message">"บทสนทนาของคุณ Canvas ของคุณ"</string>
+    <string name="theme_canvas_preview_reply">"ทำตัวเหมือนอยู่บ้าน"</string>
+    <string name="theme_canvas_color_area">"พื้นที่สี"</string>
+</resources>

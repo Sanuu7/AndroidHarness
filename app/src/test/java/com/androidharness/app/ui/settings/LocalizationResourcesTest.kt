@@ -261,7 +261,7 @@ class LocalizationResourcesTest {
         val locales = DocumentBuilderFactory.newInstance().newDocumentBuilder()
             .parse(File("src/main/res/xml/locales_config.xml")).getElementsByTagName("locale")
         val tags = (0 until locales.length).map { (locales.item(it) as Element).getAttribute("android:name") }
-        assertTrue(tags.containsAll(listOf("en", "zh-CN", "ru", "ar", "fa", "pt-BR", "de", "es", "ja", "id", "si", "vi")))
+        assertTrue(tags.containsAll(listOf("en", "zh-CN", "ru", "ar", "fa", "pt-BR", "de", "es", "ja", "id", "si", "vi", "tr", "ms", "th")))
     }
 
     @Test fun brazilianPortugueseCoversEveryUiResourceInItsOriginalGroup() = assertUiResourceCoverage("values-pt-rBR")
@@ -279,6 +279,30 @@ class LocalizationResourcesTest {
         val vietnamese = strings("values-vi")
         strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
             assertEquals("Resource reference $name", reference, vietnamese.getValue(name))
+        }
+    }
+
+    @Test fun turkishCoversEveryUiResourceInItsOriginalGroup() {
+        assertUiResourceCoverage("values-tr")
+        val turkish = strings("values-tr")
+        strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
+            assertEquals("Resource reference $name", reference, turkish.getValue(name))
+        }
+    }
+
+    @Test fun malayCoversEveryUiResourceInItsOriginalGroup() {
+        assertUiResourceCoverage("values-ms")
+        val malay = strings("values-ms")
+        strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
+            assertEquals("Resource reference $name", reference, malay.getValue(name))
+        }
+    }
+
+    @Test fun thaiCoversEveryUiResourceInItsOriginalGroup() {
+        assertUiResourceCoverage("values-th")
+        val thai = strings("values-th")
+        strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
+            assertEquals("Resource reference $name", reference, thai.getValue(name))
         }
     }
 
@@ -307,6 +331,12 @@ class LocalizationResourcesTest {
     @Test fun sinhalaPreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-si", "si")
 
     @Test fun vietnamesePreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-vi", "vi")
+
+    @Test fun turkishPreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-tr", "tr")
+
+    @Test fun malayPreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-ms", "ms")
+
+    @Test fun thaiPreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-th", "th")
 
     private fun assertFormattingAndTechnicalValues(resourceFolder: String, languageTag: String) {
         val english = strings("values")
@@ -338,7 +368,7 @@ class LocalizationResourcesTest {
             }
         }
         for (name in english.keys.filter { it.startsWith("settings_language_") &&
-            it.substringAfter("settings_language_") in setOf("english", "chinese", "russian", "arabic", "persian", "indonesian", "portuguese", "german", "spanish", "japanese", "sinhala", "vietnamese") }) {
+            it.substringAfter("settings_language_") in setOf("english", "chinese", "russian", "arabic", "persian", "indonesian", "portuguese", "german", "spanish", "japanese", "sinhala", "vietnamese", "turkish", "malay", "thai") }) {
             assertEquals("Native language name $name", english.getValue(name).removeSurrounding("\""),
                 translations.getValue(name).removeSurrounding("\""))
         }
@@ -356,6 +386,15 @@ class LocalizationResourcesTest {
 
     @Test fun vietnamesePluralsPreserveCountsAndUseOther() =
         assertPluralCoverage("values-vi", "vi", setOf("other"), preserveAllArguments = true)
+
+    @Test fun turkishPluralsPreserveAllArgumentsAndCoverOneAndOther() =
+        assertPluralCoverage("values-tr", "tr", preserveAllArguments = true)
+
+    @Test fun malayPluralsPreserveAllArgumentsAndUseOther() =
+        assertPluralCoverage("values-ms", "ms", setOf("other"), preserveAllArguments = true)
+
+    @Test fun thaiPluralsPreserveAllArgumentsAndUseOther() =
+        assertPluralCoverage("values-th", "th", setOf("other"), preserveAllArguments = true)
 
     private fun assertPluralCoverage(resourceFolder: String, languageTag: String, quantities: Set<String> = setOf("one", "other"), preserveAllArguments: Boolean = false) {
         fun plurals(locale: String): Map<String, Map<String, String>> = buildMap {

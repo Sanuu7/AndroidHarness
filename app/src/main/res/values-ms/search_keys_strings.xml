@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="other">"%2$s · %1$d kunci disimpan"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"Anda boleh menyimpan sehingga 20 kunci. Apabila kunci ditolak, mencapai had kadar atau kehabisan kredit, kunci aktif seterusnya digunakan secara automatik."</string>
+    <string name="search_key_check_failed">"Kunci %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"Kunci disahkan dan disimpan"</string>
+    <string name="search_manage_keys">"Urus kunci"</string>
+</resources>

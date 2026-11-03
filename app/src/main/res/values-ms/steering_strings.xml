@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"Semasa ejen bekerja"</string>
+    <string name="settings_anchor_steering">"Mesej dihantar pertengahan tugasan"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"Ejen membaca mesej anda selepas langkah semasa dan terus berjalan. Alat berjalan tidak pernah diganggu. Jika tugasan telah tamat, mesej akan bermula pada giliran seterusnya."</string>
+    <string name="steering_mode_after_task">"Selepas tugasan"</string>
+    <string name="steering_mode_after_task_desc">"Mesej anda menunggu sehingga keseluruhan tugasan selesai, kemudian memulakan giliran baharu."</string>
+    <string name="steering_picker_detail">"Pilih perkara yang berlaku apabila anda menghantar mesej semasa ejen sedang bekerja. Hantar sekarang pada mesej beratur sentiasa menghentikan ejen dan menghantarnya serta-merta."</string>
+    <string name="steering_search_desc">"Pandu ejen yang sedang berjalan, atau tunggu tugas selesai"</string>
+    <string name="steering_queue_next_step">"Ejen membaca ini selepas langkah semasanya."</string>
+    <string name="steering_queue_badge">"Baca pada langkah seterusnya"</string>
+</resources>

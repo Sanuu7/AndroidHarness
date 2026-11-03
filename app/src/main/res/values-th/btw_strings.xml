@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"ถามเพิ่มเติม"</string>
+    <string name="btw_source_live">"บริบทสด"</string>
+    <string name="btw_source_saved">"ประวัติที่บันทึกไว้"</string>
+    <string name="btw_private">"ไม่ได้เพิ่มเข้าไปในแชท"</string>
+    <string name="btw_empty_hint">"ถามอะไรก็ได้เกี่ยวกับงานปัจจุบัน คำตอบจะใช้ข้อมูลที่เอเจนต์อ่านและตัดสินใจแล้ว ใช้แคชพรอมต์ซ้ำ และไม่ถูกเพิ่มในการสนทนาหลัก"</string>
+    <string name="btw_input_hint">"ถามคำถามเพิ่มเติม"</string>
+    <string name="btw_input_again">"ถามคำถามเพิ่มเติมอีกข้อ"</string>
+    <string name="btw_ask">"ถาม"</string>
+    <string name="btw_stop">"หยุด"</string>
+    <string name="btw_copy">"คัดลอก"</string>
+    <string name="btw_copied">"คัดลอกคำตอบแล้ว"</string>
+    <string name="btw_stopped">"หยุดแล้ว"</string>
+    <string name="btw_retrying">"กำลังลองอีกครั้ง · %1$s"</string>
+    <string name="btw_cold_note">"ไม่มีคำขอสดอยู่ในหน่วยความจำ ดังนั้นคำตอบนี้จึงอ่านการสนทนาที่บันทึกไว้โดยไม่มีแคชพร้อมต์"</string>
+    <string name="btw_composer_action">"สอบถามได้เลย"</string>
+    <string name="btw_error_empty_chat">"ส่งข้อความก่อนแล้วจึงถามคำถามข้างเคียงเกี่ยวกับเรื่องนี้"</string>
+    <string name="btw_error_local_busy">"โมเดลท้องถิ่นจะตอบทีละคำขอ ถามหลังจากการตอบกลับปัจจุบันเสร็จสิ้น"</string>
+    <string name="btw_error_no_key">"เพิ่มคีย์ API ของผู้ให้บริการรายนี้ก่อนที่จะถาม"</string>
+    <string name="btw_error_generic">"คำถามด้านข้างล้มเหลว"</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">"การเรียกเครื่องมือแบบอ่านอย่างเดียว %1$d"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"Palet warna"</string>
+    <string name="theme_color_hint">"Pilih palet untuk mewarnai apl anda."</string>
+    <string name="theme_wallpaper_colors">"Warna kertas dinding"</string>
+    <string name="theme_wallpaper_hint">"Ikut warna Material You telefon anda."</string>
+    <string name="theme_wallpaper_unavailable">"Warna kertas dinding memerlukan Android 12 atau lebih baru. Pilih palet di bawah."</string>
+    <string name="theme_palette_blue">"Harness biru"</string>
+    <string name="theme_palette_ocean">"Lautan"</string>
+    <string name="theme_palette_indigo">"nila"</string>
+    <string name="theme_palette_lavender">"Lavender"</string>
+    <string name="theme_palette_orchid">"Orkid"</string>
+    <string name="theme_palette_rose">"Mawar"</string>
+    <string name="theme_palette_coral">"karang"</string>
+    <string name="theme_palette_amber">"Amber"</string>
+    <string name="theme_palette_lime">"kapur"</string>
+    <string name="theme_palette_forest">"Hutan"</string>
+    <string name="theme_palette_teal">"Teal"</string>
+    <string name="theme_palette_slate">"Batu tulis"</string>
+</resources>

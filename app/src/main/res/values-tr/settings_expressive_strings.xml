@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"Ajan ve iş akışı"</string>
+    <string name="settings_coding_intelligence">"Beceriler ve zeka"</string>
+    <string name="settings_coding_execution">"Çalışma alanları ve yürütme"</string>
+    <string name="settings_device_connections">"Bağlantılar"</string>
+    <string name="settings_device_tools">"Araçlar ve gelişmiş ayarlar"</string>
+    <string name="settings_linux_optional">"Linux gerektiren projeler için isteğe bağlı araçlar"</string>
+    <string name="settings_device_advanced">"Gelişmiş cihaz erişimi"</string>
+    <string name="settings_device_advanced_summary">"Root ve cihaz sahibi kontrolleri"</string>
+    <string name="settings_device_background">"Arka plan ve pil"</string>
+    <string name="settings_device_background_summary">"Terminal oturumlarını ve ajan çalışmasını çalışır durumda tutun"</string>
+    <string name="settings_connection_help">"Nasıl bağlanılır"</string>
+    <string name="settings_connection_options">"Bağlantı seçenekleri"</string>
+    <string name="wireless_adb_disconnect">"Bağlantıyı kes"</string>
+    <string name="wireless_adb_connection_kept">"Bağlı · bağlantı kesilene kadar kullanılabilir"</string>
+    <string name="wireless_adb_auto_reconnecting">"Kaydedilen kablosuz hata ayıklamaya yeniden bağlanılıyor"</string>
+    <string name="rich_profile_details">"Ayrıntılar"</string>
+    <string name="rich_profile_sources">"Kaynaklar"</string>
+    <string name="settings_disclosure_expanded">"Genişletilmiş"</string>
+    <string name="settings_disclosure_collapsed">"Daraltılmış"</string>
+    <string name="settings_terminal_access">"Terminal erişimi"</string>
+    <string name="wireless_adb_compact_summary">"Otomatik yeniden bağlanma ile cihaz komutları"</string>
+</resources>

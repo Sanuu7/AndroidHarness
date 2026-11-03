@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"เลือก"</string>
+    <string name="sidebar_selected_count">"เลือก %1$d แล้ว"</string>
+    <string name="sidebar_select_all">"เลือกทั้งหมด"</string>
+    <string name="sidebar_clear_selection">"ล้างการเลือก"</string>
+    <string name="sidebar_exit_selection">"ออกจากการเลือก"</string>
+    <string name="sidebar_select_chat">"เลือก %1$s"</string>
+    <string name="sidebar_details">"รายละเอียด"</string>
+    <string name="sidebar_other_chats">"แชทอื่นๆ"</string>
+    <string name="sidebar_model_unavailable">"ไม่พร้อมใช้งาน"</string>
+    <string name="sidebar_delete_selected">"ลบแชทที่เลือกใช่ไหม"</string>
+    <string name="sidebar_delete_selected_message">"ลบการแชทเหล่านี้และประวัติการสนทนาหรือไม่ สิ่งนี้ไม่สามารถยกเลิกได้"</string>
+    <string name="sidebar_delete_running">"งานที่กำลังรันอยู่ในแชทเหล่านี้จะหยุดลง"</string>
+    <string name="sidebar_selection_error">"ไม่สามารถดำเนินการนี้ให้เสร็จสิ้นได้ โปรดลองอีกครั้ง"</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="other">"เก็บถาวรการแชท %1$d แล้ว"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="other">"กู้คืนการแชท %1$d แล้ว"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"Pilihan jadual"</string>
+    <string name="rich_select_rows">"Pilih baris"</string>
+    <string name="rich_stop_selecting_rows">"Berhenti memilih"</string>
+    <string name="rich_sort_rows">"Isih baris"</string>
+</resources>

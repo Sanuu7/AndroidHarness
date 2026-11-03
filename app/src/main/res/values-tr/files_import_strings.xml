@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Dosyaları içe aktar"</string>
+    <string name="files_import_folder">"Klasörü içe aktar"</string>
+    <string name="files_import_done">"İçe aktarılan öğe: %1$s / %2$s"</string>
+    <string name="files_import_failed">"Dosyalar içe aktarılamadı"</string>
+</resources>

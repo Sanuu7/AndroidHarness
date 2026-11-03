@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"Ajan çalışırken"</string>
+    <string name="settings_anchor_steering">"Görevin ortasında gönderilen iletiler"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"Ajan, mevcut adımından sonra mesajınızı okur ve devam eder. Çalışan aletler asla kesintiye uğramaz. Görev zaten bittiyse mesaj bir sonraki turda başlar."</string>
+    <string name="steering_mode_after_task">"Görevden sonra"</string>
+    <string name="steering_mode_after_task_desc">"Mesajınız tüm görev bitene kadar bekler, ardından yeni bir dönüş başlatır."</string>
+    <string name="steering_picker_detail">"Ajan çalışırken mesaj gönderdiğinizde ne olacağını seçin. Sıraya alınmış bir mesajda hemen gönder, her zaman ajanı durdurur ve mesajı hemen gönderir."</string>
+    <string name="steering_search_desc">"Çalışan ajanı yönlendirin veya görevin bitmesini bekleyin"</string>
+    <string name="steering_queue_next_step">"Ajan, mevcut adımından sonra bunları okur."</string>
+    <string name="steering_queue_badge">"Bir sonraki adımda okuyun"</string>
+</resources>

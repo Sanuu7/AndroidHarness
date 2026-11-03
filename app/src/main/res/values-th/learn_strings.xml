@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"เรียนรู้ AndroidHarness"</string>
+    <string name="learn_description">"คู่มือที่เข้าใจง่ายทีละขั้นสำหรับทุกสิ่งที่คุณทำได้ที่นี่"</string>
+    <string name="learn_group">"เริ่มที่นี่"</string>
+    <string name="learn_entry_hint">"เรียนรู้ตามจังหวะของคุณ"</string>
+    <string name="learn_entry_action">"สำรวจคำแนะนำ"</string>
+    <string name="learn_hero_title">"คำแนะนำเพียงเล็กน้อย\nเปิดโอกาสได้อีกมากมาย"</string>
+    <string name="learn_hero_body">"เริ่มต้นด้วยการแชทครั้งแรกของคุณหรือกระโดดตรงไปยังสิ่งที่คุณต้องการทำ ทุกบทเรียนประกอบด้วยขั้นตอน ขีดจำกัดที่เป็นประโยชน์ และความช่วยเหลือเมื่อคุณติดขัด"</string>
+    <string name="learn_offline">"ใช้งานออฟไลน์ได้ · บทเรียนเป็นภาษาอังกฤษ"</string>
+    <string name="learn_progress">"เรียนรู้แล้ว %1$d จาก %2$d บทเรียน"</string>
+    <string name="learn_search">"คุณต้องการเรียนรู้อะไร?"</string>
+    <string name="learn_clear_search">"ล้างการค้นหาบทช่วยสอน"</string>
+    <string name="learn_all">"บทเรียนทั้งหมด"</string>
+    <string name="learn_saved">"บันทึกแล้ว"</string>
+    <string name="learn_start">"เริ่มต้นด้วยพื้นฐาน"</string>
+    <string name="learn_start_hint">"ใหม่ที่นี่? บทเรียนทั้งสามบทนี้จะช่วยให้คุณก้าวต่อไปได้"</string>
+    <string name="learn_results">"%1$d บทเรียน"</string>
+    <string name="learn_empty_title">"ลองค้นหาอีกครั้ง"</string>
+    <string name="learn_empty_body">"ลองใช้ \"คีย์ API\", \"GitHub\", \"รุ่นท้องถิ่น\" หรือ \"MCP\" คุณยังสามารถสลับไปที่บทเรียนทั้งหมดเพื่อเรียกดูทุกอย่างได้"</string>
+    <string name="learn_saved_empty_title">"เก็บบทเรียนไว้ใช้"</string>
+    <string name="learn_saved_empty_body">"ใช้บุ๊กมาร์กในบทเรียนเพื่อค้นหาที่นี่ในภายหลัง"</string>
+    <string name="learn_reset_filters">"แสดงบทเรียนทั้งหมด"</string>
+    <string name="learn_location">"ไปที่ไหน"</string>
+    <string name="learn_before">"ก่อนที่คุณจะเริ่ม"</string>
+    <string name="learn_steps">"มาลองทำกัน"</string>
+    <string name="learn_outcome">"ผลลัพธ์ที่ควรเห็น"</string>
+    <string name="learn_limits">"สิ่งที่ควรรู้"</string>
+    <string name="learn_fixes">"หากติดปัญหา"</string>
+    <string name="learn_example">"ลองพูดแบบนี้สิ"</string>
+    <string name="learn_copy_example">"คัดลอกตัวอย่าง"</string>
+    <string name="learn_copied">"คัดลอกตัวอย่างแล้ว"</string>
+    <string name="learn_open_section">"ลองใช้ในแอป"</string>
+    <string name="learn_links">"ความช่วยเหลืออย่างเป็นทางการ"</string>
+    <string name="learn_links_hint">"ลิงก์เหล่านี้เปิดในเบราว์เซอร์และต้องเชื่อมต่ออินเทอร์เน็ต หน้าของผู้ให้บริการอาจเปลี่ยนแปลง โปรดตรวจสอบข้อกำหนดและราคาที่แสดงก่อนชำระเงิน"</string>
+    <string name="learn_related">"ขั้นตอนต่อไปที่เป็นประโยชน์"</string>
+    <string name="learn_mark_complete">"ทำเครื่องหมายว่าเรียนรู้แล้ว"</string>
+    <string name="learn_complete">"เรียนรู้แล้ว · แตะเพื่อเลิกทำ"</string>
+    <string name="learn_completed_label">"ได้เรียนรู้"</string>
+    <string name="learn_bookmark">"บันทึกบทเรียนนี้"</string>
+    <string name="learn_bookmarked">"ลบบทเรียนที่บันทึกไว้"</string>
+    <string name="learn_link_failed">"ไม่สามารถเปิดเบราว์เซอร์ได้ คุณสามารถคัดลอกลิงก์แทนได้"</string>
+    <string name="learn_copy_link">"คัดลอกลิงก์"</string>
+    <string name="learn_load_failed">"ไม่สามารถเปิดคำแนะนำได้ ปิดการตั้งค่าแล้วลองอีกครั้ง"</string>
+</resources>

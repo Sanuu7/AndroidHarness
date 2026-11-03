@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"Çekme isteği açılıyor…"</string>
+    <string name="pr_tool_opened">"Çekme isteği açıldı #%1$d"</string>
+    <string name="pr_tool_existing">"Çekme isteği #%1$d zaten açık"</string>
+    <string name="pr_tool_failed">"Çekme isteği açılmadı"</string>
+    <string name="pr_tool_waiting">"Onayınızı bekliyorum"</string>
+    <string name="pr_draft">"Taslak"</string>
+    <string name="pr_counts">"Commit: %1$d · Dosya: %2$d"</string>
+    <string name="pr_open_on_github">"GitHub üzerinde aç"</string>
+    <string name="pr_copy_link">"Bağlantıyı kopyala"</string>
+    <string name="pr_link_copied">"Bağlantı kopyalandı"</string>
+    <string name="pr_open_failed">"Hiçbir uygulama bağlantıyı açamadı. Onun yerine kopyalandı."</string>
+    <string name="pr_approval_title">"Bir çekme isteği açılsın mı?"</string>
+    <string name="pr_approval_body">"İtilen daldan GitHub üzerinde bir çekme isteği oluşturur. Hiçbir şey itilmez veya birleştirilmez."</string>
+    <string name="pr_approval_base">"%1$s\'ye"</string>
+    <string name="pr_approval_default_base">"Varsayılan şubeye"</string>
+    <string name="pr_create">"Çekme isteği oluştur"</string>
+    <string name="pr_create_draft">"Taslak çekme isteği oluştur"</string>
+    <string name="pr_entry_body">"Bu şubenin gönderilen commitlerini GitHub\'de incelenmek üzere önerin."</string>
+    <string name="pr_loading">"Bu şubeyi GitHub ile karşılaştırdığımızda…"</string>
+    <string name="pr_title_label">"Başlık"</string>
+    <string name="pr_description_label">"Açıklama"</string>
+    <string name="pr_rewrite_description">"Açıklamayı yeniden yaz"</string>
+    <string name="pr_base_label">"Temel şube"</string>
+    <string name="pr_draft_label">"Taslak olarak aç"</string>
+    <string name="pr_draft_body">"Gözden geçirenler bunu görebilir ancak siz hazır olarak işaretleyene kadar birleştirilemez."</string>
+    <string name="pr_include_checks">"Bu sohbetteki kontrolleri dahil et"</string>
+    <string name="pr_include_checks_body">"Bu görüşmede kaydedilen derleme, test ve tüy bırakma sonuçlarını ekler."</string>
+    <string name="pr_existing_body">"%1$s\'ye yapılan yeni aktarımlar bu çekme isteğini otomatik olarak günceller."</string>
+    <string name="pr_not_pushed_title">"Şube henüz GitHub\'de değil"</string>
+    <string name="pr_out_of_date_title">"GitHub\'de bu şubenin daha eski bir kopyası var"</string>
+    <string name="pr_push_body">"%1$s\'ye basın, böylece GitHub en son commitlerinizi alır."</string>
+    <string name="pr_push_branch">"Şubeyi itin"</string>
+    <string name="pr_pushed">"Şube itti."</string>
+    <string name="pr_uncommitted_title">"Commit edilmemiş değişiklikler: %1$d"</string>
+    <string name="pr_uncommitted_body">"Siz onları commit edene ve zorlayana kadar dahil edilmeyecekler."</string>
+    <string name="pr_behind_title">"%1$s\'de daha yeni commitler: %2$d"</string>
+    <string name="pr_behind_body">"Bu şube henüz onları içermiyor. Gözden geçirenler sizden güncellemenizi isteyebilir."</string>
+    <string name="pr_no_commits_title">"Henüz önerilecek bir şey yok"</string>
+    <string name="pr_no_commits_body">"%1$s\'nin halihazırda %2$s\'de olmayan hiçbir taahhüdü yoktur."</string>
+    <string name="pr_commits_header">"Commitler"</string>
+    <string name="pr_more">"Daha fazla: %1$d"</string>
+    <string name="pr_created_title">"Çekme isteği #%1$d açıldı"</string>
+    <string name="pr_created_draft_title">"Taslak çekme isteği #%1$d açıldı"</string>
+    <string name="pr_retry">"Tekrar dene"</string>
+</resources>

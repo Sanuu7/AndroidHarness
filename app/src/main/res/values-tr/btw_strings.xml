@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"Bu arada"</string>
+    <string name="btw_source_live">"Canlı bağlam"</string>
+    <string name="btw_source_saved">"Kayıtlı geçmiş"</string>
+    <string name="btw_private">"Sohbete eklenmedi"</string>
+    <string name="btw_empty_hint">"Geçerli görev hakkında istediğinizi sorun. Yanıt, ajanın daha önce okuduklarını ve kararlarını kullanır; istem önbelleğinden yararlanır ve ana sohbete eklenmez."</string>
+    <string name="btw_input_hint">"Bir yan soru sorun"</string>
+    <string name="btw_input_again">"Başka bir yan soru sor"</string>
+    <string name="btw_ask">"Sor"</string>
+    <string name="btw_stop">"Durdur"</string>
+    <string name="btw_copy">"Kopyala"</string>
+    <string name="btw_copied">"Yanıt kopyalandı"</string>
+    <string name="btw_stopped">"Durduruldu"</string>
+    <string name="btw_retrying">"Yeniden deneniyor · %1$s"</string>
+    <string name="btw_cold_note">"Bellekte canlı istek olmadığından bu yanıt, kayıtlı konuşmayı istem önbelleği olmadan okur."</string>
+    <string name="btw_composer_action">"Bu arada sor"</string>
+    <string name="btw_error_empty_chat">"Önce bir mesaj gönderin, ardından bununla ilgili bir yan soru sorun."</string>
+    <string name="btw_error_local_busy">"Yerel modeller aynı anda bir talebe yanıt verir. Mevcut yanıt bittikten sonra sor."</string>
+    <string name="btw_error_no_key">"Sormadan önce bu sağlayıcının API anahtarını ekleyin."</string>
+    <string name="btw_error_generic">"Yan soru başarısız oldu."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">"%1$d salt okunur araç çağrıları"</item>
+        <item quantity="other">"%1$d salt okunur araç çağrıları"</item>
+    </plurals>
+</resources>

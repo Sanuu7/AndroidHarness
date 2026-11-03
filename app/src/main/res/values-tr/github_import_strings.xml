@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"Bir depo seçin"</string>
+    <string name="github_import_destination">"Bir kopyayı bu cihazdaki kendi çalışma alanına aktarın."</string>
+    <string name="github_import_loading">"Depolarınız yükleniyor…"</string>
+    <string name="github_import_empty">"Bu hesap için depo bulunamadı. URL ile de içe aktarabilirsiniz."</string>
+    <string name="github_import_by_url">"URL ile içe aktar"</string>
+    <string name="github_import_confirm_title">"Depo içe aktarılsın mı?"</string>
+    <string name="github_import_confirm_body">"%1$s\'yi bu cihazdaki yeni bir çalışma alanına aktarmak istediğinizden emin misiniz?"</string>
+    <string name="github_import_preparing">"İçe aktarma hazırlanıyor…"</string>
+    <string name="github_import_success">"İçe aktarılan %1$s"</string>
+    <string name="github_import_open_workspace">"Çalışma alanını aç"</string>
+</resources>

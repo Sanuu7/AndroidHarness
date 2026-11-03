@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"Pelajari AndroidHarness"</string>
+    <string name="learn_description">"Panduan mudah langkah demi langkah tentang semua yang boleh anda lakukan di sini."</string>
+    <string name="learn_group">"Mulakan di sini"</string>
+    <string name="learn_entry_hint">"Panduan mengikut rentak anda"</string>
+    <string name="learn_entry_action">"Terokai panduan"</string>
+    <string name="learn_hero_title">"Sedikit panduan.\nBanyak kemungkinan."</string>
+    <string name="learn_hero_body">"Mulakan dengan sembang pertama anda, atau terus ke perkara yang anda mahu lakukan. Setiap pelajaran termasuk langkah, had berguna dan bantuan apabila anda tersekat."</string>
+    <string name="learn_offline">"Tersedia di luar talian · Tutorial dalam bahasa Inggeris"</string>
+    <string name="learn_progress">"%1$d daripada %2$d pelajaran telah dipelajari"</string>
+    <string name="learn_search">"Apakah yang anda ingin pelajari?"</string>
+    <string name="learn_clear_search">"Kosongkan carian tutorial"</string>
+    <string name="learn_all">"Semua pelajaran"</string>
+    <string name="learn_saved">"Disimpan"</string>
+    <string name="learn_start">"Mulakan dengan asas"</string>
+    <string name="learn_start_hint">"Baru di sini? Tiga pelajaran ini akan membantu anda."</string>
+    <string name="learn_results">"%1$d pelajaran"</string>
+    <string name="learn_empty_title">"Mari cuba carian lain"</string>
+    <string name="learn_empty_body">"Cuba \"kunci API\", \"GitHub\", \"model tempatan\" atau \"MCP\". Anda juga boleh bertukar kepada Semua pelajaran untuk menyemak imbas segala-galanya."</string>
+    <string name="learn_saved_empty_title">"Simpan pelajaran berguna"</string>
+    <string name="learn_saved_empty_body">"Gunakan penanda halaman dalam pelajaran untuk mencarinya di sini kemudian."</string>
+    <string name="learn_reset_filters">"Tunjukkan semua pelajaran"</string>
+    <string name="learn_location">"Tempat untuk dibuka"</string>
+    <string name="learn_before">"Sebelum anda bermula"</string>
+    <string name="learn_steps">"Mari mulakan"</string>
+    <string name="learn_outcome">"Hasil yang dijangka"</string>
+    <string name="learn_limits">"Perkara yang perlu diketahui"</string>
+    <string name="learn_fixes">"Jika anda buntu"</string>
+    <string name="learn_example">"Cuba katakan ini"</string>
+    <string name="learn_copy_example">"Salin contoh"</string>
+    <string name="learn_copied">"Contoh disalin"</string>
+    <string name="learn_open_section">"Cuba dalam apl"</string>
+    <string name="learn_links">"Bantuan rasmi"</string>
+    <string name="learn_links_hint">"Pautan ini dibuka dalam pelayar dan memerlukan sambungan internet. Halaman penyedia boleh berubah; semak syarat dan harga yang dipaparkan sebelum membuat bayaran."</string>
+    <string name="learn_related">"Langkah seterusnya yang berguna"</string>
+    <string name="learn_mark_complete">"Tandakan sebagai dipelajari"</string>
+    <string name="learn_complete">"Telah dipelajari · ketik untuk buat asal"</string>
+    <string name="learn_completed_label">"Dipelajari"</string>
+    <string name="learn_bookmark">"Simpan pelajaran ini"</string>
+    <string name="learn_bookmarked">"Alih keluar pelajaran yang disimpan"</string>
+    <string name="learn_link_failed">"Tidak dapat membuka penyemak imbas. Anda boleh menyalin pautan sebaliknya."</string>
+    <string name="learn_copy_link">"Salin pautan"</string>
+    <string name="learn_load_failed">"Panduan tidak dapat dibuka. Tutup Tetapan dan cuba lagi."</string>
+</resources>

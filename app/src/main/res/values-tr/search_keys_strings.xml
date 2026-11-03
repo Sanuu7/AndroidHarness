@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">"%2$s · %1$d anahtar kaydedildi"</item>
+        <item quantity="other">"%2$s · %1$d anahtar kaydedildi"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"En fazla 20 anahtar kaydedebilirsiniz. Bir anahtar reddedilirse, istek sınırına ulaşırsa veya kredisi biterse sıradaki etkin anahtar otomatik olarak kullanılır."</string>
+    <string name="search_key_check_failed">"Anahtar %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"Anahtarlar doğrulandı ve kaydedildi"</string>
+    <string name="search_manage_keys">"Anahtarları yönet"</string>
+</resources>

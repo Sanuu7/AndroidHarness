@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"Renk paleti"</string>
+    <string name="theme_color_hint">"Uygulamanızı renklendirmek için bir palet seçin."</string>
+    <string name="theme_wallpaper_colors">"Duvar kağıdı renkleri"</string>
+    <string name="theme_wallpaper_hint">"Telefonunuzun Material You renklerini takip edin."</string>
+    <string name="theme_wallpaper_unavailable">"Duvar kağıdı renkleri Android 12 veya üzerini gerektirir. Aşağıdan bir palet seçin."</string>
+    <string name="theme_palette_blue">"Harness mavi"</string>
+    <string name="theme_palette_ocean">"Okyanus"</string>
+    <string name="theme_palette_indigo">"Çivit mavisi"</string>
+    <string name="theme_palette_lavender">"Lavanta"</string>
+    <string name="theme_palette_orchid">"Orkide"</string>
+    <string name="theme_palette_rose">"Gül"</string>
+    <string name="theme_palette_coral">"Mercan"</string>
+    <string name="theme_palette_amber">"Kehribar"</string>
+    <string name="theme_palette_lime">"Kireç"</string>
+    <string name="theme_palette_forest">"Orman"</string>
+    <string name="theme_palette_teal">"Turkuaz"</string>
+    <string name="theme_palette_slate">"Arduvaz"</string>
+</resources>

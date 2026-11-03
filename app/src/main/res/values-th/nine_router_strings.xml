@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"ติดตั้งและจัดการตัวกำหนดเส้นทางโมเดลในอุปกรณ์"</string>
+    <string name="nine_router_intro">"เรียกใช้ 9Router บนโทรศัพท์นี้ แล้วจัดการผู้ให้บริการ โมเดล และเส้นทางในเบราว์เซอร์ โดยใช้ชุดเครื่องมือ Linux ของ AndroidHarness"</string>
+    <string name="nine_router_setup">"ตั้งค่าสภาพแวดล้อมของคุณ"</string>
+    <string name="nine_router_not_installed">"พร้อมติดตั้ง"</string>
+    <string name="nine_router_ready">"ติดตั้งแล้ว · หยุดแล้ว"</string>
+    <string name="nine_router_running">"กำลังใช้งานโทรศัพท์เครื่องนี้"</string>
+    <string name="nine_router_starting">"กำลังเริ่ม 9Router…"</string>
+    <string name="nine_router_stopping">"กำลังหยุด 9Router..."</string>
+    <string name="nine_router_installing">"กำลังติดตั้ง..."</string>
+    <string name="nine_router_updating">"กำลังอัปเดต 9Router..."</string>
+    <string name="nine_router_uninstalling">"กำลังถอนการติดตั้ง 9Router..."</string>
+    <string name="nine_router_connecting">"กำลังเพิ่มไปยังผู้ให้บริการ..."</string>
+    <string name="nine_router_removing">"กำลังนำออกจากผู้ให้บริการ..."</string>
+    <string name="nine_router_install_linux">"ติดตั้งห่วงโซ่เครื่องมือ Linux"</string>
+    <string name="nine_router_install">"ติดตั้ง 9Router"</string>
+    <string name="nine_router_start">"สตาร์ท 9Router"</string>
+    <string name="nine_router_stop">"หยุด"</string>
+    <string name="nine_router_show_details">"แสดงรายละเอียด"</string>
+    <string name="nine_router_hide_details">"ซ่อนรายละเอียด"</string>
+    <string name="nine_router_open_dashboard">"เปิดแดชบอร์ดในเบราว์เซอร์"</string>
+    <string name="nine_router_browser_error">"ไม่มีเบราว์เซอร์ใดที่สามารถเปิดแดชบอร์ด 9Router ได้"</string>
+    <string name="nine_router_version">"เวอร์ชัน %1$s"</string>
+    <string name="nine_router_check_update">"ตรวจสอบการอัปเดต"</string>
+    <string name="nine_router_checking">"กำลังตรวจสอบ..."</string>
+    <string name="nine_router_update">"อัพเดตเป็น %1$s"</string>
+    <string name="nine_router_auto_start">"สตาร์ทอัตโนมัติ 9Router"</string>
+    <string name="nine_router_auto_start_body">"เริ่มเราเตอร์ที่ติดตั้งเมื่อเปิด AndroidHarness"</string>
+    <string name="nine_router_add_provider">"เพิ่ม 9Router ให้กับผู้ให้บริการ"</string>
+    <string name="nine_router_refresh_provider">"รีเฟรชผู้ให้บริการ 9Router"</string>
+    <string name="nine_router_provider_body">"สตาร์ท 9Router หากจำเป็น และเติมตำแหน่งข้อมูลในเครื่องและคีย์ API โดยอัตโนมัติ รุ่นที่เชื่อมต่อจะมีอยู่ในตัวเลือกรุ่น Chat และ Code"</string>
+    <string name="nine_router_remove_provider">"ลบออกจากผู้ให้บริการ"</string>
+    <string name="nine_router_remove_provider_body">"ลบการเชื่อมต่อ 9Router ออกจาก AndroidHarness เราเตอร์และบัญชีจะยังคงติดตั้งอยู่"</string>
+    <string name="nine_router_uninstall">"ถอนการติดตั้ง 9Router"</string>
+    <string name="nine_router_uninstall_title">"ถอนการติดตั้ง 9Router อย่างสมบูรณ์หรือไม่"</string>
+    <string name="nine_router_uninstall_body">"หยุด 9Router และลบการติดตั้ง บัญชีที่บันทึกไว้ คีย์เราเตอร์ API การกำหนดค่า แคช การตั้งค่าการเริ่มต้นอัตโนมัติ และการเชื่อมต่อผู้ให้บริการแอป สิ่งนี้ไม่สามารถยกเลิกได้ ห่วงโซ่เครื่องมือ Linux ที่ใช้ร่วมกันยังคงพร้อมใช้งานสำหรับคุณสมบัติอื่นๆ"</string>
+</resources>

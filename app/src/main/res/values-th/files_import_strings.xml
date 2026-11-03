@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"นำเข้าไฟล์"</string>
+    <string name="files_import_folder">"นำเข้าโฟลเดอร์"</string>
+    <string name="files_import_done">"นำเข้าแล้ว %1$s จาก %2$s รายการ"</string>
+    <string name="files_import_failed">"ไม่สามารถนำเข้าไฟล์ได้"</string>
+</resources>
