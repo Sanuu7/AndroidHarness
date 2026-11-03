@@ -974,4 +974,13 @@
     <string name="glass_transparency">Transparansi</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">Geser ke kanan untuk kaca yang lebih bening. Pratinjau ikut bergeser dan pilihanmu berlaku saat dilepas. Tombol tindakan dan pop-up tetap memakai warna yang terbaca.</string>
+    <string name="memory_entry_unlimited">Entri memori tanpa batas</string>
+    <string name="memory_entry_unlimited_desc">Simpan memori dengan panjang berapa pun. Nonaktif secara default.</string>
+    <string name="memory_entry_max_chars">Karakter per memori</string>
+    <string name="memory_entry_max_chars_desc">Atur batas untuk entri baru dan yang diedit saat entri tanpa batas dinonaktifkan. Memori yang ada tetap disimpan.</string>
+    <string name="memory_entry_unlimited_value">Tanpa batas</string>
+    <string name="memory_entry_limit_value">%1$d karakter</string>
+    <string name="memory_entry_limit_invalid">Masukkan bilangan bulat positif yang valid.</string>
+    <string name="memory_entry_count_unlimited">%1$d karakter · Tanpa batas</string>
+    <string name="memory_entry_count_limited">%1$d / %2$d karakter</string>
 </resources>

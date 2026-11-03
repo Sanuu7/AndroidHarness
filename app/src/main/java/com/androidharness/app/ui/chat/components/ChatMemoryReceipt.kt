@@ -41,6 +41,7 @@ internal fun ChatMemoryReceipt(messages: List<ChatMessage>, container: AppContai
     if (!open) return
     val memories by container.memory.memories.collectAsStateWithLifecycle(initialValue = emptyList())
     val projects by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
+    val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = com.androidharness.app.data.AppSettings())
     val ids = remember(messages, supplied) { ChatActivityPresentation.savedMemoryIds(messages) + supplied.map { it.id } }
     val currentIds = ids.map { id -> memories.firstOrNull { it.id == id }?.consolidatedInto ?: id }.toSet()
     val saved = memories.filter { it.id in currentIds }
@@ -79,7 +80,7 @@ internal fun ChatMemoryReceipt(messages: List<ChatMessage>, container: AppContai
 
     editing?.let { memory ->
         if (saved.none { it.id == memory.id }) { LaunchedEffect(memory.id) { editing = null }; return@let }
-        MemoryEditDialog(memory, projects, enabled = !busy && !saving, error = error,
+        MemoryEditDialog(memory, projects, enabled = !busy && !saving, error = error, settings = settings,
             onDismiss = { if (!saving) { editing = null; error = null } },
             onSave = { text, category, memoryScope, project, section ->
                 if (!saving && !busy) { saving = true; scope.launch {

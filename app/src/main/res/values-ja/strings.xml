@@ -974,4 +974,13 @@
     <string name="glass_transparency">透明度</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">右に動かすほどガラスが透明になります。プレビューはドラッグ中に更新され、指を離すと設定が適用されます。操作ボタンとポップアップは読みやすい色合いを保ちます。</string>
+    <string name="memory_entry_unlimited">メモリ項目の文字数を無制限にする</string>
+    <string name="memory_entry_unlimited_desc">任意の長さのメモリを保存します。初期設定ではオフです。</string>
+    <string name="memory_entry_max_chars">各メモリの文字数</string>
+    <string name="memory_entry_max_chars_desc">無制限のメモリ項目がオフのとき、新規および編集する項目の上限を設定します。既存のメモリは保持されます。</string>
+    <string name="memory_entry_unlimited_value">無制限</string>
+    <string name="memory_entry_limit_value">%1$d 文字</string>
+    <string name="memory_entry_limit_invalid">有効な正の整数を入力してください。</string>
+    <string name="memory_entry_count_unlimited">%1$d 文字 · 無制限</string>
+    <string name="memory_entry_count_limited">%1$d / %2$d 文字</string>
 </resources>

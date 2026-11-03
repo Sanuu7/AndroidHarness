@@ -975,4 +975,13 @@
     <string name="glass_transparency">Transparenz</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">Nach rechts schieben für klareres Glas. Die Vorschau folgt dem Ziehen, deine Auswahl gilt beim Loslassen. Aktionsschaltflächen und Pop-ups behalten eine lesbare Tönung.</string>
+    <string name="memory_entry_unlimited">Unbegrenzte Speichereinträge</string>
+    <string name="memory_entry_unlimited_desc">Erinnerungen beliebiger Länge speichern. Standardmäßig ausgeschaltet.</string>
+    <string name="memory_entry_max_chars">Zeichen pro Erinnerung</string>
+    <string name="memory_entry_max_chars_desc">Zeichenlimit für neue und bearbeitete Einträge, wenn unbegrenzte Einträge ausgeschaltet sind. Vorhandene Erinnerungen bleiben erhalten.</string>
+    <string name="memory_entry_unlimited_value">Unbegrenzt</string>
+    <string name="memory_entry_limit_value">%1$d Zeichen</string>
+    <string name="memory_entry_limit_invalid">Gib eine gültige positive ganze Zahl ein.</string>
+    <string name="memory_entry_count_unlimited">%1$d Zeichen · Unbegrenzt</string>
+    <string name="memory_entry_count_limited">%1$d / %2$d Zeichen</string>
 </resources>

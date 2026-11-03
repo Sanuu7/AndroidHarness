@@ -25,6 +25,8 @@ class MemoryReliabilityDeviceTest {
         val db = Room.inMemoryDatabaseBuilder(c.appContext, AppDatabase::class.java).build()
         try {
             c.settings.setMemoryEnabled(true)
+            c.settings.setMemoryEntryUnlimited(false)
+            c.settings.setMemoryEntryMaxChars(600)
             c.settings.setSectionMemoryEnabled(MemorySection.CHAT, true)
             c.settings.setSectionMemoryEnabled(MemorySection.CODE, true)
             c.settings.setCrossSectionMemory(MemorySection.CHAT, false)
@@ -36,6 +38,8 @@ class MemoryReliabilityDeviceTest {
             block(MemoryRepository(db, c.settings), db)
         } finally {
             c.settings.setMemoryEnabled(before.memoryEnabled)
+            c.settings.setMemoryEntryUnlimited(before.memoryEntryUnlimited)
+            c.settings.setMemoryEntryMaxChars(before.memoryEntryMaxChars)
             c.settings.setSectionMemoryEnabled(MemorySection.CHAT, before.chatMemoryEnabled)
             c.settings.setSectionMemoryEnabled(MemorySection.CODE, before.codeMemoryEnabled)
             c.settings.setCrossSectionMemory(MemorySection.CHAT, before.chatRecallCodeMemory)
@@ -64,6 +68,46 @@ class MemoryReliabilityDeviceTest {
                 assertEquals(1, row.getInt(4)); assertEquals(4, row.getInt(5))
             }
         } finally { helper.close(); c.appContext.deleteDatabase(name) }
+    }
+
+    @Test fun entryLimitsApplyToManualAndAgentWritesAndUnlimitedEntriesRemainRecallable() = fixture { repo, db ->
+        val exact = requireNotNull(repo.add("x".repeat(600), MemoryCategory.FACT, MemoryScope.GLOBAL, null, MemorySection.CHAT))
+        try {
+            repo.add("x".repeat(601), MemoryCategory.FACT, MemoryScope.GLOBAL, null, MemorySection.CHAT)
+            fail("The default limit must reject oversize entries")
+        } catch (_: IllegalArgumentException) { }
+        c.settings.setMemoryEntryMaxChars(1_200)
+        val custom = repo.rememberResult("y".repeat(1_200), MemoryCategory.FACT, MemoryScope.GLOBAL, "chat").memory
+        try {
+            repo.update(custom, "y".repeat(1_201), MemoryCategory.FACT, MemoryScope.GLOBAL, null)
+            fail("Edits must use the selected custom limit")
+        } catch (_: IllegalArgumentException) { }
+        c.settings.setMemoryEntryUnlimited(true)
+        val text = "Detailed background. ".repeat(1_000) + "Garden irrigation is automated. " + "More context. ".repeat(1_000)
+        repo.update(exact, text, MemoryCategory.FACT, MemoryScope.GLOBAL, null)
+        val long = requireNotNull(db.dao().memory(exact.id))
+        assertEquals(text.trim(), long.text)
+        val agent = repo.rememberResult("Agent detail. ".repeat(2_000), MemoryCategory.PROJECT, MemoryScope.PROJECT, "code").memory
+        assertTrue(agent.text.length > 20_000)
+        val root = File(c.appContext.cacheDir, "memory-limit-${System.nanoTime()}").apply { mkdirs() }
+        try {
+            val recall = RecallTool(repo)
+            val ctx = ToolContext(FileFs(root), sessionId = "chat")
+            val preview = recall.execute(buildJsonObject { put("query", "garden irrigation") }, ctx).output
+            assertTrue(preview.contains("Garden irrigation is automated"))
+            assertTrue(preview.contains("recall(memory_id) for full text"))
+            assertTrue(preview.length <= 12_000)
+            assertTrue(recall.execute(buildJsonObject { put("memory_id", long.id) }, ctx).output.contains(long.text))
+        } finally { root.deleteRecursively() }
+        val portable = c.settings.settings.first()
+        c.settings.setMemoryEntryUnlimited(false)
+        c.settings.setMemoryEntryMaxChars(100)
+        assertEquals(long.text, db.dao().memory(long.id)!!.text)
+        assertEquals(agent.text, MemoryBackupMerge.normalize(agent.toBackupMemory())!!.text)
+        c.settings.restorePortable(portable)
+        val restored = SettingsRepository(c.appContext).settings.first()
+        assertTrue(restored.memoryEntryUnlimited)
+        assertEquals(1_200, restored.memoryEntryMaxChars)
     }
 
     @Test fun engineRefreshesEditedMemoryBeforeItsNextModelRequest() = fixture { repo, db ->

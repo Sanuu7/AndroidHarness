@@ -107,8 +107,10 @@ class RecallTool(private val memory: MemoryRepository) : Tool {
             val scope = if (entry.scope == MemoryScope.PROJECT.name) "project" else "global"
             val text = if (entry.isSummary) entry.text.lines().filter { it.isNotBlank() && !it.endsWith(":") }
                 .sortedByDescending { com.androidharness.app.data.MemoryMatch.relevance(it, query) }
-                .take(12).joinToString("\n").take(4_000) else entry.text
-            val line = "- [id:${entry.id} ${entry.section.lowercase()}/$scope/${entry.category.lowercase()}${if (entry.isSummary) "/digest; recall(memory_id) for full text" else ""}] $text\n"
+                .take(12).joinToString("\n").take(4_000)
+                else com.androidharness.app.data.MemoryText.excerpt(entry.text, 4_000, query)
+            val partial = entry.isSummary || text != entry.text
+            val line = "- [id:${entry.id} ${entry.section.lowercase()}/$scope/${entry.category.lowercase()}${if (entry.isSummary) "/digest" else ""}${if (partial) "; recall(memory_id) for full text" else ""}] $text\n"
             if (output.length + line.length > 12_000) {
                 output.append("More matches are available; refine your query.\n")
                 break

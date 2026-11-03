@@ -78,7 +78,8 @@ internal object MemoryBackupMerge {
     fun normalize(entry: BackupMemory, remapProject: (String?) -> String? = { it }): BackupMemory? {
         if (entry.agentId != null && (entry.agentId.length !in 1..100 || entry.section != "CHAT")) return null
         if (entry.section !in MemorySection.entries.map { it.name }) return null
-        val text = if (entry.isSummary) entry.text.trim().takeIf { it.isNotBlank() && it.length <= MemoryConsolidation.MAX_CHARS }
+        // Saved entries can outlive a lower character limit; restoring must never shorten them.
+        val text = if (entry.isSummary) entry.text.trim().takeIf { it.isNotBlank() }
             else MemoryText.normalize(entry.text)
         text ?: return null
         if (entry.id.isBlank() || entry.id.length > MAX_ID) return null

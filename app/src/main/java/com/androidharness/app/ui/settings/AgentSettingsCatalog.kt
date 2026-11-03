@@ -27,7 +27,7 @@ import java.util.Locale
 /** How a setting's value is shaped. Values travel as canonical strings. */
 internal sealed interface SettingKind {
     data object Toggle : SettingKind
-    data class Range(val min: Double, val max: Double, val unit: RangeUnit) : SettingKind
+    data class Range(val min: Double, val max: Double, val unit: RangeUnit, val wholeNumber: Boolean = false) : SettingKind
     data class Choice(
         val options: (AppSettings) -> List<String>,
         val labels: Map<String, Int> = emptyMap(),
@@ -69,7 +69,8 @@ internal class AgentSetting(
             }
             is SettingKind.Range -> {
                 val number = raw.removeSuffix(kind.unit.suffix.trim()).removeSuffix("%").trim().toDoubleOrNull()
-                if (number == null || number < kind.min || number > kind.max) fail("$key must be a number from ${format(kind.min)} to ${format(kind.max)}${kind.unit.suffix}.")
+                if (number == null || !number.isFinite() || number < kind.min || number > kind.max) fail("$key must be a number from ${format(kind.min)} to ${format(kind.max)}${kind.unit.suffix}.")
+                else if (kind.wholeNumber && number % 1.0 != 0.0) fail("$key must be a whole number.")
                 else Result.success(format(number))
             }
             is SettingKind.Choice -> {
@@ -222,6 +223,15 @@ internal object AgentSettingsCatalog {
         AgentSetting("code_memory", R.string.memory_code_enabled, SettingsPage.MEMORY, SettingKind.Toggle,
             "Memory in Code.", keywords = "remember code",
             read = { it.codeMemoryEnabled.toString() }, write = { r, v -> r.setSectionMemoryEnabled(com.androidharness.app.data.MemorySection.CODE, bool(v)) }),
+        AgentSetting("memory_entry_unlimited", R.string.memory_entry_unlimited, SettingsPage.MEMORY, SettingKind.Toggle,
+            "Remove the per-entry character limit for Chat and Code memories. Off by default.",
+            keywords = "memory unlimited characters length size limit",
+            read = { it.memoryEntryUnlimited.toString() }, write = { r, v -> r.setMemoryEntryUnlimited(bool(v)) }),
+        AgentSetting("memory_entry_max_chars", R.string.memory_entry_max_chars, SettingsPage.MEMORY,
+            SettingKind.Range(1.0, Int.MAX_VALUE.toDouble(), RangeUnit.COUNT, wholeNumber = true),
+            "Characters per memory when memory_entry_unlimited is false; default 600. Existing entries are kept.",
+            keywords = "memory custom characters length size maximum limit",
+            read = { it.memoryEntryMaxChars.toString() }, write = { r, v -> r.setMemoryEntryMaxChars(v.toInt()) }),
         // Agent
         AgentSetting("permission_mode", R.string.settings_search_permission_mode_title, SettingsPage.AGENT, enumChoice(PermissionMode.entries.toTypedArray()),
             "Default approvals for Code: CONFIRM_ALL, CONFIRM_RISKY, FULL_AUTO, FULL_ACCESS.", R.string.settings_anchor_default_permission,

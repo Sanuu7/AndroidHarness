@@ -6,6 +6,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
@@ -18,6 +19,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
@@ -28,6 +30,7 @@ import com.androidharness.app.data.MemoryPrompt
 import com.androidharness.app.data.MemorySection
 import com.androidharness.app.data.MemoryConsolidation
 import com.androidharness.app.data.MemoryScope
+import com.androidharness.app.data.MemoryText
 import com.androidharness.app.data.db.MemoryEntity
 import com.androidharness.app.data.db.ProjectEntity
 import kotlinx.coroutines.launch
@@ -46,6 +49,7 @@ internal fun MemoryOptionsSection(
     val memories by container.memory.memories.collectAsStateWithLifecycle(initialValue = emptyList())
     val count = memories.count { it.consolidatedInto == null }
     val work = rememberCoroutineScope()
+    var editingLimit by rememberSaveable { mutableStateOf(false) }
     SettingsAnchor(R.string.settings_memory) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Column {
@@ -73,6 +77,26 @@ internal fun MemoryOptionsSection(
                     settings.codeMemoryEnabled, settings.memoryEnabled) { value -> work.launch { container.settings.setSectionMemoryEnabled(MemorySection.CODE, value) } }
                 MemoryPreferenceRow(stringResource(R.string.memory_code_cross), stringResource(R.string.memory_cross_desc),
                     settings.codeRecallChatMemory, settings.memoryEnabled && settings.codeMemoryEnabled && settings.chatMemoryEnabled) { value -> work.launch { container.settings.setCrossSectionMemory(MemorySection.CODE, value) } }
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                MemoryPreferenceRow(stringResource(R.string.memory_entry_unlimited), stringResource(R.string.memory_entry_unlimited_desc),
+                    settings.memoryEntryUnlimited, settings.memoryEnabled) { value -> work.launch { container.settings.setMemoryEntryUnlimited(value) } }
+                SettingsAnchor(R.string.memory_entry_max_chars) {
+                    Row(
+                        Modifier.fillMaxWidth().clickable(enabled = settings.memoryEnabled && !settings.memoryEntryUnlimited) { editingLimit = true }
+                            .padding(horizontal = 16.dp, vertical = 12.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    ) {
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                            Text(stringResource(R.string.memory_entry_max_chars), style = MaterialTheme.typography.bodyLarge)
+                            Text(stringResource(R.string.memory_entry_max_chars_desc), style = MaterialTheme.typography.bodySmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Text(if (settings.memoryEntryUnlimited) stringResource(R.string.memory_entry_unlimited_value)
+                            else stringResource(R.string.memory_entry_limit_value, settings.memoryEntryMaxChars), style = MaterialTheme.typography.labelLarge,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
                 Text(stringResource(R.string.memory_shared_explanation), modifier = Modifier.padding(16.dp),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 if (showManage) {
@@ -100,6 +124,35 @@ internal fun MemoryOptionsSection(
             }
         }
     }
+    if (editingLimit) MemoryEntryLimitDialog(settings.memoryEntryMaxChars, onDismiss = { editingLimit = false }) { value ->
+        work.launch { container.settings.setMemoryEntryMaxChars(value); editingLimit = false }
+    }
+}
+
+@Composable
+private fun MemoryEntryLimitDialog(initial: Int, onDismiss: () -> Unit, onSave: (Int) -> Unit) {
+    var value by rememberSaveable { mutableStateOf(initial.toString()) }
+    val limit = value.toIntOrNull()?.takeIf { it > 0 }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.memory_entry_max_chars)) },
+        text = {
+            OutlinedTextField(
+                value = value,
+                onValueChange = { if (it.all { character -> character in '0'..'9' }) value = it },
+                label = { Text(stringResource(R.string.memory_entry_max_chars)) },
+                singleLine = true,
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                isError = limit == null,
+                supportingText = { Text(stringResource(if (limit == null) R.string.memory_entry_limit_invalid else R.string.memory_entry_max_chars_desc)) },
+                modifier = Modifier.fillMaxWidth(),
+            )
+        },
+        confirmButton = {
+            TextButton(enabled = limit != null, onClick = { limit?.let(onSave) }) { Text(stringResource(R.string.settings_memory_save)) }
+        },
+        dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } },
+    )
 }
 
 @OptIn(ExperimentalLayoutApi::class)
@@ -185,7 +238,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
         }
     }
     consolidation?.let { plan ->
-        MemoryConsolidationDialog(plan, saving, error, onDismiss = { if (!saving) { consolidation = null; error = null } }) { text ->
+        MemoryConsolidationDialog(plan, MemoryText.maxChars(agentSettings, summary = true), saving, error, onDismiss = { if (!saving) { consolidation = null; error = null } }) { text ->
             mutate({ container.memory.consolidate(plan, text) }) { consolidation = null }
         }
     }
@@ -233,6 +286,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
             onDismiss = { if (!saving) { adding = false; editing = null; error = null } },
             enabled = !saving,
             error = error,
+            settings = agentSettings,
             initialSection = section?.let { MemorySection.fromStored(it) } ?: MemorySection.CHAT,
             onSave = { text, category, memoryScope, projectId, owner ->
                 val target = editing
@@ -346,9 +400,10 @@ internal fun MemoryEditDialog(
     enabled: Boolean = true,
     initialSection: MemorySection = MemorySection.CHAT,
     error: String? = null,
+    settings: AppSettings = AppSettings(),
 ) {
     var owner by remember(initial?.id) { mutableStateOf(initial?.let { MemorySection.fromStored(it.section) } ?: initialSection) }
-    val maxChars = if (initial?.isSummary == true) MemoryConsolidation.MAX_CHARS else 600
+    val maxChars = MemoryText.maxChars(settings, summary = initial?.isSummary == true)
     var text by remember(initial?.id) { mutableStateOf(initial?.text.orEmpty()) }
     var category by remember(initial?.id) { mutableStateOf(MemoryCategory.fromStored(initial?.category)) }
     var scope by remember(initial?.id) { mutableStateOf(MemoryScope.fromStored(initial?.scope)) }
@@ -369,8 +424,9 @@ internal fun MemoryEditDialog(
                     value = text,
                     onValueChange = { text = it },
                     enabled = enabled,
-                    isError = text.length > maxChars,
-                    supportingText = { Text("${text.length}/$maxChars") },
+                    isError = maxChars != null && text.length > maxChars,
+                    supportingText = { Text(if (maxChars == null) stringResource(R.string.memory_entry_count_unlimited, text.length)
+                        else stringResource(R.string.memory_entry_count_limited, text.length, maxChars)) },
                     label = { Text(stringResource(R.string.settings_memory_text_label)) },
                     minLines = 2,
                     maxLines = 5,
@@ -415,7 +471,7 @@ internal fun MemoryEditDialog(
         },
         confirmButton = {
             TextButton(
-                enabled = enabled && text.isNotBlank() && text.length <= maxChars,
+                enabled = enabled && text.isNotBlank() && (maxChars == null || text.length <= maxChars),
                 onClick = { onSave(text, category, scope, if (scope == MemoryScope.PROJECT) projectId else null, owner) },
             ) { Text(stringResource(R.string.settings_memory_save)) }
         },
@@ -460,7 +516,7 @@ internal fun sectionLabel(section: MemorySection): Int = when (section) {
 }
 
 @Composable
-private fun MemoryConsolidationDialog(plan: MemoryConsolidation, saving: Boolean, error: String?, onDismiss: () -> Unit, onSave: (String) -> Unit) {
+private fun MemoryConsolidationDialog(plan: MemoryConsolidation, maxChars: Int?, saving: Boolean, error: String?, onDismiss: () -> Unit, onSave: (String) -> Unit) {
     var text by remember(plan) { mutableStateOf(plan.text) }
     AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.memory_consolidate)) },
         text = {
@@ -469,10 +525,10 @@ private fun MemoryConsolidationDialog(plan: MemoryConsolidation, saving: Boolean
                 OutlinedTextField(value = text, onValueChange = { text = it }, enabled = !saving,
                     label = { Text(stringResource(R.string.memory_review_digest)) },
                     modifier = Modifier.fillMaxWidth(), minLines = 5, maxLines = 10,
-                    isError = text.length > MemoryConsolidation.MAX_CHARS)
+                    isError = maxChars != null && text.length > maxChars)
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
             }
         },
-        confirmButton = { TextButton(enabled = !saving && text.isNotBlank() && text.length <= MemoryConsolidation.MAX_CHARS, onClick = { onSave(text) }) { Text(stringResource(R.string.settings_memory_save)) } },
+        confirmButton = { TextButton(enabled = !saving && text.isNotBlank() && (maxChars == null || text.length <= maxChars), onClick = { onSave(text) }) { Text(stringResource(R.string.settings_memory_save)) } },
         dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } })
 }

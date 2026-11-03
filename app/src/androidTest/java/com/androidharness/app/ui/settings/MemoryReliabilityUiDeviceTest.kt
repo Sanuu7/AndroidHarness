@@ -39,6 +39,71 @@ class MemoryReliabilityUiDeviceTest {
     private val context get() = instrumentation.targetContext
     private val c get() = (context.applicationContext as HarnessApp).container
 
+    @Test fun customAndUnlimitedEntrySettingsPersistAndEditorsFollowTheSelectedLimit() = runBlocking {
+        val before = c.settings.settings.first()
+        try {
+            c.settings.setMemoryEnabled(true)
+            c.settings.setMemoryEntryUnlimited(false)
+            c.settings.setMemoryEntryMaxChars(600)
+            ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
+                var scrollToBottom: (() -> Unit)? = null
+                scenario.onActivity { activity -> activity.setContent {
+                    HarnessTheme(themeMode = ThemeMode.LIGHT, dynamicColor = false) {
+                        val prefs by c.settings.settings.collectAsStateWithLifecycle(initialValue = before)
+                        val work = rememberCoroutineScope()
+                        val scroll = rememberScrollState()
+                        scrollToBottom = { work.launch { scroll.scrollTo(scroll.maxValue) } }
+                        Surface(Modifier.fillMaxSize().systemBarsPadding()) {
+                            Column(Modifier.fillMaxSize().verticalScroll(scroll)) {
+                                MemoryOptionsSection(c, prefs, onEnabled = {}, onOpen = {}, showManage = false)
+                            }
+                        }
+                    }
+                } }
+                await { scrollToBottom != null }
+                instrumentation.runOnMainSync { scrollToBottom?.invoke() }
+                click(context.getString(R.string.memory_entry_max_chars))
+                setInput("0")
+                await { !saveEnabled() }
+                setInput("1200")
+                await { saveEnabled() }
+                click(context.getString(R.string.settings_memory_save))
+                await { runBlocking { c.settings.settings.first().memoryEntryMaxChars == 1_200 } }
+                screenshot("memory-custom-entry-limit")
+                click(context.getString(R.string.memory_entry_unlimited))
+                await { runBlocking { c.settings.settings.first().memoryEntryUnlimited } }
+                assertEquals(1_200, c.settings.settings.first().memoryEntryMaxChars)
+                screenshot("memory-unlimited-entry-setting")
+
+                var savedText: String? = null
+                scenario.onActivity { activity -> activity.setContent {
+                    HarnessTheme(themeMode = ThemeMode.DARK, dynamicColor = false) {
+                        val prefs by c.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings(memoryEntryUnlimited = true))
+                        MemoryEditDialog(null, emptyList(), onDismiss = {}, onDelete = {}, settings = prefs,
+                            onSave = { text, _, _, _, _ -> savedText = text })
+                    }
+                } }
+                val long = "x".repeat(25_000)
+                setInput(long)
+                await { saveEnabled() }
+                awaitText(context.getString(R.string.memory_entry_count_unlimited, long.length))
+                screenshot("memory-unlimited-entry-editor")
+                click(context.getString(R.string.settings_memory_save))
+                await { savedText == long }
+                c.settings.setMemoryEntryUnlimited(false)
+                setInput("x".repeat(1_201))
+                await { !saveEnabled() }
+                setInput("x".repeat(1_200))
+                await { saveEnabled() }
+                screenshot("memory-custom-limit-editor")
+            }
+        } finally {
+            c.settings.setMemoryEnabled(before.memoryEnabled)
+            c.settings.setMemoryEntryUnlimited(before.memoryEntryUnlimited)
+            c.settings.setMemoryEntryMaxChars(before.memoryEntryMaxChars)
+        }
+    }
+
     @Test fun memorySettingsKeepChatCodeAndCrossLookupIndependent() = runBlocking {
         val before = c.settings.settings.first()
         try {
@@ -175,6 +240,14 @@ class MemoryReliabilityUiDeviceTest {
     }
 
     private fun awaitText(text: String) = await { find { it.text?.toString() == text } != null }
+    private fun setInput(text: String) {
+        await { find { it.isEditable } != null }
+        assertTrue(requireNotNull(find { it.isEditable }).performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, Bundle().apply {
+            putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, text)
+        }))
+    }
+    private fun saveEnabled(): Boolean = find { it.text?.toString() == context.getString(R.string.settings_memory_save) }
+        ?.let { generateSequence(it) { node -> node.parent }.all { node -> node.isEnabled } } == true
     private fun click(text: String) {
         awaitText(text)
         var node = requireNotNull(find { it.text?.toString() == text })

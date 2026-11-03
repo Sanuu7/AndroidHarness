@@ -58,6 +58,21 @@ class AppSettingsToolsTest {
         assertTrue(palette.normalize("custom:missing", state).isFailure)
     }
 
+    @Test fun memoryEntryLimitsAreDiscoverableAndOnlyAcceptPositiveWholeNumbers() {
+        val unlimited = AgentSettingsCatalog["memory_entry_unlimited"]!!
+        val limit = AgentSettingsCatalog["memory_entry_max_chars"]!!
+        assertEquals("false", unlimited.read(defaults))
+        assertEquals("true", unlimited.normalize("on", defaults).getOrNull())
+        assertEquals("600", limit.read(defaults))
+        assertEquals("2500", limit.normalize("2500", defaults).getOrNull())
+        assertEquals(Int.MAX_VALUE.toString(), limit.normalize(Int.MAX_VALUE.toString(), defaults).getOrNull())
+        for (invalid in listOf("0", "-1", "1.5", "NaN", "Infinity", "2147483648", "unlimited")) {
+            assertTrue("Reject $invalid", limit.normalize(invalid, defaults).isFailure)
+        }
+        assertTrue(AgentSettingsCatalog.search("unlimited memory").any { it.key == unlimited.key })
+        assertTrue(AgentSettingsCatalog.search("memory character limit").any { it.key == limit.key })
+    }
+
     @Test fun planDropsNoOpsAndCollectsErrors() {
         val plan = tool().plan(args("""{"changes":[{"key":"rumble","value":"true"},{"key":"rumble_strength","value":"80"},
             {"key":"nope","value":"1"},{"key":"theme_mode","value":"neon"}],

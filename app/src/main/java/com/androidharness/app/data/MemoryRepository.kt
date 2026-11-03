@@ -25,12 +25,42 @@ enum class MemoryCategory {
 }
 
 internal object MemoryText {
-    const val MAX_ENTRY_CHARS = 600
+    const val DEFAULT_MAX_ENTRY_CHARS = 600
 
     fun normalize(raw: String): String? {
         val text = raw.replace(Regex("\\s+"), " ").trim()
-        if (text.isEmpty()) return null
-        return text.take(MAX_ENTRY_CHARS)
+        return text.takeIf { it.isNotEmpty() }
+    }
+
+    fun maxChars(settings: AppSettings, summary: Boolean = false): Int? {
+        if (settings.memoryEntryUnlimited) return null
+        val limit = settings.memoryEntryMaxChars.takeIf { it > 0 } ?: DEFAULT_MAX_ENTRY_CHARS
+        // Organized memories retain their existing allowance when a smaller entry limit is selected.
+        return if (summary) maxOf(limit, MemoryConsolidation.MAX_CHARS) else limit
+    }
+
+    fun checked(raw: String, settings: AppSettings, summary: Boolean = false): String {
+        val text = if (summary) raw.trim() else normalize(raw).orEmpty()
+        require(text.isNotBlank()) { "Enter a memory." }
+        val limit = maxChars(settings, summary)
+        require(limit == null || text.length <= limit) {
+            "Memory is limited to $limit characters. Shorten it or change the limit in Settings > Memory."
+        }
+        return text
+    }
+
+    /** A bounded preview; the complete saved entry remains available through recall(memory_id). */
+    fun excerpt(text: String, maxChars: Int, query: String = ""): String {
+        if (maxChars <= 0) return ""
+        if (text.length <= maxChars) return text
+        if (maxChars < 3) return text.take(maxChars)
+        val match = MemoryMatch.tokens(query).mapNotNull { token ->
+            text.indexOf(token, ignoreCase = true).takeIf { it >= 0 }
+        }.minOrNull() ?: 0
+        val length = maxChars - 2
+        val start = (match - length / 3).coerceIn(0, text.length - length)
+        return (if (start > 0) "…" else "") + text.substring(start, start + length) +
+            (if (start + length < text.length) "…" else "")
     }
 }
 
@@ -58,7 +88,9 @@ internal object MemoryPrompt {
         val supplied = mutableListOf<MemoryEntity>()
         var omitted = 0
         for (memory in sorted) {
-            val prefix = "- [id:${memory.id} ${memory.category.lowercase()}${if (memory.isSummary) "; digest, recall(memory_id) for full text" else ""}] "
+            val label = "- [id:${memory.id} ${memory.category.lowercase()}"
+            val longEntry = !memory.isSummary && memory.text.length > maxChars - label.length - 3
+            val prefix = "$label${if (memory.isSummary) "; digest, recall(memory_id) for full text" else if (longEntry) "; excerpt, recall(memory_id) for full text" else ""}] "
             val content = if (memory.isSummary) {
                 // Select facts from a large digest instead of dropping the whole digest.
                 memory.text.lines().filter { it.isNotBlank() && !it.endsWith(":") }.sortedByDescending {
@@ -67,7 +99,8 @@ internal object MemoryPrompt {
                     if (text.length + prefix.length + result.length + line.length + 2 <= maxChars)
                         result + line + "\n" else result
                 }.trim()
-            } else memory.text
+            } else if (longEntry) MemoryText.excerpt(memory.text, (maxChars - prefix.length - 1).coerceAtLeast(0), query)
+                else memory.text
             val line = prefix + content + "\n"
             if (content.isBlank() || text.length + line.length > maxChars) { omitted++; continue }
             text.append(line)
@@ -191,12 +224,8 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         return WriteResult(memory, Action.SAVED)
     }
 
-    private fun checkedText(raw: String, summary: Boolean = false): String {
-        val text = if (summary) raw.trim() else raw.replace(Regex("\\s+"), " ").trim()
-        require(text.isNotBlank()) { "Enter a memory." }
-        require(text.length <= if (summary) MemoryConsolidation.MAX_CHARS else MemoryText.MAX_ENTRY_CHARS) { "Memory is too long. Shorten it before saving." }
-        return text
-    }
+    private suspend fun checkedText(raw: String, summary: Boolean = false): String =
+        MemoryText.checked(raw, settings.settings.first(), summary)
 
     suspend fun update(memory: MemoryEntity, text: String, category: MemoryCategory, scope: MemoryScope, projectId: String?, section: MemorySection = MemorySection.fromStored(memory.section)) = db.withTransaction {
         val current = dao.memory(memory.id) ?: error("This memory was deleted.")

@@ -20,6 +20,15 @@ class SettingsSearchTest {
         assertEquals(setOf(R.string.settings_device_advanced), settingsRevealFor(root.anchor))
     }
 
+    @Test fun `memory character controls are searchable and open the memory page`() {
+        val unlimited = matchingSettingsEntries("unlimited memory entries", english)
+            .first { it.anchor == R.string.memory_entry_unlimited }
+        assertEquals(SettingsPage.MEMORY, unlimited.page)
+        val limit = matchingSettingsEntries("characters per memory", english)
+            .first { it.anchor == R.string.memory_entry_max_chars }
+        assertEquals(SettingsPage.MEMORY, limit.page)
+    }
+
     @Test fun `a setting outranks the page that holds it`() {
         val results = matchingSettingsEntries("whisper", english)
         assertFalse(results.first().primary)

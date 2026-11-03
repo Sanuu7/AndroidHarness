@@ -467,6 +467,8 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         "memory on off enable disable remember"),
     control(SettingsPage.MEMORY, R.string.memory_chat_enabled, R.string.memory_chat_enabled_desc, "chat memory remember"),
     control(SettingsPage.MEMORY, R.string.memory_code_enabled, R.string.memory_code_enabled_desc, "code memory project notes remember"),
+    control(SettingsPage.MEMORY, R.string.memory_entry_unlimited, R.string.memory_entry_unlimited_desc, "memory entries unlimited character length size cap limit 600"),
+    control(SettingsPage.MEMORY, R.string.memory_entry_max_chars, R.string.memory_entry_max_chars_desc, "memory entries custom characters length size limit maximum 600"),
     control(SettingsPage.MEMORY, R.string.memory_chat_cross, R.string.memory_cross_desc, "share memories across chat code look up"),
     control(SettingsPage.MEMORY, R.string.memory_code_cross, R.string.memory_cross_desc, "share memories across chat code look up"),
     control(SettingsPage.APPEARANCE, R.string.theme_wallpaper_colors, R.string.theme_wallpaper_hint,

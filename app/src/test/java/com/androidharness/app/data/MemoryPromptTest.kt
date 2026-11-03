@@ -60,10 +60,10 @@ class MemoryPromptTest {
         assertTrue(block.text.contains("2 more saved memories"))
     }
 
-    @Test fun textIsNormalizedAndBounded() {
+    @Test fun normalizationDoesNotTruncateSavedText() {
         assertEquals("hello world", MemoryText.normalize("  hello \n\t world  "))
         assertEquals(null, MemoryText.normalize("   "))
-        assertEquals(MemoryText.MAX_ENTRY_CHARS, MemoryText.normalize("x".repeat(1_000))!!.length)
+        assertEquals(1_000, MemoryText.normalize("x".repeat(1_000))!!.length)
         assertFalse(MemoryText.normalize("valid")!!.isEmpty())
     }
 }

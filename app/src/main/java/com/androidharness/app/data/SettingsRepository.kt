@@ -165,6 +165,8 @@ data class AppSettings(
     val runTipCursor: Int = 0,
     /** Master switch for section memories and legacy project notes. */
     val memoryEnabled: Boolean = true,
+    val memoryEntryUnlimited: Boolean = false,
+    val memoryEntryMaxChars: Int = MemoryText.DEFAULT_MAX_ENTRY_CHARS,
     val chatMemoryEnabled: Boolean = true,
     val codeMemoryEnabled: Boolean = true,
     val chatRecallCodeMemory: Boolean = false,
@@ -322,6 +324,8 @@ class SettingsRepository(private val context: Context) {
         val CHAT_RECALL_CODE_MEMORY = booleanPreferencesKey("chat_recall_code_memory")
         val CODE_RECALL_CHAT_MEMORY = booleanPreferencesKey("code_recall_chat_memory")
         val MEMORY_ENABLED = booleanPreferencesKey("memory_enabled")
+        val MEMORY_ENTRY_UNLIMITED = booleanPreferencesKey("memory_entry_unlimited")
+        val MEMORY_ENTRY_MAX_CHARS = intPreferencesKey("memory_entry_max_chars")
         val LAST_CONVERSATION_KIND = stringPreferencesKey("last_conversation_kind")
         val SHOW_LIVE_CODE = booleanPreferencesKey("show_live_code")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
@@ -450,6 +454,8 @@ class SettingsRepository(private val context: Context) {
             chatRecallCodeMemory = prefs[Keys.CHAT_RECALL_CODE_MEMORY] ?: false,
             codeRecallChatMemory = prefs[Keys.CODE_RECALL_CHAT_MEMORY] ?: false,
             memoryEnabled = prefs[Keys.MEMORY_ENABLED] ?: true,
+            memoryEntryUnlimited = prefs[Keys.MEMORY_ENTRY_UNLIMITED] ?: false,
+            memoryEntryMaxChars = prefs[Keys.MEMORY_ENTRY_MAX_CHARS]?.takeIf { it > 0 } ?: MemoryText.DEFAULT_MAX_ENTRY_CHARS,
             lastConversationKind = ConversationKind.entries.firstOrNull { it.name == prefs[Keys.LAST_CONVERSATION_KIND] } ?: ConversationKind.CODE,
             showLiveCode = prefs[Keys.SHOW_LIVE_CODE] ?: true,
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
@@ -534,6 +540,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.CHAT_RECALL_CODE_MEMORY] = s.chatRecallCodeMemory
             p[Keys.CODE_RECALL_CHAT_MEMORY] = s.codeRecallChatMemory
             p[Keys.MEMORY_ENABLED] = s.memoryEnabled
+            p[Keys.MEMORY_ENTRY_UNLIMITED] = s.memoryEntryUnlimited
+            p[Keys.MEMORY_ENTRY_MAX_CHARS] = s.memoryEntryMaxChars.takeIf { it > 0 } ?: MemoryText.DEFAULT_MAX_ENTRY_CHARS
             p[Keys.SHOW_LIVE_CODE] = s.showLiveCode
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
             p[Keys.LOCAL_MODEL_AGENT_CONTEXT] = s.localModelAgentContext
@@ -1117,6 +1125,15 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setMemoryEnabled(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.MEMORY_ENABLED] = enabled }
+    }
+
+    suspend fun setMemoryEntryUnlimited(unlimited: Boolean) {
+        context.settingsStore.edit { it[Keys.MEMORY_ENTRY_UNLIMITED] = unlimited }
+    }
+
+    suspend fun setMemoryEntryMaxChars(maxChars: Int) {
+        require(maxChars > 0) { "Enter a positive whole number." }
+        context.settingsStore.edit { it[Keys.MEMORY_ENTRY_MAX_CHARS] = maxChars }
     }
 
     suspend fun setSearchDepth(depth: SearchDepth) {

@@ -975,4 +975,13 @@
     <string name="glass_transparency">පාරදෘශ්‍යතාව</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">වඩා පැහැදිලි වීදුරු සඳහා දකුණට අදින්න. ඇදීමේදී පෙරදසුන යාවත්කාලීන වන අතර ඔබේ තේරීම මුදා හරින විට යෙදේ. ක්‍රියා බොත්තම් සහ උත්පතන කවුළු කියවිය හැකි වර්ණයක් රඳවා ගනී.</string>
+    <string name="memory_entry_unlimited">සීමාවක් නැති මතක සටහන්</string>
+    <string name="memory_entry_unlimited_desc">ඕනෑම දිගක මතක සටහන් සුරකින්න. පෙරනිමියෙන් අක්‍රියයි.</string>
+    <string name="memory_entry_max_chars">එක් මතක සටහනක අක්ෂර ගණන</string>
+    <string name="memory_entry_max_chars_desc">සීමාවක් නැති මතක සටහන් අක්‍රිය විට නව සහ සංස්කරණය කළ සටහන් සඳහා අක්ෂර සීමාව සකසන්න. පවතින මතක සටහන් රඳවා තබයි.</string>
+    <string name="memory_entry_unlimited_value">සීමාවක් නැත</string>
+    <string name="memory_entry_limit_value">අක්ෂර %1$d</string>
+    <string name="memory_entry_limit_invalid">වලංගු ධන පූර්ණ සංඛ්‍යාවක් ඇතුළත් කරන්න.</string>
+    <string name="memory_entry_count_unlimited">අක්ෂර %1$d · සීමාවක් නැත</string>
+    <string name="memory_entry_count_limited">අක්ෂර %1$d / %2$d</string>
 </resources>

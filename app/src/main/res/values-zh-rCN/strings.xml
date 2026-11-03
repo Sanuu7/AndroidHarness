@@ -1005,4 +1005,13 @@
     <string name="glass_transparency">透明度</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">向右滑动可让玻璃更透明。拖动时预览会实时更新，松开后应用你的选择。操作按钮和弹窗会保留可读的色调。</string>
+    <string name="memory_entry_unlimited">无限长度的记忆条目</string>
+    <string name="memory_entry_unlimited_desc">保存任意长度的记忆。默认关闭。</string>
+    <string name="memory_entry_max_chars">每条记忆的字符数</string>
+    <string name="memory_entry_max_chars_desc">关闭无限长度记忆时，设置新增和编辑条目的字符上限。现有记忆会保留。</string>
+    <string name="memory_entry_unlimited_value">不限</string>
+    <string name="memory_entry_limit_value">%1$d 个字符</string>
+    <string name="memory_entry_limit_invalid">请输入有效的正整数。</string>
+    <string name="memory_entry_count_unlimited">%1$d 个字符 · 不限</string>
+    <string name="memory_entry_count_limited">%1$d / %2$d 个字符</string>
 </resources>

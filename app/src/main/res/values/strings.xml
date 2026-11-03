@@ -970,6 +970,15 @@
     <string name="memory_code_cross">Let Code look up Chat memories</string>
     <string name="memory_cross_desc">The assistant can look up relevant facts from the other section when needed.</string>
     <string name="memory_shared_explanation">Existing memories are Shared. You can move each one to Chat or Code when editing it.</string>
+    <string name="memory_entry_unlimited">Unlimited memory entries</string>
+    <string name="memory_entry_unlimited_desc">Save memories of any length. Off by default.</string>
+    <string name="memory_entry_max_chars">Characters per memory</string>
+    <string name="memory_entry_max_chars_desc">Set the limit for new and edited entries when unlimited memory entries is off. Existing memories are kept.</string>
+    <string name="memory_entry_unlimited_value">Unlimited</string>
+    <string name="memory_entry_limit_value">%1$d characters</string>
+    <string name="memory_entry_limit_invalid">Enter a valid positive whole number.</string>
+    <string name="memory_entry_count_unlimited">%1$d characters · Unlimited</string>
+    <string name="memory_entry_count_limited">%1$d / %2$d characters</string>
     <string name="memory_consolidate">Consolidate memories</string>
     <string name="memory_cleanup_suggestion">Time to organize your memories</string>
     <string name="memory_consolidate_desc">Group related entries into one organized memory. Review the text before saving; originals remain available to restore.</string>

@@ -143,6 +143,7 @@ object SettingsBackupValidation {
         check(file.searchKeys.keys.all { it in setOf("brave", "tavily") }, SettingsBackupProblem.SEARCH)
         check(file.searchKeyPools.all { (name, pool) -> name in setOf("brave", "tavily") && pool.error() == null }, SettingsBackupProblem.SEARCH)
         val s = file.settings
+        check(s.memoryEntryMaxChars > 0, SettingsBackupProblem.MEMORY)
         check(s.customPalettes.size <= 24 && s.customPalettes.all { it.valid() } && s.customPalettes.map { it.id }.distinct().size == s.customPalettes.size &&
             (s.activeCustomPaletteId == null || s.customPalettes.any { it.id == s.activeCustomPaletteId }), SettingsBackupProblem.APPEARANCE)
         check(s.harnessCanvas.dim.isFinite() && s.harnessCanvas.dim in 0f..1f &&
@@ -178,7 +179,8 @@ object SettingsBackupValidation {
         val categories = MemoryCategory.entries.mapTo(mutableSetOf()) { it.name }
         file.memories.forEach { memory ->
             check(memory.id.isNotBlank() && memory.id.length <= 200, SettingsBackupProblem.MEMORY)
-            check(memory.text.isNotBlank() && memory.text.length <= if (memory.isSummary) MemoryConsolidation.MAX_CHARS else MemoryText.MAX_ENTRY_CHARS, SettingsBackupProblem.MEMORY)
+            // A user may have reduced the entry limit since saving this memory.
+            check(memory.text.isNotBlank(), SettingsBackupProblem.MEMORY)
             check(memory.category in categories && memory.scope in scopes && memory.section in MemorySection.entries.map { it.name }, SettingsBackupProblem.MEMORY)
             check((memory.consolidatedInto?.length ?: 0) <= 200 && memory.consolidatedInto != memory.id, SettingsBackupProblem.MEMORY)
             check(memory.scope != MemoryScope.PROJECT.name || !memory.projectId.isNullOrBlank(), SettingsBackupProblem.MEMORY)

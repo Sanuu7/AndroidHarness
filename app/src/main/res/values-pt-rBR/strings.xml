@@ -975,4 +975,13 @@
     <string name="glass_transparency">Transparência</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">Deslize para a direita para um vidro mais nítido. A prévia acompanha o arrasto e sua escolha é aplicada ao soltar. Botões de ação e pop-ups mantêm um tom legível.</string>
+    <string name="memory_entry_unlimited">Entradas de memória sem limite</string>
+    <string name="memory_entry_unlimited_desc">Salve memórias de qualquer tamanho. Desativado por padrão.</string>
+    <string name="memory_entry_max_chars">Caracteres por memória</string>
+    <string name="memory_entry_max_chars_desc">Defina o limite para entradas novas e editadas quando as entradas sem limite estiverem desativadas. As memórias existentes são mantidas.</string>
+    <string name="memory_entry_unlimited_value">Sem limite</string>
+    <string name="memory_entry_limit_value">%1$d caracteres</string>
+    <string name="memory_entry_limit_invalid">Digite um número inteiro positivo válido.</string>
+    <string name="memory_entry_count_unlimited">%1$d caracteres · Sem limite</string>
+    <string name="memory_entry_count_limited">%1$d / %2$d caracteres</string>
 </resources>
