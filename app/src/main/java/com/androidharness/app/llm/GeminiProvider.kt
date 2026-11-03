@@ -151,7 +151,9 @@ class GeminiProvider(
                                 add(buildJsonObject {
                                     put("name", schema.name)
                                     put("description", schema.description)
-                                    put("parameters", schema.parametersJson)
+                                    // Tool schemas use JSON Schema (including dictionary headers).
+                                    // Gemini's typed `parameters` rejects additionalProperties.
+                                    put("parametersJsonSchema", schema.parametersJson)
                                 })
                             }
                         }
