@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"Mở chế độ xem đầy đủ"</string>
+    <string name="chat_activity_tool_details">"Mở chi tiết công cụ"</string>
+    <string name="chat_activity_input">"Đầu vào"</string>
+    <string name="chat_activity_output">"Đầu ra"</string>
+    <string name="chat_activity_output_preview">"Xem trước đầu ra"</string>
+    <string name="chat_activity_more">"Thêm bên dưới"</string>
+    <string name="chat_activity_latest">"Mới nhất"</string>
+    <string name="chat_activity_copy">"Sao chép văn bản"</string>
+    <string name="chat_activity_copied">"Đã sao chép"</string>
+</resources>

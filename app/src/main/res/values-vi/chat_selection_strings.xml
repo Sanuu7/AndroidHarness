@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"Chọn"</string>
+    <string name="sidebar_selected_count">"%1$d đã chọn"</string>
+    <string name="sidebar_select_all">"Chọn tất cả"</string>
+    <string name="sidebar_clear_selection">"Xóa lựa chọn"</string>
+    <string name="sidebar_exit_selection">"Thoát khỏi lựa chọn"</string>
+    <string name="sidebar_select_chat">"Chọn %1$s"</string>
+    <string name="sidebar_details">"Chi tiết"</string>
+    <string name="sidebar_other_chats">"Các cuộc trò chuyện khác"</string>
+    <string name="sidebar_model_unavailable">"Không có sẵn"</string>
+    <string name="sidebar_delete_selected">"Xóa cuộc trò chuyện đã chọn?"</string>
+    <string name="sidebar_delete_selected_message">"Xóa những cuộc trò chuyện này và lịch sử cuộc trò chuyện của chúng? Điều này không thể hoàn tác được."</string>
+    <string name="sidebar_delete_running">"Các tác vụ đang chạy trong các cuộc trò chuyện này sẽ bị dừng lại."</string>
+    <string name="sidebar_selection_error">"Không thể hoàn tất hành động này. Vui lòng thử lại."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="other">"Đã lưu trữ các cuộc trò chuyện %1$d"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="other">"Đã khôi phục cuộc trò chuyện %1$d"</item>
+    </plurals>
+</resources>

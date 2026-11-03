@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"Trong khi trợ lý hoạt động"</string>
+    <string name="settings_anchor_steering">"Tin nhắn được gửi giữa nhiệm vụ"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"Trợ lý đọc tin nhắn của bạn sau bước hiện tại và tiếp tục. Công cụ đang chạy không bao giờ bị gián đoạn. Nếu nhiệm vụ đã kết thúc, tin nhắn sẽ bắt đầu ở lượt tiếp theo."</string>
+    <string name="steering_mode_after_task">"Sau nhiệm vụ"</string>
+    <string name="steering_mode_after_task_desc">"Tin nhắn của bạn đợi cho đến khi toàn bộ nhiệm vụ kết thúc, sau đó bắt đầu một lượt mới."</string>
+    <string name="steering_picker_detail">"Chọn điều gì sẽ xảy ra khi bạn gửi tin nhắn trong khi trợ lý đang hoạt động. Gửi ngay trên một tin nhắn được xếp hàng đợi luôn dừng trợ lý và gửi nó ngay lập tức."</string>
+    <string name="steering_search_desc">"Điều khiển trợ lý đang chạy hoặc đợi nhiệm vụ hoàn thành"</string>
+    <string name="steering_queue_next_step">"Trợ lý đọc những thông tin này sau bước hiện tại."</string>
+    <string name="steering_queue_badge">"Đọc ở bước tiếp theo"</string>
+</resources>

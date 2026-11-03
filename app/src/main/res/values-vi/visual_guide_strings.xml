@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_reading_design_guide">"Đang đọc hướng dẫn thiết kế"</string>
+    <string name="chat_read_design_guide">"Đã đọc hướng dẫn thiết kế"</string>
+</resources>

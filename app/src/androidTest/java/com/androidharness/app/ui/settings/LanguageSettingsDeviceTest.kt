@@ -263,6 +263,38 @@ class LanguageSettingsDeviceTest {
         }
     }
 
+    @Test fun vietnameseSelectionSurvivesRecreationAndReturnsToSystemDefault() {
+        val original = AppCompatDelegate.getApplicationLocales()
+        ActivityScenario.launch(MainActivity::class.java).use { scenario ->
+            try {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(LocaleListCompat.forLanguageTags("en")) }
+                openLanguage(scenario)
+                scrollTo("Tiếng Việt")
+                click("Tiếng Việt")
+                awaitText(label(R.string.settings_page_language_title, "vi"))
+                scenario.onActivity {
+                    assertEquals("vi", it.resources.configuration.locales[0].language)
+                    assertEquals("vi", AppCompatDelegate.getApplicationLocales().toLanguageTags())
+                    assertEquals(android.view.View.LAYOUT_DIRECTION_LTR, it.resources.configuration.layoutDirection)
+                    assertEquals("Ngôn ngữ ứng dụng", it.getString(R.string.settings_page_language_title))
+                    assertEquals("Mô hình và nhà cung cấp", it.getString(R.string.settings_page_models_title))
+                }
+                screenshot("language-vietnamese-phone.png")
+                scenario.recreate()
+                scrollTo("Tiếng Việt")
+                scenario.onActivity { assertEquals("vi", it.resources.configuration.locales[0].language) }
+                var chosen = find("Tiếng Việt")
+                while (chosen != null && !chosen.isCheckable) chosen = chosen.parent
+                assertTrue("Vietnamese remains selected after recreation", chosen?.isChecked == true)
+                scrollTo(label(R.string.settings_language_system, "vi"))
+                click(label(R.string.settings_language_system, "vi"))
+                scenario.onActivity { assertTrue(AppCompatDelegate.getApplicationLocales().isEmpty) }
+            } finally {
+                scenario.onActivity { AppCompatDelegate.setApplicationLocales(original) }
+            }
+        }
+    }
+
     @Test fun contributionButtonOpensThePublicProjectAtLargeFont() {
         var opened: String? = null
         var action = ""

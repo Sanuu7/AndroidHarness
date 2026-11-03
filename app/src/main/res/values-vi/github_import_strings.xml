@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"Chọn một kho mã"</string>
+    <string name="github_import_destination">"Nhập một bản sao vào không gian làm việc của chính nó trên thiết bị này."</string>
+    <string name="github_import_loading">"Đang tải kho mã của bạn…"</string>
+    <string name="github_import_empty">"Không tìm thấy kho mã cho tài khoản này. Bạn cũng có thể nhập bằng URL."</string>
+    <string name="github_import_by_url">"Nhập bằng URL"</string>
+    <string name="github_import_confirm_title">"Nhập kho mã?"</string>
+    <string name="github_import_confirm_body">"Bạn có chắc chắn muốn nhập %1$s vào không gian làm việc mới trên thiết bị này không?"</string>
+    <string name="github_import_preparing">"Đang chuẩn bị nhập…"</string>
+    <string name="github_import_success">"%1$s đã nhập"</string>
+    <string name="github_import_open_workspace">"Mở không gian làm việc"</string>
+</resources>

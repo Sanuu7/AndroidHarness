@@ -984,4 +984,5 @@
     <string name="memory_entry_limit_invalid">වලංගු ධන පූර්ණ සංඛ්‍යාවක් ඇතුළත් කරන්න.</string>
     <string name="memory_entry_count_unlimited">අක්ෂර %1$d · සීමාවක් නැත</string>
     <string name="memory_entry_count_limited">අක්ෂර %1$d / %2$d</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"Tìm hiểu AndroidHarness"</string>
+    <string name="learn_description">"Hướng dẫn dễ hiểu từng bước về những việc bạn có thể làm trong ứng dụng."</string>
+    <string name="learn_group">"Bắt đầu tại đây"</string>
+    <string name="learn_entry_hint">"Tìm hiểu theo nhịp độ của bạn"</string>
+    <string name="learn_entry_action">"Khám phá hướng dẫn"</string>
+    <string name="learn_hero_title">"Một chút hướng dẫn.\nThật nhiều khả năng."</string>
+    <string name="learn_hero_body">"Bắt đầu với hội thoại đầu tiên hoặc đi thẳng đến điều bạn muốn làm. Mỗi bài học có các bước thực hiện, giới hạn cần biết và cách khắc phục khi gặp khó khăn."</string>
+    <string name="learn_offline">"Dùng được ngoại tuyến · Bài hướng dẫn bằng tiếng Anh"</string>
+    <string name="learn_progress">"Đã học %1$d trên %2$d bài"</string>
+    <string name="learn_search">"Bạn muốn tìm hiểu điều gì?"</string>
+    <string name="learn_clear_search">"Xóa nội dung tìm kiếm bài học"</string>
+    <string name="learn_all">"Tất cả bài học"</string>
+    <string name="learn_saved">"Đã lưu"</string>
+    <string name="learn_start">"Bắt đầu với kiến thức cơ bản"</string>
+    <string name="learn_start_hint">"Mới sử dụng? Ba bài học này sẽ giúp bạn bắt đầu."</string>
+    <string name="learn_results">"%1$d bài học"</string>
+    <string name="learn_empty_title">"Hãy thử tìm cách khác"</string>
+    <string name="learn_empty_body">"Thử “khóa API”, “GitHub”, “mô hình trên thiết bị” hoặc “MCP”. Bạn cũng có thể chọn Tất cả bài học để xem toàn bộ."</string>
+    <string name="learn_saved_empty_title">"Lưu bài học để xem lại"</string>
+    <string name="learn_saved_empty_body">"Đánh dấu bài học để có thể tìm lại ở đây."</string>
+    <string name="learn_reset_filters">"Hiển thị tất cả bài học"</string>
+    <string name="learn_location">"Nơi cần mở"</string>
+    <string name="learn_before">"Trước khi bắt đầu"</string>
+    <string name="learn_steps">"Cùng thực hiện"</string>
+    <string name="learn_outcome">"Kết quả mong đợi"</string>
+    <string name="learn_limits">"Điều cần biết"</string>
+    <string name="learn_fixes">"Khi gặp khó khăn"</string>
+    <string name="learn_example">"Thử nói như sau"</string>
+    <string name="learn_copy_example">"Sao chép ví dụ"</string>
+    <string name="learn_copied">"Đã sao chép ví dụ"</string>
+    <string name="learn_open_section">"Thử trong ứng dụng"</string>
+    <string name="learn_links">"Trợ giúp chính thức"</string>
+    <string name="learn_links_hint">"Liên kết mở trong trình duyệt và cần kết nối mạng. Trang của nhà cung cấp có thể thay đổi; hãy kiểm tra điều khoản và giá trước khi thanh toán."</string>
+    <string name="learn_related">"Bước tiếp theo hữu ích"</string>
+    <string name="learn_mark_complete">"Đánh dấu đã học"</string>
+    <string name="learn_complete">"Đã học · chạm để hoàn tác"</string>
+    <string name="learn_completed_label">"Đã học"</string>
+    <string name="learn_bookmark">"Lưu bài học này"</string>
+    <string name="learn_bookmarked">"Bỏ lưu bài học"</string>
+    <string name="learn_link_failed">"Không thể mở trình duyệt. Bạn có thể sao chép liên kết."</string>
+    <string name="learn_copy_link">"Sao chép liên kết"</string>
+    <string name="learn_load_failed">"Không thể mở hướng dẫn. Hãy đóng Cài đặt rồi thử lại."</string>
+</resources>

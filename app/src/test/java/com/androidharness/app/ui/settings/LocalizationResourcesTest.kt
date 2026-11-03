@@ -261,7 +261,7 @@ class LocalizationResourcesTest {
         val locales = DocumentBuilderFactory.newInstance().newDocumentBuilder()
             .parse(File("src/main/res/xml/locales_config.xml")).getElementsByTagName("locale")
         val tags = (0 until locales.length).map { (locales.item(it) as Element).getAttribute("android:name") }
-        assertTrue(tags.containsAll(listOf("en", "zh-CN", "ru", "ar", "fa", "pt-BR", "de", "es", "ja", "id", "si")))
+        assertTrue(tags.containsAll(listOf("en", "zh-CN", "ru", "ar", "fa", "pt-BR", "de", "es", "ja", "id", "si", "vi")))
     }
 
     @Test fun brazilianPortugueseCoversEveryUiResourceInItsOriginalGroup() = assertUiResourceCoverage("values-pt-rBR")
@@ -273,6 +273,14 @@ class LocalizationResourcesTest {
     @Test fun japaneseCoversEveryUiResourceInItsOriginalGroup() = assertUiResourceCoverage("values-ja")
 
     @Test fun sinhalaCoversEveryUiResourceInItsOriginalGroup() = assertUiResourceCoverage("values-si")
+
+    @Test fun vietnameseCoversEveryUiResourceInItsOriginalGroup() {
+        assertUiResourceCoverage("values-vi")
+        val vietnamese = strings("values-vi")
+        strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
+            assertEquals("Resource reference $name", reference, vietnamese.getValue(name))
+        }
+    }
 
     private fun assertUiResourceCoverage(resourceFolder: String) {
         assertEquals(strings("values").keys, strings(resourceFolder).keys)
@@ -297,6 +305,8 @@ class LocalizationResourcesTest {
     @Test fun japanesePreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-ja", "ja")
 
     @Test fun sinhalaPreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-si", "si")
+
+    @Test fun vietnamesePreservesFormattingAndTechnicalValues() = assertFormattingAndTechnicalValues("values-vi", "vi")
 
     private fun assertFormattingAndTechnicalValues(resourceFolder: String, languageTag: String) {
         val english = strings("values")
@@ -328,7 +338,7 @@ class LocalizationResourcesTest {
             }
         }
         for (name in english.keys.filter { it.startsWith("settings_language_") &&
-            it.substringAfter("settings_language_") in setOf("english", "chinese", "russian", "arabic", "persian", "indonesian", "portuguese", "german", "spanish", "japanese", "sinhala") }) {
+            it.substringAfter("settings_language_") in setOf("english", "chinese", "russian", "arabic", "persian", "indonesian", "portuguese", "german", "spanish", "japanese", "sinhala", "vietnamese") }) {
             assertEquals("Native language name $name", english.getValue(name).removeSurrounding("\""),
                 translations.getValue(name).removeSurrounding("\""))
         }
@@ -344,7 +354,10 @@ class LocalizationResourcesTest {
 
     @Test fun sinhalaPluralsPreserveCountsAndCoverOneAndOther() = assertPluralCoverage("values-si", "si")
 
-    private fun assertPluralCoverage(resourceFolder: String, languageTag: String, quantities: Set<String> = setOf("one", "other")) {
+    @Test fun vietnamesePluralsPreserveCountsAndUseOther() =
+        assertPluralCoverage("values-vi", "vi", setOf("other"), preserveAllArguments = true)
+
+    private fun assertPluralCoverage(resourceFolder: String, languageTag: String, quantities: Set<String> = setOf("one", "other"), preserveAllArguments: Boolean = false) {
         fun plurals(locale: String): Map<String, Map<String, String>> = buildMap {
             File("src/main/res/$locale").listFiles().orEmpty().filter { it.extension == "xml" }.forEach { file ->
                 val nodes = DocumentBuilderFactory.newInstance().newDocumentBuilder().parse(file).getElementsByTagName("plurals")
@@ -358,13 +371,24 @@ class LocalizationResourcesTest {
                 }
             }
         }
+        val english = plurals("values")
         val translated = plurals(resourceFolder)
-        assertEquals(plurals("values").keys, translated.keys)
+        assertEquals(english.keys, translated.keys)
+        val argument = Regex("%(\\d+)\\$([-+ #0,(]*\\d*(?:\\.\\d+)?[sdf])")
         translated.forEach { (name, forms) ->
             assertEquals(name, quantities, forms.keys)
             forms.values.forEach { form ->
                 assertTrue(name, form.contains("%1\$d"))
-                String.format(Locale.forLanguageTag(languageTag), form, 21)
+                if (preserveAllArguments) {
+                    assertEquals("Plural arguments in $name",
+                        argument.findAll(english.getValue(name).getValue("other")).map { it.value }.sorted().toList(),
+                        argument.findAll(form).map { it.value }.sorted().toList())
+                }
+                val types = argument.findAll(form).associate { it.groupValues[1].toInt() to it.groupValues[2].last() }
+                val args = Array<Any>(types.keys.max()) { index ->
+                    when (types[index + 1]) { 'd' -> 21; 'f' -> 2.5; else -> "sample" }
+                }
+                String.format(Locale.forLanguageTag(languageTag), form, *args)
             }
         }
     }

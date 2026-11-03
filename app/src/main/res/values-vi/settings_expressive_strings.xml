@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"Trợ lý và quy trình làm việc"</string>
+    <string name="settings_coding_intelligence">"Kỹ năng &amp; trí thông minh"</string>
+    <string name="settings_coding_execution">"Không gian làm việc và thực thi"</string>
+    <string name="settings_device_connections">"Kết nối"</string>
+    <string name="settings_device_tools">"Công cụ &amp; cài đặt nâng cao"</string>
+    <string name="settings_linux_optional">"Công cụ tùy chọn cho các dự án cần Linux"</string>
+    <string name="settings_device_advanced">"Truy cập thiết bị nâng cao"</string>
+    <string name="settings_device_advanced_summary">"Root và quyền kiểm soát của chủ sở hữu thiết bị"</string>
+    <string name="settings_device_background">"Nền và pin"</string>
+    <string name="settings_device_background_summary">"Giữ các phiên cuối và trợ lý hoạt động"</string>
+    <string name="settings_connection_help">"Làm thế nào để kết nối"</string>
+    <string name="settings_connection_options">"Tùy chọn kết nối"</string>
+    <string name="wireless_adb_disconnect">"Ngắt kết nối"</string>
+    <string name="wireless_adb_connection_kept">"Đã kết nối · khả dụng cho đến khi bạn ngắt kết nối"</string>
+    <string name="wireless_adb_auto_reconnecting">"Đang kết nối lại để gỡ lỗi không dây đã lưu"</string>
+    <string name="rich_profile_details">"Chi tiết"</string>
+    <string name="rich_profile_sources">"Nguồn"</string>
+    <string name="settings_disclosure_expanded">"Đã mở rộng"</string>
+    <string name="settings_disclosure_collapsed">"Đã thu gọn"</string>
+    <string name="settings_terminal_access">"Truy cập thiết bị đầu cuối"</string>
+    <string name="wireless_adb_compact_summary">"Lệnh thiết bị, với khả năng kết nối lại tự động"</string>
+</resources>

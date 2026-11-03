@@ -1016,4 +1016,5 @@
     <string name="glass_transparency">Transparency</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">Slide right for clearer glass. Preview updates as you drag; your choice applies when you release. Action buttons and pop-ups keep a readable tint.</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

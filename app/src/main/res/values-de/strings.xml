@@ -984,4 +984,5 @@
     <string name="memory_entry_limit_invalid">Gib eine gültige positive ganze Zahl ein.</string>
     <string name="memory_entry_count_unlimited">%1$d Zeichen · Unbegrenzt</string>
     <string name="memory_entry_count_limited">%1$d / %2$d Zeichen</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

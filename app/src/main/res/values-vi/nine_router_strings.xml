@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"Cài đặt và quản lý bộ định tuyến mô hình cục bộ"</string>
+    <string name="nine_router_intro">"Chạy 9Router trên điện thoại này và quản lý nhà cung cấp, mô hình và định tuyến trong trình duyệt của bạn. Sử dụng chuỗi công cụ AndroidHarness Linux."</string>
+    <string name="nine_router_setup">"Thiết lập môi trường của bạn"</string>
+    <string name="nine_router_not_installed">"Sẵn sàng để cài đặt"</string>
+    <string name="nine_router_ready">"Đã cài đặt · Đã dừng"</string>
+    <string name="nine_router_running">"Chạy trên điện thoại này"</string>
+    <string name="nine_router_starting">"Đang khởi động 9Router…"</string>
+    <string name="nine_router_stopping">"Đang dừng 9Router…"</string>
+    <string name="nine_router_installing">"Đang cài đặt…"</string>
+    <string name="nine_router_updating">"Đang cập nhật 9Router…"</string>
+    <string name="nine_router_uninstalling">"Đang gỡ cài đặt 9Router…"</string>
+    <string name="nine_router_connecting">"Đang thêm vào nhà cung cấp…"</string>
+    <string name="nine_router_removing">"Đang xóa khỏi nhà cung cấp…"</string>
+    <string name="nine_router_install_linux">"Cài đặt chuỗi công cụ Linux"</string>
+    <string name="nine_router_install">"Cài đặt 9Router"</string>
+    <string name="nine_router_start">"Khởi động 9Router"</string>
+    <string name="nine_router_stop">"Dừng lại"</string>
+    <string name="nine_router_show_details">"Hiển thị chi tiết"</string>
+    <string name="nine_router_hide_details">"Ẩn chi tiết"</string>
+    <string name="nine_router_open_dashboard">"Mở bảng điều khiển trong trình duyệt"</string>
+    <string name="nine_router_browser_error">"Không trình duyệt nào có thể mở bảng điều khiển 9Router."</string>
+    <string name="nine_router_version">"Phiên bản %1$s"</string>
+    <string name="nine_router_check_update">"Kiểm tra các bản cập nhật"</string>
+    <string name="nine_router_checking">"Đang kiểm tra…"</string>
+    <string name="nine_router_update">"Cập nhật lên %1$s"</string>
+    <string name="nine_router_auto_start">"Tự động khởi động 9Router"</string>
+    <string name="nine_router_auto_start_body">"Khởi động bộ định tuyến đã cài đặt khi AndroidHarness mở."</string>
+    <string name="nine_router_add_provider">"Thêm 9Router vào nhà cung cấp"</string>
+    <string name="nine_router_refresh_provider">"Làm mới nhà cung cấp 9Router"</string>
+    <string name="nine_router_provider_body">"Khởi động 9Router nếu cần và tự động điền điểm cuối cục bộ của nó và API khóa. Các mô hình được kết nối sẽ có sẵn trong bộ chọn mô hình Chat và Code."</string>
+    <string name="nine_router_remove_provider">"Xóa khỏi nhà cung cấp"</string>
+    <string name="nine_router_remove_provider_body">"Xóa các kết nối 9Router khỏi AndroidHarness. Bộ định tuyến và các tài khoản của nó sẽ vẫn được cài đặt."</string>
+    <string name="nine_router_uninstall">"Gỡ cài đặt 9Router"</string>
+    <string name="nine_router_uninstall_title">"Gỡ cài đặt hoàn toàn 9Router?"</string>
+    <string name="nine_router_uninstall_body">"Dừng 9Router và xóa cài đặt, tài khoản đã lưu, bộ định tuyến API khóa, cấu hình, bộ đệm, tùy chọn tự động khởi động và kết nối nhà cung cấp ứng dụng. Điều này không thể hoàn tác được. Chuỗi công cụ Linux được chia sẻ vẫn có sẵn cho các tính năng khác."</string>
+</resources>

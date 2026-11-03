@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"Nhân tiện"</string>
+    <string name="btw_source_live">"Bối cảnh trực tiếp"</string>
+    <string name="btw_source_saved">"Lịch sử đã lưu"</string>
+    <string name="btw_private">"Không được thêm vào hội thoại"</string>
+    <string name="btw_empty_hint">"Hỏi bất kỳ điều gì về tác vụ hiện tại. Câu trả lời dùng những gì trợ lý đã đọc và quyết định, tận dụng bộ nhớ đệm lời nhắc và không được thêm vào hội thoại."</string>
+    <string name="btw_input_hint">"Đặt một câu hỏi phụ"</string>
+    <string name="btw_input_again">"Hỏi một câu hỏi phụ khác"</string>
+    <string name="btw_ask">"Hỏi"</string>
+    <string name="btw_stop">"Dừng lại"</string>
+    <string name="btw_copy">"Sao chép"</string>
+    <string name="btw_copied">"Đã sao chép câu trả lời"</string>
+    <string name="btw_stopped">"Đã dừng"</string>
+    <string name="btw_retrying">"Đang thử lại · %1$s"</string>
+    <string name="btw_cold_note">"Không có yêu cầu trực tiếp nào trong bộ nhớ, vì vậy câu trả lời này sẽ đọc cuộc hội thoại đã lưu mà không có lời nhắc trong bộ đệm."</string>
+    <string name="btw_composer_action">"Nhân tiện hãy hỏi"</string>
+    <string name="btw_error_empty_chat">"Gửi tin nhắn trước, sau đó đặt một câu hỏi phụ về tin nhắn đó."</string>
+    <string name="btw_error_local_busy">"Mô hình cục bộ trả lời một yêu cầu tại một thời điểm. Hỏi sau khi câu trả lời hiện tại kết thúc."</string>
+    <string name="btw_error_no_key">"Thêm API khóa của nhà cung cấp này trước khi yêu cầu."</string>
+    <string name="btw_error_generic">"Câu hỏi phụ không thành công."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">"Cuộc gọi công cụ chỉ đọc %1$d"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"Tùy chọn bảng"</string>
+    <string name="rich_select_rows">"Chọn hàng"</string>
+    <string name="rich_stop_selecting_rows">"Dừng chọn"</string>
+    <string name="rich_sort_rows">"Sắp xếp hàng"</string>
+</resources>

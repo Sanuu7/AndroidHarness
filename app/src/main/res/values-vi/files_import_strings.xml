@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Nhập tập tin"</string>
+    <string name="files_import_folder">"Nhập thư mục"</string>
+    <string name="files_import_done">"Đã nhập %1$s trên tổng số %2$s mục"</string>
+    <string name="files_import_failed">"Không thể nhập tập tin"</string>
+</resources>

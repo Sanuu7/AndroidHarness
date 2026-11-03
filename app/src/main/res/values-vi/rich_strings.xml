@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"Lọc hàng"</string>
+    <string name="rich_no_rows">"Không có hàng phù hợp"</string>
+    <string name="rich_previous">"Trước đó"</string>
+    <string name="rich_next">"Tiếp theo"</string>
+    <string name="rich_discuss_rows">"Thảo luận về các hàng đã chọn"</string>
+    <string name="rich_discuss_rows_prompt">"So sánh các hàng tôi đã chọn."</string>
+    <string name="rich_discuss_tab">"Hỏi về tab này"</string>
+    <string name="rich_discuss_tab_prompt">"Giải thích tab %1$s."</string>
+    <string name="rich_copy">"Sao chép"</string>
+    <string name="rich_copied">"Đã sao chép"</string>
+    <string name="rich_share">"Chia sẻ"</string>
+    <string name="rich_share_unavailable">"Không có ứng dụng nào có sẵn để chia sẻ văn bản này."</string>
+    <string name="rich_images_hidden">"Hình ảnh bị tắt cho chat này."</string>
+    <string name="rich_expand_image">"Mở rộng hình ảnh"</string>
+    <string name="rich_open_source">"Nguồn mở"</string>
+    <string name="rich_discuss_image">"Hỏi về hình ảnh này"</string>
+    <string name="rich_discuss_image_prompt">"Giải thích hình ảnh tôi đã chọn."</string>
+    <string name="rich_reported_status">"Đã báo cáo: %1$s"</string>
+    <string name="rich_passed">"Đã đậu"</string>
+    <string name="rich_failed">"Thất bại"</string>
+    <string name="rich_unverified">"Chưa được xác minh"</string>
+    <string name="rich_open_file">"Mở tập tin"</string>
+    <string name="rich_show_less">"Hiển thị ít hơn"</string>
+    <string name="rich_show_all">"Hiển thị tất cả"</string>
+    <string name="rich_changes">"Thay đổi"</string>
+    <string name="rich_before">"Trước đây"</string>
+    <string name="rich_after">"Sau"</string>
+    <string name="rich_change_count">"Đã thêm %1$d · Đã xóa %2$d"</string>
+    <string name="rich_discuss_diff">"Thảo luận về những thay đổi này"</string>
+    <string name="rich_discuss_diff_prompt">"Giải thích sự so sánh này và sự đánh đổi của nó."</string>
+    <string name="rich_input_range">"%1$s đến %2$s"</string>
+    <string name="rich_result_unavailable">"Kiểm tra đầu vào hoặc công thức"</string>
+    <string name="rich_reset">"Đặt lại"</string>
+    <string name="rich_discuss_values">"Hỏi về những giá trị này"</string>
+    <string name="rich_discuss_values_prompt">"Giải thích kết quả bằng cách sử dụng các giá trị hiện tại của tôi."</string>
+    <string name="rich_chart_range">"Phạm vi hiển thị"</string>
+    <string name="rich_reset_range">"Hiển thị đầy đủ"</string>
+    <string name="rich_chart_label">"Nhãn"</string>
+    <string name="rich_discuss_chart">"Hỏi về biểu đồ này"</string>
+    <string name="rich_discuss_chart_prompt">"Giải thích điểm biểu đồ đã chọn của tôi và các tập dữ liệu hiển thị."</string>
+    <string name="rich_select_point">"Chọn %1$s"</string>
+    <string name="rich_selected_count">"%1$d đã chọn"</string>
+    <string name="rich_clear_selection">"Xóa lựa chọn"</string>
+    <string name="rich_adjust_input">"Điều chỉnh %1$s"</string>
+</resources>

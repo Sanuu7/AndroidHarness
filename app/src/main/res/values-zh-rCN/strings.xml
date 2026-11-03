@@ -1014,4 +1014,5 @@
     <string name="memory_entry_limit_invalid">请输入有效的正整数。</string>
     <string name="memory_entry_count_unlimited">%1$d 个字符 · 不限</string>
     <string name="memory_entry_count_limited">%1$d / %2$d 个字符</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

@@ -988,4 +988,5 @@
     <string name="memory_entry_limit_invalid">أدخل عددًا صحيحًا موجبًا صالحًا.</string>
     <string name="memory_entry_count_unlimited">%1$d حرفًا · بلا حد</string>
     <string name="memory_entry_count_limited">%1$d / %2$d حرفًا</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"Bảng màu của bạn"</string>
+    <string name="theme_custom_add">"Tạo bảng màu"</string>
+    <string name="theme_custom_edit">"Chỉnh sửa bảng màu"</string>
+    <string name="theme_custom_name">"Tên bảng màu"</string>
+    <string name="theme_custom_default">"Bảng màu của tôi"</string>
+    <string name="theme_custom_hint">"Chọn màu sắc của bạn. Material tạo ra các sắc thái sáng và tối dễ đọc."</string>
+    <string name="theme_custom_main">"Chính"</string>
+    <string name="theme_custom_accent">"Màu nhấn"</string>
+    <string name="theme_custom_highlight">"Đánh dấu"</string>
+    <string name="theme_custom_hex">"Màu lục giác"</string>
+    <string name="theme_custom_invalid_hex">"Nhập sáu chữ số hex, chẳng hạn như 6750A4."</string>
+    <string name="theme_custom_hue">"Huế"</string>
+    <string name="theme_custom_saturation">"Độ bão hòa"</string>
+    <string name="theme_custom_brightness">"Độ sáng"</string>
+    <string name="theme_custom_automatic">"Đặt lại màu nhấn"</string>
+    <string name="theme_custom_save">"Lưu và áp dụng"</string>
+    <string name="theme_custom_limit">"Bạn có 24 bảng màu. Chỉnh sửa hoặc xóa cái này để tạo cái khác."</string>
+    <string name="theme_custom_delete">"Xóa bảng màu"</string>
+    <string name="theme_custom_delete_message">"Xóa bảng màu đã lưu này? Ứng dụng sẽ trở về cài đặt trước đã chọn nếu bảng màu này được kích hoạt."</string>
+    <string name="theme_custom_preview">"Xem trước bảng màu"</string>
+    <string name="theme_canvas_title">"Vải Harness"</string>
+    <string name="theme_canvas_description">"Phông nền của riêng bạn cho Chat và Code."</string>
+    <string name="theme_canvas_add">"Thêm hình ảnh"</string>
+    <string name="theme_canvas_change">"Thay đổi hình ảnh"</string>
+    <string name="theme_canvas_remove">"Xóa hình ảnh"</string>
+    <string name="theme_canvas_enabled">"Hiển thị Canvas Harness"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"Làm mờ hình ảnh"</string>
+    <string name="theme_canvas_dim_hint">"Làm mờ hình ảnh theo chủ đề của bạn để có văn bản rõ ràng hơn."</string>
+    <string name="theme_canvas_colors">"Phù hợp với màu Canvas"</string>
+    <string name="theme_canvas_colors_hint">"Xây dựng bảng màu cho ứng dụng của bạn từ hình ảnh này."</string>
+    <string name="theme_canvas_working">"Đang chuẩn bị Canvas của bạn…"</string>
+    <string name="theme_canvas_error">"Không thể sử dụng hình ảnh đó. Hãy thử một bức ảnh khác có dung lượng dưới 32 MB."</string>
+    <string name="theme_canvas_empty">"Thêm ảnh hoặc tác phẩm nghệ thuật để biến không gian này thành của bạn."</string>
+    <string name="theme_canvas_preview_message">"Cuộc trò chuyện của bạn, Canvas của bạn."</string>
+    <string name="theme_canvas_preview_reply">"Tự nhiên như ở nhà."</string>
+    <string name="theme_canvas_color_area">"Vùng màu"</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="other">"%2$s · %1$d khóa đã lưu"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"Bạn có thể lưu tối đa 20 khóa. Khi một khóa bị từ chối, bị giới hạn tần suất hoặc hết tín dụng, ứng dụng sẽ tự động dùng khóa tiếp theo đang bật."</string>
+    <string name="search_key_check_failed">"Khóa %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"Khóa đã được xác minh và lưu"</string>
+    <string name="search_manage_keys">"Quản lý khóa"</string>
+</resources>

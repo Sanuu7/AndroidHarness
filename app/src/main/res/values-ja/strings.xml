@@ -983,4 +983,5 @@
     <string name="memory_entry_limit_invalid">有効な正の整数を入力してください。</string>
     <string name="memory_entry_count_unlimited">%1$d 文字 · 無制限</string>
     <string name="memory_entry_count_limited">%1$d / %2$d 文字</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

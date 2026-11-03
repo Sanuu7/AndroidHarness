@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"Đang mở yêu cầu kéo…"</string>
+    <string name="pr_tool_opened">"Đã mở yêu cầu kéo #%1$d"</string>
+    <string name="pr_tool_existing">"Yêu cầu kéo #%1$d đã được mở"</string>
+    <string name="pr_tool_failed">"Yêu cầu kéo chưa được mở"</string>
+    <string name="pr_tool_waiting">"Đang chờ sự chấp thuận của bạn"</string>
+    <string name="pr_draft">"Bản nháp"</string>
+    <string name="pr_counts">"Commit: %1$d · Tập tin: %2$d"</string>
+    <string name="pr_open_on_github">"Mở trên GitHub"</string>
+    <string name="pr_copy_link">"Sao chép liên kết"</string>
+    <string name="pr_link_copied">"Đã sao chép liên kết"</string>
+    <string name="pr_open_failed">"Không có ứng dụng nào có thể mở liên kết. Thay vào đó, nó đã được sao chép."</string>
+    <string name="pr_approval_title">"Mở một yêu cầu kéo?"</string>
+    <string name="pr_approval_body">"Tạo yêu cầu kéo trên GitHub từ nhánh được đẩy. Không có gì được đẩy hoặc hợp nhất."</string>
+    <string name="pr_approval_base">"Vào %1$s"</string>
+    <string name="pr_approval_default_base">"Vào nhánh mặc định"</string>
+    <string name="pr_create">"Tạo yêu cầu kéo"</string>
+    <string name="pr_create_draft">"Tạo yêu cầu kéo dự thảo"</string>
+    <string name="pr_entry_body">"Đề xuất nhánh được đẩy commit này để xem xét trên GitHub."</string>
+    <string name="pr_loading">"So sánh nhánh này với GitHub…"</string>
+    <string name="pr_title_label">"Tiêu đề"</string>
+    <string name="pr_description_label">"Mô tả"</string>
+    <string name="pr_rewrite_description">"Viết lại mô tả"</string>
+    <string name="pr_base_label">"Căn cứ nhánh"</string>
+    <string name="pr_draft_label">"Mở dưới dạng bản nháp"</string>
+    <string name="pr_draft_body">"Người đánh giá có thể nhìn thấy nó nhưng không thể hợp nhất nó cho đến khi bạn đánh dấu nó là sẵn sàng."</string>
+    <string name="pr_include_checks">"Bao gồm các séc từ chat này"</string>
+    <string name="pr_include_checks_body">"Thêm kết quả xây dựng, kiểm tra và tìm lỗi mã nguồn được ghi lại trong cuộc trò chuyện này."</string>
+    <string name="pr_existing_body">"Các lần đẩy mới tới %1$s sẽ tự động cập nhật yêu cầu kéo này."</string>
+    <string name="pr_not_pushed_title">"Nhánh chưa có trên GitHub"</string>
+    <string name="pr_out_of_date_title">"GitHub có bản sao cũ hơn của nhánh này"</string>
+    <string name="pr_push_body">"Nhấn %1$s để GitHub có commit mới nhất của bạn."</string>
+    <string name="pr_push_branch">"Đẩy nhánh"</string>
+    <string name="pr_pushed">"Nhánh đã đẩy."</string>
+    <string name="pr_uncommitted_title">"Thay đổi chưa commit: %1$d"</string>
+    <string name="pr_uncommitted_body">"Chúng sẽ không được đưa vào cho đến khi bạn commit và đẩy chúng."</string>
+    <string name="pr_behind_title">"Commit mới hơn trên %1$s: %2$d"</string>
+    <string name="pr_behind_body">"Nhánh này chưa bao gồm chúng. Người đánh giá có thể yêu cầu bạn cập nhật nó."</string>
+    <string name="pr_no_commits_title">"Chưa có gì để đề xuất"</string>
+    <string name="pr_no_commits_body">"%1$s không có commit nào chưa có trên %2$s."</string>
+    <string name="pr_commits_header">"Commit"</string>
+    <string name="pr_more">"Thêm: %1$d"</string>
+    <string name="pr_created_title">"Đã mở yêu cầu kéo #%1$d"</string>
+    <string name="pr_created_draft_title">"Đã mở yêu cầu kéo bản nháp #%1$d"</string>
+    <string name="pr_retry">"Thử lại"</string>
+</resources>

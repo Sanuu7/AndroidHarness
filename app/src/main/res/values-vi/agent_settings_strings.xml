@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Cấp độ Caveman"</string>
+    <string name="as_activity_finding">"Tra cứu cài đặt"</string>
+    <string name="as_activity_found">"Đã tra cứu cài đặt"</string>
+    <string name="as_activity_changing">"Thay đổi cài đặt"</string>
+    <string name="as_activity_changed">"Đã thay đổi cài đặt"</string>
+    <string name="as_undo">"Hoàn tác"</string>
+    <string name="as_undo_all">"Hoàn tác tất cả"</string>
+    <string name="as_redo">"Làm lại"</string>
+    <string name="as_open_settings">"Mở cài đặt"</string>
+    <string name="as_open_setting">"Mở cài đặt"</string>
+    <string name="as_title_changed">"Đã thay đổi cài đặt"</string>
+    <string name="as_title_undone">"Đã hoàn tác các thay đổi"</string>
+    <string name="as_title_needs_you">"Một cài đặt cần bạn"</string>
+    <string name="as_title_not_changed">"Cài đặt không thay đổi"</string>
+    <string name="as_state_undone">"Hoàn tác"</string>
+    <string name="as_state_moved_on">"Lại thay đổi kể từ đó"</string>
+    <string name="as_on">"Bật"</string>
+    <string name="as_off">"Tắt"</string>
+    <string name="as_unlimited">"Không giới hạn"</string>
+    <string name="as_custom_palette">"Bảng màu tùy chỉnh"</string>
+    <string name="as_empty">"Không có"</string>
+    <string name="as_needs_you_label">"Cần bạn · %1$s"</string>
+    <string name="as_group">"Cài đặt từ chat"</string>
+    <string name="as_setting_title">"Hãy để trợ lý thay đổi cài đặt"</string>
+    <string name="as_access_off">"Tắt"</string>
+    <string name="as_access_off_desc">"Trợ lý có thể tra cứu các cài đặt và chỉ cho bạn những cài đặt đó nhưng không thay đổi chúng."</string>
+    <string name="as_access_ask">"Hỏi mọi lúc"</string>
+    <string name="as_access_ask_desc">"Mọi thay đổi đều chờ bạn phê duyệt trong chat."</string>
+    <string name="as_access_allowed">"Được phép"</string>
+    <string name="as_access_allowed_desc">"Các thay đổi được áp dụng ngay lập tức với thẻ Hoàn tác. Những thứ nhạy cảm như khóa ứng dụng vẫn hỏi."</string>
+    <string name="as_picker_detail">"Yêu cầu Chat hoặc Code bật hoặc tắt cài đặt, di chuyển thanh trượt hoặc tạo bảng màu. Cài đặt nhạy cảm luôn hỏi trước và API khóa nằm ngoài tầm với."</string>
+    <string name="as_search_desc">"Thay đổi cài đặt bằng cách hỏi trong Chat hoặc Code"</string>
+    <string name="tip_ask_settings" formatted="false">"Yêu cầu tôi thay đổi cài đặt, chẳng hạn như “đặt rumble thành 70%” hoặc “tạo bảng màu xanh mòng két”. Một thẻ hiển thị những gì đã thay đổi, với tính năng Hoàn tác."</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">"%1$d thay đổi"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">"%1$d cần bạn"</item>
+    </plurals>
+</resources>

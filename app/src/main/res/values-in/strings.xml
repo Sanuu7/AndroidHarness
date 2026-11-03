@@ -983,4 +983,5 @@
     <string name="memory_entry_limit_invalid">Masukkan bilangan bulat positif yang valid.</string>
     <string name="memory_entry_count_unlimited">%1$d karakter · Tanpa batas</string>
     <string name="memory_entry_count_limited">%1$d / %2$d karakter</string>
+    <string name="settings_language_vietnamese">Tiếng Việt</string>
 </resources>

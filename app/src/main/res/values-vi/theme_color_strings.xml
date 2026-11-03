@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"Bảng màu"</string>
+    <string name="theme_color_hint">"Chọn một bảng màu để tô màu cho ứng dụng của bạn."</string>
+    <string name="theme_wallpaper_colors">"Màu sắc hình nền"</string>
+    <string name="theme_wallpaper_hint">"Theo dõi màu sắc Material You trên điện thoại của bạn."</string>
+    <string name="theme_wallpaper_unavailable">"Màu sắc hình nền yêu cầu Android 12 trở lên. Chọn một bảng màu dưới đây."</string>
+    <string name="theme_palette_blue">"Harness màu xanh"</string>
+    <string name="theme_palette_ocean">"Đại dương"</string>
+    <string name="theme_palette_indigo">"Màu chàm"</string>
+    <string name="theme_palette_lavender">"Hoa oải hương"</string>
+    <string name="theme_palette_orchid">"Phong lan"</string>
+    <string name="theme_palette_rose">"Hoa hồng"</string>
+    <string name="theme_palette_coral">"San hô"</string>
+    <string name="theme_palette_amber">"Hổ phách"</string>
+    <string name="theme_palette_lime">"Vôi"</string>
+    <string name="theme_palette_forest">"Rừng"</string>
+    <string name="theme_palette_teal">"Màu xanh mòng két"</string>
+    <string name="theme_palette_slate">"Đá phiến"</string>
+</resources>

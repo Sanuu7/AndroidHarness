@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Cần Android %1$s trở lên"</string>
+    <string name="settings_requires_vibrator">"Không có động cơ rung trên thiết bị này"</string>
+    <string name="rumble_unsupported">"Máy này không có mô tơ rung nên AH Rumble không chạy được ở đây."</string>
+</resources>
