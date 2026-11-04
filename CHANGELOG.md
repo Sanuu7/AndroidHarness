@@ -1,5 +1,37 @@
 # Changelog
 
+## 3.3 (2026-11-05)
+
+### Added
+
+- **Live Mode** (#77): a hands-free voice mode for talking through an idea. Start it from the empty message box or the + menu, talk normally, and hear replies read aloud while the conversation is saved to this chat. Three levels set what it can do (talk only, read files and search, or read and start tasks, which sends the plan to the main agent under the chat's usual permissions and approvals), and you can pick a fast model, pause length, speech engine and whether replies are spoken. Settings stay on this device.
+- **Auto-compaction threshold** (#81): Code can summarize older context at a point you choose instead of a fixed 80%. Settings → Coding → Agent behavior accepts 250K, 258K, 350K, 1M, 1 million or an exact token count, and `/autocompact` sets it for one chat, with `default` returning to the app setting. Space for the reply is always reserved, a running task uses the new value at its next request, and a per-chat override survives restarts.
+- **Context meter** (#81): a ring beside the Code composer shows how full the working context is, amber near 75% and red near 90%. Tapping it opens used and remaining tokens, whether the figure is an estimate or the last request, whether earlier messages were summarized, cached tokens and cache hit rate, with links to Context limits and a Compact action that leaves the draft alone.
+- **Subagent button** (#81): background subagents now show as a labelled button above the composer accessories instead of a wide bar. It shimmers while agents run, can be dragged anywhere and remembers that position across chats and restarts, opens the agent list and per-agent details (Open chat, Stop, Back), and fades a couple of seconds after the last agent finishes. Opening a chat with completed subagents no longer revives it.
+- **More app languages**: Vietnamese, Turkish, Malay, Thai, French, Hindi, Korean, Tamil, Bengali, Filipino and Traditional Chinese, for 21 languages in total. Traditional and simplified Chinese are separate choices, legacy Tagalog requests map to Filipino, and script or region variants such as zh-TW, zh-HK and fr-CA select the right option.
+- **Markdown preview** (#74): Markdown files open rendered in the code editor with a Show preview/Show source toggle, using the chat's Markdown rendering and its 400k-character limit.
+- **File and folder import**: the file manager can import individual files or a whole folder from the device, and the chat attachment picker accepts several files at once, with progress and an imported count.
+- **Plugin MCP servers in Connected tools**: Settings → MCP lists the MCP servers supplied by enabled plugins, with their plugin, Global or Project scope, workspace approval state and live status, plus links to manage the plugin or review workspace permissions. Plugin servers no longer appear twice.
+
+### Changed
+
+- **Settings search**: every setting is searchable by name and description, results open the exact control, collapsed sections expand on arrival and the match is highlighted. The app-owned workspace can also use privileged shells, under Settings → Environment → Advanced device access.
+- **Chat answer formatting**: guidance now keeps paragraphs to two to four sentences with blank lines between blocks and breaks long answers into headed sections, so replies read better on a phone.
+- **Links in answers**: only a link that trails a sentence collapses to a citation icon. A link that opens its line or list item, follows a colon, or is a bare URL stays visible and tappable, which also keeps requested link lists from disappearing into icons.
+- **Search key pools** (#75): each search provider can hold up to 20 keys. A key that is rejected, rate limited or out of credit is skipped for the next enabled one, and key checks report which key failed.
+- **Harness free limits**: an exhausted free quota or a temporarily limited free model now opens a dialog with a plain explanation, the suggested wait time and a Switch Provider action, instead of a raw error snackbar. Continuing a task after switching uses the provider you picked.
+- **Images in answers**: the image-frequency setting now decides how often pictures appear, not how many or where. Answers can mix inline pictures with rich components before, between or after prose, galleries accept as many useful images as the answer needs, and the model may explain a shortfall instead of inventing URLs.
+- **Plugin installs**: catalog cards and pasted sources show live progress while resolution, runtime setup and installation run, with a Cancel action and a full loading state on Discover, so a slow install no longer looks stuck.
+- **Memory entry limits** (#81): the 600-character limit per memory is now a setting with a custom count or an unlimited option. Saved entries are never truncated, digests keep their own allowance, and long entries appear as query-aware excerpts in prompts and recall with a pointer to the full text.
+
+### Fixed
+
+- **Gemini tools** (#80): tool schemas are sent through Gemini's JSON Schema field, so tools with dictionary arguments (such as HTTP headers) and nested schemas work instead of being rejected.
+- **9Router npm installs** (#82, #84): lazy npm and npm lifecycle installs from the router now run through the app's own Node and shell shims, with arguments, working directory, environment and exit status preserved. Shared launchers are not rewritten, and other commands such as d8, r8 and minify keep their normal path.
+- **Rich response recovery**: providers that wrap a JSON callout or card in `::callout` or `::card` directives instead of a harness-ui fence now render correctly, including in already-saved chats, with the usual schema and URL validation.
+- **Side questions** (#76): the side-question input stays above the keyboard.
+- **Empty tool arguments** (#79): a tool call that sends empty arguments now gets a hint naming the arguments it forgot, instead of a bare failure.
+
 ## 3.2 (2026-11-01)
 
 ### Added
