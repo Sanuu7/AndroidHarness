@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">"Đã ghép nối nhưng không thể kết nối"</string>
     <string name="wireless_adb_timeout">"Đã hết thời gian ghép nối. code hoặc cổng đã hết hạn. Bắt đầu ghép nối lại."</string>
     <string name="wireless_adb_stop_search">"Dừng tìm kiếm"</string>
+    <string name="subagents_running_count">"%1$d đang chạy"</string>
+    <string name="subagents_running_background">"Đang chạy trong nền"</string>
+    <string name="subagents_back_to_list">"Quay lại trợ lý phụ"</string>
 </resources>

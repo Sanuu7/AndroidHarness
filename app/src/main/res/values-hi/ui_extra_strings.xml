@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">"जोड़ा गया, लेकिन कनेक्ट नहीं हो सका"</string>
     <string name="wireless_adb_timeout">"युग्मन का समय समाप्त हो गया. कोड या पोर्ट समाप्त हो गया. फिर से जोड़ी बनाना शुरू करें."</string>
     <string name="wireless_adb_stop_search">"खोजना बंद करो"</string>
+    <string name="subagents_running_count">"%1$d चल रहे हैं"</string>
+    <string name="subagents_running_background">"पृष्ठभूमि में चल रहा है"</string>
+    <string name="subagents_back_to_list">"उप-एजेंट पर वापस जाएँ"</string>
 </resources>

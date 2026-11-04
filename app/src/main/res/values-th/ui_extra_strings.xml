@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">"จับคู่แต่ไม่สามารถเชื่อมต่อได้"</string>
     <string name="wireless_adb_timeout">"หมดเวลาการจับคู่ รหัสหรือพอร์ตหมดอายุ เริ่มการจับคู่อีกครั้ง"</string>
     <string name="wireless_adb_stop_search">"หยุดค้นหา"</string>
+    <string name="subagents_running_count">"%1$d กำลังทำงาน"</string>
+    <string name="subagents_running_background">"กำลังทำงานเบื้องหลัง"</string>
+    <string name="subagents_back_to_list">"กลับไปที่เอเจนต์ย่อย"</string>
 </resources>

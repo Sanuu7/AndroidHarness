@@ -449,4 +449,7 @@
     <string name="wireless_adb_paired_connect_failed">تم الاقتران ولكن تعذّر الاتصال</string>
     <string name="wireless_adb_timeout">انتهت مهلة الاقتران. انتهت صلاحية الرمز أو المنفذ. ابدأ الاقتران من جديد.</string>
     <string name="wireless_adb_stop_search">إيقاف البحث</string>
+    <string name="subagents_running_count">%1$d قيد التشغيل</string>
+    <string name="subagents_running_background">قيد التشغيل في الخلفية</string>
+    <string name="subagents_back_to_list">العودة إلى الوكلاء الفرعيين</string>
 </resources>

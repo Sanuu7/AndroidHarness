@@ -437,4 +437,7 @@
     <string name="wireless_adb_paired_connect_failed">已配对，但无法连接</string>
     <string name="wireless_adb_timeout">配对超时。代码或端口已过期。请重新开始配对。</string>
     <string name="wireless_adb_stop_search">停止搜索</string>
+    <string name="subagents_running_count">%1$d 个运行中</string>
+    <string name="subagents_running_background">正在后台运行</string>
+    <string name="subagents_back_to_list">返回子代理</string>
 </resources>

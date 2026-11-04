@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">"Eşleştirildi ancak bağlanılamadı"</string>
     <string name="wireless_adb_timeout">"Eşleştirme zaman aşımına uğradı. Kodun veya bağlantı noktasının süresi doldu. Tekrar eşleştirmeye başlayın."</string>
     <string name="wireless_adb_stop_search">"Aramayı durdur"</string>
+    <string name="subagents_running_count">"%1$d çalışıyor"</string>
+    <string name="subagents_running_background">"Arka planda çalışıyor"</string>
+    <string name="subagents_back_to_list">"Alt ajanlara dön"</string>
 </resources>

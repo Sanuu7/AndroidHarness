@@ -445,4 +445,7 @@
     <string name="wireless_adb_paired_connect_failed">Сопряжено, но подключиться не удалось</string>
     <string name="wireless_adb_timeout">Время сопряжения истекло. Код или порт устарел. Начните сопряжение заново.</string>
     <string name="wireless_adb_stop_search">Остановить поиск</string>
+    <string name="subagents_running_count">%1$d выполняется</string>
+    <string name="subagents_running_background">Выполняется в фоне</string>
+    <string name="subagents_back_to_list">Назад к субагентам</string>
 </resources>

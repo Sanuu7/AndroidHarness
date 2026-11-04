@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">Emparelhado, mas não foi possível conectar</string>
     <string name="wireless_adb_timeout">O emparelhamento expirou. O código ou a porta expirou. Inicie o emparelhamento novamente.</string>
     <string name="wireless_adb_stop_search">Parar busca</string>
+    <string name="subagents_running_count">%1$d em execução</string>
+    <string name="subagents_running_background">Em execução em segundo plano</string>
+    <string name="subagents_back_to_list">Voltar aos subagentes</string>
 </resources>

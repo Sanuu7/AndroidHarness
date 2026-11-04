@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">جفت شد اما اتصال برقرار نشد</string>
     <string name="wireless_adb_timeout">مهلت جفت‌سازی تمام شد. کد یا پورت منقضی شده است. جفت‌سازی را دوباره شروع کنید.</string>
     <string name="wireless_adb_stop_search">توقف جستجو</string>
+    <string name="subagents_running_count">%1$d در حال اجرا</string>
+    <string name="subagents_running_background">در حال اجرا در پس‌زمینه</string>
+    <string name="subagents_back_to_list">بازگشت به زیرعامل‌ها</string>
 </resources>

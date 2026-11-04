@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">"페어링되었으나 연결할 수 없습니다."</string>
     <string name="wireless_adb_timeout">"페어링 시간이 초과되었습니다. 코드 또는 포트가 만료되었습니다. 다시 페어링을 시작하세요."</string>
     <string name="wireless_adb_stop_search">"검색 중지"</string>
+    <string name="subagents_running_count">"%1$d개 실행 중"</string>
+    <string name="subagents_running_background">"백그라운드에서 실행 중"</string>
+    <string name="subagents_back_to_list">"하위 에이전트로 돌아가기"</string>
 </resources>

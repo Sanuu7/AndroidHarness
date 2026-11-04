@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">ペア設定済みですが接続できませんでした</string>
     <string name="wireless_adb_timeout">ペア設定がタイムアウトしました。コードまたはポートの有効期限が切れています。もう一度ペア設定を開始してください。</string>
     <string name="wireless_adb_stop_search">検索を停止</string>
+    <string name="subagents_running_count">%1$d 実行中</string>
+    <string name="subagents_running_background">バックグラウンドで実行中</string>
+    <string name="subagents_back_to_list">サブエージェントに戻る</string>
 </resources>

@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">"জোড়া হয়েছে, কিন্তু সংযোগ করতে পারেনি৷"</string>
     <string name="wireless_adb_timeout">"পেয়ার করার সময় শেষ হয়েছে। কোড বা পোর্টের মেয়াদ শেষ হয়ে গেছে। আবার জোড়া শুরু করুন."</string>
     <string name="wireless_adb_stop_search">"খোঁজা বন্ধ করুন"</string>
+    <string name="subagents_running_count">"%1$dটি চলছে"</string>
+    <string name="subagents_running_background">"পটভূমিতে চলছে"</string>
+    <string name="subagents_back_to_list">"সাবএজেন্টে ফিরে যান"</string>
 </resources>

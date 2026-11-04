@@ -2389,7 +2389,8 @@ private fun ChatScreenContent(
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = fabBottomPadding),
+                        .padding(end = if (!state.conversation.isChat && subagentResults.isNotEmpty()) 80.dp else 16.dp,
+                            bottom = fabBottomPadding),
                 )
                 SnackbarHost(
                     hostState = snackbar,
@@ -2407,6 +2408,10 @@ private fun ChatScreenContent(
                     },
                 )
                 }
+
+                if (!state.conversation.isChat) com.androidharness.app.ui.chat.components.FloatingSubagentDock(
+                    state.sessionId, viewModel.container.runManager, onOpenSubagent,
+                    composerText = composerText)
 
                 if (!state.conversation.isChat && state.todos.isNotEmpty()) {
                     TodoCard(state.todos)
@@ -2457,8 +2462,6 @@ private fun ChatScreenContent(
                 com.androidharness.app.ui.automation.ScheduledMessageRow(chatSchedules, scheduleConnection, scheduleNow) {
                     if (chatSchedules.size == 1) scheduleDraft = chatSchedules.first() else showScheduledList = true
                 }
-                if (!state.conversation.isChat) com.androidharness.app.ui.chat.components.FloatingSubagentDock(
-                    state.sessionId, viewModel.container.runManager, onOpenSubagent)
                 MessageComposer(
                     contextControl = if (state.conversation.isChat) null else {
                         {

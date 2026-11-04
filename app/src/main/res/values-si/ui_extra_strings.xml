@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">"බැඳිය හැකි නමුත් සම්බන්ධ කළ නොහැක"</string>
     <string name="wireless_adb_timeout">"කැබිනට් කාලය අවසන් වේ. කේතය හෝ වරාය අවසන් වී ඇත. නැවත කැබිනට් ආරම්භ කරන්න."</string>
     <string name="wireless_adb_stop_search">"සෙවීම නතර කරන්න"</string>
+    <string name="subagents_running_count">"%1$d ක්‍රියාත්මකයි"</string>
+    <string name="subagents_running_background">"පසුබිමින් ක්‍රියාත්මක වේ"</string>
+    <string name="subagents_back_to_list">"උප නියෝජිතයන් වෙත ආපසු"</string>
 </resources>

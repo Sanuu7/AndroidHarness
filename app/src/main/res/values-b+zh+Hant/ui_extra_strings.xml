@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">"已配對，但無法連線"</string>
     <string name="wireless_adb_timeout">"配對超時。程式碼或埠已過期。請重新開始配對。"</string>
     <string name="wireless_adb_stop_search">"停止搜尋"</string>
+    <string name="subagents_running_count">"%1$d 個執行中"</string>
+    <string name="subagents_running_background">"正在背景執行"</string>
+    <string name="subagents_back_to_list">"返回子代理"</string>
 </resources>

@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">"Ipinares, ngunit hindi makakonekta"</string>
     <string name="wireless_adb_timeout">"Nag-time out ang pagpapares. Nag-expire ang code o port. Simulan muli ang pagpapares."</string>
     <string name="wireless_adb_stop_search">"Itigil ang paghahanap"</string>
+    <string name="subagents_running_count">"%1$d ang tumatakbo"</string>
+    <string name="subagents_running_background">"Tumatakbo sa background"</string>
+    <string name="subagents_back_to_list">"Bumalik sa mga subagents"</string>
 </resources>

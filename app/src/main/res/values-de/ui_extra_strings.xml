@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">Gekoppelt, aber keine Verbindung</string>
     <string name="wireless_adb_timeout">Zeitüberschreitung beim Koppeln. Code oder Port ist abgelaufen. Starte die Kopplung erneut.</string>
     <string name="wireless_adb_stop_search">Suche beenden</string>
+    <string name="subagents_running_count">%1$d laufen</string>
+    <string name="subagents_running_background">Läuft im Hintergrund</string>
+    <string name="subagents_back_to_list">Zurück zu Unteragenten</string>
 </resources>

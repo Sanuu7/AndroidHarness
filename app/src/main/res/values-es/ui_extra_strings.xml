@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">Emparejado, pero no se pudo conectar</string>
     <string name="wireless_adb_timeout">Se agotó el tiempo de emparejamiento. El código o el puerto caducó. Inicia el emparejamiento de nuevo.</string>
     <string name="wireless_adb_stop_search">Dejar de buscar</string>
+    <string name="subagents_running_count">%1$d en ejecución</string>
+    <string name="subagents_running_background">En ejecución en segundo plano</string>
+    <string name="subagents_back_to_list">Volver a subagentes</string>
 </resources>

@@ -19,6 +19,7 @@ import androidx.test.core.app.ActivityScenario
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.platform.app.InstrumentationRegistry
 import androidx.lifecycle.viewModelScope
+import com.androidharness.app.R
 import com.androidharness.app.HarnessApp
 import com.androidharness.app.agent.*
 import com.androidharness.app.core.*
@@ -39,7 +40,7 @@ class FloatingSubagentDeckDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
     private val c get() = (instrumentation.targetContext.applicationContext as HarnessApp).container
 
-    @Test fun floatingDeckSwipesOpensRealChatAndKeepsSelectionAtNormalAndLargeText(): Unit = runBlocking {
+    @Test fun roundBubbleLeavesComposerClearAndExpandsOnlyOnTapAtNormalAndLargeText(): Unit = runBlocking {
         val service = instrumentation.uiAutomation.serviceInfo
         service.flags = service.flags or AccessibilityServiceInfo.FLAG_RETRIEVE_INTERACTIVE_WINDOWS
         instrumentation.uiAutomation.serviceInfo = service
@@ -51,6 +52,7 @@ class FloatingSubagentDeckDeviceTest {
             val names = listOf("Build checker", "UI reviewer", "Test runner")
             val calls = names.mapIndexed { i, name -> ToolCallData("deck-$i-${System.nanoTime()}", "task",
                 """{"name":"$name","prompt":"${listOf("Find why the APK build fails.", "Review the chat layout on a small screen.", "Run the focused regression tests.")[i]}"}""") }
+            c.runManager.controls.update(sid) { it.copy(queue = listOf(QueuedPrompt(text = "Keep this queued message"))) }
             c.sessions.addMessage(sid, ChatMessage(Role.USER, "Check the build and review the UI."), "deck-turn")
             c.sessions.addMessage(sid, ChatMessage(Role.ASSISTANT, text = "I’ll check the configuration while the subagents work.", toolCalls = calls), "deck-turn")
             val fixtureJobs = calls.mapIndexed { i, call ->
@@ -89,25 +91,48 @@ class FloatingSubagentDeckDeviceTest {
                             }
                         }
                     } }
-                    await("LATEST ACTIVITY"); fits("Open chat"); screenshot("deck-$scale-expanded")
-                    tap("Next subagent"); await("Review the chat layout on a small screen.")
+                    await("Expand subagent popup")
+                    assertNull("New agents should not open the panel", find("2 running"))
+                    val bubble = Rect().also(await("Expand subagent popup")::getBoundsInScreen)
+                    val pixels = c.appContext.resources.displayMetrics.density
+                    assertTrue("Collapsed popup was wider than the round touch target: $bubble", bubble.width() <= 50 * pixels)
+                    assertTrue("Collapsed popup was taller than the round touch target: $bubble", bubble.height() <= 50 * pixels)
+                    val queue = Rect().also(await("Keep this queued message")::getBoundsInScreen)
+                    assertTrue("Bubble covered the composer accessories: $bubble, queue=$queue", bubble.bottom < queue.top)
+                    val popup = Rect().also(requireNotNull(await("Expand subagent popup").window?.root)::getBoundsInScreen)
+                    assertTrue("An invisible popup window still blocked the chat: $popup", popup.width() <= 50 * pixels)
+                    screenshot("bubble-$scale-collapsed")
+                    tap("Expand subagent popup"); await("2 running")
+                    screenshot("bubble-$scale-expanded")
+                    tap("UI reviewer"); await("Running in the background")
                     gate.complete(Unit)
                     withTimeout(5000) { c.runManager.subagents.forSession(sid).first { list -> list.first { it.id == calls[0].id }.status == SubagentStatus.COMPLETED } }
-                    await("Review the chat layout on a small screen.") // Completion must not switch pages.
+                    // Another agent finishing must not replace the selected agent's details.
+                    await("Checking whether the controls leave enough room for messages.")
                     tap("Open chat"); await("Results return to the main agent.")
                     await("Checking whether the controls leave enough room for messages.")
-                    screenshot("deck-$scale-full-chat")
-                    tap("Main chat"); await("LATEST ACTIVITY")
-                    tap("Collapse subagent popup"); await("3 subagents")
-                    screenshot("deck-$scale-collapsed")
-                    tap("Expand subagent popup"); await("LATEST ACTIVITY")
-                    screenshot("deck-$scale-restored")
-                    val task = await("Review the chat layout on a small screen.")
-                    val bounds = Rect().also(task::getBoundsInScreen)
-                    swipe(bounds.centerY().toFloat())
-                    await("Run the focused regression tests.")
-                    fits("Open chat")
-                    screenshot("deck-$scale-completed")
+                    screenshot("bubble-$scale-full-chat")
+                    tap("Main chat"); await("Running in the background")
+                    tap("Stop")
+                    withTimeout(5000) { c.runManager.subagents.forSession(sid).first { list -> list.first { it.id == calls[1].id }.status == SubagentStatus.STOPPED } }
+                    tap("Back to subagents"); tap("Test runner"); await("12 focused tests passed.")
+                    tap("Collapse subagent popup"); await("Expand subagent popup")
+                    tap("Expand subagent popup"); await("All finished")
+                    // Tapping the transcript dismisses the nonmodal panel and reaches the underlying UI.
+                    val message = await(c.appContext.getString(R.string.ui_message_input))
+                    val messageBounds = Rect().also(message::getBoundsInScreen)
+                    tapAt(messageBounds.centerX().toFloat(), messageBounds.centerY().toFloat())
+                    assertNull("Typing left the details panel open", find("All finished"))
+                    find("Expand subagent popup")?.let { node ->
+                        val orb = Rect().also(node::getBoundsInScreen)
+                        val input = Rect().also(await(c.appContext.getString(R.string.ui_message_input))::getBoundsInScreen)
+                        assertTrue("Keyboard pushed the bubble over the typing box: $orb, input=$input", orb.bottom < input.top)
+                    }
+                    screenshot("bubble-$scale-typing")
+                    instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
+                    await("Expand subagent popup")
+                    fits("Expand subagent popup")
+
                 }
             } finally {
                 instrumentation.runOnMainSync { viewModel?.viewModelScope?.cancel() }
@@ -134,10 +159,33 @@ class FloatingSubagentDeckDeviceTest {
         error("Missing UI: $text")
     }
     private fun tap(text: String) {
-        var node: AccessibilityNodeInfo? = await(text)
+        var node: AccessibilityNodeInfo? = reachable(text)
         while (node != null && !node.isClickable) node = node.parent
         assertTrue("Could not tap $text", node?.performAction(AccessibilityNodeInfo.ACTION_CLICK) == true)
         instrumentation.waitForIdleSync(); SystemClock.sleep(300)
+    }
+    private fun reachable(text: String): AccessibilityNodeInfo {
+        repeat(8) {
+            find(text)?.let { return it }
+            fun scrollable(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+                if (node.isScrollable) return node
+                for (i in 0 until node.childCount) node.getChild(i)?.let { scrollable(it)?.let { found -> return found } }
+                return null
+            }
+            val root = find("Collapse subagent popup")?.window?.root
+            if (root == null || scrollable(root)?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD) != true) return await(text)
+            SystemClock.sleep(200)
+        }
+        return await(text)
+    }
+    private fun tapAt(x: Float, y: Float) {
+        val now = SystemClock.uptimeMillis()
+        for (action in listOf(MotionEvent.ACTION_DOWN, MotionEvent.ACTION_UP)) {
+            val event = MotionEvent.obtain(now, now + if (action == MotionEvent.ACTION_UP) 30 else 0, action, x, y, 0)
+            event.source = android.view.InputDevice.SOURCE_TOUCHSCREEN
+            instrumentation.uiAutomation.injectInputEvent(event, true); event.recycle()
+        }
+        instrumentation.waitForIdleSync(); SystemClock.sleep(400)
     }
     private fun swipe(y: Float) {
         val width = c.appContext.resources.displayMetrics.widthPixels

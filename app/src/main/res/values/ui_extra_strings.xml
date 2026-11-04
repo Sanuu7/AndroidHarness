@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">Paired, but could not connect</string>
     <string name="wireless_adb_timeout">Pairing timed out. The code or port expired. Start pairing again.</string>
     <string name="wireless_adb_stop_search">Stop searching</string>
+    <string name="subagents_running_count">%1$d running</string>
+    <string name="subagents_running_background">Running in the background</string>
+    <string name="subagents_back_to_list">Back to subagents</string>
 </resources>

@@ -443,4 +443,7 @@
     <string name="wireless_adb_paired_connect_failed">"Couplé, mais impossible de se connecter"</string>
     <string name="wireless_adb_timeout">"Le délai d\'appairage a expiré. Le code ou le port a expiré. Recommencez le jumelage."</string>
     <string name="wireless_adb_stop_search">"Arrêtez de chercher"</string>
+    <string name="subagents_running_count">"%1$d en cours"</string>
+    <string name="subagents_running_background">"En cours en arrière-plan"</string>
+    <string name="subagents_back_to_list">"Retour aux sous-agents"</string>
 </resources>

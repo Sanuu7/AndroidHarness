@@ -439,4 +439,7 @@
     <string name="wireless_adb_paired_connect_failed">"Berpasangan, tetapi tidak dapat menyambung"</string>
     <string name="wireless_adb_timeout">"Berpasangan tamat masa. Kod atau port tamat tempoh. Mula berpasangan semula."</string>
     <string name="wireless_adb_stop_search">"Berhenti mencari"</string>
+    <string name="subagents_running_count">"%1$d sedang berjalan"</string>
+    <string name="subagents_running_background">"Berjalan di latar belakang"</string>
+    <string name="subagents_back_to_list">"Kembali ke subagen"</string>
 </resources>

@@ -441,4 +441,7 @@
     <string name="wireless_adb_paired_connect_failed">"இணைக்கப்பட்டது, ஆனால் இணைக்க முடியவில்லை"</string>
     <string name="wireless_adb_timeout">"இணைத்தல் நேரம் முடிந்தது. குறியீடு அல்லது போர்ட் காலாவதியானது. மீண்டும் இணைக்கத் தொடங்குங்கள்."</string>
     <string name="wireless_adb_stop_search">"தேடுவதை நிறுத்து"</string>
+    <string name="subagents_running_count">"%1$d இயங்குகிறது"</string>
+    <string name="subagents_running_background">"பின்னணியில் இயங்குகிறது"</string>
+    <string name="subagents_back_to_list">"துணைப் பொருட்களுக்குத் திரும்பு"</string>
 </resources>
