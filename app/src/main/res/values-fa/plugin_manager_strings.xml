@@ -79,4 +79,16 @@
     <string name="pm_runtimes">زمان‌های اجرا</string>
     <string name="pm_show_all">نمایش همهٔ %1$d</string>
     <string name="pm_show_less">نمایش کمتر</string>
+    <string name="pm_install_title">نصب افزونه</string>
+    <string name="pm_install_named">نصب %1$s</string>
+    <string name="pm_installing">در حال نصب…</string>
+    <string name="pm_discover_loading">در حال یافتن افزونه‌ها…</string>
+    <string name="pm_discover_loading_hint">بارگذاری بازارها و منابع جامعه.</string>
+    <string name="pm_mcp_from_plugins">سرورهای MCP از افزونه‌ها</string>
+    <string name="pm_mcp_direct">مستقیماً اضافه شده</string>
+    <string name="pm_mcp_approval_pending">نصب شده · نیاز به تأیید فضای کاری</string>
+    <string name="pm_mcp_ready">برای اجرای بعدی Code در دسترس است</string>
+    <string name="pm_mcp_managed_hint">این سرورها از افزونه‌های فعال می‌آیند. آن‌ها را در افزونه‌ها مدیریت کنید؛ ابزارهایشان از مجوزهای فضای کاری استفاده می‌کنند.</string>
+    <string name="pm_manage_plugins">مدیریت افزونه‌ها</string>
+    <string name="pm_mcp_permissions">مجوزهای فضای کاری</string>
 </resources>

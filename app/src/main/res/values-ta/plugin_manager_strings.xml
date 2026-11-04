@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"இயக்க நேரங்கள்"</string>
     <string name="pm_show_all">"%1$d அனைத்தையும் காட்டு"</string>
     <string name="pm_show_less">"குறைவாகக் காட்டு"</string>
+    <string name="pm_install_title">"செருகுநிரலை நிறுவு"</string>
+    <string name="pm_install_named">"%1$s ஐ நிறுவு"</string>
+    <string name="pm_installing">"நிறுவுகிறது…"</string>
+    <string name="pm_discover_loading">"செருகுநிரல்களைத் தேடுகிறது…"</string>
+    <string name="pm_discover_loading_hint">"மார்க்கெட்பிளேஸ்களும் சமூக ஆதாரங்களும் ஏற்றப்படுகின்றன."</string>
+    <string name="pm_mcp_from_plugins">"செருகுநிரல்களிலிருந்து MCP சேவையகங்கள்"</string>
+    <string name="pm_mcp_direct">"நேரடியாகச் சேர்க்கப்பட்டது"</string>
+    <string name="pm_mcp_approval_pending">"நிறுவப்பட்டது · பணியிட ஒப்புதல் தேவை"</string>
+    <string name="pm_mcp_ready">"அடுத்த Code இயக்கத்திற்குக் கிடைக்கும்"</string>
+    <string name="pm_mcp_managed_hint">"இந்தச் சேவையகங்கள் இயக்கப்பட்ட செருகுநிரல்களிலிருந்து வருகின்றன. அவற்றை செருகுநிரல்களில் நிர்வகிக்கவும்; அவற்றின் கருவிகள் பணியிட அனுமதிகளைப் பயன்படுத்துகின்றன."</string>
+    <string name="pm_manage_plugins">"செருகுநிரல்களை நிர்வகி"</string>
+    <string name="pm_mcp_permissions">"பணியிட அனுமதிகள்"</string>
 </resources>

@@ -79,4 +79,16 @@
     <string name="pm_runtimes">Runtime</string>
     <string name="pm_show_all">Tampilkan semua %1$d</string>
     <string name="pm_show_less">Tampilkan lebih sedikit</string>
+    <string name="pm_install_title">Instal plugin</string>
+    <string name="pm_install_named">Instal %1$s</string>
+    <string name="pm_installing">Menginstal…</string>
+    <string name="pm_discover_loading">Mencari plugin…</string>
+    <string name="pm_discover_loading_hint">Memuat marketplace dan sumber komunitas.</string>
+    <string name="pm_mcp_from_plugins">Server MCP dari plugin</string>
+    <string name="pm_mcp_direct">Ditambahkan langsung</string>
+    <string name="pm_mcp_approval_pending">Terinstal · perlu persetujuan ruang kerja</string>
+    <string name="pm_mcp_ready">Tersedia untuk jalannya Code berikutnya</string>
+    <string name="pm_mcp_managed_hint">Server ini berasal dari plugin yang diaktifkan. Kelola di Plugin; alatnya memakai izin ruang kerja.</string>
+    <string name="pm_manage_plugins">Kelola plugin</string>
+    <string name="pm_mcp_permissions">Izin ruang kerja</string>
 </resources>

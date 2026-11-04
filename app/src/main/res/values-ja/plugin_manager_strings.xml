@@ -79,4 +79,16 @@
     <string name="pm_runtimes">ランタイム</string>
     <string name="pm_show_all">すべて表示（%1$d 件）</string>
     <string name="pm_show_less">表示を減らす</string>
+    <string name="pm_install_title">プラグインをインストール</string>
+    <string name="pm_install_named">%1$s をインストール</string>
+    <string name="pm_installing">インストール中…</string>
+    <string name="pm_discover_loading">プラグインを探しています…</string>
+    <string name="pm_discover_loading_hint">マーケットプレイスとコミュニティソースを読み込み中。</string>
+    <string name="pm_mcp_from_plugins">プラグインからの MCP サーバー</string>
+    <string name="pm_mcp_direct">直接追加</string>
+    <string name="pm_mcp_approval_pending">インストール済み · ワークスペースの承認が必要</string>
+    <string name="pm_mcp_ready">次の Code 実行で利用可能</string>
+    <string name="pm_mcp_managed_hint">これらのサーバーは有効なプラグインから提供されます。プラグインで管理してください。そのツールはワークスペースの権限を使用します。</string>
+    <string name="pm_manage_plugins">プラグインを管理</string>
+    <string name="pm_mcp_permissions">ワークスペースの権限</string>
 </resources>

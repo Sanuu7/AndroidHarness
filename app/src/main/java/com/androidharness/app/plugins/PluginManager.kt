@@ -253,6 +253,7 @@ class PluginManager(
                 } catch (e: CancellationException) { throw e }
                 catch (e: Exception) { runtimeProblem = e.message ?: "Runtime installation failed." }
             }
+            progress(PluginProgress("Installing plugin"))
             val record = withContext(Dispatchers.IO) { store.install(prepared, scope, label) }
             return record to runtimeProblem
         } finally { withContext(NonCancellable + Dispatchers.IO) { discard(prepared) } }

@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"Mga runtime"</string>
     <string name="pm_show_all">"Ipakita ang lahat ng %1$d"</string>
     <string name="pm_show_less">"Magpakita ng mas kaunti"</string>
+    <string name="pm_install_title">"I-install ang plugin"</string>
+    <string name="pm_install_named">"I-install ang %1$s"</string>
+    <string name="pm_installing">"Nag-i-install…"</string>
+    <string name="pm_discover_loading">"Naghahanap ng mga plugin…"</string>
+    <string name="pm_discover_loading_hint">"Naglo-load ng mga marketplace at source ng komunidad."</string>
+    <string name="pm_mcp_from_plugins">"Mga MCP server mula sa mga plugin"</string>
+    <string name="pm_mcp_direct">"Idinagdag nang direkta"</string>
+    <string name="pm_mcp_approval_pending">"Naka-install · kailangan ang pag-apruba ng workspace"</string>
+    <string name="pm_mcp_ready">"Magagamit sa susunod na pagtakbo ng Code"</string>
+    <string name="pm_mcp_managed_hint">"Ang mga server na ito ay mula sa mga naka-enable na plugin. Pamahalaan ang mga ito sa Mga plugin; ginagamit ng kanilang tool ang mga pahintulot ng workspace."</string>
+    <string name="pm_manage_plugins">"Pamahalaan ang mga plugin"</string>
+    <string name="pm_mcp_permissions">"Mga pahintulot ng workspace"</string>
 </resources>

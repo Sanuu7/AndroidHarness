@@ -15,6 +15,7 @@ data class ConfigCommandHook(val event: String, val command: String, val matcher
 data class ConfigPlugin(val name: String, val script: String, val hooks: Set<String>, val commands: List<ConfigCommandHook> = emptyList(), val root: String = "")
 data class ConfigMemory(val file: String = ".harness/memory.md", val topics: String = ".harness/memory",
     val autoRecall: Boolean = true, val maxLines: Int = 120)
+data class ConfigServerSource(val name: String, val plugin: String? = null, val source: String)
 
 data class HarnessConfig(
     val root: ConfigValue? = null,
@@ -32,6 +33,7 @@ data class HarnessConfig(
     val warnings: List<String> = emptyList(),
     val trustPayload: String = "",
     val sensitiveValues: Set<String> = emptySet(),
+    val serverSources: Map<String, ConfigServerSource> = emptyMap(),
 ) {
     val present get() = sources.isNotEmpty()
     val fingerprint get() = digest(trustPayload + Json.encodeToString(kotlinx.serialization.builtins.ListSerializer(McpServerConfig.serializer()), servers))
@@ -258,9 +260,10 @@ class HarnessConfigLoader(
         }
         // Explicit paths supplement the conventional project directory, with deterministic precedence.
         val plugins = mutableListOf<ConfigPlugin>()
+        val pluginServerSources = linkedMapOf<String, ConfigServerSource>()
         val pluginAgents = linkedMapOf<String, ConfigAgent>()
         val pluginSettings = root["plugins"]
-        fun plugin(baseFs: WorkspaceFs, base: String) {
+        fun plugin(baseFs: WorkspaceFs, base: String, configurationSource: String) {
             val manifestPath = "$base/plugin.json"
             if (!baseFs.resolve(manifestPath).exists) return
             val id = "Plugin/${HarnessConfig.digest(baseFs.displayPath).take(12)}/$base"
@@ -302,6 +305,7 @@ class HarnessConfigLoader(
                         return v.copy(json = when (v.json) { is JsonObject -> JsonObject(fields.mapValues { it.value.json }); is JsonArray -> JsonArray(items.map { it.json }); else -> v.json }, fields = fields, items = items)
                     }
                     pluginServers[qualified] = bundleVariables(value)
+                    pluginServerSources[qualified] = ConfigServerSource(key, name, configurationSource)
                 }
             }
             val events = setOf("session.start", "message.received", "prompt.before", "tool.before", "tool.after", "session.end")
@@ -322,15 +326,15 @@ class HarnessConfigLoader(
             val (fs, base) = path(v); val dir = fs.resolve(base)
             require(dir.exists && dir.isDirectory) { "Plugin folder is missing: $base" }
             require(dir.list().size <= 32) { "At most 32 plugins per folder." }
-            if (fs.resolve("$base/plugin.json").exists) plugin(fs, base)
-            else dir.list().filter { it.isDirectory }.sortedBy { it.name }.forEach { plugin(fs, "$base/${it.name}") }
+            if (fs.resolve("$base/plugin.json").exists) plugin(fs, base, v.source)
+            else dir.list().filter { it.isDirectory }.sortedBy { it.name }.forEach { plugin(fs, "$base/${it.name}", v.source) }
         }
         pluginSettings?.get("npm")?.items.orEmpty().forEach { v ->
             val name = v.string().orEmpty()
             require(Regex("(@[a-z0-9_-]+/)?[a-z0-9_-]+").matches(name)) { "plugins.npm must name an installed package, without a version or URL." }
             val (fs, base) = path(v, "node_modules/$name")
             require(fs.resolve("$base/plugin.json").exists) { "Plugin package $name is not installed. Install it in the config folder's node_modules, then reload." }
-            plugin(fs, base)
+            plugin(fs, base, v.source)
         }
         require(plugins.map { it.name }.distinct().size == plugins.size && plugins.size <= 32) { "Plugin names must be unique; at most 32 plugins with hooks." }
         root["skills"]?.get("paths")?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
@@ -342,7 +346,10 @@ class HarnessConfigLoader(
         }
         val instructions = (pluginInstructions + rootInstructions).distinctBy { it.source to it.path }
         require(instructions.sumOf { it.text.length } <= 64_000) { "Combined plugin and project instructions exceed 64,000 characters." }
+        val serverSources = linkedMapOf<String, ConfigServerSource>()
         val servers = (pluginServers + root["mcp"]?.fields.orEmpty()).filterValues { it.json !is JsonNull }.map { (name, v) ->
+            serverSources[name] = pluginServerSources[name]?.takeIf { v.source.startsWith("Plugin/") }
+                ?: ConfigServerSource(name, source = v.source)
             val enabled = v["enabled"]?.json?.jsonPrimitive?.booleanOrNull ?: true
             fun resolved(value: ConfigValue): String = if (enabled) expand(value) else value.string().orEmpty()
             val command = v["command"]
@@ -368,6 +375,6 @@ class HarnessConfigLoader(
             agents, root["default_agent"]?.string() ?: "default",
             ConfigMemory(mem?.get("file")?.string() ?: ".harness/memory.md", mem?.get("topics_dir")?.string() ?: ".harness/memory",
                 mem?.get("auto_recall")?.json?.jsonPrimitive?.booleanOrNull ?: true, mem?.get("max_core_lines")?.json?.jsonPrimitive?.intOrNull ?: 120),
-            plugins, warnings.toList(), sources.values.joinToString("\n") { "${it.id}\n${it.text}" } + plugins.joinToString { it.script + it.commands.joinToString("\n") { c -> "${c.event} ${c.matcher} ${c.command}" } }, sensitiveValues.toSet())
+            plugins, warnings.toList(), sources.values.joinToString("\n") { "${it.id}\n${it.text}" } + plugins.joinToString { it.script + it.commands.joinToString("\n") { c -> "${c.event} ${c.matcher} ${c.command}" } }, sensitiveValues.toSet(), serverSources)
     }
 }

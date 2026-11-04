@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"रनटाइम्स"</string>
     <string name="pm_show_all">"सभी %1$d दिखाएँ"</string>
     <string name="pm_show_less">"कम दिखाओ"</string>
+    <string name="pm_install_title">"प्लगइन इंस्टॉल करें"</string>
+    <string name="pm_install_named">"%1$s इंस्टॉल करें"</string>
+    <string name="pm_installing">"इंस्टॉल हो रहा है…"</string>
+    <string name="pm_discover_loading">"प्लगइन खोजे जा रहे हैं…"</string>
+    <string name="pm_discover_loading_hint">"मार्केटप्लेस और समुदाय स्रोत लोड हो रहे हैं।"</string>
+    <string name="pm_mcp_from_plugins">"प्लगइन्स से MCP सर्वर"</string>
+    <string name="pm_mcp_direct">"सीधे जोड़ा गया"</string>
+    <string name="pm_mcp_approval_pending">"इंस्टॉल · कार्यक्षेत्र स्वीकृति आवश्यक"</string>
+    <string name="pm_mcp_ready">"अगली Code रन के लिए उपलब्ध"</string>
+    <string name="pm_mcp_managed_hint">"ये सर्वर सक्षम प्लगइन्स से आते हैं। इन्हें प्लगइन्स में प्रबंधित करें; इनके टूल कार्यक्षेत्र अनुमतियाँ उपयोग करते हैं।"</string>
+    <string name="pm_manage_plugins">"प्लगइन्स प्रबंधित करें"</string>
+    <string name="pm_mcp_permissions">"कार्यक्षेत्र अनुमतियाँ"</string>
 </resources>

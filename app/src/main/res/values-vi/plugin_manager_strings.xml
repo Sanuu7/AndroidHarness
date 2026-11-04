@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"Thời gian chạy"</string>
     <string name="pm_show_all">"Hiển thị tất cả %1$d"</string>
     <string name="pm_show_less">"Hiển thị ít hơn"</string>
+    <string name="pm_install_title">"Cài đặt plugin"</string>
+    <string name="pm_install_named">"Cài đặt %1$s"</string>
+    <string name="pm_installing">"Đang cài đặt…"</string>
+    <string name="pm_discover_loading">"Đang tìm plugin…"</string>
+    <string name="pm_discover_loading_hint">"Đang tải chợ ứng dụng và nguồn cộng đồng."</string>
+    <string name="pm_mcp_from_plugins">"Máy chủ MCP từ plugin"</string>
+    <string name="pm_mcp_direct">"Đã thêm trực tiếp"</string>
+    <string name="pm_mcp_approval_pending">"Đã cài đặt · cần phê duyệt không gian làm việc"</string>
+    <string name="pm_mcp_ready">"Có sẵn cho lần chạy Code tiếp theo"</string>
+    <string name="pm_mcp_managed_hint">"Các máy chủ này đến từ plugin đã bật. Quản lý chúng trong Plugin; công cụ của chúng dùng quyền của không gian làm việc."</string>
+    <string name="pm_manage_plugins">"Quản lý plugin"</string>
+    <string name="pm_mcp_permissions">"Quyền của không gian làm việc"</string>
 </resources>

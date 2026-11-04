@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"런타임"</string>
     <string name="pm_show_all">"%1$d 모두 표시"</string>
     <string name="pm_show_less">"간략히 보기"</string>
+    <string name="pm_install_title">"플러그인 설치"</string>
+    <string name="pm_install_named">"%1$s 설치"</string>
+    <string name="pm_installing">"설치 중…"</string>
+    <string name="pm_discover_loading">"플러그인을 찾는 중…"</string>
+    <string name="pm_discover_loading_hint">"마켓플레이스와 커뮤니티 소스를 불러오는 중입니다."</string>
+    <string name="pm_mcp_from_plugins">"플러그인의 MCP 서버"</string>
+    <string name="pm_mcp_direct">"직접 추가됨"</string>
+    <string name="pm_mcp_approval_pending">"설치됨 · 작업 공간 승인 필요"</string>
+    <string name="pm_mcp_ready">"다음 Code 실행에서 사용 가능"</string>
+    <string name="pm_mcp_managed_hint">"이 서버는 활성화된 플러그인에서 제공됩니다. 플러그인에서 관리하세요. 서버의 도구는 작업 공간 권한을 사용합니다."</string>
+    <string name="pm_manage_plugins">"플러그인 관리"</string>
+    <string name="pm_mcp_permissions">"작업 공간 권한"</string>
 </resources>

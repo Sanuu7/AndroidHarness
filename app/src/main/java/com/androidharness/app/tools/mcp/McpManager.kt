@@ -249,6 +249,9 @@ class McpManager(
         return legacy.filterNot { old -> snapshot.servers.any { it.name.equals(old.name, true) } } + snapshot.servers
     }
 
+    fun workspaceConnectionName(workspace: WorkspaceFs, config: McpServerConfig): String =
+        config.name + "_ws_" + sha256(workspace.displayPath + config.deviceLocal + json.encodeToString(McpServerConfig.serializer(), config)).take(12)
+
     // --- Workspace config approval (security-battery D1) -------------------------
 
     private val approvalsFile = File(context.filesDir, "mcp-approvals.json")
@@ -362,8 +365,7 @@ class McpManager(
             val isProject = ws.any { it.name == original.name }
             // An approved attempt now has its workspace-specific status; retire the earlier approval notice.
             if (isProject) _statuses.update { it - original.name }
-            val identity = if (!isProject && remote == null) original.name else original.name + "_ws_" + sha256(
-                workspace.displayPath + original.deviceLocal + json.encodeToString(McpServerConfig.serializer(), original)).take(12)
+            val identity = if (!isProject && remote == null) original.name else workspaceConnectionName(workspace, original)
             val config = original.copy(name = identity)
             if (isProject && leaseId != null) retainWorkspaceTool(leaseId, config.name)
             val conn = connectionFor(config, if (original.deviceLocal) context.filesDir else cwd, remote) ?: continue

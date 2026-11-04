@@ -79,4 +79,16 @@
     <string name="pm_runtimes">රන්ටයිම්</string>
     <string name="pm_show_all">සියල්ල %1$d පෙන්වන්න</string>
     <string name="pm_show_less">අඩුවෙන් පෙන්වන්න</string>
+    <string name="pm_install_title">ප්ලගිනය ස්ථාපනය කරන්න</string>
+    <string name="pm_install_named">%1$s ස්ථාපනය කරන්න</string>
+    <string name="pm_installing">ස්ථාපනය වෙමින්…</string>
+    <string name="pm_discover_loading">ප්ලගින සොයමින්…</string>
+    <string name="pm_discover_loading_hint">වෙළඳපොල සහ ප්‍රජා මූලාශ්‍ර පූරණය වෙමින්.</string>
+    <string name="pm_mcp_from_plugins">ප්ලගින වලින් MCP සේවාදායක</string>
+    <string name="pm_mcp_direct">සෘජුවම එකතු කර ඇත</string>
+    <string name="pm_mcp_approval_pending">ස්ථාපිතයි · කාර්ය අවකාශ අනුමැතිය අවශ්‍යයි</string>
+    <string name="pm_mcp_ready">ඊළඟ Code ධාවනයට ලබා ගත හැක</string>
+    <string name="pm_mcp_managed_hint">මෙම සේවාදායක සක්‍රීය ප්ලගින වලින් පැමිණේ. ඒවා ප්ලගින තුළ කළමනාකරණය කරන්න; ඒවායේ මෙවලම් කාර්ය අවකාශ අවසර භාවිතා කරයි.</string>
+    <string name="pm_manage_plugins">ප්ලගින කළමනාකරණය කරන්න</string>
+    <string name="pm_mcp_permissions">කාර්ය අවකාශ අවසර</string>
 </resources>

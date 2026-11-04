@@ -44,7 +44,8 @@ object PluginAdapter {
 
     /** Skips archive envelopes (GitHub's owner-repo-sha/, npm's package/) until something recognizable appears. */
     fun locate(bundle: File, subdirectory: String): File {
-        var current = bundle
+        // Android's app-data aliases must use the same spelling as canonical component paths.
+        var current = bundle.canonicalFile
         fun recognizable(dir: File) = dir.resolve("plugin.json").isFile || dir.resolve("SKILL.md").isFile || dir.resolve("package.json").isFile ||
             dir.resolve("gemini-extension.json").isFile || manifestDirs.any { dir.resolve(it).isDirectory }
         repeat(4) {

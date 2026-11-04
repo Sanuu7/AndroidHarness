@@ -5,6 +5,7 @@ import org.junit.Rule
 import org.junit.Test
 import org.junit.rules.TemporaryFolder
 import java.io.File
+import java.nio.file.Files
 
 class PluginFormatsTest {
     @get:Rule val tmp = TemporaryFolder()
@@ -81,6 +82,33 @@ class PluginFormatsTest {
         val rules = tmp.newFolder()
         file(rules, "CLAUDE.md", "Always write tests first.")
         assertEquals(1, adapt(rules).instructions.size)
+    }
+
+    @Test fun `claude bundle reached through a filesystem alias keeps component paths inside the bundle`() {
+        val root = tmp.newFolder()
+        file(root, ".claude-plugin/plugin.json", """{"name":"ui-kit","skills":"./.claude/skills/"}""")
+        file(root, ".claude/skills/ui-ux-pro-max/SKILL.md", skill("ui-ux-pro-max"))
+        file(root, "commands/polish.md", "Polish the current screen.")
+        file(root, "agents/reviewer.md", "Review the current screen.")
+        val alias = File(tmp.root, "android-data-alias")
+        Files.createSymbolicLink(alias.toPath(), root.toPath())
+
+        val contents = adapt(alias)
+
+        assertEquals(setOf("ui-ux-pro-max", "polish"), contents.skills.toSet())
+        assertTrue(contents.agents.toString(), contents.agents.any { "reviewer" in it })
+        assertTrue(root.resolve(".claude/skills/ui-ux-pro-max/SKILL.md").isFile)
+    }
+
+    @Test fun `filesystem aliases still reject components outside the bundle`() {
+        val root = tmp.newFolder()
+        val outside = tmp.newFolder()
+        val alias = File(tmp.root, "bundle-alias")
+        Files.createSymbolicLink(alias.toPath(), root.toPath())
+        Files.createSymbolicLink(root.resolve("skills").toPath(), outside.toPath())
+
+        assertThrows(IllegalArgumentException::class.java) { PluginManifest.path(alias, "skills") }
+        assertThrows(IllegalArgumentException::class.java) { PluginManifest.path(alias, "../outside") }
     }
 
     @Test fun `marketplace with several plugins offers choices and installers are detected`() {

@@ -79,4 +79,16 @@
     <string name="pm_runtimes">运行时</string>
     <string name="pm_show_all">显示全部 %1$d</string>
     <string name="pm_show_less">收起</string>
+    <string name="pm_install_title">安装插件</string>
+    <string name="pm_install_named">安装 %1$s</string>
+    <string name="pm_installing">正在安装…</string>
+    <string name="pm_discover_loading">正在查找插件…</string>
+    <string name="pm_discover_loading_hint">正在加载插件市场和社区来源。</string>
+    <string name="pm_mcp_from_plugins">来自插件的 MCP 服务器</string>
+    <string name="pm_mcp_direct">直接添加</string>
+    <string name="pm_mcp_approval_pending">已安装 · 需要工作区批准</string>
+    <string name="pm_mcp_ready">可用于下一次 Code 运行</string>
+    <string name="pm_mcp_managed_hint">这些服务器来自已启用的插件。请在插件中管理；它们的工具使用工作区权限。</string>
+    <string name="pm_manage_plugins">管理插件</string>
+    <string name="pm_mcp_permissions">工作区权限</string>
 </resources>

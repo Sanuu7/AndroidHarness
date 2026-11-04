@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"Durées d\'exécution"</string>
     <string name="pm_show_all">"Afficher tout %1$d"</string>
     <string name="pm_show_less">"Afficher moins"</string>
+    <string name="pm_install_title">"Installer le plugin"</string>
+    <string name="pm_install_named">"Installer %1$s"</string>
+    <string name="pm_installing">"Installation…"</string>
+    <string name="pm_discover_loading">"Recherche de plugins…"</string>
+    <string name="pm_discover_loading_hint">"Chargement des places de marché et des sources communautaires."</string>
+    <string name="pm_mcp_from_plugins">"Serveurs MCP des plugins"</string>
+    <string name="pm_mcp_direct">"Ajouté directement"</string>
+    <string name="pm_mcp_approval_pending">"Installé · approbation de l’espace de travail requise"</string>
+    <string name="pm_mcp_ready">"Disponible pour la prochaine exécution de Code"</string>
+    <string name="pm_mcp_managed_hint">"Ces serveurs proviennent de plugins activés. Gérez-les dans Plugins ; leurs outils utilisent les autorisations de l’espace de travail."</string>
+    <string name="pm_manage_plugins">"Gérer les plugins"</string>
+    <string name="pm_mcp_permissions">"Autorisations de l’espace de travail"</string>
 </resources>

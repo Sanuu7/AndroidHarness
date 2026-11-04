@@ -390,7 +390,8 @@ fun SettingsScreen(
                         SettingsPage.PRIVACY -> PrivacySection(container, settings, scope)
                         SettingsPage.GITHUB -> GitHubIntegrationSection(container)
                         SettingsPage.SEARCH -> WebSearchSection(container)
-                        SettingsPage.MCP -> McpSection(container)
+                        SettingsPage.MCP -> McpSection(container, onOpenPlugins = { openPage(SettingsPage.PLUGINS) },
+                            onOpenConfiguration = { openPage(SettingsPage.CONFIGURATION) })
                         SettingsPage.TELEGRAM -> TelegramSection(container)
                         SettingsPage.WORKSPACE -> {
                             RememberedPermissionsSection(container)
@@ -1743,7 +1744,7 @@ private fun VoiceSpeechSection(
 // ---------------------------------------------------------------------------
 
 @Composable
-private fun McpSection(container: AppContainer) {
+private fun McpSection(container: AppContainer, onOpenPlugins: () -> Unit, onOpenConfiguration: () -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -1756,6 +1757,7 @@ private fun McpSection(container: AppContainer) {
     val anyConnected = servers.any { statuses[it.name]?.state == "connected" }
 
     SettingsHeader(uiContext.getString(R.string.settings_search_mcp_title))
+    PluginMcpServersSection(container, onOpenPlugins, onOpenConfiguration)
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_mcp_title)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (configTampered) {
@@ -1775,7 +1777,7 @@ private fun McpSection(container: AppContainer) {
                 )
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_search_mcp_title), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.pm_mcp_direct), style = MaterialTheme.typography.titleSmall)
                     Text(
                         uiContext.getString(R.string.ui_extra_tools_the_agent_can_use_in),
                         style = MaterialTheme.typography.bodySmall,

@@ -218,6 +218,22 @@ class PluginManagerTest {
         assertTrue(server.name.startsWith("test_plugi_"))
         assertTrue(server.deviceLocal)
         assertEquals(store.directory(record).resolve("server.js").canonicalPath, server.args.single())
+        val origin = requireNotNull(config.serverSources[server.name])
+        assertEquals("test", origin.name)
+        assertEquals("test-plugin", origin.plugin)
+        assertTrue(origin.source.startsWith("Managed/Global/"))
+    }
+    @Test fun `MCP server labels follow project overrides and disappear when plugins are disabled`() {
+        val store = PluginStore(tmp.newFolder())
+        store.install(prepared(bundle(mcp = true)), "global", "Global")
+        val project = store.install(prepared(bundle(version = "2.0.0", mcp = true)), "project:a", "A")
+        fun load(scope: String) = HarnessConfigLoader(managedPlugins = store.configurationSources(scope)).load(FileFs(tmp.newFolder()))
+        assertTrue(load("project:a").serverSources.values.single().source.startsWith("Managed/Project/"))
+        assertTrue(load("project:b").serverSources.values.single().source.startsWith("Managed/Global/"))
+        store.setEnabled(project.id, false)
+        assertTrue(load("project:a").serverSources.values.single().source.startsWith("Managed/Global/"))
+        store.list().forEach { store.setEnabled(it.id, false) }
+        assertTrue(load("project:a").serverSources.isEmpty())
     }
     @Test fun `similarly named MCP servers remain distinct after namespacing`() {
         val root = bundle()

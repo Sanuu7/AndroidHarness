@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"執行時"</string>
     <string name="pm_show_all">"顯示全部 %1$d"</string>
     <string name="pm_show_less">"收起"</string>
+    <string name="pm_install_title">"安裝外掛"</string>
+    <string name="pm_install_named">"安裝 %1$s"</string>
+    <string name="pm_installing">"正在安裝…"</string>
+    <string name="pm_discover_loading">"正在尋找外掛…"</string>
+    <string name="pm_discover_loading_hint">"正在載入外掛市集與社群來源。"</string>
+    <string name="pm_mcp_from_plugins">"來自外掛的 MCP 伺服器"</string>
+    <string name="pm_mcp_direct">"直接新增"</string>
+    <string name="pm_mcp_approval_pending">"已安裝 · 需要工作區核准"</string>
+    <string name="pm_mcp_ready">"可用於下一次 Code 執行"</string>
+    <string name="pm_mcp_managed_hint">"這些伺服器來自已啟用的外掛。請在外掛中管理；其工具會使用工作區權限。"</string>
+    <string name="pm_manage_plugins">"管理外掛"</string>
+    <string name="pm_mcp_permissions">"工作區權限"</string>
 </resources>

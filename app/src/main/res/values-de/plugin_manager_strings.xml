@@ -79,4 +79,16 @@
     <string name="pm_runtimes">Laufzeitumgebungen</string>
     <string name="pm_show_all">Alle %1$d anzeigen</string>
     <string name="pm_show_less">Weniger anzeigen</string>
+    <string name="pm_install_title">Plugin installieren</string>
+    <string name="pm_install_named">%1$s installieren</string>
+    <string name="pm_installing">Wird installiert…</string>
+    <string name="pm_discover_loading">Plugins werden gesucht…</string>
+    <string name="pm_discover_loading_hint">Marktplätze und Community-Quellen werden geladen.</string>
+    <string name="pm_mcp_from_plugins">MCP-Server aus Plugins</string>
+    <string name="pm_mcp_direct">Direkt hinzugefügt</string>
+    <string name="pm_mcp_approval_pending">Installiert · Freigabe für den Arbeitsbereich nötig</string>
+    <string name="pm_mcp_ready">Für den nächsten Code-Lauf verfügbar</string>
+    <string name="pm_mcp_managed_hint">Diese Server stammen aus aktivierten Plugins. Verwalte sie unter Plugins; ihre Tools nutzen die Berechtigungen des Arbeitsbereichs.</string>
+    <string name="pm_manage_plugins">Plugins verwalten</string>
+    <string name="pm_mcp_permissions">Berechtigungen des Arbeitsbereichs</string>
 </resources>

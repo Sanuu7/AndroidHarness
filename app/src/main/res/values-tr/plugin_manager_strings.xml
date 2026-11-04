@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"Çalışma zamanları"</string>
     <string name="pm_show_all">"Tümünü göster (%1$d)"</string>
     <string name="pm_show_less">"Daha az göster"</string>
+    <string name="pm_install_title">"Eklentiyi yükle"</string>
+    <string name="pm_install_named">"%1$s eklentisini yükle"</string>
+    <string name="pm_installing">"Yükleniyor…"</string>
+    <string name="pm_discover_loading">"Eklentiler bulunuyor…"</string>
+    <string name="pm_discover_loading_hint">"Pazaryerleri ve topluluk kaynakları yükleniyor."</string>
+    <string name="pm_mcp_from_plugins">"Eklentilerden MCP sunucuları"</string>
+    <string name="pm_mcp_direct">"Doğrudan eklendi"</string>
+    <string name="pm_mcp_approval_pending">"Yüklendi · çalışma alanı onayı gerekli"</string>
+    <string name="pm_mcp_ready">"Sonraki Code çalıştırması için kullanılabilir"</string>
+    <string name="pm_mcp_managed_hint">"Bu sunucular etkin eklentilerden gelir. Bunları Eklentiler bölümünde yönetin; araçları çalışma alanı izinlerini kullanır."</string>
+    <string name="pm_manage_plugins">"Eklentileri yönet"</string>
+    <string name="pm_mcp_permissions">"Çalışma alanı izinleri"</string>
 </resources>

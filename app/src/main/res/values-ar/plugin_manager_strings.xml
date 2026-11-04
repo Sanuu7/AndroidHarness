@@ -79,4 +79,16 @@
     <string name="pm_runtimes">بيئات التشغيل</string>
     <string name="pm_show_all">عرض كل %1$d</string>
     <string name="pm_show_less">عرض أقل</string>
+    <string name="pm_install_title">تثبيت المكوّن الإضافي</string>
+    <string name="pm_install_named">تثبيت %1$s</string>
+    <string name="pm_installing">جارٍ التثبيت…</string>
+    <string name="pm_discover_loading">البحث عن المكونات الإضافية…</string>
+    <string name="pm_discover_loading_hint">تحميل الأسواق والمصادر المجتمعية.</string>
+    <string name="pm_mcp_from_plugins">خوادم MCP من المكونات الإضافية</string>
+    <string name="pm_mcp_direct">مُضاف مباشرة</string>
+    <string name="pm_mcp_approval_pending">مثبّت · يلزم اعتماد مساحة العمل</string>
+    <string name="pm_mcp_ready">متاح لتشغيل Code التالي</string>
+    <string name="pm_mcp_managed_hint">تأتي هذه الخوادم من مكونات إضافية مفعّلة. أدرها من الإضافات؛ تستخدم أدواتها أذونات مساحة العمل.</string>
+    <string name="pm_manage_plugins">إدارة المكونات الإضافية</string>
+    <string name="pm_mcp_permissions">أذونات مساحة العمل</string>
 </resources>

@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"Masa tayangan"</string>
     <string name="pm_show_all">"Tunjukkan semua %1$d"</string>
     <string name="pm_show_less">"Tunjukkan lebih sedikit"</string>
+    <string name="pm_install_title">"Pasang pemalam"</string>
+    <string name="pm_install_named">"Pasang %1$s"</string>
+    <string name="pm_installing">"Memasang…"</string>
+    <string name="pm_discover_loading">"Mencari pemalam…"</string>
+    <string name="pm_discover_loading_hint">"Memuatkan pasar raya dan sumber komuniti."</string>
+    <string name="pm_mcp_from_plugins">"Pelayan MCP daripada pemalam"</string>
+    <string name="pm_mcp_direct">"Ditambah terus"</string>
+    <string name="pm_mcp_approval_pending">"Dipasang · kelulusan ruang kerja diperlukan"</string>
+    <string name="pm_mcp_ready">"Tersedia untuk larian Code seterusnya"</string>
+    <string name="pm_mcp_managed_hint">"Pelayan ini datang daripada pemalam yang didayakan. Uruskan dalam Pemalam; alatnya menggunakan kebenaran ruang kerja."</string>
+    <string name="pm_manage_plugins">"Urus pemalam"</string>
+    <string name="pm_mcp_permissions">"Kebenaran ruang kerja"</string>
 </resources>

@@ -12,6 +12,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
@@ -25,6 +27,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.LiveRegionMode
+import androidx.compose.ui.semantics.liveRegion
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.style.TextOverflow
@@ -43,7 +47,8 @@ import com.androidharness.app.ui.common.Switch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
-internal fun PluginManagerSection(container: AppContainer, managerOverride: PluginManager? = null, workspaceOverride: WorkspaceFs? = null) {
+internal fun PluginManagerSection(container: AppContainer, managerOverride: PluginManager? = null, workspaceOverride: WorkspaceFs? = null,
+    catalogSearch: (suspend (String) -> List<CatalogSection>)? = null) {
     val manager = managerOverride ?: container.pluginManager
     val current by container.workspace.current.collectAsStateWithLifecycle(initialValue = null)
     val project by container.workspace.currentProject.collectAsStateWithLifecycle(initialValue = null)
@@ -67,6 +72,8 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     var registryBroken by remember { mutableStateOf(false) }
     var resetRegistry by remember { mutableStateOf(false) }
     var busy by remember { mutableStateOf(false) }
+    var preparingOrigin by remember { mutableStateOf<PluginOrigin?>(null) }
+    var preparingInput by remember { mutableStateOf(false) }
     var progress by remember { mutableStateOf<PluginProgress?>(null) }
     var operation by remember { mutableStateOf<Job?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -89,35 +96,36 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     }
     fun search() {
         if (searching) return
+        searching = true
         scope.launch {
-            searching = true
-            try { sections = manager.search(query) }
+            try { sections = catalogSearch?.invoke(query) ?: manager.search(query) }
             catch (e: CancellationException) { throw e }
-            catch (e: Exception) { error = e.message }
+            catch (e: Exception) { error = e.message; sections = emptyList() }
             finally { searching = false }
         }
     }
     LaunchedEffect(tab) { if (tab == 1 && sections == null) search() }
     /** Runs one plugin operation with shared progress, cancellation and the three outcomes a bundle can have. */
-    fun launch(replacing: InstalledPlugin? = null, block: suspend () -> Unit) {
+    fun launch(replacing: InstalledPlugin? = null, origin: PluginOrigin? = null, fromInput: Boolean = false, block: suspend () -> Unit) {
         if (busy) return
         val captured = fs
         reviewWorkspace = captured
         reviewLabel = replacing?.scopeLabel ?: project?.name ?: captured?.displayPath.orEmpty()
+        busy = true; error = null; notice = null
+        preparingOrigin = origin; preparingInput = fromInput
         operation = scope.launch {
-            busy = true; error = null; notice = null
             try { block() }
             catch (e: CancellationException) { throw e }
             catch (e: MarketplaceChoices) { choices = e.listings }
             catch (e: InstallerNeeded) { installer = PluginRequest.RunInstaller(e.command, "", e.message.orEmpty()) }
             catch (e: Exception) { error = e.message ?: failed }
-            finally { busy = false; progress = null; operation = null }
+            finally { busy = false; progress = null; operation = null; preparingOrigin = null; preparingInput = false }
         }
     }
-    fun prepare(origin: PluginOrigin, replacing: InstalledPlugin? = null) = launch(replacing) {
+    fun prepare(origin: PluginOrigin, replacing: InstalledPlugin? = null) = launch(replacing, origin) {
         prepared = manager.prepare(origin, replacing) { progress = it }
     }
-    fun submit(text: String) = launch {
+    fun submit(text: String) = launch(fromInput = true) {
         progress = PluginProgress("Resolving source")
         when (val request = manager.request(text)) {
             is PluginRequest.Install -> prepared = manager.prepare(request.origin) { progress = it }
@@ -157,7 +165,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                     }
                 }
             }
-            if (loading || busy) item {
+            if ((loading && tab == 0) || (busy && prepared == null && !preparingInput && (tab != 1 || preparingOrigin == null))) item {
                 Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     val status = progress?.packages
                     if (status != null && status.packages.isNotEmpty())
@@ -243,6 +251,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                     item {
                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                             OutlinedTextField(query, { query = it.take(160) }, Modifier.fillMaxWidth(), singleLine = true,
+                                shape = RoundedCornerShape(28.dp),
                                 label = { Text(stringResource(R.string.pm_search_hint)) },
                                 leadingIcon = { Icon(Icons.Outlined.Search, null) },
                                 keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search), keyboardActions = KeyboardActions(onSearch = { search() }))
@@ -252,48 +261,51 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                                 }
                                 AssistChip(onClick = { search() }, enabled = !searching, label = { Text(stringResource(R.string.pm_search)) })
                             }
-                            if (searching) LinearProgressIndicator(Modifier.fillMaxWidth())
                         }
                     }
-                    val catalog = listOf(CatalogSection(container.appContext.getString(R.string.pm_starters), PluginStarters.listings)) + sections.orEmpty()
-                    catalog.forEach { section ->
-                        val shown = section.listings.filter { kindFilter == "all" || it.kind == kindFilter }
-                        if (shown.isEmpty() && section.error == null) return@forEach
-                        val open = section.title in expanded
-                        item(key = "section-${section.title}") {
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(section.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                                if (shown.size > 6) TextButton(onClick = { expanded = if (open) expanded - section.title else expanded + section.title }) {
-                                    Text(if (open) stringResource(R.string.pm_show_less) else stringResource(R.string.pm_show_all, shown.size))
-                                }
-                            }
-                        }
-                        section.error?.let { item(key = "error-${section.title}") { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) } }
-                        items(if (open) shown else shown.take(6), key = { "${section.title}-${it.name}-${it.origin.target}-${it.origin.subdirectory}" }) { listing ->
-                            PluginListingCard(listing, !busy) { prepare(listing.origin) }
-                        }
-                    }
-                    item {
-                        PluginPanel {
-                            Text(stringResource(R.string.pm_marketplaces), style = MaterialTheme.typography.titleMedium)
-                            Text(stringResource(R.string.pm_marketplaces_hint), style = MaterialTheme.typography.bodyMedium)
-                            marketList.forEach { market ->
+                    if (searching || sections == null) item { PluginDiscoverLoading() }
+                    else {
+                        val catalog = sections.orEmpty()
+                        catalog.forEach { section ->
+                            val shown = section.listings.filter { kindFilter == "all" || it.kind == kindFilter }
+                            if (shown.isEmpty() && section.error == null) return@forEach
+                            val open = section.title in expanded
+                            item(key = "section-${section.title}") {
                                 Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Column(Modifier.weight(1f)) {
-                                        Text(market.name.ifBlank { market.repo }, style = MaterialTheme.typography.bodyMedium)
-                                        Text(market.repo, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                    }
-                                    IconButton(onClick = { manager.removeMarketplace(market.repo); marketList = manager.marketplaces.list(); sections = null; search() }, enabled = !busy) {
-                                        Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.pm_remove_marketplace, market.repo))
+                                    Text(section.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                                    if (shown.size > 6) TextButton(onClick = { expanded = if (open) expanded - section.title else expanded + section.title }) {
+                                        Text(if (open) stringResource(R.string.pm_show_less) else stringResource(R.string.pm_show_all, shown.size))
                                     }
                                 }
                             }
-                            OutlinedTextField(marketInput, { marketInput = it.take(300) }, Modifier.fillMaxWidth(), singleLine = true, enabled = !busy,
-                                label = { Text(stringResource(R.string.pm_marketplace_field)) })
-                            OutlinedButton(onClick = {
-                                try { manager.addMarketplace(marketInput); marketInput = ""; marketList = manager.marketplaces.list(); sections = null; search() }
-                                catch (e: Exception) { error = e.message }
-                            }, enabled = !busy && marketInput.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_add_marketplace)) }
+                            section.error?.let { item(key = "error-${section.title}") { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.error) } }
+                            items(if (open) shown else shown.take(6), key = { "${section.title}-${it.name}-${it.origin.target}-${it.origin.subdirectory}" }) { listing ->
+                                PluginListingCard(listing, !busy, preparingOrigin == listing.origin, progress,
+                                    onCancel = { operation?.cancel() }) { prepare(listing.origin) }
+                            }
+                        }
+                        item {
+                            PluginPanel {
+                                Text(stringResource(R.string.pm_marketplaces), style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(R.string.pm_marketplaces_hint), style = MaterialTheme.typography.bodyMedium)
+                                marketList.forEach { market ->
+                                    Row(verticalAlignment = Alignment.CenterVertically) {
+                                        Column(Modifier.weight(1f)) {
+                                            Text(market.name.ifBlank { market.repo }, style = MaterialTheme.typography.bodyMedium)
+                                            Text(market.repo, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                        IconButton(onClick = { manager.removeMarketplace(market.repo); marketList = manager.marketplaces.list(); sections = null; search() }, enabled = !busy) {
+                                            Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.pm_remove_marketplace, market.repo))
+                                        }
+                                    }
+                                }
+                                OutlinedTextField(marketInput, { marketInput = it.take(300) }, Modifier.fillMaxWidth(), singleLine = true, enabled = !busy,
+                                    label = { Text(stringResource(R.string.pm_marketplace_field)) })
+                                OutlinedButton(onClick = {
+                                    try { manager.addMarketplace(marketInput); marketInput = ""; marketList = manager.marketplaces.list(); sections = null; search() }
+                                    catch (e: Exception) { error = e.message }
+                                }, enabled = !busy && marketInput.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_add_marketplace)) }
+                            }
                         }
                     }
                 }
@@ -303,8 +315,11 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                             Text(stringResource(R.string.pm_add_title), style = MaterialTheme.typography.titleLarge)
                             Text(stringResource(R.string.pm_paste_hint), style = MaterialTheme.typography.bodyMedium)
                             OutlinedTextField(input, { input = it.take(4000) }, Modifier.fillMaxWidth(), enabled = !busy, minLines = 2, maxLines = 6,
+                                keyboardOptions = KeyboardOptions(autoCorrectEnabled = false),
                                 label = { Text(stringResource(R.string.pm_paste_label)) }, textStyle = MaterialTheme.typography.bodyMedium.copy(fontFamily = FontFamily.Monospace))
-                            Button(onClick = { submit(input) }, enabled = !busy && input.isNotBlank(), modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_review)) }
+                            PluginInstallButton(enabled = !busy && input.isNotBlank(), preparing = preparingInput, progress = progress,
+                                onClick = { submit(input) })
+                            if (preparingInput) TextButton(onClick = { operation?.cancel() }) { Text(stringResource(android.R.string.cancel)) }
                             Text(stringResource(R.string.pm_examples), style = MaterialTheme.typography.titleSmall)
                             listOf("npx -y @modelcontextprotocol/server-memory", "npx skills add anthropics/skills --skill pdf",
                                 "/plugin marketplace add anthropics/claude-plugins-official", "/plugin install superpowers@superpowers-marketplace",
@@ -330,10 +345,12 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
         }
     }
     prepared?.let { candidate ->
-        PluginInstallDialog(candidate, reviewWorkspace, reviewLabel, manager, installed.firstOrNull { it.id == candidate.replacing }, busy,
+        PluginInstallDialog(candidate, reviewWorkspace, reviewLabel, manager, installed.firstOrNull { it.id == candidate.replacing }, busy, progress,
+            onCancel = { operation?.cancel() },
             onDismiss = { if (!busy) prepared = null }, onInstall = { destination, label ->
+                if (busy) return@PluginInstallDialog
+                busy = true; error = null; progress = PluginProgress("Installing plugin")
                 operation = scope.launch {
-                    busy = true; error = null
                     try {
                         val (_, runtimeProblem) = manager.install(candidate, destination, label) { progress = it }
                         prepared = null; tab = 0; input = ""
@@ -352,7 +369,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                 Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(listing.name, style = MaterialTheme.typography.titleSmall)
                     if (listing.description.isNotBlank()) Text(listing.description, style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis)
-                    TextButton(onClick = { choices = null; prepare(listing.origin) }) { Text(stringResource(R.string.pm_review)) }
+                    TextButton(onClick = { choices = null; prepare(listing.origin) }) { Text(stringResource(R.string.settings_action_install)) }
                 }
             }
         }
@@ -395,8 +412,10 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
 }
 
 @Composable
-private fun PluginPanel(content: @Composable ColumnScope.() -> Unit) = SettingsPanel(Modifier.fillMaxWidth()) {
-    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
+private fun PluginPanel(content: @Composable ColumnScope.() -> Unit) = Surface(Modifier.fillMaxWidth(),
+    shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.surfaceContainerLow,
+    tonalElevation = 1.dp, shadowElevation = 3.dp) {
+    Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp), content = content)
 }
 
 @Composable
@@ -413,8 +432,12 @@ private fun kindLabel(kind: String): String = stringResource(when (kind) {
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
-private fun PluginListingCard(listing: PluginListing, enabled: Boolean, review: () -> Unit) = PluginPanel {
+private fun PluginListingCard(listing: PluginListing, enabled: Boolean, preparing: Boolean, progress: PluginProgress?,
+    onCancel: () -> Unit, install: () -> Unit) = PluginPanel {
     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.secondaryContainer, tonalElevation = 3.dp) {
+            Icon(if (listing.kind == "mcp") Icons.Outlined.Hub else Icons.Outlined.Extension, null, Modifier.padding(12.dp).size(24.dp))
+        }
         Text(listing.name, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
         if (listing.version.isNotBlank()) Text(listing.version, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
@@ -425,7 +448,73 @@ private fun PluginListingCard(listing: PluginListing, enabled: Boolean, review: 
     }
     Text(if (listing.builtIn) stringResource(R.string.pm_built_in) else listOf(listing.source, listing.publisher).filter(String::isNotBlank).joinToString(" · "),
         style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    OutlinedButton(onClick = review, enabled = enabled, modifier = Modifier.fillMaxWidth()) { Text(stringResource(R.string.pm_review)) }
+    val installLabel = stringResource(R.string.pm_install_named, listing.name)
+    PluginInstallButton(enabled, preparing, progress, Modifier.semantics { contentDescription = installLabel }, install)
+    if (preparing) TextButton(onClick = onCancel) { Text(stringResource(android.R.string.cancel)) }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun PluginInstallButton(enabled: Boolean, preparing: Boolean, progress: PluginProgress?, modifier: Modifier = Modifier, onClick: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    Button(onClick = onClick, enabled = enabled && !preparing, modifier = modifier.fillMaxWidth().heightIn(min = 54.dp).animateContentSize(),
+        colors = ButtonDefaults.buttonColors(disabledContainerColor = if (preparing) scheme.primaryContainer else scheme.onSurface.copy(alpha = .12f),
+            disabledContentColor = if (preparing) scheme.onPrimaryContainer else scheme.onSurface.copy(alpha = .38f))) {
+        if (preparing) LoadingIndicator(Modifier.size(26.dp), color = scheme.onPrimaryContainer)
+        else Icon(Icons.Outlined.Download, null, Modifier.size(20.dp))
+        Spacer(Modifier.width(10.dp))
+        Text(if (preparing) pluginProgressLabel(progress) else stringResource(R.string.settings_action_install),
+            Modifier.semantics { liveRegion = LiveRegionMode.Polite }, maxLines = 2, overflow = TextOverflow.Ellipsis)
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun PluginDiscoverLoading() = Surface(Modifier.fillMaxWidth(), shape = RoundedCornerShape(32.dp),
+    color = MaterialTheme.colorScheme.secondaryContainer, tonalElevation = 3.dp) {
+    Column(Modifier.fillMaxWidth().padding(horizontal = 24.dp, vertical = 48.dp), horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        LoadingIndicator(Modifier.size(80.dp))
+        Text(stringResource(R.string.pm_discover_loading), style = MaterialTheme.typography.titleLarge,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        Text(stringResource(R.string.pm_discover_loading_hint), style = MaterialTheme.typography.bodyMedium,
+            textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+    }
+}
+
+@Composable
+private fun pluginProgressLabel(progress: PluginProgress?): String = stringResource(when (progress?.stage) {
+    "Downloading" -> R.string.pm_downloading
+    "Checking bundle" -> R.string.pm_checking
+    "Reading archive", "Reading folder" -> R.string.pm_reading
+    "Installing runtime" -> R.string.pm_installing_runtime
+    "Running installer" -> R.string.pm_running_installer
+    "Installing plugin" -> R.string.pm_installing
+    else -> R.string.pm_resolving
+})
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun PluginInstallingContent(name: String, progress: PluginProgress?) {
+    Column(Modifier.fillMaxWidth().padding(vertical = 24.dp), horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(20.dp)) {
+        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primaryContainer, shadowElevation = 6.dp) {
+            LoadingIndicator(Modifier.padding(20.dp).size(72.dp))
+        }
+        Text(name, style = MaterialTheme.typography.titleLarge, textAlign = androidx.compose.ui.text.style.TextAlign.Center)
+        Text(pluginProgressLabel(progress), style = MaterialTheme.typography.bodyLarge,
+            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite })
+        val packages = progress?.packages
+        when {
+            packages != null && packages.packages.isNotEmpty() -> LinearProgressIndicator(
+                progress = { packages.completed.size.toFloat() / packages.packages.size }, modifier = Modifier.fillMaxWidth())
+            progress?.total?.let { it > 0 } == true -> LinearProgressIndicator(
+                progress = { (progress.bytes.toFloat() / requireNotNull(progress.total)).coerceIn(0f, 1f) }, modifier = Modifier.fillMaxWidth())
+            else -> LinearProgressIndicator(Modifier.fillMaxWidth())
+        }
+        val detail = packages?.currentPackage ?: progress?.detail.orEmpty()
+        if (detail.isNotBlank()) Text(detail, style = MaterialTheme.typography.bodySmall, maxLines = 3, overflow = TextOverflow.Ellipsis)
+    }
 }
 
 @Composable
@@ -462,7 +551,8 @@ private fun PluginContentsView(contents: PluginContents) {
 
 @Composable
 private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceFs?, workspaceLabel: String, manager: PluginManager,
-    previous: InstalledPlugin?, busy: Boolean, onDismiss: () -> Unit, onInstall: (String, String) -> Unit) {
+    previous: InstalledPlugin?, busy: Boolean, progress: PluginProgress?, onCancel: () -> Unit,
+    onDismiss: () -> Unit, onInstall: (String, String) -> Unit) {
     var global by rememberSaveable(candidate.token) { mutableStateOf(previous?.let { it.scope == "global" } ?: (workspace == null)) }
     var manifest by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(candidate.token) {
@@ -471,9 +561,12 @@ private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceF
         catch (_: Exception) { manifest = null }
     }
     var reviewManifest by remember { mutableStateOf(false) }
-    AlertDialog(onDismissRequest = { if (reviewManifest) reviewManifest = false else if (!busy) onDismiss() },
-        title = { Text(stringResource(if (reviewManifest) R.string.pm_manifest else R.string.pm_review_title)) }, text = {
-        if (reviewManifest) {
+    AlertDialog(onDismissRequest = { if (!busy) { if (reviewManifest) reviewManifest = false else onDismiss() } },
+        shape = RoundedCornerShape(32.dp),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+        title = { Text(stringResource(if (busy) R.string.pm_installing else if (reviewManifest) R.string.pm_manifest else R.string.pm_install_title)) }, text = {
+        if (busy) PluginInstallingContent(candidate.contents.name, progress)
+        else if (reviewManifest) {
             com.androidharness.app.ui.common.SecureDialogEffect()
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(manifest.orEmpty(), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
@@ -500,12 +593,12 @@ private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceF
             TextButton(onClick = { reviewManifest = true }, enabled = manifest != null && !busy) { Text(stringResource(R.string.pm_manifest)) }
         }
     }, confirmButton = {
-        if (reviewManifest) TextButton(onClick = { reviewManifest = false }) { Text(stringResource(R.string.pm_close)) }
-        else TextButton(onClick = {
+        if (!busy && reviewManifest) TextButton(onClick = { reviewManifest = false }) { Text(stringResource(R.string.pm_close)) }
+        else if (!busy) Button(onClick = {
         val destination = previous?.scope ?: if (global) "global" else manager.workspaceScope(requireNotNull(workspace))
         onInstall(destination, previous?.scopeLabel ?: if (global) "Global" else workspaceLabel)
     }, enabled = !busy && (candidate.replacing == null || previous != null) && (global || workspace != null || previous != null)) { Text(stringResource(if (candidate.replacing == null) R.string.pm_install else R.string.pm_apply_update)) } },
-        dismissButton = { if (!reviewManifest) TextButton(onClick = onDismiss, enabled = !busy) { Text(stringResource(android.R.string.cancel)) } })
+        dismissButton = { if (!reviewManifest || busy) TextButton(onClick = if (busy) onCancel else onDismiss) { Text(stringResource(android.R.string.cancel)) } })
 }
 
 @Composable

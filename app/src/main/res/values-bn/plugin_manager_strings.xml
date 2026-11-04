@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"রানটাইম"</string>
     <string name="pm_show_all">"সমস্ত %1$d দেখান"</string>
     <string name="pm_show_less">"কম দেখান"</string>
+    <string name="pm_install_title">"প্লাগইন ইনস্টল করুন"</string>
+    <string name="pm_install_named">"%1$s ইনস্টল করুন"</string>
+    <string name="pm_installing">"ইনস্টল হচ্ছে…"</string>
+    <string name="pm_discover_loading">"প্লাগইন খোঁজা হচ্ছে…"</string>
+    <string name="pm_discover_loading_hint">"মার্কেটপ্লেস ও কমিউনিটি উৎস লোড হচ্ছে।"</string>
+    <string name="pm_mcp_from_plugins">"প্লাগইন থেকে MCP সার্ভার"</string>
+    <string name="pm_mcp_direct">"সরাসরি যোগ করা হয়েছে"</string>
+    <string name="pm_mcp_approval_pending">"ইনস্টল হয়েছে · কর্মক্ষেত্রের অনুমোদন প্রয়োজন"</string>
+    <string name="pm_mcp_ready">"পরবর্তী Code রানের জন্য উপলব্ধ"</string>
+    <string name="pm_mcp_managed_hint">"এই সার্ভারগুলো সক্ষম প্লাগইন থেকে আসে। প্লাগইনে সেগুলো পরিচালনা করুন; তাদের টুল কর্মক্ষেত্রের অনুমতি ব্যবহার করে।"</string>
+    <string name="pm_manage_plugins">"প্লাগইন পরিচালনা করুন"</string>
+    <string name="pm_mcp_permissions">"কর্মক্ষেত্রের অনুমতি"</string>
 </resources>

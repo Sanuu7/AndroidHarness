@@ -79,4 +79,16 @@
     <string name="pm_runtimes">Среды выполнения</string>
     <string name="pm_show_all">Показать все %1$d</string>
     <string name="pm_show_less">Свернуть</string>
+    <string name="pm_install_title">Установить плагин</string>
+    <string name="pm_install_named">Установить %1$s</string>
+    <string name="pm_installing">Установка…</string>
+    <string name="pm_discover_loading">Поиск плагинов…</string>
+    <string name="pm_discover_loading_hint">Загрузка магазинов и источников сообщества.</string>
+    <string name="pm_mcp_from_plugins">MCP-серверы из плагинов</string>
+    <string name="pm_mcp_direct">Добавлено напрямую</string>
+    <string name="pm_mcp_approval_pending">Установлено · нужно одобрение рабочей области</string>
+    <string name="pm_mcp_ready">Доступно для следующего запуска Code</string>
+    <string name="pm_mcp_managed_hint">Эти серверы взяты из включённых плагинов. Управляйте ими в разделе «Плагины»; их инструменты используют разрешения рабочей области.</string>
+    <string name="pm_manage_plugins">Управление плагинами</string>
+    <string name="pm_mcp_permissions">Разрешения рабочей области</string>
 </resources>

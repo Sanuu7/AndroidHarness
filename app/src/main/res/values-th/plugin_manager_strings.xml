@@ -79,4 +79,16 @@
     <string name="pm_runtimes">"รันไทม์"</string>
     <string name="pm_show_all">"แสดง %1$d ทั้งหมด"</string>
     <string name="pm_show_less">"แสดงน้อยลง"</string>
+    <string name="pm_install_title">"ติดตั้งปลั๊กอิน"</string>
+    <string name="pm_install_named">"ติดตั้ง %1$s"</string>
+    <string name="pm_installing">"กำลังติดตั้ง…"</string>
+    <string name="pm_discover_loading">"กำลังค้นหาปลั๊กอิน…"</string>
+    <string name="pm_discover_loading_hint">"กำลังโหลดมาร์เก็ตเพลสและแหล่งชุมชน"</string>
+    <string name="pm_mcp_from_plugins">"เซิร์ฟเวอร์ MCP จากปลั๊กอิน"</string>
+    <string name="pm_mcp_direct">"เพิ่มโดยตรง"</string>
+    <string name="pm_mcp_approval_pending">"ติดตั้งแล้ว · ต้องอนุมัติพื้นที่ทำงาน"</string>
+    <string name="pm_mcp_ready">"พร้อมใช้สำหรับการรัน Code ครั้งถัดไป"</string>
+    <string name="pm_mcp_managed_hint">"เซิร์ฟเวอร์เหล่านี้มาจากปลั๊กอินที่เปิดใช้งาน จัดการได้ในปลั๊กอิน เครื่องมือของเซิร์ฟเวอร์ใช้สิทธิ์ของพื้นที่ทำงาน"</string>
+    <string name="pm_manage_plugins">"จัดการปลั๊กอิน"</string>
+    <string name="pm_mcp_permissions">"สิทธิ์ของพื้นที่ทำงาน"</string>
 </resources>
