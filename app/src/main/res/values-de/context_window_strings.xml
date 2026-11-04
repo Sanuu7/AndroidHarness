@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">Kontextnutzung</string>
+    <string name="context_window_remaining">Noch %1$s Tokens</string>
+    <string name="context_window_used">%1$s / %2$s Tokens verwendet</string>
+    <string name="context_window_estimate">Geschätzter aktueller Kontext. Aktualisiert sich während Läufen; ungesendeter Text zählt nicht.</string>
+    <string name="context_window_last_request">Aus der letzten Anfrage; ungesendeter Text zählt nicht.</string>
+    <string name="context_window_pending">Die Kontextnutzung erscheint nach der ersten Anfrage.</string>
+    <string name="context_window_summarized">Frühere Nachrichten wurden zusammengefasst. Der vollständige Verlauf bleibt in diesem Chat.</string>
+    <string name="context_window_compact">Komprimieren</string>
+    <string name="context_window_compact_help">Sendet /compact, um frühere Nachrichten zusammenzufassen.</string>
+    <string name="context_window_busy">Stoppe die aktuelle Aufgabe, bevor du komprimierst.</string>
+</resources>

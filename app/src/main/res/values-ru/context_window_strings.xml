@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">Использование контекста</string>
+    <string name="context_window_remaining">%1$s токенов осталось</string>
+    <string name="context_window_used">%1$s / %2$s токенов использовано</string>
+    <string name="context_window_estimate">Оценка текущего контекста. Обновляется во время выполнения; неотправленный текст не учитывается.</string>
+    <string name="context_window_last_request">По последнему запросу; неотправленный текст не учитывается.</string>
+    <string name="context_window_pending">Использование контекста появится после первого запроса.</string>
+    <string name="context_window_summarized">Более ранние сообщения сжаты в сводку. Полная история остаётся в этом чате.</string>
+    <string name="context_window_compact">Сжать</string>
+    <string name="context_window_compact_help">Отправляет /compact, чтобы сжать более ранние сообщения.</string>
+    <string name="context_window_busy">Остановите текущую задачу перед сжатием.</string>
+</resources>

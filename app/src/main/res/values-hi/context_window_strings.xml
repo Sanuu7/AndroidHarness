@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">संदर्भ उपयोग</string>
+    <string name="context_window_remaining">%1$s टोकन शेष</string>
+    <string name="context_window_used">%1$s / %2$s टोकन उपयोग</string>
+    <string name="context_window_estimate">अनुमानित मौजूदा संदर्भ। रन के दौरान अपडेट होता है; बिना भेजा टेक्स्ट शामिल नहीं है।</string>
+    <string name="context_window_last_request">नवीनतम अनुरोध से; बिना भेजा टेक्स्ट शामिल नहीं है।</string>
+    <string name="context_window_pending">संदर्भ उपयोग पहले अनुरोध के बाद दिखेगा।</string>
+    <string name="context_window_summarized">पुराने संदेशों का सारांश बन गया है। पूरा इतिहास इस चैट में रहता है।</string>
+    <string name="context_window_compact">संक्षिप्त करें</string>
+    <string name="context_window_compact_help">पुराने संदेशों को सारांशित करने के लिए /compact भेजता है।</string>
+    <string name="context_window_busy">संक्षिप्त करने से पहले मौजूदा कार्य रोकें।</string>
+</resources>

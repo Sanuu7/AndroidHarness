@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">"Bağlam kullanımı"</string>
+    <string name="context_window_remaining">"%1$s jeton kaldı"</string>
+    <string name="context_window_used">"%1$s / %2$s jeton kullanıldı"</string>
+    <string name="context_window_estimate">"Tahmini geçerli bağlam. Çalışmalar sırasında güncellenir; gönderilmeyen metin sayılmaz."</string>
+    <string name="context_window_last_request">"Son istekten; gönderilmeyen metin sayılmaz."</string>
+    <string name="context_window_pending">"Bağlam kullanımı ilk istekten sonra görünür."</string>
+    <string name="context_window_summarized">"Önceki mesajlar özetlendi. Tam geçmiş bu sohbette kalır."</string>
+    <string name="context_window_compact">"Sıkıştır"</string>
+    <string name="context_window_compact_help">"Önceki mesajları özetlemek için /compact gönderir."</string>
+    <string name="context_window_busy">"Sıkıştırmadan önce geçerli görevi durdurun."</string>
+</resources>

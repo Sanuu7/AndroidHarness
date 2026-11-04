@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">컨텍스트 사용량</string>
+    <string name="context_window_remaining">%1$s개 토큰 남음</string>
+    <string name="context_window_used">%1$s / %2$s개 토큰 사용</string>
+    <string name="context_window_estimate">현재 컨텍스트 추정치입니다. 실행 중에 업데이트되며, 보내지 않은 텍스트는 제외됩니다.</string>
+    <string name="context_window_last_request">최근 요청 기준이며, 보내지 않은 텍스트는 제외됩니다.</string>
+    <string name="context_window_pending">첫 요청 후 컨텍스트 사용량이 표시됩니다.</string>
+    <string name="context_window_summarized">이전 메시지가 요약되었습니다. 전체 기록은 이 채팅에 남아 있습니다.</string>
+    <string name="context_window_compact">압축</string>
+    <string name="context_window_compact_help">이전 메시지를 요약하려면 /compact를 보냅니다.</string>
+    <string name="context_window_busy">압축하기 전에 현재 작업을 중지하세요.</string>
+</resources>

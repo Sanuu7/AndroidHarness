@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">Uso del contexto</string>
+    <string name="context_window_remaining">Quedan %1$s tokens</string>
+    <string name="context_window_used">%1$s / %2$s tokens usados</string>
+    <string name="context_window_estimate">Contexto actual estimado. Se actualiza durante las ejecuciones; excluye el texto sin enviar.</string>
+    <string name="context_window_last_request">De la última solicitud; excluye el texto sin enviar.</string>
+    <string name="context_window_pending">El uso del contexto aparecerá tras la primera solicitud.</string>
+    <string name="context_window_summarized">Los mensajes anteriores se han resumido. El historial completo permanece en este chat.</string>
+    <string name="context_window_compact">Compactar</string>
+    <string name="context_window_compact_help">Envía /compact para resumir los mensajes anteriores.</string>
+    <string name="context_window_busy">Detén la tarea actual antes de compactar.</string>
+</resources>

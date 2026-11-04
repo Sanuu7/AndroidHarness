@@ -2460,6 +2460,15 @@ private fun ChatScreenContent(
                 if (!state.conversation.isChat) com.androidharness.app.ui.chat.components.FloatingSubagentDock(
                     state.sessionId, viewModel.container.runManager, onOpenSubagent)
                 MessageComposer(
+                    contextControl = if (state.conversation.isChat) null else {
+                        {
+                            com.androidharness.app.ui.chat.components.ContextWindowButton(
+                                state = state,
+                                onOpenLimits = { showContext = true },
+                                onCompact = { viewModel.send("/compact") },
+                            )
+                        }
+                    },
                     modifier = Modifier.onSizeChanged { glassComposerHeight = it.height },
                     chatOnly = state.conversation.isChat,
                     sendAllowed = viewModel.attachmentBlockReason() == null,

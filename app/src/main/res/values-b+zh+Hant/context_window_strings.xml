@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">"上下文用量"</string>
+    <string name="context_window_remaining">"剩餘 %1$s 個 Token"</string>
+    <string name="context_window_used">"已用 %1$s / %2$s 個 Token"</string>
+    <string name="context_window_estimate">"估算的目前上下文。執行期間會更新；不包含未傳送的文字。"</string>
+    <string name="context_window_last_request">"來自最近一次請求；不包含未傳送的文字。"</string>
+    <string name="context_window_pending">"首次請求後顯示上下文用量。"</string>
+    <string name="context_window_summarized">"較早的訊息已總結。完整歷史仍保留在此聊天中。"</string>
+    <string name="context_window_compact">"壓縮"</string>
+    <string name="context_window_compact_help">"傳送 /compact 以總結較早的訊息。"</string>
+    <string name="context_window_busy">"壓縮前請先停止目前工作。"</string>
+</resources>

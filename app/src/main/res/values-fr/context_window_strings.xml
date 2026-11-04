@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">"Utilisation du contexte"</string>
+    <string name="context_window_remaining">"%1$s jetons restants"</string>
+    <string name="context_window_used">"%1$s / %2$s jetons utilisés"</string>
+    <string name="context_window_estimate">"Contexte actuel estimé. Mis à jour pendant les exécutions ; le texte non envoyé n’est pas compté."</string>
+    <string name="context_window_last_request">"D’après la dernière requête ; le texte non envoyé n’est pas compté."</string>
+    <string name="context_window_pending">"L’utilisation du contexte apparaîtra après la première requête."</string>
+    <string name="context_window_summarized">"Les messages précédents ont été résumés. L’historique complet reste dans ce chat."</string>
+    <string name="context_window_compact">"Compacter"</string>
+    <string name="context_window_compact_help">"Envoie /compact pour résumer les messages précédents."</string>
+    <string name="context_window_busy">"Arrêtez la tâche en cours avant de compacter."</string>
+</resources>

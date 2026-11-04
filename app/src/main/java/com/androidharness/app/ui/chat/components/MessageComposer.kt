@@ -185,6 +185,8 @@ internal fun MessageComposer(
     onAskAside: (() -> Unit)? = null,
     /** Opens hands-free Live Mode; null while the experiment is switched off. */
     onLiveMode: (() -> Unit)? = null,
+    /** Coding-only context meter, anchored immediately to the left of the text field. */
+    contextControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     attachments: @Composable () -> Unit = {},
 ) {
@@ -541,6 +543,9 @@ internal fun MessageComposer(
                 verticalAlignment = if (isGroqActive) Alignment.CenterVertically else inputAlignment,
             ) {
                 Box(Modifier.width(slotSize), contentAlignment = Alignment.Center) { leading() }
+                if (!chatOnly && !isGroqActive) contextControl?.let { control ->
+                    Box(Modifier.width(48.dp), contentAlignment = Alignment.Center) { control() }
+                }
                 field()
                 // The held mic retains its node and position until release or lock.
                 Box(Modifier.width(voiceSlotWidth.coerceAtLeast(0.dp)), contentAlignment = Alignment.Center) {

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">コンテキスト使用量</string>
+    <string name="context_window_remaining">残り %1$s トークン</string>
+    <string name="context_window_used">%1$s / %2$s トークン使用</string>
+    <string name="context_window_estimate">現在のコンテキストの推定値。実行中に更新され、未送信のテキストは含みません。</string>
+    <string name="context_window_last_request">最新のリクエストに基づく値。未送信のテキストは含みません。</string>
+    <string name="context_window_pending">最初のリクエスト後にコンテキスト使用量が表示されます。</string>
+    <string name="context_window_summarized">以前のメッセージは要約済みです。完全な履歴はこのチャットに残ります。</string>
+    <string name="context_window_compact">圧縮</string>
+    <string name="context_window_compact_help">/compact を送信して以前のメッセージを要約します。</string>
+    <string name="context_window_busy">圧縮する前に現在のタスクを停止してください。</string>
+</resources>

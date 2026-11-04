@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_window_button">প্রসঙ্গ ব্যবহার</string>
+    <string name="context_window_remaining">%1$sটি টোকেন বাকি</string>
+    <string name="context_window_used">%1$s / %2$sটি টোকেন ব্যবহৃত</string>
+    <string name="context_window_estimate">আনুমানিক বর্তমান প্রসঙ্গ। চলার সময় হালনাগাদ হয়; না পাঠানো পাঠ্য অন্তর্ভুক্ত নয়।</string>
+    <string name="context_window_last_request">সাম্প্রতিক অনুরোধ থেকে; না পাঠানো পাঠ্য অন্তর্ভুক্ত নয়।</string>
+    <string name="context_window_pending">প্রথম অনুরোধের পরে প্রসঙ্গ ব্যবহার দেখাবে।</string>
+    <string name="context_window_summarized">আগের বার্তাগুলো সংক্ষিপ্ত করা হয়েছে। সম্পূর্ণ ইতিহাস এই চ্যাটে থাকবে।</string>
+    <string name="context_window_compact">সংকুচিত করুন</string>
+    <string name="context_window_compact_help">আগের বার্তা সংক্ষিপ্ত করতে /compact পাঠায়।</string>
+    <string name="context_window_busy">সংকুচিত করার আগে বর্তমান কাজ থামান।</string>
+</resources>
