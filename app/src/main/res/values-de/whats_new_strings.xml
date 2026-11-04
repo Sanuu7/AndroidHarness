@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">Was ist neu</string>
+    <string name="whats_new_subtitle">Ein paar Dinge haben sich geändert, während du weg warst.</string>
+    <string name="whats_new_added">Neu</string>
+    <string name="whats_new_improved">Verbessert</string>
+    <string name="whats_new_fixed">Behoben</string>
+    <string name="whats_new_done">Verstanden</string>
+    <string name="wn_languages">Elf neue Sprachen, von Vietnamesisch und Türkisch bis Hindi, Koreanisch und traditionellem Chinesisch.</string>
+    <string name="wn_plugins">Plugins aus jeder Quelle, einschließlich Skills und MCP-Servern, direkt unter Plugins installiert.</string>
+    <string name="wn_live_mode">Live-Modus: eine Idee freihändig besprechen und die Antwort laut hören (#77).</string>
+    <string name="wn_autocompact">Wähle, wann Code automatisch komprimiert, nutze /autocompact pro Chat und sieh die neue Kontextanzeige (#81).</string>
+    <string name="wn_editor_files">Markdown-Vorschau im Editor sowie das Importieren vieler Dateien oder eines ganzen Ordners auf einmal (#74).</string>
+    <string name="wn_memory_search">Eigene oder unbegrenzte Länge für Erinnerungen und bis zu 20 Schlüssel pro Suchanbieter (#75).</string>
+    <string name="wn_workspace_learn">Workspace-Konfiguration, 96 Learn-Lektionen, gespeicherte Antworten, GitHub-Pull-Requests und Retry mit einem anderen Modell (#71).</string>
+    <string name="wn_visuals_tips">Eigene Visuals, AH-Rumble-Haptik, Tipps und ein klarer Hinweis, wenn eine Funktion neueres Android braucht.</string>
+    <string name="wn_local_models">Hugging-Face-Suche in der App, Pause und Fortsetzen lokaler Modelle und stärkere Build-Werkzeuge auf dem Gerät.</string>
+    <string name="wn_side_steer_settings">Seitenfragen (/btw), AH-Auto-Steuerung und vom Agenten verwaltete Einstellungen in Chat und Code (#72).</string>
+    <string name="wn_readable">Chat-Antworten lesen sich leichter, angeforderte Links bleiben sichtbar, und Bilder folgen deiner Anzahl und Platzierung.</string>
+    <string name="wn_focus">Die Einstellungssuche trifft das genaue Element, Subagenten sind leichter zu verfolgen, und Plugin-Installationen zeigen echten Fortschritt.</string>
+    <string name="wn_speed">Schnellerer Start, flüssigere Bildschirme mit hoher Bildrate und feinere Schaltflächen und Animationen.</string>
+    <string name="wn_fixed_tools">Gemini-Werkzeuge, 9Router-npm-Installationen und Rich-Antworten, die als JSON in Direktiven eintreffen (#80, #82, #84).</string>
+    <string name="wn_fixed_chat">Seitenfragen verstecken sich nicht mehr unter der Tastatur, und leere Werkzeugargumente bekommen jetzt einen hilfreichen Hinweis (#76, #79).</string>
+    <string name="wn_fixed_github">GitHub-Import und Update-Prüfungen.</string>
+</resources>

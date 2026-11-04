@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">Yang baru</string>
+    <string name="whats_new_subtitle">Beberapa hal berubah saat kamu pergi.</string>
+    <string name="whats_new_added">Ditambahkan</string>
+    <string name="whats_new_improved">Ditingkatkan</string>
+    <string name="whats_new_fixed">Diperbaiki</string>
+    <string name="whats_new_done">Mengerti</string>
+    <string name="wn_languages">Sebelas bahasa baru, dari Vietnam dan Turki hingga Hindi, Korea, dan Tionghoa Tradisional.</string>
+    <string name="wn_plugins">Plugin dari sumber mana pun, termasuk skill dan server MCP, dipasang langsung dari Plugin.</string>
+    <string name="wn_live_mode">Mode Langsung: bahas ide tanpa memegang ponsel dan dengar jawabannya (#77).</string>
+    <string name="wn_autocompact">Pilih kapan Code memadatkan otomatis, gunakan /autocompact per obrolan, dan lihat meter konteks baru (#81).</string>
+    <string name="wn_editor_files">Pratinjau Markdown di editor, plus impor banyak file atau satu folder sekaligus (#74).</string>
+    <string name="wn_memory_search">Panjang memori kustom atau tanpa batas, dan hingga 20 kunci untuk tiap penyedia pencarian (#75).</string>
+    <string name="wn_workspace_learn">Konfigurasi ruang kerja, 96 pelajaran Learn, jawaban tersimpan, pull request GitHub, dan coba ulang di model lain (#71).</string>
+    <string name="wn_visuals_tips">Visual kustom, haptik AH Rumble, tips, dan pemberitahuan jelas saat fitur butuh Android lebih baru.</string>
+    <string name="wn_local_models">Pencarian Hugging Face di dalam aplikasi, jeda dan lanjutkan model lokal, serta alat build perangkat yang lebih kuat.</string>
+    <string name="wn_side_steer_settings">Pertanyaan sampingan (/btw), kemudi AH Auto, dan setelan yang dikelola agen di Chat dan Code (#72).</string>
+    <string name="wn_readable">Jawaban Chat lebih mudah dibaca, tautan yang diminta tetap terlihat, dan gambar mengikuti jumlah serta penempatan pilihanmu.</string>
+    <string name="wn_focus">Pencarian setelan langsung ke kontrol yang tepat, subagen lebih mudah diikuti, dan pemasangan plugin menunjukkan progres nyata.</string>
+    <string name="wn_speed">Startup lebih cepat, layar refresh rate tinggi lebih mulus, dan tombol serta animasi lebih rapi.</string>
+    <string name="wn_fixed_tools">Alat Gemini, pemasangan npm 9Router, dan balasan kaya yang datang sebagai JSON dalam direktif (#80, #82, #84).</string>
+    <string name="wn_fixed_chat">Pertanyaan sampingan tidak lagi tersembunyi di bawah keyboard, dan argumen alat yang kosong kini mendapat petunjuk (#76, #79).</string>
+    <string name="wn_fixed_github">Impor GitHub dan pemeriksaan pembaruan.</string>
+</resources>

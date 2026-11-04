@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">අලුත් දේ</string>
+    <string name="whats_new_subtitle">ඔබ නොසිටි කාලයේ යම් යම් දේ වෙනස් විය.</string>
+    <string name="whats_new_added">එකතු කළා</string>
+    <string name="whats_new_improved">වැඩිදියුණු කළා</string>
+    <string name="whats_new_fixed">නිවැරදි කළා</string>
+    <string name="whats_new_done">තේරුණා</string>
+    <string name="wn_languages">වියට්නාම් සහ තුර්කි සිට හින්දි, කොරියානු සහ සාම්ප්‍රදායික චීන දක්වා නව භාෂා එකොළහක්.</string>
+    <string name="wn_plugins">ඕනෑම මූලාශ්‍රයක ප්ලගින, කුසලතා සහ MCP සේවාදායක ඇතුළුව, ප්ලගින වලින් කෙලින්ම ස්ථාපනය වේ.</string>
+    <string name="wn_live_mode">සජීවී ප්‍රකාරය: අත් නොගෙන අදහසක් ගැන කතා කර පිළිතුර හඬින් අසන්න (#77).</string>
+    <string name="wn_autocompact">Code කවදා ස්වයංක්‍රීයව සංක්ෂිප්ත වේද තෝරන්න, සංවාදයකට /autocompact භාවිතා කරන්න, නව සන්දර්භ මානකය බලන්න (#81).</string>
+    <string name="wn_editor_files">සංස්කාරකයේ Markdown පෙරදසුන සහ ගොනු කිහිපයක් හෝ මුළු ෆෝල්ඩරයක් එකවර ආයාත කිරීම (#74).</string>
+    <string name="wn_memory_search">අභිරුචි හෝ අසීමිත මතක දිග, සහ සෙවුම් සැපයුම්කරුවෙකුට යතුරු 20ක් දක්වා (#75).</string>
+    <string name="wn_workspace_learn">කාර්ය අවකාශ වින්‍යාසය, Learn පාඩම් 96, සුරකින ලද පිළිතුරු, GitHub pull requests සහ වෙනත් මාදිලියක් මත නැවත උත්සාහය (#71).</string>
+    <string name="wn_visuals_tips">අභිරුචි දෘශ්‍ය, AH Rumble ස්පර්ශ, ඉඟි, සහ නව Android අවශ්‍ය විට පැහැදිලි දැනුම්දීමක්.</string>
+    <string name="wn_local_models">යෙදුම තුළ Hugging Face සෙවුම, දේශීය මාදිලි තාවකාලිකව නැවැත්වීම සහ යළි ආරම්භය, සහ වඩා ශක්තිමත් උපාංග ගොඩනැගුම් මෙවලම්.</string>
+    <string name="wn_side_steer_settings">පැති ප්‍රශ්න (/btw), AH Auto මෙහෙයවීම, සහ Chat සහ Code හි නියෝජිතයා විසින් කළමනාකරණය කරන සැකසීම් (#72).</string>
+    <string name="wn_readable">Chat පිළිතුරු කියවීම පහසුය, ඉල්ලූ සබැඳි දිස්වේ, රූප ඔබේ ගණන සහ ස්ථානය අනුගමනය කරයි.</string>
+    <string name="wn_focus">සැකසීම් සෙවුම නිවැරදි පාලනයට යයි, උප නියෝජිතයන් අනුගමනය පහසුය, ප්ලගින් ස්ථාපන සැබෑ ප්‍රගතිය පෙන්වයි.</string>
+    <string name="wn_speed">වේගවත් ආරම්භය, ඉහළ නැවුම් අනුපාත තිර සුමට, බොත්තම් සහ සජීවීකරණ වඩා පිරිපහදු කළා.</string>
+    <string name="wn_fixed_tools">Gemini මෙවලම්, 9Router npm ස්ථාපන, සහ උපදෙස් තුළ JSON ලෙස පැමිණෙන පොහොසත් පිළිතුරු (#80, #82, #84).</string>
+    <string name="wn_fixed_chat">පැති ප්‍රශ්න යතුරුපුවරුව යට සැඟවෙන්නේ නැත, හිස් මෙවලම් තර්ක දැන් ප්‍රයෝජනවත් ඉඟියක් ලබයි (#76, #79).</string>
+    <string name="wn_fixed_github">GitHub ආයාතය සහ යාවත්කාලීන පරීක්ෂණ.</string>
+</resources>

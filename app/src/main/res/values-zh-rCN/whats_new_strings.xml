@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">新内容</string>
+    <string name="whats_new_subtitle">你离开的这段时间里有了一些变化。</string>
+    <string name="whats_new_added">新增</string>
+    <string name="whats_new_improved">改进</string>
+    <string name="whats_new_fixed">修复</string>
+    <string name="whats_new_done">知道了</string>
+    <string name="wn_languages">新增十一种语言，从越南语、土耳其语到印地语、韩语和繁体中文。</string>
+    <string name="wn_plugins">支持来自任何来源的插件，包括技能和 MCP 服务器，可直接在插件中安装。</string>
+    <string name="wn_live_mode">实时模式：不用手也能讨论想法，并听到回答 (#77)。</string>
+    <string name="wn_autocompact">选择 Code 何时自动压缩，在单个对话中使用 /autocompact，并查看新的上下文仪表 (#81)。</string>
+    <string name="wn_editor_files">编辑器中的 Markdown 预览，以及一次导入多个文件或整个文件夹 (#74)。</string>
+    <string name="wn_memory_search">自定义或无限制的记忆长度，每个搜索提供商最多 20 个密钥 (#75)。</string>
+    <string name="wn_workspace_learn">工作区配置、96 节 Learn 课程、已保存的回答、GitHub 拉取请求，以及在另一个模型上重试 (#71)。</string>
+    <string name="wn_visuals_tips">自定义视觉、AH Rumble 触感、提示，以及功能需要更新 Android 时的明确通知。</string>
+    <string name="wn_local_models">应用内的 Hugging Face 搜索、本地模型的暂停与继续，以及更强的设备端构建工具。</string>
+    <string name="wn_side_steer_settings">侧边提问 (/btw)、AH Auto 引导，以及 Chat 和 Code 中由代理管理的设置 (#72)。</string>
+    <string name="wn_readable">Chat 回答更易阅读，请求的链接保持可见，图片数量与位置由你决定。</string>
+    <string name="wn_focus">设置搜索直接定位到具体控件，子代理更易跟踪，插件安装显示真实进度。</string>
+    <string name="wn_speed">启动更快、高刷新率屏幕更流畅，按钮和动画更精致。</string>
+    <string name="wn_fixed_tools">Gemini 工具、9Router npm 安装，以及以指令中 JSON 形式到达的富回答 (#80、#82、#84)。</string>
+    <string name="wn_fixed_chat">侧边提问不再被键盘遮挡，空的工具参数现在会得到有用的提示 (#76、#79)。</string>
+    <string name="wn_fixed_github">GitHub 导入和更新检查。</string>
+</resources>

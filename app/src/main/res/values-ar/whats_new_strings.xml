@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">ما الجديد</string>
+    <string name="whats_new_subtitle">تغيّرت بعض الأشياء أثناء غيابك.</string>
+    <string name="whats_new_added">أُضيف</string>
+    <string name="whats_new_improved">تحسّن</string>
+    <string name="whats_new_fixed">أُصلح</string>
+    <string name="whats_new_done">حسنًا</string>
+    <string name="wn_languages">إحدى عشرة لغة جديدة، من الفيتنامية والتركية إلى الهندية والكورية والصينية التقليدية.</string>
+    <string name="wn_plugins">مكونات إضافية من أي مصدر، بما في ذلك المهارات وخوادم MCP، تُثبَّت مباشرة من الإضافات.</string>
+    <string name="wn_live_mode">وضع مباشر: ناقش فكرة دون استخدام اليدين واسمع الإجابة بصوت عالٍ (#77).</string>
+    <string name="wn_autocompact">اختر متى يضغط Code السياق تلقائيًا، واستخدم /autocompact لكل محادثة، وشاهد مقياس السياق الجديد (#81).</string>
+    <string name="wn_editor_files">معاينة Markdown في المحرر، مع استيراد ملفات متعددة أو مجلد كامل دفعة واحدة (#74).</string>
+    <string name="wn_memory_search">طول ذاكرة مخصص أو بلا حد، وحتى 20 مفتاحًا لكل مزود بحث (#75).</string>
+    <string name="wn_workspace_learn">إعداد مساحة العمل، و96 درسًا في Learn، وإجابات محفوظة، وطلبات سحب GitHub، وإعادة المحاولة على نموذج آخر (#71).</string>
+    <string name="wn_visuals_tips">مرئيات مخصصة، واهتزازات AH Rumble، وتلميحات، وتنبيه واضح عندما تحتاج ميزة إلى Android أحدث.</string>
+    <string name="wn_local_models">بحث Hugging Face داخل التطبيق، وإيقاف النماذج المحلية واستئنافها، وأدوات بناء أقوى على الجهاز.</string>
+    <string name="wn_side_steer_settings">أسئلة جانبية (/btw)، وتوجيه AH Auto، وإعدادات يديرها الوكيل في Chat وCode (#72).</string>
+    <string name="wn_readable">إجابات Chat أسهل في القراءة، والروابط المطلوبة تبقى ظاهرة، والصور تتبع العدد والموضع الذي تريده.</string>
+    <string name="wn_focus">بحث الإعدادات يصل إلى عنصر التحكم بدقة، والمهام الفرعية أسهل في المتابعة، وتثبيت الإضافات يعرض تقدمًا حقيقيًا.</string>
+    <string name="wn_speed">بدء أسرع، وشاشات أكثر سلاسة بمعدل تحديث عالٍ، وأزرار وحركات أكثر صقلًا.</string>
+    <string name="wn_fixed_tools">أدوات Gemini، وتثبيت npm في 9Router، والردود الغنية التي تصل كـ JSON داخل التوجيهات (#80، #82، #84).</string>
+    <string name="wn_fixed_chat">الأسئلة الجانبية لم تعد تختفي تحت لوحة المفاتيح، والوسائط الفارغة من الأدوات تحصل الآن على تلميح مفيد (#76، #79).</string>
+    <string name="wn_fixed_github">استيراد GitHub وفحوص التحديث.</string>
+</resources>

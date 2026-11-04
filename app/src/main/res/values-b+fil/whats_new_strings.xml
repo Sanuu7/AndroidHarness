@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"Ano ang bago"</string>
+    <string name="whats_new_subtitle">"May mga nabago habang wala ka."</string>
+    <string name="whats_new_added">"Naidagdag"</string>
+    <string name="whats_new_improved">"Napabuti"</string>
+    <string name="whats_new_fixed">"Naayos"</string>
+    <string name="whats_new_done">"Naintindihan ko"</string>
+    <string name="wn_languages">"Labing-isang bagong wika, mula Vietnamese at Turkish hanggang Hindi, Korean at Traditional Chinese."</string>
+    <string name="wn_plugins">"Mga plugin mula sa kahit anong source, kasama ang mga skill at MCP server, na direktang ini-install mula sa Plugin."</string>
+    <string name="wn_live_mode">"Live mode: pag-usapan ang isang ideya nang walang kamay at pakinggan ang sagot (#77)."</string>
+    <string name="wn_autocompact">"Piliin kung kailan awtomatikong nag-compact ang Code, gamitin ang /autocompact bawat chat, at tingnan ang bagong context meter (#81)."</string>
+    <string name="wn_editor_files">"Markdown preview sa editor, at pag-import ng maraming file o buong folder nang sabay (#74)."</string>
+    <string name="wn_memory_search">"Custom o walang limitasyong haba ng memory, at hanggang 20 key bawat search provider (#75)."</string>
+    <string name="wn_workspace_learn">"Workspace configuration, 96 na aralin sa Learn, mga naka-save na sagot, GitHub pull requests at retry sa ibang model (#71)."</string>
+    <string name="wn_visuals_tips">"Mga custom visual, AH Rumble haptics, tips, at malinaw na abiso kapag kailangan ng mas bagong Android ang isang feature."</string>
+    <string name="wn_local_models">"Hugging Face search sa loob ng app, pause at resume ng local models, at mas malakas na build tools sa device."</string>
+    <string name="wn_side_steer_settings">"Mga side question (/btw), AH Auto steering, at settings na pinamamahalaan ng agent sa Chat at Code (#72)."</string>
+    <string name="wn_readable">"Mas madaling basahin ang mga sagot sa Chat, nananatiling nakikita ang mga hiniling na link, at sinusunod ng mga larawan ang bilang at puwesto mo."</string>
+    <string name="wn_focus">"Direktang napupunta ang settings search sa tamang control, mas madaling sundan ang mga subagent, at totoong progreso ang ipinapakita ng plugin installs."</string>
+    <string name="wn_speed">"Mas mabilis na startup, mas makinis na high refresh-rate screens, at mas pulidong mga button at animation."</string>
+    <string name="wn_fixed_tools">"Mga Gemini tool, 9Router npm installs, at rich responses na dumarating bilang JSON sa mga directive (#80, #82, #84)."</string>
+    <string name="wn_fixed_chat">"Hindi na nagtatago sa ilalim ng keyboard ang mga side question, at nakakakuha na ng kapaki-pakinabang na hint ang walang laman na tool arguments (#76, #79)."</string>
+    <string name="wn_fixed_github">"GitHub import at update checks."</string>
+</resources>

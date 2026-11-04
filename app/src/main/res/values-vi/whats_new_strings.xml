@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"Có gì mới"</string>
+    <string name="whats_new_subtitle">"Một vài thứ đã thay đổi trong lúc bạn vắng mặt."</string>
+    <string name="whats_new_added">"Đã thêm"</string>
+    <string name="whats_new_improved">"Đã cải thiện"</string>
+    <string name="whats_new_fixed">"Đã sửa"</string>
+    <string name="whats_new_done">"Đã hiểu"</string>
+    <string name="wn_languages">"Mười một ngôn ngữ mới, từ tiếng Việt và tiếng Thổ Nhĩ Kỳ đến tiếng Hindi, Hàn và Trung phồn thể."</string>
+    <string name="wn_plugins">"Plugin từ mọi nguồn, gồm cả kỹ năng và máy chủ MCP, cài thẳng từ Plugin."</string>
+    <string name="wn_live_mode">"Chế độ trực tiếp: trao đổi ý tưởng rảnh tay và nghe câu trả lời (#77)."</string>
+    <string name="wn_autocompact">"Chọn thời điểm Code tự nén, dùng /autocompact cho từng cuộc trò chuyện và xem đồng hồ ngữ cảnh mới (#81)."</string>
+    <string name="wn_editor_files">"Xem trước Markdown trong trình soạn thảo, cùng nhập nhiều tệp hoặc cả thư mục một lần (#74)."</string>
+    <string name="wn_memory_search">"Độ dài bộ nhớ tùy chỉnh hoặc không giới hạn, và tối đa 20 khóa cho mỗi nhà cung cấp tìm kiếm (#75)."</string>
+    <string name="wn_workspace_learn">"Cấu hình không gian làm việc, 96 bài học Learn, câu trả lời đã lưu, pull request GitHub và thử lại trên mô hình khác (#71)."</string>
+    <string name="wn_visuals_tips">"Hình ảnh tùy chỉnh, phản hồi rung AH Rumble, mẹo, và thông báo rõ khi tính năng cần Android mới hơn."</string>
+    <string name="wn_local_models">"Tìm kiếm Hugging Face trong ứng dụng, tạm dừng và tiếp tục mô hình cục bộ, cùng công cụ build mạnh hơn trên thiết bị."</string>
+    <string name="wn_side_steer_settings">"Câu hỏi bên lề (/btw), điều hướng AH Auto, và cài đặt do trợ lý quản lý trong Chat và Code (#72)."</string>
+    <string name="wn_readable">"Câu trả lời Chat dễ đọc hơn, liên kết bạn yêu cầu vẫn hiển thị, và hình ảnh theo số lượng cùng vị trí bạn chọn."</string>
+    <string name="wn_focus">"Tìm kiếm cài đặt đến đúng điều khiển, dễ theo dõi trợ lý phụ hơn, và cài đặt plugin hiển thị tiến trình thật."</string>
+    <string name="wn_speed">"Khởi động nhanh hơn, màn hình tần số quét cao mượt hơn, nút và hiệu ứng tinh tế hơn."</string>
+    <string name="wn_fixed_tools">"Công cụ Gemini, cài đặt npm 9Router, và câu trả lời phong phú đến dưới dạng JSON trong chỉ thị (#80, #82, #84)."</string>
+    <string name="wn_fixed_chat">"Câu hỏi bên lề không còn bị bàn phím che, và đối số công cụ trống giờ nhận được gợi ý hữu ích (#76, #79)."</string>
+    <string name="wn_fixed_github">"Nhập GitHub và kiểm tra cập nhật."</string>
+</resources>

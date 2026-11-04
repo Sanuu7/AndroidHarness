@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"Quoi de neuf"</string>
+    <string name="whats_new_subtitle">"Quelques choses ont changé pendant votre absence."</string>
+    <string name="whats_new_added">"Ajouté"</string>
+    <string name="whats_new_improved">"Amélioré"</string>
+    <string name="whats_new_fixed">"Corrigé"</string>
+    <string name="whats_new_done">"Compris"</string>
+    <string name="wn_languages">"Onze nouvelles langues, du vietnamien et du turc à l’hindi, au coréen et au chinois traditionnel."</string>
+    <string name="wn_plugins">"Des plugins de toute source, y compris les compétences et les serveurs MCP, installés directement depuis Plugins."</string>
+    <string name="wn_live_mode">"Mode direct : discutez d’une idée sans les mains et écoutez la réponse (#77)."</string>
+    <string name="wn_autocompact">"Choisissez quand Code compacte automatiquement, utilisez /autocompact par conversation et suivez le nouvel indicateur de contexte (#81)."</string>
+    <string name="wn_editor_files">"Aperçu Markdown dans l’éditeur, et import de plusieurs fichiers ou d’un dossier entier d’un coup (#74)."</string>
+    <string name="wn_memory_search">"Longueur de mémoire personnalisée ou illimitée, et jusqu’à 20 clés par fournisseur de recherche (#75)."</string>
+    <string name="wn_workspace_learn">"Configuration de l’espace de travail, 96 leçons Learn, réponses enregistrées, pull requests GitHub et nouvel essai sur un autre modèle (#71)."</string>
+    <string name="wn_visuals_tips">"Visuels personnalisés, retour haptique AH Rumble, astuces et avis clair quand une fonction demande un Android plus récent."</string>
+    <string name="wn_local_models">"Recherche Hugging Face dans l’application, pause et reprise des modèles locaux, et outils de compilation renforcés sur l’appareil."</string>
+    <string name="wn_side_steer_settings">"Questions latérales (/btw), pilotage AH Auto et réglages gérés par l’agent dans Chat et Code (#72)."</string>
+    <string name="wn_readable">"Les réponses de Chat se lisent mieux, les liens demandés restent visibles et les images suivent votre nombre et votre placement."</string>
+    <string name="wn_focus">"La recherche des réglages atteint le bon contrôle, les sous-agents sont plus faciles à suivre et les installations de plugins montrent une vraie progression."</string>
+    <string name="wn_speed">"Démarrage plus rapide, écrans à haut taux de rafraîchissement plus fluides, boutons et animations plus soignés."</string>
+    <string name="wn_fixed_tools">"Outils Gemini, installations npm de 9Router et réponses riches arrivant en JSON dans les directives (#80, #82, #84)."</string>
+    <string name="wn_fixed_chat">"Les questions latérales ne se cachent plus sous le clavier et les arguments vides des outils reçoivent une aide utile (#76, #79)."</string>
+    <string name="wn_fixed_github">"Import GitHub et vérifications de mise à jour."</string>
+</resources>

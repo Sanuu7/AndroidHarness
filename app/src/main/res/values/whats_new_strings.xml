@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">What’s new</string>
+    <string name="whats_new_subtitle">A few things changed while you were away.</string>
+    <string name="whats_new_added">Added</string>
+    <string name="whats_new_improved">Improved</string>
+    <string name="whats_new_fixed">Fixed</string>
+    <string name="whats_new_done">Got it</string>
+    <string name="wn_languages">Eleven new languages, from Vietnamese and Turkish to Hindi, Korean and Traditional Chinese.</string>
+    <string name="wn_plugins">Plugins from any source, including skills and MCP servers, installed straight from Plugins.</string>
+    <string name="wn_live_mode">Live Mode: talk through an idea hands-free and hear the answer read aloud (#77).</string>
+    <string name="wn_autocompact">Choose when Code auto-compacts, use /autocompact per chat, and watch the new context meter (#81).</string>
+    <string name="wn_editor_files">Markdown preview in the editor, plus importing many files or a whole folder at once (#74).</string>
+    <string name="wn_memory_search">Custom or unlimited memory length, and up to 20 keys for each search provider (#75).</string>
+    <string name="wn_workspace_learn">Workspace configuration, 96 Learn lessons, saved answers, GitHub pull requests and Retry on another model (#71).</string>
+    <string name="wn_visuals_tips">Custom visuals, AH Rumble haptics, tips, and a clear notice when a feature needs a newer Android.</string>
+    <string name="wn_local_models">Hugging Face search inside the app, pause and resume for local models, and stronger on-device build tools.</string>
+    <string name="wn_side_steer_settings">Side questions (/btw), AH Auto steering, and agent-managed settings on Chat and Code (#72).</string>
+    <string name="wn_readable">Chat answers are easier to read, requested links stay visible, and pictures follow your own count and placement.</string>
+    <string name="wn_focus">Settings search lands on the exact control, subagents are easier to follow, and plugin installs show real progress.</string>
+    <string name="wn_speed">Faster startup, smoother high refresh-rate screens, and more polished buttons and animations.</string>
+    <string name="wn_fixed_tools">Gemini tools, 9Router npm installs and rich responses that arrive as JSON in directives (#80, #82, #84).</string>
+    <string name="wn_fixed_chat">Side questions no longer hide under the keyboard, and empty tool arguments now get a helpful hint (#76, #79).</string>
+    <string name="wn_fixed_github">GitHub import and update checks.</string>
+</resources>

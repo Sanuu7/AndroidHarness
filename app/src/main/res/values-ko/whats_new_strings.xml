@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"새로운 기능"</string>
+    <string name="whats_new_subtitle">"자리를 비운 사이 몇 가지가 바뀌었습니다."</string>
+    <string name="whats_new_added">"추가"</string>
+    <string name="whats_new_improved">"개선"</string>
+    <string name="whats_new_fixed">"수정"</string>
+    <string name="whats_new_done">"확인"</string>
+    <string name="wn_languages">"베트남어와 터키어부터 힌디어, 한국어, 번체 중국어까지 11개 언어가 추가되었습니다."</string>
+    <string name="wn_plugins">"스킬과 MCP 서버를 포함해 모든 소스의 플러그인을 플러그인에서 바로 설치합니다."</string>
+    <string name="wn_live_mode">"라이브 모드: 손을 쓰지 않고 아이디어를 이야기하고 답변을 소리로 듣습니다 (#77)."</string>
+    <string name="wn_autocompact">"Code가 자동 압축하는 시점을 선택하고, 채팅마다 /autocompact를 사용하며, 새로운 컨텍스트 미터를 확인하세요 (#81)."</string>
+    <string name="wn_editor_files">"편집기의 Markdown 미리보기와 여러 파일 또는 폴더 전체를 한 번에 가져오기 (#74)."</string>
+    <string name="wn_memory_search">"사용자 지정 또는 무제한 메모리 길이, 검색 공급자당 최대 20개 키 (#75)."</string>
+    <string name="wn_workspace_learn">"작업 공간 구성, Learn 96개 레슨, 저장된 답변, GitHub 풀 리퀘스트, 다른 모델로 재시도 (#71)."</string>
+    <string name="wn_visuals_tips">"사용자 지정 비주얼, AH Rumble 햅틱, 팁, 그리고 기능에 더 새로운 Android가 필요할 때의 명확한 안내."</string>
+    <string name="wn_local_models">"앱 안의 Hugging Face 검색, 로컬 모델 일시 중지와 재개, 더 강력한 기기 내 빌드 도구."</string>
+    <string name="wn_side_steer_settings">"사이드 질문 (/btw), AH Auto 조향, Chat과 Code의 에이전트 관리 설정 (#72)."</string>
+    <string name="wn_readable">"Chat 답변이 읽기 쉬워지고, 요청한 링크가 계속 보이며, 이미지는 지정한 개수와 위치를 따릅니다."</string>
+    <string name="wn_focus">"설정 검색이 정확한 컨트롤로 이동하고, 하위 에이전트를 추적하기 쉬워졌으며, 플러그인 설치가 실제 진행을 보여줍니다."</string>
+    <string name="wn_speed">"더 빠른 시작, 높은 주사율 화면의 부드러운 동작, 더 정돈된 버튼과 애니메이션."</string>
+    <string name="wn_fixed_tools">"Gemini 도구, 9Router npm 설치, 지시문 안에 JSON으로 도착하는 리치 응답 (#80, #82, #84)."</string>
+    <string name="wn_fixed_chat">"사이드 질문이 더 이상 키보드 아래에 숨지 않고, 빈 도구 인수에는 유용한 힌트가 표시됩니다 (#76, #79)."</string>
+    <string name="wn_fixed_github">"GitHub 가져오기와 업데이트 확인."</string>
+</resources>

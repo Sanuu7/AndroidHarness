@@ -30,6 +30,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextAlign
@@ -45,6 +46,8 @@ import com.androidharness.app.ui.AppNav
 import com.androidharness.app.ui.common.RefreshRate
 import com.androidharness.app.ui.theme.HarnessTheme
 import com.androidharness.app.ui.update.UpdateDialog
+import com.androidharness.app.ui.whatsnew.WhatsNewDialog
+import com.androidharness.app.ui.whatsnew.WhatsNewStore
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.repeatOnLifecycle
@@ -177,6 +180,16 @@ class MainActivity : AppCompatActivity() {
                         onDispose { container.browser.unbindReadCaptureHost(host) }
                     }
                     AppNav(container)
+                    // Store builds only: one summary after the first launch on this update.
+                    if (BuildConfig.PLAY_DISTRIBUTION) {
+                        var showWhatsNew by remember { mutableStateOf(!WhatsNewStore.seen(this@MainActivity)) }
+                        if (showWhatsNew) {
+                            WhatsNewDialog(onDismiss = {
+                                WhatsNewStore.markSeen(this@MainActivity)
+                                showWhatsNew = false
+                            })
+                        }
+                    }
                 }
 
                 // The one global update dialog, above everything else.

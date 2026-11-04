@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">تازه‌ها</string>
+    <string name="whats_new_subtitle">در مدت نبودنت چند چیز تغییر کرد.</string>
+    <string name="whats_new_added">افزوده شد</string>
+    <string name="whats_new_improved">بهبود یافت</string>
+    <string name="whats_new_fixed">رفع شد</string>
+    <string name="whats_new_done">متوجه شدم</string>
+    <string name="wn_languages">یازده زبان جدید، از ویتنامی و ترکی تا هندی، کره‌ای و چینی سنتی.</string>
+    <string name="wn_plugins">افزونه‌ها از هر منبعی، از جمله مهارت‌ها و سرورهای MCP، مستقیماً از افزونه‌ها نصب می‌شوند.</string>
+    <string name="wn_live_mode">حالت زنده: بدون استفاده از دست درباره یک ایده صحبت کنید و پاسخ را بشنوید (#77).</string>
+    <string name="wn_autocompact">انتخاب کنید Code چه زمانی خودکار فشرده کند، از /autocompact برای هر گفتگو استفاده کنید و سنجه زمینه جدید را ببینید (#81).</string>
+    <string name="wn_editor_files">پیش‌نمایش Markdown در ویرایشگر، و وارد کردن چند فایل یا یک پوشه کامل به‌صورت یکجا (#74).</string>
+    <string name="wn_memory_search">طول حافظه سفارشی یا بی‌نهایت، و تا 20 کلید برای هر ارائه‌دهنده جستجو (#75).</string>
+    <string name="wn_workspace_learn">پیکربندی فضای کاری، 96 درس Learn، پاسخ‌های ذخیره‌شده، درخواست‌های کشش GitHub و تلاش دوباره با مدل دیگر (#71).</string>
+    <string name="wn_visuals_tips">جلوه‌های بصری سفارشی، لرزش AH Rumble، نکته‌ها، و هشدار روشن وقتی قابلیتی به Android جدیدتر نیاز دارد.</string>
+    <string name="wn_local_models">جستجوی Hugging Face در برنامه، توقف و ادامه مدل‌های محلی، و ابزارهای ساخت قوی‌تر روی دستگاه.</string>
+    <string name="wn_side_steer_settings">پرسش‌های جانبی (/btw)، هدایت AH Auto، و تنظیماتی که عامل مدیریت می‌کند در Chat و Code (#72).</string>
+    <string name="wn_readable">پاسخ‌های Chat خواناترند، پیوندهای درخواستی نمایان می‌مانند و تصاویر از تعداد و جای‌گذاری شما پیروی می‌کنند.</string>
+    <string name="wn_focus">جستجوی تنظیمات دقیقاً به همان کنترل می‌رسد، پیگیری زیرعامل‌ها آسان‌تر است و نصب افزونه‌ها پیشرفت واقعی نشان می‌دهد.</string>
+    <string name="wn_speed">شروع سریع‌تر، صفحه‌های نرم‌تر با نرخ نوسازی بالا و دکمه‌ها و انیمیشن‌های زیباتر.</string>
+    <string name="wn_fixed_tools">ابزارهای Gemini، نصب npm در 9Router، و پاسخ‌های غنی که به‌صورت JSON در دستورها می‌رسند (#80، #82، #84).</string>
+    <string name="wn_fixed_chat">پرسش‌های جانبی دیگر زیر صفحه‌کلید پنهان نمی‌شوند و آرگومان‌های خالی ابزار اکنون راهنمای مفیدی می‌گیرند (#76، #79).</string>
+    <string name="wn_fixed_github">وارد کردن GitHub و بررسی به‌روزرسانی‌ها.</string>
+</resources>

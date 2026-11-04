@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"नया क्या है"</string>
+    <string name="whats_new_subtitle">"आपके न होने के दौरान कुछ चीज़ें बदलीं।"</string>
+    <string name="whats_new_added">"जोड़ा गया"</string>
+    <string name="whats_new_improved">"सुधारा गया"</string>
+    <string name="whats_new_fixed">"ठीक किया गया"</string>
+    <string name="whats_new_done">"समझ गया"</string>
+    <string name="wn_languages">"ग्यारह नई भाषाएँ, वियतनामी और तुर्की से लेकर हिन्दी, कोरियाई और पारंपरिक चीनी तक।"</string>
+    <string name="wn_plugins">"किसी भी स्रोत से प्लगइन्स, जिनमें कौशल और MCP सर्वर भी शामिल हैं, सीधे प्लगइन्स से इंस्टॉल होते हैं।"</string>
+    <string name="wn_live_mode">"लाइव मोड: बिना हाथ लगाए किसी विचार पर बात करें और जवाब सुनें (#77)।"</string>
+    <string name="wn_autocompact">"चुनें कि Code कब स्वतः संक्षिप्त करे, हर चैट के लिए /autocompact उपयोग करें और नया संदर्भ मीटर देखें (#81)।"</string>
+    <string name="wn_editor_files">"एडिटर में Markdown पूर्वावलोकन, और कई फाइलें या पूरा फोल्डर एक साथ आयात करें (#74)।"</string>
+    <string name="wn_memory_search">"कस्टम या असीमित मेमोरी लंबाई, और हर खोज प्रदाता के लिए 20 कुंजियाँ तक (#75)।"</string>
+    <string name="wn_workspace_learn">"कार्यक्षेत्र कॉन्फ़िगरेशन, 96 Learn पाठ, सहेजे गए उत्तर, GitHub पुल अनुरोध और किसी अन्य मॉडल पर पुनः प्रयास (#71)।"</string>
+    <string name="wn_visuals_tips">"कस्टम विज़ुअल, AH Rumble हैप्टिक्स, टिप्स, और स्पष्ट सूचना जब किसी सुविधा के लिए नया Android चाहिए।"</string>
+    <string name="wn_local_models">"ऐप में Hugging Face खोज, स्थानीय मॉडल रोकना और जारी रखना, और डिवाइस पर मज़बूत बिल्ड टूल।"</string>
+    <string name="wn_side_steer_settings">"साइड प्रश्न (/btw), AH Auto स्टीयरिंग, और Chat व Code में एजेंट द्वारा प्रबंधित सेटिंग्स (#72)।"</string>
+    <string name="wn_readable">"Chat उत्तर पढ़ने में आसान हैं, माँगे गए लिंक दिखते रहते हैं, और तस्वीरें आपकी संख्या और जगह अपनाती हैं।"</string>
+    <string name="wn_focus">"सेटिंग खोज सही कंट्रोल तक पहुँचती है, सबएजेंट्स को ट्रैक करना आसान है, और प्लगइन इंस्टॉल वास्तविक प्रगति दिखाते हैं।"</string>
+    <string name="wn_speed">"तेज़ शुरुआत, उच्च रिफ़्रेश दर वाली स्क्रीन अधिक सहज, और बेहतर बटन व एनिमेशन।"</string>
+    <string name="wn_fixed_tools">"Gemini टूल, 9Router npm इंस्टॉल, और निर्देशों में JSON के रूप में आने वाले समृद्ध उत्तर (#80, #82, #84)।"</string>
+    <string name="wn_fixed_chat">"साइड प्रश्न अब कीबोर्ड के नीचे नहीं छिपते, और खाली टूल आर्ग्युमेंट को उपयोगी संकेत मिलता है (#76, #79)।"</string>
+    <string name="wn_fixed_github">"GitHub आयात और अपडेट जाँच।"</string>
+</resources>

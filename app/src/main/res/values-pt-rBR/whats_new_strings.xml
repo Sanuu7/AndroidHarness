@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">Novidades</string>
+    <string name="whats_new_subtitle">Algumas coisas mudaram enquanto você esteve fora.</string>
+    <string name="whats_new_added">Adicionado</string>
+    <string name="whats_new_improved">Melhorado</string>
+    <string name="whats_new_fixed">Corrigido</string>
+    <string name="whats_new_done">Entendi</string>
+    <string name="wn_languages">Onze novos idiomas, do vietnamita e turco ao hindi, coreano e chinês tradicional.</string>
+    <string name="wn_plugins">Plugins de qualquer fonte, incluindo skills e servidores MCP, instalados direto em Plugins.</string>
+    <string name="wn_live_mode">Modo ao vivo: fale sobre uma ideia sem usar as mãos e ouça a resposta em voz alta (#77).</string>
+    <string name="wn_autocompact">Escolha quando o Code compacta automaticamente, use /autocompact por conversa e veja o novo medidor de contexto (#81).</string>
+    <string name="wn_editor_files">Prévia de Markdown no editor e importação de vários arquivos ou de uma pasta inteira de uma vez (#74).</string>
+    <string name="wn_memory_search">Tamanho de memória personalizado ou ilimitado e até 20 chaves por provedor de busca (#75).</string>
+    <string name="wn_workspace_learn">Configuração do espaço de trabalho, 96 lições do Learn, respostas salvas, pull requests do GitHub e nova tentativa em outro modelo (#71).</string>
+    <string name="wn_visuals_tips">Visuais personalizados, haptics do AH Rumble, dicas e um aviso claro quando um recurso precisa de um Android mais novo.</string>
+    <string name="wn_local_models">Busca no Hugging Face dentro do app, pausa e retomada de modelos locais e ferramentas de build mais fortes no dispositivo.</string>
+    <string name="wn_side_steer_settings">Perguntas laterais (/btw), direção AH Auto e configurações gerenciadas pelo agente no Chat e no Code (#72).</string>
+    <string name="wn_readable">As respostas do Chat ficaram mais fáceis de ler, os links pedidos continuam visíveis e as imagens seguem sua quantidade e posição.</string>
+    <string name="wn_focus">A busca de configurações chega ao controle exato, os subagentes são mais fáceis de acompanhar e as instalações de plugins mostram progresso real.</string>
+    <string name="wn_speed">Início mais rápido, telas de alta taxa de atualização mais suaves e botões e animações mais refinados.</string>
+    <string name="wn_fixed_tools">Ferramentas do Gemini, instalações npm do 9Router e respostas ricas que chegam como JSON em diretivas (#80, #82, #84).</string>
+    <string name="wn_fixed_chat">As perguntas laterais não ficam mais escondidas sob o teclado, e argumentos vazios de ferramentas agora recebem uma dica útil (#76, #79).</string>
+    <string name="wn_fixed_github">Importação do GitHub e verificações de atualização.</string>
+</resources>

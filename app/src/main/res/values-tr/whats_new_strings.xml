@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"Neler yeni"</string>
+    <string name="whats_new_subtitle">"Yokken birkaç şey değişti."</string>
+    <string name="whats_new_added">"Eklendi"</string>
+    <string name="whats_new_improved">"İyileştirildi"</string>
+    <string name="whats_new_fixed">"Düzeltildi"</string>
+    <string name="whats_new_done">"Anladım"</string>
+    <string name="wn_languages">"Vietnamca ve Türkçeden Hintçe, Korece ve geleneksel Çinceye kadar on bir yeni dil."</string>
+    <string name="wn_plugins">"Beceriler ve MCP sunucuları dahil her kaynaktan eklentiler, doğrudan Eklentiler bölümünden yüklenir."</string>
+    <string name="wn_live_mode">"Canlı mod: ellerinizi kullanmadan bir fikri konuşun ve yanıtı sesli dinleyin (#77)."</string>
+    <string name="wn_autocompact">"Code’un ne zaman otomatik sıkıştıracağını seçin, sohbet başına /autocompact kullanın ve yeni bağlam ölçeri görün (#81)."</string>
+    <string name="wn_editor_files">"Düzenleyicide Markdown önizlemesi ve birden çok dosyayı veya tüm klasörü tek seferde içe aktarma (#74)."</string>
+    <string name="wn_memory_search">"Özel veya sınırsız bellek uzunluğu ve her arama sağlayıcısı için 20 anahtara kadar (#75)."</string>
+    <string name="wn_workspace_learn">"Çalışma alanı yapılandırması, 96 Learn dersi, kaydedilen yanıtlar, GitHub pull istekleri ve başka modelde yeniden deneme (#71)."</string>
+    <string name="wn_visuals_tips">"Özel görseller, AH Rumble dokunsal geri bildirimi, ipuçları ve bir özellik daha yeni Android gerektirdiğinde açık uyarı."</string>
+    <string name="wn_local_models">"Uygulama içinde Hugging Face araması, yerel modelleri duraklatma ve sürdürme, cihaz üzerinde daha güçlü derleme araçları."</string>
+    <string name="wn_side_steer_settings">"Yan sorular (/btw), AH Auto yönlendirmesi ve Chat ile Code’da ajan tarafından yönetilen ayarlar (#72)."</string>
+    <string name="wn_readable">"Chat yanıtları daha kolay okunuyor, istediğiniz bağlantılar görünür kalıyor ve görseller sizin sayı ve konumunuza uyuyor."</string>
+    <string name="wn_focus">"Ayar araması tam denetimi buluyor, alt ajanları izlemek kolaylaştı, eklenti yüklemeleri gerçek ilerleme gösteriyor."</string>
+    <string name="wn_speed">"Daha hızlı açılış, yüksek yenileme hızlı ekranlarda daha akıcı hareket, daha özenli düğmeler ve animasyonlar."</string>
+    <string name="wn_fixed_tools">"Gemini araçları, 9Router npm yüklemeleri ve direktifler içinde JSON olarak gelen zengin yanıtlar (#80, #82, #84)."</string>
+    <string name="wn_fixed_chat">"Yan sorular artık klavyenin altında gizlenmiyor ve boş araç bağımsız değişkenleri artık yararlı bir ipucu alıyor (#76, #79)."</string>
+    <string name="wn_fixed_github">"GitHub içe aktarma ve güncelleme kontrolleri."</string>
+</resources>

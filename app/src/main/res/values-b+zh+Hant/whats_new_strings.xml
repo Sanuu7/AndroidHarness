@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"新功能"</string>
+    <string name="whats_new_subtitle">"你不在的期間有些變化。"</string>
+    <string name="whats_new_added">"新增"</string>
+    <string name="whats_new_improved">"改良"</string>
+    <string name="whats_new_fixed">"修正"</string>
+    <string name="whats_new_done">"知道了"</string>
+    <string name="wn_languages">"十一種新語言，從越南語、土耳其語到印地語、韓語與繁體中文。"</string>
+    <string name="wn_plugins">"支援任何來源的外掛，包括技能與 MCP 伺服器，可直接在外掛中安裝。"</string>
+    <string name="wn_live_mode">"即時模式：不用手也能討論想法，並聽取回答 (#77)。"</string>
+    <string name="wn_autocompact">"選擇 Code 何時自動壓縮，在單一對話使用 /autocompact，並查看新的上下文儀表 (#81)。"</string>
+    <string name="wn_editor_files">"編輯器中的 Markdown 預覽，以及一次匯入多個檔案或整個資料夾 (#74)。"</string>
+    <string name="wn_memory_search">"自訂或無限長的記憶，每個搜尋供應商最多 20 組金鑰 (#75)。"</string>
+    <string name="wn_workspace_learn">"工作區設定、96 堂 Learn 課程、已儲存的回答、GitHub 提取要求，以及在另一個模型上重試 (#71)。"</string>
+    <string name="wn_visuals_tips">"自訂視覺、AH Rumble 觸感、提示，以及功能需要較新 Android 時的明確通知。"</string>
+    <string name="wn_local_models">"應用程式內的 Hugging Face 搜尋、本機模型暫停與繼續，以及更強的裝置端建置工具。"</string>
+    <string name="wn_side_steer_settings">"側邊提問 (/btw)、AH Auto 引導，以及 Chat 與 Code 中由代理管理的設定 (#72)。"</string>
+    <string name="wn_readable">"Chat 回答更易閱讀，要求的連結會保持可見，圖片數量與位置由你決定。"</string>
+    <string name="wn_focus">"設定搜尋直接跳到正確控制項，子代理更容易追蹤，外掛安裝顯示真實進度。"</string>
+    <string name="wn_speed">"啟動更快、高更新率螢幕更順暢，按鈕與動畫更精緻。"</string>
+    <string name="wn_fixed_tools">"Gemini 工具、9Router npm 安裝，以及以指令內 JSON 形式送達的豐富回答 (#80、#82、#84)。"</string>
+    <string name="wn_fixed_chat">"側邊提問不再被鍵盤遮住，空的工具引數現在會得到有用的提示 (#76、#79)。"</string>
+    <string name="wn_fixed_github">"GitHub 匯入與更新檢查。"</string>
+</resources>

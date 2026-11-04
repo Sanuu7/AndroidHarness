@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="whats_new_title">"มีอะไรใหม่"</string>
+    <string name="whats_new_subtitle">"มีบางอย่างเปลี่ยนไประหว่างที่คุณไม่อยู่"</string>
+    <string name="whats_new_added">"เพิ่ม"</string>
+    <string name="whats_new_improved">"ปรับปรุง"</string>
+    <string name="whats_new_fixed">"แก้ไข"</string>
+    <string name="whats_new_done">"เข้าใจแล้ว"</string>
+    <string name="wn_languages">"ภาษาใหม่ 11 ภาษา ตั้งแต่เวียดนามและตุรกีไปจนถึงฮินดี เกาหลี และจีนตัวเต็ม"</string>
+    <string name="wn_plugins">"ปลั๊กอินจากทุกแหล่ง รวมถึงสกิลและเซิร์ฟเวอร์ MCP ติดตั้งได้จากปลั๊กอินโดยตรง"</string>
+    <string name="wn_live_mode">"โหมดสด: พูดคุยไอเดียโดยไม่ต้องใช้มือและฟังคำตอบออกเสียง (#77)"</string>
+    <string name="wn_autocompact">"เลือกเวลาให้ Code บีบอัดอัตโนมัติ ใช้ /autocompact ต่อแชท และดูมาตรวัดบริบทใหม่ (#81)"</string>
+    <string name="wn_editor_files">"แสดงตัวอย่าง Markdown ในตัวแก้ไข และนำเข้าไฟล์หลายไฟล์หรือทั้งโฟลเดอร์ในครั้งเดียว (#74)"</string>
+    <string name="wn_memory_search">"ความยาวหน่วยความจำแบบกำหนดเองหรือไม่จำกัด และคีย์สูงสุด 20 คีย์ต่อผู้ให้บริการค้นหา (#75)"</string>
+    <string name="wn_workspace_learn">"การกำหนดค่าพื้นที่ทำงาน บทเรียน Learn 96 บท คำตอบที่บันทึกไว้ คำขอดึง GitHub และลองใหม่บนโมเดลอื่น (#71)"</string>
+    <string name="wn_visuals_tips">"ภาพกำหนดเอง การสั่น AH Rumble เคล็ดลับ และการแจ้งชัดเจนเมื่อฟีเจอร์ต้องใช้ Android ใหม่กว่า"</string>
+    <string name="wn_local_models">"ค้นหา Hugging Face ในแอป หยุดและทำต่อโมเดลในเครื่อง และเครื่องมือสร้างบนอุปกรณ์ที่แข็งแรงขึ้น"</string>
+    <string name="wn_side_steer_settings">"คำถามข้างเคียง (/btw) การนำทาง AH Auto และการตั้งค่าที่ตัวแทนจัดการใน Chat และ Code (#72)"</string>
+    <string name="wn_readable">"คำตอบ Chat อ่านง่ายขึ้น ลิงก์ที่ขอยังแสดงอยู่ และรูปภาพเป็นไปตามจำนวนและตำแหน่งที่คุณเลือก"</string>
+    <string name="wn_focus">"การค้นหาการตั้งค่าไปถึงตัวควบคุมที่ถูกต้อง ติดตามเอเจนต์ย่อยง่ายขึ้น และการติดตั้งปลั๊กอินแสดงความคืบหน้าจริง"</string>
+    <string name="wn_speed">"เริ่มเร็วขึ้น จอรีเฟรชสูงลื่นขึ้น และปุ่มกับแอนิเมชันประณีตขึ้น"</string>
+    <string name="wn_fixed_tools">"เครื่องมือ Gemini การติดตั้ง npm ของ 9Router และคำตอบสมบูรณ์ที่มาเป็น JSON ในคำสั่ง (#80, #82, #84)"</string>
+    <string name="wn_fixed_chat">"คำถามข้างเคียงไม่ซ่อนใต้แป้นพิมพ์แล้ว และอาร์กิวเมนต์เครื่องมือว่างได้รับการแนะนำที่เป็นประโยชน์ (#76, #79)"</string>
+    <string name="wn_fixed_github">"การนำเข้า GitHub และการตรวจสอบอัปเดต"</string>
+</resources>
