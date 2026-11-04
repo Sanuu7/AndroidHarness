@@ -125,4 +125,47 @@ After"""
         assertTrue((parts.last() as RichResponse.Part.Markdown).text.contains("After"))
         assertTrue(parts.none { it is RichResponse.Part.Markdown && it.text.contains("::") })
     }
+
+    @Test fun jsonCalloutInsideDirectiveRendersAndKeepsSurroundingImages() {
+        val body = """{"tone":"info","title":"Why the still is unavailable","text":"The footage was cut. A quoted \"scene\" and {braces} remain readable."}"""
+        val before = "Before the callout."
+        val after = "![Interview](harness-image:img_fixture)\n\nAfter the picture."
+        for (wrapper in listOf("::", ":::")) for (typeField in listOf("", "\"type\":\"callout\",")) {
+            val json = body.replaceFirst("{", "{$typeField")
+            val reply = "$before\n\n${wrapper}callout\n$json\n$wrapper\n\n$after"
+            val expected = RichResponse.decode("""{"type":"callout",${body.drop(1)}""")
+            for (streaming in listOf(true, false)) {
+                val normalized = ChatRichResponse.normalize(reply, streaming)
+                val parts = RichResponse.parse(normalized, streaming)
+                assertEquals(3, parts.size)
+                assertEquals(before, (parts.first() as RichResponse.Part.Markdown).text.trim())
+                assertEquals(expected, (parts[1] as RichResponse.Part.Content).node)
+                assertEquals(after, (parts.last() as RichResponse.Part.Markdown).text.trim())
+                assertEquals(parts, RichResponse.parse(ChatRichResponse.normalize(normalized)))
+            }
+            val prefix = "${wrapper}callout\n$json\n$wrapper"
+            for (end in "${wrapper}callout".length until prefix.length - wrapper.length) {
+                val parts = RichResponse.parse(ChatRichResponse.normalize(prefix.take(end), true), true)
+                assertTrue(parts.none { it is RichResponse.Part.Content || it is RichResponse.Part.Unavailable })
+                assertFalse(parts.filterIsInstance<RichResponse.Part.Markdown>().any { it.text.contains("\"tone\"") })
+            }
+        }
+    }
+
+    @Test fun jsonDirectiveBodiesKeepSchemaValidationAndRejectConflictingTypesAndAttributes() {
+        fun parts(type: String, body: String, attributes: String = "") =
+            RichResponse.parse(ChatRichResponse.normalize("::$type$attributes\n$body\n::"))
+        assertTrue(parts("card", """{"text":"Readable body"}""", "{title=\"A card\"}").single() is RichResponse.Part.Content)
+        val card = parts("card", """{"title":"A nested card","children":[{"type":"text","text":"Readable child"}]}""").single() as RichResponse.Part.Content
+        assertEquals(listOf(RichResponse.Node.Text("Readable child")), (card.node as RichResponse.Node.Card).children)
+        for (body in listOf(
+            """{"type":"card","title":"Wrong wrapper","text":"Body"}""",
+            """{"tone":"unsupported","title":"Title","text":"Body"}""",
+            """{"title":"Title","text":12}""",
+            """{"title":"Title","text":"Broken""",
+        )) assertEquals(listOf(RichResponse.Part.Unavailable), parts("callout", body))
+        assertEquals(listOf(RichResponse.Part.Unavailable), parts("card", """{"title":"Body title","text":"Body"}""", "{title=\"Header title\"}"))
+        assertEquals(listOf(RichResponse.Part.Unavailable), parts("preview", """{"title":"Only a title"}"""))
+        assertEquals(listOf(RichResponse.Part.Unavailable), parts("profile", """{"name":"Name","description":"Body","image":"file:///private/image","image_source":"https://example.com","sources":[{"title":"Source","url":"https://example.com"}]}"""))
+    }
 }

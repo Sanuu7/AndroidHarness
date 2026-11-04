@@ -42,6 +42,44 @@ class RichResponseDeviceTest {
     private val context = instrumentation.targetContext
     private val c get() = (context.applicationContext as HarnessApp).container
 
+    @Test fun savedChatJsonInsideCalloutDirectiveRendersAfterReopeningWithoutRewritingHistory() = runBlocking {
+        val sid = c.sessions.createSession("Callout recovery", conversation = ConversationConfig(ConversationKind.CHAT))
+        val store = ViewModelStore()
+        val reply = """Before the callout.
+
+::callout
+{"tone":"info","title":"Why the still is unavailable","text":"The original footage was cut. This explanation should remain visible."}
+::
+
+After the callout."""
+        c.sessions.addMessage(sid, ChatMessage(Role.USER, "Explain why the still is unavailable."))
+        c.sessions.addMessage(sid, ChatMessage(Role.ASSISTANT, reply))
+        fun show(host: ChatListTestActivity) {
+            val vm = ChatViewModel(c, sid); store.put("chat", vm)
+            host.setContent { HarnessTheme(themeMode = ThemeMode.DARK, dynamicColor = false) {
+                ChatScreen(vm, {}, { _, _ -> }, {}, {}, onOpenSubagent = {})
+            } }
+        }
+        fun verify() {
+            await("Why the still is unavailable")
+            await("The original footage was cut. This explanation should remain visible.")
+            await("After the callout.")
+            assertNull(find(instrumentation.uiAutomation.rootInActiveWindow, "This content couldn’t be displayed"))
+            assertNull(find(instrumentation.uiAutomation.rootInActiveWindow, "\"tone\"", true))
+        }
+        try {
+            ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
+                scenario.onActivity(::show); verify()
+                scenario.recreate(); scenario.onActivity(::show); verify()
+                screenshot("saved-json-callout-recovered")
+            }
+            assertEquals(reply, c.sessions.messages(sid).last { it.role == Role.ASSISTANT }.text)
+        } finally {
+            instrumentation.runOnMainSync { store.clear() }
+            c.sessions.session(sid)?.let { c.sessions.deleteSession(it) }
+        }
+    }
+
     @Test fun providerRichReplyPersistsInRealChatAndActionsOnlyPrepareComposerWhileArtifactsRemain() = runBlocking {
         val root = File(context.cacheDir, "rich-response-${System.nanoTime()}").apply { mkdirs() }
         val sid = c.sessions.createSession("Rich conversation", c.workspace.currentProjectOnce().id)

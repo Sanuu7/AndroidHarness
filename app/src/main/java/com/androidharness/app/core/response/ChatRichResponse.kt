@@ -118,6 +118,23 @@ internal object ChatRichResponse {
             if (key !in allowed || key in fields) return null
             fields[key] = StringBuilder(attribute.groupValues[2].replace("\\\"", "\""))
         }
+        // Some providers wrap a JSON object in ::callout/::card instead of a
+        // harness-ui fence. The wrapper supplies the otherwise optional type.
+        if (body.trimStart().startsWith('{')) {
+            val obj = runCatching { Json.parseToJsonElement(body) as? JsonObject }.getOrNull() ?: return null
+            if (obj["type"]?.let { it != JsonPrimitive(type) } == true ||
+                obj.keys.any { it != "type" && it in fields }) return null
+            return buildJsonObject {
+                put("type", type)
+                for ((key, value) in fields) {
+                    val raw = value.toString().trim()
+                    if (key == "facts" || key == "sources") {
+                        put(key, directiveArray(raw, if (key == "facts") setOf("label", "value", "source") else setOf("title", "url")) ?: return null)
+                    } else put(key, raw)
+                }
+                for ((key, value) in obj) if (key != "type") put(key, value)
+            }.toString()
+        }
         val field = Regex("^\\s*([a-z_]+):\\s*(.*)$")
         val firstLine = body.lines().firstOrNull { it.isNotBlank() }
         // With attributes in the header, a card or callout body may be plain text rather than `key: value` lines.
