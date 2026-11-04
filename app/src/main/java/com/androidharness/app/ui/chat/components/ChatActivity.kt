@@ -613,7 +613,7 @@ private fun activityLabel(name: String, running: Boolean): String = stringResour
 })
 
 @Composable
-private fun ChatShimmerText(text: String, running: Boolean) {
+internal fun ChatShimmerText(text: String, running: Boolean) {
     val scheme = MaterialTheme.colorScheme
     if (!running) {
         Text(
