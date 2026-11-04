@@ -125,8 +125,11 @@ class NineRouterManager(
         val node = File(linux.prefix, "bin/node")
         val linker = if (Build.SUPPORTED_ABIS.first().contains("64")) "/system/bin/linker64" else "/system/bin/linker"
         val args = if (Build.VERSION.SDK_INT >= 29) listOf(linker, node.absolutePath) else listOf(node.absolutePath)
+        val runtime = File(root, "node-runtime.cjs").apply {
+            writeText(NineRouterNodeRuntime.preload(useLinker = Build.VERSION.SDK_INT >= 29))
+        }
         val lifecycle = File(root, "lifecycle.cjs").apply { writeText("const parent=process.ppid;setInterval(()=>{if(process.ppid!==parent)process.exit(0)},1500).unref();") }
-        val child = ProcessBuilder(args + listOf("--require", lifecycle.absolutePath, "--dns-result-order=ipv4first", "--max-old-space-size=1024", server.absolutePath))
+        val child = ProcessBuilder(args + listOf("--require", runtime.absolutePath, "--require", lifecycle.absolutePath, "--dns-result-order=ipv4first", "--max-old-space-size=1024", server.absolutePath))
             .directory(server.parentFile!!).redirectErrorStream(true).apply {
                 environment().putAll(linux.processEnv())
                 environment().putAll(mapOf("PORT" to "$PORT", "HOSTNAME" to "127.0.0.1", "NODE_ENV" to "production", "NEXT_TELEMETRY_DISABLED" to "1", "NODE_PATH" to File(root, "node_modules").absolutePath, "DATA_DIR" to File(root, "data").absolutePath))
