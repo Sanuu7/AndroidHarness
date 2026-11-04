@@ -1,0 +1,20 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="theme_color_palette">"調色盤"</string>
+    <string name="theme_color_hint">"選擇一套調色盤為應用配色。"</string>
+    <string name="theme_wallpaper_colors">"桌布顏色"</string>
+    <string name="theme_wallpaper_hint">"跟隨手機的 Material You 配色。"</string>
+    <string name="theme_wallpaper_unavailable">"桌布配色需要 Android 12 或更高版本。請在下方選擇調色盤。"</string>
+    <string name="theme_palette_blue">"Harness 藍"</string>
+    <string name="theme_palette_ocean">"海洋"</string>
+    <string name="theme_palette_indigo">"靛藍"</string>
+    <string name="theme_palette_lavender">"薰衣草"</string>
+    <string name="theme_palette_orchid">"蘭花"</string>
+    <string name="theme_palette_rose">"玫瑰"</string>
+    <string name="theme_palette_coral">"珊瑚"</string>
+    <string name="theme_palette_amber">"琥珀"</string>
+    <string name="theme_palette_lime">"青檸"</string>
+    <string name="theme_palette_forest">"森林"</string>
+    <string name="theme_palette_teal">"藍綠"</string>
+    <string name="theme_palette_slate">"石板"</string>
+</resources>

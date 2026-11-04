@@ -26,30 +26,14 @@ internal const val TRANSLATION_PROJECT_URL = "https://poeditor.com/join/project/
 @Composable
 internal fun LanguageSection() {
     val locales = AppCompatDelegate.getApplicationLocales()
-    val selected = when {
-        locales.isEmpty -> ""
-        locales[0]?.language == "zh" -> "zh-CN"
-        locales[0]?.language == "ru" -> "ru"
-        locales[0]?.language == "ar" -> "ar"
-        locales[0]?.language == "fa" -> "fa"
-        locales[0]?.language == "pt" -> "pt-BR"
-        locales[0]?.language == "de" -> "de"
-        locales[0]?.language == "es" -> "es"
-        locales[0]?.language == "ja" -> "ja"
-        locales[0]?.language == "id" || locales[0]?.language == "in" -> "id"
-        locales[0]?.language == "si" -> "si"
-        locales[0]?.language == "vi" -> "vi"
-        locales[0]?.language == "tr" -> "tr"
-        locales[0]?.language == "ms" -> "ms"
-        locales[0]?.language == "th" -> "th"
-        else -> "en"
-    }
+    val selected = selectedAppLanguageTag(locales[0])
     val context = LocalContext.current
     val uriHandler = LocalUriHandler.current
     val languages = listOf(
         "" to R.string.settings_language_system,
         "en" to R.string.settings_language_english,
         "zh-CN" to R.string.settings_language_chinese,
+        "zh-Hant" to R.string.settings_language_traditional_chinese,
         "ru" to R.string.settings_language_russian,
         "ar" to R.string.settings_language_arabic,
         "fa" to R.string.settings_language_persian,
@@ -63,6 +47,12 @@ internal fun LanguageSection() {
         "tr" to R.string.settings_language_turkish,
         "ms" to R.string.settings_language_malay,
         "th" to R.string.settings_language_thai,
+        "fr" to R.string.settings_language_french,
+        "hi" to R.string.settings_language_hindi,
+        "ko" to R.string.settings_language_korean,
+        "ta" to R.string.settings_language_tamil,
+        "bn" to R.string.settings_language_bengali,
+        "fil" to R.string.settings_language_filipino,
     )
 
     SettingsPanel(Modifier.fillMaxWidth()) {

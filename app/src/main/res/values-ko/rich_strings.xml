@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"행 필터링"</string>
+    <string name="rich_no_rows">"일치하는 행이 없습니다."</string>
+    <string name="rich_previous">"이전"</string>
+    <string name="rich_next">"다음"</string>
+    <string name="rich_discuss_rows">"선택한 행에 대해 토론"</string>
+    <string name="rich_discuss_rows_prompt">"내가 선택한 행을 비교하세요."</string>
+    <string name="rich_discuss_tab">"이 탭에 대해 물어보세요"</string>
+    <string name="rich_discuss_tab_prompt">"%1$s 탭에 대해 설명하세요."</string>
+    <string name="rich_copy">"복사"</string>
+    <string name="rich_copied">"복사됨"</string>
+    <string name="rich_share">"공유"</string>
+    <string name="rich_share_unavailable">"이 텍스트를 공유할 수 있는 앱이 없습니다."</string>
+    <string name="rich_images_hidden">"이 채팅에서는 이미지가 사용 중지되었습니다."</string>
+    <string name="rich_expand_image">"이미지 펼치기"</string>
+    <string name="rich_open_source">"오픈 소스"</string>
+    <string name="rich_discuss_image">"이 이미지에 대해 물어보세요"</string>
+    <string name="rich_discuss_image_prompt">"내가 선택한 이미지에 대해 설명해주세요."</string>
+    <string name="rich_reported_status">"보고됨: %1$s"</string>
+    <string name="rich_passed">"합격"</string>
+    <string name="rich_failed">"실패"</string>
+    <string name="rich_unverified">"확인되지 않음"</string>
+    <string name="rich_open_file">"파일 열기"</string>
+    <string name="rich_show_less">"간략히 보기"</string>
+    <string name="rich_show_all">"모두 표시"</string>
+    <string name="rich_changes">"변경 사항"</string>
+    <string name="rich_before">"이전"</string>
+    <string name="rich_after">"이후"</string>
+    <string name="rich_change_count">"%1$d 추가 · %2$d 삭제"</string>
+    <string name="rich_discuss_diff">"이러한 변화에 대해 토론하세요"</string>
+    <string name="rich_discuss_diff_prompt">"이 비교와 그 장단점을 설명하십시오."</string>
+    <string name="rich_input_range">"%1$s ~ %2$s"</string>
+    <string name="rich_result_unavailable">"입력 또는 수식을 확인하세요."</string>
+    <string name="rich_reset">"재설정"</string>
+    <string name="rich_discuss_values">"이러한 가치에 대해 물어보세요"</string>
+    <string name="rich_discuss_values_prompt">"현재 값을 사용하여 결과를 설명하십시오."</string>
+    <string name="rich_chart_range">"가시 범위"</string>
+    <string name="rich_reset_range">"전체 범위 표시"</string>
+    <string name="rich_chart_label">"라벨"</string>
+    <string name="rich_discuss_chart">"이 차트에 대해 물어보세요"</string>
+    <string name="rich_discuss_chart_prompt">"내가 선택한 차트 포인트와 표시되는 데이터 세트를 설명합니다."</string>
+    <string name="rich_select_point">"%1$s를 선택하세요"</string>
+    <string name="rich_selected_count">"%1$d 선택됨"</string>
+    <string name="rich_clear_selection">"선택 취소"</string>
+    <string name="rich_adjust_input">"%1$s 조정"</string>
+</resources>

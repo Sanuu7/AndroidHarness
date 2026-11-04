@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"तालिका विकल्प"</string>
+    <string name="rich_select_rows">"पंक्तियाँ चुनें"</string>
+    <string name="rich_stop_selecting_rows">"चयन करना बंद करें"</string>
+    <string name="rich_sort_rows">"पंक्तियों को क्रमबद्ध करें"</string>
+</resources>

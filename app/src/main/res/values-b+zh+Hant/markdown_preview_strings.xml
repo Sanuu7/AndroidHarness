@@ -1,0 +1,5 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="markdown_show_preview">"顯示預覽"</string>
+    <string name="markdown_show_source">"顯示原始碼"</string>
+</resources>

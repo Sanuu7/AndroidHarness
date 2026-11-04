@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"Palette ng kulay"</string>
+    <string name="theme_color_hint">"Pumili ng palette upang kulayan ang iyong app."</string>
+    <string name="theme_wallpaper_colors">"Mga kulay ng wallpaper"</string>
+    <string name="theme_wallpaper_hint">"Sundin ang mga kulay ng Material You ng iyong telepono."</string>
+    <string name="theme_wallpaper_unavailable">"Ang mga kulay ng wallpaper ay nangangailangan ng Android 12 o mas bago. Pumili ng palette sa ibaba."</string>
+    <string name="theme_palette_blue">"Harness asul"</string>
+    <string name="theme_palette_ocean">"Karagatan"</string>
+    <string name="theme_palette_indigo">"Indigo"</string>
+    <string name="theme_palette_lavender">"Lavender"</string>
+    <string name="theme_palette_orchid">"Orchid"</string>
+    <string name="theme_palette_rose">"Rose"</string>
+    <string name="theme_palette_coral">"Coral"</string>
+    <string name="theme_palette_amber">"Amber"</string>
+    <string name="theme_palette_lime">"kalamansi"</string>
+    <string name="theme_palette_forest">"kagubatan"</string>
+    <string name="theme_palette_teal">"Teal"</string>
+    <string name="theme_palette_slate">"slate"</string>
+</resources>

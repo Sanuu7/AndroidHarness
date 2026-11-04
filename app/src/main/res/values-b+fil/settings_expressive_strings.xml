@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"Ahente at daloy ng trabaho"</string>
+    <string name="settings_coding_intelligence">"Mga kasanayan at katalinuhan"</string>
+    <string name="settings_coding_execution">"Mga workspace at execution"</string>
+    <string name="settings_device_connections">"Mga koneksyon"</string>
+    <string name="settings_device_tools">"Mga tool at advanced na setting"</string>
+    <string name="settings_linux_optional">"Mga opsyonal na tool para sa mga proyektong nangangailangan ng Linux"</string>
+    <string name="settings_device_advanced">"Advanced na access sa device"</string>
+    <string name="settings_device_advanced_summary">"Root at mga kontrol ng may-ari ng device"</string>
+    <string name="settings_device_background">"Background at baterya"</string>
+    <string name="settings_device_background_summary">"Panatilihing tumatakbo ang mga terminal session at trabaho ng ahente"</string>
+    <string name="settings_connection_help">"Paano kumonekta"</string>
+    <string name="settings_connection_options">"Mga pagpipilian sa koneksyon"</string>
+    <string name="wireless_adb_disconnect">"Idiskonekta"</string>
+    <string name="wireless_adb_connection_kept">"Konektado · magagamit hanggang sa magdiskonekta ka"</string>
+    <string name="wireless_adb_auto_reconnecting">"Muling kumokonekta sa naka-save na wireless debugging"</string>
+    <string name="rich_profile_details">"Mga Detalye"</string>
+    <string name="rich_profile_sources">"Mga pinagmumulan"</string>
+    <string name="settings_disclosure_expanded">"Pinalawak"</string>
+    <string name="settings_disclosure_collapsed">"Na-collapse"</string>
+    <string name="settings_terminal_access">"Access sa terminal"</string>
+    <string name="wireless_adb_compact_summary">"Mga utos ng device, na may awtomatikong muling pagkonekta"</string>
+</resources>

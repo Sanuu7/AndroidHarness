@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"கோப்புகளை இறக்குமதி செய்யவும்"</string>
+    <string name="files_import_folder">"கோப்புறையை இறக்குமதி செய்"</string>
+    <string name="files_import_done">"%2$s உருப்படிகளில் %1$s இறக்குமதி செய்யப்பட்டது"</string>
+    <string name="files_import_failed">"கோப்புகளை இறக்குமதி செய்ய முடியவில்லை"</string>
+</resources>

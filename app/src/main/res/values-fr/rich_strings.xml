@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"Filtrer les lignes"</string>
+    <string name="rich_no_rows">"Aucune ligne correspondante"</string>
+    <string name="rich_previous">"Précédent"</string>
+    <string name="rich_next">"Suivant"</string>
+    <string name="rich_discuss_rows">"Discuter des lignes sélectionnées"</string>
+    <string name="rich_discuss_rows_prompt">"Comparez les lignes que j\'ai sélectionnées."</string>
+    <string name="rich_discuss_tab">"Renseignez-vous sur cet onglet"</string>
+    <string name="rich_discuss_tab_prompt">"Expliquez l\'onglet %1$s."</string>
+    <string name="rich_copy">"Copier"</string>
+    <string name="rich_copied">"Copié"</string>
+    <string name="rich_share">"Partager"</string>
+    <string name="rich_share_unavailable">"Aucune application n\'est disponible pour partager ce texte."</string>
+    <string name="rich_images_hidden">"Les images sont désactivées pour ce chat."</string>
+    <string name="rich_expand_image">"Agrandir l\'image"</string>
+    <string name="rich_open_source">"Source ouverte"</string>
+    <string name="rich_discuss_image">"Posez des questions sur cette image"</string>
+    <string name="rich_discuss_image_prompt">"Expliquez l\'image que j\'ai sélectionnée."</string>
+    <string name="rich_reported_status">"Signalé : %1$s"</string>
+    <string name="rich_passed">"Réussi"</string>
+    <string name="rich_failed">"Échec"</string>
+    <string name="rich_unverified">"Non vérifié"</string>
+    <string name="rich_open_file">"Ouvrir le fichier"</string>
+    <string name="rich_show_less">"Afficher moins"</string>
+    <string name="rich_show_all">"Afficher tout"</string>
+    <string name="rich_changes">"Changements"</string>
+    <string name="rich_before">"Avant"</string>
+    <string name="rich_after">"Après"</string>
+    <string name="rich_change_count">"%1$d ajouté · %2$d supprimé"</string>
+    <string name="rich_discuss_diff">"Discutez de ces changements"</string>
+    <string name="rich_discuss_diff_prompt">"Expliquez cette comparaison et ses compromis."</string>
+    <string name="rich_input_range">"%1$s à %2$s"</string>
+    <string name="rich_result_unavailable">"Vérifiez les entrées ou la formule"</string>
+    <string name="rich_reset">"Réinitialiser"</string>
+    <string name="rich_discuss_values">"Renseignez-vous sur ces valeurs"</string>
+    <string name="rich_discuss_values_prompt">"Expliquez le résultat en utilisant mes valeurs actuelles."</string>
+    <string name="rich_chart_range">"Portée visible"</string>
+    <string name="rich_reset_range">"Afficher la gamme complète"</string>
+    <string name="rich_chart_label">"Étiquette"</string>
+    <string name="rich_discuss_chart">"Renseignez-vous sur ce tableau"</string>
+    <string name="rich_discuss_chart_prompt">"Expliquez mon point de graphique sélectionné et mes ensembles de données visibles."</string>
+    <string name="rich_select_point">"Sélectionnez %1$s"</string>
+    <string name="rich_selected_count">"%1$d sélectionné"</string>
+    <string name="rich_clear_selection">"Effacer la sélection"</string>
+    <string name="rich_adjust_input">"Ajuster %1$s"</string>
+</resources>

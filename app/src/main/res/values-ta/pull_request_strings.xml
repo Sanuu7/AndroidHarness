@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"இழுத்தல் கோரிக்கையைத் திறக்கிறது…"</string>
+    <string name="pr_tool_opened">"இழுக்க கோரிக்கை திறக்கப்பட்டது #%1$d"</string>
+    <string name="pr_tool_existing">"இழுக்கும் கோரிக்கை #%1$d ஏற்கனவே திறக்கப்பட்டுள்ளது"</string>
+    <string name="pr_tool_failed">"இழுக்கும் கோரிக்கை திறக்கப்படவில்லை"</string>
+    <string name="pr_tool_waiting">"உங்கள் ஒப்புதலுக்காக காத்திருக்கிறது"</string>
+    <string name="pr_draft">"வரைவு"</string>
+    <string name="pr_counts">"பொறுப்புகள்: %1$d · கோப்புகள்: %2$d"</string>
+    <string name="pr_open_on_github">"GitHub இல் திறக்கவும்"</string>
+    <string name="pr_copy_link">"இணைப்பை நகலெடுக்கவும்"</string>
+    <string name="pr_link_copied">"இணைப்பு நகலெடுக்கப்பட்டது"</string>
+    <string name="pr_open_failed">"எந்த ஆப்ஸாலும் இணைப்பைத் திறக்க முடியவில்லை. அதற்கு பதிலாக நகலெடுக்கப்பட்டுள்ளது."</string>
+    <string name="pr_approval_title">"இழுக்கும் கோரிக்கையைத் திறக்கவா?"</string>
+    <string name="pr_approval_body">"தள்ளப்பட்ட கிளையிலிருந்து GitHub இல் இழுக்கும் கோரிக்கையை உருவாக்குகிறது. எதுவும் தள்ளப்படவில்லை அல்லது ஒன்றிணைக்கப்படவில்லை."</string>
+    <string name="pr_approval_base">"%1$s இல்"</string>
+    <string name="pr_approval_default_base">"இயல்புநிலை கிளைக்குள்"</string>
+    <string name="pr_create">"இழுக்கும் கோரிக்கையை உருவாக்கவும்"</string>
+    <string name="pr_create_draft">"வரைவு இழுக்கும் கோரிக்கையை உருவாக்கவும்"</string>
+    <string name="pr_entry_body">"GitHub இல் இந்த கிளையின் புஷ்டு கமிட்களை மதிப்பாய்வு செய்ய முன்மொழியவும்."</string>
+    <string name="pr_loading">"இந்தக் கிளையை GitHub உடன் ஒப்பிடுகிறது…"</string>
+    <string name="pr_title_label">"தலைப்பு"</string>
+    <string name="pr_description_label">"விளக்கம்"</string>
+    <string name="pr_rewrite_description">"விளக்கத்தை மீண்டும் எழுதவும்"</string>
+    <string name="pr_base_label">"அடிப்படை கிளை"</string>
+    <string name="pr_draft_label">"வரைவாக திற"</string>
+    <string name="pr_draft_body">"மதிப்பாய்வாளர்கள் அதைப் பார்க்க முடியும், ஆனால் நீங்கள் அதை தயார் எனக் குறிக்கும் வரை அதை ஒன்றிணைக்க முடியாது."</string>
+    <string name="pr_include_checks">"இந்த அரட்டையிலிருந்து காசோலைகளைச் சேர்க்கவும்"</string>
+    <string name="pr_include_checks_body">"இந்த உரையாடலில் பதிவுசெய்யப்பட்ட உருவாக்கம், சோதனை மற்றும் லின்ட் முடிவுகளைச் சேர்க்கிறது."</string>
+    <string name="pr_existing_body">"%1$sக்கான புதிய புஷ்கள் இந்த இழுத்தல் கோரிக்கையை தானாகவே புதுப்பிக்கும்."</string>
+    <string name="pr_not_pushed_title">"கிளை இன்னும் GitHub இல் இல்லை"</string>
+    <string name="pr_out_of_date_title">"GitHub இந்த கிளையின் பழைய நகல் உள்ளது"</string>
+    <string name="pr_push_body">"%1$s ஐ அழுத்தவும், இதன் மூலம் GitHub உங்களின் சமீபத்திய கடமைகளைப் பெறுகிறது."</string>
+    <string name="pr_push_branch">"மிகுதி கிளை"</string>
+    <string name="pr_pushed">"கிளை தள்ளப்பட்டது."</string>
+    <string name="pr_uncommitted_title">"செய்யப்படாத மாற்றங்கள்: %1$d"</string>
+    <string name="pr_uncommitted_body">"நீங்கள் உறுதியளித்து அவர்களைத் தள்ளும் வரை அவை சேர்க்கப்படாது."</string>
+    <string name="pr_behind_title">"%1$s இல் புதிய கமிட்கள்: %2$d"</string>
+    <string name="pr_behind_body">"இந்தக் கிளை இன்னும் அவர்களைச் சேர்க்கவில்லை. மதிப்பாய்வாளர்கள் அதைப் புதுப்பிக்கும்படி கேட்கலாம்."</string>
+    <string name="pr_no_commits_title">"இன்னும் முன்மொழிய எதுவும் இல்லை"</string>
+    <string name="pr_no_commits_body">"%1$s இல் ஏற்கனவே %2$s இல் இல்லாத கமிட்கள் எதுவும் இல்லை."</string>
+    <string name="pr_commits_header">"கமிட்கள்"</string>
+    <string name="pr_more">"மேலும்: %1$d"</string>
+    <string name="pr_created_title">"இழுக்கும் கோரிக்கை #%1$d திறக்கப்பட்டது"</string>
+    <string name="pr_created_draft_title">"வரைவு இழுத்தல் கோரிக்கை #%1$d திறக்கப்பட்டது"</string>
+    <string name="pr_retry">"மீண்டும் முயற்சிக்கவும்"</string>
+</resources>

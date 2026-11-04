@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Caveman स्तर"</string>
+    <string name="as_activity_finding">"सेटिंग्स देख रहे हैं"</string>
+    <string name="as_activity_found">"सेटिंग्स देखीं"</string>
+    <string name="as_activity_changing">"सेटिंग बदल रहा है"</string>
+    <string name="as_activity_changed">"बदली गई सेटिंग्स"</string>
+    <string name="as_undo">"पूर्ववत करें"</string>
+    <string name="as_undo_all">"सभी को पूर्ववत करें"</string>
+    <string name="as_redo">"पुनः करें"</string>
+    <string name="as_open_settings">"सेटिंग्स खोलें"</string>
+    <string name="as_open_setting">"सेटिंग खोलें"</string>
+    <string name="as_title_changed">"सेटिंग्स बदल गईं"</string>
+    <string name="as_title_undone">"परिवर्तन पूर्ववत"</string>
+    <string name="as_title_needs_you">"एक सेटिंग को आपकी आवश्यकता है"</string>
+    <string name="as_title_not_changed">"सेटिंग्स नहीं बदलीं"</string>
+    <string name="as_state_undone">"पूर्ववत"</string>
+    <string name="as_state_moved_on">"तब से फिर बदल गया"</string>
+    <string name="as_on">"पर"</string>
+    <string name="as_off">"बंद"</string>
+    <string name="as_unlimited">"असीमित"</string>
+    <string name="as_custom_palette">"कस्टम पैलेट"</string>
+    <string name="as_empty">"कोई नहीं"</string>
+    <string name="as_needs_you_label">"आपकी जरूरत है · %1$s"</string>
+    <string name="as_group">"चैट से सेटिंग"</string>
+    <string name="as_setting_title">"एजेंट को सेटिंग बदलने दें"</string>
+    <string name="as_access_off">"बंद"</string>
+    <string name="as_access_off_desc">"एजेंट सेटिंग्स देख सकता है और आपको उनकी ओर संकेत कर सकता है, लेकिन उन्हें बदल नहीं सकता।"</string>
+    <string name="as_access_ask">"हर बार पूछो"</string>
+    <string name="as_access_ask_desc">"प्रत्येक परिवर्तन चैट में आपकी स्वीकृति की प्रतीक्षा करता है।"</string>
+    <string name="as_access_allowed">"अनुमति है"</string>
+    <string name="as_access_allowed_desc">"परिवर्तन पूर्ववत कार्ड के साथ तुरंत लागू होते हैं। ऐप लॉक जैसे संवेदनशील लोग अभी भी पूछते हैं।"</string>
+    <string name="as_picker_detail">"Chat या Code में किसी सेटिंग को चालू या बंद करने, स्लाइडर को स्थानांतरित करने या रंग पैलेट बनाने के लिए कहें। संवेदनशील सेटिंग्स हमेशा पहले पूछती हैं, और API कुंजियाँ पहुंच से बाहर रहती हैं।"</string>
+    <string name="as_search_desc">"Chat या Code में पूछकर सेटिंग्स बदलें"</string>
+    <string name="tip_ask_settings" formatted="false">"मुझसे कोई सेटिंग बदलने के लिए कहें, जैसे \"रम्बल को 70% पर सेट करें\" या \"एक चैती पैलेट बनाएं\"। पूर्ववत करने के साथ एक कार्ड दिखाता है कि क्या बदल गया है।"</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">"%1$d परिवर्तन"</item>
+        <item quantity="other">"%1$d परिवर्तन"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">"%1$d को आपकी जरूरत है"</item>
+        <item quantity="other">"%1$d को आपकी जरूरत है"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"저장소 선택"</string>
+    <string name="github_import_destination">"이 장치의 자체 작업 공간으로 복사본을 가져옵니다."</string>
+    <string name="github_import_loading">"저장소 로드 중…"</string>
+    <string name="github_import_empty">"이 계정에 대한 저장소를 찾을 수 없습니다. URL로 가져올 수도 있습니다."</string>
+    <string name="github_import_by_url">"URL로 가져오기"</string>
+    <string name="github_import_confirm_title">"저장소를 가져오시겠습니까?"</string>
+    <string name="github_import_confirm_body">"%1$s를 이 기기의 새 작업 공간으로 가져오시겠습니까?"</string>
+    <string name="github_import_preparing">"가져오기 준비 중…"</string>
+    <string name="github_import_success">"수입된 %1$s"</string>
+    <string name="github_import_open_workspace">"작업공간 열기"</string>
+</resources>

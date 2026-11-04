@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_viewing_image">"படத்தைப் பார்க்கிறேன்"</string>
+    <string name="chat_viewed_image">"படத்தைப் பார்த்தேன்"</string>
+    <string name="chat_image_failed">"படத்தை ஆய்வு செய்ய முடியவில்லை"</string>
+</resources>

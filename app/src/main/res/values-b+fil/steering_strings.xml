@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"Habang nagtatrabaho ang ahente"</string>
+    <string name="settings_anchor_steering">"Ipinadala ang mga mensahe sa kalagitnaan ng gawain"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"Binabasa ng ahente ang iyong mensahe pagkatapos ng kasalukuyang hakbang nito at nagpapatuloy. Ang mga kagamitan sa pagpapatakbo ay hindi kailanman naaantala. Kung natapos na ang gawain, magsisimula ang mensahe sa susunod na pagliko."</string>
+    <string name="steering_mode_after_task">"Pagkatapos ng gawain"</string>
+    <string name="steering_mode_after_task_desc">"Ang iyong mensahe ay naghihintay hanggang sa matapos ang buong gawain, pagkatapos ay magsisimula ng bagong pagliko."</string>
+    <string name="steering_picker_detail">"Piliin kung ano ang mangyayari kapag nagpadala ka ng mensahe habang nagtatrabaho ang ahente. Ipadala ngayon sa isang naka-queue na mensahe ay palaging humihinto sa ahente at ipinapadala ito kaagad."</string>
+    <string name="steering_search_desc">"Patnubayan ang tumatakbong ahente, o hintaying matapos ang gawain"</string>
+    <string name="steering_queue_next_step">"Binabasa ito ng ahente pagkatapos ng kasalukuyang hakbang nito."</string>
+    <string name="steering_queue_badge">"Basahin sa susunod na hakbang"</string>
+</resources>

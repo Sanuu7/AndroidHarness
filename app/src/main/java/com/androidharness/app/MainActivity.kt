@@ -63,6 +63,13 @@ class MainActivity : AppCompatActivity() {
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        val languageTags = androidx.appcompat.app.AppCompatDelegate.getApplicationLocales().toLanguageTags()
+        val canonicalTags = com.androidharness.app.ui.settings.canonicalAppLanguageTags(languageTags)
+        if (canonicalTags != languageTags) {
+            androidx.appcompat.app.AppCompatDelegate.setApplicationLocales(
+                androidx.core.os.LocaleListCompat.forLanguageTags(canonicalTags),
+            )
+        }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         container = (application as HarnessApp).container

@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="pr_tool_opening">"正在建立拉取請求…"</string>
+    <string name="pr_tool_opened">"已建立拉取請求 #%1$d"</string>
+    <string name="pr_tool_existing">"拉取請求 #%1$d 已處於開啟狀態"</string>
+    <string name="pr_tool_failed">"未建立拉取請求"</string>
+    <string name="pr_tool_waiting">"等待你的批准"</string>
+    <string name="pr_draft">"草稿"</string>
+    <string name="pr_counts">"提交：%1$d · 檔案：%2$d"</string>
+    <string name="pr_open_on_github">"在 GitHub 上開啟"</string>
+    <string name="pr_copy_link">"複製連結"</string>
+    <string name="pr_link_copied">"連結已複製"</string>
+    <string name="pr_open_failed">"沒有可開啟該連結的應用，已改為複製連結。"</string>
+    <string name="pr_approval_title">"建立拉取請求？"</string>
+    <string name="pr_approval_body">"將基於已推送的分支在 GitHub 上建立拉取請求。不會推送或合併任何內容。"</string>
+    <string name="pr_approval_base">"合併到 %1$s"</string>
+    <string name="pr_approval_default_base">"合併到預設分支"</string>
+    <string name="pr_create">"建立拉取請求"</string>
+    <string name="pr_create_draft">"建立草稿拉取請求"</string>
+    <string name="pr_entry_body">"在 GitHub 上提交此分支已推送的提交以供審查。"</string>
+    <string name="pr_loading">"正在與 GitHub 比較此分支…"</string>
+    <string name="pr_title_label">"標題"</string>
+    <string name="pr_description_label">"描述"</string>
+    <string name="pr_rewrite_description">"重寫描述"</string>
+    <string name="pr_base_label">"目標分支"</string>
+    <string name="pr_draft_label">"以草稿形式建立"</string>
+    <string name="pr_draft_body">"審查者可以檢視，但在你標記為就緒之前無法合併。"</string>
+    <string name="pr_include_checks">"包含此對話中的檢查"</string>
+    <string name="pr_include_checks_body">"新增此對話中記錄的構建、測試和 lint 結果。"</string>
+    <string name="pr_existing_body">"推送到 %1$s 的新提交會自動更新此拉取請求。"</string>
+    <string name="pr_not_pushed_title">"分支尚未推送到 GitHub"</string>
+    <string name="pr_out_of_date_title">"GitHub 上的分支副本較舊"</string>
+    <string name="pr_push_body">"推送 %1$s，讓 GitHub 獲得你的最新提交。"</string>
+    <string name="pr_push_branch">"推送分支"</string>
+    <string name="pr_pushed">"分支已推送。"</string>
+    <string name="pr_uncommitted_title">"未提交的更改：%1$d"</string>
+    <string name="pr_uncommitted_body">"在你提交併推送之前，它們不會包含在內。"</string>
+    <string name="pr_behind_title">"%1$s 上的新提交：%2$d"</string>
+    <string name="pr_behind_body">"此分支尚未包含這些提交，審查者可能會要求你更新。"</string>
+    <string name="pr_no_commits_title">"暫無可提交的內容"</string>
+    <string name="pr_no_commits_body">"%1$s 沒有任何不在 %2$s 上的提交。"</string>
+    <string name="pr_commits_header">"提交紀錄"</string>
+    <string name="pr_more">"更多：%1$d"</string>
+    <string name="pr_created_title">"拉取請求 #%1$d 已建立"</string>
+    <string name="pr_created_draft_title">"草稿拉取請求 #%1$d 已建立"</string>
+    <string name="pr_retry">"重試"</string>
+</resources>

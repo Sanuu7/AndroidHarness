@@ -261,7 +261,7 @@ class LocalizationResourcesTest {
         val locales = DocumentBuilderFactory.newInstance().newDocumentBuilder()
             .parse(File("src/main/res/xml/locales_config.xml")).getElementsByTagName("locale")
         val tags = (0 until locales.length).map { (locales.item(it) as Element).getAttribute("android:name") }
-        assertTrue(tags.containsAll(listOf("en", "zh-CN", "ru", "ar", "fa", "pt-BR", "de", "es", "ja", "id", "si", "vi", "tr", "ms", "th")))
+        assertTrue(tags.containsAll(listOf("en", "zh-CN", "ru", "ar", "fa", "pt-BR", "de", "es", "ja", "id", "si", "vi", "tr", "ms", "th", "fr", "hi", "ko", "ta", "bn", "fil", "zh-Hant")))
     }
 
     @Test fun brazilianPortugueseCoversEveryUiResourceInItsOriginalGroup() = assertUiResourceCoverage("values-pt-rBR")
@@ -303,6 +303,36 @@ class LocalizationResourcesTest {
         val thai = strings("values-th")
         strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
             assertEquals("Resource reference $name", reference, thai.getValue(name))
+        }
+    }
+
+    private val additionalLocales = listOf(
+        Triple("values-fr", "fr", setOf("one", "many", "other")),
+        Triple("values-hi", "hi", setOf("one", "other")),
+        Triple("values-ko", "ko", setOf("other")),
+        Triple("values-ta", "ta", setOf("one", "other")),
+        Triple("values-bn", "bn", setOf("one", "other")),
+        Triple("values-b+fil", "fil", setOf("one", "other")),
+        Triple("values-b+zh+Hant", "zh-Hant", setOf("other")),
+    )
+
+    @Test fun additionalLanguagesCoverEveryResourceAndKeepReferences() {
+        additionalLocales.forEach { (folder, _, _) ->
+            assertUiResourceCoverage(folder)
+            val translated = strings(folder)
+            strings("values").filterValues { it.startsWith("@string/") }.forEach { (name, reference) ->
+                assertEquals("Resource reference $folder/$name", reference, translated.getValue(name))
+            }
+        }
+    }
+
+    @Test fun additionalLanguagesPreserveFormattingAndTechnicalValues() {
+        additionalLocales.forEach { (folder, tag, _) -> assertFormattingAndTechnicalValues(folder, tag) }
+    }
+
+    @Test fun additionalLanguagesPreserveAllPluralArgumentsAndForms() {
+        additionalLocales.forEach { (folder, tag, forms) ->
+            assertPluralCoverage(folder, tag, forms, preserveAllArguments = true)
         }
     }
 
@@ -368,7 +398,7 @@ class LocalizationResourcesTest {
             }
         }
         for (name in english.keys.filter { it.startsWith("settings_language_") &&
-            it.substringAfter("settings_language_") in setOf("english", "chinese", "russian", "arabic", "persian", "indonesian", "portuguese", "german", "spanish", "japanese", "sinhala", "vietnamese", "turkish", "malay", "thai") }) {
+            it.substringAfter("settings_language_") in setOf("english", "chinese", "russian", "arabic", "persian", "indonesian", "portuguese", "german", "spanish", "japanese", "sinhala", "vietnamese", "turkish", "malay", "thai", "french", "hindi", "korean", "tamil", "bengali", "filipino", "traditional_chinese") }) {
             assertEquals("Native language name $name", english.getValue(name).removeSurrounding("\""),
                 translations.getValue(name).removeSurrounding("\""))
         }

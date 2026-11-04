@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Niveau Caveman"</string>
+    <string name="as_activity_finding">"Recherche de paramètres"</string>
+    <string name="as_activity_found">"Paramètres recherchés"</string>
+    <string name="as_activity_changing">"Modification des paramètres"</string>
+    <string name="as_activity_changed">"Paramètres modifiés"</string>
+    <string name="as_undo">"Annuler"</string>
+    <string name="as_undo_all">"Tout annuler"</string>
+    <string name="as_redo">"Refaire"</string>
+    <string name="as_open_settings">"Ouvrir les paramètres"</string>
+    <string name="as_open_setting">"Ouvrir le paramètre"</string>
+    <string name="as_title_changed">"Paramètres modifiés"</string>
+    <string name="as_title_undone">"Modifications annulées"</string>
+    <string name="as_title_needs_you">"Un décor a besoin de vous"</string>
+    <string name="as_title_not_changed">"Paramètres non modifiés"</string>
+    <string name="as_state_undone">"Annulé"</string>
+    <string name="as_state_moved_on">"Changé à nouveau depuis"</string>
+    <string name="as_on">"Sur"</string>
+    <string name="as_off">"Désactivé"</string>
+    <string name="as_unlimited">"Illimité"</string>
+    <string name="as_custom_palette">"Palette personnalisée"</string>
+    <string name="as_empty">"Aucun"</string>
+    <string name="as_needs_you_label">"A besoin de vous · %1$s"</string>
+    <string name="as_group">"Paramètres du chat"</string>
+    <string name="as_setting_title">"Laisser l\'agent modifier les paramètres"</string>
+    <string name="as_access_off">"Désactivé"</string>
+    <string name="as_access_off_desc">"L\'agent peut rechercher les paramètres et vous les indiquer, mais pas les modifier."</string>
+    <string name="as_access_ask">"Demande à chaque fois"</string>
+    <string name="as_access_ask_desc">"Chaque modification attend votre approbation dans le chat."</string>
+    <string name="as_access_allowed">"Autorisé"</string>
+    <string name="as_access_allowed_desc">"Les modifications s’appliquent immédiatement avec une carte Annuler. Les plus sensibles, comme le verrouillage des applications, demandent toujours."</string>
+    <string name="as_picker_detail">"Demandez dans Chat ou Code pour activer ou désactiver un paramètre, déplacer un curseur ou créer une palette de couleurs. Les paramètres sensibles sont toujours demandés en premier et les touches API restent hors de portée."</string>
+    <string name="as_search_desc">"Modifiez les paramètres en demandant dans Chat ou Code"</string>
+    <string name="tip_ask_settings" formatted="false">"Demandez-moi de modifier un paramètre, comme « régler le grondement à 70 % » ou « créer une palette bleu sarcelle ». Une carte montre ce qui a changé, avec Annuler."</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">"Changement %1$d"</item>
+        <item quantity="other">"Modifications du %1$d"</item>
+        <item quantity="many">"Modifications du %1$d"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">"%1$d a besoin de vous"</item>
+        <item quantity="other">"%1$d a besoin de vous"</item>
+        <item quantity="many">"%1$d a besoin de vous"</item>
+    </plurals>
+</resources>

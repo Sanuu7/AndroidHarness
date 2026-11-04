@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"Demande de tirage d’ouverture…"</string>
+    <string name="pr_tool_opened">"Demande de tirage ouverte #%1$d"</string>
+    <string name="pr_tool_existing">"La demande de tirage #%1$d est déjà ouverte"</string>
+    <string name="pr_tool_failed">"Demande de tirage non ouverte"</string>
+    <string name="pr_tool_waiting">"En attente de votre approbation"</string>
+    <string name="pr_draft">"Brouillon"</string>
+    <string name="pr_counts">"Validations : %1$d · Fichiers : %2$d"</string>
+    <string name="pr_open_on_github">"Ouvert sur GitHub"</string>
+    <string name="pr_copy_link">"Copier le lien"</string>
+    <string name="pr_link_copied">"Lien copié"</string>
+    <string name="pr_open_failed">"Aucune application n\'a pu ouvrir le lien. Il a été copié à la place."</string>
+    <string name="pr_approval_title">"Ouvrir une pull request ?"</string>
+    <string name="pr_approval_body">"Crée une pull request sur GitHub à partir de la branche poussée. Rien n\'est poussé ou fusionné."</string>
+    <string name="pr_approval_base">"Dans %1$s"</string>
+    <string name="pr_approval_default_base">"Dans la branche par défaut"</string>
+    <string name="pr_create">"Créer une demande de tirage"</string>
+    <string name="pr_create_draft">"Créer un brouillon de demande d\'extraction"</string>
+    <string name="pr_entry_body">"Proposez les validations poussées de cette branche pour examen sur GitHub."</string>
+    <string name="pr_loading">"En comparant cette branche avec GitHub…"</string>
+    <string name="pr_title_label">"Titre"</string>
+    <string name="pr_description_label">"Descriptif"</string>
+    <string name="pr_rewrite_description">"Réécrire la description"</string>
+    <string name="pr_base_label">"Branche de base"</string>
+    <string name="pr_draft_label">"Ouvrir comme brouillon"</string>
+    <string name="pr_draft_body">"Les réviseurs peuvent le voir, mais il ne peut pas être fusionné tant que vous ne l\'avez pas marqué comme prêt."</string>
+    <string name="pr_include_checks">"Inclure les chèques de ce chat"</string>
+    <string name="pr_include_checks_body">"Ajoute les résultats de construction, de test et de charpie enregistrés dans cette conversation."</string>
+    <string name="pr_existing_body">"Les nouveaux push vers %1$s mettent automatiquement à jour cette demande d’extraction."</string>
+    <string name="pr_not_pushed_title">"Branch n\'est pas encore sur GitHub"</string>
+    <string name="pr_out_of_date_title">"GitHub possède une ancienne copie de cette branche"</string>
+    <string name="pr_push_body">"Poussez %1$s pour que GitHub ait vos derniers commits."</string>
+    <string name="pr_push_branch">"Pousser la branche"</string>
+    <string name="pr_pushed">"Branche poussée."</string>
+    <string name="pr_uncommitted_title">"Modifications non validées : %1$d"</string>
+    <string name="pr_uncommitted_body">"Ils ne seront pas inclus tant que vous ne les aurez pas validés et poussés."</string>
+    <string name="pr_behind_title">"Nouveaux commits sur %1$s : %2$d"</string>
+    <string name="pr_behind_body">"Cette branche ne les inclut pas encore. Les évaluateurs peuvent vous demander de le mettre à jour."</string>
+    <string name="pr_no_commits_title">"Rien à proposer pour l\'instant"</string>
+    <string name="pr_no_commits_body">"%1$s n\'a aucun commit qui ne soit déjà sur %2$s."</string>
+    <string name="pr_commits_header">"Commits"</string>
+    <string name="pr_more">"En savoir plus : %1$d"</string>
+    <string name="pr_created_title">"Demande de tirage #%1$d ouverte"</string>
+    <string name="pr_created_draft_title">"Brouillon de demande d\'extraction #%1$d ouvert"</string>
+    <string name="pr_retry">"Réessayez"</string>
+</resources>

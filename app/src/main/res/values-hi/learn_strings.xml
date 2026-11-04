@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"AndroidHarness सीखें"</string>
+    <string name="learn_description">"यहां आप जो कुछ भी कर सकते हैं उसके लिए मैत्रीपूर्ण, चरण-दर-चरण मार्गदर्शिकाएँ।"</string>
+    <string name="learn_group">"यहां से प्रारंभ करें"</string>
+    <string name="learn_entry_hint">"आपका मार्गदर्शक, आपकी गति से"</string>
+    <string name="learn_entry_action">"गाइड का अन्वेषण करें"</string>
+    <string name="learn_hero_title">"थोड़ा मार्गदर्शन।\nढेरों संभावनाएँ।"</string>
+    <string name="learn_hero_body">"अपनी पहली चैट से शुरुआत करें, या सीधे उस चीज़ पर जाएँ जो आप करना चाहते हैं। प्रत्येक पाठ में चरण, उपयोगी सीमाएँ और फंस जाने पर सहायता शामिल होती है।"</string>
+    <string name="learn_offline">"ऑफ़लाइन उपलब्ध · ट्यूटोरियल अंग्रेज़ी में हैं"</string>
+    <string name="learn_progress">"%2$d में से %1$d पाठ सीखे गए"</string>
+    <string name="learn_search">"आप क्या सीखना चाहेंगे?"</string>
+    <string name="learn_clear_search">"ट्यूटोरियल खोज साफ़ करें"</string>
+    <string name="learn_all">"सभी पाठ"</string>
+    <string name="learn_saved">"सहेजा गया"</string>
+    <string name="learn_start">"बुनियादी बातों से शुरुआत करें"</string>
+    <string name="learn_start_hint">"यहाँ नये हैं? ये तीन पाठ आपको आगे बढ़ने में मदद करेंगे।"</string>
+    <string name="learn_results">"%1$d पाठ"</string>
+    <string name="learn_empty_title">"आइए एक और खोज का प्रयास करें"</string>
+    <string name="learn_empty_body">"\"API कुंजी\", \"GitHub\", \"स्थानीय मॉडल\", या \"MCP\" आज़माएं। आप सब कुछ ब्राउज़ करने के लिए सभी पाठों पर भी स्विच कर सकते हैं।"</string>
+    <string name="learn_saved_empty_title">"एक पाठ संभाल कर रखें"</string>
+    <string name="learn_saved_empty_body">"किसी पाठ को बाद में यहां ढूंढने के लिए बुकमार्क का उपयोग करें।"</string>
+    <string name="learn_reset_filters">"सभी पाठ दिखाएँ"</string>
+    <string name="learn_location">"कहाँ जाना है"</string>
+    <string name="learn_before">"शुरू करने से पहले"</string>
+    <string name="learn_steps">"आइए इसे करें"</string>
+    <string name="learn_outcome">"आपको क्या देखना चाहिए"</string>
+    <string name="learn_limits">"जानकर अच्छा लगा"</string>
+    <string name="learn_fixes">"अगर आप फंस गए"</string>
+    <string name="learn_example">"यह कहने का प्रयास करें"</string>
+    <string name="learn_copy_example">"उदाहरण कॉपी करें"</string>
+    <string name="learn_copied">"उदाहरण कॉपी किया गया"</string>
+    <string name="learn_open_section">"इसे ऐप में आज़माएं"</string>
+    <string name="learn_links">"आधिकारिक मदद"</string>
+    <string name="learn_links_hint">"ये लिंक आपके ब्राउज़र में खुलते हैं और इनके लिए इंटरनेट कनेक्शन की आवश्यकता होती है। प्रदाता पृष्ठ बदल सकते हैं; भुगतान करने से पहले दिखाए गए नियम और कीमत की जांच करें।"</string>
+    <string name="learn_related">"एक उपयोगी अगला कदम"</string>
+    <string name="learn_mark_complete">"विद्वान के रूप में चिह्नित करें"</string>
+    <string name="learn_complete">"सीखा · पूर्ववत करने के लिए टैप करें"</string>
+    <string name="learn_completed_label">"सीखा"</string>
+    <string name="learn_bookmark">"इस पाठ को सहेजें"</string>
+    <string name="learn_bookmarked">"सहेजा गया पाठ हटाएँ"</string>
+    <string name="learn_link_failed">"ब्राउज़र नहीं खुल सका. इसके बजाय आप लिंक को कॉपी कर सकते हैं."</string>
+    <string name="learn_copy_link">"लिंक कॉपी करें"</string>
+    <string name="learn_load_failed">"गाइड नहीं खोली जा सकी. सेटिंग्स बंद करें और पुनः प्रयास करें।"</string>
+</resources>

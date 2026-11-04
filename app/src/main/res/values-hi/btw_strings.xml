@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"वैसे"</string>
+    <string name="btw_source_live">"सजीव प्रसंग"</string>
+    <string name="btw_source_saved">"इतिहास सहेजा गया"</string>
+    <string name="btw_private">"चैट में नहीं जोड़ा गया"</string>
+    <string name="btw_empty_hint">"वर्तमान कार्य के बारे में कुछ भी पूछें. उत्तर में वही उपयोग किया जाता है जो एजेंट ने पहले ही पढ़ लिया है और निर्णय ले लिया है, इसके त्वरित कैश का पुन: उपयोग करता है, और कभी भी बातचीत में शामिल नहीं होता है।"</string>
+    <string name="btw_input_hint">"एक पार्श्व प्रश्न पूछें"</string>
+    <string name="btw_input_again">"दूसरे पक्ष का प्रश्न पूछें"</string>
+    <string name="btw_ask">"पूछो"</string>
+    <string name="btw_stop">"रुकें"</string>
+    <string name="btw_copy">"प्रतिलिपि"</string>
+    <string name="btw_copied">"उत्तर कॉपी किया गया"</string>
+    <string name="btw_stopped">"रुक गया"</string>
+    <string name="btw_retrying">"पुनः प्रयास कर रहा है · %1$s"</string>
+    <string name="btw_cold_note">"कोई लाइव अनुरोध मेमोरी में नहीं है, इसलिए यह उत्तर प्रॉम्प्ट कैश के बिना सहेजे गए वार्तालाप को पढ़ता है।"</string>
+    <string name="btw_composer_action">"वैसे पूछो"</string>
+    <string name="btw_error_empty_chat">"पहले एक संदेश भेजें, फिर इसके बारे में एक अतिरिक्त प्रश्न पूछें।"</string>
+    <string name="btw_error_local_busy">"स्थानीय मॉडल एक समय में एक अनुरोध का उत्तर देते हैं। वर्तमान उत्तर समाप्त होने के बाद पूछें."</string>
+    <string name="btw_error_no_key">"पूछने से पहले इस प्रदाता की API कुंजी जोड़ें।"</string>
+    <string name="btw_error_generic">"पार्श्व प्रश्न विफल रहा."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">"%1$d रीड-ओनली टूल कॉल"</item>
+        <item quantity="other">"%1$d रीड-ओनली टूल कॉल"</item>
+    </plurals>
+</resources>

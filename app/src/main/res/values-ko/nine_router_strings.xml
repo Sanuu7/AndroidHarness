@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"로컬 모델 라우터 설치 및 관리"</string>
+    <string name="nine_router_intro">"이 휴대폰에서 9Router를 실행하고 브라우저에서 공급자, 모델 및 라우팅을 관리하세요. AndroidHarness Linux 툴체인을 사용합니다."</string>
+    <string name="nine_router_setup">"환경 설정"</string>
+    <string name="nine_router_not_installed">"설치 준비 완료"</string>
+    <string name="nine_router_ready">"설치됨 · 중지됨"</string>
+    <string name="nine_router_running">"이 휴대전화에서 실행 중"</string>
+    <string name="nine_router_starting">"9Router 시작 중…"</string>
+    <string name="nine_router_stopping">"9Router 중지 중…"</string>
+    <string name="nine_router_installing">"설치 중…"</string>
+    <string name="nine_router_updating">"9Router 업데이트 중…"</string>
+    <string name="nine_router_uninstalling">"9Router 제거 중…"</string>
+    <string name="nine_router_connecting">"제공업체에 추가 중…"</string>
+    <string name="nine_router_removing">"제공업체에서 삭제 중…"</string>
+    <string name="nine_router_install_linux">"Linux 툴체인 설치"</string>
+    <string name="nine_router_install">"9Router 설치"</string>
+    <string name="nine_router_start">"9Router 시작"</string>
+    <string name="nine_router_stop">"중지"</string>
+    <string name="nine_router_show_details">"세부정보 표시"</string>
+    <string name="nine_router_hide_details">"세부정보 숨기기"</string>
+    <string name="nine_router_open_dashboard">"브라우저에서 대시보드 열기"</string>
+    <string name="nine_router_browser_error">"9Router 대시보드를 열 수 있는 브라우저가 없습니다."</string>
+    <string name="nine_router_version">"버전 %1$s"</string>
+    <string name="nine_router_check_update">"업데이트 확인"</string>
+    <string name="nine_router_checking">"확인 중…"</string>
+    <string name="nine_router_update">"%1$s로 업데이트"</string>
+    <string name="nine_router_auto_start">"자동 시작 9Router"</string>
+    <string name="nine_router_auto_start_body">"AndroidHarness가 열리면 설치된 라우터를 시작하십시오."</string>
+    <string name="nine_router_add_provider">"공급자에 9Router 추가"</string>
+    <string name="nine_router_refresh_provider">"9Router 공급자 새로 고침"</string>
+    <string name="nine_router_provider_body">"필요한 경우 9Router를 시작하고 로컬 엔드포인트와 API 키를 자동으로 채웁니다. 연결된 모델은 Chat 및 Code 모델 선택기에서 사용할 수 있습니다."</string>
+    <string name="nine_router_remove_provider">"공급자에서 제거"</string>
+    <string name="nine_router_remove_provider_body">"AndroidHarness에서 9Router 연결을 제거합니다. 라우터와 해당 계정은 설치된 상태로 유지됩니다."</string>
+    <string name="nine_router_uninstall">"9Router 제거"</string>
+    <string name="nine_router_uninstall_title">"9Router를 완전히 제거하시겠습니까?"</string>
+    <string name="nine_router_uninstall_body">"9Router를 중지하고 설치, 저장된 계정, 라우터 API 키, 구성, 캐시, 자동 시작 기본 설정 및 앱 제공자 연결을 삭제합니다. 이 작업은 취소할 수 없습니다. 공유 Linux 툴체인은 다른 기능에 계속 사용할 수 있습니다."</string>
+</resources>

@@ -1,0 +1,45 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="learn_title">"瞭解 AndroidHarness"</string>
+    <string name="learn_description">"簡明易懂的分步指南，帶你瞭解這裡的所有功能。"</string>
+    <string name="learn_group">"從這裡開始"</string>
+    <string name="learn_entry_hint">"按你的節奏學習的指南"</string>
+    <string name="learn_entry_action">"瀏覽指南"</string>
+    <string name="learn_hero_title">"一點指引。\n無限可能。"</string>
+    <string name="learn_hero_body">"從第一次聊天開始，或直接跳到你想做的事。每節課都包含步驟、實用限制和卡住時的幫助。"</string>
+    <string name="learn_offline">"可離線使用 · 教學內容為英文"</string>
+    <string name="learn_progress">"已學習 %2$d 節中的 %1$d 節"</string>
+    <string name="learn_search">"想學點什麼？"</string>
+    <string name="learn_clear_search">"清除教程搜尋"</string>
+    <string name="learn_all">"全部課程"</string>
+    <string name="learn_saved">"已儲存"</string>
+    <string name="learn_start">"從基礎開始"</string>
+    <string name="learn_start_hint">"第一次用？這三節課能帶你入門。"</string>
+    <string name="learn_results">"%1$d 節課程"</string>
+    <string name="learn_empty_title">"換個關鍵詞試試"</string>
+    <string name="learn_empty_body">"試試“API 金鑰”“GitHub”“本地模型”或“MCP”。也可以切換到“全部課程”瀏覽所有內容。"</string>
+    <string name="learn_saved_empty_title">"把課程留到以後看"</string>
+    <string name="learn_saved_empty_body">"在課程裡點收藏，之後就能在這裡找到它。"</string>
+    <string name="learn_reset_filters">"顯示全部課程"</string>
+    <string name="learn_location">"去哪裡操作"</string>
+    <string name="learn_before">"開始之前"</string>
+    <string name="learn_steps">"動手做"</string>
+    <string name="learn_outcome">"完成後的效果"</string>
+    <string name="learn_limits">"需要知道的"</string>
+    <string name="learn_fixes">"遇到問題怎麼辦"</string>
+    <string name="learn_example">"試試這樣說"</string>
+    <string name="learn_copy_example">"複製示例"</string>
+    <string name="learn_copied">"示例已複製"</string>
+    <string name="learn_open_section">"在應用中試試"</string>
+    <string name="learn_links">"官方幫助"</string>
+    <string name="learn_links_hint">"這些連結會在瀏覽器中開啟，需要聯網。服務商頁面可能變化；付款前請先檢視頁面上的條款和價格。"</string>
+    <string name="learn_related">"建議的下一步"</string>
+    <string name="learn_mark_complete">"標記為已學"</string>
+    <string name="learn_complete">"已學 · 點按可撤銷"</string>
+    <string name="learn_completed_label">"已學"</string>
+    <string name="learn_bookmark">"收藏本課"</string>
+    <string name="learn_bookmarked">"取消收藏本課"</string>
+    <string name="learn_link_failed">"無法開啟瀏覽器。你可以改為複製連結。"</string>
+    <string name="learn_copy_link">"複製連結"</string>
+    <string name="learn_load_failed">"無法開啟指南。請關閉設定後重試。"</string>
+</resources>

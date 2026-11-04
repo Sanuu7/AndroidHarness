@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"전체 보기 열기"</string>
+    <string name="chat_activity_tool_details">"도구 세부정보 열기"</string>
+    <string name="chat_activity_input">"입력"</string>
+    <string name="chat_activity_output">"출력"</string>
+    <string name="chat_activity_output_preview">"출력 미리보기"</string>
+    <string name="chat_activity_more">"아래에서 더 자세히"</string>
+    <string name="chat_activity_latest">"최신"</string>
+    <string name="chat_activity_copy">"텍스트 복사"</string>
+    <string name="chat_activity_copied">"복사됨"</string>
+</resources>

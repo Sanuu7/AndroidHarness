@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="sidebar_saved">"已儲存"</string>
+    <string name="sidebar_saved_answers">"已儲存的回答"</string>
+    <string name="sidebar_saved_count_description">"已儲存的回答，%1$d 條"</string>
+    <string name="sidebar_saved_answer">"已儲存的回答"</string>
+    <string name="sidebar_open_in_chat">"在聊天中開啟"</string>
+    <string name="sidebar_remove_saved">"從已儲存中移除"</string>
+    <string name="chat_save_answer">"儲存回答"</string>
+    <string name="chat_answer_saved">"回答已儲存"</string>
+    <string name="chat_answer_unsaved">"已從已儲存中移除"</string>
+</resources>

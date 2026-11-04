@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"चयन करें"</string>
+    <string name="sidebar_selected_count">"%1$d चयनित"</string>
+    <string name="sidebar_select_all">"सभी का चयन करें"</string>
+    <string name="sidebar_clear_selection">"स्पष्ट चयन"</string>
+    <string name="sidebar_exit_selection">"बाहर निकलें चयन"</string>
+    <string name="sidebar_select_chat">"%1$s चुनें"</string>
+    <string name="sidebar_details">"विवरण"</string>
+    <string name="sidebar_other_chats">"अन्य चैट"</string>
+    <string name="sidebar_model_unavailable">"अनुपलब्ध"</string>
+    <string name="sidebar_delete_selected">"चयनित चैट हटाएं?"</string>
+    <string name="sidebar_delete_selected_message">"ये चैट और उनका वार्तालाप इतिहास हटाएं? इसे असंपादित नहीं किया जा सकता है।"</string>
+    <string name="sidebar_delete_running">"इन चैट्स में चल रहे टास्क बंद हो जाएंगे."</string>
+    <string name="sidebar_selection_error">"यह कार्रवाई पूरी नहीं की जा सकी. कृपया पुन: प्रयास करें।"</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="one">"%1$d चैट संग्रहीत"</item>
+        <item quantity="other">"%1$d चैट संग्रहीत"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="one">"%1$d चैट बहाल हो गई"</item>
+        <item quantity="other">"%1$d चैट बहाल हो गईं"</item>
+    </plurals>
+</resources>

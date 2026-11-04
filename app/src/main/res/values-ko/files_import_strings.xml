@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"파일 가져오기"</string>
+    <string name="files_import_folder">"폴더 가져오기"</string>
+    <string name="files_import_done">"%2$s 품목 중 %1$s 수입품"</string>
+    <string name="files_import_failed">"파일을 가져올 수 없습니다."</string>
+</resources>

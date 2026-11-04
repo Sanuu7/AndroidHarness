@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"선택"</string>
+    <string name="sidebar_selected_count">"%1$d 선택됨"</string>
+    <string name="sidebar_select_all">"모두 선택"</string>
+    <string name="sidebar_clear_selection">"선택 취소"</string>
+    <string name="sidebar_exit_selection">"선택 종료"</string>
+    <string name="sidebar_select_chat">"%1$s를 선택하세요"</string>
+    <string name="sidebar_details">"세부정보"</string>
+    <string name="sidebar_other_chats">"기타 채팅"</string>
+    <string name="sidebar_model_unavailable">"이용 불가"</string>
+    <string name="sidebar_delete_selected">"선택한 채팅을 삭제하시겠습니까?"</string>
+    <string name="sidebar_delete_selected_message">"이 채팅과 대화 기록을 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."</string>
+    <string name="sidebar_delete_running">"해당 채팅에서 실행 중인 작업이 중지됩니다."</string>
+    <string name="sidebar_selection_error">"이 작업을 완료할 수 없습니다. 다시 시도해 주세요."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="other">"%1$d 채팅이 보관되었습니다."</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="other">"%1$d 채팅이 복원되었습니다."</item>
+    </plurals>
+</resources>

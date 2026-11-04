@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"வரிசைகளை வடிகட்டி"</string>
+    <string name="rich_no_rows">"பொருந்தக்கூடிய வரிசைகள் இல்லை"</string>
+    <string name="rich_previous">"முந்தைய"</string>
+    <string name="rich_next">"அடுத்து"</string>
+    <string name="rich_discuss_rows">"தேர்ந்தெடுக்கப்பட்ட வரிசைகளைப் பற்றி விவாதிக்கவும்"</string>
+    <string name="rich_discuss_rows_prompt">"நான் தேர்ந்தெடுத்த வரிசைகளை ஒப்பிடுக."</string>
+    <string name="rich_discuss_tab">"இந்த தாவலைப் பற்றி கேளுங்கள்"</string>
+    <string name="rich_discuss_tab_prompt">"%1$s தாவலை விளக்கவும்."</string>
+    <string name="rich_copy">"நகலெடுக்கவும்"</string>
+    <string name="rich_copied">"நகலெடுக்கப்பட்டது"</string>
+    <string name="rich_share">"பகிரவும்"</string>
+    <string name="rich_share_unavailable">"இந்த உரையைப் பகிர எந்தப் பயன்பாடும் இல்லை."</string>
+    <string name="rich_images_hidden">"இந்த அரட்டைக்கு படங்கள் முடக்கப்பட்டுள்ளன."</string>
+    <string name="rich_expand_image">"படத்தை விரிவாக்கு"</string>
+    <string name="rich_open_source">"திறந்த மூல"</string>
+    <string name="rich_discuss_image">"இந்த படத்தை பற்றி கேளுங்கள்"</string>
+    <string name="rich_discuss_image_prompt">"நான் தேர்ந்தெடுத்த படத்தை விளக்குங்கள்."</string>
+    <string name="rich_reported_status">"அறிக்கை: %1$s"</string>
+    <string name="rich_passed">"தேர்ச்சி பெற்றார்"</string>
+    <string name="rich_failed">"தோல்வியடைந்தது"</string>
+    <string name="rich_unverified">"சரிபார்க்கப்படவில்லை"</string>
+    <string name="rich_open_file">"கோப்பைத் திறக்கவும்"</string>
+    <string name="rich_show_less">"குறைவாகக் காட்டு"</string>
+    <string name="rich_show_all">"அனைத்தையும் காட்டு"</string>
+    <string name="rich_changes">"மாற்றங்கள்"</string>
+    <string name="rich_before">"முன்பு"</string>
+    <string name="rich_after">"பிறகு"</string>
+    <string name="rich_change_count">"%1$d சேர்க்கப்பட்டது · %2$d அகற்றப்பட்டது"</string>
+    <string name="rich_discuss_diff">"இந்த மாற்றங்களைப் பற்றி விவாதிக்கவும்"</string>
+    <string name="rich_discuss_diff_prompt">"இந்த ஒப்பீடு மற்றும் அதன் பரிமாற்றங்களை விளக்குங்கள்."</string>
+    <string name="rich_input_range">"%1$s முதல் %2$s வரை"</string>
+    <string name="rich_result_unavailable">"உள்ளீடுகள் அல்லது சூத்திரத்தைச் சரிபார்க்கவும்"</string>
+    <string name="rich_reset">"மீட்டமை"</string>
+    <string name="rich_discuss_values">"இந்த மதிப்புகளைப் பற்றி கேளுங்கள்"</string>
+    <string name="rich_discuss_values_prompt">"எனது தற்போதைய மதிப்புகளைப் பயன்படுத்தி முடிவை விளக்குங்கள்."</string>
+    <string name="rich_chart_range">"காணக்கூடிய வரம்பு"</string>
+    <string name="rich_reset_range">"முழு வரம்பைக் காட்டு"</string>
+    <string name="rich_chart_label">"லேபிள்"</string>
+    <string name="rich_discuss_chart">"இந்த விளக்கப்படத்தைப் பற்றி கேளுங்கள்"</string>
+    <string name="rich_discuss_chart_prompt">"நான் தேர்ந்தெடுத்த விளக்கப்பட புள்ளி மற்றும் தெரியும் தரவுத்தொகுப்புகளை விளக்கவும்."</string>
+    <string name="rich_select_point">"%1$s ஐத் தேர்ந்தெடுக்கவும்"</string>
+    <string name="rich_selected_count">"%1$d தேர்ந்தெடுக்கப்பட்டது"</string>
+    <string name="rich_clear_selection">"தெளிவான தேர்வு"</string>
+    <string name="rich_adjust_input">"%1$s ஐ சரிசெய்யவும்"</string>
+</resources>

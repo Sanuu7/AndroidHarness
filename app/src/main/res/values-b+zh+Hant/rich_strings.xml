@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="rich_filter_rows">"篩選行"</string>
+    <string name="rich_no_rows">"沒有匹配的行"</string>
+    <string name="rich_previous">"上一頁"</string>
+    <string name="rich_next">"下一頁"</string>
+    <string name="rich_discuss_rows">"討論所選行"</string>
+    <string name="rich_discuss_rows_prompt">"比較我選擇的行。"</string>
+    <string name="rich_discuss_tab">"詢問此選項卡"</string>
+    <string name="rich_discuss_tab_prompt">"解釋“%1$s”選項卡。"</string>
+    <string name="rich_copy">"複製"</string>
+    <string name="rich_copied">"已複製"</string>
+    <string name="rich_share">"分享"</string>
+    <string name="rich_share_unavailable">"沒有可分享此文字的應用。"</string>
+    <string name="rich_images_hidden">"此聊天已關閉圖片。"</string>
+    <string name="rich_expand_image">"放大圖片"</string>
+    <string name="rich_open_source">"開啟來源"</string>
+    <string name="rich_discuss_image">"詢問此圖片"</string>
+    <string name="rich_discuss_image_prompt">"解釋我選擇的圖片。"</string>
+    <string name="rich_reported_status">"報告狀態：%1$s"</string>
+    <string name="rich_passed">"透過"</string>
+    <string name="rich_failed">"失敗"</string>
+    <string name="rich_unverified">"未經驗證"</string>
+    <string name="rich_open_file">"開啟檔案"</string>
+    <string name="rich_show_less">"收起"</string>
+    <string name="rich_show_all">"顯示全部"</string>
+    <string name="rich_changes">"更改"</string>
+    <string name="rich_before">"更改前"</string>
+    <string name="rich_after">"更改後"</string>
+    <string name="rich_change_count">"新增 %1$d 行 · 刪除 %2$d 行"</string>
+    <string name="rich_discuss_diff">"討論這些更改"</string>
+    <string name="rich_discuss_diff_prompt">"解釋此比較及其利弊。"</string>
+    <string name="rich_input_range">"%1$s 至 %2$s"</string>
+    <string name="rich_result_unavailable">"請檢查輸入或公式"</string>
+    <string name="rich_reset">"重置"</string>
+    <string name="rich_discuss_values">"詢問這些數值"</string>
+    <string name="rich_discuss_values_prompt">"使用我當前的數值解釋結果。"</string>
+    <string name="rich_chart_range">"顯示範圍"</string>
+    <string name="rich_reset_range">"顯示完整範圍"</string>
+    <string name="rich_chart_label">"標籤"</string>
+    <string name="rich_discuss_chart">"詢問此圖表"</string>
+    <string name="rich_discuss_chart_prompt">"解釋我選擇的圖表點及可見資料集。"</string>
+    <string name="rich_select_point">"選擇 %1$s"</string>
+    <string name="rich_selected_count">"已選擇 %1$d 行"</string>
+    <string name="rich_clear_selection">"清除選擇"</string>
+    <string name="rich_adjust_input">"調整 %1$s"</string>
+</resources>

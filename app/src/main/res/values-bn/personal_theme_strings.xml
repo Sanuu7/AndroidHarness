@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"আপনার প্যালেট"</string>
+    <string name="theme_custom_add">"প্যালেট তৈরি করুন"</string>
+    <string name="theme_custom_edit">"প্যালেট সম্পাদনা করুন"</string>
+    <string name="theme_custom_name">"প্যালেট নাম"</string>
+    <string name="theme_custom_default">"আমার প্যালেট"</string>
+    <string name="theme_custom_hint">"আপনার রং নির্বাচন করুন. Material পঠনযোগ্য হালকা এবং গাঢ় শেড তৈরি করে।"</string>
+    <string name="theme_custom_main">"প্রধান"</string>
+    <string name="theme_custom_accent">"উচ্চারণ"</string>
+    <string name="theme_custom_highlight">"হাইলাইট করুন"</string>
+    <string name="theme_custom_hex">"হেক্স রঙ"</string>
+    <string name="theme_custom_invalid_hex">"ছয় হেক্স ডিজিট লিখুন, যেমন 6750A4।"</string>
+    <string name="theme_custom_hue">"হিউ"</string>
+    <string name="theme_custom_saturation">"স্যাচুরেশন"</string>
+    <string name="theme_custom_brightness">"উজ্জ্বলতা"</string>
+    <string name="theme_custom_automatic">"অ্যাকসেন্ট রং রিসেট করুন"</string>
+    <string name="theme_custom_save">"সংরক্ষণ করুন এবং আবেদন করুন"</string>
+    <string name="theme_custom_limit">"আপনার 24 টি প্যালেট আছে। অন্যটি তৈরি করতে একটি সম্পাদনা করুন বা সরান৷"</string>
+    <string name="theme_custom_delete">"প্যালেট মুছুন"</string>
+    <string name="theme_custom_delete_message">"এই সংরক্ষিত প্যালেট সরান? এই প্যালেট সক্রিয় থাকলে অ্যাপটি তার নির্বাচিত প্রিসেটে ফিরে আসবে।"</string>
+    <string name="theme_custom_preview">"প্যালেট পূর্বরূপ"</string>
+    <string name="theme_canvas_title">"Harness ক্যানভাস"</string>
+    <string name="theme_canvas_description">"Chat এবং Code এর জন্য আপনার নিজস্ব ব্যাকড্রপ।"</string>
+    <string name="theme_canvas_add">"ইমেজ যোগ করুন"</string>
+    <string name="theme_canvas_change">"ছবি পরিবর্তন করুন"</string>
+    <string name="theme_canvas_remove">"ছবি সরান"</string>
+    <string name="theme_canvas_enabled">"Harness ক্যানভাস দেখান"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"ছবি ম্লান হচ্ছে"</string>
+    <string name="theme_canvas_dim_hint">"স্পষ্ট পাঠ্যের জন্য আপনার থিমে চিত্রটি বিবর্ণ করুন।"</string>
+    <string name="theme_canvas_colors">"ক্যানভাসের রং মেলে"</string>
+    <string name="theme_canvas_colors_hint">"এই ইমেজ থেকে আপনার অ্যাপের কালার প্যালেট তৈরি করুন।"</string>
+    <string name="theme_canvas_working">"আপনার ক্যানভাস প্রস্তুত করা হচ্ছে..."</string>
+    <string name="theme_canvas_error">"সেই ছবি ব্যবহার করতে পারিনি। 32 MB এর নিচে আরেকটি ফটো চেষ্টা করুন।"</string>
+    <string name="theme_canvas_empty">"এই স্থানটিকে আপনার করতে একটি ফটো বা আর্টওয়ার্ক যোগ করুন।"</string>
+    <string name="theme_canvas_preview_message">"আপনার কথোপকথন, আপনার ক্যানভাস।"</string>
+    <string name="theme_canvas_preview_reply">"বাড়িতে নিজেকে তৈরি করুন।"</string>
+    <string name="theme_canvas_color_area">"রঙ এলাকা"</string>
+</resources>

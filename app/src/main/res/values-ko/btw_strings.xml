@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"그런데"</string>
+    <string name="btw_source_live">"라이브 컨텍스트"</string>
+    <string name="btw_source_saved">"저장된 이력"</string>
+    <string name="btw_private">"채팅에 추가되지 않았습니다."</string>
+    <string name="btw_empty_hint">"현재 작업에 대해 무엇이든 물어보세요. 답변은 에이전트가 이미 읽고 결정한 내용을 사용하고 프롬프트 캐시를 재사용하며 대화에 참여하지 않습니다."</string>
+    <string name="btw_input_hint">"부가적인 질문을 해보세요"</string>
+    <string name="btw_input_again">"다른 부차적인 질문을 해보세요"</string>
+    <string name="btw_ask">"물어보세요"</string>
+    <string name="btw_stop">"중지"</string>
+    <string name="btw_copy">"복사"</string>
+    <string name="btw_copied">"답변이 복사되었습니다."</string>
+    <string name="btw_stopped">"중지됨"</string>
+    <string name="btw_retrying">"재시도 중 · %1$s"</string>
+    <string name="btw_cold_note">"메모리에 실시간 요청이 없으므로 이 답변은 프롬프트 캐시 없이 저장된 대화를 읽습니다."</string>
+    <string name="btw_composer_action">"그런데 물어보세요"</string>
+    <string name="btw_error_empty_chat">"먼저 메시지를 보낸 다음 그에 대해 부가적인 질문을 하세요."</string>
+    <string name="btw_error_local_busy">"지역 모델은 한 번에 하나의 요청에 응답합니다. 현재 응답이 완료된 후 질문하세요."</string>
+    <string name="btw_error_no_key">"요청하기 전에 이 공급자의 API 키를 추가하세요."</string>
+    <string name="btw_error_generic">"부가 질문이 실패했습니다."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">"%1$d 읽기 전용 도구 호출"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,42 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="as_caveman_level">"Caveman 級別"</string>
+    <string name="as_activity_finding">"正在查詢設定"</string>
+    <string name="as_activity_found">"已查詢設定"</string>
+    <string name="as_activity_changing">"正在更改設定"</string>
+    <string name="as_activity_changed">"已更改設定"</string>
+    <string name="as_undo">"撤消"</string>
+    <string name="as_undo_all">"全部撤消"</string>
+    <string name="as_redo">"重做"</string>
+    <string name="as_open_settings">"開啟設定"</string>
+    <string name="as_open_setting">"開啟此設定"</string>
+    <string name="as_title_changed">"設定已更改"</string>
+    <string name="as_title_undone">"更改已撤消"</string>
+    <string name="as_title_needs_you">"有設定需要你處理"</string>
+    <string name="as_title_not_changed">"設定未更改"</string>
+    <string name="as_state_undone">"已撤消"</string>
+    <string name="as_state_moved_on">"之後又被更改"</string>
+    <string name="as_on">"開"</string>
+    <string name="as_off">"關"</string>
+    <string name="as_unlimited">"不限"</string>
+    <string name="as_custom_palette">"自定義調色盤"</string>
+    <string name="as_empty">"無"</string>
+    <string name="as_needs_you_label">"需要你 · %1$s"</string>
+    <string name="as_group">"在聊天中更改設定"</string>
+    <string name="as_setting_title">"允許智慧體更改設定"</string>
+    <string name="as_access_off">"關"</string>
+    <string name="as_access_off_desc">"智慧體可以查詢設定並引導你前往，但不能更改。"</string>
+    <string name="as_access_ask">"每次詢問"</string>
+    <string name="as_access_ask_desc">"每項更改都會在聊天中等待你的批准。"</string>
+    <string name="as_access_allowed">"允許"</string>
+    <string name="as_access_allowed_desc">"更改會立即生效，並顯示可撤消的卡片。應用鎖等敏感設定仍會詢問。"</string>
+    <string name="as_picker_detail">"在 Chat 或 Code 中提出，即可開關設定、調整滑塊或建立調色盤。敏感設定總會先詢問，API 金鑰始終無法訪問。"</string>
+    <string name="as_search_desc">"在 Chat 或 Code 中提出即可更改設定"</string>
+    <string name="tip_ask_settings" formatted="false">"可以讓我更改設定，比如“把振動調到 70%”或“做一個青色調色盤”。卡片會顯示改了什麼，並可撤消。"</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">"%1$d 項更改"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">"%1$d 項需要你"</item>
+    </plurals>
+</resources>

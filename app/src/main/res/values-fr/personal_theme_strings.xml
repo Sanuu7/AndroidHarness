@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"Vos palettes"</string>
+    <string name="theme_custom_add">"Créer une palette"</string>
+    <string name="theme_custom_edit">"Modifier la palette"</string>
+    <string name="theme_custom_name">"Nom de la palette"</string>
+    <string name="theme_custom_default">"Ma palette"</string>
+    <string name="theme_custom_hint">"Choisissez vos couleurs. Material crée des nuances claires et sombres lisibles."</string>
+    <string name="theme_custom_main">"Principal"</string>
+    <string name="theme_custom_accent">"Accent"</string>
+    <string name="theme_custom_highlight">"Mettre en surbrillance"</string>
+    <string name="theme_custom_hex">"Couleur hexagonale"</string>
+    <string name="theme_custom_invalid_hex">"Entrez six chiffres hexadécimaux, par exemple 6750A4."</string>
+    <string name="theme_custom_hue">"Teinte"</string>
+    <string name="theme_custom_saturation">"Saturation"</string>
+    <string name="theme_custom_brightness">"Luminosité"</string>
+    <string name="theme_custom_automatic">"Réinitialiser les couleurs d\'accent"</string>
+    <string name="theme_custom_save">"Enregistrer et postuler"</string>
+    <string name="theme_custom_limit">"Vous disposez de 24 palettes. Modifiez ou supprimez-en un pour en créer un autre."</string>
+    <string name="theme_custom_delete">"Supprimer la palette"</string>
+    <string name="theme_custom_delete_message">"Supprimer cette palette enregistrée ? L\'application reviendra à son préréglage sélectionné si cette palette est active."</string>
+    <string name="theme_custom_preview">"Aperçu de la palette"</string>
+    <string name="theme_canvas_title">"Toile Harness"</string>
+    <string name="theme_canvas_description">"Votre propre toile de fond pour Chat et Code."</string>
+    <string name="theme_canvas_add">"Ajouter une image"</string>
+    <string name="theme_canvas_change">"Changer l\'image"</string>
+    <string name="theme_canvas_remove">"Supprimer l\'image"</string>
+    <string name="theme_canvas_enabled">"Afficher le canevas Harness"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"Assombrissement de l\'image"</string>
+    <string name="theme_canvas_dim_hint">"Fondu l\'image dans votre thème pour un texte plus clair."</string>
+    <string name="theme_canvas_colors">"Assortir les couleurs de la toile"</string>
+    <string name="theme_canvas_colors_hint">"Créez la palette de couleurs de votre application à partir de cette image."</string>
+    <string name="theme_canvas_working">"Préparation de votre toile…"</string>
+    <string name="theme_canvas_error">"Je n\'ai pas pu utiliser cette image. Essayez une autre photo de moins de 32 Mo."</string>
+    <string name="theme_canvas_empty">"Ajoutez une photo ou une œuvre d’art pour personnaliser cet espace."</string>
+    <string name="theme_canvas_preview_message">"Vos conversations, votre Canvas."</string>
+    <string name="theme_canvas_preview_reply">"Faites comme chez vous."</string>
+    <string name="theme_canvas_color_area">"Zone de couleur"</string>
+</resources>

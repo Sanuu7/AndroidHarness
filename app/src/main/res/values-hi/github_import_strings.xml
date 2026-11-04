@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"एक भंडार चुनें"</string>
+    <string name="github_import_destination">"इस डिवाइस पर अपने स्वयं के कार्यक्षेत्र में एक प्रति आयात करें।"</string>
+    <string name="github_import_loading">"आपकी रिपॉजिटरी लोड हो रही है..."</string>
+    <string name="github_import_empty">"इस खाते के लिए कोई रिपॉजिटरी नहीं मिली. आप URL द्वारा भी आयात कर सकते हैं।"</string>
+    <string name="github_import_by_url">"URL द्वारा आयात करें"</string>
+    <string name="github_import_confirm_title">"आयात भंडार?"</string>
+    <string name="github_import_confirm_body">"क्या आप वाकई इस डिवाइस पर %1$s को एक नए कार्यक्षेत्र में आयात करना चाहते हैं?"</string>
+    <string name="github_import_preparing">"आयात की तैयारी की जा रही है..."</string>
+    <string name="github_import_success">"आयातित %1$s"</string>
+    <string name="github_import_open_workspace">"कार्यक्षेत्र खोलें"</string>
+</resources>

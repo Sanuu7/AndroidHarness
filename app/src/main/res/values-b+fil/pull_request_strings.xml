@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"Binubuksan ang pull request..."</string>
+    <string name="pr_tool_opened">"Binuksan ang pull request #%1$d"</string>
+    <string name="pr_tool_existing">"Bukas na ang pull request #%1$d"</string>
+    <string name="pr_tool_failed">"Hindi binuksan ang kahilingan sa paghila"</string>
+    <string name="pr_tool_waiting">"Naghihintay para sa iyong pag-apruba"</string>
+    <string name="pr_draft">"Draft"</string>
+    <string name="pr_counts">"Nag-commit: %1$d · Mga File: %2$d"</string>
+    <string name="pr_open_on_github">"Buksan sa GitHub"</string>
+    <string name="pr_copy_link">"Kopyahin ang link"</string>
+    <string name="pr_link_copied">"Nakopya ang link"</string>
+    <string name="pr_open_failed">"Walang app ang makapagbukas ng link. Ito ay kinopya sa halip."</string>
+    <string name="pr_approval_title">"Magbukas ng pull request?"</string>
+    <string name="pr_approval_body">"Gumagawa ng pull request sa GitHub mula sa itinulak na sangay. Walang itinutulak o pinagsasama."</string>
+    <string name="pr_approval_base">"Sa %1$s"</string>
+    <string name="pr_approval_default_base">"Sa default na sangay"</string>
+    <string name="pr_create">"Gumawa ng pull request"</string>
+    <string name="pr_create_draft">"Gumawa ng draft na pull request"</string>
+    <string name="pr_entry_body">"Ipanukala ang mga pushed commit ng sangay na ito para sa pagsusuri sa GitHub."</string>
+    <string name="pr_loading">"Inihahambing ang sangay na ito sa GitHub…"</string>
+    <string name="pr_title_label">"Pamagat"</string>
+    <string name="pr_description_label">"Paglalarawan"</string>
+    <string name="pr_rewrite_description">"Isulat muli ang paglalarawan"</string>
+    <string name="pr_base_label">"Base branch"</string>
+    <string name="pr_draft_label">"Buksan bilang draft"</string>
+    <string name="pr_draft_body">"Makikita ito ng mga reviewer, ngunit hindi ito maaaring pagsamahin hanggang sa markahan mo itong handa."</string>
+    <string name="pr_include_checks">"Isama ang mga tseke mula sa chat na ito"</string>
+    <string name="pr_include_checks_body">"Idinaragdag ang mga resulta ng build, pagsubok at lint na naitala sa pag-uusap na ito."</string>
+    <string name="pr_existing_body">"Mga bagong push sa %1$s awtomatikong i-update ang pull request na ito."</string>
+    <string name="pr_not_pushed_title">"Wala pa sa GitHub ang branch"</string>
+    <string name="pr_out_of_date_title">"Ang GitHub ay may mas lumang kopya ng sangay na ito"</string>
+    <string name="pr_push_body">"Itulak ang %1$s para GitHub ang iyong pinakabagong mga commit."</string>
+    <string name="pr_push_branch">"Itulak ang sanga"</string>
+    <string name="pr_pushed">"Itinulak ng sanga."</string>
+    <string name="pr_uncommitted_title">"Mga hindi nakatalagang pagbabago: %1$d"</string>
+    <string name="pr_uncommitted_body">"Hindi sila isasama hangga\'t hindi ka nag-commit at nagtutulak sa kanila."</string>
+    <string name="pr_behind_title">"Mga bagong commit sa %1$s: %2$d"</string>
+    <string name="pr_behind_body">"Hindi pa sila kasama sa branch na ito. Maaaring hilingin sa iyo ng mga tagasuri na i-update ito."</string>
+    <string name="pr_no_commits_title">"Wala pang ipo-propose"</string>
+    <string name="pr_no_commits_body">"Ang %1$s ay walang mga commit na wala pa sa %2$s."</string>
+    <string name="pr_commits_header">"Mga commit"</string>
+    <string name="pr_more">"Higit pa: %1$d"</string>
+    <string name="pr_created_title">"Binuksan ang pull request #%1$d"</string>
+    <string name="pr_created_draft_title">"Binuksan ang draft na pull request #%1$d"</string>
+    <string name="pr_retry">"Subukan muli"</string>
+</resources>

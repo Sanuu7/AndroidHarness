@@ -1,0 +1,24 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="settings_coding_workflow">"智慧體與工作流程"</string>
+    <string name="settings_coding_intelligence">"技能與智慧"</string>
+    <string name="settings_coding_execution">"工作區與執行"</string>
+    <string name="settings_device_connections">"連線"</string>
+    <string name="settings_device_tools">"工具與高階設定"</string>
+    <string name="settings_linux_optional">"需要 Linux 的專案可選工具"</string>
+    <string name="settings_device_advanced">"高階裝置訪問"</string>
+    <string name="settings_device_advanced_summary">"Root 和裝置所有者控制"</string>
+    <string name="settings_device_background">"後臺與電池"</string>
+    <string name="settings_device_background_summary">"保持終端會話和智慧體工作執行"</string>
+    <string name="settings_connection_help">"連線方法"</string>
+    <string name="settings_connection_options">"連線選項"</string>
+    <string name="wireless_adb_disconnect">"斷開連線"</string>
+    <string name="wireless_adb_connection_kept">"已連線 · 斷開前持續可用"</string>
+    <string name="wireless_adb_auto_reconnecting">"正在重新連線已儲存的無線除錯"</string>
+    <string name="rich_profile_details">"詳情"</string>
+    <string name="rich_profile_sources">"來源"</string>
+    <string name="settings_disclosure_expanded">"已展開"</string>
+    <string name="settings_disclosure_collapsed">"已摺疊"</string>
+    <string name="settings_terminal_access">"終端訪問"</string>
+    <string name="wireless_adb_compact_summary">"裝置命令與自動重新連線"</string>
+</resources>

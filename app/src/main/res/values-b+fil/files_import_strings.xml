@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"Mag-import ng mga file"</string>
+    <string name="files_import_folder">"Mag-import ng folder"</string>
+    <string name="files_import_done">"Na-import na %1$s ng %2$s item"</string>
+    <string name="files_import_failed">"Hindi makapag-import ng mga file"</string>
+</resources>

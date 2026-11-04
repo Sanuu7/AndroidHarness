@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"Matuto AndroidHarness"</string>
+    <string name="learn_description">"Friendly, step-by-step na mga gabay sa lahat ng magagawa mo dito."</string>
+    <string name="learn_group">"Magsimula dito"</string>
+    <string name="learn_entry_hint">"Ang iyong gabay, sa iyong bilis"</string>
+    <string name="learn_entry_action">"Galugarin ang gabay"</string>
+    <string name="learn_hero_title">"Kaunting gabay.\nMaraming posibilidad."</string>
+    <string name="learn_hero_body">"Magsimula sa iyong unang chat, o dumiretso sa bagay na gusto mong gawin. Kasama sa bawat aralin ang mga hakbang, kapaki-pakinabang na limitasyon, at tulong kapag natigil ka."</string>
+    <string name="learn_offline">"Magagamit offline · Nasa English ang mga tutorial"</string>
+    <string name="learn_progress">"%1$d ng %2$d lessons natutunan"</string>
+    <string name="learn_search">"Ano ang gusto mong matutunan?"</string>
+    <string name="learn_clear_search">"I-clear ang paghahanap ng tutorial"</string>
+    <string name="learn_all">"Lahat ng aralin"</string>
+    <string name="learn_saved">"Nai-save"</string>
+    <string name="learn_start">"Magsimula sa mga pangunahing kaalaman"</string>
+    <string name="learn_start_hint">"Bago dito? Ang tatlong mga aralin na ito ay magtutulak sa iyo."</string>
+    <string name="learn_results">"%1$d na mga aralin"</string>
+    <string name="learn_empty_title">"Subukan natin ang isa pang paghahanap"</string>
+    <string name="learn_empty_body">"Subukan ang \"API key\", \"GitHub\", \"local model\", o \"MCP\". Maaari ka ring lumipat sa Lahat ng mga aralin upang i-browse ang lahat."</string>
+    <string name="learn_saved_empty_title">"Panatilihin ang isang aralin na madaling gamitin"</string>
+    <string name="learn_saved_empty_body">"Gamitin ang bookmark sa isang aralin upang mahanap ito dito mamaya."</string>
+    <string name="learn_reset_filters">"Ipakita ang lahat ng mga aralin"</string>
+    <string name="learn_location">"Kung saan pupunta"</string>
+    <string name="learn_before">"Bago ka magsimula"</string>
+    <string name="learn_steps">"Gawin natin ito"</string>
+    <string name="learn_outcome">"Ang dapat mong makita"</string>
+    <string name="learn_limits">"Magandang malaman"</string>
+    <string name="learn_fixes">"Kung makaalis ka"</string>
+    <string name="learn_example">"Subukan mong sabihin ito"</string>
+    <string name="learn_copy_example">"Kopyahin ang halimbawa"</string>
+    <string name="learn_copied">"Kinopya ang halimbawa"</string>
+    <string name="learn_open_section">"Subukan ito sa app"</string>
+    <string name="learn_links">"Opisyal na tulong"</string>
+    <string name="learn_links_hint">"Ang mga link na ito ay bubukas sa iyong browser at nangangailangan ng koneksyon sa internet. Maaaring magbago ang mga pahina ng provider; suriin ang mga tuntunin at presyo na ipinapakita bago magbayad."</string>
+    <string name="learn_related">"Isang kapaki-pakinabang na susunod na hakbang"</string>
+    <string name="learn_mark_complete">"Markahan bilang natutunan"</string>
+    <string name="learn_complete">"Natutunan · i-tap para i-undo"</string>
+    <string name="learn_completed_label">"Natutunan"</string>
+    <string name="learn_bookmark">"I-save ang araling ito"</string>
+    <string name="learn_bookmarked">"Alisin ang na-save na aralin"</string>
+    <string name="learn_link_failed">"Hindi mabuksan ang browser. Maaari mong kopyahin ang link sa halip."</string>
+    <string name="learn_copy_link">"Kopyahin ang link"</string>
+    <string name="learn_load_failed">"Hindi mabuksan ang gabay. Isara ang Mga Setting at subukang muli."</string>
+</resources>

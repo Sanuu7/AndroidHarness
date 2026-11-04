@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"যখন এজেন্ট কাজ করে"</string>
+    <string name="settings_anchor_steering">"কাজের মাঝখানে বার্তা পাঠানো হয়েছে"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"এজেন্ট তার বর্তমান পদক্ষেপের পরে আপনার বার্তা পড়ে এবং চলতে থাকে। চলমান সরঞ্জামগুলি কখনই বাধাগ্রস্ত হয় না। টাস্ক ইতিমধ্যে শেষ হলে, বার্তাটি পরবর্তী পালা শুরু হয়।"</string>
+    <string name="steering_mode_after_task">"টাস্ক পরে"</string>
+    <string name="steering_mode_after_task_desc">"আপনার বার্তা পুরো টাস্ক শেষ না হওয়া পর্যন্ত অপেক্ষা করে, তারপর একটি নতুন পালা শুরু হয়।"</string>
+    <string name="steering_picker_detail">"এজেন্ট কাজ করার সময় আপনি একটি বার্তা পাঠালে কি হবে তা বেছে নিন। একটি সারিবদ্ধ বার্তায় এখন পাঠান সবসময় এজেন্টকে থামিয়ে দেয় এবং এখনই পাঠায়।"</string>
+    <string name="steering_search_desc">"চলমান এজেন্ট চালান, অথবা কাজ শেষ হওয়ার জন্য অপেক্ষা করুন"</string>
+    <string name="steering_queue_next_step">"এজেন্ট তার বর্তমান পদক্ষেপের পরে এগুলি পড়ে।"</string>
+    <string name="steering_queue_badge">"পরবর্তী ধাপে পড়ুন"</string>
+</resources>

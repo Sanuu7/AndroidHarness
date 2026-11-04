@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"உள்ளூர் மாதிரி திசைவியை நிறுவி நிர்வகிக்கவும்"</string>
+    <string name="nine_router_intro">"இந்த மொபைலில் 9Router ஐ இயக்கி, உங்கள் உலாவியில் அதன் வழங்குநர்கள், மாதிரிகள் மற்றும் ரூட்டிங் ஆகியவற்றை நிர்வகிக்கவும். AndroidHarness Linux டூல்செயினைப் பயன்படுத்துகிறது."</string>
+    <string name="nine_router_setup">"உங்கள் சூழலை அமைக்கவும்"</string>
+    <string name="nine_router_not_installed">"நிறுவ தயாராக உள்ளது"</string>
+    <string name="nine_router_ready">"நிறுவப்பட்டது · நிறுத்தப்பட்டது"</string>
+    <string name="nine_router_running">"இந்த மொபைலில் இயங்குகிறது"</string>
+    <string name="nine_router_starting">"9Router தொடங்குகிறது…"</string>
+    <string name="nine_router_stopping">"9Router நிறுத்தப்படுகிறது…"</string>
+    <string name="nine_router_installing">"நிறுவுகிறது…"</string>
+    <string name="nine_router_updating">"9Router ஐப் புதுப்பிக்கிறது…"</string>
+    <string name="nine_router_uninstalling">"9Router நிறுவல் நீக்குகிறது…"</string>
+    <string name="nine_router_connecting">"வழங்குநர்களிடம் சேர்க்கிறது…"</string>
+    <string name="nine_router_removing">"வழங்குநர்களிடமிருந்து அகற்றுகிறது…"</string>
+    <string name="nine_router_install_linux">"Linux கருவித்தொகுப்பை நிறுவவும்"</string>
+    <string name="nine_router_install">"9Router ஐ நிறுவவும்"</string>
+    <string name="nine_router_start">"9Router ஐத் தொடங்கவும்"</string>
+    <string name="nine_router_stop">"நிறுத்து"</string>
+    <string name="nine_router_show_details">"விவரங்களைக் காட்டு"</string>
+    <string name="nine_router_hide_details">"விவரங்களை மறை"</string>
+    <string name="nine_router_open_dashboard">"உலாவியில் டாஷ்போர்டைத் திறக்கவும்"</string>
+    <string name="nine_router_browser_error">"எந்த உலாவியும் 9Router டாஷ்போர்டை திறக்க முடியாது."</string>
+    <string name="nine_router_version">"பதிப்பு %1$s"</string>
+    <string name="nine_router_check_update">"புதுப்பிப்புகளைச் சரிபார்க்கவும்"</string>
+    <string name="nine_router_checking">"சரிபார்க்கிறது…"</string>
+    <string name="nine_router_update">"%1$s க்கு புதுப்பிக்கவும்"</string>
+    <string name="nine_router_auto_start">"9Router தானாகத் தொடங்கவும்"</string>
+    <string name="nine_router_auto_start_body">"AndroidHarness திறக்கும் போது நிறுவப்பட்ட திசைவியைத் தொடங்கவும்."</string>
+    <string name="nine_router_add_provider">"வழங்குநர்களுக்கு 9Router ஐச் சேர்க்கவும்"</string>
+    <string name="nine_router_refresh_provider">"9Router வழங்குநரைப் புதுப்பிக்கவும்"</string>
+    <string name="nine_router_provider_body">"தேவைப்பட்டால் 9Router ஐத் தொடங்கி அதன் உள்ளூர் இறுதிப்புள்ளி மற்றும் API விசையை தானாகவே நிரப்புகிறது. இணைக்கப்பட்ட மாதிரிகள் Chat மற்றும் Code மாடல் பிக்கர்களில் கிடைக்கும்."</string>
+    <string name="nine_router_remove_provider">"வழங்குநர்களிடமிருந்து அகற்று"</string>
+    <string name="nine_router_remove_provider_body">"AndroidHarness இலிருந்து 9Router இணைப்புகளை அகற்றவும். திசைவி மற்றும் அதன் கணக்குகள் நிறுவப்பட்ட நிலையில் இருக்கும்."</string>
+    <string name="nine_router_uninstall">"9Router ஐ நிறுவல் நீக்கவும்"</string>
+    <string name="nine_router_uninstall_title">"9Router ஐ முழுமையாக நிறுவல் நீக்கவா?"</string>
+    <string name="nine_router_uninstall_body">"9Router ஐ நிறுத்தி, அதன் நிறுவல், சேமித்த கணக்குகள், திசைவி API விசைகள், உள்ளமைவு, கேச், ஆட்டோ-ஸ்டார்ட் விருப்பம் மற்றும் பயன்பாட்டு வழங்குநர் இணைப்புகளை நீக்குகிறது. இதை செயல்தவிர்க்க முடியாது. பகிரப்பட்ட Linux கருவித்தொகுப்பு மற்ற அம்சங்களுக்குக் கிடைக்கும்."</string>
+</resources>

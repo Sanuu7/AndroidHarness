@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"வண்ணத் தட்டு"</string>
+    <string name="theme_color_hint">"உங்கள் பயன்பாட்டை வண்ணமாக்க ஒரு தட்டு ஒன்றைத் தேர்வு செய்யவும்."</string>
+    <string name="theme_wallpaper_colors">"வால்பேப்பர் நிறங்கள்"</string>
+    <string name="theme_wallpaper_hint">"உங்கள் தொலைபேசியின் Material You வண்ணங்களைப் பின்பற்றவும்."</string>
+    <string name="theme_wallpaper_unavailable">"வால்பேப்பர் வண்ணங்களுக்கு Android 12 அல்லது அதற்குப் பிறகு தேவை. கீழே உள்ள தட்டு ஒன்றைத் தேர்ந்தெடுக்கவும்."</string>
+    <string name="theme_palette_blue">"Harness நீலம்"</string>
+    <string name="theme_palette_ocean">"பெருங்கடல்"</string>
+    <string name="theme_palette_indigo">"இண்டிகோ"</string>
+    <string name="theme_palette_lavender">"லாவெண்டர்"</string>
+    <string name="theme_palette_orchid">"ஆர்க்கிட்"</string>
+    <string name="theme_palette_rose">"ரோஜா"</string>
+    <string name="theme_palette_coral">"பவளம்"</string>
+    <string name="theme_palette_amber">"அம்பர்"</string>
+    <string name="theme_palette_lime">"சுண்ணாம்பு"</string>
+    <string name="theme_palette_forest">"காடு"</string>
+    <string name="theme_palette_teal">"டீல்"</string>
+    <string name="theme_palette_slate">"ஸ்லேட்"</string>
+</resources>

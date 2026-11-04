@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"Oo nga pala"</string>
+    <string name="btw_source_live">"Live na konteksto"</string>
+    <string name="btw_source_saved">"Naka-save na kasaysayan"</string>
+    <string name="btw_private">"Hindi naidagdag sa chat"</string>
+    <string name="btw_empty_hint">"Magtanong ng anuman tungkol sa kasalukuyang gawain. Ginagamit ng sagot ang nabasa at napagpasyahan na ng ahente, muling ginagamit ang prompt cache nito, at hindi kailanman sumasali sa pag-uusap."</string>
+    <string name="btw_input_hint">"Magtanong ng isang side question"</string>
+    <string name="btw_input_again">"Magtanong ng isa pang side question"</string>
+    <string name="btw_ask">"Magtanong"</string>
+    <string name="btw_stop">"Tumigil ka"</string>
+    <string name="btw_copy">"Kopyahin"</string>
+    <string name="btw_copied">"Kinopya ang sagot"</string>
+    <string name="btw_stopped">"Huminto"</string>
+    <string name="btw_retrying">"Sinusubukang muli · %1$s"</string>
+    <string name="btw_cold_note">"Walang live na kahilingan ang nasa memorya, kaya binabasa ng sagot na ito ang naka-save na pag-uusap nang walang prompt cache."</string>
+    <string name="btw_composer_action">"Magtanong nga pala"</string>
+    <string name="btw_error_empty_chat">"Magpadala muna ng mensahe, pagkatapos ay magtanong ng side question tungkol dito."</string>
+    <string name="btw_error_local_busy">"Ang mga lokal na modelo ay sumasagot ng isang kahilingan sa isang pagkakataon. Magtanong pagkatapos ng kasalukuyang tugon."</string>
+    <string name="btw_error_no_key">"Idagdag ang API key ng provider na ito bago magtanong."</string>
+    <string name="btw_error_generic">"Nabigo ang side question."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">"%1$d read-only na tool call"</item>
+        <item quantity="other">"%1$d read-only na tool na mga tawag"</item>
+    </plurals>
+</resources>

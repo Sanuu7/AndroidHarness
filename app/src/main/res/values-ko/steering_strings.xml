@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"상담원이 일하는 동안"</string>
+    <string name="settings_anchor_steering">"작업 중간에 전송된 메시지"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"에이전트는 현재 단계 이후에 메시지를 읽고 계속 진행합니다. 실행 도구는 중단되지 않습니다. 작업이 이미 종료된 경우 메시지는 다음 차례를 시작합니다."</string>
+    <string name="steering_mode_after_task">"작업 후"</string>
+    <string name="steering_mode_after_task_desc">"메시지는 전체 작업이 완료될 때까지 기다린 후 새로운 차례를 시작합니다."</string>
+    <string name="steering_picker_detail">"상담원이 작업하는 동안 메시지를 보내면 어떻게 되는지 선택하세요. 대기 중인 메시지에 대해 지금 보내기는 항상 에이전트를 중지하고 즉시 보냅니다."</string>
+    <string name="steering_search_desc">"실행 중인 에이전트를 조종하거나 작업이 완료될 때까지 기다립니다."</string>
+    <string name="steering_queue_next_step">"에이전트는 현재 단계 후에 이를 읽습니다."</string>
+    <string name="steering_queue_badge">"다음 단계에서 읽어보세요"</string>
+</resources>

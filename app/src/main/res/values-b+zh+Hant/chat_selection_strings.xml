@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="sidebar_select">"選擇"</string>
+    <string name="sidebar_selected_count">"已選擇 %1$d 個"</string>
+    <string name="sidebar_select_all">"全選"</string>
+    <string name="sidebar_clear_selection">"清除選擇"</string>
+    <string name="sidebar_exit_selection">"退出選擇"</string>
+    <string name="sidebar_select_chat">"選擇 %1$s"</string>
+    <string name="sidebar_details">"詳情"</string>
+    <string name="sidebar_other_chats">"其他聊天"</string>
+    <string name="sidebar_model_unavailable">"不可用"</string>
+    <string name="sidebar_delete_selected">"刪除所選聊天？"</string>
+    <string name="sidebar_delete_selected_message">"刪除這些聊天及其對話記錄？此操作無法撤銷。"</string>
+    <string name="sidebar_delete_running">"這些聊天中正在執行的任務將被停止。"</string>
+    <string name="sidebar_selection_error">"無法完成此操作。請重試。"</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="other">"已歸檔 %1$d 個聊天"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="other">"已恢復 %1$d 個聊天"</item>
+    </plurals>
+</resources>

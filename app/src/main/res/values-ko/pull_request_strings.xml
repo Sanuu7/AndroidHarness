@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"풀 요청을 여는 중…"</string>
+    <string name="pr_tool_opened">"끌어오기 요청 #%1$d를 열었습니다."</string>
+    <string name="pr_tool_existing">"풀 요청 #%1$d가 이미 열려 있습니다."</string>
+    <string name="pr_tool_failed">"풀 요청이 열리지 않았습니다."</string>
+    <string name="pr_tool_waiting">"귀하의 승인을 기다리는 중"</string>
+    <string name="pr_draft">"초안"</string>
+    <string name="pr_counts">"커밋: %1$d · 파일: %2$d"</string>
+    <string name="pr_open_on_github">"GitHub에서 열기"</string>
+    <string name="pr_copy_link">"링크 복사"</string>
+    <string name="pr_link_copied">"링크가 복사되었습니다"</string>
+    <string name="pr_open_failed">"링크를 열 수 있는 앱이 없습니다. 대신 복사되었습니다."</string>
+    <string name="pr_approval_title">"끌어오기 요청을 열까요?"</string>
+    <string name="pr_approval_body">"푸시된 브랜치에서 GitHub에 대한 풀 요청을 생성합니다. 아무것도 푸시되거나 병합되지 않습니다."</string>
+    <string name="pr_approval_base">"%1$s로"</string>
+    <string name="pr_approval_default_base">"기본 지점으로"</string>
+    <string name="pr_create">"풀 요청 생성"</string>
+    <string name="pr_create_draft">"풀 리퀘스트 초안 생성"</string>
+    <string name="pr_entry_body">"GitHub에 대한 검토를 위해 이 브랜치의 푸시 커밋을 제안합니다."</string>
+    <string name="pr_loading">"이 브랜치를 GitHub와 비교하면…"</string>
+    <string name="pr_title_label">"제목"</string>
+    <string name="pr_description_label">"설명"</string>
+    <string name="pr_rewrite_description">"설명 다시 작성"</string>
+    <string name="pr_base_label">"기본 지점"</string>
+    <string name="pr_draft_label">"초안으로 열기"</string>
+    <string name="pr_draft_body">"검토자는 이를 볼 수 있지만 준비됨으로 표시할 때까지 병합할 수 없습니다."</string>
+    <string name="pr_include_checks">"이 채팅의 확인 내용을 포함하세요."</string>
+    <string name="pr_include_checks_body">"이 대화에 기록된 빌드, 테스트 및 Lint 결과를 추가합니다."</string>
+    <string name="pr_existing_body">"%1$s에 대한 새로운 푸시는 이 풀 요청을 자동으로 업데이트합니다."</string>
+    <string name="pr_not_pushed_title">"Branch가 아직 GitHub에 없습니다."</string>
+    <string name="pr_out_of_date_title">"GitHub에는 이 분기의 이전 복사본이 있습니다."</string>
+    <string name="pr_push_body">"%1$s를 푸시하면 GitHub에 최신 커밋이 포함됩니다."</string>
+    <string name="pr_push_branch">"푸시 분기"</string>
+    <string name="pr_pushed">"지점이 밀렸습니다."</string>
+    <string name="pr_uncommitted_title">"커밋되지 않은 변경 사항: %1$d"</string>
+    <string name="pr_uncommitted_body">"커밋하고 푸시할 때까지는 포함되지 않습니다."</string>
+    <string name="pr_behind_title">"%1$s의 최신 커밋: %2$d"</string>
+    <string name="pr_behind_body">"이 분기에는 아직 포함되지 않습니다. 리뷰어가 업데이트를 요청할 수도 있습니다."</string>
+    <string name="pr_no_commits_title">"아직 제안할 항목이 없습니다."</string>
+    <string name="pr_no_commits_body">"%1$s에는 아직 %2$s에 없는 커밋이 없습니다."</string>
+    <string name="pr_commits_header">"커밋"</string>
+    <string name="pr_more">"더 보기: %1$d"</string>
+    <string name="pr_created_title">"풀 요청 #%1$d가 열렸습니다."</string>
+    <string name="pr_created_draft_title">"풀 요청 초안 #%1$d가 열렸습니다."</string>
+    <string name="pr_retry">"다시 시도하세요"</string>
+</resources>

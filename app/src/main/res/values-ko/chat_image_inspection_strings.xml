@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_viewing_image">"이미지를 보면"</string>
+    <string name="chat_viewed_image">"이미지를 보니"</string>
+    <string name="chat_image_failed">"이미지를 검사할 수 없습니다."</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"নির্বাচন করুন"</string>
+    <string name="sidebar_selected_count">"%1$d নির্বাচিত হয়েছে৷"</string>
+    <string name="sidebar_select_all">"সব নির্বাচন করুন"</string>
+    <string name="sidebar_clear_selection">"নির্বাচন পরিষ্কার করুন"</string>
+    <string name="sidebar_exit_selection">"নির্বাচন থেকে প্রস্থান করুন"</string>
+    <string name="sidebar_select_chat">"%1$s নির্বাচন করুন"</string>
+    <string name="sidebar_details">"বিস্তারিত"</string>
+    <string name="sidebar_other_chats">"অন্যান্য চ্যাট"</string>
+    <string name="sidebar_model_unavailable">"অনুপলব্ধ"</string>
+    <string name="sidebar_delete_selected">"নির্বাচিত চ্যাট মুছবেন?"</string>
+    <string name="sidebar_delete_selected_message">"এই চ্যাট এবং তাদের কথোপকথনের ইতিহাস মুছবেন? এটি পূর্বাবস্থায় ফেরানো যাবে না।"</string>
+    <string name="sidebar_delete_running">"এই চ্যাটে চলমান কাজগুলি বন্ধ হয়ে যাবে।"</string>
+    <string name="sidebar_selection_error">"এই কাজটি সম্পূর্ণ করা যায়নি। আবার চেষ্টা করুন."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="one">"%1$d চ্যাট আর্কাইভ করা হয়েছে"</item>
+        <item quantity="other">"%1$d চ্যাট আর্কাইভ করা হয়েছে৷"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="one">"%1$d চ্যাট পুনরুদ্ধার করা হয়েছে৷"</item>
+        <item quantity="other">"%1$d চ্যাট পুনরুদ্ধার করা হয়েছে৷"</item>
+    </plurals>
+</resources>

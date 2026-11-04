@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"Palette de couleurs"</string>
+    <string name="theme_color_hint">"Choisissez une palette pour colorer votre application."</string>
+    <string name="theme_wallpaper_colors">"Couleurs de papier peint"</string>
+    <string name="theme_wallpaper_hint">"Suivez les couleurs Material You de votre téléphone."</string>
+    <string name="theme_wallpaper_unavailable">"Les couleurs du papier peint nécessitent Android 12 ou version ultérieure. Choisissez une palette ci-dessous."</string>
+    <string name="theme_palette_blue">"Harness bleu"</string>
+    <string name="theme_palette_ocean">"Océan"</string>
+    <string name="theme_palette_indigo">"Indigo"</string>
+    <string name="theme_palette_lavender">"Lavande"</string>
+    <string name="theme_palette_orchid">"Orchidée"</string>
+    <string name="theme_palette_rose">"Rose"</string>
+    <string name="theme_palette_coral">"Corail"</string>
+    <string name="theme_palette_amber">"Ambre"</string>
+    <string name="theme_palette_lime">"Chaux"</string>
+    <string name="theme_palette_forest">"Forêt"</string>
+    <string name="theme_palette_teal">"Sarcelle"</string>
+    <string name="theme_palette_slate">"Ardoise"</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">"%2$s · %1$d clé enregistrée"</item>
+        <item quantity="other">"%2$s · %1$d clés enregistrées"</item>
+        <item quantity="many">"%2$s · %1$d clés enregistrées"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"Vous pouvez enregistrer jusqu\'à 20 clés. Lorsqu\'une clé est rejetée, à taux limité ou à court de crédits, la clé activée suivante est utilisée automatiquement."</string>
+    <string name="search_key_check_failed">"Clé %1$d : %2$s"</string>
+    <string name="search_keys_verified_and_saved">"Clés vérifiées et enregistrées"</string>
+    <string name="search_manage_keys">"Gérer les clés"</string>
+</resources>

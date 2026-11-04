@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"AndroidHarness கற்றுக்கொள்ளுங்கள்"</string>
+    <string name="learn_description">"நீங்கள் இங்கே செய்யக்கூடிய அனைத்திற்கும் நட்பு, படிப்படியான வழிகாட்டிகள்."</string>
+    <string name="learn_group">"இங்கே தொடங்குங்கள்"</string>
+    <string name="learn_entry_hint">"உங்கள் வழிகாட்டி, உங்கள் வேகத்தில்"</string>
+    <string name="learn_entry_action">"வழிகாட்டியை ஆராயுங்கள்"</string>
+    <string name="learn_hero_title">"சிறிது வழிகாட்டல்.\nஏராளமான வாய்ப்புகள்."</string>
+    <string name="learn_hero_body">"உங்கள் முதல் அரட்டையுடன் தொடங்கவும் அல்லது நீங்கள் செய்ய விரும்பும் விஷயத்திற்கு நேராக செல்லவும். ஒவ்வொரு பாடத்திலும் படிகள், பயனுள்ள வரம்புகள் மற்றும் நீங்கள் சிக்கிக்கொள்ளும்போது உதவி ஆகியவை அடங்கும்."</string>
+    <string name="learn_offline">"இணையமின்றிப் பயன்படுத்தலாம் · பயிற்சிகள் ஆங்கிலத்தில் உள்ளன"</string>
+    <string name="learn_progress">"கற்றுக்கொண்ட %2$d பாடங்களில் %1$d"</string>
+    <string name="learn_search">"நீங்கள் என்ன கற்றுக்கொள்ள விரும்புகிறீர்கள்?"</string>
+    <string name="learn_clear_search">"டுடோரியல் தேடலை அழிக்கவும்"</string>
+    <string name="learn_all">"அனைத்து பாடங்களும்"</string>
+    <string name="learn_saved">"சேமிக்கப்பட்டது"</string>
+    <string name="learn_start">"அடிப்படைகளுடன் தொடங்குங்கள்"</string>
+    <string name="learn_start_hint">"இங்கு புதியதா? இந்த மூன்று பாடங்கள் உங்களைத் தூண்டும்."</string>
+    <string name="learn_results">"%1$d பாடங்கள்"</string>
+    <string name="learn_empty_title">"வேறொரு தேடலை முயற்சிப்போம்"</string>
+    <string name="learn_empty_body">"\"API விசை\", \"GitHub\", \"உள்ளூர் மாதிரி\" அல்லது \"MCP\" ஆகியவற்றை முயற்சிக்கவும். எல்லாவற்றையும் உலவ நீங்கள் அனைத்து பாடங்களுக்கும் மாறலாம்."</string>
+    <string name="learn_saved_empty_title">"ஒரு பாடத்தை கையில் வைத்திருங்கள்"</string>
+    <string name="learn_saved_empty_body">"ஒரு பாடத்தில் உள்ள புக்மார்க்கைப் பயன்படுத்தி பின்னர் அதை இங்கே காணலாம்."</string>
+    <string name="learn_reset_filters">"அனைத்து பாடங்களையும் காட்டு"</string>
+    <string name="learn_location">"எங்கே போவது"</string>
+    <string name="learn_before">"நீங்கள் தொடங்குவதற்கு முன்"</string>
+    <string name="learn_steps">"அதை செய்வோம்"</string>
+    <string name="learn_outcome">"நீங்கள் என்ன பார்க்க வேண்டும்"</string>
+    <string name="learn_limits">"தெரிந்து கொள்வது நல்லது"</string>
+    <string name="learn_fixes">"மாட்டிக் கொண்டால்"</string>
+    <string name="learn_example">"இதைச் சொல்லிப் பாருங்கள்"</string>
+    <string name="learn_copy_example">"உதாரணத்தை நகலெடுக்கவும்"</string>
+    <string name="learn_copied">"உதாரணம் நகலெடுக்கப்பட்டது"</string>
+    <string name="learn_open_section">"பயன்பாட்டில் முயற்சிக்கவும்"</string>
+    <string name="learn_links">"உத்தியோகபூர்வ உதவி"</string>
+    <string name="learn_links_hint">"இந்த இணைப்புகள் உங்கள் உலாவியில் திறக்கப்பட்டு இணைய இணைப்பு தேவை. வழங்குநர் பக்கங்கள் மாறலாம்; செலுத்தும் முன் காட்டப்படும் விதிமுறைகள் மற்றும் விலையைச் சரிபார்க்கவும்."</string>
+    <string name="learn_related">"பயனுள்ள அடுத்த படி"</string>
+    <string name="learn_mark_complete">"கற்றதாகக் குறிக்கவும்"</string>
+    <string name="learn_complete">"கற்றுக்கொண்டது · செயல்தவிர்க்க தட்டவும்"</string>
+    <string name="learn_completed_label">"கற்றது"</string>
+    <string name="learn_bookmark">"இந்த பாடத்தை சேமிக்கவும்"</string>
+    <string name="learn_bookmarked">"சேமித்த பாடத்தை அகற்று"</string>
+    <string name="learn_link_failed">"உலாவியைத் திறக்க முடியவில்லை. அதற்கு பதிலாக நீங்கள் இணைப்பை நகலெடுக்கலாம்."</string>
+    <string name="learn_copy_link">"இணைப்பை நகலெடுக்கவும்"</string>
+    <string name="learn_load_failed">"வழிகாட்டியைத் திறக்க முடியவில்லை. அமைப்புகளை மூடிவிட்டு மீண்டும் முயற்சிக்கவும்."</string>
+</resources>

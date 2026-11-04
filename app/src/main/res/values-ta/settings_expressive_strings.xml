@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"முகவர் &amp; பணிப்பாய்வு"</string>
+    <string name="settings_coding_intelligence">"திறன்கள் மற்றும் நுண்ணறிவு"</string>
+    <string name="settings_coding_execution">"பணியிடங்கள் மற்றும் செயல்படுத்தல்"</string>
+    <string name="settings_device_connections">"இணைப்புகள்"</string>
+    <string name="settings_device_tools">"கருவிகள் மற்றும் மேம்பட்ட அமைப்புகள்"</string>
+    <string name="settings_linux_optional">"Linux தேவைப்படும் திட்டங்களுக்கான விருப்பக் கருவிகள்"</string>
+    <string name="settings_device_advanced">"மேம்பட்ட சாதன அணுகல்"</string>
+    <string name="settings_device_advanced_summary">"ரூட் மற்றும் சாதன உரிமையாளர் கட்டுப்பாடுகள்"</string>
+    <string name="settings_device_background">"பின்னணி &amp; பேட்டரி"</string>
+    <string name="settings_device_background_summary">"டெர்மினல் அமர்வுகள் மற்றும் முகவர் பணியை தொடர்ந்து இயக்கவும்"</string>
+    <string name="settings_connection_help">"எப்படி இணைப்பது"</string>
+    <string name="settings_connection_options">"இணைப்பு விருப்பங்கள்"</string>
+    <string name="wireless_adb_disconnect">"துண்டிக்கவும்"</string>
+    <string name="wireless_adb_connection_kept">"இணைக்கப்பட்டுள்ளது · நீங்கள் துண்டிக்கும் வரை கிடைக்கும்"</string>
+    <string name="wireless_adb_auto_reconnecting">"சேமிக்கப்பட்ட வயர்லெஸ் பிழைத்திருத்தத்துடன் மீண்டும் இணைக்கிறது"</string>
+    <string name="rich_profile_details">"விவரங்கள்"</string>
+    <string name="rich_profile_sources">"ஆதாரங்கள்"</string>
+    <string name="settings_disclosure_expanded">"விரிவாக்கப்பட்டது"</string>
+    <string name="settings_disclosure_collapsed">"சரிந்தது"</string>
+    <string name="settings_terminal_access">"முனைய அணுகல்"</string>
+    <string name="wireless_adb_compact_summary">"சாதன கட்டளைகள், தானியங்கி மறு இணைப்புடன்"</string>
+</resources>

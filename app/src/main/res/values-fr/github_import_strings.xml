@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"Choisissez un référentiel"</string>
+    <string name="github_import_destination">"Importez une copie dans son propre espace de travail sur cet appareil."</string>
+    <string name="github_import_loading">"Chargement de vos référentiels…"</string>
+    <string name="github_import_empty">"Aucun référentiel trouvé pour ce compte. Vous pouvez également importer par URL."</string>
+    <string name="github_import_by_url">"Importer par URL"</string>
+    <string name="github_import_confirm_title">"Importer le référentiel ?"</string>
+    <string name="github_import_confirm_body">"Êtes-vous sûr de vouloir importer %1$s dans un nouvel espace de travail sur cet appareil ?"</string>
+    <string name="github_import_preparing">"Préparation de l\'importation…"</string>
+    <string name="github_import_success">"%1$s importé"</string>
+    <string name="github_import_open_workspace">"Espace de travail ouvert"</string>
+</resources>

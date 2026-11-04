@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"색상 팔레트"</string>
+    <string name="theme_color_hint">"앱에 색상을 지정할 팔레트를 선택하세요."</string>
+    <string name="theme_wallpaper_colors">"벽지 색상"</string>
+    <string name="theme_wallpaper_hint">"휴대폰의 Material You 색상을 따르세요."</string>
+    <string name="theme_wallpaper_unavailable">"배경 화면 색상에는 Android 12 이상이 필요합니다. 아래에서 팔레트를 선택하세요."</string>
+    <string name="theme_palette_blue">"Harness 블루"</string>
+    <string name="theme_palette_ocean">"바다"</string>
+    <string name="theme_palette_indigo">"인디고"</string>
+    <string name="theme_palette_lavender">"라벤더"</string>
+    <string name="theme_palette_orchid">"난초"</string>
+    <string name="theme_palette_rose">"로즈"</string>
+    <string name="theme_palette_coral">"산호"</string>
+    <string name="theme_palette_amber">"호박색"</string>
+    <string name="theme_palette_lime">"라임"</string>
+    <string name="theme_palette_forest">"숲"</string>
+    <string name="theme_palette_teal">"청록색"</string>
+    <string name="theme_palette_slate">"슬레이트"</string>
+</resources>

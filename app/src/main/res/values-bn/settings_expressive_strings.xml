@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"এজেন্ট এবং কর্মপ্রবাহ"</string>
+    <string name="settings_coding_intelligence">"দক্ষতা ও বুদ্ধিমত্তা"</string>
+    <string name="settings_coding_execution">"কর্মক্ষেত্র এবং সম্পাদন"</string>
+    <string name="settings_device_connections">"সংযোগ"</string>
+    <string name="settings_device_tools">"সরঞ্জাম এবং উন্নত সেটিংস"</string>
+    <string name="settings_linux_optional">"Linux প্রয়োজন এমন প্রকল্পগুলির জন্য ঐচ্ছিক সরঞ্জাম"</string>
+    <string name="settings_device_advanced">"উন্নত ডিভাইস অ্যাক্সেস"</string>
+    <string name="settings_device_advanced_summary">"রুট এবং ডিভাইস মালিক নিয়ন্ত্রণ"</string>
+    <string name="settings_device_background">"পটভূমি এবং ব্যাটারি"</string>
+    <string name="settings_device_background_summary">"টার্মিনাল সেশন এবং এজেন্ট কাজ চলমান রাখুন"</string>
+    <string name="settings_connection_help">"কিভাবে সংযোগ করতে হয়"</string>
+    <string name="settings_connection_options">"সংযোগ বিকল্প"</string>
+    <string name="wireless_adb_disconnect">"সংযোগ বিচ্ছিন্ন করুন"</string>
+    <string name="wireless_adb_connection_kept">"সংযুক্ত · আপনি সংযোগ বিচ্ছিন্ন না হওয়া পর্যন্ত উপলব্ধ"</string>
+    <string name="wireless_adb_auto_reconnecting">"সংরক্ষিত ওয়্যারলেস ডিবাগিংয়ের সাথে পুনরায় সংযোগ করা হচ্ছে"</string>
+    <string name="rich_profile_details">"বিস্তারিত"</string>
+    <string name="rich_profile_sources">"সূত্র"</string>
+    <string name="settings_disclosure_expanded">"প্রসারিত"</string>
+    <string name="settings_disclosure_collapsed">"ধসে পড়েছে"</string>
+    <string name="settings_terminal_access">"টার্মিনাল অ্যাক্সেস"</string>
+    <string name="wireless_adb_compact_summary">"স্বয়ংক্রিয় পুনঃসংযোগ সহ ডিভাইস কমান্ড"</string>
+</resources>

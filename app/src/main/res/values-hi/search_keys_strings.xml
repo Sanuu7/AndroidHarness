@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">"%2$s · %1$d कुंजी सहेजी गई"</item>
+        <item quantity="other">"%2$s · %1$d कुंजियाँ सहेजी गईं"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"आप अधिकतम 20 चाबियाँ सहेज सकते हैं. जब कोई कुंजी अस्वीकार कर दी जाती है, दर सीमित हो जाती है या क्रेडिट खत्म हो जाता है, तो अगली सक्षम कुंजी स्वचालित रूप से उपयोग की जाती है।"</string>
+    <string name="search_key_check_failed">"कुंजी %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"कुंजियाँ सत्यापित और सहेजी गईं"</string>
+    <string name="search_manage_keys">"कुंजियाँ प्रबंधित करें"</string>
+</resources>

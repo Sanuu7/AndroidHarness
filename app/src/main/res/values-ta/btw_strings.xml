@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"மூலம்"</string>
+    <string name="btw_source_live">"நேரடி சூழல்"</string>
+    <string name="btw_source_saved">"சேமிக்கப்பட்ட வரலாறு"</string>
+    <string name="btw_private">"அரட்டையில் சேர்க்கப்படவில்லை"</string>
+    <string name="btw_empty_hint">"தற்போதைய பணியைப் பற்றி எதையும் கேளுங்கள். பதில் முகவர் ஏற்கனவே படித்து முடிவு செய்ததைப் பயன்படுத்துகிறது, அதன் உடனடி தற்காலிக சேமிப்பை மீண்டும் பயன்படுத்துகிறது மற்றும் உரையாடலில் ஒருபோதும் சேராது."</string>
+    <string name="btw_input_hint">"ஒரு பக்க கேள்வி கேளுங்கள்"</string>
+    <string name="btw_input_again">"இன்னொரு பக்கம் கேள்வி கேளுங்க"</string>
+    <string name="btw_ask">"கேள்"</string>
+    <string name="btw_stop">"நிறுத்து"</string>
+    <string name="btw_copy">"நகலெடுக்கவும்"</string>
+    <string name="btw_copied">"பதில் நகலெடுக்கப்பட்டது"</string>
+    <string name="btw_stopped">"நிறுத்தப்பட்டது"</string>
+    <string name="btw_retrying">"மீண்டும் முயற்சிக்கிறது · %1$s"</string>
+    <string name="btw_cold_note">"எந்த நேரலை கோரிக்கையும் நினைவகத்தில் இல்லை, எனவே இந்த பதில் ப்ராம்ட் கேச் இல்லாமல் சேமிக்கப்பட்ட உரையாடலைப் படிக்கும்."</string>
+    <string name="btw_composer_action">"வழியில் கேள்"</string>
+    <string name="btw_error_empty_chat">"முதலில் ஒரு செய்தியை அனுப்பவும், பின்னர் அதைப் பற்றி ஒரு பக்க கேள்வி கேட்கவும்."</string>
+    <string name="btw_error_local_busy">"உள்ளூர் மாதிரிகள் ஒரு நேரத்தில் ஒரு கோரிக்கைக்கு பதிலளிக்கின்றன. தற்போதைய பதில் முடிந்ததும் கேளுங்கள்."</string>
+    <string name="btw_error_no_key">"கேட்கும் முன் இந்த வழங்குநரின் API விசையைச் சேர்க்கவும்."</string>
+    <string name="btw_error_generic">"பக்க கேள்வி தோல்வியடைந்தது."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">"%1$d படிக்க-மட்டும் கருவி அழைப்பு"</item>
+        <item quantity="other">"%1$d படிக்க-மட்டும் கருவி அழைப்புகள்"</item>
+    </plurals>
+</resources>

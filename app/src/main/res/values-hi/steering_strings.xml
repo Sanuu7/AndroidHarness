@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"जबकि एजेंट काम करता है"</string>
+    <string name="settings_anchor_steering">"कार्य के बीच में संदेश भेजे गए"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"एजेंट आपके संदेश को उसके वर्तमान चरण के बाद पढ़ता है और जारी रखता है। चलने वाले उपकरण कभी बाधित नहीं होते। यदि कार्य पहले ही समाप्त हो चुका है, तो संदेश अगला चरण शुरू करता है।"</string>
+    <string name="steering_mode_after_task">"कार्य के बाद"</string>
+    <string name="steering_mode_after_task_desc">"आपका संदेश पूरा कार्य समाप्त होने तक प्रतीक्षा करता है, फिर एक नया मोड़ शुरू होता है।"</string>
+    <string name="steering_picker_detail">"चुनें कि जब एजेंट काम कर रहा हो तब आप संदेश भेजते हैं तो क्या होता है। कतारबद्ध संदेश पर अभी भेजें हमेशा एजेंट को रोकता है और तुरंत भेजता है।"</string>
+    <string name="steering_search_desc">"चल रहे एजेंट का संचालन करें, या कार्य समाप्त होने तक प्रतीक्षा करें"</string>
+    <string name="steering_queue_next_step">"एजेंट अपने वर्तमान चरण के बाद इन्हें पढ़ता है।"</string>
+    <string name="steering_queue_badge">"अगले चरण में पढ़ें"</string>
+</resources>

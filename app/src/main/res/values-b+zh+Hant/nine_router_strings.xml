@@ -1,0 +1,39 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"安裝並管理本地模型路由器"</string>
+    <string name="nine_router_intro">"在此手機上執行 9Router，並在瀏覽器中管理其提供方、模型和路由。使用 AndroidHarness 的 Linux 工具鏈。"</string>
+    <string name="nine_router_setup">"設定你的環境"</string>
+    <string name="nine_router_not_installed">"可以安裝"</string>
+    <string name="nine_router_ready">"已安裝 · 已停止"</string>
+    <string name="nine_router_running">"正在此手機上執行"</string>
+    <string name="nine_router_starting">"正在啟動 9Router…"</string>
+    <string name="nine_router_stopping">"正在停止 9Router…"</string>
+    <string name="nine_router_installing">"正在安裝…"</string>
+    <string name="nine_router_updating">"正在更新 9Router…"</string>
+    <string name="nine_router_uninstalling">"正在解除安裝 9Router…"</string>
+    <string name="nine_router_connecting">"正在新增到提供方…"</string>
+    <string name="nine_router_removing">"正在從提供方移除…"</string>
+    <string name="nine_router_install_linux">"安裝 Linux 工具鏈"</string>
+    <string name="nine_router_install">"安裝 9Router"</string>
+    <string name="nine_router_start">"啟動 9Router"</string>
+    <string name="nine_router_stop">"停止"</string>
+    <string name="nine_router_show_details">"顯示詳情"</string>
+    <string name="nine_router_hide_details">"隱藏詳情"</string>
+    <string name="nine_router_open_dashboard">"在瀏覽器中開啟儀表板"</string>
+    <string name="nine_router_browser_error">"沒有瀏覽器可以開啟 9Router 儀表板。"</string>
+    <string name="nine_router_version">"版本 %1$s"</string>
+    <string name="nine_router_check_update">"檢查更新"</string>
+    <string name="nine_router_checking">"正在檢查…"</string>
+    <string name="nine_router_update">"更新到 %1$s"</string>
+    <string name="nine_router_auto_start">"自動啟動 9Router"</string>
+    <string name="nine_router_auto_start_body">"在開啟 AndroidHarness 時啟動已安裝的路由器。"</string>
+    <string name="nine_router_add_provider">"將 9Router 新增到提供方"</string>
+    <string name="nine_router_refresh_provider">"重新整理 9Router 提供方"</string>
+    <string name="nine_router_provider_body">"按需啟動 9Router，並自動填入其本地端點和 API 金鑰。已連線的模型會出現在聊天和程式碼的模型選擇器中。"</string>
+    <string name="nine_router_remove_provider">"從提供方移除"</string>
+    <string name="nine_router_remove_provider_body">"從 AndroidHarness 中移除 9Router 連線。路由器和其賬戶仍保持安裝。"</string>
+    <string name="nine_router_uninstall">"解除安裝 9Router"</string>
+    <string name="nine_router_uninstall_title">"完全解除安裝 9Router？"</string>
+    <string name="nine_router_uninstall_body">"停止 9Router 並刪除其安裝檔案、已儲存的賬戶、路由器 API 金鑰、配置、快取、自動啟動設定以及應用的提供方連線。此操作無法撤銷。共享的 Linux 工具鏈仍可供其他功能使用。"</string>
+</resources>

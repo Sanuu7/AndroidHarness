@@ -1,0 +1,25 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="btw_title">"順便問一下"</string>
+    <string name="btw_source_live">"實時上下文"</string>
+    <string name="btw_source_saved">"已儲存的歷史"</string>
+    <string name="btw_private">"不會加入聊天"</string>
+    <string name="btw_empty_hint">"可以就當前任務提出任何問題。回答會使用智慧體已經讀取和決定的內容，複用其提示快取，且永遠不會加入對話。"</string>
+    <string name="btw_input_hint">"提一個旁支問題"</string>
+    <string name="btw_input_again">"再提一個旁支問題"</string>
+    <string name="btw_ask">"提問"</string>
+    <string name="btw_stop">"停止"</string>
+    <string name="btw_copy">"複製"</string>
+    <string name="btw_copied">"已複製回答"</string>
+    <string name="btw_stopped">"已停止"</string>
+    <string name="btw_retrying">"正在重試 · %1$s"</string>
+    <string name="btw_cold_note">"記憶體中沒有實時請求，因此此回答會在不使用提示快取的情況下讀取已儲存的對話。"</string>
+    <string name="btw_composer_action">"順便問一下"</string>
+    <string name="btw_error_empty_chat">"請先傳送一條訊息，然後再就此提出旁支問題。"</string>
+    <string name="btw_error_local_busy">"本地模型一次只處理一個請求。請在當前回覆完成後再提問。"</string>
+    <string name="btw_error_no_key">"提問前請先新增此提供方的 API 金鑰。"</string>
+    <string name="btw_error_generic">"旁支問題失敗。"</string>
+    <plurals name="btw_tool_count">
+        <item quantity="other">"%1$d 次只讀工具呼叫"</item>
+    </plurals>
+</resources>

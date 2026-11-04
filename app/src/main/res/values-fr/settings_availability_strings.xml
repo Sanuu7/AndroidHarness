@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Nécessite Android %1$s ou version ultérieure"</string>
+    <string name="settings_requires_vibrator">"Pas de moteur vibrant sur cet appareil"</string>
+    <string name="rumble_unsupported">"Cet appareil n\'a pas de moteur vibrant, donc AH Rumble ne peut pas fonctionner ici."</string>
+</resources>

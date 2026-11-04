@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"AndroidHarness 알아보기"</string>
+    <string name="learn_description">"여기에서 할 수 있는 모든 것에 대한 친절하고 단계별 안내가 제공됩니다."</string>
+    <string name="learn_group">"여기서 시작하세요"</string>
+    <string name="learn_entry_hint">"귀하의 속도에 맞춰 귀하의 가이드"</string>
+    <string name="learn_entry_action">"가이드 살펴보기"</string>
+    <string name="learn_hero_title">"작은 안내.\n무한한 가능성."</string>
+    <string name="learn_hero_body">"첫 번째 채팅부터 시작하거나 하고 싶은 일로 바로 이동하세요. 모든 레슨에는 단계, 유용한 제한 사항, 막혔을 때의 도움말이 포함되어 있습니다."</string>
+    <string name="learn_offline">"오프라인 사용 가능 · 튜토리얼은 영어로 제공됩니다"</string>
+    <string name="learn_progress">"%2$d 교훈 중 %1$d 교훈"</string>
+    <string name="learn_search">"무엇을 배우고 싶나요?"</string>
+    <string name="learn_clear_search">"튜토리얼 검색 지우기"</string>
+    <string name="learn_all">"모든 수업"</string>
+    <string name="learn_saved">"저장됨"</string>
+    <string name="learn_start">"기본부터 시작하세요"</string>
+    <string name="learn_start_hint">"여기 새로 왔나요? 이 세 가지 교훈을 통해 여러분의 마음을 사로잡을 수 있습니다."</string>
+    <string name="learn_results">"%1$d 수업"</string>
+    <string name="learn_empty_title">"다른 검색을 해보자"</string>
+    <string name="learn_empty_body">"\"API 키\", \"GitHub\", \"로컬 모델\" 또는 \"MCP\"를 사용해 보세요. 모든 강의로 전환하여 모든 강의를 탐색할 수도 있습니다."</string>
+    <string name="learn_saved_empty_title">"수업을 편리하게 이용하세요"</string>
+    <string name="learn_saved_empty_body">"나중에 여기에서 찾으려면 수업 중 북마크를 사용하세요."</string>
+    <string name="learn_reset_filters">"모든 강의 보기"</string>
+    <string name="learn_location">"어디로 갈까?"</string>
+    <string name="learn_before">"시작하기 전에"</string>
+    <string name="learn_steps">"해보자"</string>
+    <string name="learn_outcome">"당신이 봐야 할 것"</string>
+    <string name="learn_limits">"알아두면 좋은 점"</string>
+    <string name="learn_fixes">"막히면"</string>
+    <string name="learn_example">"이렇게 말해 보세요"</string>
+    <string name="learn_copy_example">"복사 예"</string>
+    <string name="learn_copied">"예시 복사됨"</string>
+    <string name="learn_open_section">"앱에서 사용해 보세요"</string>
+    <string name="learn_links">"공식 도움말"</string>
+    <string name="learn_links_hint">"이러한 링크는 브라우저에서 열리며 인터넷 연결이 필요합니다. 공급자 페이지는 변경될 수 있습니다. 결제하기 전에 표시된 조건과 가격을 확인하세요."</string>
+    <string name="learn_related">"유용한 다음 단계"</string>
+    <string name="learn_mark_complete">"학습한 것으로 표시"</string>
+    <string name="learn_complete">"학습함 · 실행취소하려면 탭하세요"</string>
+    <string name="learn_completed_label">"배운"</string>
+    <string name="learn_bookmark">"이 강의를 저장하세요"</string>
+    <string name="learn_bookmarked">"저장된 강의 삭제"</string>
+    <string name="learn_link_failed">"브라우저를 열 수 없습니다. 대신 링크를 복사할 수 있습니다."</string>
+    <string name="learn_copy_link">"링크 복사"</string>
+    <string name="learn_load_failed">"가이드를 열 수 없습니다. 설정을 닫고 다시 시도하세요."</string>
+</resources>

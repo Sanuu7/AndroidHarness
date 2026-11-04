@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"উপায় দ্বারা"</string>
+    <string name="btw_source_live">"লাইভ প্রসঙ্গ"</string>
+    <string name="btw_source_saved">"সংরক্ষিত ইতিহাস"</string>
+    <string name="btw_private">"চ্যাটে যোগ করা হয়নি"</string>
+    <string name="btw_empty_hint">"বর্তমান কাজ সম্পর্কে কিছু জিজ্ঞাসা করুন. উত্তরটি এজেন্ট ইতিমধ্যে যা পড়েছে এবং সিদ্ধান্ত নিয়েছে তা ব্যবহার করে, এর প্রম্পট ক্যাশে পুনরায় ব্যবহার করে এবং কখনই কথোপকথনে যোগ দেয় না।"</string>
+    <string name="btw_input_hint">"একটি পার্শ্ব প্রশ্ন জিজ্ঞাসা করুন"</string>
+    <string name="btw_input_again">"অন্য পার্শ্ব প্রশ্ন জিজ্ঞাসা করুন"</string>
+    <string name="btw_ask">"জিজ্ঞাসা করুন"</string>
+    <string name="btw_stop">"থামো"</string>
+    <string name="btw_copy">"কপি"</string>
+    <string name="btw_copied">"উত্তর কপি করা হয়েছে"</string>
+    <string name="btw_stopped">"থেমে গেল"</string>
+    <string name="btw_retrying">"আবার চেষ্টা করা হচ্ছে · %1$s"</string>
+    <string name="btw_cold_note">"কোনও লাইভ অনুরোধ মেমরিতে নেই, তাই এই উত্তরটি প্রম্পট ক্যাশে ছাড়াই সংরক্ষিত কথোপকথনটি পড়ে।"</string>
+    <string name="btw_composer_action">"উপায় দ্বারা জিজ্ঞাসা"</string>
+    <string name="btw_error_empty_chat">"প্রথমে একটি বার্তা পাঠান, তারপর এটি সম্পর্কে একটি পার্শ্ব প্রশ্ন জিজ্ঞাসা করুন৷"</string>
+    <string name="btw_error_local_busy">"স্থানীয় মডেলগুলি একবারে একটি অনুরোধের উত্তর দেয়। বর্তমান উত্তর শেষ হওয়ার পরে জিজ্ঞাসা করুন।"</string>
+    <string name="btw_error_no_key">"জিজ্ঞাসা করার আগে এই প্রদানকারীর API কী যোগ করুন।"</string>
+    <string name="btw_error_generic">"পার্শ্ব প্রশ্ন ব্যর্থ হয়েছে."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">"%1$d শুধুমাত্র পঠনযোগ্য টুল কল"</item>
+        <item quantity="other">"%1$d শুধুমাত্র পঠনযোগ্য টুল কল"</item>
+    </plurals>
+</resources>

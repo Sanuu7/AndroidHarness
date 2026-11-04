@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">"저장됨"</string>
+    <string name="sidebar_saved_answers">"저장된 답변"</string>
+    <string name="sidebar_saved_count_description">"저장된 답변, %1$d"</string>
+    <string name="sidebar_saved_answer">"저장된 답변"</string>
+    <string name="sidebar_open_in_chat">"채팅에서 열기"</string>
+    <string name="sidebar_remove_saved">"저장된 항목에서 삭제"</string>
+    <string name="chat_save_answer">"답변 저장"</string>
+    <string name="chat_answer_saved">"답변이 저장되었습니다"</string>
+    <string name="chat_answer_unsaved">"저장된 항목에서 삭제됨"</string>
+</resources>

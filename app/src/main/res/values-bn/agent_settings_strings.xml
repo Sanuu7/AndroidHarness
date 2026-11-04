@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Caveman স্তর"</string>
+    <string name="as_activity_finding">"সেটিংস খুঁজছেন"</string>
+    <string name="as_activity_found">"সেটিংস দেখলাম"</string>
+    <string name="as_activity_changing">"সেটিংস পরিবর্তন করা হচ্ছে"</string>
+    <string name="as_activity_changed">"সেটিংস পরিবর্তন করা হয়েছে"</string>
+    <string name="as_undo">"পূর্বাবস্থায় ফেরান"</string>
+    <string name="as_undo_all">"সব পূর্বাবস্থায় ফেরান"</string>
+    <string name="as_redo">"আবার করুন"</string>
+    <string name="as_open_settings">"সেটিংস খুলুন"</string>
+    <string name="as_open_setting">"সেটিং খুলুন"</string>
+    <string name="as_title_changed">"সেটিংস পরিবর্তন করা হয়েছে"</string>
+    <string name="as_title_undone">"পরিবর্তনগুলি পূর্বাবস্থায় ফেরানো হয়েছে৷"</string>
+    <string name="as_title_needs_you">"একটি সেটিং আপনার প্রয়োজন"</string>
+    <string name="as_title_not_changed">"সেটিংস পরিবর্তন করা হয়নি"</string>
+    <string name="as_state_undone">"পূর্বাবস্থা"</string>
+    <string name="as_state_moved_on">"তারপর থেকে আবার পরিবর্তন"</string>
+    <string name="as_on">"চালু"</string>
+    <string name="as_off">"বন্ধ"</string>
+    <string name="as_unlimited">"আনলিমিটেড"</string>
+    <string name="as_custom_palette">"কাস্টম প্যালেট"</string>
+    <string name="as_empty">"কোনোটিই নয়"</string>
+    <string name="as_needs_you_label">"আপনার প্রয়োজন · %1$s"</string>
+    <string name="as_group">"চ্যাট থেকে সেটিংস"</string>
+    <string name="as_setting_title">"এজেন্টকে সেটিংস পরিবর্তন করতে দিন"</string>
+    <string name="as_access_off">"বন্ধ"</string>
+    <string name="as_access_off_desc">"এজেন্ট সেটিংস দেখতে এবং আপনাকে তাদের নির্দেশ করতে পারে, কিন্তু সেগুলি পরিবর্তন করতে পারে না।"</string>
+    <string name="as_access_ask">"প্রতিবার জিজ্ঞাসা করুন"</string>
+    <string name="as_access_ask_desc">"প্রতিটি পরিবর্তন চ্যাটে আপনার অনুমোদনের জন্য অপেক্ষা করে।"</string>
+    <string name="as_access_allowed">"অনুমোদিত"</string>
+    <string name="as_access_allowed_desc">"পরিবর্তনগুলি অবিলম্বে একটি পূর্বাবস্থায় ফেরানো কার্ডের মাধ্যমে প্রযোজ্য৷ সংবেদনশীল, যেমন অ্যাপ লক, এখনও জিজ্ঞাসা."</string>
+    <string name="as_picker_detail">"একটি সেটিং চালু বা বন্ধ করতে, একটি স্লাইডার সরাতে বা একটি রঙ প্যালেট তৈরি করতে Chat বা Code-এ বলুন৷ সংবেদনশীল সেটিংস সর্বদা প্রথমে জিজ্ঞাসা করে এবং API কীগুলি নাগালের বাইরে থাকে।"</string>
+    <string name="as_search_desc">"Chat বা Code-এ জিজ্ঞাসা করে সেটিংস পরিবর্তন করুন"</string>
+    <string name="tip_ask_settings" formatted="false">"আমাকে একটি সেটিং পরিবর্তন করতে বলুন, যেমন \"রম্বল 70% সেট করুন\" বা \"একটি টিল প্যালেট তৈরি করুন\"। একটি কার্ড দেখায় কি পরিবর্তন হয়েছে, পূর্বাবস্থায় ফেরানো সহ।"</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">"%1$d পরিবর্তন"</item>
+        <item quantity="other">"%1$d পরিবর্তন"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">"%1$d আপনাকে প্রয়োজন"</item>
+        <item quantity="other">"%1$d আপনার প্রয়োজন"</item>
+    </plurals>
+</resources>

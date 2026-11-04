@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="files_import_files">"ফাইল আমদানি করুন"</string>
+    <string name="files_import_folder">"ফোল্ডার আমদানি করুন"</string>
+    <string name="files_import_done">"%2$s আইটেমগুলির আমদানি করা %1$s"</string>
+    <string name="files_import_failed">"ফাইল ইম্পোর্ট করা যায়নি"</string>
+</resources>

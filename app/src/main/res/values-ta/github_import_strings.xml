@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"ஒரு களஞ்சியத்தைத் தேர்ந்தெடுக்கவும்"</string>
+    <string name="github_import_destination">"இந்தச் சாதனத்தில் நகலை அதன் சொந்தப் பணியிடத்தில் இறக்கவும்."</string>
+    <string name="github_import_loading">"உங்கள் களஞ்சியங்களை ஏற்றுகிறது…"</string>
+    <string name="github_import_empty">"இந்தக் கணக்கிற்கான களஞ்சியங்கள் எதுவும் இல்லை. நீங்கள் URL மூலமாகவும் இறக்குமதி செய்யலாம்."</string>
+    <string name="github_import_by_url">"URL மூலம் இறக்குமதி"</string>
+    <string name="github_import_confirm_title">"களஞ்சியத்தை இறக்குமதி செய்யவா?"</string>
+    <string name="github_import_confirm_body">"இந்தச் சாதனத்தில் ஒரு புதிய பணியிடத்தில் %1$s ஐ நிச்சயமாக இறக்குமதி செய்ய விரும்புகிறீர்களா?"</string>
+    <string name="github_import_preparing">"இறக்குமதியை தயார் செய்கிறது…"</string>
+    <string name="github_import_success">"இறக்குமதி செய்யப்பட்ட %1$s"</string>
+    <string name="github_import_open_workspace">"பணியிடத்தைத் திறக்கவும்"</string>
+</resources>

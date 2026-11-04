@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"ফিল্টার সারি"</string>
+    <string name="rich_no_rows">"কোন মিল সারি নেই"</string>
+    <string name="rich_previous">"আগের"</string>
+    <string name="rich_next">"পরবর্তী"</string>
+    <string name="rich_discuss_rows">"নির্বাচিত সারি আলোচনা করুন"</string>
+    <string name="rich_discuss_rows_prompt">"আমি নির্বাচিত সারি তুলনা."</string>
+    <string name="rich_discuss_tab">"এই ট্যাব সম্পর্কে জিজ্ঞাসা করুন"</string>
+    <string name="rich_discuss_tab_prompt">"%1$s ট্যাবটি ব্যাখ্যা কর।"</string>
+    <string name="rich_copy">"কপি"</string>
+    <string name="rich_copied">"কপি করা হয়েছে"</string>
+    <string name="rich_share">"শেয়ার করুন"</string>
+    <string name="rich_share_unavailable">"এই টেক্সট শেয়ার করার জন্য কোন অ্যাপ উপলব্ধ নেই।"</string>
+    <string name="rich_images_hidden">"এই চ্যাটের জন্য ছবিগুলি বন্ধ করা হয়েছে৷"</string>
+    <string name="rich_expand_image">"ছবি প্রসারিত করুন"</string>
+    <string name="rich_open_source">"ওপেন সোর্স"</string>
+    <string name="rich_discuss_image">"এই ইমেজ সম্পর্কে জিজ্ঞাসা করুন"</string>
+    <string name="rich_discuss_image_prompt">"আমার নির্বাচিত চিত্রটি ব্যাখ্যা করুন।"</string>
+    <string name="rich_reported_status">"রিপোর্ট করা হয়েছে: %1$s"</string>
+    <string name="rich_passed">"পাস করেছে"</string>
+    <string name="rich_failed">"ব্যর্থ হয়েছে"</string>
+    <string name="rich_unverified">"যাচাই করা হয়নি"</string>
+    <string name="rich_open_file">"ফাইল খুলুন"</string>
+    <string name="rich_show_less">"কম দেখান"</string>
+    <string name="rich_show_all">"সব দেখান"</string>
+    <string name="rich_changes">"পরিবর্তন"</string>
+    <string name="rich_before">"আগে"</string>
+    <string name="rich_after">"পরে"</string>
+    <string name="rich_change_count">"%1$d যোগ করা হয়েছে · %2$d সরানো হয়েছে"</string>
+    <string name="rich_discuss_diff">"এই পরিবর্তনগুলি আলোচনা করুন"</string>
+    <string name="rich_discuss_diff_prompt">"এই তুলনা এবং এর ট্রেডঅফ ব্যাখ্যা করুন।"</string>
+    <string name="rich_input_range">"%1$s থেকে %2$s"</string>
+    <string name="rich_result_unavailable">"ইনপুট বা সূত্র চেক করুন"</string>
+    <string name="rich_reset">"রিসেট করুন"</string>
+    <string name="rich_discuss_values">"এই মান সম্পর্কে জিজ্ঞাসা করুন"</string>
+    <string name="rich_discuss_values_prompt">"আমার বর্তমান মান ব্যবহার করে ফলাফল ব্যাখ্যা করুন।"</string>
+    <string name="rich_chart_range">"দৃশ্যমান পরিসীমা"</string>
+    <string name="rich_reset_range">"সম্পূর্ণ পরিসীমা দেখান"</string>
+    <string name="rich_chart_label">"লেবেল"</string>
+    <string name="rich_discuss_chart">"এই চার্ট সম্পর্কে জিজ্ঞাসা করুন"</string>
+    <string name="rich_discuss_chart_prompt">"আমার নির্বাচিত চার্ট পয়েন্ট এবং দৃশ্যমান ডেটাসেট ব্যাখ্যা করুন।"</string>
+    <string name="rich_select_point">"%1$s নির্বাচন করুন"</string>
+    <string name="rich_selected_count">"%1$d নির্বাচিত হয়েছে৷"</string>
+    <string name="rich_clear_selection">"নির্বাচন পরিষ্কার করুন"</string>
+    <string name="rich_adjust_input">"%1$s সামঞ্জস্য করুন"</string>
+</resources>

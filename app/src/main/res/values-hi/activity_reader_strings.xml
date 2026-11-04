@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"पूरा दृश्य खोलें"</string>
+    <string name="chat_activity_tool_details">"टूल विवरण खोलें"</string>
+    <string name="chat_activity_input">"इनपुट"</string>
+    <string name="chat_activity_output">"आउटपुट"</string>
+    <string name="chat_activity_output_preview">"आउटपुट पूर्वावलोकन"</string>
+    <string name="chat_activity_more">"और अधिक नीचे"</string>
+    <string name="chat_activity_latest">"नवीनतम"</string>
+    <string name="chat_activity_copy">"पाठ कॉपी करें"</string>
+    <string name="chat_activity_copied">"नकल की गई"</string>
+</resources>

@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Caveman நிலை"</string>
+    <string name="as_activity_finding">"அமைப்புகளைத் தேடுகிறது"</string>
+    <string name="as_activity_found">"அமைப்புகளைப் பார்த்தேன்"</string>
+    <string name="as_activity_changing">"அமைப்புகளை மாற்றுதல்"</string>
+    <string name="as_activity_changed">"அமைப்புகளை மாற்றியது"</string>
+    <string name="as_undo">"செயல்தவிர்"</string>
+    <string name="as_undo_all">"அனைத்தையும் செயல்தவிர்"</string>
+    <string name="as_redo">"மீண்டும் செய்"</string>
+    <string name="as_open_settings">"அமைப்புகளைத் திறக்கவும்"</string>
+    <string name="as_open_setting">"அமைப்பைத் திற"</string>
+    <string name="as_title_changed">"அமைப்புகள் மாற்றப்பட்டன"</string>
+    <string name="as_title_undone">"மாற்றங்கள் செயல்தவிர்க்கப்பட்டது"</string>
+    <string name="as_title_needs_you">"ஒரு அமைப்பு உங்களுக்குத் தேவை"</string>
+    <string name="as_title_not_changed">"அமைப்புகள் மாறவில்லை"</string>
+    <string name="as_state_undone">"செயல்தவிர்க்கப்பட்டது"</string>
+    <string name="as_state_moved_on">"அதிலிருந்து மீண்டும் மாற்றப்பட்டது"</string>
+    <string name="as_on">"அன்று"</string>
+    <string name="as_off">"ஆஃப்"</string>
+    <string name="as_unlimited">"வரம்பற்ற"</string>
+    <string name="as_custom_palette">"தனிப்பயன் தட்டு"</string>
+    <string name="as_empty">"இல்லை"</string>
+    <string name="as_needs_you_label">"நீங்கள் தேவை · %1$s"</string>
+    <string name="as_group">"அரட்டையிலிருந்து அமைப்புகள்"</string>
+    <string name="as_setting_title">"முகவர் அமைப்புகளை மாற்றட்டும்"</string>
+    <string name="as_access_off">"ஆஃப்"</string>
+    <string name="as_access_off_desc">"முகவர் அமைப்புகளைப் பார்த்து, அவற்றைச் சுட்டிக்காட்டலாம், ஆனால் அவற்றை மாற்ற முடியாது."</string>
+    <string name="as_access_ask">"ஒவ்வொரு முறையும் கேளுங்கள்"</string>
+    <string name="as_access_ask_desc">"ஒவ்வொரு மாற்றமும் அரட்டையில் உங்கள் ஒப்புதலுக்காக காத்திருக்கிறது."</string>
+    <string name="as_access_allowed">"அனுமதிக்கப்பட்டது"</string>
+    <string name="as_access_allowed_desc">"செயல்தவிர்க்க அட்டை மூலம் மாற்றங்கள் உடனடியாகப் பொருந்தும். ஆப்ஸ் லாக் போன்ற உணர்திறன் உள்ளவர்கள் இன்னும் கேட்கிறார்கள்."</string>
+    <string name="as_picker_detail">"அமைப்பை ஆன் அல்லது ஆஃப் செய்ய, ஸ்லைடரை நகர்த்த அல்லது வண்ணத் தட்டுகளை உருவாக்க Chat அல்லது Code இல் கேளுங்கள். உணர்திறன் அமைப்புகள் எப்போதும் முதலில் கேட்கும், மேலும் API விசைகள் அணுக முடியாத நிலையில் இருக்கும்."</string>
+    <string name="as_search_desc">"Chat அல்லது Code இல் கேட்டு அமைப்புகளை மாற்றவும்"</string>
+    <string name="tip_ask_settings" formatted="false">"\"ரம்பிளை 70% ஆக அமைக்கவும்\" அல்லது \"டீல் பேலட்டை உருவாக்கவும்\" போன்ற அமைப்பை மாற்றச் சொல்லுங்கள். செயல்தவிர் செய்வதன் மூலம் என்ன மாறிவிட்டது என்பதை கார்டு காட்டுகிறது."</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">"%1$d மாற்றம்"</item>
+        <item quantity="other">"%1$d மாற்றங்கள்"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">"%1$d உங்களுக்குத் தேவை"</item>
+        <item quantity="other">"%1$d உங்களுக்குத் தேவை"</item>
+    </plurals>
+</resources>

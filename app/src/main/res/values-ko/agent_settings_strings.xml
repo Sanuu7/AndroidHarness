@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Caveman 레벨"</string>
+    <string name="as_activity_finding">"설정 조회 중"</string>
+    <string name="as_activity_found">"설정을 찾아보니"</string>
+    <string name="as_activity_changing">"설정 변경"</string>
+    <string name="as_activity_changed">"변경된 설정"</string>
+    <string name="as_undo">"실행 취소"</string>
+    <string name="as_undo_all">"모두 실행 취소"</string>
+    <string name="as_redo">"다시 실행"</string>
+    <string name="as_open_settings">"설정 열기"</string>
+    <string name="as_open_setting">"설정 열기"</string>
+    <string name="as_title_changed">"설정이 변경됨"</string>
+    <string name="as_title_undone">"변경사항이 취소되었습니다."</string>
+    <string name="as_title_needs_you">"설정에 당신이 필요합니다"</string>
+    <string name="as_title_not_changed">"설정이 변경되지 않았습니다."</string>
+    <string name="as_state_undone">"실행 취소됨"</string>
+    <string name="as_state_moved_on">"이후 다시 변경됨"</string>
+    <string name="as_on">"켜짐"</string>
+    <string name="as_off">"끄기"</string>
+    <string name="as_unlimited">"무제한"</string>
+    <string name="as_custom_palette">"맞춤 팔레트"</string>
+    <string name="as_empty">"없음"</string>
+    <string name="as_needs_you_label">"당신이 필요합니다 · %1$s"</string>
+    <string name="as_group">"채팅 설정"</string>
+    <string name="as_setting_title">"상담원이 설정을 변경하도록 허용"</string>
+    <string name="as_access_off">"끄기"</string>
+    <string name="as_access_off_desc">"상담원은 설정을 찾아 알려줄 수 있지만 변경할 수는 없습니다."</string>
+    <string name="as_access_ask">"매번 물어보세요"</string>
+    <string name="as_access_ask_desc">"모든 변경 사항은 채팅에서 귀하의 승인을 기다립니다."</string>
+    <string name="as_access_allowed">"허용됨"</string>
+    <string name="as_access_allowed_desc">"실행 취소 카드를 사용하면 변경 사항이 즉시 적용됩니다. 앱 잠금과 같은 민감한 기능은 여전히 ​​묻습니다."</string>
+    <string name="as_picker_detail">"Chat 또는 Code에서 설정을 켜거나 끄고 슬라이더를 이동하거나 색상 팔레트를 만들도록 요청하세요. 민감한 설정은 항상 먼저 물어보고 API 키는 손이 닿지 않는 곳에 있습니다."</string>
+    <string name="as_search_desc">"Chat 또는 Code에 요청하여 설정을 변경하세요."</string>
+    <string name="tip_ask_settings" formatted="false">"\"럼블을 70%로 설정\" 또는 \"청록색 팔레트 만들기\"와 같이 설정을 변경해 달라고 요청하세요. 카드에는 실행 취소를 통해 변경된 내용이 표시됩니다."</string>
+    <plurals name="as_changes_count">
+        <item quantity="other">"%1$d 변경 사항"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="other">"%1$d 당신이 필요해요"</item>
+    </plurals>
+</resources>

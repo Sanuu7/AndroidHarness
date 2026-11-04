@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="btw_title">"Au fait"</string>
+    <string name="btw_source_live">"Contexte en direct"</string>
+    <string name="btw_source_saved">"Historique enregistré"</string>
+    <string name="btw_private">"Non ajouté au chat"</string>
+    <string name="btw_empty_hint">"Demandez n\'importe quoi sur la tâche en cours. La réponse utilise ce que l\'agent a déjà lu et décidé, réutilise son cache d\'invites et ne rejoint jamais la conversation."</string>
+    <string name="btw_input_hint">"Posez une question secondaire"</string>
+    <string name="btw_input_again">"Posez une autre question secondaire"</string>
+    <string name="btw_ask">"Demander"</string>
+    <string name="btw_stop">"Arrêter"</string>
+    <string name="btw_copy">"Copier"</string>
+    <string name="btw_copied">"Réponse copiée"</string>
+    <string name="btw_stopped">"Arrêté"</string>
+    <string name="btw_retrying">"Nouvelle tentative · %1$s"</string>
+    <string name="btw_cold_note">"Aucune requête en direct n\'est en mémoire, donc cette réponse lit la conversation enregistrée sans le cache d\'invite."</string>
+    <string name="btw_composer_action">"Demande d\'ailleurs"</string>
+    <string name="btw_error_empty_chat">"Envoyez d’abord un message, puis posez une question secondaire à ce sujet."</string>
+    <string name="btw_error_local_busy">"Les modèles locaux répondent à une demande à la fois. Demandez une fois la réponse actuelle terminée."</string>
+    <string name="btw_error_no_key">"Ajoutez la clé API de ce fournisseur avant de demander."</string>
+    <string name="btw_error_generic">"La question secondaire a échoué."</string>
+    <plurals name="btw_tool_count">
+        <item quantity="one">"Appel d\'outil en lecture seule %1$d"</item>
+        <item quantity="other">"Appels d\'outils en lecture seule %1$d"</item>
+        <item quantity="many">"Appels d\'outils en lecture seule %1$d"</item>
+    </plurals>
+</resources>

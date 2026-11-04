@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"একটি সংগ্রহস্থল চয়ন করুন"</string>
+    <string name="github_import_destination">"এই ডিভাইসে তার নিজস্ব কর্মক্ষেত্রে একটি অনুলিপি আমদানি করুন৷"</string>
+    <string name="github_import_loading">"আপনার সংগ্রহস্থল লোড হচ্ছে..."</string>
+    <string name="github_import_empty">"এই অ্যাকাউন্টের জন্য কোনো সংগ্রহস্থল পাওয়া যায়নি। এছাড়াও আপনি URL দ্বারা আমদানি করতে পারেন৷"</string>
+    <string name="github_import_by_url">"URL দ্বারা আমদানি করুন"</string>
+    <string name="github_import_confirm_title">"ভান্ডার আমদানি করবেন?"</string>
+    <string name="github_import_confirm_body">"আপনি কি এই ডিভাইসে একটি নতুন কর্মক্ষেত্রে %1$s আমদানি করার বিষয়ে নিশ্চিত?"</string>
+    <string name="github_import_preparing">"আমদানির প্রস্তুতি চলছে..."</string>
+    <string name="github_import_success">"আমদানি করা %1$s"</string>
+    <string name="github_import_open_workspace">"কর্মক্ষেত্র খুলুন"</string>
+</resources>

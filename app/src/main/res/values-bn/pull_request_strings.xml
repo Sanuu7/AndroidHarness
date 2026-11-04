@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"টানার অনুরোধ খোলা হচ্ছে..."</string>
+    <string name="pr_tool_opened">"খোলা টান অনুরোধ #%1$d"</string>
+    <string name="pr_tool_existing">"পুল অনুরোধ #%1$d ইতিমধ্যেই খোলা আছে"</string>
+    <string name="pr_tool_failed">"টান অনুরোধ খোলা হয়নি"</string>
+    <string name="pr_tool_waiting">"আপনার অনুমোদনের জন্য অপেক্ষা করছি"</string>
+    <string name="pr_draft">"খসড়া"</string>
+    <string name="pr_counts">"কমিট: %1$d · ফাইল: %2$d"</string>
+    <string name="pr_open_on_github">"GitHub এ খুলুন"</string>
+    <string name="pr_copy_link">"লিঙ্ক কপি করুন"</string>
+    <string name="pr_link_copied">"লিঙ্ক কপি করা হয়েছে"</string>
+    <string name="pr_open_failed">"কোনো অ্যাপই লিঙ্ক খুলতে পারেনি। এটি পরিবর্তে অনুলিপি করা হয়েছে."</string>
+    <string name="pr_approval_title">"একটি টান অনুরোধ খুলুন?"</string>
+    <string name="pr_approval_body">"পুশ করা শাখা থেকে GitHub এ একটি টান অনুরোধ তৈরি করে। কিছুই ধাক্কা বা একত্রিত হয় না."</string>
+    <string name="pr_approval_base">"%1$s-এ"</string>
+    <string name="pr_approval_default_base">"ডিফল্ট শাখায়"</string>
+    <string name="pr_create">"টান অনুরোধ তৈরি করুন"</string>
+    <string name="pr_create_draft">"খসড়া টান অনুরোধ তৈরি করুন"</string>
+    <string name="pr_entry_body">"GitHub-এ পর্যালোচনার জন্য এই শাখার পুশড কমিট প্রস্তাব করুন।"</string>
+    <string name="pr_loading">"এই শাখাটিকে GitHub-এর সাথে তুলনা করা হচ্ছে..."</string>
+    <string name="pr_title_label">"শিরোনাম"</string>
+    <string name="pr_description_label">"বর্ণনা"</string>
+    <string name="pr_rewrite_description">"বর্ণনা পুনরায় লিখুন"</string>
+    <string name="pr_base_label">"বেস শাখা"</string>
+    <string name="pr_draft_label">"খসড়া হিসাবে খুলুন"</string>
+    <string name="pr_draft_body">"পর্যালোচকরা এটি দেখতে পারেন, কিন্তু আপনি এটিকে প্রস্তুত হিসাবে চিহ্নিত না করা পর্যন্ত এটি মার্জ করা যাবে না৷"</string>
+    <string name="pr_include_checks">"এই চ্যাট থেকে চেক অন্তর্ভুক্ত করুন"</string>
+    <string name="pr_include_checks_body">"এই কথোপকথনে রেকর্ড করা বিল্ড, পরীক্ষা এবং লিন্ট ফলাফল যোগ করে।"</string>
+    <string name="pr_existing_body">"%1$s এ নতুন পুশ এই টান অনুরোধটি স্বয়ংক্রিয়ভাবে আপডেট করে।"</string>
+    <string name="pr_not_pushed_title">"শাখা এখনও GitHub-এ নেই"</string>
+    <string name="pr_out_of_date_title">"GitHub এই শাখার একটি পুরানো কপি আছে"</string>
+    <string name="pr_push_body">"%1$s পুশ করুন তাই GitHub আপনার সাম্প্রতিক প্রতিশ্রুতি আছে।"</string>
+    <string name="pr_push_branch">"পুশ শাখা"</string>
+    <string name="pr_pushed">"শাখা ধাক্কা।"</string>
+    <string name="pr_uncommitted_title">"প্রতিশ্রুতিহীন পরিবর্তন: %1$d"</string>
+    <string name="pr_uncommitted_body">"যতক্ষণ না আপনি প্রতিশ্রুতিবদ্ধ এবং ধাক্কা দেবেন ততক্ষণ পর্যন্ত সেগুলিকে অন্তর্ভুক্ত করা হবে না।"</string>
+    <string name="pr_behind_title">"%1$s-এ নতুন কমিট: %2$d"</string>
+    <string name="pr_behind_body">"এই শাখা এখনও তাদের অন্তর্ভুক্ত করে না. পর্যালোচকরা আপনাকে এটি আপডেট করতে বলতে পারেন।"</string>
+    <string name="pr_no_commits_title">"এখনো প্রস্তাব করার কিছুই নেই"</string>
+    <string name="pr_no_commits_body">"%1$s-এর এমন কোনও কমিট নেই যা ইতিমধ্যে %2$s-এ নেই।"</string>
+    <string name="pr_commits_header">"কমিট"</string>
+    <string name="pr_more">"আরও: %1$d"</string>
+    <string name="pr_created_title">"পুল অনুরোধ #%1$d খোলা হয়েছে"</string>
+    <string name="pr_created_draft_title">"খসড়া টানার অনুরোধ #%1$d খোলা হয়েছে৷"</string>
+    <string name="pr_retry">"আবার চেষ্টা করুন"</string>
+</resources>

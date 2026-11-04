@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="files_import_files">"匯入檔案"</string>
+    <string name="files_import_folder">"匯入資料夾"</string>
+    <string name="files_import_done">"已匯入 %1$s 項，共 %2$s 項"</string>
+    <string name="files_import_failed">"無法匯入檔案"</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"I-install at pamahalaan ang isang lokal na modelo ng router"</string>
+    <string name="nine_router_intro">"Patakbuhin ang 9Router sa teleponong ito at pamahalaan ang mga provider, modelo at pagruruta nito sa iyong browser. Gumagamit ng AndroidHarness Linux toolchain."</string>
+    <string name="nine_router_setup">"I-set up ang iyong kapaligiran"</string>
+    <string name="nine_router_not_installed">"Handa nang i-install"</string>
+    <string name="nine_router_ready">"Naka-install · Huminto"</string>
+    <string name="nine_router_running">"Tumatakbo sa teleponong ito"</string>
+    <string name="nine_router_starting">"Nagsisimula 9Router…"</string>
+    <string name="nine_router_stopping">"Pinipigilan ang 9Router…"</string>
+    <string name="nine_router_installing">"Ini-install…"</string>
+    <string name="nine_router_updating">"Ina-update ang 9Router…"</string>
+    <string name="nine_router_uninstalling">"Ina-uninstall ang 9Router…"</string>
+    <string name="nine_router_connecting">"Idinaragdag sa mga provider…"</string>
+    <string name="nine_router_removing">"Inaalis mula sa mga provider…"</string>
+    <string name="nine_router_install_linux">"I-install ang Linux toolchain"</string>
+    <string name="nine_router_install">"I-install ang 9Router"</string>
+    <string name="nine_router_start">"Simulan ang 9Router"</string>
+    <string name="nine_router_stop">"Tumigil ka"</string>
+    <string name="nine_router_show_details">"Ipakita ang mga detalye"</string>
+    <string name="nine_router_hide_details">"Itago ang mga detalye"</string>
+    <string name="nine_router_open_dashboard">"Buksan ang dashboard sa browser"</string>
+    <string name="nine_router_browser_error">"Walang browser ang makakapagbukas ng 9Router dashboard."</string>
+    <string name="nine_router_version">"Bersyon %1$s"</string>
+    <string name="nine_router_check_update">"Tingnan ang mga update"</string>
+    <string name="nine_router_checking">"Sinusuri…"</string>
+    <string name="nine_router_update">"Update sa %1$s"</string>
+    <string name="nine_router_auto_start">"Awtomatikong simulan ang 9Router"</string>
+    <string name="nine_router_auto_start_body">"Simulan ang naka-install na router kapag bumukas ang AndroidHarness."</string>
+    <string name="nine_router_add_provider">"Magdagdag ng 9Router sa mga provider"</string>
+    <string name="nine_router_refresh_provider">"I-refresh ang provider ng 9Router"</string>
+    <string name="nine_router_provider_body">"Magsisimula ng 9Router kung kinakailangan at awtomatikong pinupunan ang lokal na endpoint at API key nito. Nagiging available ang mga konektadong modelo sa mga tagapili ng modelo ng Chat at Code."</string>
+    <string name="nine_router_remove_provider">"Alisin sa mga provider"</string>
+    <string name="nine_router_remove_provider_body">"Alisin ang 9Router na mga koneksyon mula sa AndroidHarness. Ang router at ang mga account nito ay mananatiling naka-install."</string>
+    <string name="nine_router_uninstall">"I-uninstall ang 9Router"</string>
+    <string name="nine_router_uninstall_title">"Ganap na i-uninstall ang 9Router?"</string>
+    <string name="nine_router_uninstall_body">"Ihihinto ang 9Router at dine-delete ang pag-install nito, mga naka-save na account, router API key, configuration, cache, auto-start preference at mga koneksyon sa provider ng app. Hindi na ito maaaring bawiin. Ang nakabahaging Linux toolchain ay nananatiling available para sa iba pang mga feature."</string>
+</resources>

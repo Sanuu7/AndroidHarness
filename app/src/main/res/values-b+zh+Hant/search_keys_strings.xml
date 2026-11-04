@@ -1,0 +1,10 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="other">"%2$s · 已儲存 %1$d 組金鑰"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"最多可儲存 20 個金鑰。當某個金鑰被拒絕、限流或額度用盡時，會自動使用下一個已啟用的金鑰。"</string>
+    <string name="search_key_check_failed">"金鑰 %1$d：%2$s"</string>
+    <string name="search_keys_verified_and_saved">"金鑰已驗證並儲存"</string>
+    <string name="search_manage_keys">"管理金鑰"</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"அட்டவணை விருப்பங்கள்"</string>
+    <string name="rich_select_rows">"வரிசைகளைத் தேர்ந்தெடுக்கவும்"</string>
+    <string name="rich_stop_selecting_rows">"தேர்ந்தெடுப்பதை நிறுத்து"</string>
+    <string name="rich_sort_rows">"வரிசைகளை வரிசைப்படுத்தவும்"</string>
+</resources>

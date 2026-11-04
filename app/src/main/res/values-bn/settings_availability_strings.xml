@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Android %1$s বা তার পরে প্রয়োজন"</string>
+    <string name="settings_requires_vibrator">"এই ডিভাইসে কোন ভাইব্রেশন মোটর নেই"</string>
+    <string name="rumble_unsupported">"এই ডিভাইসে কোন ভাইব্রেশন মোটর নেই, তাই AH Rumble এখানে চলতে পারে না।"</string>
+</resources>

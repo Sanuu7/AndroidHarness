@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="github_import_choose">"選擇一個倉庫"</string>
+    <string name="github_import_destination">"將副本匯入到此裝置上的獨立工作區。"</string>
+    <string name="github_import_loading">"正在載入你的倉庫…"</string>
+    <string name="github_import_empty">"未找到此賬戶的倉庫。你也可以透過 URL 匯入。"</string>
+    <string name="github_import_by_url">"透過 URL 匯入"</string>
+    <string name="github_import_confirm_title">"匯入倉庫？"</string>
+    <string name="github_import_confirm_body">"確定要將 %1$s 匯入到此裝置上的新工作區嗎？"</string>
+    <string name="github_import_preparing">"正在準備匯入…"</string>
+    <string name="github_import_success">"已匯入 %1$s"</string>
+    <string name="github_import_open_workspace">"開啟工作區"</string>
+</resources>

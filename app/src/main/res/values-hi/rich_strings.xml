@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"पंक्तियों को फ़िल्टर करें"</string>
+    <string name="rich_no_rows">"कोई मेल खाती पंक्तियाँ नहीं"</string>
+    <string name="rich_previous">"पिछला"</string>
+    <string name="rich_next">"अगला"</string>
+    <string name="rich_discuss_rows">"चयनित पंक्तियों पर चर्चा करें"</string>
+    <string name="rich_discuss_rows_prompt">"मेरे द्वारा चयनित पंक्तियों की तुलना करें."</string>
+    <string name="rich_discuss_tab">"इस टैब के बारे में पूछें"</string>
+    <string name="rich_discuss_tab_prompt">"%1$s टैब को समझाइये।"</string>
+    <string name="rich_copy">"प्रतिलिपि"</string>
+    <string name="rich_copied">"नकल की गई"</string>
+    <string name="rich_share">"साझा करें"</string>
+    <string name="rich_share_unavailable">"इस पाठ को साझा करने के लिए कोई ऐप उपलब्ध नहीं है."</string>
+    <string name="rich_images_hidden">"इस चैट के लिए छवियाँ बंद हैं."</string>
+    <string name="rich_expand_image">"छवि का विस्तार करें"</string>
+    <string name="rich_open_source">"खुला स्रोत"</string>
+    <string name="rich_discuss_image">"इस छवि के बारे में पूछें"</string>
+    <string name="rich_discuss_image_prompt">"मेरे द्वारा चुनी गई छवि को स्पष्ट करें।"</string>
+    <string name="rich_reported_status">"रिपोर्ट: %1$s"</string>
+    <string name="rich_passed">"उत्तीर्ण"</string>
+    <string name="rich_failed">"असफल"</string>
+    <string name="rich_unverified">"असत्यापित"</string>
+    <string name="rich_open_file">"फ़ाइल खोलें"</string>
+    <string name="rich_show_less">"कम दिखाओ"</string>
+    <string name="rich_show_all">"सब दिखाओ"</string>
+    <string name="rich_changes">"परिवर्तन"</string>
+    <string name="rich_before">"पहले"</string>
+    <string name="rich_after">"के बाद"</string>
+    <string name="rich_change_count">"%1$d जोड़ा गया · %2$d हटाया गया"</string>
+    <string name="rich_discuss_diff">"इन परिवर्तनों पर चर्चा करें"</string>
+    <string name="rich_discuss_diff_prompt">"इस तुलना और इसके ट्रेडऑफ़ को स्पष्ट करें।"</string>
+    <string name="rich_input_range">"%1$s से %2$s"</string>
+    <string name="rich_result_unavailable">"इनपुट या सूत्र की जाँच करें"</string>
+    <string name="rich_reset">"रीसेट करें"</string>
+    <string name="rich_discuss_values">"इन मूल्यों के बारे में पूछें"</string>
+    <string name="rich_discuss_values_prompt">"मेरे वर्तमान मानों का उपयोग करके परिणाम स्पष्ट करें।"</string>
+    <string name="rich_chart_range">"दृश्यमान सीमा"</string>
+    <string name="rich_reset_range">"पूरी रेंज दिखाएँ"</string>
+    <string name="rich_chart_label">"लेबल"</string>
+    <string name="rich_discuss_chart">"इस चार्ट के बारे में पूछें"</string>
+    <string name="rich_discuss_chart_prompt">"मेरे चयनित चार्ट बिंदु और दृश्यमान डेटासेट की व्याख्या करें।"</string>
+    <string name="rich_select_point">"%1$s चुनें"</string>
+    <string name="rich_selected_count">"%1$d चयनित"</string>
+    <string name="rich_clear_selection">"स्पष्ट चयन"</string>
+    <string name="rich_adjust_input">"%1$s समायोजित करें"</string>
+</resources>

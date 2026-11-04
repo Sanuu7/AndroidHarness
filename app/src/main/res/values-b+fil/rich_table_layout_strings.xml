@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"Mga pagpipilian sa talahanayan"</string>
+    <string name="rich_select_rows">"Pumili ng mga row"</string>
+    <string name="rich_stop_selecting_rows">"Itigil ang pagpili"</string>
+    <string name="rich_sort_rows">"Pagbukud-bukurin ang mga hilera"</string>
+</resources>

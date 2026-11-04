@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">"%2$s · %1$d விசை சேமிக்கப்பட்டது"</item>
+        <item quantity="other">"%2$s · %1$d விசைகள் சேமிக்கப்பட்டன"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"நீங்கள் 20 விசைகள் வரை சேமிக்க முடியும். ஒரு விசை நிராகரிக்கப்பட்டால், வரம்புக்குட்பட்ட அல்லது வரவு இல்லாதபோது, ​​அடுத்த இயக்கப்பட்ட விசை தானாகவே பயன்படுத்தப்படும்."</string>
+    <string name="search_key_check_failed">"முக்கிய %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"விசைகள் சரிபார்க்கப்பட்டு சேமிக்கப்பட்டன"</string>
+    <string name="search_manage_keys">"விசைகளை நிர்வகிக்கவும்"</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="rich_table_options">"表格選項"</string>
+    <string name="rich_select_rows">"選擇行"</string>
+    <string name="rich_stop_selecting_rows">"結束選擇"</string>
+    <string name="rich_sort_rows">"排序行"</string>
+</resources>

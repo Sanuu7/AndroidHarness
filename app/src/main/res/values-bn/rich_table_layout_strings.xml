@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"টেবিল বিকল্প"</string>
+    <string name="rich_select_rows">"সারি নির্বাচন করুন"</string>
+    <string name="rich_stop_selecting_rows">"নির্বাচন করা বন্ধ করুন"</string>
+    <string name="rich_sort_rows">"সারি সাজান"</string>
+</resources>

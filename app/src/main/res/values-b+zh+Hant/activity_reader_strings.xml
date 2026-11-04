@@ -1,0 +1,12 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="chat_activity_full_view">"開啟完整檢視"</string>
+    <string name="chat_activity_tool_details">"開啟工具詳情"</string>
+    <string name="chat_activity_input">"輸入"</string>
+    <string name="chat_activity_output">"輸出"</string>
+    <string name="chat_activity_output_preview">"輸出預覽"</string>
+    <string name="chat_activity_more">"下方還有更多"</string>
+    <string name="chat_activity_latest">"最新"</string>
+    <string name="chat_activity_copy">"複製文字"</string>
+    <string name="chat_activity_copied">"已複製"</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"முழு காட்சியைத் திறக்கவும்"</string>
+    <string name="chat_activity_tool_details">"கருவி விவரங்களைத் திறக்கவும்"</string>
+    <string name="chat_activity_input">"உள்ளீடு"</string>
+    <string name="chat_activity_output">"வெளியீடு"</string>
+    <string name="chat_activity_output_preview">"வெளியீட்டு முன்னோட்டம்"</string>
+    <string name="chat_activity_more">"மேலும் கீழே"</string>
+    <string name="chat_activity_latest">"சமீபத்திய"</string>
+    <string name="chat_activity_copy">"உரையை நகலெடுக்கவும்"</string>
+    <string name="chat_activity_copied">"நகலெடுக்கப்பட்டது"</string>
+</resources>

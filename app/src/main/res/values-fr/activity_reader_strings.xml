@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"Ouvrir la vue complète"</string>
+    <string name="chat_activity_tool_details">"Ouvrir les détails de l\'outil"</string>
+    <string name="chat_activity_input">"Entrée"</string>
+    <string name="chat_activity_output">"Sortie"</string>
+    <string name="chat_activity_output_preview">"Aperçu de la sortie"</string>
+    <string name="chat_activity_more">"Plus ci-dessous"</string>
+    <string name="chat_activity_latest">"Dernier"</string>
+    <string name="chat_activity_copy">"Copier le texte"</string>
+    <string name="chat_activity_copied">"Copié"</string>
+</resources>

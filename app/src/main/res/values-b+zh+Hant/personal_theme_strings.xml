@@ -1,0 +1,41 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="theme_custom_title">"你的調色盤"</string>
+    <string name="theme_custom_add">"建立調色盤"</string>
+    <string name="theme_custom_edit">"編輯調色盤"</string>
+    <string name="theme_custom_name">"調色盤名稱"</string>
+    <string name="theme_custom_default">"我的調色盤"</string>
+    <string name="theme_custom_hint">"選擇你的顏色。Material 會生成清晰易讀的明暗色調。"</string>
+    <string name="theme_custom_main">"主色"</string>
+    <string name="theme_custom_accent">"強調色"</string>
+    <string name="theme_custom_highlight">"高亮色"</string>
+    <string name="theme_custom_hex">"十六進位制顏色"</string>
+    <string name="theme_custom_invalid_hex">"輸入六位十六進位制數字，例如 6750A4。"</string>
+    <string name="theme_custom_hue">"色相"</string>
+    <string name="theme_custom_saturation">"飽和度"</string>
+    <string name="theme_custom_brightness">"亮度"</string>
+    <string name="theme_custom_automatic">"重置強調色"</string>
+    <string name="theme_custom_save">"儲存並應用"</string>
+    <string name="theme_custom_limit">"你已有 24 個調色盤。請編輯或刪除一個後再建立。"</string>
+    <string name="theme_custom_delete">"刪除調色盤"</string>
+    <string name="theme_custom_delete_message">"移除這個已儲存的調色盤？如果它正在使用中，應用會回到所選預設。"</string>
+    <string name="theme_custom_preview">"調色盤預覽"</string>
+    <string name="theme_canvas_title">"Harness Canvas"</string>
+    <string name="theme_canvas_description">"專屬於你的聊天和程式碼背景。"</string>
+    <string name="theme_canvas_add">"新增圖片"</string>
+    <string name="theme_canvas_change">"更換圖片"</string>
+    <string name="theme_canvas_remove">"移除圖片"</string>
+    <string name="theme_canvas_enabled">"顯示 Harness Canvas"</string>
+    <string name="theme_canvas_chat">"聊天"</string>
+    <string name="theme_canvas_code">"程式碼"</string>
+    <string name="theme_canvas_dim">"圖片壓暗"</string>
+    <string name="theme_canvas_dim_hint">"讓圖片融入主題，文字更清晰。"</string>
+    <string name="theme_canvas_colors">"匹配 Canvas 顏色"</string>
+    <string name="theme_canvas_colors_hint">"根據這張圖片生成應用的調色盤。"</string>
+    <string name="theme_canvas_working">"正在準備你的 Canvas…"</string>
+    <string name="theme_canvas_error">"無法使用該圖片。請換一張 32 MB 以下的照片。"</string>
+    <string name="theme_canvas_empty">"新增照片或畫作，讓這裡屬於你。"</string>
+    <string name="theme_canvas_preview_message">"你的對話，你的 Canvas。"</string>
+    <string name="theme_canvas_preview_reply">"賓至如歸。"</string>
+    <string name="theme_canvas_color_area">"取色區域"</string>
+</resources>

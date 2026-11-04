@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_viewing_image">"छवि देख रहे हैं"</string>
+    <string name="chat_viewed_image">"छवि को देखा"</string>
+    <string name="chat_image_failed">"छवि का निरीक्षण नहीं किया जा सका"</string>
+</resources>

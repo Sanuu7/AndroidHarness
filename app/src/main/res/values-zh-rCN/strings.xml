@@ -1018,4 +1018,11 @@
     <string name="settings_language_turkish">Türkçe</string>
     <string name="settings_language_malay">Bahasa Melayu</string>
     <string name="settings_language_thai">ไทย</string>
+    <string name="settings_language_french">Français</string>
+    <string name="settings_language_hindi">हिन्दी</string>
+    <string name="settings_language_korean">한국어</string>
+    <string name="settings_language_tamil">தமிழ்</string>
+    <string name="settings_language_bengali">বাংলা</string>
+    <string name="settings_language_filipino">Filipino</string>
+    <string name="settings_language_traditional_chinese">繁體中文</string>
 </resources>

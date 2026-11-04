@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="other">"%2$s · 키 %1$d개 저장됨"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"최대 20개의 키를 저장할 수 있습니다. 키가 거부되거나, 비율이 제한되거나, 크레딧이 부족하면 다음으로 활성화된 키가 자동으로 사용됩니다."</string>
+    <string name="search_key_check_failed">"키 %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"키가 확인되고 저장되었습니다."</string>
+    <string name="search_manage_keys">"키 관리"</string>
+</resources>

@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"Pumili"</string>
+    <string name="sidebar_selected_count">"%1$d ang napili"</string>
+    <string name="sidebar_select_all">"Piliin lahat"</string>
+    <string name="sidebar_clear_selection">"I-clear ang pagpili"</string>
+    <string name="sidebar_exit_selection">"Lumabas sa pagpili"</string>
+    <string name="sidebar_select_chat">"Piliin ang %1$s"</string>
+    <string name="sidebar_details">"Mga Detalye"</string>
+    <string name="sidebar_other_chats">"Iba pang chat"</string>
+    <string name="sidebar_model_unavailable">"Hindi available"</string>
+    <string name="sidebar_delete_selected">"Tanggalin ang mga napiling chat?"</string>
+    <string name="sidebar_delete_selected_message">"I-delete ang mga chat na ito at ang history ng pag-uusap nila? Hindi na ito maaaring bawiin."</string>
+    <string name="sidebar_delete_running">"Ang pagpapatakbo ng mga gawain sa mga chat na ito ay ititigil."</string>
+    <string name="sidebar_selection_error">"Hindi makumpleto ang pagkilos na ito. Pakisubukang muli."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="one">"%1$d chat na naka-archive"</item>
+        <item quantity="other">"%1$d chat na naka-archive"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="one">"Na-restore ang %1$d chat"</item>
+        <item quantity="other">"Na-restore ang %1$d chat"</item>
+    </plurals>
+</resources>

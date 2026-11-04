@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"Apprendre AndroidHarness"</string>
+    <string name="learn_description">"Des guides conviviaux étape par étape sur tout ce que vous pouvez faire ici."</string>
+    <string name="learn_group">"Commencez ici"</string>
+    <string name="learn_entry_hint">"Votre guide, à votre rythme"</string>
+    <string name="learn_entry_action">"Explorez le guide"</string>
+    <string name="learn_hero_title">"Un peu d’aide.\nBeaucoup de possibilités."</string>
+    <string name="learn_hero_body">"Commencez par votre première conversation ou passez directement à ce que vous souhaitez faire. Chaque leçon comprend des étapes, des limites utiles et de l\'aide lorsque vous êtes bloqué."</string>
+    <string name="learn_offline">"Disponible hors connexion · Tutoriels en anglais"</string>
+    <string name="learn_progress">"%1$d ou %2$d, leçons apprises"</string>
+    <string name="learn_search">"Qu’aimeriez-vous apprendre ?"</string>
+    <string name="learn_clear_search">"Effacer la recherche du didacticiel"</string>
+    <string name="learn_all">"Toutes les leçons"</string>
+    <string name="learn_saved">"Enregistré"</string>
+    <string name="learn_start">"Commencez par les bases"</string>
+    <string name="learn_start_hint">"Nouveau ici ? Ces trois leçons vous permettront de démarrer."</string>
+    <string name="learn_results">"Cours %1$d"</string>
+    <string name="learn_empty_title">"Essayons une autre recherche"</string>
+    <string name="learn_empty_body">"Essayez « clé API », « GitHub », « modèle local » ou « MCP ». Vous pouvez également basculer vers Toutes les leçons pour tout parcourir."</string>
+    <string name="learn_saved_empty_title">"Gardez une leçon à portée de main"</string>
+    <string name="learn_saved_empty_body">"Utilisez le signet dans une leçon pour le retrouver ici plus tard."</string>
+    <string name="learn_reset_filters">"Afficher toutes les leçons"</string>
+    <string name="learn_location">"Où aller"</string>
+    <string name="learn_before">"Avant de commencer"</string>
+    <string name="learn_steps">"Faisons-le"</string>
+    <string name="learn_outcome">"Ce que tu devrais voir"</string>
+    <string name="learn_limits">"Bon à savoir"</string>
+    <string name="learn_fixes">"Si tu es coincé"</string>
+    <string name="learn_example">"Essayez de dire ça"</string>
+    <string name="learn_copy_example">"Exemple de copie"</string>
+    <string name="learn_copied">"Exemple copié"</string>
+    <string name="learn_open_section">"Essayez-le dans l\'application"</string>
+    <string name="learn_links">"Aide officielle"</string>
+    <string name="learn_links_hint">"Ces liens s\'ouvrent dans votre navigateur et nécessitent une connexion Internet. Les pages des fournisseurs peuvent changer ; vérifiez les conditions et le prix indiqués avant de payer."</string>
+    <string name="learn_related">"Une prochaine étape utile"</string>
+    <string name="learn_mark_complete">"Marquer comme appris"</string>
+    <string name="learn_complete">"Appris · appuyez pour annuler"</string>
+    <string name="learn_completed_label">"Appris"</string>
+    <string name="learn_bookmark">"Enregistrez cette leçon"</string>
+    <string name="learn_bookmarked">"Supprimer la leçon enregistrée"</string>
+    <string name="learn_link_failed">"Impossible d\'ouvrir le navigateur. Vous pouvez copier le lien à la place."</string>
+    <string name="learn_copy_link">"Copier le lien"</string>
+    <string name="learn_load_failed">"Le guide n\'a pas pu être ouvert. Fermez les paramètres et réessayez."</string>
+</resources>

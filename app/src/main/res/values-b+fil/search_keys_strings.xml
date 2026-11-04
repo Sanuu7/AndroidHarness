@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">"%2$s · %1$d key ang na-save"</item>
+        <item quantity="other">"%2$s · %1$d key ang na-save"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"Makakatipid ka ng hanggang 20 key. Kapag tinanggihan ang isang susi, limitado ang rate o wala sa mga kredito, awtomatikong ginagamit ang susunod na naka-enable na key."</string>
+    <string name="search_key_check_failed">"Susi %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"Na-verify at na-save ang mga susi"</string>
+    <string name="search_manage_keys">"Pamahalaan ang mga susi"</string>
+</resources>

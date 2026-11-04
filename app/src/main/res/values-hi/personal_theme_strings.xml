@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"आपके पैलेट"</string>
+    <string name="theme_custom_add">"पैलेट बनाएं"</string>
+    <string name="theme_custom_edit">"पैलेट संपादित करें"</string>
+    <string name="theme_custom_name">"पैलेट नाम"</string>
+    <string name="theme_custom_default">"मेरा पैलेट"</string>
+    <string name="theme_custom_hint">"अपने रंग चुनें. Material पढ़ने योग्य प्रकाश और गहरे रंग बनाता है।"</string>
+    <string name="theme_custom_main">"मुख्य"</string>
+    <string name="theme_custom_accent">"उच्चारण"</string>
+    <string name="theme_custom_highlight">"हाइलाइट करें"</string>
+    <string name="theme_custom_hex">"हेक्स रंग"</string>
+    <string name="theme_custom_invalid_hex">"छह हेक्स अंक दर्ज करें, जैसे 6750ए4।"</string>
+    <string name="theme_custom_hue">"रंग"</string>
+    <string name="theme_custom_saturation">"संतृप्ति"</string>
+    <string name="theme_custom_brightness">"चमक"</string>
+    <string name="theme_custom_automatic">"उच्चारण रंग रीसेट करें"</string>
+    <string name="theme_custom_save">"सहेजें और लागू करें"</string>
+    <string name="theme_custom_limit">"आपके पास 24 पैलेट हैं. दूसरा बनाने के लिए एक को संपादित करें या हटाएँ।"</string>
+    <string name="theme_custom_delete">"पैलेट हटाएँ"</string>
+    <string name="theme_custom_delete_message">"इस सहेजे गए पैलेट को हटाएं? यदि यह पैलेट सक्रिय है तो ऐप अपने चयनित प्रीसेट पर वापस आ जाएगा।"</string>
+    <string name="theme_custom_preview">"पैलेट पूर्वावलोकन"</string>
+    <string name="theme_canvas_title">"Harness कैनवास"</string>
+    <string name="theme_canvas_description">"Chat और Code के लिए आपकी अपनी पृष्ठभूमि।"</string>
+    <string name="theme_canvas_add">"छवि जोड़ें"</string>
+    <string name="theme_canvas_change">"छवि बदलें"</string>
+    <string name="theme_canvas_remove">"छवि हटाएँ"</string>
+    <string name="theme_canvas_enabled">"Harness कैनवास दिखाएँ"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"छवि धूमिल करना"</string>
+    <string name="theme_canvas_dim_hint">"स्पष्ट पाठ के लिए छवि को अपनी थीम में फीका करें।"</string>
+    <string name="theme_canvas_colors">"कैनवास के रंगों का मिलान करें"</string>
+    <string name="theme_canvas_colors_hint">"इस छवि से अपने ऐप का रंग पैलेट बनाएं।"</string>
+    <string name="theme_canvas_working">"आपका कैनवास तैयार किया जा रहा है..."</string>
+    <string name="theme_canvas_error">"उस छवि का उपयोग नहीं किया जा सका. 32 एमबी से कम का एक और फोटो आज़माएं।"</string>
+    <string name="theme_canvas_empty">"इस स्थान को अपना बनाने के लिए एक फ़ोटो या कलाकृति जोड़ें।"</string>
+    <string name="theme_canvas_preview_message">"आपकी बातचीत, आपका कैनवास।"</string>
+    <string name="theme_canvas_preview_reply">"अपने आप को घर पर बनाओ."</string>
+    <string name="theme_canvas_color_area">"रंग क्षेत्र"</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_viewing_image">"En regardant l\'image"</string>
+    <string name="chat_viewed_image">"J\'ai regardé l\'image"</string>
+    <string name="chat_image_failed">"Impossible d\'inspecter l\'image"</string>
+</resources>

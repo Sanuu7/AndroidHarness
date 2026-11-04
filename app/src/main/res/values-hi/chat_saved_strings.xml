@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">"सहेजा गया"</string>
+    <string name="sidebar_saved_answers">"उत्तर सहेजे गए"</string>
+    <string name="sidebar_saved_count_description">"सहेजे गए उत्तर, %1$d"</string>
+    <string name="sidebar_saved_answer">"उत्तर सहेजा गया"</string>
+    <string name="sidebar_open_in_chat">"चैट में खोलें"</string>
+    <string name="sidebar_remove_saved">"सहेजे गए से हटाएँ"</string>
+    <string name="chat_save_answer">"उत्तर सहेजें"</string>
+    <string name="chat_answer_saved">"उत्तर सहेजा गया"</string>
+    <string name="chat_answer_unsaved">"सहेजे गए से हटा दिया गया"</string>
+</resources>

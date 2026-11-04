@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_filter_rows">"I-filter ang mga hilera"</string>
+    <string name="rich_no_rows">"Walang tugmang row"</string>
+    <string name="rich_previous">"Nakaraang"</string>
+    <string name="rich_next">"Susunod"</string>
+    <string name="rich_discuss_rows">"Talakayin ang mga piling row"</string>
+    <string name="rich_discuss_rows_prompt">"Ihambing ang mga hilera na aking pinili."</string>
+    <string name="rich_discuss_tab">"Magtanong tungkol sa tab na ito"</string>
+    <string name="rich_discuss_tab_prompt">"Ipaliwanag ang tab na %1$s."</string>
+    <string name="rich_copy">"Kopyahin"</string>
+    <string name="rich_copied">"Kinopya"</string>
+    <string name="rich_share">"Ibahagi"</string>
+    <string name="rich_share_unavailable">"Walang app na magagamit upang ibahagi ang text na ito."</string>
+    <string name="rich_images_hidden">"Naka-off ang mga larawan para sa chat na ito."</string>
+    <string name="rich_expand_image">"Palawakin ang larawan"</string>
+    <string name="rich_open_source">"Open source"</string>
+    <string name="rich_discuss_image">"Magtanong tungkol sa larawang ito"</string>
+    <string name="rich_discuss_image_prompt">"Ipaliwanag ang larawang pinili ko."</string>
+    <string name="rich_reported_status">"Iniulat: %1$s"</string>
+    <string name="rich_passed">"nakapasa"</string>
+    <string name="rich_failed">"Nabigo"</string>
+    <string name="rich_unverified">"Hindi na-verify"</string>
+    <string name="rich_open_file">"Buksan ang file"</string>
+    <string name="rich_show_less">"Magpakita ng mas kaunti"</string>
+    <string name="rich_show_all">"Ipakita ang lahat"</string>
+    <string name="rich_changes">"Mga pagbabago"</string>
+    <string name="rich_before">"dati"</string>
+    <string name="rich_after">"Pagkatapos"</string>
+    <string name="rich_change_count">"%1$d idinagdag · %2$d inalis"</string>
+    <string name="rich_discuss_diff">"Talakayin ang mga pagbabagong ito"</string>
+    <string name="rich_discuss_diff_prompt">"Ipaliwanag ang paghahambing na ito at ang mga tradeoff nito."</string>
+    <string name="rich_input_range">"%1$s hanggang %2$s"</string>
+    <string name="rich_result_unavailable">"Suriin ang mga input o formula"</string>
+    <string name="rich_reset">"I-reset"</string>
+    <string name="rich_discuss_values">"Magtanong tungkol sa mga halagang ito"</string>
+    <string name="rich_discuss_values_prompt">"Ipaliwanag ang resulta gamit ang aking kasalukuyang mga halaga."</string>
+    <string name="rich_chart_range">"Nakikitang saklaw"</string>
+    <string name="rich_reset_range">"Ipakita ang buong saklaw"</string>
+    <string name="rich_chart_label">"Label"</string>
+    <string name="rich_discuss_chart">"Magtanong tungkol sa tsart na ito"</string>
+    <string name="rich_discuss_chart_prompt">"Ipaliwanag ang aking napiling chart point at mga nakikitang dataset."</string>
+    <string name="rich_select_point">"Piliin ang %1$s"</string>
+    <string name="rich_selected_count">"%1$d ang napili"</string>
+    <string name="rich_clear_selection">"I-clear ang pagpili"</string>
+    <string name="rich_adjust_input">"Ayusin ang %1$s"</string>
+</resources>

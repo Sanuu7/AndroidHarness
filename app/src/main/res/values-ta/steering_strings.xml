@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="steering_group">"முகவர் வேலை செய்யும் போது"</string>
+    <string name="settings_anchor_steering">"பணியின் நடுவில் செய்திகள் அனுப்பப்பட்டன"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"ஏஜென்ட் உங்கள் செய்தியை அதன் தற்போதைய படிக்குப் பிறகு படித்து, தொடர்ந்து செல்கிறார். இயங்கும் கருவிகள் ஒருபோதும் குறுக்கிடப்படாது. பணி ஏற்கனவே முடிவடைந்தால், செய்தி அடுத்த திருப்பத்தைத் தொடங்குகிறது."</string>
+    <string name="steering_mode_after_task">"பணிக்குப் பிறகு"</string>
+    <string name="steering_mode_after_task_desc">"முழு பணியும் முடியும் வரை உங்கள் செய்தி காத்திருக்கிறது, பின்னர் ஒரு புதிய திருப்பத்தைத் தொடங்கும்."</string>
+    <string name="steering_picker_detail">"முகவர் பணிபுரியும் போது நீங்கள் செய்தியை அனுப்பினால் என்ன நடக்கும் என்பதைத் தேர்வுசெய்யவும். வரிசைப்படுத்தப்பட்ட செய்தியில் இப்போது அனுப்பவும், எப்போதும் முகவரை நிறுத்தி, உடனே அனுப்பும்."</string>
+    <string name="steering_search_desc">"இயங்கும் முகவரை வழிநடத்தவும் அல்லது பணி முடிவடையும் வரை காத்திருக்கவும்"</string>
+    <string name="steering_queue_next_step">"முகவர் அதன் தற்போதைய படிக்குப் பிறகு இவற்றைப் படிக்கிறார்."</string>
+    <string name="steering_queue_badge">"அடுத்த கட்டத்தில் படிக்கவும்"</string>
+</resources>

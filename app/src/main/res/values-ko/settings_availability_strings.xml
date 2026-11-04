@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Android %1$s 이상이 필요합니다."</string>
+    <string name="settings_requires_vibrator">"이 장치에는 진동 모터가 없습니다."</string>
+    <string name="rumble_unsupported">"이 장치에는 진동 모터가 없으므로 AH Rumble는 여기서 실행할 수 없습니다."</string>
+</resources>

@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"உங்கள் தட்டுகள்"</string>
+    <string name="theme_custom_add">"தட்டு உருவாக்கவும்"</string>
+    <string name="theme_custom_edit">"தட்டு திருத்தவும்"</string>
+    <string name="theme_custom_name">"தட்டு பெயர்"</string>
+    <string name="theme_custom_default">"என் தட்டு"</string>
+    <string name="theme_custom_hint">"உங்கள் வண்ணங்களைத் தேர்ந்தெடுங்கள். Material படிக்கக்கூடிய ஒளி மற்றும் இருண்ட நிழல்களை உருவாக்குகிறது."</string>
+    <string name="theme_custom_main">"முக்கிய"</string>
+    <string name="theme_custom_accent">"உச்சரிப்பு"</string>
+    <string name="theme_custom_highlight">"முன்னிலைப்படுத்தவும்"</string>
+    <string name="theme_custom_hex">"ஹெக்ஸ் நிறம்"</string>
+    <string name="theme_custom_invalid_hex">"6750A4 போன்ற ஆறு ஹெக்ஸ் இலக்கங்களை உள்ளிடவும்."</string>
+    <string name="theme_custom_hue">"சாயல்"</string>
+    <string name="theme_custom_saturation">"செறிவு"</string>
+    <string name="theme_custom_brightness">"பிரகாசம்"</string>
+    <string name="theme_custom_automatic">"உச்சரிப்பு வண்ணங்களை மீட்டமைக்கவும்"</string>
+    <string name="theme_custom_save">"சேமித்து விண்ணப்பிக்கவும்"</string>
+    <string name="theme_custom_limit">"உங்களிடம் 24 தட்டுகள் உள்ளன. மற்றொன்றை உருவாக்க ஒன்றைத் திருத்தவும் அல்லது அகற்றவும்."</string>
+    <string name="theme_custom_delete">"தட்டுகளை நீக்கு"</string>
+    <string name="theme_custom_delete_message">"இந்த சேமித்த தட்டுகளை அகற்றவா? இந்தத் தட்டு செயலில் இருந்தால், ஆப்ஸ் தேர்ந்தெடுத்த முன்னமைவுக்குத் திரும்பும்."</string>
+    <string name="theme_custom_preview">"தட்டு மாதிரிக்காட்சி"</string>
+    <string name="theme_canvas_title">"Harness கேன்வாஸ்"</string>
+    <string name="theme_canvas_description">"Chat மற்றும் Code க்கான உங்கள் சொந்த பின்னணி."</string>
+    <string name="theme_canvas_add">"படத்தைச் சேர்க்கவும்"</string>
+    <string name="theme_canvas_change">"படத்தை மாற்றவும்"</string>
+    <string name="theme_canvas_remove">"படத்தை அகற்று"</string>
+    <string name="theme_canvas_enabled">"Harness கேன்வாஸைக் காட்டு"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"படம் மங்குகிறது"</string>
+    <string name="theme_canvas_dim_hint">"தெளிவான உரைக்கு படத்தை உங்கள் தீமில் மங்கச் செய்யவும்."</string>
+    <string name="theme_canvas_colors">"கேன்வாஸ் வண்ணங்களைப் பொருத்து"</string>
+    <string name="theme_canvas_colors_hint">"இந்தப் படத்திலிருந்து உங்கள் பயன்பாட்டின் வண்ணத் தட்டுகளை உருவாக்கவும்."</string>
+    <string name="theme_canvas_working">"உங்கள் கேன்வாஸ் தயாராகிறது…"</string>
+    <string name="theme_canvas_error">"அந்தப் படத்தைப் பயன்படுத்த முடியவில்லை. 32 எம்பிக்கு குறைவான மற்றொரு புகைப்படத்தை முயற்சிக்கவும்."</string>
+    <string name="theme_canvas_empty">"இந்த இடத்தை உங்களுடையதாக மாற்ற புகைப்படம் அல்லது கலைப்படைப்பைச் சேர்க்கவும்."</string>
+    <string name="theme_canvas_preview_message">"உங்கள் உரையாடல்கள், உங்கள் கேன்வாஸ்."</string>
+    <string name="theme_canvas_preview_reply">"உங்களை வீட்டில் செய்யுங்கள்."</string>
+    <string name="theme_canvas_color_area">"வண்ண பகுதி"</string>
+</resources>

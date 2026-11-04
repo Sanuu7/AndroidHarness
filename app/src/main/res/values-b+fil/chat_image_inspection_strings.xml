@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_viewing_image">"Nakatingin sa imahe"</string>
+    <string name="chat_viewed_image">"Tiningnan ang imahe"</string>
+    <string name="chat_image_failed">"Hindi masuri ang larawan"</string>
+</resources>

@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="pr_tool_opening">"पुल अनुरोध खोला जा रहा है..."</string>
+    <string name="pr_tool_opened">"पुल अनुरोध #%1$d खोला गया"</string>
+    <string name="pr_tool_existing">"पुल अनुरोध #%1$d पहले से ही खुला है"</string>
+    <string name="pr_tool_failed">"पुल अनुरोध नहीं खोला गया"</string>
+    <string name="pr_tool_waiting">"आपकी स्वीकृति की प्रतीक्षा है"</string>
+    <string name="pr_draft">"ड्राफ्ट"</string>
+    <string name="pr_counts">"प्रतिबद्धताएँ: %1$d · फ़ाइलें: %2$d"</string>
+    <string name="pr_open_on_github">"GitHub पर खोलें"</string>
+    <string name="pr_copy_link">"लिंक कॉपी करें"</string>
+    <string name="pr_link_copied">"लिंक कॉपी किया गया"</string>
+    <string name="pr_open_failed">"कोई भी ऐप लिंक नहीं खोल सका. इसकी जगह इसे कॉपी किया गया है."</string>
+    <string name="pr_approval_title">"पुल अनुरोध खोलें?"</string>
+    <string name="pr_approval_body">"पुश की गई शाखा से GitHub पर एक पुल अनुरोध बनाता है। कुछ भी धकेला या मर्ज नहीं किया गया है."</string>
+    <string name="pr_approval_base">"%1$s में"</string>
+    <string name="pr_approval_default_base">"डिफ़ॉल्ट शाखा में"</string>
+    <string name="pr_create">"पुल अनुरोध बनाएं"</string>
+    <string name="pr_create_draft">"ड्राफ्ट पुल अनुरोध बनाएं"</string>
+    <string name="pr_entry_body">"इस शाखा की पुश की गई प्रतिबद्धताओं को GitHub पर समीक्षा के लिए प्रस्तावित करें।"</string>
+    <string name="pr_loading">"इस शाखा की तुलना GitHub से की जा रही है..."</string>
+    <string name="pr_title_label">"शीर्षक"</string>
+    <string name="pr_description_label">"विवरण"</string>
+    <string name="pr_rewrite_description">"विवरण पुनः लिखें"</string>
+    <string name="pr_base_label">"आधार शाखा"</string>
+    <string name="pr_draft_label">"ड्राफ्ट के रूप में खोलें"</string>
+    <string name="pr_draft_body">"समीक्षक इसे देख सकते हैं, लेकिन जब तक आप इसे तैयार के रूप में चिह्नित नहीं करते, इसे मर्ज नहीं किया जा सकता।"</string>
+    <string name="pr_include_checks">"इस चैट से चेक शामिल करें"</string>
+    <string name="pr_include_checks_body">"इस वार्तालाप में रिकॉर्ड किए गए निर्माण, परीक्षण और लिंट परिणाम जोड़ता है।"</string>
+    <string name="pr_existing_body">"%1$s पर नए पुश इस पुल अनुरोध को स्वचालित रूप से अपडेट करते हैं।"</string>
+    <string name="pr_not_pushed_title">"शाखा अभी GitHub पर नहीं है"</string>
+    <string name="pr_out_of_date_title">"GitHub के पास इस शाखा की एक पुरानी प्रति है"</string>
+    <string name="pr_push_body">"%1$s को पुश करें ताकि GitHub के पास आपके नवीनतम कमिट हों।"</string>
+    <string name="pr_push_branch">"धक्का शाखा"</string>
+    <string name="pr_pushed">"शाखा को धक्का दिया."</string>
+    <string name="pr_uncommitted_title">"अप्रतिबद्ध परिवर्तन: %1$d"</string>
+    <string name="pr_uncommitted_body">"जब तक आप प्रतिबद्ध नहीं होंगे और उन पर दबाव नहीं डालेंगे तब तक उन्हें शामिल नहीं किया जाएगा।"</string>
+    <string name="pr_behind_title">"%1$s पर नया कमिट: %2$d"</string>
+    <string name="pr_behind_body">"इस शाखा में अभी तक उन्हें शामिल नहीं किया गया है. समीक्षक आपसे इसे अपडेट करने के लिए कह सकते हैं।"</string>
+    <string name="pr_no_commits_title">"अभी तक प्रस्ताव करने के लिए कुछ भी नहीं है"</string>
+    <string name="pr_no_commits_body">"%1$s में ऐसी कोई प्रतिबद्धता नहीं है जो पहले से ही %2$s पर न हो।"</string>
+    <string name="pr_commits_header">"कमिट"</string>
+    <string name="pr_more">"अधिक: %1$d"</string>
+    <string name="pr_created_title">"पुल अनुरोध #%1$d खोला गया"</string>
+    <string name="pr_created_draft_title">"ड्राफ्ट पुल अनुरोध #%1$d खोला गया"</string>
+    <string name="pr_retry">"पुनः प्रयास करें"</string>
+</resources>

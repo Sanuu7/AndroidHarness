@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="github_import_choose">"Pumili ng repositoryo"</string>
+    <string name="github_import_destination">"Mag-import ng kopya sa sarili nitong workspace sa device na ito."</string>
+    <string name="github_import_loading">"Nilo-load ang iyong mga repository…"</string>
+    <string name="github_import_empty">"Walang nakitang mga repository para sa account na ito. Maaari ka ring mag-import sa pamamagitan ng URL."</string>
+    <string name="github_import_by_url">"Mag-import ng URL"</string>
+    <string name="github_import_confirm_title">"Mag-import ng repository?"</string>
+    <string name="github_import_confirm_body">"Sigurado ka bang gusto mong i-import ang %1$s sa isang bagong workspace sa device na ito?"</string>
+    <string name="github_import_preparing">"Inihahanda ang pag-import…"</string>
+    <string name="github_import_success">"Na-import na %1$s"</string>
+    <string name="github_import_open_workspace">"Buksan ang workspace"</string>
+</resources>

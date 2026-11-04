@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="as_caveman_level">"Antas ng Caveman"</string>
+    <string name="as_activity_finding">"Hinahanap ang mga setting"</string>
+    <string name="as_activity_found">"Hinanap ang mga setting"</string>
+    <string name="as_activity_changing">"Pagbabago ng mga setting"</string>
+    <string name="as_activity_changed">"Binago ang mga setting"</string>
+    <string name="as_undo">"I-undo"</string>
+    <string name="as_undo_all">"I-undo lahat"</string>
+    <string name="as_redo">"Gawin muli"</string>
+    <string name="as_open_settings">"Buksan ang mga setting"</string>
+    <string name="as_open_setting">"Buksan ang setting"</string>
+    <string name="as_title_changed">"Binago ang mga setting"</string>
+    <string name="as_title_undone">"Na-undo ang mga pagbabago"</string>
+    <string name="as_title_needs_you">"Kailangan ka ng isang setting"</string>
+    <string name="as_title_not_changed">"Hindi nabago ang mga setting"</string>
+    <string name="as_state_undone">"Inalis na"</string>
+    <string name="as_state_moved_on">"Nagbago ulit simula noon"</string>
+    <string name="as_on">"Naka-on"</string>
+    <string name="as_off">"Naka-off"</string>
+    <string name="as_unlimited">"Walang limitasyon"</string>
+    <string name="as_custom_palette">"Pasadyang palette"</string>
+    <string name="as_empty">"wala"</string>
+    <string name="as_needs_you_label">"Kailangan mo · %1$s"</string>
+    <string name="as_group">"Mga setting mula sa chat"</string>
+    <string name="as_setting_title">"Hayaang baguhin ng ahente ang mga setting"</string>
+    <string name="as_access_off">"Naka-off"</string>
+    <string name="as_access_off_desc">"Maaaring tingnan ng ahente ang mga setting at ituro ka sa kanila, ngunit hindi baguhin ang mga ito."</string>
+    <string name="as_access_ask">"Magtanong sa bawat oras"</string>
+    <string name="as_access_ask_desc">"Ang bawat pagbabago ay naghihintay para sa iyong pag-apruba sa chat."</string>
+    <string name="as_access_allowed">"Pinayagan"</string>
+    <string name="as_access_allowed_desc">"Nalalapat kaagad ang mga pagbabago sa isang Undo card. Nagtatanong pa rin ang mga sensitibo, tulad ng lock ng app."</string>
+    <string name="as_picker_detail">"Magtanong sa Chat o Code na i-on o i-off ang isang setting, ilipat ang slider o gumawa ng color palette. Palaging magtanong muna ang mga sensitibong setting, at hindi maabot ang mga API key."</string>
+    <string name="as_search_desc">"Baguhin ang mga setting sa pamamagitan ng pagtatanong sa Chat o Code"</string>
+    <string name="tip_ask_settings" formatted="false">"Hilingin sa akin na baguhin ang isang setting, tulad ng \"itakda ang rumble sa 70%\" o \"gumawa ng isang teal palette.\" Ipinapakita ng card kung ano ang nagbago, kasama ang I-undo."</string>
+    <plurals name="as_changes_count">
+        <item quantity="one">"%1$d pagbabago"</item>
+        <item quantity="other">"%1$d pagbabago"</item>
+    </plurals>
+    <plurals name="as_needs_you_count">
+        <item quantity="one">"Kailangan ka ng %1$d"</item>
+        <item quantity="other">"Kailangan ka ng %1$d"</item>
+    </plurals>
+</resources>

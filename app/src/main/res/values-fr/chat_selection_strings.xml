@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_select">"Sélectionnez"</string>
+    <string name="sidebar_selected_count">"%1$d sélectionné"</string>
+    <string name="sidebar_select_all">"Tout sélectionner"</string>
+    <string name="sidebar_clear_selection">"Effacer la sélection"</string>
+    <string name="sidebar_exit_selection">"Quitter la sélection"</string>
+    <string name="sidebar_select_chat">"Sélectionnez %1$s"</string>
+    <string name="sidebar_details">"Détails"</string>
+    <string name="sidebar_other_chats">"Autres discussions"</string>
+    <string name="sidebar_model_unavailable">"Indisponible"</string>
+    <string name="sidebar_delete_selected">"Supprimer les discussions sélectionnées ?"</string>
+    <string name="sidebar_delete_selected_message">"Supprimer ces chats et leur historique de conversations ? Cela ne peut pas être annulé."</string>
+    <string name="sidebar_delete_running">"Les tâches en cours d’exécution dans ces discussions seront arrêtées."</string>
+    <string name="sidebar_selection_error">"Impossible de terminer cette action. Veuillez réessayer."</string>
+    <plurals name="sidebar_archived_count">
+        <item quantity="one">"Discussion %1$d archivée"</item>
+        <item quantity="other">"Discussions %1$d archivées"</item>
+        <item quantity="many">"Discussions %1$d archivées"</item>
+    </plurals>
+    <plurals name="sidebar_restored_count">
+        <item quantity="one">"Chat %1$d restauré"</item>
+        <item quantity="other">"Discussions %1$d restaurées"</item>
+        <item quantity="many">"Discussions %1$d restaurées"</item>
+    </plurals>
+</resources>

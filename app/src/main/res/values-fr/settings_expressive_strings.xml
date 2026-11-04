@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_coding_workflow">"Agent et flux de travail"</string>
+    <string name="settings_coding_intelligence">"Compétences et intelligence"</string>
+    <string name="settings_coding_execution">"Espaces de travail et exécution"</string>
+    <string name="settings_device_connections">"Connexions"</string>
+    <string name="settings_device_tools">"Outils et paramètres avancés"</string>
+    <string name="settings_linux_optional">"Outils optionnels pour les projets nécessitant Linux"</string>
+    <string name="settings_device_advanced">"Accès avancé aux appareils"</string>
+    <string name="settings_device_advanced_summary">"Contrôles de la racine et du propriétaire de l\'appareil"</string>
+    <string name="settings_device_background">"Contexte et batterie"</string>
+    <string name="settings_device_background_summary">"Maintenir les sessions de terminal et le travail des agents"</string>
+    <string name="settings_connection_help">"Comment se connecter"</string>
+    <string name="settings_connection_options">"Options de connexion"</string>
+    <string name="wireless_adb_disconnect">"Déconnecter"</string>
+    <string name="wireless_adb_connection_kept">"Connecté · disponible jusqu\'à votre déconnexion"</string>
+    <string name="wireless_adb_auto_reconnecting">"Reconnexion au débogage sans fil enregistré"</string>
+    <string name="rich_profile_details">"Détails"</string>
+    <string name="rich_profile_sources">"Sources"</string>
+    <string name="settings_disclosure_expanded">"Élargi"</string>
+    <string name="settings_disclosure_collapsed">"Effondré"</string>
+    <string name="settings_terminal_access">"Accès aux terminaux"</string>
+    <string name="wireless_adb_compact_summary">"Commandes des appareils, avec reconnexion automatique"</string>
+</resources>

@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"Options du tableau"</string>
+    <string name="rich_select_rows">"Sélectionner des lignes"</string>
+    <string name="rich_stop_selecting_rows">"Arrêter de sélectionner"</string>
+    <string name="rich_sort_rows">"Trier les lignes"</string>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_requires_android">"Android %1$s या बाद के संस्करण की आवश्यकता है"</string>
+    <string name="settings_requires_vibrator">"इस उपकरण पर कोई कंपन मोटर नहीं है"</string>
+    <string name="rumble_unsupported">"इस डिवाइस में कोई कंपन मोटर नहीं है, इसलिए AH Rumble यहां नहीं चल सकता।"</string>
+</resources>

@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">"Nai-save"</string>
+    <string name="sidebar_saved_answers">"Naka-save na mga sagot"</string>
+    <string name="sidebar_saved_count_description">"Mga naka-save na sagot, %1$d"</string>
+    <string name="sidebar_saved_answer">"Naka-save na sagot"</string>
+    <string name="sidebar_open_in_chat">"Buksan sa chat"</string>
+    <string name="sidebar_remove_saved">"Alisin mula sa na-save"</string>
+    <string name="chat_save_answer">"I-save ang sagot"</string>
+    <string name="chat_answer_saved">"Na-save ang sagot"</string>
+    <string name="chat_answer_unsaved">"Inalis mula sa na-save"</string>
+</resources>

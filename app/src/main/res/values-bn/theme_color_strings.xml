@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_color_palette">"রঙ প্যালেট"</string>
+    <string name="theme_color_hint">"আপনার অ্যাপকে রঙিন করতে একটি প্যালেট বেছে নিন।"</string>
+    <string name="theme_wallpaper_colors">"ওয়ালপেপার রং"</string>
+    <string name="theme_wallpaper_hint">"আপনার ফোনের Material You রং অনুসরণ করুন।"</string>
+    <string name="theme_wallpaper_unavailable">"ওয়ালপেপারের রঙের জন্য Android 12 বা তার পরে প্রয়োজন। নীচে একটি প্যালেট চয়ন করুন."</string>
+    <string name="theme_palette_blue">"Harness নীল"</string>
+    <string name="theme_palette_ocean">"মহাসাগর"</string>
+    <string name="theme_palette_indigo">"নীল"</string>
+    <string name="theme_palette_lavender">"ল্যাভেন্ডার"</string>
+    <string name="theme_palette_orchid">"অর্কিড"</string>
+    <string name="theme_palette_rose">"গোলাপ"</string>
+    <string name="theme_palette_coral">"প্রবাল"</string>
+    <string name="theme_palette_amber">"অ্যাম্বার"</string>
+    <string name="theme_palette_lime">"চুন"</string>
+    <string name="theme_palette_forest">"বন"</string>
+    <string name="theme_palette_teal">"টিল"</string>
+    <string name="theme_palette_slate">"স্লেট"</string>
+</resources>

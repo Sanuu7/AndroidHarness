@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="search_keys_saved">
+        <item quantity="one">"%2$s · %1$dটি কী সংরক্ষিত"</item>
+        <item quantity="other">"%2$s · %1$dটি কী সংরক্ষিত"</item>
+    </plurals>
+    <string name="search_keys_rotation_hint">"আপনি 20টি পর্যন্ত কী সংরক্ষণ করতে পারেন৷ যখন একটি কী প্রত্যাখ্যান করা হয়, রেট সীমিত বা ক্রেডিটের বাইরে, পরবর্তী সক্ষম কী স্বয়ংক্রিয়ভাবে ব্যবহৃত হয়।"</string>
+    <string name="search_key_check_failed">"কী %1$d: %2$s"</string>
+    <string name="search_keys_verified_and_saved">"কী যাচাই এবং সংরক্ষিত"</string>
+    <string name="search_manage_keys">"কী ম্যানেজ করুন"</string>
+</resources>

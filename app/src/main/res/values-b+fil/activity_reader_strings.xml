@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_activity_full_view">"Buksan ang buong view"</string>
+    <string name="chat_activity_tool_details">"Buksan ang mga detalye ng tool"</string>
+    <string name="chat_activity_input">"Input"</string>
+    <string name="chat_activity_output">"Output"</string>
+    <string name="chat_activity_output_preview">"Preview ng output"</string>
+    <string name="chat_activity_more">"Higit pa sa ibaba"</string>
+    <string name="chat_activity_latest">"Pinakabago"</string>
+    <string name="chat_activity_copy">"Kopyahin ang text"</string>
+    <string name="chat_activity_copied">"Kinopya"</string>
+</resources>

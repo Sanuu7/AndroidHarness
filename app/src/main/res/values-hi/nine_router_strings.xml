@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="nine_router_title">"9Router"</string>
+    <string name="nine_router_description">"स्थानीय मॉडल राउटर स्थापित करें और प्रबंधित करें"</string>
+    <string name="nine_router_intro">"इस फ़ोन पर 9Router चलाएँ और अपने ब्राउज़र में इसके प्रदाताओं, मॉडलों और रूटिंग को प्रबंधित करें। AndroidHarness Linux टूलचेन का उपयोग करता है।"</string>
+    <string name="nine_router_setup">"अपना परिवेश स्थापित करें"</string>
+    <string name="nine_router_not_installed">"स्थापित करने के लिए तैयार"</string>
+    <string name="nine_router_ready">"स्थापित · रुका हुआ"</string>
+    <string name="nine_router_running">"इस फ़ोन पर चल रहा है"</string>
+    <string name="nine_router_starting">"9Router प्रारंभ हो रहा है…"</string>
+    <string name="nine_router_stopping">"9Router को रोका जा रहा है..."</string>
+    <string name="nine_router_installing">"इंस्टाल किया जा रहा है..."</string>
+    <string name="nine_router_updating">"9Router अपडेट हो रहा है..."</string>
+    <string name="nine_router_uninstalling">"9Router को अनइंस्टॉल किया जा रहा है..."</string>
+    <string name="nine_router_connecting">"प्रदाताओं में जोड़ा जा रहा है..."</string>
+    <string name="nine_router_removing">"प्रदाताओं से हटाया जा रहा है..."</string>
+    <string name="nine_router_install_linux">"Linux टूलचेन स्थापित करें"</string>
+    <string name="nine_router_install">"9Router स्थापित करें"</string>
+    <string name="nine_router_start">"9Router प्रारंभ करें"</string>
+    <string name="nine_router_stop">"रुकें"</string>
+    <string name="nine_router_show_details">"विवरण दिखाएँ"</string>
+    <string name="nine_router_hide_details">"विवरण छिपाएँ"</string>
+    <string name="nine_router_open_dashboard">"ब्राउज़र में डैशबोर्ड खोलें"</string>
+    <string name="nine_router_browser_error">"कोई भी ब्राउज़र 9Router डैशबोर्ड नहीं खोल सका।"</string>
+    <string name="nine_router_version">"संस्करण %1$s"</string>
+    <string name="nine_router_check_update">"अपडेट के लिए जांचें"</string>
+    <string name="nine_router_checking">"जाँच हो रही है..."</string>
+    <string name="nine_router_update">"%1$s पर अपडेट करें"</string>
+    <string name="nine_router_auto_start">"ऑटो-स्टार्ट 9Router"</string>
+    <string name="nine_router_auto_start_body">"AndroidHarness खुलने पर स्थापित राउटर को प्रारंभ करें।"</string>
+    <string name="nine_router_add_provider">"प्रदाताओं में 9Router जोड़ें"</string>
+    <string name="nine_router_refresh_provider">"9Router प्रदाता को ताज़ा करें"</string>
+    <string name="nine_router_provider_body">"यदि आवश्यक हो तो 9Router प्रारंभ करता है और इसके स्थानीय समापन बिंदु और API कुंजी को स्वचालित रूप से भरता है। कनेक्टेड मॉडल Chat और Code मॉडल पिकर में उपलब्ध हो जाते हैं।"</string>
+    <string name="nine_router_remove_provider">"प्रदाताओं से निकालें"</string>
+    <string name="nine_router_remove_provider_body">"AndroidHarness से 9Router कनेक्शन हटाएँ। राउटर और उसके खाते इंस्टॉल रहेंगे."</string>
+    <string name="nine_router_uninstall">"9Router को अनइंस्टॉल करें"</string>
+    <string name="nine_router_uninstall_title">"9Router को पूरी तरह से अनइंस्टॉल करें?"</string>
+    <string name="nine_router_uninstall_body">"9Router को रोकता है और इसकी स्थापना, सहेजे गए खाते, राउटर API कुंजी, कॉन्फ़िगरेशन, कैश, ऑटो-स्टार्ट प्राथमिकता और ऐप प्रदाता कनेक्शन हटा देता है। इसे असंपादित नहीं किया जा सकता है। साझा Linux टूलचेन अन्य सुविधाओं के लिए उपलब्ध रहता है।"</string>
+</resources>

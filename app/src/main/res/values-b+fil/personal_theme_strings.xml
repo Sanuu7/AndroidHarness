@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="theme_custom_title">"Ang iyong mga palette"</string>
+    <string name="theme_custom_add">"Lumikha ng palette"</string>
+    <string name="theme_custom_edit">"I-edit ang palette"</string>
+    <string name="theme_custom_name">"Pangalan ng palette"</string>
+    <string name="theme_custom_default">"Ang palette ko"</string>
+    <string name="theme_custom_hint">"Piliin ang iyong mga kulay. Ang Material ay lumilikha ng nababasang maliwanag at madilim na kulay."</string>
+    <string name="theme_custom_main">"Pangunahing"</string>
+    <string name="theme_custom_accent">"Accent"</string>
+    <string name="theme_custom_highlight">"I-highlight"</string>
+    <string name="theme_custom_hex">"Kulay ng hex"</string>
+    <string name="theme_custom_invalid_hex">"Maglagay ng anim na hex digit, gaya ng 6750A4."</string>
+    <string name="theme_custom_hue">"Hue"</string>
+    <string name="theme_custom_saturation">"Saturation"</string>
+    <string name="theme_custom_brightness">"Liwanag"</string>
+    <string name="theme_custom_automatic">"I-reset ang mga kulay ng accent"</string>
+    <string name="theme_custom_save">"I-save at ilapat"</string>
+    <string name="theme_custom_limit">"Mayroon kang 24 na palette. I-edit o alisin ang isa upang lumikha ng isa pa."</string>
+    <string name="theme_custom_delete">"Tanggalin ang palette"</string>
+    <string name="theme_custom_delete_message">"Alisin ang naka-save na palette na ito? Babalik ang app sa napili nitong preset kung aktibo ang palette na ito."</string>
+    <string name="theme_custom_preview">"Preview ng palette"</string>
+    <string name="theme_canvas_title">"Harness Canvas"</string>
+    <string name="theme_canvas_description">"Ang iyong sariling backdrop para sa Chat at Code."</string>
+    <string name="theme_canvas_add">"Magdagdag ng larawan"</string>
+    <string name="theme_canvas_change">"Baguhin ang larawan"</string>
+    <string name="theme_canvas_remove">"Alisin ang larawan"</string>
+    <string name="theme_canvas_enabled">"Ipakita ang Harness Canvas"</string>
+    <string name="theme_canvas_chat">"Chat"</string>
+    <string name="theme_canvas_code">"Code"</string>
+    <string name="theme_canvas_dim">"Pagdilim ng imahe"</string>
+    <string name="theme_canvas_dim_hint">"I-fade ang larawan sa iyong tema para sa mas malinaw na text."</string>
+    <string name="theme_canvas_colors">"Itugma ang mga kulay ng Canvas"</string>
+    <string name="theme_canvas_colors_hint">"Buuin ang color palette ng iyong app mula sa larawang ito."</string>
+    <string name="theme_canvas_working">"Inihahanda ang iyong Canvas…"</string>
+    <string name="theme_canvas_error">"Hindi magamit ang larawang iyon. Subukan ang isa pang larawan na wala pang 32 MB."</string>
+    <string name="theme_canvas_empty">"Magdagdag ng larawan o likhang sining upang gawing iyo ang espasyong ito."</string>
+    <string name="theme_canvas_preview_message">"Ang iyong mga pag-uusap, ang iyong Canvas."</string>
+    <string name="theme_canvas_preview_reply">"Gawin ang iyong sarili sa bahay."</string>
+    <string name="theme_canvas_color_area">"Lugar ng kulay"</string>
+</resources>

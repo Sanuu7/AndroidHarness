@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sidebar_saved">"சேமிக்கப்பட்டது"</string>
+    <string name="sidebar_saved_answers">"சேமிக்கப்பட்ட பதில்கள்"</string>
+    <string name="sidebar_saved_count_description">"சேமிக்கப்பட்ட பதில்கள், %1$d"</string>
+    <string name="sidebar_saved_answer">"சேமிக்கப்பட்ட பதில்"</string>
+    <string name="sidebar_open_in_chat">"அரட்டையில் திறக்கவும்"</string>
+    <string name="sidebar_remove_saved">"சேமித்ததிலிருந்து அகற்று"</string>
+    <string name="chat_save_answer">"பதிலைச் சேமிக்கவும்"</string>
+    <string name="chat_answer_saved">"பதில் சேமிக்கப்பட்டது"</string>
+    <string name="chat_answer_unsaved">"சேமித்ததில் இருந்து அகற்றப்பட்டது"</string>
+</resources>

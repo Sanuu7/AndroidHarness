@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="rich_table_options">"테이블 옵션"</string>
+    <string name="rich_select_rows">"행 선택"</string>
+    <string name="rich_stop_selecting_rows">"선택 중지"</string>
+    <string name="rich_sort_rows">"행 정렬"</string>
+</resources>

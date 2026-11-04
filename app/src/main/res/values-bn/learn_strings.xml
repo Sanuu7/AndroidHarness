@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="learn_title">"AndroidHarness শিখুন"</string>
+    <string name="learn_description">"বন্ধুত্বপূর্ণ, আপনি এখানে যা করতে পারেন তার জন্য ধাপে ধাপে নির্দেশিকা।"</string>
+    <string name="learn_group">"এখানে শুরু করুন"</string>
+    <string name="learn_entry_hint">"আপনার গাইড, আপনার গতিতে"</string>
+    <string name="learn_entry_action">"গাইড অন্বেষণ"</string>
+    <string name="learn_hero_title">"একটু দিকনির্দেশনা।\nঅনেক সম্ভাবনা।"</string>
+    <string name="learn_hero_body">"আপনার প্রথম চ্যাট দিয়ে শুরু করুন, অথবা আপনি যে জিনিসটি করতে চান তাতে সরাসরি যান৷ প্রতিটি পাঠে পদক্ষেপ, দরকারী সীমা এবং আপনি আটকে গেলে সহায়তা অন্তর্ভুক্ত করে।"</string>
+    <string name="learn_offline">"অফলাইনে উপলব্ধ · টিউটোরিয়াল ইংরেজিতে"</string>
+    <string name="learn_progress">"%2$d পাঠের %1$d শিখেছি"</string>
+    <string name="learn_search">"আপনি কি শিখতে চান?"</string>
+    <string name="learn_clear_search">"টিউটোরিয়াল অনুসন্ধান সাফ করুন"</string>
+    <string name="learn_all">"সব পাঠ"</string>
+    <string name="learn_saved">"সংরক্ষিত"</string>
+    <string name="learn_start">"বেসিক দিয়ে শুরু করুন"</string>
+    <string name="learn_start_hint">"এখানে নতুন? এই তিনটি পাঠ আপনাকে এগিয়ে নিয়ে যাবে।"</string>
+    <string name="learn_results">"%1$d পাঠ"</string>
+    <string name="learn_empty_title">"অন্য অনুসন্ধান চেষ্টা করা যাক"</string>
+    <string name="learn_empty_body">"\"API কী\", \"GitHub\", \"স্থানীয় মডেল\", বা \"MCP\" ব্যবহার করে দেখুন। আপনি সবকিছু ব্রাউজ করতে সকল পাঠে স্যুইচ করতে পারেন।"</string>
+    <string name="learn_saved_empty_title">"একটি পাঠ হাতে রাখুন"</string>
+    <string name="learn_saved_empty_body">"একটি পাঠে বুকমার্ক ব্যবহার করুন এটি পরে এখানে খুঁজে পেতে।"</string>
+    <string name="learn_reset_filters">"সমস্ত পাঠ দেখান"</string>
+    <string name="learn_location">"কোথায় যেতে হবে"</string>
+    <string name="learn_before">"আপনি শুরু করার আগে"</string>
+    <string name="learn_steps">"এটা করা যাক"</string>
+    <string name="learn_outcome">"আপনি কি দেখতে হবে"</string>
+    <string name="learn_limits">"জেনে ভালো লাগলো"</string>
+    <string name="learn_fixes">"আটকে গেলে"</string>
+    <string name="learn_example">"এটা বলার চেষ্টা করুন"</string>
+    <string name="learn_copy_example">"উদাহরণ অনুলিপি করুন"</string>
+    <string name="learn_copied">"উদাহরণ কপি করা হয়েছে"</string>
+    <string name="learn_open_section">"অ্যাপে এটি ব্যবহার করে দেখুন"</string>
+    <string name="learn_links">"অফিসিয়াল সাহায্য"</string>
+    <string name="learn_links_hint">"এই লিঙ্কগুলি আপনার ব্রাউজারে খোলে এবং একটি ইন্টারনেট সংযোগ প্রয়োজন৷ প্রদানকারী পৃষ্ঠা পরিবর্তন করতে পারেন; অর্থ প্রদানের আগে প্রদর্শিত শর্তাবলী এবং মূল্য পরীক্ষা করুন।"</string>
+    <string name="learn_related">"একটি দরকারী পরবর্তী ধাপ"</string>
+    <string name="learn_mark_complete">"শিখেছি হিসাবে চিহ্নিত করুন"</string>
+    <string name="learn_complete">"শেখা · পূর্বাবস্থায় ফেরাতে আলতো চাপুন"</string>
+    <string name="learn_completed_label">"শিখেছে"</string>
+    <string name="learn_bookmark">"এই পাঠ সংরক্ষণ করুন"</string>
+    <string name="learn_bookmarked">"সংরক্ষিত পাঠ সরান"</string>
+    <string name="learn_link_failed">"ব্রাউজার খুলতে পারেনি। আপনি পরিবর্তে লিঙ্কটি অনুলিপি করতে পারেন।"</string>
+    <string name="learn_copy_link">"লিঙ্ক কপি করুন"</string>
+    <string name="learn_load_failed">"গাইড খোলা যায়নি। সেটিংস বন্ধ করে আবার চেষ্টা করুন।"</string>
+</resources>

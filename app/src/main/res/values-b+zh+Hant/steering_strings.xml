@@ -1,0 +1,13 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="steering_group">"智慧體工作時"</string>
+    <string name="settings_anchor_steering">"任務進行中傳送的訊息"</string>
+    <string name="steering_mode_auto">"AH Auto"</string>
+    <string name="steering_mode_auto_desc">"智慧體會在當前步驟結束後讀取你的訊息並繼續工作，正在執行的工具不會被打斷。如果任務已經結束，這條訊息會開始下一輪。"</string>
+    <string name="steering_mode_after_task">"任務結束後"</string>
+    <string name="steering_mode_after_task_desc">"你的訊息會等到整個任務完成，再開始新的一輪。"</string>
+    <string name="steering_picker_detail">"選擇在智慧體工作時傳送訊息會發生什麼。對排隊訊息點“立即傳送”總會停止智慧體並馬上傳送。"</string>
+    <string name="steering_search_desc">"在智慧體執行時引導它，或等待任務完成"</string>
+    <string name="steering_queue_next_step">"智慧體會在當前步驟結束後讀取這些訊息。"</string>
+    <string name="steering_queue_badge">"將在下一步讀取"</string>
+</resources>
