@@ -42,4 +42,6 @@ Keep the change focused and explain why it matters. If it fixes an issue, link i
 
 Please don't commit API keys, signing keys, `local.properties`, or personal workspace data. Before opening the pull request, check the diff for anything you didn't mean to include.
 
+Be decent to other people here. Taking part in this project means following the [Code of Conduct](CODE_OF_CONDUCT.md).
+
 The project is MIT licensed; see the LICENSE file.
