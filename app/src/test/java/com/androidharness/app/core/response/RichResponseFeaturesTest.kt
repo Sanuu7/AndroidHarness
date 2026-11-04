@@ -40,6 +40,17 @@ class RichResponseFeaturesTest {
             assertTrue(RichResponse.parse(source, true).single() is RichResponse.Part.Content)
         }
     }
+    @Test fun galleriesAcceptTheRequestedCountBeyondTwelveAndKeepPayloadAndUrlValidation() {
+        val urls = (1..30).map { "https://example.com/photo-$it.jpg" }
+        fun gallery(images: List<String>) = """{"type":"gallery","title":"Requested pictures","images":[${images.joinToString(",") { """{"url":"$it"}""" }}]}"""
+        val decoded = RichResponse.decode(gallery(urls)) as RichResponse.Node.Gallery
+        assertEquals(urls, decoded.images.map { it.url })
+        assertNull(RichResponse.decode(gallery(emptyList())))
+        assertNull(RichResponse.decode(gallery(urls + "file:///private/image")))
+        val oversized = gallery(List(3_000) { urls.first() })
+        assertTrue(oversized.length > RichResponse.MAX_JSON_CHARS)
+        assertNull(RichResponse.decode(oversized))
+    }
     @Test fun tableRejectsRaggedRowsAndSortsNumericValuesBeforeTextWithStableFiltering() {
         val source = """{"type":"table","title":"Scores","columns":["Name","Score"],"rows":[["B","10"],["A","2"],["C","unknown"],["A two","-1"]]}"""
         val table = RichResponse.decode(source) as RichResponse.Node.Table

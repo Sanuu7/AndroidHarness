@@ -105,6 +105,18 @@ class ChatExperienceTest {
         )
     }
 
+    @Test fun enabledImageFrequenciesLeaveImageCountAndPlacementToTheRequest() {
+        for (frequency in com.androidharness.app.data.ImageFrequency.entries.filter { it != com.androidharness.app.data.ImageFrequency.NONE }) {
+            val prompt = ChatExperience.imageFrequencyPrompt(frequency)
+            assertTrue(prompt.contains("honor the user's requested count and placement"))
+            assertTrue(prompt.contains("before, between, or after prose and rich components"))
+            assertFalse(prompt.contains("One image is usually enough"))
+            assertFalse(prompt.contains("two or three representative pictures"))
+            assertFalse(prompt.contains("do not add galleries"))
+        }
+        assertFalse(ChatExperience.IMAGE_NUDGE.contains("near the top"))
+    }
+
     @Test fun researchOffAllowsReadingLinksWithoutEncouragingSearch() {
         val prompt = ChatExperience.researchDepthPrompt(com.androidharness.app.data.SearchDepth.OFF)
         assertTrue(prompt.contains("web_search tool is disabled"))

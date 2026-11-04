@@ -88,6 +88,52 @@ class ResponseProfileDeviceTest {
         } finally { cache.delete() }
     }
 
+    @Test fun multipleInlinePicturesRenderAroundRichContentAndGalleryCanPassTwelve() {
+        val cache = seedPortrait()
+        val images = mutableStateOf(true)
+        val before = (1..2).joinToString("\n\n") { "![Inline before $it]($image)" }
+        val after = (1..2).joinToString("\n\n") { "![Inline after $it]($image)" }
+        val gallery = """{"type":"gallery","title":"Picture collection","images":[${(1..13).joinToString(",") { """{"url":"$image","caption":"Collection $it"}""" }}]}"""
+        val reply = "$before\n\n$answer\n\n```harness-ui\n$gallery\n```\n\n$after"
+        fun reach(label: String) {
+            repeat(24) {
+                instrumentation.uiAutomation.clearCache()
+                if (find { it.text?.toString() == label || it.contentDescription?.toString() == label } != null) {
+                    await(label)
+                    return
+                }
+                find { it.isScrollable && it.className?.toString() != "androidx.viewpager.widget.ViewPager" }
+                    ?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
+                SystemClock.sleep(200)
+            }
+            await(label)
+        }
+        try {
+            ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
+                scenario.onActivity { host -> host.setContent {
+                    HarnessTheme(themeMode = ThemeMode.LIGHT, dynamicColor = false) {
+                        CompositionLocalProvider(LocalChatImagesEnabled provides images.value) {
+                            Column(Modifier.fillMaxSize().safeDrawingPadding().verticalScroll(rememberScrollState()).padding(16.dp)) {
+                                AssistantText(reply, onOpenUrl = {})
+                            }
+                        }
+                    }
+                } }
+                await("Inline before 1")
+                reach("Inline before 2"); reach("Example scientist")
+                reach("1 / 13")
+                repeat(12) { page -> tap(c.appContext.getString(com.androidharness.app.R.string.rich_next)); await("${page + 2} / 13") }
+                reach("Inline after 1"); reach("Inline after 2")
+                assertNull(find { it.text?.toString()?.contains("harness-ui") == true })
+                scenario.onActivity { images.value = false }
+                instrumentation.waitForIdleSync()
+                SystemClock.sleep(300)
+                instrumentation.uiAutomation.clearCache()
+                assertNull(find { it.contentDescription?.toString()?.startsWith("Inline ") == true })
+            }
+        } finally { cache.delete() }
+    }
+
     @Test fun largeSystemTextKeepsProfileFactsAndSourcesReadable() {
         val old = android.provider.Settings.System.getFloat(c.appContext.contentResolver, android.provider.Settings.System.FONT_SCALE, 1f)
         val cache = seedPortrait()

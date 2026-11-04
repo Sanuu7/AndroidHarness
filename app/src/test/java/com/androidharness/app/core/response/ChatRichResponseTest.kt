@@ -6,6 +6,23 @@ import org.junit.Test
 class ChatRichResponseTest {
     private val card = """{"type":"callout","tone":"info","title":"Today's lead story","text":"A report with {braces} and an escaped \"quote\"."}"""
 
+    @Test fun multipleInlineImagesAndRichGalleryKeepTheirChosenPlacementDuringStreamingAndReload() {
+        val before = (1..3).joinToString("\n\n") { "![Before $it](https://example.com/before-$it.jpg)" }
+        val after = (1..3).joinToString("\n\n") { "![After $it](https://example.com/after-$it.jpg)" }
+        val urls = (1..25).map { "https://example.com/gallery-$it.jpg" }
+        val gallery = """{"type":"gallery","title":"Collection","images":[${urls.joinToString(",") { """{"url":"$it"}""" }}]}"""
+        val reply = "$before\n\n$gallery\n\n$after"
+        for (streaming in listOf(true, false)) {
+            val normalized = ChatRichResponse.normalize(reply, streaming)
+            val parts = RichResponse.parse(normalized, streaming)
+            assertEquals(3, parts.size)
+            assertEquals(before, (parts[0] as RichResponse.Part.Markdown).text.trim())
+            assertEquals(urls, ((parts[1] as RichResponse.Part.Content).node as RichResponse.Node.Gallery).images.map { it.url })
+            assertEquals(after, (parts[2] as RichResponse.Part.Markdown).text.trim())
+            assertEquals(parts, RichResponse.parse(ChatRichResponse.normalize(normalized), streaming))
+        }
+    }
+
     @Test fun screenshotStyleBareComponentsRenderWithSurroundingProseAndCitations() {
         val reply = "Here is today's news.\n$card\n[Source](https://example.com/report)"
         val parts = RichResponse.parse(ChatRichResponse.normalize(reply))

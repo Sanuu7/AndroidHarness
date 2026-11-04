@@ -27,7 +27,7 @@ class ChatResponseImagesTest {
         assertTrue(guide.split(Regex("\\s+")).size <= 190)
         for (tool in listOf("web_fetch", "browser_read", "view_chat_image", "zoom_chat_image")) assertTrue(guide.contains(tool))
         assertTrue(guide.contains("Zoom is optional")); assertTrue(guide.contains("Do not routinely zoom every image"))
-        assertTrue(guide.contains("display_url")); assertTrue(guide.contains("below the final text"))
+        assertTrue(guide.contains("display_url")); assertTrue(guide.contains("wherever it best supports the answer"))
         assertFalse(com.androidharness.app.core.response.RichResponse.INSTRUCTIONS.contains("harness-image:"))
     }
 }

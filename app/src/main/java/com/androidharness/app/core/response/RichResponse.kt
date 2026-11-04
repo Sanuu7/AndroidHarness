@@ -203,7 +203,8 @@ object RichResponse {
                 "tabs" -> Node.Tabs(o.str("title", 100, true), o.array("tabs", 6).map { it.jsonObject.let { tab ->
                     Tab(tab.str("title", 60, true), tab.array("children", 12).map { child -> node(child.jsonObject, depth + 1) })
                 } })
-                "gallery" -> Node.Gallery(o.str("title", 100, true), o.array("images", 12).map { it.jsonObject.let { image ->
+                // The overall JSON size bounds galleries; image count is a presentation choice.
+                "gallery" -> Node.Gallery(o.str("title", 100, true), o.array("images").map { it.jsonObject.let { image ->
                     GalleryImage(image.str("url", 2048, true).also(::requireWebUrl), image.str("caption", 500), image.str("source", 2048).also { url -> if (url.isNotBlank()) requireWebUrl(url) })
                 } })
                 "profile" -> {
@@ -272,7 +273,7 @@ object RichResponse {
         require(value.length <= max && (!required || value.isNotBlank()))
         return value
     }
-    private fun JsonObject.array(key: String, max: Int, required: Boolean = true): JsonArray {
+    private fun JsonObject.array(key: String, max: Int = Int.MAX_VALUE, required: Boolean = true): JsonArray {
         val value = this[key] ?: return JsonArray(emptyList()).also { require(!required) }
         return (value as? JsonArray ?: error("Expected a list")).also { require(it.size <= max && (!required || it.isNotEmpty())) }
     }
@@ -355,7 +356,7 @@ Additional native components work in BOTH Chat and Code. Prefer these over custo
 Both Markdown and native tables can be expanded for filtering, sorting, and selecting rows. Use a native table when a title, caption, or direct row discussion helps; keep cell text concise and put source citations and longer explanations in surrounding prose. Do not imply that sorting or filtering edits the original data.
 A table column heading may be empty (for example, the row-label column of a comparison). Every row must still have exactly one string cell per column. Close each JSON object exactly once; do not add extra brackets after it.
 {"type":"tabs","title":"Explore the answer","tabs":[{"title":"Overview","children":[{"type":"text","text":"Main answer"}]},{"title":"Examples","children":[{"type":"text","text":"A concrete example"}]}]} (up to 6 tabs; nest any supported components in children; selected-tab controls retain state)
-{"type":"gallery","title":"Visual comparison","images":[{"url":"https://example.com/actual-image.jpg","caption":"What this image shows","source":"https://example.com/source-page"}]} (swipe, previous/next, expand with zoom, and source links; up to 12 images; ONLY actual image URLs returned by tools or supplied by the user, never invented URLs; respect the chat image setting)
+{"type":"gallery","title":"Visual comparison","images":[{"url":"https://example.com/actual-image.jpg","caption":"What this image shows","source":"https://example.com/source-page"}]} (swipe, previous/next, expand with zoom, and source links; choose the useful image count; multiple Markdown images may also appear outside galleries or alongside them; ONLY actual image URLs returned by tools or supplied by the user, never invented URLs; respect the chat image setting)
 {"type":"profile","name":"Subject name","subtitle":"Verified role or category","description":"A short introduction supported by the sources below.","image":"https://example.com/actual-portrait.jpg","image_source":"https://example.com/biography","facts":[{"label":"Known for","value":"A verified contribution","source":"https://example.com/biography"}],"sources":[{"title":"Biography","url":"https://example.com/biography"}]} (native knowledge/profile card for a person, place, organization, or other named subject; optional image/image_source, up to 8 sourced facts and 6 source links; sources required; use only pages actually read and image URLs returned by tools or supplied by the user; omit unverified facts and resolve ambiguous names before making a card; respect the chat image setting)
 {"type":"chart","title":"Performance over time","kind":"line","unit":"ms","series":[{"name":"Before","points":[{"label":"Day 1","value":18},{"label":"Day 2","value":20}]},{"name":"After","points":[{"label":"Day 1","value":12},{"label":"Day 2","value":14}]}],"caption":"Measured data or clearly marked illustrative values"} (bar or line, up to 6 datasets and 120 points each, aligned labels in exactly the same order; legends toggle datasets, visible-range sliders zoom the data, data view exposes exact values; existing single-series points form still works)
 {"type":"calculator","title":"Try different values","inputs":[{"id":"hours","label":"Hours","value":4,"min":0,"max":24,"step":0.5},{"id":"rate","label":"Rate","value":10,"min":0,"max":100,"step":1}],"outputs":[{"label":"Total","expression":"hours * rate","unit":"credits"}],"caption":"Illustrative estimate; explain assumptions"} (up to 6 numeric inputs and 6 calculated outputs, sliders and editable numbers; use input IDs in arithmetic expressions; supports + - * / ^, parentheses, min(a,b), max(a,b), abs(x), sqrt(x), round(x); NO scripts, functions beyond this list, network, or tool actions)
