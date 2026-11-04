@@ -995,4 +995,15 @@
     <string name="settings_language_bengali">"বাংলা"</string>
     <string name="settings_language_filipino">"Filipino"</string>
     <string name="settings_language_traditional_chinese">"繁體中文"</string>
+    <string name="auto_compact_title">"தானாகச் சுருக்கு"</string>
+    <string name="auto_compact_automatic">"தானியங்கி (சூழலின் 80%)"</string>
+    <string name="auto_compact_description">"Code பழைய சூழலை எப்போது சுருக்கி வேலையைத் தொடர்வது என்பதை அமைக்கவும்."</string>
+    <string name="auto_compact_detail">"Code அரட்டைகளுக்கான இயல்புநிலை. மதிப்பிடப்பட்ட சூழல் டோக்கன்களைப் பயன்படுத்துகிறது. 250K, 258K, 350K, 1M, 1 million அல்லது சரியான டோக்கன் எண்ணிக்கையை உள்ளிடவும். சூழல் வரம்பின் 80%க்கு auto பயன்படுத்தவும். கோரிக்கைகளுக்கு இடையே சுருக்கி, பதிலுக்கான இடத்தை வைத்திருக்கும். /autocompact ஒரு அரட்டைக்கு இதை மீறுகிறது."</string>
+    <string name="auto_compact_input_label">"டோக்கன்கள் அல்லது auto"</string>
+    <string name="auto_compact_invalid">"குறைந்தது 1,024 டோக்கன்களை உள்ளிடவும், எடுத்துக்காட்டாக 258K, 350K அல்லது 1M, அல்லது 80%க்கு auto பயன்படுத்தவும்."</string>
+    <string name="auto_compact_slash_hint">"இந்த அரட்டையின் வரம்பை அமைக்கவும், எ.கா. /autocompact 350K"</string>
+    <string name="auto_compact_status">"இந்த அரட்டை சுமார் %1$s சூழல் டோக்கன்களில் தானாகச் சுருக்கும். மாற்ற /autocompact 350K, அல்லது அமைப்புகளைப் பின்பற்ற /autocompact default பயன்படுத்தவும்."</string>
+    <string name="auto_compact_saved">"இந்த அரட்டை சுமார் %1$s சூழல் டோக்கன்களில் தானாகச் சுருக்கி தொடரும். பதிலுக்கான இடம் ஒதுக்கப்பட்டுள்ளது."</string>
+    <string name="auto_compact_reset">"இயல்புநிலையைப் பின்பற்றுகிறது: சுமார் %1$s சூழல் டோக்கன்களில் தானாகச் சுருக்கு."</string>
+    <string name="tip_auto_compact">"350,000 டோக்கன்களில் சூழலைத் தானாகச் சுருக்கி இந்த அரட்டையைத் தொடர /autocompact 350K பயன்படுத்தவும். 258K அல்லது 1M ம் ஏற்கப்படும். /autocompact default அமைப்புகள் → குறியீட்டு முறை → முகவரின் நடத்தை பின்பற்றும்."</string>
 </resources>

@@ -33,6 +33,39 @@ import org.junit.runner.RunWith
 class AgentBehaviorDeviceTest {
     private val instrumentation get() = InstrumentationRegistry.getInstrumentation()
 
+    @Test fun autoCompactAcceptsExactValuesAndCancelKeepsTheDefault() {
+        val state = mutableStateOf(AppSettings())
+        launch(state, dark = true, fontScale = 1f).use {
+            click("Auto compact at")
+            fun enter(value: String) {
+                val root = instrumentation.uiAutomation.rootInActiveWindow
+                fun editable(node: AccessibilityNodeInfo): AccessibilityNodeInfo? {
+                    if (node.isEditable) return node
+                    for (i in 0 until node.childCount) node.getChild(i)?.let { editable(it)?.let { match -> return match } }
+                    return null
+                }
+                val field = requireNotNull(root?.let { editable(it) })
+                assertTrue(field.performAction(AccessibilityNodeInfo.ACTION_SET_TEXT, android.os.Bundle().apply {
+                    putCharSequence(AccessibilityNodeInfo.ACTION_ARGUMENT_SET_TEXT_CHARSEQUENCE, value)
+                }))
+                instrumentation.waitForIdleSync()
+            }
+            enter("258K")
+            screenshot("auto-compact-editor.png")
+            click("Cancel")
+            assertEquals(0, state.value.autoCompactTokens)
+            click("Auto compact at")
+            enter("258K")
+            click("Save")
+            awaitCondition { state.value.autoCompactTokens == 258_000 }
+            awaitNode("258,000 tokens")
+            click("Auto compact at")
+            enter("auto")
+            click("Save")
+            awaitCondition { state.value.autoCompactTokens == 0 }
+        }
+    }
+
     @Test
     fun choicesApplyCancelPreservesValuesAndRowsAreAccessible() {
         val state = mutableStateOf(AppSettings(maxContextTokens = 200_000, maxIterations = 75))
@@ -143,6 +176,7 @@ class AgentBehaviorDeviceTest {
                                         settings = state.value,
                                         onPermissionMode = { state.value = state.value.copy(permissionMode = it) },
                                         onContextLimit = { state.value = state.value.copy(maxContextTokens = it) },
+                                        onAutoCompact = { state.value = state.value.copy(autoCompactTokens = it) },
                                         onIterationLimit = { state.value = state.value.copy(maxIterations = it) },
                                         onProjectInstructions = onInstructions,
                                         onLiveUpdates = { state.value = state.value.copy(liveUpdatesEnabled = it) },
@@ -233,10 +267,11 @@ class AgentBehaviorDeviceTest {
             if (match?.isVisibleToUser == true) {
                 var node = requireNotNull(match)
                 while (!node.isClickable && node.parent != null) node = node.parent
-                assertTrue("Cannot click $text", node.performAction(AccessibilityNodeInfo.ACTION_CLICK))
-                instrumentation.waitForIdleSync()
-                SystemClock.sleep(200)
-                return
+                if (node.performAction(AccessibilityNodeInfo.ACTION_CLICK)) {
+                    instrumentation.waitForIdleSync()
+                    SystemClock.sleep(200)
+                    return
+                }
             }
             swipe(forward = attempt < 8)
         }

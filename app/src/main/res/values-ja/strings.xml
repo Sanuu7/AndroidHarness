@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">自動圧縮のしきい値</string>
+    <string name="auto_compact_automatic">自動（コンテキストの 80%）</string>
+    <string name="auto_compact_description">Code が古いコンテキストを要約して作業を続けるタイミングを設定します。</string>
+    <string name="auto_compact_detail">Code チャットの既定値です。推定コンテキストトークンを使用します。250K、258K、350K、1M、1 million、または正確なトークン数を入力してください。コンテキスト上限の 80% には auto を使います。リクエストの間に圧縮し、返信のための余白を残します。/autocompact はこのチャットだけ上書きします。</string>
+    <string name="auto_compact_input_label">トークンまたは auto</string>
+    <string name="auto_compact_invalid">1,024 トークン以上を入力してください（例: 258K、350K、1M）。80% には auto を使います。</string>
+    <string name="auto_compact_slash_hint">このチャットのしきい値を設定します（例: /autocompact 350K）</string>
+    <string name="auto_compact_status">このチャットは約 %1$s コンテキストトークンで自動圧縮します。変更するには /autocompact 350K、設定に従うには /autocompact default を使います。</string>
+    <string name="auto_compact_saved">このチャットは約 %1$s コンテキストトークンで自動圧縮して続行します。返信のための余白は残されます。</string>
+    <string name="auto_compact_reset">既定に従います: 約 %1$s コンテキストトークンで自動圧縮します。</string>
+    <string name="tip_auto_compact">/autocompact 350K を使うと、350,000 トークンでコンテキストを自動要約してこのチャットを続行できます。258K や 1M も使えます。/autocompact default は設定 → コーディング → エージェントの動作に従います。</string>
 </resources>

@@ -995,4 +995,15 @@
     <string name="settings_language_bengali">"বাংলা"</string>
     <string name="settings_language_filipino">"Filipino"</string>
     <string name="settings_language_traditional_chinese">"繁體中文"</string>
+    <string name="auto_compact_title">"স্বয়ংক্রিয়ভাবে সংকুচিত করুন"</string>
+    <string name="auto_compact_automatic">"স্বয়ংক্রিয় (প্রসঙ্গের 80%)"</string>
+    <string name="auto_compact_description">"Code কখন পুরানো প্রসঙ্গ সংক্ষিপ্ত করে কাজ চালিয়ে যাবে তা নির্ধারণ করুন।"</string>
+    <string name="auto_compact_detail">"Code চ্যাটের ডিফল্ট। আনুমানিক প্রসঙ্গ টোকেন ব্যবহার করে। 250K, 258K, 350K, 1M, 1 million বা সঠিক টোকেন সংখ্যা লিখুন। প্রসঙ্গ সীমার 80% এর জন্য auto ব্যবহার করুন। অনুরোধের মধ্যে সংকুচিত করে; উত্তরের জন্য জায়গা রাখে। /autocompact একটি চ্যাটের জন্য এটি ওভাররাইড করে।"</string>
+    <string name="auto_compact_input_label">"টোকেন বা auto"</string>
+    <string name="auto_compact_invalid">"কমপক্ষে 1,024 টোকেন লিখুন, যেমন 258K, 350K বা 1M, অথবা 80% এর জন্য auto ব্যবহার করুন।"</string>
+    <string name="auto_compact_slash_hint">"এই চ্যাটের সীমা নির্ধারণ করুন, যেমন /autocompact 350K"</string>
+    <string name="auto_compact_status">"এই চ্যাট প্রায় %1$s প্রসঙ্গ টোকেনে স্বয়ংক্রিয়ভাবে সংকুচিত হয়। পরিবর্তন করতে /autocompact 350K, অথবা সেটিংস অনুসরণ করতে /autocompact default ব্যবহার করুন।"</string>
+    <string name="auto_compact_saved">"এই চ্যাট প্রায় %1$s প্রসঙ্গ টোকেনে স্বয়ংক্রিয়ভাবে সংকুচিত হয়ে চালিয়ে যাবে। উত্তরের জন্য জায়গা সংরক্ষিত।"</string>
+    <string name="auto_compact_reset">"ডিফল্ট অনুসরণ: প্রায় %1$s প্রসঙ্গ টোকেনে স্বয়ংক্রিয়ভাবে সংকুচিত করুন।"</string>
+    <string name="tip_auto_compact">"350,000 টোকেনে প্রসঙ্গ স্বয়ংক্রিয়ভাবে সংক্ষিপ্ত করে এই চ্যাট চালিয়ে যেতে /autocompact 350K ব্যবহার করুন। 258K বা 1M ও গ্রহণ করে। /autocompact default সেটিংস → কোডিং → এজেন্টের আচরণ অনুসরণ করে।"</string>
 </resources>

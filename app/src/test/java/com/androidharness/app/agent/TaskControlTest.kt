@@ -10,6 +10,18 @@ import org.junit.rules.TemporaryFolder
 
 class TaskControlTest {
     @get:Rule val folder = TemporaryFolder()
+    @Test fun `auto compact overrides survive restart and stay scoped to their chat`() {
+        val store = TaskControlStore(folder.root)
+        assertNull(store.flow("first").value.autoCompactTokens)
+        store.update("first") { it.copy(autoCompactTokens = 258_000) }
+        assertEquals(258_000, TaskControlStore(folder.root).flow("first").value.autoCompactTokens)
+        assertNull(TaskControlStore(folder.root).flow("second").value.autoCompactTokens)
+        store.update("first") { it.copy(autoCompactTokens = 0) }
+        assertEquals(0, TaskControlStore(folder.root).flow("first").value.autoCompactTokens)
+        store.update("first") { it.copy(autoCompactTokens = null) }
+        assertNull(TaskControlStore(folder.root).flow("first").value.autoCompactTokens)
+    }
+
     @Test fun `queue edits and reordering survive process recreation`() {
         val store = TaskControlStore(folder.root)
         val a = QueuedPrompt(text = "first")

@@ -60,6 +60,7 @@ internal object RunTips {
         RunTip("glass", R.string.tip_glass, page = SettingsPage.APPEARANCE, anchor = R.string.glass_title,
             relevant = { !it.harnessGlassEnabled }),
         RunTip("compact", R.string.tip_compact, TipScope.CODE),
+        RunTip("auto_compact", R.string.tip_auto_compact, TipScope.CODE, SettingsPage.AGENT, R.string.auto_compact_title),
         RunTip("search_depth", R.string.tip_search_depth, TipScope.CHAT),
         RunTip("notifications", R.string.tip_notifications, page = SettingsPage.BACKGROUND, anchor = R.string.background_notifications_title,
             relevant = { !it.notificationsEnabled }),

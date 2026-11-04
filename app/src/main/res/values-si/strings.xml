@@ -995,4 +995,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">ස්වයංක්‍රීයව සංක්ෂිප්ත කරන්න</string>
+    <string name="auto_compact_automatic">ස්වයංක්‍රීය (සන්දර්භයෙන් 80%)</string>
+    <string name="auto_compact_description">Code පැරණි සන්දර්භය සාරාංශ කර වැඩ දිගටම කරගෙන යන විට නියම කරන්න.</string>
+    <string name="auto_compact_detail">Code සංවාද සඳහා පෙරනිමිය. ඇස්තමේන්තුගත සන්දර්භ ටෝකන් භාවිතා කරයි. 250K, 258K, 350K, 1M, 1 million හෝ නිශ්චිත ටෝකන් ගණනක් ඇතුළත් කරන්න. සන්දර්භ සීමාවෙන් 80% සඳහා auto භාවිතා කරන්න. ඉල්ලීම් අතර සංක්ෂිප්ත කරයි; පිළිතුර සඳහා ඉඩ තබයි. /autocompact මෙය එක් සංවාදයකට පමණක් අභිබවා යයි.</string>
+    <string name="auto_compact_input_label">ටෝකන් හෝ auto</string>
+    <string name="auto_compact_invalid">අවම වශයෙන් ටෝකන් 1,024ක් ඇතුළත් කරන්න, උදා: 258K, 350K හෝ 1M, නැතහොත් 80% සඳහා auto භාවිතා කරන්න.</string>
+    <string name="auto_compact_slash_hint">මෙම සංවාදයේ සීමාව සකසන්න, උදා: /autocompact 350K</string>
+    <string name="auto_compact_status">මෙම සංවාදය ආසන්න වශයෙන් සන්දර්භ ටෝකන් %1$sකදී ස්වයංක්‍රීයව සංක්ෂිප්ත වේ. වෙනස් කිරීමට /autocompact 350K භාවිතා කරන්න, නැතහොත් සැකසීම් අනුගමනය කිරීමට /autocompact default භාවිතා කරන්න.</string>
+    <string name="auto_compact_saved">මෙම සංවාදය ආසන්න වශයෙන් සන්දර්භ ටෝකන් %1$sකදී ස්වයංක්‍රීයව සංක්ෂිප්ත වී දිගටම යයි. පිළිතුර සඳහා ඉඩ තබා ඇත.</string>
+    <string name="auto_compact_reset">පෙරනිමිය අනුගමනය: ආසන්න වශයෙන් සන්දර්භ ටෝකන් %1$sකදී ස්වයංක්‍රීයව සංක්ෂිප්ත කරන්න.</string>
+    <string name="tip_auto_compact">ටෝකන් 350,000දී සන්දර්භය ස්වයංක්‍රීයව සාරාංශ කර මෙම සංවාදය දිගටම කරගෙන යාමට /autocompact 350K භාවිතා කරන්න. 258K හෝ 1M ද පිළිගනී. /autocompact default සැකසීම් → කේතනය → නියෝජිත හැසිරීම අනුගමනය කරයි.</string>
 </resources>

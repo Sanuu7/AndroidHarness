@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">Padatkan automatik pada</string>
+    <string name="auto_compact_automatic">Automatik (80% konteks)</string>
+    <string name="auto_compact_description">Tetapkan bila Code meringkaskan konteks lama dan meneruskan kerja.</string>
+    <string name="auto_compact_detail">Lalai untuk perbualan Code. Menggunakan token konteks yang dianggarkan. Masukkan 250K, 258K, 350K, 1M, 1 million atau bilangan token tepat. Gunakan auto untuk 80% had konteks. Memadatkan antara permintaan; ruang untuk balasan dikekalkan. /autocompact menimpa ini untuk satu perbualan.</string>
+    <string name="auto_compact_input_label">Token atau auto</string>
+    <string name="auto_compact_invalid">Masukkan sekurang-kurangnya 1,024 token, seperti 258K, 350K atau 1M, atau gunakan auto untuk 80%.</string>
+    <string name="auto_compact_slash_hint">Tetapkan ambang perbualan ini, cth. /autocompact 350K</string>
+    <string name="auto_compact_status">Perbualan ini memadatkan secara automatik pada kira-kira %1$s token konteks. Gunakan /autocompact 350K untuk menukarnya, atau /autocompact default untuk mengikut tetapan.</string>
+    <string name="auto_compact_saved">Perbualan ini akan memadatkan secara automatik pada kira-kira %1$s token konteks kemudian meneruskan. Ruang untuk balasan dikekalkan.</string>
+    <string name="auto_compact_reset">Mengikut lalai: padatkan secara automatik pada kira-kira %1$s token konteks.</string>
+    <string name="tip_auto_compact">Gunakan /autocompact 350K untuk meringkaskan konteks secara automatik pada 350,000 token dan meneruskan perbualan ini. Turut menerima 258K atau 1M. /autocompact default mengikut Tetapan → Pengekodan → Tingkah laku ejen.</string>
 </resources>

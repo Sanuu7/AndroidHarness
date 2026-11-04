@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">"বাংলা"</string>
     <string name="settings_language_filipino">"Filipino"</string>
     <string name="settings_language_traditional_chinese">"繁體中文"</string>
+    <string name="auto_compact_title">"自動壓縮臨界值"</string>
+    <string name="auto_compact_automatic">"自動（上下文的 80%）"</string>
+    <string name="auto_compact_description">"設定 Code 何時總結較早的上下文並繼續工作。"</string>
+    <string name="auto_compact_detail">"Code 對話的預設值。使用估算的上下文 Token。輸入 250K、258K、350K、1M、1 million 或精確的 Token 數。使用 auto 表示上下文上限的 80%。在請求之間壓縮，並保留回覆空間。/autocompact 僅覆寫單一對話的設定。"</string>
+    <string name="auto_compact_input_label">"Token 或 auto"</string>
+    <string name="auto_compact_invalid">"至少輸入 1,024 個 Token，例如 258K、350K 或 1M，或使用 auto 表示 80%。"</string>
+    <string name="auto_compact_slash_hint">"設定此對話的臨界值，例如 /autocompact 350K"</string>
+    <string name="auto_compact_status">"此對話將在約 %1$s 個上下文 Token 時自動壓縮。使用 /autocompact 350K 修改，或使用 /autocompact default 跟隨設定。"</string>
+    <string name="auto_compact_saved">"此對話將在約 %1$s 個上下文 Token 時自動壓縮後繼續。已保留回覆空間。"</string>
+    <string name="auto_compact_reset">"跟隨預設值：在約 %1$s 個上下文 Token 時自動壓縮。"</string>
+    <string name="tip_auto_compact">"使用 /autocompact 350K 可在 350,000 個 Token 時自動總結上下文並繼續此對話。也接受 258K 或 1M。/autocompact default 跟隨設定 → 程式設計 → 代理程式行為。"</string>
 </resources>

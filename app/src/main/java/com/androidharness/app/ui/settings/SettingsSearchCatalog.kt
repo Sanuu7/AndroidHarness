@@ -166,6 +166,13 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         anchor = R.string.settings_anchor_max_context,
     ),
     SettingsSearchEntry(
+        R.string.auto_compact_title,
+        R.string.auto_compact_description,
+        SettingsPage.AGENT,
+        "auto compact autocompact compaction threshold context tokens summarize",
+        anchor = R.string.auto_compact_title,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_tool_iterations_title,
         R.string.settings_search_tool_iterations_desc,
         SettingsPage.AGENT,

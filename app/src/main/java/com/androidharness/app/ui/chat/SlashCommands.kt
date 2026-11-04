@@ -9,7 +9,7 @@ import com.androidharness.app.skills.buildSlashSkillMessage
 object SlashCommands {
 
     enum class Kind {
-        CLEAR, COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW,
+        CLEAR, COMPACT, AUTO_COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW,
     }
 
     enum class Dispatch { START, QUEUE }
@@ -20,6 +20,7 @@ object SlashCommands {
         val error: String? = null,
         /** /btw: the side question, blank when the sheet should open empty. */
         val sideQuestion: String? = null,
+        val autoCompactArgument: String? = null,
     ) {
         val startsAgent: Boolean get() = agentText != null
     }
@@ -151,6 +152,13 @@ object SlashCommands {
         return when (command) {
             "/clear" -> Result(Kind.CLEAR)
             "/compact" -> Result(Kind.COMPACT)
+            "/autocompact", "/auto-compact", "/auto_compact" -> Result(Kind.AUTO_COMPACT, autoCompactArgument = argument.trim())
+            "/auto" -> {
+                val words = argument.split(WHITESPACE, limit = 2)
+                if (words[0].equals("compact", ignoreCase = true))
+                    Result(Kind.AUTO_COMPACT, autoCompactArgument = words.getOrNull(1).orEmpty().trim())
+                else Result(Kind.UNKNOWN, error = "Unknown command: $command")
+            }
             "/cost" -> Result(Kind.COST)
             "/doctor" -> Result(Kind.DOCTOR, agentText = DOCTOR_PROMPT)
             "/skills" -> Result(Kind.SKILLS)
@@ -210,7 +218,7 @@ object SlashCommands {
             } else ""
             return Pick.AttachSkill(entryCommand.removePrefix("/"), leftover)
         }
-        if (kind == Kind.BTW) return Pick.Insert("$entryCommand ")
+        if (kind == Kind.BTW || kind == Kind.AUTO_COMPACT) return Pick.Insert("$entryCommand ")
         if (kind == Kind.PLAN) {
             // Stay in the composer: "/plan" stays put so the user can append
             // the instruction and hit send themselves. No auto-send.

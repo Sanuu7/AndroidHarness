@@ -332,6 +332,7 @@ internal fun SlashSuggestions(
         buildList {
             add(SlashEntry("/clear", "New chat", "Start a fresh conversation", SlashCommands.Kind.CLEAR))
             add(SlashEntry("/compact", "Compact", "Summarize older context", SlashCommands.Kind.COMPACT))
+            add(SlashEntry("/autocompact", uiContext.getString(R.string.auto_compact_title), uiContext.getString(R.string.auto_compact_slash_hint), SlashCommands.Kind.AUTO_COMPACT))
             add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
             add(SlashEntry(SlashCommands.SIDE_COMMAND, "By the way", "Ask aside on the live context, kept out of the chat", SlashCommands.Kind.BTW))
             add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))

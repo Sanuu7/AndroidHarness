@@ -37,6 +37,8 @@ data class TaskRecord(
     val thinking: String = "OFF",
     val maxOutput: Int = 32768,
     val maxContext: Int = 1000000,
+    /** Null follows app settings; zero explicitly selects automatic (80%) for this chat. */
+    val autoCompactTokens: Int? = null,
     val maxIterations: Int = 0,
     val turnId: String = "",
     val initialPrompt: String = "",

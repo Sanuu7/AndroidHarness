@@ -7,6 +7,23 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class SlashCommandsTest {
+    @Test fun `auto compact aliases stay local and preserve the full amount`() {
+        for (command in listOf("/autocompact", "/auto-compact", "/auto_compact", "/auto compact")) {
+            val result = resolve("$command 1 million")
+            assertEquals(SlashCommands.Kind.AUTO_COMPACT, result.kind)
+            assertEquals("1 million", result.autoCompactArgument)
+            assertFalse(result.startsAgent)
+            assertNull(result.agentText)
+        }
+        assertEquals("", resolve("/autocompact").autoCompactArgument)
+        assertEquals("default", resolve("/autocompact default").autoCompactArgument)
+    }
+
+    @Test fun `picking auto compact leaves the composer ready for a threshold`() {
+        assertEquals(SlashCommands.Pick.Insert("/autocompact "), SlashCommands.pickAction(
+            "/autocompact", "/auto", SlashCommands.Kind.AUTO_COMPACT))
+    }
+
 
     private val skills = setOf("git", "systematic-debugging")
     private val snippets = mapOf("review" to "Review this: \$ARG")

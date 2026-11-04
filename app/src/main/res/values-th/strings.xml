@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">บีบอัดอัตโนมัติที่</string>
+    <string name="auto_compact_automatic">อัตโนมัติ (80% ของบริบท)</string>
+    <string name="auto_compact_description">กำหนดว่า Code จะสรุปบริบทเก่าและทำงานต่อเมื่อใด</string>
+    <string name="auto_compact_detail">ค่าเริ่มต้นสำหรับแชท Code ใช้โทเค็นบริบทโดยประมาณ ป้อน 250K, 258K, 350K, 1M, 1 million หรือจำนวนโทเค็นที่แน่นอน ใช้ auto สำหรับ 80% ของขีดจำกัดบริบท บีบอัดระหว่างคำขอและสงวนพื้นที่สำหรับคำตอบ /autocompact เขียนทับค่านี้สำหรับแชทเดียว</string>
+    <string name="auto_compact_input_label">โทเค็นหรือ auto</string>
+    <string name="auto_compact_invalid">ป้อนอย่างน้อย 1,024 โทเค็น เช่น 258K, 350K หรือ 1M หรือใช้ auto สำหรับ 80%</string>
+    <string name="auto_compact_slash_hint">กำหนดเกณฑ์ของแชทนี้ เช่น /autocompact 350K</string>
+    <string name="auto_compact_status">แชทนี้จะบีบอัดอัตโนมัติที่ประมาณ %1$s โทเค็นบริบท ใช้ /autocompact 350K เพื่อเปลี่ยน หรือ /autocompact default เพื่อทำตามการตั้งค่า</string>
+    <string name="auto_compact_saved">แชทนี้จะบีบอัดอัตโนมัติที่ประมาณ %1$s โทเค็นบริบทแล้วดำเนินการต่อ โดยสงวนพื้นที่สำหรับคำตอบ</string>
+    <string name="auto_compact_reset">ทำตามค่าเริ่มต้น: บีบอัดอัตโนมัติที่ประมาณ %1$s โทเค็นบริบท</string>
+    <string name="tip_auto_compact">ใช้ /autocompact 350K เพื่อสรุปบริบทอัตโนมัติที่ 350,000 โทเค็นและดำเนินแชทนี้ต่อ รองรับ 258K หรือ 1M ด้วย /autocompact default ทำตาม การตั้งค่า → การเขียนโค้ด → พฤติกรรมเอเจนต์</string>
 </resources>

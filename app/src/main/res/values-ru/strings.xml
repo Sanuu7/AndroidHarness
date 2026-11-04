@@ -997,4 +997,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">Автосжатие при</string>
+    <string name="auto_compact_automatic">Автоматически (80% контекста)</string>
+    <string name="auto_compact_description">Задаёт, когда Code сжимает старый контекст и продолжает работу.</string>
+    <string name="auto_compact_detail">Значение по умолчанию для чатов Code. Использует оценочные токены контекста. Введите 250K, 258K, 350K, 1M, 1 million или точное число токенов. Используйте auto для 80% лимита контекста. Сжимает между запросами и оставляет место для ответа. /autocompact переопределяет это для одного чата.</string>
+    <string name="auto_compact_input_label">Токены или auto</string>
+    <string name="auto_compact_invalid">Введите не менее 1 024 токенов, например 258K, 350K или 1M, либо используйте auto для 80%.</string>
+    <string name="auto_compact_slash_hint">Задайте порог для этого чата, например /autocompact 350K</string>
+    <string name="auto_compact_status">Этот чат автоматически сжимается примерно при %1$s токенах контекста. Используйте /autocompact 350K, чтобы изменить, или /autocompact default, чтобы следовать настройкам.</string>
+    <string name="auto_compact_saved">Этот чат автоматически сожмётся примерно при %1$s токенах контекста и продолжит работу. Место для ответа остаётся.</string>
+    <string name="auto_compact_reset">Следуем значению по умолчанию: автосжатие примерно при %1$s токенах контекста.</string>
+    <string name="tip_auto_compact">Используйте /autocompact 350K, чтобы автоматически сжимать контекст при 350 000 токенов и продолжать этот чат. Также принимаются 258K или 1M. /autocompact default следует Настройки → Программирование → Поведение агента.</string>
 </resources>

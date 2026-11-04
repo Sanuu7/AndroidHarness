@@ -33,6 +33,68 @@ class CompactionDeviceTest {
     private val instrumentation = InstrumentationRegistry.getInstrumentation()
     private val c get() = (instrumentation.targetContext.applicationContext as HarnessApp).container
 
+    @Test fun chatOverrideChangesLiveRunCompactsAndContinuesWithoutAQueuedPrompt() = runBlocking {
+        val saved = c.settings.settings.first()
+        // Keep this live-setting test in the foreground, independent of fresh-install notification policy.
+        val scenario = ActivityScenario.launch(ChatListTestActivity::class.java)
+        val requests = Collections.synchronizedList(mutableListOf<JsonObject>())
+        val server = FixtureServer(requests).apply { mode = "tool-stall" }
+        val root = java.io.File(c.appContext.cacheDir, "compact-setting-${System.nanoTime()}").apply { mkdirs() }
+        val project = c.workspace.addShellProject(root.path, activate = false)
+        val provider = c.providers.add("Threshold fixture", ProviderType.OPENAI_COMPAT,
+            "http://127.0.0.1:${server.port}/v1", "fixture-model", "fixture")
+        val sid = c.sessions.createSession("Threshold chat", project.id)
+        val other = c.sessions.createSession("Independent chat", project.id)
+        var vm: ChatViewModel? = null
+        try {
+            c.settings.setAutoCompactTokens(900_000)
+            repeat(20) { c.sessions.addMessage(sid, ChatMessage(Role.USER, "Recorded goal $it " + "x".repeat(8_000))); delay(2) }
+            val originalIds = c.sessions.messages(sid).map { it.id }
+            val chat = onMain { ChatViewModel(c, sid) }.also { vm = it }
+            withTimeout(15_000) { chat.state.first { it.conversationReady && it.autoCompactTokens == 900_000 } }
+            c.runManager.startRun(sid, "Continue the saved task", emptyList(), provider, "fixture", PermissionMode.CONFIRM_RISKY,
+                AgentMode.ACT, 2_000, 1_000_000, ThinkingLevel.OFF, 4, workspaceOverride = c.workspace.forSession(sid), notifyOnFinish = false)
+            withTimeout(15_000) { while (requests.isEmpty()) delay(20) }
+            assertTrue(c.sessions.session(sid)!!.compactionSummary.isEmpty())
+            assertTrue(onMain { chat.send("/autocompact 35K") })
+            withTimeout(10_000) { c.runManager.controls.flow(sid).first { it.autoCompactTokens == 35_000 } }
+            assertTrue(c.runManager.controls.flow(sid).value.queue.isEmpty())
+            assertNull(c.runManager.controls.flow(other).value.autoCompactTokens)
+            assertEquals(900_000, c.settings.settings.first().autoCompactTokens)
+            server.release.countDown()
+            withTimeout(60_000) { c.runManager.live(sid).first { !it.running } }
+            withTimeout(15_000) { while (c.runManager.isRunning(sid)) delay(10) }
+            assertNull(c.runManager.live(sid).value.error)
+            val finished = c.runManager.controls.flow(sid).value
+            assertTrue("status=${finished.status}; reason=${finished.reason}; cancelled=${c.runManager.live(sid).value.cancelled}; requests=${requests.size}; messages=${c.sessions.messages(sid).takeLast(3).map { it.role to it.text.take(150) }}", finished.completed)
+            assertEquals("Preserve the goal and tool outcomes", c.sessions.session(sid)!!.compactionSummary)
+            assertTrue(c.sessions.messages(sid).map { it.id }.containsAll(originalIds))
+            assertTrue(c.sessions.messages(sid).any { it.role == Role.TOOL && it.toolCallId == "fixture-list" })
+            assertFalse(c.sessions.messages(sid).any { it.text.startsWith("/autocompact") })
+            val finalMessages = requests.last()["messages"]!!.jsonArray.map { it.jsonObject }
+            assertTrue(finalMessages.any { it["content"]?.jsonPrimitive?.content?.contains("Auto-compacted context") == true })
+            assertTrue(finalMessages.any { it["role"]?.jsonPrimitive?.content == "tool" })
+            assertTrue(onMain { chat.send("/autocompact 258K") })
+            withTimeout(10_000) { c.runManager.controls.flow(sid).first { it.autoCompactTokens == 258_000 } }
+            assertEquals(258_000, TaskControlStore(java.io.File(c.appContext.filesDir, "task-controls")).flow(sid).value.autoCompactTokens)
+            assertFalse(onMain { chat.send("/autocompact 999999999999M") })
+            assertEquals(258_000, c.runManager.controls.flow(sid).value.autoCompactTokens)
+            assertTrue(onMain { chat.send("/autocompact default") })
+            withTimeout(10_000) { c.runManager.controls.flow(sid).first { it.autoCompactTokens == null } }
+            assertTrue(onMain { chat.send("/autocompact") })
+            assertTrue(chat.state.value.modeToast.orEmpty().contains("900"))
+        } finally {
+            server.release.countDown()
+            c.runManager.stopAndJoin(sid)
+            vm?.let { chat -> onMain { androidx.lifecycle.ViewModelStore().apply { put("fixture", chat); clear() } } }
+            for (id in listOf(sid, other)) c.sessions.session(id)?.let { c.sessions.deleteSession(it) }
+            c.workspace.deleteProject(project); root.deleteRecursively()
+            c.providers.delete(provider.id); server.close(); c.settings.restorePortable(saved)
+            c.settings.setLastActiveSessionId(saved.lastActiveSessionId)
+            scenario.close()
+        }
+    }
+
     @Test fun chatUses250kAndAutomaticallyCompactsBeforeTheLimit() = runBlocking {
         val requests = Collections.synchronizedList(mutableListOf<JsonObject>())
         val server = FixtureServer(requests)
@@ -284,6 +346,7 @@ class CompactionDeviceTest {
         private val socket = ServerSocket(0)
         val port get() = socket.localPort
         @Volatile var mode = "stop"
+        private var toolSent = false
         val release = CountDownLatch(1)
         private val worker = Thread {
             while (!socket.isClosed) try {
@@ -301,9 +364,14 @@ class CompactionDeviceTest {
                     val chat = line.contains("/chat/completions")
                     if (chat) requests += Json.parseToJsonElement(body).jsonObject
                     val currentMode = mode
-                    if (chat && currentMode == "stall") release.await(10, TimeUnit.SECONDS)
-                    val response = if (!chat) """{"data":[{"id":"fixture-model"}]}""" else when (currentMode) {
-                        "partial-error" -> "data: {\"choices\":[{\"delta\":{\"content\":\"partial summary\"}}]}\n\ndata: {\"error\":{\"message\":\"invalid request\",\"code\":422}}\n\n"
+                    if (chat && currentMode in setOf("stall", "tool-stall")) release.await(10, TimeUnit.SECONDS)
+                    val response = if (!chat) """{"data":[{"id":"fixture-model"}]}""" else when {
+                        currentMode == "tool-stall" && !toolSent -> {
+                            toolSent = true
+                            """data: {"choices":[{"delta":{"tool_calls":[{"index":0,"id":"fixture-list","type":"function","function":{"name":"list_dir","arguments":"{\"path\":\".\"}"}}]}}]}""" + "\n\n" +
+                                """data: {"choices":[{"delta":{},"finish_reason":"tool_calls"}]}""" + "\n\ndata: [DONE]\n\n"
+                        }
+                        currentMode == "partial-error" -> "data: {\"choices\":[{\"delta\":{\"content\":\"partial summary\"}}]}\n\ndata: {\"error\":{\"message\":\"invalid request\",\"code\":422}}\n\n"
                         else -> "data: {\"choices\":[{\"delta\":{\"content\":\"Preserve the goal and tool outcomes\"}}]}\n\ndata: {\"choices\":[{\"delta\":{},\"finish_reason\":\"stop\"}],\"usage\":{\"prompt_tokens\":100,\"completion_tokens\":10}}\n\ndata: [DONE]\n\n"
                     }
                     val bytes = response.toByteArray()

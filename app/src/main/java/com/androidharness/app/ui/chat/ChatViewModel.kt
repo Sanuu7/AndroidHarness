@@ -124,6 +124,7 @@ data class ChatUiState(
     val fileAttachments: List<FileAttachment> = emptyList(),
     val attachmentImports: List<AttachmentImport> = emptyList(),
     val maxContextTokens: Int = 1_000_000,
+    val autoCompactTokens: Int = 0,
     val maxOutputTokens: Int = 32_768,
     val maxIterations: Int = 0,
     val providers: List<ProviderConfig> = emptyList(),
@@ -733,6 +734,7 @@ class ChatViewModel(
             reasoningConfigs = settings.reasoningConfigs,
             customThinkingLevels = selection.customThinkingLevels,
             maxContextTokens = settings.maxContextTokens,
+            autoCompactTokens = settings.autoCompactTokens,
             maxOutputTokens = settings.maxOutputTokens,
             maxIterations = settings.maxIterations,
             providers = models.providers,
@@ -842,6 +844,40 @@ class ChatViewModel(
                     return false
                 }
                 compactionJob = viewModelScope.launch { forceCompact() }
+                return true
+            }
+            SlashCommands.Kind.AUTO_COMPACT -> {
+                val argument = resolved.autoCompactArgument.orEmpty()
+                if (argument.isBlank()) {
+                    val override = sessionId?.let { c.runManager.controls.flow(it).value.autoCompactTokens }
+                    val configured = override ?: _state.value.autoCompactTokens
+                    val threshold = com.androidharness.app.agent.AutoCompaction.threshold(configured,
+                        _state.value.maxContextTokens, _state.value.maxOutputTokens)
+                    _state.update { it.copy(error = null, modeToast = c.appContext.getString(R.string.auto_compact_status,
+                        java.text.NumberFormat.getIntegerInstance().format(threshold))) }
+                    return true
+                }
+                val inherit = argument.equals("default", ignoreCase = true) || argument.equals("reset", ignoreCase = true)
+                val tokens = if (inherit) null else com.androidharness.app.agent.AutoCompaction.parse(argument)
+                if (!inherit && tokens == null) {
+                    _state.update { it.copy(error = c.appContext.getString(R.string.auto_compact_invalid)) }
+                    return false
+                }
+                viewModelScope.launch {
+                    try {
+                        val sid = ensureSession()
+                        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                            c.runManager.controls.update(sid) { it.copy(autoCompactTokens = tokens) }
+                        }
+                        val configured = tokens ?: c.settings.settings.first().autoCompactTokens
+                        val threshold = com.androidharness.app.agent.AutoCompaction.threshold(configured,
+                            _state.value.maxContextTokens, _state.value.maxOutputTokens)
+                        _state.update { it.copy(error = null, modeToast = c.appContext.getString(
+                            if (inherit) R.string.auto_compact_reset else R.string.auto_compact_saved,
+                            java.text.NumberFormat.getIntegerInstance().format(threshold))) }
+                    } catch (e: kotlinx.coroutines.CancellationException) { throw e }
+                    catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+                }
                 return true
             }
             SlashCommands.Kind.COST -> {

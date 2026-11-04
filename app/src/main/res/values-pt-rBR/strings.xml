@@ -995,4 +995,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">Compactar automaticamente em</string>
+    <string name="auto_compact_automatic">Automático (80% do contexto)</string>
+    <string name="auto_compact_description">Define quando o Code resume o contexto mais antigo e continua trabalhando.</string>
+    <string name="auto_compact_detail">Padrão para conversas de Code. Usa tokens de contexto estimados. Digite 250K, 258K, 350K, 1M, 1 million ou uma contagem exata de tokens. Use auto para 80% do limite de contexto. Compacta entre solicitações e reserva espaço para a resposta. /autocompact substitui isso para uma conversa.</string>
+    <string name="auto_compact_input_label">Tokens ou auto</string>
+    <string name="auto_compact_invalid">Digite pelo menos 1.024 tokens, como 258K, 350K ou 1M, ou use auto para 80%.</string>
+    <string name="auto_compact_slash_hint">Define o limite desta conversa, por exemplo /autocompact 350K</string>
+    <string name="auto_compact_status">Esta conversa compacta automaticamente com cerca de %1$s tokens de contexto. Use /autocompact 350K para alterar ou /autocompact default para seguir as configurações.</string>
+    <string name="auto_compact_saved">Esta conversa vai compactar automaticamente com cerca de %1$s tokens de contexto e continuar. O espaço para a resposta é reservado.</string>
+    <string name="auto_compact_reset">Seguindo o padrão: compactar automaticamente com cerca de %1$s tokens de contexto.</string>
+    <string name="tip_auto_compact">Use /autocompact 350K para resumir o contexto automaticamente em 350.000 tokens e continuar esta conversa. Também aceita 258K ou 1M. /autocompact default segue Configurações → Programação → Comportamento do agente.</string>
 </resources>

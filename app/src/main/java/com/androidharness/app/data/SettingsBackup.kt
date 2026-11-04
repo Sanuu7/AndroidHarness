@@ -150,7 +150,7 @@ object SettingsBackupValidation {
             (s.harnessCanvas.imageId == null || canvasImageIdPattern.matches(s.harnessCanvas.imageId)) &&
             (s.harnessCanvas.seed == null || s.harnessCanvas.seed in 0xFF000000..0xFFFFFFFF), SettingsBackupProblem.APPEARANCE)
         check(runCatching { ChatAgentProfile.encodeList(s.chatAgents) }.isSuccess, SettingsBackupProblem.CHAT_AGENTS)
-        check(s.maxContextTokens in 8192..2_000_000 && s.maxOutputTokens in 1..1_000_000 && s.maxIterations in 0..10_000, SettingsBackupProblem.MODEL_LIMITS)
+        check((s.autoCompactTokens == 0 || s.autoCompactTokens >= 1_024) && s.maxContextTokens in 8192..2_000_000 && s.maxOutputTokens in 1..1_000_000 && s.maxIterations in 0..10_000, SettingsBackupProblem.MODEL_LIMITS)
         check(s.webSearchProvider in setOf("keyless", "brave", "tavily"), SettingsBackupProblem.SEARCH)
         check(s.voiceEngine in setOf("inbuilt", "groq"), SettingsBackupProblem.VOICE)
         val ids = file.providers.map { it.config.id }.toSet() + HarnessProvider.ID

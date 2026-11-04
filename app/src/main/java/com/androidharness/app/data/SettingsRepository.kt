@@ -52,6 +52,8 @@ data class AppSettings(
     val reasoningConfigs: Map<String, com.androidharness.app.agent.CustomReasoningConfig> = emptyMap(),
     val customThinkingLevels: Map<String, String> = emptyMap(),
     val maxContextTokens: Int = DEFAULT_MAX_CONTEXT,
+    /** Default Code auto-compaction threshold; zero keeps the automatic 80% policy. */
+    val autoCompactTokens: Int = 0,
     val maxOutputTokens: Int = DEFAULT_MAX_OUTPUT,
     /** Tool-call iterations per run. 0 = unlimited. */
     val maxIterations: Int = DEFAULT_MAX_ITERATIONS,
@@ -258,6 +260,7 @@ class SettingsRepository(private val context: Context) {
         val REASONING_CONFIGS = stringPreferencesKey("reasoning_configs")
         val CUSTOM_THINKING_LEVELS = stringPreferencesKey("custom_thinking_levels")
         val MAX_CONTEXT = intPreferencesKey("max_context_tokens")
+        val AUTO_COMPACT = intPreferencesKey("auto_compact_tokens")
         val MAX_OUTPUT = intPreferencesKey("max_output_tokens")
         val MAX_ITERATIONS = intPreferencesKey("max_iterations")
         val RUN_IN_BACKGROUND = booleanPreferencesKey("run_in_background")
@@ -382,6 +385,7 @@ class SettingsRepository(private val context: Context) {
             reasoningConfigs = decodeReasoningConfigs(prefs[Keys.REASONING_CONFIGS]),
             customThinkingLevels = decodeCustomLevels(prefs[Keys.CUSTOM_THINKING_LEVELS]),
             maxContextTokens = prefs[Keys.MAX_CONTEXT] ?: AppSettings.DEFAULT_MAX_CONTEXT,
+            autoCompactTokens = prefs[Keys.AUTO_COMPACT] ?: 0,
             maxOutputTokens = prefs[Keys.MAX_OUTPUT] ?: AppSettings.DEFAULT_MAX_OUTPUT,
             maxIterations = prefs[Keys.MAX_ITERATIONS] ?: AppSettings.DEFAULT_MAX_ITERATIONS,
             runInBackground = prefs[Keys.RUN_IN_BACKGROUND] ?: true,
@@ -493,6 +497,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.REASONING_CONFIGS] = kotlinx.serialization.json.Json.encodeToString(s.reasoningConfigs)
             p[Keys.CUSTOM_THINKING_LEVELS] = kotlinx.serialization.json.Json.encodeToString(s.customThinkingLevels)
             p[Keys.MAX_CONTEXT] = s.maxContextTokens
+            p[Keys.AUTO_COMPACT] = s.autoCompactTokens
             p[Keys.MAX_OUTPUT] = s.maxOutputTokens
             p[Keys.MAX_ITERATIONS] = s.maxIterations
             p[Keys.RUN_IN_BACKGROUND] = s.runInBackground
@@ -863,6 +868,11 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setMaxContextTokens(tokens: Int) {
         context.settingsStore.edit { it[Keys.MAX_CONTEXT] = tokens }
+    }
+
+    suspend fun setAutoCompactTokens(tokens: Int) {
+        require(tokens == 0 || tokens >= 1_024)
+        context.settingsStore.edit { it[Keys.AUTO_COMPACT] = tokens }
     }
 
     suspend fun setMaxOutputTokens(tokens: Int) {

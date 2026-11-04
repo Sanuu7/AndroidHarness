@@ -996,4 +996,15 @@
     <string name="settings_language_bengali">"বাংলা"</string>
     <string name="settings_language_filipino">"Filipino"</string>
     <string name="settings_language_traditional_chinese">"繁體中文"</string>
+    <string name="auto_compact_title">"Compactage automatique à"</string>
+    <string name="auto_compact_automatic">"Automatique (80 % du contexte)"</string>
+    <string name="auto_compact_description">"Définit quand Code résume le contexte ancien et continue de travailler."</string>
+    <string name="auto_compact_detail">"Valeur par défaut pour les discussions Code. Utilise les jetons de contexte estimés. Saisissez 250K, 258K, 350K, 1M, 1 million ou un nombre exact de jetons. Utilisez auto pour 80 % de la limite de contexte. Compacte entre les requêtes et réserve la place de la réponse. /autocompact remplace ce réglage pour une discussion."</string>
+    <string name="auto_compact_input_label">"Jetons ou auto"</string>
+    <string name="auto_compact_invalid">"Saisissez au moins 1 024 jetons, par exemple 258K, 350K ou 1M, ou utilisez auto pour 80 %."</string>
+    <string name="auto_compact_slash_hint">"Définissez le seuil de cette discussion, par ex. /autocompact 350K"</string>
+    <string name="auto_compact_status">"Cette discussion compacte automatiquement vers %1$s jetons de contexte. Utilisez /autocompact 350K pour le changer, ou /autocompact default pour suivre les réglages."</string>
+    <string name="auto_compact_saved">"Cette discussion compacte automatiquement vers %1$s jetons de contexte, puis continue. La place de la réponse est réservée."</string>
+    <string name="auto_compact_reset">"Réglage par défaut suivi : compactage automatique vers %1$s jetons de contexte."</string>
+    <string name="tip_auto_compact">"Utilisez /autocompact 350K pour résumer automatiquement le contexte à 350 000 jetons et poursuivre cette discussion. Accepte aussi 258K ou 1M. /autocompact default suit Paramètres → Codage → Comportement de l’agent."</string>
 </resources>

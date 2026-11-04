@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">Tự nén tại</string>
+    <string name="auto_compact_automatic">Tự động (80% ngữ cảnh)</string>
+    <string name="auto_compact_description">Đặt thời điểm Code tóm tắt ngữ cảnh cũ và tiếp tục làm việc.</string>
+    <string name="auto_compact_detail">Mặc định cho trò chuyện Code. Dùng token ngữ cảnh ước tính. Nhập 250K, 258K, 350K, 1M, 1 million hoặc số token chính xác. Dùng auto cho 80% giới hạn ngữ cảnh. Nén giữa các yêu cầu và chừa chỗ cho câu trả lời. /autocompact ghi đè thiết lập này cho một cuộc trò chuyện.</string>
+    <string name="auto_compact_input_label">Token hoặc auto</string>
+    <string name="auto_compact_invalid">Nhập ít nhất 1.024 token, chẳng hạn 258K, 350K hoặc 1M, hoặc dùng auto cho 80%.</string>
+    <string name="auto_compact_slash_hint">Đặt ngưỡng cho cuộc trò chuyện này, ví dụ /autocompact 350K</string>
+    <string name="auto_compact_status">Cuộc trò chuyện này tự nén ở khoảng %1$s token ngữ cảnh. Dùng /autocompact 350K để thay đổi, hoặc /autocompact default để theo cài đặt.</string>
+    <string name="auto_compact_saved">Cuộc trò chuyện này sẽ tự nén ở khoảng %1$s token ngữ cảnh rồi tiếp tục. Chỗ cho câu trả lời được giữ lại.</string>
+    <string name="auto_compact_reset">Theo mặc định: tự nén ở khoảng %1$s token ngữ cảnh.</string>
+    <string name="tip_auto_compact">Dùng /autocompact 350K để tự động tóm tắt ngữ cảnh ở 350.000 token và tiếp tục cuộc trò chuyện này. Cũng chấp nhận 258K hoặc 1M. /autocompact default theo Cài đặt → Lập trình → Hành vi trợ lý.</string>
 </resources>

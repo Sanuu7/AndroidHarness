@@ -995,4 +995,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">فشرده‌سازی خودکار در</string>
+    <string name="auto_compact_automatic">خودکار (80% زمینه)</string>
+    <string name="auto_compact_description">تعیین کنید Code چه زمانی زمینه قدیمی‌تر را خلاصه کند و به کار ادامه دهد.</string>
+    <string name="auto_compact_detail">پیش‌فرض برای گفتگوهای Code. از توکن‌های زمینه تخمینی استفاده می‌کند. 250K، 258K، 350K، 1M، 1 million یا تعداد دقیق توکن را وارد کنید. برای 80% از حد زمینه از auto استفاده کنید. بین درخواست‌ها فشرده می‌کند و جای پاسخ را نگه می‌دارد. /autocompact این را برای یک گفتگو نادیده می‌گیرد.</string>
+    <string name="auto_compact_input_label">توکن یا auto</string>
+    <string name="auto_compact_invalid">حداقل 1,024 توکن وارد کنید، مثل 258K، 350K یا 1M، یا برای 80% از auto استفاده کنید.</string>
+    <string name="auto_compact_slash_hint">آستانه این گفتگو را تعیین کنید، مثلاً /autocompact 350K</string>
+    <string name="auto_compact_status">این گفتگو به‌طور خودکار حدود %1$s توکن زمینه فشرده می‌شود. برای تغییر آن /autocompact 350K را بفرستید یا برای پیروی از تنظیمات /autocompact default را بفرستید.</string>
+    <string name="auto_compact_saved">این گفتگو به‌طور خودکار حدود %1$s توکن زمینه فشرده می‌شود و سپس ادامه می‌دهد. جای پاسخ نگه داشته می‌شود.</string>
+    <string name="auto_compact_reset">پیروی از پیش‌فرض: فشرده‌سازی خودکار حدود %1$s توکن زمینه.</string>
+    <string name="tip_auto_compact">برای خلاصه کردن خودکار زمینه در 350,000 توکن و ادامه این گفتگو از /autocompact 350K استفاده کنید. 258K یا 1M هم پذیرفته می‌شود. /autocompact default از تنظیمات ← کد نویسی ← رفتار عامل پیروی می‌کند.</string>
 </resources>

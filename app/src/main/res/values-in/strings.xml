@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">Padatkan otomatis pada</string>
+    <string name="auto_compact_automatic">Otomatis (80% konteks)</string>
+    <string name="auto_compact_description">Atur kapan Code meringkas konteks lama dan melanjutkan pekerjaan.</string>
+    <string name="auto_compact_detail">Bawaan untuk obrolan Code. Memakai perkiraan token konteks. Masukkan 250K, 258K, 350K, 1M, 1 million, atau jumlah token persis. Gunakan auto untuk 80% batas konteks. Memadatkan di antara permintaan; ruang untuk balasan tetap disisakan. /autocompact menimpa ini untuk satu obrolan.</string>
+    <string name="auto_compact_input_label">Token atau auto</string>
+    <string name="auto_compact_invalid">Masukkan minimal 1.024 token, seperti 258K, 350K, atau 1M, atau gunakan auto untuk 80%.</string>
+    <string name="auto_compact_slash_hint">Atur ambang obrolan ini, misalnya /autocompact 350K</string>
+    <string name="auto_compact_status">Obrolan ini memadatkan otomatis sekitar %1$s token konteks. Gunakan /autocompact 350K untuk mengubahnya, atau /autocompact default untuk mengikuti setelan.</string>
+    <string name="auto_compact_saved">Obrolan ini akan memadatkan otomatis sekitar %1$s token konteks lalu melanjutkan. Ruang untuk balasan disisakan.</string>
+    <string name="auto_compact_reset">Mengikuti bawaan: padatkan otomatis sekitar %1$s token konteks.</string>
+    <string name="tip_auto_compact">Gunakan /autocompact 350K untuk meringkas konteks otomatis pada 350.000 token dan melanjutkan obrolan ini. Menerima 258K atau 1M juga. /autocompact default mengikuti Setelan → Pemrograman → Perilaku agen.</string>
 </resources>

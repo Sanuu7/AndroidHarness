@@ -999,4 +999,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">الضغط التلقائي عند</string>
+    <string name="auto_compact_automatic">تلقائي (80% من السياق)</string>
+    <string name="auto_compact_description">حدد متى يلخّص Code السياق الأقدم ويتابع العمل.</string>
+    <string name="auto_compact_detail">الإعداد الافتراضي لمحادثات Code. يستخدم رموز السياق المقدَّرة. أدخل 250K أو 258K أو 350K أو 1M أو 1 million أو عددًا دقيقًا للرموز. استخدم auto لـ 80% من حد السياق. يتم الضغط بين الطلبات مع ترك مساحة للرد. يجاوز /autocompact هذا الإعداد لمحادثة واحدة.</string>
+    <string name="auto_compact_input_label">رموز أو auto</string>
+    <string name="auto_compact_invalid">أدخل 1,024 رمزًا على الأقل، مثل 258K أو 350K أو 1M، أو استخدم auto لـ 80%.</string>
+    <string name="auto_compact_slash_hint">حدد حد هذه المحادثة، مثل /autocompact 350K</string>
+    <string name="auto_compact_status">تضغط هذه المحادثة تلقائيًا عند نحو %1$s من رموز السياق. استخدم /autocompact 350K لتغييره، أو /autocompact default لاتباع الإعدادات.</string>
+    <string name="auto_compact_saved">ستضغط هذه المحادثة تلقائيًا عند نحو %1$s من رموز السياق ثم تتابع. تُترك مساحة للرد.</string>
+    <string name="auto_compact_reset">اتباع الافتراضي: الضغط التلقائي عند نحو %1$s من رموز السياق.</string>
+    <string name="tip_auto_compact">استخدم /autocompact 350K لتلخيص السياق تلقائيًا عند 350,000 رمز ومتابعة هذه المحادثة. يقبل أيضًا 258K أو 1M. يتبع /autocompact default الإعدادات ← برمجة ← سلوك الوكيل.</string>
 </resources>

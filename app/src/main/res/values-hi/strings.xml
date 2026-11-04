@@ -995,4 +995,15 @@
     <string name="settings_language_bengali">"বাংলা"</string>
     <string name="settings_language_filipino">"Filipino"</string>
     <string name="settings_language_traditional_chinese">"繁體中文"</string>
+    <string name="auto_compact_title">"स्वतः संक्षिप्त करें"</string>
+    <string name="auto_compact_automatic">"स्वचालित (संदर्भ का 80%)"</string>
+    <string name="auto_compact_description">"तय करें कि Code पुराने संदर्भ को कब सारांशित करके काम जारी रखे।"</string>
+    <string name="auto_compact_detail">"Code चैट के लिए डिफ़ॉल्ट। अनुमानित संदर्भ टोकन का उपयोग करता है। 250K, 258K, 350K, 1M, 1 million या सटीक टोकन संख्या दर्ज करें। संदर्भ सीमा के 80% के लिए auto का उपयोग करें। अनुरोधों के बीच संक्षिप्त करता है; उत्तर के लिए जगह छोड़ी जाती है। /autocompact एक चैट के लिए इसे ओवरराइड करता है।"</string>
+    <string name="auto_compact_input_label">"टोकन या auto"</string>
+    <string name="auto_compact_invalid">"कम से कम 1,024 टोकन दर्ज करें, जैसे 258K, 350K या 1M, या 80% के लिए auto का उपयोग करें।"</string>
+    <string name="auto_compact_slash_hint">"इस चैट की सीमा तय करें, जैसे /autocompact 350K"</string>
+    <string name="auto_compact_status">"यह चैट लगभग %1$s संदर्भ टोकन पर स्वतः संक्षिप्त करती है। बदलने के लिए /autocompact 350K, या सेटिंग का पालन करने के लिए /autocompact default का उपयोग करें।"</string>
+    <string name="auto_compact_saved">"यह चैट लगभग %1$s संदर्भ टोकन पर स्वतः संक्षिप्त करके जारी रहेगी। उत्तर के लिए जगह सुरक्षित है।"</string>
+    <string name="auto_compact_reset">"डिफ़ॉल्ट का पालन: लगभग %1$s संदर्भ टोकन पर स्वतः संक्षिप्त करें।"</string>
+    <string name="tip_auto_compact">"350,000 टोकन पर संदर्भ को स्वतः सारांशित करके इस चैट को जारी रखने के लिए /autocompact 350K का उपयोग करें। 258K या 1M भी स्वीकार करता है। /autocompact default सेटिंग → कोडिंग → एजेंट का व्यवहार का पालन करता है।"</string>
 </resources>

@@ -604,6 +604,8 @@ class RunManager(
                         modelCatalogs = providers.catalogs.first(), customReasoning = reasoningPrefs.reasoningConfigs,
                         customThinkingLevels = customLevels),
                     maxContextTokens = contextLimit,
+                    autoCompactTokens = { controls.flow(sid).value.autoCompactTokens
+                        ?: settings.settings.first().autoCompactTokens },
                     mode = if (conversation.isChat) AgentMode.ACT else mode,
                     conversation = conversation,
                     searchDepth = reasoningPrefs.searchDepth,

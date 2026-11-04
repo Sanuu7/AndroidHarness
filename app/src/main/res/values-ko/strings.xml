@@ -994,4 +994,15 @@
     <string name="settings_language_bengali">"বাংলা"</string>
     <string name="settings_language_filipino">"Filipino"</string>
     <string name="settings_language_traditional_chinese">"繁體中文"</string>
+    <string name="auto_compact_title">"자동 압축 시점"</string>
+    <string name="auto_compact_automatic">"자동 (컨텍스트의 80%)"</string>
+    <string name="auto_compact_description">"Code가 이전 컨텍스트를 요약하고 작업을 계속할 시점을 설정합니다."</string>
+    <string name="auto_compact_detail">"Code 채팅의 기본값입니다. 예상 컨텍스트 토큰을 사용합니다. 250K, 258K, 350K, 1M, 1 million 또는 정확한 토큰 수를 입력하세요. 컨텍스트 한도의 80%에는 auto를 사용하세요. 요청 사이에 압축하며 답변 공간을 남겨 둡니다. /autocompact는 한 채팅에 대해서만 이 값을 덮어씁니다."</string>
+    <string name="auto_compact_input_label">"토큰 또는 auto"</string>
+    <string name="auto_compact_invalid">"최소 1,024개 토큰을 입력하세요(예: 258K, 350K, 1M). 80%에는 auto를 사용하세요."</string>
+    <string name="auto_compact_slash_hint">"이 채팅의 임계값을 설정하세요(예: /autocompact 350K)."</string>
+    <string name="auto_compact_status">"이 채팅은 약 %1$s 컨텍스트 토큰에서 자동 압축합니다. 변경하려면 /autocompact 350K, 설정을 따르려면 /autocompact default를 사용하세요."</string>
+    <string name="auto_compact_saved">"이 채팅은 약 %1$s 컨텍스트 토큰에서 자동 압축한 후 계속합니다. 답변 공간은 남겨 둡니다."</string>
+    <string name="auto_compact_reset">"기본값을 따릅니다: 약 %1$s 컨텍스트 토큰에서 자동 압축."</string>
+    <string name="tip_auto_compact">"/autocompact 350K를 사용하면 350,000 토큰에서 컨텍스트를 자동 요약하고 이 채팅을 계속합니다. 258K 또는 1M도 사용할 수 있습니다. /autocompact default는 설정 → 코딩 → 에이전트 동작을 따릅니다."</string>
 </resources>

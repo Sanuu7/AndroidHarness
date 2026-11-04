@@ -2698,6 +2698,7 @@ private fun AgentSection(
         settings = settings,
         onPermissionMode = { scope.launch { container.settings.setPermissionMode(it) } },
         onContextLimit = { scope.launch { container.settings.setMaxContextTokens(it) } },
+        onAutoCompact = { scope.launch { container.settings.setAutoCompactTokens(it) } },
         onIterationLimit = { scope.launch { container.settings.setMaxIterations(it) } },
         onProjectInstructions = { showAgentsDialog = true },
         onLiveUpdates = { scope.launch { container.settings.setLiveUpdatesEnabled(it) } },

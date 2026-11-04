@@ -1025,4 +1025,15 @@
     <string name="settings_language_bengali">বাংলা</string>
     <string name="settings_language_filipino">Filipino</string>
     <string name="settings_language_traditional_chinese">繁體中文</string>
+    <string name="auto_compact_title">自动压缩阈值</string>
+    <string name="auto_compact_automatic">自动（上下文的 80%）</string>
+    <string name="auto_compact_description">设置 Code 何时总结较早的上下文并继续工作。</string>
+    <string name="auto_compact_detail">Code 对话的默认值。使用估算的上下文 Token。输入 250K、258K、350K、1M、1 million 或精确的 Token 数。使用 auto 表示上下文上限的 80%。在请求之间压缩，并预留回复空间。/autocompact 仅覆盖单个对话的设置。</string>
+    <string name="auto_compact_input_label">Token 或 auto</string>
+    <string name="auto_compact_invalid">至少输入 1,024 个 Token，例如 258K、350K 或 1M，或使用 auto 表示 80%。</string>
+    <string name="auto_compact_slash_hint">设置此对话的阈值，例如 /autocompact 350K</string>
+    <string name="auto_compact_status">此对话将在约 %1$s 个上下文 Token 时自动压缩。使用 /autocompact 350K 修改，或使用 /autocompact default 跟随设置。</string>
+    <string name="auto_compact_saved">此对话将在约 %1$s 个上下文 Token 时自动压缩后继续。已预留回复空间。</string>
+    <string name="auto_compact_reset">跟随默认值：在约 %1$s 个上下文 Token 时自动压缩。</string>
+    <string name="tip_auto_compact">使用 /autocompact 350K 可在 350,000 个 Token 时自动总结上下文并继续此对话。也接受 258K 或 1M。/autocompact default 跟随设置 → 编程 → 代理行为。</string>
 </resources>

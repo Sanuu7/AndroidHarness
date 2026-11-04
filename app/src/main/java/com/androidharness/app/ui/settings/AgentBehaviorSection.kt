@@ -95,6 +95,7 @@ internal fun AgentBehaviorSection(
     showLiveUpdates: Boolean = true,
     onSteeringMode: (SteeringMode) -> Unit = {},
     onRunTips: (Boolean) -> Unit = {},
+    onAutoCompact: (Int) -> Unit = {},
     onAgentSettingsAccess: (AgentSettingsAccess) -> Unit = {},
     /**
      * Test/preview override for the device-owner check guarding full access.
@@ -102,6 +103,9 @@ internal fun AgentBehaviorSection(
      */
     fullAccessApproval: ((onApproved: () -> Unit) -> Unit)? = null,
 ) {
+    var editAutoCompact by rememberSaveable { mutableStateOf(false) }
+    var autoCompactText by rememberSaveable { mutableStateOf("") }
+    var autoCompactError by rememberSaveable { mutableStateOf(false) }
     var pickerName by rememberSaveable { mutableStateOf<String?>(null) }
     val picker = pickerName?.let(BehaviorPicker::valueOf)
     val context = LocalContext.current
@@ -132,6 +136,20 @@ internal fun AgentBehaviorSection(
                     value = stringResource(R.string.settings_agent_context_value, formatTokenCount(settings.maxContextTokens.toLong())),
                     description = stringResource(R.string.settings_agent_context_cap_subtitle),
                     onClick = { pickerName = BehaviorPicker.CONTEXT.name },
+                )
+            }
+            BehaviorDivider()
+            SettingsAnchor(R.string.auto_compact_title) {
+                BehaviorValueRow(
+                    title = stringResource(R.string.auto_compact_title),
+                    value = if (settings.autoCompactTokens == 0) stringResource(R.string.auto_compact_automatic)
+                        else stringResource(R.string.settings_agent_context_value, java.text.NumberFormat.getIntegerInstance().format(settings.autoCompactTokens)),
+                    description = stringResource(R.string.auto_compact_description),
+                    onClick = {
+                        autoCompactText = if (settings.autoCompactTokens == 0) "auto" else settings.autoCompactTokens.toString()
+                        autoCompactError = false
+                        editAutoCompact = true
+                    },
                 )
             }
             BehaviorDivider()
@@ -190,6 +208,34 @@ internal fun AgentBehaviorSection(
                 )
             }
         }
+    }
+
+    if (editAutoCompact) {
+        AlertDialog(
+            onDismissRequest = { editAutoCompact = false },
+            title = { Text(stringResource(R.string.auto_compact_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.auto_compact_detail))
+                    OutlinedTextField(
+                        value = autoCompactText,
+                        onValueChange = { autoCompactText = it; autoCompactError = false },
+                        singleLine = true,
+                        label = { Text(stringResource(R.string.auto_compact_input_label)) },
+                        isError = autoCompactError,
+                        supportingText = { if (autoCompactError) Text(stringResource(R.string.auto_compact_invalid)) },
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val tokens = com.androidharness.app.agent.AutoCompaction.parse(autoCompactText)
+                    if (tokens == null) autoCompactError = true
+                    else { onAutoCompact(tokens); editAutoCompact = false }
+                }) { Text(stringResource(R.string.settings_action_save)) }
+            },
+            dismissButton = { TextButton(onClick = { editAutoCompact = false }) { Text(stringResource(R.string.settings_action_cancel)) } },
+        )
     }
 
     if (picker != null) {

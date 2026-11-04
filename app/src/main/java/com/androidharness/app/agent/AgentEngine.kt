@@ -296,6 +296,8 @@ class AgentEngine(
         subagentRuns: SubagentRuns? = null,
         projectConfiguration: com.androidharness.app.config.HarnessConfig? = null,
         pluginsApproved: Boolean = false,
+        /** Live per-chat override or app default, re-read between model requests. */
+        autoCompactTokens: suspend () -> Int = { 0 },
     ): Flow<AgentEvent> = channelFlow {
         val loadedConfig = if (conversation.isChat) com.androidharness.app.config.HarnessConfig()
             else projectConfiguration ?: configuration(workspace)
@@ -482,10 +484,10 @@ class AgentEngine(
             val estimate = estimateContext(working, requestSystemPrompt, tools)
             emit(AgentEvent.EstimatedContext(estimate))
             val compactThreshold = if (conversation.isChat) ChatContextPolicy.compactAt(contextLimit, requestOptions.maxOutputTokens)
-                else (contextLimit * 0.8).toInt()
-            val needsCompaction = if (conversation.isChat) estimate.total >= compactThreshold else estimate.total > compactThreshold
-            if ((!localChat || agentContextEnabled) && needsCompaction && (conversation.isChat || working.size > 6)) {
-                val compacted = compact(provider, config, apiKey, working, contextLimit, sessionId, conversation.isChat) {
+                else AutoCompaction.threshold(autoCompactTokens(), contextLimit, requestOptions.maxOutputTokens)
+            val needsCompaction = estimate.total >= compactThreshold
+            if ((!localChat || agentContextEnabled) && needsCompaction && (conversation.isChat || working.size > 1)) {
+                val compacted = compact(provider, config, apiKey, working, contextLimit, sessionId, conversation.isChat, compactThreshold) {
                     if (it is AgentEvent.ProviderChanged) config = it.config
                     emit(it)
                 }
@@ -1923,14 +1925,14 @@ class AgentEngine(
         provider: LlmProvider, config: ProviderConfig, apiKey: String,
         working: List<ChatMessage>, maxContextTokens: Int, sessionId: String,
         chat: Boolean,
+        compactThreshold: Int,
         emit: suspend (AgentEvent) -> Unit,
     ): List<ChatMessage>? {
         var keepCount = minOf(8, working.size)
-        if (chat) {
-            // Leave room for the summary even when only a few turns are unusually large.
-            while (keepCount > 1 && (keepCount == working.size ||
-                    estimateContext(working.takeLast(keepCount), "", emptyList()).total > maxContextTokens / 2)) keepCount--
-        }
+        // Leave room below the trigger for a summary and continued work, even with few large turns.
+        val retainedBudget = (if (chat) maxContextTokens else compactThreshold) / 2
+        while (keepCount > 1 && (keepCount == working.size ||
+                estimateContext(working.takeLast(keepCount), "", emptyList()).total > retainedBudget)) keepCount--
         while (keepCount < working.size && working[working.size - keepCount].role == Role.TOOL) keepCount++
         val older = working.dropLast(keepCount)
         if (older.isEmpty()) {
