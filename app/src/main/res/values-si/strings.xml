@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">මෙම සංවාදය ආසන්න වශයෙන් සන්දර්භ ටෝකන් %1$sකදී ස්වයංක්‍රීයව සංක්ෂිප්ත වී දිගටම යයි. පිළිතුර සඳහා ඉඩ තබා ඇත.</string>
     <string name="auto_compact_reset">පෙරනිමිය අනුගමනය: ආසන්න වශයෙන් සන්දර්භ ටෝකන් %1$sකදී ස්වයංක්‍රීයව සංක්ෂිප්ත කරන්න.</string>
     <string name="tip_auto_compact">ටෝකන් 350,000දී සන්දර්භය ස්වයංක්‍රීයව සාරාංශ කර මෙම සංවාදය දිගටම කරගෙන යාමට /autocompact 350K භාවිතා කරන්න. 258K හෝ 1M ද පිළිගනී. /autocompact default සැකසීම් → කේතනය → නියෝජිත හැසිරීම අනුගමනය කරයි.</string>
+    <string name="harness_free_quota_title">"Harness නොමිලේ කෝටාව අවසන් වී ඇත"</string>
+    <string name="harness_free_quota_body">"නොමිලේ ප්‍රමාණය ඔබේ ජාලය සමඟ බෙදා ගන්නා අතර පැයක කවුළුවකින් අලුත් වේ. නැවත සැකසීමට රැඳී සිටින්න, නැතහොත් දිගටම යාමට සැපයුම්කරු මාරු කරන්න."</string>
+    <string name="harness_free_rate_title">"Harness නොමිලේ මාදිලි තාවකාලිකව සීමා කර ඇත"</string>
+    <string name="harness_free_rate_body">"මෙම මාදිලිය තාවකාලිකව කාර්යබහුලයි හෝ සීමා කර ඇත. ටික වේලාවකින් නැවත උත්සාහ කරන්න, නැතහොත් සැපයුම්කරු මාරු කරන්න."</string>
+    <string name="harness_switch_provider">"සැපයුම්කරු මාරු කරන්න"</string>
+    <string name="harness_free_wait">"මම රැඳී සිටිමි"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">"සේවාව තවත් තත්පර %1$dකින් නැවත උත්සාහ කිරීමට යෝජනා කරයි."</item>
+        <item quantity="other">"සේවාව තවත් තත්පර %1$dකින් නැවත උත්සාහ කිරීමට යෝජනා කරයි."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">"සේවාව තවත් මිනිත්තු %1$dකින් නැවත උත්සාහ කිරීමට යෝජනා කරයි."</item>
+        <item quantity="other">"සේවාව තවත් මිනිත්තු %1$dකින් නැවත උත්සාහ කිරීමට යෝජනා කරයි."</item>
+    </plurals>
 </resources>

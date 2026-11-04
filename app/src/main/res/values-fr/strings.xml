@@ -1007,4 +1007,20 @@
     <string name="auto_compact_saved">"Cette discussion compacte automatiquement vers %1$s jetons de contexte, puis continue. La place de la réponse est réservée."</string>
     <string name="auto_compact_reset">"Réglage par défaut suivi : compactage automatique vers %1$s jetons de contexte."</string>
     <string name="tip_auto_compact">"Utilisez /autocompact 350K pour résumer automatiquement le contexte à 350 000 jetons et poursuivre cette discussion. Accepte aussi 258K ou 1M. /autocompact default suit Paramètres → Codage → Comportement de l’agent."</string>
+    <string name="harness_free_quota_title">"Le quota gratuit Harness est épuisé"</string>
+    <string name="harness_free_quota_body">"L’allocation gratuite est partagée par votre réseau et se renouvelle chaque heure. Attendez la réinitialisation ou changez de fournisseur pour continuer."</string>
+    <string name="harness_free_rate_title">"Les modèles gratuits Harness sont temporairement limités"</string>
+    <string name="harness_free_rate_body">"Ce modèle est temporairement occupé ou limité en débit. Réessayez bientôt ou changez de fournisseur pour continuer."</string>
+    <string name="harness_switch_provider">"Changer de fournisseur"</string>
+    <string name="harness_free_wait">"Je vais attendre"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">"Le service suggère de réessayer dans environ %1$d seconde."</item>
+        <item quantity="many">"Le service suggère de réessayer dans environ %1$d secondes."</item>
+        <item quantity="other">"Le service suggère de réessayer dans environ %1$d secondes."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">"Le service suggère de réessayer dans environ %1$d minute."</item>
+        <item quantity="many">"Le service suggère de réessayer dans environ %1$d minutes."</item>
+        <item quantity="other">"Le service suggère de réessayer dans environ %1$d minutes."</item>
+    </plurals>
 </resources>

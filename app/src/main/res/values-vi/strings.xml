@@ -1005,4 +1005,16 @@
     <string name="auto_compact_saved">Cuộc trò chuyện này sẽ tự nén ở khoảng %1$s token ngữ cảnh rồi tiếp tục. Chỗ cho câu trả lời được giữ lại.</string>
     <string name="auto_compact_reset">Theo mặc định: tự nén ở khoảng %1$s token ngữ cảnh.</string>
     <string name="tip_auto_compact">Dùng /autocompact 350K để tự động tóm tắt ngữ cảnh ở 350.000 token và tiếp tục cuộc trò chuyện này. Cũng chấp nhận 258K hoặc 1M. /autocompact default theo Cài đặt → Lập trình → Hành vi trợ lý.</string>
+    <string name="harness_free_quota_title">"Hạn mức miễn phí của Harness đã hết"</string>
+    <string name="harness_free_quota_body">"Hạn mức miễn phí được chia sẻ theo mạng của bạn và được làm mới theo khung giờ. Vui lòng chờ làm mới hoặc chuyển nhà cung cấp để tiếp tục."</string>
+    <string name="harness_free_rate_title">"Các mô hình miễn phí của Harness tạm thời bị giới hạn"</string>
+    <string name="harness_free_rate_body">"Mô hình này tạm thời bận hoặc bị giới hạn tốc độ. Hãy thử lại sau, hoặc chuyển nhà cung cấp để tiếp tục."</string>
+    <string name="harness_switch_provider">"Chuyển nhà cung cấp"</string>
+    <string name="harness_free_wait">"Tôi sẽ chờ"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="other">"Dịch vụ đề nghị thử lại sau khoảng %1$d giây."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="other">"Dịch vụ đề nghị thử lại sau khoảng %1$d phút."</item>
+    </plurals>
 </resources>

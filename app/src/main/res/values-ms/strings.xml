@@ -1005,4 +1005,16 @@
     <string name="auto_compact_saved">Perbualan ini akan memadatkan secara automatik pada kira-kira %1$s token konteks kemudian meneruskan. Ruang untuk balasan dikekalkan.</string>
     <string name="auto_compact_reset">Mengikut lalai: padatkan secara automatik pada kira-kira %1$s token konteks.</string>
     <string name="tip_auto_compact">Gunakan /autocompact 350K untuk meringkaskan konteks secara automatik pada 350,000 token dan meneruskan perbualan ini. Turut menerima 258K atau 1M. /autocompact default mengikut Tetapan → Pengekodan → Tingkah laku ejen.</string>
+    <string name="harness_free_quota_title">"Kuota percuma Harness telah habis"</string>
+    <string name="harness_free_quota_body">"Elaun percuma dikongsi oleh rangkaian anda dan diperbaharui setiap jam. Tunggu sehingga ditetapkan semula, atau tukar penyedia untuk meneruskan."</string>
+    <string name="harness_free_rate_title">"Model percuma Harness terhad buat sementara"</string>
+    <string name="harness_free_rate_body">"Model ini sibuk atau terhad kadar buat sementara. Cuba lagi sebentar lagi, atau tukar penyedia untuk meneruskan."</string>
+    <string name="harness_switch_provider">"Tukar penyedia"</string>
+    <string name="harness_free_wait">"Saya akan tunggu"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="other">"Perkhidmatan mencadangkan cuba lagi dalam kira-kira %1$d saat."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="other">"Perkhidmatan mencadangkan cuba lagi dalam kira-kira %1$d minit."</item>
+    </plurals>
 </resources>

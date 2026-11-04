@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">این گفتگو به‌طور خودکار حدود %1$s توکن زمینه فشرده می‌شود و سپس ادامه می‌دهد. جای پاسخ نگه داشته می‌شود.</string>
     <string name="auto_compact_reset">پیروی از پیش‌فرض: فشرده‌سازی خودکار حدود %1$s توکن زمینه.</string>
     <string name="tip_auto_compact">برای خلاصه کردن خودکار زمینه در 350,000 توکن و ادامه این گفتگو از /autocompact 350K استفاده کنید. 258K یا 1M هم پذیرفته می‌شود. /autocompact default از تنظیمات ← کد نویسی ← رفتار عامل پیروی می‌کند.</string>
+    <string name="harness_free_quota_title">سهمیه رایگان Harness تمام شده است</string>
+    <string name="harness_free_quota_body">سهمیه رایگان با شبکه شما مشترک است و در یک پنجره ساعتی تمدید می‌شود. برای ادامه منتظر بازنشانی بمانید یا ارائه‌دهنده را تغییر دهید.</string>
+    <string name="harness_free_rate_title">مدل‌های رایگان Harness موقتاً محدود شده‌اند</string>
+    <string name="harness_free_rate_body">این مدل موقتاً مشغول یا محدود شده است. کمی بعد دوباره امتحان کنید یا ارائه‌دهنده را تغییر دهید.</string>
+    <string name="harness_switch_provider">تغییر ارائه‌دهنده</string>
+    <string name="harness_free_wait">منتظر می‌مانم</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">سرویس پیشنهاد می‌کند حدود %1$d ثانیه دیگر دوباره امتحان کنید.</item>
+        <item quantity="other">سرویس پیشنهاد می‌کند حدود %1$d ثانیه دیگر دوباره امتحان کنید.</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">سرویس پیشنهاد می‌کند حدود %1$d دقیقه دیگر دوباره امتحان کنید.</item>
+        <item quantity="other">سرویس پیشنهاد می‌کند حدود %1$d دقیقه دیگر دوباره امتحان کنید.</item>
+    </plurals>
 </resources>

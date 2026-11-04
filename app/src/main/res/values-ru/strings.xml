@@ -1008,4 +1008,22 @@
     <string name="auto_compact_saved">Этот чат автоматически сожмётся примерно при %1$s токенах контекста и продолжит работу. Место для ответа остаётся.</string>
     <string name="auto_compact_reset">Следуем значению по умолчанию: автосжатие примерно при %1$s токенах контекста.</string>
     <string name="tip_auto_compact">Используйте /autocompact 350K, чтобы автоматически сжимать контекст при 350 000 токенов и продолжать этот чат. Также принимаются 258K или 1M. /autocompact default следует Настройки → Программирование → Поведение агента.</string>
+    <string name="harness_free_quota_title">"Бесплатная квота Harness исчерпана"</string>
+    <string name="harness_free_quota_body">"Бесплатный лимит общий для вашей сети и обновляется раз в час. Дождитесь сброса или смените провайдера, чтобы продолжить."</string>
+    <string name="harness_free_rate_title">"Бесплатные модели Harness временно ограничены"</string>
+    <string name="harness_free_rate_body">"Модель временно занята или ограничена по частоте запросов. Повторите попытку позже или смените провайдера, чтобы продолжить."</string>
+    <string name="harness_switch_provider">"Сменить провайдера"</string>
+    <string name="harness_free_wait">"Подожду"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">"Сервис предлагает повторить попытку примерно через %1$d секунду."</item>
+        <item quantity="few">"Сервис предлагает повторить попытку примерно через %1$d секунды."</item>
+        <item quantity="many">"Сервис предлагает повторить попытку примерно через %1$d секунд."</item>
+        <item quantity="other">"Сервис предлагает повторить попытку примерно через %1$d секунды."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">"Сервис предлагает повторить попытку примерно через %1$d минуту."</item>
+        <item quantity="few">"Сервис предлагает повторить попытку примерно через %1$d минуты."</item>
+        <item quantity="many">"Сервис предлагает повторить попытку примерно через %1$d минут."</item>
+        <item quantity="other">"Сервис предлагает повторить попытку примерно через %1$d минуты."</item>
+    </plurals>
 </resources>

@@ -20,7 +20,7 @@ internal enum class FallbackFailureKind { QUOTA, TRANSIENT, TERMINAL }
 
 internal fun fallbackFailureKind(failure: StreamEvent.Failure, cause: Throwable? = null): FallbackFailureKind {
     if (failure.code == 401 || failure.code == 403) return FallbackFailureKind.TERMINAL
-    val quotaCodes = setOf("insufficient_quota", "quota_exceeded", "credit_balance_too_low",
+    val quotaCodes = setOf(HarnessFreeLimit.QUOTA_CODE, "insufficient_quota", "quota_exceeded", "credit_balance_too_low",
         "subscription_sharing_usage_limit_exceeded", "usage_limit_reached", "billing_hard_limit_reached")
     val quotaText = Regex("insufficient[_ ]quota|quota (?:is )?(?:exceeded|exhausted)|exceeded.{0,30}quota|" +
         "insufficient (?:credits|balance)|credit balance.{0,20}(?:low|exhausted)|usage limit (?:reached|exceeded)", RegexOption.IGNORE_CASE)

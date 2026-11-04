@@ -964,7 +964,19 @@ class ChatViewModel(
     }
 
     private suspend fun resumeTaskNow(sid: String) {
-        val record = c.runManager.controls.flow(sid).value
+        var record = c.runManager.controls.flow(sid).value
+        // A manual provider choice after a free-limit notice must also apply to Continue.
+        // Other interrupted tasks retain their saved provider and recovery behavior.
+        if (record.provider?.id == com.androidharness.app.llm.HarnessProvider.ID &&
+            com.androidharness.app.llm.HarnessFreeLimit.notice(record.reason) != null) {
+            val current = _state.value
+            val target = current.modelSelectionTarget
+            val chosen = current.providers.firstOrNull { it.id == current.selectedProviderIdFor(target) }
+                ?.let { it.copy(model = current.selectedModelFor(target) ?: it.model) }
+            if (chosen != null && (chosen.id != record.provider?.id || chosen.model != record.provider?.model)) {
+                record = c.runManager.controls.update(sid) { it.copy(provider = chosen, fallbackPrimary = null) }
+            }
+        }
         val provider = record.provider ?: _state.value.activeProvider
             ?.takeIf { it.id == com.androidharness.app.llm.HarnessProvider.ID }
             ?.let { active ->

@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">"Awtomatikong mag-compact ang chat na ito sa humigit-kumulang %1$s token ng konteksto at magpapatuloy. Nakalaan ang puwang para sa sagot."</string>
     <string name="auto_compact_reset">"Sumusunod sa default: awtomatikong i-compact sa humigit-kumulang %1$s token ng konteksto."</string>
     <string name="tip_auto_compact">"Gamitin ang /autocompact 350K para awtomatikong ibuod ang konteksto sa 350,000 token at ipagpatuloy ang chat na ito. Tumatanggap din ng 258K o 1M. Ang /autocompact default ay sumusunod sa Mga setting → Pag-coding → Gawi ng ahente."</string>
+    <string name="harness_free_quota_title">"Naubos na ang libreng quota ng Harness"</string>
+    <string name="harness_free_quota_body">"Ibinabahagi ng iyong network ang libreng allowance at nire-refresh bawat oras. Hintayin ang pag-reset, o lumipat ng provider para magpatuloy."</string>
+    <string name="harness_free_rate_title">"Pansamantalang limitado ang mga libreng model ng Harness"</string>
+    <string name="harness_free_rate_body">"Pansamantalang abala o limitado ang model na ito. Subukan muli mamaya, o lumipat ng provider para magpatuloy."</string>
+    <string name="harness_switch_provider">"Lumipat ng provider"</string>
+    <string name="harness_free_wait">"Maghihintay ako"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">"Iminumungkahi ng serbisyo na subukan muli sa loob ng humigit-kumulang %1$d segundo."</item>
+        <item quantity="other">"Iminumungkahi ng serbisyo na subukan muli sa loob ng humigit-kumulang %1$d segundo."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">"Iminumungkahi ng serbisyo na subukan muli sa loob ng humigit-kumulang %1$d minuto."</item>
+        <item quantity="other">"Iminumungkahi ng serbisyo na subukan muli sa loob ng humigit-kumulang %1$d minuto."</item>
+    </plurals>
 </resources>

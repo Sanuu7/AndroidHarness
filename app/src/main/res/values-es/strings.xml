@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">Este chat compactará automáticamente a unos %1$s tokens de contexto y luego continuará. Se reserva espacio para la respuesta.</string>
     <string name="auto_compact_reset">Siguiendo el valor predeterminado: compactar automáticamente a unos %1$s tokens de contexto.</string>
     <string name="tip_auto_compact">Usa /autocompact 350K para resumir el contexto automáticamente a los 350.000 tokens y continuar este chat. También acepta 258K o 1M. /autocompact default sigue Configuración → Programación → Comportamiento del agente.</string>
+    <string name="harness_free_quota_title">La cuota gratuita de Harness se ha agotado</string>
+    <string name="harness_free_quota_body">El límite gratuito se comparte con tu red y se renueva cada hora. Espera a que se restablezca o cambia de proveedor para continuar.</string>
+    <string name="harness_free_rate_title">Los modelos gratuitos de Harness están limitados temporalmente</string>
+    <string name="harness_free_rate_body">Este modelo está ocupado o limitado temporalmente. Inténtalo de nuevo en breve o cambia de proveedor para continuar.</string>
+    <string name="harness_switch_provider">Cambiar proveedor</string>
+    <string name="harness_free_wait">Esperaré</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">El servicio sugiere reintentar en aproximadamente %1$d segundo.</item>
+        <item quantity="other">El servicio sugiere reintentar en aproximadamente %1$d segundos.</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">El servicio sugiere reintentar en aproximadamente %1$d minuto.</item>
+        <item quantity="other">El servicio sugiere reintentar en aproximadamente %1$d minutos.</item>
+    </plurals>
 </resources>

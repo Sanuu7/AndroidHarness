@@ -147,7 +147,7 @@ sealed interface StreamEvent {
     ) : StreamEvent
     /** [code] is the provider's error status, even when the SSE HTTP response is 200. */
     data class Failure(val message: String, val code: Int? = null, val errorCode: String? = null,
-        val retryable: Boolean? = null) : StreamEvent
+        val retryable: Boolean? = null, val retryAfterSeconds: Long? = null) : StreamEvent
     /** A consented account/model change before any response output. */
     data class ProviderChanged(val config: ProviderConfig, val reason: String, val persistSelection: Boolean = true) : StreamEvent
     data class Retrying(val attempt: Int, val delayMs: Long, val reason: String) : StreamEvent
@@ -161,7 +161,10 @@ sealed interface StreamEvent {
     data class Done(val finishReason: String? = null) : StreamEvent
 }
 
-class ApiException(val code: Int, message: String) : IOException("HTTP $code: $message") {
+class ApiException(val code: Int, message: String, retryAfterSecondsHeader: Long? = null) : IOException("HTTP $code: $message") {
+    val retryAfterSeconds: Long? = retryAfterSecondsHeader ?: runCatching {
+        providerRetryAfterSeconds(Json.parseToJsonElement(message))
+    }.getOrNull()
     val errorCode: String? = runCatching {
         providerErrorCode((Json.parseToJsonElement(message) as? JsonObject)?.get("error") as? JsonObject)
     }.getOrNull()
@@ -249,7 +252,7 @@ object ProviderFactory {
                 response.use {
                     if (!it.isSuccessful) {
                         val errBody = try { it.body?.string()?.take(2000) } catch (_: Exception) { null }
-                        throw ApiException(it.code, errBody ?: it.message)
+                        throw ApiException(it.code, errBody ?: it.message, retryAfterHeaderSeconds(it.header("Retry-After")))
                     }
                     val source = it.body!!.source()
                     while (true) {

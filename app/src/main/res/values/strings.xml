@@ -1038,4 +1038,12 @@
     <string name="auto_compact_saved">This chat will auto compact at about %1$s context tokens, then continue. Space for the reply is reserved.</string>
     <string name="auto_compact_reset">Following the default: auto compact at about %1$s context tokens.</string>
     <string name="tip_auto_compact">Use /autocompact 350K to summarize context automatically at 350,000 tokens and continue this chat. Accepts 258K or 1M too. /autocompact default follows Settings → Coding → Agent behavior.</string>
+    <string name="harness_free_quota_title">Harness free quota limit has been exhausted</string>
+    <string name="harness_free_quota_body">The free allowance is shared by your network and renews over an hourly window. Please wait for it to reset, or switch providers to continue.</string>
+    <string name="harness_free_rate_title">Harness free models are temporarily limited</string>
+    <string name="harness_free_rate_body">This model is temporarily busy or rate limited. Try again shortly, or switch providers to continue.</string>
+    <string name="harness_switch_provider">Switch Provider</string>
+    <string name="harness_free_wait">I’ll wait</string>
+    <plurals name="harness_free_retry_seconds"><item quantity="one">The service suggests trying again in about %1$d second.</item><item quantity="other">The service suggests trying again in about %1$d seconds.</item></plurals>
+    <plurals name="harness_free_retry_minutes"><item quantity="one">The service suggests trying again in about %1$d minute.</item><item quantity="other">The service suggests trying again in about %1$d minutes.</item></plurals>
 </resources>

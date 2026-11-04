@@ -1005,4 +1005,16 @@
     <string name="auto_compact_saved">แชทนี้จะบีบอัดอัตโนมัติที่ประมาณ %1$s โทเค็นบริบทแล้วดำเนินการต่อ โดยสงวนพื้นที่สำหรับคำตอบ</string>
     <string name="auto_compact_reset">ทำตามค่าเริ่มต้น: บีบอัดอัตโนมัติที่ประมาณ %1$s โทเค็นบริบท</string>
     <string name="tip_auto_compact">ใช้ /autocompact 350K เพื่อสรุปบริบทอัตโนมัติที่ 350,000 โทเค็นและดำเนินแชทนี้ต่อ รองรับ 258K หรือ 1M ด้วย /autocompact default ทำตาม การตั้งค่า → การเขียนโค้ด → พฤติกรรมเอเจนต์</string>
+    <string name="harness_free_quota_title">"โควตาฟรีของ Harness หมดแล้ว"</string>
+    <string name="harness_free_quota_body">"โควตาฟรีใช้ร่วมกันในเครือข่ายของคุณและรีเซ็ตเป็นรายชั่วโมง โปรดรอการรีเซ็ต หรือสลับผู้ให้บริการเพื่อดำเนินการต่อ"</string>
+    <string name="harness_free_rate_title">"โมเดลฟรีของ Harness ถูกจำกัดชั่วคราว"</string>
+    <string name="harness_free_rate_body">"โมเดลนี้ไม่ว่างหรือถูกจำกัดอัตราชั่วคราว ลองอีกครั้งในไม่ช้า หรือสลับผู้ให้บริการเพื่อดำเนินการต่อ"</string>
+    <string name="harness_switch_provider">"สลับผู้ให้บริการ"</string>
+    <string name="harness_free_wait">"ฉันจะรอ"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="other">"บริการแนะนำให้ลองอีกครั้งในประมาณ %1$d วินาที"</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="other">"บริการแนะนำให้ลองอีกครั้งในประมาณ %1$d นาที"</item>
+    </plurals>
 </resources>

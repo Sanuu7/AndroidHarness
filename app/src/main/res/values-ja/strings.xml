@@ -1005,4 +1005,16 @@
     <string name="auto_compact_saved">このチャットは約 %1$s コンテキストトークンで自動圧縮して続行します。返信のための余白は残されます。</string>
     <string name="auto_compact_reset">既定に従います: 約 %1$s コンテキストトークンで自動圧縮します。</string>
     <string name="tip_auto_compact">/autocompact 350K を使うと、350,000 トークンでコンテキストを自動要約してこのチャットを続行できます。258K や 1M も使えます。/autocompact default は設定 → コーディング → エージェントの動作に従います。</string>
+    <string name="harness_free_quota_title">Harness の無料枠を使い切りました</string>
+    <string name="harness_free_quota_body">無料枠はネットワーク全体で共有され、1 時間単位で更新されます。リセットを待つか、プロバイダーを切り替えて続行してください。</string>
+    <string name="harness_free_rate_title">Harness の無料モデルは一時的に制限されています</string>
+    <string name="harness_free_rate_body">このモデルは一時的に混雑しているか、レート制限中です。しばらくしてから再試行するか、プロバイダーを切り替えて続行してください。</string>
+    <string name="harness_switch_provider">プロバイダーを切り替え</string>
+    <string name="harness_free_wait">待機します</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="other">サービスは約 %1$d 秒後に再試行することを推奨しています。</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="other">サービスは約 %1$d 分後に再試行することを推奨しています。</item>
+    </plurals>
 </resources>

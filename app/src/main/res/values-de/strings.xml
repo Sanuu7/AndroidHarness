@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">Dieser Chat komprimiert automatisch bei etwa %1$s Kontext-Tokens und arbeitet dann weiter. Platz für die Antwort bleibt reserviert.</string>
     <string name="auto_compact_reset">Folgt dem Standard: automatisch komprimieren bei etwa %1$s Kontext-Tokens.</string>
     <string name="tip_auto_compact">Nutze /autocompact 350K, um den Kontext bei 350.000 Tokens automatisch zusammenzufassen und diesen Chat fortzusetzen. Akzeptiert auch 258K oder 1M. /autocompact default folgt Einstellungen → Programmieren → Agent-Verhalten.</string>
+    <string name="harness_free_quota_title">Das kostenlose Harness-Kontingent ist aufgebraucht</string>
+    <string name="harness_free_quota_body">Das kostenlose Kontingent wird von deinem Netzwerk geteilt und erneuert sich stündlich. Warte auf die Zurücksetzung oder wechsle den Anbieter, um fortzufahren.</string>
+    <string name="harness_free_rate_title">Kostenlose Harness-Modelle sind vorübergehend eingeschränkt</string>
+    <string name="harness_free_rate_body">Dieses Modell ist vorübergehend ausgelastet oder ratenbegrenzt. Versuche es gleich noch einmal oder wechsle den Anbieter, um fortzufahren.</string>
+    <string name="harness_switch_provider">Anbieter wechseln</string>
+    <string name="harness_free_wait">Ich warte</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">Der Dienst empfiehlt, es in etwa %1$d Sekunde erneut zu versuchen.</item>
+        <item quantity="other">Der Dienst empfiehlt, es in etwa %1$d Sekunden erneut zu versuchen.</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">Der Dienst empfiehlt, es in etwa %1$d Minute erneut zu versuchen.</item>
+        <item quantity="other">Der Dienst empfiehlt, es in etwa %1$d Minuten erneut zu versuchen.</item>
+    </plurals>
 </resources>

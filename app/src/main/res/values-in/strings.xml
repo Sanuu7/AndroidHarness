@@ -1005,4 +1005,16 @@
     <string name="auto_compact_saved">Obrolan ini akan memadatkan otomatis sekitar %1$s token konteks lalu melanjutkan. Ruang untuk balasan disisakan.</string>
     <string name="auto_compact_reset">Mengikuti bawaan: padatkan otomatis sekitar %1$s token konteks.</string>
     <string name="tip_auto_compact">Gunakan /autocompact 350K untuk meringkas konteks otomatis pada 350.000 token dan melanjutkan obrolan ini. Menerima 258K atau 1M juga. /autocompact default mengikuti Setelan → Pemrograman → Perilaku agen.</string>
+    <string name="harness_free_quota_title">Kuota gratis Harness sudah habis</string>
+    <string name="harness_free_quota_body">Jatah gratis dibagi oleh jaringanmu dan diperbarui dalam jendela per jam. Tunggu hingga direset, atau ganti penyedia untuk melanjutkan.</string>
+    <string name="harness_free_rate_title">Model gratis Harness sementara dibatasi</string>
+    <string name="harness_free_rate_body">Model ini sedang sibuk atau dibatasi sementara. Coba lagi sebentar lagi, atau ganti penyedia untuk melanjutkan.</string>
+    <string name="harness_switch_provider">Ganti penyedia</string>
+    <string name="harness_free_wait">Saya tunggu</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="other">Layanan menyarankan mencoba lagi dalam sekitar %1$d detik.</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="other">Layanan menyarankan mencoba lagi dalam sekitar %1$d menit.</item>
+    </plurals>
 </resources>

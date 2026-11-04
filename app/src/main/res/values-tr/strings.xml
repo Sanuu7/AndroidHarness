@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">Bu sohbet yaklaşık %1$s bağlam jetonunda otomatik sıkıştırıp devam eder. Yanıt için yer ayrılır.</string>
     <string name="auto_compact_reset">Varsayılan izleniyor: yaklaşık %1$s bağlam jetonunda otomatik sıkıştır.</string>
     <string name="tip_auto_compact">Bağlamı 350.000 jetonunda otomatik özetleyip bu sohbete devam etmek için /autocompact 350K kullanın. 258K veya 1M de kabul edilir. /autocompact default Ayarlar → Kodlama → Ajan davranışı yolunu izler.</string>
+    <string name="harness_free_quota_title">"Harness ücretsiz kota sınırı tükendi"</string>
+    <string name="harness_free_quota_body">"Ücretsiz hak ağınızla paylaşılır ve saatlik bir pencerede yenilenir. Sıfırlanmasını bekleyin veya devam etmek için sağlayıcıyı değiştirin."</string>
+    <string name="harness_free_rate_title">"Harness ücretsiz modelleri geçici olarak sınırlı"</string>
+    <string name="harness_free_rate_body">"Bu model geçici olarak meşgul veya hız sınırlı. Kısa süre sonra tekrar deneyin ya da devam etmek için sağlayıcıyı değiştirin."</string>
+    <string name="harness_switch_provider">"Sağlayıcıyı değiştir"</string>
+    <string name="harness_free_wait">"Bekleyeceğim"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">"Hizmet yaklaşık %1$d saniye sonra tekrar denemenizi öneriyor."</item>
+        <item quantity="other">"Hizmet yaklaşık %1$d saniye sonra tekrar denemenizi öneriyor."</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">"Hizmet yaklaşık %1$d dakika sonra tekrar denemenizi öneriyor."</item>
+        <item quantity="other">"Hizmet yaklaşık %1$d dakika sonra tekrar denemenizi öneriyor."</item>
+    </plurals>
 </resources>

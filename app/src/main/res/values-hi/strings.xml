@@ -1006,4 +1006,18 @@
     <string name="auto_compact_saved">"यह चैट लगभग %1$s संदर्भ टोकन पर स्वतः संक्षिप्त करके जारी रहेगी। उत्तर के लिए जगह सुरक्षित है।"</string>
     <string name="auto_compact_reset">"डिफ़ॉल्ट का पालन: लगभग %1$s संदर्भ टोकन पर स्वतः संक्षिप्त करें।"</string>
     <string name="tip_auto_compact">"350,000 टोकन पर संदर्भ को स्वतः सारांशित करके इस चैट को जारी रखने के लिए /autocompact 350K का उपयोग करें। 258K या 1M भी स्वीकार करता है। /autocompact default सेटिंग → कोडिंग → एजेंट का व्यवहार का पालन करता है।"</string>
+    <string name="harness_free_quota_title">"Harness का मुफ़्त कोटा ख़त्म हो गया है"</string>
+    <string name="harness_free_quota_body">"मुफ़्त कोटा आपके नेटवर्क में साझा है और हर घंटे में नवीनीकृत होता है। रीसेट होने की प्रतीक्षा करें या जारी रखने के लिए प्रदाता बदलें।"</string>
+    <string name="harness_free_rate_title">"Harness के मुफ़्त मॉडल अस्थायी रूप से सीमित हैं"</string>
+    <string name="harness_free_rate_body">"यह मॉडल अस्थायी रूप से व्यस्त या दर-सीमित है। थोड़ी देर बाद पुनः प्रयास करें, या जारी रखने के लिए प्रदाता बदलें।"</string>
+    <string name="harness_switch_provider">"प्रदाता बदलें"</string>
+    <string name="harness_free_wait">"मैं प्रतीक्षा करूँगा"</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="one">"सेवा लगभग %1$d सेकंड में पुनः प्रयास करने का सुझाव देती है।"</item>
+        <item quantity="other">"सेवा लगभग %1$d सेकंड में पुनः प्रयास करने का सुझाव देती है।"</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="one">"सेवा लगभग %1$d मिनट में पुनः प्रयास करने का सुझाव देती है।"</item>
+        <item quantity="other">"सेवा लगभग %1$d मिनट में पुनः प्रयास करने का सुझाव देती है।"</item>
+    </plurals>
 </resources>

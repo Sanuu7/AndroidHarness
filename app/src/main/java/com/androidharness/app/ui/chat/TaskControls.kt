@@ -28,7 +28,8 @@ import com.androidharness.app.ui.common.TextButton
 @Composable
 fun TaskProgressCard(record: TaskRecord, busy: Boolean, onResume: () -> Unit, onSettings: () -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    if (!record.resumable || record.status == "running" || busy) return
+    if (!record.resumable || record.status == "running" || busy ||
+        com.androidharness.app.llm.HarnessFreeLimit.suppressRecovery(record.reason, record.provider)) return
     Surface(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
         shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainer,
         border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {

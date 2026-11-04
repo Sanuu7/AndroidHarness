@@ -1010,4 +1010,26 @@
     <string name="auto_compact_saved">ستضغط هذه المحادثة تلقائيًا عند نحو %1$s من رموز السياق ثم تتابع. تُترك مساحة للرد.</string>
     <string name="auto_compact_reset">اتباع الافتراضي: الضغط التلقائي عند نحو %1$s من رموز السياق.</string>
     <string name="tip_auto_compact">استخدم /autocompact 350K لتلخيص السياق تلقائيًا عند 350,000 رمز ومتابعة هذه المحادثة. يقبل أيضًا 258K أو 1M. يتبع /autocompact default الإعدادات ← برمجة ← سلوك الوكيل.</string>
+    <string name="harness_free_quota_title">تم استهلاك الحصة المجانية من Harness</string>
+    <string name="harness_free_quota_body">الحصة المجانية مشتركة عبر شبكتك وتتجدد خلال نافذة زمنية كل ساعة. انتظر إعادة تعيينها، أو بدّل المزوّد للمتابعة.</string>
+    <string name="harness_free_rate_title">نماذج Harness المجانية محدودة مؤقتًا</string>
+    <string name="harness_free_rate_body">هذا النموذج مشغول مؤقتًا أو محدود المعدل. أعد المحاولة قريبًا، أو بدّل المزوّد للمتابعة.</string>
+    <string name="harness_switch_provider">تبديل المزوّد</string>
+    <string name="harness_free_wait">سأنتظر</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="zero">تقترح الخدمة إعادة المحاولة بعد %1$d ثانية.</item>
+        <item quantity="one">تقترح الخدمة إعادة المحاولة بعد %1$d ثانية.</item>
+        <item quantity="two">تقترح الخدمة إعادة المحاولة بعد %1$d ثانيتين.</item>
+        <item quantity="few">تقترح الخدمة إعادة المحاولة بعد %1$d ثوانٍ.</item>
+        <item quantity="many">تقترح الخدمة إعادة المحاولة بعد %1$d ثانية.</item>
+        <item quantity="other">تقترح الخدمة إعادة المحاولة بعد %1$d ثانية.</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="zero">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقة.</item>
+        <item quantity="one">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقة.</item>
+        <item quantity="two">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقتين.</item>
+        <item quantity="few">تقترح الخدمة إعادة المحاولة بعد %1$d دقائق.</item>
+        <item quantity="many">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقة.</item>
+        <item quantity="other">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقة.</item>
+    </plurals>
 </resources>

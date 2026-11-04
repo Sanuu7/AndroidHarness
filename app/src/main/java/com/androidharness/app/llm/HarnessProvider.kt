@@ -3,6 +3,8 @@ package com.androidharness.app.llm
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonObject
@@ -221,8 +223,17 @@ object HarnessProvider {
             // on the chat/completions wire, no zen probing or session header.
             pool[config.model]?.let { upstream ->
                 val routed = config.copy(type = ProviderType.OPENAI_COMPAT, baseUrl = upstream.baseUrl)
-                return OpenAiCompatProvider(pooledClient, ProviderFactory.json)
+                val stream = OpenAiCompatProvider(pooledClient, ProviderFactory.json)
                     .streamChat(routed, OpenAiCompatProvider.LOCAL_KEY, systemPrompt, messages, tools, options)
+                if (upstream.baseUrl != KILO_BASE_URL) return stream
+                return stream.map { event ->
+                    if (event is StreamEvent.Failure) HarnessFreeLimit.normalize(event) else event
+                }.catch { failure ->
+                    if (failure is ApiException) emit(HarnessFreeLimit.normalize(StreamEvent.Failure(
+                        failure.message.orEmpty(), failure.code, failure.errorCode,
+                        retryAfterSeconds = failure.retryAfterSeconds)))
+                    else throw failure
+                }
             }
             if (config.model !in customModelIds) return flowOf(StreamEvent.Failure(
                 "${config.model} is no longer available in Harness. Refresh the model list and choose an available model.",

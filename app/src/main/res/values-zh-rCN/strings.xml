@@ -1036,4 +1036,16 @@
     <string name="auto_compact_saved">此对话将在约 %1$s 个上下文 Token 时自动压缩后继续。已预留回复空间。</string>
     <string name="auto_compact_reset">跟随默认值：在约 %1$s 个上下文 Token 时自动压缩。</string>
     <string name="tip_auto_compact">使用 /autocompact 350K 可在 350,000 个 Token 时自动总结上下文并继续此对话。也接受 258K 或 1M。/autocompact default 跟随设置 → 编程 → 代理行为。</string>
+    <string name="harness_free_quota_title">Harness 免费额度已用完</string>
+    <string name="harness_free_quota_body">免费额度由你的网络共享，并按小时重置。请等待重置，或切换提供商以继续。</string>
+    <string name="harness_free_rate_title">Harness 免费模型暂时受限</string>
+    <string name="harness_free_rate_body">该模型暂时繁忙或受到速率限制。请稍后重试，或切换提供商以继续。</string>
+    <string name="harness_switch_provider">切换提供商</string>
+    <string name="harness_free_wait">我会等待</string>
+    <plurals name="harness_free_retry_seconds">
+        <item quantity="other">服务建议约 %1$d 秒后重试。</item>
+    </plurals>
+    <plurals name="harness_free_retry_minutes">
+        <item quantity="other">服务建议约 %1$d 分钟后重试。</item>
+    </plurals>
 </resources>

@@ -1150,12 +1150,14 @@ private fun ChatScreenContent(
         )
     }
 
-    LaunchedEffect(state.error) {
-        state.error?.let {
-            snackbar.showSnackbar(it)
-            viewModel.dismissError()
-        }
-    }
+    com.androidharness.app.ui.chat.components.ProviderFailureNotice(
+        state.sessionId, state.error, state.busy, snackbar,
+        onDismiss = viewModel::dismissError,
+        onSwitchProvider = {
+            addProviderInitially = false
+            activeProviderManagerTarget = state.modelSelectionTarget
+        },
+    )
 
     val selectSection by androidx.compose.runtime.rememberUpdatedState(onSelectSection)
     LaunchedEffect(viewModel) {
@@ -2196,7 +2198,8 @@ private fun ChatScreenContent(
                             com.androidharness.app.ui.chat.components.ChatRecovery(
                                 state.taskControl.reason,
                                 onContinue = viewModel::resumeInterruptedTask,
-                                onRetry = { retryRequest = { model -> viewModel.retryLatestResponse(model) } })
+                                onRetry = { retryRequest = { model -> viewModel.retryLatestResponse(model) } },
+                                provider = state.taskControl.provider)
                             state.sessionId?.let { sid ->
                                 com.androidharness.app.ui.chat.components.ChatAnswerVersions(
                                     sid, state.messages, viewModel.container.sessions, enabled = true,

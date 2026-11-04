@@ -86,7 +86,9 @@ internal fun ChatAnswerVersions(sessionId: String, messages: List<ChatMessage>, 
 }
 
 @Composable
-internal fun ChatRecovery(reason: String?, onContinue: () -> Unit, onRetry: () -> Unit) {
+internal fun ChatRecovery(reason: String?, onContinue: () -> Unit, onRetry: () -> Unit,
+    provider: com.androidharness.app.llm.ProviderConfig? = null) {
+    if (com.androidharness.app.llm.HarnessFreeLimit.suppressRecovery(reason, provider)) return
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(R.string.chat_response_interrupted), style = MaterialTheme.typography.titleSmall)
         Text(reason?.takeIf { it.isNotBlank() } ?: stringResource(R.string.chat_recovery_explanation), style = MaterialTheme.typography.bodySmall)
