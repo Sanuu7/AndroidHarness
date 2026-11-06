@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Discover sorting and filters**: sort by most stars, recently updated, most downloaded, newest, oldest or name, and filter by type, source, category and setup. Cards show GitHub stars, npm downloads and update times when the source reports them, and stars are fetched for listings that only link to a GitHub repository.
+- **Installed status in Discover**: plugins you already have show an Installed banner with their Global or project scope, and an Update button when the catalog lists something newer. All, Installed, Not installed and Updates buttons hide what you already have, and the Installed tab gets an Update available badge, an Updates filter and search.
+- **Skills manager**: Settings → Skills is now a searchable list with Enabled and Disabled filters, source chips, per-skill switches and bulk Enable, Disable and Delete with Undo. A detail sheet shows the rendered skill, its Markdown source and files, and a full-screen editor replaces the small dialog; editing a bundled skill saves your own copy.
+
+### Changed
+
+- **Plugins and skills design**: Material 3 Expressive styling with shaped type badges, connected button groups, grouped lists and a floating selection toolbar.
+
+### Fixed
+
+- **Skill list refresh**: adding, editing or deleting a skill now updates the list right away.
+
 ## 3.3 (2026-11-05)
 
 ### Added
