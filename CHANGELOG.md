@@ -7,14 +7,17 @@
 - **Discover sorting and filters**: sort by most stars, recently updated, most downloaded, newest, oldest or name, and filter by type, source, category and setup. Cards show GitHub stars, npm downloads and update times when the source reports them, and stars are fetched for listings that only link to a GitHub repository.
 - **Installed status in Discover**: plugins you already have show an Installed banner with their Global or project scope, and an Update button when the catalog lists something newer. All, Installed, Not installed and Updates buttons hide what you already have, and the Installed tab gets an Update available badge, an Updates filter and search.
 - **Skills manager**: Settings → Skills is now a searchable list with Enabled and Disabled filters, source chips, per-skill switches and bulk Enable, Disable and Delete with Undo. A detail sheet shows the rendered skill, its Markdown source and files, and a full-screen editor replaces the small dialog; editing a bundled skill saves your own copy.
+- **Storage inventory**: Settings → Storage now lists every installed component with its size and real location, grouped into App data, Plugins, Skills, Workspaces, Linux packages, Local models and Caches. That covers each plugin (global and per workspace), user, workspace and bundled skills, each recorded Linux package plus global npm and pip packages, local models and unfinished downloads, every saved workspace, the chat database, settings, web page data and background tasks, and the npm, pip, Gradle, Linux package, plugin preview and model catalog caches. Related folders such as the different settings stores show as one item. Items open a detail sheet with every location, the file count, owners and a Copy path action, and the list can be searched or sorted by largest.
 
 ### Changed
 
 - **Plugins and skills design**: Material 3 Expressive styling with shaped type badges, connected button groups, grouped lists and a floating selection toolbar.
+- **Storage scanning**: a Rescan button shows which category is being measured and how far along it is, and Stop cancels the scan. Measuring runs in the background with a time limit, and the last finished scan stays on screen while a new one runs.
 
 ### Fixed
 
 - **Skill list refresh**: adding, editing or deleting a skill now updates the list right away.
+- **Storage totals**: installed packages, plugins and other components no longer go missing from Settings → Storage, and the total now matches what is on disk. Each file is counted once even when it is hard linked, shared by several packages or inside another listed folder, and shared caches and shared package files appear as their own items. Anything that cannot be measured (permission denied, picker-only or SSH workspaces, a missing folder, a scan error or a timeout) is listed as Not measured with the reason, and the total says how many items it leaves out.
 
 ## 3.3 (2026-11-05)
 
