@@ -18,6 +18,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.outlined.Replay
 import androidx.compose.material.icons.outlined.Security
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.*
@@ -33,6 +34,8 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.PermissionMode
+import com.androidharness.app.agent.RunRecovery
+import com.androidharness.app.ui.chat.ResumePromptSheet
 import com.androidharness.app.data.AppSettings
 import com.androidharness.app.data.SteeringMode
 import com.androidharness.app.data.AgentSettingsAccess
@@ -96,6 +99,8 @@ internal fun AgentBehaviorSection(
     onSteeringMode: (SteeringMode) -> Unit = {},
     onRunTips: (Boolean) -> Unit = {},
     onAutoCompact: (Int) -> Unit = {},
+    /** Blank restores the built-in resume prompt. */
+    onResumePrompt: (String) -> Unit = {},
     onAgentSettingsAccess: (AgentSettingsAccess) -> Unit = {},
     /**
      * Test/preview override for the device-owner check guarding full access.
@@ -106,6 +111,7 @@ internal fun AgentBehaviorSection(
     var editAutoCompact by rememberSaveable { mutableStateOf(false) }
     var autoCompactText by rememberSaveable { mutableStateOf("") }
     var autoCompactError by rememberSaveable { mutableStateOf(false) }
+    var editResumePrompt by rememberSaveable { mutableStateOf(false) }
     var pickerName by rememberSaveable { mutableStateOf<String?>(null) }
     val picker = pickerName?.let(BehaviorPicker::valueOf)
     val context = LocalContext.current
@@ -163,6 +169,16 @@ internal fun AgentBehaviorSection(
                 )
             }
         }
+        BehaviorGroup(stringResource(R.string.resume_prompt_group), Icons.Outlined.Replay) {
+            SettingsAnchor(R.string.resume_prompt_title) {
+                BehaviorValueRow(
+                    title = stringResource(R.string.resume_prompt_title),
+                    value = stringResource(if (settings.resumePrompt.isBlank()) R.string.resume_prompt_value_builtin else R.string.resume_prompt_value_custom),
+                    description = stringResource(R.string.resume_prompt_app_summary),
+                    onClick = { editResumePrompt = true },
+                )
+            }
+        }
         BehaviorGroup(stringResource(R.string.steering_group), Icons.AutoMirrored.Outlined.Send) {
             SettingsAnchor(R.string.settings_anchor_steering) {
                 BehaviorValueRow(
@@ -208,6 +224,18 @@ internal fun AgentBehaviorSection(
                 )
             }
         }
+    }
+
+    if (editResumePrompt) {
+        ResumePromptSheet(
+            description = stringResource(R.string.resume_prompt_app_detail),
+            current = RunRecovery.resolvePrompt(null, settings.resumePrompt),
+            fallback = RunRecovery.CONTINUE_PROMPT,
+            isCustom = settings.resumePrompt.isNotBlank(),
+            resetLabel = stringResource(R.string.resume_prompt_reset_app),
+            onSave = { onResumePrompt(it.orEmpty()) },
+            onDismiss = { editResumePrompt = false },
+        )
     }
 
     if (editAutoCompact) {

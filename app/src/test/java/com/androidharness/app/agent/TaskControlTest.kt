@@ -22,6 +22,33 @@ class TaskControlTest {
         assertNull(TaskControlStore(folder.root).flow("first").value.autoCompactTokens)
     }
 
+    @Test fun `resume prompt resolves from the chat, then the app, then the built in text`() {
+        assertEquals(RunRecovery.CONTINUE_PROMPT, RunRecovery.resolvePrompt(null, ""))
+        assertEquals(RunRecovery.CONTINUE_PROMPT, RunRecovery.resolvePrompt("   ", "\n"))
+        assertEquals("App prompt", RunRecovery.resolvePrompt(null, "  App prompt "))
+        assertEquals("Chat prompt", RunRecovery.resolvePrompt(" Chat prompt ", "App prompt"))
+        assertEquals("App prompt", RunRecovery.resolvePrompt("", "App prompt"))
+    }
+
+    @Test fun `typing the default prompt back stores nothing`() {
+        val builtIn = RunRecovery.CONTINUE_PROMPT
+        assertNull(RunRecovery.customPrompt("", builtIn))
+        assertNull(RunRecovery.customPrompt("  $builtIn\n", builtIn))
+        assertEquals("Keep going", RunRecovery.customPrompt(" Keep going ", builtIn))
+        assertNull(RunRecovery.customPrompt("App prompt", "App prompt"))
+        assertEquals(RunRecovery.MAX_PROMPT_CHARS, RunRecovery.customPrompt("x".repeat(5000), builtIn)?.length)
+    }
+
+    @Test fun `chat resume prompt survives restart and stays scoped to its chat`() {
+        val store = TaskControlStore(folder.root)
+        assertNull(store.flow("first").value.resumePrompt)
+        store.update("first") { it.copy(resumePrompt = "Carry on") }
+        assertEquals("Carry on", TaskControlStore(folder.root).flow("first").value.resumePrompt)
+        assertNull(TaskControlStore(folder.root).flow("second").value.resumePrompt)
+        store.update("first") { it.copy(resumePrompt = null) }
+        assertNull(TaskControlStore(folder.root).flow("first").value.resumePrompt)
+    }
+
     @Test fun `queue edits and reordering survive process recreation`() {
         val store = TaskControlStore(folder.root)
         val a = QueuedPrompt(text = "first")

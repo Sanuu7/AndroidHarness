@@ -18,6 +18,8 @@ import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.data.SessionRepository
 import com.androidharness.app.ui.chat.CopyIconButton
+import com.androidharness.app.ui.chat.CustomPromptChip
+import com.androidharness.app.ui.chat.ResumeSplitButton
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.TextButton
 
@@ -86,15 +88,25 @@ internal fun ChatAnswerVersions(sessionId: String, messages: List<ChatMessage>, 
 }
 
 @Composable
+@OptIn(ExperimentalLayoutApi::class)
 internal fun ChatRecovery(reason: String?, onContinue: () -> Unit, onRetry: () -> Unit,
-    provider: com.androidharness.app.llm.ProviderConfig? = null) {
+    provider: com.androidharness.app.llm.ProviderConfig? = null,
+    /** Opens the resume prompt editor; null keeps the plain Continue button. */
+    onEditPrompt: (() -> Unit)? = null,
+    /** Drops this chat's own prompt so it follows the app setting; null when there is nothing to drop. */
+    onResetPrompt: (() -> Unit)? = null,
+    /** True while any custom resume prompt (this chat's or the app's) is in effect. */
+    customPrompt: Boolean = false) {
     if (com.androidharness.app.llm.HarnessFreeLimit.suppressRecovery(reason, provider)) return
     Column(Modifier.fillMaxWidth().padding(vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
         Text(stringResource(R.string.chat_response_interrupted), style = MaterialTheme.typography.titleSmall)
         Text(reason?.takeIf { it.isNotBlank() } ?: stringResource(R.string.chat_recovery_explanation), style = MaterialTheme.typography.bodySmall)
-        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            TextButton(onClick = onContinue) { Text(stringResource(R.string.chat_continue_reply)) }
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp),
+            itemVerticalAlignment = Alignment.CenterVertically) {
+            ResumeSplitButton(stringResource(R.string.chat_continue_reply), onContinue,
+                onEditPrompt = onEditPrompt, onResetPrompt = onResetPrompt)
             TextButton(onClick = onRetry) { Text(stringResource(R.string.chat_retry_reply)) }
+            if (customPrompt && onEditPrompt != null) CustomPromptChip(onClick = onEditPrompt)
         }
     }
 }

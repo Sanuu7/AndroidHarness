@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextOverflow
@@ -25,29 +26,56 @@ import com.androidharness.app.ui.common.FilledTonalButton
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.TextButton
 
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
-fun TaskProgressCard(record: TaskRecord, busy: Boolean, onResume: () -> Unit, onSettings: () -> Unit) {
+fun TaskProgressCard(
+    record: TaskRecord, busy: Boolean, onResume: () -> Unit, onSettings: () -> Unit,
+    /** Opens the resume prompt editor; null keeps the plain Resume button. */
+    onEditPrompt: (() -> Unit)? = null,
+    /** Drops this chat's own prompt so it follows the app setting; null when there is nothing to drop. */
+    onResetPrompt: (() -> Unit)? = null,
+    /** True while any custom resume prompt (this chat's or the app's) is in effect. */
+    customPrompt: Boolean = false,
+) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     if (!record.resumable || record.status == "running" || busy ||
         com.androidharness.app.llm.HarnessFreeLimit.suppressRecovery(record.reason, record.provider)) return
-    Surface(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-        shape = MaterialTheme.shapes.medium, color = MaterialTheme.colorScheme.surfaceContainer,
-        border = BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant)) {
-        Column(Modifier.padding(horizontal = 14.dp, vertical = 8.dp)) {
-            Text(if (record.status == "interrupted") uiContext.getString(R.string.ui_task_interrupted) else uiContext.getString(R.string.ui_task_paused),
-                style = MaterialTheme.typography.titleSmall)
-            SelectionContainer {
-                Text(record.reason ?: uiContext.getString(R.string.ui_your_progress_is_saved_continue_from_the),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            record.reason?.let { CopyIconButton(it) }
-            if (record.autoContinue && record.autoContinueAttempts >= record.autoContinueLimit.coerceIn(1, 5)) {
-                Text(uiContext.getString(R.string.ui_auto_continue_limit_reached_resume_manually_to),
-                    style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                TextButton(onClick = onSettings) { Text(uiContext.getString(R.string.ui_context_limits)) }
-                FilledTonalButton(onClick = onResume) { Text(uiContext.getString(R.string.ui_resume_task)) }
+    val scheme = MaterialTheme.colorScheme
+    val interrupted = record.status == "interrupted"
+    MaterialTheme(motionScheme = MotionScheme.expressive()) {
+        Surface(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
+            shape = MaterialTheme.shapes.extraLarge, color = scheme.surfaceContainer,
+            border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f))) {
+            Column(Modifier.padding(start = 16.dp, end = 12.dp, top = 12.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.Top, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Surface(shape = MaterialShapes.Cookie6Sided.toShape(), modifier = Modifier.size(36.dp),
+                        color = if (interrupted) scheme.errorContainer else scheme.secondaryContainer) {
+                        Box(contentAlignment = Alignment.Center) {
+                            Icon(if (interrupted) Icons.Default.ErrorOutline else Icons.Default.Pause, null, Modifier.size(20.dp),
+                                tint = if (interrupted) scheme.onErrorContainer else scheme.onSecondaryContainer)
+                        }
+                    }
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(if (interrupted) uiContext.getString(R.string.ui_task_interrupted) else uiContext.getString(R.string.ui_task_paused),
+                            style = MaterialTheme.typography.titleMedium)
+                        SelectionContainer {
+                            Text(record.reason ?: uiContext.getString(R.string.ui_your_progress_is_saved_continue_from_the),
+                                style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                        }
+                    }
+                    record.reason?.let { CopyIconButton(it) }
+                }
+                if (record.autoContinue && record.autoContinueAttempts >= record.autoContinueLimit.coerceIn(1, 5)) {
+                    Text(uiContext.getString(R.string.ui_auto_continue_limit_reached_resume_manually_to),
+                        style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                }
+                FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
+                    verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
+                    if (customPrompt && onEditPrompt != null) CustomPromptChip(onClick = onEditPrompt)
+                    TextButton(onClick = onSettings) { Text(uiContext.getString(R.string.ui_context_limits)) }
+                    ResumeSplitButton(uiContext.getString(R.string.ui_resume_task), onResume,
+                        onEditPrompt = onEditPrompt, onResetPrompt = onResetPrompt)
+                }
             }
         }
     }
@@ -119,9 +147,12 @@ fun TaskSettingsSheet(
     state: ChatUiState, onDismiss: () -> Unit,
     onSave: (String, String?, TaskLimits, Boolean) -> Unit,
     onRecoveryChange: (Boolean, Int) -> Unit,
+    /** Null clears this chat's own resume prompt so it follows the app setting. */
+    onResumePrompt: (String?) -> Unit = {},
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val record = state.taskControl
+    var editPrompt by rememberSaveable { mutableStateOf(false) }
     val savedSummary = record.summaryOverride ?: state.messages.lastOrNull {
         it.role == Role.SYSTEM && it.text.startsWith(AgentEngine.COMPACTION_PREFIX)
     }?.text?.removePrefix(AgentEngine.COMPACTION_PREFIX)?.trim().orEmpty()
@@ -136,6 +167,17 @@ fun TaskSettingsSheet(
     val valid = (tokens.isBlank() || (tokens.toLongOrNull() ?: -1) > 0) &&
         (cost.isBlank() || cost.toDoubleOrNull()?.let { it.isFinite() && it > 0 } == true) &&
         (minutes.isBlank() || (minutes.toLongOrNull() ?: -1) in 1..525600)
+    if (editPrompt) {
+        ResumePromptSheet(
+            description = uiContext.getString(R.string.resume_prompt_chat_detail),
+            current = RunRecovery.resolvePrompt(record.resumePrompt, state.resumePrompt),
+            fallback = RunRecovery.resolvePrompt(null, state.resumePrompt),
+            isCustom = record.resumePrompt != null,
+            resetLabel = uiContext.getString(R.string.resume_prompt_reset_chat),
+            onSave = onResumePrompt,
+            onDismiss = { editPrompt = false },
+        )
+    }
     if (usage) {
         ContextUsageDialog(
             state = state,
@@ -202,6 +244,23 @@ fun TaskSettingsSheet(
                         }
                         Text(uiContext.getString(R.string.ui_uses_the_same_prompt_as_resume_task),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Surface(onClick = { editPrompt = true }, shape = MaterialTheme.shapes.large,
+                            color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.fillMaxWidth()) {
+                            Row(Modifier.padding(horizontal = 16.dp, vertical = 12.dp).heightIn(min = 48.dp),
+                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                    Text(uiContext.getString(R.string.resume_prompt_title), style = MaterialTheme.typography.bodyLarge)
+                                    Text(uiContext.getString(when {
+                                        record.resumePrompt != null -> R.string.resume_prompt_value_chat
+                                        state.resumePrompt.isNotBlank() -> R.string.resume_prompt_value_app
+                                        else -> R.string.resume_prompt_value_builtin
+                                    }), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                                    Text(RunRecovery.resolvePrompt(record.resumePrompt, state.resumePrompt), maxLines = 2, overflow = TextOverflow.Ellipsis,
+                                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                }
+                                Icon(Icons.Default.Edit, uiContext.getString(R.string.resume_prompt_edit), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
                         Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                             Text(uiContext.getString(R.string.ui_retry_limit_per_task), modifier = Modifier.weight(1f))
                             IconButton(onClick = { onRecoveryChange(record.autoContinue, record.autoContinueLimit - 1) },

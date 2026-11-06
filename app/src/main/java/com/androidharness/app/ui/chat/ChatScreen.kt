@@ -273,6 +273,7 @@ private fun ChatScreenContent(
     val listState = rememberChatListState()
     val snackbar = remember { SnackbarHostState() }
     var showContext by remember { mutableStateOf(false) }
+    var showResumePrompt by rememberSaveable { mutableStateOf(false) }
 
     githubProject?.let { (id, name) ->
         GitHubWorkspaceDialog(viewModel.container, id, name,
@@ -729,7 +730,21 @@ private fun ChatScreenContent(
 
     if (showContext) {
         TaskSettingsSheet(state = state, onDismiss = { showContext = false },
-            onSave = viewModel::saveTaskControls, onRecoveryChange = viewModel::saveRecoverySettings)
+            onSave = viewModel::saveTaskControls, onRecoveryChange = viewModel::saveRecoverySettings,
+            onResumePrompt = viewModel::saveResumePrompt)
+    }
+    if (showResumePrompt) {
+        val chatPrompt = state.taskControl.resumePrompt
+        ResumePromptSheet(
+            description = stringResource(R.string.resume_prompt_chat_detail),
+            current = com.androidharness.app.agent.RunRecovery.resolvePrompt(chatPrompt, state.resumePrompt),
+            fallback = com.androidharness.app.agent.RunRecovery.resolvePrompt(null, state.resumePrompt),
+            isCustom = chatPrompt != null,
+            resetLabel = stringResource(R.string.resume_prompt_reset_chat),
+            onSave = viewModel::saveResumePrompt,
+            onDismiss = { showResumePrompt = false },
+            onSaveAndResume = if (state.taskControl.resumable && !state.busy) viewModel::resumeWithPrompt else null,
+        )
     }
     activeModelPickerTarget?.let { target ->
         val currentProviderId = state.selectedProviderIdFor(target) ?: state.activeProviderId
@@ -2199,7 +2214,10 @@ private fun ChatScreenContent(
                                 state.taskControl.reason,
                                 onContinue = viewModel::resumeInterruptedTask,
                                 onRetry = { retryRequest = { model -> viewModel.retryLatestResponse(model) } },
-                                provider = state.taskControl.provider)
+                                provider = state.taskControl.provider,
+                                onEditPrompt = { showResumePrompt = true },
+                                onResetPrompt = state.taskControl.resumePrompt?.let { { viewModel.saveResumePrompt(null) } },
+                                customPrompt = state.taskControl.resumePrompt != null || state.resumePrompt.isNotBlank())
                             state.sessionId?.let { sid ->
                                 com.androidharness.app.ui.chat.components.ChatAnswerVersions(
                                     sid, state.messages, viewModel.container.sessions, enabled = true,
@@ -2429,6 +2447,9 @@ private fun ChatScreenContent(
                     record = state.taskControl, busy = state.busy,
                     onResume = viewModel::resumeInterruptedTask,
                     onSettings = { showContext = true },
+                    onEditPrompt = { showResumePrompt = true },
+                    onResetPrompt = state.taskControl.resumePrompt?.let { { viewModel.saveResumePrompt(null) } },
+                    customPrompt = state.taskControl.resumePrompt != null || state.resumePrompt.isNotBlank(),
                 )
                 RunTipHost(
                     busy = state.busy,

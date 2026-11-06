@@ -54,6 +54,8 @@ data class AppSettings(
     val maxContextTokens: Int = DEFAULT_MAX_CONTEXT,
     /** Default Code auto-compaction threshold; zero keeps the automatic 80% policy. */
     val autoCompactTokens: Int = 0,
+    /** Sent when a paused or interrupted task resumes. Blank uses the built-in prompt; a chat can override it. */
+    val resumePrompt: String = "",
     val maxOutputTokens: Int = DEFAULT_MAX_OUTPUT,
     /** Tool-call iterations per run. 0 = unlimited. */
     val maxIterations: Int = DEFAULT_MAX_ITERATIONS,
@@ -261,6 +263,7 @@ class SettingsRepository(private val context: Context) {
         val CUSTOM_THINKING_LEVELS = stringPreferencesKey("custom_thinking_levels")
         val MAX_CONTEXT = intPreferencesKey("max_context_tokens")
         val AUTO_COMPACT = intPreferencesKey("auto_compact_tokens")
+        val RESUME_PROMPT = stringPreferencesKey("resume_prompt")
         val MAX_OUTPUT = intPreferencesKey("max_output_tokens")
         val MAX_ITERATIONS = intPreferencesKey("max_iterations")
         val RUN_IN_BACKGROUND = booleanPreferencesKey("run_in_background")
@@ -386,6 +389,7 @@ class SettingsRepository(private val context: Context) {
             customThinkingLevels = decodeCustomLevels(prefs[Keys.CUSTOM_THINKING_LEVELS]),
             maxContextTokens = prefs[Keys.MAX_CONTEXT] ?: AppSettings.DEFAULT_MAX_CONTEXT,
             autoCompactTokens = prefs[Keys.AUTO_COMPACT] ?: 0,
+            resumePrompt = prefs[Keys.RESUME_PROMPT].orEmpty(),
             maxOutputTokens = prefs[Keys.MAX_OUTPUT] ?: AppSettings.DEFAULT_MAX_OUTPUT,
             maxIterations = prefs[Keys.MAX_ITERATIONS] ?: AppSettings.DEFAULT_MAX_ITERATIONS,
             runInBackground = prefs[Keys.RUN_IN_BACKGROUND] ?: true,
@@ -498,6 +502,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.CUSTOM_THINKING_LEVELS] = kotlinx.serialization.json.Json.encodeToString(s.customThinkingLevels)
             p[Keys.MAX_CONTEXT] = s.maxContextTokens
             p[Keys.AUTO_COMPACT] = s.autoCompactTokens
+            p[Keys.RESUME_PROMPT] = s.resumePrompt
             p[Keys.MAX_OUTPUT] = s.maxOutputTokens
             p[Keys.MAX_ITERATIONS] = s.maxIterations
             p[Keys.RUN_IN_BACKGROUND] = s.runInBackground
@@ -873,6 +878,12 @@ class SettingsRepository(private val context: Context) {
     suspend fun setAutoCompactTokens(tokens: Int) {
         require(tokens == 0 || tokens >= 1_024)
         context.settingsStore.edit { it[Keys.AUTO_COMPACT] = tokens }
+    }
+
+    suspend fun setResumePrompt(prompt: String) {
+        val clean = prompt.trim()
+        require(clean.length <= com.androidharness.app.agent.RunRecovery.MAX_PROMPT_CHARS)
+        context.settingsStore.edit { if (clean.isEmpty()) it.remove(Keys.RESUME_PROMPT) else it[Keys.RESUME_PROMPT] = clean }
     }
 
     suspend fun setMaxOutputTokens(tokens: Int) {

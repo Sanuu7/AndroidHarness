@@ -505,7 +505,7 @@ class RunManager(
         controls.update(sid) { it.copy(queue = it.queue.filterNot { q -> q.id == initialId }) }
         dropDeliveredSteering(sid)
         if (resume) sessions.addMessage(sid, ChatMessage(role = Role.USER,
-            text = RunRecovery.CONTINUE_PROMPT,
+            text = RunRecovery.resolvePrompt(record.resumePrompt, settings.settings.first().resumePrompt),
             id = if (conversation.isChat) RunRecovery.CHAT_CONTINUATION_ID_PREFIX + UUID.randomUUID() else null), turnId)
         // A new run replaces any plan approval still pending on this session.
         runCatching { sessions.setPendingPlan(sid, null) }

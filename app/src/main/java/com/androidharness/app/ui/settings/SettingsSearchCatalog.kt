@@ -173,6 +173,13 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         anchor = R.string.auto_compact_title,
     ),
     SettingsSearchEntry(
+        R.string.resume_prompt_title,
+        R.string.resume_prompt_app_summary,
+        SettingsPage.AGENT,
+        "resume continue prompt auto continue retry recovery interrupted instruction message",
+        anchor = R.string.resume_prompt_title,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_tool_iterations_title,
         R.string.settings_search_tool_iterations_desc,
         SettingsPage.AGENT,

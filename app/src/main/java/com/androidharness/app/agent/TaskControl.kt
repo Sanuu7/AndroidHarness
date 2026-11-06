@@ -57,6 +57,8 @@ data class TaskRecord(
     val autoContinue: Boolean = false,
     val autoContinueLimit: Int = 3,
     val autoContinueAttempts: Int = 0,
+    /** Null follows the app setting; a non-blank value is sent when this chat resumes, manually or automatically. */
+    val resumePrompt: String? = null,
 ) {
     val resumable: Boolean get() = status == "running" || status == "paused" || status == "interrupted"
 }
@@ -126,6 +128,16 @@ class TaskBudget(
 /** Close orphan tool calls without replaying operations whose outcome is unknown. */
 object RunRecovery {
     const val CONTINUE_PROMPT = "Resume the interrupted task from saved progress. Completed tool results are authoritative. Inspect uncertain outcomes before further actions; do not repeat completed operations."
+    const val MAX_PROMPT_CHARS = 2000
+
+    /** The chat's own prompt wins, then the app setting, then the built-in text. Blank values never win. */
+    fun resolvePrompt(chat: String?, app: String): String =
+        chat?.trim()?.takeIf { it.isNotEmpty() } ?: app.trim().takeIf { it.isNotEmpty() } ?: CONTINUE_PROMPT
+
+    /** Text the user typed, trimmed and capped; null when it is empty or just the prompt that would apply anyway. */
+    fun customPrompt(typed: String, fallback: String): String? =
+        typed.trim().take(MAX_PROMPT_CHARS).trim().takeIf { it.isNotEmpty() && it != fallback.trim() }
+
     const val CHAT_CONTINUATION_ID_PREFIX = "internal-chat-continuation-"
     fun isInternalChatContinuation(id: String?): Boolean = id?.startsWith(CHAT_CONTINUATION_ID_PREFIX) == true
     fun missingResults(messages: List<ChatMessage>): List<ChatMessage> {

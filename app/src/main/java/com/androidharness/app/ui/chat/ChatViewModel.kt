@@ -125,6 +125,8 @@ data class ChatUiState(
     val attachmentImports: List<AttachmentImport> = emptyList(),
     val maxContextTokens: Int = 1_000_000,
     val autoCompactTokens: Int = 0,
+    /** App-wide resume prompt; blank means the built-in text. A chat's own prompt lives on its task record. */
+    val resumePrompt: String = "",
     val maxOutputTokens: Int = 32_768,
     val maxIterations: Int = 0,
     val providers: List<ProviderConfig> = emptyList(),
@@ -735,6 +737,7 @@ class ChatViewModel(
             customThinkingLevels = selection.customThinkingLevels,
             maxContextTokens = settings.maxContextTokens,
             autoCompactTokens = settings.autoCompactTokens,
+            resumePrompt = settings.resumePrompt,
             maxOutputTokens = settings.maxOutputTokens,
             maxIterations = settings.maxIterations,
             providers = models.providers,
@@ -1002,6 +1005,32 @@ class ChatViewModel(
         viewModelScope.launch {
             try { resumeTaskNow(sid) }
             catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+            finally { steering = false }
+        }
+    }
+
+    /** Null makes this chat follow the app setting again. */
+    fun saveResumePrompt(prompt: String?) {
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try {
+                val sid = ensureSession()
+                c.runManager.controls.update(sid) { it.copy(resumePrompt = prompt?.trim()?.takeIf { text -> text.isNotEmpty() }) }
+            } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+        }
+    }
+
+    /** Saves and resumes in one step so the run can never start with the old prompt. */
+    fun resumeWithPrompt(prompt: String?) {
+        val sid = sessionId ?: return
+        if (selectingAnswerVersion || steering || compactionJob?.isActive == true || c.runManager.isRunning(sid)) return
+        steering = true
+        viewModelScope.launch {
+            try {
+                kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                    c.runManager.controls.update(sid) { it.copy(resumePrompt = prompt?.trim()?.takeIf { text -> text.isNotEmpty() }) }
+                }
+                resumeTaskNow(sid)
+            } catch (e: Exception) { _state.update { it.copy(error = e.message) } }
             finally { steering = false }
         }
     }
