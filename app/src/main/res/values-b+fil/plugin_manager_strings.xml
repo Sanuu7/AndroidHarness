@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">"Ang mga server na ito ay mula sa mga naka-enable na plugin. Pamahalaan ang mga ito sa Mga plugin; ginagamit ng kanilang tool ang mga pahintulot ng workspace."</string>
     <string name="pm_manage_plugins">"Pamahalaan ang mga plugin"</string>
     <string name="pm_mcp_permissions">"Mga pahintulot ng workspace"</string>
+    <string name="pm_sort">"Pagbukud-bukurin"</string>
+    <string name="pm_sort_hint">"Ang mga bituin ay mula sa GitHub, ang mga download mula sa npm. Ang mga item na walang mga ito ay nasa huli."</string>
+    <string name="pm_sort_relevance">"Pinakamahusay na tugma"</string>
+    <string name="pm_sort_stars">"Pinakamaraming bituin"</string>
+    <string name="pm_sort_updated">"Kamakailang na-update"</string>
+    <string name="pm_sort_downloads">"Pinakamaraming na-download"</string>
+    <string name="pm_sort_newest">"Pinakabago"</string>
+    <string name="pm_sort_oldest">"Pinakaluma"</string>
+    <string name="pm_sort_name">"Pangalan"</string>
+    <string name="pm_status_all">"Lahat"</string>
+    <string name="pm_status_installed">"Naka-install"</string>
+    <string name="pm_status_not_installed">"Hindi naka-install"</string>
+    <string name="pm_status_updates">"Mga update"</string>
+    <string name="pm_filter_type">"Uri"</string>
+    <string name="pm_filter_source">"Pinagmulan"</string>
+    <string name="pm_filter_category">"Kategorya"</string>
+    <string name="pm_filter_setup">"Setup"</string>
+    <string name="pm_type_any">"Anumang uri"</string>
+    <string name="pm_source_any">"Anumang pinagmulan"</string>
+    <string name="pm_source_featured">"Tampok"</string>
+    <string name="pm_source_mcp">"MCP registry"</string>
+    <string name="pm_category_any">"Anumang kategorya"</string>
+    <string name="pm_setup_any">"Anumang setup"</string>
+    <string name="pm_setup_none">"Gumagana agad"</string>
+    <string name="pm_setup_runtime">"Kailangan ng runtime"</string>
+    <string name="pm_setup_hint">"Gumagana agad ang mga kasanayan at malayuang MCP server. Kailangan ng mga lokal na server ang Node, Python o ibang runtime. Sinusuri ang mga plugin kapag ini-install mo, kaya lumalabas lang ang mga ito sa Anumang setup."</string>
+    <string name="pm_clear_filters">"I-clear ang mga filter"</string>
+    <string name="pm_clear_search">"I-clear ang paghahanap"</string>
+    <string name="pm_search_installed">"Maghanap ng naka-install na plugin"</string>
+    <string name="pm_no_matches">"Walang tumutugma sa mga filter na ito"</string>
+    <string name="pm_no_matches_hint">"Subukan ang ibang paghahanap, o i-clear ang isang filter para makakita ng higit pa."</string>
+    <string name="pm_installed_in">"Sa %1$s"</string>
+    <string name="pm_update_available">"May available na update"</string>
+    <string name="pm_update_named">"I-update ang %1$s"</string>
+    <string name="pm_install_again">"I-install sa ibang lugar"</string>
+    <string name="pm_open_page">"Buksan ang pahina ng %1$s"</string>
+    <string name="pm_updated">"Na-update ang %1$s"</string>
+    <string name="pm_downloads_month">"%1$s bawat buwan"</string>
+    <string name="pm_show_updates">"Ipakita"</string>
+    <plurals name="pm_results">
+        <item quantity="one">"%1$d resulta"</item>
+        <item quantity="other">"%1$d resulta"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">"%1$d bituin sa GitHub"</item>
+        <item quantity="other">"%1$d bituin sa GitHub"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">"%1$d available na update"</item>
+        <item quantity="other">"%1$d available na update"</item>
+    </plurals>
 </resources>

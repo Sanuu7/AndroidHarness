@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">البحث عن المهارات بالاسم أو الوصف</string>
+    <string name="sk_summary">%1$d من %2$d مفعّلة</string>
+    <string name="sk_group_count">%1$d من %2$d قيد التشغيل</string>
+    <string name="sk_status_on">مفعّل</string>
+    <string name="sk_status_off">معطّل</string>
+    <string name="sk_source_yours">مهاراتك</string>
+    <string name="sk_source_workspace">مساحة العمل</string>
+    <string name="sk_select">تحديد المهارات</string>
+    <string name="sk_open">فتح المهارة</string>
+    <string name="sk_select_all">تحديد الكل</string>
+    <string name="sk_clear_selection">مسح</string>
+    <string name="sk_stop_selecting">إيقاف التحديد</string>
+    <string name="sk_state_selected">%1$s، محدّدة</string>
+    <string name="sk_state_not_selected">%1$s، غير محدّدة</string>
+    <string name="sk_turn_on">تفعيل</string>
+    <string name="sk_turn_off">تعطيل</string>
+    <string name="sk_undo">تراجع</string>
+    <string name="sk_new">مهارة جديدة</string>
+    <string name="sk_empty">لا توجد مهارات مطابقة</string>
+    <string name="sk_empty_hint">جرّب بحثًا آخر أو امسح عوامل التصفية لرؤية كل المهارات.</string>
+    <string name="sk_enabled_hint">يرى النموذج هذه المهارة في كتالوجه ويحمّلها عندما تناسب المهمة.</string>
+    <string name="sk_disabled_hint">مخفية عن النموذج حتى تعيد تفعيلها.</string>
+    <string name="sk_enable_named">تفعيل %1$s</string>
+    <string name="sk_edit_copy">تعديل نسخة</string>
+    <string name="sk_copy">نسخ</string>
+    <string name="sk_copied">تم نسخ المهارة</string>
+    <string name="sk_copy_note">عند الحفظ تبقى نسختك الخاصة، وهي تحل محل المهارة المضمّنة. احذف نسختك لاحقًا للعودة إلى الأصل.</string>
+    <string name="sk_workspace_note">توجد هذه المهارة في مجلد .harness/skills بمساحة العمل. عدّلها هناك.</string>
+    <string name="sk_preview">معاينة</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">الملفات (%1$d)</string>
+    <string name="sk_saved">تم حفظ %1$s</string>
+    <string name="sk_fix_frontmatter">إصلاح بيانات المقدمة</string>
+    <string name="sk_chars">%1$d / %2$d حرفًا</string>
+    <string name="sk_delete_hint">تُحذف مهاراتك الخاصة فقط. المهارة المضمّنة التي عدّلتها تعود إلى أصلها.</string>
+    <string name="sk_discard_title">تجاهل تغييراتك؟</string>
+    <string name="sk_discard">تجاهل</string>
+    <string name="sk_keep_editing">متابعة التعديل</string>
+    <plurals name="sk_selected">
+        <item quantity="zero">%1$d محدّدة</item>
+        <item quantity="one">%1$d محدّدة</item>
+        <item quantity="two">%1$d محدّدتان</item>
+        <item quantity="few">%1$d محدّدة</item>
+        <item quantity="many">%1$d محدّدة</item>
+        <item quantity="other">%1$d محدّدة</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="zero">%1$d مهارة مفعّلة</item>
+        <item quantity="one">%1$d مهارة مفعّلة</item>
+        <item quantity="two">%1$d مهارتان مفعّلتان</item>
+        <item quantity="few">%1$d مهارات مفعّلة</item>
+        <item quantity="many">%1$d مهارة مفعّلة</item>
+        <item quantity="other">%1$d مهارة مفعّلة</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="zero">%1$d مهارة معطّلة</item>
+        <item quantity="one">%1$d مهارة معطّلة</item>
+        <item quantity="two">%1$d مهارتان معطّلتان</item>
+        <item quantity="few">%1$d مهارات معطّلة</item>
+        <item quantity="many">%1$d مهارة معطّلة</item>
+        <item quantity="other">%1$d مهارة معطّلة</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="zero">%1$d مهارة محذوفة</item>
+        <item quantity="one">%1$d مهارة محذوفة</item>
+        <item quantity="two">%1$d مهارتان محذوفتان</item>
+        <item quantity="few">%1$d مهارات محذوفة</item>
+        <item quantity="many">%1$d مهارة محذوفة</item>
+        <item quantity="other">%1$d مهارة محذوفة</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="zero">حذف %1$d مهارة؟</item>
+        <item quantity="one">حذف %1$d مهارة؟</item>
+        <item quantity="two">حذف %1$d مهارتين؟</item>
+        <item quantity="few">حذف %1$d مهارات؟</item>
+        <item quantity="many">حذف %1$d مهارة؟</item>
+        <item quantity="other">حذف %1$d مهارة؟</item>
+    </plurals>
+</resources>

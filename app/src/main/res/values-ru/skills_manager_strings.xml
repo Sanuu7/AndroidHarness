@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">Поиск навыков по названию или описанию</string>
+    <string name="sk_summary">%1$d из %2$d включено</string>
+    <string name="sk_group_count">%1$d из %2$d включено</string>
+    <string name="sk_status_on">Включён</string>
+    <string name="sk_status_off">Отключён</string>
+    <string name="sk_source_yours">Ваши</string>
+    <string name="sk_source_workspace">Рабочая область</string>
+    <string name="sk_select">Выбрать навыки</string>
+    <string name="sk_open">Открыть навык</string>
+    <string name="sk_select_all">Выбрать все</string>
+    <string name="sk_clear_selection">Очистить</string>
+    <string name="sk_stop_selecting">Завершить выбор</string>
+    <string name="sk_state_selected">%1$s, выбран</string>
+    <string name="sk_state_not_selected">%1$s, не выбран</string>
+    <string name="sk_turn_on">Включить</string>
+    <string name="sk_turn_off">Отключить</string>
+    <string name="sk_undo">Отменить</string>
+    <string name="sk_new">Новый навык</string>
+    <string name="sk_empty">Нет подходящих навыков</string>
+    <string name="sk_empty_hint">Попробуйте другой запрос или сбросьте фильтры, чтобы увидеть все навыки.</string>
+    <string name="sk_enabled_hint">Модель видит этот навык в своём каталоге и загружает его, когда он подходит.</string>
+    <string name="sk_disabled_hint">Скрыт от модели, пока вы снова его не включите.</string>
+    <string name="sk_enable_named">Включить %1$s</string>
+    <string name="sk_edit_copy">Изменить копию</string>
+    <string name="sk_copy">Копировать</string>
+    <string name="sk_copied">Навык скопирован</string>
+    <string name="sk_copy_note">При сохранении остаётся ваша копия, которая заменяет встроенный навык. Удалите свою копию позже, чтобы вернуться к оригиналу.</string>
+    <string name="sk_workspace_note">Этот навык находится в папке .harness/skills рабочей области. Измените его там.</string>
+    <string name="sk_preview">Предпросмотр</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">Файлы (%1$d)</string>
+    <string name="sk_saved">%1$s сохранён</string>
+    <string name="sk_fix_frontmatter">исправить frontmatter</string>
+    <string name="sk_chars">%1$d / %2$d символов</string>
+    <string name="sk_delete_hint">Удаляются только ваши собственные навыки. Изменённый встроенный навык возвращается к оригиналу.</string>
+    <string name="sk_discard_title">Отменить изменения?</string>
+    <string name="sk_discard">Отменить</string>
+    <string name="sk_keep_editing">Продолжить редактирование</string>
+    <plurals name="sk_selected">
+        <item quantity="one">%1$d выбран</item>
+        <item quantity="few">%1$d выбрано</item>
+        <item quantity="many">%1$d выбрано</item>
+        <item quantity="other">%1$d выбрано</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">%1$d навык включён</item>
+        <item quantity="few">%1$d навыка включено</item>
+        <item quantity="many">%1$d навыков включено</item>
+        <item quantity="other">%1$d навыка включено</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">%1$d навык отключён</item>
+        <item quantity="few">%1$d навыка отключено</item>
+        <item quantity="many">%1$d навыков отключено</item>
+        <item quantity="other">%1$d навыка отключено</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">%1$d навык удалён</item>
+        <item quantity="few">%1$d навыка удалено</item>
+        <item quantity="many">%1$d навыков удалено</item>
+        <item quantity="other">%1$d навыка удалено</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">Удалить %1$d навык?</item>
+        <item quantity="few">Удалить %1$d навыка?</item>
+        <item quantity="many">Удалить %1$d навыков?</item>
+        <item quantity="other">Удалить %1$d навыка?</item>
+    </plurals>
+</resources>

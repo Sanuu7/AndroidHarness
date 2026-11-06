@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"नाम या विवरण से कौशल खोजें"</string>
+    <string name="sk_summary">"%1$d में से %2$d सक्षम"</string>
+    <string name="sk_group_count">"%1$d में से %2$d चालू"</string>
+    <string name="sk_status_on">"सक्षम"</string>
+    <string name="sk_status_off">"अक्षम"</string>
+    <string name="sk_source_yours">"आपके"</string>
+    <string name="sk_source_workspace">"कार्यक्षेत्र"</string>
+    <string name="sk_select">"कौशल चुनें"</string>
+    <string name="sk_open">"कौशल खोलें"</string>
+    <string name="sk_select_all">"सभी चुनें"</string>
+    <string name="sk_clear_selection">"साफ़ करें"</string>
+    <string name="sk_stop_selecting">"चयन रोकें"</string>
+    <string name="sk_state_selected">"%1$s, चयनित"</string>
+    <string name="sk_state_not_selected">"%1$s, अचयनित"</string>
+    <string name="sk_turn_on">"सक्षम करें"</string>
+    <string name="sk_turn_off">"अक्षम करें"</string>
+    <string name="sk_undo">"पूर्ववत करें"</string>
+    <string name="sk_new">"नया कौशल"</string>
+    <string name="sk_empty">"कोई कौशल मेल नहीं खाता"</string>
+    <string name="sk_empty_hint">"कोई अन्य खोज आज़माएँ, या सभी कौशल देखने के लिए फ़िल्टर साफ़ करें।"</string>
+    <string name="sk_enabled_hint">"मॉडल इस कौशल को अपनी सूची में देखता है और उपयुक्त होने पर इसे लोड करता है।"</string>
+    <string name="sk_disabled_hint">"जब तक आप इसे फिर से सक्षम नहीं करते, यह मॉडल से छिपा रहता है।"</string>
+    <string name="sk_enable_named">"%1$s सक्षम करें"</string>
+    <string name="sk_edit_copy">"प्रतिलिपि संपादित करें"</string>
+    <string name="sk_copy">"प्रतिलिपि"</string>
+    <string name="sk_copied">"कौशल की प्रतिलिपि बनी"</string>
+    <string name="sk_copy_note">"सहेजने पर आपकी अपनी प्रतिलिपि रहती है, जो बंडल किए गए कौशल की जगह लेती है। मूल पर लौटने के लिए बाद में अपनी प्रतिलिपि हटाएँ।"</string>
+    <string name="sk_workspace_note">"यह कौशल कार्यक्षेत्र के .harness/skills फ़ोल्डर में है। इसे वहीं संपादित करें।"</string>
+    <string name="sk_preview">"पूर्वावलोकन"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"फ़ाइलें (%1$d)"</string>
+    <string name="sk_saved">"%1$s सहेजा गया"</string>
+    <string name="sk_fix_frontmatter">"frontmatter ठीक करें"</string>
+    <string name="sk_chars">"%1$d / %2$d अक्षर"</string>
+    <string name="sk_delete_hint">"केवल आपके अपने कौशल हटाए जाते हैं। आपके द्वारा संपादित बंडल किया गया कौशल अपने मूल पर लौट जाता है।"</string>
+    <string name="sk_discard_title">"अपने परिवर्तन त्यागें?"</string>
+    <string name="sk_discard">"त्यागें"</string>
+    <string name="sk_keep_editing">"संपादन करते रहें"</string>
+    <plurals name="sk_selected">
+        <item quantity="one">"%1$d चयनित"</item>
+        <item quantity="other">"%1$d चयनित"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">"%1$d कौशल सक्षम किया गया"</item>
+        <item quantity="other">"%1$d कौशल सक्षम किया गया"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">"%1$d कौशल अक्षम किया गया"</item>
+        <item quantity="other">"%1$d कौशल अक्षम किया गया"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">"%1$d कौशल हटाया गया"</item>
+        <item quantity="other">"%1$d कौशल हटाया गया"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">"%1$d कौशल हटाएँ?"</item>
+        <item quantity="other">"%1$d कौशल हटाएँ?"</item>
+    </plurals>
+</resources>

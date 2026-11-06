@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">Pesquisar habilidades por nome ou descrição</string>
+    <string name="sk_summary">%1$d de %2$d ativadas</string>
+    <string name="sk_group_count">%1$d de %2$d ativas</string>
+    <string name="sk_status_on">Ativada</string>
+    <string name="sk_status_off">Desativada</string>
+    <string name="sk_source_yours">Suas</string>
+    <string name="sk_source_workspace">Espaço de trabalho</string>
+    <string name="sk_select">Selecionar habilidades</string>
+    <string name="sk_open">Abrir habilidade</string>
+    <string name="sk_select_all">Selecionar tudo</string>
+    <string name="sk_clear_selection">Limpar</string>
+    <string name="sk_stop_selecting">Parar seleção</string>
+    <string name="sk_state_selected">%1$s, selecionada</string>
+    <string name="sk_state_not_selected">%1$s, não selecionada</string>
+    <string name="sk_turn_on">Ativar</string>
+    <string name="sk_turn_off">Desativar</string>
+    <string name="sk_undo">Desfazer</string>
+    <string name="sk_new">Nova habilidade</string>
+    <string name="sk_empty">Nenhuma habilidade corresponde</string>
+    <string name="sk_empty_hint">Tente outra pesquisa ou limpe os filtros para ver todas as habilidades.</string>
+    <string name="sk_enabled_hint">O modelo vê esta habilidade no catálogo e a carrega quando ela se encaixa.</string>
+    <string name="sk_disabled_hint">Oculta do modelo até você ativá-la novamente.</string>
+    <string name="sk_enable_named">Ativar %1$s</string>
+    <string name="sk_edit_copy">Editar uma cópia</string>
+    <string name="sk_copy">Copiar</string>
+    <string name="sk_copied">Habilidade copiada</string>
+    <string name="sk_copy_note">Salvar mantém sua própria cópia, que substitui a habilidade incluída. Exclua sua cópia depois para voltar à original.</string>
+    <string name="sk_workspace_note">Esta habilidade fica na pasta .harness/skills do espaço de trabalho. Edite-a lá.</string>
+    <string name="sk_preview">Pré-visualização</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">Arquivos (%1$d)</string>
+    <string name="sk_saved">%1$s salva</string>
+    <string name="sk_fix_frontmatter">corrigir o frontmatter</string>
+    <string name="sk_chars">%1$d / %2$d caracteres</string>
+    <string name="sk_delete_hint">Apenas suas próprias habilidades são excluídas. Uma habilidade incluída que você editou volta à original.</string>
+    <string name="sk_discard_title">Descartar suas alterações?</string>
+    <string name="sk_discard">Descartar</string>
+    <string name="sk_keep_editing">Continuar editando</string>
+    <plurals name="sk_selected">
+        <item quantity="one">%1$d selecionada</item>
+        <item quantity="other">%1$d selecionadas</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">%1$d habilidade ativada</item>
+        <item quantity="other">%1$d habilidades ativadas</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">%1$d habilidade desativada</item>
+        <item quantity="other">%1$d habilidades desativadas</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">%1$d habilidade excluída</item>
+        <item quantity="other">%1$d habilidades excluídas</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">Excluir %1$d habilidade?</item>
+        <item quantity="other">Excluir %1$d habilidades?</item>
+    </plurals>
+</resources>

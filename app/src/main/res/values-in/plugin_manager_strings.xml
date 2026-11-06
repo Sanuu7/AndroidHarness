@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">Server ini berasal dari plugin yang diaktifkan. Kelola di Plugin; alatnya memakai izin ruang kerja.</string>
     <string name="pm_manage_plugins">Kelola plugin</string>
     <string name="pm_mcp_permissions">Izin ruang kerja</string>
+    <string name="pm_sort">Urutkan</string>
+    <string name="pm_sort_hint">Bintang berasal dari GitHub, unduhan dari npm. Item tanpa data itu ditampilkan terakhir.</string>
+    <string name="pm_sort_relevance">Paling cocok</string>
+    <string name="pm_sort_stars">Bintang terbanyak</string>
+    <string name="pm_sort_updated">Baru diperbarui</string>
+    <string name="pm_sort_downloads">Paling banyak diunduh</string>
+    <string name="pm_sort_newest">Terbaru</string>
+    <string name="pm_sort_oldest">Terlama</string>
+    <string name="pm_sort_name">Nama</string>
+    <string name="pm_status_all">Semua</string>
+    <string name="pm_status_installed">Terinstal</string>
+    <string name="pm_status_not_installed">Belum terinstal</string>
+    <string name="pm_status_updates">Pembaruan</string>
+    <string name="pm_filter_type">Jenis</string>
+    <string name="pm_filter_source">Sumber</string>
+    <string name="pm_filter_category">Kategori</string>
+    <string name="pm_filter_setup">Pengaturan</string>
+    <string name="pm_type_any">Semua jenis</string>
+    <string name="pm_source_any">Semua sumber</string>
+    <string name="pm_source_featured">Unggulan</string>
+    <string name="pm_source_mcp">Registri MCP</string>
+    <string name="pm_category_any">Semua kategori</string>
+    <string name="pm_setup_any">Semua pengaturan</string>
+    <string name="pm_setup_none">Langsung berfungsi</string>
+    <string name="pm_setup_runtime">Perlu runtime</string>
+    <string name="pm_setup_hint">Keahlian dan server MCP jarak jauh langsung berfungsi. Server lokal perlu Node, Python, atau runtime lain. Plugin diperiksa saat dipasang, jadi hanya muncul di Semua pengaturan.</string>
+    <string name="pm_clear_filters">Hapus filter</string>
+    <string name="pm_clear_search">Hapus pencarian</string>
+    <string name="pm_search_installed">Cari plugin terinstal</string>
+    <string name="pm_no_matches">Tidak ada yang cocok dengan filter ini</string>
+    <string name="pm_no_matches_hint">Coba pencarian lain, atau hapus filter untuk melihat lebih banyak.</string>
+    <string name="pm_installed_in">Di %1$s</string>
+    <string name="pm_update_available">Pembaruan tersedia</string>
+    <string name="pm_update_named">Perbarui %1$s</string>
+    <string name="pm_install_again">Instal di tempat lain</string>
+    <string name="pm_open_page">Buka halaman %1$s</string>
+    <string name="pm_updated">%1$s diperbarui</string>
+    <string name="pm_downloads_month">%1$s per bulan</string>
+    <string name="pm_show_updates">Tampilkan</string>
+    <plurals name="pm_results">
+        <item quantity="other">%1$d hasil</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">%1$d bintang di GitHub</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">%1$d pembaruan tersedia</item>
+    </plurals>
 </resources>

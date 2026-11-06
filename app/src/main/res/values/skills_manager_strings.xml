@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">Search skills by name or description</string>
+    <string name="sk_summary">%1$d of %2$d enabled</string>
+    <string name="sk_group_count">%1$d of %2$d on</string>
+    <string name="sk_status_on">Enabled</string>
+    <string name="sk_status_off">Disabled</string>
+    <string name="sk_source_yours">Yours</string>
+    <string name="sk_source_workspace">Workspace</string>
+    <string name="sk_select">Select skills</string>
+    <string name="sk_open">Open skill</string>
+    <string name="sk_select_all">Select all</string>
+    <string name="sk_clear_selection">Clear</string>
+    <string name="sk_stop_selecting">Stop selecting</string>
+    <string name="sk_state_selected">%1$s, selected</string>
+    <string name="sk_state_not_selected">%1$s, not selected</string>
+    <string name="sk_turn_on">Enable</string>
+    <string name="sk_turn_off">Disable</string>
+    <string name="sk_undo">Undo</string>
+    <string name="sk_new">New skill</string>
+    <string name="sk_empty">No skills match</string>
+    <string name="sk_empty_hint">Try another search, or clear the filters to see every skill.</string>
+    <string name="sk_enabled_hint">The model sees this skill in its catalog and loads it when it fits.</string>
+    <string name="sk_disabled_hint">Hidden from the model until you turn it back on.</string>
+    <string name="sk_enable_named">Enable %1$s</string>
+    <string name="sk_edit_copy">Edit a copy</string>
+    <string name="sk_copy">Copy</string>
+    <string name="sk_copied">Skill copied</string>
+    <string name="sk_copy_note">Saving keeps your own copy, which replaces the bundled skill. Delete your copy later to go back to the original.</string>
+    <string name="sk_workspace_note">This skill lives in the workspace\'s .harness/skills folder. Edit it there.</string>
+    <string name="sk_preview">Preview</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">Files (%1$d)</string>
+    <string name="sk_saved">Saved %1$s</string>
+    <string name="sk_fix_frontmatter">fix the frontmatter</string>
+    <string name="sk_chars">%1$d / %2$d characters</string>
+    <string name="sk_delete_hint">Only your own skills are deleted. A bundled skill you edited goes back to its original.</string>
+    <string name="sk_discard_title">Discard your changes?</string>
+    <string name="sk_discard">Discard</string>
+    <string name="sk_keep_editing">Keep editing</string>
+    <plurals name="sk_selected">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">Enabled %1$d skill</item>
+        <item quantity="other">Enabled %1$d skills</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">Disabled %1$d skill</item>
+        <item quantity="other">Disabled %1$d skills</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">Deleted %1$d skill</item>
+        <item quantity="other">Deleted %1$d skills</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">Delete %1$d skill?</item>
+        <item quantity="other">Delete %1$d skills?</item>
+    </plurals>
+</resources>

@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">නම හෝ විස්තරය අනුව කුසලතා සොයන්න</string>
+    <string name="sk_summary">%1$d / %2$d සක්‍රියයි</string>
+    <string name="sk_group_count">%1$d / %2$d ක්‍රියාත්මකයි</string>
+    <string name="sk_status_on">සක්‍රියයි</string>
+    <string name="sk_status_off">අක්‍රියයි</string>
+    <string name="sk_source_yours">ඔබගේ</string>
+    <string name="sk_source_workspace">වැඩබිම</string>
+    <string name="sk_select">කුසලතා තෝරන්න</string>
+    <string name="sk_open">කුසලතාව විවෘත කරන්න</string>
+    <string name="sk_select_all">සියල්ල තෝරන්න</string>
+    <string name="sk_clear_selection">ඉවත් කරන්න</string>
+    <string name="sk_stop_selecting">තේරීම නවත්වන්න</string>
+    <string name="sk_state_selected">%1$s, තෝරා ඇත</string>
+    <string name="sk_state_not_selected">%1$s, තෝරා නැත</string>
+    <string name="sk_turn_on">සක්‍රිය කරන්න</string>
+    <string name="sk_turn_off">අක්‍රිය කරන්න</string>
+    <string name="sk_undo">අහෝසි කරන්න</string>
+    <string name="sk_new">නව කුසලතාව</string>
+    <string name="sk_empty">ගැළපෙන කුසලතා නැත</string>
+    <string name="sk_empty_hint">වෙනත් සෙවුමක් උත්සාහ කරන්න, නැතහොත් සියලු කුසලතා බැලීමට පෙරහන් ඉවත් කරන්න.</string>
+    <string name="sk_enabled_hint">ආකෘතිය මෙම කුසලතාව එහි නාමාවලියේ දකින අතර ගැළපෙන විට එය පූරණය කරයි.</string>
+    <string name="sk_disabled_hint">ඔබ එය නැවත සක්‍රිය කරන තෙක් ආකෘතියෙන් සැඟවී ඇත.</string>
+    <string name="sk_enable_named">%1$s සක්‍රිය කරන්න</string>
+    <string name="sk_edit_copy">පිටපතක් සංස්කරණය කරන්න</string>
+    <string name="sk_copy">පිටපත් කරන්න</string>
+    <string name="sk_copied">කුසලතාව පිටපත් කරන ලදී</string>
+    <string name="sk_copy_note">සුරැකීමෙන් ඔබගේම පිටපත රැඳේ, එය ඇතුළත් කුසලතාව ප්‍රතිස්ථාපනය කරයි. මුල් පිටපතට ආපසු යාමට පසුව ඔබගේ පිටපත මකන්න.</string>
+    <string name="sk_workspace_note">මෙම කුසලතාව වැඩබිමේ .harness/skills ෆෝල්ඩරයේ ඇත. එහිදී එය සංස්කරණය කරන්න.</string>
+    <string name="sk_preview">පෙරදසුන</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">ගොනු (%1$d)</string>
+    <string name="sk_saved">%1$s සුරකින ලදී</string>
+    <string name="sk_fix_frontmatter">frontmatter නිවැරදි කරන්න</string>
+    <string name="sk_chars">%1$d / %2$d අක්ෂර</string>
+    <string name="sk_delete_hint">මකා දැමෙන්නේ ඔබගේම කුසලතා පමණි. ඔබ සංස්කරණය කළ ඇතුළත් කුසලතාවක් එහි මුල් තත්ත්වයට පැමිණේ.</string>
+    <string name="sk_discard_title">ඔබගේ වෙනස්කම් ඉවත් කරන්නද?</string>
+    <string name="sk_discard">ඉවත් කරන්න</string>
+    <string name="sk_keep_editing">සංස්කරණය දිගටම කරන්න</string>
+    <plurals name="sk_selected">
+        <item quantity="one">%1$d තෝරා ඇත</item>
+        <item quantity="other">%1$d තෝරා ඇත</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">%1$d කුසලතා සක්‍රිය කරන ලදී</item>
+        <item quantity="other">%1$d කුසලතා සක්‍රිය කරන ලදී</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">%1$d කුසලතා අක්‍රිය කරන ලදී</item>
+        <item quantity="other">%1$d කුසලතා අක්‍රිය කරන ලදී</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">%1$d කුසලතා මකා දමන ලදී</item>
+        <item quantity="other">%1$d කුසලතා මකා දමන ලදී</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">%1$d කුසලතා මකන්නද?</item>
+        <item quantity="other">%1$d කුසලතා මකන්නද?</item>
+    </plurals>
+</resources>

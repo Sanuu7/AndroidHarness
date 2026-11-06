@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">这些服务器来自已启用的插件。请在插件中管理；它们的工具使用工作区权限。</string>
     <string name="pm_manage_plugins">管理插件</string>
     <string name="pm_mcp_permissions">工作区权限</string>
+    <string name="pm_sort">排序</string>
+    <string name="pm_sort_hint">星标来自 GitHub，下载量来自 npm。没有这些数据的条目会排在最后。</string>
+    <string name="pm_sort_relevance">最佳匹配</string>
+    <string name="pm_sort_stars">星标最多</string>
+    <string name="pm_sort_updated">最近更新</string>
+    <string name="pm_sort_downloads">下载最多</string>
+    <string name="pm_sort_newest">最新</string>
+    <string name="pm_sort_oldest">最旧</string>
+    <string name="pm_sort_name">名称</string>
+    <string name="pm_status_all">全部</string>
+    <string name="pm_status_installed">已安装</string>
+    <string name="pm_status_not_installed">未安装</string>
+    <string name="pm_status_updates">更新</string>
+    <string name="pm_filter_type">类型</string>
+    <string name="pm_filter_source">来源</string>
+    <string name="pm_filter_category">分类</string>
+    <string name="pm_filter_setup">配置要求</string>
+    <string name="pm_type_any">任意类型</string>
+    <string name="pm_source_any">任意来源</string>
+    <string name="pm_source_featured">精选</string>
+    <string name="pm_source_mcp">MCP 注册表</string>
+    <string name="pm_category_any">任意分类</string>
+    <string name="pm_setup_any">任意配置要求</string>
+    <string name="pm_setup_none">开箱即用</string>
+    <string name="pm_setup_runtime">需要运行时</string>
+    <string name="pm_setup_hint">技能和远程 MCP 服务器开箱即用。本地服务器需要 Node、Python 或其他运行时。插件在安装时会经过检查，因此只会显示在任意配置要求下。</string>
+    <string name="pm_clear_filters">清除筛选</string>
+    <string name="pm_clear_search">清除搜索</string>
+    <string name="pm_search_installed">搜索已安装的插件</string>
+    <string name="pm_no_matches">没有符合这些筛选条件的结果</string>
+    <string name="pm_no_matches_hint">试试其他搜索，或清除一个筛选条件以查看更多。</string>
+    <string name="pm_installed_in">位于 %1$s</string>
+    <string name="pm_update_available">有可用更新</string>
+    <string name="pm_update_named">更新 %1$s</string>
+    <string name="pm_install_again">安装到其他位置</string>
+    <string name="pm_open_page">打开 %1$s 的页面</string>
+    <string name="pm_updated">已更新 %1$s</string>
+    <string name="pm_downloads_month">每月 %1$s</string>
+    <string name="pm_show_updates">显示</string>
+    <plurals name="pm_results">
+        <item quantity="other">共 %1$d 个结果</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">GitHub 上有 %1$d 颗星</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">有 %1$d 个可用更新</item>
+    </plurals>
 </resources>

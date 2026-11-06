@@ -132,11 +132,14 @@ class PluginDownloads(
             val keywords = pkg["keywords"]?.jsonArray.orEmpty().mapNotNull { it.jsonPrimitive.contentOrNull?.lowercase() }
             val mcp = keywords.any { "mcp" in it || "modelcontextprotocol" in it } || Regex("(^|[-/@])mcp([-/]|$)").containsMatchIn(name)
             val score = keywords.count { it in relevant }
+            val links = pkg["links"] as? JsonObject
             score to PluginListing(name, pkg["description"]?.jsonPrimitive?.content.orEmpty().take(2000),
                 pkg["version"]?.jsonPrimitive?.content.orEmpty(), PluginOrigin("npm", name, "latest"),
                 pkg["publisher"]?.jsonObject?.get("username")?.jsonPrimitive?.content.orEmpty(),
                 kind = if (mcp) "mcp" else if (keywords.any { "skill" in it }) "skill" else "plugin", source = "npm",
-                homepage = pkg["links"]?.jsonObject?.get("homepage")?.jsonPrimitive?.contentOrNull.orEmpty())
+                homepage = links?.get("repository").string()?.takeIf { "github.com" in it } ?: links?.get("homepage").string().orEmpty(),
+                updatedAt = epochMillis(pkg["date"].string()),
+                downloads = ((item.jsonObject["downloads"] as? JsonObject)?.get("monthly") as? JsonPrimitive)?.longOrNull)
         }.sortedByDescending { it.first }.map { it.second }
     }
     /** The official MCP registry. npm and PyPI packages run through npx or uvx; remote servers connect directly. */
@@ -150,11 +153,13 @@ class PluginDownloads(
             val id = server["name"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
             val config = mcpServerConfig(server) ?: return@mapNotNull null
             val short = PluginAdapter.sanitizeName(id.substringAfterLast('/'), "server").take(32)
+            val official = ((item.jsonObject["_meta"] as? JsonObject)?.get("io.modelcontextprotocol.registry/official")) as? JsonObject
             PluginListing(server["title"]?.jsonPrimitive?.contentOrNull ?: id.substringAfterLast('/'), server["description"]?.jsonPrimitive?.contentOrNull.orEmpty().take(2000),
                 server["version"]?.jsonPrimitive?.contentOrNull.orEmpty(),
                 PluginOrigin("mcp", buildJsonObject { put(short, config) }.toString(), server["version"]?.jsonPrimitive?.contentOrNull.orEmpty(), name = short),
                 id.substringBefore('/'), kind = "mcp", source = "MCP registry",
-                homepage = server["repository"]?.jsonObject?.get("url")?.jsonPrimitive?.contentOrNull ?: server["websiteUrl"]?.jsonPrimitive?.contentOrNull.orEmpty())
+                homepage = server["repository"]?.jsonObject?.get("url")?.jsonPrimitive?.contentOrNull ?: server["websiteUrl"]?.jsonPrimitive?.contentOrNull.orEmpty(),
+                updatedAt = epochMillis(official?.get("updatedAt").string()), createdAt = epochMillis(official?.get("publishedAt").string()))
         }.distinctBy { it.origin.target }
     }
     /** GitHub repositories tagged as skills or plugins for coding agents. */
@@ -171,12 +176,25 @@ class PluginDownloads(
             val topicsList = repo["topics"]?.jsonArray.orEmpty().mapNotNull { it.jsonPrimitive.contentOrNull }
             val stars = repo["stargazers_count"]?.jsonPrimitive?.intOrNull ?: 0
             PluginListing(repo["name"]?.jsonPrimitive?.content.orEmpty(), repo["description"]?.jsonPrimitive?.contentOrNull.orEmpty().take(2000),
-                "★ $stars", PluginOrigin("github", fullName), fullName.substringBefore('/'),
+                "", PluginOrigin("github", fullName), fullName.substringBefore('/'),
                 kind = when { topicsList.any { "mcp" in it } -> "mcp"; topicsList.any { "skill" in it } -> "skill"; else -> "plugin" },
-                source = "GitHub", homepage = repo["html_url"]?.jsonPrimitive?.contentOrNull.orEmpty())
+                source = "GitHub", homepage = repo["html_url"]?.jsonPrimitive?.contentOrNull.orEmpty(), stars = stars,
+                updatedAt = epochMillis(repo["pushed_at"].string()), createdAt = epochMillis(repo["created_at"].string()))
         }
     }
+    /** Star count and dates of one repository, used to rank listings that only link to GitHub. */
+    suspend fun githubStats(repo: String): RepoStats {
+        val checked = githubTarget(repo)
+        val data = metadata(githubApi.toHttpUrl().newBuilder().addPathSegment("repos").addPathSegments(checked).build().toString(), githubHeaders())
+        return RepoStats(data["stargazers_count"]?.jsonPrimitive?.intOrNull ?: 0, epochMillis(data["pushed_at"].string()),
+            epochMillis(data["created_at"].string()))
+    }
+    data class RepoStats(val stars: Int, val updatedAt: Long?, val createdAt: Long?)
+    private fun JsonElement?.string(): String? = (this as? JsonPrimitive)?.takeIf { it.isString }?.content
     companion object {
+        /** ISO 8601 time from a registry, or null when it is missing or malformed. */
+        fun epochMillis(text: String?): Long? = text?.takeIf(String::isNotBlank)?.let { runCatching { java.time.Instant.parse(it).toEpochMilli() }.getOrNull()
+            ?: runCatching { java.time.OffsetDateTime.parse(it).toInstant().toEpochMilli() }.getOrNull() }
         fun npmTarget(target: String): Pair<String, String> {
             val at = target.lastIndexOf('@').takeIf { it > 0 }
             val name = if (at == null) target.trim() else target.substring(0, at).trim()

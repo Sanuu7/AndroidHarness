@@ -129,6 +129,28 @@ class PluginManager(
         val featured = PluginMarketplaces.featured.filter { text.isBlank() || it.matches(text) }
         listOf(CatalogSection("Featured", featured)) + markets.awaitAll() + remote.awaitAll()
     }
+    private val repoStats = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, PluginDownloads.RepoStats?>>()
+    /**
+     * Adds GitHub stars and dates to listings that link to a repository but did not come with them.
+     * At most [limit] repositories are asked per call and answers are kept for six hours, so the
+     * unauthenticated rate limit is never spent on one screen. A repository that fails stays unranked.
+     */
+    suspend fun withRepoStats(sections: List<CatalogSection>, limit: Int = 24): List<CatalogSection> = coroutineScope {
+        val now = System.currentTimeMillis()
+        val wanted = sections.flatMap { it.listings }.filter { it.stars == null }.mapNotNull(PluginCatalog::githubRepo)
+            .map(String::lowercase).distinct().filter { repo ->
+                // A failure is usually the rate limit, so it is asked again sooner than a real answer.
+                repoStats[repo]?.takeIf { now - it.first < if (it.second == null) 15 * 60 * 1000 else 6 * 60 * 60 * 1000 } == null
+            }.take(limit)
+        wanted.map { repo -> async {
+            repoStats[repo] = now to runCatching { withTimeout(10_000) { downloads.githubStats(repo) } }.getOrNull()
+        } }.awaitAll()
+        sections.map { section -> section.copy(listings = section.listings.map { listing ->
+            if (listing.stars != null) return@map listing
+            val stats = PluginCatalog.githubRepo(listing)?.lowercase()?.let { repoStats[it]?.second } ?: return@map listing
+            listing.copy(stars = stats.stars, updatedAt = listing.updatedAt ?: stats.updatedAt, createdAt = listing.createdAt ?: stats.createdAt)
+        }) }
+    }
     private fun PluginListing.matches(text: String) = text.split(Regex("\\s+")).all { word ->
         name.contains(word, true) || description.contains(word, true) || category.contains(word, true) || publisher.contains(word, true)
     }

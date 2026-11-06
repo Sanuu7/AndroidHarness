@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">"இந்தச் சேவையகங்கள் இயக்கப்பட்ட செருகுநிரல்களிலிருந்து வருகின்றன. அவற்றை செருகுநிரல்களில் நிர்வகிக்கவும்; அவற்றின் கருவிகள் பணியிட அனுமதிகளைப் பயன்படுத்துகின்றன."</string>
     <string name="pm_manage_plugins">"செருகுநிரல்களை நிர்வகி"</string>
     <string name="pm_mcp_permissions">"பணியிட அனுமதிகள்"</string>
+    <string name="pm_sort">"வரிசைப்படுத்து"</string>
+    <string name="pm_sort_hint">"நட்சத்திரங்கள் GitHub இலிருந்தும் பதிவிறக்கங்கள் npm இலிருந்தும் வரும். அவை இல்லாத பட்டியல்கள் இறுதியில் காட்டப்படும்."</string>
+    <string name="pm_sort_relevance">"சிறந்த பொருத்தம்"</string>
+    <string name="pm_sort_stars">"அதிக நட்சத்திரங்கள்"</string>
+    <string name="pm_sort_updated">"சமீபத்தில் புதுப்பிக்கப்பட்டது"</string>
+    <string name="pm_sort_downloads">"அதிக பதிவிறக்கங்கள்"</string>
+    <string name="pm_sort_newest">"புதியது"</string>
+    <string name="pm_sort_oldest">"பழையது"</string>
+    <string name="pm_sort_name">"பெயர்"</string>
+    <string name="pm_status_all">"அனைத்தும்"</string>
+    <string name="pm_status_installed">"நிறுவப்பட்டது"</string>
+    <string name="pm_status_not_installed">"நிறுவப்படவில்லை"</string>
+    <string name="pm_status_updates">"புதுப்பிப்புகள்"</string>
+    <string name="pm_filter_type">"வகை"</string>
+    <string name="pm_filter_source">"மூலம்"</string>
+    <string name="pm_filter_category">"வகைக்குழு"</string>
+    <string name="pm_filter_setup">"அமைப்பு"</string>
+    <string name="pm_type_any">"எந்த வகையும்"</string>
+    <string name="pm_source_any">"எந்த மூலமும்"</string>
+    <string name="pm_source_featured">"சிறப்பு"</string>
+    <string name="pm_source_mcp">"MCP பதிவேடு"</string>
+    <string name="pm_category_any">"எந்த வகைக்குழுவும்"</string>
+    <string name="pm_setup_any">"எந்த அமைப்பும்"</string>
+    <string name="pm_setup_none">"உடனே வேலை செய்கிறது"</string>
+    <string name="pm_setup_runtime">"இயக்க நேரம் தேவை"</string>
+    <string name="pm_setup_hint">"திறன்களும் தொலை MCP சேவையகங்களும் உடனே வேலை செய்கின்றன. உள்ளூர் சேவையகங்களுக்கு Node, Python அல்லது பிற இயக்க நேரம் தேவை. நீங்கள் நிறுவும்போது செருகுநிரல்கள் சரிபார்க்கப்படுவதால் அவை எந்த அமைப்பும் என்பதன் கீழ் மட்டுமே தோன்றும்."</string>
+    <string name="pm_clear_filters">"வடிகட்டிகளை அழி"</string>
+    <string name="pm_clear_search">"தேடலை அழி"</string>
+    <string name="pm_search_installed">"நிறுவப்பட்ட செருகுநிரல்களைத் தேடு"</string>
+    <string name="pm_no_matches">"இந்த வடிகட்டிகளுடன் எதுவும் பொருந்தவில்லை"</string>
+    <string name="pm_no_matches_hint">"வேறு தேடலை முயற்சிக்கவும், அல்லது மேலும் காண ஒரு வடிகட்டியை அழிக்கவும்."</string>
+    <string name="pm_installed_in">"%1$s இல்"</string>
+    <string name="pm_update_available">"புதுப்பிப்பு உள்ளது"</string>
+    <string name="pm_update_named">"%1$s ஐப் புதுப்பி"</string>
+    <string name="pm_install_again">"வேறு இடத்தில் நிறுவு"</string>
+    <string name="pm_open_page">"%1$s பக்கத்தைத் திற"</string>
+    <string name="pm_updated">"%1$s புதுப்பிக்கப்பட்டது"</string>
+    <string name="pm_downloads_month">"மாதத்திற்கு %1$s"</string>
+    <string name="pm_show_updates">"காட்டு"</string>
+    <plurals name="pm_results">
+        <item quantity="one">"%1$d முடிவு"</item>
+        <item quantity="other">"%1$d முடிவு"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">"GitHub இல் %1$d நட்சத்திரம்"</item>
+        <item quantity="other">"GitHub இல் %1$d நட்சத்திரம்"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">"%1$d புதுப்பிப்பு உள்ளது"</item>
+        <item quantity="other">"%1$d புதுப்பிப்பு உள்ளது"</item>
+    </plurals>
 </resources>

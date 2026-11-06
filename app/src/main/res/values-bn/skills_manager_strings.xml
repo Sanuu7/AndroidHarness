@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"নাম বা বিবরণ দিয়ে দক্ষতা খুঁজুন"</string>
+    <string name="sk_summary">"%1$d / %2$d সক্রিয়"</string>
+    <string name="sk_group_count">"%1$d / %2$d চালু"</string>
+    <string name="sk_status_on">"সক্রিয়"</string>
+    <string name="sk_status_off">"নিষ্ক্রিয়"</string>
+    <string name="sk_source_yours">"আপনার"</string>
+    <string name="sk_source_workspace">"কর্মক্ষেত্র"</string>
+    <string name="sk_select">"দক্ষতা নির্বাচন করুন"</string>
+    <string name="sk_open">"দক্ষতা খুলুন"</string>
+    <string name="sk_select_all">"সব নির্বাচন করুন"</string>
+    <string name="sk_clear_selection">"মুছুন"</string>
+    <string name="sk_stop_selecting">"নির্বাচন বন্ধ করুন"</string>
+    <string name="sk_state_selected">"%1$s, নির্বাচিত"</string>
+    <string name="sk_state_not_selected">"%1$s, নির্বাচিত নয়"</string>
+    <string name="sk_turn_on">"সক্রিয় করুন"</string>
+    <string name="sk_turn_off">"নিষ্ক্রিয় করুন"</string>
+    <string name="sk_undo">"পূর্বাবস্থায় ফেরান"</string>
+    <string name="sk_new">"নতুন দক্ষতা"</string>
+    <string name="sk_empty">"কোনো দক্ষতা মেলেনি"</string>
+    <string name="sk_empty_hint">"অন্য অনুসন্ধান চেষ্টা করুন, বা সব দক্ষতা দেখতে ফিল্টার মুছুন।"</string>
+    <string name="sk_enabled_hint">"মডেল তার তালিকায় এই দক্ষতা দেখে এবং উপযুক্ত হলে এটি লোড করে।"</string>
+    <string name="sk_disabled_hint">"আপনি আবার সক্রিয় না করা পর্যন্ত মডেল থেকে লুকানো থাকে।"</string>
+    <string name="sk_enable_named">"%1$s সক্রিয় করুন"</string>
+    <string name="sk_edit_copy">"কপি সম্পাদনা করুন"</string>
+    <string name="sk_copy">"কপি"</string>
+    <string name="sk_copied">"দক্ষতা কপি হয়েছে"</string>
+    <string name="sk_copy_note">"সংরক্ষণ করলে আপনার নিজের কপি থাকে, যা বান্ডল করা দক্ষতার জায়গা নেয়। মূলেতে ফিরতে পরে আপনার কপি মুছুন।"</string>
+    <string name="sk_workspace_note">"এই দক্ষতাটি কর্মক্ষেত্রের .harness/skills ফোল্ডারে আছে। সেখানেই এটি সম্পাদনা করুন।"</string>
+    <string name="sk_preview">"পূর্বরূপ"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"ফাইল (%1$d)"</string>
+    <string name="sk_saved">"%1$s সংরক্ষিত হয়েছে"</string>
+    <string name="sk_fix_frontmatter">"frontmatter ঠিক করুন"</string>
+    <string name="sk_chars">"%1$d / %2$d অক্ষর"</string>
+    <string name="sk_delete_hint">"শুধু আপনার নিজের দক্ষতা মুছে ফেলা হয়। আপনার সম্পাদনা করা বান্ডল করা দক্ষতা আগের মূল অবস্থায় ফিরে যায়।"</string>
+    <string name="sk_discard_title">"আপনার পরিবর্তন বাতিল করবেন?"</string>
+    <string name="sk_discard">"বাতিল করুন"</string>
+    <string name="sk_keep_editing">"সম্পাদনা করতে থাকুন"</string>
+    <plurals name="sk_selected">
+        <item quantity="one">"%1$dটি নির্বাচিত"</item>
+        <item quantity="other">"%1$dটি নির্বাচিত"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">"%1$dটি দক্ষতা সক্রিয় করা হয়েছে"</item>
+        <item quantity="other">"%1$dটি দক্ষতা সক্রিয় করা হয়েছে"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">"%1$dটি দক্ষতা নিষ্ক্রিয় করা হয়েছে"</item>
+        <item quantity="other">"%1$dটি দক্ষতা নিষ্ক্রিয় করা হয়েছে"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">"%1$dটি দক্ষতা মুছে ফেলা হয়েছে"</item>
+        <item quantity="other">"%1$dটি দক্ষতা মুছে ফেলা হয়েছে"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">"%1$dটি দক্ষতা মুছবেন?"</item>
+        <item quantity="other">"%1$dটি দক্ষতা মুছবেন?"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"ค้นหาทักษะตามชื่อหรือคำอธิบาย"</string>
+    <string name="sk_summary">"เปิดใช้ %1$d จาก %2$d"</string>
+    <string name="sk_group_count">"เปิด %1$d จาก %2$d"</string>
+    <string name="sk_status_on">"เปิดใช้งาน"</string>
+    <string name="sk_status_off">"ปิดใช้งาน"</string>
+    <string name="sk_source_yours">"ของคุณ"</string>
+    <string name="sk_source_workspace">"พื้นที่ทำงาน"</string>
+    <string name="sk_select">"เลือกทักษะ"</string>
+    <string name="sk_open">"เปิดทักษะ"</string>
+    <string name="sk_select_all">"เลือกทั้งหมด"</string>
+    <string name="sk_clear_selection">"ล้าง"</string>
+    <string name="sk_stop_selecting">"หยุดเลือก"</string>
+    <string name="sk_state_selected">"%1$s เลือกแล้ว"</string>
+    <string name="sk_state_not_selected">"%1$s ยังไม่ได้เลือก"</string>
+    <string name="sk_turn_on">"เปิดใช้งาน"</string>
+    <string name="sk_turn_off">"ปิดใช้งาน"</string>
+    <string name="sk_undo">"เลิกทำ"</string>
+    <string name="sk_new">"ทักษะใหม่"</string>
+    <string name="sk_empty">"ไม่มีทักษะที่ตรงกัน"</string>
+    <string name="sk_empty_hint">"ลองค้นหาอื่น หรือล้างตัวกรองเพื่อดูทักษะทั้งหมด"</string>
+    <string name="sk_enabled_hint">"โมเดลเห็นทักษะนี้ในแคตตาล็อกและโหลดเมื่อเหมาะสม"</string>
+    <string name="sk_disabled_hint">"ซ่อนจากโมเดลจนกว่าคุณจะเปิดใช้อีกครั้ง"</string>
+    <string name="sk_enable_named">"เปิดใช้งาน %1$s"</string>
+    <string name="sk_edit_copy">"แก้ไขสำเนา"</string>
+    <string name="sk_copy">"คัดลอก"</string>
+    <string name="sk_copied">"คัดลอกทักษะแล้ว"</string>
+    <string name="sk_copy_note">"การบันทึกจะเก็บสำเนาของคุณไว้ ซึ่งแทนที่ทักษะที่มาพร้อมระบบ ลบสำเนาของคุณภายหลังเพื่อกลับไปใช้ต้นฉบับ"</string>
+    <string name="sk_workspace_note">"ทักษะนี้อยู่ในโฟลเดอร์ .harness/skills ของพื้นที่ทำงาน แก้ไขที่นั่น"</string>
+    <string name="sk_preview">"ตัวอย่าง"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"ไฟล์ (%1$d)"</string>
+    <string name="sk_saved">"บันทึก %1$s แล้ว"</string>
+    <string name="sk_fix_frontmatter">"แก้ไข frontmatter"</string>
+    <string name="sk_chars">"%1$d / %2$d ตัวอักษร"</string>
+    <string name="sk_delete_hint">"จะลบเฉพาะทักษะของคุณเอง ทักษะที่มาพร้อมระบบซึ่งคุณแก้ไขจะกลับไปเป็นต้นฉบับ"</string>
+    <string name="sk_discard_title">"ทิ้งการเปลี่ยนแปลงหรือไม่"</string>
+    <string name="sk_discard">"ทิ้ง"</string>
+    <string name="sk_keep_editing">"แก้ไขต่อไป"</string>
+    <plurals name="sk_selected">
+        <item quantity="other">"เลือก %1$d รายการ"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">"เปิดใช้งาน %1$d ทักษะ"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">"ปิดใช้งาน %1$d ทักษะ"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">"ลบ %1$d ทักษะ"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">"ลบ %1$d ทักษะหรือไม่"</item>
+    </plurals>
+</resources>

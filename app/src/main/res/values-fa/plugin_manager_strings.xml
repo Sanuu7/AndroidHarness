@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">این سرورها از افزونه‌های فعال می‌آیند. آن‌ها را در افزونه‌ها مدیریت کنید؛ ابزارهایشان از مجوزهای فضای کاری استفاده می‌کنند.</string>
     <string name="pm_manage_plugins">مدیریت افزونه‌ها</string>
     <string name="pm_mcp_permissions">مجوزهای فضای کاری</string>
+    <string name="pm_sort">مرتب‌سازی</string>
+    <string name="pm_sort_hint">ستاره‌ها از GitHub و دانلودها از npm می‌آیند. مواردی که این داده‌ها را ندارند در انتها نمایش داده می‌شوند.</string>
+    <string name="pm_sort_relevance">بهترین تطابق</string>
+    <string name="pm_sort_stars">بیشترین ستاره</string>
+    <string name="pm_sort_updated">اخیراً به‌روزرسانی‌شده</string>
+    <string name="pm_sort_downloads">بیشترین دانلود</string>
+    <string name="pm_sort_newest">جدیدترین</string>
+    <string name="pm_sort_oldest">قدیمی‌ترین</string>
+    <string name="pm_sort_name">نام</string>
+    <string name="pm_status_all">همه</string>
+    <string name="pm_status_installed">نصب‌شده</string>
+    <string name="pm_status_not_installed">نصب‌نشده</string>
+    <string name="pm_status_updates">به‌روزرسانی‌ها</string>
+    <string name="pm_filter_type">نوع</string>
+    <string name="pm_filter_source">منبع</string>
+    <string name="pm_filter_category">دسته‌بندی</string>
+    <string name="pm_filter_setup">راه‌اندازی</string>
+    <string name="pm_type_any">هر نوع</string>
+    <string name="pm_source_any">هر منبع</string>
+    <string name="pm_source_featured">ویژه</string>
+    <string name="pm_source_mcp">رجیستری MCP</string>
+    <string name="pm_category_any">هر دسته‌بندی</string>
+    <string name="pm_setup_any">هر راه‌اندازی</string>
+    <string name="pm_setup_none">فوراً کار می‌کند</string>
+    <string name="pm_setup_runtime">به محیط اجرا نیاز دارد</string>
+    <string name="pm_setup_hint">مهارت‌ها و سرورهای MCP راه دور فوراً کار می‌کنند. سرورهای محلی به Node، Python یا محیط اجرای دیگری نیاز دارند. افزونه‌ها هنگام نصب بررسی می‌شوند، بنابراین فقط زیر هر راه‌اندازی نمایش داده می‌شوند.</string>
+    <string name="pm_clear_filters">پاک کردن فیلترها</string>
+    <string name="pm_clear_search">پاک کردن جستجو</string>
+    <string name="pm_search_installed">جستجوی افزونه‌های نصب‌شده</string>
+    <string name="pm_no_matches">هیچ‌چیز با این فیلترها مطابقت ندارد</string>
+    <string name="pm_no_matches_hint">جستجوی دیگری را امتحان کنید یا یک فیلتر را پاک کنید تا بیشتر ببینید.</string>
+    <string name="pm_installed_in">در %1$s</string>
+    <string name="pm_update_available">به‌روزرسانی موجود است</string>
+    <string name="pm_update_named">به‌روزرسانی %1$s</string>
+    <string name="pm_install_again">نصب در مکان دیگر</string>
+    <string name="pm_open_page">باز کردن صفحهٔ %1$s</string>
+    <string name="pm_updated">%1$s به‌روزرسانی شد</string>
+    <string name="pm_downloads_month">%1$s در ماه</string>
+    <string name="pm_show_updates">نمایش</string>
+    <plurals name="pm_results">
+        <item quantity="one">%1$d نتیجه</item>
+        <item quantity="other">%1$d نتیجه</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">%1$d ستاره در GitHub</item>
+        <item quantity="other">%1$d ستاره در GitHub</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">%1$d به‌روزرسانی موجود است</item>
+        <item quantity="other">%1$d به‌روزرسانی موجود است</item>
+    </plurals>
 </resources>

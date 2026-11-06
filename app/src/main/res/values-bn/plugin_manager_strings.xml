@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">"এই সার্ভারগুলো সক্ষম প্লাগইন থেকে আসে। প্লাগইনে সেগুলো পরিচালনা করুন; তাদের টুল কর্মক্ষেত্রের অনুমতি ব্যবহার করে।"</string>
     <string name="pm_manage_plugins">"প্লাগইন পরিচালনা করুন"</string>
     <string name="pm_mcp_permissions">"কর্মক্ষেত্রের অনুমতি"</string>
+    <string name="pm_sort">"সাজান"</string>
+    <string name="pm_sort_hint">"স্টার GitHub থেকে, ডাউনলোড npm থেকে আসে। এগুলো নেই এমন তালিকা শেষে দেখানো হয়।"</string>
+    <string name="pm_sort_relevance">"সেরা মিল"</string>
+    <string name="pm_sort_stars">"সর্বাধিক স্টার"</string>
+    <string name="pm_sort_updated">"সাম্প্রতিক আপডেট"</string>
+    <string name="pm_sort_downloads">"সর্বাধিক ডাউনলোড"</string>
+    <string name="pm_sort_newest">"নতুনতম"</string>
+    <string name="pm_sort_oldest">"পুরাতনতম"</string>
+    <string name="pm_sort_name">"নাম"</string>
+    <string name="pm_status_all">"সব"</string>
+    <string name="pm_status_installed">"ইনস্টল করা"</string>
+    <string name="pm_status_not_installed">"ইনস্টল করা নেই"</string>
+    <string name="pm_status_updates">"আপডেট"</string>
+    <string name="pm_filter_type">"ধরন"</string>
+    <string name="pm_filter_source">"উৎস"</string>
+    <string name="pm_filter_category">"শ্রেণি"</string>
+    <string name="pm_filter_setup">"সেটআপ"</string>
+    <string name="pm_type_any">"যেকোনো ধরন"</string>
+    <string name="pm_source_any">"যেকোনো উৎস"</string>
+    <string name="pm_source_featured">"বিশেষ"</string>
+    <string name="pm_source_mcp">"MCP রেজিস্ট্রি"</string>
+    <string name="pm_category_any">"যেকোনো শ্রেণি"</string>
+    <string name="pm_setup_any">"যেকোনো সেটআপ"</string>
+    <string name="pm_setup_none">"সাথে সাথে কাজ করে"</string>
+    <string name="pm_setup_runtime">"রানটাইম দরকার"</string>
+    <string name="pm_setup_hint">"দক্ষতা ও দূরবর্তী MCP সার্ভার সাথে সাথে কাজ করে। স্থানীয় সার্ভারে Node, Python বা অন্য রানটাইম দরকার। প্লাগইন ইনস্টল করার সময় যাচাই করা হয়, তাই সেগুলো শুধু যেকোনো সেটআপ-এর অধীনে দেখায়।"</string>
+    <string name="pm_clear_filters">"ফিল্টার মুছুন"</string>
+    <string name="pm_clear_search">"অনুসন্ধান মুছুন"</string>
+    <string name="pm_search_installed">"ইনস্টল করা প্লাগইন খুঁজুন"</string>
+    <string name="pm_no_matches">"এই ফিল্টারগুলোর সাথে কিছু মেলে না"</string>
+    <string name="pm_no_matches_hint">"অন্য অনুসন্ধান চেষ্টা করুন, বা আরও দেখতে একটি ফিল্টার মুছুন।"</string>
+    <string name="pm_installed_in">"%1$s-এ"</string>
+    <string name="pm_update_available">"আপডেট উপলব্ধ"</string>
+    <string name="pm_update_named">"%1$s আপডেট করুন"</string>
+    <string name="pm_install_again">"অন্য জায়গায় ইনস্টল করুন"</string>
+    <string name="pm_open_page">"%1$s-এর পৃষ্ঠা খুলুন"</string>
+    <string name="pm_updated">"%1$s আপডেট হয়েছে"</string>
+    <string name="pm_downloads_month">"মাসে %1$s"</string>
+    <string name="pm_show_updates">"দেখান"</string>
+    <plurals name="pm_results">
+        <item quantity="one">"%1$dটি ফলাফল"</item>
+        <item quantity="other">"%1$dটি ফলাফল"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">"GitHub-এ %1$dটি স্টার"</item>
+        <item quantity="other">"GitHub-এ %1$dটি স্টার"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">"%1$dটি আপডেট উপলব্ধ"</item>
+        <item quantity="other">"%1$dটি আপডেট উপলব্ধ"</item>
+    </plurals>
 </resources>

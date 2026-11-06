@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">"Các máy chủ này đến từ plugin đã bật. Quản lý chúng trong Plugin; công cụ của chúng dùng quyền của không gian làm việc."</string>
     <string name="pm_manage_plugins">"Quản lý plugin"</string>
     <string name="pm_mcp_permissions">"Quyền của không gian làm việc"</string>
+    <string name="pm_sort">"Sắp xếp"</string>
+    <string name="pm_sort_hint">"Sao lấy từ GitHub, lượt tải từ npm. Các mục không có dữ liệu này sẽ hiện cuối."</string>
+    <string name="pm_sort_relevance">"Khớp nhất"</string>
+    <string name="pm_sort_stars">"Nhiều sao nhất"</string>
+    <string name="pm_sort_updated">"Cập nhật gần đây"</string>
+    <string name="pm_sort_downloads">"Tải nhiều nhất"</string>
+    <string name="pm_sort_newest">"Mới nhất"</string>
+    <string name="pm_sort_oldest">"Cũ nhất"</string>
+    <string name="pm_sort_name">"Tên"</string>
+    <string name="pm_status_all">"Tất cả"</string>
+    <string name="pm_status_installed">"Đã cài đặt"</string>
+    <string name="pm_status_not_installed">"Chưa cài đặt"</string>
+    <string name="pm_status_updates">"Cập nhật"</string>
+    <string name="pm_filter_type">"Loại"</string>
+    <string name="pm_filter_source">"Nguồn"</string>
+    <string name="pm_filter_category">"Danh mục"</string>
+    <string name="pm_filter_setup">"Thiết lập"</string>
+    <string name="pm_type_any">"Mọi loại"</string>
+    <string name="pm_source_any">"Mọi nguồn"</string>
+    <string name="pm_source_featured">"Nổi bật"</string>
+    <string name="pm_source_mcp">"Registry MCP"</string>
+    <string name="pm_category_any">"Mọi danh mục"</string>
+    <string name="pm_setup_any">"Mọi thiết lập"</string>
+    <string name="pm_setup_none">"Hoạt động ngay"</string>
+    <string name="pm_setup_runtime">"Cần môi trường chạy"</string>
+    <string name="pm_setup_hint">"Kỹ năng và máy chủ MCP từ xa hoạt động ngay. Máy chủ cục bộ cần Node, Python hoặc môi trường chạy khác. Plugin được kiểm tra khi bạn cài đặt, nên chúng chỉ hiện trong Mọi thiết lập."</string>
+    <string name="pm_clear_filters">"Xóa bộ lọc"</string>
+    <string name="pm_clear_search">"Xóa tìm kiếm"</string>
+    <string name="pm_search_installed">"Tìm plugin đã cài đặt"</string>
+    <string name="pm_no_matches">"Không có mục nào khớp bộ lọc này"</string>
+    <string name="pm_no_matches_hint">"Hãy thử tìm kiếm khác hoặc xóa một bộ lọc để xem thêm."</string>
+    <string name="pm_installed_in">"Trong %1$s"</string>
+    <string name="pm_update_available">"Có bản cập nhật"</string>
+    <string name="pm_update_named">"Cập nhật %1$s"</string>
+    <string name="pm_install_again">"Cài đặt ở vị trí khác"</string>
+    <string name="pm_open_page">"Mở trang của %1$s"</string>
+    <string name="pm_updated">"Đã cập nhật %1$s"</string>
+    <string name="pm_downloads_month">"%1$s mỗi tháng"</string>
+    <string name="pm_show_updates">"Hiện"</string>
+    <plurals name="pm_results">
+        <item quantity="other">"%1$d kết quả"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">"%1$d sao trên GitHub"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">"%1$d bản cập nhật có sẵn"</item>
+    </plurals>
 </resources>

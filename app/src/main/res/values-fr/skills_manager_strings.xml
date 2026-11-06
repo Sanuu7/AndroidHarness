@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"Rechercher des compétences par nom ou description"</string>
+    <string name="sk_summary">"%1$d sur %2$d activées"</string>
+    <string name="sk_group_count">"%1$d sur %2$d actives"</string>
+    <string name="sk_status_on">"Activée"</string>
+    <string name="sk_status_off">"Désactivée"</string>
+    <string name="sk_source_yours">"Les vôtres"</string>
+    <string name="sk_source_workspace">"Espace de travail"</string>
+    <string name="sk_select">"Sélectionner des compétences"</string>
+    <string name="sk_open">"Ouvrir la compétence"</string>
+    <string name="sk_select_all">"Tout sélectionner"</string>
+    <string name="sk_clear_selection">"Effacer"</string>
+    <string name="sk_stop_selecting">"Arrêter la sélection"</string>
+    <string name="sk_state_selected">"%1$s, sélectionnée"</string>
+    <string name="sk_state_not_selected">"%1$s, non sélectionnée"</string>
+    <string name="sk_turn_on">"Activer"</string>
+    <string name="sk_turn_off">"Désactiver"</string>
+    <string name="sk_undo">"Annuler"</string>
+    <string name="sk_new">"Nouvelle compétence"</string>
+    <string name="sk_empty">"Aucune compétence ne correspond"</string>
+    <string name="sk_empty_hint">"Essayez une autre recherche ou effacez les filtres pour voir toutes les compétences."</string>
+    <string name="sk_enabled_hint">"Le modèle voit cette compétence dans son catalogue et la charge lorsqu\'elle convient."</string>
+    <string name="sk_disabled_hint">"Masquée au modèle jusqu\'à ce que vous la réactiviez."</string>
+    <string name="sk_enable_named">"Activer %1$s"</string>
+    <string name="sk_edit_copy">"Modifier une copie"</string>
+    <string name="sk_copy">"Copier"</string>
+    <string name="sk_copied">"Compétence copiée"</string>
+    <string name="sk_copy_note">"L\'enregistrement conserve votre propre copie, qui remplace la compétence fournie. Supprimez votre copie plus tard pour revenir à l\'original."</string>
+    <string name="sk_workspace_note">"Cette compétence se trouve dans le dossier .harness/skills de l\'espace de travail. Modifiez-la là."</string>
+    <string name="sk_preview">"Aperçu"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"Fichiers (%1$d)"</string>
+    <string name="sk_saved">"%1$s enregistrée"</string>
+    <string name="sk_fix_frontmatter">"corriger le frontmatter"</string>
+    <string name="sk_chars">"%1$d / %2$d caractères"</string>
+    <string name="sk_delete_hint">"Seules vos propres compétences sont supprimées. Une compétence fournie que vous avez modifiée revient à son original."</string>
+    <string name="sk_discard_title">"Abandonner vos modifications ?"</string>
+    <string name="sk_discard">"Abandonner"</string>
+    <string name="sk_keep_editing">"Continuer à éditer"</string>
+    <plurals name="sk_selected">
+        <item quantity="one">"%1$d sélectionnée"</item>
+        <item quantity="many">"%1$d sélectionnées"</item>
+        <item quantity="other">"%1$d sélectionnées"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">"%1$d compétence activée"</item>
+        <item quantity="many">"%1$d compétences activées"</item>
+        <item quantity="other">"%1$d compétences activées"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">"%1$d compétence désactivée"</item>
+        <item quantity="many">"%1$d compétences désactivées"</item>
+        <item quantity="other">"%1$d compétences désactivées"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">"%1$d compétence supprimée"</item>
+        <item quantity="many">"%1$d compétences supprimées"</item>
+        <item quantity="other">"%1$d compétences supprimées"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">"Supprimer %1$d compétence ?"</item>
+        <item quantity="many">"Supprimer %1$d compétences ?"</item>
+        <item quantity="other">"Supprimer %1$d compétences ?"</item>
+    </plurals>
+</resources>

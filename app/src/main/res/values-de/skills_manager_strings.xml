@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">Skills nach Name oder Beschreibung suchen</string>
+    <string name="sk_summary">%1$d von %2$d aktiviert</string>
+    <string name="sk_group_count">%1$d von %2$d an</string>
+    <string name="sk_status_on">Aktiviert</string>
+    <string name="sk_status_off">Deaktiviert</string>
+    <string name="sk_source_yours">Deine</string>
+    <string name="sk_source_workspace">Arbeitsbereich</string>
+    <string name="sk_select">Skills auswählen</string>
+    <string name="sk_open">Skill öffnen</string>
+    <string name="sk_select_all">Alle auswählen</string>
+    <string name="sk_clear_selection">Aufheben</string>
+    <string name="sk_stop_selecting">Auswahl beenden</string>
+    <string name="sk_state_selected">%1$s, ausgewählt</string>
+    <string name="sk_state_not_selected">%1$s, nicht ausgewählt</string>
+    <string name="sk_turn_on">Aktivieren</string>
+    <string name="sk_turn_off">Deaktivieren</string>
+    <string name="sk_undo">Rückgängig</string>
+    <string name="sk_new">Neuer Skill</string>
+    <string name="sk_empty">Keine Skills passen</string>
+    <string name="sk_empty_hint">Versuche eine andere Suche oder hebe die Filter auf, um alle Skills zu sehen.</string>
+    <string name="sk_enabled_hint">Das Modell sieht diesen Skill in seinem Katalog und lädt ihn, wenn er passt.</string>
+    <string name="sk_disabled_hint">Vor dem Modell verborgen, bis du ihn wieder aktivierst.</string>
+    <string name="sk_enable_named">%1$s aktivieren</string>
+    <string name="sk_edit_copy">Kopie bearbeiten</string>
+    <string name="sk_copy">Kopieren</string>
+    <string name="sk_copied">Skill kopiert</string>
+    <string name="sk_copy_note">Beim Speichern bleibt deine eigene Kopie, die den mitgelieferten Skill ersetzt. Lösche deine Kopie später, um zum Original zurückzukehren.</string>
+    <string name="sk_workspace_note">Dieser Skill liegt im Ordner .harness/skills des Arbeitsbereichs. Bearbeite ihn dort.</string>
+    <string name="sk_preview">Vorschau</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">Dateien (%1$d)</string>
+    <string name="sk_saved">%1$s gespeichert</string>
+    <string name="sk_fix_frontmatter">Frontmatter korrigieren</string>
+    <string name="sk_chars">%1$d / %2$d Zeichen</string>
+    <string name="sk_delete_hint">Nur deine eigenen Skills werden gelöscht. Ein bearbeiteter mitgelieferter Skill wird auf das Original zurückgesetzt.</string>
+    <string name="sk_discard_title">Änderungen verwerfen?</string>
+    <string name="sk_discard">Verwerfen</string>
+    <string name="sk_keep_editing">Weiter bearbeiten</string>
+    <plurals name="sk_selected">
+        <item quantity="one">%1$d ausgewählt</item>
+        <item quantity="other">%1$d ausgewählt</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">%1$d Skill aktiviert</item>
+        <item quantity="other">%1$d Skills aktiviert</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">%1$d Skill deaktiviert</item>
+        <item quantity="other">%1$d Skills deaktiviert</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">%1$d Skill gelöscht</item>
+        <item quantity="other">%1$d Skills gelöscht</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">%1$d Skill löschen?</item>
+        <item quantity="other">%1$d Skills löschen?</item>
+    </plurals>
+</resources>

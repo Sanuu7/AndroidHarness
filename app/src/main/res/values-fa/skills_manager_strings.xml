@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">جستجوی مهارت‌ها بر اساس نام یا توضیحات</string>
+    <string name="sk_summary">%1$d از %2$d فعال</string>
+    <string name="sk_group_count">%1$d از %2$d روشن</string>
+    <string name="sk_status_on">فعال</string>
+    <string name="sk_status_off">غیرفعال</string>
+    <string name="sk_source_yours">متعلق به شما</string>
+    <string name="sk_source_workspace">فضای کاری</string>
+    <string name="sk_select">انتخاب مهارت‌ها</string>
+    <string name="sk_open">باز کردن مهارت</string>
+    <string name="sk_select_all">انتخاب همه</string>
+    <string name="sk_clear_selection">پاک کردن</string>
+    <string name="sk_stop_selecting">پایان انتخاب</string>
+    <string name="sk_state_selected">%1$s، انتخاب‌شده</string>
+    <string name="sk_state_not_selected">%1$s، انتخاب‌نشده</string>
+    <string name="sk_turn_on">فعال کردن</string>
+    <string name="sk_turn_off">غیرفعال کردن</string>
+    <string name="sk_undo">واگرد</string>
+    <string name="sk_new">مهارت جدید</string>
+    <string name="sk_empty">هیچ مهارتی مطابقت ندارد</string>
+    <string name="sk_empty_hint">جستجوی دیگری را امتحان کنید یا فیلترها را پاک کنید تا همهٔ مهارت‌ها را ببینید.</string>
+    <string name="sk_enabled_hint">مدل این مهارت را در فهرست خود می‌بیند و وقتی مناسب باشد آن را بارگذاری می‌کند.</string>
+    <string name="sk_disabled_hint">تا زمانی که دوباره آن را فعال نکنید، از مدل پنهان است.</string>
+    <string name="sk_enable_named">فعال کردن %1$s</string>
+    <string name="sk_edit_copy">ویرایش یک نسخه</string>
+    <string name="sk_copy">کپی</string>
+    <string name="sk_copied">مهارت کپی شد</string>
+    <string name="sk_copy_note">ذخیره کردن نسخهٔ خودتان را نگه می‌دارد که جایگزین مهارت همراه می‌شود. بعداً نسخهٔ خود را حذف کنید تا به نسخهٔ اصلی برگردید.</string>
+    <string name="sk_workspace_note">این مهارت در پوشهٔ .harness/skills فضای کاری قرار دارد. آن را همان‌جا ویرایش کنید.</string>
+    <string name="sk_preview">پیش‌نمایش</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">فایل‌ها (%1$d)</string>
+    <string name="sk_saved">%1$s ذخیره شد</string>
+    <string name="sk_fix_frontmatter">اصلاح frontmatter</string>
+    <string name="sk_chars">%1$d / %2$d نویسه</string>
+    <string name="sk_delete_hint">فقط مهارت‌های خودتان حذف می‌شوند. مهارت همراهی که ویرایش کرده‌اید به نسخهٔ اصلی برمی‌گردد.</string>
+    <string name="sk_discard_title">تغییرات خود را کنار بگذارید؟</string>
+    <string name="sk_discard">کنار گذاشتن</string>
+    <string name="sk_keep_editing">ادامهٔ ویرایش</string>
+    <plurals name="sk_selected">
+        <item quantity="one">%1$d انتخاب‌شده</item>
+        <item quantity="other">%1$d انتخاب‌شده</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">%1$d مهارت فعال شد</item>
+        <item quantity="other">%1$d مهارت فعال شد</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">%1$d مهارت غیرفعال شد</item>
+        <item quantity="other">%1$d مهارت غیرفعال شد</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">%1$d مهارت حذف شد</item>
+        <item quantity="other">%1$d مهارت حذف شد</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">حذف %1$d مهارت؟</item>
+        <item quantity="other">حذف %1$d مهارت؟</item>
+    </plurals>
+</resources>

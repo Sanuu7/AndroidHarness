@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">"Bu sunucular etkin eklentilerden gelir. Bunları Eklentiler bölümünde yönetin; araçları çalışma alanı izinlerini kullanır."</string>
     <string name="pm_manage_plugins">"Eklentileri yönet"</string>
     <string name="pm_mcp_permissions">"Çalışma alanı izinleri"</string>
+    <string name="pm_sort">"Sırala"</string>
+    <string name="pm_sort_hint">"Yıldızlar GitHub\'dan, indirmeler npm\'den gelir. Bunları içermeyen listelemeler en sonda görünür."</string>
+    <string name="pm_sort_relevance">"En iyi eşleşme"</string>
+    <string name="pm_sort_stars">"En çok yıldız"</string>
+    <string name="pm_sort_updated">"Son güncellenen"</string>
+    <string name="pm_sort_downloads">"En çok indirilen"</string>
+    <string name="pm_sort_newest">"En yeni"</string>
+    <string name="pm_sort_oldest">"En eski"</string>
+    <string name="pm_sort_name">"Ad"</string>
+    <string name="pm_status_all">"Tümü"</string>
+    <string name="pm_status_installed">"Yüklü"</string>
+    <string name="pm_status_not_installed">"Yüklü değil"</string>
+    <string name="pm_status_updates">"Güncellemeler"</string>
+    <string name="pm_filter_type">"Tür"</string>
+    <string name="pm_filter_source">"Kaynak"</string>
+    <string name="pm_filter_category">"Kategori"</string>
+    <string name="pm_filter_setup">"Kurulum"</string>
+    <string name="pm_type_any">"Her tür"</string>
+    <string name="pm_source_any">"Her kaynak"</string>
+    <string name="pm_source_featured">"Öne çıkanlar"</string>
+    <string name="pm_source_mcp">"MCP kayıt defteri"</string>
+    <string name="pm_category_any">"Her kategori"</string>
+    <string name="pm_setup_any">"Her kurulum"</string>
+    <string name="pm_setup_none">"Hemen çalışır"</string>
+    <string name="pm_setup_runtime">"Çalışma zamanı gerektirir"</string>
+    <string name="pm_setup_hint">"Beceriler ve uzak MCP sunucuları hemen çalışır. Yerel sunucular Node, Python veya başka bir çalışma zamanı gerektirir. Eklentiler yüklenirken denetlenir, bu yüzden yalnızca Her kurulum altında görünürler."</string>
+    <string name="pm_clear_filters">"Filtreleri temizle"</string>
+    <string name="pm_clear_search">"Aramayı temizle"</string>
+    <string name="pm_search_installed">"Yüklü eklentilerde ara"</string>
+    <string name="pm_no_matches">"Bu filtrelerle eşleşen yok"</string>
+    <string name="pm_no_matches_hint">"Başka bir arama deneyin veya daha fazlasını görmek için bir filtreyi temizleyin."</string>
+    <string name="pm_installed_in">"%1$s içinde"</string>
+    <string name="pm_update_available">"Güncelleme mevcut"</string>
+    <string name="pm_update_named">"%1$s eklentisini güncelle"</string>
+    <string name="pm_install_again">"Başka bir yere yükle"</string>
+    <string name="pm_open_page">"%1$s sayfasını aç"</string>
+    <string name="pm_updated">"%1$s güncellendi"</string>
+    <string name="pm_downloads_month">"Ayda %1$s"</string>
+    <string name="pm_show_updates">"Göster"</string>
+    <plurals name="pm_results">
+        <item quantity="one">"%1$d sonuç"</item>
+        <item quantity="other">"%1$d sonuç"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">"GitHub\'da %1$d yıldız"</item>
+        <item quantity="other">"GitHub\'da %1$d yıldız"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">"%1$d güncelleme mevcut"</item>
+        <item quantity="other">"%1$d güncelleme mevcut"</item>
+    </plurals>
 </resources>

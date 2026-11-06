@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"Maghanap ng kasanayan sa pangalan o paglalarawan"</string>
+    <string name="sk_summary">"%1$d sa %2$d pinagana"</string>
+    <string name="sk_group_count">"%1$d sa %2$d naka-on"</string>
+    <string name="sk_status_on">"Pinagana"</string>
+    <string name="sk_status_off">"Hindi pinagana"</string>
+    <string name="sk_source_yours">"Sa iyo"</string>
+    <string name="sk_source_workspace">"Workspace"</string>
+    <string name="sk_select">"Pumili ng mga kasanayan"</string>
+    <string name="sk_open">"Buksan ang kasanayan"</string>
+    <string name="sk_select_all">"Piliin lahat"</string>
+    <string name="sk_clear_selection">"I-clear"</string>
+    <string name="sk_stop_selecting">"Itigil ang pagpili"</string>
+    <string name="sk_state_selected">"%1$s, napili"</string>
+    <string name="sk_state_not_selected">"%1$s, hindi napili"</string>
+    <string name="sk_turn_on">"Paganahin"</string>
+    <string name="sk_turn_off">"Huwag paganahin"</string>
+    <string name="sk_undo">"I-undo"</string>
+    <string name="sk_new">"Bagong kasanayan"</string>
+    <string name="sk_empty">"Walang tugmang kasanayan"</string>
+    <string name="sk_empty_hint">"Subukan ang ibang paghahanap, o i-clear ang mga filter para makita ang lahat ng kasanayan."</string>
+    <string name="sk_enabled_hint">"Nakikita ng modelo ang kasanayang ito sa catalog nito at nilo-load ito kapag akma."</string>
+    <string name="sk_disabled_hint">"Nakatago sa modelo hanggang muling paganahin mo ito."</string>
+    <string name="sk_enable_named">"Paganahin ang %1$s"</string>
+    <string name="sk_edit_copy">"I-edit ang kopya"</string>
+    <string name="sk_copy">"Kopyahin"</string>
+    <string name="sk_copied">"Nakopya ang kasanayan"</string>
+    <string name="sk_copy_note">"Pananatilihin ng pag-save ang sarili mong kopya, na pumapalit sa built-in na kasanayan. Burahin ang kopya mo mamaya para bumalik sa orihinal."</string>
+    <string name="sk_workspace_note">"Nasa folder na .harness/skills ng workspace ang kasanayang ito. I-edit ito doon."</string>
+    <string name="sk_preview">"Preview"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"Mga file (%1$d)"</string>
+    <string name="sk_saved">"Nai-save ang %1$s"</string>
+    <string name="sk_fix_frontmatter">"ayusin ang frontmatter"</string>
+    <string name="sk_chars">"%1$d / %2$d character"</string>
+    <string name="sk_delete_hint">"Sarili mo lamang na kasanayan ang binubura. Ang na-edit mong built-in na kasanayan ay bumabalik sa orihinal."</string>
+    <string name="sk_discard_title">"Itapon ang mga pagbabago?"</string>
+    <string name="sk_discard">"Itapon"</string>
+    <string name="sk_keep_editing">"Ituloy ang pag-edit"</string>
+    <plurals name="sk_selected">
+        <item quantity="one">"%1$d napili"</item>
+        <item quantity="other">"%1$d napili"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">"%1$d kasanayan ang pinagana"</item>
+        <item quantity="other">"%1$d kasanayan ang pinagana"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">"%1$d kasanayan ang hindi pinagana"</item>
+        <item quantity="other">"%1$d kasanayan ang hindi pinagana"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">"%1$d kasanayan ang binura"</item>
+        <item quantity="other">"%1$d kasanayan ang binura"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">"Burahin ang %1$d kasanayan?"</item>
+        <item quantity="other">"Burahin ang %1$d kasanayan?"</item>
+    </plurals>
+</resources>

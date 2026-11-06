@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"Tìm kỹ năng theo tên hoặc mô tả"</string>
+    <string name="sk_summary">"%1$d/%2$d đã bật"</string>
+    <string name="sk_group_count">"%1$d/%2$d đang bật"</string>
+    <string name="sk_status_on">"Đã bật"</string>
+    <string name="sk_status_off">"Đã tắt"</string>
+    <string name="sk_source_yours">"Của bạn"</string>
+    <string name="sk_source_workspace">"Không gian làm việc"</string>
+    <string name="sk_select">"Chọn kỹ năng"</string>
+    <string name="sk_open">"Mở kỹ năng"</string>
+    <string name="sk_select_all">"Chọn tất cả"</string>
+    <string name="sk_clear_selection">"Xóa chọn"</string>
+    <string name="sk_stop_selecting">"Dừng chọn"</string>
+    <string name="sk_state_selected">"%1$s, đã chọn"</string>
+    <string name="sk_state_not_selected">"%1$s, chưa chọn"</string>
+    <string name="sk_turn_on">"Bật"</string>
+    <string name="sk_turn_off">"Tắt"</string>
+    <string name="sk_undo">"Hoàn tác"</string>
+    <string name="sk_new">"Kỹ năng mới"</string>
+    <string name="sk_empty">"Không có kỹ năng phù hợp"</string>
+    <string name="sk_empty_hint">"Hãy thử tìm kiếm khác hoặc xóa bộ lọc để xem mọi kỹ năng."</string>
+    <string name="sk_enabled_hint">"Mô hình thấy kỹ năng này trong danh mục và tải khi phù hợp."</string>
+    <string name="sk_disabled_hint">"Ẩn khỏi mô hình cho đến khi bạn bật lại."</string>
+    <string name="sk_enable_named">"Bật %1$s"</string>
+    <string name="sk_edit_copy">"Chỉnh sửa bản sao"</string>
+    <string name="sk_copy">"Sao chép"</string>
+    <string name="sk_copied">"Đã sao chép kỹ năng"</string>
+    <string name="sk_copy_note">"Khi lưu, bản sao của bạn được giữ lại và thay thế kỹ năng đi kèm. Xóa bản sao sau để quay lại bản gốc."</string>
+    <string name="sk_workspace_note">"Kỹ năng này nằm trong thư mục .harness/skills của không gian làm việc. Hãy chỉnh sửa ở đó."</string>
+    <string name="sk_preview">"Xem trước"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"Tệp (%1$d)"</string>
+    <string name="sk_saved">"Đã lưu %1$s"</string>
+    <string name="sk_fix_frontmatter">"sửa frontmatter"</string>
+    <string name="sk_chars">"%1$d / %2$d ký tự"</string>
+    <string name="sk_delete_hint">"Chỉ kỹ năng của bạn bị xóa. Kỹ năng đi kèm mà bạn đã chỉnh sửa sẽ trở về bản gốc."</string>
+    <string name="sk_discard_title">"Bỏ các thay đổi?"</string>
+    <string name="sk_discard">"Bỏ"</string>
+    <string name="sk_keep_editing">"Tiếp tục chỉnh sửa"</string>
+    <plurals name="sk_selected">
+        <item quantity="other">"%1$d đã chọn"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">"Đã bật %1$d kỹ năng"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">"Đã tắt %1$d kỹ năng"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">"Đã xóa %1$d kỹ năng"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">"Xóa %1$d kỹ năng?"</item>
+    </plurals>
+</resources>

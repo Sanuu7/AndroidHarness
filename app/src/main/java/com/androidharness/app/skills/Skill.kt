@@ -11,6 +11,14 @@ data class SkillMeta(
     val enabled: Boolean,
 )
 
+/** One skill's full file as the settings screen shows it; [folder] is set when the skill has a real directory. */
+data class SkillDocument(
+    val meta: SkillMeta,
+    val raw: String,
+    val files: List<String>,
+    val folder: String?,
+)
+
 data class SkillView(
     val name: String,
     val description: String,

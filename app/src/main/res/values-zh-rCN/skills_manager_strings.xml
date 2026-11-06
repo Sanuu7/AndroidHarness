@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">按名称或描述搜索技能</string>
+    <string name="sk_summary">%1$d/%2$d 已启用</string>
+    <string name="sk_group_count">%1$d/%2$d 已开启</string>
+    <string name="sk_status_on">已启用</string>
+    <string name="sk_status_off">已停用</string>
+    <string name="sk_source_yours">你的</string>
+    <string name="sk_source_workspace">工作区</string>
+    <string name="sk_select">选择技能</string>
+    <string name="sk_open">打开技能</string>
+    <string name="sk_select_all">全选</string>
+    <string name="sk_clear_selection">清除</string>
+    <string name="sk_stop_selecting">停止选择</string>
+    <string name="sk_state_selected">%1$s，已选择</string>
+    <string name="sk_state_not_selected">%1$s，未选择</string>
+    <string name="sk_turn_on">启用</string>
+    <string name="sk_turn_off">停用</string>
+    <string name="sk_undo">撤消</string>
+    <string name="sk_new">新建技能</string>
+    <string name="sk_empty">没有匹配的技能</string>
+    <string name="sk_empty_hint">试试其他搜索，或清除筛选条件以查看所有技能。</string>
+    <string name="sk_enabled_hint">模型会在其目录中看到此技能，并在合适时加载它。</string>
+    <string name="sk_disabled_hint">在你重新启用之前，模型看不到它。</string>
+    <string name="sk_enable_named">启用 %1$s</string>
+    <string name="sk_edit_copy">编辑副本</string>
+    <string name="sk_copy">复制</string>
+    <string name="sk_copied">技能已复制</string>
+    <string name="sk_copy_note">保存后会保留你自己的副本，并替代内置技能。之后删除你的副本即可恢复原始技能。</string>
+    <string name="sk_workspace_note">此技能位于工作区的 .harness/skills 文件夹中。请在那里编辑。</string>
+    <string name="sk_preview">预览</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">文件 (%1$d)</string>
+    <string name="sk_saved">已保存 %1$s</string>
+    <string name="sk_fix_frontmatter">修复 frontmatter</string>
+    <string name="sk_chars">%1$d / %2$d 个字符</string>
+    <string name="sk_delete_hint">只会删除你自己的技能。你编辑过的内置技能会恢复为原始版本。</string>
+    <string name="sk_discard_title">放弃更改？</string>
+    <string name="sk_discard">放弃</string>
+    <string name="sk_keep_editing">继续编辑</string>
+    <plurals name="sk_selected">
+        <item quantity="other">已选择 %1$d 个</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">已启用 %1$d 个技能</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">已停用 %1$d 个技能</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">已删除 %1$d 个技能</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">删除 %1$d 个技能？</item>
+    </plurals>
+</resources>

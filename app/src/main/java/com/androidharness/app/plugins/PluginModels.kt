@@ -53,9 +53,11 @@ data class PreparedPlugin(val token: String, val root: File, val origin: PluginO
     val contents: PluginContents, val digest: String, val replacing: String? = null, val previousDigest: String? = null)
 
 /** [kind] is plugin, skill, mcp or marketplace; [source] is the catalog that listed it. */
+/** [stars], [updatedAt], [createdAt] and [downloads] are filled only when the source reports them; times are epoch milliseconds. */
 data class PluginListing(val name: String, val description: String, val version: String, val origin: PluginOrigin,
     val publisher: String = "", val builtIn: Boolean = false, val kind: String = "plugin", val category: String = "",
-    val source: String = "", val homepage: String = "")
+    val source: String = "", val homepage: String = "", val stars: Int? = null, val updatedAt: Long? = null,
+    val createdAt: Long? = null, val downloads: Long? = null)
 
 /** Inspect the actual bundle; registry descriptions alone never establish compatibility. */
 object PluginManifest {

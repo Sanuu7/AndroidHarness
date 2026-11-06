@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">"Pelayan ini datang daripada pemalam yang didayakan. Uruskan dalam Pemalam; alatnya menggunakan kebenaran ruang kerja."</string>
     <string name="pm_manage_plugins">"Urus pemalam"</string>
     <string name="pm_mcp_permissions">"Kebenaran ruang kerja"</string>
+    <string name="pm_sort">"Susun"</string>
+    <string name="pm_sort_hint">"Bintang datang dari GitHub, muat turun dari npm. Item tanpa maklumat ini dipaparkan terakhir."</string>
+    <string name="pm_sort_relevance">"Padanan terbaik"</string>
+    <string name="pm_sort_stars">"Bintang terbanyak"</string>
+    <string name="pm_sort_updated">"Baru dikemas kini"</string>
+    <string name="pm_sort_downloads">"Paling banyak dimuat turun"</string>
+    <string name="pm_sort_newest">"Terbaharu"</string>
+    <string name="pm_sort_oldest">"Paling lama"</string>
+    <string name="pm_sort_name">"Nama"</string>
+    <string name="pm_status_all">"Semua"</string>
+    <string name="pm_status_installed">"Dipasang"</string>
+    <string name="pm_status_not_installed">"Belum dipasang"</string>
+    <string name="pm_status_updates">"Kemas kini"</string>
+    <string name="pm_filter_type">"Jenis"</string>
+    <string name="pm_filter_source">"Sumber"</string>
+    <string name="pm_filter_category">"Kategori"</string>
+    <string name="pm_filter_setup">"Persediaan"</string>
+    <string name="pm_type_any">"Semua jenis"</string>
+    <string name="pm_source_any">"Semua sumber"</string>
+    <string name="pm_source_featured">"Pilihan"</string>
+    <string name="pm_source_mcp">"Daftar MCP"</string>
+    <string name="pm_category_any">"Semua kategori"</string>
+    <string name="pm_setup_any">"Semua persediaan"</string>
+    <string name="pm_setup_none">"Berfungsi serta-merta"</string>
+    <string name="pm_setup_runtime">"Perlukan masa jalan"</string>
+    <string name="pm_setup_hint">"Kemahiran dan pelayan MCP jauh berfungsi serta-merta. Pelayan tempatan memerlukan Node, Python atau masa jalan lain. Pemalam disemak semasa dipasang, jadi ia hanya dipaparkan di bawah Semua persediaan."</string>
+    <string name="pm_clear_filters">"Kosongkan penapis"</string>
+    <string name="pm_clear_search">"Kosongkan carian"</string>
+    <string name="pm_search_installed">"Cari pemalam dipasang"</string>
+    <string name="pm_no_matches">"Tiada padanan untuk penapis ini"</string>
+    <string name="pm_no_matches_hint">"Cuba carian lain, atau kosongkan penapis untuk melihat lebih banyak."</string>
+    <string name="pm_installed_in">"Dalam %1$s"</string>
+    <string name="pm_update_available">"Kemas kini tersedia"</string>
+    <string name="pm_update_named">"Kemas kini %1$s"</string>
+    <string name="pm_install_again">"Pasang di tempat lain"</string>
+    <string name="pm_open_page">"Buka halaman %1$s"</string>
+    <string name="pm_updated">"%1$s dikemas kini"</string>
+    <string name="pm_downloads_month">"%1$s sebulan"</string>
+    <string name="pm_show_updates">"Tunjukkan"</string>
+    <plurals name="pm_results">
+        <item quantity="other">"%1$d hasil"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">"%1$d bintang di GitHub"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">"%1$d kemas kini tersedia"</item>
+    </plurals>
 </resources>

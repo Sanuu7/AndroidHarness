@@ -1012,6 +1012,15 @@ class SettingsRepository(private val context: Context) {
         }
     }
 
+    /** Turns many skills on or off in one write, so a bulk change is applied all at once. */
+    suspend fun setSkillsEnabled(names: Collection<String>, enabled: Boolean) {
+        if (names.isEmpty()) return
+        context.settingsStore.edit { prefs ->
+            val current = prefs[Keys.DISABLED_SKILLS] ?: emptySet()
+            prefs[Keys.DISABLED_SKILLS] = if (enabled) current - names.toSet() else current + names
+        }
+    }
+
     /** Model override for the ACTIVE provider; null falls back to its saved default. */
     suspend fun setActiveModel(model: String?) {
         context.settingsStore.edit { prefs ->

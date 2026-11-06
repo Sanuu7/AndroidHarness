@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">名前または説明でスキルを検索</string>
+    <string name="sk_summary">%1$d / %2$d 有効</string>
+    <string name="sk_group_count">%1$d / %2$d オン</string>
+    <string name="sk_status_on">有効</string>
+    <string name="sk_status_off">無効</string>
+    <string name="sk_source_yours">自分の</string>
+    <string name="sk_source_workspace">ワークスペース</string>
+    <string name="sk_select">スキルを選択</string>
+    <string name="sk_open">スキルを開く</string>
+    <string name="sk_select_all">すべて選択</string>
+    <string name="sk_clear_selection">クリア</string>
+    <string name="sk_stop_selecting">選択を終了</string>
+    <string name="sk_state_selected">%1$s、選択済み</string>
+    <string name="sk_state_not_selected">%1$s、未選択</string>
+    <string name="sk_turn_on">有効にする</string>
+    <string name="sk_turn_off">無効にする</string>
+    <string name="sk_undo">元に戻す</string>
+    <string name="sk_new">新しいスキル</string>
+    <string name="sk_empty">一致するスキルがありません</string>
+    <string name="sk_empty_hint">別の検索を試すか、フィルターをクリアしてすべてのスキルを表示してください。</string>
+    <string name="sk_enabled_hint">モデルはこのスキルをカタログで確認し、適しているときに読み込みます。</string>
+    <string name="sk_disabled_hint">再び有効にするまでモデルには表示されません。</string>
+    <string name="sk_enable_named">%1$s を有効にする</string>
+    <string name="sk_edit_copy">コピーを編集</string>
+    <string name="sk_copy">コピー</string>
+    <string name="sk_copied">スキルをコピーしました</string>
+    <string name="sk_copy_note">保存すると自分のコピーが保持され、同梱のスキルが置き換わります。元に戻すには後で自分のコピーを削除してください。</string>
+    <string name="sk_workspace_note">このスキルはワークスペースの .harness/skills フォルダーにあります。そこで編集してください。</string>
+    <string name="sk_preview">プレビュー</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">ファイル (%1$d)</string>
+    <string name="sk_saved">%1$s を保存しました</string>
+    <string name="sk_fix_frontmatter">frontmatter を修正</string>
+    <string name="sk_chars">%1$d / %2$d 文字</string>
+    <string name="sk_delete_hint">削除されるのは自分のスキルだけです。編集した同梱スキルは元の状態に戻ります。</string>
+    <string name="sk_discard_title">変更を破棄しますか？</string>
+    <string name="sk_discard">破棄</string>
+    <string name="sk_keep_editing">編集を続ける</string>
+    <plurals name="sk_selected">
+        <item quantity="other">%1$d 件選択中</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">%1$d 個のスキルを有効にしました</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">%1$d 個のスキルを無効にしました</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">%1$d 個のスキルを削除しました</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">%1$d 個のスキルを削除しますか？</item>
+    </plurals>
+</resources>

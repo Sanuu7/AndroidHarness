@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">これらのサーバーは有効なプラグインから提供されます。プラグインで管理してください。そのツールはワークスペースの権限を使用します。</string>
     <string name="pm_manage_plugins">プラグインを管理</string>
     <string name="pm_mcp_permissions">ワークスペースの権限</string>
+    <string name="pm_sort">並べ替え</string>
+    <string name="pm_sort_hint">スターは GitHub、ダウンロード数は npm の値です。これらがない項目は最後に表示されます。</string>
+    <string name="pm_sort_relevance">最適な一致</string>
+    <string name="pm_sort_stars">スターが多い順</string>
+    <string name="pm_sort_updated">最近更新された順</string>
+    <string name="pm_sort_downloads">ダウンロードが多い順</string>
+    <string name="pm_sort_newest">新しい順</string>
+    <string name="pm_sort_oldest">古い順</string>
+    <string name="pm_sort_name">名前</string>
+    <string name="pm_status_all">すべて</string>
+    <string name="pm_status_installed">インストール済み</string>
+    <string name="pm_status_not_installed">未インストール</string>
+    <string name="pm_status_updates">更新</string>
+    <string name="pm_filter_type">種類</string>
+    <string name="pm_filter_source">ソース</string>
+    <string name="pm_filter_category">カテゴリ</string>
+    <string name="pm_filter_setup">セットアップ</string>
+    <string name="pm_type_any">すべての種類</string>
+    <string name="pm_source_any">すべてのソース</string>
+    <string name="pm_source_featured">注目</string>
+    <string name="pm_source_mcp">MCP レジストリ</string>
+    <string name="pm_category_any">すべてのカテゴリ</string>
+    <string name="pm_setup_any">すべてのセットアップ</string>
+    <string name="pm_setup_none">すぐに動作</string>
+    <string name="pm_setup_runtime">ランタイムが必要</string>
+    <string name="pm_setup_hint">スキルとリモート MCP サーバーはすぐに動作します。ローカルサーバーには Node、Python などのランタイムが必要です。プラグインはインストール時に確認されるため、すべてのセットアップにのみ表示されます。</string>
+    <string name="pm_clear_filters">フィルターをクリア</string>
+    <string name="pm_clear_search">検索をクリア</string>
+    <string name="pm_search_installed">インストール済みプラグインを検索</string>
+    <string name="pm_no_matches">これらのフィルターに一致するものはありません</string>
+    <string name="pm_no_matches_hint">別の検索を試すか、フィルターをクリアするとさらに表示されます。</string>
+    <string name="pm_installed_in">%1$s 内</string>
+    <string name="pm_update_available">更新があります</string>
+    <string name="pm_update_named">%1$s を更新</string>
+    <string name="pm_install_again">別の場所にインストール</string>
+    <string name="pm_open_page">%1$s のページを開く</string>
+    <string name="pm_updated">%1$s を更新しました</string>
+    <string name="pm_downloads_month">月間 %1$s</string>
+    <string name="pm_show_updates">表示</string>
+    <plurals name="pm_results">
+        <item quantity="other">%1$d 件の結果</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">GitHub のスター %1$d 件</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">利用可能な更新 %1$d 件</item>
+    </plurals>
 </resources>

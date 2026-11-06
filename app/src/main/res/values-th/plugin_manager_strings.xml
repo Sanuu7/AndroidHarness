@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">"เซิร์ฟเวอร์เหล่านี้มาจากปลั๊กอินที่เปิดใช้งาน จัดการได้ในปลั๊กอิน เครื่องมือของเซิร์ฟเวอร์ใช้สิทธิ์ของพื้นที่ทำงาน"</string>
     <string name="pm_manage_plugins">"จัดการปลั๊กอิน"</string>
     <string name="pm_mcp_permissions">"สิทธิ์ของพื้นที่ทำงาน"</string>
+    <string name="pm_sort">"เรียงลำดับ"</string>
+    <string name="pm_sort_hint">"ดาวมาจาก GitHub ยอดดาวน์โหลดมาจาก npm รายการที่ไม่มีข้อมูลเหล่านี้จะอยู่ท้ายสุด"</string>
+    <string name="pm_sort_relevance">"ตรงที่สุด"</string>
+    <string name="pm_sort_stars">"ดาวมากที่สุด"</string>
+    <string name="pm_sort_updated">"อัปเดตล่าสุด"</string>
+    <string name="pm_sort_downloads">"ดาวน์โหลดมากที่สุด"</string>
+    <string name="pm_sort_newest">"ใหม่ที่สุด"</string>
+    <string name="pm_sort_oldest">"เก่าที่สุด"</string>
+    <string name="pm_sort_name">"ชื่อ"</string>
+    <string name="pm_status_all">"ทั้งหมด"</string>
+    <string name="pm_status_installed">"ติดตั้งแล้ว"</string>
+    <string name="pm_status_not_installed">"ยังไม่ได้ติดตั้ง"</string>
+    <string name="pm_status_updates">"การอัปเดต"</string>
+    <string name="pm_filter_type">"ประเภท"</string>
+    <string name="pm_filter_source">"แหล่งที่มา"</string>
+    <string name="pm_filter_category">"หมวดหมู่"</string>
+    <string name="pm_filter_setup">"การตั้งค่า"</string>
+    <string name="pm_type_any">"ทุกประเภท"</string>
+    <string name="pm_source_any">"ทุกแหล่งที่มา"</string>
+    <string name="pm_source_featured">"แนะนำ"</string>
+    <string name="pm_source_mcp">"รีจิสทรี MCP"</string>
+    <string name="pm_category_any">"ทุกหมวดหมู่"</string>
+    <string name="pm_setup_any">"ทุกการตั้งค่า"</string>
+    <string name="pm_setup_none">"ใช้งานได้ทันที"</string>
+    <string name="pm_setup_runtime">"ต้องใช้รันไทม์"</string>
+    <string name="pm_setup_hint">"ทักษะและเซิร์ฟเวอร์ MCP ระยะไกลใช้งานได้ทันที เซิร์ฟเวอร์ในเครื่องต้องใช้ Node, Python หรือรันไทม์อื่น ปลั๊กอินจะถูกตรวจสอบเมื่อคุณติดตั้ง จึงแสดงเฉพาะภายใต้ทุกการตั้งค่า"</string>
+    <string name="pm_clear_filters">"ล้างตัวกรอง"</string>
+    <string name="pm_clear_search">"ล้างการค้นหา"</string>
+    <string name="pm_search_installed">"ค้นหาปลั๊กอินที่ติดตั้งแล้ว"</string>
+    <string name="pm_no_matches">"ไม่มีรายการที่ตรงกับตัวกรองเหล่านี้"</string>
+    <string name="pm_no_matches_hint">"ลองค้นหาอื่น หรือล้างตัวกรองเพื่อดูเพิ่มเติม"</string>
+    <string name="pm_installed_in">"ใน %1$s"</string>
+    <string name="pm_update_available">"มีอัปเดต"</string>
+    <string name="pm_update_named">"อัปเดต %1$s"</string>
+    <string name="pm_install_again">"ติดตั้งในตำแหน่งอื่น"</string>
+    <string name="pm_open_page">"เปิดหน้า %1$s"</string>
+    <string name="pm_updated">"อัปเดต %1$s แล้ว"</string>
+    <string name="pm_downloads_month">"เดือนละ %1$s"</string>
+    <string name="pm_show_updates">"แสดง"</string>
+    <plurals name="pm_results">
+        <item quantity="other">"ผลลัพธ์ %1$d รายการ"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">"%1$d ดาวบน GitHub"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">"มี %1$d อัปเดต"</item>
+    </plurals>
 </resources>

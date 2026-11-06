@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">"이 서버는 활성화된 플러그인에서 제공됩니다. 플러그인에서 관리하세요. 서버의 도구는 작업 공간 권한을 사용합니다."</string>
     <string name="pm_manage_plugins">"플러그인 관리"</string>
     <string name="pm_mcp_permissions">"작업 공간 권한"</string>
+    <string name="pm_sort">"정렬"</string>
+    <string name="pm_sort_hint">"별표는 GitHub, 다운로드 수는 npm에서 가져옵니다. 해당 정보가 없는 항목은 마지막에 표시됩니다."</string>
+    <string name="pm_sort_relevance">"최적 일치"</string>
+    <string name="pm_sort_stars">"별표 많은 순"</string>
+    <string name="pm_sort_updated">"최근 업데이트순"</string>
+    <string name="pm_sort_downloads">"다운로드 많은 순"</string>
+    <string name="pm_sort_newest">"최신순"</string>
+    <string name="pm_sort_oldest">"오래된순"</string>
+    <string name="pm_sort_name">"이름"</string>
+    <string name="pm_status_all">"전체"</string>
+    <string name="pm_status_installed">"설치됨"</string>
+    <string name="pm_status_not_installed">"설치 안 됨"</string>
+    <string name="pm_status_updates">"업데이트"</string>
+    <string name="pm_filter_type">"유형"</string>
+    <string name="pm_filter_source">"소스"</string>
+    <string name="pm_filter_category">"카테고리"</string>
+    <string name="pm_filter_setup">"설정"</string>
+    <string name="pm_type_any">"모든 유형"</string>
+    <string name="pm_source_any">"모든 소스"</string>
+    <string name="pm_source_featured">"추천"</string>
+    <string name="pm_source_mcp">"MCP 레지스트리"</string>
+    <string name="pm_category_any">"모든 카테고리"</string>
+    <string name="pm_setup_any">"모든 설정"</string>
+    <string name="pm_setup_none">"바로 작동"</string>
+    <string name="pm_setup_runtime">"런타임 필요"</string>
+    <string name="pm_setup_hint">"스킬과 원격 MCP 서버는 바로 작동합니다. 로컬 서버는 Node, Python 또는 다른 런타임이 필요합니다. 플러그인은 설치할 때 확인되므로 모든 설정 아래에만 표시됩니다."</string>
+    <string name="pm_clear_filters">"필터 지우기"</string>
+    <string name="pm_clear_search">"검색 지우기"</string>
+    <string name="pm_search_installed">"설치된 플러그인 검색"</string>
+    <string name="pm_no_matches">"이 필터와 일치하는 항목 없음"</string>
+    <string name="pm_no_matches_hint">"다른 검색어를 사용하거나 필터를 지워 더 확인하세요."</string>
+    <string name="pm_installed_in">"%1$s 내"</string>
+    <string name="pm_update_available">"업데이트 있음"</string>
+    <string name="pm_update_named">"%1$s 업데이트"</string>
+    <string name="pm_install_again">"다른 위치에 설치"</string>
+    <string name="pm_open_page">"%1$s 페이지 열기"</string>
+    <string name="pm_updated">"%1$s 업데이트됨"</string>
+    <string name="pm_downloads_month">"월 %1$s"</string>
+    <string name="pm_show_updates">"표시"</string>
+    <plurals name="pm_results">
+        <item quantity="other">"결과 %1$d개"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">"GitHub 별표 %1$d개"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">"사용 가능한 업데이트 %1$d개"</item>
+    </plurals>
 </resources>

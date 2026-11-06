@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">Cari keahlian menurut nama atau deskripsi</string>
+    <string name="sk_summary">%1$d dari %2$d aktif</string>
+    <string name="sk_group_count">%1$d dari %2$d aktif</string>
+    <string name="sk_status_on">Aktif</string>
+    <string name="sk_status_off">Nonaktif</string>
+    <string name="sk_source_yours">Milik Anda</string>
+    <string name="sk_source_workspace">Ruang kerja</string>
+    <string name="sk_select">Pilih keahlian</string>
+    <string name="sk_open">Buka keahlian</string>
+    <string name="sk_select_all">Pilih semua</string>
+    <string name="sk_clear_selection">Hapus pilihan</string>
+    <string name="sk_stop_selecting">Berhenti memilih</string>
+    <string name="sk_state_selected">%1$s, dipilih</string>
+    <string name="sk_state_not_selected">%1$s, tidak dipilih</string>
+    <string name="sk_turn_on">Aktifkan</string>
+    <string name="sk_turn_off">Nonaktifkan</string>
+    <string name="sk_undo">Urungkan</string>
+    <string name="sk_new">Keahlian baru</string>
+    <string name="sk_empty">Tidak ada keahlian yang cocok</string>
+    <string name="sk_empty_hint">Coba pencarian lain atau hapus filter untuk melihat semua keahlian.</string>
+    <string name="sk_enabled_hint">Model melihat keahlian ini di katalognya dan memuatnya saat cocok.</string>
+    <string name="sk_disabled_hint">Tersembunyi dari model sampai Anda mengaktifkannya lagi.</string>
+    <string name="sk_enable_named">Aktifkan %1$s</string>
+    <string name="sk_edit_copy">Edit salinan</string>
+    <string name="sk_copy">Salin</string>
+    <string name="sk_copied">Keahlian disalin</string>
+    <string name="sk_copy_note">Menyimpan mempertahankan salinan Anda sendiri, yang menggantikan keahlian bawaan. Hapus salinan Anda nanti untuk kembali ke aslinya.</string>
+    <string name="sk_workspace_note">Keahlian ini berada di folder .harness/skills ruang kerja. Edit di sana.</string>
+    <string name="sk_preview">Pratinjau</string>
+    <string name="sk_markdown">Markdown</string>
+    <string name="sk_files">Berkas (%1$d)</string>
+    <string name="sk_saved">%1$s disimpan</string>
+    <string name="sk_fix_frontmatter">perbaiki frontmatter</string>
+    <string name="sk_chars">%1$d / %2$d karakter</string>
+    <string name="sk_delete_hint">Hanya keahlian Anda sendiri yang dihapus. Keahlian bawaan yang Anda edit kembali ke aslinya.</string>
+    <string name="sk_discard_title">Buang perubahan Anda?</string>
+    <string name="sk_discard">Buang</string>
+    <string name="sk_keep_editing">Lanjutkan mengedit</string>
+    <plurals name="sk_selected">
+        <item quantity="other">%1$d dipilih</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">%1$d keahlian diaktifkan</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">%1$d keahlian dinonaktifkan</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">%1$d keahlian dihapus</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">Hapus %1$d keahlian?</item>
+    </plurals>
+</resources>

@@ -91,4 +91,52 @@
     <string name="pm_mcp_managed_hint">"這些伺服器來自已啟用的外掛。請在外掛中管理；其工具會使用工作區權限。"</string>
     <string name="pm_manage_plugins">"管理外掛"</string>
     <string name="pm_mcp_permissions">"工作區權限"</string>
+    <string name="pm_sort">"排序"</string>
+    <string name="pm_sort_hint">"星標來自 GitHub，下載量來自 npm。沒有這些資料的項目會排在最後。"</string>
+    <string name="pm_sort_relevance">"最佳符合"</string>
+    <string name="pm_sort_stars">"星標最多"</string>
+    <string name="pm_sort_updated">"最近更新"</string>
+    <string name="pm_sort_downloads">"下載最多"</string>
+    <string name="pm_sort_newest">"最新"</string>
+    <string name="pm_sort_oldest">"最舊"</string>
+    <string name="pm_sort_name">"名稱"</string>
+    <string name="pm_status_all">"全部"</string>
+    <string name="pm_status_installed">"已安裝"</string>
+    <string name="pm_status_not_installed">"未安裝"</string>
+    <string name="pm_status_updates">"更新"</string>
+    <string name="pm_filter_type">"類型"</string>
+    <string name="pm_filter_source">"來源"</string>
+    <string name="pm_filter_category">"分類"</string>
+    <string name="pm_filter_setup">"設定需求"</string>
+    <string name="pm_type_any">"任意類型"</string>
+    <string name="pm_source_any">"任意來源"</string>
+    <string name="pm_source_featured">"精選"</string>
+    <string name="pm_source_mcp">"MCP 登錄"</string>
+    <string name="pm_category_any">"任意分類"</string>
+    <string name="pm_setup_any">"任意設定需求"</string>
+    <string name="pm_setup_none">"開箱即用"</string>
+    <string name="pm_setup_runtime">"需要執行時"</string>
+    <string name="pm_setup_hint">"技能和遠端 MCP 伺服器開箱即用。本機伺服器需要 Node、Python 或其他執行時。外掛會在安裝時檢查，因此只會顯示在任意設定需求下。"</string>
+    <string name="pm_clear_filters">"清除篩選"</string>
+    <string name="pm_clear_search">"清除搜尋"</string>
+    <string name="pm_search_installed">"搜尋已安裝的外掛"</string>
+    <string name="pm_no_matches">"沒有符合這些篩選條件的結果"</string>
+    <string name="pm_no_matches_hint">"試試其他搜尋，或清除一個篩選條件以查看更多。"</string>
+    <string name="pm_installed_in">"位於 %1$s"</string>
+    <string name="pm_update_available">"有可用更新"</string>
+    <string name="pm_update_named">"更新 %1$s"</string>
+    <string name="pm_install_again">"安裝到其他位置"</string>
+    <string name="pm_open_page">"開啟 %1$s 的頁面"</string>
+    <string name="pm_updated">"已更新 %1$s"</string>
+    <string name="pm_downloads_month">"每月 %1$s"</string>
+    <string name="pm_show_updates">"顯示"</string>
+    <plurals name="pm_results">
+        <item quantity="other">"共 %1$d 個結果"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="other">"GitHub 上有 %1$d 顆星"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="other">"有 %1$d 個可用更新"</item>
+    </plurals>
 </resources>

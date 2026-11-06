@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"பெயர் அல்லது விளக்கத்தால் திறன்களைத் தேடுங்கள்"</string>
+    <string name="sk_summary">"%1$d / %2$d இயக்கப்பட்டது"</string>
+    <string name="sk_group_count">"%1$d / %2$d இயக்கத்தில்"</string>
+    <string name="sk_status_on">"இயக்கப்பட்டது"</string>
+    <string name="sk_status_off">"முடக்கப்பட்டது"</string>
+    <string name="sk_source_yours">"உங்களுடையது"</string>
+    <string name="sk_source_workspace">"பணியிடம்"</string>
+    <string name="sk_select">"திறன்களைத் தேர்ந்தெடுக்கவும்"</string>
+    <string name="sk_open">"திறனைத் திறக்கவும்"</string>
+    <string name="sk_select_all">"அனைத்தையும் தேர்ந்தெடுக்கவும்"</string>
+    <string name="sk_clear_selection">"அழி"</string>
+    <string name="sk_stop_selecting">"தேர்வை நிறுத்து"</string>
+    <string name="sk_state_selected">"%1$s, தேர்ந்தெடுக்கப்பட்டது"</string>
+    <string name="sk_state_not_selected">"%1$s, தேர்ந்தெடுக்கப்படவில்லை"</string>
+    <string name="sk_turn_on">"இயக்கு"</string>
+    <string name="sk_turn_off">"முடக்கு"</string>
+    <string name="sk_undo">"செயல்தவிர்"</string>
+    <string name="sk_new">"புதிய திறன்"</string>
+    <string name="sk_empty">"பொருந்தும் திறன்கள் இல்லை"</string>
+    <string name="sk_empty_hint">"வேறு தேடலை முயற்சிக்கவும், அல்லது அனைத்து திறன்களையும் காண வடிகட்டிகளை அழிக்கவும்."</string>
+    <string name="sk_enabled_hint">"மாதிரி இந்த திறனை அதன் பட்டியலில் காண்கிறது, பொருத்தமானபோது ஏற்றுகிறது."</string>
+    <string name="sk_disabled_hint">"மீண்டும் இயக்கும் வரை மாதிரியிலிருந்து மறைக்கப்பட்டுள்ளது."</string>
+    <string name="sk_enable_named">"%1$s ஐ இயக்கு"</string>
+    <string name="sk_edit_copy">"நகலைத் திருத்து"</string>
+    <string name="sk_copy">"நகலெடு"</string>
+    <string name="sk_copied">"திறன் நகலெடுக்கப்பட்டது"</string>
+    <string name="sk_copy_note">"சேமித்தால் உங்கள் சொந்த நகல் இருக்கும், அது உள்ளமைந்த திறனை மாற்றும். மூலத்திற்குத் திரும்ப பின்னர் உங்கள் நகலை நீக்கவும்."</string>
+    <string name="sk_workspace_note">"இந்த திறன் பணியிடத்தின் .harness/skills கோப்புறையில் உள்ளது. அங்கேயே திருத்தவும்."</string>
+    <string name="sk_preview">"முன்னோட்டம்"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"கோப்புகள் (%1$d)"</string>
+    <string name="sk_saved">"%1$s சேமிக்கப்பட்டது"</string>
+    <string name="sk_fix_frontmatter">"frontmatter ஐச் சரிசெய்"</string>
+    <string name="sk_chars">"%1$d / %2$d எழுத்துகள்"</string>
+    <string name="sk_delete_hint">"உங்கள் சொந்த திறன்கள் மட்டுமே நீக்கப்படும். நீங்கள் திருத்திய உள்ளமைந்த திறன் அதன் மூலத்திற்குத் திரும்பும்."</string>
+    <string name="sk_discard_title">"உங்கள் மாற்றங்களை நிராகரிக்கவா?"</string>
+    <string name="sk_discard">"நிராகரி"</string>
+    <string name="sk_keep_editing">"தொடர்ந்து திருத்து"</string>
+    <plurals name="sk_selected">
+        <item quantity="one">"%1$d தேர்ந்தெடுக்கப்பட்டது"</item>
+        <item quantity="other">"%1$d தேர்ந்தெடுக்கப்பட்டது"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">"%1$d திறன் இயக்கப்பட்டது"</item>
+        <item quantity="other">"%1$d திறன் இயக்கப்பட்டது"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">"%1$d திறன் முடக்கப்பட்டது"</item>
+        <item quantity="other">"%1$d திறன் முடக்கப்பட்டது"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">"%1$d திறன் நீக்கப்பட்டது"</item>
+        <item quantity="other">"%1$d திறன் நீக்கப்பட்டது"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">"%1$d திறனை நீக்கவா?"</item>
+        <item quantity="other">"%1$d திறனை நீக்கவா?"</item>
+    </plurals>
+</resources>

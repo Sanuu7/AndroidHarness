@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"Ad veya açıklamaya göre beceri ara"</string>
+    <string name="sk_summary">"%1$d / %2$d etkin"</string>
+    <string name="sk_group_count">"%1$d / %2$d açık"</string>
+    <string name="sk_status_on">"Etkin"</string>
+    <string name="sk_status_off">"Devre dışı"</string>
+    <string name="sk_source_yours">"Sizin"</string>
+    <string name="sk_source_workspace">"Çalışma alanı"</string>
+    <string name="sk_select">"Beceri seç"</string>
+    <string name="sk_open">"Beceriyi aç"</string>
+    <string name="sk_select_all">"Tümünü seç"</string>
+    <string name="sk_clear_selection">"Temizle"</string>
+    <string name="sk_stop_selecting">"Seçimi durdur"</string>
+    <string name="sk_state_selected">"%1$s, seçildi"</string>
+    <string name="sk_state_not_selected">"%1$s, seçilmedi"</string>
+    <string name="sk_turn_on">"Etkinleştir"</string>
+    <string name="sk_turn_off">"Devre dışı bırak"</string>
+    <string name="sk_undo">"Geri al"</string>
+    <string name="sk_new">"Yeni beceri"</string>
+    <string name="sk_empty">"Eşleşen beceri yok"</string>
+    <string name="sk_empty_hint">"Başka bir arama deneyin veya tüm becerileri görmek için filtreleri temizleyin."</string>
+    <string name="sk_enabled_hint">"Model bu beceriyi kataloğunda görür ve uygun olduğunda yükler."</string>
+    <string name="sk_disabled_hint">"Tekrar etkinleştirene kadar modelden gizlenir."</string>
+    <string name="sk_enable_named">"%1$s becerisini etkinleştir"</string>
+    <string name="sk_edit_copy">"Kopyayı düzenle"</string>
+    <string name="sk_copy">"Kopyala"</string>
+    <string name="sk_copied">"Beceri kopyalandı"</string>
+    <string name="sk_copy_note">"Kaydetmek kendi kopyanızı korur ve paketlenmiş becerinin yerini alır. Orijinale dönmek için kopyanızı daha sonra silin."</string>
+    <string name="sk_workspace_note">"Bu beceri çalışma alanının .harness/skills klasöründe bulunur. Burada düzenleyin."</string>
+    <string name="sk_preview">"Önizleme"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"Dosyalar (%1$d)"</string>
+    <string name="sk_saved">"%1$s kaydedildi"</string>
+    <string name="sk_fix_frontmatter">"frontmatter\'ı düzelt"</string>
+    <string name="sk_chars">"%1$d / %2$d karakter"</string>
+    <string name="sk_delete_hint">"Yalnızca kendi becerileriniz silinir. Düzenlediğiniz paketlenmiş bir beceri orijinaline döner."</string>
+    <string name="sk_discard_title">"Değişiklikleriniz atılsın mı?"</string>
+    <string name="sk_discard">"At"</string>
+    <string name="sk_keep_editing">"Düzenlemeye devam et"</string>
+    <plurals name="sk_selected">
+        <item quantity="one">"%1$d seçildi"</item>
+        <item quantity="other">"%1$d seçildi"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="one">"%1$d beceri etkinleştirildi"</item>
+        <item quantity="other">"%1$d beceri etkinleştirildi"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="one">"%1$d beceri devre dışı bırakıldı"</item>
+        <item quantity="other">"%1$d beceri devre dışı bırakıldı"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="one">"%1$d beceri silindi"</item>
+        <item quantity="other">"%1$d beceri silindi"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="one">"%1$d beceri silinsin mi?"</item>
+        <item quantity="other">"%1$d beceri silinsin mi?"</item>
+    </plurals>
+</resources>

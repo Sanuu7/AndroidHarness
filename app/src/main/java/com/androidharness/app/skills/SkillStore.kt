@@ -137,6 +137,13 @@ class SkillStore(
         )
     }
 
+    /** The SKILL.md text that wins for [name], enabled or not, for showing and editing; null when missing or ambiguous. */
+    fun document(name: String): SkillDocument? {
+        val winner = pickWinner(findAll(name.trim())) ?: return null
+        return SkillDocument(winner.meta.copy(enabled = name !in disabled() && configuration?.skillEnabled(name) != false),
+            winner.content, winner.linkedFiles, winner.directory?.path)
+    }
+
     fun saveUser(content: String): ParsedSkill {
         val parsed = SkillParser.validateUserContent(content)
         val dir = File(userDir, parsed.name)

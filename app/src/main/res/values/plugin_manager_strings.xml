@@ -91,4 +91,55 @@
     <string name="pm_runtimes">Runtimes</string>
     <string name="pm_show_all">Show all %1$d</string>
     <string name="pm_show_less">Show less</string>
+    <string name="pm_sort">Sort</string>
+    <string name="pm_sort_hint">Stars come from GitHub, downloads from npm. Listings without them go last.</string>
+    <string name="pm_sort_relevance">Best match</string>
+    <string name="pm_sort_stars">Most stars</string>
+    <string name="pm_sort_updated">Recently updated</string>
+    <string name="pm_sort_downloads">Most downloaded</string>
+    <string name="pm_sort_newest">Newest</string>
+    <string name="pm_sort_oldest">Oldest</string>
+    <string name="pm_sort_name">Name</string>
+    <string name="pm_status_all">All</string>
+    <string name="pm_status_installed">Installed</string>
+    <string name="pm_status_not_installed">Not installed</string>
+    <string name="pm_status_updates">Updates</string>
+    <string name="pm_filter_type">Type</string>
+    <string name="pm_filter_source">Source</string>
+    <string name="pm_filter_category">Category</string>
+    <string name="pm_filter_setup">Setup</string>
+    <string name="pm_type_any">Any type</string>
+    <string name="pm_source_any">Any source</string>
+    <string name="pm_source_featured">Featured</string>
+    <string name="pm_source_mcp">MCP registry</string>
+    <string name="pm_category_any">Any category</string>
+    <string name="pm_setup_any">Any setup</string>
+    <string name="pm_setup_none">Works right away</string>
+    <string name="pm_setup_runtime">Needs a runtime</string>
+    <string name="pm_setup_hint">Skills and remote MCP servers work right away. Local servers need Node, Python or another runtime. Plugins are checked when you install them, so they only show under Any setup.</string>
+    <string name="pm_clear_filters">Clear filters</string>
+    <string name="pm_clear_search">Clear search</string>
+    <string name="pm_search_installed">Search installed plugins</string>
+    <string name="pm_no_matches">Nothing matches these filters</string>
+    <string name="pm_no_matches_hint">Try another search, or clear a filter to see more.</string>
+    <string name="pm_installed_in">In %1$s</string>
+    <string name="pm_update_available">Update available</string>
+    <string name="pm_update_named">Update %1$s</string>
+    <string name="pm_install_again">Install in another place</string>
+    <string name="pm_open_page">Open the page for %1$s</string>
+    <string name="pm_updated">Updated %1$s</string>
+    <string name="pm_downloads_month">%1$s a month</string>
+    <string name="pm_show_updates">Show</string>
+    <plurals name="pm_results">
+        <item quantity="one">%1$d result</item>
+        <item quantity="other">%1$d results</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">%1$d star on GitHub</item>
+        <item quantity="other">%1$d stars on GitHub</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">%1$d update available</item>
+        <item quantity="other">%1$d updates available</item>
+    </plurals>
 </resources>

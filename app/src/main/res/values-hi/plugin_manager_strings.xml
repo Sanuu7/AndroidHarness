@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">"ये सर्वर सक्षम प्लगइन्स से आते हैं। इन्हें प्लगइन्स में प्रबंधित करें; इनके टूल कार्यक्षेत्र अनुमतियाँ उपयोग करते हैं।"</string>
     <string name="pm_manage_plugins">"प्लगइन्स प्रबंधित करें"</string>
     <string name="pm_mcp_permissions">"कार्यक्षेत्र अनुमतियाँ"</string>
+    <string name="pm_sort">"क्रमबद्ध करें"</string>
+    <string name="pm_sort_hint">"स्टार GitHub से और डाउनलोड npm से आते हैं। इनके बिना प्रविष्टियाँ अंत में दिखती हैं।"</string>
+    <string name="pm_sort_relevance">"सर्वोत्तम मेल"</string>
+    <string name="pm_sort_stars">"सबसे अधिक स्टार"</string>
+    <string name="pm_sort_updated">"हाल में अपडेट किए गए"</string>
+    <string name="pm_sort_downloads">"सबसे अधिक डाउनलोड"</string>
+    <string name="pm_sort_newest">"नवीनतम"</string>
+    <string name="pm_sort_oldest">"सबसे पुराने"</string>
+    <string name="pm_sort_name">"नाम"</string>
+    <string name="pm_status_all">"सभी"</string>
+    <string name="pm_status_installed">"इंस्टॉल किए गए"</string>
+    <string name="pm_status_not_installed">"इंस्टॉल नहीं किए गए"</string>
+    <string name="pm_status_updates">"अपडेट"</string>
+    <string name="pm_filter_type">"प्रकार"</string>
+    <string name="pm_filter_source">"स्रोत"</string>
+    <string name="pm_filter_category">"श्रेणी"</string>
+    <string name="pm_filter_setup">"सेटअप"</string>
+    <string name="pm_type_any">"कोई भी प्रकार"</string>
+    <string name="pm_source_any">"कोई भी स्रोत"</string>
+    <string name="pm_source_featured">"विशेष रुप से प्रदर्शित"</string>
+    <string name="pm_source_mcp">"MCP रजिस्ट्री"</string>
+    <string name="pm_category_any">"कोई भी श्रेणी"</string>
+    <string name="pm_setup_any">"कोई भी सेटअप"</string>
+    <string name="pm_setup_none">"तुरंत काम करता है"</string>
+    <string name="pm_setup_runtime">"रनटाइम चाहिए"</string>
+    <string name="pm_setup_hint">"कौशल और दूरस्थ MCP सर्वर तुरंत काम करते हैं। स्थानीय सर्वर को Node, Python या कोई अन्य रनटाइम चाहिए। प्लगइन्स को इंस्टॉल करते समय जाँचा जाता है, इसलिए वे केवल कोई भी सेटअप के अंतर्गत दिखते हैं।"</string>
+    <string name="pm_clear_filters">"फ़िल्टर साफ़ करें"</string>
+    <string name="pm_clear_search">"खोज साफ़ करें"</string>
+    <string name="pm_search_installed">"इंस्टॉल किए गए प्लगइन्स खोजें"</string>
+    <string name="pm_no_matches">"इन फ़िल्टरों से कुछ भी मेल नहीं खाता"</string>
+    <string name="pm_no_matches_hint">"कोई अन्य खोज आज़माएँ, या अधिक देखने के लिए कोई फ़िल्टर साफ़ करें।"</string>
+    <string name="pm_installed_in">"%1$s में"</string>
+    <string name="pm_update_available">"अपडेट उपलब्ध है"</string>
+    <string name="pm_update_named">"%1$s अपडेट करें"</string>
+    <string name="pm_install_again">"किसी अन्य स्थान पर इंस्टॉल करें"</string>
+    <string name="pm_open_page">"%1$s का पेज खोलें"</string>
+    <string name="pm_updated">"%1$s अपडेट किया गया"</string>
+    <string name="pm_downloads_month">"प्रति माह %1$s"</string>
+    <string name="pm_show_updates">"दिखाएँ"</string>
+    <plurals name="pm_results">
+        <item quantity="one">"%1$d परिणाम"</item>
+        <item quantity="other">"%1$d परिणाम"</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">"GitHub पर %1$d स्टार"</item>
+        <item quantity="other">"GitHub पर %1$d स्टार"</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">"%1$d अपडेट उपलब्ध"</item>
+        <item quantity="other">"%1$d अपडेट उपलब्ध"</item>
+    </plurals>
 </resources>

@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">Estes servidores vêm de plugins ativados. Gerencie-os em Plugins; as ferramentas usam as permissões do espaço de trabalho.</string>
     <string name="pm_manage_plugins">Gerenciar plugins</string>
     <string name="pm_mcp_permissions">Permissões do espaço de trabalho</string>
+    <string name="pm_sort">Ordenar</string>
+    <string name="pm_sort_hint">As estrelas vêm do GitHub e os downloads do npm. Itens sem esses dados aparecem por último.</string>
+    <string name="pm_sort_relevance">Melhor correspondência</string>
+    <string name="pm_sort_stars">Mais estrelas</string>
+    <string name="pm_sort_updated">Atualizados recentemente</string>
+    <string name="pm_sort_downloads">Mais baixados</string>
+    <string name="pm_sort_newest">Mais recentes</string>
+    <string name="pm_sort_oldest">Mais antigos</string>
+    <string name="pm_sort_name">Nome</string>
+    <string name="pm_status_all">Todos</string>
+    <string name="pm_status_installed">Instalados</string>
+    <string name="pm_status_not_installed">Não instalados</string>
+    <string name="pm_status_updates">Atualizações</string>
+    <string name="pm_filter_type">Tipo</string>
+    <string name="pm_filter_source">Origem</string>
+    <string name="pm_filter_category">Categoria</string>
+    <string name="pm_filter_setup">Configuração</string>
+    <string name="pm_type_any">Qualquer tipo</string>
+    <string name="pm_source_any">Qualquer origem</string>
+    <string name="pm_source_featured">Em destaque</string>
+    <string name="pm_source_mcp">Registro MCP</string>
+    <string name="pm_category_any">Qualquer categoria</string>
+    <string name="pm_setup_any">Qualquer configuração</string>
+    <string name="pm_setup_none">Funciona de imediato</string>
+    <string name="pm_setup_runtime">Precisa de um runtime</string>
+    <string name="pm_setup_hint">Habilidades e servidores MCP remotos funcionam de imediato. Servidores locais precisam de Node, Python ou outro runtime. Os plugins são verificados quando você os instala, então só aparecem em Qualquer configuração.</string>
+    <string name="pm_clear_filters">Limpar filtros</string>
+    <string name="pm_clear_search">Limpar pesquisa</string>
+    <string name="pm_search_installed">Pesquisar plugins instalados</string>
+    <string name="pm_no_matches">Nada corresponde a esses filtros</string>
+    <string name="pm_no_matches_hint">Tente outra pesquisa ou limpe um filtro para ver mais.</string>
+    <string name="pm_installed_in">Em %1$s</string>
+    <string name="pm_update_available">Atualização disponível</string>
+    <string name="pm_update_named">Atualizar %1$s</string>
+    <string name="pm_install_again">Instalar em outro lugar</string>
+    <string name="pm_open_page">Abrir a página de %1$s</string>
+    <string name="pm_updated">%1$s atualizado</string>
+    <string name="pm_downloads_month">%1$s por mês</string>
+    <string name="pm_show_updates">Mostrar</string>
+    <plurals name="pm_results">
+        <item quantity="one">%1$d resultado</item>
+        <item quantity="other">%1$d resultados</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">%1$d estrela no GitHub</item>
+        <item quantity="other">%1$d estrelas no GitHub</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">%1$d atualização disponível</item>
+        <item quantity="other">%1$d atualizações disponíveis</item>
+    </plurals>
 </resources>

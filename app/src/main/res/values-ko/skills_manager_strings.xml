@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"이름 또는 설명으로 스킬 검색"</string>
+    <string name="sk_summary">"%1$d/%2$d 사용 중"</string>
+    <string name="sk_group_count">"%1$d/%2$d 켜짐"</string>
+    <string name="sk_status_on">"사용 중"</string>
+    <string name="sk_status_off">"사용 안 함"</string>
+    <string name="sk_source_yours">"내 스킬"</string>
+    <string name="sk_source_workspace">"작업 공간"</string>
+    <string name="sk_select">"스킬 선택"</string>
+    <string name="sk_open">"스킬 열기"</string>
+    <string name="sk_select_all">"모두 선택"</string>
+    <string name="sk_clear_selection">"지우기"</string>
+    <string name="sk_stop_selecting">"선택 중지"</string>
+    <string name="sk_state_selected">"%1$s, 선택됨"</string>
+    <string name="sk_state_not_selected">"%1$s, 선택 안 됨"</string>
+    <string name="sk_turn_on">"사용"</string>
+    <string name="sk_turn_off">"해제"</string>
+    <string name="sk_undo">"실행 취소"</string>
+    <string name="sk_new">"새 스킬"</string>
+    <string name="sk_empty">"일치하는 스킬 없음"</string>
+    <string name="sk_empty_hint">"다른 검색어를 사용하거나 필터를 지워 모든 스킬을 확인하세요."</string>
+    <string name="sk_enabled_hint">"모델은 카탈로그에서 이 스킬을 확인하고 적합할 때 불러옵니다."</string>
+    <string name="sk_disabled_hint">"다시 사용할 때까지 모델에 표시되지 않습니다."</string>
+    <string name="sk_enable_named">"%1$s 사용"</string>
+    <string name="sk_edit_copy">"복사본 편집"</string>
+    <string name="sk_copy">"복사"</string>
+    <string name="sk_copied">"스킬을 복사했습니다"</string>
+    <string name="sk_copy_note">"저장하면 내 복사본이 유지되며 기본 제공 스킬을 대체합니다. 원래대로 돌아가려면 나중에 내 복사본을 삭제하세요."</string>
+    <string name="sk_workspace_note">"이 스킬은 작업 공간의 .harness/skills 폴더에 있습니다. 거기서 편집하세요."</string>
+    <string name="sk_preview">"미리보기"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"파일 (%1$d)"</string>
+    <string name="sk_saved">"%1$s 저장됨"</string>
+    <string name="sk_fix_frontmatter">"frontmatter 수정"</string>
+    <string name="sk_chars">"%1$d / %2$d자"</string>
+    <string name="sk_delete_hint">"내 스킬만 삭제됩니다. 편집한 기본 제공 스킬은 원래대로 돌아갑니다."</string>
+    <string name="sk_discard_title">"변경 사항을 버릴까요?"</string>
+    <string name="sk_discard">"버리기"</string>
+    <string name="sk_keep_editing">"계속 편집"</string>
+    <plurals name="sk_selected">
+        <item quantity="other">"%1$d개 선택됨"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">"스킬 %1$d개 사용"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">"스킬 %1$d개 해제"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">"스킬 %1$d개 삭제됨"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">"스킬 %1$d개를 삭제할까요?"</item>
+    </plurals>
+</resources>

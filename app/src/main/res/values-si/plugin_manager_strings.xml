@@ -91,4 +91,55 @@
     <string name="pm_mcp_managed_hint">මෙම සේවාදායක සක්‍රීය ප්ලගින වලින් පැමිණේ. ඒවා ප්ලගින තුළ කළමනාකරණය කරන්න; ඒවායේ මෙවලම් කාර්ය අවකාශ අවසර භාවිතා කරයි.</string>
     <string name="pm_manage_plugins">ප්ලගින කළමනාකරණය කරන්න</string>
     <string name="pm_mcp_permissions">කාර්ය අවකාශ අවසර</string>
+    <string name="pm_sort">වර්ග කරන්න</string>
+    <string name="pm_sort_hint">තරු GitHub වෙතින්, බාගැනීම් npm වෙතින්. ඒවා නොමැති ලැයිස්තු අවසානයේ පෙන්වයි.</string>
+    <string name="pm_sort_relevance">හොඳම ගැළපීම</string>
+    <string name="pm_sort_stars">වැඩිම තරු</string>
+    <string name="pm_sort_updated">මෑතකදී යාවත්කාලීන වූ</string>
+    <string name="pm_sort_downloads">වැඩිම බාගැනීම්</string>
+    <string name="pm_sort_newest">අලුත්ම</string>
+    <string name="pm_sort_oldest">පැරණිම</string>
+    <string name="pm_sort_name">නම</string>
+    <string name="pm_status_all">සියල්ල</string>
+    <string name="pm_status_installed">ස්ථාපිතයි</string>
+    <string name="pm_status_not_installed">ස්ථාපිත නැත</string>
+    <string name="pm_status_updates">යාවත්කාලීන</string>
+    <string name="pm_filter_type">වර්ගය</string>
+    <string name="pm_filter_source">මූලාශ්‍රය</string>
+    <string name="pm_filter_category">ප්‍රවර්ගය</string>
+    <string name="pm_filter_setup">සැකසුම</string>
+    <string name="pm_type_any">ඕනෑම වර්ගයක්</string>
+    <string name="pm_source_any">ඕනෑම මූලාශ්‍රයක්</string>
+    <string name="pm_source_featured">විශේෂ</string>
+    <string name="pm_source_mcp">MCP ලේඛනාගාරය</string>
+    <string name="pm_category_any">ඕනෑම ප්‍රවර්ගයක්</string>
+    <string name="pm_setup_any">ඕනෑම සැකසුමක්</string>
+    <string name="pm_setup_none">වහාම ක්‍රියා කරයි</string>
+    <string name="pm_setup_runtime">රන්ටයිම් අවශ්‍යයි</string>
+    <string name="pm_setup_hint">කුසලතා සහ දුරස්ථ MCP සේවාදායක වහාම ක්‍රියා කරයි. ස්ථානීය සේවාදායක සඳහා Node, Python හෝ වෙනත් රන්ටයිම් අවශ්‍යයි. ප්ලගින ස්ථාපනය කරන විට පරීක්ෂා කරන නිසා ඒවා පෙන්වන්නේ ඕනෑම සැකසුමක් යටතේ පමණි.</string>
+    <string name="pm_clear_filters">පෙරහන් ඉවත් කරන්න</string>
+    <string name="pm_clear_search">සෙවුම ඉවත් කරන්න</string>
+    <string name="pm_search_installed">ස්ථාපිත ප්ලගින සොයන්න</string>
+    <string name="pm_no_matches">මෙම පෙරහන් සමඟ ගැළපෙන දෙයක් නැත</string>
+    <string name="pm_no_matches_hint">වෙනත් සෙවුමක් උත්සාහ කරන්න, නැතහොත් තවත් බැලීමට පෙරහනක් ඉවත් කරන්න.</string>
+    <string name="pm_installed_in">%1$s තුළ</string>
+    <string name="pm_update_available">යාවත්කාලීනයක් ඇත</string>
+    <string name="pm_update_named">%1$s යාවත්කාලීන කරන්න</string>
+    <string name="pm_install_again">වෙනත් තැනක ස්ථාපනය කරන්න</string>
+    <string name="pm_open_page">%1$s හි පිටුව විවෘත කරන්න</string>
+    <string name="pm_updated">%1$s යාවත්කාලීන විය</string>
+    <string name="pm_downloads_month">මසකට %1$s</string>
+    <string name="pm_show_updates">පෙන්වන්න</string>
+    <plurals name="pm_results">
+        <item quantity="one">%1$d ප්‍රතිඵල</item>
+        <item quantity="other">%1$d ප්‍රතිඵල</item>
+    </plurals>
+    <plurals name="pm_stars">
+        <item quantity="one">GitHub හි තරු %1$d</item>
+        <item quantity="other">GitHub හි තරු %1$d</item>
+    </plurals>
+    <plurals name="pm_updates_found">
+        <item quantity="one">%1$d යාවත්කාලීනයක් ඇත</item>
+        <item quantity="other">%1$d යාවත්කාලීනයක් ඇත</item>
+    </plurals>
 </resources>

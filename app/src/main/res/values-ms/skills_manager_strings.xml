@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="sk_search">"Cari kemahiran mengikut nama atau penerangan"</string>
+    <string name="sk_summary">"%1$d daripada %2$d didayakan"</string>
+    <string name="sk_group_count">"%1$d daripada %2$d dihidupkan"</string>
+    <string name="sk_status_on">"Didayakan"</string>
+    <string name="sk_status_off">"Dilumpuhkan"</string>
+    <string name="sk_source_yours">"Milik anda"</string>
+    <string name="sk_source_workspace">"Ruang kerja"</string>
+    <string name="sk_select">"Pilih kemahiran"</string>
+    <string name="sk_open">"Buka kemahiran"</string>
+    <string name="sk_select_all">"Pilih semua"</string>
+    <string name="sk_clear_selection">"Kosongkan"</string>
+    <string name="sk_stop_selecting">"Hentikan pemilihan"</string>
+    <string name="sk_state_selected">"%1$s, dipilih"</string>
+    <string name="sk_state_not_selected">"%1$s, tidak dipilih"</string>
+    <string name="sk_turn_on">"Dayakan"</string>
+    <string name="sk_turn_off">"Lumpuhkan"</string>
+    <string name="sk_undo">"Buat asal"</string>
+    <string name="sk_new">"Kemahiran baharu"</string>
+    <string name="sk_empty">"Tiada kemahiran sepadan"</string>
+    <string name="sk_empty_hint">"Cuba carian lain, atau kosongkan penapis untuk melihat semua kemahiran."</string>
+    <string name="sk_enabled_hint">"Model melihat kemahiran ini dalam katalognya dan memuatkannya apabila sesuai."</string>
+    <string name="sk_disabled_hint">"Tersembunyi daripada model sehingga anda mendayakannya semula."</string>
+    <string name="sk_enable_named">"Dayakan %1$s"</string>
+    <string name="sk_edit_copy">"Edit salinan"</string>
+    <string name="sk_copy">"Salin"</string>
+    <string name="sk_copied">"Kemahiran disalin"</string>
+    <string name="sk_copy_note">"Menyimpan mengekalkan salinan anda sendiri, yang menggantikan kemahiran terbina dalam. Padam salinan anda kemudian untuk kembali kepada asal."</string>
+    <string name="sk_workspace_note">"Kemahiran ini berada dalam folder .harness/skills ruang kerja. Edit di sana."</string>
+    <string name="sk_preview">"Pratonton"</string>
+    <string name="sk_markdown">"Markdown"</string>
+    <string name="sk_files">"Fail (%1$d)"</string>
+    <string name="sk_saved">"%1$s disimpan"</string>
+    <string name="sk_fix_frontmatter">"betulkan frontmatter"</string>
+    <string name="sk_chars">"%1$d / %2$d aksara"</string>
+    <string name="sk_delete_hint">"Hanya kemahiran anda sendiri dipadam. Kemahiran terbina dalam yang anda edit kembali kepada asalnya."</string>
+    <string name="sk_discard_title">"Buang perubahan anda?"</string>
+    <string name="sk_discard">"Buang"</string>
+    <string name="sk_keep_editing">"Teruskan mengedit"</string>
+    <plurals name="sk_selected">
+        <item quantity="other">"%1$d dipilih"</item>
+    </plurals>
+    <plurals name="sk_enabled_snack">
+        <item quantity="other">"%1$d kemahiran didayakan"</item>
+    </plurals>
+    <plurals name="sk_disabled_snack">
+        <item quantity="other">"%1$d kemahiran dilumpuhkan"</item>
+    </plurals>
+    <plurals name="sk_deleted_snack">
+        <item quantity="other">"%1$d kemahiran dipadam"</item>
+    </plurals>
+    <plurals name="sk_delete_title">
+        <item quantity="other">"Padam %1$d kemahiran?"</item>
+    </plurals>
+</resources>
