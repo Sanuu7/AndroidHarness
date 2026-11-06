@@ -39,8 +39,9 @@ class StorageDeviceTest {
             val other = File(bRoot, "keep.txt").apply { writeText("second project kept") }
             val inventory = c.storage.scan()
             assertTrue(inventory.bytes > 0)
-            assertNotNull(inventory.workspaces.first { it.id == a.id }.bytes)
-            assertNotNull(inventory.workspaces.first { it.id == b.id }.bytes)
+            val workspaces = inventory.report.items.filter { it.role == com.androidharness.app.data.storage.StorageRole.WORKSPACE }
+            assertNotNull(workspaces.first { it.key == a.id }.bytes)
+            assertNotNull(workspaces.first { it.key == b.id }.bytes)
             val chosen = inventory.candidates.filter { it.id == "download:${download.name}" || it.id == "build:${output.parentFile!!.parentFile!!.canonicalPath}" }
             assertEquals(2, chosen.size)
             c.runManager.runningSessionIds.value = setOf("storage-test-busy")
@@ -148,13 +149,12 @@ class StorageDeviceTest {
             instrumentation.startActivitySync(Intent(c.appContext, MainActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
             tap("Open navigation"); tap("Settings")
             c.pendingSettingsScroll.value = "storage"
-            awaitNode("Storage on this device"); awaitNode("Measured files · shared tools counted once")
-            assertVisibleBounds("Overview"); assertVisibleBounds("Shared"); assertVisibleBounds("Workspaces")
+            awaitNode("Storage on this device"); awaitNode("Measured on this device")
+            assertVisibleBounds("Categories"); assertVisibleBounds("Largest"); assertVisibleBounds("Rescan")
             screenshot("storage-compact-overview.png")
-            tap("Shared"); awaitNode("Shared download caches"); screenshot("storage-compact-shared.png")
-            tap("Workspaces"); awaitNode("Workspace totals exclude shared tools. Aliases and nested folders count once in the measured total.")
-            screenshot("storage-compact-workspaces.png")
-            tap("Overview"); tap("Review cleanup"); awaitNode("Review cleanup"); awaitNode(download.name)
+            tap("Caches"); scrollTo("Linux package downloads"); screenshot("storage-compact-caches.png")
+            scrollToTop(); tap("Largest"); screenshot("storage-compact-largest.png")
+            tap("Categories"); tap("Review cleanup"); awaitNode(download.name)
             screenshot("storage-compact-cleanup.png")
             // Preview and cancel only: existing user cleanup candidates are never deleted by this UI test.
             var review = findPrefix("Review ", exclude = "Review cleanup")
@@ -206,6 +206,19 @@ class StorageDeviceTest {
             find(text)?.let { return it }; SystemClock.sleep(80)
         }
         screenshot("storage-failure.png"); error("Missing UI node: $text")
+    }
+    /** Scrolls down until [text] is on screen; rows below the fold are not in the tree until then. */
+    private fun scrollTo(text: String): AccessibilityNodeInfo {
+        repeat(12) {
+            instrumentation.uiAutomation.clearCache()
+            find(text)?.let { return it }
+            if (!scrollForward()) return@repeat
+            SystemClock.sleep(150)
+        }
+        return awaitNode(text)
+    }
+    private fun scrollToTop() {
+        repeat(20) { if (!scrollBackward()) return; SystemClock.sleep(120); instrumentation.uiAutomation.clearCache() }
     }
     private fun assertVisibleBounds(text: String) {
         val bounds = Rect(); awaitNode(text).getBoundsInScreen(bounds)

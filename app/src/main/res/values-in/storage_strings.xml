@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage inventory -->
+    <string name="storage_rescan">Pindai ulang</string>
+    <string name="storage_stop">Hentikan</string>
+    <string name="storage_scanned_at">Dipindai %1$s</string>
+    <string name="storage_scanned_now">Baru saja dipindai</string>
+    <string name="storage_scan_stopped">Pemindaian dihentikan. Ini hasil pemindaian lengkap terakhir.</string>
+    <string name="storage_scan_stopped_empty">Pemindaian dihentikan sebelum selesai.</string>
+    <string name="storage_progress_starting">Memulai pemindaian</string>
+    <string name="storage_progress_cleanup">Memeriksa apa yang dapat dibersihkan</string>
+    <string name="storage_progress_count">Mengukur item %1$d dari %2$d</string>
+    <string name="storage_total_label">Diukur di perangkat ini</string>
+    <plurals name="storage_items">
+        <item quantity="other">%1$d item</item>
+    </plurals>
+    <string name="storage_not_measured_count">%1$d tidak diukur</string>
+    <string name="storage_partial_count">%1$d terbaca sebagian</string>
+    <plurals name="storage_total_excludes">
+        <item quantity="other">Total tidak menyertakan %1$d item yang tidak dapat diukur.</item>
+    </plurals>
+    <string name="storage_timed_out_note">Pemindaian kehabisan waktu, jadi sebagian item tidak diukur. Pindai ulang untuk mencoba lagi.</string>
+    <string name="storage_view_categories">Kategori</string>
+    <string name="storage_view_largest">Terbesar</string>
+    <string name="storage_view_unmeasured">Tidak diukur</string>
+    <string name="storage_search_hint">Cari item atau jalur</string>
+    <string name="storage_no_matches">Tidak ada yang cocok dengan pencarian Anda.</string>
+    <string name="storage_all_measured">Semua item telah diukur.</string>
+    <string name="storage_not_measured">Tidak diukur</string>
+    <string name="storage_shared">Dipakai bersama</string>
+    <string name="storage_partial">Terbaca sebagian</string>
+    <string name="storage_disabled">Dinonaktifkan</string>
+    <string name="storage_global">Global</string>
+    <string name="storage_counted_in">Dihitung dalam %1$s</string>
+    <string name="storage_timed_out_seen">Dihentikan setelah %1$s</string>
+    <string name="storage_show_all">Tampilkan semua %1$d</string>
+    <string name="storage_show_less">Tampilkan lebih sedikit</string>
+    <string name="storage_category_summary">%1$s · %2$s</string>
+    <string name="storage_detail_location">Lokasi</string>
+    <string name="storage_detail_locations">Lokasi</string>
+    <string name="storage_copy_paths">Salin jalur</string>
+    <string name="storage_detail_size">Ukuran</string>
+    <plurals name="storage_detail_files">
+        <item quantity="other">%1$d file</item>
+    </plurals>
+    <string name="storage_detail_used_by">Digunakan oleh %1$s</string>
+    <string name="storage_detail_shared_by">Dibagikan oleh %1$s</string>
+    <string name="storage_detail_version">Versi %1$s</string>
+    <string name="storage_detail_scope">Cakupan: %1$s</string>
+    <string name="storage_detail_reason">Alasan tidak diukur</string>
+    <string name="storage_copy_path">Salin jalur</string>
+    <string name="storage_path_copied">Jalur disalin</string>
+    <string name="storage_paths_copied">Jalur disalin</string>
+    <string name="storage_manage_requirements">Persyaratan</string>
+    <string name="storage_partial_detail">Sebagian file di dalamnya tidak dapat dibaca, jadi ukuran sebenarnya mungkin lebih besar.</string>
+    <string name="storage_shared_detail">Lebih dari satu ruang kerja atau paket menggunakannya. Ini dihitung sekali, di sini.</string>
+    <string name="storage_untracked_reason">Dipasang sebelum aplikasi mencatat file paket, jadi ukurannya termasuk dalam File Linux lainnya.</string>
+    <string name="storage_measure_note_full">Ukuran file logis, bukan alokasi disk Android. Tautan tidak diikuti, hard link dihitung sekali, dan setiap file dihitung hanya dalam satu item.</string>
+
+    <string name="storage_category_app_data">Data aplikasi</string>
+    <string name="storage_category_plugins">Plugin</string>
+    <string name="storage_category_skills">Skill</string>
+    <string name="storage_category_workspaces">Ruang kerja</string>
+    <string name="storage_category_linux">Paket Linux</string>
+    <string name="storage_category_models">Model lokal</string>
+    <string name="storage_category_caches">Cache</string>
+
+    <string name="storage_gap_permission">Izin ditolak. Aplikasi tidak dapat membaca lokasi ini.</string>
+    <string name="storage_gap_saf">Dipilih dengan pemilih folder. Aplikasi hanya memiliki akses dokumen di sana, jadi tidak dapat mengukurnya.</string>
+    <string name="storage_gap_ssh">Di host SSH. File jarak jauh tidak diukur.</string>
+    <string name="storage_gap_missing">Folder tidak ditemukan.</string>
+    <string name="storage_gap_timed_out">Pemindaian kehabisan waktu sebelum menyelesaikan item ini.</string>
+    <string name="storage_gap_error">Item ini tidak dapat dipindai.</string>
+    <string name="storage_gap_registry">Registri plugin tidak dapat dibaca. Folder plugin dicantumkan sebagai file sisa. Buka Plugin untuk memperbaikinya.</string>
+
+    <string name="storage_role_app_package">Paket aplikasi</string>
+    <string name="storage_role_app_package_note">Aplikasi yang terpasang, termasuk skill bawaan</string>
+    <string name="storage_role_chat_database">Basis data chat</string>
+    <string name="storage_role_chat_database_note">Chat, pesan, memori, dan daftar ruang kerja</string>
+    <string name="storage_role_chat_images">Gambar chat</string>
+    <string name="storage_role_chat_images_note">Gambar yang dilampirkan ke atau dibuat dalam chat</string>
+    <string name="storage_role_undo">Titik pemeriksaan urungkan</string>
+    <string name="storage_role_undo_note">Status tersimpan yang memungkinkan Anda mengurungkan edit agen</string>
+    <string name="storage_role_file_history">Riwayat file</string>
+    <string name="storage_role_file_history_note">Versi sebelumnya dari file ruang kerja yang diedit</string>
+    <string name="storage_role_editor">Draf dan tab editor</string>
+    <string name="storage_role_editor_note">Teks editor yang belum disimpan dan tab yang terbuka</string>
+    <string name="storage_role_canvas">Canvas</string>
+    <string name="storage_role_canvas_note">Papan Canvas dan gambarnya</string>
+    <string name="storage_role_settings">Pengaturan dan konfigurasi</string>
+    <string name="storage_role_settings_note">Preferensi dan konfigurasi harness</string>
+    <string name="storage_role_scratch">Ruang coret shell</string>
+    <string name="storage_role_scratch_note">Folder kerja sementara untuk perintah shell</string>
+    <string name="storage_role_router">9router</string>
+    <string name="storage_role_router_note">Instalasi router dan datanya</string>
+    <string name="storage_role_telegram">Gateway Telegram</string>
+    <string name="storage_role_telegram_note">Status gateway dan balasan tertunda</string>
+    <string name="storage_role_web_data">Data halaman web</string>
+    <string name="storage_role_web_data_note">Cookie, penyimpanan situs, dan cache untuk halaman web yang dibuka di aplikasi</string>
+    <string name="storage_role_background_work">Tugas latar belakang</string>
+    <string name="storage_role_background_work_note">Daftar Android tentang pekerjaan latar belakang terjadwal</string>
+    <string name="storage_role_other_app_data">Data aplikasi lain</string>
+    <string name="storage_role_other_app_data_note">File di folder aplikasi yang tidak dicakup item lain</string>
+
+    <string name="storage_role_plugin_note">File plugin yang terpasang</string>
+    <string name="storage_role_plugin_leftovers">File plugin sisa</string>
+    <string name="storage_role_plugin_leftovers_note">Folder dari plugin yang dihapus atau diperbarui. Aplikasi membersihkannya saat mulai berikutnya.</string>
+    <string name="storage_role_plugin_registry">Registri plugin</string>
+    <string name="storage_role_plugin_registry_note">Daftar plugin dan marketplace yang terpasang</string>
+
+    <string name="storage_role_skill_user_note">Skill Anda</string>
+    <string name="storage_role_skill_project_note">Skill ruang kerja</string>
+    <string name="storage_role_skill_bundled_note">Skill bawaan</string>
+
+    <string name="storage_role_workspace_note">File proyek dan hasil build. Alat dan cache bersama memiliki item sendiri.</string>
+    <string name="storage_role_other_repos">Repositori kloningan lain</string>
+    <string name="storage_role_other_repos_note">Folder repositori yang tidak dirujuk ruang kerja tersimpan mana pun</string>
+
+    <string name="storage_role_linux_package_note">Paket Linux</string>
+    <string name="storage_role_linux_untracked_note">Paket Linux dari instalasi lama</string>
+    <string name="storage_role_linux_shared">File yang dibagikan beberapa paket</string>
+    <string name="storage_role_linux_shared_note">Dihitung sekali di sini, bukan di setiap paket</string>
+    <string name="storage_role_npm_note">Paket npm global</string>
+    <string name="storage_role_pip_note">Paket Python yang dipasang dengan pip</string>
+    <string name="storage_role_codegraph">Runtime CodeGraph</string>
+    <string name="storage_role_codegraph_note">Pengindeks kode dan Node.js miliknya sendiri</string>
+    <string name="storage_role_linux_home">Folder home Linux</string>
+    <string name="storage_role_linux_home_note">Dotfile, pengaturan, dan file yang disimpan di home Linux</string>
+    <string name="storage_role_linux_tmp">File sementara Linux</string>
+    <string name="storage_role_linux_tmp_note">File yang tersisa di folder tmp Linux</string>
+    <string name="storage_role_linux_other">File Linux lainnya</string>
+    <string name="storage_role_linux_other_note">File dari instalasi lama dan apa pun yang tidak dicatat paket mana pun</string>
+    <string name="storage_role_package_records">Catatan paket</string>
+    <string name="storage_role_package_records_note">Daftar file dan persyaratan untuk paket yang terpasang</string>
+    <string name="storage_role_staging">Salinan penerapan</string>
+    <string name="storage_role_staging_note">Salinan terkemas lingkungan Linux untuk shell Shizuku atau ADB</string>
+    <string name="storage_role_shell_tier">Salinan shell Shizuku atau ADB</string>
+    <string name="storage_role_shell_tier_note">Lingkungan terbuka yang digunakan shell istimewa</string>
+
+    <string name="storage_role_model_note">Model lokal</string>
+    <string name="storage_role_model_partial_note">File unduhan atau konversi yang belum selesai</string>
+    <string name="storage_role_model_other">Daftar model dan sisa file</string>
+    <string name="storage_role_model_other_note">Daftar model kustom dan file yang tidak diklaim model mana pun</string>
+    <string name="storage_role_gpu">Runtime GPU</string>
+    <string name="storage_role_gpu_note">Pustaka akselerasi GPU yang diunduh</string>
+
+    <string name="storage_role_cache_npm">Cache unduhan npm</string>
+    <string name="storage_role_cache_pip">Cache unduhan pip</string>
+    <string name="storage_role_cache_shared_note">Dibagikan oleh semua ruang kerja. Diunduh lagi saat diperlukan.</string>
+    <string name="storage_role_cache_package_other">Cache paket lainnya</string>
+    <string name="storage_role_cache_package_other_note">File lain di cache paket bersama</string>
+    <string name="storage_role_cache_gradle">Cache Gradle</string>
+    <string name="storage_role_cache_gradle_note">Cache dependensi bersama untuk build Gradle</string>
+    <string name="storage_role_cache_gradle_wrapper">Unduhan wrapper Gradle</string>
+    <string name="storage_role_cache_gradle_wrapper_note">Versi Gradle yang diunduh oleh proyek</string>
+    <string name="storage_role_cache_apt">Cache apt</string>
+    <string name="storage_role_cache_apt_note">Arsip paket yang diunduh</string>
+    <string name="storage_role_cache_home_other">Cache Linux lainnya</string>
+    <string name="storage_role_cache_home_other_note">Cache alat di folder .cache home Linux</string>
+    <string name="storage_role_cache_deb">Unduhan paket Linux</string>
+    <string name="storage_role_cache_deb_note">File paket yang disimpan selama pemasangan. Unduhan terputus lama dapat dibersihkan.</string>
+    <string name="storage_role_cache_previews">Pratinjau plugin</string>
+    <string name="storage_role_cache_previews_note">Unduhan yang diperiksa sebelum Anda memasang plugin. Dihapus setelah sehari.</string>
+    <string name="storage_role_cache_share">File bersama</string>
+    <string name="storage_role_cache_share_note">Salinan yang dibuat saat Anda membagikan file ke aplikasi lain</string>
+    <string name="storage_role_cache_images">Cache gambar</string>
+    <string name="storage_role_cache_images_note">Gambar yang diunduh untuk chat</string>
+    <string name="storage_role_cache_audio">Audio</string>
+    <string name="storage_role_cache_audio_note">Rekaman suara dan balasan lisan</string>
+    <string name="storage_role_cache_mcp">Log server MCP</string>
+    <string name="storage_role_cache_mcp_note">Output dari server MCP lokal</string>
+    <string name="storage_role_cache_model_catalog">Katalog model</string>
+    <string name="storage_role_cache_model_catalog_note">Nama model, batas, dan harga dari models.dev. Diunduh lagi saat diperlukan.</string>
+    <string name="storage_role_cache_other">Cache aplikasi lainnya</string>
+    <string name="storage_role_cache_other_note">Apa pun yang Android izinkan untuk dibersihkan aplikasi</string>
+</resources>

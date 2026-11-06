@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage inventory -->
+    <string name="storage_rescan">"สแกนใหม่"</string>
+    <string name="storage_stop">"หยุด"</string>
+    <string name="storage_scanned_at">"สแกนเมื่อ %1$s"</string>
+    <string name="storage_scanned_now">"เพิ่งสแกนเมื่อครู่"</string>
+    <string name="storage_scan_stopped">"หยุดการสแกนแล้ว นี่คือผลลัพธ์จากการสแกนเต็มครั้งล่าสุด"</string>
+    <string name="storage_scan_stopped_empty">"การสแกนหยุดก่อนจะเสร็จสิ้น"</string>
+    <string name="storage_progress_starting">"กำลังเริ่มสแกน"</string>
+    <string name="storage_progress_cleanup">"กำลังตรวจสอบสิ่งที่ล้างได้"</string>
+    <string name="storage_progress_count">"กำลังวัดรายการที่ %1$d จาก %2$d"</string>
+    <string name="storage_total_label">"วัดบนอุปกรณ์นี้"</string>
+    <plurals name="storage_items">
+        <item quantity="other">"%1$d รายการ"</item>
+    </plurals>
+    <string name="storage_not_measured_count">"%1$d รายการที่ยังไม่ได้วัด"</string>
+    <string name="storage_partial_count">"%1$d รายการที่อ่านได้บางส่วน"</string>
+    <plurals name="storage_total_excludes">
+        <item quantity="other">"ยอดรวมไม่นับ %1$d รายการที่วัดไม่ได้"</item>
+    </plurals>
+    <string name="storage_timed_out_note">"การสแกนหมดเวลา รายการบางส่วนจึงยังไม่ได้วัด สแกนใหม่เพื่อลองอีกครั้ง"</string>
+    <string name="storage_view_categories">"หมวดหมู่"</string>
+    <string name="storage_view_largest">"ใหญ่ที่สุด"</string>
+    <string name="storage_view_unmeasured">"ยังไม่ได้วัด"</string>
+    <string name="storage_search_hint">"ค้นหารายการหรือเส้นทาง"</string>
+    <string name="storage_no_matches">"ไม่พบสิ่งที่ตรงกับการค้นหาของคุณ"</string>
+    <string name="storage_all_measured">"วัดครบทุกรายการแล้ว"</string>
+    <string name="storage_not_measured">"ยังไม่ได้วัด"</string>
+    <string name="storage_shared">"แชร์"</string>
+    <string name="storage_partial">"อ่านได้บางส่วน"</string>
+    <string name="storage_disabled">"ปิดใช้งาน"</string>
+    <string name="storage_global">"ส่วนกลาง"</string>
+    <string name="storage_counted_in">"นับรวมใน %1$s"</string>
+    <string name="storage_timed_out_seen">"หยุดหลังจาก %1$s"</string>
+    <string name="storage_show_all">"แสดงทั้งหมด %1$d"</string>
+    <string name="storage_show_less">"แสดงน้อยลง"</string>
+    <string name="storage_category_summary">"%1$s · %2$s"</string>
+    <string name="storage_detail_location">"ตำแหน่ง"</string>
+    <string name="storage_detail_locations">"ตำแหน่ง"</string>
+    <string name="storage_copy_paths">"คัดลอกเส้นทาง"</string>
+    <string name="storage_detail_size">"ขนาด"</string>
+    <plurals name="storage_detail_files">
+        <item quantity="other">"%1$d ไฟล์"</item>
+    </plurals>
+    <string name="storage_detail_used_by">"ใช้โดย %1$s"</string>
+    <string name="storage_detail_shared_by">"แชร์โดย %1$s"</string>
+    <string name="storage_detail_version">"เวอร์ชัน %1$s"</string>
+    <string name="storage_detail_scope">"ขอบเขต: %1$s"</string>
+    <string name="storage_detail_reason">"เหตุผลที่ยังไม่ได้วัด"</string>
+    <string name="storage_copy_path">"คัดลอกเส้นทาง"</string>
+    <string name="storage_path_copied">"คัดลอกเส้นทางแล้ว"</string>
+    <string name="storage_paths_copied">"คัดลอกเส้นทางแล้ว"</string>
+    <string name="storage_manage_requirements">"ข้อกำหนด"</string>
+    <string name="storage_partial_detail">"ไฟล์บางไฟล์ภายในอ่านไม่ได้ ขนาดจริงจึงอาจใหญ่กว่านี้"</string>
+    <string name="storage_shared_detail">"มีพื้นที่ทำงานหรือแพ็กเกจมากกว่าหนึ่งรายการใช้สิ่งนี้ จึงนับเพียงครั้งเดียวที่นี่"</string>
+    <string name="storage_untracked_reason">"ติดตั้งก่อนที่แอปจะบันทึกไฟล์แพ็กเกจ ขนาดจึงรวมอยู่ในไฟล์ Linux อื่นๆ"</string>
+    <string name="storage_measure_note_full">"ขนาดไฟล์เชิงตรรกะ ไม่ใช่การจัดสรรดิสก์ของ Android ไม่มีการตามลิงก์ ลิงก์แบบฮาร์ดนับครั้งเดียว และแต่ละไฟล์นับภายใต้รายการเดียวเท่านั้น"</string>
+
+    <string name="storage_category_app_data">"ข้อมูลแอป"</string>
+    <string name="storage_category_plugins">"ปลั๊กอิน"</string>
+    <string name="storage_category_skills">"ทักษะ"</string>
+    <string name="storage_category_workspaces">"พื้นที่ทำงาน"</string>
+    <string name="storage_category_linux">"แพ็กเกจ Linux"</string>
+    <string name="storage_category_models">"โมเดลในเครื่อง"</string>
+    <string name="storage_category_caches">"แคช"</string>
+
+    <string name="storage_gap_permission">"ไม่ได้รับอนุญาต แอปอ่านตำแหน่งนี้ไม่ได้"</string>
+    <string name="storage_gap_saf">"เลือกด้วยตัวเลือกโฟลเดอร์ แอปมีเพียงสิทธิ์เข้าถึงเอกสารที่นั่น จึงวัดไม่ได้"</string>
+    <string name="storage_gap_ssh">"อยู่บนโฮสต์ SSH ไฟล์ระยะไกลไม่ถูกวัด"</string>
+    <string name="storage_gap_missing">"ไม่พบโฟลเดอร์"</string>
+    <string name="storage_gap_timed_out">"การสแกนหมดเวลาก่อนจะวัดรายการนี้เสร็จ"</string>
+    <string name="storage_gap_error">"ไม่สามารถสแกนรายการนี้ได้"</string>
+    <string name="storage_gap_registry">"อ่านทะเบียนปลั๊กอินไม่ได้ โฟลเดอร์ปลั๊กอินจะแสดงเป็นไฟล์ที่ค้างอยู่ เปิดปลั๊กอินเพื่อซ่อมแซม"</string>
+
+    <string name="storage_role_app_package">"แพ็กเกจแอป"</string>
+    <string name="storage_role_app_package_note">"แอปที่ติดตั้ง รวมถึงทักษะที่มาพร้อม"</string>
+    <string name="storage_role_chat_database">"ฐานข้อมูลแชต"</string>
+    <string name="storage_role_chat_database_note">"แชต ข้อความ ความทรงจำ และรายการพื้นที่ทำงาน"</string>
+    <string name="storage_role_chat_images">"รูปภาพแชต"</string>
+    <string name="storage_role_chat_images_note">"รูปภาพที่แนบหรือสร้างในแชต"</string>
+    <string name="storage_role_undo">"จุดตรวจสอบการเลิกทำ"</string>
+    <string name="storage_role_undo_note">"สถานะที่บันทึกไว้ให้คุณเลิกทำการแก้ไขของเอเจนต์"</string>
+    <string name="storage_role_file_history">"ประวัติไฟล์"</string>
+    <string name="storage_role_file_history_note">"เวอร์ชันก่อนหน้าของไฟล์พื้นที่ทำงานที่แก้ไข"</string>
+    <string name="storage_role_editor">"ฉบับร่างและแท็บของตัวแก้ไข"</string>
+    <string name="storage_role_editor_note">"ข้อความในตัวแก้ไขที่ยังไม่บันทึกและแท็บที่เปิดอยู่"</string>
+    <string name="storage_role_canvas">"Canvas"</string>
+    <string name="storage_role_canvas_note">"บอร์ด Canvas และรูปภาพ"</string>
+    <string name="storage_role_settings">"การตั้งค่าและการกำหนดค่า"</string>
+    <string name="storage_role_settings_note">"ค่ากำหนดและการกำหนดค่า harness"</string>
+    <string name="storage_role_scratch">"พื้นที่ชั่วคราวของเชลล์"</string>
+    <string name="storage_role_scratch_note">"โฟลเดอร์ทำงานชั่วคราวสำหรับคำสั่งเชลล์"</string>
+    <string name="storage_role_router">"9router"</string>
+    <string name="storage_role_router_note">"การติดตั้งเราเตอร์และข้อมูล"</string>
+    <string name="storage_role_telegram">"เกตเวย์ Telegram"</string>
+    <string name="storage_role_telegram_note">"สถานะเกตเวย์และการตอบกลับที่รอดำเนินการ"</string>
+    <string name="storage_role_web_data">"ข้อมูลหน้าเว็บ"</string>
+    <string name="storage_role_web_data_note">"คุกกี้ พื้นที่จัดเก็บของไซต์ และแคชสำหรับหน้าเว็บที่เปิดในแอป"</string>
+    <string name="storage_role_background_work">"งานเบื้องหลัง"</string>
+    <string name="storage_role_background_work_note">"รายการงานเบื้องหลังที่กำหนดเวลาไว้ของ Android"</string>
+    <string name="storage_role_other_app_data">"ข้อมูลแอปอื่นๆ"</string>
+    <string name="storage_role_other_app_data_note">"ไฟล์ในโฟลเดอร์ของแอปที่ไม่มีรายการอื่นครอบคลุม"</string>
+
+    <string name="storage_role_plugin_note">"ไฟล์ปลั๊กอินที่ติดตั้ง"</string>
+    <string name="storage_role_plugin_leftovers">"ไฟล์ปลั๊กอินที่ค้างอยู่"</string>
+    <string name="storage_role_plugin_leftovers_note">"โฟลเดอร์จากปลั๊กอินที่ถูกลบหรืออัปเดต แอปจะล้างในครั้งถัดไปที่เริ่มทำงาน"</string>
+    <string name="storage_role_plugin_registry">"ทะเบียนปลั๊กอิน"</string>
+    <string name="storage_role_plugin_registry_note">"รายการปลั๊กอินและมาร์เก็ตเพลสที่ติดตั้ง"</string>
+
+    <string name="storage_role_skill_user_note">"ทักษะของคุณ"</string>
+    <string name="storage_role_skill_project_note">"ทักษะของพื้นที่ทำงาน"</string>
+    <string name="storage_role_skill_bundled_note">"ทักษะที่มาพร้อม"</string>
+
+    <string name="storage_role_workspace_note">"ไฟล์โปรเจกต์และผลลัพธ์การบิลด์ เครื่องมือและแคชที่แชร์มีรายการของตัวเอง"</string>
+    <string name="storage_role_other_repos">"ที่เก็บโค้ดที่โคลนอื่นๆ"</string>
+    <string name="storage_role_other_repos_note">"โฟลเดอร์ที่เก็บโค้ดที่ไม่มีพื้นที่ทำงานที่บันทึกไว้ชี้ไป"</string>
+
+    <string name="storage_role_linux_package_note">"แพ็กเกจ Linux"</string>
+    <string name="storage_role_linux_untracked_note">"แพ็กเกจ Linux จากการติดตั้งเก่า"</string>
+    <string name="storage_role_linux_shared">"ไฟล์ที่แชร์โดยหลายแพ็กเกจ"</string>
+    <string name="storage_role_linux_shared_note">"นับครั้งเดียวที่นี่แทนที่จะนับใต้แต่ละแพ็กเกจ"</string>
+    <string name="storage_role_npm_note">"แพ็กเกจ npm ส่วนกลาง"</string>
+    <string name="storage_role_pip_note">"แพ็กเกจ Python ที่ติดตั้งด้วย pip"</string>
+    <string name="storage_role_codegraph">"รันไทม์ CodeGraph"</string>
+    <string name="storage_role_codegraph_note">"ตัวสร้างดัชนีโค้ดและ Node.js ของตัวเอง"</string>
+    <string name="storage_role_linux_home">"โฟลเดอร์ home ของ Linux"</string>
+    <string name="storage_role_linux_home_note">"ไฟล์ซ่อน การตั้งค่า และไฟล์ที่บันทึกใน home ของ Linux"</string>
+    <string name="storage_role_linux_tmp">"ไฟล์ชั่วคราวของ Linux"</string>
+    <string name="storage_role_linux_tmp_note">"ไฟล์ที่ค้างอยู่ในโฟลเดอร์ tmp ของ Linux"</string>
+    <string name="storage_role_linux_other">"ไฟล์ Linux อื่นๆ"</string>
+    <string name="storage_role_linux_other_note">"ไฟล์จากการติดตั้งเก่าและทุกสิ่งที่ไม่ถูกแพ็กเกจใดบันทึก"</string>
+    <string name="storage_role_package_records">"บันทึกแพ็กเกจ"</string>
+    <string name="storage_role_package_records_note">"รายการไฟล์และข้อกำหนดสำหรับแพ็กเกจที่ติดตั้ง"</string>
+    <string name="storage_role_staging">"สำเนาการปรับใช้"</string>
+    <string name="storage_role_staging_note">"สำเนาที่แพ็กของสภาพแวดล้อม Linux สำหรับเชลล์ Shizuku หรือ ADB"</string>
+    <string name="storage_role_shell_tier">"สำเนาเชลล์ Shizuku หรือ ADB"</string>
+    <string name="storage_role_shell_tier_note">"สภาพแวดล้อมที่แตกแพ็กแล้วซึ่งเชลล์ที่มีสิทธิ์พิเศษใช้"</string>
+
+    <string name="storage_role_model_note">"โมเดลในเครื่อง"</string>
+    <string name="storage_role_model_partial_note">"ไฟล์ดาวน์โหลดหรือแปลงที่ยังไม่เสร็จ"</string>
+    <string name="storage_role_model_other">"รายการโมเดลและส่วนที่ค้าง"</string>
+    <string name="storage_role_model_other_note">"รายการโมเดลที่กำหนดเองและไฟล์ที่ไม่มีโมเดลใดอ้างสิทธิ์"</string>
+    <string name="storage_role_gpu">"รันไทม์ GPU"</string>
+    <string name="storage_role_gpu_note">"ไลบรารีเร่งความเร็ว GPU ที่ดาวน์โหลด"</string>
+
+    <string name="storage_role_cache_npm">"แคชดาวน์โหลด npm"</string>
+    <string name="storage_role_cache_pip">"แคชดาวน์โหลด pip"</string>
+    <string name="storage_role_cache_shared_note">"แชร์โดยทุกพื้นที่ทำงาน ดาวน์โหลดใหม่เมื่อจำเป็น"</string>
+    <string name="storage_role_cache_package_other">"แคชแพ็กเกจอื่นๆ"</string>
+    <string name="storage_role_cache_package_other_note">"ไฟล์อื่นๆ ในแคชแพ็กเกจที่แชร์"</string>
+    <string name="storage_role_cache_gradle">"แคช Gradle"</string>
+    <string name="storage_role_cache_gradle_note">"แคชการพึ่งพาที่แชร์สำหรับการบิลด์ Gradle"</string>
+    <string name="storage_role_cache_gradle_wrapper">"ดาวน์โหลด Gradle wrapper"</string>
+    <string name="storage_role_cache_gradle_wrapper_note">"เวอร์ชัน Gradle ที่โปรเจกต์ดาวน์โหลด"</string>
+    <string name="storage_role_cache_apt">"แคช apt"</string>
+    <string name="storage_role_cache_apt_note">"ไฟล์แพ็กเกจที่ดาวน์โหลด"</string>
+    <string name="storage_role_cache_home_other">"แคช Linux อื่นๆ"</string>
+    <string name="storage_role_cache_home_other_note">"แคชเครื่องมือในโฟลเดอร์ .cache ของ home Linux"</string>
+    <string name="storage_role_cache_deb">"ดาวน์โหลดแพ็กเกจ Linux"</string>
+    <string name="storage_role_cache_deb_note">"ไฟล์แพ็กเกจที่เก็บไว้ระหว่างการติดตั้ง ดาวน์โหลดที่ถูกขัดจังหวะไว้อาจล้างได้"</string>
+    <string name="storage_role_cache_previews">"ตัวอย่างปลั๊กอิน"</string>
+    <string name="storage_role_cache_previews_note">"ดาวน์โหลดที่ตรวจสอบก่อนคุณติดตั้งปลั๊กอิน ล้างหลังจากหนึ่งวัน"</string>
+    <string name="storage_role_cache_share">"ไฟล์ที่แชร์"</string>
+    <string name="storage_role_cache_share_note">"สำเนาที่สร้างขึ้นเมื่อคุณแชร์ไฟล์ให้แอปอื่น"</string>
+    <string name="storage_role_cache_images">"แคชรูปภาพ"</string>
+    <string name="storage_role_cache_images_note">"รูปภาพที่ดาวน์โหลดสำหรับแชต"</string>
+    <string name="storage_role_cache_audio">"เสียง"</string>
+    <string name="storage_role_cache_audio_note">"การบันทึกเสียงและการตอบกลับด้วยเสียง"</string>
+    <string name="storage_role_cache_mcp">"บันทึกของเซิร์ฟเวอร์ MCP"</string>
+    <string name="storage_role_cache_mcp_note">"เอาต์พุตจากเซิร์ฟเวอร์ MCP ภายในเครื่อง"</string>
+    <string name="storage_role_cache_model_catalog">"แค็ตตาล็อกโมเดล"</string>
+    <string name="storage_role_cache_model_catalog_note">"ชื่อ ขีดจำกัด และราคาของโมเดลจาก models.dev ดาวน์โหลดใหม่เมื่อจำเป็น"</string>
+    <string name="storage_role_cache_other">"แคชแอปอื่นๆ"</string>
+    <string name="storage_role_cache_other_note">"ทุกสิ่งอื่นที่ Android อนุญาตให้แอปล้างได้"</string>
+</resources>

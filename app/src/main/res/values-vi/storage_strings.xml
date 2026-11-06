@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage inventory -->
+    <string name="storage_rescan">Quét lại</string>
+    <string name="storage_stop">Dừng</string>
+    <string name="storage_scanned_at">Đã quét %1$s</string>
+    <string name="storage_scanned_now">Vừa quét xong</string>
+    <string name="storage_scan_stopped">Đã dừng quét. Đây là kết quả của lần quét đầy đủ gần nhất.</string>
+    <string name="storage_scan_stopped_empty">Quá trình quét đã dừng trước khi hoàn tất.</string>
+    <string name="storage_progress_starting">Đang bắt đầu quét</string>
+    <string name="storage_progress_cleanup">Đang kiểm tra những gì có thể dọn dẹp</string>
+    <string name="storage_progress_count">Đang đo mục %1$d trong %2$d</string>
+    <string name="storage_total_label">Đã đo trên thiết bị này</string>
+    <plurals name="storage_items">
+        <item quantity="other">%1$d mục</item>
+    </plurals>
+    <string name="storage_not_measured_count">%1$d chưa được đo</string>
+    <string name="storage_partial_count">%1$d đọc một phần</string>
+    <plurals name="storage_total_excludes">
+        <item quantity="other">Tổng số không tính %1$d mục không thể đo được.</item>
+    </plurals>
+    <string name="storage_timed_out_note">Quá trình quét hết thời gian nên một số mục chưa được đo. Hãy quét lại để thử lại.</string>
+    <string name="storage_view_categories">Danh mục</string>
+    <string name="storage_view_largest">Lớn nhất</string>
+    <string name="storage_view_unmeasured">Chưa đo</string>
+    <string name="storage_search_hint">Tìm mục hoặc đường dẫn</string>
+    <string name="storage_no_matches">Không có gì khớp với tìm kiếm của bạn.</string>
+    <string name="storage_all_measured">Mọi mục đã được đo.</string>
+    <string name="storage_not_measured">Chưa đo</string>
+    <string name="storage_shared">Chia sẻ</string>
+    <string name="storage_partial">Đọc một phần</string>
+    <string name="storage_disabled">Đã tắt</string>
+    <string name="storage_global">Toàn cục</string>
+    <string name="storage_counted_in">Được tính trong %1$s</string>
+    <string name="storage_timed_out_seen">Đã dừng sau %1$s</string>
+    <string name="storage_show_all">Hiện tất cả %1$d</string>
+    <string name="storage_show_less">Hiện ít hơn</string>
+    <string name="storage_category_summary">%1$s · %2$s</string>
+    <string name="storage_detail_location">Vị trí</string>
+    <string name="storage_detail_locations">Các vị trí</string>
+    <string name="storage_copy_paths">Sao chép đường dẫn</string>
+    <string name="storage_detail_size">Kích thước</string>
+    <plurals name="storage_detail_files">
+        <item quantity="other">%1$d tệp</item>
+    </plurals>
+    <string name="storage_detail_used_by">Được dùng bởi %1$s</string>
+    <string name="storage_detail_shared_by">Được chia sẻ bởi %1$s</string>
+    <string name="storage_detail_version">Phiên bản %1$s</string>
+    <string name="storage_detail_scope">Phạm vi: %1$s</string>
+    <string name="storage_detail_reason">Vì sao chưa được đo</string>
+    <string name="storage_copy_path">Sao chép đường dẫn</string>
+    <string name="storage_path_copied">Đã sao chép đường dẫn</string>
+    <string name="storage_paths_copied">Đã sao chép các đường dẫn</string>
+    <string name="storage_manage_requirements">Yêu cầu</string>
+    <string name="storage_partial_detail">Một số tệp bên trong không thể đọc được nên kích thước thực có thể lớn hơn.</string>
+    <string name="storage_shared_detail">Nhiều không gian làm việc hoặc gói cùng dùng mục này. Nó chỉ được tính một lần, ở đây.</string>
+    <string name="storage_untracked_reason">Được cài đặt trước khi ứng dụng ghi lại tệp gói, nên kích thước của nó nằm trong Tệp Linux khác.</string>
+    <string name="storage_measure_note_full">Kích thước tệp logic, không phải phân bổ đĩa của Android. Liên kết không được theo dõi, liên kết cứng chỉ tính một lần và mỗi tệp chỉ được tính trong một mục.</string>
+
+    <string name="storage_category_app_data">Dữ liệu ứng dụng</string>
+    <string name="storage_category_plugins">Plugin</string>
+    <string name="storage_category_skills">Kỹ năng</string>
+    <string name="storage_category_workspaces">Không gian làm việc</string>
+    <string name="storage_category_linux">Gói Linux</string>
+    <string name="storage_category_models">Mô hình cục bộ</string>
+    <string name="storage_category_caches">Bộ nhớ đệm</string>
+
+    <string name="storage_gap_permission">Quyền bị từ chối. Ứng dụng không thể đọc vị trí này.</string>
+    <string name="storage_gap_saf">Được chọn bằng trình chọn thư mục. Ứng dụng chỉ có quyền truy cập tài liệu ở đó nên không thể đo.</string>
+    <string name="storage_gap_ssh">Trên máy chủ SSH. Tệp từ xa không được đo.</string>
+    <string name="storage_gap_missing">Thư mục bị thiếu.</string>
+    <string name="storage_gap_timed_out">Quá trình quét hết thời gian trước khi hoàn tất mục này.</string>
+    <string name="storage_gap_error">Không thể quét mục này.</string>
+    <string name="storage_gap_registry">Không thể đọc sổ đăng ký plugin. Các thư mục plugin được liệt kê là tệp còn sót lại. Mở Plugin để sửa.</string>
+
+    <string name="storage_role_app_package">Gói ứng dụng</string>
+    <string name="storage_role_app_package_note">Ứng dụng đã cài đặt, bao gồm các kỹ năng đi kèm</string>
+    <string name="storage_role_chat_database">Cơ sở dữ liệu trò chuyện</string>
+    <string name="storage_role_chat_database_note">Trò chuyện, tin nhắn, ký ức và danh sách không gian làm việc</string>
+    <string name="storage_role_chat_images">Hình ảnh trò chuyện</string>
+    <string name="storage_role_chat_images_note">Hình ảnh được đính kèm hoặc tạo trong trò chuyện</string>
+    <string name="storage_role_undo">Điểm kiểm tra hoàn tác</string>
+    <string name="storage_role_undo_note">Trạng thái đã lưu cho phép bạn hoàn tác chỉnh sửa của tác nhân</string>
+    <string name="storage_role_file_history">Lịch sử tệp</string>
+    <string name="storage_role_file_history_note">Các phiên bản trước của tệp không gian làm việc đã chỉnh sửa</string>
+    <string name="storage_role_editor">Bản nháp và thẻ của trình soạn thảo</string>
+    <string name="storage_role_editor_note">Văn bản chưa lưu của trình soạn thảo và các thẻ đang mở</string>
+    <string name="storage_role_canvas">Canvas</string>
+    <string name="storage_role_canvas_note">Bảng Canvas và hình ảnh của chúng</string>
+    <string name="storage_role_settings">Cài đặt và cấu hình</string>
+    <string name="storage_role_settings_note">Tùy chọn và cấu hình harness</string>
+    <string name="storage_role_scratch">Không gian tạm của shell</string>
+    <string name="storage_role_scratch_note">Thư mục làm việc tạm cho lệnh shell</string>
+    <string name="storage_role_router">9router</string>
+    <string name="storage_role_router_note">Cài đặt bộ định tuyến và dữ liệu của nó</string>
+    <string name="storage_role_telegram">Cổng Telegram</string>
+    <string name="storage_role_telegram_note">Trạng thái cổng và các phản hồi đang chờ</string>
+    <string name="storage_role_web_data">Dữ liệu trang web</string>
+    <string name="storage_role_web_data_note">Cookie, lưu trữ trang và bộ nhớ đệm cho các trang web mở trong ứng dụng</string>
+    <string name="storage_role_background_work">Tác vụ nền</string>
+    <string name="storage_role_background_work_note">Danh sách công việc nền đã lên lịch của Android</string>
+    <string name="storage_role_other_app_data">Dữ liệu ứng dụng khác</string>
+    <string name="storage_role_other_app_data_note">Tệp trong thư mục ứng dụng mà không mục nào khác bao gồm</string>
+
+    <string name="storage_role_plugin_note">Tệp plugin đã cài đặt</string>
+    <string name="storage_role_plugin_leftovers">Tệp plugin còn sót lại</string>
+    <string name="storage_role_plugin_leftovers_note">Thư mục từ plugin đã xóa hoặc cập nhật. Ứng dụng sẽ xóa chúng ở lần khởi động tiếp theo.</string>
+    <string name="storage_role_plugin_registry">Sổ đăng ký plugin</string>
+    <string name="storage_role_plugin_registry_note">Danh sách plugin và chợ đã cài đặt</string>
+
+    <string name="storage_role_skill_user_note">Kỹ năng của bạn</string>
+    <string name="storage_role_skill_project_note">Kỹ năng không gian làm việc</string>
+    <string name="storage_role_skill_bundled_note">Kỹ năng đi kèm</string>
+
+    <string name="storage_role_workspace_note">Tệp dự án và đầu ra bản dựng. Công cụ và bộ nhớ đệm chia sẻ có mục riêng.</string>
+    <string name="storage_role_other_repos">Kho lưu trữ đã sao chép khác</string>
+    <string name="storage_role_other_repos_note">Thư mục kho lưu trữ mà không không gian làm việc đã lưu nào trỏ tới</string>
+
+    <string name="storage_role_linux_package_note">Gói Linux</string>
+    <string name="storage_role_linux_untracked_note">Gói Linux từ bản cài đặt cũ</string>
+    <string name="storage_role_linux_shared">Tệp được nhiều gói chia sẻ</string>
+    <string name="storage_role_linux_shared_note">Được tính một lần ở đây thay vì trong từng gói</string>
+    <string name="storage_role_npm_note">Gói npm toàn cục</string>
+    <string name="storage_role_pip_note">Gói Python được cài bằng pip</string>
+    <string name="storage_role_codegraph">Môi trường chạy CodeGraph</string>
+    <string name="storage_role_codegraph_note">Trình lập chỉ mục mã và Node.js riêng của nó</string>
+    <string name="storage_role_linux_home">Thư mục home Linux</string>
+    <string name="storage_role_linux_home_note">Tệp ẩn, cài đặt và tệp được lưu trong home Linux</string>
+    <string name="storage_role_linux_tmp">Tệp tạm Linux</string>
+    <string name="storage_role_linux_tmp_note">Tệp còn lại trong thư mục tmp của Linux</string>
+    <string name="storage_role_linux_other">Tệp Linux khác</string>
+    <string name="storage_role_linux_other_note">Tệp từ bản cài đặt cũ và mọi thứ không gói nào ghi lại</string>
+    <string name="storage_role_package_records">Bản ghi gói</string>
+    <string name="storage_role_package_records_note">Danh sách tệp và yêu cầu cho các gói đã cài đặt</string>
+    <string name="storage_role_staging">Bản sao triển khai</string>
+    <string name="storage_role_staging_note">Bản sao đóng gói của môi trường Linux cho shell Shizuku hoặc ADB</string>
+    <string name="storage_role_shell_tier">Bản sao shell Shizuku hoặc ADB</string>
+    <string name="storage_role_shell_tier_note">Môi trường đã giải nén được shell đặc quyền sử dụng</string>
+
+    <string name="storage_role_model_note">Mô hình cục bộ</string>
+    <string name="storage_role_model_partial_note">Tệp tải xuống hoặc chuyển đổi chưa hoàn tất</string>
+    <string name="storage_role_model_other">Danh sách mô hình và phần còn lại</string>
+    <string name="storage_role_model_other_note">Danh sách mô hình tùy chỉnh và các tệp không mô hình nào nhận</string>
+    <string name="storage_role_gpu">Môi trường chạy GPU</string>
+    <string name="storage_role_gpu_note">Thư viện tăng tốc GPU đã tải xuống</string>
+
+    <string name="storage_role_cache_npm">Bộ nhớ đệm tải xuống npm</string>
+    <string name="storage_role_cache_pip">Bộ nhớ đệm tải xuống pip</string>
+    <string name="storage_role_cache_shared_note">Được mọi không gian làm việc chia sẻ. Sẽ tải lại khi cần.</string>
+    <string name="storage_role_cache_package_other">Bộ nhớ đệm gói khác</string>
+    <string name="storage_role_cache_package_other_note">Tệp khác trong bộ nhớ đệm gói chia sẻ</string>
+    <string name="storage_role_cache_gradle">Bộ nhớ đệm Gradle</string>
+    <string name="storage_role_cache_gradle_note">Bộ nhớ đệm phụ thuộc chia sẻ cho bản dựng Gradle</string>
+    <string name="storage_role_cache_gradle_wrapper">Tải xuống Gradle wrapper</string>
+    <string name="storage_role_cache_gradle_wrapper_note">Các phiên bản Gradle do dự án tải xuống</string>
+    <string name="storage_role_cache_apt">Bộ nhớ đệm apt</string>
+    <string name="storage_role_cache_apt_note">Kho lưu trữ gói đã tải xuống</string>
+    <string name="storage_role_cache_home_other">Bộ nhớ đệm Linux khác</string>
+    <string name="storage_role_cache_home_other_note">Bộ nhớ đệm công cụ trong thư mục .cache của home Linux</string>
+    <string name="storage_role_cache_deb">Tải xuống gói Linux</string>
+    <string name="storage_role_cache_deb_note">Tệp gói được giữ lại trong khi cài đặt. Các bản tải xuống bị gián đoạn cũ có thể được dọn dẹp.</string>
+    <string name="storage_role_cache_previews">Xem trước plugin</string>
+    <string name="storage_role_cache_previews_note">Bản tải xuống được kiểm tra trước khi bạn cài plugin. Bị xóa sau một ngày.</string>
+    <string name="storage_role_cache_share">Tệp chia sẻ</string>
+    <string name="storage_role_cache_share_note">Bản sao được tạo khi bạn chia sẻ tệp cho ứng dụng khác</string>
+    <string name="storage_role_cache_images">Bộ nhớ đệm hình ảnh</string>
+    <string name="storage_role_cache_images_note">Hình ảnh được tải xuống cho trò chuyện</string>
+    <string name="storage_role_cache_audio">Âm thanh</string>
+    <string name="storage_role_cache_audio_note">Bản ghi âm giọng nói và phản hồi đọc thành tiếng</string>
+    <string name="storage_role_cache_mcp">Nhật ký máy chủ MCP</string>
+    <string name="storage_role_cache_mcp_note">Đầu ra từ máy chủ MCP cục bộ</string>
+    <string name="storage_role_cache_model_catalog">Danh mục mô hình</string>
+    <string name="storage_role_cache_model_catalog_note">Tên, giới hạn và giá mô hình từ models.dev. Sẽ tải lại khi cần.</string>
+    <string name="storage_role_cache_other">Bộ nhớ đệm ứng dụng khác</string>
+    <string name="storage_role_cache_other_note">Mọi thứ khác Android cho phép ứng dụng xóa</string>
+</resources>

@@ -5329,7 +5329,7 @@
       "steps": [
         {
           "title": "Measure first",
-          "body": "Open Storage and refresh the scan. Review overview, shared tools/caches, and workspace totals. Read any “not measured” or access notice."
+          "body": "Open Storage and tap Rescan. Each category lists its items with sizes and paths, and Largest shows the biggest ones. Open Not measured to see anything the scan could not read and why."
         },
         {
           "title": "Inspect the candidates",
@@ -5337,7 +5337,7 @@
         },
         {
           "title": "Check package requirements",
-          "body": "Review recorded workspace requirements/dependencies before releasing a package requirement or removing eligible unused files."
+          "body": "Open a Linux package under Linux packages and tap Requirements to see its recorded requirements and dependencies before releasing a requirement or removing eligible unused files."
         },
         {
           "title": "Confirm the exact cleanup",

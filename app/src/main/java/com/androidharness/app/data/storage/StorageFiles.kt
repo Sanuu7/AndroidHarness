@@ -9,33 +9,104 @@ import java.nio.file.Path
 import java.nio.file.attribute.BasicFileAttributes
 import java.security.MessageDigest
 
-/** Logical file bytes, with links never followed. Hard links count once per inventory. */
-internal class StorageCounter {
-    private val identities = mutableSetOf<Any>()
+/**
+ * One measurement. [alreadyCounted] files were claimed by an earlier measurement in the same inventory
+ * (hard links, aliases, or a folder listed under two items), so their bytes live in that earlier item.
+ */
+internal data class StorageMeasure(
+    val bytes: Long = 0, val files: Int = 0, val alreadyCounted: Int = 0,
+    val denied: Int = 0, val errors: Int = 0, val truncated: Boolean = false,
+    val exists: Boolean = true, val rootDenied: Boolean = false,
+) {
+    val partial get() = denied > 0 || errors > 0
+    operator fun plus(o: StorageMeasure) = StorageMeasure(bytes + o.bytes, files + o.files, alreadyCounted + o.alreadyCounted,
+        denied + o.denied, errors + o.errors, truncated || o.truncated, exists || o.exists, rootDenied && o.rootDenied)
+}
+
+/**
+ * Logical file bytes, with links never followed. Every file identity (device and inode) is claimed by the first
+ * measurement that sees it, so hard links and overlapping folders count once per inventory.
+ */
+internal class StorageCounter(
+    private val deadline: Long = Long.MAX_VALUE,
+    private val now: () -> Long = System::nanoTime,
+    private val maxEntries: Int = 3_000_000,
+) {
+    private val identities = HashSet<Any>()
     var incomplete = false
         private set
     private var visited = 0
+    val expired get() = now() > deadline || visited > maxEntries
 
-    suspend fun bytes(root: File, excluded: Set<Path> = emptySet(), depth: Int = 0): Long {
-        currentCoroutineContext().ensureActive()
-        val path = root.toPath().toAbsolutePath().normalize()
-        if (path in excluded) return 0
-        if (++visited > 200_000 || depth > 64) { incomplete = true; return 0 }
-        return try {
-            val a = Files.readAttributes(path, BasicFileAttributes::class.java, NOFOLLOW_LINKS)
+    /** Legacy total used by cleanup tests; any unreadable or truncated part marks the counter incomplete. */
+    suspend fun bytes(root: File, excluded: Set<Path> = emptySet()): Long = measure(root, excluded).bytes
+
+    /** Walks [root] without following links. [excluded] paths (normalized, absolute) are skipped entirely. */
+    suspend fun measure(root: File, excluded: Set<Path> = emptySet()): StorageMeasure {
+        val start = root.toPath().toAbsolutePath().normalize()
+        if (start in excluded) return StorageMeasure()
+        val rootAttrs = try { Files.readAttributes(start, BasicFileAttributes::class.java, NOFOLLOW_LINKS) }
+            catch (_: java.nio.file.NoSuchFileException) { return StorageMeasure(exists = false) }
+            catch (_: java.nio.file.AccessDeniedException) { incomplete = true; return StorageMeasure(denied = 1, rootDenied = true) }
+            catch (_: SecurityException) { incomplete = true; return StorageMeasure(denied = 1, rootDenied = true) }
+            catch (_: java.io.IOException) { incomplete = true; return StorageMeasure(errors = 1) }
+        if (rootAttrs.isSymbolicLink) return StorageMeasure()
+        var bytes = 0L; var files = 0; var counted = 0; var denied = 0; var errors = 0; var truncated = false
+        val stack = ArrayDeque<Pair<Path, Int>>()
+        fun take(path: Path, a: BasicFileAttributes, depth: Int) {
             when {
-                a.isSymbolicLink -> 0
-                a.isRegularFile -> if (identities.add(a.fileKey() ?: path)) a.size() else 0
-                a.isDirectory -> Files.newDirectoryStream(path).use { entries ->
-                    var sum = 0L
-                    for (child in entries) sum += bytes(child.toFile(), excluded, depth + 1)
-                    sum
-                }
-                else -> 0
+                a.isSymbolicLink -> Unit
+                a.isRegularFile -> if (identities.add(a.fileKey() ?: path)) { bytes += a.size(); files++ } else counted++
+                a.isDirectory -> if (depth > 64) truncated = true else stack.addLast(path to depth)
             }
-        } catch (_: java.nio.file.NoSuchFileException) { 0 }
-        catch (e: java.io.IOException) { incomplete = true; 0 }
-        catch (e: SecurityException) { incomplete = true; 0 }
+        }
+        take(start, rootAttrs, 0)
+        var first = true
+        while (stack.isNotEmpty()) {
+            currentCoroutineContext().ensureActive()
+            if (expired) { truncated = true; break }
+            val (dir, depth) = stack.removeLast()
+            try {
+                Files.newDirectoryStream(dir).use { entries ->
+                    for (child in entries) {
+                        if (++visited and 1023 == 0) currentCoroutineContext().ensureActive()
+                        val normalized = child.toAbsolutePath().normalize()
+                        if (normalized in excluded) continue
+                        try { take(normalized, Files.readAttributes(normalized, BasicFileAttributes::class.java, NOFOLLOW_LINKS), depth + 1) }
+                        catch (_: java.nio.file.NoSuchFileException) { }
+                        catch (_: java.nio.file.AccessDeniedException) { denied++ }
+                        catch (_: SecurityException) { denied++ }
+                        catch (_: java.io.IOException) { errors++ }
+                    }
+                }
+            } catch (_: java.nio.file.NoSuchFileException) { }
+            catch (_: java.nio.file.AccessDeniedException) { denied++; if (first) { incomplete = true; return StorageMeasure(denied = 1, rootDenied = true) } }
+            catch (_: SecurityException) { denied++ }
+            catch (_: java.io.IOException) { errors++ }
+            first = false
+        }
+        if (denied > 0 || errors > 0 || truncated) incomplete = true
+        return StorageMeasure(bytes, files, counted, denied, errors, truncated)
+    }
+
+    /** Measures exact files (a package manifest or a pip RECORD). Directories in the list are skipped, not walked. */
+    suspend fun measureFiles(paths: Collection<File>): StorageMeasure {
+        var bytes = 0L; var files = 0; var counted = 0; var denied = 0; var errors = 0; var truncated = false; var seen = 0
+        for (file in paths) {
+            if (++seen and 255 == 0) currentCoroutineContext().ensureActive()
+            if (expired) { truncated = true; break }
+            visited++
+            val path = file.toPath().toAbsolutePath().normalize()
+            try {
+                val a = Files.readAttributes(path, BasicFileAttributes::class.java, NOFOLLOW_LINKS)
+                if (a.isRegularFile) { if (identities.add(a.fileKey() ?: path)) { bytes += a.size(); files++ } else counted++ }
+            } catch (_: java.nio.file.NoSuchFileException) { }
+            catch (_: java.nio.file.AccessDeniedException) { denied++ }
+            catch (_: SecurityException) { denied++ }
+            catch (_: java.io.IOException) { errors++ }
+        }
+        if (denied > 0 || errors > 0 || truncated) incomplete = true
+        return StorageMeasure(bytes, files, counted, denied, errors, truncated)
     }
 }
 

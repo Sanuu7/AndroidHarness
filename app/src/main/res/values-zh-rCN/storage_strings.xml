@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage inventory -->
+    <string name="storage_rescan">重新扫描</string>
+    <string name="storage_stop">停止</string>
+    <string name="storage_scanned_at">已于 %1$s 扫描</string>
+    <string name="storage_scanned_now">刚刚扫描</string>
+    <string name="storage_scan_stopped">扫描已停止。以下是上次完整扫描的结果。</string>
+    <string name="storage_scan_stopped_empty">扫描在完成前已停止。</string>
+    <string name="storage_progress_starting">正在开始扫描</string>
+    <string name="storage_progress_cleanup">正在检查可清理的内容</string>
+    <string name="storage_progress_count">正在测量第 %1$d 项，共 %2$d 项</string>
+    <string name="storage_total_label">已在此设备上测量</string>
+    <plurals name="storage_items">
+        <item quantity="other">%1$d 个项目</item>
+    </plurals>
+    <string name="storage_not_measured_count">%1$d 项未测量</string>
+    <string name="storage_partial_count">%1$d 项仅部分读取</string>
+    <plurals name="storage_total_excludes">
+        <item quantity="other">总计不包含无法测量的 %1$d 个项目。</item>
+    </plurals>
+    <string name="storage_timed_out_note">扫描超时，因此部分项目未测量。请重新扫描再试一次。</string>
+    <string name="storage_view_categories">类别</string>
+    <string name="storage_view_largest">最大</string>
+    <string name="storage_view_unmeasured">未测量</string>
+    <string name="storage_search_hint">搜索项目或路径</string>
+    <string name="storage_no_matches">没有与搜索匹配的内容。</string>
+    <string name="storage_all_measured">所有项目均已测量。</string>
+    <string name="storage_not_measured">未测量</string>
+    <string name="storage_shared">共享</string>
+    <string name="storage_partial">部分读取</string>
+    <string name="storage_disabled">已停用</string>
+    <string name="storage_global">全局</string>
+    <string name="storage_counted_in">计入 %1$s</string>
+    <string name="storage_timed_out_seen">在 %1$s 后停止</string>
+    <string name="storage_show_all">显示全部 %1$d 项</string>
+    <string name="storage_show_less">显示更少</string>
+    <string name="storage_category_summary">%1$s · %2$s</string>
+    <string name="storage_detail_location">位置</string>
+    <string name="storage_detail_locations">位置</string>
+    <string name="storage_copy_paths">复制路径</string>
+    <string name="storage_detail_size">大小</string>
+    <plurals name="storage_detail_files">
+        <item quantity="other">%1$d 个文件</item>
+    </plurals>
+    <string name="storage_detail_used_by">由 %1$s 使用</string>
+    <string name="storage_detail_shared_by">由 %1$s 共享</string>
+    <string name="storage_detail_version">版本 %1$s</string>
+    <string name="storage_detail_scope">范围：%1$s</string>
+    <string name="storage_detail_reason">未测量的原因</string>
+    <string name="storage_copy_path">复制路径</string>
+    <string name="storage_path_copied">已复制路径</string>
+    <string name="storage_paths_copied">已复制路径</string>
+    <string name="storage_manage_requirements">要求</string>
+    <string name="storage_partial_detail">内部有些文件无法读取，因此实际大小可能更大。</string>
+    <string name="storage_shared_detail">有多个工作区或包在使用此项。此处只计一次。</string>
+    <string name="storage_untracked_reason">在应用记录包文件之前就已安装，因此其大小属于其他 Linux 文件。</string>
+    <string name="storage_measure_note_full">逻辑文件大小，而非 Android 的磁盘分配。不跟随链接，硬链接只计一次，每个文件只计入一个项目。</string>
+
+    <string name="storage_category_app_data">应用数据</string>
+    <string name="storage_category_plugins">插件</string>
+    <string name="storage_category_skills">技能</string>
+    <string name="storage_category_workspaces">工作区</string>
+    <string name="storage_category_linux">Linux 包</string>
+    <string name="storage_category_models">本地模型</string>
+    <string name="storage_category_caches">缓存</string>
+
+    <string name="storage_gap_permission">权限被拒绝。应用无法读取此位置。</string>
+    <string name="storage_gap_saf">通过文件夹选择器选取。应用在那里只有文档访问权限，因此无法测量。</string>
+    <string name="storage_gap_ssh">位于 SSH 主机上。不会测量远程文件。</string>
+    <string name="storage_gap_missing">文件夹不存在。</string>
+    <string name="storage_gap_timed_out">扫描在此项目完成前超时。</string>
+    <string name="storage_gap_error">无法扫描此项目。</string>
+    <string name="storage_gap_registry">无法读取插件注册表。插件文件夹已列为残留文件。请打开插件进行修复。</string>
+
+    <string name="storage_role_app_package">应用包</string>
+    <string name="storage_role_app_package_note">已安装的应用，包括内置技能</string>
+    <string name="storage_role_chat_database">聊天数据库</string>
+    <string name="storage_role_chat_database_note">聊天、消息、记忆和工作区列表</string>
+    <string name="storage_role_chat_images">聊天图片</string>
+    <string name="storage_role_chat_images_note">附加到聊天或在聊天中生成的图片</string>
+    <string name="storage_role_undo">撤销检查点</string>
+    <string name="storage_role_undo_note">可让你撤销智能体编辑的已保存状态</string>
+    <string name="storage_role_file_history">文件历史</string>
+    <string name="storage_role_file_history_note">已编辑工作区文件的早期版本</string>
+    <string name="storage_role_editor">编辑器草稿和标签页</string>
+    <string name="storage_role_editor_note">未保存的编辑器文本和打开的标签页</string>
+    <string name="storage_role_canvas">Canvas</string>
+    <string name="storage_role_canvas_note">Canvas 画板及其图片</string>
+    <string name="storage_role_settings">设置和配置</string>
+    <string name="storage_role_settings_note">偏好设置和 harness 配置</string>
+    <string name="storage_role_scratch">Shell 暂存空间</string>
+    <string name="storage_role_scratch_note">Shell 命令的临时工作文件夹</string>
+    <string name="storage_role_router">9router</string>
+    <string name="storage_role_router_note">路由器安装及其数据</string>
+    <string name="storage_role_telegram">Telegram 网关</string>
+    <string name="storage_role_telegram_note">网关状态和待处理的回复</string>
+    <string name="storage_role_web_data">网页数据</string>
+    <string name="storage_role_web_data_note">在应用中打开的网页的 Cookie、站点存储和缓存</string>
+    <string name="storage_role_background_work">后台任务</string>
+    <string name="storage_role_background_work_note">Android 的已安排后台任务列表</string>
+    <string name="storage_role_other_app_data">其他应用数据</string>
+    <string name="storage_role_other_app_data_note">应用文件夹中未被其他项目涵盖的文件</string>
+
+    <string name="storage_role_plugin_note">已安装的插件文件</string>
+    <string name="storage_role_plugin_leftovers">残留插件文件</string>
+    <string name="storage_role_plugin_leftovers_note">已移除或更新插件的文件夹。应用会在下次启动时清除它们。</string>
+    <string name="storage_role_plugin_registry">插件注册表</string>
+    <string name="storage_role_plugin_registry_note">已安装插件和应用市场的列表</string>
+
+    <string name="storage_role_skill_user_note">你的技能</string>
+    <string name="storage_role_skill_project_note">工作区技能</string>
+    <string name="storage_role_skill_bundled_note">内置技能</string>
+
+    <string name="storage_role_workspace_note">项目文件和构建输出。共享工具和缓存有各自的项目。</string>
+    <string name="storage_role_other_repos">其他克隆的仓库</string>
+    <string name="storage_role_other_repos_note">没有已保存工作区指向的仓库文件夹</string>
+
+    <string name="storage_role_linux_package_note">Linux 包</string>
+    <string name="storage_role_linux_untracked_note">旧安装的 Linux 包</string>
+    <string name="storage_role_linux_shared">多个包共享的文件</string>
+    <string name="storage_role_linux_shared_note">在此只计一次，而不是计入每个包下</string>
+    <string name="storage_role_npm_note">全局 npm 包</string>
+    <string name="storage_role_pip_note">使用 pip 安装的 Python 包</string>
+    <string name="storage_role_codegraph">CodeGraph 运行时</string>
+    <string name="storage_role_codegraph_note">代码索引器及其自带的 Node.js</string>
+    <string name="storage_role_linux_home">Linux 主目录</string>
+    <string name="storage_role_linux_home_note">保存在 Linux 主目录中的点文件、设置和文件</string>
+    <string name="storage_role_linux_tmp">Linux 临时文件</string>
+    <string name="storage_role_linux_tmp_note">留在 Linux tmp 文件夹中的文件</string>
+    <string name="storage_role_linux_other">其他 Linux 文件</string>
+    <string name="storage_role_linux_other_note">旧安装的文件以及任何包都未记录的内容</string>
+    <string name="storage_role_package_records">包记录</string>
+    <string name="storage_role_package_records_note">已安装包的文件列表和要求</string>
+    <string name="storage_role_staging">部署副本</string>
+    <string name="storage_role_staging_note">供 Shizuku 或 ADB shell 使用的 Linux 环境打包副本</string>
+    <string name="storage_role_shell_tier">Shizuku 或 ADB shell 副本</string>
+    <string name="storage_role_shell_tier_note">特权 shell 使用的已解包环境</string>
+
+    <string name="storage_role_model_note">本地模型</string>
+    <string name="storage_role_model_partial_note">未完成的下载或转换文件</string>
+    <string name="storage_role_model_other">模型列表和残留文件</string>
+    <string name="storage_role_model_other_note">自定义模型列表以及没有模型声明的文件</string>
+    <string name="storage_role_gpu">GPU 运行时</string>
+    <string name="storage_role_gpu_note">已下载的 GPU 加速库</string>
+
+    <string name="storage_role_cache_npm">npm 下载缓存</string>
+    <string name="storage_role_cache_pip">pip 下载缓存</string>
+    <string name="storage_role_cache_shared_note">所有工作区共享。需要时会重新下载。</string>
+    <string name="storage_role_cache_package_other">其他包缓存</string>
+    <string name="storage_role_cache_package_other_note">共享包缓存中的其他文件</string>
+    <string name="storage_role_cache_gradle">Gradle 缓存</string>
+    <string name="storage_role_cache_gradle_note">Gradle 构建的共享依赖缓存</string>
+    <string name="storage_role_cache_gradle_wrapper">Gradle 包装器下载</string>
+    <string name="storage_role_cache_gradle_wrapper_note">项目下载的 Gradle 版本</string>
+    <string name="storage_role_cache_apt">apt 缓存</string>
+    <string name="storage_role_cache_apt_note">已下载的包归档</string>
+    <string name="storage_role_cache_home_other">其他 Linux 缓存</string>
+    <string name="storage_role_cache_home_other_note">Linux 主目录 .cache 文件夹中的工具缓存</string>
+    <string name="storage_role_cache_deb">Linux 包下载</string>
+    <string name="storage_role_cache_deb_note">安装期间保留的包文件。可以清理旧的中断下载。</string>
+    <string name="storage_role_cache_previews">插件预览</string>
+    <string name="storage_role_cache_previews_note">安装插件前检查的下载。一天后清除。</string>
+    <string name="storage_role_cache_share">共享文件</string>
+    <string name="storage_role_cache_share_note">将文件分享到其他应用时创建的副本</string>
+    <string name="storage_role_cache_images">图片缓存</string>
+    <string name="storage_role_cache_images_note">为聊天下载的图片</string>
+    <string name="storage_role_cache_audio">音频</string>
+    <string name="storage_role_cache_audio_note">语音录制和语音回复</string>
+    <string name="storage_role_cache_mcp">MCP 服务器日志</string>
+    <string name="storage_role_cache_mcp_note">本地 MCP 服务器的输出</string>
+    <string name="storage_role_cache_model_catalog">模型目录</string>
+    <string name="storage_role_cache_model_catalog_note">来自 models.dev 的模型名称、限制和价格。需要时会重新下载。</string>
+    <string name="storage_role_cache_other">其他应用缓存</string>
+    <string name="storage_role_cache_other_note">Android 允许应用清除的其他内容</string>
+</resources>

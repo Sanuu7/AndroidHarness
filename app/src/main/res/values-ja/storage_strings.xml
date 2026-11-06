@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage inventory -->
+    <string name="storage_rescan">再スキャン</string>
+    <string name="storage_stop">停止</string>
+    <string name="storage_scanned_at">%1$s にスキャン</string>
+    <string name="storage_scanned_now">たった今スキャンしました</string>
+    <string name="storage_scan_stopped">スキャンを停止しました。これは最後の完全なスキャンの結果です。</string>
+    <string name="storage_scan_stopped_empty">スキャンは完了する前に停止しました。</string>
+    <string name="storage_progress_starting">スキャンを開始しています</string>
+    <string name="storage_progress_cleanup">クリーンアップできる項目を確認しています</string>
+    <string name="storage_progress_count">%1$d 件目を測定中 (全 %2$d 件)</string>
+    <string name="storage_total_label">このデバイスでの測定値</string>
+    <plurals name="storage_items">
+        <item quantity="other">%1$d 件の項目</item>
+    </plurals>
+    <string name="storage_not_measured_count">%1$d 件未測定</string>
+    <string name="storage_partial_count">%1$d 件を一部読み取り</string>
+    <plurals name="storage_total_excludes">
+        <item quantity="other">測定できなかった %1$d 件の項目は合計に含まれていません。</item>
+    </plurals>
+    <string name="storage_timed_out_note">スキャンが時間切れになったため、一部の項目は測定されていません。再スキャンしてもう一度お試しください。</string>
+    <string name="storage_view_categories">カテゴリ</string>
+    <string name="storage_view_largest">大きい順</string>
+    <string name="storage_view_unmeasured">未測定</string>
+    <string name="storage_search_hint">項目やパスを検索</string>
+    <string name="storage_no_matches">検索に一致するものはありません。</string>
+    <string name="storage_all_measured">すべての項目が測定されました。</string>
+    <string name="storage_not_measured">未測定</string>
+    <string name="storage_shared">共有</string>
+    <string name="storage_partial">一部読み取り</string>
+    <string name="storage_disabled">無効</string>
+    <string name="storage_global">グローバル</string>
+    <string name="storage_counted_in">%1$s に含まれる</string>
+    <string name="storage_timed_out_seen">%1$s 後に停止</string>
+    <string name="storage_show_all">%1$d 件すべて表示</string>
+    <string name="storage_show_less">表示を減らす</string>
+    <string name="storage_category_summary">%1$s · %2$s</string>
+    <string name="storage_detail_location">保存場所</string>
+    <string name="storage_detail_locations">保存場所</string>
+    <string name="storage_copy_paths">パスをコピー</string>
+    <string name="storage_detail_size">サイズ</string>
+    <plurals name="storage_detail_files">
+        <item quantity="other">%1$d 個のファイル</item>
+    </plurals>
+    <string name="storage_detail_used_by">%1$s が使用</string>
+    <string name="storage_detail_shared_by">%1$s が共有</string>
+    <string name="storage_detail_version">バージョン %1$s</string>
+    <string name="storage_detail_scope">スコープ: %1$s</string>
+    <string name="storage_detail_reason">測定されなかった理由</string>
+    <string name="storage_copy_path">パスをコピー</string>
+    <string name="storage_path_copied">パスをコピーしました</string>
+    <string name="storage_paths_copied">パスをコピーしました</string>
+    <string name="storage_manage_requirements">要件</string>
+    <string name="storage_partial_detail">内部の一部のファイルを読み取れなかったため、実際のサイズはより大きい可能性があります。</string>
+    <string name="storage_shared_detail">複数のワークスペースまたはパッケージがこれを使用しています。ここで 1 回だけカウントされます。</string>
+    <string name="storage_untracked_reason">アプリがパッケージファイルを記録する前にインストールされたため、サイズは「その他の Linux ファイル」に含まれています。</string>
+    <string name="storage_measure_note_full">論理ファイルサイズであり、Android のディスク割り当てではありません。リンクは追跡せず、ハードリンクは 1 回だけカウントし、各ファイルは 1 つの項目でのみカウントされます。</string>
+
+    <string name="storage_category_app_data">アプリデータ</string>
+    <string name="storage_category_plugins">プラグイン</string>
+    <string name="storage_category_skills">スキル</string>
+    <string name="storage_category_workspaces">ワークスペース</string>
+    <string name="storage_category_linux">Linux パッケージ</string>
+    <string name="storage_category_models">ローカルモデル</string>
+    <string name="storage_category_caches">キャッシュ</string>
+
+    <string name="storage_gap_permission">権限が拒否されました。アプリはこの場所を読み取れません。</string>
+    <string name="storage_gap_saf">フォルダ選択ツールで選択されました。アプリにはドキュメントへのアクセスしかないため、測定できません。</string>
+    <string name="storage_gap_ssh">SSH ホスト上です。リモートファイルは測定されません。</string>
+    <string name="storage_gap_missing">フォルダがありません。</string>
+    <string name="storage_gap_timed_out">この項目を完了する前にスキャンが時間切れになりました。</string>
+    <string name="storage_gap_error">この項目をスキャンできませんでした。</string>
+    <string name="storage_gap_registry">プラグインの登録情報を読み取れませんでした。プラグインフォルダは残存ファイルとして表示されます。プラグインを開いて修復してください。</string>
+
+    <string name="storage_role_app_package">アプリパッケージ</string>
+    <string name="storage_role_app_package_note">同梱スキルを含むインストール済みアプリ</string>
+    <string name="storage_role_chat_database">チャットデータベース</string>
+    <string name="storage_role_chat_database_note">チャット、メッセージ、メモリ、ワークスペース一覧</string>
+    <string name="storage_role_chat_images">チャット画像</string>
+    <string name="storage_role_chat_images_note">チャットに添付または作成された画像</string>
+    <string name="storage_role_undo">取り消しチェックポイント</string>
+    <string name="storage_role_undo_note">エージェントの編集を取り消せる保存済み状態</string>
+    <string name="storage_role_file_history">ファイル履歴</string>
+    <string name="storage_role_file_history_note">編集されたワークスペースファイルの以前のバージョン</string>
+    <string name="storage_role_editor">エディタの下書きとタブ</string>
+    <string name="storage_role_editor_note">未保存のエディタテキストと開いているタブ</string>
+    <string name="storage_role_canvas">Canvas</string>
+    <string name="storage_role_canvas_note">Canvas ボードとその画像</string>
+    <string name="storage_role_settings">設定と構成</string>
+    <string name="storage_role_settings_note">環境設定とハーネスの構成</string>
+    <string name="storage_role_scratch">シェルの一時領域</string>
+    <string name="storage_role_scratch_note">シェルコマンド用の一時作業フォルダ</string>
+    <string name="storage_role_router">9router</string>
+    <string name="storage_role_router_note">ルーターのインストールとそのデータ</string>
+    <string name="storage_role_telegram">Telegram ゲートウェイ</string>
+    <string name="storage_role_telegram_note">ゲートウェイの状態と保留中の返信</string>
+    <string name="storage_role_web_data">Web ページデータ</string>
+    <string name="storage_role_web_data_note">アプリで開いた Web ページの Cookie、サイトストレージ、キャッシュ</string>
+    <string name="storage_role_background_work">バックグラウンドタスク</string>
+    <string name="storage_role_background_work_note">Android のスケジュールされたバックグラウンド作業の一覧</string>
+    <string name="storage_role_other_app_data">その他のアプリデータ</string>
+    <string name="storage_role_other_app_data_note">他の項目に含まれない、アプリのフォルダ内のファイル</string>
+
+    <string name="storage_role_plugin_note">インストール済みのプラグインファイル</string>
+    <string name="storage_role_plugin_leftovers">残存プラグインファイル</string>
+    <string name="storage_role_plugin_leftovers_note">削除または更新されたプラグインのフォルダ。アプリは次回起動時に消去します。</string>
+    <string name="storage_role_plugin_registry">プラグイン登録情報</string>
+    <string name="storage_role_plugin_registry_note">インストール済みプラグインとマーケットプレイスの一覧</string>
+
+    <string name="storage_role_skill_user_note">あなたのスキル</string>
+    <string name="storage_role_skill_project_note">ワークスペースのスキル</string>
+    <string name="storage_role_skill_bundled_note">同梱スキル</string>
+
+    <string name="storage_role_workspace_note">プロジェクトファイルとビルド出力。共有ツールとキャッシュには独自の項目があります。</string>
+    <string name="storage_role_other_repos">その他のクローン済みリポジトリ</string>
+    <string name="storage_role_other_repos_note">保存済みワークスペースが指していないリポジトリフォルダ</string>
+
+    <string name="storage_role_linux_package_note">Linux パッケージ</string>
+    <string name="storage_role_linux_untracked_note">古いインストールからの Linux パッケージ</string>
+    <string name="storage_role_linux_shared">複数のパッケージで共有されるファイル</string>
+    <string name="storage_role_linux_shared_note">各パッケージではなくここで 1 回だけカウント</string>
+    <string name="storage_role_npm_note">グローバル npm パッケージ</string>
+    <string name="storage_role_pip_note">pip でインストールされた Python パッケージ</string>
+    <string name="storage_role_codegraph">CodeGraph ランタイム</string>
+    <string name="storage_role_codegraph_note">コードインデクサーとそれ専用の Node.js</string>
+    <string name="storage_role_linux_home">Linux ホームフォルダ</string>
+    <string name="storage_role_linux_home_note">Linux ホームに保存されたドットファイル、設定、ファイル</string>
+    <string name="storage_role_linux_tmp">Linux 一時ファイル</string>
+    <string name="storage_role_linux_tmp_note">Linux の tmp フォルダに残ったファイル</string>
+    <string name="storage_role_linux_other">その他の Linux ファイル</string>
+    <string name="storage_role_linux_other_note">古いインストールからのファイルと、どのパッケージにも記録されていないもの</string>
+    <string name="storage_role_package_records">パッケージ記録</string>
+    <string name="storage_role_package_records_note">インストール済みパッケージのファイル一覧と要件</string>
+    <string name="storage_role_staging">デプロイコピー</string>
+    <string name="storage_role_staging_note">Shizuku または ADB シェル用の Linux 環境のパッケージ済みコピー</string>
+    <string name="storage_role_shell_tier">Shizuku または ADB シェルコピー</string>
+    <string name="storage_role_shell_tier_note">特権シェルが使用する展開済み環境</string>
+
+    <string name="storage_role_model_note">ローカルモデル</string>
+    <string name="storage_role_model_partial_note">未完了のダウンロードまたは変換ファイル</string>
+    <string name="storage_role_model_other">モデル一覧と残存ファイル</string>
+    <string name="storage_role_model_other_note">カスタムモデル一覧と、どのモデルにも属さないファイル</string>
+    <string name="storage_role_gpu">GPU ランタイム</string>
+    <string name="storage_role_gpu_note">ダウンロードされた GPU アクセラレーションライブラリ</string>
+
+    <string name="storage_role_cache_npm">npm ダウンロードキャッシュ</string>
+    <string name="storage_role_cache_pip">pip ダウンロードキャッシュ</string>
+    <string name="storage_role_cache_shared_note">すべてのワークスペースで共有されます。必要に応じて再ダウンロードされます。</string>
+    <string name="storage_role_cache_package_other">その他のパッケージキャッシュ</string>
+    <string name="storage_role_cache_package_other_note">共有パッケージキャッシュ内のその他のファイル</string>
+    <string name="storage_role_cache_gradle">Gradle キャッシュ</string>
+    <string name="storage_role_cache_gradle_note">Gradle ビルド用の共有依存関係キャッシュ</string>
+    <string name="storage_role_cache_gradle_wrapper">Gradle ラッパーのダウンロード</string>
+    <string name="storage_role_cache_gradle_wrapper_note">プロジェクトがダウンロードした Gradle バージョン</string>
+    <string name="storage_role_cache_apt">apt キャッシュ</string>
+    <string name="storage_role_cache_apt_note">ダウンロードされたパッケージアーカイブ</string>
+    <string name="storage_role_cache_home_other">その他の Linux キャッシュ</string>
+    <string name="storage_role_cache_home_other_note">Linux ホームの .cache フォルダ内のツールキャッシュ</string>
+    <string name="storage_role_cache_deb">Linux パッケージのダウンロード</string>
+    <string name="storage_role_cache_deb_note">インストール中に保持されるパッケージファイル。古い中断されたダウンロードはクリーンアップできます。</string>
+    <string name="storage_role_cache_previews">プラグインのプレビュー</string>
+    <string name="storage_role_cache_previews_note">プラグインをインストールする前に確認されるダウンロード。1 日後に消去されます。</string>
+    <string name="storage_role_cache_share">共有ファイル</string>
+    <string name="storage_role_cache_share_note">他のアプリにファイルを共有するときに作成されるコピー</string>
+    <string name="storage_role_cache_images">画像キャッシュ</string>
+    <string name="storage_role_cache_images_note">チャット用にダウンロードされた画像</string>
+    <string name="storage_role_cache_audio">音声</string>
+    <string name="storage_role_cache_audio_note">音声録音と読み上げられた返信</string>
+    <string name="storage_role_cache_mcp">MCP サーバーログ</string>
+    <string name="storage_role_cache_mcp_note">ローカル MCP サーバーの出力</string>
+    <string name="storage_role_cache_model_catalog">モデルカタログ</string>
+    <string name="storage_role_cache_model_catalog_note">models.dev からのモデル名、上限、価格。必要に応じて再ダウンロードされます。</string>
+    <string name="storage_role_cache_other">その他のアプリキャッシュ</string>
+    <string name="storage_role_cache_other_note">Android がアプリに消去を許可するその他すべて</string>
+</resources>

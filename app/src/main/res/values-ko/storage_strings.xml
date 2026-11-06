@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage inventory -->
+    <string name="storage_rescan">다시 스캔</string>
+    <string name="storage_stop">중지</string>
+    <string name="storage_scanned_at">%1$s에 스캔함</string>
+    <string name="storage_scanned_now">방금 스캔함</string>
+    <string name="storage_scan_stopped">스캔이 중지되었습니다. 마지막 전체 스캔의 결과입니다.</string>
+    <string name="storage_scan_stopped_empty">스캔이 완료되기 전에 중지되었습니다.</string>
+    <string name="storage_progress_starting">스캔 시작 중</string>
+    <string name="storage_progress_cleanup">정리할 수 있는 항목 확인 중</string>
+    <string name="storage_progress_count">%2$d개 중 %1$d번째 항목 측정 중</string>
+    <string name="storage_total_label">이 기기에서 측정함</string>
+    <plurals name="storage_items">
+        <item quantity="other">%1$d개 항목</item>
+    </plurals>
+    <string name="storage_not_measured_count">%1$d개 측정 안 됨</string>
+    <string name="storage_partial_count">%1$d개 일부만 읽음</string>
+    <plurals name="storage_total_excludes">
+        <item quantity="other">측정할 수 없었던 %1$d개 항목은 합계에서 제외됩니다.</item>
+    </plurals>
+    <string name="storage_timed_out_note">스캔 시간이 초과되어 일부 항목을 측정하지 못했습니다. 다시 스캔해 보세요.</string>
+    <string name="storage_view_categories">카테고리</string>
+    <string name="storage_view_largest">큰 항목</string>
+    <string name="storage_view_unmeasured">측정 안 됨</string>
+    <string name="storage_search_hint">항목 또는 경로 검색</string>
+    <string name="storage_no_matches">검색과 일치하는 항목이 없습니다.</string>
+    <string name="storage_all_measured">모든 항목을 측정했습니다.</string>
+    <string name="storage_not_measured">측정 안 됨</string>
+    <string name="storage_shared">공유됨</string>
+    <string name="storage_partial">일부만 읽음</string>
+    <string name="storage_disabled">사용 중지됨</string>
+    <string name="storage_global">전역</string>
+    <string name="storage_counted_in">%1$s에 포함됨</string>
+    <string name="storage_timed_out_seen">%1$s 후 중지됨</string>
+    <string name="storage_show_all">전체 %1$d개 보기</string>
+    <string name="storage_show_less">간단히 보기</string>
+    <string name="storage_category_summary">%1$s · %2$s</string>
+    <string name="storage_detail_location">위치</string>
+    <string name="storage_detail_locations">위치</string>
+    <string name="storage_copy_paths">경로 복사</string>
+    <string name="storage_detail_size">크기</string>
+    <plurals name="storage_detail_files">
+        <item quantity="other">%1$d개 파일</item>
+    </plurals>
+    <string name="storage_detail_used_by">%1$s에서 사용</string>
+    <string name="storage_detail_shared_by">%1$s에서 공유</string>
+    <string name="storage_detail_version">버전 %1$s</string>
+    <string name="storage_detail_scope">범위: %1$s</string>
+    <string name="storage_detail_reason">측정되지 않은 이유</string>
+    <string name="storage_copy_path">경로 복사</string>
+    <string name="storage_path_copied">경로를 복사했습니다</string>
+    <string name="storage_paths_copied">경로를 복사했습니다</string>
+    <string name="storage_manage_requirements">요구 사항</string>
+    <string name="storage_partial_detail">내부의 일부 파일을 읽을 수 없어 실제 크기가 더 클 수 있습니다.</string>
+    <string name="storage_shared_detail">하나 이상의 워크스페이스 또는 패키지가 이 항목을 사용합니다. 여기에서 한 번만 계산됩니다.</string>
+    <string name="storage_untracked_reason">앱이 패키지 파일을 기록하기 전에 설치되었으므로 크기가 기타 Linux 파일에 포함됩니다.</string>
+    <string name="storage_measure_note_full">논리적 파일 크기이며 Android의 디스크 할당이 아닙니다. 링크를 따라가지 않으며, 하드 링크는 한 번만 계산되고, 각 파일은 하나의 항목에만 포함됩니다.</string>
+
+    <string name="storage_category_app_data">앱 데이터</string>
+    <string name="storage_category_plugins">플러그인</string>
+    <string name="storage_category_skills">스킬</string>
+    <string name="storage_category_workspaces">워크스페이스</string>
+    <string name="storage_category_linux">Linux 패키지</string>
+    <string name="storage_category_models">로컬 모델</string>
+    <string name="storage_category_caches">캐시</string>
+
+    <string name="storage_gap_permission">권한이 거부되었습니다. 앱이 이 위치를 읽을 수 없습니다.</string>
+    <string name="storage_gap_saf">폴더 선택기로 선택했습니다. 앱은 이 위치에 문서 접근 권한만 있어 측정할 수 없습니다.</string>
+    <string name="storage_gap_ssh">SSH 호스트에 있습니다. 원격 파일은 측정하지 않습니다.</string>
+    <string name="storage_gap_missing">폴더가 없습니다.</string>
+    <string name="storage_gap_timed_out">이 항목을 마치기 전에 스캔 시간이 초과되었습니다.</string>
+    <string name="storage_gap_error">이 항목을 스캔할 수 없습니다.</string>
+    <string name="storage_gap_registry">플러그인 레지스트리를 읽을 수 없습니다. 플러그인 폴더가 남은 파일로 표시됩니다. 복구하려면 플러그인을 여세요.</string>
+
+    <string name="storage_role_app_package">앱 패키지</string>
+    <string name="storage_role_app_package_note">번들 스킬을 포함한 설치된 앱</string>
+    <string name="storage_role_chat_database">채팅 데이터베이스</string>
+    <string name="storage_role_chat_database_note">채팅, 메시지, 기억 및 워크스페이스 목록</string>
+    <string name="storage_role_chat_images">채팅 이미지</string>
+    <string name="storage_role_chat_images_note">채팅에 첨부되거나 채팅에서 생성된 이미지</string>
+    <string name="storage_role_undo">실행 취소 체크포인트</string>
+    <string name="storage_role_undo_note">에이전트 편집을 실행 취소할 수 있는 저장된 상태</string>
+    <string name="storage_role_file_history">파일 기록</string>
+    <string name="storage_role_file_history_note">편집된 워크스페이스 파일의 이전 버전</string>
+    <string name="storage_role_editor">편집기 임시 문서 및 탭</string>
+    <string name="storage_role_editor_note">저장하지 않은 편집기 텍스트와 열린 탭</string>
+    <string name="storage_role_canvas">Canvas</string>
+    <string name="storage_role_canvas_note">Canvas 보드와 해당 이미지</string>
+    <string name="storage_role_settings">설정 및 구성</string>
+    <string name="storage_role_settings_note">환경설정 및 하네스 구성</string>
+    <string name="storage_role_scratch">셸 임시 공간</string>
+    <string name="storage_role_scratch_note">셸 명령용 임시 작업 폴더</string>
+    <string name="storage_role_router">9router</string>
+    <string name="storage_role_router_note">라우터 설치 및 해당 데이터</string>
+    <string name="storage_role_telegram">Telegram 게이트웨이</string>
+    <string name="storage_role_telegram_note">게이트웨이 상태 및 대기 중인 답장</string>
+    <string name="storage_role_web_data">웹 페이지 데이터</string>
+    <string name="storage_role_web_data_note">앱에서 연 웹 페이지의 쿠키, 사이트 저장소 및 캐시</string>
+    <string name="storage_role_background_work">백그라운드 작업</string>
+    <string name="storage_role_background_work_note">Android가 예약한 백그라운드 작업 목록</string>
+    <string name="storage_role_other_app_data">기타 앱 데이터</string>
+    <string name="storage_role_other_app_data_note">다른 항목에 포함되지 않는 앱 폴더의 파일</string>
+
+    <string name="storage_role_plugin_note">설치된 플러그인 파일</string>
+    <string name="storage_role_plugin_leftovers">남은 플러그인 파일</string>
+    <string name="storage_role_plugin_leftovers_note">제거되거나 업데이트된 플러그인의 폴더입니다. 앱을 다음에 시작할 때 지워집니다.</string>
+    <string name="storage_role_plugin_registry">플러그인 레지스트리</string>
+    <string name="storage_role_plugin_registry_note">설치된 플러그인 및 마켓플레이스 목록</string>
+
+    <string name="storage_role_skill_user_note">내 스킬</string>
+    <string name="storage_role_skill_project_note">워크스페이스 스킬</string>
+    <string name="storage_role_skill_bundled_note">번들 스킬</string>
+
+    <string name="storage_role_workspace_note">프로젝트 파일 및 빌드 출력. 공유 도구와 캐시는 별도 항목입니다.</string>
+    <string name="storage_role_other_repos">기타 복제된 저장소</string>
+    <string name="storage_role_other_repos_note">저장된 워크스페이스가 가리키지 않는 저장소 폴더</string>
+
+    <string name="storage_role_linux_package_note">Linux 패키지</string>
+    <string name="storage_role_linux_untracked_note">이전 설치의 Linux 패키지</string>
+    <string name="storage_role_linux_shared">여러 패키지가 공유하는 파일</string>
+    <string name="storage_role_linux_shared_note">각 패키지가 아닌 여기에서 한 번만 계산됩니다</string>
+    <string name="storage_role_npm_note">전역 npm 패키지</string>
+    <string name="storage_role_pip_note">pip로 설치한 Python 패키지</string>
+    <string name="storage_role_codegraph">CodeGraph 런타임</string>
+    <string name="storage_role_codegraph_note">코드 인덱서 및 자체 Node.js</string>
+    <string name="storage_role_linux_home">Linux 홈 폴더</string>
+    <string name="storage_role_linux_home_note">Linux 홈에 저장된 도트 파일, 설정 및 파일</string>
+    <string name="storage_role_linux_tmp">Linux 임시 파일</string>
+    <string name="storage_role_linux_tmp_note">Linux tmp 폴더에 남은 파일</string>
+    <string name="storage_role_linux_other">기타 Linux 파일</string>
+    <string name="storage_role_linux_other_note">이전 설치의 파일과 어떤 패키지도 기록하지 않은 항목</string>
+    <string name="storage_role_package_records">패키지 기록</string>
+    <string name="storage_role_package_records_note">설치된 패키지의 파일 목록 및 요구 사항</string>
+    <string name="storage_role_staging">배포 사본</string>
+    <string name="storage_role_staging_note">Shizuku 또는 ADB 셸용 Linux 환경의 압축 사본</string>
+    <string name="storage_role_shell_tier">Shizuku 또는 ADB 셸 사본</string>
+    <string name="storage_role_shell_tier_note">권한 있는 셸이 사용하는 압축 해제된 환경</string>
+
+    <string name="storage_role_model_note">로컬 모델</string>
+    <string name="storage_role_model_partial_note">완료되지 않은 다운로드 또는 변환 파일</string>
+    <string name="storage_role_model_other">모델 목록 및 남은 파일</string>
+    <string name="storage_role_model_other_note">사용자 지정 모델 목록과 어떤 모델에도 속하지 않는 파일</string>
+    <string name="storage_role_gpu">GPU 런타임</string>
+    <string name="storage_role_gpu_note">다운로드한 GPU 가속 라이브러리</string>
+
+    <string name="storage_role_cache_npm">npm 다운로드 캐시</string>
+    <string name="storage_role_cache_pip">pip 다운로드 캐시</string>
+    <string name="storage_role_cache_shared_note">모든 워크스페이스가 공유합니다. 필요할 때 다시 다운로드합니다.</string>
+    <string name="storage_role_cache_package_other">기타 패키지 캐시</string>
+    <string name="storage_role_cache_package_other_note">공유 패키지 캐시의 기타 파일</string>
+    <string name="storage_role_cache_gradle">Gradle 캐시</string>
+    <string name="storage_role_cache_gradle_note">Gradle 빌드용 공유 종속성 캐시</string>
+    <string name="storage_role_cache_gradle_wrapper">Gradle 래퍼 다운로드</string>
+    <string name="storage_role_cache_gradle_wrapper_note">프로젝트에서 다운로드한 Gradle 버전</string>
+    <string name="storage_role_cache_apt">apt 캐시</string>
+    <string name="storage_role_cache_apt_note">다운로드한 패키지 압축 파일</string>
+    <string name="storage_role_cache_home_other">기타 Linux 캐시</string>
+    <string name="storage_role_cache_home_other_note">Linux 홈 .cache 폴더의 도구 캐시</string>
+    <string name="storage_role_cache_deb">Linux 패키지 다운로드</string>
+    <string name="storage_role_cache_deb_note">설치 중 보관된 패키지 파일. 오래된 중단된 다운로드는 정리할 수 있습니다.</string>
+    <string name="storage_role_cache_previews">플러그인 미리보기</string>
+    <string name="storage_role_cache_previews_note">플러그인을 설치하기 전에 확인하는 다운로드. 하루 후 지워집니다.</string>
+    <string name="storage_role_cache_share">공유 파일</string>
+    <string name="storage_role_cache_share_note">다른 앱으로 파일을 공유할 때 만든 사본</string>
+    <string name="storage_role_cache_images">이미지 캐시</string>
+    <string name="storage_role_cache_images_note">채팅용으로 다운로드한 이미지</string>
+    <string name="storage_role_cache_audio">오디오</string>
+    <string name="storage_role_cache_audio_note">음성 녹음 및 음성 답장</string>
+    <string name="storage_role_cache_mcp">MCP 서버 로그</string>
+    <string name="storage_role_cache_mcp_note">로컬 MCP 서버의 출력</string>
+    <string name="storage_role_cache_model_catalog">모델 카탈로그</string>
+    <string name="storage_role_cache_model_catalog_note">models.dev의 모델 이름, 한도 및 가격. 필요할 때 다시 다운로드합니다.</string>
+    <string name="storage_role_cache_other">기타 앱 캐시</string>
+    <string name="storage_role_cache_other_note">Android가 앱에 지우도록 허용하는 기타 항목</string>
+</resources>

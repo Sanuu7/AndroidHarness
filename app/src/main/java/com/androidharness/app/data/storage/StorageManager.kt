@@ -2,69 +2,107 @@ package com.androidharness.app.data.storage
 
 import com.androidharness.app.AppContainer
 import kotlinx.coroutines.Dispatchers
+import com.androidharness.app.skills.SkillSource
+import com.androidharness.app.workspace.WorkspaceManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
-import java.nio.file.Path
 
-/** No SAF traversal or SSH connection is initiated by a storage scan. */
-data class StorageWorkspace(val id: String, val name: String, val path: String, val bytes: Long?, val note: String)
-data class StorageUsage(val title: String, val bytes: Long, val note: String)
+/** The full inventory plus the cleanup previews. No SAF traversal or SSH connection is started by a scan. */
 data class StorageInventory(
-    val usage: List<StorageUsage>, val workspaces: List<StorageWorkspace>,
-    val packages: List<String>, val managedTools: Map<String, ManagedTool>, val protections: Map<String, String?>, val candidates: List<StorageCandidate>, val incomplete: Boolean,
-) { val bytes get() = usage.sumOf { it.bytes } }
+    val report: StorageReport,
+    val managedTools: Map<String, ManagedTool>,
+    val protections: Map<String, String?>,
+    val candidates: List<StorageCandidate>,
+) {
+    val bytes get() = report.total
+    val incomplete get() = report.notMeasured.isNotEmpty() || report.partial > 0
+}
 
 class StorageManager(private val container: AppContainer) {
     private val context get() = container.appContext
     private val env get() = container.linuxEnv
     private fun canonical(file: File) = file.canonicalFile
     // Resolve Android's app-data aliases, but never turn a managed-folder symlink into a scan root.
-    private fun managed(file: File) = if (StorageFiles.contained(context.dataDir, file)) canonical(file) else file.absoluteFile
+    private fun managed(file: File) = if (StorageFiles.contained(context.dataDir, file)) canonical(file) else
+        file.parentFile?.let { parent -> runCatching { File(parent.canonicalFile, file.name) }.getOrNull() } ?: file.absoluteFile
 
-    suspend fun scan(): StorageInventory = withContext(Dispatchers.IO) {
-        val counter = StorageCounter()
-        val candidates = mutableListOf<StorageCandidate>()
+    private val _last = MutableStateFlow<StorageInventory?>(null)
+    /** The latest finished scan, kept so the screen can show it while a rescan runs. */
+    val last = _last.asStateFlow()
+
+    private suspend fun layout(): Pair<StorageLayout, Map<String, File>> {
         val projects = container.workspace.projects.first()
-        val localRoots = linkedMapOf<String, File>()
-        val unavailable = mutableMapOf<String, String>()
-        projects.forEach { project ->
-            if (project.kind == "SSH") unavailable[project.id] = "On SSH host · not measured"
-            else {
-                val root = runCatching { container.workspace.fsFor(project).shellRoot?.let(::canonical) }.getOrNull()
-                if (root == null) unavailable[project.id] = "Picker-only folder · not measured"
-                else if (!root.isDirectory || !root.canRead()) unavailable[project.id] = "Folder unavailable · not measured"
-                else localRoots[project.id] = root
+        val roots = linkedMapOf<String, File>()
+        val workspaces = projects.map { project ->
+            if (project.kind == WorkspaceManager.KIND_SSH) return@map StorageWorkspaceEntry(project.id, project.name, null, StorageGap.SSH_HOST)
+            val root = runCatching { container.workspace.fsFor(project).shellRoot?.let(::canonical) }
+            val folder = root.getOrNull()
+            when {
+                root.isFailure -> StorageWorkspaceEntry(project.id, project.name, null, StorageGap.SCAN_ERROR)
+                folder == null -> StorageWorkspaceEntry(project.id, project.name, null, StorageGap.SAF_FOLDER)
+                !folder.exists() -> StorageWorkspaceEntry(project.id, project.name, folder, StorageGap.MISSING)
+                !folder.isDirectory || !folder.canRead() -> StorageWorkspaceEntry(project.id, project.name, folder, StorageGap.PERMISSION_DENIED)
+                else -> StorageWorkspaceEntry(project.id, project.name, folder).also { roots[project.id] = folder }
             }
         }
+        val external = context.getExternalFilesDir(null)?.let(::managed)
+        val staging = File(context.getExternalFilesDir(null) ?: context.filesDir, "linux-deploy")
+        val plugins = runCatching {
+            val store = container.pluginManager.store
+            store.list().map { record ->
+                StoragePlugin(record.id, record.name, record.version, record.scope.takeIf { it != "global" }?.let { record.scopeLabel.ifBlank { it } },
+                    record.enabled, managed(runCatching { store.directory(record) }.getOrElse { File(context.filesDir, "plugins/packages/${record.directory}") }))
+            }
+        }.getOrNull()
+        val skills = runCatching { container.skills.list() }.getOrDefault(emptyList())
+        val info = context.applicationInfo
+        val linux = StorageLinuxLayout(
+            prefix = managed(env.prefix), sharedCacheRoot = managed(env.sharedCacheRoot),
+            toolRecords = managed(File(context.filesDir, "shared-tools")),
+            installed = env.installedPackages(), records = env.managedTools(),
+            staging = managed(staging),
+            shellTier = File(env.tmpBase).takeIf { File(staging, ".harness-staged").exists() },
+        )
+        return StorageLayout(
+            dataDir = canonical(context.dataDir), filesDir = managed(context.filesDir), cacheDir = managed(context.cacheDir),
+            noBackupDir = managed(context.noBackupFilesDir), linux = linux,
+            codeCacheDir = managed(context.codeCacheDir), externalFilesDir = external,
+            externalCacheDir = context.externalCacheDir?.let(::managed),
+            apkFiles = (listOfNotNull(info.sourceDir) + info.splitSourceDirs.orEmpty()).map(::File).distinct(),
+            databases = listOf("harness.db", "harness.db-wal", "harness.db-shm", "harness.db-journal").map { managed(context.getDatabasePath(it)) },
+            pluginRoot = managed(File(context.filesDir, "plugins")), plugins = plugins,
+            userSkillsDir = managed(File(context.filesDir, "skills")),
+            userSkillNames = skills.filter { it.source == SkillSource.USER }.associate { it.relativeDir to it.name },
+            bundledSkills = skills.filter { it.source == SkillSource.BUNDLED }.map { it.name },
+            modelRoot = managed(File(context.noBackupFilesDir, "local-models")),
+            models = container.localModels.models.value.associate { it.id to it.title },
+            gpuRuntime = managed(File(context.noBackupFilesDir, "gpu-runtime")),
+            workspaces = workspaces,
+            repositoriesRoot = managed(File(context.filesDir, "github-projects")),
+        ) to roots
+    }
+
+    /** Measures everything off the main thread. Cancel the calling job to stop; nothing is kept from a stopped scan. */
+    suspend fun scan(onProgress: (StorageProgress) -> Unit = {}): StorageInventory = withContext(Dispatchers.IO) {
+        val (layout, localRoots) = layout()
+        val report = StorageScanner(layout).scan { onProgress(it.copy(total = it.total + 1)) }
+        val candidates = cleanupCandidates(localRoots)
+        val installed = env.installedPackages()
+        StorageInventory(report, env.managedTools(), installed.associateWith(env::packageProtection), candidates)
+            .also { _last.value = it }
+    }
+
+    private suspend fun cleanupCandidates(localRoots: Map<String, File>): List<StorageCandidate> {
+        val candidates = mutableListOf<StorageCandidate>()
+        val projects = container.workspace.projects.first()
         val roots = localRoots.values.distinct()
         val safeCacheRoot = StorageFiles.contained(context.filesDir, env.sharedCacheRoot)
         val safeDownloads = StorageFiles.contained(context.cacheDir, File(context.cacheDir, "deb-download"))
         val cacheRoot = managed(env.sharedCacheRoot)
-        val legacyCaches = listOf("home/.npm", "home/.cache/pip", "home/.gradle/caches", "home/.gradle/wrapper/dists")
-            .map { File(env.prefix, it) }.filter { StorageFiles.contained(env.prefix, it) }.map(::canonical)
         val downloads = managed(File(context.cacheDir, "deb-download"))
-        val modelRoot = managed(File(context.noBackupFilesDir, "local-models"))
-        val allSpecial = (roots + cacheRoot + legacyCaches + downloads + modelRoot).map { it.toPath() }.toSet()
-        val workspaceBytes = mutableMapOf<Path, Long>()
-        val managedPaths = (listOf(cacheRoot, downloads, modelRoot) + legacyCaches).map { it.toPath() }.toSet()
-        val caches = counter.bytes(cacheRoot, managedPaths - cacheRoot.toPath()) +
-            legacyCaches.sumOf { counter.bytes(it, managedPaths - it.toPath()) } + counter.bytes(downloads)
-        val tools = counter.bytes(managed(env.prefix), managedPaths)
-        val models = counter.bytes(modelRoot, managedPaths - modelRoot.toPath())
-        val recoveryRoots = listOf(context.getDatabasePath("harness.db"), context.getDatabasePath("harness.db-wal"),
-            context.getDatabasePath("harness.db-shm"), File(context.filesDir, "task-controls"), File(context.filesDir, "images"))
-            .map(::managed)
-        val recovery = recoveryRoots.sumOf { counter.bytes(it, managedPaths) }
-        // Managed files take precedence even if a saved workspace contains the app data directory.
-        val reserved = managedPaths + managed(env.prefix).toPath() + recoveryRoots.map { it.toPath() }
-        // Nested and aliased folders are measured once. Their own row describes attribution honestly.
-        roots.sortedByDescending { it.path.length }.forEach { root ->
-            workspaceBytes[root.toPath()] = counter.bytes(root, (allSpecial - root.toPath()) + reserved)
-        }
-        val excluded = allSpecial + recoveryRoots.map { it.toPath() } + managed(env.prefix).toPath()
-        val other = counter.bytes(canonical(context.dataDir), excluded) +
-            (context.getExternalFilesDir(null)?.let { counter.bytes(canonical(it), excluded) } ?: 0)
         val dayAgo = System.currentTimeMillis() - 24L * 60 * 60 * 1000
         // Serialize with package downloads, including queued installations, when making a preview.
         env.withPackageStorageLock {
@@ -97,21 +135,7 @@ class StorageManager(private val container: AppContainer) {
                 }
             }
         }
-        StorageInventory(
-            listOf(StorageUsage("Shared tools", tools, "One toolchain for local workspaces"),
-                StorageUsage("Download caches", caches, "Shared per execution tier"),
-                StorageUsage("Workspaces", workspaceBytes.values.sum(), "Project files and build outputs"),
-                StorageUsage("Local models", models, "Kept on this device"),
-                StorageUsage("Chat history & recovery", recovery, "Messages, images and undo checkpoints"),
-                StorageUsage("App data & runtime staging", other, "Settings, other caches and required staging")),
-            projects.map { p ->
-                val root = localRoots[p.id]
-                StorageWorkspace(p.id, p.name, root?.path.orEmpty(), root?.let { workspaceBytes[it.toPath()] },
-                    unavailable[p.id] ?: if (roots.any { it != root && it.toPath().startsWith(root!!.toPath()) })
-                        "Nested workspace bytes appear in their own row" else "Shared tools excluded")
-            }, env.installedPackages().sorted(), env.managedTools(), env.installedPackages().associateWith(env::packageProtection),
-            candidates.distinctBy { it.id }, counter.incomplete,
-        )
+        return candidates.distinctBy { it.id }
     }
 
     suspend fun uninstallToolchain() = withContext(Dispatchers.IO) { withIdle { env.uninstall() } }
