@@ -95,7 +95,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
-import androidx.compose.material3.SnackbarHost
+import com.androidharness.app.ui.common.SwipeDismissibleSnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.Surface
@@ -2395,7 +2395,7 @@ private fun ChatScreenContent(
                         .padding(end = if (!state.conversation.isChat && subagentResults.isNotEmpty()) 80.dp else 16.dp,
                             bottom = fabBottomPadding),
                 )
-                SnackbarHost(
+                SwipeDismissibleSnackbarHost(
                     hostState = snackbar,
                     modifier = Modifier
                         .align(Alignment.BottomCenter)

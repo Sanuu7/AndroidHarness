@@ -55,6 +55,7 @@ import com.androidharness.app.data.MessageHit
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.ui.common.HarnessMark
+import com.androidharness.app.ui.common.SwipeDismissibleSnackbarHost
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.common.formatRelativeTime
 import com.androidharness.app.ui.theme.expressiveEffectsSpec
@@ -376,7 +377,7 @@ internal fun ProjectNavigationSidebar(
                 }
                 if (!short) { HorizontalDivider(color = scheme.outlineVariant); Footer() }
             }
-            SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (short) 8.dp else footerHeight + 8.dp))
+            SwipeDismissibleSnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = if (short) 8.dp else footerHeight + 8.dp))
         }
         }
     }
