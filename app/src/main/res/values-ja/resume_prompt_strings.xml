@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">再開プロンプト</string>
+    <string name="resume_prompt_group">復旧</string>
+    <string name="resume_prompt_app_summary">一時停止または中断したタスクが再開するときに、自動継続を含めてモデルへ送られます。チャットごとに上書きできます。</string>
+    <string name="resume_prompt_app_detail">再開するすべての Code と Chat タスクの既定値です。組み込みプロンプトを使うには空のままにします。</string>
+    <string name="resume_prompt_chat_detail">このチャットが手動または自動で再開するときだけ使われます。設定に再び従うにはアプリの既定値を使ってください。</string>
+    <string name="resume_prompt_field_label">プロンプト</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">完了したツール呼び出しは、プロンプトの内容にかかわらず再実行されません。</string>
+    <string name="resume_prompt_value_builtin">組み込み</string>
+    <string name="resume_prompt_value_custom">カスタム</string>
+    <string name="resume_prompt_value_app">アプリの既定値</string>
+    <string name="resume_prompt_value_chat">このチャット用カスタム</string>
+    <string name="resume_prompt_reset_app">既定値に戻す</string>
+    <string name="resume_prompt_reset_chat">アプリの既定値を使う</string>
+    <string name="resume_prompt_save_resume">保存して再開</string>
+    <string name="resume_prompt_edit">再開プロンプトを編集</string>
+    <string name="resume_prompt_more">その他の再開オプション</string>
+    <string name="resume_prompt_active_badge">カスタムプロンプト</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Промпт возобновления</string>
+    <string name="resume_prompt_group">Восстановление</string>
+    <string name="resume_prompt_app_summary">Отправляется модели, когда приостановленная или прерванная задача возобновляется, включая автоматическое продолжение. Чаты могут его переопределить.</string>
+    <string name="resume_prompt_app_detail">Это значение по умолчанию для каждой возобновляемой задачи Code и Chat. Оставьте пустым, чтобы использовать встроенный промпт.</string>
+    <string name="resume_prompt_chat_detail">Используется только когда этот чат возобновляется, вручную или автоматически. Выберите значение приложения, чтобы снова следовать настройкам.</string>
+    <string name="resume_prompt_field_label">Промпт</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Уже завершённые вызовы инструментов никогда не повторяются, что бы ни говорил промпт.</string>
+    <string name="resume_prompt_value_builtin">Встроенный</string>
+    <string name="resume_prompt_value_custom">Свой</string>
+    <string name="resume_prompt_value_app">Значение приложения</string>
+    <string name="resume_prompt_value_chat">Свой для этого чата</string>
+    <string name="resume_prompt_reset_app">Сбросить по умолчанию</string>
+    <string name="resume_prompt_reset_chat">Использовать значение приложения</string>
+    <string name="resume_prompt_save_resume">Сохранить и возобновить</string>
+    <string name="resume_prompt_edit">Изменить промпт возобновления</string>
+    <string name="resume_prompt_more">Другие параметры возобновления</string>
+    <string name="resume_prompt_active_badge">Свой промпт</string>
+</resources>

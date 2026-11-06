@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">"พรอมต์การทำงานต่อ"</string>
+    <string name="resume_prompt_group">"การกู้คืน"</string>
+    <string name="resume_prompt_app_summary">"ส่งให้โมเดลเมื่องานที่หยุดชั่วคราวหรือถูกขัดจังหวะกลับมาทำต่อ รวมถึงการทำงานต่ออัตโนมัติ แชทสามารถแทนที่ได้"</string>
+    <string name="resume_prompt_app_detail">"นี่คือค่าเริ่มต้นสำหรับงาน Code และ Chat ทุกงานที่ทำงานต่อ เว้นว่างเพื่อใช้พรอมต์ที่มีมาให้"</string>
+    <string name="resume_prompt_chat_detail">"ใช้เฉพาะเมื่อแชทนี้ทำงานต่อ ทั้งแบบกำหนดเองหรืออัตโนมัติ ใช้ค่าเริ่มต้นของแอปเพื่อทำตามการตั้งค่าอีกครั้ง"</string>
+    <string name="resume_prompt_field_label">"พรอมต์"</string>
+    <string name="resume_prompt_counter">"%1$d / %2$d"</string>
+    <string name="resume_prompt_note">"การเรียกเครื่องมือที่เสร็จแล้วจะไม่ถูกทำซ้ำไม่ว่าพรอมต์จะบอกอะไร"</string>
+    <string name="resume_prompt_value_builtin">"มีมาให้"</string>
+    <string name="resume_prompt_value_custom">"กำหนดเอง"</string>
+    <string name="resume_prompt_value_app">"ค่าเริ่มต้นของแอป"</string>
+    <string name="resume_prompt_value_chat">"กำหนดเองสำหรับแชทนี้"</string>
+    <string name="resume_prompt_reset_app">"รีเซ็ตเป็นค่าเริ่มต้น"</string>
+    <string name="resume_prompt_reset_chat">"ใช้ค่าเริ่มต้นของแอป"</string>
+    <string name="resume_prompt_save_resume">"บันทึกแล้วทำงานต่อ"</string>
+    <string name="resume_prompt_edit">"แก้ไขพรอมต์การทำงานต่อ"</string>
+    <string name="resume_prompt_more">"ตัวเลือกการทำงานต่อเพิ่มเติม"</string>
+    <string name="resume_prompt_active_badge">"พรอมต์กำหนดเอง"</string>
+</resources>

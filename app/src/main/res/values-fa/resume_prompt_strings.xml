@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">پرامپت ادامه کار</string>
+    <string name="resume_prompt_group">بازیابی</string>
+    <string name="resume_prompt_app_summary">وقتی کار متوقف‌شده یا قطع‌شده‌ای ادامه می‌یابد، از جمله ادامه خودکار، به مدل فرستاده می‌شود. گفتگوها می‌توانند آن را جایگزین کنند.</string>
+    <string name="resume_prompt_app_detail">این پیش‌فرض هر کار Code و Chat است که ادامه می‌یابد. برای استفاده از پرامپت داخلی خالی بگذارید.</string>
+    <string name="resume_prompt_chat_detail">فقط وقتی این گفتگو ادامه می‌یابد استفاده می‌شود، دستی یا خودکار. برای پیروی دوباره از تنظیمات، پیش‌فرض برنامه را انتخاب کنید.</string>
+    <string name="resume_prompt_field_label">پرامپت</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">فراخوانی‌های ابزار که تمام شده‌اند هرگز تکرار نمی‌شوند، هر چه پرامپت بگوید.</string>
+    <string name="resume_prompt_value_builtin">داخلی</string>
+    <string name="resume_prompt_value_custom">سفارشی</string>
+    <string name="resume_prompt_value_app">پیش‌فرض برنامه</string>
+    <string name="resume_prompt_value_chat">سفارشی برای این گفتگو</string>
+    <string name="resume_prompt_reset_app">بازنشانی به پیش‌فرض</string>
+    <string name="resume_prompt_reset_chat">استفاده از پیش‌فرض برنامه</string>
+    <string name="resume_prompt_save_resume">ذخیره و ادامه</string>
+    <string name="resume_prompt_edit">ویرایش پرامپت ادامه</string>
+    <string name="resume_prompt_more">گزینه‌های بیشتر ادامه</string>
+    <string name="resume_prompt_active_badge">پرامپت سفارشی</string>
+</resources>

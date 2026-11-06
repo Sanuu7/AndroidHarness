@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">"Prompt de reprise"</string>
+    <string name="resume_prompt_group">"Reprise"</string>
+    <string name="resume_prompt_app_summary">"Envoyé au modèle quand une tâche en pause ou interrompue reprend, y compris les reprises automatiques. Les discussions peuvent le remplacer."</string>
+    <string name="resume_prompt_app_detail">"C\'est la valeur par défaut de toute tâche Code et Chat qui reprend. Laissez vide pour utiliser le prompt intégré."</string>
+    <string name="resume_prompt_chat_detail">"Utilisé seulement quand cette discussion reprend, manuellement ou automatiquement. Choisissez la valeur de l\'app pour suivre à nouveau les réglages."</string>
+    <string name="resume_prompt_field_label">"Prompt"</string>
+    <string name="resume_prompt_counter">"%1$d / %2$d"</string>
+    <string name="resume_prompt_note">"Les appels d\'outils déjà terminés ne sont jamais répétés, quel que soit le prompt."</string>
+    <string name="resume_prompt_value_builtin">"Intégré"</string>
+    <string name="resume_prompt_value_custom">"Personnalisé"</string>
+    <string name="resume_prompt_value_app">"Valeur de l\'app"</string>
+    <string name="resume_prompt_value_chat">"Personnalisé pour cette discussion"</string>
+    <string name="resume_prompt_reset_app">"Rétablir la valeur par défaut"</string>
+    <string name="resume_prompt_reset_chat">"Utiliser la valeur de l\'app"</string>
+    <string name="resume_prompt_save_resume">"Enregistrer et reprendre"</string>
+    <string name="resume_prompt_edit">"Modifier le prompt de reprise"</string>
+    <string name="resume_prompt_more">"Plus d\'options de reprise"</string>
+    <string name="resume_prompt_active_badge">"Prompt personnalisé"</string>
+</resources>

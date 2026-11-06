@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Prompt sambung semula</string>
+    <string name="resume_prompt_group">Pemulihan</string>
+    <string name="resume_prompt_app_summary">Dihantar kepada model apabila tugasan yang dijeda atau terganggu disambung semula, termasuk sambungan automatik. Sembang boleh menimpanya.</string>
+    <string name="resume_prompt_app_detail">Ini lalai untuk setiap tugasan Code dan Chat yang disambung semula. Biarkan kosong untuk menggunakan prompt terbina dalam.</string>
+    <string name="resume_prompt_chat_detail">Hanya digunakan apabila sembang ini disambung semula, secara manual atau automatik. Gunakan lalai apl untuk mengikut Tetapan semula.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Panggilan alat yang sudah selesai tidak pernah diulang, apa pun yang dikatakan prompt.</string>
+    <string name="resume_prompt_value_builtin">Terbina dalam</string>
+    <string name="resume_prompt_value_custom">Tersuai</string>
+    <string name="resume_prompt_value_app">Lalai apl</string>
+    <string name="resume_prompt_value_chat">Tersuai untuk sembang ini</string>
+    <string name="resume_prompt_reset_app">Set semula kepada lalai</string>
+    <string name="resume_prompt_reset_chat">Gunakan lalai apl</string>
+    <string name="resume_prompt_save_resume">Simpan dan sambung</string>
+    <string name="resume_prompt_edit">Edit prompt sambung semula</string>
+    <string name="resume_prompt_more">Pilihan sambung semula lain</string>
+    <string name="resume_prompt_active_badge">Prompt tersuai</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Prompt lanjutkan</string>
+    <string name="resume_prompt_group">Pemulihan</string>
+    <string name="resume_prompt_app_summary">Dikirim ke model saat tugas yang dijeda atau terputus dilanjutkan, termasuk lanjutan otomatis. Chat dapat menggantinya.</string>
+    <string name="resume_prompt_app_detail">Ini default untuk setiap tugas Code dan Chat yang dilanjutkan. Biarkan kosong untuk memakai prompt bawaan.</string>
+    <string name="resume_prompt_chat_detail">Hanya dipakai saat chat ini dilanjutkan, manual atau otomatis. Gunakan default aplikasi untuk mengikuti Setelan lagi.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Panggilan alat yang sudah selesai tidak pernah diulang, apa pun yang dikatakan prompt.</string>
+    <string name="resume_prompt_value_builtin">Bawaan</string>
+    <string name="resume_prompt_value_custom">Khusus</string>
+    <string name="resume_prompt_value_app">Default aplikasi</string>
+    <string name="resume_prompt_value_chat">Khusus untuk chat ini</string>
+    <string name="resume_prompt_reset_app">Atur ulang ke default</string>
+    <string name="resume_prompt_reset_chat">Gunakan default aplikasi</string>
+    <string name="resume_prompt_save_resume">Simpan dan lanjutkan</string>
+    <string name="resume_prompt_edit">Edit prompt lanjutkan</string>
+    <string name="resume_prompt_more">Opsi lanjutkan lainnya</string>
+    <string name="resume_prompt_active_badge">Prompt khusus</string>
+</resources>

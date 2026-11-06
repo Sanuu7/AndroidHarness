@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Prompt de retomada</string>
+    <string name="resume_prompt_group">Recuperação</string>
+    <string name="resume_prompt_app_summary">Enviado ao modelo quando uma tarefa pausada ou interrompida é retomada, incluindo continuações automáticas. As conversas podem substituí-lo.</string>
+    <string name="resume_prompt_app_detail">Este é o padrão para toda tarefa Code e Chat que é retomada. Deixe em branco para usar o prompt integrado.</string>
+    <string name="resume_prompt_chat_detail">Usado apenas quando esta conversa é retomada, manual ou automaticamente. Use o padrão do app para seguir as Configurações novamente.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Chamadas de ferramenta já concluídas nunca são repetidas, diga o que disser o prompt.</string>
+    <string name="resume_prompt_value_builtin">Integrado</string>
+    <string name="resume_prompt_value_custom">Personalizado</string>
+    <string name="resume_prompt_value_app">Padrão do app</string>
+    <string name="resume_prompt_value_chat">Personalizado para esta conversa</string>
+    <string name="resume_prompt_reset_app">Redefinir para o padrão</string>
+    <string name="resume_prompt_reset_chat">Usar padrão do app</string>
+    <string name="resume_prompt_save_resume">Salvar e retomar</string>
+    <string name="resume_prompt_edit">Editar prompt de retomada</string>
+    <string name="resume_prompt_more">Mais opções de retomada</string>
+    <string name="resume_prompt_active_badge">Prompt personalizado</string>
+</resources>

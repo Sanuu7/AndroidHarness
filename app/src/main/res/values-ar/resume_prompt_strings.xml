@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">موجه الاستئناف</string>
+    <string name="resume_prompt_group">الاستعادة</string>
+    <string name="resume_prompt_app_summary">يُرسل إلى النموذج عند استئناف مهمة متوقفة مؤقتًا أو منقطعة، بما في ذلك المتابعة التلقائية. يمكن للدردشات تجاوزه.</string>
+    <string name="resume_prompt_app_detail">هذا هو الافتراضي لكل مهمة برمجة أو دردشة تستأنف. اتركه فارغًا لاستخدام الموجه المدمج.</string>
+    <string name="resume_prompt_chat_detail">يُستخدم فقط عند استئناف هذه الدردشة، يدويًا أو تلقائيًا. استخدم افتراضي التطبيق للعودة إلى الإعدادات.</string>
+    <string name="resume_prompt_field_label">الموجه</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">لا تتكرر أبدًا استدعاءات الأدوات المكتملة، مهما قال الموجه.</string>
+    <string name="resume_prompt_value_builtin">مدمج</string>
+    <string name="resume_prompt_value_custom">مخصص</string>
+    <string name="resume_prompt_value_app">افتراضي التطبيق</string>
+    <string name="resume_prompt_value_chat">مخصص لهذه الدردشة</string>
+    <string name="resume_prompt_reset_app">إعادة التعيين إلى الافتراضي</string>
+    <string name="resume_prompt_reset_chat">استخدام افتراضي التطبيق</string>
+    <string name="resume_prompt_save_resume">حفظ واستئناف</string>
+    <string name="resume_prompt_edit">تعديل موجه الاستئناف</string>
+    <string name="resume_prompt_more">مزيد من خيارات الاستئناف</string>
+    <string name="resume_prompt_active_badge">موجه مخصص</string>
+</resources>

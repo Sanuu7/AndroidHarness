@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">পুনরায় চালু করার প্রম্পট</string>
+    <string name="resume_prompt_group">পুনরুদ্ধার</string>
+    <string name="resume_prompt_app_summary">বিরত বা বাধাগ্রস্ত কাজ পুনরায় চালু হলে মডেলকে পাঠানো হয়, স্বয়ংক্রিয় পুনরারম্ভসহ। চ্যাটগুলি এটি অগ্রাহ্য করতে পারে।</string>
+    <string name="resume_prompt_app_detail">পুনরায় চালু হওয়া প্রতিটি কোড ও চ্যাট কাজের জন্য এটি ডিফল্ট। অন্তর্নির্মিত প্রম্পট ব্যবহার করতে খালি রাখুন।</string>
+    <string name="resume_prompt_chat_detail">কেবল এই চ্যাট পুনরায় চালু হলে ব্যবহার হয়, হাতে বা স্বয়ংক্রিয়ভাবে। আবার সেটিংস অনুসরণ করতে অ্যাপ ডিফল্ট ব্যবহার করুন।</string>
+    <string name="resume_prompt_field_label">প্রম্পট</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">সমাপ্ত টুল কল কখনো পুনরাবৃত্তি হয় না, প্রম্পট যা-ই বলুক।</string>
+    <string name="resume_prompt_value_builtin">অন্তর্নির্মিত</string>
+    <string name="resume_prompt_value_custom">কাস্টম</string>
+    <string name="resume_prompt_value_app">অ্যাপ ডিফল্ট</string>
+    <string name="resume_prompt_value_chat">এই চ্যাটের জন্য কাস্টম</string>
+    <string name="resume_prompt_reset_app">ডিফল্টে রিসেট করুন</string>
+    <string name="resume_prompt_reset_chat">অ্যাপ ডিফল্ট ব্যবহার করুন</string>
+    <string name="resume_prompt_save_resume">সংরক্ষণ করে চালিয়ে যান</string>
+    <string name="resume_prompt_edit">পুনরারম্ভ প্রম্পট সম্পাদনা করুন</string>
+    <string name="resume_prompt_more">আরও পুনরারম্ভ বিকল্প</string>
+    <string name="resume_prompt_active_badge">কাস্টম প্রম্পট</string>
+</resources>

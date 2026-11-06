@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">மீண்டும் தொடங்கும் ப்ராம்ப்ட்</string>
+    <string name="resume_prompt_group">மீட்பு</string>
+    <string name="resume_prompt_app_summary">இடைநிறுத்தப்பட்ட அல்லது தடைபட்ட பணி மீண்டும் தொடங்கும்போது தானியங்கி தொடர்வு உட்பட மாதிரிக்கு அனுப்பப்படும். அரட்டைகள் இதை மேலெழுதலாம்.</string>
+    <string name="resume_prompt_app_detail">மீண்டும் தொடங்கும் ஒவ்வொரு Code மற்றும் Chat பணிக்கும் இது இயல்புநிலை. உள்ளமைந்த ப்ராம்ப்ட்டைப் பயன்படுத்த காலியாக விடவும்.</string>
+    <string name="resume_prompt_chat_detail">இந்த அரட்டை கைமுறையாக அல்லது தானாக மீண்டும் தொடங்கும்போது மட்டுமே பயன்படும். அமைப்புகளை மீண்டும் பின்பற்ற செயலி இயல்புநிலையைப் பயன்படுத்தவும்.</string>
+    <string name="resume_prompt_field_label">ப்ராம்ப்ட்</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">முடிந்த கருவி அழைப்புகள் ப்ராம்ப்ட் என்ன சொன்னாலும் மீண்டும் செய்யப்படுவதில்லை.</string>
+    <string name="resume_prompt_value_builtin">உள்ளமைந்தது</string>
+    <string name="resume_prompt_value_custom">தனிப்பயன்</string>
+    <string name="resume_prompt_value_app">செயலி இயல்புநிலை</string>
+    <string name="resume_prompt_value_chat">இந்த அரட்டைக்கு தனிப்பயன்</string>
+    <string name="resume_prompt_reset_app">இயல்புநிலைக்கு மீட்டமை</string>
+    <string name="resume_prompt_reset_chat">செயலி இயல்புநிலையைப் பயன்படுத்து</string>
+    <string name="resume_prompt_save_resume">சேமித்து தொடர்</string>
+    <string name="resume_prompt_edit">மீண்டும் தொடங்கும் ப்ராம்ப்ட்டைத் திருத்து</string>
+    <string name="resume_prompt_more">மேலும் தொடர்வு விருப்பங்கள்</string>
+    <string name="resume_prompt_active_badge">தனிப்பயன் ப்ராம்ப்ட்</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">නැවත ආරම්භ කිරීමේ ප්‍රොම්ප්ට්</string>
+    <string name="resume_prompt_group">ප්‍රතිසාධනය</string>
+    <string name="resume_prompt_app_summary">විරාමිත හෝ බාධා වූ කාර්යයක් නැවත ආරම්භ වන විට ස්වයංක්‍රීය ඉදිරියට යැවීම ඇතුළුව මාදිලියට යවනු ලැබේ. චැට් මෙය වෙනස් කළ හැක.</string>
+    <string name="resume_prompt_app_detail">නැවත ආරම්භ වන සෑම Code සහ Chat කාර්යයකට මෙය පෙරනිමියයි. ගොඩනඟා ඇති ප්‍රොම්ප්ට් භාවිත කිරීමට හිස්ව තබන්න.</string>
+    <string name="resume_prompt_chat_detail">මෙම චැට් අතින් හෝ ස්වයංක්‍රීයව නැවත ආරම්භ වන විට පමණක් භාවිත වේ. නැවත සැකසුම් අනුගමනය කිරීමට යෙදුම් පෙරනිමිය භාවිත කරන්න.</string>
+    <string name="resume_prompt_field_label">ප්‍රොම්ප්ට්</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">අවසන් වූ මෙවලම් ඇමතුම් කිසිදා නැවත නොකෙරේ, ප්‍රොම්ප්ට් කුමක් කීවත්.</string>
+    <string name="resume_prompt_value_builtin">ගොඩනඟා ඇති</string>
+    <string name="resume_prompt_value_custom">අභිරුචි</string>
+    <string name="resume_prompt_value_app">යෙදුම් පෙරනිමිය</string>
+    <string name="resume_prompt_value_chat">මෙම චැට් සඳහා අභිරුචි</string>
+    <string name="resume_prompt_reset_app">පෙරනිමියට නැවත සකසන්න</string>
+    <string name="resume_prompt_reset_chat">යෙදුම් පෙරනිමිය භාවිත කරන්න</string>
+    <string name="resume_prompt_save_resume">සුරකින්න සහ නැවත ආරම්භ කරන්න</string>
+    <string name="resume_prompt_edit">නැවත ආරම්භ කිරීමේ ප්‍රොම්ප්ට් සංස්කරණය කරන්න</string>
+    <string name="resume_prompt_more">තවත් නැවත ආරම්භ කිරීමේ විකල්ප</string>
+    <string name="resume_prompt_active_badge">අභිරුචි ප්‍රොම්ප්ට්</string>
+</resources>

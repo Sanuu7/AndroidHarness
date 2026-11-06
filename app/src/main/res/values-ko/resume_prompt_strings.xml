@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">재개 프롬프트</string>
+    <string name="resume_prompt_group">복구</string>
+    <string name="resume_prompt_app_summary">일시 중지되었거나 중단된 작업이 재개될 때 자동 계속을 포함해 모델에 전송됩니다. 채팅별로 재정의할 수 있습니다.</string>
+    <string name="resume_prompt_app_detail">재개되는 모든 Code 및 Chat 작업의 기본값입니다. 기본 제공 프롬프트를 쓰려면 비워 두세요.</string>
+    <string name="resume_prompt_chat_detail">이 채팅이 수동 또는 자동으로 재개될 때만 사용됩니다. 설정을 다시 따르려면 앱 기본값을 사용하세요.</string>
+    <string name="resume_prompt_field_label">프롬프트</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">이미 완료된 도구 호출은 프롬프트 내용과 관계없이 다시 실행되지 않습니다.</string>
+    <string name="resume_prompt_value_builtin">기본 제공</string>
+    <string name="resume_prompt_value_custom">사용자 지정</string>
+    <string name="resume_prompt_value_app">앱 기본값</string>
+    <string name="resume_prompt_value_chat">이 채팅용 사용자 지정</string>
+    <string name="resume_prompt_reset_app">기본값으로 재설정</string>
+    <string name="resume_prompt_reset_chat">앱 기본값 사용</string>
+    <string name="resume_prompt_save_resume">저장 후 재개</string>
+    <string name="resume_prompt_edit">재개 프롬프트 편집</string>
+    <string name="resume_prompt_more">더 많은 재개 옵션</string>
+    <string name="resume_prompt_active_badge">사용자 지정 프롬프트</string>
+</resources>

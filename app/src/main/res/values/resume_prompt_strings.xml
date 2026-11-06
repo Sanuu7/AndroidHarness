@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Resume prompt</string>
+    <string name="resume_prompt_group">Recovery</string>
+    <string name="resume_prompt_app_summary">Sent to the model when a paused or interrupted task resumes, including automatic continues. Chats can override it.</string>
+    <string name="resume_prompt_app_detail">This is the default for every Code and Chat task that resumes. Leave it empty to use the built-in prompt.</string>
+    <string name="resume_prompt_chat_detail">Used only when this chat resumes, by hand or automatically. Use the app default to follow Settings again.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Tool calls that already finished are never repeated, whatever the prompt says.</string>
+    <string name="resume_prompt_value_builtin">Built-in</string>
+    <string name="resume_prompt_value_custom">Custom</string>
+    <string name="resume_prompt_value_app">App default</string>
+    <string name="resume_prompt_value_chat">Custom for this chat</string>
+    <string name="resume_prompt_reset_app">Reset to default</string>
+    <string name="resume_prompt_reset_chat">Use app default</string>
+    <string name="resume_prompt_save_resume">Save and resume</string>
+    <string name="resume_prompt_edit">Edit resume prompt</string>
+    <string name="resume_prompt_more">More resume options</string>
+    <string name="resume_prompt_active_badge">Custom prompt</string>
+</resources>

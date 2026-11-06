@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Devam istemi</string>
+    <string name="resume_prompt_group">Kurtarma</string>
+    <string name="resume_prompt_app_summary">Duraklatılmış veya kesintiye uğramış bir görev devam ettiğinde, otomatik devamlar dahil modele gönderilir. Sohbetler bunu geçersiz kılabilir.</string>
+    <string name="resume_prompt_app_detail">Devam eden her Code ve Chat görevi için varsayılan budur. Yerleşik istemi kullanmak için boş bırakın.</string>
+    <string name="resume_prompt_chat_detail">Yalnızca bu sohbet devam ettiğinde kullanılır, elle veya otomatik. Ayarları yeniden izlemek için uygulama varsayılanını kullanın.</string>
+    <string name="resume_prompt_field_label">İstem</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Tamamlanmış araç çağrıları, istem ne derse desin asla tekrarlanmaz.</string>
+    <string name="resume_prompt_value_builtin">Yerleşik</string>
+    <string name="resume_prompt_value_custom">Özel</string>
+    <string name="resume_prompt_value_app">Uygulama varsayılanı</string>
+    <string name="resume_prompt_value_chat">Bu sohbet için özel</string>
+    <string name="resume_prompt_reset_app">Varsayılana sıfırla</string>
+    <string name="resume_prompt_reset_chat">Uygulama varsayılanını kullan</string>
+    <string name="resume_prompt_save_resume">Kaydet ve devam et</string>
+    <string name="resume_prompt_edit">Devam istemini düzenle</string>
+    <string name="resume_prompt_more">Diğer devam seçenekleri</string>
+    <string name="resume_prompt_active_badge">Özel istem</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Fortsetzungs-Prompt</string>
+    <string name="resume_prompt_group">Wiederaufnahme</string>
+    <string name="resume_prompt_app_summary">Wird an das Modell gesendet, wenn eine pausierte oder unterbrochene Aufgabe fortgesetzt wird, auch bei automatischen Fortsetzungen. Chats können ihn überschreiben.</string>
+    <string name="resume_prompt_app_detail">Dies ist die Voreinstellung für jede fortgesetzte Code- und Chat-Aufgabe. Leer lassen, um den integrierten Prompt zu verwenden.</string>
+    <string name="resume_prompt_chat_detail">Wird nur verwendet, wenn dieser Chat fortgesetzt wird, manuell oder automatisch. Mit der App-Voreinstellung folgst du wieder den Einstellungen.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Bereits abgeschlossene Tool-Aufrufe werden nie wiederholt, unabhängig vom Prompt.</string>
+    <string name="resume_prompt_value_builtin">Integriert</string>
+    <string name="resume_prompt_value_custom">Angepasst</string>
+    <string name="resume_prompt_value_app">App-Voreinstellung</string>
+    <string name="resume_prompt_value_chat">Angepasst für diesen Chat</string>
+    <string name="resume_prompt_reset_app">Auf Standard zurücksetzen</string>
+    <string name="resume_prompt_reset_chat">App-Voreinstellung verwenden</string>
+    <string name="resume_prompt_save_resume">Speichern und fortsetzen</string>
+    <string name="resume_prompt_edit">Fortsetzungs-Prompt bearbeiten</string>
+    <string name="resume_prompt_more">Weitere Fortsetzungsoptionen</string>
+    <string name="resume_prompt_active_badge">Angepasster Prompt</string>
+</resources>

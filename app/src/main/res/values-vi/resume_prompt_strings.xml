@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Lời nhắc tiếp tục</string>
+    <string name="resume_prompt_group">Khôi phục</string>
+    <string name="resume_prompt_app_summary">Được gửi đến mô hình khi một tác vụ bị tạm dừng hoặc gián đoạn tiếp tục, kể cả tự động tiếp tục. Cuộc trò chuyện có thể ghi đè.</string>
+    <string name="resume_prompt_app_detail">Đây là mặc định cho mọi tác vụ Code và Chat được tiếp tục. Để trống để dùng lời nhắc có sẵn.</string>
+    <string name="resume_prompt_chat_detail">Chỉ dùng khi cuộc trò chuyện này tiếp tục, thủ công hoặc tự động. Dùng mặc định của ứng dụng để tuân theo Cài đặt trở lại.</string>
+    <string name="resume_prompt_field_label">Lời nhắc</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Các lệnh gọi công cụ đã hoàn tất không bao giờ bị lặp lại, bất kể lời nhắc nói gì.</string>
+    <string name="resume_prompt_value_builtin">Có sẵn</string>
+    <string name="resume_prompt_value_custom">Tùy chỉnh</string>
+    <string name="resume_prompt_value_app">Mặc định của ứng dụng</string>
+    <string name="resume_prompt_value_chat">Tùy chỉnh cho cuộc trò chuyện này</string>
+    <string name="resume_prompt_reset_app">Đặt lại về mặc định</string>
+    <string name="resume_prompt_reset_chat">Dùng mặc định của ứng dụng</string>
+    <string name="resume_prompt_save_resume">Lưu và tiếp tục</string>
+    <string name="resume_prompt_edit">Sửa lời nhắc tiếp tục</string>
+    <string name="resume_prompt_more">Thêm tùy chọn tiếp tục</string>
+    <string name="resume_prompt_active_badge">Lời nhắc tùy chỉnh</string>
+</resources>

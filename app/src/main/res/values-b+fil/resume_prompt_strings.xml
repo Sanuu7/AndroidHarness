@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Prompt sa pagpapatuloy</string>
+    <string name="resume_prompt_group">Pagbawi</string>
+    <string name="resume_prompt_app_summary">Ipinapadala sa modelo kapag nagpatuloy ang isang naka-pause o naputol na gawain, kasama ang awtomatikong pagpapatuloy. Maaaring palitan ito ng mga chat.</string>
+    <string name="resume_prompt_app_detail">Ito ang default para sa bawat gawaing Code at Chat na nagpapatuloy. Iwanang blangko para gamitin ang built-in na prompt.</string>
+    <string name="resume_prompt_chat_detail">Ginagamit lamang kapag nagpatuloy ang chat na ito, manual o awtomatiko. Gamitin ang app default para sumunod muli sa Mga Setting.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Ang mga tool call na natapos na ay hindi kailanman inuulit, anuman ang sabihin ng prompt.</string>
+    <string name="resume_prompt_value_builtin">Built-in</string>
+    <string name="resume_prompt_value_custom">Pasadyang</string>
+    <string name="resume_prompt_value_app">App default</string>
+    <string name="resume_prompt_value_chat">Pasadyang para sa chat na ito</string>
+    <string name="resume_prompt_reset_app">I-reset sa default</string>
+    <string name="resume_prompt_reset_chat">Gamitin ang app default</string>
+    <string name="resume_prompt_save_resume">I-save at ipagpatuloy</string>
+    <string name="resume_prompt_edit">I-edit ang prompt sa pagpapatuloy</string>
+    <string name="resume_prompt_more">Higit pang opsyon sa pagpapatuloy</string>
+    <string name="resume_prompt_active_badge">Pasadyang prompt</string>
+</resources>

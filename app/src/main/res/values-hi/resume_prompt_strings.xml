@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">फिर से शुरू करने का प्रॉम्प्ट</string>
+    <string name="resume_prompt_group">रिकवरी</string>
+    <string name="resume_prompt_app_summary">रोके गए या बाधित कार्य के फिर से शुरू होने पर मॉडल को भेजा जाता है, स्वचालित जारी रखने सहित। चैट इसे बदल सकती हैं।</string>
+    <string name="resume_prompt_app_detail">यह हर फिर से शुरू होने वाले Code और Chat कार्य के लिए डिफ़ॉल्ट है। अंतर्निहित प्रॉम्प्ट के लिए खाली छोड़ें।</string>
+    <string name="resume_prompt_chat_detail">केवल तब उपयोग होता है जब यह चैट फिर से शुरू होती है, मैन्युअल या स्वचालित रूप से। सेटिंग्स का पालन करने के लिए ऐप डिफ़ॉल्ट चुनें।</string>
+    <string name="resume_prompt_field_label">प्रॉम्प्ट</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">पूरे हो चुके टूल कॉल कभी दोहराए नहीं जाते, प्रॉम्प्ट कुछ भी कहे।</string>
+    <string name="resume_prompt_value_builtin">अंतर्निहित</string>
+    <string name="resume_prompt_value_custom">कस्टम</string>
+    <string name="resume_prompt_value_app">ऐप डिफ़ॉल्ट</string>
+    <string name="resume_prompt_value_chat">इस चैट के लिए कस्टम</string>
+    <string name="resume_prompt_reset_app">डिफ़ॉल्ट पर रीसेट करें</string>
+    <string name="resume_prompt_reset_chat">ऐप डिफ़ॉल्ट उपयोग करें</string>
+    <string name="resume_prompt_save_resume">सहेजें और फिर से शुरू करें</string>
+    <string name="resume_prompt_edit">फिर से शुरू करने का प्रॉम्प्ट संपादित करें</string>
+    <string name="resume_prompt_more">और फिर से शुरू करने के विकल्प</string>
+    <string name="resume_prompt_active_badge">कस्टम प्रॉम्प्ट</string>
+</resources>

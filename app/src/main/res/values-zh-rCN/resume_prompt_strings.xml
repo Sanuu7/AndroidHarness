@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">续跑提示词</string>
+    <string name="resume_prompt_group">恢复</string>
+    <string name="resume_prompt_app_summary">当暂停或中断的任务继续时发送给模型，包括自动继续。每个对话都可以覆盖它。</string>
+    <string name="resume_prompt_app_detail">这是所有继续运行的 Code 和 Chat 任务的默认值。留空则使用内置提示词。</string>
+    <string name="resume_prompt_chat_detail">仅在此对话继续时使用，手动或自动。使用应用默认值可重新遵循设置。</string>
+    <string name="resume_prompt_field_label">提示词</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">已完成的工具调用绝不会重复，无论提示词写了什么。</string>
+    <string name="resume_prompt_value_builtin">内置</string>
+    <string name="resume_prompt_value_custom">自定义</string>
+    <string name="resume_prompt_value_app">应用默认</string>
+    <string name="resume_prompt_value_chat">此对话自定义</string>
+    <string name="resume_prompt_reset_app">重置为默认</string>
+    <string name="resume_prompt_reset_chat">使用应用默认</string>
+    <string name="resume_prompt_save_resume">保存并继续</string>
+    <string name="resume_prompt_edit">编辑续跑提示词</string>
+    <string name="resume_prompt_more">更多继续选项</string>
+    <string name="resume_prompt_active_badge">自定义提示词</string>
+</resources>

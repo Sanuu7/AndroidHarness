@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="resume_prompt_title">Prompt de reanudación</string>
+    <string name="resume_prompt_group">Recuperación</string>
+    <string name="resume_prompt_app_summary">Se envía al modelo cuando se reanuda una tarea pausada o interrumpida, incluidas las continuaciones automáticas. Los chats pueden sobrescribirlo.</string>
+    <string name="resume_prompt_app_detail">Es el valor predeterminado para cada tarea de Código y Chat que se reanuda. Déjalo vacío para usar el prompt integrado.</string>
+    <string name="resume_prompt_chat_detail">Solo se usa cuando este chat se reanuda, de forma manual o automática. Usa el valor de la app para volver a seguir los Ajustes.</string>
+    <string name="resume_prompt_field_label">Prompt</string>
+    <string name="resume_prompt_counter">%1$d / %2$d</string>
+    <string name="resume_prompt_note">Las llamadas a herramientas ya completadas nunca se repiten, diga lo que diga el prompt.</string>
+    <string name="resume_prompt_value_builtin">Integrado</string>
+    <string name="resume_prompt_value_custom">Personalizado</string>
+    <string name="resume_prompt_value_app">Valor de la app</string>
+    <string name="resume_prompt_value_chat">Personalizado para este chat</string>
+    <string name="resume_prompt_reset_app">Restablecer al valor predeterminado</string>
+    <string name="resume_prompt_reset_chat">Usar valor de la app</string>
+    <string name="resume_prompt_save_resume">Guardar y reanudar</string>
+    <string name="resume_prompt_edit">Editar prompt de reanudación</string>
+    <string name="resume_prompt_more">Más opciones de reanudación</string>
+    <string name="resume_prompt_active_badge">Prompt personalizado</string>
+</resources>
