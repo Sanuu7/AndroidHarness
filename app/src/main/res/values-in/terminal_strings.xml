@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Layar terminal. Ketuk untuk mengetik.</string>
+    <string name="terminal_interactive_mode">Terminal interaktif</string>
+    <string name="terminal_command_mode">Mode perintah</string>
+    <string name="terminal_interactive_subtitle">%1$s, pengguna aplikasi</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, pengguna aplikasi, %2$s</string>
+    <string name="terminal_starting">Memulai shell…</string>
+    <string name="terminal_exited">Shell keluar dengan kode %1$d.</string>
+    <string name="terminal_restart">Mulai shell baru</string>
+    <string name="terminal_start_failed">Shell tidak dapat dimulai: %1$s</string>
+    <string name="terminal_try_again">Coba lagi</string>
+    <string name="terminal_paste">Tempel</string>
+    <string name="terminal_copy_output">Salin output</string>
+    <string name="terminal_copied">Output terminal disalin</string>
+    <string name="terminal_show_keyboard">Tampilkan keyboard</string>
+    <string name="terminal_restart_shell">Mulai ulang shell</string>
+    <string name="terminal_more_actions">Tindakan terminal lainnya</string>
+    <string name="terminal_reset_font">Atur ulang ukuran teks</string>
+    <string name="terminal_no_linux_hint">Lingkungan Linux belum terpasang, jadi ini adalah shell dasar Android. Pasang di Pengaturan untuk mendapatkan bash dan paket seperti nano, fzf, dan python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, hentikan</string>
+    <string name="terminal_key_up">Panah atas</string>
+    <string name="terminal_key_down">Panah bawah</string>
+    <string name="terminal_key_left">Panah kiri</string>
+    <string name="terminal_key_right">Panah kanan</string>
+    <string name="terminal_modifier_once">%1$s untuk tombol berikutnya</string>
+    <string name="terminal_modifier_locked">%1$s terkunci</string>
+</resources>

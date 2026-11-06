@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">"หน้าจอเทอร์มินัล แตะเพื่อพิมพ์"</string>
+    <string name="terminal_interactive_mode">"เทอร์มินัลแบบโต้ตอบ"</string>
+    <string name="terminal_command_mode">"โหมดคำสั่ง"</string>
+    <string name="terminal_interactive_subtitle">"%1$s ผู้ใช้แอป"</string>
+    <string name="terminal_interactive_subtitle_dir">"%1$s ผู้ใช้แอป %2$s"</string>
+    <string name="terminal_starting">"กำลังเริ่มเชลล์…"</string>
+    <string name="terminal_exited">"เชลล์ออกด้วยรหัส %1$d"</string>
+    <string name="terminal_restart">"เริ่มเชลล์ใหม่"</string>
+    <string name="terminal_start_failed">"ไม่สามารถเริ่มเชลล์ได้: %1$s"</string>
+    <string name="terminal_try_again">"ลองอีกครั้ง"</string>
+    <string name="terminal_paste">"วาง"</string>
+    <string name="terminal_copy_output">"คัดลอกเอาต์พุต"</string>
+    <string name="terminal_copied">"คัดลอกเอาต์พุตเทอร์มินัลแล้ว"</string>
+    <string name="terminal_show_keyboard">"แสดงแป้นพิมพ์"</string>
+    <string name="terminal_restart_shell">"รีสตาร์ทเชลล์"</string>
+    <string name="terminal_more_actions">"การดำเนินการเทอร์มินัลเพิ่มเติม"</string>
+    <string name="terminal_reset_font">"รีเซ็ตขนาดข้อความ"</string>
+    <string name="terminal_no_linux_hint">"ยังไม่ได้ติดตั้งสภาพแวดล้อม Linux ดังนั้นนี่คือเชลล์พื้นฐานของ Android ติดตั้งได้ในการตั้งค่าเพื่อรับ bash และแพ็กเกจอย่าง nano, fzf และ python"</string>
+    <string name="terminal_key_ctrl">"Ctrl"</string>
+    <string name="terminal_key_alt">"Alt"</string>
+    <string name="terminal_key_fn">"Fn"</string>
+    <string name="terminal_key_esc">"Esc"</string>
+    <string name="terminal_key_tab">"Tab"</string>
+    <string name="terminal_key_home">"Home"</string>
+    <string name="terminal_key_end">"End"</string>
+    <string name="terminal_key_pgup">"PgUp"</string>
+    <string name="terminal_key_pgdn">"PgDn"</string>
+    <string name="terminal_key_ins">"Ins"</string>
+    <string name="terminal_key_del">"Del"</string>
+    <string name="terminal_key_interrupt">"Ctrl+C ขัดจังหวะ"</string>
+    <string name="terminal_key_up">"ลูกศรขึ้น"</string>
+    <string name="terminal_key_down">"ลูกศรลง"</string>
+    <string name="terminal_key_left">"ลูกศรซ้าย"</string>
+    <string name="terminal_key_right">"ลูกศรขวา"</string>
+    <string name="terminal_modifier_once">"%1$s สำหรับปุ่มถัดไป"</string>
+    <string name="terminal_modifier_locked">"ล็อก %1$s อยู่"</string>
+</resources>

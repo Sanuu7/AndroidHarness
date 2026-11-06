@@ -9,6 +9,10 @@ if(ANDROID)
     add_library(harness_device SHARED device_info.cpp)
     target_link_libraries(harness_device PRIVATE dl)
     target_link_options(harness_device PRIVATE "-Wl,-z,max-page-size=16384")
+    # Pseudo-terminal for the interactive Terminal. Independent of llama, so
+    # every ABI gets it.
+    add_library(harness_pty SHARED pty.cpp)
+    target_link_options(harness_pty PRIVATE "-Wl,-z,max-page-size=16384")
     find_package(boringssl REQUIRED CONFIG)
     add_library(harness_adb SHARED adb_pairing.cpp)
     target_link_libraries(harness_adb PRIVATE log boringssl::crypto_static)

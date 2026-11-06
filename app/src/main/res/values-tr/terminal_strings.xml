@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Terminal ekranı. Yazmak için dokunun.</string>
+    <string name="terminal_interactive_mode">Etkileşimli terminal</string>
+    <string name="terminal_command_mode">Komut modu</string>
+    <string name="terminal_interactive_subtitle">%1$s, uygulama kullanıcısı</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, uygulama kullanıcısı, %2$s</string>
+    <string name="terminal_starting">Kabuk başlatılıyor…</string>
+    <string name="terminal_exited">Kabuk %1$d koduyla kapandı.</string>
+    <string name="terminal_restart">Yeni kabuk başlat</string>
+    <string name="terminal_start_failed">Kabuk başlatılamadı: %1$s</string>
+    <string name="terminal_try_again">Tekrar dene</string>
+    <string name="terminal_paste">Yapıştır</string>
+    <string name="terminal_copy_output">Çıktıyı kopyala</string>
+    <string name="terminal_copied">Terminal çıktısı kopyalandı</string>
+    <string name="terminal_show_keyboard">Klavyeyi göster</string>
+    <string name="terminal_restart_shell">Kabuğu yeniden başlat</string>
+    <string name="terminal_more_actions">Daha fazla terminal işlemi</string>
+    <string name="terminal_reset_font">Metin boyutunu sıfırla</string>
+    <string name="terminal_no_linux_hint">Linux ortamı yüklü değil, bu yüzden bu Android\'in temel kabuğu. bash ile nano, fzf ve python gibi paketleri kullanmak için Ayarlar\'dan yükleyin.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, kes</string>
+    <string name="terminal_key_up">Yukarı ok</string>
+    <string name="terminal_key_down">Aşağı ok</string>
+    <string name="terminal_key_left">Sol ok</string>
+    <string name="terminal_key_right">Sağ ok</string>
+    <string name="terminal_modifier_once">Sonraki tuş için %1$s</string>
+    <string name="terminal_modifier_locked">%1$s kilitli</string>
+</resources>

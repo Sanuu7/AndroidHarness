@@ -1162,12 +1162,12 @@ class LinuxEnvironmentManager(
     // it through linker64, so plain command names work everywhere.
     // ------------------------------------------------------------------
 
-    private val shimFile: File get() = File(prefix, "etc/harness-shims.sh")
+    internal val shimFile: File get() = File(prefix, "etc/harness-shims.sh")
 
     // Direct linker invocation was added in Android 10. Older linkers print
     // their helper banner and exit 0 without executing the supplied binary.
     // Those Android versions allow ordinary exec from app-private storage.
-    private fun linkerPath(): String? = when {
+    internal fun linkerPath(): String? = when {
         Build.VERSION.SDK_INT < Build.VERSION_CODES.Q -> null
         File("/system/bin/linker64").exists() -> "/system/bin/linker64"
         File("/apex/com.android.runtime/bin/linker64").exists() -> "/apex/com.android.runtime/bin/linker64"

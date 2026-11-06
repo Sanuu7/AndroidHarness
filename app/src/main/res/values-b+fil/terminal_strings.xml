@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Screen ng terminal. I-tap para mag-type.</string>
+    <string name="terminal_interactive_mode">Interaktibong terminal</string>
+    <string name="terminal_command_mode">Mode ng command</string>
+    <string name="terminal_interactive_subtitle">%1$s, user ng app</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, user ng app, %2$s</string>
+    <string name="terminal_starting">Sinisimulan ang shell…</string>
+    <string name="terminal_exited">Nag-exit ang shell na may code na %1$d.</string>
+    <string name="terminal_restart">Magsimula ng bagong shell</string>
+    <string name="terminal_start_failed">Hindi ma-start ang shell: %1$s</string>
+    <string name="terminal_try_again">Subukan muli</string>
+    <string name="terminal_paste">I-paste</string>
+    <string name="terminal_copy_output">Kopyahin ang output</string>
+    <string name="terminal_copied">Nakopya ang output ng terminal</string>
+    <string name="terminal_show_keyboard">Ipakita ang keyboard</string>
+    <string name="terminal_restart_shell">I-restart ang shell</string>
+    <string name="terminal_more_actions">Higit pang mga aksyon sa terminal</string>
+    <string name="terminal_reset_font">I-reset ang laki ng teksto</string>
+    <string name="terminal_no_linux_hint">Hindi naka-install ang Linux environment, kaya ito ang basic na shell ng Android. I-install ito sa Mga Setting para magkaroon ng bash at mga package tulad ng nano, fzf at python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, i-interrupt</string>
+    <string name="terminal_key_up">Pataas na arrow</string>
+    <string name="terminal_key_down">Pababa na arrow</string>
+    <string name="terminal_key_left">Kaliwang arrow</string>
+    <string name="terminal_key_right">Kanang arrow</string>
+    <string name="terminal_modifier_once">%1$s para sa susunod na key</string>
+    <string name="terminal_modifier_locked">%1$s naka-lock</string>
+</resources>

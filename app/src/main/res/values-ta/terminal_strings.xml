@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">முனையத் திரை. தட்டச்சு செய்ய தட்டவும்.</string>
+    <string name="terminal_interactive_mode">ஊடாடும் முனையம்</string>
+    <string name="terminal_command_mode">கட்டளைப் பயன்முறை</string>
+    <string name="terminal_interactive_subtitle">%1$s, பயன்பாட்டு பயனர்</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, பயன்பாட்டு பயனர், %2$s</string>
+    <string name="terminal_starting">ஷெல் தொடங்குகிறது…</string>
+    <string name="terminal_exited">ஷெல் %1$d குறியீட்டுடன் வெளியேறியது.</string>
+    <string name="terminal_restart">புதிய ஷெல்லைத் தொடங்கு</string>
+    <string name="terminal_start_failed">ஷெல்லைத் தொடங்க முடியவில்லை: %1$s</string>
+    <string name="terminal_try_again">மீண்டும் முயற்சி</string>
+    <string name="terminal_paste">ஒட்டு</string>
+    <string name="terminal_copy_output">வெளியீட்டை நகலெடு</string>
+    <string name="terminal_copied">முனைய வெளியீடு நகலெடுக்கப்பட்டது</string>
+    <string name="terminal_show_keyboard">விசைப்பலகையைக் காட்டு</string>
+    <string name="terminal_restart_shell">ஷெல்லை மீண்டும் தொடங்கு</string>
+    <string name="terminal_more_actions">மேலும் முனையச் செயல்கள்</string>
+    <string name="terminal_reset_font">எழுத்து அளவை மீட்டமை</string>
+    <string name="terminal_no_linux_hint">Linux சூழல் நிறுவப்படவில்லை, எனவே இது Android இன் அடிப்படை ஷெல். bash மற்றும் nano, fzf, python போன்ற தொகுப்புகளைப் பெற அதை அமைப்புகளில் நிறுவவும்.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, குறுக்கீடு</string>
+    <string name="terminal_key_up">மேல் அம்பு</string>
+    <string name="terminal_key_down">கீழ் அம்பு</string>
+    <string name="terminal_key_left">இடது அம்பு</string>
+    <string name="terminal_key_right">வலது அம்பு</string>
+    <string name="terminal_modifier_once">அடுத்த விசைக்கு %1$s</string>
+    <string name="terminal_modifier_locked">%1$s பூட்டப்பட்டது</string>
+</resources>

@@ -33,6 +33,7 @@ class TerminalManager(
     private val shizuku: ShizukuManager,
     private val runManager: RunManager,
     private val router: com.androidharness.app.data.env.ShellTierRouter? = null,
+    private val interactive: com.androidharness.app.terminal.InteractiveTerminalManager? = null,
 ) {
 
     data class TerminalState(
@@ -87,9 +88,15 @@ class TerminalManager(
             check(!storageMaintenance && !_state.value.started && !_state.value.busy && process == null) {
                 "Close the terminal before cleaning storage."
             }
+            check(interactive?.beginStorageMaintenance() != false) {
+                "Close the interactive terminal before cleaning storage."
+            }
             storageMaintenance = true
         }
-        try { return action() } finally { synchronized(this) { storageMaintenance = false } }
+        try { return action() } finally {
+            synchronized(this) { storageMaintenance = false }
+            interactive?.endStorageMaintenance()
+        }
     }
 
     /** Starts the terminal if it isn't running yet. */

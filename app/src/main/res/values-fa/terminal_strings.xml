@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">صفحه ترمینال. برای تایپ ضربه بزنید.</string>
+    <string name="terminal_interactive_mode">ترمینال تعاملی</string>
+    <string name="terminal_command_mode">حالت فرمان</string>
+    <string name="terminal_interactive_subtitle">%1$s، کاربر برنامه</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s، کاربر برنامه، %2$s</string>
+    <string name="terminal_starting">در حال راه‌اندازی شل…</string>
+    <string name="terminal_exited">شل با کد %1$d خارج شد.</string>
+    <string name="terminal_restart">شروع شل جدید</string>
+    <string name="terminal_start_failed">شل شروع نشد: %1$s</string>
+    <string name="terminal_try_again">تلاش دوباره</string>
+    <string name="terminal_paste">چسباندن</string>
+    <string name="terminal_copy_output">کپی خروجی</string>
+    <string name="terminal_copied">خروجی ترمینال کپی شد</string>
+    <string name="terminal_show_keyboard">نمایش صفحه‌کلید</string>
+    <string name="terminal_restart_shell">راه‌اندازی دوباره شل</string>
+    <string name="terminal_more_actions">اقدامات بیشتر ترمینال</string>
+    <string name="terminal_reset_font">بازنشانی اندازه متن</string>
+    <string name="terminal_no_linux_hint">محیط Linux نصب نیست، بنابراین این شل پایه Android است. آن را در تنظیمات نصب کنید تا bash و بسته‌هایی مانند nano، fzf و python را داشته باشید.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C، قطع</string>
+    <string name="terminal_key_up">فلش بالا</string>
+    <string name="terminal_key_down">فلش پایین</string>
+    <string name="terminal_key_left">فلش چپ</string>
+    <string name="terminal_key_right">فلش راست</string>
+    <string name="terminal_modifier_once">%1$s برای کلید بعدی</string>
+    <string name="terminal_modifier_locked">%1$s قفل شده</string>
+</resources>

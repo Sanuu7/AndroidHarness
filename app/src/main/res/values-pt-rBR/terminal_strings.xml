@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Tela do terminal. Toque para digitar.</string>
+    <string name="terminal_interactive_mode">Terminal interativo</string>
+    <string name="terminal_command_mode">Modo de comando</string>
+    <string name="terminal_interactive_subtitle">%1$s, usuário do app</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, usuário do app, %2$s</string>
+    <string name="terminal_starting">Iniciando o shell…</string>
+    <string name="terminal_exited">O shell foi encerrado com o código %1$d.</string>
+    <string name="terminal_restart">Iniciar um novo shell</string>
+    <string name="terminal_start_failed">Não foi possível iniciar o shell: %1$s</string>
+    <string name="terminal_try_again">Tentar novamente</string>
+    <string name="terminal_paste">Colar</string>
+    <string name="terminal_copy_output">Copiar saída</string>
+    <string name="terminal_copied">Saída do terminal copiada</string>
+    <string name="terminal_show_keyboard">Mostrar teclado</string>
+    <string name="terminal_restart_shell">Reiniciar shell</string>
+    <string name="terminal_more_actions">Mais ações do terminal</string>
+    <string name="terminal_reset_font">Redefinir tamanho do texto</string>
+    <string name="terminal_no_linux_hint">O ambiente Linux não está instalado, então este é o shell básico do Android. Instale-o nas Configurações para ter bash e pacotes como nano, fzf e python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, interromper</string>
+    <string name="terminal_key_up">Seta para cima</string>
+    <string name="terminal_key_down">Seta para baixo</string>
+    <string name="terminal_key_left">Seta para a esquerda</string>
+    <string name="terminal_key_right">Seta para a direita</string>
+    <string name="terminal_modifier_once">%1$s para a próxima tecla</string>
+    <string name="terminal_modifier_locked">%1$s travado</string>
+</resources>

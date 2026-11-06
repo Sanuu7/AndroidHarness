@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Terminal screen. Tap to type.</string>
+    <string name="terminal_interactive_mode">Interactive terminal</string>
+    <string name="terminal_command_mode">Command mode</string>
+    <string name="terminal_interactive_subtitle">%1$s, app user</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, app user, %2$s</string>
+    <string name="terminal_starting">Starting the shell…</string>
+    <string name="terminal_exited">The shell exited with code %1$d.</string>
+    <string name="terminal_restart">Start a new shell</string>
+    <string name="terminal_start_failed">The shell could not start: %1$s</string>
+    <string name="terminal_try_again">Try again</string>
+    <string name="terminal_paste">Paste</string>
+    <string name="terminal_copy_output">Copy output</string>
+    <string name="terminal_copied">Terminal output copied</string>
+    <string name="terminal_show_keyboard">Show keyboard</string>
+    <string name="terminal_restart_shell">Restart shell</string>
+    <string name="terminal_more_actions">More terminal actions</string>
+    <string name="terminal_reset_font">Reset text size</string>
+    <string name="terminal_no_linux_hint">The Linux environment is not installed, so this is Android\'s basic shell. Install it in Settings to get bash and packages such as nano, fzf and python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, interrupt</string>
+    <string name="terminal_key_up">Up arrow</string>
+    <string name="terminal_key_down">Down arrow</string>
+    <string name="terminal_key_left">Left arrow</string>
+    <string name="terminal_key_right">Right arrow</string>
+    <string name="terminal_modifier_once">%1$s for the next key</string>
+    <string name="terminal_modifier_locked">%1$s locked on</string>
+</resources>

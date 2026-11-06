@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Terminalbildschirm. Zum Eingeben tippen.</string>
+    <string name="terminal_interactive_mode">Interaktives Terminal</string>
+    <string name="terminal_command_mode">Befehlsmodus</string>
+    <string name="terminal_interactive_subtitle">%1$s, App-Benutzer</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, App-Benutzer, %2$s</string>
+    <string name="terminal_starting">Shell wird gestartet…</string>
+    <string name="terminal_exited">Die Shell wurde mit Code %1$d beendet.</string>
+    <string name="terminal_restart">Neue Shell starten</string>
+    <string name="terminal_start_failed">Die Shell konnte nicht gestartet werden: %1$s</string>
+    <string name="terminal_try_again">Erneut versuchen</string>
+    <string name="terminal_paste">Einfügen</string>
+    <string name="terminal_copy_output">Ausgabe kopieren</string>
+    <string name="terminal_copied">Terminalausgabe kopiert</string>
+    <string name="terminal_show_keyboard">Tastatur anzeigen</string>
+    <string name="terminal_restart_shell">Shell neu starten</string>
+    <string name="terminal_more_actions">Weitere Terminal-Aktionen</string>
+    <string name="terminal_reset_font">Textgröße zurücksetzen</string>
+    <string name="terminal_no_linux_hint">Die Linux-Umgebung ist nicht installiert, daher ist dies die einfache Shell von Android. Installiere sie in den Einstellungen, um bash und Pakete wie nano, fzf und python zu erhalten.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, unterbrechen</string>
+    <string name="terminal_key_up">Pfeil nach oben</string>
+    <string name="terminal_key_down">Pfeil nach unten</string>
+    <string name="terminal_key_left">Pfeil nach links</string>
+    <string name="terminal_key_right">Pfeil nach rechts</string>
+    <string name="terminal_modifier_once">%1$s für die nächste Taste</string>
+    <string name="terminal_modifier_locked">%1$s dauerhaft aktiv</string>
+</resources>

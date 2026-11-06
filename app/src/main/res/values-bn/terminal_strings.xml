@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">টার্মিনাল স্ক্রিন। টাইপ করতে ট্যাপ করুন।</string>
+    <string name="terminal_interactive_mode">ইন্টারঅ্যাকটিভ টার্মিনাল</string>
+    <string name="terminal_command_mode">কমান্ড মোড</string>
+    <string name="terminal_interactive_subtitle">%1$s, অ্যাপ ব্যবহারকারী</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, অ্যাপ ব্যবহারকারী, %2$s</string>
+    <string name="terminal_starting">শেল চালু হচ্ছে…</string>
+    <string name="terminal_exited">শেল কোড %1$d দিয়ে বন্ধ হয়েছে।</string>
+    <string name="terminal_restart">নতুন শেল শুরু করুন</string>
+    <string name="terminal_start_failed">শেল চালু করা যায়নি: %1$s</string>
+    <string name="terminal_try_again">আবার চেষ্টা করুন</string>
+    <string name="terminal_paste">পেস্ট</string>
+    <string name="terminal_copy_output">আউটপুট কপি করুন</string>
+    <string name="terminal_copied">টার্মিনাল আউটপুট কপি হয়েছে</string>
+    <string name="terminal_show_keyboard">কীবোর্ড দেখান</string>
+    <string name="terminal_restart_shell">শেল পুনরায় চালু করুন</string>
+    <string name="terminal_more_actions">আরও টার্মিনাল ক্রিয়া</string>
+    <string name="terminal_reset_font">টেক্সট আকার রিসেট করুন</string>
+    <string name="terminal_no_linux_hint">Linux পরিবেশ ইনস্টল করা নেই, তাই এটি Android এর মৌলিক শেল। bash এবং nano, fzf, python এর মতো প্যাকেজ পেতে এটি সেটিংসে ইনস্টল করুন।</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, বাধা দিন</string>
+    <string name="terminal_key_up">উপরের তীর</string>
+    <string name="terminal_key_down">নিচের তীর</string>
+    <string name="terminal_key_left">বাম তীর</string>
+    <string name="terminal_key_right">ডান তীর</string>
+    <string name="terminal_modifier_once">%1$s পরের কী-এর জন্য</string>
+    <string name="terminal_modifier_locked">%1$s লক করা</string>
+</resources>

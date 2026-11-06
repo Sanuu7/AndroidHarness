@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">टर्मिनल स्क्रीन। टाइप करने के लिए टैप करें।</string>
+    <string name="terminal_interactive_mode">इंटरैक्टिव टर्मिनल</string>
+    <string name="terminal_command_mode">कमांड मोड</string>
+    <string name="terminal_interactive_subtitle">%1$s, ऐप उपयोगकर्ता</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, ऐप उपयोगकर्ता, %2$s</string>
+    <string name="terminal_starting">शेल शुरू हो रहा है…</string>
+    <string name="terminal_exited">शेल कोड %1$d के साथ बंद हुआ।</string>
+    <string name="terminal_restart">नया शेल शुरू करें</string>
+    <string name="terminal_start_failed">शेल शुरू नहीं हो सका: %1$s</string>
+    <string name="terminal_try_again">फिर से कोशिश करें</string>
+    <string name="terminal_paste">पेस्ट करें</string>
+    <string name="terminal_copy_output">आउटपुट कॉपी करें</string>
+    <string name="terminal_copied">टर्मिनल आउटपुट कॉपी हो गया</string>
+    <string name="terminal_show_keyboard">कीबोर्ड दिखाएं</string>
+    <string name="terminal_restart_shell">शेल पुनः आरंभ करें</string>
+    <string name="terminal_more_actions">और टर्मिनल क्रियाएं</string>
+    <string name="terminal_reset_font">टेक्स्ट आकार रीसेट करें</string>
+    <string name="terminal_no_linux_hint">Linux वातावरण इंस्टॉल नहीं है, इसलिए यह Android का बुनियादी शेल है। bash और nano, fzf, python जैसे पैकेज पाने के लिए इसे सेटिंग्स में इंस्टॉल करें।</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, बाधित करें</string>
+    <string name="terminal_key_up">ऊपर तीर</string>
+    <string name="terminal_key_down">नीचे तीर</string>
+    <string name="terminal_key_left">बायां तीर</string>
+    <string name="terminal_key_right">दायां तीर</string>
+    <string name="terminal_modifier_once">%1$s अगली कुंजी के लिए</string>
+    <string name="terminal_modifier_locked">%1$s लॉक है</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Skrin terminal. Ketik untuk menaip.</string>
+    <string name="terminal_interactive_mode">Terminal interaktif</string>
+    <string name="terminal_command_mode">Mod arahan</string>
+    <string name="terminal_interactive_subtitle">%1$s, pengguna aplikasi</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, pengguna aplikasi, %2$s</string>
+    <string name="terminal_starting">Memulakan shell…</string>
+    <string name="terminal_exited">Shell keluar dengan kod %1$d.</string>
+    <string name="terminal_restart">Mulakan shell baharu</string>
+    <string name="terminal_start_failed">Shell tidak dapat dimulakan: %1$s</string>
+    <string name="terminal_try_again">Cuba lagi</string>
+    <string name="terminal_paste">Tampal</string>
+    <string name="terminal_copy_output">Salin output</string>
+    <string name="terminal_copied">Output terminal disalin</string>
+    <string name="terminal_show_keyboard">Tunjukkan papan kekunci</string>
+    <string name="terminal_restart_shell">Mulakan semula shell</string>
+    <string name="terminal_more_actions">Lebih banyak tindakan terminal</string>
+    <string name="terminal_reset_font">Set semula saiz teks</string>
+    <string name="terminal_no_linux_hint">Persekitaran Linux tidak dipasang, jadi ini ialah shell asas Android. Pasangnya dalam Tetapan untuk mendapatkan bash dan pakej seperti nano, fzf dan python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, ganggu</string>
+    <string name="terminal_key_up">Anak panah atas</string>
+    <string name="terminal_key_down">Anak panah bawah</string>
+    <string name="terminal_key_left">Anak panah kiri</string>
+    <string name="terminal_key_right">Anak panah kanan</string>
+    <string name="terminal_modifier_once">%1$s untuk kekunci seterusnya</string>
+    <string name="terminal_modifier_locked">%1$s dikunci</string>
+</resources>

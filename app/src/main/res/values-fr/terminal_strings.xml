@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">"Écran du terminal. Touchez pour saisir."</string>
+    <string name="terminal_interactive_mode">"Terminal interactif"</string>
+    <string name="terminal_command_mode">"Mode commande"</string>
+    <string name="terminal_interactive_subtitle">"%1$s, utilisateur de l\'application"</string>
+    <string name="terminal_interactive_subtitle_dir">"%1$s, utilisateur de l\'application, %2$s"</string>
+    <string name="terminal_starting">"Démarrage du shell…"</string>
+    <string name="terminal_exited">"Le shell s\'est arrêté avec le code %1$d."</string>
+    <string name="terminal_restart">"Démarrer un nouveau shell"</string>
+    <string name="terminal_start_failed">"Le shell n\'a pas pu démarrer : %1$s"</string>
+    <string name="terminal_try_again">"Réessayer"</string>
+    <string name="terminal_paste">"Coller"</string>
+    <string name="terminal_copy_output">"Copier la sortie"</string>
+    <string name="terminal_copied">"Sortie du terminal copiée"</string>
+    <string name="terminal_show_keyboard">"Afficher le clavier"</string>
+    <string name="terminal_restart_shell">"Redémarrer le shell"</string>
+    <string name="terminal_more_actions">"Plus d\'actions du terminal"</string>
+    <string name="terminal_reset_font">"Réinitialiser la taille du texte"</string>
+    <string name="terminal_no_linux_hint">"L\'environnement Linux n\'est pas installé, il s\'agit donc du shell de base d\'Android. Installez-le dans les Paramètres pour obtenir bash et des paquets comme nano, fzf et python."</string>
+    <string name="terminal_key_ctrl">"Ctrl"</string>
+    <string name="terminal_key_alt">"Alt"</string>
+    <string name="terminal_key_fn">"Fn"</string>
+    <string name="terminal_key_esc">"Esc"</string>
+    <string name="terminal_key_tab">"Tab"</string>
+    <string name="terminal_key_home">"Home"</string>
+    <string name="terminal_key_end">"End"</string>
+    <string name="terminal_key_pgup">"PgUp"</string>
+    <string name="terminal_key_pgdn">"PgDn"</string>
+    <string name="terminal_key_ins">"Ins"</string>
+    <string name="terminal_key_del">"Del"</string>
+    <string name="terminal_key_interrupt">"Ctrl+C, interrompre"</string>
+    <string name="terminal_key_up">"Flèche haut"</string>
+    <string name="terminal_key_down">"Flèche bas"</string>
+    <string name="terminal_key_left">"Flèche gauche"</string>
+    <string name="terminal_key_right">"Flèche droite"</string>
+    <string name="terminal_modifier_once">"%1$s pour la touche suivante"</string>
+    <string name="terminal_modifier_locked">"%1$s verrouillé"</string>
+</resources>

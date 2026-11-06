@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Màn hình terminal. Chạm để nhập.</string>
+    <string name="terminal_interactive_mode">Terminal tương tác</string>
+    <string name="terminal_command_mode">Chế độ lệnh</string>
+    <string name="terminal_interactive_subtitle">%1$s, người dùng ứng dụng</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, người dùng ứng dụng, %2$s</string>
+    <string name="terminal_starting">Đang khởi động shell…</string>
+    <string name="terminal_exited">Shell đã thoát với mã %1$d.</string>
+    <string name="terminal_restart">Khởi động shell mới</string>
+    <string name="terminal_start_failed">Không thể khởi động shell: %1$s</string>
+    <string name="terminal_try_again">Thử lại</string>
+    <string name="terminal_paste">Dán</string>
+    <string name="terminal_copy_output">Sao chép đầu ra</string>
+    <string name="terminal_copied">Đã sao chép đầu ra terminal</string>
+    <string name="terminal_show_keyboard">Hiện bàn phím</string>
+    <string name="terminal_restart_shell">Khởi động lại shell</string>
+    <string name="terminal_more_actions">Thêm hành động terminal</string>
+    <string name="terminal_reset_font">Đặt lại cỡ chữ</string>
+    <string name="terminal_no_linux_hint">Chưa cài môi trường Linux nên đây là shell cơ bản của Android. Hãy cài trong Cài đặt để có bash và các gói như nano, fzf và python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, ngắt</string>
+    <string name="terminal_key_up">Mũi tên lên</string>
+    <string name="terminal_key_down">Mũi tên xuống</string>
+    <string name="terminal_key_left">Mũi tên trái</string>
+    <string name="terminal_key_right">Mũi tên phải</string>
+    <string name="terminal_modifier_once">%1$s cho phím tiếp theo</string>
+    <string name="terminal_modifier_locked">%1$s đang khóa</string>
+</resources>

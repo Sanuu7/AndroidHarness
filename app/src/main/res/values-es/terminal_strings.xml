@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Pantalla del terminal. Toca para escribir.</string>
+    <string name="terminal_interactive_mode">Terminal interactivo</string>
+    <string name="terminal_command_mode">Modo de comandos</string>
+    <string name="terminal_interactive_subtitle">%1$s, usuario de la aplicación</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, usuario de la aplicación, %2$s</string>
+    <string name="terminal_starting">Iniciando el shell…</string>
+    <string name="terminal_exited">El shell terminó con el código %1$d.</string>
+    <string name="terminal_restart">Iniciar un shell nuevo</string>
+    <string name="terminal_start_failed">No se pudo iniciar el shell: %1$s</string>
+    <string name="terminal_try_again">Reintentar</string>
+    <string name="terminal_paste">Pegar</string>
+    <string name="terminal_copy_output">Copiar salida</string>
+    <string name="terminal_copied">Salida del terminal copiada</string>
+    <string name="terminal_show_keyboard">Mostrar teclado</string>
+    <string name="terminal_restart_shell">Reiniciar shell</string>
+    <string name="terminal_more_actions">Más acciones del terminal</string>
+    <string name="terminal_reset_font">Restablecer tamaño del texto</string>
+    <string name="terminal_no_linux_hint">El entorno Linux no está instalado, así que este es el shell básico de Android. Instálalo en Ajustes para tener bash y paquetes como nano, fzf y python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, interrumpir</string>
+    <string name="terminal_key_up">Flecha arriba</string>
+    <string name="terminal_key_down">Flecha abajo</string>
+    <string name="terminal_key_left">Flecha izquierda</string>
+    <string name="terminal_key_right">Flecha derecha</string>
+    <string name="terminal_modifier_once">%1$s para la siguiente tecla</string>
+    <string name="terminal_modifier_locked">%1$s bloqueado</string>
+</resources>

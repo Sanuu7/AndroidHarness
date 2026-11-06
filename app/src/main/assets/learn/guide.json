@@ -3047,39 +3047,53 @@
       "id": "terminal",
       "category": "code",
       "title": "Use the Terminal",
-      "summary": "Run a command yourself in the selected workspace.",
+      "summary": "Run commands yourself in the selected workspace, including full-screen programs such as nano and fzf.",
       "location": "Navigation menu → Terminal, or a project/editor terminal action.",
       "before": [
         "Know whether this is an app/device shell or an SSH workspace.",
-        "Have the required command/package installed."
+        "Have the required command/package installed. Install the Linux environment to get bash and packages."
       ],
       "steps": [
         {
-          "title": "Check the workspace and access mode",
-          "body": "Read the header before typing. Terminal can use a local workspace or the SSH host for a remote workspace. Access mode determines the preferred available execution route."
+          "title": "Check the workspace and mode",
+          "body": "Read the header before typing. In a local workspace the Terminal opens in interactive mode: a live bash shell running as the app user, with the current folder under the title. The terminal button beside the title switches to command mode, which follows the access mode (Shizuku, Wireless ADB or root) and is the only mode for SSH workspaces."
         },
         {
-          "title": "Run a small command",
-          "body": "Enter the command and tap Run. Read the output and reported completion. Prefer a short check before running a long build or server."
+          "title": "Type into the live shell",
+          "body": "Tap the terminal to bring up the keyboard and type as you would on a computer. Keys go straight to the running program, so nano, fzf, Python, top and interactive prompts work. Pinch to change the text size, scroll up to read earlier output, and long-press to paste."
         },
         {
-          "title": "Stop work when needed",
-          "body": "Use Stop for the active command. If it may have changed files, inspect them before repeating it."
+          "title": "Use the extra keys",
+          "body": "The two rows above the keyboard add Esc, Tab, arrows, Home, End, Page Up and Page Down, plus a Ctrl+C key. Tap Ctrl or Alt once to apply it to the next key, or twice to keep it on until you tap it again. Fn shows F1 to F12, Insert, Delete and common symbols. A hardware keyboard works too, with Ctrl+Shift+V to paste and Ctrl+Shift+C to copy."
+        },
+        {
+          "title": "Stop or restart",
+          "body": "Press the Ctrl+C key to interrupt the running program. The ⋮ menu has Paste, Copy output, Reset text size and Restart shell. The shell keeps running when you leave the screen or rotate the phone. In command mode, enter a command and tap Run, and use Stop for the active command."
         },
         {
           "title": "Use Code for an assisted task",
           "body": "Return to Code if you want the assistant to inspect output, edit files, or coordinate several commands. Include the exact error and what you expected."
         }
       ],
-      "outcome": "You can see the command’s real output in the intended environment.",
+      "outcome": "You can see the command’s real output in the intended environment and work with interactive programs directly.",
       "limits": [
-        "A terminal does not automatically grant root or access to protected folders.",
+        "A terminal does not automatically grant root or access to protected folders. On a rooted device, running su in the interactive terminal gives a root shell.",
+        "Interactive mode runs in local workspaces as the app user. Shizuku, Wireless ADB, root routes and SSH workspaces use command mode.",
+        "Long lines are not re-wrapped when the terminal width changes; full-screen programs redraw themselves.",
         "Fallback is chosen before a command starts. Interrupted commands are not automatically repeated on another access route."
       ],
       "fixes": [
         {
           "problem": "Command not found",
           "solution": "Install the relevant package in the environment that runs the command, or check the SSH host’s tools. Installing a phone package does not install it on the remote host."
+        },
+        {
+          "problem": "Only a basic shell starts",
+          "solution": "The Linux environment is not installed, so the terminal uses Android’s own shell. Install it from Settings → Terminal & device → Linux environment, then choose Restart shell from the ⋮ menu."
+        },
+        {
+          "problem": "Storage cleanup refuses to run",
+          "solution": "Type exit in the interactive terminal first, because cleanup will not delete files a running shell may be using."
         }
       ],
       "related": [
@@ -3101,9 +3115,13 @@
       ],
       "sources": [
         "ui/terminal/TerminalScreen.kt",
+        "ui/terminal/InteractiveTerminalPane.kt",
+        "ui/terminal/TerminalCanvasView.kt",
+        "terminal/InteractiveTerminalManager.kt",
+        "terminal/TerminalEmulator.kt",
         "data/env/LinuxEnvironment.kt"
       ],
-      "keywords": ""
+      "keywords": "pty interactive shell bash nano fzf ctrl+c extra keys tui"
     },
     {
       "id": "browser-preview",

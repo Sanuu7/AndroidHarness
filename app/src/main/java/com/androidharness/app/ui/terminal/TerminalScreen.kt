@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -29,6 +30,13 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Shield
+import androidx.compose.material.icons.outlined.ContentCopy
+import androidx.compose.material.icons.outlined.ContentPaste
+import androidx.compose.material.icons.outlined.FormatSize
+import androidx.compose.material.icons.outlined.Keyboard
+import androidx.compose.material.icons.outlined.MoreVert
+import androidx.compose.material.icons.outlined.RestartAlt
+import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.filled.Stop
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -60,8 +68,10 @@ import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.TextButton
 
 /**
- * Full-screen interactive terminal. The shell process lives in TerminalManager
- * (app-wide scope + keepalive), so it keeps running while the app is minimized.
+ * Full-screen terminal. Local workspaces default to the interactive PTY
+ * terminal (InteractiveTerminalManager); command mode and SSH workspaces use
+ * TerminalManager's line shell. Both live in the app-wide scope with the
+ * keepalive, so they keep running while the app is minimized.
  */
 @Composable
 fun TerminalScreen(
@@ -100,8 +110,33 @@ fun TerminalScreen(
     val active = com.androidharness.app.ui.LocalWorkspacePaneActive.current
     val scheme = MaterialTheme.colorScheme
 
-    LaunchedEffect(workspace?.displayPath, state.busy, active) {
-        if (!active) return@LaunchedEffect
+    // The interactive (PTY) terminal runs local workspaces as the app user; SSH stays in command mode.
+    val pty = container.interactiveTerminal
+    val preferInteractive by pty.preferInteractive.collectAsStateWithLifecycle()
+    val interactiveAvailable = pty.supported && workspace != null && remote == null
+    val interactive = interactiveAvailable && preferInteractive
+    val ptyKey = workspace?.displayPath.orEmpty()
+    val ptyCwd = workspace?.shellRoot ?: container.linuxEnv.shellFallbackRoot
+    val ptySessions by pty.sessions.collectAsStateWithLifecycle()
+    val ptySession = ptySessions[ptyKey]
+    val ptyDirectory = ptySession?.directory?.collectAsStateWithLifecycle()?.value
+    val viewHandle = remember { TerminalViewHandle() }
+    var showMenu by remember { mutableStateOf(false) }
+    val clipboard = remember(uiContext) { uiContext.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager }
+    fun pasteClipboard() {
+        val text = clipboard.primaryClip?.takeIf { it.itemCount > 0 }?.getItemAt(0)?.coerceToText(uiContext)?.toString()
+        if (!text.isNullOrEmpty()) ptySession?.paste(text)
+    }
+    fun copyOutput() {
+        val text = ptySession?.transcript() ?: return
+        clipboard.setPrimaryClip(android.content.ClipData.newPlainText(uiContext.getString(R.string.ui_terminal), text))
+        if (android.os.Build.VERSION.SDK_INT < 33) {
+            android.widget.Toast.makeText(uiContext, R.string.terminal_copied, android.widget.Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    LaunchedEffect(workspace?.displayPath, state.busy, active, interactive) {
+        if (!active || interactive) return@LaunchedEffect
         workspace?.let { terminal.useWorkspace(it) }
         if (workspace != null) terminal.ensureStarted()
     }
@@ -137,9 +172,64 @@ fun TerminalScreen(
         topBar = {
             AppHeader(
                 title = uiContext.getString(R.string.ui_terminal),
-                subtitle = if (remote != null) uiContext.getString(R.string.ui_ssh_workspace) else uiContext.getString(R.string.ui_preferred, state.backendLabel, uiContext.localizedOptionLabel(accessPrefs.mode.label)),
+                subtitle = when {
+                    remote != null -> uiContext.getString(R.string.ui_ssh_workspace)
+                    interactive -> {
+                        val shell = ptySession?.shellName ?: "bash"
+                        ptyDirectory?.let { uiContext.getString(R.string.terminal_interactive_subtitle_dir, shell, it) }
+                            ?: uiContext.getString(R.string.terminal_interactive_subtitle, shell)
+                    }
+                    else -> uiContext.getString(R.string.ui_preferred, state.backendLabel, uiContext.localizedOptionLabel(accessPrefs.mode.label))
+                },
                 onBack = onBack,
                 actions = {
+                    if (interactiveAvailable) {
+                        com.androidharness.app.ui.common.IconToggleButton(
+                            checked = interactive,
+                            onCheckedChange = { pty.preferInteractive.value = it },
+                        ) {
+                            Icon(
+                                Icons.Outlined.Terminal,
+                                contentDescription = uiContext.getString(if (interactive) R.string.terminal_command_mode else R.string.terminal_interactive_mode),
+                            )
+                        }
+                    }
+                    if (interactive) {
+                        IconButton(onClick = { viewHandle.showKeyboard() }) {
+                            Icon(Icons.Outlined.Keyboard, contentDescription = uiContext.getString(R.string.terminal_show_keyboard), tint = scheme.primary)
+                        }
+                        Box {
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(Icons.Outlined.MoreVert, contentDescription = uiContext.getString(R.string.terminal_more_actions), tint = scheme.onSurfaceVariant)
+                            }
+                            com.androidharness.app.ui.common.ExpressiveDropdownMenu(expanded = showMenu, onDismissRequest = { showMenu = false }) {
+                                com.androidharness.app.ui.common.ExpressiveDropdownMenuItem(
+                                    text = { Text(uiContext.getString(R.string.terminal_paste)) },
+                                    leadingIcon = { Icon(Icons.Outlined.ContentPaste, null) },
+                                    enabled = ptySession?.running == true,
+                                    onClick = { showMenu = false; pasteClipboard() },
+                                )
+                                com.androidharness.app.ui.common.ExpressiveDropdownMenuItem(
+                                    text = { Text(uiContext.getString(R.string.terminal_copy_output)) },
+                                    leadingIcon = { Icon(Icons.Outlined.ContentCopy, null) },
+                                    enabled = ptySession != null,
+                                    onClick = { showMenu = false; copyOutput() },
+                                )
+                                com.androidharness.app.ui.common.ExpressiveDropdownMenuItem(
+                                    text = { Text(uiContext.getString(R.string.terminal_reset_font)) },
+                                    leadingIcon = { Icon(Icons.Outlined.FormatSize, null) },
+                                    onClick = { showMenu = false; pty.fontSizeSp.value = 13f },
+                                )
+                                com.androidharness.app.ui.common.ExpressiveDropdownMenuItem(
+                                    text = { Text(uiContext.getString(R.string.terminal_restart_shell)) },
+                                    leadingIcon = { Icon(Icons.Outlined.RestartAlt, null) },
+                                    enabled = ptySession != null,
+                                    onClick = { showMenu = false; pty.close(ptyKey) },
+                                )
+                            }
+                        }
+                        return@AppHeader
+                    }
                     IconButton(onClick = { showAccess = true }, enabled = remote == null) {
                         Icon(Icons.Outlined.Shield, contentDescription = uiContext.getString(R.string.settings_root_access_mode), tint = scheme.primary)
                     }
@@ -154,6 +244,22 @@ fun TerminalScreen(
             )
         },
     ) { padding ->
+        if (interactive) {
+            com.androidharness.app.ui.common.LeftToRightContent {
+                InteractiveTerminalPane(
+                    manager = pty,
+                    sessionKey = ptyKey,
+                    cwd = ptyCwd,
+                    handle = viewHandle,
+                    onPaste = ::pasteClipboard,
+                    onCopy = ::copyOutput,
+                    // consumeWindowInsets stops the keyboard padding from counting
+                    // the navigation bar a second time.
+                    modifier = Modifier.padding(padding).consumeWindowInsets(padding).imePadding(),
+                )
+            }
+            return@Scaffold
+        }
         com.androidharness.app.ui.common.LeftToRightContent {
             Column(
                 modifier = Modifier

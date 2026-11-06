@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">Экран терминала. Коснитесь, чтобы ввести текст.</string>
+    <string name="terminal_interactive_mode">Интерактивный терминал</string>
+    <string name="terminal_command_mode">Режим команд</string>
+    <string name="terminal_interactive_subtitle">%1$s, пользователь приложения</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, пользователь приложения, %2$s</string>
+    <string name="terminal_starting">Запуск оболочки…</string>
+    <string name="terminal_exited">Оболочка завершилась с кодом %1$d.</string>
+    <string name="terminal_restart">Запустить новую оболочку</string>
+    <string name="terminal_start_failed">Не удалось запустить оболочку: %1$s</string>
+    <string name="terminal_try_again">Повторить</string>
+    <string name="terminal_paste">Вставить</string>
+    <string name="terminal_copy_output">Копировать вывод</string>
+    <string name="terminal_copied">Вывод терминала скопирован</string>
+    <string name="terminal_show_keyboard">Показать клавиатуру</string>
+    <string name="terminal_restart_shell">Перезапустить оболочку</string>
+    <string name="terminal_more_actions">Другие действия терминала</string>
+    <string name="terminal_reset_font">Сбросить размер текста</string>
+    <string name="terminal_no_linux_hint">Среда Linux не установлена, поэтому это базовая оболочка Android. Установите её в настройках, чтобы использовать bash и пакеты вроде nano, fzf и python.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, прервать</string>
+    <string name="terminal_key_up">Стрелка вверх</string>
+    <string name="terminal_key_down">Стрелка вниз</string>
+    <string name="terminal_key_left">Стрелка влево</string>
+    <string name="terminal_key_right">Стрелка вправо</string>
+    <string name="terminal_modifier_once">%1$s для следующей клавиши</string>
+    <string name="terminal_modifier_locked">%1$s зафиксирован</string>
+</resources>

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">ターミナル画面。タップして入力します。</string>
+    <string name="terminal_interactive_mode">インタラクティブターミナル</string>
+    <string name="terminal_command_mode">コマンドモード</string>
+    <string name="terminal_interactive_subtitle">%1$s、アプリユーザー</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s、アプリユーザー、%2$s</string>
+    <string name="terminal_starting">シェルを起動しています…</string>
+    <string name="terminal_exited">シェルがコード %1$d で終了しました。</string>
+    <string name="terminal_restart">新しいシェルを起動</string>
+    <string name="terminal_start_failed">シェルを起動できませんでした: %1$s</string>
+    <string name="terminal_try_again">再試行</string>
+    <string name="terminal_paste">貼り付け</string>
+    <string name="terminal_copy_output">出力をコピー</string>
+    <string name="terminal_copied">ターミナル出力をコピーしました</string>
+    <string name="terminal_show_keyboard">キーボードを表示</string>
+    <string name="terminal_restart_shell">シェルを再起動</string>
+    <string name="terminal_more_actions">その他のターミナル操作</string>
+    <string name="terminal_reset_font">文字サイズをリセット</string>
+    <string name="terminal_no_linux_hint">Linux 環境がインストールされていないため、これは Android の基本シェルです。設定からインストールすると、bash や nano、fzf、python などのパッケージを利用できます。</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C、中断</string>
+    <string name="terminal_key_up">上矢印</string>
+    <string name="terminal_key_down">下矢印</string>
+    <string name="terminal_key_left">左矢印</string>
+    <string name="terminal_key_right">右矢印</string>
+    <string name="terminal_modifier_once">%1$s を次のキーに適用</string>
+    <string name="terminal_modifier_locked">%1$s ロック中</string>
+</resources>

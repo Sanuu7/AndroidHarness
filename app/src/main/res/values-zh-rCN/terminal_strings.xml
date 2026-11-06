@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">终端屏幕。点按以输入。</string>
+    <string name="terminal_interactive_mode">交互式终端</string>
+    <string name="terminal_command_mode">命令模式</string>
+    <string name="terminal_interactive_subtitle">%1$s，应用用户</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s，应用用户，%2$s</string>
+    <string name="terminal_starting">正在启动 shell…</string>
+    <string name="terminal_exited">shell 已退出，代码为 %1$d。</string>
+    <string name="terminal_restart">启动新 shell</string>
+    <string name="terminal_start_failed">无法启动 shell：%1$s</string>
+    <string name="terminal_try_again">重试</string>
+    <string name="terminal_paste">粘贴</string>
+    <string name="terminal_copy_output">复制输出</string>
+    <string name="terminal_copied">已复制终端输出</string>
+    <string name="terminal_show_keyboard">显示键盘</string>
+    <string name="terminal_restart_shell">重启 shell</string>
+    <string name="terminal_more_actions">更多终端操作</string>
+    <string name="terminal_reset_font">重置文字大小</string>
+    <string name="terminal_no_linux_hint">未安装 Linux 环境，因此这是 Android 的基础 shell。请在设置中安装，以获取 bash 以及 nano、fzf 和 python 等软件包。</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C，中断</string>
+    <string name="terminal_key_up">上箭头</string>
+    <string name="terminal_key_down">下箭头</string>
+    <string name="terminal_key_left">左箭头</string>
+    <string name="terminal_key_right">右箭头</string>
+    <string name="terminal_modifier_once">下一次按键使用 %1$s</string>
+    <string name="terminal_modifier_locked">%1$s 已锁定</string>
+</resources>

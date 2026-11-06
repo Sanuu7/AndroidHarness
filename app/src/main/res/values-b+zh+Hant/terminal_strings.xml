@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">終端機畫面。輕觸即可輸入。</string>
+    <string name="terminal_interactive_mode">互動式終端機</string>
+    <string name="terminal_command_mode">命令模式</string>
+    <string name="terminal_interactive_subtitle">%1$s，應用程式使用者</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s，應用程式使用者，%2$s</string>
+    <string name="terminal_starting">正在啟動 shell…</string>
+    <string name="terminal_exited">shell 已結束，代碼為 %1$d。</string>
+    <string name="terminal_restart">啟動新的 shell</string>
+    <string name="terminal_start_failed">無法啟動 shell：%1$s</string>
+    <string name="terminal_try_again">重試</string>
+    <string name="terminal_paste">貼上</string>
+    <string name="terminal_copy_output">複製輸出</string>
+    <string name="terminal_copied">已複製終端機輸出</string>
+    <string name="terminal_show_keyboard">顯示鍵盤</string>
+    <string name="terminal_restart_shell">重新啟動 shell</string>
+    <string name="terminal_more_actions">更多終端機動作</string>
+    <string name="terminal_reset_font">重設文字大小</string>
+    <string name="terminal_no_linux_hint">未安裝 Linux 環境，因此這是 Android 的基本 shell。請在設定中安裝，即可取得 bash 以及 nano、fzf、python 等套件。</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C，中斷</string>
+    <string name="terminal_key_up">向上鍵</string>
+    <string name="terminal_key_down">向下鍵</string>
+    <string name="terminal_key_left">向左鍵</string>
+    <string name="terminal_key_right">向右鍵</string>
+    <string name="terminal_modifier_once">%1$s 用於下一個按鍵</string>
+    <string name="terminal_modifier_locked">%1$s 已鎖定</string>
+</resources>

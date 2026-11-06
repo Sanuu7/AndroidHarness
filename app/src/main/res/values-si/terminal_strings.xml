@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="terminal_view_description">ටර්මිනල් තිරය. ටයිප් කිරීමට තට්ටු කරන්න.</string>
+    <string name="terminal_interactive_mode">අන්තර්ක්‍රියාකාරී ටර්මිනලය</string>
+    <string name="terminal_command_mode">විධාන ප්‍රකාරය</string>
+    <string name="terminal_interactive_subtitle">%1$s, යෙදුම් පරිශීලක</string>
+    <string name="terminal_interactive_subtitle_dir">%1$s, යෙදුම් පරිශීලක, %2$s</string>
+    <string name="terminal_starting">ෂෙලය ආරම්භ කරමින්…</string>
+    <string name="terminal_exited">ෂෙලය කේතය %1$d සමඟ අවසන් විය.</string>
+    <string name="terminal_restart">නව ෂෙලයක් ආරම්භ කරන්න</string>
+    <string name="terminal_start_failed">ෂෙලය ආරම්භ කළ නොහැකි විය: %1$s</string>
+    <string name="terminal_try_again">නැවත උත්සාහ කරන්න</string>
+    <string name="terminal_paste">අලවන්න</string>
+    <string name="terminal_copy_output">ප්‍රතිදානය පිටපත් කරන්න</string>
+    <string name="terminal_copied">ටර්මිනල් ප්‍රතිදානය පිටපත් කරන ලදි</string>
+    <string name="terminal_show_keyboard">යතුරුපුවරුව පෙන්වන්න</string>
+    <string name="terminal_restart_shell">ෂෙලය නැවත අරඹන්න</string>
+    <string name="terminal_more_actions">තවත් ටර්මිනල් ක්‍රියා</string>
+    <string name="terminal_reset_font">පෙළ ප්‍රමාණය යළි සකසන්න</string>
+    <string name="terminal_no_linux_hint">Linux පරිසරය ස්ථාපිත නොමැති බැවින් මෙය Android හි මූලික ෂෙලයයි. bash සහ nano, fzf, python වැනි පැකේජ ලබා ගැනීමට එය සැකසීම් තුළ ස්ථාපනය කරන්න.</string>
+    <string name="terminal_key_ctrl">Ctrl</string>
+    <string name="terminal_key_alt">Alt</string>
+    <string name="terminal_key_fn">Fn</string>
+    <string name="terminal_key_esc">Esc</string>
+    <string name="terminal_key_tab">Tab</string>
+    <string name="terminal_key_home">Home</string>
+    <string name="terminal_key_end">End</string>
+    <string name="terminal_key_pgup">PgUp</string>
+    <string name="terminal_key_pgdn">PgDn</string>
+    <string name="terminal_key_ins">Ins</string>
+    <string name="terminal_key_del">Del</string>
+    <string name="terminal_key_interrupt">Ctrl+C, බාධා කරන්න</string>
+    <string name="terminal_key_up">ඉහළ ඊතලය</string>
+    <string name="terminal_key_down">පහළ ඊතලය</string>
+    <string name="terminal_key_left">වම් ඊතලය</string>
+    <string name="terminal_key_right">දකුණු ඊතලය</string>
+    <string name="terminal_modifier_once">ඊළඟ යතුර සඳහා %1$s</string>
+    <string name="terminal_modifier_locked">%1$s අගුළු දමා ඇත</string>
+</resources>
