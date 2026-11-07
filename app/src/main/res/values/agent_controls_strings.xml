@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Recommended</string>
+    <string name="question_auto_continue">No answer? Continues with the recommended option in %1$s.</string>
+
+    <string name="questions_group">Questions</string>
+    <string name="auto_continue_title">Automatically continue questions</string>
+    <string name="auto_continue_desc">When enabled, agent questions automatically continue with the recommended option after 5 minutes without an answer. When disabled, current and future questions wait for your response.</string>
+    <string name="auto_continue_search_desc">Let unanswered agent questions continue with the recommended option after 5 minutes</string>
+
+    <string name="show_todo_title">Show to-do list</string>
+    <string name="show_todo_desc">Show the agent\'s task list above the message box in Code. When off, the list stays hidden and the agent keeps working the same way.</string>
+    <string name="show_todo_search_desc">Show or hide the agent\'s to-do list in Code</string>
+
+    <string name="subagents_enable_title">Allow subagents</string>
+    <string name="subagents_enable_desc">When off, nothing can start a subagent: not the agent, a plugin or another setting. Running subagents stop. Only you can turn this back on.</string>
+    <string name="subagents_enable_off_note">Subagents are off. The options below have no effect until you turn them back on.</string>
+    <string name="subagents_search_desc">Turn every subagent off so nothing can start one</string>
+</resources>

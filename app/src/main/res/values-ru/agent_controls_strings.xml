@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Рекомендуется</string>
+    <string name="question_auto_continue">Нет ответа? Продолжит с рекомендуемым вариантом через %1$s.</string>
+    <string name="questions_group">Вопросы</string>
+    <string name="auto_continue_title">Автоматически продолжать вопросы</string>
+    <string name="auto_continue_desc">Если включено, вопросы агента автоматически продолжаются с рекомендуемым вариантом через 5 минут без ответа. Если выключено, текущие и будущие вопросы ждут вашего ответа.</string>
+    <string name="auto_continue_search_desc">Разрешить неотвеченным вопросам агента продолжаться с рекомендуемым вариантом через 5 минут</string>
+    <string name="show_todo_title">Показывать список задач</string>
+    <string name="show_todo_desc">Показывать список задач агента над полем ввода в Code. Если выключено, список остаётся скрытым, а агент работает так же.</string>
+    <string name="show_todo_search_desc">Показывать или скрывать список задач агента в Code</string>
+    <string name="subagents_enable_title">Разрешить субагентов</string>
+    <string name="subagents_enable_desc">Если выключено, ничто не может запустить субагента: ни агент, ни плагин, ни другая настройка. Запущенные субагенты останавливаются. Включить обратно можете только вы.</string>
+    <string name="subagents_enable_off_note">Субагенты выключены. Параметры ниже не действуют, пока вы не включите их снова.</string>
+    <string name="subagents_search_desc">Отключить всех субагентов, чтобы ничто не могло запустить ни одного</string>
+</resources>

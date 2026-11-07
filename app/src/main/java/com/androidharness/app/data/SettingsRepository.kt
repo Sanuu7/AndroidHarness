@@ -178,6 +178,15 @@ data class AppSettings(
     /** Device-local section selection, including an empty Chat or Code draft. */
     val lastConversationKind: ConversationKind = ConversationKind.CODE,
     val showLiveCode: Boolean = true,
+    /**
+     * A Code question nobody answers continues with its recommended option after five minutes.
+     * Off, every question waits for the user, including one already on screen.
+     */
+    val autoContinueQuestions: Boolean = true,
+    /** The task list above the Code composer. The agent keeps writing its list either way. */
+    val showTodoList: Boolean = true,
+    /** Off removes the task tool and every subagent control, so nothing can start a subagent. */
+    val subagentsEnabled: Boolean = true,
     /** ID of the last active chat session. */
     val lastActiveSessionId: String? = null,
     /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
@@ -334,6 +343,9 @@ class SettingsRepository(private val context: Context) {
         val MEMORY_ENTRY_MAX_CHARS = intPreferencesKey("memory_entry_max_chars")
         val LAST_CONVERSATION_KIND = stringPreferencesKey("last_conversation_kind")
         val SHOW_LIVE_CODE = booleanPreferencesKey("show_live_code")
+        val AUTO_CONTINUE_QUESTIONS = booleanPreferencesKey("auto_continue_questions")
+        val SHOW_TODO_LIST = booleanPreferencesKey("show_todo_list")
+        val SUBAGENTS_ENABLED = booleanPreferencesKey("subagents_enabled")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
         val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
         val LOCAL_MODEL_AGENT_CONTEXT = booleanPreferencesKey("local_model_agent_context")
@@ -466,6 +478,9 @@ class SettingsRepository(private val context: Context) {
             memoryEntryMaxChars = prefs[Keys.MEMORY_ENTRY_MAX_CHARS]?.takeIf { it > 0 } ?: MemoryText.DEFAULT_MAX_ENTRY_CHARS,
             lastConversationKind = ConversationKind.entries.firstOrNull { it.name == prefs[Keys.LAST_CONVERSATION_KIND] } ?: ConversationKind.CODE,
             showLiveCode = prefs[Keys.SHOW_LIVE_CODE] ?: true,
+            autoContinueQuestions = prefs[Keys.AUTO_CONTINUE_QUESTIONS] ?: true,
+            showTodoList = prefs[Keys.SHOW_TODO_LIST] ?: true,
+            subagentsEnabled = prefs[Keys.SUBAGENTS_ENABLED] ?: true,
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
             repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
             localModelAgentContext = prefs[Keys.LOCAL_MODEL_AGENT_CONTEXT] ?: false,
@@ -553,6 +568,9 @@ class SettingsRepository(private val context: Context) {
             p[Keys.MEMORY_ENTRY_UNLIMITED] = s.memoryEntryUnlimited
             p[Keys.MEMORY_ENTRY_MAX_CHARS] = s.memoryEntryMaxChars.takeIf { it > 0 } ?: MemoryText.DEFAULT_MAX_ENTRY_CHARS
             p[Keys.SHOW_LIVE_CODE] = s.showLiveCode
+            p[Keys.AUTO_CONTINUE_QUESTIONS] = s.autoContinueQuestions
+            p[Keys.SHOW_TODO_LIST] = s.showTodoList
+            p[Keys.SUBAGENTS_ENABLED] = s.subagentsEnabled
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
             p[Keys.LOCAL_MODEL_AGENT_CONTEXT] = s.localModelAgentContext
             p[Keys.LOCAL_MODEL_EXPERIMENTAL] = s.localModelExperimental
@@ -596,6 +614,18 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setSubagentFullAccess(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.SUBAGENT_FULL_ACCESS] = enabled }
+    }
+
+    suspend fun setSubagentsEnabled(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.SUBAGENTS_ENABLED] = enabled }
+    }
+
+    suspend fun setAutoContinueQuestions(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.AUTO_CONTINUE_QUESTIONS] = enabled }
+    }
+
+    suspend fun setShowTodoList(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.SHOW_TODO_LIST] = enabled }
     }
 
     suspend fun setBackgroundSubagents(enabled: Boolean) {

@@ -132,6 +132,74 @@ class AppSettingsToolsTest {
         assertTrue(AgentSettingsCatalog.all.none { it.kind is SettingKind.Text && !it.sensitive })
     }
 
+    @Test fun questionsTodoListAndSubagentsAreOnByDefaultAndFindable() {
+        listOf("auto_continue_questions", "show_todo_list", "subagents_enabled").forEach { key ->
+            assertEquals("$key starts on", "true", AgentSettingsCatalog[key]!!.read(defaults))
+        }
+        assertTrue(AgentSettingsCatalog.search("hide todo list").any { it.key == "show_todo_list" })
+        assertTrue(AgentSettingsCatalog.search("turn off subagents").any { it.key == "subagents_enabled" })
+        assertTrue(AgentSettingsCatalog.search("questions wait for me").any { it.key == "auto_continue_questions" })
+    }
+
+    @Test fun theAgentCanTurnSubagentsOffButNeverBackOn() {
+        val off = tool().plan(args("""{"changes":[{"key":"subagents_enabled","value":"off"}]}"""), defaults)
+        assertEquals(listOf("subagents_enabled"), off.changes.map { it.setting.key })
+        assertEquals("false", off.changes.single().after)
+        assertTrue(off.errors.isEmpty() && off.todos.isEmpty())
+
+        val disabled = defaults.copy(subagentsEnabled = false)
+        for (spelling in listOf("true", "on", "Enable", "YES", "1")) {
+            val plan = tool(disabled).plan(args("""{"changes":[{"key":"subagents_enabled","value":"$spelling"}]}"""), disabled)
+            assertTrue("$spelling must not change anything", plan.changes.isEmpty())
+            assertEquals(1, plan.errors.size)
+            val link = plan.todos.single()
+            assertEquals("SUBAGENT", link.page)
+            assertEquals("subagents_enabled", link.key)
+        }
+        val sameAsNow = tool().plan(args("""{"changes":[{"key":"subagents_enabled","value":"true"}]}"""), defaults)
+        assertTrue(sameAsNow.changes.isEmpty() && sameAsNow.errors.isEmpty())
+    }
+
+    @Test fun theUserOnlyRuleIsVisibleToTheModelAndDoesNotTouchOtherSettings() {
+        val line = AgentSettingsCatalog["subagents_enabled"]!!.describe(defaults)
+        assertTrue(line, line.contains("only the user can set it to true"))
+        assertTrue(AgentSettingsCatalog.all.filter { it.key != "subagents_enabled" }.all { it.userOnlyValue == null })
+        val mixed = tool(defaults.copy(subagentsEnabled = false)).plan(
+            args("""{"changes":[{"key":"subagents_enabled","value":"true"},{"key":"show_todo_list","value":"false"}]}"""),
+            defaults.copy(subagentsEnabled = false))
+        assertEquals(listOf("show_todo_list"), mixed.changes.map { it.setting.key })
+    }
+
+    @Test fun moreOfTheAppIsReachableAndAnythingThatWidensWhatTheAgentDoesAsks() {
+        val reachable = listOf("auto_compact", "resume_prompt", "chat_recall_code_memory", "code_recall_chat_memory", "canvas_in_chat",
+            "canvas_in_code", "local_model_agent_context", "live_speak_replies", "live_silence", "groq_whisper_model",
+            "auto_continue_questions", "show_todo_list", "subagents_enabled")
+        reachable.forEach { assertNotNull("$it is in the catalog", AgentSettingsCatalog[it]) }
+        listOf("auto_continue_questions", "resume_prompt", "chat_recall_code_memory", "code_recall_chat_memory", "local_model_agent_context").forEach {
+            assertTrue("$it asks first", AgentSettingsCatalog[it]!!.sensitive)
+        }
+    }
+
+    @Test fun newRangesAndTextRejectValuesTheAppCannotUse() {
+        val compact = AgentSettingsCatalog["auto_compact"]!!
+        assertEquals("0", compact.read(defaults))
+        assertEquals("50000", compact.normalize("50000", defaults).getOrNull())
+        assertTrue(compact.normalize("-1", defaults).isFailure)
+        assertTrue(compact.normalize("12.5", defaults).isFailure)
+        val silence = AgentSettingsCatalog["live_silence"]!!
+        assertEquals("1200", silence.read(defaults))
+        assertEquals("600", silence.normalize("600 ms", defaults).getOrNull())
+        assertTrue(silence.normalize("500", defaults).isFailure)
+        assertTrue(silence.normalize("3001", defaults).isFailure)
+        val resume = AgentSettingsCatalog["resume_prompt"]!!
+        assertEquals("", resume.read(defaults))
+        assertTrue(resume.normalize("x".repeat(2_000), defaults).isSuccess)
+        assertTrue(resume.normalize("x".repeat(2_001), defaults).isFailure)
+        val whisper = AgentSettingsCatalog["groq_whisper_model"]!!
+        assertEquals("whisper-large-v3-turbo", whisper.normalize("Whisper large v3 turbo", defaults).getOrNull())
+        assertTrue(whisper.normalize("whisper-9", defaults).isFailure)
+    }
+
     @Test fun findListsMatchesWithCurrentValues() = runBlocking {
         val result = AppSettingsFindTool { defaults.copy(rumbleStrength = 42) }.execute(args("""{"query":"rumble strength"}"""), ToolContext(FileFs(File("."))))
         assertTrue(result.output.contains("rumble_strength = 42"))

@@ -15,7 +15,10 @@ class AskUserTool : Tool {
         "several times in the same turn to gather everything you need before acting. " +
         "Provide 2-4 short options when possible; the user can also type a free-form answer. " +
         "Set multi_select=true when several answers can be true at once (the user gets " +
-        "checkboxes instead of single-choice chips); offer up to 8 options then."
+        "checkboxes instead of single-choice chips); offer up to 8 options then. " +
+        "List the option you recommend first and name it in `recommended` (its exact text or its number); " +
+        "the user sees a Recommended badge on it. When the user is away for 5 minutes the app may continue " +
+        "with it on their behalf, so never recommend an option that deletes data, spends money or cannot be undone."
     override val parametersSchema = Schema.obj(
         mapOf(
             "question" to Schema.string("The question to show the user."),
@@ -25,6 +28,10 @@ class AskUserTool : Tool {
             ),
             "multi_select" to Schema.boolean(
                 "Allow the user to pick several options at once (checkboxes). Default false.",
+            ),
+            "recommended" to Schema.array(
+                Schema.string("Exact text or one-based number of a recommended option."),
+                "The option you recommend (one, or several with multi_select). Defaults to the first option.",
             ),
         ),
         required = listOf("question"),

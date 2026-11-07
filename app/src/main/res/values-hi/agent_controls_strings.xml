@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">अनुशंसित</string>
+    <string name="question_auto_continue">कोई उत्तर नहीं? %1$s में अनुशंसित विकल्प के साथ जारी रहेगा।</string>
+    <string name="questions_group">प्रश्न</string>
+    <string name="auto_continue_title">प्रश्नों को स्वतः जारी रखें</string>
+    <string name="auto_continue_desc">चालू होने पर, एजेंट के प्रश्न 5 मिनट तक उत्तर न मिलने पर अनुशंसित विकल्प के साथ स्वतः जारी रहते हैं। बंद होने पर, मौजूदा और भविष्य के प्रश्न आपके उत्तर की प्रतीक्षा करते हैं।</string>
+    <string name="auto_continue_search_desc">बिना उत्तर वाले एजेंट प्रश्नों को 5 मिनट बाद अनुशंसित विकल्प के साथ जारी रहने दें</string>
+    <string name="show_todo_title">कार्य सूची दिखाएँ</string>
+    <string name="show_todo_desc">Code में संदेश बॉक्स के ऊपर एजेंट की कार्य सूची दिखाएँ। बंद होने पर सूची छिपी रहती है और एजेंट उसी तरह काम करता रहता है।</string>
+    <string name="show_todo_search_desc">Code में एजेंट की कार्य सूची दिखाएँ या छिपाएँ</string>
+    <string name="subagents_enable_title">सबएजेंट की अनुमति दें</string>
+    <string name="subagents_enable_desc">बंद होने पर कोई भी सबएजेंट शुरू नहीं कर सकता: न एजेंट, न प्लगइन, न कोई अन्य सेटिंग। चल रहे सबएजेंट रुक जाते हैं। इसे केवल आप ही वापस चालू कर सकते हैं।</string>
+    <string name="subagents_enable_off_note">सबएजेंट बंद हैं। जब तक आप इन्हें वापस चालू नहीं करते, नीचे के विकल्प काम नहीं करेंगे।</string>
+    <string name="subagents_search_desc">सभी सबएजेंट बंद करें ताकि कोई भी एक भी शुरू न कर सके</string>
+</resources>

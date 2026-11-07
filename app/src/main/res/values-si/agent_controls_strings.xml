@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">නිර්දේශිතයි</string>
+    <string name="question_auto_continue">පිළිතුරක් නැද්ද? %1$s තුළ නිර්දේශිත විකල්පය සමඟ දිගටම යයි.</string>
+    <string name="questions_group">ප්‍රශ්න</string>
+    <string name="auto_continue_title">ප්‍රශ්න ස්වයංක්‍රීයව දිගටම කරගෙන යන්න</string>
+    <string name="auto_continue_desc">සක්‍රීය කළ විට, නියෝජිතයාගේ ප්‍රශ්නවලට විනාඩි 5ක් පිළිතුරක් නොලැබුණොත් නිර්දේශිත විකල්පය සමඟ ස්වයංක්‍රීයව දිගටම යයි. අක්‍රීය කළ විට, වත්මන් සහ අනාගත ප්‍රශ්න ඔබේ පිළිතුර එනතුරු රැඳී සිටියි.</string>
+    <string name="auto_continue_search_desc">පිළිතුරු නොලැබූ නියෝජිත ප්‍රශ්න විනාඩි 5කට පසු නිර්දේශිත විකල්පය සමඟ දිගටම යාමට ඉඩ දෙන්න</string>
+    <string name="show_todo_title">කාර්ය ලැයිස්තුව පෙන්වන්න</string>
+    <string name="show_todo_desc">Code තුළ පණිවිඩ කොටුවට ඉහළින් නියෝජිතයාගේ කාර්ය ලැයිස්තුව පෙන්වන්න. අක්‍රීය කළ විට ලැයිස්තුව සැඟවී රැඳේ, නියෝජිතයා එලෙසම වැඩ කරයි.</string>
+    <string name="show_todo_search_desc">Code තුළ නියෝජිතයාගේ කාර්ය ලැයිස්තුව පෙන්වන්න හෝ සඟවන්න</string>
+    <string name="subagents_enable_title">උප නියෝජිතයන්ට ඉඩ දෙන්න</string>
+    <string name="subagents_enable_desc">අක්‍රීය කළ විට කිසිවකට උප නියෝජිතයෙකු ආරම්භ කළ නොහැක: නියෝජිතයාට, ප්ලගිනයකට හෝ වෙනත් සැකසුමකට නොවේ. ධාවනය වන උප නියෝජිතයන් නතර වේ. නැවත සක්‍රීය කළ හැක්කේ ඔබට පමණි.</string>
+    <string name="subagents_enable_off_note">උප නියෝජිතයන් අක්‍රීයයි. ඔබ නැවත සක්‍රීය කරන තෙක් පහත විකල්ප ක්‍රියා නොකරයි.</string>
+    <string name="subagents_search_desc">කිසිවකට එකක් ආරම්භ කළ නොහැකි වන පරිදි සියලු උප නියෝජිතයන් අක්‍රීය කරන්න</string>
+</resources>

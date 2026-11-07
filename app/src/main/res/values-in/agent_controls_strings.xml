@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Direkomendasikan</string>
+    <string name="question_auto_continue">Tidak ada jawaban? Lanjut dengan opsi yang direkomendasikan dalam %1$s.</string>
+    <string name="questions_group">Pertanyaan</string>
+    <string name="auto_continue_title">Lanjutkan pertanyaan secara otomatis</string>
+    <string name="auto_continue_desc">Saat aktif, pertanyaan agen otomatis lanjut dengan opsi yang direkomendasikan setelah 5 menit tanpa jawaban. Saat nonaktif, pertanyaan saat ini dan mendatang menunggu jawaban Anda.</string>
+    <string name="auto_continue_search_desc">Biarkan pertanyaan agen yang belum dijawab lanjut dengan opsi yang direkomendasikan setelah 5 menit</string>
+    <string name="show_todo_title">Tampilkan daftar tugas</string>
+    <string name="show_todo_desc">Tampilkan daftar tugas agen di atas kotak pesan di Code. Saat nonaktif, daftar tetap tersembunyi dan agen tetap bekerja seperti biasa.</string>
+    <string name="show_todo_search_desc">Tampilkan atau sembunyikan daftar tugas agen di Code</string>
+    <string name="subagents_enable_title">Izinkan subagen</string>
+    <string name="subagents_enable_desc">Saat nonaktif, tidak ada yang dapat memulai subagen: bukan agen, plugin, atau pengaturan lain. Subagen yang berjalan berhenti. Hanya Anda yang dapat mengaktifkannya kembali.</string>
+    <string name="subagents_enable_off_note">Subagen nonaktif. Opsi di bawah tidak berlaku sampai Anda mengaktifkannya kembali.</string>
+    <string name="subagents_search_desc">Nonaktifkan semua subagen agar tidak ada yang dapat memulai satu</string>
+</resources>

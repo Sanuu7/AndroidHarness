@@ -9,6 +9,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
@@ -22,17 +23,28 @@ internal fun SubagentSettingsSection(
     onBackgroundSubagents: (Boolean) -> Unit = {},
     onCompletionNotifications: (Boolean) -> Unit = {},
     onOpenBackgroundSettings: () -> Unit = {},
+    onSubagentsEnabled: (Boolean) -> Unit = {},
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val on = settings.subagentsEnabled
     SettingsPanel(Modifier.fillMaxWidth()) {
+        SubagentSettingSwitch(R.string.subagents_enable_title, R.string.subagents_enable_desc, on, onSubagentsEnabled)
+    }
+    if (!on) Text(
+        stringResource(R.string.subagents_enable_off_note),
+        style = MaterialTheme.typography.bodySmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+    SettingsPanel(Modifier.fillMaxWidth().alpha(if (on) 1f else .5f)) {
         SubagentSettingSwitch(R.string.subagents_allow_background, R.string.subagents_background_description,
-            settings.backgroundSubagents, onBackgroundSubagents)
+            settings.backgroundSubagents, onBackgroundSubagents, enabled = on)
         SubagentSettingSwitch(R.string.subagents_notify_completion, R.string.subagents_notify_description,
-            settings.notificationsEnabled && settings.subagentCompletionNotifications, onCompletionNotifications, enabled = settings.notificationsEnabled)
+            settings.notificationsEnabled && settings.subagentCompletionNotifications, onCompletionNotifications,
+            enabled = on && settings.notificationsEnabled)
         SettingsAnchor(R.string.settings_anchor_subagent_tools) {
             Row(
                 Modifier.fillMaxWidth()
-                    .toggleable(settings.subagentFullAccess, role = Role.Switch, onValueChange = onSubagentTools)
+                    .toggleable(settings.subagentFullAccess, enabled = on, role = Role.Switch, onValueChange = onSubagentTools)
                     .padding(16.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(12.dp),
@@ -45,7 +57,7 @@ internal fun SubagentSettingsSection(
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
-                Switch(checked = settings.subagentFullAccess, onCheckedChange = null)
+                Switch(checked = settings.subagentFullAccess, onCheckedChange = null, enabled = on)
             }
         }
     }

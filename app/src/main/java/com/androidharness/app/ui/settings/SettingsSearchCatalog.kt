@@ -201,6 +201,20 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         anchor = R.string.tips_setting_title,
     ),
     SettingsSearchEntry(
+        R.string.auto_continue_title,
+        R.string.auto_continue_search_desc,
+        SettingsPage.AGENT,
+        "question ask auto continue automatically recommended option timeout 5 minutes wait answer",
+        anchor = R.string.auto_continue_title,
+    ),
+    SettingsSearchEntry(
+        R.string.subagents_enable_title,
+        R.string.subagents_search_desc,
+        SettingsPage.SUBAGENT,
+        "subagent sub-agent subagents disable off turn off allow task delegate parallel",
+        anchor = R.string.subagents_enable_title,
+    ),
+    SettingsSearchEntry(
         R.string.as_setting_title,
         R.string.as_search_desc,
         SettingsPage.AGENT,
@@ -227,6 +241,13 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         SettingsPage.CHAT,
         "writing streaming diff added removed tokens",
         anchor = R.string.settings_anchor_show_live_code,
+    ),
+    SettingsSearchEntry(
+        R.string.show_todo_title,
+        R.string.show_todo_search_desc,
+        SettingsPage.CHAT,
+        "todo to-do task list checklist plan progress hide show",
+        anchor = R.string.show_todo_title,
     ),
     SettingsSearchEntry(
         R.string.settings_search_repo_map_title,

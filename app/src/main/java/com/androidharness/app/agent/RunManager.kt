@@ -32,6 +32,8 @@ import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.onEach
@@ -92,6 +94,8 @@ class RunManager(
         val packageProgress: Map<String, com.androidharness.app.data.env.PackageInstallStatus> = emptyMap(),
         val pendingApproval: ApprovalRequest? = null,
         val pendingQuestion: QuestionRequest? = null,
+        /** When the open question continues by itself, or null while no countdown runs. */
+        val questionAutoAt: Long? = null,
         val pendingEnvironment: EnvironmentRequest? = null,
         val installingEnvironment: EnvironmentRequest? = null,
         val currentToolAction: String? = null,
@@ -237,6 +241,11 @@ class RunManager(
     private val mainRunningSessionIds = MutableStateFlow<Set<String>>(emptySet())
     val runningSessionIds = MutableStateFlow<Set<String>>(emptySet())
     init {
+        // Turning subagents off also stops any that are running, so the switch means what it says.
+        appScope.launch {
+            settings.settings.map { it.subagentsEnabled }.distinctUntilChanged().drop(1).filter { !it }
+                .collect { subagents.stopAllAndJoin() }
+        }
         appScope.launch {
             combine(mainRunningSessionIds, subagents.activeSessionIds) { main, delegates -> main + delegates }
                 .collect { runningSessionIds.value = it }
@@ -695,6 +704,7 @@ class RunManager(
                         codeDrafts = emptyMap(), packageProgress = emptyMap(),
                         pendingApproval = null,
                         pendingQuestion = null,
+                        questionAutoAt = null,
                         pendingEnvironment = null,
                         currentToolAction = null,
                         subagentSteps = emptyMap(),
@@ -858,7 +868,13 @@ class RunManager(
                     st.copy(packageProgress = st.packageProgress + (event.callId to event.status)) else st
             }
             is AgentEvent.ApprovalNeeded -> live.update { it.copy(pendingApproval = event.request) }
-            is AgentEvent.QuestionNeeded -> live.update { it.copy(pendingQuestion = event.request) }
+            is AgentEvent.QuestionNeeded -> {
+                live.update { it.copy(pendingQuestion = event.request, questionAutoAt = null) }
+                // Only Code questions continue on their own, and only when there is something to recommend.
+                if (QuestionAutoContinue.answer(event.request) != null &&
+                    !com.androidharness.app.data.ConversationConfig.decode(sessions.session(sessionId)?.conversationJson).isChat)
+                    watchQuestion(sessionId, event.request)
+            }
             is AgentEvent.EnvironmentNeeded -> live.update { it.copy(pendingEnvironment = event.request) }
 
             is AgentEvent.ToolMessageCommitted -> sessions.addMessage(sessionId, event.message, turnId)
@@ -1053,8 +1069,36 @@ class RunManager(
             val pending = current.pendingQuestion ?: return false
             if (current.turnId != turnId || pending.callId != callId) return false
             if (fingerprint != null && RemotePromptIdentity.question(pending) != fingerprint) return false
-            if (!live.compareAndSet(current, current.copy(pendingQuestion = null))) continue
+            if (!live.compareAndSet(current, current.copy(pendingQuestion = null, questionAutoAt = null))) continue
             return pending.response.complete(answer.ifBlank { "(no answer given)" })
+        }
+    }
+
+    /** One countdown per open Code question; it follows the setting live and ends with the question. */
+    private fun watchQuestion(sessionId: String, request: QuestionRequest) {
+        val live = stateOf(sessionId)
+        appScope.launch {
+            QuestionAutoContinue.watch(
+                askedAt = request.askedAt,
+                enabled = settings.settings.map { it.autoContinueQuestions }.distinctUntilChanged(),
+                open = live.map { it.pendingQuestion === request }.distinctUntilChanged(),
+                onDeadline = { at -> live.update { if (it.pendingQuestion === request) it.copy(questionAutoAt = at) else it } },
+                onExpired = { continueQuestion(sessionId, request) },
+            )
+        }
+    }
+
+    /** Answers with the recommendation, unless the user or a run ending got there first. */
+    private fun continueQuestion(sessionId: String, request: QuestionRequest) {
+        val live = stateOf(sessionId)
+        val answer = QuestionAutoContinue.answer(request) ?: return
+        while (true) {
+            val current = live.value
+            if (current.pendingQuestion !== request) return
+            if (!live.compareAndSet(current, current.copy(pendingQuestion = null, questionAutoAt = null))) continue
+            request.autoAnswered = true
+            request.response.complete(answer)
+            return
         }
     }
 

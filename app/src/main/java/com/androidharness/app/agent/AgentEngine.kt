@@ -66,8 +66,14 @@ class QuestionRequest(
     val options: List<String>,
     /** Checkbox UI: the user may pick several options at once. */
     val multiSelect: Boolean = false,
+    /** Indexes into [options] the agent recommends; empty only when there are no options. */
+    val recommended: List<Int> = emptyList(),
 ) {
     val response = CompletableDeferred<String>()
+    val askedAt: Long = System.currentTimeMillis()
+
+    /** Set just before completing [response] when the app answered because nobody did. */
+    @Volatile var autoAnswered = false
 }
 
 /** The agent wants to run commands that need the Linux environment. */
@@ -457,6 +463,7 @@ class AgentEngine(
             var roundRegistry = (if (conversation.isChat && !visionAvailable)
                 runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry)
                 .filter { !runContext.denies(it) && com.androidharness.app.config.ConfigToolPolicy.permission(projectConfig, it, effectiveMode) != "deny" }
+                .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
             val searchConfiguration = (roundRegistry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.configurationNote()
             var tools = if (!agentContextEnabled) emptyList() else roundRegistry.schemas(
                 readOnlyOnly = mode == AgentMode.PLAN,
@@ -664,6 +671,7 @@ class AgentEngine(
                 if (conversation.isChat) {
                     visionAvailable = false
                     roundRegistry = runRegistry.without(setOf("view_chat_image", "zoom_chat_image"))
+                        .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
                     tools = tools.filterNot { it.name in setOf("view_chat_image", "zoom_chat_image") }
                     requestSystemPrompt += "\nImage input was rejected by the provider. You cannot inspect or zoom images in this turn; say so rather than claiming to see them.\n"
                 }
@@ -1215,6 +1223,8 @@ class AgentEngine(
 
         // task spawns a nested read-only agent; handled here, never executed.
         if (call.name == "task") {
+            // The schema already hides the tool; this covers a call that was in flight when the switch turned off.
+            if (!cavemanSettings().subagentsEnabled) return ToolResult(false, SUBAGENTS_OFF_MESSAGE)
             val args = runCatching {
                 json.parseToJsonElement(call.argumentsJson).jsonObject
             }.getOrNull()
@@ -1307,15 +1317,18 @@ class AgentEngine(
                     ) multiSelect = true
                 }
             }
+            val shown = options.take(if (multiSelect) 8 else 6)
+            val choices = QuestionAutoContinue.resolve(shown, parseAskUserOptions(args["recommended"]), multiSelect)
             val request = QuestionRequest(
                 call.id,
                 questionText,
-                options.take(if (multiSelect) 8 else 6),
+                choices.labels,
                 multiSelect = multiSelect,
+                recommended = choices.recommended,
             )
             emitEvent(AgentEvent.QuestionNeeded(request))
             val answer = request.response.await()
-            return ToolResult(true, "The user answered: $answer")
+            return ToolResult(true, if (request.autoAnswered) QuestionAutoContinue.toolResult(answer) else "The user answered: $answer")
         }
 
         val command = if (com.androidharness.app.tools.ShellPolicy.isShellTool(call.name)) {
@@ -2217,6 +2230,7 @@ class AgentEngine(
             }.getOrNull() else readWorkspaceDoc(workspace, "memory")
         } else null
 
+        val appSettings = cavemanSettings()
         val sb = StringBuilder()
         sb.append(
             """
@@ -2232,14 +2246,14 @@ Rules:
 - Use todo_write to track multi-step work. Mark the current task in_progress before starting work or delegating it. After each milestone, mark only verified completed work completed and mark the next task in_progress before more tools. Never defer all task updates until the final answer; leave unfinished work pending or in_progress.
 - For a separately managed concept or artifact with version history and HTML export, use create_artifact. For ordinary rich replies, use the inline response components described below. Show it directly in chat; do not create workspace files, install packages, start a server, or change the real product unless requested. For follow-up edits, use read_artifact then create_artifact with the same artifact_id. If the user message has a [[harness-concept]] attachment, read its exact artifact_id and revision so edits start from the version the user selected.
 - HTML passed to create_artifact must be self-contained and work offline. Use inline CSS/JS/SVG/canvas, responsive layouts at 320px, accessible native controls with 44px touch targets, clear typography, and restrained spacing. Respect prefers-color-scheme and prefers-reduced-motion. No remote fonts, CDN scripts, fetch, APIs, forms that submit, or native bridges. Make controls actually work locally. Return a short explanation after creating the concept; never paste its full source into the final answer.
-- Use ask_user whenever a decision is genuinely the user's to make instead of guessing.
+- Use ask_user whenever a decision is genuinely the user's to make instead of guessing. List your recommended option first and name it in `recommended`.${if (appSettings.autoContinueQuestions) " If nobody answers within 5 minutes the app continues with that option for the user, so never recommend one that deletes data, spends money or cannot be undone." else ""}
 - Use remember to save durable user preferences, ongoing projects, decisions, and reusable project facts. When the user shares one, save it in the same turn without asking for confirmation. Use recall when earlier context or a saved preference would help. Keep entries short and standalone, and update rather than duplicate. Never save secrets, credentials, or one-off details. Workspace memory_write is separate and stays for long-form project notes.
 - Independent read-only tool calls may run concurrently. Mutating, interactive, and browser-state calls keep strict ordering. Never make one read-only call depend on the result of another call in the same batch; split dependent work into another tool round.
 - Mutating calls see the workspace after earlier ordered calls complete. A patch or diff pre-computed before an earlier edit can be stale by the time it runs, so build patches right before applying them.
 - Text files follow the POSIX convention: the last line ends with a newline terminator. When patching or editing, never add an extra empty line for the file's final newline.
 - When reporting file properties like newlines or byte counts, verify with a byte check (file_info or shell tail -c 3 | xxd) rather than inferring from line counts.
 - For Android logs, exceptions, or app crash investigations, use read_logcat instead of raw shell logcat commands. It supports level, tag, package_name, and buffer filtering.
-- For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message: they run concurrently.
+${if (appSettings.subagentsEnabled) "- For broad exploration whose raw output would flood this conversation (finding all usages, mapping a codebase, comparing many files), delegate to the task tool: it runs a read-only subagent and returns only the final answer. When several independent explorations are needed, issue ALL task calls in the SAME message: they run concurrently." else "- Subagents are turned off by the user, so there is no task tool. Explore and do the work yourself, and do not offer to delegate."}
 
 """.trim()
         )
@@ -2405,6 +2419,12 @@ Rules:
 
     companion object {
         private val PARALLEL_READ_EXCLUSIONS = setOf("ask_user", "browser_wait_for", "create_artifact", "subagent_wait", "subagent_stop")
+
+        /** Everything that starts or controls a subagent. The Sub-Agent switch removes all of it. */
+        val SUBAGENT_TOOLS = setOf("task", "subagent_status", "subagent_wait", "subagent_stop")
+        const val SUBAGENTS_OFF_MESSAGE =
+            "Subagents are turned off in Settings, so task cannot run. Do the work yourself with your own tools. " +
+                "Only the user can turn subagents back on."
         const val COMPACTION_PREFIX = "[Auto-compacted context: summary of the earlier conversation]"
 
         /** How many times a silent (reasoning-only, no answer) model is asked to answer. */

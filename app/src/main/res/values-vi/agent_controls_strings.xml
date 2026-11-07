@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Đề xuất</string>
+    <string name="question_auto_continue">Không có câu trả lời? Sẽ tiếp tục với tùy chọn được đề xuất trong %1$s.</string>
+    <string name="questions_group">Câu hỏi</string>
+    <string name="auto_continue_title">Tự động tiếp tục câu hỏi</string>
+    <string name="auto_continue_desc">Khi bật, câu hỏi của tác nhân tự động tiếp tục với tùy chọn được đề xuất sau 5 phút không có câu trả lời. Khi tắt, câu hỏi hiện tại và sau này sẽ chờ câu trả lời của bạn.</string>
+    <string name="auto_continue_search_desc">Cho phép câu hỏi chưa trả lời của tác nhân tiếp tục với tùy chọn được đề xuất sau 5 phút</string>
+    <string name="show_todo_title">Hiện danh sách việc cần làm</string>
+    <string name="show_todo_desc">Hiện danh sách công việc của tác nhân phía trên ô nhập tin nhắn trong Code. Khi tắt, danh sách vẫn ẩn và tác nhân vẫn làm việc như cũ.</string>
+    <string name="show_todo_search_desc">Hiện hoặc ẩn danh sách việc cần làm của tác nhân trong Code</string>
+    <string name="subagents_enable_title">Cho phép tác nhân con</string>
+    <string name="subagents_enable_desc">Khi tắt, không gì có thể khởi động tác nhân con: không phải tác nhân, plugin hay cài đặt khác. Tác nhân con đang chạy sẽ dừng. Chỉ bạn mới có thể bật lại.</string>
+    <string name="subagents_enable_off_note">Tác nhân con đang tắt. Các tùy chọn bên dưới không có tác dụng cho đến khi bạn bật lại.</string>
+    <string name="subagents_search_desc">Tắt mọi tác nhân con để không gì có thể khởi động một cái</string>
+</resources>

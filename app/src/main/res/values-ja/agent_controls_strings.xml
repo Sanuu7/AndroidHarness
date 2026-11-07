@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">おすすめ</string>
+    <string name="question_auto_continue">回答がありませんか? %1$s でおすすめのオプションを選んで続行します。</string>
+    <string name="questions_group">質問</string>
+    <string name="auto_continue_title">質問を自動的に続行</string>
+    <string name="auto_continue_desc">オンの場合、5分間回答がないエージェントの質問は、おすすめのオプションで自動的に続行します。オフの場合、現在および今後の質問はあなたの回答を待ちます。</string>
+    <string name="auto_continue_search_desc">未回答のエージェントの質問を5分後におすすめのオプションで続行させる</string>
+    <string name="show_todo_title">ToDoリストを表示</string>
+    <string name="show_todo_desc">Codeのメッセージ欄の上にエージェントのタスクリストを表示します。オフの場合、リストは非表示のままで、エージェントは同じように作業を続けます。</string>
+    <string name="show_todo_search_desc">CodeでエージェントのToDoリストを表示または非表示にする</string>
+    <string name="subagents_enable_title">サブエージェントを許可</string>
+    <string name="subagents_enable_desc">オフの場合、エージェント、プラグイン、他の設定のいずれもサブエージェントを開始できません。実行中のサブエージェントは停止します。再度オンにできるのはあなただけです。</string>
+    <string name="subagents_enable_off_note">サブエージェントはオフです。再度オンにするまで、以下のオプションは効果がありません。</string>
+    <string name="subagents_search_desc">何もサブエージェントを開始できないように、すべてのサブエージェントをオフにする</string>
+</resources>

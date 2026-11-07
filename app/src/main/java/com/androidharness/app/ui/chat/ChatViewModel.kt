@@ -106,8 +106,11 @@ data class ChatUiState(
     val codeDrafts: Map<String, com.androidharness.app.agent.LiveCodeDraft> = emptyMap(),
     val packageProgress: Map<String, com.androidharness.app.data.env.PackageInstallStatus> = emptyMap(),
     val showLiveCode: Boolean = true,
+    val showTodoList: Boolean = true,
     val pendingApproval: ApprovalRequest? = null,
     val pendingQuestion: QuestionRequest? = null,
+    /** When the open question continues by itself; null while no countdown runs. */
+    val questionAutoAt: Long? = null,
     val busy: Boolean = false,
     val error: String? = null,
     val permissionMode: PermissionMode = PermissionMode.CONFIRM_RISKY,
@@ -458,7 +461,7 @@ class ChatViewModel(
         }
         viewModelScope.launch {
             c.settings.settings.collect {
-                _state.update { st -> st.copy(showLiveCode = it.showLiveCode) }
+                _state.update { st -> st.copy(showLiveCode = it.showLiveCode, showTodoList = it.showTodoList) }
             }
         }
         viewModelScope.launch {
@@ -691,6 +694,7 @@ class ChatViewModel(
                 packageProgress = live.packageProgress,
                 pendingApproval = live.pendingApproval,
                 pendingQuestion = live.pendingQuestion,
+                questionAutoAt = live.questionAutoAt,
                 pendingEnvironment = live.pendingEnvironment,
                 installingEnvironment = live.installingEnvironment,
                 currentToolAction = live.currentToolAction,

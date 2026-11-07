@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">แนะนำ</string>
+    <string name="question_auto_continue">ไม่มีคำตอบ? จะดำเนินการต่อด้วยตัวเลือกที่แนะนำใน %1$s</string>
+    <string name="questions_group">คำถาม</string>
+    <string name="auto_continue_title">ตอบคำถามต่อโดยอัตโนมัติ</string>
+    <string name="auto_continue_desc">เมื่อเปิดใช้งาน คำถามของเอเจนต์จะดำเนินการต่อโดยอัตโนมัติด้วยตัวเลือกที่แนะนำหลังจากไม่มีคำตอบ 5 นาที เมื่อปิดใช้งาน คำถามปัจจุบันและในอนาคตจะรอคำตอบของคุณ</string>
+    <string name="auto_continue_search_desc">ปล่อยให้คำถามที่ยังไม่มีคำตอบดำเนินการต่อด้วยตัวเลือกที่แนะนำหลังจาก 5 นาที</string>
+    <string name="show_todo_title">แสดงรายการสิ่งที่ต้องทำ</string>
+    <string name="show_todo_desc">แสดงรายการงานของเอเจนต์เหนือช่องข้อความใน Code เมื่อปิด รายการจะซ่อนอยู่และเอเจนต์ยังทำงานเหมือนเดิม</string>
+    <string name="show_todo_search_desc">แสดงหรือซ่อนรายการสิ่งที่ต้องทำของเอเจนต์ใน Code</string>
+    <string name="subagents_enable_title">อนุญาตเอเจนต์ย่อย</string>
+    <string name="subagents_enable_desc">เมื่อปิด ไม่มีสิ่งใดเริ่มเอเจนต์ย่อยได้: ทั้งเอเจนต์ ปลั๊กอิน หรือการตั้งค่าอื่น เอเจนต์ย่อยที่กำลังทำงานจะหยุด เฉพาะคุณเท่านั้นที่เปิดกลับได้</string>
+    <string name="subagents_enable_off_note">เอเจนต์ย่อยปิดอยู่ ตัวเลือกด้านล่างจะไม่มีผลจนกว่าคุณจะเปิดอีกครั้ง</string>
+    <string name="subagents_search_desc">ปิดเอเจนต์ย่อยทั้งหมดเพื่อไม่ให้สิ่งใดเริ่มได้</string>
+</resources>

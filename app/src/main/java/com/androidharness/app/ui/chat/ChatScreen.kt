@@ -2313,6 +2313,7 @@ private fun ChatScreenContent(
                                 QuestionCard(
                                     question = question,
                                     onAnswer = viewModel::answerQuestion,
+                                    autoContinueAt = state.questionAutoAt,
                                 )
                             }
                         }
@@ -2434,7 +2435,7 @@ private fun ChatScreenContent(
                     state.sessionId, viewModel.container.runManager, onOpenSubagent,
                     composerText = composerText)
 
-                if (!state.conversation.isChat && state.todos.isNotEmpty()) {
+                if (!state.conversation.isChat && state.showTodoList && state.todos.isNotEmpty()) {
                     TodoCard(state.todos)
                 }
 

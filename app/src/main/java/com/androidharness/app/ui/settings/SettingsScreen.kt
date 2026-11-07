@@ -371,6 +371,7 @@ fun SettingsScreen(
                                 onBackgroundSubagents = { scope.launch { container.settings.setBackgroundSubagents(it) } },
                                 onCompletionNotifications = { scope.launch { container.settings.setSubagentCompletionNotifications(it) } },
                                 onOpenBackgroundSettings = { openPage(SettingsPage.BACKGROUND) },
+                                onSubagentsEnabled = { scope.launch { container.settings.setSubagentsEnabled(it) } },
                             )
                         }
                         SettingsPage.LOCAL_MODELS -> LocalModelsSection(container, scrollContent = true)
@@ -2708,6 +2709,7 @@ private fun AgentSection(
         showLiveUpdates = false,
         onSteeringMode = { scope.launch { container.settings.setSteeringMode(it) } },
         onRunTips = { scope.launch { container.settings.setRunTipsEnabled(it) } },
+        onAutoContinueQuestions = { scope.launch { container.settings.setAutoContinueQuestions(it) } },
         onAgentSettingsAccess = { scope.launch { container.settings.setAgentSettingsAccess(it) } },
     )
     if (showAgentsDialog) {
@@ -2888,6 +2890,19 @@ private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, 
                     }
                     Switch(checked = settings.showLiveCode,
                         onCheckedChange = { scope.launch { container.settings.setShowLiveCode(it) } })
+                }
+            }
+            HorizontalDivider()
+            SettingsAnchor(R.string.show_todo_title) {
+                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
+                    .clickable { scope.launch { container.settings.setShowTodoList(!settings.showTodoList) } }) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.show_todo_title), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.show_todo_desc),
+                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = settings.showTodoList,
+                        onCheckedChange = { scope.launch { container.settings.setShowTodoList(it) } })
                 }
             }
             HorizontalDivider()

@@ -9,6 +9,7 @@ import com.androidharness.app.data.ChatStartMode
 import com.androidharness.app.data.CodeStartMode
 import com.androidharness.app.data.CustomThemePalette
 import com.androidharness.app.data.ImageFrequency
+import com.androidharness.app.data.LiveModeSettings
 import com.androidharness.app.data.ProgressBarStyle
 import com.androidharness.app.data.RUMBLE_MAX_SPACING_MS
 import com.androidharness.app.data.RUMBLE_MIN_SPACING_MS
@@ -55,6 +56,11 @@ internal class AgentSetting(
     val sensitive: Boolean = false,
     /** Another setting (key to value) that must also be set when this one is turned on, or it has no effect. */
     val requires: Pair<String, String>? = null,
+    /**
+     * A value only the user may choose. The agent can read it and can leave it
+     * alone, but a request to set it is refused and sent to the user instead.
+     */
+    val userOnlyValue: String? = null,
     val read: (AppSettings) -> String,
     val write: suspend (SettingsRepository, String) -> Unit,
 ) {
@@ -92,7 +98,8 @@ internal class AgentSetting(
             is SettingKind.Text -> "text up to ${kind.maxLength} chars"
         }
         val current = read(settings).let { if (kind is SettingKind.Text) "\"${it.take(80)}${if (it.length > 80) "…" else ""}\"" else it }
-        return "$key = $current ($allowed) · ${page.name}${if (sensitive) " · needs approval" else ""} · $about"
+        val limit = if (userOnlyValue != null) " · only the user can set it to $userOnlyValue" else ""
+        return "$key = $current ($allowed) · ${page.name}${if (sensitive) " · needs approval" else ""}$limit · $about"
     }
 
     private fun fail(message: String) = Result.failure<String>(IllegalArgumentException(message))
@@ -148,6 +155,12 @@ internal object AgentSettingsCatalog {
         AgentSetting("canvas_dim", R.string.theme_canvas_dim, SettingsPage.APPEARANCE, SettingKind.Range(0.0, 100.0, RangeUnit.PERCENT),
             "How much the canvas image is dimmed.", R.string.theme_canvas_title, "background dim darken",
             read = { format(Math.round(it.harnessCanvas.dim * 100.0).toDouble()) }, write = { r, v -> r.updateHarnessCanvas { c -> c.copy(dim = v.toFloat() / 100f) } }),
+        AgentSetting("canvas_in_chat", R.string.theme_canvas_chat, SettingsPage.APPEARANCE, SettingKind.Toggle,
+            "Show the Harness Canvas behind Chat conversations.", keywords = "background wallpaper image canvas chat",
+            read = { it.harnessCanvas.chat.toString() }, write = { r, v -> r.updateHarnessCanvas { c -> c.copy(chat = bool(v)) } }),
+        AgentSetting("canvas_in_code", R.string.theme_canvas_code, SettingsPage.APPEARANCE, SettingKind.Toggle,
+            "Show the Harness Canvas behind Code conversations.", keywords = "background wallpaper image canvas code",
+            read = { it.harnessCanvas.code.toString() }, write = { r, v -> r.updateHarnessCanvas { c -> c.copy(code = bool(v)) } }),
         AgentSetting("progress_bar_style", R.string.settings_search_progress_bar_title, SettingsPage.APPEARANCE, enumChoice(ProgressBarStyle.entries.toTypedArray()),
             "Flat or squiggly progress bars.", R.string.settings_anchor_progress_bar_style, "progress wavy squiggly",
             read = { it.progressBarStyle.name }, write = { r, v -> r.setProgressBarStyle(ProgressBarStyle.valueOf(v)) }),
@@ -223,6 +236,14 @@ internal object AgentSettingsCatalog {
         AgentSetting("code_memory", R.string.memory_code_enabled, SettingsPage.MEMORY, SettingKind.Toggle,
             "Memory in Code.", keywords = "remember code",
             read = { it.codeMemoryEnabled.toString() }, write = { r, v -> r.setSectionMemoryEnabled(com.androidharness.app.data.MemorySection.CODE, bool(v)) }),
+        AgentSetting("chat_recall_code_memory", R.string.memory_chat_cross, SettingsPage.MEMORY, SettingKind.Toggle,
+            "Let Chat look up memories saved in Code.", keywords = "memory cross share chat code recall",
+            sensitive = true, read = { it.chatRecallCodeMemory.toString() },
+            write = { r, v -> r.setCrossSectionMemory(com.androidharness.app.data.MemorySection.CHAT, bool(v)) }),
+        AgentSetting("code_recall_chat_memory", R.string.memory_code_cross, SettingsPage.MEMORY, SettingKind.Toggle,
+            "Let Code look up memories saved in Chat.", keywords = "memory cross share chat code recall",
+            sensitive = true, read = { it.codeRecallChatMemory.toString() },
+            write = { r, v -> r.setCrossSectionMemory(com.androidharness.app.data.MemorySection.CODE, bool(v)) }),
         AgentSetting("memory_entry_unlimited", R.string.memory_entry_unlimited, SettingsPage.MEMORY, SettingKind.Toggle,
             "Remove the per-entry character limit for Chat and Code memories. Off by default.",
             keywords = "memory unlimited characters length size limit",
@@ -243,6 +264,19 @@ internal object AgentSettingsCatalog {
         AgentSetting("max_context", R.string.settings_search_max_context_title, SettingsPage.AGENT, SettingKind.Range(8_000.0, 2_000_000.0, RangeUnit.TOKENS),
             "Context cap in tokens before older messages are compacted.", R.string.settings_anchor_max_context, "context window tokens compact",
             read = { it.maxContextTokens.toString() }, write = { r, v -> r.setMaxContextTokens(v.toDouble().toInt()) }),
+        AgentSetting("auto_compact", R.string.auto_compact_title, SettingsPage.AGENT,
+            SettingKind.Range(0.0, 2_000_000.0, RangeUnit.TOKENS, wholeNumber = true),
+            "Context size that triggers an automatic compact; 0 lets the app decide. Values from 1 to 1023 are raised to 1024.",
+            R.string.auto_compact_title, "compact compaction summarize context threshold",
+            read = { it.autoCompactTokens.toString() }, write = { r, v -> r.setAutoCompactTokens(v.toInt().let { n -> if (n in 1..1_023) 1_024 else n }) }),
+        AgentSetting("resume_prompt", R.string.resume_prompt_title, SettingsPage.AGENT, SettingKind.Text(com.androidharness.app.agent.RunRecovery.MAX_PROMPT_CHARS),
+            "The message sent to the agent to continue an interrupted run. Empty restores the built-in message.",
+            R.string.resume_prompt_title, "resume continue interrupted retry recovery prompt",
+            sensitive = true, read = { it.resumePrompt }, write = { r, v -> r.setResumePrompt(v) }),
+        AgentSetting("auto_continue_questions", R.string.auto_continue_title, SettingsPage.AGENT, SettingKind.Toggle,
+            "Code questions the user leaves unanswered for 5 minutes continue with the recommended option. Off makes them wait for the user.",
+            R.string.auto_continue_title, "question ask continue automatically recommended timeout wait answer",
+            sensitive = true, read = { it.autoContinueQuestions.toString() }, write = { r, v -> r.setAutoContinueQuestions(bool(v)) }),
         AgentSetting("steering", R.string.settings_anchor_steering, SettingsPage.AGENT,
             enumChoice(SteeringMode.entries.toTypedArray(), mapOf("AH_AUTO" to R.string.steering_mode_auto, "AFTER_TASK" to R.string.steering_mode_after_task)),
             "AH_AUTO reads messages sent mid-task at the next step; AFTER_TASK waits for the task to end.", R.string.settings_anchor_steering, "steer queue messages",
@@ -253,6 +287,10 @@ internal object AgentSettingsCatalog {
         AgentSetting("show_live_code", R.string.settings_search_show_live_code_title, SettingsPage.CHAT, SettingKind.Toggle,
             "Stream file edits as live code in Code.", R.string.settings_anchor_show_live_code, "live code preview edits",
             read = { it.showLiveCode.toString() }, write = { r, v -> r.setShowLiveCode(bool(v)) }),
+        AgentSetting("show_todo_list", R.string.show_todo_title, SettingsPage.CHAT, SettingKind.Toggle,
+            "Show the agent's to-do list in Code. Off only hides it; the agent still keeps one.",
+            R.string.show_todo_title, "todo tasks checklist plan progress hide",
+            read = { it.showTodoList.toString() }, write = { r, v -> r.setShowTodoList(bool(v)) }),
         AgentSetting("repo_map", R.string.settings_search_repo_map_title, SettingsPage.CHAT, SettingKind.Toggle,
             "Give the Code agent a compact symbol map of the project.", R.string.settings_anchor_repo_map, "symbols index map",
             read = { it.repoMapEnabled.toString() }, write = { r, v -> r.setRepoMapEnabled(bool(v)) }),
@@ -260,6 +298,10 @@ internal object AgentSettingsCatalog {
             "Separate planning and execution models (models are picked on the page).", R.string.settings_anchor_dual_planning, "plan model execute two models",
             read = { it.planningModelsEnabled.toString() }, write = { r, v -> r.setPlanningModelsEnabled(bool(v)) }),
         // Sub-agents
+        AgentSetting("subagents_enabled", R.string.subagents_enable_title, SettingsPage.SUBAGENT, SettingKind.Toggle,
+            "Master switch for subagents. Off removes the subagent tools and stops running subagents. You can turn it off for the user but never back on.",
+            R.string.subagents_enable_title, "subagent sub-agent subagents disable off turn off delegate task parallel", userOnlyValue = "true",
+            read = { it.subagentsEnabled.toString() }, write = { r, v -> r.setSubagentsEnabled(bool(v)) }),
         AgentSetting("subagent_action_tools", R.string.settings_search_subagent_tools_title, SettingsPage.SUBAGENT, SettingKind.Toggle,
             "Let subagents edit files and run commands in Act mode.", R.string.settings_anchor_subagent_tools, "subagent edit commands", sensitive = true,
             read = { it.subagentFullAccess.toString() }, write = { r, v -> r.setSubagentFullAccess(bool(v)) }),
@@ -294,6 +336,24 @@ internal object AgentSettingsCatalog {
         AgentSetting("always_read_aloud", R.string.settings_tts_always_speak, SettingsPage.VOICE, SettingKind.Toggle,
             "Read every finished reply aloud automatically.", R.string.settings_anchor_tts, "read aloud automatic speak",
             read = { it.ttsAlwaysSpeak.toString() }, write = { r, v -> r.setTtsAlwaysSpeak(bool(v)) }),
+        AgentSetting("groq_whisper_model", R.string.settings_anchor_whisper, SettingsPage.VOICE,
+            SettingKind.Choice({ listOf(AppSettings.GROQ_MODEL_WHISPER_V3, AppSettings.GROQ_MODEL_WHISPER_TURBO) }),
+            "Groq Whisper model for voice input: whisper-large-v3 is the most accurate, the turbo model is faster.",
+            R.string.settings_anchor_whisper, "voice dictation whisper groq model turbo accurate fast",
+            read = { it.groqWhisperModel }, write = { r, v -> r.setGroqWhisperModel(v) }),
+        // Live Mode
+        AgentSetting("live_speak_replies", R.string.live_settings_speak, SettingsPage.LIVE_MODE, SettingKind.Toggle,
+            "Read each Live Mode reply aloud.", R.string.live_settings_speak, "live voice conversation speak read aloud reply",
+            read = { it.liveMode.speakReplies.toString() }, write = { r, v -> r.updateLiveMode { m -> m.copy(speakReplies = bool(v)) } }),
+        AgentSetting("live_silence", R.string.live_settings_silence, SettingsPage.LIVE_MODE,
+            SettingKind.Range(LiveModeSettings.MIN_SILENCE_MS.toDouble(), LiveModeSettings.MAX_SILENCE_MS.toDouble(), RangeUnit.MS, wholeNumber = true),
+            "How long the user can stop talking before Live Mode answers.", R.string.live_settings_silence, "live voice conversation pause silence wait cut off",
+            read = { it.liveMode.silenceMs.toString() }, write = { r, v -> r.updateLiveMode { m -> m.copy(silenceMs = v.toInt()) } }),
+        // Local models
+        AgentSetting("local_model_agent_context", R.string.settings_local_models_system_tools, SettingsPage.LOCAL_MODELS, SettingKind.Toggle,
+            "Give on-device models the Harness instructions and tools. Slower and heavier; off by default.",
+            keywords = "local model on device offline instructions tools slow memory",
+            sensitive = true, read = { it.localModelAgentContext.toString() }, write = { r, v -> r.setLocalModelAgentContext(bool(v)) }),
         // Web search
         AgentSetting("web_search_provider", R.string.settings_search_web_title, SettingsPage.SEARCH,
             SettingKind.Choice({ listOf("keyless", "brave", "tavily") }),

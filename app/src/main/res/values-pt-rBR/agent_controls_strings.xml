@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Recomendado</string>
+    <string name="question_auto_continue">Sem resposta? Continua com a opção recomendada em %1$s.</string>
+    <string name="questions_group">Perguntas</string>
+    <string name="auto_continue_title">Continuar perguntas automaticamente</string>
+    <string name="auto_continue_desc">Quando ativado, as perguntas do agente continuam automaticamente com a opção recomendada após 5 minutos sem resposta. Quando desativado, as perguntas atuais e futuras aguardam sua resposta.</string>
+    <string name="auto_continue_search_desc">Permitir que perguntas sem resposta continuem com a opção recomendada após 5 minutos</string>
+    <string name="show_todo_title">Mostrar lista de tarefas</string>
+    <string name="show_todo_desc">Mostrar a lista de tarefas do agente acima da caixa de mensagem no Code. Quando desativado, a lista fica oculta e o agente continua trabalhando da mesma forma.</string>
+    <string name="show_todo_search_desc">Mostrar ou ocultar a lista de tarefas do agente no Code</string>
+    <string name="subagents_enable_title">Permitir subagentes</string>
+    <string name="subagents_enable_desc">Quando desativado, nada pode iniciar um subagente: nem o agente, nem um plugin, nem outra configuração. Os subagentes em execução são interrompidos. Só você pode reativar.</string>
+    <string name="subagents_enable_off_note">Os subagentes estão desativados. As opções abaixo não têm efeito até você reativá-los.</string>
+    <string name="subagents_search_desc">Desativar todos os subagentes para que nada possa iniciar um</string>
+</resources>

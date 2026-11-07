@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">موصى به</string>
+    <string name="question_auto_continue">لا إجابة؟ ستتابع بالخيار الموصى به خلال %1$s.</string>
+    <string name="questions_group">الأسئلة</string>
+    <string name="auto_continue_title">متابعة الأسئلة تلقائياً</string>
+    <string name="auto_continue_desc">عند التفعيل، تستمر أسئلة الوكيل تلقائياً بالخيار الموصى به بعد 5 دقائق دون إجابة. عند التعطيل، تنتظر الأسئلة الحالية والمستقبلية ردّك.</string>
+    <string name="auto_continue_search_desc">السماح لأسئلة الوكيل غير المجاب عنها بالمتابعة بالخيار الموصى به بعد 5 دقائق</string>
+    <string name="show_todo_title">إظهار قائمة المهام</string>
+    <string name="show_todo_desc">إظهار قائمة مهام الوكيل فوق مربع الرسالة في Code. عند الإيقاف، تبقى القائمة مخفية ويعمل الوكيل بالطريقة نفسها.</string>
+    <string name="show_todo_search_desc">إظهار أو إخفاء قائمة مهام الوكيل في Code</string>
+    <string name="subagents_enable_title">السماح بالوكلاء الفرعيين</string>
+    <string name="subagents_enable_desc">عند الإيقاف، لا يمكن لأي شيء بدء وكيل فرعي: لا الوكيل ولا إضافة ولا إعداد آخر. تتوقف الوكلاء الفرعية قيد التشغيل. أنت وحدك من يمكنه إعادة تشغيلها.</string>
+    <string name="subagents_enable_off_note">الوكلاء الفرعية متوقفة. الخيارات أدناه لا تؤثر حتى تعيد تشغيلها.</string>
+    <string name="subagents_search_desc">إيقاف كل الوكلاء الفرعية حتى لا يتمكن أي شيء من بدء واحد</string>
+</resources>

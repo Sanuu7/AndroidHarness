@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Recommande</string>
+    <string name="question_auto_continue">Pas de reponse ? Continue avec l\'option recommandee dans %1$s.</string>
+    <string name="questions_group">Questions</string>
+    <string name="auto_continue_title">Continuer automatiquement les questions</string>
+    <string name="auto_continue_desc">Lorsque cette option est activee, les questions de l\'agent continuent automatiquement avec l\'option recommandee apres 5 minutes sans reponse. Lorsqu\'elle est desactivee, les questions actuelles et futures attendent votre reponse.</string>
+    <string name="auto_continue_search_desc">Laisser les questions sans reponse continuer avec l\'option recommandee apres 5 minutes</string>
+    <string name="show_todo_title">Afficher la liste des taches</string>
+    <string name="show_todo_desc">Afficher la liste des taches de l\'agent au-dessus de la zone de message dans Code. Si l\'option est desactivee, la liste reste masquee et l\'agent continue de la meme maniere.</string>
+    <string name="show_todo_search_desc">Afficher ou masquer la liste des taches de l\'agent dans Code</string>
+    <string name="subagents_enable_title">Autoriser les sous-agents</string>
+    <string name="subagents_enable_desc">Lorsque cette option est desactivee, rien ne peut demarrer un sous-agent : ni l\'agent, ni un plugin, ni un autre reglage. Les sous-agents en cours s\'arretent. Vous seul pouvez reactiver cette option.</string>
+    <string name="subagents_enable_off_note">Les sous-agents sont desactives. Les options ci-dessous n\'ont aucun effet tant que vous ne les reactivez pas.</string>
+    <string name="subagents_search_desc">Desactiver tous les sous-agents pour que rien ne puisse en demarrer un</string>
+</resources>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Disyorkan</string>
+    <string name="question_auto_continue">Tiada jawapan? Akan terus dengan pilihan yang disyorkan dalam %1$s.</string>
+    <string name="questions_group">Soalan</string>
+    <string name="auto_continue_title">Teruskan soalan secara automatik</string>
+    <string name="auto_continue_desc">Apabila didayakan, soalan ejen terus secara automatik dengan pilihan yang disyorkan selepas 5 minit tanpa jawapan. Apabila dinyahdayakan, soalan semasa dan akan datang menunggu jawapan anda.</string>
+    <string name="auto_continue_search_desc">Benarkan soalan ejen yang tidak dijawab terus dengan pilihan yang disyorkan selepas 5 minit</string>
+    <string name="show_todo_title">Tunjukkan senarai tugasan</string>
+    <string name="show_todo_desc">Tunjukkan senarai tugasan ejen di atas kotak mesej dalam Code. Apabila dimatikan, senarai kekal tersembunyi dan ejen terus bekerja seperti biasa.</string>
+    <string name="show_todo_search_desc">Tunjukkan atau sembunyikan senarai tugasan ejen dalam Code</string>
+    <string name="subagents_enable_title">Benarkan subejen</string>
+    <string name="subagents_enable_desc">Apabila dimatikan, tiada apa boleh memulakan subejen: bukan ejen, pemalam atau tetapan lain. Subejen yang berjalan berhenti. Hanya anda boleh menghidupkannya semula.</string>
+    <string name="subagents_enable_off_note">Subejen dimatikan. Pilihan di bawah tidak berkesan sehingga anda menghidupkannya semula.</string>
+    <string name="subagents_search_desc">Matikan semua subejen supaya tiada apa boleh memulakan satu</string>
+</resources>

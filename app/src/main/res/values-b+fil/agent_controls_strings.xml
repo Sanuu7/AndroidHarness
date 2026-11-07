@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Inirerekomenda</string>
+    <string name="question_auto_continue">Walang sagot? Magpapatuloy gamit ang inirerekomendang opsyon sa %1$s.</string>
+    <string name="questions_group">Mga tanong</string>
+    <string name="auto_continue_title">Awtomatikong ipagpatuloy ang mga tanong</string>
+    <string name="auto_continue_desc">Kapag naka-on, awtomatikong nagpapatuloy ang mga tanong ng agent gamit ang inirerekomendang opsyon pagkatapos ng 5 minutong walang sagot. Kapag naka-off, hinihintay ng kasalukuyan at susunod na mga tanong ang sagot mo.</string>
+    <string name="auto_continue_search_desc">Payagan ang mga hindi nasagot na tanong ng agent na magpatuloy gamit ang inirerekomendang opsyon pagkatapos ng 5 minuto</string>
+    <string name="show_todo_title">Ipakita ang to-do list</string>
+    <string name="show_todo_desc">Ipakita ang listahan ng gawain ng agent sa itaas ng kahon ng mensahe sa Code. Kapag naka-off, nananatiling nakatago ang listahan at patuloy na gumagana ang agent sa parehong paraan.</string>
+    <string name="show_todo_search_desc">Ipakita o itago ang to-do list ng agent sa Code</string>
+    <string name="subagents_enable_title">Payagan ang mga subagent</string>
+    <string name="subagents_enable_desc">Kapag naka-off, walang makakapagsimula ng subagent: hindi ang agent, plugin, o ibang setting. Humihinto ang mga tumatakbong subagent. Ikaw lang ang makakapagbalik nito.</string>
+    <string name="subagents_enable_off_note">Naka-off ang mga subagent. Walang epekto ang mga opsyon sa ibaba hanggang hindi mo ito binalik.</string>
+    <string name="subagents_search_desc">I-off ang lahat ng subagent para walang makapagsimula ng isa</string>
+</resources>

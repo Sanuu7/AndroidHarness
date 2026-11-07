@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">প্রস্তাবিত</string>
+    <string name="question_auto_continue">কোনো উত্তর নেই? %1$s-এ প্রস্তাবিত বিকল্প দিয়ে চালিয়ে যাবে।</string>
+    <string name="questions_group">প্রশ্ন</string>
+    <string name="auto_continue_title">প্রশ্ন স্বয়ংক্রিয়ভাবে চালিয়ে যান</string>
+    <string name="auto_continue_desc">চালু থাকলে, এজেন্টের প্রশ্ন ৫ মিনিট উত্তর না পেলে প্রস্তাবিত বিকল্প দিয়ে স্বয়ংক্রিয়ভাবে চালিয়ে যায়। বন্ধ থাকলে, বর্তমান ও ভবিষ্যতের প্রশ্ন আপনার উত্তরের জন্য অপেক্ষা করে।</string>
+    <string name="auto_continue_search_desc">উত্তরহীন এজেন্ট প্রশ্নগুলোকে ৫ মিনিট পর প্রস্তাবিত বিকল্প দিয়ে চালিয়ে যেতে দিন</string>
+    <string name="show_todo_title">কাজের তালিকা দেখান</string>
+    <string name="show_todo_desc">Code-এ বার্তা বাক্সের উপরে এজেন্টের কাজের তালিকা দেখান। বন্ধ থাকলে তালিকা লুকানো থাকে এবং এজেন্ট আগের মতোই কাজ করে।</string>
+    <string name="show_todo_search_desc">Code-এ এজেন্টের কাজের তালিকা দেখান বা লুকান</string>
+    <string name="subagents_enable_title">সাবএজেন্ট অনুমোদন করুন</string>
+    <string name="subagents_enable_desc">বন্ধ থাকলে কোনো কিছুই সাবএজেন্ট শুরু করতে পারে না: এজেন্ট, প্লাগইন বা অন্য কোনো সেটিং নয়। চলমান সাবএজেন্ট থেমে যায়। শুধু আপনি এটি আবার চালু করতে পারেন।</string>
+    <string name="subagents_enable_off_note">সাবএজেন্ট বন্ধ আছে। আবার চালু না করা পর্যন্ত নিচের বিকল্পগুলো কাজ করবে না।</string>
+    <string name="subagents_search_desc">সব সাবএজেন্ট বন্ধ করুন যাতে কোনো কিছুই একটি শুরু করতে না পারে</string>
+</resources>

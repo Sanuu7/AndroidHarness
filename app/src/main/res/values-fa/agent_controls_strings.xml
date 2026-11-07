@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">پیشنهادشده</string>
+    <string name="question_auto_continue">پاسخی نیست؟ تا %1$s با گزینه پیشنهادی ادامه می‌یابد.</string>
+    <string name="questions_group">پرسش‌ها</string>
+    <string name="auto_continue_title">ادامه خودکار پرسش‌ها</string>
+    <string name="auto_continue_desc">وقتی فعال باشد، پرسش‌های عامل پس از ۵ دقیقه بی‌پاسخ به‌طور خودکار با گزینه پیشنهادی ادامه می‌یابند. وقتی غیرفعال باشد، پرسش‌های فعلی و آینده منتظر پاسخ شما می‌مانند.</string>
+    <string name="auto_continue_search_desc">اجازه دادن به پرسش‌های بی‌پاسخ برای ادامه با گزینه پیشنهادی پس از ۵ دقیقه</string>
+    <string name="show_todo_title">نمایش فهرست کارها</string>
+    <string name="show_todo_desc">نمایش فهرست کارهای عامل بالای کادر پیام در Code. وقتی خاموش باشد، فهرست پنهان می‌ماند و عامل به همان شکل کار می‌کند.</string>
+    <string name="show_todo_search_desc">نمایش یا پنهان کردن فهرست کارهای عامل در Code</string>
+    <string name="subagents_enable_title">اجازه دادن به زیرعامل‌ها</string>
+    <string name="subagents_enable_desc">وقتی خاموش باشد، هیچ چیز نمی‌تواند زیرعاملی را شروع کند: نه عامل، نه افزونه و نه تنظیم دیگری. زیرعامل‌های در حال اجرا متوقف می‌شوند. فقط شما می‌توانید آن را دوباره روشن کنید.</string>
+    <string name="subagents_enable_off_note">زیرعامل‌ها خاموش هستند. گزینه‌های زیر تا زمانی که دوباره روشنشان نکنید اثری ندارند.</string>
+    <string name="subagents_search_desc">خاموش کردن همه زیرعامل‌ها تا هیچ چیز نتواند یکی را شروع کند</string>
+</resources>

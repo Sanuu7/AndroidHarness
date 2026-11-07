@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Önerilen</string>
+    <string name="question_auto_continue">Yanıt yok mu? %1$s içinde önerilen seçenekle devam eder.</string>
+    <string name="questions_group">Sorular</string>
+    <string name="auto_continue_title">Soruları otomatik olarak sürdür</string>
+    <string name="auto_continue_desc">Açıkken, aracı soruları 5 dakika yanıtsız kalırsa önerilen seçenekle otomatik olarak devam eder. Kapalıyken, mevcut ve gelecekteki sorular yanıtınızı bekler.</string>
+    <string name="auto_continue_search_desc">Yanıtsız aracı sorularının 5 dakika sonra önerilen seçenekle devam etmesine izin ver</string>
+    <string name="show_todo_title">Yapılacaklar listesini göster</string>
+    <string name="show_todo_desc">Code içinde ileti kutusunun üstünde aracının görev listesini göster. Kapalıyken liste gizli kalır ve aracı aynı şekilde çalışmaya devam eder.</string>
+    <string name="show_todo_search_desc">Code içinde aracının yapılacaklar listesini göster veya gizle</string>
+    <string name="subagents_enable_title">Alt aracılara izin ver</string>
+    <string name="subagents_enable_desc">Kapalıyken hiçbir şey bir alt aracı başlatamaz: ne aracı, ne bir eklenti ne de başka bir ayar. Çalışan alt aracılar durur. Bunu yalnızca siz yeniden açabilirsiniz.</string>
+    <string name="subagents_enable_off_note">Alt aracılar kapalı. Siz yeniden açana kadar aşağıdaki seçeneklerin etkisi olmaz.</string>
+    <string name="subagents_search_desc">Hiçbir şeyin başlatamaması için tüm alt aracıları kapat</string>
+</resources>

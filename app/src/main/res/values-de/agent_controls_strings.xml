@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">Empfohlen</string>
+    <string name="question_auto_continue">Keine Antwort? Fährt in %1$s mit der empfohlenen Option fort.</string>
+    <string name="questions_group">Fragen</string>
+    <string name="auto_continue_title">Fragen automatisch fortsetzen</string>
+    <string name="auto_continue_desc">Wenn aktiviert, fahren Agentenfragen nach 5 Minuten ohne Antwort automatisch mit der empfohlenen Option fort. Wenn deaktiviert, warten aktuelle und künftige Fragen auf deine Antwort.</string>
+    <string name="auto_continue_search_desc">Unbeantwortete Agentenfragen nach 5 Minuten mit der empfohlenen Option fortsetzen</string>
+    <string name="show_todo_title">To-do-Liste anzeigen</string>
+    <string name="show_todo_desc">Die Aufgabenliste des Agenten über dem Eingabefeld in Code anzeigen. Wenn deaktiviert, bleibt die Liste verborgen und der Agent arbeitet unverändert weiter.</string>
+    <string name="show_todo_search_desc">Die To-do-Liste des Agenten in Code anzeigen oder ausblenden</string>
+    <string name="subagents_enable_title">Subagenten erlauben</string>
+    <string name="subagents_enable_desc">Wenn deaktiviert, kann nichts einen Subagenten starten: weder der Agent noch ein Plugin oder eine andere Einstellung. Laufende Subagenten werden beendet. Nur du kannst das wieder einschalten.</string>
+    <string name="subagents_enable_off_note">Subagenten sind aus. Die Optionen unten haben keine Wirkung, bis du sie wieder einschaltest.</string>
+    <string name="subagents_search_desc">Alle Subagenten ausschalten, sodass nichts einen starten kann</string>
+</resources>

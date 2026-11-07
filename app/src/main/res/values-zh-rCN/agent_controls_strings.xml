@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">推荐</string>
+    <string name="question_auto_continue">没有回答?将在 %1$s 后使用推荐选项继续。</string>
+    <string name="questions_group">问题</string>
+    <string name="auto_continue_title">自动继续问题</string>
+    <string name="auto_continue_desc">开启后,代理问题在 5 分钟无人回答后会自动使用推荐选项继续。关闭后,当前和以后的问题都会等待你的回答。</string>
+    <string name="auto_continue_search_desc">允许未回答的代理问题在 5 分钟后使用推荐选项继续</string>
+    <string name="show_todo_title">显示待办列表</string>
+    <string name="show_todo_desc">在 Code 的消息框上方显示代理的任务列表。关闭后列表保持隐藏,代理仍照常工作。</string>
+    <string name="show_todo_search_desc">显示或隐藏 Code 中代理的待办列表</string>
+    <string name="subagents_enable_title">允许子代理</string>
+    <string name="subagents_enable_desc">关闭后,任何东西都无法启动子代理:代理、插件或其他设置都不行。正在运行的子代理会停止。只有你能重新开启。</string>
+    <string name="subagents_enable_off_note">子代理已关闭。在你重新开启之前,下面的选项不会生效。</string>
+    <string name="subagents_search_desc">关闭所有子代理,使任何东西都无法启动</string>
+</resources>

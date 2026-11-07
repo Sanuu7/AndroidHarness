@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">பரிந்துரைக்கப்பட்டது</string>
+    <string name="question_auto_continue">பதில் இல்லையா? %1$s-இல் பரிந்துரைக்கப்பட்ட விருப்பத்துடன் தொடரும்.</string>
+    <string name="questions_group">கேள்விகள்</string>
+    <string name="auto_continue_title">கேள்விகளைத் தானாகத் தொடரவும்</string>
+    <string name="auto_continue_desc">இயக்கப்பட்டால், முகவரின் கேள்விகள் 5 நிமிடங்கள் பதிலில்லாமல் இருந்தால் பரிந்துரைக்கப்பட்ட விருப்பத்துடன் தானாகத் தொடரும். முடக்கப்பட்டால், தற்போதைய மற்றும் எதிர்காலக் கேள்விகள் உங்கள் பதிலுக்காகக் காத்திருக்கும்.</string>
+    <string name="auto_continue_search_desc">பதிலளிக்கப்படாத முகவர் கேள்விகள் 5 நிமிடங்களுக்குப் பிறகு பரிந்துரைக்கப்பட்ட விருப்பத்துடன் தொடர அனுமதிக்கவும்</string>
+    <string name="show_todo_title">செய்பட்டியலைக் காட்டு</string>
+    <string name="show_todo_desc">Code-இல் செய்தி பெட்டிக்கு மேலே முகவரின் பணிப் பட்டியலைக் காட்டு. முடக்கப்பட்டால் பட்டியல் மறைந்திருக்கும், முகவர் அதேபோல் வேலை செய்யும்.</string>
+    <string name="show_todo_search_desc">Code-இல் முகவரின் செய்பட்டியலைக் காட்டு அல்லது மறை</string>
+    <string name="subagents_enable_title">துணை முகவர்களை அனுமதி</string>
+    <string name="subagents_enable_desc">முடக்கப்பட்டால் எதுவும் துணை முகவரைத் தொடங்க முடியாது: முகவர், செருகுநிரல் அல்லது வேறு அமைப்பும் அல்ல. இயங்கும் துணை முகவர்கள் நிற்கும். இதை நீங்கள் மட்டுமே மீண்டும் இயக்க முடியும்.</string>
+    <string name="subagents_enable_off_note">துணை முகவர்கள் முடக்கப்பட்டுள்ளன. மீண்டும் இயக்கும் வரை கீழே உள்ள விருப்பங்கள் வேலை செய்யாது.</string>
+    <string name="subagents_search_desc">எதுவும் ஒன்றைத் தொடங்க முடியாதபடி அனைத்து துணை முகவர்களையும் முடக்கு</string>
+</resources>

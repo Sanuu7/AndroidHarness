@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="question_recommended">추천됨</string>
+    <string name="question_auto_continue">응답이 없나요? %1$s 후 추천 옵션으로 계속합니다.</string>
+    <string name="questions_group">질문</string>
+    <string name="auto_continue_title">질문 자동 계속</string>
+    <string name="auto_continue_desc">켜면 에이전트 질문이 5분 동안 응답이 없을 때 추천 옵션으로 자동 계속됩니다. 끄면 현재와 이후 질문이 응답을 기다립니다.</string>
+    <string name="auto_continue_search_desc">응답 없는 에이전트 질문이 5분 후 추천 옵션으로 계속되도록 허용</string>
+    <string name="show_todo_title">할 일 목록 표시</string>
+    <string name="show_todo_desc">Code의 메시지 상자 위에 에이전트의 작업 목록을 표시합니다. 끄면 목록이 숨겨지고 에이전트는 같은 방식으로 계속 작업합니다.</string>
+    <string name="show_todo_search_desc">Code에서 에이전트의 할 일 목록 표시 또는 숨기기</string>
+    <string name="subagents_enable_title">하위 에이전트 허용</string>
+    <string name="subagents_enable_desc">끄면 에이전트, 플러그인, 다른 설정 무엇도 하위 에이전트를 시작할 수 없습니다. 실행 중인 하위 에이전트는 중지됩니다. 다시 켜는 것은 사용자만 할 수 있습니다.</string>
+    <string name="subagents_enable_off_note">하위 에이전트가 꺼져 있습니다. 다시 켤 때까지 아래 옵션은 효과가 없습니다.</string>
+    <string name="subagents_search_desc">아무것도 하위 에이전트를 시작할 수 없도록 모두 끄기</string>
+</resources>

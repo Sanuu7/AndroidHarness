@@ -16,6 +16,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.outlined.Send
+import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Replay
@@ -98,6 +99,7 @@ internal fun AgentBehaviorSection(
     showLiveUpdates: Boolean = true,
     onSteeringMode: (SteeringMode) -> Unit = {},
     onRunTips: (Boolean) -> Unit = {},
+    onAutoContinueQuestions: (Boolean) -> Unit = {},
     onAutoCompact: (Int) -> Unit = {},
     /** Blank restores the built-in resume prompt. */
     onResumePrompt: (String) -> Unit = {},
@@ -201,6 +203,22 @@ internal fun AgentBehaviorSection(
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     Switch(checked = settings.runTipsEnabled, onCheckedChange = null)
+                }
+            }
+        }
+        BehaviorGroup(stringResource(R.string.questions_group), Icons.Outlined.ChatBubbleOutline) {
+            SettingsAnchor(R.string.auto_continue_title) {
+                Row(
+                    Modifier.fillMaxWidth().clickable(role = Role.Switch) { onAutoContinueQuestions(!settings.autoContinueQuestions) }.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.auto_continue_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.auto_continue_desc), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = settings.autoContinueQuestions, onCheckedChange = null)
                 }
             }
         }

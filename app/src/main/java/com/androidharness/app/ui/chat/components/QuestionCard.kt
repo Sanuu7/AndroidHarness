@@ -14,6 +14,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.ChatBubbleOutline
 import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -25,31 +26,56 @@ import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardCapitalization
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.androidharness.app.agent.QuestionAutoContinue
 import com.androidharness.app.agent.QuestionRequest
+import kotlinx.coroutines.delay
 import com.androidharness.app.ui.common.Button
 import com.androidharness.app.ui.common.Checkbox
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
 
-/** A pending question stays in the conversation; selecting an option never submits it. */
+/**
+ * A pending question stays in the conversation; selecting an option never submits it.
+ * [autoContinueAt] is when the app answers with the recommended option, or null while it will not.
+ */
 @Composable
-internal fun QuestionCard(question: QuestionRequest, onAnswer: (String) -> Unit) {
+internal fun QuestionCard(question: QuestionRequest, onAnswer: (String) -> Unit, autoContinueAt: Long? = null) {
     // Some providers reuse call IDs. A changed question must not inherit the previous answer.
     key(question.callId, question.question, question.options, question.multiSelect) {
-        QuestionCardBody(question, onAnswer)
+        QuestionCardBody(question, onAnswer, autoContinueAt)
     }
 }
 
 @Composable
-private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Unit) {
+private fun RecommendedBadge() {
+    Surface(shape = RoundedCornerShape(6.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+        Text(
+            stringResource(R.string.question_recommended),
+            Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSecondaryContainer,
+        )
+    }
+}
+
+@Composable
+private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Unit, autoContinueAt: Long?) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scheme = MaterialTheme.colorScheme
     var selected by rememberSaveable { mutableStateOf(listOf<Int>()) }
     var writtenAnswer by rememberSaveable { mutableStateOf("") }
     var writing by rememberSaveable { mutableStateOf(question.options.isEmpty()) }
     var submitted by rememberSaveable { mutableStateOf(false) }
+    var now by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    LaunchedEffect(autoContinueAt, submitted) {
+        while (autoContinueAt != null && !submitted) {
+            now = System.currentTimeMillis()
+            delay(1000)
+        }
+    }
     val answer = (selected.sorted().mapNotNull(question.options::getOrNull) +
         listOf(if (writing) writtenAnswer.trim() else "").filter(String::isNotBlank)).joinToString("; ")
 
@@ -113,8 +139,11 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
                             ) {
                                 if (question.multiSelect) Checkbox(checked, null, Modifier.size(24.dp), enabled = !submitted)
                                 else RadioButton(checked, null, Modifier.size(24.dp), enabled = !submitted)
-                                Text(option, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium,
-                                    color = if (checked) scheme.primary else scheme.onSurface)
+                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                    Text(option, style = MaterialTheme.typography.bodyMedium,
+                                        color = if (checked) scheme.primary else scheme.onSurface)
+                                    if (index in question.recommended) RecommendedBadge()
+                                }
                             }
                         }
                     }
@@ -150,6 +179,17 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
                     Icon(Icons.Outlined.Edit, null, Modifier.size(17.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(if (question.multiSelect && selected.isNotEmpty()) uiContext.getString(R.string.ui_add_a_note) else uiContext.getString(R.string.ui_write_your_own_answer))
+                }
+            }
+
+            if (autoContinueAt != null && !submitted) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Icon(Icons.Outlined.Schedule, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
+                    Text(
+                        stringResource(R.string.question_auto_continue, QuestionAutoContinue.remaining(autoContinueAt, now)),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurfaceVariant,
+                    )
                 }
             }
 
