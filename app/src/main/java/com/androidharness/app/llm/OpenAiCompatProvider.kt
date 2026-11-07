@@ -168,6 +168,24 @@ class OpenAiCompatProvider(
             if (supportsUsageAccounting(host)) {
                 putJsonObject("stream_options") { put("include_usage", true) }
             }
+            // Strict chat templates (Qwen3.5/3.6 on SGLang/vLLM) reject any
+            // role=system message after index 0 with "System message must be
+            // at the beginning." History can legitimately carry system notes
+            // (compaction summaries, run notices), so fold them into the
+            // leading prompt and keep exactly one system message, at index 0.
+            val normalized = CompatHistory.normalize(messages).map {
+                com.androidharness.app.tools.ImageInspectionDelivery.update(it, it.imageData)
+            }
+            val systemNotes = normalized
+                .filter { it.role == Role.SYSTEM }
+                .mapNotNull { it.text.takeIf { text -> text.isNotBlank() } }
+            val fullSystemPrompt = if (systemNotes.isEmpty()) systemPrompt
+                else buildString {
+                    if (systemPrompt.isNotBlank()) append(systemPrompt.trimEnd())
+                    append("\n\n[Notes recorded by the app earlier in this conversation]\n")
+                    append(systemNotes.joinToString("\n\n"))
+                }
+            val history = normalized.filter { it.role != Role.SYSTEM }
             putJsonArray("messages") {
                 if ("openrouter.ai" in host && (config.model.contains("claude", true) || config.model.contains("anthropic", true))) {
                     add(buildJsonObject {
@@ -175,7 +193,7 @@ class OpenAiCompatProvider(
                         putJsonArray("content") {
                             add(buildJsonObject {
                                 put("type", "text")
-                                put("text", systemPrompt)
+                                put("text", fullSystemPrompt)
                                 putJsonObject("cache_control") { put("type", "ephemeral") }
                             })
                         }
@@ -183,15 +201,12 @@ class OpenAiCompatProvider(
                 } else {
                     add(buildJsonObject {
                         put("role", "system")
-                        put("content", systemPrompt)
+                        put("content", fullSystemPrompt)
                     })
-                }
-                val normalized = CompatHistory.normalize(messages).map {
-                    com.androidharness.app.tools.ImageInspectionDelivery.update(it, it.imageData)
                 }
                 val closeUps = mutableListOf<com.androidharness.app.core.ImageData>()
                 val imageLabels = mutableListOf<String>()
-                normalized.forEachIndexed { index, message ->
+                history.forEachIndexed { index, message ->
                     // Chat Completions accepts images in user messages, while
                     // strict endpoints reject image parts in tool messages.
                     val toolImage = message.role == Role.TOOL && message.imageData.isNotEmpty()
@@ -204,7 +219,7 @@ class OpenAiCompatProvider(
                         }
                     }
                     add(serializeMessage(if (toolImage) message.copy(imageData = emptyList()) else message, config))
-                    if (closeUps.isNotEmpty() && normalized.getOrNull(index + 1)?.role != Role.TOOL) {
+                    if (closeUps.isNotEmpty() && history.getOrNull(index + 1)?.role != Role.TOOL) {
                         add(serializeMessage(ChatMessage(role = Role.USER,
                             text = "Images actually attached by the preceding tools, in this exact attachment order. Match attachment_id and tool_call_id; omitted results have no image here.\n" + imageLabels.joinToString("\n"),
                             imageData = closeUps.toList()), config))
