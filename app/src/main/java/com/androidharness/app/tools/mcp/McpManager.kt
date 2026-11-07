@@ -102,7 +102,7 @@ class McpManager(
     }
 
     /** resource_metadata URLs from each server's last 401 challenge. */
-    private val authChallenges = ConcurrentHashMap<String, String?>()
+    private val authChallenges = ConcurrentHashMap<String, String>()
 
     private data class PendingAuth(
         val serverName: String,
@@ -474,7 +474,11 @@ class McpManager(
 
     /** Records an OAuth challenge so Settings shows the Authenticate button. */
     private fun recordAuth(name: String, e: McpAuthRequiredException) {
-        authChallenges[name] = e.resourceMetadataUrl
+        // Metadata is optional on a 401; ConcurrentHashMap cannot store null.
+        // Forget any earlier URL so discovery falls back to this server's URL.
+        val metadataUrl = e.resourceMetadataUrl
+        if (metadataUrl == null) authChallenges.remove(name)
+        else authChallenges[name] = metadataUrl
         _statuses.update {
             it + (name to McpServerStatus(
                 "auth",
