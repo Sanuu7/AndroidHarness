@@ -1349,7 +1349,24 @@ private fun ChatScreenContent(
     ) { granted ->
         if (granted) {
                 if (state.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) {
-                        voiceController.startGroqRecording(locked = pendingLockedRecord)
+                        val silenceMs = if (state.voiceAutoSend) state.voiceAutoSendTimeoutMs.toLong() else 0L
+                        autoSendSuppressed = false
+                        voiceController.startGroqRecording(locked = pendingLockedRecord, autoSilenceTimeoutMs = silenceMs) {
+                            val base = composerText
+                            // Silence fired in controller: transcribe then auto-send if still enabled.
+                            voiceController.stopAndTranscribeGroq(model = state.groqWhisperModel) { transcribed ->
+                                if (transcribed.isBlank() || isPunctuationOnly(transcribed)) {
+                                    setComposerText(base)
+                                } else if (state.voiceAutoSend && !state.busy && !autoSendSuppressed) {
+                                    val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"
+                                    if (!isPunctuationOnly(autoMsg)) {
+                                        setComposerText("")
+                                        viewModel.send(autoMsg)
+                                    } else setComposerText(base)
+                                } else setComposerText(if (base.isBlank()) transcribed else "$base $transcribed")
+                                autoSendSuppressed = false
+                            }
+                        }
                 } else {
                         val base = composerText
                         val silenceMs = if (state.voiceAutoSend) state.voiceAutoSendTimeoutMs.toLong() else null
@@ -2654,7 +2671,23 @@ private fun ChatScreenContent(
                                 android.Manifest.permission.RECORD_AUDIO,
                             ) == android.content.pm.PackageManager.PERMISSION_GRANTED
                         ) {
-                            voiceController.startGroqRecording(locked = locked)
+                            val silenceMs = if (state.voiceAutoSend) state.voiceAutoSendTimeoutMs.toLong() else 0L
+                            autoSendSuppressed = false
+                            voiceController.startGroqRecording(locked = locked, autoSilenceTimeoutMs = silenceMs) {
+                                val base = composerText
+                                voiceController.stopAndTranscribeGroq(model = state.groqWhisperModel) { transcribed ->
+                                    if (transcribed.isBlank() || isPunctuationOnly(transcribed)) {
+                                        setComposerText(base)
+                                    } else if (state.voiceAutoSend && !state.busy && !autoSendSuppressed) {
+                                        val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"
+                                        if (!isPunctuationOnly(autoMsg)) {
+                                            setComposerText("")
+                                            viewModel.send(autoMsg)
+                                        } else setComposerText(base)
+                                    } else setComposerText(if (base.isBlank()) transcribed else "$base $transcribed")
+                                    autoSendSuppressed = false
+                                }
+                            }
                         } else {
                             pendingLockedRecord = locked
                             audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
@@ -2711,9 +2744,7 @@ private fun ChatScreenContent(
                             autoSendSuppressed = false
                         }
                     },
-                    onToggleAutoSend = {
-                        scope.launch { viewModel.container.settings.setVoiceAutoSend(!state.voiceAutoSend) }
-                    },
+                    onToggleAutoSend = { viewModel.toggleVoiceAutoSend() },
                 )
             }
 

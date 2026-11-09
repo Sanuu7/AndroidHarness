@@ -1876,6 +1876,13 @@ class ChatViewModel(
         }
     }
 
+    /** Optimistic toggle for the + menu: the Chat hears it immediately, then persists. */
+    fun toggleVoiceAutoSend() {
+        val next = !_state.value.voiceAutoSend
+        _state.update { it.copy(voiceAutoSend = next) }
+        viewModelScope.launch { c.settings.setVoiceAutoSend(next) }
+    }
+
     private fun forkFrom(messageId: String, onForked: (String) -> Unit) {
         val sid = sessionId ?: return
         viewModelScope.launch {

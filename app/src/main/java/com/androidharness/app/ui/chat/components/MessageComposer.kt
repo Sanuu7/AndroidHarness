@@ -261,16 +261,17 @@ internal fun MessageComposer(
     // Only fires AFTER the user actually spoke (avoids sending "." for silence).
     var silenceSamples by remember { mutableIntStateOf(0) }
     var hasSpoken by remember { mutableStateOf(false) }
-    LaunchedEffect(autoSendEnabled, isGroqLocked, levels) {
+    LaunchedEffect(autoSendEnabled, autoSendTimeoutMs, isGroqLocked, levels) {
         if (!autoSendEnabled || !isGroqLocked) {
             silenceSamples = 0
             hasSpoken = false
         } else {
             val last = levels.lastOrNull() ?: 0f
-            if (last >= 0.06f) {
+            // Lower thresholds than before: 0.03 speech, 0.02 silence floor.
+            if (last > 0.03f) {
                 hasSpoken = true
                 if (silenceSamples >= 0) silenceSamples = 0
-            } else if (hasSpoken) {
+            } else if (hasSpoken && last <= 0.02f) {
                 silenceSamples += 1
                 val threshold = (autoSendTimeoutMs / 60).coerceAtLeast(1)
                 if (silenceSamples >= threshold) {

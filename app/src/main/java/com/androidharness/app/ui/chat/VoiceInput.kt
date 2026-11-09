@@ -85,7 +85,15 @@ class VoiceInputController(
     private var currentAudioFile: File? = null
     private var amplitudeJob: Job? = null
     private var transcriptionJob: Job? = null
+    private var nativeSilenceJob: Job? = null
     private var recordStartTime = 0L
+    // Silence tracking (native + Groq). Speech = rmsDb > 8 dB (native) or amplitude > 0.03 (Groq).
+    private var nativeHasSpoken = false
+    private var nativeLastSpeechTime = 0L
+    private var groqHasSpoken = false
+    private var groqLastSpeechTime = 0L
+    private var groqLastPeak = 0
+    private var groqSilenceFired = false
 
     val isNativeAvailable: Boolean
         get() = SpeechRecognizer.isRecognitionAvailable(context)
@@ -98,6 +106,8 @@ class VoiceInputController(
         if (!isNativeAvailable) return
         stopNativeListening()
         errorMessage = null
+        nativeHasSpoken = false
+        nativeLastSpeechTime = SystemClock.elapsedRealtime()
 
         val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH).apply {
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
@@ -133,6 +143,11 @@ class VoiceInputController(
 
                 override fun onRmsChanged(rmsdB: Float) {
                     rmsDb = rmsdB
+                    // SpeechRecognizer rms is dB (typically ~0 silence, >10 speech).
+                    if (rmsdB > 8f) {
+                        nativeHasSpoken = true
+                        nativeLastSpeechTime = SystemClock.elapsedRealtime()
+                    }
                 }
 
                 override fun onBufferReceived(buffer: ByteArray?) {}
@@ -167,6 +182,22 @@ class VoiceInputController(
                 override fun onEvent(eventType: Int, params: Bundle?) {}
             })
             sr.startListening(intent)
+            // Client-side silence fallback: many devices ignore the EXTRA_SILENCE*
+            // intents, so the recognizer never finishes on its own. Watch rmsDb and
+            // force stopListening() after the configured silence timeout.
+            silenceTimeoutMs
+                ?.takeIf { it > 0 }
+                ?.let { timeout ->
+                    nativeSilenceJob = scope.launch {
+                        while (isActive && isListeningInbuilt) {
+                            if (nativeHasSpoken && SystemClock.elapsedRealtime() - nativeLastSpeechTime >= timeout) {
+                                runCatching { recognizer?.stopListening() }
+                                break
+                            }
+                            delay(100)
+                        }
+                    }
+                }
         } catch (e: Exception) {
             isListeningInbuilt = false
             cleanupNative()
@@ -175,6 +206,8 @@ class VoiceInputController(
 
     fun stopNativeListening() {
         isListeningInbuilt = false
+        nativeSilenceJob?.cancel()
+        nativeSilenceJob = null
         try {
             recognizer?.stopListening()
         } catch (_: Exception) { }
@@ -182,6 +215,8 @@ class VoiceInputController(
     }
 
     private fun cleanupNative() {
+        nativeSilenceJob?.cancel()
+        nativeSilenceJob = null
         try {
             recognizer?.destroy()
         } catch (_: Exception) { }
@@ -193,11 +228,15 @@ class VoiceInputController(
     // Groq Whisper Recording & Transcription
     // -----------------------------------------------------------------------
 
-    fun startGroqRecording(locked: Boolean = false): Boolean {
+    fun startGroqRecording(locked: Boolean = false, autoSilenceTimeoutMs: Long = 0L, onSilenceTimeout: (() -> Unit)? = null): Boolean {
         if (groqRecordState != GroqRecordState.IDLE) return false
         errorMessage = null
         cancelArmed = false
         levels = emptyList()
+        groqHasSpoken = false
+        groqSilenceFired = false
+        groqLastPeak = 0
+        groqLastSpeechTime = SystemClock.elapsedRealtime()
 
         val audioDir = File(context.cacheDir, "audio_recordings").apply { mkdirs() }
         val audioFile = File(audioDir, "rec_${System.currentTimeMillis()}.m4a")
@@ -230,11 +269,28 @@ class VoiceInputController(
             amplitudeJob = scope.launch {
                 while (isActive && (groqRecordState == GroqRecordState.HOLDING || groqRecordState == GroqRecordState.LOCKED)) {
                     val maxAmp = runCatching { mediaRecorder?.maxAmplitude ?: 0 }.getOrDefault(0)
-                    // Normalize amplitude 0..32767 to 0f..1f
+                    // Normalize amplitude 0..32767 to 0f..1f. Speech floor ~0.03
+                    // (some OEMs return cumulative peak and never drop — handled below).
                     val scaled = (maxAmp / 32767f).coerceIn(0f, 1f)
                     rmsDb = scaled
                     levels = (levels + scaled).takeLast(40)
                     recordingDurationMs = SystemClock.elapsedRealtime() - recordStartTime
+                    // Silence detection for auto-send (locked hands-free).
+                    if (autoSilenceTimeoutMs > 0 && onSilenceTimeout != null && groqRecordState == GroqRecordState.LOCKED && !groqSilenceFired) {
+                        val now = SystemClock.elapsedRealtime()
+                        // Speech: loud sample OR new peak (cumulative-device fallback).
+                        val isSpeech = scaled > 0.03f
+                        val isNewPeak = maxAmp > groqLastPeak
+                        if (isSpeech || isNewPeak) {
+                            groqLastSpeechTime = now
+                            if (maxAmp > 983) groqHasSpoken = true
+                        }
+                        if (isNewPeak) groqLastPeak = maxAmp
+                        if (groqHasSpoken && now - groqLastSpeechTime >= autoSilenceTimeoutMs) {
+                            groqSilenceFired = true
+                            withContext(Dispatchers.Main) { onSilenceTimeout() }
+                        }
+                    }
                     delay(60)
                 }
             }
