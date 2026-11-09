@@ -129,8 +129,6 @@ data class AppSettings(
     val voiceAutoSend: Boolean = false,
     /** Silence before auto-sending dictation, in milliseconds (1000..5000, 100ms steps). */
     val voiceAutoSendTimeoutMs: Int = 2000,
-    /** Backwards-compat accessor: timeout in seconds (for old callers). */
-    val voiceAutoSendTimeoutSeconds: Int get() = voiceAutoSendTimeoutMs / 1000,
     /** Experimental hands-free voice planning. Device-local, never restored from a backup. */
     val liveMode: LiveModeSettings = LiveModeSettings(),
     /** Legacy Code resume toggle kept for old backups; codeStart is authoritative. */
@@ -205,6 +203,8 @@ data class AppSettings(
     val cavemanIntensity: com.androidharness.app.caveman.CavemanIntensity = com.androidharness.app.caveman.CavemanIntensity.OFF,
     val cavemanWenyan: Boolean = false,
 ) {
+    /** Backwards-compat accessor: timeout in seconds (for old callers / backups). */
+    val voiceAutoSendTimeoutSeconds: Int get() = voiceAutoSendTimeoutMs / 1000
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
         const val DEFAULT_MAX_OUTPUT = 32_768
