@@ -22,6 +22,7 @@
 
 ### Fixed
 
+- **Commas in question options**: an option the agent offered that contains commas, such as "Pizza, with cheese, and basil", now stays one option instead of splitting into several at every comma. Only a single plain-text list with no other separator is still split on commas.
 - **Skill list refresh**: adding, editing or deleting a skill now updates the list right away.
 - **Storage totals**: installed packages, plugins and other components no longer go missing from Settings → Storage, and the total now matches what is on disk. Each file is counted once even when it is hard linked, shared by several packages or inside another listed folder, and shared caches and shared package files appear as their own items. Anything that cannot be measured (permission denied, picker-only or SSH workspaces, a missing folder, a scan error or a timeout) is listed as Not measured with the reason, and the total says how many items it leaves out.
 
