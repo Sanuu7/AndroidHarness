@@ -43,6 +43,8 @@
     <string name="settings_page_voice_desc">Speech recognition, text-to-speech and voice providers</string>
     <string name="settings_voice_auto_send">Auto send</string>
     <string name="settings_voice_auto_send_desc">Send the prompt automatically once you stop speaking, without waiting for the send button.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Show in + menu</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Offer the Auto Send switch inside the + button menu for a quick toggle.</string>
     <string name="settings_voice_auto_send_timeout">Silence timeout</string>
     <string name="settings_voice_auto_send_timeout_desc">How long to wait in silence before sending.</string>
     <string name="settings_voice_auto_send_timeout_value">%1$s s</string>

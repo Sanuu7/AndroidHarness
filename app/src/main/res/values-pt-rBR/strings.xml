@@ -32,6 +32,8 @@
     <string name="settings_page_voice_desc">"Reconhecimento de fala, texto para fala e provedores de voz"</string>
     <string name="settings_voice_auto_send">"Auto Enviar"</string>
     <string name="settings_voice_auto_send_desc">"Envia o prompt automaticamente quando você para de falar, sem esperar o botão enviar."</string>
+    <string name="settings_voice_auto_send_show_in_plus">"Mostrar no menu +"</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">"Mostra o interruptor Auto Enviar dentro do menu do botão + para ativar rápido."</string>
     <string name="settings_voice_auto_send_timeout">"Tempo de espera"</string>
     <string name="settings_voice_auto_send_timeout_desc">"Tempo de silêncio antes de enviar."</string>
     <string name="settings_voice_auto_send_timeout_value">"%1$s s"</string>

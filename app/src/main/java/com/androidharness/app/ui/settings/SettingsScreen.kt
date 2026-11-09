@@ -1441,6 +1441,20 @@ private fun VoiceSpeechSection(
                     onCheckedChange = { scope.launch { container.settings.setVoiceAutoSend(it) } },
                 )
             }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(R.string.settings_voice_auto_send_show_in_plus), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        stringResource(R.string.settings_voice_auto_send_show_in_plus_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.voiceAutoSendShowInPlus,
+                    onCheckedChange = { scope.launch { container.settings.setVoiceAutoSendShowInPlus(it) } },
+                )
+            }
             if (settings.voiceAutoSend) {
                 Text(
                     stringResource(R.string.settings_voice_auto_send_timeout),

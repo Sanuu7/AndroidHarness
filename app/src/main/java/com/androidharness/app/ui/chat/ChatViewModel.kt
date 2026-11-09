@@ -194,6 +194,8 @@ data class ChatUiState(
     val showVoicePromo: Boolean = false,
     /** Auto-send dictation after the configured silence timeout. */
     val voiceAutoSend: Boolean = false,
+    /** Show the Auto Send toggle in the + (composer leading) menu. */
+    val voiceAutoSendShowInPlus: Boolean = true,
     /** Silence before auto-send in milliseconds (1000..5000, 100ms steps). */
     val voiceAutoSendTimeoutMs: Int = 2000,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
@@ -766,6 +768,7 @@ class ChatViewModel(
             groqWhisperModel = settings.groqWhisperModel,
             voicePromoSeen = settings.voicePromoSeen,
             voiceAutoSend = settings.voiceAutoSend,
+            voiceAutoSendShowInPlus = settings.voiceAutoSendShowInPlus,
             voiceAutoSendTimeoutMs = settings.voiceAutoSendTimeoutMs,
         ) }
     }

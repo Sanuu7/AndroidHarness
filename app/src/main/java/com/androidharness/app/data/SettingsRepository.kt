@@ -127,6 +127,8 @@ data class AppSettings(
     val voicePromoSeen: Boolean = false,
     /** Auto-send dictation after silence without waiting for the user to press send. */
     val voiceAutoSend: Boolean = false,
+    /** Show the Auto Send toggle in the + (composer leading) menu. */
+    val voiceAutoSendShowInPlus: Boolean = true,
     /** Silence before auto-sending dictation, in milliseconds (1000..5000, 100ms steps). */
     val voiceAutoSendTimeoutMs: Int = 2000,
     /** Experimental hands-free voice planning. Device-local, never restored from a backup. */
@@ -316,6 +318,7 @@ class SettingsRepository(private val context: Context) {
         val TTS_ALWAYS_SPEAK = booleanPreferencesKey("tts_always_speak")
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
         val VOICE_AUTO_SEND = booleanPreferencesKey("voice_auto_send")
+        val VOICE_AUTO_SEND_SHOW_IN_PLUS = booleanPreferencesKey("voice_auto_send_show_in_plus")
         val VOICE_AUTO_SEND_TIMEOUT_SECONDS = intPreferencesKey("voice_auto_send_timeout_seconds")
         val VOICE_AUTO_SEND_TIMEOUT_MS = intPreferencesKey("voice_auto_send_timeout_ms")
         val LIVE_MODE = stringPreferencesKey("live_mode")
@@ -451,6 +454,7 @@ class SettingsRepository(private val context: Context) {
             ttsAlwaysSpeak = prefs[Keys.TTS_ALWAYS_SPEAK] ?: false,
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
             voiceAutoSend = prefs[Keys.VOICE_AUTO_SEND] ?: false,
+            voiceAutoSendShowInPlus = prefs[Keys.VOICE_AUTO_SEND_SHOW_IN_PLUS] ?: true,
             voiceAutoSendTimeoutMs = (prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] ?: prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS]?.let { it * 1000 } ?: 2000).coerceIn(1000, 5000),
             liveMode = liveModeFrom(prefs[Keys.LIVE_MODE]),
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
@@ -549,6 +553,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.TTS_SPEED] = s.ttsSpeed
             p[Keys.TTS_ALWAYS_SPEAK] = s.ttsAlwaysSpeak
             p[Keys.VOICE_AUTO_SEND] = s.voiceAutoSend
+            p[Keys.VOICE_AUTO_SEND_SHOW_IN_PLUS] = s.voiceAutoSendShowInPlus
             p[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] = s.voiceAutoSendTimeoutMs.coerceIn(1000, 5000)
             p[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = s.voiceAutoSendTimeoutMs.coerceIn(1000, 5000) / 1000
             p[Keys.RESUME_LAST_CHAT] = s.resumeLastChat
@@ -810,6 +815,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setVoiceAutoSend(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.VOICE_AUTO_SEND] = enabled }
+    }
+
+    suspend fun setVoiceAutoSendShowInPlus(visible: Boolean) {
+        context.settingsStore.edit { it[Keys.VOICE_AUTO_SEND_SHOW_IN_PLUS] = visible }
     }
 
     suspend fun setVoiceAutoSendTimeoutMs(ms: Int) {

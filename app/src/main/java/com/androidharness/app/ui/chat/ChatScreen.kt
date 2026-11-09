@@ -2720,6 +2720,7 @@ private fun ChatScreenContent(
                     },
                     hasAttachments = state.fileAttachments.isNotEmpty() || state.attachments.isNotEmpty() || attachedConcept != null || attachedResponse != null,
                     autoSendEnabled = state.voiceAutoSend,
+                    autoSendShowInPlus = state.voiceAutoSendShowInPlus,
                     autoSendTimeoutMs = state.voiceAutoSendTimeoutMs,
                     onSilenceDetected = {
                         voiceController.stopAndTranscribeGroq(

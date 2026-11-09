@@ -193,6 +193,8 @@ internal fun MessageComposer(
     onSilenceDetected: () -> Unit = {},
     /** Toggle for auto-send, shown in the + menu. */
     onToggleAutoSend: (() -> Unit)? = null,
+    /** Whether to show the Auto Send item in the + menu. */
+    autoSendShowInPlus: Boolean = true,
     /** Coding-only context meter, anchored immediately to the left of the text field. */
     contextControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -302,6 +304,7 @@ internal fun MessageComposer(
                 scheduleUnavailableReason = scheduleUnavailableReason,
                 onLiveMode = onLiveMode,
                 autoSendEnabled = autoSendEnabled,
+                autoSendShowInPlus = autoSendShowInPlus,
                 onToggleAutoSend = onToggleAutoSend,
                 size = actionSize,
             )
@@ -919,6 +922,7 @@ private fun ComposerLeadingButton(
     scheduleUnavailableReason: String?,
     onLiveMode: (() -> Unit)?,
     autoSendEnabled: Boolean = false,
+    autoSendShowInPlus: Boolean = true,
     onToggleAutoSend: (() -> Unit)? = null,
     size: Dp = 52.dp,
 ) {
@@ -961,7 +965,7 @@ private fun ComposerLeadingButton(
                     onPickFile()
                 },
             )
-            if (onToggleAutoSend != null) {
+            if (onToggleAutoSend != null && autoSendShowInPlus) {
                 androidx.compose.material3.HorizontalDivider()
                 DropdownMenuItem(
                     text = {

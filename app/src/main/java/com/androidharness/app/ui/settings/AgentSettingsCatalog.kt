@@ -348,6 +348,9 @@ internal object AgentSettingsCatalog {
             SettingKind.Range(1000.0, 5000.0, RangeUnit.MS, wholeNumber = true),
             "Milliseconds of silence before auto-sending dictated text (1000 to 5000, 100ms steps — e.g. 1500 = 1.5s, 1700 = 1.7s, 2500 = 2.5s).", R.string.settings_anchor_auto_send, "voice auto send silence timeout seconds wait pause milliseconds",
             read = { it.voiceAutoSendTimeoutMs.toString() }, write = { r, v -> r.setVoiceAutoSendTimeoutMs(v.toDouble().toInt()) }),
+        AgentSetting("voice_auto_send_show_in_plus", R.string.settings_voice_auto_send_show_in_plus, SettingsPage.VOICE, SettingKind.Toggle,
+            "Offer the Auto Send switch inside the + button menu of the composer for a quick toggle.", R.string.settings_anchor_auto_send, "voice auto send plus menu shortcut composer",
+            read = { it.voiceAutoSendShowInPlus.toString() }, write = { r, v -> r.setVoiceAutoSendShowInPlus(bool(v)) }),
         // Live Mode
         AgentSetting("live_speak_replies", R.string.live_settings_speak, SettingsPage.LIVE_MODE, SettingKind.Toggle,
             "Read each Live Mode reply aloud.", R.string.live_settings_speak, "live voice conversation speak read aloud reply",
