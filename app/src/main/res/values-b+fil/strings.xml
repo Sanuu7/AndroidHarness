@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Maghanap ng mga provider o modelo"</string>
     <string name="settings_providers_search_all_models">"Maghanap sa lahat ng mga modelo"</string>
     <string name="settings_permissions_title">"Mga natatandaang pahintulot"</string>
-    <string name="settings_permissions_note">"Kasalukuyang workspace lang. Ang \"Palagi\" ay tumatagal hanggang sa matapos ang aktibong pagtakbo. Ang pagbawi ay nagtatanong muli kung kailan kinakailangan ang pag-apruba; hindi nito mapipigilan ang isang aksyon na naaprubahan na. Ang buong auto at Full access ay maaari pa ring i-bypass ang mga prompt na ito."</string>
+    <string name="settings_permissions_note">"Kasalukuyang workspace lang. Ang \"Laging\" ay naka-save dito at nalalapat sa bawat bagong pagtakbo hanggang bawiin mo ito. Ang pag-apruba ng shell ay sumasaklaw sa isang utos, tulad ng git status. Ang mga install, push, pull request at bukas na utos ay hindi kailanman naka-save. Ang pagbawi ay nagtatanong muli kung kailan kinakailangan ang pag-apruba; hindi nito mapipigilan ang isang aksyon na naaprubahan na. Ang \"Kumpirmahin ang lahat\" ay binabalewala ang mga naka-save na pahintulot, at ang buong auto at Full access ay maaari pa ring i-bypass ang mga prompt."</string>
+    <string name="settings_permissions_saved">"Naka-save para sa workspace na ito"</string>
+    <string name="settings_permissions_revoke_all">"Bawiin lahat"</string>
+    <string name="approval_for_this_run">"Ang pagtakbo na ito"</string>
+    <string name="review_changes_action">"Suriin"</string>
     <string name="settings_permissions_empty">"Walang natatandaang mga pahintulot"</string>
     <string name="settings_action_revoke">"Bawiin"</string>
     <string name="settings_root_title">"Pag-access sa ugat"</string>

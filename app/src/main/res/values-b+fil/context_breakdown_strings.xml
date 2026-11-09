@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Ano ang pumupuno sa konteksto"</string>
+    <string name="context_breakdown_note">"Tinataya mula sa haba ng teksto, mga 4 na karakter bawat token. Maaaring bahagyang iba ang bilang ng provider."</string>
+    <string name="context_breakdown_expand">"Ipakita ang detalye"</string>
+    <string name="context_breakdown_collapse">"Itago ang detalye"</string>
+    <string name="context_group_tools">"Mga depinisyon ng kasangkapan"</string>
+    <string name="context_free_space">"Libreng espasyo"</string>
+
+    <string name="context_part_core">"Pangunahing tagubilin"</string>
+    <string name="context_part_skills">"Mga kasanayan"</string>
+    <string name="context_part_environment">"Live na kapaligiran at index ng kasangkapan"</string>
+    <string name="context_part_instructions">"Mga tagubilin ng proyekto at chat"</string>
+    <string name="context_part_memory">"Naka-save na alaala"</string>
+    <string name="context_part_repo_map">"Mapa ng imbakan"</string>
+    <string name="context_part_tools_built_in">"Mga built-in na kasangkapan (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Ang iyong mga mensahe"</string>
+    <string name="context_part_assistant">"Mga sagot ng katulong"</string>
+    <string name="context_part_tool_calls">"Mga argumento ng tawag sa kasangkapan"</string>
+    <string name="context_part_tool_results">"Mga resulta ng kasangkapan"</string>
+    <string name="context_part_notes">"Mga tala ng system"</string>
+
+    <string name="context_largest_results">"Pinakamalalaking resulta ng kasangkapan"</string>
+    <string name="context_hints_title">"Mga paraan para magbakante ng espasyo"</string>
+    <string name="context_hint_near_limit">"Malapit nang mapuno ang konteksto. Patakbuhin ang /compact para ibuod ang mas lumang mga turn."</string>
+    <string name="context_hint_tool_results">"Umaabot sa %1$s token ang mga resulta ng kasangkapan, at ang pinakamalaki ay mula sa %2$s. Patakbuhin ang /compact, o humiling ng mas makitid na pagbasa at paghahanap."</string>
+    <string name="context_hint_tool_results_unnamed">"Umaabot sa %1$s token ang mga resulta ng kasangkapan. Patakbuhin ang /compact, o humiling ng mas makitid na pagbasa at paghahanap."</string>
+    <string name="context_hint_mcp_tools">"Nagdadagdag ang mga MCP tool ng %1$s token sa bawat kahilingan. Idiskonekta ang mga server na hindi mo ginagamit sa chat na ito."</string>
+    <string name="context_hint_skills">"Nagdadagdag ang listahan ng kasanayan ng %1$s token sa bawat kahilingan. Patayin ang mga kasanayang hindi mo ginagamit."</string>
+    <string name="context_hint_memory">"Nagdadagdag ang naka-save na alaala ng %1$s token sa bawat kahilingan. Alisin ang mga lumang tala."</string>
+
+    <string name="context_command_title">"Hati ng konteksto"</string>
+    <string name="context_command_hint">"Tingnan kung ano ang pumupuno sa context window at ano ang maaari mong bawasan"</string>
+</resources>

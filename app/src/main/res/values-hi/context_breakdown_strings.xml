@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"संदर्भ किससे भरता है"</string>
+    <string name="context_breakdown_note">"पाठ की लंबाई से अनुमानित, लगभग 4 अक्षर प्रति टोकन। प्रदाता की गिनती थोड़ी भिन्न हो सकती है।"</string>
+    <string name="context_breakdown_expand">"विवरण दिखाएं"</string>
+    <string name="context_breakdown_collapse">"विवरण छिपाएं"</string>
+    <string name="context_group_tools">"उपकरण परिभाषाएं"</string>
+    <string name="context_free_space">"खाली जगह"</string>
+
+    <string name="context_part_core">"मुख्य निर्देश"</string>
+    <string name="context_part_skills">"कौशल"</string>
+    <string name="context_part_environment">"लाइव वातावरण और उपकरण सूची"</string>
+    <string name="context_part_instructions">"प्रोजेक्ट और चैट निर्देश"</string>
+    <string name="context_part_memory">"सहेजी गई स्मृति"</string>
+    <string name="context_part_repo_map">"रिपॉज़िटरी मैप"</string>
+    <string name="context_part_tools_built_in">"अंतर्निहित उपकरण (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"आपके संदेश"</string>
+    <string name="context_part_assistant">"सहायक के उत्तर"</string>
+    <string name="context_part_tool_calls">"उपकरण कॉल के तर्क"</string>
+    <string name="context_part_tool_results">"उपकरण परिणाम"</string>
+    <string name="context_part_notes">"सिस्टम नोट्स"</string>
+
+    <string name="context_largest_results">"सबसे बड़े उपकरण परिणाम"</string>
+    <string name="context_hints_title">"जगह खाली करने के तरीके"</string>
+    <string name="context_hint_near_limit">"संदर्भ लगभग भर चुका है। पुरानी बारी को सारांशित करने के लिए /compact चलाएं।"</string>
+    <string name="context_hint_tool_results">"उपकरण परिणाम %1$s टोकन लेते हैं, और सबसे बड़ा %2$s से आता है। /compact चलाएं, या अधिक सीमित पढ़ने और खोजने के लिए कहें।"</string>
+    <string name="context_hint_tool_results_unnamed">"उपकरण परिणाम %1$s टोकन लेते हैं। /compact चलाएं, या अधिक सीमित पढ़ने और खोजने के लिए कहें।"</string>
+    <string name="context_hint_mcp_tools">"MCP उपकरण हर अनुरोध में %1$s टोकन जोड़ते हैं। इस चैट में जिन सर्वरों का उपयोग नहीं कर रहे हैं उन्हें डिस्कनेक्ट करें।"</string>
+    <string name="context_hint_skills">"कौशल सूची हर अनुरोध में %1$s टोकन जोड़ती है। जिन कौशलों का उपयोग नहीं करते उन्हें बंद करें।"</string>
+    <string name="context_hint_memory">"सहेजी गई स्मृति हर अनुरोध में %1$s टोकन जोड़ती है। पुराने नोट्स हटाएं।"</string>
+
+    <string name="context_command_title">"संदर्भ विवरण"</string>
+    <string name="context_command_hint">"देखें कि संदर्भ विंडो किससे भरती है और आप क्या घटा सकते हैं"</string>
+</resources>

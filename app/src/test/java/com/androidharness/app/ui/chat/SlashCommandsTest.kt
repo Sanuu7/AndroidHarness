@@ -37,12 +37,13 @@ class SlashCommandsTest {
 
     @Test
     fun `local commands never start an agent turn`() {
-        for (cmd in listOf("/clear", "/compact", "/cost", "/skills", "/env")) {
+        for (cmd in listOf("/clear", "/compact", "/cost", "/context", "/skills", "/env")) {
             val result = resolve(cmd)
             assertNull("$cmd should stay local", result.agentText)
             assertFalse(result.startsAgent)
         }
         assertEquals(SlashCommands.Kind.COST, resolve("/cost").kind)
+        assertEquals(SlashCommands.Kind.CONTEXT, resolve("/context").kind)
         assertEquals(SlashCommands.Kind.SKILLS, resolve("/skills").kind)
         assertEquals(SlashCommands.Kind.ENV, resolve("/env").kind)
     }
@@ -206,5 +207,27 @@ class SlashCommandsTest {
     @Test
     fun `picking btw waits for the question`() {
         assertEquals(SlashCommands.Pick.Insert("/btw "), SlashCommands.pickAction("/btw", "/bt", SlashCommands.Kind.BTW))
+    }
+
+    @Test
+    fun `review expands to the read-only review prompt and keeps the focus`() {
+        val plain = SlashCommands.resolve("/review", emptySet(), emptyMap()) { null }
+        assertEquals(SlashCommands.Kind.REVIEW, plain.kind)
+        assertTrue(plain.startsAgent)
+        assertTrue(plain.agentText!!.contains("read-only"))
+        val focused = SlashCommands.resolve("/review the login flow", emptySet(), emptyMap()) { null }
+        assertTrue(focused.agentText!!.contains("Focus the review on: the login flow"))
+    }
+
+    @Test
+    fun `a saved review snippet or skill keeps the command`() {
+        assertEquals(SlashCommands.Kind.SNIPPET, resolve("/review").kind)
+        val withSkill = SlashCommands.resolve("/review", setOf("review"), emptyMap()) { "# review\nDo it." }
+        assertEquals(SlashCommands.Kind.SKILL, withSkill.kind)
+    }
+
+    @Test
+    fun `picking review sends it right away`() {
+        assertEquals(SlashCommands.Pick.Send("/review"), SlashCommands.pickAction("/review", "/rev", SlashCommands.Kind.REVIEW))
     }
 }

@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"ค้นหาผู้ให้บริการหรือรุ่น"</string>
     <string name="settings_providers_search_all_models">"ค้นหาทุกรุ่น"</string>
     <string name="settings_permissions_title">"จำสิทธิ์แล้ว"</string>
-    <string name="settings_permissions_note">"พื้นที่ทำงานปัจจุบันเท่านั้น “เสมอ” จะคงอยู่จนกว่าการรันที่ใช้งานอยู่จะสิ้นสุดลง การเพิกถอนจะถามอีกครั้งเมื่อจำเป็นต้องได้รับการอนุมัติ ไม่สามารถหยุดการดำเนินการที่ได้รับอนุมัติแล้วได้ การเข้าถึงอัตโนมัติเต็มรูปแบบและการเข้าถึงแบบเต็มยังคงสามารถข้ามข้อความแจ้งเหล่านี้ได้"</string>
+    <string name="settings_permissions_note">"พื้นที่ทำงานปัจจุบันเท่านั้น “เสมอ” จะถูกบันทึกไว้ที่นี่และมีผลกับการรันใหม่ทุกครั้งจนกว่าคุณจะเพิกถอน การอนุมัติ Shell ครอบคลุมคำสั่งเดียว เช่น git status การติดตั้ง การพุช พูลรีเควสต์ และคำสั่งแบบเปิดกว้างจะไม่ถูกบันทึกเลย การเพิกถอนจะถามอีกครั้งเมื่อจำเป็นต้องได้รับการอนุมัติ ไม่สามารถหยุดการดำเนินการที่ได้รับอนุมัติแล้วได้ “ยืนยันทุกอย่าง” จะไม่สนใจสิทธิ์ที่บันทึกไว้ และโหมดอัตโนมัติเต็มรูปแบบกับการเข้าถึงได้เต็มรูปแบบยังคงสามารถข้ามข้อความแจ้งเหล่านี้ได้"</string>
+    <string name="settings_permissions_saved">"บันทึกไว้สำหรับพื้นที่ทำงานนี้"</string>
+    <string name="settings_permissions_revoke_all">"เพิกถอนทั้งหมด"</string>
+    <string name="approval_for_this_run">"การรันนี้"</string>
+    <string name="review_changes_action">"ตรวจทาน"</string>
     <string name="settings_permissions_empty">"ไม่มีการจดจำสิทธิ์"</string>
     <string name="settings_action_revoke">"เพิกถอน"</string>
     <string name="settings_root_title">"การเข้าถึงรูท"</string>

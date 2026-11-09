@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Tìm kiếm nhà cung cấp hoặc mô hình"</string>
     <string name="settings_providers_search_all_models">"Tìm kiếm tất cả các mô hình"</string>
     <string name="settings_permissions_title">"Quyền đã ghi nhớ"</string>
-    <string name="settings_permissions_note">"Chỉ không gian làm việc hiện tại. “Luôn luôn” kéo dài cho đến khi quá trình chạy hoạt động kết thúc. Thu hồi yêu cầu lại khi cần phê duyệt; nó không thể dừng một hành động đã được phê duyệt. Tự động hoàn toàn và Truy cập đầy đủ vẫn có thể bỏ qua những lời nhắc này."</string>
+    <string name="settings_permissions_note">"Chỉ không gian làm việc hiện tại. “Luôn cho phép” được lưu ở đây và áp dụng cho mỗi lần chạy mới cho đến khi bạn thu hồi. Phê duyệt shell chỉ bao gồm một lệnh, chẳng hạn git status. Cài đặt, đẩy mã, yêu cầu kéo và lệnh mở không bao giờ được lưu. Thu hồi sẽ hỏi lại khi cần phê duyệt; nó không thể dừng một hành động đã được phê duyệt. “Xác nhận mọi thứ” bỏ qua quyền đã lưu, và Tự động hoàn toàn cùng Toàn quyền truy cập vẫn có thể bỏ qua những lời nhắc này."</string>
+    <string name="settings_permissions_saved">"Đã lưu cho không gian làm việc này"</string>
+    <string name="settings_permissions_revoke_all">"Thu hồi tất cả"</string>
+    <string name="approval_for_this_run">"Lần chạy này"</string>
+    <string name="review_changes_action">"Xem xét"</string>
     <string name="settings_permissions_empty">"Không có quyền được ghi nhớ"</string>
     <string name="settings_action_revoke">"Thu hồi"</string>
     <string name="settings_root_title">"Truy cập root"</string>

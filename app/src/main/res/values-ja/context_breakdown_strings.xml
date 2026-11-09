@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"コンテキストを占めるもの"</string>
+    <string name="context_breakdown_note">"テキストの長さからの推定で、約 4 文字を 1 トークンとして計算しています。プロバイダーの集計とは少し異なることがあります。"</string>
+    <string name="context_breakdown_expand">"詳細を表示"</string>
+    <string name="context_breakdown_collapse">"詳細を隠す"</string>
+    <string name="context_group_tools">"ツール定義"</string>
+    <string name="context_free_space">"空き容量"</string>
+
+    <string name="context_part_core">"基本の指示"</string>
+    <string name="context_part_skills">"スキル"</string>
+    <string name="context_part_environment">"ライブ環境とツール一覧"</string>
+    <string name="context_part_instructions">"プロジェクトとチャットの指示"</string>
+    <string name="context_part_memory">"保存されたメモリ"</string>
+    <string name="context_part_repo_map">"リポジトリマップ"</string>
+    <string name="context_part_tools_built_in">"組み込みツール (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"あなたのメッセージ"</string>
+    <string name="context_part_assistant">"アシスタントの返信"</string>
+    <string name="context_part_tool_calls">"ツール呼び出しの引数"</string>
+    <string name="context_part_tool_results">"ツールの結果"</string>
+    <string name="context_part_notes">"システムメモ"</string>
+
+    <string name="context_largest_results">"大きいツール結果"</string>
+    <string name="context_hints_title">"空きを増やす方法"</string>
+    <string name="context_hint_near_limit">"コンテキストがほぼいっぱいです。/compact を実行して古いターンを要約してください。"</string>
+    <string name="context_hint_tool_results">"ツール結果が %1$s トークンを占め、最大のものは %2$s によるものです。/compact を実行するか、読み取りや検索の範囲を狭めてください。"</string>
+    <string name="context_hint_tool_results_unnamed">"ツール結果が %1$s トークンを占めています。/compact を実行するか、読み取りや検索の範囲を狭めてください。"</string>
+    <string name="context_hint_mcp_tools">"MCP ツールがリクエストごとに %1$s トークンを追加しています。このチャットで使わないサーバーを切断してください。"</string>
+    <string name="context_hint_skills">"スキル一覧がリクエストごとに %1$s トークンを追加しています。使わないスキルをオフにしてください。"</string>
+    <string name="context_hint_memory">"保存されたメモリがリクエストごとに %1$s トークンを追加しています。古いメモを削除してください。"</string>
+
+    <string name="context_command_title">"コンテキストの内訳"</string>
+    <string name="context_command_hint">"コンテキストウィンドウを何が占めているか、何を減らせるかを確認"</string>
+</resources>

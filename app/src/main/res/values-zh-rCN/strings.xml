@@ -434,7 +434,11 @@
     <string name="settings_providers_search_placeholder">搜索提供商或模型</string>
     <string name="settings_providers_search_all_models">搜索所有模型</string>
     <string name="settings_permissions_title">记住的权限</string>
-    <string name="settings_permissions_note">仅限当前工作区。「始终允许」在本次运行结束前有效。撤销后，需要批准时会再次询问；但无法阻止已获批准的操作。全自动和完全访问仍可绕过这些提示。</string>
+    <string name="settings_permissions_note">仅限当前工作区。「始终允许」会保存在这里，并对每次新运行生效，直到你撤销。Shell 批准只覆盖一条命令，例如 git status。安装、推送、拉取请求和开放式命令永远不会保存。撤销后，需要批准时会再次询问；无法阻止已获批准的操作。「每次都确认」会忽略已保存的权限，完全自动和完全访问仍可绕过这些提示。</string>
+    <string name="settings_permissions_saved">已为此工作区保存</string>
+    <string name="settings_permissions_revoke_all">全部撤销</string>
+    <string name="approval_for_this_run">本次运行</string>
+    <string name="review_changes_action">审查</string>
     <string name="settings_permissions_empty">没有记住的权限</string>
     <string name="settings_action_revoke">撤销</string>
     <string name="settings_root_title">Root 访问</string>

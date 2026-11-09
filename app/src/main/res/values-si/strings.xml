@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"සෙවුම් සැපයුම්කරුවන් හෝ ආකෘති"</string>
     <string name="settings_providers_search_all_models">"සියලුම ආකෘති සොයන්න"</string>
     <string name="settings_permissions_title">"මතක තියාගන්න අවසරය"</string>
-    <string name="settings_permissions_note">"වර්තමාන වැඩපිළිවෙළ පමණි. \"සෑම විටම\" ක්‍රියාකාරී ධාවනය අවසන් වන තුරු දිගු වේ. අනුමතය අවශ් ය වන විට නැවත නැවත ඉල්ලා ය; එය දැනටමත් අනුමත කරන ලද ක්‍රියාවලිය නතර කළ නොහැක. පූර්ණ ස්වයංක්‍රීය සහ පූර්ණ ප්‍රවේශය තවමත් මෙම ප්‍රවේශයන් වටහා ගත හැකිය."</string>
+    <string name="settings_permissions_note">"වර්තමාන වැඩපිළිවෙළ පමණි. \"සෑම විටම\" මෙහි සුරකින අතර ඔබ එය අවලංගු කරන තෙක් සෑම නව ධාවනයකටම අදාළ වේ. Shell අනුමැතිය git status වැනි එක් විධානයක් ආවරණය කරයි. ස්ථාපන, තල්ලු කිරීම්, ඇදගැනීම් ඉල්ලීම් සහ විවෘත විධාන කිසිදා සුරකින්නේ නැත. අවලංගු කිරීම අනුමැතිය අවශ්‍ය විට නැවත අසයි; දැනටමත් අනුමත ක්‍රියාවක් නතර කළ නොහැක. \"සියල්ලට තහවුරු කිරීම ඉල්ලන්න\" සුරකින ලද අවසර නොසලකා හරියි, පූර්ණ ස්වයංක්‍රීය සහ පූර්ණ ප්‍රවේශය තවමත් මෙම විමසුම් මඟ හැරිය හැක."</string>
+    <string name="settings_permissions_saved">"මෙම වැඩපිළිවෙළ සඳහා සුරකින ලදි"</string>
+    <string name="settings_permissions_revoke_all">"සියල්ල අවලංගු කරන්න"</string>
+    <string name="approval_for_this_run">"මෙම ධාවනය"</string>
+    <string name="review_changes_action">"සමාලෝචනය"</string>
     <string name="settings_permissions_empty">"මතක නැති අවසර"</string>
     <string name="settings_action_revoke">"අවලංගු"</string>
     <string name="settings_root_title">"Root ප්‍රවේශය"</string>

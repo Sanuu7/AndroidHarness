@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"தேடல் வழங்குநர்கள் அல்லது மாதிரிகள்"</string>
     <string name="settings_providers_search_all_models">"அனைத்து மாடல்களையும் தேடுங்கள்"</string>
     <string name="settings_permissions_title">"நினைவூட்டப்பட்ட அனுமதிகள்"</string>
-    <string name="settings_permissions_note">"தற்போதைய பணியிடம் மட்டுமே. செயலில் ரன் முடியும் வரை \"எப்போதும்\" நீடிக்கும். அனுமதி தேவைப்படும்போது ரத்துசெய்தல் மீண்டும் கேட்கிறது; ஏற்கனவே அங்கீகரிக்கப்பட்ட செயலை நிறுத்த முடியாது. முழு தானியங்கு மற்றும் முழு அணுகல் இன்னும் இந்த அறிவுறுத்தல்களைத் தவிர்க்கலாம்."</string>
+    <string name="settings_permissions_note">"தற்போதைய பணியிடம் மட்டுமே. \"எப்போதும்\" இங்கே சேமிக்கப்படும், நீங்கள் ரத்துசெய்யும் வரை ஒவ்வொரு புதிய ரன்னுக்கும் பொருந்தும். Shell அனுமதி git status போன்ற ஒரு கட்டளையை மட்டுமே உள்ளடக்கும். நிறுவல்கள், புஷ்கள், புல் கோரிக்கைகள் மற்றும் திறந்த கட்டளைகள் ஒருபோதும் சேமிக்கப்படுவதில்லை. அனுமதி தேவைப்படும்போது ரத்துசெய்தல் மீண்டும் கேட்கிறது; ஏற்கனவே அங்கீகரிக்கப்பட்ட செயலை நிறுத்த முடியாது. \"எல்லாவற்றையும் உறுதிப்படுத்தவும்\" சேமித்த அனுமதிகளைப் புறக்கணிக்கிறது, முழு தானியங்கு மற்றும் முழு அணுகல் இன்னும் இந்த அறிவுறுத்தல்களைத் தவிர்க்கலாம்."</string>
+    <string name="settings_permissions_saved">"இந்த பணியிடத்திற்குச் சேமிக்கப்பட்டது"</string>
+    <string name="settings_permissions_revoke_all">"அனைத்தையும் திரும்பப் பெறு"</string>
+    <string name="approval_for_this_run">"இந்த ரன்"</string>
+    <string name="review_changes_action">"மதிப்பாய்வு"</string>
     <string name="settings_permissions_empty">"நினைவில் கொள்ளப்பட்ட அனுமதிகள் இல்லை"</string>
     <string name="settings_action_revoke">"திரும்பப் பெறு"</string>
     <string name="settings_root_title">"ரூட் அணுகல்"</string>

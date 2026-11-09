@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"プロバイダーまたはモデルを検索"</string>
     <string name="settings_providers_search_all_models">"すべてのモデルを検索"</string>
     <string name="settings_permissions_title">"記憶済み権限"</string>
-    <string name="settings_permissions_note">"現在のワークスペースのみ。「常に」はアクティブな実行が終了するまで続きます。取り消すと、承認が必要なときに再度尋ねます。すでに承認されたアクションは停止できません。フルオートとフルアクセスはこれらのプロンプトをバイパスできます。"</string>
+    <string name="settings_permissions_note">"現在のワークスペースのみ。「常に」はここに保存され、取り消すまで新しい実行のたびに適用されます。Shell の承認は git status のような 1 つのコマンドにだけ効きます。インストール、プッシュ、プルリクエスト、自由形式のコマンドは保存されません。取り消すと、承認が必要なときに再度尋ねます。すでに承認されたアクションは停止できません。「すべて確認」は保存された権限を無視し、全自動とフルアクセスはこれらのプロンプトをバイパスできます。"</string>
+    <string name="settings_permissions_saved">"このワークスペース用に保存済み"</string>
+    <string name="settings_permissions_revoke_all">"すべて取り消す"</string>
+    <string name="approval_for_this_run">"今回の実行"</string>
+    <string name="review_changes_action">"レビュー"</string>
     <string name="settings_permissions_empty">"記憶済み権限がありません"</string>
     <string name="settings_action_revoke">"取り消す"</string>
     <string name="settings_root_title">"Rootアクセス"</string>

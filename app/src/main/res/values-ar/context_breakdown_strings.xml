@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"ما الذي يملأ السياق"</string>
+    <string name="context_breakdown_note">"تقدير من طول النص، نحو 4 أحرف لكل رمز. قد يختلف عدّ المزوّد قليلًا."</string>
+    <string name="context_breakdown_expand">"إظهار التفاصيل"</string>
+    <string name="context_breakdown_collapse">"إخفاء التفاصيل"</string>
+    <string name="context_group_tools">"تعريفات الأدوات"</string>
+    <string name="context_free_space">"المساحة الحرة"</string>
+
+    <string name="context_part_core">"التعليمات الأساسية"</string>
+    <string name="context_part_skills">"المهارات"</string>
+    <string name="context_part_environment">"البيئة الحية وفهرس الأدوات"</string>
+    <string name="context_part_instructions">"تعليمات المشروع والدردشة"</string>
+    <string name="context_part_memory">"الذاكرة المحفوظة"</string>
+    <string name="context_part_repo_map">"خريطة المستودع"</string>
+    <string name="context_part_tools_built_in">"الأدوات المدمجة (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"رسائلك"</string>
+    <string name="context_part_assistant">"ردود المساعد"</string>
+    <string name="context_part_tool_calls">"وسائط استدعاءات الأدوات"</string>
+    <string name="context_part_tool_results">"نتائج الأدوات"</string>
+    <string name="context_part_notes">"ملاحظات النظام"</string>
+
+    <string name="context_largest_results">"أكبر نتائج الأدوات"</string>
+    <string name="context_hints_title">"طرق لتوفير مساحة"</string>
+    <string name="context_hint_near_limit">"السياق على وشك الامتلاء. شغّل /compact لتلخيص الجولات الأقدم."</string>
+    <string name="context_hint_tool_results">"تستهلك نتائج الأدوات %1$s رمزًا، وأكبرها من %2$s. شغّل /compact، أو اطلب قراءات وبحوثًا أضيق."</string>
+    <string name="context_hint_tool_results_unnamed">"تستهلك نتائج الأدوات %1$s رمزًا. شغّل /compact، أو اطلب قراءات وبحوثًا أضيق."</string>
+    <string name="context_hint_mcp_tools">"تضيف أدوات MCP %1$s رمزًا إلى كل طلب. افصل الخوادم التي لا تستخدمها في هذه الدردشة."</string>
+    <string name="context_hint_skills">"تضيف قائمة المهارات %1$s رمزًا إلى كل طلب. أوقف المهارات التي لا تستخدمها."</string>
+    <string name="context_hint_memory">"تضيف الذاكرة المحفوظة %1$s رمزًا إلى كل طلب. احذف الملاحظات القديمة."</string>
+
+    <string name="context_command_title">"تفصيل السياق"</string>
+    <string name="context_command_hint">"اطّلع على ما يملأ نافذة السياق وما يمكنك تقليصه"</string>
+</resources>

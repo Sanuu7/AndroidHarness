@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Поиск провайдеров или моделей"</string>
     <string name="settings_providers_search_all_models">"Поиск всех моделей"</string>
     <string name="settings_permissions_title">"Сохранённые разрешения"</string>
-    <string name="settings_permissions_note">"Только для текущей рабочей области. «Всегда» действует до завершения текущего запуска. После отзыва подтверждение запрашивается снова, если оно требуется; уже одобренное действие остановить нельзя. Полностью автоматический режим и полный доступ могут обходить эти запросы."</string>
+    <string name="settings_permissions_note">"Только для текущей рабочей области. «Всегда» сохраняется здесь и действует для каждого нового запуска, пока вы его не отзовёте. Одобрение shell охватывает одну команду, например git status. Установки, отправки, пул-реквесты и открытые команды никогда не сохраняются. После отзыва подтверждение запрашивается снова, если оно требуется; уже одобренное действие остановить нельзя. «Подтверждать всё» игнорирует сохранённые разрешения, а полностью автоматический режим и полный доступ могут обходить эти запросы."</string>
+    <string name="settings_permissions_saved">"Сохранено для этой рабочей области"</string>
+    <string name="settings_permissions_revoke_all">"Отозвать все"</string>
+    <string name="approval_for_this_run">"Этот запуск"</string>
+    <string name="review_changes_action">"Проверить"</string>
     <string name="settings_permissions_empty">"Нет сохранённых разрешений"</string>
     <string name="settings_action_revoke">"Отозвать"</string>
     <string name="settings_root_title">"Root-доступ"</string>

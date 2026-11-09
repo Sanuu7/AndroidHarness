@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"อะไรที่กินพื้นที่บริบท"</string>
+    <string name="context_breakdown_note">"ประมาณจากความยาวข้อความ ราว 4 อักขระต่อ 1 โทเค็น การนับของผู้ให้บริการอาจต่างออกไปเล็กน้อย"</string>
+    <string name="context_breakdown_expand">"แสดงรายละเอียด"</string>
+    <string name="context_breakdown_collapse">"ซ่อนรายละเอียด"</string>
+    <string name="context_group_tools">"คำจำกัดความของเครื่องมือ"</string>
+    <string name="context_free_space">"พื้นที่ว่าง"</string>
+
+    <string name="context_part_core">"คำสั่งหลัก"</string>
+    <string name="context_part_skills">"ทักษะ"</string>
+    <string name="context_part_environment">"สภาพแวดล้อมสดและดัชนีเครื่องมือ"</string>
+    <string name="context_part_instructions">"คำสั่งของโปรเจกต์และแชต"</string>
+    <string name="context_part_memory">"หน่วยความจำที่บันทึกไว้"</string>
+    <string name="context_part_repo_map">"แผนที่พื้นที่เก็บข้อมูล"</string>
+    <string name="context_part_tools_built_in">"เครื่องมือในตัว (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"ข้อความของคุณ"</string>
+    <string name="context_part_assistant">"คำตอบของผู้ช่วย"</string>
+    <string name="context_part_tool_calls">"อาร์กิวเมนต์การเรียกเครื่องมือ"</string>
+    <string name="context_part_tool_results">"ผลลัพธ์เครื่องมือ"</string>
+    <string name="context_part_notes">"บันทึกของระบบ"</string>
+
+    <string name="context_largest_results">"ผลลัพธ์เครื่องมือที่ใหญ่ที่สุด"</string>
+    <string name="context_hints_title">"วิธีคืนพื้นที่"</string>
+    <string name="context_hint_near_limit">"บริบทใกล้เต็มแล้ว รัน /compact เพื่อสรุปเทิร์นเก่า"</string>
+    <string name="context_hint_tool_results">"ผลลัพธ์เครื่องมือใช้ %1$s โทเค็น และชิ้นที่ใหญ่ที่สุดมาจาก %2$s รัน /compact หรือขอให้อ่านและค้นหาให้แคบลง"</string>
+    <string name="context_hint_tool_results_unnamed">"ผลลัพธ์เครื่องมือใช้ %1$s โทเค็น รัน /compact หรือขอให้อ่านและค้นหาให้แคบลง"</string>
+    <string name="context_hint_mcp_tools">"เครื่องมือ MCP เพิ่ม %1$s โทเค็นให้ทุกคำขอ ตัดการเชื่อมต่อเซิร์ฟเวอร์ที่คุณไม่ได้ใช้ในแชตนี้"</string>
+    <string name="context_hint_skills">"แค็ตตาล็อกทักษะเพิ่ม %1$s โทเค็นให้ทุกคำขอ ปิดทักษะที่คุณไม่ได้ใช้"</string>
+    <string name="context_hint_memory">"หน่วยความจำที่บันทึกไว้เพิ่ม %1$s โทเค็นให้ทุกคำขอ ลบบันทึกที่ล้าสมัย"</string>
+
+    <string name="context_command_title">"รายละเอียดบริบท"</string>
+    <string name="context_command_hint">"ดูว่าอะไรกินพื้นที่หน้าต่างบริบท และอะไรที่คุณลดได้"</string>
+</resources>

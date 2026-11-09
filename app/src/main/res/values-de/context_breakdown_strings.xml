@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Was den Kontext füllt"</string>
+    <string name="context_breakdown_note">"Geschätzt aus der Textlänge, etwa 4 Zeichen pro Token. Die Zählung des Anbieters kann leicht abweichen."</string>
+    <string name="context_breakdown_expand">"Details anzeigen"</string>
+    <string name="context_breakdown_collapse">"Details ausblenden"</string>
+    <string name="context_group_tools">"Werkzeugdefinitionen"</string>
+    <string name="context_free_space">"Freier Platz"</string>
+
+    <string name="context_part_core">"Grundanweisungen"</string>
+    <string name="context_part_skills">"Skills"</string>
+    <string name="context_part_environment">"Live-Umgebung und Werkzeugindex"</string>
+    <string name="context_part_instructions">"Projekt- und Chat-Anweisungen"</string>
+    <string name="context_part_memory">"Gespeichertes Gedächtnis"</string>
+    <string name="context_part_repo_map">"Repository-Karte"</string>
+    <string name="context_part_tools_built_in">"Integrierte Werkzeuge (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Deine Nachrichten"</string>
+    <string name="context_part_assistant">"Antworten des Assistenten"</string>
+    <string name="context_part_tool_calls">"Argumente der Werkzeugaufrufe"</string>
+    <string name="context_part_tool_results">"Werkzeugergebnisse"</string>
+    <string name="context_part_notes">"Systemhinweise"</string>
+
+    <string name="context_largest_results">"Größte Werkzeugergebnisse"</string>
+    <string name="context_hints_title">"So wird Platz frei"</string>
+    <string name="context_hint_near_limit">"Der Kontext ist fast voll. Mit /compact werden die älteren Runden zusammengefasst."</string>
+    <string name="context_hint_tool_results">"Werkzeugergebnisse belegen %1$s Token, das größte stammt von %2$s. Mit /compact zusammenfassen oder engere Lese- und Suchvorgänge anfordern."</string>
+    <string name="context_hint_tool_results_unnamed">"Werkzeugergebnisse belegen %1$s Token. Mit /compact zusammenfassen oder engere Lese- und Suchvorgänge anfordern."</string>
+    <string name="context_hint_mcp_tools">"MCP-Werkzeuge fügen jeder Anfrage %1$s Token hinzu. Trenne die Server, die du in diesem Chat nicht nutzt."</string>
+    <string name="context_hint_skills">"Der Skills-Katalog fügt jeder Anfrage %1$s Token hinzu. Deaktiviere die Skills, die du nicht nutzt."</string>
+    <string name="context_hint_memory">"Gespeichertes Gedächtnis fügt jeder Anfrage %1$s Token hinzu. Entferne veraltete Notizen."</string>
+
+    <string name="context_command_title">"Kontextaufteilung"</string>
+    <string name="context_command_hint">"Sieh, was das Kontextfenster füllt und was du kürzen kannst"</string>
+</resources>

@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"प्रदाताओं या मॉडलों को खोजें"</string>
     <string name="settings_providers_search_all_models">"सभी मॉडल खोजें"</string>
     <string name="settings_permissions_title">"अनुमतियाँ याद आ गईं"</string>
-    <string name="settings_permissions_note">"केवल वर्तमान कार्यक्षेत्र. सक्रिय रन समाप्त होने तक \"हमेशा\" रहता है। अनुमोदन की आवश्यकता होने पर निरस्तीकरण पुनः पूछता है; यह पहले से स्वीकृत किसी कार्रवाई को नहीं रोक सकता। पूर्ण ऑटो और पूर्ण पहुंच अभी भी इन संकेतों को बायपास कर सकती है।"</string>
+    <string name="settings_permissions_note">"केवल वर्तमान कार्यक्षेत्र. \"हमेशा\" यहां सहेजा जाता है और जब तक आप इसे निरस्त नहीं करते, हर नए रन पर लागू होता है। Shell स्वीकृति एक कमांड को कवर करती है, जैसे git status. इंस्टॉल, पुश, पुल रिक्वेस्ट और खुले कमांड कभी सहेजे नहीं जाते। निरस्तीकरण अनुमोदन की आवश्यकता होने पर फिर से पूछता है; यह पहले से स्वीकृत किसी कार्रवाई को नहीं रोक सकता। \"हर बात की पुष्टि करें\" सहेजी गई अनुमतियों को अनदेखा करता है, और पूर्ण ऑटो व पूर्ण पहुंच अभी भी संकेतों को बायपास कर सकते हैं।"</string>
+    <string name="settings_permissions_saved">"इस कार्यक्षेत्र के लिए सहेजा गया"</string>
+    <string name="settings_permissions_revoke_all">"सभी निरस्त करें"</string>
+    <string name="approval_for_this_run">"यह रन"</string>
+    <string name="review_changes_action">"समीक्षा"</string>
     <string name="settings_permissions_empty">"कोई याद रखने योग्य अनुमतियाँ नहीं"</string>
     <string name="settings_action_revoke">"निरस्त करें"</string>
     <string name="settings_root_title">"रूट पहुंच"</string>

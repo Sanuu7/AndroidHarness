@@ -436,7 +436,11 @@
     <string name="settings_providers_search_placeholder">Search providers or models</string>
     <string name="settings_providers_search_all_models">Search all models</string>
     <string name="settings_permissions_title">Remembered permissions</string>
-    <string name="settings_permissions_note">Current workspace only. “Always” lasts until the active run ends. Revoking asks again when approval is required; it cannot stop an action already approved. Full auto and Full access can still bypass these prompts.</string>
+    <string name="settings_permissions_note">Current workspace only. “Always” is saved here and applies to every new run until you revoke it. A shell approval covers one command such as git status. Installs, pushes, pull requests and open-ended commands are never saved. Revoking asks again when approval is required; it cannot stop an action already approved. Confirm everything ignores saved permissions, and Full auto and Full access can still bypass prompts.</string>
+    <string name="settings_permissions_saved">Saved for this workspace</string>
+    <string name="settings_permissions_revoke_all">Revoke all</string>
+    <string name="approval_for_this_run">This run</string>
+    <string name="review_changes_action">Review</string>
     <string name="settings_permissions_empty">No remembered permissions</string>
     <string name="settings_action_revoke">Revoke</string>
     <string name="settings_root_title">Root access</string>

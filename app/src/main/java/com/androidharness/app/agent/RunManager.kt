@@ -188,9 +188,10 @@ class RunManager(
     private val queueWrites = mutableMapOf<String, MutableSet<Job>>()
     private val turnIds = mutableMapOf<String, String>()
     private val allowedTools = mutableMapOf<String, MutableSet<String>>()
-    private val grantStore = RememberedGrants()
+    private val grantStore = RememberedGrants(PrefsGrantPersistence(context))
     internal val rememberedGrants = grantStore.grants
     internal fun revokeGrant(grant: RememberedGrants.Grant) = grantStore.revoke(grant)
+    internal fun revokeAllGrants(workspacePath: String) = grantStore.revokeAll(workspacePath)
     private val lingerJobs = mutableMapOf<String, Job>()
     private val deltaBuffers = mutableMapOf<String, DeltaBuffers>()
 
@@ -491,7 +492,8 @@ class RunManager(
         val budget = TaskBudget(record.limits, record.usedTokens, record.usedCost, record.elapsedMs)
         synchronized(lock) {
             turnIds[sid] = turnId
-            allowedTools[sid] = grantStore.start(sid, runWorkspace.displayPath)
+            // Confirm everything means every action asks, so saved approvals stay out of those runs.
+            allowedTools[sid] = grantStore.start(sid, runWorkspace.displayPath, useSaved = permissionMode != PermissionMode.CONFIRM_ALL)
             deltaBuffers[sid] = DeltaBuffers()
         }
 

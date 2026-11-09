@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Buscar proveedores o modelos"</string>
     <string name="settings_providers_search_all_models">"Buscar todos los modelos"</string>
     <string name="settings_permissions_title">"Permisos recordados"</string>
-    <string name="settings_permissions_note">"Solo espacio de trabajo actual. “Siempre” dura hasta que termine la ejecución activa. Revocar vuelve a pedir cuando se requiera aprobación; no puede detener una acción ya aprobada. Automático y Acceso total aún pueden omitir estos avisos."</string>
+    <string name="settings_permissions_note">"Solo espacio de trabajo actual. «Siempre» se guarda aquí y se aplica a cada nueva ejecución hasta que lo revoques. La aprobación de un comando de shell cubre un solo comando, como git status. Las instalaciones, los envíos, las solicitudes de extracción y los comandos abiertos nunca se guardan. Revocar vuelve a pedir aprobación cuando se requiera; no puede detener una acción ya aprobada. «Confirmar todo» ignora los permisos guardados, y Automático y Acceso total aún pueden omitir los avisos."</string>
+    <string name="settings_permissions_saved">"Guardado para este espacio de trabajo"</string>
+    <string name="settings_permissions_revoke_all">"Revocar todo"</string>
+    <string name="approval_for_this_run">"Esta ejecución"</string>
+    <string name="review_changes_action">"Revisar"</string>
     <string name="settings_permissions_empty">"No hay permisos recordados"</string>
     <string name="settings_action_revoke">"Revocar"</string>
     <string name="settings_root_title">"Acceso Root"</string>

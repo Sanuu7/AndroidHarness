@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Sağlayıcıları veya modelleri arayın"</string>
     <string name="settings_providers_search_all_models">"Tüm modelleri arayın"</string>
     <string name="settings_permissions_title">"Hatırlanan izinler"</string>
-    <string name="settings_permissions_note">"Yalnızca mevcut çalışma alanı. “Her zaman” aktif çalışma bitene kadar devam eder. İptal etme, onay gerektiğinde tekrar sorar; zaten onaylanmış bir eylemi durduramaz. Tam otomatik ve Tam erişim yine de bu istemleri atlayabilir."</string>
+    <string name="settings_permissions_note">"Yalnızca mevcut çalışma alanı. “Her zaman” burada saklanır ve siz iptal edene kadar her yeni çalıştırmada geçerli olur. Shell onayı git status gibi tek bir komutu kapsar. Kurulumlar, gönderimler, çekme istekleri ve açık uçlu komutlar hiçbir zaman saklanmaz. İptal etme, onay gerektiğinde tekrar sorar; zaten onaylanmış bir eylemi durduramaz. “Her şeyi onaylayın” kayıtlı izinleri yok sayar ve Tam otomatik ile Tam erişim yine de bu istemleri atlayabilir."</string>
+    <string name="settings_permissions_saved">"Bu çalışma alanı için kaydedildi"</string>
+    <string name="settings_permissions_revoke_all">"Tümünü iptal et"</string>
+    <string name="approval_for_this_run">"Bu çalıştırma"</string>
+    <string name="review_changes_action">"İncele"</string>
     <string name="settings_permissions_empty">"Hatırlanan izin yok"</string>
     <string name="settings_action_revoke">"İptal et"</string>
     <string name="settings_root_title">"Kök erişimi"</string>

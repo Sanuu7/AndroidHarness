@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"搜尋提供商或模型"</string>
     <string name="settings_providers_search_all_models">"搜尋所有模型"</string>
     <string name="settings_permissions_title">"記住的許可權"</string>
-    <string name="settings_permissions_note">"僅限當前工作區。「始終允許」在本次執行結束前有效。撤銷後，需要批准時會再次詢問；但無法阻止已獲批准的操作。全自動和完全訪問仍可繞過這些提示。"</string>
+    <string name="settings_permissions_note">"僅限當前工作區。「始終允許」會儲存在這裡，並對每次新執行生效，直到你撤銷。Shell 核准只涵蓋一條命令，例如 git status。安裝、推送、拉取請求與開放式命令永遠不會儲存。撤銷後，需要核准時會再次詢問；無法阻止已獲核准的操作。「每次都確認」會忽略已儲存的權限，完全自動和完全訪問仍可略過這些提示。"</string>
+    <string name="settings_permissions_saved">"已為此工作區儲存"</string>
+    <string name="settings_permissions_revoke_all">"全部撤銷"</string>
+    <string name="approval_for_this_run">"本次執行"</string>
+    <string name="review_changes_action">"審查"</string>
     <string name="settings_permissions_empty">"沒有記住的許可權"</string>
     <string name="settings_action_revoke">"撤銷"</string>
     <string name="settings_root_title">"Root 訪問"</string>

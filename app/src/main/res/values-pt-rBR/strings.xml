@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Buscar provedores ou modelos"</string>
     <string name="settings_providers_search_all_models">"Buscar todos os modelos"</string>
     <string name="settings_permissions_title">"Permissões lembradas"</string>
-    <string name="settings_permissions_note">"Somente na área de trabalho atual. “Sempre” vale até o fim da execução atual. Ao revogar, a aprovação será solicitada novamente quando necessária; isso não interrompe uma ação já aprovada. Os modos Totalmente automático e Acesso total ainda podem dispensar essas solicitações."</string>
+    <string name="settings_permissions_note">"Somente na área de trabalho atual. “Sempre” é salvo aqui e vale para cada nova execução até você revogar. A aprovação de shell cobre um comando, como git status. Instalações, envios, pull requests e comandos abertos nunca são salvos. Revogar solicita novamente quando a aprovação for necessária; isso não interrompe uma ação já aprovada. “Confirmar tudo” ignora as permissões salvas, e Totalmente automático e Acesso total ainda podem dispensar essas solicitações."</string>
+    <string name="settings_permissions_saved">"Salvo para esta área de trabalho"</string>
+    <string name="settings_permissions_revoke_all">"Revogar tudo"</string>
+    <string name="approval_for_this_run">"Esta execução"</string>
+    <string name="review_changes_action">"Revisar"</string>
     <string name="settings_permissions_empty">"Nenhuma permissão lembrada"</string>
     <string name="settings_action_revoke">"Revogar"</string>
     <string name="settings_root_title">"Acesso Root"</string>

@@ -129,7 +129,11 @@ internal fun ApprovalCard(
         actions = {
             TextButton(onClick = onDeny) { Text(if (isPkg) uiContext.getString(R.string.ui_decline) else uiContext.getString(R.string.ui_deny)) }
             if (!isPkg) {
-                FilledTonalButton(onClick = { onApprove(true) }) { Text(uiContext.getString(R.string.ui_always)) }
+                // Only approvals that are safe to keep are saved, anything else lasts for this run.
+                val saved = com.androidharness.app.agent.GrantPolicy.canSave(approval.grantKey)
+                FilledTonalButton(onClick = { onApprove(true) }) {
+                    Text(uiContext.getString(if (saved) R.string.ui_always else R.string.approval_for_this_run))
+                }
             }
             Button(onClick = { onApprove(false) }) { Text(uiContext.getString(R.string.ui_allow)) }
         },

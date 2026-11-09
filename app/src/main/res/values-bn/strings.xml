@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"প্রদানকারী বা মডেল অনুসন্ধান করুন"</string>
     <string name="settings_providers_search_all_models">"সমস্ত মডেল অনুসন্ধান করুন"</string>
     <string name="settings_permissions_title">"অনুমতি মনে রাখা"</string>
-    <string name="settings_permissions_note">"শুধুমাত্র বর্তমান কর্মক্ষেত্র। সক্রিয় রান শেষ না হওয়া পর্যন্ত \"সর্বদা\" স্থায়ী হয়। অনুমোদনের প্রয়োজন হলে প্রত্যাহার করা আবার জিজ্ঞাসা করে; এটি ইতিমধ্যে অনুমোদিত একটি ক্রিয়া বন্ধ করতে পারে না। সম্পূর্ণ স্বয়ংক্রিয় এবং সম্পূর্ণ অ্যাক্সেস এখনও এই প্রম্পটগুলিকে বাইপাস করতে পারে৷"</string>
+    <string name="settings_permissions_note">"শুধুমাত্র বর্তমান কর্মক্ষেত্র। \"সর্বদা\" এখানে সংরক্ষিত হয় এবং আপনি প্রত্যাহার না করা পর্যন্ত প্রতিটি নতুন রানে প্রযোজ্য। Shell অনুমোদন git status-এর মতো একটি কমান্ড কভার করে। ইনস্টল, পুশ, পুল রিকোয়েস্ট এবং খোলা কমান্ড কখনো সংরক্ষিত হয় না। অনুমোদনের প্রয়োজন হলে প্রত্যাহার আবার জিজ্ঞাসা করে; এটি ইতিমধ্যে অনুমোদিত একটি ক্রিয়া বন্ধ করতে পারে না। \"সবকিছু নিশ্চিত করুন\" সংরক্ষিত অনুমতিগুলো উপেক্ষা করে, এবং সম্পূর্ণ অটো ও সম্পূর্ণ অ্যাক্সেস এখনও এই প্রম্পটগুলো বাইপাস করতে পারে।"</string>
+    <string name="settings_permissions_saved">"এই কর্মক্ষেত্রের জন্য সংরক্ষিত"</string>
+    <string name="settings_permissions_revoke_all">"সব প্রত্যাহার করুন"</string>
+    <string name="approval_for_this_run">"এই রান"</string>
+    <string name="review_changes_action">"পর্যালোচনা"</string>
     <string name="settings_permissions_empty">"কোনো মনে রাখা অনুমতি নেই"</string>
     <string name="settings_action_revoke">"প্রত্যাহার করুন"</string>
     <string name="settings_root_title">"রুট অ্যাক্সেস"</string>

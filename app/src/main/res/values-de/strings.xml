@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Anbieter oder Modelle suchen"</string>
     <string name="settings_providers_search_all_models">"Alle Modelle suchen"</string>
     <string name="settings_permissions_title">"Gespeicherte Berechtigungen"</string>
-    <string name="settings_permissions_note">"Nur für den aktuellen Arbeitsbereich. „Immer“ gilt, bis der aktive Lauf endet. Widerrufen fragt erneut, wenn eine Genehmigung erforderlich ist; eine bereits genehmigte Aktion kann nicht gestoppt werden. Vollautomatisch und Vollzugriff können diese Abfragen weiterhin umgehen."</string>
+    <string name="settings_permissions_note">"Nur für den aktuellen Arbeitsbereich. „Immer“ wird hier gespeichert und gilt für jeden neuen Lauf, bis du es widerrufst. Eine Shell-Genehmigung deckt einen Befehl wie git status ab. Installationen, Pushes, Pull Requests und offene Befehle werden nie gespeichert. Widerrufen fragt erneut, wenn eine Genehmigung erforderlich ist; eine bereits genehmigte Aktion kann nicht gestoppt werden. „Alles bestätigen“ ignoriert gespeicherte Berechtigungen, und Vollautomatisch und Vollzugriff können Abfragen weiterhin umgehen."</string>
+    <string name="settings_permissions_saved">"Für diesen Arbeitsbereich gespeichert"</string>
+    <string name="settings_permissions_revoke_all">"Alle widerrufen"</string>
+    <string name="approval_for_this_run">"Dieser Lauf"</string>
+    <string name="review_changes_action">"Prüfen"</string>
     <string name="settings_permissions_empty">"Keine gespeicherten Berechtigungen"</string>
     <string name="settings_action_revoke">"Widerrufen"</string>
     <string name="settings_root_title">"Root-Zugriff"</string>

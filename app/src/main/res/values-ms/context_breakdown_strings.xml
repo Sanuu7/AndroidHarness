@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Apa yang memenuhi konteks"</string>
+    <string name="context_breakdown_note">"Dianggarkan daripada panjang teks, kira-kira 4 aksara setiap token. Kiraan penyedia mungkin berbeza sedikit."</string>
+    <string name="context_breakdown_expand">"Tunjukkan butiran"</string>
+    <string name="context_breakdown_collapse">"Sembunyikan butiran"</string>
+    <string name="context_group_tools">"Takrifan alat"</string>
+    <string name="context_free_space">"Ruang kosong"</string>
+
+    <string name="context_part_core">"Arahan teras"</string>
+    <string name="context_part_skills">"Kemahiran"</string>
+    <string name="context_part_environment">"Persekitaran langsung dan indeks alat"</string>
+    <string name="context_part_instructions">"Arahan projek dan sembang"</string>
+    <string name="context_part_memory">"Ingatan disimpan"</string>
+    <string name="context_part_repo_map">"Peta repositori"</string>
+    <string name="context_part_tools_built_in">"Alat terbina dalam (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Mesej anda"</string>
+    <string name="context_part_assistant">"Balasan pembantu"</string>
+    <string name="context_part_tool_calls">"Argumen panggilan alat"</string>
+    <string name="context_part_tool_results">"Hasil alat"</string>
+    <string name="context_part_notes">"Nota sistem"</string>
+
+    <string name="context_largest_results">"Hasil alat terbesar"</string>
+    <string name="context_hints_title">"Cara mengosongkan ruang"</string>
+    <string name="context_hint_near_limit">"Konteks hampir penuh. Jalankan /compact untuk meringkaskan pusingan lama."</string>
+    <string name="context_hint_tool_results">"Hasil alat mengambil %1$s token, dan yang terbesar datang daripada %2$s. Jalankan /compact, atau minta bacaan dan carian yang lebih sempit."</string>
+    <string name="context_hint_tool_results_unnamed">"Hasil alat mengambil %1$s token. Jalankan /compact, atau minta bacaan dan carian yang lebih sempit."</string>
+    <string name="context_hint_mcp_tools">"Alat MCP menambah %1$s token pada setiap permintaan. Putuskan sambungan pelayan yang tidak anda gunakan dalam sembang ini."</string>
+    <string name="context_hint_skills">"Katalog kemahiran menambah %1$s token pada setiap permintaan. Matikan kemahiran yang tidak anda gunakan."</string>
+    <string name="context_hint_memory">"Ingatan disimpan menambah %1$s token pada setiap permintaan. Buang nota yang sudah lapuk."</string>
+
+    <string name="context_command_title">"Pecahan konteks"</string>
+    <string name="context_command_hint">"Lihat apa yang memenuhi tetingkap konteks dan apa yang boleh anda kurangkan"</string>
+</resources>

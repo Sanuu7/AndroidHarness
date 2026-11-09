@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"සන්දර්භය පුරවන්නේ කුමක්ද"</string>
+    <string name="context_breakdown_note">"පෙළේ දිගෙන් ඇස්තමේන්තු කර ඇත, ටෝකනයකට ආසන්න වශයෙන් අකුරු 4ක්. සැපයුම්කරුගේ ගණනය තරමක් වෙනස් විය හැක."</string>
+    <string name="context_breakdown_expand">"විස්තර පෙන්වන්න"</string>
+    <string name="context_breakdown_collapse">"විස්තර සඟවන්න"</string>
+    <string name="context_group_tools">"මෙවලම් අර්ථ දැක්වීම්"</string>
+    <string name="context_free_space">"නිදහස් ඉඩ"</string>
+
+    <string name="context_part_core">"මූලික උපදෙස්"</string>
+    <string name="context_part_skills">"කුසලතා"</string>
+    <string name="context_part_environment">"සජීවී පරිසරය සහ මෙවලම් දර්ශකය"</string>
+    <string name="context_part_instructions">"ව්‍යාපෘති සහ කතාබස් උපදෙස්"</string>
+    <string name="context_part_memory">"සුරකින ලද මතකය"</string>
+    <string name="context_part_repo_map">"කේත ගබඩා සිතියම"</string>
+    <string name="context_part_tools_built_in">"ආවේණික මෙවලම් (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"ඔබේ පණිවිඩ"</string>
+    <string name="context_part_assistant">"සහායක පිළිතුරු"</string>
+    <string name="context_part_tool_calls">"මෙවලම් ඇමතුම් තර්ක"</string>
+    <string name="context_part_tool_results">"මෙවලම් ප්‍රතිඵල"</string>
+    <string name="context_part_notes">"පද්ධති සටහන්"</string>
+
+    <string name="context_largest_results">"විශාලතම මෙවලම් ප්‍රතිඵල"</string>
+    <string name="context_hints_title">"ඉඩ නිදහස් කරන ක්‍රම"</string>
+    <string name="context_hint_near_limit">"සන්දර්භය බොහෝ දුරට පිරී ඇත. පැරණි වාර සාරාංශ කිරීමට /compact ධාවනය කරන්න."</string>
+    <string name="context_hint_tool_results">"මෙවලම් ප්‍රතිඵල %1$s ටෝකන් ගනී, විශාලතම එක %2$s වෙතින්. /compact ධාවනය කරන්න, නැතහොත් වඩා පටු කියවීම් සහ සෙවීම් ඉල්ලන්න."</string>
+    <string name="context_hint_tool_results_unnamed">"මෙවලම් ප්‍රතිඵල %1$s ටෝකන් ගනී. /compact ධාවනය කරන්න, නැතහොත් වඩා පටු කියවීම් සහ සෙවීම් ඉල්ලන්න."</string>
+    <string name="context_hint_mcp_tools">"MCP මෙවලම් සෑම ඉල්ලීමකටම %1$s ටෝකන් එකතු කරයි. මෙම කතාබස්හි ඔබ භාවිත නොකරන සේවාදායක විසන්ධි කරන්න."</string>
+    <string name="context_hint_skills">"කුසලතා නාමාවලිය සෑම ඉල්ලීමකටම %1$s ටෝකන් එකතු කරයි. ඔබ භාවිත නොකරන කුසලතා ක්‍රියාවිරහිත කරන්න."</string>
+    <string name="context_hint_memory">"සුරකින ලද මතකය සෑම ඉල්ලීමකටම %1$s ටෝකන් එකතු කරයි. කල් ඉකුත් වූ සටහන් ඉවත් කරන්න."</string>
+
+    <string name="context_command_title">"සන්දර්භ විස්තරය"</string>
+    <string name="context_command_hint">"සන්දර්භ කවුළුව පුරවන්නේ කුමක්ද සහ ඔබට අඩු කළ හැක්කේ කුමක්ද බලන්න"</string>
+</resources>

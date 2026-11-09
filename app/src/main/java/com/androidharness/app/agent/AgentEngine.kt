@@ -139,6 +139,8 @@ data class ContextEstimate(
     val systemTokens: Int,
     val toolsTokens: Int,
     val metaTokens: Int = 256,
+    /** What the three groups are made of; only filled for the estimates shown in the context panel. */
+    val breakdown: ContextBreakdown? = null,
 ) {
     val total: Int get() = messagesTokens + systemTokens + toolsTokens + metaTokens
 }
@@ -488,7 +490,7 @@ class AgentEngine(
                 put("agent", runContext.agent); put("iteration", iterations)
             }).instructions
             // Auto-compact before the request grows past the context budget.
-            val estimate = estimateContext(working, requestSystemPrompt, tools)
+            val estimate = estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)
             emit(AgentEvent.EstimatedContext(estimate))
             val compactThreshold = if (conversation.isChat) ChatContextPolicy.compactAt(contextLimit, requestOptions.maxOutputTokens)
                 else AutoCompaction.threshold(autoCompactTokens(), contextLimit, requestOptions.maxOutputTokens)
@@ -504,7 +506,7 @@ class AgentEngine(
                     working.addAll(compacted)
                     // The window just shrank: refresh the context panel now
                     // instead of waiting for the next request's usage row.
-                    emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt, tools)))
+                    emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)))
                 }
                 if (conversation.isChat && estimateContext(working, requestSystemPrompt, tools).total >= compactThreshold) {
                     emit(AgentEvent.Error("The latest message is too large for the available context. Shorten it or choose a model with a larger context."))
@@ -1999,6 +2001,7 @@ class AgentEngine(
         history: List<ChatMessage>,
         systemPrompt: String,
         tools: List<com.androidharness.app.llm.ToolSchema> = registry.schemas(),
+        withBreakdown: Boolean = false,
     ): ContextEstimate {
         val messagesChars = history.sumOf {
             it.text.length + it.toolCalls.sumOf { c -> c.argumentsJson.length }
@@ -2010,6 +2013,7 @@ class AgentEngine(
             messagesTokens = messagesChars / 4,
             systemTokens = systemPrompt.length / 4,
             toolsTokens = toolsChars / 4,
+            breakdown = if (withBreakdown) ContextBreakdown.of(history, systemPrompt, tools) else null,
         )
     }
 
@@ -2060,6 +2064,7 @@ class AgentEngine(
                 wenyan = caveman.cavemanWenyan,
             ),
             tools = tools,
+            withBreakdown = true,
         )
     }
 

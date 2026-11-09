@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Что занимает контекст"</string>
+    <string name="context_breakdown_note">"Оценка по длине текста, около 4 символов на токен. Подсчёт провайдера может немного отличаться."</string>
+    <string name="context_breakdown_expand">"Показать подробности"</string>
+    <string name="context_breakdown_collapse">"Скрыть подробности"</string>
+    <string name="context_group_tools">"Определения инструментов"</string>
+    <string name="context_free_space">"Свободное место"</string>
+
+    <string name="context_part_core">"Основные инструкции"</string>
+    <string name="context_part_skills">"Навыки"</string>
+    <string name="context_part_environment">"Живая среда и индекс инструментов"</string>
+    <string name="context_part_instructions">"Инструкции проекта и чата"</string>
+    <string name="context_part_memory">"Сохранённая память"</string>
+    <string name="context_part_repo_map">"Карта репозитория"</string>
+    <string name="context_part_tools_built_in">"Встроенные инструменты (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Ваши сообщения"</string>
+    <string name="context_part_assistant">"Ответы ассистента"</string>
+    <string name="context_part_tool_calls">"Аргументы вызовов инструментов"</string>
+    <string name="context_part_tool_results">"Результаты инструментов"</string>
+    <string name="context_part_notes">"Системные заметки"</string>
+
+    <string name="context_largest_results">"Самые большие результаты инструментов"</string>
+    <string name="context_hints_title">"Как освободить место"</string>
+    <string name="context_hint_near_limit">"Контекст почти заполнен. Запустите /compact, чтобы сжать старые ходы."</string>
+    <string name="context_hint_tool_results">"Результаты инструментов занимают %1$s токенов, а самый большой получен от %2$s. Запустите /compact или попросите более узкие чтения и поиски."</string>
+    <string name="context_hint_tool_results_unnamed">"Результаты инструментов занимают %1$s токенов. Запустите /compact или попросите более узкие чтения и поиски."</string>
+    <string name="context_hint_mcp_tools">"Инструменты MCP добавляют %1$s токенов к каждому запросу. Отключите серверы, которые не используете в этом чате."</string>
+    <string name="context_hint_skills">"Каталог навыков добавляет %1$s токенов к каждому запросу. Отключите ненужные навыки."</string>
+    <string name="context_hint_memory">"Сохранённая память добавляет %1$s токенов к каждому запросу. Удалите устаревшие заметки."</string>
+
+    <string name="context_command_title">"Разбивка контекста"</string>
+    <string name="context_command_hint">"Посмотрите, что заполняет окно контекста и что можно сократить"</string>
+</resources>
