@@ -1644,19 +1644,8 @@
         <item quantity="other">"%1$d صف"</item>
     </plurals>
     <string name="voice_transcribing">جارٍ تحويل الصوت إلى نص…</string>
-    <string name="donate_upi_title">تبرع عبر UPI</string>
-    <string name="donate_upi_copy_id">نسخ معرف UPI</string>
-    <string name="donate_upi_copied">تم نسخ معرف UPI</string>
-    <string name="donate_upi_show_qr">عرض رمز QR</string>
-    <string name="donate_upi_hide_qr">إخفاء رمز QR</string>
-    <string name="donate_upi_qr_description">رمز QR للتبرع عبر UPI</string>
-    <string name="donate_upi_save_qr">حفظ في المعرض</string>
-    <string name="donate_upi_qr_saved">تم حفظ رمز QR في المعرض</string>
-    <string name="donate_upi_save_failed">تعذر حفظ رمز QR</string>
-    <string name="donate_upi_storage_required">اسمح بالوصول إلى التخزين لحفظ رمز QR في المعرض.</string>
     <string name="donate_funding_message">نواجه نقصًا في التمويل لمواصلة تطوير AndroidHarness. دعمك يساعدنا على الاستمرار.</string>
     <string name="donate_dismiss_message">إخفاء رسالة التبرع</string>
-    <string name="donate_upi_saving_qr">جارٍ الحفظ…</string>
     <string name="background_settings_title">الخلفية والإشعارات</string>
     <string name="background_settings_description">إدارة العمل في الخلفية والإشعارات.</string>
     <string name="background_run_title">التشغيل في الخلفية</string>
@@ -1827,4 +1816,8 @@
     <string name="local_thinking_on">نموذج مفكّر · طلب الاستدلال</string>
     <string name="local_thinking_direct">نموذج غير مفكّر · ردود مباشرة</string>
     <string name="local_thinking_help">يطلب النموذج المفكّر الاستدلال عبر قالب النموذج. يتبع الإعداد التلقائي مفتاح التفكير في الدردشة. ويُطلب في الحالة غير المفكّرة رد مباشر. قد تتجاهل بعض النماذج هذا الطلب؛ وتبقى علامات التفكير المتعرّف عليها معروضة بشكل منفصل.</string>
+    <string name="discord_join_title">"انضم إلى مجتمع Discord"</string>
+    <string name="discord_join_subtitle">"احصل على المساعدة وشارك ملاحظاتك وتعرّف على مستخدمين آخرين"</string>
+    <string name="discord_open_invite">"فتح دعوة Discord"</string>
+    <string name="discord_no_browser">"لا يوجد متصفح متاح. تفضل بزيارة discord.gg/NdC5K3XeWF للانضمام."</string>
 </resources>

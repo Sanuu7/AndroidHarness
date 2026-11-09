@@ -43,3 +43,8 @@ fun <T> expressiveSpatialSpec(): FiniteAnimationSpec<T> =
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 fun <T> expressiveEffectsSpec(): FiniteAnimationSpec<T> =
     MotionScheme.expressive().fastEffectsSpec()
+
+// Softer than the fast variant: a gentle overshoot for larger surfaces such as panels.
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+fun <T> expressiveDefaultSpatialSpec(): FiniteAnimationSpec<T> =
+    MotionScheme.expressive().defaultSpatialSpec()

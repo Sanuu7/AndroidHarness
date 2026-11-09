@@ -1640,19 +1640,8 @@
         <item quantity="other">"%1$d строки"</item>
     </plurals>
     <string name="voice_transcribing">Преобразование в текст…</string>
-    <string name="donate_upi_title">Поддержать через UPI</string>
-    <string name="donate_upi_copy_id">Копировать UPI ID</string>
-    <string name="donate_upi_copied">UPI ID скопирован</string>
-    <string name="donate_upi_show_qr">Показать QR-код</string>
-    <string name="donate_upi_hide_qr">Скрыть QR-код</string>
-    <string name="donate_upi_qr_description">QR-код для пожертвования через UPI</string>
-    <string name="donate_upi_save_qr">Сохранить в галерею</string>
-    <string name="donate_upi_qr_saved">QR-код сохранён в галерею</string>
-    <string name="donate_upi_save_failed">Не удалось сохранить QR-код</string>
-    <string name="donate_upi_storage_required">Разрешите доступ к хранилищу, чтобы сохранить QR-код в галерею.</string>
     <string name="donate_funding_message">Нам не хватает средств на дальнейшую разработку AndroidHarness. Ваша поддержка поможет нам продолжить работу.</string>
     <string name="donate_dismiss_message">Скрыть сообщение о поддержке</string>
-    <string name="donate_upi_saving_qr">Сохранение…</string>
     <string name="background_settings_title">Фоновая работа и уведомления</string>
     <string name="background_settings_description">Управление фоновой работой и уведомлениями.</string>
     <string name="background_run_title">Работать в фоне</string>
@@ -1823,4 +1812,8 @@
     <string name="local_thinking_on">Модель с рассуждениями · запрашивать рассуждения</string>
     <string name="local_thinking_direct">Модель без рассуждений · прямые ответы</string>
     <string name="local_thinking_help">Модель с рассуждениями запрашивает рассуждения через шаблон модели. Авто следует переключателю рассуждений в чате. Без рассуждений запрашивается прямой ответ. Некоторые модели могут игнорировать этот запрос; распознанные маркеры рассуждений всё равно показываются отдельно.</string>
+    <string name="discord_join_title">"Присоединяйтесь к нашему сообществу в Discord"</string>
+    <string name="discord_join_subtitle">"Получите помощь, поделитесь отзывом и познакомьтесь с другими пользователями"</string>
+    <string name="discord_open_invite">"Открыть приглашение в Discord"</string>
+    <string name="discord_no_browser">"Нет доступного браузера. Перейдите на discord.gg/NdC5K3XeWF, чтобы присоединиться."</string>
 </resources>

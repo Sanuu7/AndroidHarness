@@ -1636,19 +1636,8 @@
         <item quantity="other">"%1$d filas"</item>
     </plurals>
     <string name="voice_transcribing">"Transcribiendo…"</string>
-    <string name="donate_upi_title">"Donar con UPI"</string>
-    <string name="donate_upi_copy_id">"Copiar ID de UPI"</string>
-    <string name="donate_upi_copied">"ID de UPI copiado"</string>
-    <string name="donate_upi_show_qr">"Mostrar código QR"</string>
-    <string name="donate_upi_hide_qr">"Ocultar código QR"</string>
-    <string name="donate_upi_qr_description">"Código QR de donación UPI"</string>
-    <string name="donate_upi_save_qr">"Guardar en galería"</string>
-    <string name="donate_upi_qr_saved">"Código QR guardado en la galería"</string>
-    <string name="donate_upi_save_failed">"No se pudo guardar el código QR"</string>
-    <string name="donate_upi_storage_required">"Permite el acceso al almacenamiento para guardar el código QR en tu galería."</string>
     <string name="donate_funding_message">"Nos faltan fondos para seguir desarrollando AndroidHarness. Tu apoyo nos ayuda a continuar."</string>
     <string name="donate_dismiss_message">"Descartar mensaje de donación"</string>
-    <string name="donate_upi_saving_qr">"Guardando…"</string>
     <string name="background_settings_title">Segundo plano y notificaciones</string>
     <string name="background_settings_description">Gestiona el trabajo en segundo plano y los avisos.</string>
     <string name="background_run_title">Ejecutar en segundo plano</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">Modelo de razonamiento · solicitar razonamiento</string>
     <string name="local_thinking_direct">Modelo sin razonamiento · respuestas directas</string>
     <string name="local_thinking_help">El modelo de razonamiento pide razonamiento a la plantilla del modelo. Auto sigue el interruptor de razonamiento del chat. Sin razonamiento se pide una respuesta directa. Algunos modelos pueden ignorar esta solicitud; las marcas de razonamiento reconocidas se siguen mostrando por separado.</string>
+    <string name="discord_join_title">"Únete a nuestra comunidad de Discord"</string>
+    <string name="discord_join_subtitle">"Obtén ayuda, comparte comentarios y conoce a otros usuarios"</string>
+    <string name="discord_open_invite">"Abrir invitación de Discord"</string>
+    <string name="discord_no_browser">"No hay ningún navegador disponible. Visita discord.gg/NdC5K3XeWF para unirte."</string>
 </resources>

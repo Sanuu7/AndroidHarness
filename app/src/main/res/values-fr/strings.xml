@@ -1023,4 +1023,14 @@
         <item quantity="many">"Le service suggère de réessayer dans environ %1$d minutes."</item>
         <item quantity="other">"Le service suggère de réessayer dans environ %1$d minutes."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Autoriser Chat à rechercher dans les chats Code"</string>
+    <string name="chat_search_code_chats_desc">"Retrouvez et lisez vos anciennes conversations Code dans vos projets quand vous les évoquez. L\'historique Chat reste consultable quand c\'est désactivé."</string>
+    <string name="code_search_chat_chats">"Autoriser Code à rechercher dans les chats"</string>
+    <string name="code_search_chat_chats_desc">"Retrouvez et lisez vos anciennes conversations Chat quand vous les évoquez. L\'historique Code reste consultable quand c\'est désactivé."</string>
+    <string name="chat_history_matches">"Conversations passées"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Ouvrir le message correspondant"</string>
+    <string name="chat_history_open_chat">"Ouvrir la conversation"</string>
+    <string name="chat_history_unavailable">"Cette conversation n\'est plus disponible."</string>
 </resources>

@@ -1032,4 +1032,14 @@
         <item quantity="many">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقة.</item>
         <item quantity="other">تقترح الخدمة إعادة المحاولة بعد %1$d دقيقة.</item>
     </plurals>
+    <string name="chat_search_code_chats">"السماح للدردشة بالبحث في محادثات الكود"</string>
+    <string name="chat_search_code_chats_desc">"ابحث واقرأ محادثات الكود السابقة في مشاريعك عندما تسأل عنها. يظل سجل الدردشة قابلاً للبحث عند إيقاف هذا الخيار."</string>
+    <string name="code_search_chat_chats">"السماح للكود بالبحث في محادثات الدردشة"</string>
+    <string name="code_search_chat_chats_desc">"ابحث واقرأ محادثات الدردشة السابقة عندما تسأل عنها. يظل سجل الكود قابلاً للبحث عند إيقاف هذا الخيار."</string>
+    <string name="chat_history_matches">"محادثات سابقة"</string>
+    <string name="chat_history_kind_chat">"دردشة"</string>
+    <string name="chat_history_kind_code">"كود"</string>
+    <string name="chat_history_open_message">"فتح الرسالة المطابقة"</string>
+    <string name="chat_history_open_chat">"فتح المحادثة"</string>
+    <string name="chat_history_unavailable">"هذه المحادثة لم تعد متاحة."</string>
 </resources>

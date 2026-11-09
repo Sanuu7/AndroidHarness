@@ -1046,4 +1046,14 @@
     <string name="harness_free_wait">I’ll wait</string>
     <plurals name="harness_free_retry_seconds"><item quantity="one">The service suggests trying again in about %1$d second.</item><item quantity="other">The service suggests trying again in about %1$d seconds.</item></plurals>
     <plurals name="harness_free_retry_minutes"><item quantity="one">The service suggests trying again in about %1$d minute.</item><item quantity="other">The service suggests trying again in about %1$d minutes.</item></plurals>
+    <string name="chat_search_code_chats">Let Chat search Code chats</string>
+    <string name="chat_search_code_chats_desc">Find and read past Code conversations across your projects when you ask about them. Chat history stays searchable when this is off.</string>
+    <string name="code_search_chat_chats">Let Code search Chat chats</string>
+    <string name="code_search_chat_chats_desc">Find and read past Chat conversations when you ask about them. Code history stays searchable when this is off.</string>
+    <string name="chat_history_matches">Past conversations</string>
+    <string name="chat_history_kind_chat">Chat</string>
+    <string name="chat_history_kind_code">Code</string>
+    <string name="chat_history_open_message">Open matching message</string>
+    <string name="chat_history_open_chat">Open conversation</string>
+    <string name="chat_history_unavailable">This conversation is no longer available.</string>
 </resources>

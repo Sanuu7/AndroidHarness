@@ -1020,4 +1020,14 @@
         <item quantity="one">سرویس پیشنهاد می‌کند حدود %1$d دقیقه دیگر دوباره امتحان کنید.</item>
         <item quantity="other">سرویس پیشنهاد می‌کند حدود %1$d دقیقه دیگر دوباره امتحان کنید.</item>
     </plurals>
+    <string name="chat_search_code_chats">"اجازه دادن به گفتگو برای جستجو در کد"</string>
+    <string name="chat_search_code_chats_desc">"وقتی دربارهٔ آن‌ها می‌پرسید، گفتگوهای پیشین کد را در پروژه‌هایتان بیابید و بخوانید. وقتی این گزینه خاموش است، تاریخچهٔ گفتگو هنوز قابل جستجو می‌ماند."</string>
+    <string name="code_search_chat_chats">"اجازه دادن به کد برای جستجو در گفتگوها"</string>
+    <string name="code_search_chat_chats_desc">"وقتی دربارهٔ آن‌ها می‌پرسید، گفتگوهای پیشین را بیابید و بخوانید. وقتی این گزینه خاموش است، تاریخچهٔ کد هنوز قابل جستجو می‌ماند."</string>
+    <string name="chat_history_matches">"گفتگوهای پیشین"</string>
+    <string name="chat_history_kind_chat">"گفتگو"</string>
+    <string name="chat_history_kind_code">"کد"</string>
+    <string name="chat_history_open_message">"باز کردن پیام مطابق"</string>
+    <string name="chat_history_open_chat">"باز کردن گفتگو"</string>
+    <string name="chat_history_unavailable">"این گفتگو دیگر در دسترس نیست."</string>
 </resources>

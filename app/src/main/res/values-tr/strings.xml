@@ -1020,4 +1020,14 @@
         <item quantity="one">"Hizmet yaklaşık %1$d dakika sonra tekrar denemenizi öneriyor."</item>
         <item quantity="other">"Hizmet yaklaşık %1$d dakika sonra tekrar denemenizi öneriyor."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Chat, Code sohbetlerinde arayabilsin"</string>
+    <string name="chat_search_code_chats_desc">"Bunları sorduğunda projelerindeki eski Code konuşmalarını bulup okur. Bu kapalıyken Chat geçmişi aramaya açık kalır."</string>
+    <string name="code_search_chat_chats">"Code, Chat sohbetlerinde arayabilsin"</string>
+    <string name="code_search_chat_chats_desc">"Bunları sorduğunda eski Chat konuşmalarını bulup okur. Bu kapalıyken Code geçmişi aramaya açık kalır."</string>
+    <string name="chat_history_matches">"Geçmiş konuşmalar"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Eşleşen mesajı aç"</string>
+    <string name="chat_history_open_chat">"Konuşmayı aç"</string>
+    <string name="chat_history_unavailable">"Bu konuşma artık kullanılamıyor."</string>
 </resources>

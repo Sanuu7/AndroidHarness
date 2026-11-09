@@ -1637,19 +1637,8 @@
         <item quantity="other">"%1$d hàng"</item>
     </plurals>
     <string name="voice_transcribing">"Phiên âm…"</string>
-    <string name="donate_upi_title">"Đóng góp với UPI"</string>
-    <string name="donate_upi_copy_id">"Sao chép ID UPI"</string>
-    <string name="donate_upi_copied">"Đã sao chép mã UPI"</string>
-    <string name="donate_upi_show_qr">"Hiển thị QR code"</string>
-    <string name="donate_upi_hide_qr">"Ẩn QR code"</string>
-    <string name="donate_upi_qr_description">"Đóng góp UPI QR code"</string>
-    <string name="donate_upi_save_qr">"Lưu vào thư viện"</string>
-    <string name="donate_upi_qr_saved">"Đã lưu QR code vào thư viện"</string>
-    <string name="donate_upi_save_failed">"Không thể lưu QR code"</string>
-    <string name="donate_upi_storage_required">"Cho phép truy cập bộ nhớ để lưu QR code vào thư viện của bạn."</string>
     <string name="donate_funding_message">"Chúng tôi đang thiếu vốn để tiếp tục phát triển AndroidHarness. Sự hỗ trợ của bạn giúp chúng tôi tiếp tục xây dựng."</string>
     <string name="donate_dismiss_message">"Loại bỏ tin nhắn quyên góp"</string>
-    <string name="donate_upi_saving_qr">"Đang lưu…"</string>
     <string name="background_settings_title">"Bối cảnh và thông báo"</string>
     <string name="background_settings_description">"Quản lý công việc nền và thông báo."</string>
     <string name="background_run_title">"Chạy ở chế độ nền"</string>
@@ -1817,4 +1806,8 @@
     <string name="local_thinking_on">"Mô hình tư duy · yêu cầu lý luận"</string>
     <string name="local_thinking_direct">"Mô hình không suy nghĩ · câu trả lời trực tiếp"</string>
     <string name="local_thinking_help">"Mô hình tư duy yêu cầu lập luận từ mẫu mô hình. Auto tuân theo công tắc tư duy của chat. Không suy nghĩ yêu cầu một câu trả lời trực tiếp. Một số mô hình có thể bỏ qua yêu cầu này; các dấu hiệu tư duy được công nhận vẫn được hiển thị riêng biệt."</string>
+    <string name="discord_join_title">"Tham gia cộng đồng Discord của chúng tôi"</string>
+    <string name="discord_join_subtitle">"Nhận trợ giúp, chia sẻ phản hồi và gặp gỡ người dùng khác"</string>
+    <string name="discord_open_invite">"Mở lời mời Discord"</string>
+    <string name="discord_no_browser">"Không có trình duyệt khả dụng. Truy cập discord.gg/NdC5K3XeWF để tham gia."</string>
 </resources>

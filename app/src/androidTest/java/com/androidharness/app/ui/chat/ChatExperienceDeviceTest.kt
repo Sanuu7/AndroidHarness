@@ -152,7 +152,7 @@ class ChatExperienceDeviceTest {
                 universalMemory = c.memory,
                 chatOnlyTools = listOf(ReadChatTextTool(c.sessions::messages), BrowserReadTool(c.browser),
                     ViewChatImageTool(c.images),
-                    SearchChatsTool { _, _, _ -> emptyList() },
+                    SearchChatsTool { _, _, _, _ -> emptyList() },
                     RecentChatsTool(c.sessions.sessions),
                     ReadChatSnippetTool(c.sessions::messages, c.sessions::session),
                     OfferCodeHandoffTool(),

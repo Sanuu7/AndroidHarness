@@ -1017,4 +1017,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">"服務建議約 %1$d 分鐘後重試。"</item>
     </plurals>
+    <string name="chat_search_code_chats">"讓聊天搜尋程式碼對話"</string>
+    <string name="chat_search_code_chats_desc">"當你提到這些內容時，在專案中尋找並閱讀先前的程式碼對話。關閉後，聊天記錄仍可搜尋。"</string>
+    <string name="code_search_chat_chats">"讓程式碼搜尋聊天對話"</string>
+    <string name="code_search_chat_chats_desc">"當你提到這些內容時，尋找並閱讀先前的聊天對話。關閉後，程式碼記錄仍可搜尋。"</string>
+    <string name="chat_history_matches">"過去的對話"</string>
+    <string name="chat_history_kind_chat">"聊天"</string>
+    <string name="chat_history_kind_code">"程式碼"</string>
+    <string name="chat_history_open_message">"開啟符合的訊息"</string>
+    <string name="chat_history_open_chat">"開啟對話"</string>
+    <string name="chat_history_unavailable">"此對話已無法使用。"</string>
 </resources>

@@ -1639,19 +1639,8 @@
         <item quantity="other">"%1$d satırlar"</item>
     </plurals>
     <string name="voice_transcribing">"Metne dönüştürülüyor…"</string>
-    <string name="donate_upi_title">"UPI ile bağış yapın"</string>
-    <string name="donate_upi_copy_id">"UPI kimliğini kopyala"</string>
-    <string name="donate_upi_copied">"UPI kimliği kopyalandı"</string>
-    <string name="donate_upi_show_qr">"QR kodunu göster"</string>
-    <string name="donate_upi_hide_qr">"QR kodunu gizle"</string>
-    <string name="donate_upi_qr_description">"UPI bağışı QR kodu"</string>
-    <string name="donate_upi_save_qr">"Galeriye kaydet"</string>
-    <string name="donate_upi_qr_saved">"QR kodu galeriye kaydedildi"</string>
-    <string name="donate_upi_save_failed">"QR kodu kaydedilemedi"</string>
-    <string name="donate_upi_storage_required">"QR kodunu galerinize kaydetmek için depolama erişimine izin verin."</string>
     <string name="donate_funding_message">"AndroidHarness\'nin geliştirilmesini sürdürmek için yeterli fonumuz yok. Desteğiniz gelişmeye devam etmemize yardımcı oluyor."</string>
     <string name="donate_dismiss_message">"Bağış mesajını reddet"</string>
-    <string name="donate_upi_saving_qr">"Kaydediliyor…"</string>
     <string name="background_settings_title">"Arka plan ve bildirimler"</string>
     <string name="background_settings_description">"Arka planda çalışmayı ve bildirimleri yönetin."</string>
     <string name="background_run_title">"Arka planda çalıştır"</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">"Düşünme modeli · muhakeme isteği"</string>
     <string name="local_thinking_direct">"Düşünmeyen model · doğrudan cevaplar"</string>
     <string name="local_thinking_help">"Düşünme modeli, model şablonundan akıl yürütmeyi talep eder. Otomatik, sohbetin düşünme anahtarını takip eder. Düşünmeme doğrudan bir cevap ister. Bazı modeller bu isteği göz ardı edebilir; tanınan düşünme işaretleri hâlâ ayrı ayrı görüntüleniyor."</string>
+    <string name="discord_join_title">"Discord topluluğumuza katılın"</string>
+    <string name="discord_join_subtitle">"Yardım alın, geri bildirim paylaşın ve diğer kullanıcılarla tanışın"</string>
+    <string name="discord_open_invite">"Discord davetini aç"</string>
+    <string name="discord_no_browser">"Kullanılabilir tarayıcı yok. Katılmak için discord.gg/NdC5K3XeWF adresini ziyaret edin."</string>
 </resources>

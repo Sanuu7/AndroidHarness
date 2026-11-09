@@ -1637,19 +1637,8 @@
         <item quantity="other">"%1$d 행"</item>
     </plurals>
     <string name="voice_transcribing">"스크립트 작성 중…"</string>
-    <string name="donate_upi_title">"UPI로 기부"</string>
-    <string name="donate_upi_copy_id">"UPI ID 복사"</string>
-    <string name="donate_upi_copied">"UPI ID가 복사되었습니다."</string>
-    <string name="donate_upi_show_qr">"QR 코드 표시"</string>
-    <string name="donate_upi_hide_qr">"QR 코드 숨기기"</string>
-    <string name="donate_upi_qr_description">"UPI 기부 QR 코드"</string>
-    <string name="donate_upi_save_qr">"갤러리에 저장"</string>
-    <string name="donate_upi_qr_saved">"갤러리에 저장된 QR 코드"</string>
-    <string name="donate_upi_save_failed">"QR 코드를 저장할 수 없습니다."</string>
-    <string name="donate_upi_storage_required">"갤러리에 QR 코드를 저장하려면 저장소 액세스를 허용하세요."</string>
     <string name="donate_funding_message">"AndroidHarness 개발을 계속 진행하기 위한 자금이 부족합니다. 귀하의 지원은 우리가 계속해서 발전하는 데 도움이 됩니다."</string>
     <string name="donate_dismiss_message">"기부 메시지 닫기"</string>
-    <string name="donate_upi_saving_qr">"저장 중…"</string>
     <string name="background_settings_title">"배경 및 알림"</string>
     <string name="background_settings_description">"백그라운드 작업 및 알림을 관리합니다."</string>
     <string name="background_run_title">"백그라운드에서 실행"</string>
@@ -1817,4 +1806,8 @@
     <string name="local_thinking_on">"사고 모델 · 요청 추론"</string>
     <string name="local_thinking_direct">"무사고 모델 · 직접 답변"</string>
     <string name="local_thinking_help">"사고 모델은 모델 템플릿에서 추론을 요청합니다. 자동은 채팅의 사고 전환을 따릅니다. 생각하지 않는 것은 직접적인 대답을 요구합니다. 일부 모델은 이 요청을 무시할 수 있습니다. 인식된 사고 표시는 여전히 별도로 표시됩니다."</string>
+    <string name="discord_join_title">"Discord 커뮤니티에 참여하세요"</string>
+    <string name="discord_join_subtitle">"도움을 받고 의견을 나누며 다른 사용자를 만나 보세요"</string>
+    <string name="discord_open_invite">"Discord 초대 열기"</string>
+    <string name="discord_no_browser">"사용할 수 있는 브라우저가 없습니다. 참여하려면 discord.gg/NdC5K3XeWF를 방문하세요."</string>
 </resources>

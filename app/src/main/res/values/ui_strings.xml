@@ -1633,19 +1633,12 @@
     <plurals name="answer_table_columns"><item quantity="one">%1$d column</item><item quantity="other">%1$d columns</item></plurals>
     <plurals name="answer_table_rows"><item quantity="one">%1$d row</item><item quantity="other">%1$d rows</item></plurals>
     <string name="voice_transcribing">Transcribing…</string>
-    <string name="donate_upi_title">Donate with UPI</string>
-    <string name="donate_upi_copy_id">Copy UPI ID</string>
-    <string name="donate_upi_copied">UPI ID copied</string>
-    <string name="donate_upi_show_qr">Show QR code</string>
-    <string name="donate_upi_hide_qr">Hide QR code</string>
-    <string name="donate_upi_qr_description">UPI donation QR code</string>
-    <string name="donate_upi_save_qr">Save to gallery</string>
-    <string name="donate_upi_qr_saved">QR code saved to gallery</string>
-    <string name="donate_upi_save_failed">Could not save QR code</string>
-    <string name="donate_upi_storage_required">Allow storage access to save the QR code to your gallery.</string>
     <string name="donate_funding_message">We’re short on funds to keep AndroidHarness development going. Your support helps us keep building.</string>
     <string name="donate_dismiss_message">Dismiss donation message</string>
-    <string name="donate_upi_saving_qr">Saving…</string>
+    <string name="discord_join_title">Join our Discord community</string>
+    <string name="discord_join_subtitle">Get help, share feedback, and meet other users</string>
+    <string name="discord_open_invite">Open Discord invite</string>
+    <string name="discord_no_browser">No browser available. Visit discord.gg/NdC5K3XeWF to join.</string>
     <string name="background_settings_title">Background &amp; notifications</string>
     <string name="background_settings_description">Manage background work and notifications.</string>
     <string name="background_run_title">Run in background</string>

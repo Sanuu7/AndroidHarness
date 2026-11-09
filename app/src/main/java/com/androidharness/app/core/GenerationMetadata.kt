@@ -57,6 +57,7 @@ data class GenerationMetadata(
     val followUps: List<String> = emptyList(),
     val research: ResearchReceipt? = null,
     val settings: SettingsReceipt? = null,
+    val chatHistory: ChatHistoryReceipt? = null,
 ) {
     companion object {
         private val json = Json { ignoreUnknownKeys = true }

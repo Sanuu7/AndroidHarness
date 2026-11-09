@@ -1020,4 +1020,14 @@
         <item quantity="one">El servicio sugiere reintentar en aproximadamente %1$d minuto.</item>
         <item quantity="other">El servicio sugiere reintentar en aproximadamente %1$d minutos.</item>
     </plurals>
+    <string name="chat_search_code_chats">"Permitir que Chat busque en chats de Code"</string>
+    <string name="chat_search_code_chats_desc">"Busca y lee conversaciones previas de Code en tus proyectos cuando preguntes por ellas. El historial de Chat sigue siendo consultable cuando está desactivado."</string>
+    <string name="code_search_chat_chats">"Permitir que Code busque en chats"</string>
+    <string name="code_search_chat_chats_desc">"Busca y lee conversaciones previas de Chat cuando preguntes por ellas. El historial de Code sigue siendo consultable cuando está desactivado."</string>
+    <string name="chat_history_matches">"Conversaciones anteriores"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Abrir mensaje coincidente"</string>
+    <string name="chat_history_open_chat">"Abrir conversación"</string>
+    <string name="chat_history_unavailable">"Esta conversación ya no está disponible."</string>
 </resources>

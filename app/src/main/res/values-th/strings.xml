@@ -1017,4 +1017,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">"บริการแนะนำให้ลองอีกครั้งในประมาณ %1$d นาที"</item>
     </plurals>
+    <string name="chat_search_code_chats">"ให้ Chat ค้นหาแชท Code"</string>
+    <string name="chat_search_code_chats_desc">"ค้นหาและอ่านบทสนทนา Code ในอดีตในโปรเจกต์ของคุณเมื่อคุณถามถึง ประวัติ Chat ยังคงค้นหาได้เมื่อปิดตัวเลือกนี้"</string>
+    <string name="code_search_chat_chats">"ให้ Code ค้นหาแชท"</string>
+    <string name="code_search_chat_chats_desc">"ค้นหาและอ่านบทสนทนา Chat ในอดีตเมื่อคุณถามถึง ประวัติ Code ยังคงค้นหาได้เมื่อปิดตัวเลือกนี้"</string>
+    <string name="chat_history_matches">"บทสนทนาที่ผ่านมา"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"เปิดข้อความที่ตรงกัน"</string>
+    <string name="chat_history_open_chat">"เปิดบทสนทนา"</string>
+    <string name="chat_history_unavailable">"บทสนทนานี้ไม่พร้อมใช้งานแล้ว"</string>
 </resources>

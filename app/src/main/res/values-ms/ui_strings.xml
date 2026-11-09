@@ -1637,19 +1637,8 @@
         <item quantity="other">"baris %1$d"</item>
     </plurals>
     <string name="voice_transcribing">"Mentranskripsi…"</string>
-    <string name="donate_upi_title">"Menderma dengan UPI"</string>
-    <string name="donate_upi_copy_id">"Salin ID UPI"</string>
-    <string name="donate_upi_copied">"ID UPI disalin"</string>
-    <string name="donate_upi_show_qr">"Tunjukkan kod QR"</string>
-    <string name="donate_upi_hide_qr">"Sembunyikan kod QR"</string>
-    <string name="donate_upi_qr_description">"Kod QR derma UPI"</string>
-    <string name="donate_upi_save_qr">"Simpan ke galeri"</string>
-    <string name="donate_upi_qr_saved">"Kod QR disimpan ke galeri"</string>
-    <string name="donate_upi_save_failed">"Tidak dapat menyimpan kod QR"</string>
-    <string name="donate_upi_storage_required">"Benarkan akses storan untuk menyimpan kod QR ke galeri anda."</string>
     <string name="donate_funding_message">"Kami kekurangan dana untuk meneruskan pembangunan AndroidHarness. Sokongan anda membantu kami terus membina."</string>
     <string name="donate_dismiss_message">"Tolak mesej derma"</string>
-    <string name="donate_upi_saving_qr">"Menyimpan…"</string>
     <string name="background_settings_title">"Latar belakang &amp; pemberitahuan"</string>
     <string name="background_settings_description">"Urus kerja latar belakang dan pemberitahuan."</string>
     <string name="background_run_title">"Jalankan di latar belakang"</string>
@@ -1817,4 +1806,8 @@
     <string name="local_thinking_on">"Model pemikiran · meminta penaakulan"</string>
     <string name="local_thinking_direct">"Model tidak berfikir · jawapan langsung"</string>
     <string name="local_thinking_help">"Model pemikiran meminta penaakulan daripada templat model. Auto mengikut suis pemikiran sembang. Tidak berfikir meminta jawapan langsung. Sesetengah model boleh mengabaikan permintaan ini; penanda pemikiran yang diiktiraf masih dipaparkan secara berasingan."</string>
+    <string name="discord_join_title">"Sertai komuniti Discord kami"</string>
+    <string name="discord_join_subtitle">"Dapatkan bantuan, kongsikan maklum balas dan kenali pengguna lain"</string>
+    <string name="discord_open_invite">"Buka jemputan Discord"</string>
+    <string name="discord_no_browser">"Tiada pelayar tersedia. Lawati discord.gg/NdC5K3XeWF untuk menyertai."</string>
 </resources>

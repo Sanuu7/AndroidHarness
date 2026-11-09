@@ -496,6 +496,19 @@ interface HarnessDao {
     )
     suspend fun deleteMessagesFrom(sessionId: String, messageId: String): Int
 
+    // History tools search titles as well as visible messages, without loading full transcripts.
+    @Query("SELECT m.* FROM messages m JOIN sessions s ON s.id = m.sessionId " +
+        "WHERE (m.rowid IN (SELECT docid FROM message_fts WHERE text MATCH :match) OR s.title LIKE :title ESCAPE '\\') " +
+        "AND m.role IN ('USER', 'ASSISTANT') AND m.toolCallId IS NULL AND m.text != '' " +
+        "AND m.id NOT LIKE 'internal-chat-continuation-%' ORDER BY m.createdAt DESC, m.rowid DESC LIMIT :limit OFFSET :offset")
+    suspend fun searchRecallFts(match: String, title: String, limit: Int, offset: Int): List<MessageEntity>
+
+    @Query("SELECT m.* FROM messages m JOIN sessions s ON s.id = m.sessionId " +
+        "WHERE (m.text LIKE :pattern ESCAPE '\\' OR s.title LIKE :pattern ESCAPE '\\') " +
+        "AND m.role IN ('USER', 'ASSISTANT') AND m.toolCallId IS NULL AND m.text != '' " +
+        "AND m.id NOT LIKE 'internal-chat-continuation-%' ORDER BY m.createdAt DESC, m.rowid DESC LIMIT :limit OFFSET :offset")
+    suspend fun searchRecallLike(pattern: String, limit: Int, offset: Int): List<MessageEntity>
+
     // chat search
     @Query(
         "SELECT m.* FROM message_fts f JOIN messages m ON m.rowid = f.docid " +

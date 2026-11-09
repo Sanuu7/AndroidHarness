@@ -1020,4 +1020,14 @@
         <item quantity="one">"සේවාව තවත් මිනිත්තු %1$dකින් නැවත උත්සාහ කිරීමට යෝජනා කරයි."</item>
         <item quantity="other">"සේවාව තවත් මිනිත්තු %1$dකින් නැවත උත්සාහ කිරීමට යෝජනා කරයි."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Chat හට Code කතාබහ සෙවීමට ඉඩ දෙන්න"</string>
+    <string name="chat_search_code_chats_desc">"ඒවා ගැන ඔබ අසන විට ඔබේ ව්‍යාපෘතිවල පෙර Code සංවාද සොයා කියවන්න. මෙය off කර ඇති විටත් Chat ඉතිහාසය සෙවිය හැක."</string>
+    <string name="code_search_chat_chats">"Code හට Chat කතාබහ සෙවීමට ඉඩ දෙන්න"</string>
+    <string name="code_search_chat_chats_desc">"ඒවා ගැන ඔබ අසන විට පෙර Chat සංවාද සොයා කියවන්න. මෙය off කර ඇති විටත් Code ඉතිහාසය සෙවිය හැක."</string>
+    <string name="chat_history_matches">"පෙර සංවාද"</string>
+    <string name="chat_history_kind_chat">"කතාබහ"</string>
+    <string name="chat_history_kind_code">"කේත"</string>
+    <string name="chat_history_open_message">"ගැළපෙන පණිවිඩය විවෘත කරන්න"</string>
+    <string name="chat_history_open_chat">"සංවාදය විවෘත කරන්න"</string>
+    <string name="chat_history_unavailable">"මෙම සංවාදය තවදුරටත් නොමැත."</string>
 </resources>

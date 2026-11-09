@@ -32,6 +32,7 @@ data class MessageHit(
     val sessionTitle: String,
     val text: String,
     val createdAt: Long,
+    val kind: ConversationKind = ConversationKind.CODE,
 )
 
 internal const val MAX_PERSISTED_FIELD_CHARS = 250_000
@@ -529,6 +530,23 @@ class SessionRepository(
      * also finds partial words, code fragments, and punctuation runs. Subagent
      * inner assistant rows stay out: they are not rendered in the main chat.
      */
+    suspend fun searchRecallMessages(rawQuery: String, fuzzy: Boolean, limit: Int, offset: Int): List<MessageHit> {
+        val query = rawQuery.trim()
+        if (query.isEmpty()) return emptyList()
+        val pattern = ChatSearch.likePattern(query)
+        val match = ChatSearch.ftsMatchQuery(query)
+        val rows = if (fuzzy || match == null) db.dao().searchRecallLike(pattern, limit, offset)
+            else db.dao().searchRecallFts(match, pattern, limit, offset)
+        val sessions = db.dao().sessionsByIds(rows.map { it.sessionId }.distinct()).associateBy { it.id }
+        return rows.map { row ->
+            val session = sessions[row.sessionId]
+            MessageHit(row.id, row.sessionId, session?.title.orEmpty(),
+                if (row.role == Role.ASSISTANT.name) com.androidharness.app.core.response.RichResponse.plainText(row.text)
+                else com.androidharness.app.core.response.UserMessageContent.visibleText(row.text), row.createdAt,
+                ConversationConfig.decode(session?.conversationJson).kind)
+        }
+    }
+
     suspend fun searchMessages(rawQuery: String, fuzzy: Boolean, limit: Int = 80): List<MessageHit> {
         val q = rawQuery.trim()
         if (q.isEmpty()) return emptyList()

@@ -1017,4 +1017,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">サービスは約 %1$d 分後に再試行することを推奨しています。</item>
     </plurals>
+    <string name="chat_search_code_chats">"チャットに Code のチャット検索を許可"</string>
+    <string name="chat_search_code_chats_desc">"話題に出たとき、プロジェクト内の過去の Code 会話を検索して読めます。オフでもチャット履歴は検索できます。"</string>
+    <string name="code_search_chat_chats">"Code にチャット検索を許可"</string>
+    <string name="code_search_chat_chats_desc">"話題に出たとき、過去のチャット会話を検索して読めます。オフでも Code 履歴は検索できます。"</string>
+    <string name="chat_history_matches">"過去の会話"</string>
+    <string name="chat_history_kind_chat">"チャット"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"一致するメッセージを開く"</string>
+    <string name="chat_history_open_chat">"会話を開く"</string>
+    <string name="chat_history_unavailable">"この会話はもう利用できません。"</string>
 </resources>

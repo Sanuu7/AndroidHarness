@@ -1639,19 +1639,8 @@
         <item quantity="other">"%1$d வரிசைகள்"</item>
     </plurals>
     <string name="voice_transcribing">"படியெடுத்தல்…"</string>
-    <string name="donate_upi_title">"UPI மூலம் நன்கொடை அளிக்கவும்"</string>
-    <string name="donate_upi_copy_id">"UPI ஐடியை நகலெடுக்கவும்"</string>
-    <string name="donate_upi_copied">"UPI ஐடி நகலெடுக்கப்பட்டது"</string>
-    <string name="donate_upi_show_qr">"QR குறியீட்டைக் காட்டு"</string>
-    <string name="donate_upi_hide_qr">"QR குறியீட்டை மறை"</string>
-    <string name="donate_upi_qr_description">"UPI நன்கொடை QR குறியீடு"</string>
-    <string name="donate_upi_save_qr">"கேலரியில் சேமிக்கவும்"</string>
-    <string name="donate_upi_qr_saved">"கேலரியில் QR குறியீடு சேமிக்கப்பட்டது"</string>
-    <string name="donate_upi_save_failed">"QR குறியீட்டைச் சேமிக்க முடியவில்லை"</string>
-    <string name="donate_upi_storage_required">"உங்கள் கேலரியில் QR குறியீட்டைச் சேமிக்க சேமிப்பக அணுகலை அனுமதிக்கவும்."</string>
     <string name="donate_funding_message">"AndroidHarness மேம்பாட்டைத் தொடர எங்களிடம் நிதி குறைவாக உள்ளது. உங்கள் ஆதரவு நாங்கள் தொடர்ந்து கட்டமைக்க உதவுகிறது."</string>
     <string name="donate_dismiss_message">"நன்கொடை செய்தியை நிராகரி"</string>
-    <string name="donate_upi_saving_qr">"சேமிக்கிறது…"</string>
     <string name="background_settings_title">"பின்னணி மற்றும் அறிவிப்புகள்"</string>
     <string name="background_settings_description">"பின்னணி வேலை மற்றும் அறிவிப்புகளை நிர்வகிக்கவும்."</string>
     <string name="background_run_title">"பின்னணியில் இயக்கவும்"</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">"சிந்தனை மாதிரி · கோரிக்கை பகுத்தறிவு"</string>
     <string name="local_thinking_direct">"சிந்திக்காத மாதிரி · நேரடியான பதில்கள்"</string>
     <string name="local_thinking_help">"மாதிரி டெம்ப்ளேட்டிலிருந்து சிந்தனை மாதிரி பகுத்தறிவைக் கோருகிறது. அரட்டையின் சிந்தனை சுவிட்சை தானியங்கு பின்பற்றுகிறது. சிந்திக்காதவர் நேரடியான பதிலைக் கோருகிறார். சில மாதிரிகள் இந்த கோரிக்கையை புறக்கணிக்கலாம்; அங்கீகரிக்கப்பட்ட சிந்தனை குறிப்பான்கள் இன்னும் தனித்தனியாக காட்டப்படுகின்றன."</string>
+    <string name="discord_join_title">"எங்கள் Discord சமூகத்தில் சேரவும்"</string>
+    <string name="discord_join_subtitle">"உதவி பெறுங்கள், கருத்துகளைப் பகிருங்கள், மற்ற பயனர்களைச் சந்தியுங்கள்"</string>
+    <string name="discord_open_invite">"Discord அழைப்பைத் திற"</string>
+    <string name="discord_no_browser">"எந்த உலாவியும் இல்லை. சேர discord.gg/NdC5K3XeWF-ஐப் பார்வையிடவும்."</string>
 </resources>

@@ -1020,4 +1020,14 @@
         <item quantity="one">O serviço sugere tentar novamente em cerca de %1$d minuto.</item>
         <item quantity="other">O serviço sugere tentar novamente em cerca de %1$d minutos.</item>
     </plurals>
+    <string name="chat_search_code_chats">"Permitir que o Chat busque chats do Code"</string>
+    <string name="chat_search_code_chats_desc">"Encontre e leia conversas anteriores do Code nos seus projetos quando perguntar sobre elas. O histórico do Chat continua pesquisável com isto desativado."</string>
+    <string name="code_search_chat_chats">"Permitir que o Code busque chats"</string>
+    <string name="code_search_chat_chats_desc">"Encontre e leia conversas anteriores do Chat quando perguntar sobre elas. O histórico do Code continua pesquisável com isto desativado."</string>
+    <string name="chat_history_matches">"Conversas anteriores"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Código"</string>
+    <string name="chat_history_open_message">"Abrir mensagem correspondente"</string>
+    <string name="chat_history_open_chat">"Abrir conversa"</string>
+    <string name="chat_history_unavailable">"Esta conversa não está mais disponível."</string>
 </resources>

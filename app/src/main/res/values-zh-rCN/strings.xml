@@ -1048,4 +1048,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">服务建议约 %1$d 分钟后重试。</item>
     </plurals>
+    <string name="chat_search_code_chats">"允许聊天搜索代码对话"</string>
+    <string name="chat_search_code_chats_desc">"当你提到这些内容时，在项目中查找并阅读以前的代码对话。关闭后，聊天记录仍可搜索。"</string>
+    <string name="code_search_chat_chats">"允许代码搜索聊天对话"</string>
+    <string name="code_search_chat_chats_desc">"当你提到这些内容时，查找并阅读以前的聊天对话。关闭后，代码记录仍可搜索。"</string>
+    <string name="chat_history_matches">"过去的对话"</string>
+    <string name="chat_history_kind_chat">"聊天"</string>
+    <string name="chat_history_kind_code">"代码"</string>
+    <string name="chat_history_open_message">"打开匹配的消息"</string>
+    <string name="chat_history_open_chat">"打开对话"</string>
+    <string name="chat_history_unavailable">"此对话已不可用。"</string>
 </resources>

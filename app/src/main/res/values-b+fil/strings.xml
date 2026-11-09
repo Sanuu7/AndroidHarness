@@ -1020,4 +1020,14 @@
         <item quantity="one">"Iminumungkahi ng serbisyo na subukan muli sa loob ng humigit-kumulang %1$d minuto."</item>
         <item quantity="other">"Iminumungkahi ng serbisyo na subukan muli sa loob ng humigit-kumulang %1$d minuto."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Payagan ang Chat na maghanap sa mga Code chat"</string>
+    <string name="chat_search_code_chats_desc">"Hanapin at basahin ang mga dating Code na usapan sa iyong mga proyekto kapag nagtanong ka tungkol sa mga ito. Nananatiling mahahanap ang kasaysayan ng Chat kapag patay ito."</string>
+    <string name="code_search_chat_chats">"Payagan ang Code na maghanap sa mga Chat na usapan"</string>
+    <string name="code_search_chat_chats_desc">"Hanapin at basahin ang mga dating Chat na usapan kapag nagtanong ka tungkol sa mga ito. Nananatiling mahahanap ang kasaysayan ng Code kapag patay ito."</string>
+    <string name="chat_history_matches">"Mga dating usapan"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Buksan ang tumutugmang mensahe"</string>
+    <string name="chat_history_open_chat">"Buksan ang usapan"</string>
+    <string name="chat_history_unavailable">"Hindi na available ang usapang ito."</string>
 </resources>

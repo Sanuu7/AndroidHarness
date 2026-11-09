@@ -1637,19 +1637,8 @@
         <item quantity="other">"แถว %1$d"</item>
     </plurals>
     <string name="voice_transcribing">"กำลังถอดเสียง..."</string>
-    <string name="donate_upi_title">"บริจาคกับ UPI"</string>
-    <string name="donate_upi_copy_id">"คัดลอกรหัส UPI"</string>
-    <string name="donate_upi_copied">"คัดลอกรหัส UPI แล้ว"</string>
-    <string name="donate_upi_show_qr">"แสดงรหัส QR"</string>
-    <string name="donate_upi_hide_qr">"ซ่อนรหัส QR"</string>
-    <string name="donate_upi_qr_description">"รหัส QR บริจาค UPI"</string>
-    <string name="donate_upi_save_qr">"บันทึกลงในแกลเลอรี่"</string>
-    <string name="donate_upi_qr_saved">"รหัส QR บันทึกลงในแกลเลอรีแล้ว"</string>
-    <string name="donate_upi_save_failed">"ไม่สามารถบันทึกโค้ด QR ได้"</string>
-    <string name="donate_upi_storage_required">"อนุญาตให้เข้าถึงพื้นที่เก็บข้อมูลเพื่อบันทึกโค้ด QR ลงในแกลเลอรีของคุณ"</string>
     <string name="donate_funding_message">"เราขาดแคลนเงินทุนสำหรับการพัฒนา AndroidHarness ต่อไป การสนับสนุนของคุณช่วยให้เราสร้างต่อไป"</string>
     <string name="donate_dismiss_message">"ปิดข้อความการบริจาค"</string>
-    <string name="donate_upi_saving_qr">"กำลังบันทึก..."</string>
     <string name="background_settings_title">"ความเป็นมาและการแจ้งเตือน"</string>
     <string name="background_settings_description">"จัดการงานเบื้องหลังและการแจ้งเตือน"</string>
     <string name="background_run_title">"ทำงานในพื้นหลัง"</string>
@@ -1817,4 +1806,8 @@
     <string name="local_thinking_on">"รูปแบบการคิด · ขอเหตุผล"</string>
     <string name="local_thinking_direct">"แบบไม่มีความคิด · ตอบตรง"</string>
     <string name="local_thinking_help">"โมเดลการคิดร้องขอเหตุผลจากเทมเพลตโมเดล อัตโนมัติติดตามสวิตช์ความคิดของการแชท การไม่คิดต้องการคำตอบโดยตรง บางรุ่นสามารถเพิกเฉยต่อคำขอนี้ได้ เครื่องหมายการคิดที่ได้รับการยอมรับยังคงแสดงแยกกัน"</string>
+    <string name="discord_join_title">"เข้าร่วมชุมชน Discord ของเรา"</string>
+    <string name="discord_join_subtitle">"รับความช่วยเหลือ แบ่งปันความคิดเห็น และพบผู้ใช้อื่นๆ"</string>
+    <string name="discord_open_invite">"เปิดคำเชิญ Discord"</string>
+    <string name="discord_no_browser">"ไม่มีเบราว์เซอร์ที่ใช้ได้ เยี่ยมชม discord.gg/NdC5K3XeWF เพื่อเข้าร่วม"</string>
 </resources>

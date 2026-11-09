@@ -38,7 +38,7 @@ class ChatRecallToolsTest {
                 createdAt = 1_700_000_000_000,
             ),
         )
-        val tool = SearchChatsTool { _, _, _ -> hits }
+        val tool = SearchChatsTool { _, _, _, _ -> hits }
         val result = tool.execute(buildJsonObject { put("query", "elden ring") }, context())
         assertTrue(result.output.contains("Elden Ring graphics"))
         assertFalse(result.output.contains("Current chat"))

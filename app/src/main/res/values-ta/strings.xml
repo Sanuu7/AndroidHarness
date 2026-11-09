@@ -1020,4 +1020,14 @@
         <item quantity="one">"சேவை சுமார் %1$d நிமிடத்தில் மீண்டும் முயற்சிக்க பரிந்துரைக்கிறது."</item>
         <item quantity="other">"சேவை சுமார் %1$d நிமிடங்களில் மீண்டும் முயற்சிக்க பரிந்துரைக்கிறது."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Chat-ஐ Code அரட்டைகளில் தேட அனுமதி"</string>
+    <string name="chat_search_code_chats_desc">"அவற்றைப் பற்றிக் கேட்கும்போது உங்கள் திட்டங்களில் முந்தைய Code உரையாடல்களைக் கண்டுபிடித்துப் படியுங்கள். இது அணைக்கப்பட்டிருந்தாலும் Chat வரலாறு தேடக்கூடியதாகவே இருக்கும்."</string>
+    <string name="code_search_chat_chats">"Code-ஐ Chat அரட்டைகளில் தேட அனுமதி"</string>
+    <string name="code_search_chat_chats_desc">"அவற்றைப் பற்றிக் கேட்கும்போது முந்தைய Chat உரையாடல்களைக் கண்டுபிடித்துப் படியுங்கள். இது அணைக்கப்பட்டிருந்தாலும் Code வரலாறு தேடக்கூடியதாகவே இருக்கும்."</string>
+    <string name="chat_history_matches">"முந்தைய உரையாடல்கள்"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"பொருந்தும் செய்தியைத் திற"</string>
+    <string name="chat_history_open_chat">"உரையாடலைத் திற"</string>
+    <string name="chat_history_unavailable">"இந்த உரையாடல் இனி கிடைக்காது."</string>
 </resources>

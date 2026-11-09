@@ -44,7 +44,9 @@ internal fun ChatOptionsSection(
     onInstructions: suspend (String) -> Unit,
     agentCount: Int = 0,
     onManageAgents: () -> Unit = {},
+    onSearchCodeChats: (Boolean) -> Unit = {},
 ) {
+    ChatHistoryAccessOption(chat = true, enabled = settings.chatSearchCodeChats, onChange = onSearchCodeChats)
     SettingsAnchor(R.string.chat_agents_title) {
         SettingsPanel(Modifier.fillMaxWidth()) {
             Row(Modifier.fillMaxWidth().clickable(onClick = onManageAgents).padding(16.dp),
@@ -168,7 +170,9 @@ internal fun ChatOptionsSection(
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
-internal fun CodeStartOptionsSection(settings: AppSettings, onCodeStart: (CodeStartMode) -> Unit) {
+internal fun CodeStartOptionsSection(settings: AppSettings, onSearchChatChats: (Boolean) -> Unit = {},
+    onCodeStart: (CodeStartMode) -> Unit) {
+    ChatHistoryAccessOption(chat = false, enabled = settings.codeSearchChatChats, onChange = onSearchChatChats)
     var choosing by rememberSaveable { mutableStateOf(false) }
     fun label(mode: CodeStartMode) = if (mode == CodeStartMode.NEW_CODE) R.string.settings_start_code_new else R.string.settings_start_code_last
     fun description(mode: CodeStartMode) = if (mode == CodeStartMode.NEW_CODE) R.string.settings_start_code_new_desc else R.string.settings_start_code_last_desc
@@ -238,4 +242,25 @@ private fun <T> ChoicePanel(
             }
         }
     }
+}
+
+/** Each side controls what its assistant can retrieve from the other mode. */
+@Composable
+internal fun ChatHistoryAccessOption(chat: Boolean, enabled: Boolean, onChange: (Boolean) -> Unit) {
+    val title = if (chat) R.string.chat_search_code_chats else R.string.code_search_chat_chats
+    val content: @Composable () -> Unit = {
+        SettingsPanel(Modifier.fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth().toggleable(value = enabled, role = Role.Switch, onValueChange = onChange)
+                .padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(title), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(if (chat) R.string.chat_search_code_chats_desc else R.string.code_search_chat_chats_desc),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = enabled, onCheckedChange = null)
+            }
+        }
+    }
+    if (chat) SettingsAnchor(R.string.chat_search_code_chats, content = content)
+    else SettingsAnchor(R.string.code_search_chat_chats, content = content)
 }

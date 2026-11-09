@@ -39,7 +39,7 @@ internal enum class SettingsPage(
         R.string.settings_page_chat_options_title,
         R.string.settings_page_chat_options_desc,
         R.string.settings_group_personalize,
-        "chat option start screen default ui selection code chat last selected launch startup chat start new last resume",
+        "chat option start screen default ui selection code chat last selected launch startup chat start new last resume search past history conversations",
     ),
     MEMORY(
         R.string.settings_page_memory_title,
@@ -51,7 +51,7 @@ internal enum class SettingsPage(
         R.string.settings_page_coding_title,
         R.string.settings_page_coding_desc,
         R.string.settings_group_personalize,
-        "coding code agent subagent behavior chat commands skills codegraph caveman connected tools mcp telegram workspaces terminal device troubleshooting",
+        "coding code agent subagent behavior chat commands skills codegraph caveman connected tools mcp telegram workspaces terminal device troubleshooting search past history conversations",
     ),
     RUMBLE(
         R.string.settings_page_rumble_title,

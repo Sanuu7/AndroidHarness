@@ -1026,4 +1026,14 @@
         <item quantity="many">"Сервис предлагает повторить попытку примерно через %1$d минут."</item>
         <item quantity="other">"Сервис предлагает повторить попытку примерно через %1$d минуты."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Разрешить чату искать в чатах Code"</string>
+    <string name="chat_search_code_chats_desc">"Находите и читайте прежние беседы Code в своих проектах, когда спрашиваете о них. История чата остаётся доступной для поиска, когда это выключено."</string>
+    <string name="code_search_chat_chats">"Разрешить коду искать в чатах"</string>
+    <string name="code_search_chat_chats_desc">"Находите и читайте прежние беседы чата, когда спрашиваете о них. История кода остаётся доступной для поиска, когда это выключено."</string>
+    <string name="chat_history_matches">"Прежние беседы"</string>
+    <string name="chat_history_kind_chat">"Чат"</string>
+    <string name="chat_history_kind_code">"Код"</string>
+    <string name="chat_history_open_message">"Открыть совпадающее сообщение"</string>
+    <string name="chat_history_open_chat">"Открыть беседу"</string>
+    <string name="chat_history_unavailable">"Эта беседа больше недоступна."</string>
 </resources>

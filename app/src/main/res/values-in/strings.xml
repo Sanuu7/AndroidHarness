@@ -1017,4 +1017,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">Layanan menyarankan mencoba lagi dalam sekitar %1$d menit.</item>
     </plurals>
+    <string name="chat_search_code_chats">"Izinkan Chat mencari chat Code"</string>
+    <string name="chat_search_code_chats_desc">"Temukan dan baca percakapan Code sebelumnya di proyek Anda saat Anda menanyakannya. Riwayat Chat tetap bisa dicari saat ini dimatikan."</string>
+    <string name="code_search_chat_chats">"Izinkan Code mencari chat"</string>
+    <string name="code_search_chat_chats_desc">"Temukan dan baca percakapan Chat sebelumnya saat Anda menanyakannya. Riwayat Code tetap bisa dicari saat ini dimatikan."</string>
+    <string name="chat_history_matches">"Percakapan sebelumnya"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Kode"</string>
+    <string name="chat_history_open_message">"Buka pesan yang cocok"</string>
+    <string name="chat_history_open_chat">"Buka percakapan"</string>
+    <string name="chat_history_unavailable">"Percakapan ini tidak tersedia lagi."</string>
 </resources>

@@ -1017,4 +1017,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">"Perkhidmatan mencadangkan cuba lagi dalam kira-kira %1$d minit."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Benarkan Chat mencari chat Code"</string>
+    <string name="chat_search_code_chats_desc">"Cari dan baca perbualan Code lalu dalam projek anda apabila anda bertanya tentangnya. Sejarah Chat kekal boleh dicari apabila ini dimatikan."</string>
+    <string name="code_search_chat_chats">"Benarkan Code mencari chat"</string>
+    <string name="code_search_chat_chats_desc">"Cari dan baca perbualan Chat lalu apabila anda bertanya tentangnya. Sejarah Code kekal boleh dicari apabila ini dimatikan."</string>
+    <string name="chat_history_matches">"Perbualan lalu"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Buka mesej yang sepadan"</string>
+    <string name="chat_history_open_chat">"Buka perbualan"</string>
+    <string name="chat_history_unavailable">"Perbualan ini tidak lagi tersedia."</string>
 </resources>

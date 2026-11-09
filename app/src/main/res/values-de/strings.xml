@@ -1020,4 +1020,14 @@
         <item quantity="one">Der Dienst empfiehlt, es in etwa %1$d Minute erneut zu versuchen.</item>
         <item quantity="other">Der Dienst empfiehlt, es in etwa %1$d Minuten erneut zu versuchen.</item>
     </plurals>
+    <string name="chat_search_code_chats">"Chat darf Code-Chats durchsuchen"</string>
+    <string name="chat_search_code_chats_desc">"Finde beim Nachfragen frühere Code-Unterhaltungen aus deinen Projekten. Der Chat-Verlauf bleibt durchsuchbar, wenn dies aus ist."</string>
+    <string name="code_search_chat_chats">"Code darf Chats durchsuchen"</string>
+    <string name="code_search_chat_chats_desc">"Finde beim Nachfragen frühere Chat-Unterhaltungen. Der Code-Verlauf bleibt durchsuchbar, wenn dies aus ist."</string>
+    <string name="chat_history_matches">"Frühere Unterhaltungen"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Passende Nachricht öffnen"</string>
+    <string name="chat_history_open_chat">"Unterhaltung öffnen"</string>
+    <string name="chat_history_unavailable">"Diese Unterhaltung gibt es nicht mehr."</string>
 </resources>

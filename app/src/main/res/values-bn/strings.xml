@@ -1020,4 +1020,14 @@
         <item quantity="one">"সেবা প্রায় %1$d মিনিট পরে আবার চেষ্টা করার পরামর্শ দেয়।"</item>
         <item quantity="other">"সেবা প্রায় %1$d মিনিট পরে আবার চেষ্টা করার পরামর্শ দেয়।"</item>
     </plurals>
+    <string name="chat_search_code_chats">"Chat-কে Code চ্যাটে খোঁজার অনুমতি দিন"</string>
+    <string name="chat_search_code_chats_desc">"সেগুলো নিয়ে জিজ্ঞাসা করলে আপনার প্রকল্পের পুরোনো Code আলোচনা খুঁজে পড়ুন। এটি বন্ধ থাকলেও Chat ইতিহাস খোঁজা যাবে।"</string>
+    <string name="code_search_chat_chats">"Code-কে Chat চ্যাটে খোঁজার অনুমতি দিন"</string>
+    <string name="code_search_chat_chats_desc">"সেগুলো নিয়ে জিজ্ঞাসা করলে পুরোনো Chat আলোচনা খুঁজে পড়ুন। এটি বন্ধ থাকলেও Code ইতিহাস খোঁজা যাবে।"</string>
+    <string name="chat_history_matches">"পুরোনো আলোচনা"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"মিলে যাওয়া বার্তা খুলুন"</string>
+    <string name="chat_history_open_chat">"আলোচনা খুলুন"</string>
+    <string name="chat_history_unavailable">"এই আলোচনা আর পাওয়া যাচ্ছে না।"</string>
 </resources>

@@ -1017,4 +1017,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">"Dịch vụ đề nghị thử lại sau khoảng %1$d phút."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Cho phép Chat tìm kiếm hội thoại Code"</string>
+    <string name="chat_search_code_chats_desc">"Tìm và đọc các hội thoại Code trước đây trong dự án của bạn khi bạn hỏi về chúng. Lịch sử Chat vẫn tìm kiếm được khi tắt mục này."</string>
+    <string name="code_search_chat_chats">"Cho phép Code tìm kiếm hội thoại Chat"</string>
+    <string name="code_search_chat_chats_desc">"Tìm và đọc các hội thoại Chat trước đây khi bạn hỏi về chúng. Lịch sử Code vẫn tìm kiếm được khi tắt mục này."</string>
+    <string name="chat_history_matches">"Hội thoại trước đây"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Mở tin nhắn trùng khớp"</string>
+    <string name="chat_history_open_chat">"Mở hội thoại"</string>
+    <string name="chat_history_unavailable">"Hội thoại này không còn khả dụng."</string>
 </resources>

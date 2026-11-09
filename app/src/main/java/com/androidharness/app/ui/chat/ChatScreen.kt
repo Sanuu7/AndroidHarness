@@ -200,13 +200,14 @@ fun ChatScreen(
     onNavigateToSession: (sessionId: String) -> Unit = {},
     searchMessageId: String? = null,
     onSelectSection: (com.androidharness.app.data.ConversationKind) -> Unit = {},
+    onNavigateToMessage: (String, String?) -> Unit = { sid, _ -> onNavigateToSession(sid) },
 ) {
     ChatAppearance {
         val appearance by viewModel.container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
         val conversation by viewModel.state.collectAsStateWithLifecycle()
         com.androidharness.app.ui.theme.HarnessCanvasBackdrop(appearance.harnessCanvas, conversation.conversation.isChat, Modifier.fillMaxSize()) {
         ChatScreenContent(viewModel, onOpenDrawer, onOpenFile, onNewChat, onOpenTerminal,
-            onOpenFiles, onOpenSubagent, onOpenSettings, onNavigateToSession, searchMessageId, onSelectSection)
+            onOpenFiles, onOpenSubagent, onOpenSettings, onNavigateToSession, searchMessageId, onSelectSection, onNavigateToMessage)
         }
     }
 }
@@ -225,6 +226,7 @@ private fun ChatScreenContent(
     onNavigateToSession: (sessionId: String) -> Unit = {},
     searchMessageId: String? = null,
     onSelectSection: (com.androidharness.app.data.ConversationKind) -> Unit = {},
+    onNavigateToMessage: (String, String?) -> Unit = { sid, _ -> onNavigateToSession(sid) },
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     // Lazy list content and its derived lookup maps must use the same snapshot.
@@ -529,11 +531,18 @@ private fun ChatScreenContent(
     var showChatSettings by rememberSaveable(viewModel) { mutableStateOf(false) }
     var showChatAgents by rememberSaveable(viewModel) { mutableStateOf(false) }
     var newAgentId by rememberSaveable(viewModel) { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
+    fun openHistoryMatch(hit: com.androidharness.app.core.ChatHistoryMatch) {
+        scope.launch {
+            if (viewModel.container.sessions.session(hit.sessionId) == null) {
+                snackbar.showSnackbar(uiContext.getString(R.string.chat_history_unavailable))
+            } else onNavigateToMessage(hit.sessionId, hit.messageId)
+        }
+    }
     var showChatSources by remember(state.sessionId) { mutableStateOf(false) }
     var chatSources by remember(state.sessionId) {
         mutableStateOf<List<com.androidharness.app.core.ChatActivityPresentation.Source>?>(null)
     }
-    val scope = rememberCoroutineScope()
 
     /** Bookmarks an answer in place, with a snackbar that can take it back. */
     fun toggleSavedAnswer(message: com.androidharness.app.core.ChatMessage) {
@@ -1748,6 +1757,10 @@ private fun ChatScreenContent(
                                         streamId = state.streamingMessageId ?: "live",
                                         onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true })
                                 }
+                                val historyMatches = com.androidharness.app.core.ChatHistoryPresentation.matches(messages)
+                                if (historyMatches.isNotEmpty()) indexedItem(key = "chat-turn-$activityKey-history", contentType = ChatListContentType.History) {
+                                    com.androidharness.app.ui.chat.components.ChatHistoryCards(historyMatches, ::openHistoryMatch)
+                                }
                             }
                             if (state.hasOlderMessages) {
                                 indexedItem(key = "older-messages", contentType = ChatListContentType.History) {
@@ -2184,7 +2197,13 @@ private fun ChatScreenContent(
                                     }
                                 }
                             }
-                            Role.TOOL -> Unit
+                            Role.TOOL -> if (!state.conversation.isChat && message.generation.chatHistory != null) {
+                                val call = state.messages.firstOrNull { it.role == Role.ASSISTANT && it.toolCalls.any { call -> call.id == message.toolCallId } }
+                                val matches = com.androidharness.app.core.ChatHistoryPresentation.matches(listOfNotNull(call, message))
+                                if (matches.isNotEmpty()) indexedItem(key = "message-$messageKey-history", contentType = ChatListContentType.History) {
+                                    com.androidharness.app.ui.chat.components.ChatHistoryCards(matches, ::openHistoryMatch)
+                                }
+                            }
                             Role.SYSTEM -> {
                                 if (state.conversation.isChat) continue
                                 if (message.text.startsWith("Compaction failed:") || message.text.startsWith("Compaction stopped.") ||

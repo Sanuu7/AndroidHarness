@@ -1636,19 +1636,8 @@
         <item quantity="other">"%1$d රේඛාව"</item>
     </plurals>
     <string name="voice_transcribing">"පරිවර්තනය කිරීම..."</string>
-    <string name="donate_upi_title">"UPI සමඟ ලබා දීම"</string>
-    <string name="donate_upi_copy_id">"UPI ID Copy කරන්න"</string>
-    <string name="donate_upi_copied">"UPI ID පිටපත් කිරීම"</string>
-    <string name="donate_upi_show_qr">"QR කේතය පෙන්වන්න"</string>
-    <string name="donate_upi_hide_qr">"QR කේතය"</string>
-    <string name="donate_upi_qr_description">"UPI දීම QR කේතය"</string>
-    <string name="donate_upi_save_qr">"ගැලරිය වෙත Save"</string>
-    <string name="donate_upi_qr_saved">"QR කේතය ගැලරිය වෙත ඉතිරි කර ඇත"</string>
-    <string name="donate_upi_save_failed">"QR කේතය සුරැකීමට නොහැකි විය"</string>
-    <string name="donate_upi_storage_required">"ඔබගේ ගබඩාව සඳහා QR කේතය සුරක්ෂිත කිරීම සඳහා ගබඩාව ප්‍රවේශය ලබා දෙන්න."</string>
     <string name="donate_funding_message">"අපි පවත්වාගෙන යාමට මුදල් අඩුයි. AndroidHarness සංවර්ධනය යනවා.ඔබගේ සහාය අපට ගොඩනැගීමට උදව් කරයි."</string>
     <string name="donate_dismiss_message">"Dismiss තෑග්ග පණිවිඩය"</string>
-    <string name="donate_upi_saving_qr">"සුරකිමින්…"</string>
     <string name="background_settings_title">"පසුබිම &amp; දැනුම් දීමනා"</string>
     <string name="background_settings_description">"පසුබිම වැඩ සහ දැනුම් දීම කළමනාකරණය කරන්න."</string>
     <string name="background_run_title">"පසුබිම තුළ Run"</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">සිතන ආකෘතිය · තර්කනය ඉල්ලා සිටියි</string>
     <string name="local_thinking_direct">සිතන්නේ නැති ආකෘතිය · සෘජු පිළිතුරු</string>
     <string name="local_thinking_help">සිතන ආකෘතිය ආකෘති සැකිල්ලෙන් තර්කනය ඉල්ලා සිටී. ස්වයං චැට්හි සිතීමේ ස්විචය අනුගමනය කරයි. සිතන්නේ නැති විට සෘජු පිළිතුරක් ඉල්ලා සිටී. සමහර ආකෘති මෙම ඉල්ලීම නොසලකා හැරිය හැක; හඳුනාගත් සිතීමේ සලකුණු තවමත් වෙන වෙනම පෙන්වයි.</string>
+    <string name="discord_join_title">"අපගේ Discord ප්‍රජාවට එක්වන්න"</string>
+    <string name="discord_join_subtitle">"උදව් ලබා ගන්න, ප්‍රතිපෝෂණ බෙදා ගන්න, අනෙකුත් පරිශීලකයන් හමුවන්න"</string>
+    <string name="discord_open_invite">"Discord ඇරයුම විවෘත කරන්න"</string>
+    <string name="discord_no_browser">"බ්‍රවුසරයක් නොමැත. එක්වීමට discord.gg/NdC5K3XeWF වෙත යන්න."</string>
 </resources>

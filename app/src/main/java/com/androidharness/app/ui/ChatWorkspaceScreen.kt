@@ -51,6 +51,7 @@ fun ChatWorkspaceScreen(
     onNavigateToSession: (String) -> Unit = {},
     searchMessageId: String? = null,
     onSelectSection: (com.androidharness.app.data.ConversationKind) -> Unit = {},
+    onNavigateToMessage: (String, String?) -> Unit = { sid, _ -> onNavigateToSession(sid) },
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val container = viewModel.container
@@ -84,7 +85,7 @@ fun ChatWorkspaceScreen(
 
     if (chatState.conversation.isChat) {
         ChatScreen(viewModel, onOpenDrawer, onOpenFile, onNewChat, onOpenTerminal, onOpenFiles,
-            onOpenSubagent, onOpenSettings, onNavigateToSession, searchMessageId, onSelectSection)
+            onOpenSubagent, onOpenSettings, onNavigateToSession, searchMessageId, onSelectSection, onNavigateToMessage)
         return
     }
 
@@ -215,7 +216,8 @@ fun ChatWorkspaceScreen(
                             onOpenFiles = { if (embedded) showTool("Files") else onOpenFiles() },
                             onOpenSubagent = { guard.navigate { onOpenSubagent(it) } },
                             onOpenSettings = { guard.navigate(onOpenSettings) },
-                            onNavigateToSession = { guard.navigate { onNavigateToSession(it) } }, searchMessageId = searchMessageId, onSelectSection = { kind -> guard.navigate { onSelectSection(kind) } })
+                            onNavigateToSession = { guard.navigate { onNavigateToSession(it) } }, searchMessageId = searchMessageId, onSelectSection = { kind -> guard.navigate { onSelectSection(kind) } },
+                            onNavigateToMessage = { sid, mid -> guard.navigate { onNavigateToMessage(sid, mid) } })
                     }, panel = {
                         if (desktop || toolsUsed) Box(Modifier.fillMaxSize()) {
                             if (file != null) WorkspaceEditorScreen(container, file!!, initialLine = line.takeIf { it > 0 }, requestId = fileRequest,

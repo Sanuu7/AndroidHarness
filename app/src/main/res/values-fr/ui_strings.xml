@@ -1641,19 +1641,8 @@
         <item quantity="many">"Lignes %1$d"</item>
     </plurals>
     <string name="voice_transcribing">"Transcription…"</string>
-    <string name="donate_upi_title">"Faites un don avec UPI"</string>
-    <string name="donate_upi_copy_id">"Copier l\'ID UPI"</string>
-    <string name="donate_upi_copied">"ID UPI copié"</string>
-    <string name="donate_upi_show_qr">"Afficher le code QR"</string>
-    <string name="donate_upi_hide_qr">"Masquer le code QR"</string>
-    <string name="donate_upi_qr_description">"Code QR de don UPI"</string>
-    <string name="donate_upi_save_qr">"Enregistrer dans la galerie"</string>
-    <string name="donate_upi_qr_saved">"Code QR enregistré dans la galerie"</string>
-    <string name="donate_upi_save_failed">"Impossible d\'enregistrer le code QR"</string>
-    <string name="donate_upi_storage_required">"Autorisez l\'accès au stockage pour enregistrer le code QR dans votre galerie."</string>
     <string name="donate_funding_message">"Nous manquons de fonds pour poursuivre le développement de AndroidHarness. Votre soutien nous aide à continuer à construire."</string>
     <string name="donate_dismiss_message">"Ignorer le message de don"</string>
-    <string name="donate_upi_saving_qr">"Sauvegarde…"</string>
     <string name="background_settings_title">"Contexte et notifications"</string>
     <string name="background_settings_description">"Gérez le travail en arrière-plan et les notifications."</string>
     <string name="background_run_title">"Exécuter en arrière-plan"</string>
@@ -1821,4 +1810,8 @@
     <string name="local_thinking_on">"Modèle de réflexion · raisonnement de la demande"</string>
     <string name="local_thinking_direct">"Modèle non pensant · réponses directes"</string>
     <string name="local_thinking_help">"Le modèle de réflexion demande un raisonnement à partir du modèle de modèle. Auto suit le changement de réflexion du chat. La non-pensée demande une réponse directe. Certains modèles peuvent ignorer cette demande ; les marqueurs de pensée reconnus sont toujours affichés séparément."</string>
+    <string name="discord_join_title">"Rejoignez notre communauté Discord"</string>
+    <string name="discord_join_subtitle">"Obtenez de l\'aide, donnez votre avis et rencontrez d\'autres utilisateurs"</string>
+    <string name="discord_open_invite">"Ouvrir l\'invitation Discord"</string>
+    <string name="discord_no_browser">"Aucun navigateur disponible. Visitez discord.gg/NdC5K3XeWF pour rejoindre."</string>
 </resources>
