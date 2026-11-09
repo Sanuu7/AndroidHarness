@@ -15,7 +15,7 @@ No PC needed. No root needed.
 </p>
 
 [![Debug build](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml/badge.svg)](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml)
-[![Version](https://img.shields.io/badge/version-3.3-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
+[![Version](https://img.shields.io/badge/version-3.4-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
 [![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3ddc84)](https://developer.android.com/about/versions/oreo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -62,12 +62,13 @@ You can start for free with the built-in provider, which needs no account, or ru
 - **Safe by default.** The agent stays inside the workspace, sensitive actions ask for approval, and every change can be reviewed as a diff and undone.
 - **21 languages.** Switch the app language at any time without a restart.
 
-## What's new in 3.3
+## What's new in 3.4
 
-- **Live Mode.** Talk an idea through hands-free. It listens, answers out loud and keeps the transcript in the chat.
-- **Context meter.** A ring next to the Code composer shows how full the context is, with token details and a Compact button. Auto-compaction can run at a threshold you pick.
-- **Movable subagent button.** Background subagents show up as a button above the composer that you can drag anywhere.
-- **Eleven more languages**, Markdown preview in the editor, folder import in the file manager, and plugin MCP servers listed in Settings.
+- **A real interactive terminal.** The Terminal now runs a full shell on a pseudo-terminal, so nano, fzf, Python and Node REPLs, `top` and prompts such as `git add -p` work, with colors, extra keys and hardware keyboards.
+- **Storage and skills managers.** Settings → Storage inventories every installed component with its size and real location, and Settings → Skills becomes a searchable manager with filters, per-skill switches and bulk actions.
+- **Your own resume prompt.** Pick the text sent when a paused or interrupted task continues, for the whole app or for one chat.
+- **More control over context and changes.** The context dialog breaks the window down by group and suggests how to free space, `/review` reads the pending changes before you ask for fixes, and approvals saved with Always now survive across runs, with unsafe commands kept to the current run.
+- **Discover filters and chat history cards.** Sort and filter the plugin catalog, and open past conversations straight from the agent's search results.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release notes.
 
