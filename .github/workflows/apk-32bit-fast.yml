@@ -1,0 +1,118 @@
+name: APK 32-bit (fast, armeabi-v7a)
+
+# Fast 32-bit-only build for rapid iteration. Building just armeabi-v7a skips
+# the heavy llama.cpp FetchContent download + Vulkan build that only the
+# arm64-v8a/x86_64 ABIs need (see CMakeLists.txt: 32-bit takes the stub path).
+# All caches are keyed with `-32bit-*` / `armeabi-v7a-*` so they never
+# collide with the full 64-bit nightly build.
+
+on:
+  workflow_dispatch: {}
+  push:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/apk-32bit-fast.yml"
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "build.gradle.kts"
+      - "settings.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/apk-32bit-fast.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: apk-32bit-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  HARNESS_ABI: armeabi-v7a
+  PINNED_NDK: 27.2.12479018
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      # Gradle cache (Gradle Home + build-cache, org.gradle.caching=true).
+      # Separate actions/cache entries below isolate NDK and CMake output
+      # with explicit 32-bit keys.
+      - name: Set up Gradle (caching)
+        uses: gradle/actions/setup-gradle@v6
+
+      # NDK + CMake cache, scoped to the 32-bit build. The runner image no
+      # longer ships the pinned NDK, and AGP 9.3.1 refuses to configure
+      # without it.
+      - name: Cache pinned NDK (32-bit)
+        id: cache-ndk
+        uses: actions/cache@v4
+        with:
+          path: |
+            ${{ env.ANDROID_HOME }}/ndk/27.2.12479018
+            ${{ env.ANDROID_HOME }}/cmake/3.22.1
+          key: ndk-27.2.12479018-${{ runner.os }}-32bit-${{ hashFiles('app/build.gradle.kts') }}
+          restore-keys: |
+            ndk-27.2.12479018-${{ runner.os }}-32bit-
+
+      # CMake incremental cache, scoped to armeabi-v7a. This is the biggest
+      # native-build win after the first run: only changed .cpp files rebuild.
+      - name: Cache CMake incremental (armeabi-v7a)
+        uses: actions/cache@v4
+        with:
+          path: |
+            app/.cxx
+            app/build/generated/gpuNative
+          key: cxx-armeabi-v7a-${{ runner.os }}-${{ hashFiles('app/src/main/cpp/CMakeLists.txt', 'app/build.gradle.kts') }}
+          restore-keys: |
+            cxx-armeabi-v7a-${{ runner.os }}-
+
+      - name: Install pinned NDK (on cache miss)
+        if: steps.cache-ndk.outputs.cache-hit != 'true'
+        run: |
+          "${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager" --install 'ndk;27.2.12479018' 'cmake;3.22.1'
+
+      # No glslc needed for 32-bit: Vulkan shader compilation belongs to the
+      # 64-bit GPU path only (PrepareGpuRuntime emits stubs for 32-bit).
+
+      - name: Build debug APK (32-bit only)
+        run: ./gradlew :app:assembleDebug -PharnessAbis=armeabi-v7a --no-daemon --parallel --build-cache --console=plain -x test --stacktrace
+
+      - name: Stamp APK with date + commit
+        id: apk
+        run: |
+          STAMP=$(date -u +%Y%m%d-%H%M)
+          SHA=$(git rev-parse --short HEAD)
+          NAME="AndroidHarness-${STAMP}-${SHA}-armeabi-v7a-debug.apk"
+          mkdir dist && cp app/build/outputs/apk/debug/*.apk "dist/${NAME}"
+          echo "name=${NAME}" >> "$GITHUB_OUTPUT"
+          ls -lh dist/
+
+      - name: Upload artifact (Actions tab, kept 14 days)
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ steps.apk.outputs.name }}
+          path: dist/*.apk
+          retention-days: 14
+          if-no-files-found: error
