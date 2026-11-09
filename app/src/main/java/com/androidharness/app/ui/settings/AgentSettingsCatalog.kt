@@ -345,9 +345,9 @@ internal object AgentSettingsCatalog {
             "Send the prompt automatically once the user stops speaking, without waiting for the send button. Works with the locked Groq recording (auto-stops after the silence timeout) and the inbuilt recognizer (finishes on silence).", R.string.settings_anchor_auto_send, "voice auto send dictation automatic prompt silence",
             read = { it.voiceAutoSend.toString() }, write = { r, v -> r.setVoiceAutoSend(bool(v)) }),
         AgentSetting("voice_auto_send_timeout", R.string.settings_voice_auto_send_timeout, SettingsPage.VOICE,
-            SettingKind.Range(1.0, 5.0, RangeUnit.COUNT, wholeNumber = true),
-            "Seconds of silence before auto-sending dictated text (1 to 5).", R.string.settings_anchor_auto_send, "voice auto send silence timeout seconds wait pause",
-            read = { it.voiceAutoSendTimeoutSeconds.toString() }, write = { r, v -> r.setVoiceAutoSendTimeoutSeconds(v.toDouble().toInt()) }),
+            SettingKind.Range(1000.0, 5000.0, RangeUnit.MS, wholeNumber = true),
+            "Milliseconds of silence before auto-sending dictated text (1000 to 5000, 100ms steps — e.g. 1500 = 1.5s, 1700 = 1.7s, 2500 = 2.5s).", R.string.settings_anchor_auto_send, "voice auto send silence timeout seconds wait pause milliseconds",
+            read = { it.voiceAutoSendTimeoutMs.toString() }, write = { r, v -> r.setVoiceAutoSendTimeoutMs(v.toDouble().toInt()) }),
         // Live Mode
         AgentSetting("live_speak_replies", R.string.live_settings_speak, SettingsPage.LIVE_MODE, SettingKind.Toggle,
             "Read each Live Mode reply aloud.", R.string.live_settings_speak, "live voice conversation speak read aloud reply",

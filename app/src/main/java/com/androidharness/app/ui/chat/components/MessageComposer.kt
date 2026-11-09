@@ -74,6 +74,7 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Icon
@@ -187,9 +188,11 @@ internal fun MessageComposer(
     onLiveMode: (() -> Unit)? = null,
     /** When true, send `onSilenceDetected` to auto-transcribe an idle locked recording. */
     autoSendEnabled: Boolean = false,
-    /** Silence in seconds before auto-send (1..5). */
-    autoSendTimeoutSeconds: Int = 2,
+    /** Silence before auto-send in milliseconds (1000..5000, 100ms steps). */
+    autoSendTimeoutMs: Int = 2000,
     onSilenceDetected: () -> Unit = {},
+    /** Toggle for auto-send, shown in the + menu. */
+    onToggleAutoSend: (() -> Unit)? = null,
     /** Coding-only context meter, anchored immediately to the left of the text field. */
     contextControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -255,22 +258,25 @@ internal fun MessageComposer(
     )
 
     // Auto-send: detect silence in a locked Groq recording.
-    // levels are sampled every ~60ms, so 1s ≈ 17 samples.
+    // Only fires AFTER the user actually spoke (avoids sending "." for silence).
     var silenceSamples by remember { mutableIntStateOf(0) }
+    var hasSpoken by remember { mutableStateOf(false) }
     LaunchedEffect(autoSendEnabled, isGroqLocked, levels) {
         if (!autoSendEnabled || !isGroqLocked) {
             silenceSamples = 0
+            hasSpoken = false
         } else {
-            val last = levels.lastOrNull()
-            if (last != null && last < 0.06f) {
+            val last = levels.lastOrNull() ?: 0f
+            if (last >= 0.06f) {
+                hasSpoken = true
+                if (silenceSamples >= 0) silenceSamples = 0
+            } else if (hasSpoken) {
                 silenceSamples += 1
-                val threshold = (autoSendTimeoutSeconds.coerceIn(1, 5) * 17)
+                val threshold = (autoSendTimeoutMs / 60).coerceAtLeast(1)
                 if (silenceSamples >= threshold) {
                     silenceSamples = -Int.MAX_VALUE / 2 // fire only once per recording
                     onSilenceDetected()
                 }
-            } else if (silenceSamples >= 0) {
-                silenceSamples = 0
             }
         }
     }
@@ -294,6 +300,8 @@ internal fun MessageComposer(
                 onSchedule = onSchedule,
                 scheduleUnavailableReason = scheduleUnavailableReason,
                 onLiveMode = onLiveMode,
+                autoSendEnabled = autoSendEnabled,
+                onToggleAutoSend = onToggleAutoSend,
                 size = actionSize,
             )
         }
@@ -909,6 +917,8 @@ private fun ComposerLeadingButton(
     onSchedule: (() -> Unit)?,
     scheduleUnavailableReason: String?,
     onLiveMode: (() -> Unit)?,
+    autoSendEnabled: Boolean = false,
+    onToggleAutoSend: (() -> Unit)? = null,
     size: Dp = 52.dp,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
@@ -950,6 +960,21 @@ private fun ComposerLeadingButton(
                     onPickFile()
                 },
             )
+            if (onToggleAutoSend != null) {
+                androidx.compose.material3.HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        androidx.compose.foundation.layout.Column {
+                            Text(uiContext.getString(R.string.settings_voice_auto_send))
+                            Text(uiContext.getString(R.string.settings_voice_auto_send_desc), style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    },
+                    leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp)) },
+                    trailingIcon = { Text(if (autoSendEnabled) "ON" else "OFF", style = MaterialTheme.typography.labelSmall, color = if (autoSendEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) },
+                    onClick = { expanded = false; onToggleAutoSend() },
+                )
+            }
             if (onLiveMode != null) {
                 androidx.compose.material3.HorizontalDivider()
                 DropdownMenuItem(

@@ -127,8 +127,10 @@ data class AppSettings(
     val voicePromoSeen: Boolean = false,
     /** Auto-send dictation after silence without waiting for the user to press send. */
     val voiceAutoSend: Boolean = false,
-    /** Silence in seconds before auto-sending dictation (1..5). */
-    val voiceAutoSendTimeoutSeconds: Int = 2,
+    /** Silence before auto-sending dictation, in milliseconds (1000..5000, 100ms steps). */
+    val voiceAutoSendTimeoutMs: Int = 2000,
+    /** Backwards-compat accessor: timeout in seconds (for old callers). */
+    val voiceAutoSendTimeoutSeconds: Int get() = voiceAutoSendTimeoutMs / 1000,
     /** Experimental hands-free voice planning. Device-local, never restored from a backup. */
     val liveMode: LiveModeSettings = LiveModeSettings(),
     /** Legacy Code resume toggle kept for old backups; codeStart is authoritative. */
@@ -315,6 +317,7 @@ class SettingsRepository(private val context: Context) {
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
         val VOICE_AUTO_SEND = booleanPreferencesKey("voice_auto_send")
         val VOICE_AUTO_SEND_TIMEOUT_SECONDS = intPreferencesKey("voice_auto_send_timeout_seconds")
+        val VOICE_AUTO_SEND_TIMEOUT_MS = intPreferencesKey("voice_auto_send_timeout_ms")
         val LIVE_MODE = stringPreferencesKey("live_mode")
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val START_SCREEN = stringPreferencesKey("start_screen")
@@ -448,7 +451,7 @@ class SettingsRepository(private val context: Context) {
             ttsAlwaysSpeak = prefs[Keys.TTS_ALWAYS_SPEAK] ?: false,
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
             voiceAutoSend = prefs[Keys.VOICE_AUTO_SEND] ?: false,
-            voiceAutoSendTimeoutSeconds = (prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] ?: 2).coerceIn(1, 5),
+            voiceAutoSendTimeoutMs = (prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] ?: prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS]?.let { it * 1000 } ?: 2000).coerceIn(1000, 5000),
             liveMode = liveModeFrom(prefs[Keys.LIVE_MODE]),
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
             startScreen = StartScreen.fromStored(prefs[Keys.START_SCREEN]),
@@ -546,7 +549,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.TTS_SPEED] = s.ttsSpeed
             p[Keys.TTS_ALWAYS_SPEAK] = s.ttsAlwaysSpeak
             p[Keys.VOICE_AUTO_SEND] = s.voiceAutoSend
-            p[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = s.voiceAutoSendTimeoutSeconds.coerceIn(1, 5)
+            p[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] = s.voiceAutoSendTimeoutMs.coerceIn(1000, 5000)
+            p[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = s.voiceAutoSendTimeoutMs.coerceIn(1000, 5000) / 1000
             p[Keys.RESUME_LAST_CHAT] = s.resumeLastChat
             p[Keys.START_SCREEN] = s.startScreen.name
             p[Keys.CHAT_START] = s.chatStart.name
@@ -808,8 +812,17 @@ class SettingsRepository(private val context: Context) {
         context.settingsStore.edit { it[Keys.VOICE_AUTO_SEND] = enabled }
     }
 
+    suspend fun setVoiceAutoSendTimeoutMs(ms: Int) {
+        val clamped = ms.coerceIn(1000, 5000)
+        context.settingsStore.edit {
+            it[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] = clamped
+            it[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = clamped / 1000
+        }
+    }
+
+    // Backwards-compat overload taking seconds (old callers / backups).
     suspend fun setVoiceAutoSendTimeoutSeconds(seconds: Int) {
-        context.settingsStore.edit { it[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = seconds.coerceIn(1, 5) }
+        setVoiceAutoSendTimeoutMs(seconds.coerceIn(1, 5) * 1000)
     }
 
     private fun liveModeFrom(raw: String?): LiveModeSettings =

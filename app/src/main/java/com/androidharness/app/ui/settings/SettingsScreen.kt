@@ -117,6 +117,7 @@ import com.androidharness.app.data.audio.GroqTtsClient
 import com.androidharness.app.data.audio.TtsError
 import com.androidharness.app.data.audio.TtsVoiceOption
 import com.androidharness.app.data.ThemeMode
+import kotlin.math.roundToInt
 import com.androidharness.app.ui.chat.components.FullAccessOrange
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.settings.ProviderManagerSheet
@@ -1446,27 +1447,35 @@ private fun VoiceSpeechSection(
                     style = MaterialTheme.typography.labelMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
+                // 100ms precision: 1.0, 1.1, ... 1.5, 1.7, 2.5 ... 5.0
+                val ms = settings.voiceAutoSendTimeoutMs
+                val secs = ms / 1000f
+                val secsLabel = if (ms % 1000 == 0) (ms / 1000).toString() else String.format(java.util.Locale.US, "%.1f", secs)
                 Text(
-                    uiContext.getString(R.string.settings_voice_auto_send_timeout_value, settings.voiceAutoSendTimeoutSeconds.toString()),
+                    uiContext.getString(R.string.settings_voice_auto_send_timeout_value, secsLabel),
                     style = MaterialTheme.typography.titleSmall,
                 )
-                var slideTimeout by remember(settings.voiceAutoSendTimeoutSeconds) {
-                    mutableStateOf(settings.voiceAutoSendTimeoutSeconds.toFloat())
+                var slideTimeoutMs by remember(ms) {
+                    mutableStateOf(ms.toFloat())
                 }
                 androidx.compose.material3.Slider(
-                    value = slideTimeout,
-                    onValueChange = { slideTimeout = it },
+                    value = slideTimeoutMs,
+                    onValueChange = { slideTimeoutMs = it },
                     onValueChangeFinished = {
-                        scope.launch { container.settings.setVoiceAutoSendTimeoutSeconds(slideTimeout.toInt()) }
+                        // Snap to nearest 100ms for clean 1.5 / 1.7 / 2.5 values.
+                        val snapped = (slideTimeoutMs / 100).roundToInt() * 100
+                        slideTimeoutMs = snapped.toFloat()
+                        scope.launch { container.settings.setVoiceAutoSendTimeoutMs(snapped) }
                     },
-                    valueRange = 1f..5f,
-                    steps = 3,
+                    valueRange = 1000f..5000f,
+                    steps = 39,
                     modifier = Modifier.fillMaxWidth().semantics {
                         contentDescription = uiContext.getString(R.string.settings_voice_auto_send_timeout)
                     },
                 )
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
                     Text("1s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("2.5s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Text("5s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
                 Text(
