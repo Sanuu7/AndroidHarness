@@ -192,6 +192,10 @@ data class ChatUiState(
     val voicePromoSeen: Boolean = false,
     /** True while the one-time voice promo dialog should be shown. */
     val showVoicePromo: Boolean = false,
+    /** Auto-send dictation after the configured silence timeout. */
+    val voiceAutoSend: Boolean = false,
+    /** Silence in seconds before auto-sending dictation (1..5). */
+    val voiceAutoSendTimeoutSeconds: Int = 2,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Workspace .harness/mcp.json server names awaiting user approval before a run. */
@@ -761,6 +765,8 @@ class ChatViewModel(
             voiceEngine = settings.voiceEngine,
             groqWhisperModel = settings.groqWhisperModel,
             voicePromoSeen = settings.voicePromoSeen,
+            voiceAutoSend = settings.voiceAutoSend,
+            voiceAutoSendTimeoutSeconds = settings.voiceAutoSendTimeoutSeconds,
         ) }
     }
 

@@ -99,6 +99,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
@@ -1417,6 +1418,61 @@ private fun VoiceSpeechSection(
                         ) { Text(label) }
                     }
                 }
+            }
+        }
+    }
+
+    SettingsHeader(uiContext.getString(R.string.settings_voice_auto_send))
+    SettingsPanel(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(Modifier.settingsAnchor(R.string.settings_anchor_auto_send), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(R.string.settings_voice_auto_send), style = MaterialTheme.typography.titleSmall)
+                    Text(
+                        stringResource(R.string.settings_voice_auto_send_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.voiceAutoSend,
+                    onCheckedChange = { scope.launch { container.settings.setVoiceAutoSend(it) } },
+                )
+            }
+            if (settings.voiceAutoSend) {
+                Text(
+                    stringResource(R.string.settings_voice_auto_send_timeout),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                Text(
+                    uiContext.getString(R.string.settings_voice_auto_send_timeout_value, settings.voiceAutoSendTimeoutSeconds.toString()),
+                    style = MaterialTheme.typography.titleSmall,
+                )
+                var slideTimeout by remember(settings.voiceAutoSendTimeoutSeconds) {
+                    mutableStateOf(settings.voiceAutoSendTimeoutSeconds.toFloat())
+                }
+                androidx.compose.material3.Slider(
+                    value = slideTimeout,
+                    onValueChange = { slideTimeout = it },
+                    onValueChangeFinished = {
+                        scope.launch { container.settings.setVoiceAutoSendTimeoutSeconds(slideTimeout.toInt()) }
+                    },
+                    valueRange = 1f..5f,
+                    steps = 3,
+                    modifier = Modifier.fillMaxWidth().semantics {
+                        contentDescription = uiContext.getString(R.string.settings_voice_auto_send_timeout)
+                    },
+                )
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text("1s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("5s", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Text(
+                    stringResource(R.string.settings_voice_auto_send_timeout_desc),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
             }
         }
     }

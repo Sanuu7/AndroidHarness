@@ -1343,15 +1343,22 @@ private fun ChatScreenContent(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            if (state.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) {
-                voiceController.startGroqRecording(locked = pendingLockedRecord)
-            } else {
-                val base = composerText
-                voiceController.startNativeListening { transcribed, isFinal ->
-                    val newText = if (base.isBlank()) transcribed else "$base $transcribed"
-                    setComposerText(newText)
+                if (state.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) {
+                        voiceController.startGroqRecording(locked = pendingLockedRecord)
+                } else {
+                        val base = composerText
+                        val silenceMs = if (state.voiceAutoSend) state.voiceAutoSendTimeoutSeconds * 1000L else null
+                        voiceController.startNativeListening({ transcribed, isFinal ->
+                                if (isFinal && !transcribed.isNullOrBlank() && !state.busy && state.voiceAutoSend) {
+                                        val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"
+                                        setComposerText("")
+                                        viewModel.send(autoMsg)
+                                } else if (!transcribed.isNullOrBlank()) {
+                                        val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                                        setComposerText(newText)
+                                }
+                        }, silenceTimeoutMs = silenceMs)
                 }
-            }
         }
     }
 
@@ -2591,10 +2598,17 @@ private fun ChatScreenContent(
                                 ) == android.content.pm.PackageManager.PERMISSION_GRANTED
                             ) {
                                 val base = composerText
-                                voiceController.startNativeListening { transcribed, isFinal ->
-                                    val newText = if (base.isBlank()) transcribed else "$base $transcribed"
-                                    setComposerText(newText)
-                                }
+                                val silenceMs = if (state.voiceAutoSend) state.voiceAutoSendTimeoutSeconds * 1000L else null
+                                voiceController.startNativeListening({ transcribed, isFinal ->
+                                    if (isFinal && !transcribed.isNullOrBlank() && !state.busy && state.voiceAutoSend) {
+                                        val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"
+                                        setComposerText("")
+                                        viewModel.send(autoMsg)
+                                    } else if (!transcribed.isNullOrBlank()) {
+                                        val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                                        setComposerText(newText)
+                                    }
+                                }, silenceTimeoutMs = silenceMs)
                             } else {
                                 audioPermissionLauncher.launch(android.Manifest.permission.RECORD_AUDIO)
                             }
@@ -2621,12 +2635,41 @@ private fun ChatScreenContent(
                         voiceController.stopAndTranscribeGroq(
                             model = state.groqWhisperModel,
                         ) { transcribed ->
-                            val base = composerText
-                            val newText = if (base.isBlank()) transcribed else "$base $transcribed"
-                            setComposerText(newText)
+                            if (transcribed.isBlank()) {
+                                setComposerText(composerText)
+                            } else if (state.voiceAutoSend && !state.busy) {
+                                val base = composerText
+                                val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"
+                                setComposerText("")
+                                viewModel.send(autoMsg)
+                            } else {
+                                val base = composerText
+                                val newText = if (base.isBlank()) transcribed else "$base $transcribed"
+                                setComposerText(newText)
+                            }
                         }
                     },
                     hasAttachments = state.fileAttachments.isNotEmpty() || state.attachments.isNotEmpty() || attachedConcept != null || attachedResponse != null,
+                    autoSendEnabled = state.voiceAutoSend,
+                    autoSendTimeoutSeconds = state.voiceAutoSendTimeoutSeconds,
+                    onSilenceDetected = {
+                        voiceController.stopAndTranscribeGroq(
+                            model = state.groqWhisperModel,
+                        ) { transcribed ->
+                            if (transcribed.isBlank()) {
+                                setComposerText(composerText)
+                                return@stopAndTranscribeGroq
+                            }
+                            val base = composerText
+                            val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"
+                            if (state.voiceAutoSend && !state.busy) {
+                                setComposerText("")
+                                viewModel.send(autoMsg)
+                            } else {
+                                setComposerText(autoMsg)
+                            }
+                        }
+                    },
                 )
             }
 

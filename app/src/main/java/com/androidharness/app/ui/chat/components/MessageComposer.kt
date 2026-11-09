@@ -185,6 +185,11 @@ internal fun MessageComposer(
     onAskAside: (() -> Unit)? = null,
     /** Opens hands-free Live Mode; null while the experiment is switched off. */
     onLiveMode: (() -> Unit)? = null,
+    /** When true, send `onSilenceDetected` to auto-transcribe an idle locked recording. */
+    autoSendEnabled: Boolean = false,
+    /** Silence in seconds before auto-send (1..5). */
+    autoSendTimeoutSeconds: Int = 2,
+    onSilenceDetected: () -> Unit = {},
     /** Coding-only context meter, anchored immediately to the left of the text field. */
     contextControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -248,6 +253,27 @@ internal fun MessageComposer(
         animationSpec = expressiveSpatialSpec(),
         label = "sendCorner",
     )
+
+    // Auto-send: detect silence in a locked Groq recording.
+    // levels are sampled every ~60ms, so 1s ≈ 17 samples.
+    var silenceSamples by remember { mutableIntStateOf(0) }
+    LaunchedEffect(autoSendEnabled, isGroqLocked, levels) {
+        if (!autoSendEnabled || !isGroqLocked) {
+            silenceSamples = 0
+        } else {
+            val last = levels.lastOrNull()
+            if (last != null && last < 0.06f) {
+                silenceSamples += 1
+                val threshold = (autoSendTimeoutSeconds.coerceIn(1, 5) * 17)
+                if (silenceSamples >= threshold) {
+                    silenceSamples = -Int.MAX_VALUE / 2 // fire only once per recording
+                    onSilenceDetected()
+                }
+            } else if (silenceSamples >= 0) {
+                silenceSamples = 0
+            }
+        }
+    }
 
     val actionSize = if (desktopInput) 36.dp else if (desktop) 52.dp else 44.dp
     val leading: @Composable () -> Unit = {

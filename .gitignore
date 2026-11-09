@@ -32,7 +32,9 @@ captures/
 .cursor/
 /skills/
 graphify-out/
-
+AGENTS.md
+TASK.md
+ISSUE.md
 # --- Not part of the published source tree ---
 docs/*
 !docs/configuration/

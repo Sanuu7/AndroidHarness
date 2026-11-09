@@ -41,6 +41,14 @@
     <string name="settings_page_caveman_desc">Shorter replies, optional coding skills and token reports</string>
     <string name="settings_page_voice_title">Voice &amp; speech</string>
     <string name="settings_page_voice_desc">Speech recognition, text-to-speech and voice providers</string>
+    <string name="settings_voice_auto_send">Auto send</string>
+    <string name="settings_voice_auto_send_desc">Send the prompt automatically once you stop speaking, without waiting for the send button.</string>
+    <string name="settings_voice_auto_send_timeout">Silence timeout</string>
+    <string name="settings_voice_auto_send_timeout_desc">How long to wait in silence before sending.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s s</string>
+    <string name="settings_search_auto_send_title">Auto send</string>
+    <string name="settings_search_auto_send_desc">Voice input · Send the prompt automatically after silence</string>
+    <string name="settings_anchor_auto_send">Auto send</string>
     <string name="settings_page_skills_title">Skills</string>
     <string name="settings_page_skills_desc">Manage the playbooks your assistant can use</string>
     <string name="settings_page_appearance_title">Appearance</string>

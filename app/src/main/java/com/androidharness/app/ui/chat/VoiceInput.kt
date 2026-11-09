@@ -94,7 +94,7 @@ class VoiceInputController(
     // Native Inbuilt SpeechRecognizer
     // -----------------------------------------------------------------------
 
-    fun startNativeListening(onResult: (text: String, isFinal: Boolean) -> Unit) {
+    fun startNativeListening(onResult: (text: String, isFinal: Boolean) -> Unit, silenceTimeoutMs: Long? = null) {
         if (!isNativeAvailable) return
         stopNativeListening()
         errorMessage = null
@@ -103,6 +103,22 @@ class VoiceInputController(
             putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
             putExtra(RecognizerIntent.EXTRA_PARTIAL_RESULTS, true)
             putExtra(RecognizerIntent.EXTRA_MAX_RESULTS, 1)
+            // When the user stops talking for this long the recognizer
+            // finishes on its own (auto-send for the inbuilt engine).
+            silenceTimeoutMs
+                ?.takeIf { it > 0 }
+                ?.let { ms ->
+                    putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS, ms)
+                    putExtra(RecognizerIntent.EXTRA_SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS, ms / 2)
+                }
+            // Same extras via the generic keys, in case the device only
+            // honors those.
+            silenceTimeoutMs
+                ?.takeIf { it > 0 }
+                ?.let { ms ->
+                    putExtra("android.speech.extra.SPEECH_INPUT_COMPLETE_SILENCE_LENGTH_MILLIS", ms)
+                    putExtra("android.speech.extra.SPEECH_INPUT_POSSIBLY_COMPLETE_SILENCE_LENGTH_MILLIS", ms / 2)
+                }
         }
 
         try {

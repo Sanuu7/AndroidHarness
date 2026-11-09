@@ -341,6 +341,13 @@ internal object AgentSettingsCatalog {
             "Groq Whisper model for voice input: whisper-large-v3 is the most accurate, the turbo model is faster.",
             R.string.settings_anchor_whisper, "voice dictation whisper groq model turbo accurate fast",
             read = { it.groqWhisperModel }, write = { r, v -> r.setGroqWhisperModel(v) }),
+        AgentSetting("voice_auto_send", R.string.settings_voice_auto_send, SettingsPage.VOICE, SettingKind.Toggle,
+            "Send the prompt automatically once the user stops speaking, without waiting for the send button. Works with the locked Groq recording (auto-stops after the silence timeout) and the inbuilt recognizer (finishes on silence).", R.string.settings_anchor_auto_send, "voice auto send dictation automatic prompt silence",
+            read = { it.voiceAutoSend.toString() }, write = { r, v -> r.setVoiceAutoSend(bool(v)) }),
+        AgentSetting("voice_auto_send_timeout", R.string.settings_voice_auto_send_timeout, SettingsPage.VOICE,
+            SettingKind.Range(1.0, 5.0, RangeUnit.COUNT, wholeNumber = true),
+            "Seconds of silence before auto-sending dictated text (1 to 5).", R.string.settings_anchor_auto_send, "voice auto send silence timeout seconds wait pause",
+            read = { it.voiceAutoSendTimeoutSeconds.toString() }, write = { r, v -> r.setVoiceAutoSendTimeoutSeconds(v.toDouble().toInt()) }),
         // Live Mode
         AgentSetting("live_speak_replies", R.string.live_settings_speak, SettingsPage.LIVE_MODE, SettingKind.Toggle,
             "Read each Live Mode reply aloud.", R.string.live_settings_speak, "live voice conversation speak read aloud reply",
