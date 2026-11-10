@@ -374,7 +374,7 @@ class VoiceInputController(
                     return@launch
                 }
                 val apiKey = container.voiceProviders.apiKeyFor(provider.id).orEmpty()
-                if (apiKey.isBlank()) {
+                if (apiKey.isBlank() && provider.requiresKey) {
                     withContext(Dispatchers.Main) {
                         groqRecordState = GroqRecordState.IDLE
                         errorMessage = "${provider.name} API key not configured in Settings"

@@ -226,7 +226,12 @@ object OpenAiAudioClient {
         speed: Float,
     ): Result<ByteArray> {
         val chosenModel = model.ifBlank { provider.ttsModel }
-        if (chosenModel.isBlank()) return Result.failure(IllegalStateException("Choose a speech model"))
+        // Edge TTS through a router takes an empty model id on purpose: the
+        // request is routed by the "provider/" prefix alone.
+        val emptyModelAllowed = provider.id == VoicePresets.EDGE
+        if (chosenModel.isBlank() && !emptyModelAllowed) {
+            return Result.failure(IllegalStateException("Choose a speech model"))
+        }
         val payload = buildJsonObject {
             put("model", chosenModel)
             put("input", text)
@@ -284,6 +289,7 @@ object OpenAiAudioClient {
                 else -> emptyList()
             }
             VoicePresets.OPENAI -> listOf("alloy", "ash", "ballad", "coral", "echo", "fable", "nova", "onyx", "sage", "shimmer", "verse")
+            VoicePresets.EDGE -> VoicePresets.edgeVoices
             else -> emptyList()
         }
         VoiceProtocol.ELEVENLABS -> emptyList() // fetched from the account
@@ -296,6 +302,7 @@ object OpenAiAudioClient {
         voicesFor(provider, model).firstOrNull() ?: provider.ttsVoice.ifBlank { null }
 
     fun modelLabel(provider: VoiceProviderConfig, model: String): String = when {
+        provider.id == VoicePresets.EDGE -> provider.name
         model.isBlank() -> provider.ttsModel.ifBlank { provider.name }
         model.contains("orpheus", true) && model.contains("arabic", true) -> "Orpheus Arabic"
         model.contains("orpheus", true) -> "Orpheus English"

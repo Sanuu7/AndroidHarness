@@ -83,8 +83,13 @@ class VoiceProviderRepository(
     fun removeApiKey(id: String) = keys.removeVoiceApiKey(id)
 
     /** What a freshly installed app offers before the user changes anything. */
+    /**
+     * What the app offers first. Edge needs no setup at all, so it is the
+     * friendliest cloud default; the device engine stays the saved default
+     * until the user picks something else.
+     */
     fun defaultProviderId(forTts: Boolean): String =
-        if (forTts) VoicePresets.GROQ else VoicePresets.GROQ
+        if (forTts) VoicePresets.EDGE else VoicePresets.GROQ
 
     /** Provider usable for the requested direction, falling back to a preset. */
     fun resolve(list: List<VoiceProviderConfig>, id: String?, forTts: Boolean): VoiceProviderConfig? {

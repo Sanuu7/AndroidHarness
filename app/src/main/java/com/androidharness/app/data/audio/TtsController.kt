@@ -169,7 +169,17 @@ class TtsController(
             val remote = ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).getOrNull()
             if (!remote.isNullOrEmpty()) return remote.map { TtsVoiceOption(it.id, it.name) }
         }
-        return VoiceGateway.voicesFor(provider, model).map { TtsVoiceOption(it, it) }
+        return VoiceGateway.voicesFor(provider, model).map { TtsVoiceOption(it, voiceLabel(it)) }
+    }
+
+    /** "pt-BR-FranciscaNeural" reads better as "Francisca · pt-BR". */
+    private fun voiceLabel(id: String): String {
+        if (!id.contains("Neural")) return id
+        val parts = id.split('-')
+        if (parts.size < 3) return id
+        val locale = parts.take(2).joinToString("-")
+        val name = parts.last().removeSuffix("Neural")
+        return "$name · $locale"
     }
 
     /** Voices of the installed engine that fit the app's language. */
@@ -247,9 +257,14 @@ class TtsController(
         provider: VoiceProviderConfig,
     ): Boolean = coroutineScope {
         val apiKey = keys.voiceApiKey(provider.id).orEmpty()
-        if (apiKey.isBlank()) return@coroutineScope report(R.string.tts_error_no_key)
+        // Free endpoints (Edge) authenticate elsewhere or not at all.
+        if (apiKey.isBlank() && provider.requiresKey) {
+            return@coroutineScope report(R.string.tts_error_no_key)
+        }
         val selection = saved.voiceSelections[provider.id]
-        val model = selection?.ttsModel?.ifBlank { null } ?: provider.ttsModel
+        // An empty saved model is meaningful for Edge, so fall back only when
+        // the key is absent from the map entirely.
+        val model = selection?.ttsModel ?: provider.ttsModel
         val voice = selection?.ttsVoice?.ifBlank { null }
             ?: VoiceGateway.defaultVoiceFor(provider, model)
             ?: provider.ttsVoice

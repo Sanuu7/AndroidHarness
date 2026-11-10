@@ -262,6 +262,8 @@
     <string name="settings_voice_get_key">Get API key</string>
     <string name="settings_voice_add_key">Add API key</string>
     <string name="settings_voice_replace_key">Replace key</string>
+    <string name="settings_voice_no_key_needed">no key needed</string>
+    <string name="settings_voice_requires_key">Requires an API key</string>
     <string name="settings_voice_no_providers">No voice provider is set up yet. Add one to use cloud speech.</string>
     <string name="settings_voice_presets_hint">Groq, OpenAI, ElevenLabs, Deepgram, Cartesia and AssemblyAI are built in. A custom endpoint uses the OpenAI Audio format.</string>
     <string name="settings_tts_speed">Speed</string>

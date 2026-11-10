@@ -43,6 +43,12 @@ data class VoiceProviderConfig(
     val custom: Boolean = false,
     /** Shown as "Get API key" next to the key field. */
     val keyUrl: String = "",
+    /**
+     * False for free endpoints that authenticate some other way (Edge TTS needs
+     * no key at all). The UI hides the key card and requests go out without an
+     * Authorization header.
+     */
+    val requiresKey: Boolean = true,
 ) {
     fun resolvedBaseUrl(): String = baseUrl.trim().trimEnd('/')
 }
@@ -59,6 +65,8 @@ object VoicePresets {
     const val DEEPGRAM = "deepgram"
     const val CARTESIA = "cartesia"
     const val ASSEMBLYAI = "assemblyai"
+    /** Microsoft Edge's free online reader, reached through an OpenAI-compatible router. */
+    const val EDGE = "edge"
 
     const val KEY_URL_GROQ = "https://console.groq.com/keys"
     const val KEY_URL_OPENAI = "https://platform.openai.com/api-keys"
@@ -66,6 +74,33 @@ object VoicePresets {
     const val KEY_URL_DEEPGRAM = "https://console.deepgram.com/"
     const val KEY_URL_CARTESIA = "https://play.cartesia.ai/console"
     const val KEY_URL_ASSEMBLYAI = "https://www.assemblyai.com/dashboard/api-keys"
+
+    /**
+     * Local routers that expose Edge TTS (9Router, LiteLLM, one-api). Edge needs
+     * no key, so the provider ships with [VoiceProviderConfig.requiresKey] off;
+     * the address is a guess at the common 9Router port and stays editable.
+     */
+    const val EDGE_DEFAULT_BASE_URL = "http://localhost:20128/v1"
+
+    /**
+     * Edge voices. The router takes the id after the slash as the model, so the
+     * Edge provider sends an empty model id and passes the voice name instead.
+     */
+    val edgeVoices = listOf(
+        "pt-BR-FranciscaNeural", "pt-BR-AntonioNeural", "pt-BR-BrendaNeural",
+        "pt-BR-DonatoNeural", "pt-BR-ElzaNeural", "pt-BR-FabioNeural",
+        "pt-BR-GiovannaNeural", "pt-BR-HumbertoNeural", "pt-BR-JulioNeural",
+        "pt-BR-LeilaNeural", "pt-BR-LeticiaNeural", "pt-BR-ManuelaNeural",
+        "pt-BR-NicolauNeural", "pt-BR-ValerioNeural", "pt-BR-YaraNeural",
+        "en-US-AriaNeural", "en-US-GuyNeural", "en-US-JennyNeural",
+        "en-US-ChristopherNeural", "en-US-MichelleNeural",
+        "es-ES-ElviraNeural", "es-ES-AlvaroNeural",
+        "fr-FR-DeniseNeural", "fr-FR-HenriNeural",
+        "de-DE-KatjaNeural", "de-DE-ConradNeural",
+        "it-IT-ElsaNeural", "it-IT-DiegoNeural",
+        "ja-JP-NanamiNeural", "ja-JP-KeitaNeural",
+        "zh-CN-XiaoxiaoNeural", "zh-CN-YunxiNeural",
+    )
 
     /** Models offered when the provider's own model list cannot be fetched. */
     val groqSttModels = listOf("whisper-large-v3", "whisper-large-v3-turbo")
@@ -90,6 +125,19 @@ object VoicePresets {
             ttsModel = "playai-tts",
             ttsVoice = "Fritz-PlayAI",
             keyUrl = KEY_URL_GROQ,
+        ),
+        VoiceProviderConfig(
+            id = EDGE,
+            name = "Edge (free)",
+            protocol = VoiceProtocol.OPENAI_AUDIO,
+            baseUrl = EDGE_DEFAULT_BASE_URL,
+            // The router splits "provider/model", so an empty model after the
+            // slash is what selects plain Edge TTS.
+            sttModel = "",
+            ttsModel = "",
+            ttsVoice = "pt-BR-FranciscaNeural",
+            supportsStt = false,
+            requiresKey = false,
         ),
         VoiceProviderConfig(
             id = OPENAI,
@@ -164,6 +212,14 @@ object VoicePresets {
         CARTESIA -> cartesiaTtsModels
         DEEPGRAM -> deepgramTtsModels
         ELEVENLABS -> elevenLabsTtsModels
+        // The router wants an empty model id here; the voice carries the choice.
+        EDGE -> listOf("")
+        else -> emptyList()
+    }
+
+    /** Voices a preset documents, for providers whose API cannot list them. */
+    fun voicesFor(provider: VoiceProviderConfig): List<String> = when (provider.id) {
+        EDGE -> edgeVoices
         else -> emptyList()
     }
 }

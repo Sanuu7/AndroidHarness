@@ -144,6 +144,17 @@ internal fun VoiceProviderEditorDialog(
                         onCheckedChange = { draft = draft.copy(supportsTts = it) },
                     )
                 }
+                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        stringResource(R.string.settings_voice_requires_key),
+                        Modifier.weight(1f),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
+                    Switch(
+                        checked = draft.requiresKey,
+                        onCheckedChange = { draft = draft.copy(requiresKey = it) },
+                    )
+                }
             }
         },
         confirmButton = {

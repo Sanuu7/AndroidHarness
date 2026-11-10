@@ -94,8 +94,8 @@ internal fun VoiceProvidersSection(
 
     val sttKey = sttProvider?.let { remember(keyEpoch, it.id) { container.voiceProviders.apiKeyFor(it.id) } }
     val ttsKey = ttsProvider?.let { remember(keyEpoch, it.id) { container.voiceProviders.apiKeyFor(it.id) } }
-    val hasSttKey = sttKey != null
-    val hasTtsKey = ttsKey != null
+    val hasSttKey = sttKey != null || sttProvider?.requiresKey == false
+    val hasTtsKey = ttsKey != null || ttsProvider?.requiresKey == false
 
     // Model lists come from the provider when it exposes /models, so new ids
     // appear without an app update. Fetched only while the dialog is open.
@@ -226,8 +226,12 @@ internal fun VoiceProvidersSection(
     }
 
     // --- Keys for whichever providers are in play ---------------------------
+    // Providers that need no key (Edge) never show a key card.
     val keyProviders = remember(providers, voiceEngine, ttsEngine) {
-        listOf(sttProvider, ttsProvider).filterNotNull().distinctBy { it.id }
+        listOf(sttProvider, ttsProvider)
+            .filterNotNull()
+            .filter { it.requiresKey }
+            .distinctBy { it.id }
     }
     keyProviders.forEach { provider ->
         VoiceProviderCard(
@@ -585,9 +589,11 @@ private fun VoiceProvidersManagerDialog(
                         Column(Modifier.weight(1f)) {
                             Text(provider.name, style = MaterialTheme.typography.bodyLarge)
                             Text(
-                                provider.protocol.label +
-                                    if (hasKey) " · " + uiContext.getString(R.string.ui_on)
-                                    else " · " + uiContext.getString(R.string.ui_no_key),
+                                provider.protocol.label + when {
+                                    !provider.requiresKey -> " · " + uiContext.getString(R.string.settings_voice_no_key_needed)
+                                    hasKey -> " · " + uiContext.getString(R.string.ui_on)
+                                    else -> " · " + uiContext.getString(R.string.ui_no_key)
+                                },
                                 style = MaterialTheme.typography.bodySmall,
                                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                             )

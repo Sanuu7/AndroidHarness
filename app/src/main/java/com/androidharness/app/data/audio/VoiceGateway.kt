@@ -24,7 +24,8 @@ object VoiceGateway {
         return when (provider.protocol) {
             VoiceProtocol.OPENAI_AUDIO, VoiceProtocol.DEEPGRAM -> {
                 val remote = runCatching {
-                    if (apiKey.isBlank()) emptyList() else OpenAiAudioClient.listModels(provider.resolvedBaseUrl(), apiKey).getOrDefault(emptyList())
+                    if (apiKey.isBlank() && provider.requiresKey) emptyList()
+                    else OpenAiAudioClient.listModels(provider.resolvedBaseUrl(), apiKey).getOrDefault(emptyList())
                 }.getOrDefault(emptyList())
                 val filtered = remote.filter { id ->
                     when (provider.protocol) {
@@ -43,7 +44,8 @@ object VoiceGateway {
         return when (provider.protocol) {
             VoiceProtocol.OPENAI_AUDIO -> {
                 val remote = runCatching {
-                    if (apiKey.isBlank()) emptyList() else OpenAiAudioClient.listModels(provider.resolvedBaseUrl(), apiKey).getOrDefault(emptyList())
+                    if (apiKey.isBlank() && provider.requiresKey) emptyList()
+                    else OpenAiAudioClient.listModels(provider.resolvedBaseUrl(), apiKey).getOrDefault(emptyList())
                 }.getOrDefault(emptyList())
                 (remote.filter { TTS_HINT.containsMatchIn(it) } + preset).distinct()
             }
@@ -90,7 +92,7 @@ object VoiceGateway {
     )
 
     fun voicesFor(provider: VoiceProviderConfig, model: String): List<String> =
-        OpenAiAudioClient.voicesFor(provider, model)
+        OpenAiAudioClient.voicesFor(provider, model).ifEmpty { VoicePresets.voicesFor(provider) }
 
     fun defaultVoiceFor(provider: VoiceProviderConfig, model: String): String? =
         OpenAiAudioClient.defaultVoiceFor(provider, model)
