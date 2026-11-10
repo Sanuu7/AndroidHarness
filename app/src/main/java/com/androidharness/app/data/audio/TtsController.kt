@@ -66,6 +66,7 @@ class TtsController(
     private val context: Context,
     private val settings: SettingsRepository,
     private val keys: KeyStoreManager,
+    private val voices: VoiceProviderRepository,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val audioManager = context.getSystemService(AudioManager::class.java)
@@ -153,10 +154,23 @@ class TtsController(
         scope.cancel()
     }
 
-    /** TTS models the saved Groq key can use; empty when there is no key. */
-    suspend fun groqSpeechModels(): List<String> {
-        val apiKey = keys.groqApiKey() ?: return emptyList()
-        return GroqTtsClient.fetchSpeechModels(apiKey).getOrDefault(emptyList())
+    /** TTS models the selected provider can use; empty when it has no key. */
+    suspend fun speechModels(providerId: String?): List<String> {
+        val provider = voices.byId(providerId) ?: return emptyList()
+        val key = keys.voiceApiKey(provider.id).orEmpty()
+        return VoiceGateway.ttsModels(provider, key)
+    }
+
+    /** Voices of the configured provider, or of the installed engine for "system". */
+    suspend fun providerVoices(providerId: String?, model: String): List<TtsVoiceOption> {
+        val provider = voices.byId(providerId) ?: return emptyList()
+        if (provider.protocol == VoiceProtocol.ELEVENLABS) {
+            val key = keys.voiceApiKey(provider.id).orEmpty()
+            ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).onSuccess { list ->
+                return list.map { TtsVoiceOption(it.id, it.name) }
+            }
+        }
+        return VoiceGateway.voicesFor(provider, model).map { TtsVoiceOption(it, it) }
     }
 
     /** Voices of the installed engine that fit the app's language. */
@@ -181,9 +195,13 @@ class TtsController(
         job = scope.launch {
             val saved = settings.settings.first()
             try {
-                when (saved.ttsEngine) {
-                    AppSettings.TTS_ENGINE_GROQ -> speakGroq(messageId, plain, saved)
-                    else -> speakSystem(messageId, plain, saved)
+                val provider = if (saved.ttsEngine == AppSettings.TTS_ENGINE_SYSTEM) null else voices.byId(saved.ttsEngine)
+                if (saved.ttsEngine != AppSettings.TTS_ENGINE_SYSTEM && provider == null) {
+                    report(R.string.tts_error_unavailable)
+                } else if (provider != null) {
+                    speakProvider(messageId, plain, saved, provider)
+                } else {
+                    speakSystem(messageId, plain, saved)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -196,7 +214,7 @@ class TtsController(
     private suspend fun speakSystem(messageId: String, text: String, saved: AppSettings): Boolean {
         val tts = ensureSystemTts() ?: return report(R.string.tts_error_unavailable)
         applySystemVoice(tts, saved)
-        val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtMost(GroqTtsClient.MAX_INPUT_CHARS)
+        val limit = TextToSpeech.getMaxSpeechInputLength().coerceAtMost(OpenAiAudioClient.MAX_INPUT_CHARS)
         val chunks = TtsTextChunker.chunk(text, limit)
         if (chunks.isEmpty()) {
             finish()
@@ -223,27 +241,34 @@ class TtsController(
         return true
     }
 
-    private suspend fun speakGroq(messageId: String, text: String, saved: AppSettings): Boolean = coroutineScope {
-        val apiKey = keys.groqApiKey() ?: return@coroutineScope report(R.string.tts_error_no_key)
-        val model = saved.ttsGroqModel.ifBlank { AppSettings.DEFAULT_TTS_GROQ_MODEL }
-        val voice = saved.ttsGroqVoice.ifBlank {
-            GroqTtsClient.defaultVoiceFor(model) ?: AppSettings.DEFAULT_TTS_GROQ_VOICE
-        }
-        val chunks = TtsTextChunker.chunk(text, GroqTtsClient.maxInputChars(model))
+    private suspend fun speakProvider(
+        messageId: String,
+        text: String,
+        saved: AppSettings,
+        provider: VoiceProviderConfig,
+    ): Boolean = coroutineScope {
+        val apiKey = keys.voiceApiKey(provider.id).orEmpty()
+        if (apiKey.isBlank()) return@coroutineScope report(R.string.tts_error_no_key)
+        val selection = saved.voiceSelections[provider.id]
+        val model = selection?.ttsModel?.ifBlank { null } ?: provider.ttsModel
+        val voice = selection?.ttsVoice?.ifBlank { null }
+            ?: VoiceGateway.defaultVoiceFor(provider, model)
+            ?: provider.ttsVoice
+        val chunks = TtsTextChunker.chunk(text, VoiceGateway.maxInputChars(provider, model))
         if (chunks.isEmpty()) {
             finish()
             return@coroutineScope false
         }
         requestFocus()
-        // Orpheus caps a request at ~200 characters, so a reply is several
-        // clips. Keep two requests in flight: the next clip is generated while
-        // the current one plays, instead of leaving a silent gap per sentence.
+        // Some vendors cap a request at ~200 characters (Orpheus), so a reply is
+        // several clips. Keep two requests in flight: the next clip is generated
+        // while the current one plays, instead of leaving a silent gap.
         val permits = Semaphore(2)
         val audio = chunks.map { chunk ->
             async(Dispatchers.IO) {
                 permits.withPermit {
-                    GroqTtsClient.synthesizeCached(
-                        context.cacheDir, chunk, apiKey, model, voice, saved.ttsSpeed,
+                    VoiceGateway.synthesizeCached(
+                        context.cacheDir, provider, apiKey, chunk, model, voice, saved.ttsSpeed,
                     )
                 }
             }
@@ -253,7 +278,7 @@ class TtsController(
         audio.forEachIndexed { _, deferred ->
             val result = deferred.await()
             val file = result.getOrElse { error ->
-                // A single clip Groq refuses must not mute the rest of the
+                // A single clip a provider refuses must not mute the rest of the
                 // reply; credential and terms failures still stop at once.
                 if (error.stopsPlayback()) return@coroutineScope reportError(error)
                 android.util.Log.w("HarnessTts", "Skipping speech clip: ${error.message}")
@@ -277,7 +302,7 @@ class TtsController(
 
     /** Missing credentials or unaccepted terms make every clip fail. */
     private fun Throwable.stopsPlayback(): Boolean {
-        val api = this as? GroqTtsClient.GroqApiException ?: return false
+        val api = this as? OpenAiAudioClient.VoiceApiException ?: return false
         return api.code == "model_terms_required" || api.status == 401 || api.status == 403
     }
 
@@ -401,7 +426,7 @@ class TtsController(
         // Keep the provider message in logcat; the toast truncates it.
         android.util.Log.w("HarnessTts", "Speech failed: ${error.message}", error)
         val message = error.message ?: context.getString(R.string.tts_error_groq)
-        val api = error as? GroqTtsClient.GroqApiException
+        val api = error as? OpenAiAudioClient.VoiceApiException
         val terms = api != null && (
             api.code == "model_terms_required" ||
                 message.contains("terms acceptance", ignoreCase = true) ||

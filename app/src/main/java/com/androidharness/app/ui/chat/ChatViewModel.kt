@@ -184,10 +184,12 @@ data class ChatUiState(
     val showForkPromo: Boolean = false,
     /** Pending message for which fork was requested while promo was pending. */
     val pendingForkMessage: ChatMessage? = null,
-    /** Voice speech-to-text engine ("inbuilt" or "groq"). */
+    /** Voice speech-to-text engine: "inbuilt" or a voice provider id. */
     val voiceEngine: String = AppSettings.VOICE_ENGINE_INBUILT,
-    /** Groq Whisper model ("whisper-large-v3" or "whisper-large-v3-turbo"). */
+    /** Legacy Groq Whisper model, used while Groq is the selected provider. */
     val groqWhisperModel: String = AppSettings.GROQ_MODEL_WHISPER_V3,
+    /** Model and voice choices per voice provider id. */
+    val voiceSelections: Map<String, com.androidharness.app.data.VoiceSelection> = emptyMap(),
     /** False until the one-time voice configuration promo dialog is dismissed. */
     val voicePromoSeen: Boolean = false,
     /** True while the one-time voice promo dialog should be shown. */
@@ -766,6 +768,7 @@ class ChatViewModel(
             forkPromoSeen = settings.forkPromoSeen,
             voiceEngine = settings.voiceEngine,
             groqWhisperModel = settings.groqWhisperModel,
+            voiceSelections = settings.voiceSelections,
             voicePromoSeen = settings.voicePromoSeen,
             voiceAutoSend = settings.voiceAutoSend,
             voiceAutoSendShowInPlus = settings.voiceAutoSendShowInPlus,

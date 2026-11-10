@@ -1357,7 +1357,7 @@ private fun ChatScreenContent(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-                if (state.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) {
+                if (state.voiceEngine != AppSettings.VOICE_ENGINE_INBUILT) {
                         val silenceMs = if (state.voiceAutoSend) state.voiceAutoSendTimeoutMs.toLong() else 0L
                         autoSendSuppressed = false
                         voiceController.startGroqRecording(locked = pendingLockedRecord, autoSilenceTimeoutMs = silenceMs) {
@@ -2694,7 +2694,10 @@ private fun ChatScreenContent(
                             autoSendSuppressed = false
                             voiceController.startGroqRecording(locked = locked, autoSilenceTimeoutMs = silenceMs) {
                                 val base = composerText
-                                voiceController.stopAndTranscribeGroq(model = state.groqWhisperModel) { transcribed ->
+                                voiceController.stopAndTranscribe(
+                                    model = state.groqWhisperModel,
+                                    providerId = state.voiceEngine,
+                                ) { transcribed ->
                                     if (transcribed.isBlank() || isPunctuationOnly(transcribed)) {
                                         setComposerText(base)
                                     } else if (state.voiceAutoSend && !state.busy && !autoSendSuppressed) {
@@ -2742,12 +2745,13 @@ private fun ChatScreenContent(
                     autoSendShowInPlus = state.voiceAutoSendShowInPlus,
                     autoSendTimeoutMs = state.voiceAutoSendTimeoutMs,
                     onSilenceDetected = {
-                        voiceController.stopAndTranscribeGroq(
+                        voiceController.stopAndTranscribe(
                             model = state.groqWhisperModel,
+                            providerId = state.voiceEngine,
                         ) { transcribed ->
                             if (transcribed.isBlank() || isPunctuationOnly(transcribed)) {
                                 setComposerText(composerText)
-                                return@stopAndTranscribeGroq
+                                return@stopAndTranscribe
                             }
                             val base = composerText
                             val autoMsg = if (base.isBlank()) transcribed else "$base $transcribed"

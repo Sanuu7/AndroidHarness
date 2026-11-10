@@ -48,9 +48,12 @@ class VoiceInputController(
     private val context: Context,
     private val container: AppContainer,
     private val scope: CoroutineScope,
-    private val transcribe: suspend (File, String, String) -> Result<String> = { file, key, model ->
-        GroqWhisperClient.transcribe(file, key, model)
-    },
+    /**
+     * Transcription lambda, injectable for tests. Production leaves it null and
+     * goes through [com.androidharness.app.data.audio.VoiceGateway], which picks
+     * the client from the provider's protocol.
+     */
+    private val transcribe: (suspend (File, String, String) -> Result<String>)? = null,
 ) {
     // Inbuilt state
     var isListeningInbuilt by mutableStateOf(false)
@@ -320,6 +323,17 @@ class VoiceInputController(
     fun stopAndTranscribeGroq(
         model: String,
         onTranscription: (text: String) -> Unit,
+    ) = stopAndTranscribe(model, onTranscription)
+
+    /**
+     * Stops the recorder and sends the clip to the configured speech-to-text
+     * provider. [providerId] is the id saved in settings; a blank id falls back
+     * to the first configured provider that supports transcription.
+     */
+    fun stopAndTranscribe(
+        model: String,
+        onTranscription: (text: String) -> Unit,
+        providerId: String? = null,
     ) {
         if (groqRecordState != GroqRecordState.HOLDING && groqRecordState != GroqRecordState.LOCKED) {
             return
@@ -345,18 +359,41 @@ class VoiceInputController(
             return
         }
 
-        val apiKey = container.keys.groqApiKey()
-        if (apiKey.isNullOrBlank()) {
-            file.delete()
-            errorMessage = "Groq API key not configured in Settings"
-            groqRecordState = GroqRecordState.IDLE
-            return
-        }
-
         groqRecordState = GroqRecordState.TRANSCRIBING
         transcriptionJob = scope.launch {
             try {
-                val result = transcribe(file, apiKey, model)
+                val all = container.voiceProviders.current()
+                val provider = container.voiceProviders.resolve(all, providerId, forTts = false)
+                if (provider == null) {
+                    withContext(Dispatchers.Main) {
+                        groqRecordState = GroqRecordState.IDLE
+                        errorMessage = "No speech-to-text provider is configured in Settings"
+                    }
+                    return@launch
+                }
+                val apiKey = container.voiceProviders.apiKeyFor(provider.id).orEmpty()
+                if (apiKey.isBlank()) {
+                    withContext(Dispatchers.Main) {
+                        groqRecordState = GroqRecordState.IDLE
+                        errorMessage = "${provider.name} API key not configured in Settings"
+                    }
+                    return@launch
+                }
+                val selection = container.settings.settings.first().voiceSelections[provider.id]
+                val chosenModel = model.ifBlank {
+                    selection?.sttModel?.ifBlank { null } ?: provider.sttModel
+                }
+                val injected = transcribe
+                val result = if (injected != null) {
+                    injected(file, apiKey, chosenModel)
+                } else {
+                    com.androidharness.app.data.audio.VoiceGateway.transcribe(
+                        provider = provider,
+                        apiKey = apiKey,
+                        audio = file,
+                        model = chosenModel,
+                    )
+                }
                 kotlinx.coroutines.currentCoroutineContext().ensureActive()
                 withContext(Dispatchers.Main) {
                     groqRecordState = GroqRecordState.IDLE

@@ -136,7 +136,15 @@ object SettingsBackupValidation {
         check(file.settings.disabledSkills.size <= 1000 && file.settings.disabledSkills.all { it.length <= 500 }, SettingsBackupProblem.SKILLS)
         check(listOfNotNull(file.settings.activeModel, file.settings.planningModel, file.settings.executionModel).all { it.length <= 500 }, SettingsBackupProblem.MODEL_SELECTION)
         check(file.settings.fallbackPolicy.valid(), SettingsBackupProblem.MODEL_SELECTION)
-        check(file.settings.groqWhisperModel in setOf("whisper-large-v3", "whisper-large-v3-turbo"), SettingsBackupProblem.VOICE)
+        // Voice provider ids are user-defined (custom endpoints exist), so these
+        // are format checks rather than a fixed allow-list.
+        check(file.settings.groqWhisperModel.length <= 200, SettingsBackupProblem.VOICE)
+        check(file.settings.ttsGroqModel.length <= 200 && file.settings.ttsGroqVoice.length <= 200, SettingsBackupProblem.VOICE)
+        check(file.settings.voiceSelections.size <= 200 &&
+            file.settings.voiceSelections.all { (id, sel) ->
+                id.length in 1..200 && sel.sttModel.length <= 200 &&
+                    sel.ttsModel.length <= 200 && sel.ttsVoice.length <= 200
+            }, SettingsBackupProblem.VOICE)
         check(file.providers.map { it.config.id }.distinct().size == file.providers.size, SettingsBackupProblem.PROVIDERS)
         check(file.settings.providerOrder.size <= 100 && file.settings.disabledProviderIds.size <= 100 &&
             (file.settings.providerOrder + file.settings.disabledProviderIds).all { it.length <= 500 }, SettingsBackupProblem.PROVIDERS)
@@ -153,7 +161,8 @@ object SettingsBackupValidation {
         check((s.autoCompactTokens == 0 || s.autoCompactTokens >= 1_024) && s.maxContextTokens in 8192..2_000_000 && s.maxOutputTokens in 1..1_000_000 && s.maxIterations in 0..10_000, SettingsBackupProblem.MODEL_LIMITS)
         check(s.resumePrompt.length <= com.androidharness.app.agent.RunRecovery.MAX_PROMPT_CHARS, SettingsBackupProblem.MODEL_LIMITS)
         check(s.webSearchProvider in setOf("keyless", "brave", "tavily"), SettingsBackupProblem.SEARCH)
-        check(s.voiceEngine in setOf("inbuilt", "groq"), SettingsBackupProblem.VOICE)
+        check(s.voiceEngine == "inbuilt" || s.voiceEngine.length in 1..200, SettingsBackupProblem.VOICE)
+        check(s.ttsEngine == "system" || s.ttsEngine.length in 1..200, SettingsBackupProblem.VOICE)
         val ids = file.providers.map { it.config.id }.toSet() + HarnessProvider.ID
         check(listOfNotNull(s.activeProviderId, s.planningProviderId, s.executionProviderId, s.subagentProviderId).all { it in ids }, SettingsBackupProblem.PROVIDER_REFERENCE)
         check(file.providerProxy.error() == null, SettingsBackupProblem.PROVIDER_CONTROLS)
@@ -285,7 +294,13 @@ class SettingsBackup(private val c: AppContainer) {
         if (file.servers.isNotEmpty()) c.mcp.importDisabledServers(file.servers)
         file.searchKeyPools.forEach { (name, pool) -> if (c.keys.searchApiKey(name) == null) c.keys.putSearchKeyPool(name, pool) }
         file.searchKeys.forEach { (name, key) -> if (c.keys.searchApiKey(name) == null) c.keys.putSearchApiKey(name, key) }
-        file.groqKey?.let { if (c.keys.groqApiKey() == null) c.keys.putGroqApiKey(it) }
+        file.groqKey?.let {
+            if (c.keys.groqApiKey() == null) c.keys.putGroqApiKey(it)
+            // Restored keys must also reach the provider slot the voice screen reads.
+            if (c.keys.voiceApiKey(com.androidharness.app.data.audio.VoicePresets.GROQ) == null) {
+                c.keys.putVoiceApiKey(com.androidharness.app.data.audio.VoicePresets.GROQ, it)
+            }
+        }
         val s = file.settings
         c.settings.restorePortable(s.copy(chatAgents = s.chatAgents.map { agent -> agent.copy(model = agent.model?.let { choice -> ids[choice.providerId]?.let { choice.copy(providerId = it) } }) },
             activeProviderId = ids[s.activeProviderId],

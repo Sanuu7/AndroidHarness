@@ -68,7 +68,7 @@ internal object RunTips {
             relevant = { !it.planningModelsEnabled }),
         RunTip("codegraph", R.string.tip_codegraph, TipScope.CODE, SettingsPage.CODE_INTELLIGENCE),
         RunTip("whisper", R.string.tip_whisper, page = SettingsPage.VOICE, anchor = R.string.settings_anchor_whisper,
-            relevant = { it.voiceEngine != AppSettings.VOICE_ENGINE_GROQ }),
+            relevant = { it.voiceEngine == AppSettings.VOICE_ENGINE_INBUILT }),
         RunTip("app_lock", R.string.tip_app_lock, page = SettingsPage.PRIVACY, relevant = { !it.biometricLockEnabled }),
         RunTip("mcp", R.string.tip_mcp, TipScope.CODE, SettingsPage.MCP),
         RunTip("web_search", R.string.tip_web_search, TipScope.CHAT, SettingsPage.SEARCH),

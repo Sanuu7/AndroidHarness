@@ -107,16 +107,18 @@ data class AppSettings(
     val biometricLockEnabled: Boolean = false,
     /** Grace period in minutes before re-locking when app is backgrounded (0 = immediately). */
     val biometricLockTimeoutMinutes: Int = 0,
-    /** Voice speech-to-text engine: "inbuilt" (native Android recognizer) or "groq" (Groq Whisper API). */
+    /** Voice speech-to-text engine: "inbuilt" (native Android recognizer) or a [VoiceProviderConfig] id. */
     val voiceEngine: String = "inbuilt",
-    /** Groq Whisper model: "whisper-large-v3" (default) or "whisper-large-v3-turbo". */
+    /** Legacy Groq Whisper model; kept in sync while Groq is the selected provider. */
     val groqWhisperModel: String = "whisper-large-v3",
-    /** Text-to-speech engine: "system" (Android TTS) or "groq" (Groq PlayAI). */
+    /** Text-to-speech engine: "system" (Android TTS) or a [VoiceProviderConfig] id. */
     val ttsEngine: String = TTS_ENGINE_SYSTEM,
-    /** Groq TTS model id, fetched from the account's model list when possible. */
+    /** Legacy Groq TTS model id; kept in sync while Groq is the selected provider. */
     val ttsGroqModel: String = DEFAULT_TTS_GROQ_MODEL,
-    /** Groq TTS voice id, e.g. "Fritz-PlayAI" or "autumn". */
+    /** Legacy Groq TTS voice id; kept in sync while Groq is the selected provider. */
     val ttsGroqVoice: String = DEFAULT_TTS_GROQ_VOICE,
+    /** Per-provider model and voice choices, keyed by provider id. */
+    val voiceSelections: Map<String, VoiceSelection> = emptyMap(),
     /** Android TTS voice name; null picks the best voice for the app language. */
     val ttsSystemVoice: String? = null,
     /** Speech rate multiplier shared by both engines. */
@@ -219,10 +221,23 @@ data class AppSettings(
         const val GROQ_MODEL_WHISPER_TURBO = "whisper-large-v3-turbo"
         const val TTS_ENGINE_SYSTEM = "system"
         const val TTS_ENGINE_GROQ = "groq"
+        const val VOICE_PROVIDER_GROQ = "groq"
         const val DEFAULT_TTS_GROQ_MODEL = "playai-tts"
         const val DEFAULT_TTS_GROQ_VOICE = "Fritz-PlayAI"
     }
 }
+
+/**
+ * Model and voice the user picked for one voice provider. Stored as a map so
+ * adding a provider never needs a new settings field, and a provider that is
+ * removed simply leaves an unused entry behind.
+ */
+@kotlinx.serialization.Serializable
+data class VoiceSelection(
+    val sttModel: String = "",
+    val ttsModel: String = "",
+    val ttsVoice: String = "",
+)
 
 class SettingsRepository(private val context: Context) {
     suspend fun setFallbackPolicy(policy: com.androidharness.app.llm.FallbackPolicy) {
@@ -235,6 +250,27 @@ class SettingsRepository(private val context: Context) {
 
     private fun decodeCustomLevels(raw: String?): Map<String, String> =
         raw?.let { kotlinx.serialization.json.Json.decodeFromString(it) } ?: emptyMap()
+
+    private fun decodeVoiceSelections(raw: String?): Map<String, VoiceSelection> =
+        raw?.let {
+            runCatching {
+                kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                    .decodeFromString<Map<String, VoiceSelection>>(it)
+            }.getOrNull()
+        } ?: emptyMap()
+
+    private fun encodeVoiceSelections(selections: Map<String, VoiceSelection>): String =
+        kotlinx.serialization.json.Json.encodeToString(selections)
+
+    private fun updateVoiceSelection(
+        raw: String?,
+        providerId: String,
+        transform: (VoiceSelection) -> VoiceSelection,
+    ): String {
+        val saved = decodeVoiceSelections(raw).toMutableMap()
+        saved[providerId] = transform(saved[providerId] ?: VoiceSelection())
+        return encodeVoiceSelections(saved)
+    }
 
     suspend fun setReasoningConfig(key: String, config: com.androidharness.app.agent.CustomReasoningConfig?) {
         context.settingsStore.edit { prefs ->
@@ -315,6 +351,7 @@ class SettingsRepository(private val context: Context) {
         val TTS_ENGINE = stringPreferencesKey("tts_engine")
         val TTS_GROQ_MODEL = stringPreferencesKey("tts_groq_model")
         val TTS_GROQ_VOICE = stringPreferencesKey("tts_groq_voice")
+        val VOICE_SELECTIONS = stringPreferencesKey("voice_provider_selections")
         val TTS_SYSTEM_VOICE = stringPreferencesKey("tts_system_voice")
         val TTS_SPEED = floatPreferencesKey("tts_speed")
         val TTS_ALWAYS_SPEAK = booleanPreferencesKey("tts_always_speak")
@@ -453,6 +490,7 @@ class SettingsRepository(private val context: Context) {
             ttsEngine = prefs[Keys.TTS_ENGINE] ?: AppSettings.TTS_ENGINE_SYSTEM,
             ttsGroqModel = prefs[Keys.TTS_GROQ_MODEL] ?: AppSettings.DEFAULT_TTS_GROQ_MODEL,
             ttsGroqVoice = prefs[Keys.TTS_GROQ_VOICE] ?: AppSettings.DEFAULT_TTS_GROQ_VOICE,
+            voiceSelections = decodeVoiceSelections(prefs[Keys.VOICE_SELECTIONS]),
             ttsSystemVoice = prefs[Keys.TTS_SYSTEM_VOICE]?.ifBlank { null },
             ttsSpeed = prefs[Keys.TTS_SPEED] ?: 1f,
             ttsAlwaysSpeak = prefs[Keys.TTS_ALWAYS_SPEAK] ?: false,
@@ -555,6 +593,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.TTS_ENGINE] = s.ttsEngine
             p[Keys.TTS_GROQ_MODEL] = s.ttsGroqModel
             p[Keys.TTS_GROQ_VOICE] = s.ttsGroqVoice
+            p[Keys.VOICE_SELECTIONS] = encodeVoiceSelections(s.voiceSelections)
             p[Keys.TTS_SYSTEM_VOICE] = s.ttsSystemVoice.orEmpty()
             p[Keys.TTS_SPEED] = s.ttsSpeed
             p[Keys.TTS_ALWAYS_SPEAK] = s.ttsAlwaysSpeak
@@ -794,8 +833,29 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setGroqWhisperModel(model: String) {
-        context.settingsStore.edit { it[Keys.GROQ_WHISPER_MODEL] = model }
+        context.settingsStore.edit {
+            it[Keys.GROQ_WHISPER_MODEL] = model
+            it[Keys.VOICE_SELECTIONS] = updateVoiceSelection(it[Keys.VOICE_SELECTIONS], VOICE_PROVIDER_GROQ) { sel ->
+                sel.copy(sttModel = model)
+            }
+        }
     }
+
+    /** Remembers the model/voice the user picked for one provider. */
+    suspend fun setVoiceSelection(providerId: String, transform: (VoiceSelection) -> VoiceSelection) {
+        context.settingsStore.edit { prefs ->
+            prefs[Keys.VOICE_SELECTIONS] = updateVoiceSelection(prefs[Keys.VOICE_SELECTIONS], providerId, transform)
+        }
+    }
+
+    suspend fun setVoiceProviderSttModel(providerId: String, model: String) =
+        setVoiceSelection(providerId) { it.copy(sttModel = model) }
+
+    suspend fun setVoiceProviderTtsModel(providerId: String, model: String) =
+        setVoiceSelection(providerId) { it.copy(ttsModel = model) }
+
+    suspend fun setVoiceProviderTtsVoice(providerId: String, voice: String) =
+        setVoiceSelection(providerId) { it.copy(ttsVoice = voice) }
 
     suspend fun setTtsEngine(engine: String) {
         context.settingsStore.edit { it[Keys.TTS_ENGINE] = engine }

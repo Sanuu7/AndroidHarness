@@ -25,7 +25,7 @@ class VoiceInputDeviceTest {
     @Test fun cancellingTranscriptionCancelsWorkAndCannotOverwriteANewRecording() = exercise(cancel = true)
 
     private fun exercise(cancel: Boolean) = runBlocking<Unit> {
-        val previousKey = c.keys.groqApiKey()
+        val previousKey = c.keys.voiceApiKey("groq")
         val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
         val entered = CompletableDeferred<File>()
         val finish = CompletableDeferred<Unit>()
@@ -34,7 +34,7 @@ class VoiceInputDeviceTest {
         lateinit var controller: VoiceInputController
         var created = false
         instrumentation.uiAutomation.grantRuntimePermission(c.appContext.packageName, Manifest.permission.RECORD_AUDIO)
-        c.keys.putGroqApiKey("voice-device-fixture")
+        c.keys.putVoiceApiKey("groq", "voice-device-fixture")
         try {
             ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
                 scenario.onActivity { activity ->
@@ -81,7 +81,7 @@ class VoiceInputDeviceTest {
         } finally {
             if (created) instrumentation.runOnMainSync { controller.releaseAll() }
             scope.cancel()
-            if (previousKey == null) c.keys.removeGroqApiKey() else c.keys.putGroqApiKey(previousKey)
+            if (previousKey == null) c.keys.removeVoiceApiKey("groq") else c.keys.putVoiceApiKey("groq", previousKey)
         }
     }
     private fun await(condition: () -> Boolean) {

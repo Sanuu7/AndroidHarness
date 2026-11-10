@@ -147,7 +147,7 @@ class SettingsBackupValidationTest {
     @Test fun invalidSettingsExplainTheBlockerWithoutExposingConnectionSecrets() {
         val cases = listOf(
             SettingsBackupFile(settings = AppSettings(maxContextTokens = -1)) to "Run limits",
-            SettingsBackupFile(settings = AppSettings(voiceEngine = "unknown")) to "Voice",
+            SettingsBackupFile(settings = AppSettings(voiceEngine = "x".repeat(201))) to "Voice",
             SettingsBackupFile(settings = AppSettings(), providers = listOf(provider(url = "https://user:secret@example.com"))) to "provider URL",
             SettingsBackupFile(settings = AppSettings(), providers = listOf(provider(url = "https://example.com/a path?token=secret"))) to "provider URL",
             SettingsBackupFile(settings = AppSettings(), servers = listOf(McpServerConfig("secret", type = "unknown"))) to "MCP",

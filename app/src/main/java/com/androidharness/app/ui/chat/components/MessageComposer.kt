@@ -210,7 +210,7 @@ internal fun MessageComposer(
     var inputLineCount by remember { mutableIntStateOf(1) }
     val inputAlignment = if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically
 
-    val isGroq = voiceEngine == AppSettings.VOICE_ENGINE_GROQ
+    val isGroq = voiceEngine != AppSettings.VOICE_ENGINE_INBUILT
     val isGroqActive = isGroq && groqRecordState != GroqRecordState.IDLE
     val isGroqLocked = groqRecordState == GroqRecordState.LOCKED
     val isGroqTranscribing = groqRecordState == GroqRecordState.TRANSCRIBING

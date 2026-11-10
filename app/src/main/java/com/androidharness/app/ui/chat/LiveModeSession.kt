@@ -69,7 +69,13 @@ class LiveModeSession(
     private val _state = MutableStateFlow(LiveUi())
     val state: StateFlow<LiveUi> = _state.asStateFlow()
 
-    val listener = LiveListener(c.appContext, scope, groqKey = { c.keys.groqApiKey() })
+    val listener = LiveListener(
+        c.appContext,
+        scope,
+        // Live Mode transcribes with Groq Whisper; the key lives in the Groq
+        // provider slot now, with the legacy single-key value as a fallback.
+        groqKey = { c.keys.voiceApiKey(com.androidharness.app.data.audio.VoicePresets.GROQ) ?: c.keys.groqApiKey() },
+    )
 
     private var settings = AppSettings()
     private var context: SideContext? = null
@@ -120,7 +126,7 @@ class LiveModeSession(
         if (closed || context == null) return
         _state.update { it.copy(phase = LivePhase.LISTENING) }
         listener.start(
-            useGroq = settings.voiceEngine == AppSettings.VOICE_ENGINE_GROQ,
+            useGroq = settings.voiceEngine != AppSettings.VOICE_ENGINE_INBUILT,
             model = settings.groqWhisperModel,
             silence = settings.liveMode.silenceMs,
             onUtterance = ::answer,
