@@ -1034,4 +1034,14 @@
     <string name="chat_history_open_message">"Passende Nachricht öffnen"</string>
     <string name="chat_history_open_chat">"Unterhaltung öffnen"</string>
     <string name="chat_history_unavailable">"Diese Unterhaltung gibt es nicht mehr."</string>
+    <string name="settings_anchor_auto_send">Automatisch senden</string>
+    <string name="settings_search_auto_send_title">Automatisch senden</string>
+    <string name="settings_search_auto_send_desc">Sendet diktierten Text nach einer Pause automatisch.</string>
+    <string name="settings_voice_auto_send">Automatisch senden</string>
+    <string name="settings_voice_auto_send_desc">Sendet die Eingabe automatisch, sobald du aufhörst zu sprechen, ohne Senden-Taste.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Im +-Menü anzeigen</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Bietet den Auto-Senden-Schalter im +-Menü für schnelles Umschalten.</string>
+    <string name="settings_voice_auto_send_timeout">Stille-Zeit</string>
+    <string name="settings_voice_auto_send_timeout_desc">Wie lange in Stille gewartet wird, bevor gesendet wird.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s s</string>
 </resources>

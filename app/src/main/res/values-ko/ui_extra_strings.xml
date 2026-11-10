@@ -464,14 +464,4 @@
     <string name="settings_tts_custom_model">사용자 지정 모델 ID</string>
     <string name="settings_tts_custom_voice">사용자 지정 음성 ID</string>
     <string name="settings_voice_choose_model">모델 선택</string>
-    <string name="settings_anchor_auto_send">자동 전송</string>
-    <string name="settings_search_auto_send_title">자동 전송</string>
-    <string name="settings_search_auto_send_desc">무음 후 받아쓴 텍스트를 자동 전송합니다.</string>
-    <string name="settings_voice_auto_send">자동 전송</string>
-    <string name="settings_voice_auto_send_desc">말을 멈추면 전송 버튼 없이 자동으로 보냅니다.</string>
-    <string name="settings_voice_auto_send_show_in_plus">+ 메뉴에 표시</string>
-    <string name="settings_voice_auto_send_show_in_plus_desc">+ 버튼 메뉴에 자동 전송 스위치를 제공합니다.</string>
-    <string name="settings_voice_auto_send_timeout">무음 시간</string>
-    <string name="settings_voice_auto_send_timeout_desc">보내기 전 기다릴 무음 시간입니다.</string>
-    <string name="settings_voice_auto_send_timeout_value">%1$s초</string>
 </resources>

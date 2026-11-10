@@ -466,14 +466,4 @@
     <string name="settings_tts_custom_model">අභිරුචි ආකෘති ID</string>
     <string name="settings_tts_custom_voice">අභිරුචි හඬ ID</string>
     <string name="settings_voice_choose_model">ආකෘතිය තෝරන්න</string>
-    <string name="settings_anchor_auto_send">ස්වයංක්‍රීයව යවන්න</string>
-    <string name="settings_search_auto_send_title">ස්වයංක්‍රීයව යවන්න</string>
-    <string name="settings_search_auto_send_desc">නිශ්ශබ්දතාවයෙන් පසු කථන පෙළ ස්වයංක්‍රීයව යවයි.</string>
-    <string name="settings_voice_auto_send">ස්වයංක්‍රීයව යවන්න</string>
-    <string name="settings_voice_auto_send_desc">කථා කිරීම නතර කළ විට යවන්න බොත්තම බලා නොසිට ස්වයංක්‍රීයව යවයි.</string>
-    <string name="settings_voice_auto_send_show_in_plus">+ මෙනුවේ පෙන්වන්න</string>
-    <string name="settings_voice_auto_send_show_in_plus_desc">+ බොත්තම මෙනුවේ ස්වයංක්‍රීය යැවීම් ස්විචය සපයයි.</string>
-    <string name="settings_voice_auto_send_timeout">නිශ්ශබ්ද කාලය</string>
-    <string name="settings_voice_auto_send_timeout_desc">යැවීමට පෙර කොපමණ නිශ්ශබ්දතාවයක් රැඳී සිටින්නේද.</string>
-    <string name="settings_voice_auto_send_timeout_value">%1$s තත්.</string>
 </resources>

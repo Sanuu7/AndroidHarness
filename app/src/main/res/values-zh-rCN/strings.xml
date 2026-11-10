@@ -1062,4 +1062,14 @@
     <string name="chat_history_open_message">"打开匹配的消息"</string>
     <string name="chat_history_open_chat">"打开对话"</string>
     <string name="chat_history_unavailable">"此对话已不可用。"</string>
+    <string name="settings_anchor_auto_send">自动发送</string>
+    <string name="settings_search_auto_send_title">自动发送</string>
+    <string name="settings_search_auto_send_desc">静音后自动发送口述文本。</string>
+    <string name="settings_voice_auto_send">自动发送</string>
+    <string name="settings_voice_auto_send_desc">停止说话后自动发送，无需等待发送按钮。</string>
+    <string name="settings_voice_auto_send_show_in_plus">在 + 菜单中显示</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">在 + 按钮菜单中提供自动发送开关，便于快速切换。</string>
+    <string name="settings_voice_auto_send_timeout">静音时间</string>
+    <string name="settings_voice_auto_send_timeout_desc">发送前等待多长时间的静音。</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s 秒</string>
 </resources>

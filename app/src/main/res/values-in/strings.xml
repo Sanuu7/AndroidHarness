@@ -1031,4 +1031,14 @@
     <string name="chat_history_open_message">"Buka pesan yang cocok"</string>
     <string name="chat_history_open_chat">"Buka percakapan"</string>
     <string name="chat_history_unavailable">"Percakapan ini tidak tersedia lagi."</string>
+    <string name="settings_anchor_auto_send">Kirim otomatis</string>
+    <string name="settings_search_auto_send_title">Kirim otomatis</string>
+    <string name="settings_search_auto_send_desc">Mengirim teks dikte otomatis setelah hening.</string>
+    <string name="settings_voice_auto_send">Kirim otomatis</string>
+    <string name="settings_voice_auto_send_desc">Mengirim prompt otomatis saat Anda berhenti berbicara, tanpa menunggu tombol kirim.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Tampilkan di menu +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Menyediakan tombol kirim otomatis di menu tombol + untuk beralih cepat.</string>
+    <string name="settings_voice_auto_send_timeout">Durasi hening</string>
+    <string name="settings_voice_auto_send_timeout_desc">Berapa lama menunggu hening sebelum mengirim.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s dtk</string>
 </resources>

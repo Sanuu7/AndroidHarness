@@ -1031,4 +1031,14 @@
     <string name="chat_history_open_message">"一致するメッセージを開く"</string>
     <string name="chat_history_open_chat">"会話を開く"</string>
     <string name="chat_history_unavailable">"この会話はもう利用できません。"</string>
+    <string name="settings_anchor_auto_send">自動送信</string>
+    <string name="settings_search_auto_send_title">自動送信</string>
+    <string name="settings_search_auto_send_desc">無音の後に音声入力したテキストを自動送信します。</string>
+    <string name="settings_voice_auto_send">自動送信</string>
+    <string name="settings_voice_auto_send_desc">話し終わると送信ボタンを待たずに自動で送信します。</string>
+    <string name="settings_voice_auto_send_show_in_plus">+ メニューに表示</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">+ ボタンのメニューに自動送信スイッチを表示します。</string>
+    <string name="settings_voice_auto_send_timeout">無音時間</string>
+    <string name="settings_voice_auto_send_timeout_desc">送信前に待つ無音時間。</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s 秒</string>
 </resources>

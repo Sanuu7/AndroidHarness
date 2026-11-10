@@ -466,14 +466,4 @@
     <string name="settings_tts_custom_model">कस्टम मॉडल ID</string>
     <string name="settings_tts_custom_voice">कस्टम वॉइस ID</string>
     <string name="settings_voice_choose_model">मॉडल चुनें</string>
-    <string name="settings_anchor_auto_send">स्वतः भेजें</string>
-    <string name="settings_search_auto_send_title">स्वतः भेजें</string>
-    <string name="settings_search_auto_send_desc">मौन के बाद बोला गया पाठ स्वतः भेजता है।</string>
-    <string name="settings_voice_auto_send">स्वतः भेजें</string>
-    <string name="settings_voice_auto_send_desc">बोलना बंद करते ही भेजें बटन की प्रतीक्षा किए बिना संदेश भेज देता है।</string>
-    <string name="settings_voice_auto_send_show_in_plus">+ मेनू में दिखाएँ</string>
-    <string name="settings_voice_auto_send_show_in_plus_desc">+ बटन मेनू में स्वतः भेजें स्विच देता है।</string>
-    <string name="settings_voice_auto_send_timeout">मौन अवधि</string>
-    <string name="settings_voice_auto_send_timeout_desc">भेजने से पहले कितनी देर मौन रुकें।</string>
-    <string name="settings_voice_auto_send_timeout_value">%1$s से.</string>
 </resources>

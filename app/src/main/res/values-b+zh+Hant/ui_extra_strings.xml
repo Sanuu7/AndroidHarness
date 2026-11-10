@@ -464,14 +464,4 @@
     <string name="settings_tts_custom_model">自訂模型 ID</string>
     <string name="settings_tts_custom_voice">自訂語音 ID</string>
     <string name="settings_voice_choose_model">選擇模型</string>
-    <string name="settings_anchor_auto_send">自動傳送</string>
-    <string name="settings_search_auto_send_title">自動傳送</string>
-    <string name="settings_search_auto_send_desc">靜音後自動傳送口述文字。</string>
-    <string name="settings_voice_auto_send">自動傳送</string>
-    <string name="settings_voice_auto_send_desc">停止說話後自動傳送，無需等待傳送按鈕。</string>
-    <string name="settings_voice_auto_send_show_in_plus">在 + 選單中顯示</string>
-    <string name="settings_voice_auto_send_show_in_plus_desc">在 + 按鈕選單中提供自動傳送開關，便於快速切換。</string>
-    <string name="settings_voice_auto_send_timeout">靜音時間</string>
-    <string name="settings_voice_auto_send_timeout_desc">傳送前等待多久的靜音。</string>
-    <string name="settings_voice_auto_send_timeout_value">%1$s 秒</string>
 </resources>

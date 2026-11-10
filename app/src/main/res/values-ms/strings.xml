@@ -1031,4 +1031,14 @@
     <string name="chat_history_open_message">"Buka mesej yang sepadan"</string>
     <string name="chat_history_open_chat">"Buka perbualan"</string>
     <string name="chat_history_unavailable">"Perbualan ini tidak lagi tersedia."</string>
+    <string name="settings_anchor_auto_send">Hantar automatik</string>
+    <string name="settings_search_auto_send_title">Hantar automatik</string>
+    <string name="settings_search_auto_send_desc">Menghantar teks imlak secara automatik selepas senyap.</string>
+    <string name="settings_voice_auto_send">Hantar automatik</string>
+    <string name="settings_voice_auto_send_desc">Menghantar gesaan secara automatik apabila anda berhenti bercakap, tanpa butang hantar.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Tunjuk dalam menu +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Menyediakan suis hantar automatik dalam menu butang + untuk tukar pantas.</string>
+    <string name="settings_voice_auto_send_timeout">Tempoh senyap</string>
+    <string name="settings_voice_auto_send_timeout_desc">Berapa lama menunggu senyap sebelum menghantar.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s saat</string>
 </resources>
