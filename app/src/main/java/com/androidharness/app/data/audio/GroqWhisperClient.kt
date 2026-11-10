@@ -25,7 +25,7 @@ object GroqWhisperClient {
     suspend fun transcribe(
         audio: File,
         apiKey: String,
-        model: String,
+        model: String = VoicePresets.groqSttModels.first(),
         client: OkHttpClient = httpClient,
     ): Result<String> = withContext(Dispatchers.IO) {
         val trimmed = apiKey.trim()

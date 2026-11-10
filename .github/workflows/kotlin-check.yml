@@ -10,6 +10,30 @@ name: Kotlin check (fast)
 
 on:
   workflow_dispatch:
+    inputs:
+      scope:
+        description: "O que verificar"
+        type: choice
+        default: kotlin
+        options:
+          - kotlin          # só compila (o mais rápido)
+          - kotlin+tests    # compila e roda os testes unitários JVM
+          - resources       # só o empacotamento de recursos (strings, XML)
+          - all             # compila + recursos + testes
+      module:
+        description: "Módulo Gradle (ex.: :app). Vazio = :app"
+        type: string
+        required: false
+        default: ":app"
+      filter:
+        description: "Filtro de teste, ex.: *EdgeTts* (só com testes)"
+        type: string
+        required: false
+        default: ""
+      fail_on_warning:
+        description: "Falhar também em warnings do Kotlin"
+        type: boolean
+        default: false
   push:
     branches:
       - main
@@ -26,13 +50,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: kotlin-check-${{ github.ref }}
+  group: kotlin-check-${{ github.ref }}-${{ github.event.inputs.scope || 'kotlin' }}
   cancel-in-progress: true
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -45,63 +69,135 @@ jobs:
           distribution: temurin
           java-version: "21"
 
+      # The Kotlin compiler daemon and the incremental build output live here.
+      # Restoring them is what makes a second run skip unchanged files instead
+      # of recompiling the whole module from zero.
+      - name: Cache Gradle and Kotlin build cache
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            ~/.kotlin
+            app/build/kotlin
+            app/build/classes
+          key: kotlin-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+          restore-keys: |
+            kotlin-${{ runner.os }}-
+
       - name: Set up Gradle (caching)
         uses: gradle/actions/setup-gradle@v6
 
-      # Compiles Kotlin against the Android SDK jars. AGP needs an SDK, but no
-      # NDK: the native block in app/build.gradle.kts is skipped when it is
-      # absent, which is exactly the fast path we want here.
-      - name: Compile Kotlin (debug, no native)
+      - name: Compile Kotlin
+        id: compile
         run: |
           set +e
-          ./gradlew :app:compileDebugKotlin \
+          MODULE="${{ github.event.inputs.module }}"
+          MODULE="${MODULE:-:app}"
+          ./gradlew "${MODULE}:compileDebugKotlin" \
             -PharnessAbis=armeabi-v7a \
-            --no-daemon --console=plain \
+            --no-daemon --console=plain --build-cache --parallel \
             > build.log 2>&1
           STATUS=$?
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
           echo "exit=$STATUS"
 
-          # Keep only the compiler diagnostics: they are the whole point.
           grep -E "^(e|w): |^ERROR|Execution failed|What went wrong|^> " build.log \
             > diagnostics.txt || true
-          if [ -s diagnostics.txt ]; then
-            head -n 200 diagnostics.txt
-          else
-            echo "no diagnostics captured" > diagnostics.txt
-          fi
 
-          # Errors grouped by file, so the agent sees at a glance which files broke.
+          WARNINGS=$(grep -cE "^w: " diagnostics.txt || true)
+          ERRORS=$(grep -cE "^e: " diagnostics.txt || true)
+          echo "errors=$ERRORS" >> "$GITHUB_OUTPUT"
+          echo "warnings=$WARNINGS" >> "$GITHUB_OUTPUT"
+
           { echo "### Kotlin errors by file"; echo
-            grep -E "^e: file://" diagnostics.txt \
-              | sed -E 's|^e: file://[^/]*/[^/]*/[^/]*/[^/]*/[^/]*/([^:]+):([0-9]+):[0-9]+ (.*)$|`\1:\2` — \3|' \
-              | sort | uniq -c | sort -rn | head -n 80 || true
+            if [ "$ERRORS" = "0" ]; then
+              echo "No compilation errors."
+            else
+              grep -E "^e: file://" diagnostics.txt \
+                | sed -E 's|^e: file://[^/]*/[^/]*/[^/]*/[^/]*/[^/]*/([^:]+):([0-9]+):[0-9]+ (.*)$|`\1:\2` — \3|' \
+                | sort | uniq -c | sort -rn | head -n 80
+            fi
             echo
-            echo "### Raw diagnostics"; echo '```'
-            head -n 120 diagnostics.txt || true
+            echo "**${ERRORS} error(s), ${WARNINGS} warning(s)**"
+            echo
+            echo "<details><summary>Raw diagnostics</summary>"; echo; echo '```'
+            head -n 150 diagnostics.txt || true
+            echo '```'; echo; echo "</details>"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          if [ "${{ github.event.inputs.fail_on_warning }}" = "true" ] && [ "$WARNINGS" != "0" ]; then
+            echo "Failing because fail_on_warning=true and ${WARNINGS} warning(s) were reported."
+            exit 1
+          fi
+          exit $STATUS
+
+      # Resources only: catches duplicate strings, bad XML and missing
+      # translations without invoking Kotlin at all.
+      - name: Package resources
+        if: |
+          always() && (github.event.inputs.scope == 'resources' || github.event.inputs.scope == 'all')
+        run: |
+          set +e
+          MODULE="${{ github.event.inputs.module }}"
+          MODULE="${MODULE:-:app}"
+          ./gradlew "${MODULE}:mergeDebugResources" "${MODULE}:processDebugResources" \
+            -PharnessAbis=armeabi-v7a \
+            --no-daemon --console=plain \
+            > resources.log 2>&1
+          STATUS=$?
+          { echo "### Resources"; echo '```'
+            grep -E "error:|Error:|Execution failed|What went wrong|more than one time|Duplicate" resources.log \
+              | head -n 60 || true
             echo '```'
           } >> "$GITHUB_STEP_SUMMARY"
           exit $STATUS
 
-      # Unit tests are pure JVM, so they run without the Android emulator. Their
-      # failures are usually real logic bugs, not environment noise.
       - name: Unit tests
-        if: success()
+        if: |
+          always() && steps.compile.outputs.status == '0' &&
+          (github.event.inputs.scope == 'kotlin+tests' || github.event.inputs.scope == 'all')
         run: |
           set +e
-          ./gradlew :app:testDebugUnitTest \
+          MODULE="${{ github.event.inputs.module }}"
+          MODULE="${MODULE:-:app}"
+          FILTER="${{ github.event.inputs.filter }}"
+          ARGS=""
+          if [ -n "$FILTER" ]; then ARGS="--tests $FILTER"; fi
+          # shellcheck disable=SC2086
+          ./gradlew "${MODULE}:testDebugUnitTest" $ARGS \
             -PharnessAbis=armeabi-v7a \
             --no-daemon --console=plain \
             > tests.log 2>&1
           STATUS=$?
-          { echo "### Unit tests"; echo '```'
-            grep -E "FAILED|tests completed|What went wrong|expected|actual" tests.log | head -n 80 || true
+          PASSED=$(grep -oE "[0-9]+ tests completed" tests.log | tail -1 || true)
+          # Gradle prints the failing test names with a "> Task :app:test… FAILED"
+          # header followed by the assertion text; capture both, and fall back to
+          # the tail of the log when the pattern does not match.
+          FAILING=$(grep -E "^[A-Za-z0-9_.]+ > .* FAILED|^[A-Za-z0-9_.]+\.[A-Za-z0-9_]+ > " tests.log | head -n 20 || true)
+          { echo "### Unit tests"; echo
+            echo "Filter: \`${FILTER:-all}\` — ${PASSED:-no summary}"
+            echo
+            if [ -n "$FAILING" ]; then
+              echo "**Failing tests**"; echo '```'; echo "$FAILING"; echo '```'; echo
+            fi
             echo '```'
+            grep -E "FAILED|tests completed|What went wrong|expected|actual|Exception|AssertionError" tests.log \
+              | head -n 80 || true
+            echo '```'
+            if [ "$STATUS" != "0" ]; then
+              echo
+              echo "<details><summary>Tail of the test log</summary>"; echo
+              echo '```'
+              tail -n 60 tests.log || true
+              echo '```'; echo "</details>"
+            fi
           } >> "$GITHUB_STEP_SUMMARY"
           exit $STATUS
 
       # The log survives a failure so the full text is one download away when
       # the summary is not enough.
-      - name: Upload build log
+      - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v7
         with:
@@ -110,5 +206,6 @@ jobs:
             build.log
             diagnostics.txt
             tests.log
+            resources.log
           retention-days: 3
           if-no-files-found: ignore
