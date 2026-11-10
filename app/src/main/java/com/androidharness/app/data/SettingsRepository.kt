@@ -835,7 +835,7 @@ class SettingsRepository(private val context: Context) {
     suspend fun setGroqWhisperModel(model: String) {
         context.settingsStore.edit {
             it[Keys.GROQ_WHISPER_MODEL] = model
-            it[Keys.VOICE_SELECTIONS] = updateVoiceSelection(it[Keys.VOICE_SELECTIONS], VOICE_PROVIDER_GROQ) { sel ->
+            it[Keys.VOICE_SELECTIONS] = updateVoiceSelection(it[Keys.VOICE_SELECTIONS], AppSettings.VOICE_PROVIDER_GROQ) { sel ->
                 sel.copy(sttModel = model)
             }
         }

@@ -21,6 +21,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import com.androidharness.app.AppContainer
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.audio.VoicePresets
 import com.androidharness.app.data.audio.GroqWhisperClient
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import java.io.File
 
@@ -323,7 +325,7 @@ class VoiceInputController(
     fun stopAndTranscribeGroq(
         model: String,
         onTranscription: (text: String) -> Unit,
-    ) = stopAndTranscribe(model, onTranscription)
+    ) = stopAndTranscribe(model, onTranscription = onTranscription)
 
     /**
      * Stops the recorder and sends the clip to the configured speech-to-text
@@ -332,8 +334,8 @@ class VoiceInputController(
      */
     fun stopAndTranscribe(
         model: String,
-        onTranscription: (text: String) -> Unit,
         providerId: String? = null,
+        onTranscription: (text: String) -> Unit,
     ) {
         if (groqRecordState != GroqRecordState.HOLDING && groqRecordState != GroqRecordState.LOCKED) {
             return
