@@ -14,7 +14,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Dns
 import androidx.compose.material.icons.outlined.Mic
 import androidx.compose.material.icons.outlined.VolumeUp
@@ -173,8 +172,6 @@ internal fun VoiceProvidersSection(
                         onClick = {
                             if (index == 0) {
                                 scope.launch { container.settings.setVoiceEngine(AppSettings.VOICE_ENGINE_INBUILT) }
-                            } else if (providers.none { it.supportsStt || true }) {
-                                sttProviderPicker = true
                             } else {
                                 sttProviderPicker = true
                             }
@@ -473,6 +470,7 @@ internal fun VoiceProvidersSection(
         )
     }
     if (sttModelPicker && sttProvider != null) {
+        val activeStt = sttProvider
         VoiceModelPickerDialog(
             title = stringResource(R.string.settings_stt_model),
             models = sttModels,
@@ -480,24 +478,25 @@ internal fun VoiceProvidersSection(
             labelFor = { it },
             onSelect = { id ->
                 sttModelPicker = false
-                scope.launch { container.settings.setVoiceProviderSttModel(sttProvider!!.id, id) }
+                scope.launch { container.settings.setVoiceProviderSttModel(activeStt.id, id) }
             },
             onRefresh = { modelEpoch++ },
             onDismiss = { sttModelPicker = false },
         )
     }
     if (ttsModelPicker && ttsProvider != null) {
+        val activeTts = ttsProvider
         VoiceModelPickerDialog(
             title = stringResource(R.string.settings_tts_model),
             models = ttsModels,
             selected = ttsModel,
-            labelFor = { id -> com.androidharness.app.data.audio.VoiceGateway.modelLabel(ttsProvider, id) },
+            labelFor = { id -> com.androidharness.app.data.audio.VoiceGateway.modelLabel(activeTts, id) },
             onSelect = { id ->
                 ttsModelPicker = false
                 scope.launch {
-                    container.settings.setVoiceProviderTtsModel(ttsProvider!!.id, id)
-                    val voice = com.androidharness.app.data.audio.VoiceGateway.defaultVoiceFor(ttsProvider, id)
-                    if (voice != null) container.settings.setVoiceProviderTtsVoice(ttsProvider.id, voice)
+                    container.settings.setVoiceProviderTtsModel(activeTts.id, id)
+                    val voice = com.androidharness.app.data.audio.VoiceGateway.defaultVoiceFor(activeTts, id)
+                    if (voice != null) container.settings.setVoiceProviderTtsVoice(activeTts.id, voice)
                 }
             },
             onRefresh = { modelEpoch++ },

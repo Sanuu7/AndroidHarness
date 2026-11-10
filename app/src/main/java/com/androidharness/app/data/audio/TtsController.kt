@@ -166,9 +166,8 @@ class TtsController(
         val provider = voices.byId(providerId) ?: return emptyList()
         if (provider.protocol == VoiceProtocol.ELEVENLABS) {
             val key = keys.voiceApiKey(provider.id).orEmpty()
-            ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).onSuccess { list ->
-                return list.map { TtsVoiceOption(it.id, it.name) }
-            }
+            val remote = ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).getOrNull()
+            if (!remote.isNullOrEmpty()) return remote.map { TtsVoiceOption(it.id, it.name) }
         }
         return VoiceGateway.voicesFor(provider, model).map { TtsVoiceOption(it, it) }
     }
