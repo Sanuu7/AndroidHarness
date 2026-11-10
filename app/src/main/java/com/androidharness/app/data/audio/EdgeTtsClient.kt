@@ -221,7 +221,7 @@ object EdgeTtsClient {
                 // Binary frames carry audio behind a 2-byte big-endian header length.
                 val frame = bytes.toByteArray()
                 val audioPart = audioFromFrame(frame)
-                if (audioPart != null) audio.add(audioPart)
+                if (audioPart != null) audio.write(audioPart, 0, audioPart.size)
             }
 
             override fun onMessage(webSocket: WebSocket, text: String) {
