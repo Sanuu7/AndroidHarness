@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"কনটেক্সট কী দিয়ে ভরে"</string>
+    <string name="context_breakdown_note">"টেক্সটের দৈর্ঘ্য থেকে অনুমান, প্রতি টোকেনে প্রায় ৪ অক্ষর। প্রোভাইডারের নিজের গণনা কিছুটা ভিন্ন হতে পারে।"</string>
+    <string name="context_breakdown_expand">"বিস্তারিত দেখান"</string>
+    <string name="context_breakdown_collapse">"বিস্তারিত লুকান"</string>
+    <string name="context_group_tools">"টুলের সংজ্ঞা"</string>
+    <string name="context_free_space">"খালি জায়গা"</string>
+
+    <string name="context_part_core">"মূল নির্দেশনা"</string>
+    <string name="context_part_skills">"দক্ষতা"</string>
+    <string name="context_part_environment">"লাইভ পরিবেশ ও টুল তালিকা"</string>
+    <string name="context_part_instructions">"প্রজেক্ট ও চ্যাট নির্দেশনা"</string>
+    <string name="context_part_memory">"সংরক্ষিত স্মৃতি"</string>
+    <string name="context_part_repo_map">"রিপোজিটরি ম্যাপ"</string>
+    <string name="context_part_tools_built_in">"অন্তর্নির্মিত টুল (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"আপনার বার্তা"</string>
+    <string name="context_part_assistant">"সহায়কের উত্তর"</string>
+    <string name="context_part_tool_calls">"টুল কলের আর্গুমেন্ট"</string>
+    <string name="context_part_tool_results">"টুলের ফলাফল"</string>
+    <string name="context_part_notes">"সিস্টেম নোট"</string>
+
+    <string name="context_largest_results">"সবচেয়ে বড় টুল ফলাফল"</string>
+    <string name="context_hints_title">"জায়গা খালি করার উপায়"</string>
+    <string name="context_hint_near_limit">"কনটেক্সট প্রায় ভরে গেছে। পুরনো টার্ন সংক্ষিপ্ত করতে /compact চালান।"</string>
+    <string name="context_hint_tool_results">"টুলের ফলাফল %1$s টোকেন নেয়, আর সবচেয়ে বড়টি %2$s থেকে এসেছে। /compact চালান, বা আরও সংকীর্ণ পড়া ও অনুসন্ধান চান।"</string>
+    <string name="context_hint_tool_results_unnamed">"টুলের ফলাফল %1$s টোকেন নেয়। /compact চালান, বা আরও সংকীর্ণ পড়া ও অনুসন্ধান চান।"</string>
+    <string name="context_hint_mcp_tools">"MCP টুল প্রতিটি অনুরোধে %1$s টোকেন যোগ করে। এই চ্যাটে যে সার্ভার ব্যবহার করছেন না সেগুলো ডিসকানেক্ট করুন।"</string>
+    <string name="context_hint_skills">"দক্ষতার তালিকা প্রতিটি অনুরোধে %1$s টোকেন যোগ করে। যে দক্ষতাগুলো ব্যবহার করছেন না সেগুলো বন্ধ করুন।"</string>
+    <string name="context_hint_memory">"সংরক্ষিত স্মৃতি প্রতিটি অনুরোধে %1$s টোকেন যোগ করে। পুরনো নোট মুছুন।"</string>
+
+    <string name="context_command_title">"কনটেক্সটের বিবরণ"</string>
+    <string name="context_command_hint">"কনটেক্সট উইন্ডো কী দিয়ে ভরে এবং কী কমানো যায় দেখুন"</string>
+</resources>

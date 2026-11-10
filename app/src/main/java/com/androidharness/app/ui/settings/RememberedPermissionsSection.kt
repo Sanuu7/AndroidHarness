@@ -24,12 +24,16 @@ internal fun RememberedPermissionsSection(container: AppContainer) {
             Text(stringResource(R.string.settings_permissions_note),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             if (selected.isEmpty()) Text(stringResource(R.string.settings_permissions_empty), style = MaterialTheme.typography.bodyMedium)
+            else if (selected.size > 1) TextButton(onClick = { workspace?.displayPath?.let(container.runManager::revokeAllGrants) }) {
+                Text(stringResource(R.string.settings_permissions_revoke_all))
+            }
             selected.forEach { grant ->
                 HorizontalDivider()
                 Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     Column(Modifier.weight(1f)) {
                         Text(grant.key.replaceFirst("#", ": "), style = MaterialTheme.typography.bodyMedium)
-                        Text(stringResource(R.string.settings_permissions_run, grant.sessionId.take(8)), style = MaterialTheme.typography.labelSmall,
+                        Text(if (grant.saved) stringResource(R.string.settings_permissions_saved)
+                            else stringResource(R.string.settings_permissions_run, grant.sessionId.take(8)), style = MaterialTheme.typography.labelSmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     TextButton(onClick = { container.runManager.revokeGrant(grant) }) { Text(stringResource(R.string.settings_action_revoke)) }

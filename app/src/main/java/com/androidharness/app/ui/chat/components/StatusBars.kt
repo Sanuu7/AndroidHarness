@@ -334,9 +334,13 @@ internal fun SlashSuggestions(
             add(SlashEntry("/compact", "Compact", "Summarize older context", SlashCommands.Kind.COMPACT))
             add(SlashEntry("/autocompact", uiContext.getString(R.string.auto_compact_title), uiContext.getString(R.string.auto_compact_slash_hint), SlashCommands.Kind.AUTO_COMPACT))
             add(SlashEntry("/cost", "Cost", "Show token and cost totals", SlashCommands.Kind.COST))
+            add(SlashEntry("/context", uiContext.getString(R.string.context_command_title), uiContext.getString(R.string.context_command_hint), SlashCommands.Kind.CONTEXT))
             add(SlashEntry(SlashCommands.SIDE_COMMAND, "By the way", "Ask aside on the live context, kept out of the chat", SlashCommands.Kind.BTW))
             add(SlashEntry("/doctor", "Harness doctor", "Run self-test across every harness tool", SlashCommands.Kind.DOCTOR))
             add(SlashEntry("/init", "Init project", "Write or refresh AGENTS.md", SlashCommands.Kind.INIT))
+            if (state.skills.none { it.enabled && it.name == "review" } && state.snippets.none { it.name.equals("review", ignoreCase = true) }) {
+                add(SlashEntry("/review", "Review changes", "Read-only review of the pending changes, add a focus after it", SlashCommands.Kind.REVIEW))
+            }
             add(SlashEntry("/plan", "Plan mode", "Load the plan skill and switch to Plan mode", SlashCommands.Kind.PLAN))
             add(SlashEntry("/skills", "Browse skills", "Open the full skill picker", SlashCommands.Kind.SKILLS))
             add(SlashEntry("/env", "Linux environment", "Check, update, install or repair the Linux env", SlashCommands.Kind.ENV))

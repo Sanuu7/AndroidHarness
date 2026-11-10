@@ -1636,19 +1636,8 @@
         <item quantity="other">"%1$d linhas"</item>
     </plurals>
     <string name="voice_transcribing">"Transcrevendo…"</string>
-    <string name="donate_upi_title">"Doar com UPI"</string>
-    <string name="donate_upi_copy_id">"Copiar ID UPI"</string>
-    <string name="donate_upi_copied">"ID UPI copiado"</string>
-    <string name="donate_upi_show_qr">"Mostrar código QR"</string>
-    <string name="donate_upi_hide_qr">"Ocultar código QR"</string>
-    <string name="donate_upi_qr_description">"Código QR de doação UPI"</string>
-    <string name="donate_upi_save_qr">"Salvar na galeria"</string>
-    <string name="donate_upi_qr_saved">"Código QR salvo na galeria"</string>
-    <string name="donate_upi_save_failed">"Não foi possível salvar o código QR"</string>
-    <string name="donate_upi_storage_required">"Permita o acesso ao armazenamento para salvar o código QR na galeria."</string>
     <string name="donate_funding_message">"Estamos com poucos recursos para continuar o desenvolvimento do AndroidHarness. Seu apoio nos ajuda a seguir em frente."</string>
     <string name="donate_dismiss_message">"Fechar mensagem de doação"</string>
-    <string name="donate_upi_saving_qr">"Salvando…"</string>
     <string name="background_settings_title">Segundo plano e notificações</string>
     <string name="background_settings_description">Gerencie o trabalho em segundo plano e os avisos.</string>
     <string name="background_run_title">Executar em segundo plano</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">Modelo de raciocínio · solicitar raciocínio</string>
     <string name="local_thinking_direct">Modelo sem raciocínio · respostas diretas</string>
     <string name="local_thinking_help">O modelo de raciocínio pede raciocínio ao modelo de conversa. Auto segue a opção de raciocínio do chat. Sem raciocínio, o app pede uma resposta direta. Alguns modelos podem ignorar esse pedido; marcadores de raciocínio reconhecidos ainda aparecem separados.</string>
+    <string name="discord_join_title">"Entre na nossa comunidade do Discord"</string>
+    <string name="discord_join_subtitle">"Obtenha ajuda, compartilhe feedback e conheça outros usuários"</string>
+    <string name="discord_open_invite">"Abrir convite do Discord"</string>
+    <string name="discord_no_browser">"Nenhum navegador disponível. Visite discord.gg/NdC5K3XeWF para entrar."</string>
 </resources>

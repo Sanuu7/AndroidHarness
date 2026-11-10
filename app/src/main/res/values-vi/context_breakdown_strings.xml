@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Điều gì lấp đầy ngữ cảnh"</string>
+    <string name="context_breakdown_note">"Ước tính theo độ dài văn bản, khoảng 4 ký tự mỗi token. Số đếm của nhà cung cấp có thể chênh lệch một chút."</string>
+    <string name="context_breakdown_expand">"Hiện chi tiết"</string>
+    <string name="context_breakdown_collapse">"Ẩn chi tiết"</string>
+    <string name="context_group_tools">"Định nghĩa công cụ"</string>
+    <string name="context_free_space">"Dung lượng trống"</string>
+
+    <string name="context_part_core">"Hướng dẫn cốt lõi"</string>
+    <string name="context_part_skills">"Kỹ năng"</string>
+    <string name="context_part_environment">"Môi trường trực tiếp và danh mục công cụ"</string>
+    <string name="context_part_instructions">"Hướng dẫn dự án và trò chuyện"</string>
+    <string name="context_part_memory">"Bộ nhớ đã lưu"</string>
+    <string name="context_part_repo_map">"Bản đồ kho mã"</string>
+    <string name="context_part_tools_built_in">"Công cụ tích hợp (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Tin nhắn của bạn"</string>
+    <string name="context_part_assistant">"Phản hồi của trợ lý"</string>
+    <string name="context_part_tool_calls">"Đối số gọi công cụ"</string>
+    <string name="context_part_tool_results">"Kết quả công cụ"</string>
+    <string name="context_part_notes">"Ghi chú hệ thống"</string>
+
+    <string name="context_largest_results">"Kết quả công cụ lớn nhất"</string>
+    <string name="context_hints_title">"Cách giải phóng dung lượng"</string>
+    <string name="context_hint_near_limit">"Ngữ cảnh gần đầy. Chạy /compact để tóm tắt các lượt cũ hơn."</string>
+    <string name="context_hint_tool_results">"Kết quả công cụ chiếm %1$s token, và kết quả lớn nhất đến từ %2$s. Chạy /compact, hoặc yêu cầu đọc và tìm kiếm hẹp hơn."</string>
+    <string name="context_hint_tool_results_unnamed">"Kết quả công cụ chiếm %1$s token. Chạy /compact, hoặc yêu cầu đọc và tìm kiếm hẹp hơn."</string>
+    <string name="context_hint_mcp_tools">"Công cụ MCP thêm %1$s token vào mỗi yêu cầu. Ngắt kết nối các máy chủ bạn không dùng trong cuộc trò chuyện này."</string>
+    <string name="context_hint_skills">"Danh mục kỹ năng thêm %1$s token vào mỗi yêu cầu. Tắt những kỹ năng bạn không dùng."</string>
+    <string name="context_hint_memory">"Bộ nhớ đã lưu thêm %1$s token vào mỗi yêu cầu. Xóa những ghi chú đã cũ."</string>
+
+    <string name="context_command_title">"Phân tích ngữ cảnh"</string>
+    <string name="context_command_hint">"Xem điều gì lấp đầy cửa sổ ngữ cảnh và bạn có thể cắt bớt gì"</string>
+</resources>

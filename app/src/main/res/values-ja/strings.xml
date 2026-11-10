@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"プロバイダーまたはモデルを検索"</string>
     <string name="settings_providers_search_all_models">"すべてのモデルを検索"</string>
     <string name="settings_permissions_title">"記憶済み権限"</string>
-    <string name="settings_permissions_note">"現在のワークスペースのみ。「常に」はアクティブな実行が終了するまで続きます。取り消すと、承認が必要なときに再度尋ねます。すでに承認されたアクションは停止できません。フルオートとフルアクセスはこれらのプロンプトをバイパスできます。"</string>
+    <string name="settings_permissions_note">"現在のワークスペースのみ。「常に」はここに保存され、取り消すまで新しい実行のたびに適用されます。Shell の承認は git status のような 1 つのコマンドにだけ効きます。インストール、プッシュ、プルリクエスト、自由形式のコマンドは保存されません。取り消すと、承認が必要なときに再度尋ねます。すでに承認されたアクションは停止できません。「すべて確認」は保存された権限を無視し、全自動とフルアクセスはこれらのプロンプトをバイパスできます。"</string>
+    <string name="settings_permissions_saved">"このワークスペース用に保存済み"</string>
+    <string name="settings_permissions_revoke_all">"すべて取り消す"</string>
+    <string name="approval_for_this_run">"今回の実行"</string>
+    <string name="review_changes_action">"レビュー"</string>
     <string name="settings_permissions_empty">"記憶済み権限がありません"</string>
     <string name="settings_action_revoke">"取り消す"</string>
     <string name="settings_root_title">"Rootアクセス"</string>
@@ -1017,4 +1021,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">サービスは約 %1$d 分後に再試行することを推奨しています。</item>
     </plurals>
+    <string name="chat_search_code_chats">"チャットに Code のチャット検索を許可"</string>
+    <string name="chat_search_code_chats_desc">"話題に出たとき、プロジェクト内の過去の Code 会話を検索して読めます。オフでもチャット履歴は検索できます。"</string>
+    <string name="code_search_chat_chats">"Code にチャット検索を許可"</string>
+    <string name="code_search_chat_chats_desc">"話題に出たとき、過去のチャット会話を検索して読めます。オフでも Code 履歴は検索できます。"</string>
+    <string name="chat_history_matches">"過去の会話"</string>
+    <string name="chat_history_kind_chat">"チャット"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"一致するメッセージを開く"</string>
+    <string name="chat_history_open_chat">"会話を開く"</string>
+    <string name="chat_history_unavailable">"この会話はもう利用できません。"</string>
 </resources>

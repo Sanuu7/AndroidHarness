@@ -1,5 +1,8 @@
 package com.androidharness.app.tools
 
+import com.androidharness.app.core.ChatHistoryMatch
+import com.androidharness.app.core.ChatHistoryReceipt
+import com.androidharness.app.data.ConversationConfig
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.response.RichResponse
@@ -22,14 +25,14 @@ private const val MAX_SNIPPET_CHARS = 260
  * a short excerpt, and the IDs needed to read a small window.
  */
 class SearchChatsTool(
-    private val search: suspend (rawQuery: String, fuzzy: Boolean, limit: Int) -> List<MessageHit>,
+    private val search: suspend (rawQuery: String, fuzzy: Boolean, limit: Int, offset: Int) -> List<MessageHit>,
 ) : Tool {
     var canAccess: suspend (String?, String) -> Boolean = { _, _ -> true }
     override val name = "search_chats"
     override val description =
         "Search the user's other AndroidHarness chats for relevant messages. Use it when the user " +
             "refers to an earlier conversation, a previous decision, or something discussed before. " +
-            "Returns compact excerpts with chat titles and dates, not full chats. Use read_chat_snippet " +
+            "Searches message text and chat titles across projects. Results appear as tappable chat cards. Returns compact excerpts with chat titles and dates, not full chats. Use read_chat_snippet " +
             "only when an excerpt is not enough."
     override val parametersSchema = Schema.obj(
         mapOf(
@@ -46,22 +49,30 @@ class SearchChatsTool(
         if (query.length < 2) throw ToolFailure("Provide at least two characters to search for.")
         val limit = (args["limit"]?.jsonPrimitive?.contentOrNull?.toIntOrNull() ?: 5).coerceIn(1, 8)
         val fuzzy = args["fuzzy"]?.jsonPrimitive?.booleanOrNull == true
-        val hits = search(query, fuzzy, 24)
-            .filter { it.sessionId != ctx.sessionId && canAccess(ctx.sessionId, it.sessionId) }
+        val tokens = ChatSearch.tokens(query)
+        val needles = if (fuzzy) listOf(query) else tokens
+        fun score(hit: MessageHit): Int =
+            (if (tokens.any { hit.sessionTitle.contains(it, ignoreCase = true) }) 6 else 0) +
+                (if (hit.text.contains(query, ignoreCase = true)) 3 else 0) +
+                (if (tokens.count { hit.text.contains(it, ignoreCase = true) } >= 2) 2 else 0)
+        // Page past current/private/disallowed chats. Retain only the best hit per conversation.
+        val hits = linkedMapOf<String, MessageHit>()
+        val access = mutableMapOf<String, Boolean>()
+        var offset = 0
+        while (true) {
+            val page = search(query, fuzzy, 64, offset)
+            for (hit in page) {
+                if (hit.sessionId == ctx.sessionId || !access.getOrPut(hit.sessionId) { canAccess(ctx.sessionId, hit.sessionId) }) continue
+                val previous = hits[hit.sessionId]
+                if (previous == null || score(hit) > score(previous)) hits[hit.sessionId] = hit
+            }
+            if (page.size < 64 || hits.size >= 24) break
+            offset += page.size
+        }
         if (hits.isEmpty()) {
             return ToolResult(true, "No matching messages in other chats. Try fewer or different keywords.")
         }
-        val tokens = ChatSearch.tokens(query)
-        val needles = if (fuzzy) listOf(query) else tokens
-        val ranked = hits.sortedWith(
-            compareByDescending<MessageHit> { hit ->
-                var score = 0
-                if (tokens.any { hit.sessionTitle.contains(it, ignoreCase = true) }) score += 6
-                if (hit.text.contains(query, ignoreCase = true)) score += 3
-                if (tokens.count { hit.text.contains(it, ignoreCase = true) } >= 2) score += 2
-                score
-            }.thenByDescending { it.createdAt },
-        ).distinctBy { it.sessionId }.take(limit)
+        val ranked = hits.values.sortedWith(compareByDescending<MessageHit>(::score).thenByDescending { it.createdAt }).take(limit)
         val out = StringBuilder("[search_chats results]\n")
         ranked.forEachIndexed { index, hit ->
             val title = hit.sessionTitle.take(100).ifBlank { "Untitled chat" }
@@ -70,11 +81,14 @@ class SearchChatsTool(
                 .append("   ").append(ChatSearch.snippet(hit.text, needles, MAX_SNIPPET_CHARS).text).append('\n')
                 .append("   session: ").append(hit.sessionId).append(" message: ").append(hit.messageId).append('\n')
         }
-        if (hits.distinctBy { it.sessionId }.size > ranked.size) {
+        if (hits.size > ranked.size) {
             out.append("[More chats matched. Refine the query if these are not the right ones.]\n")
         }
         out.append("[Excerpts only. Use read_chat_snippet for a small window around one hit; never request a whole chat.]")
-        return ToolResult(true, out.toString())
+        return ToolResult(true, out.toString(), chatHistory = ChatHistoryReceipt(ranked.map { hit ->
+            ChatHistoryMatch(hit.sessionId, hit.messageId, hit.sessionTitle.ifBlank { "Untitled chat" }.take(100),
+                ChatSearch.snippet(hit.text, needles, MAX_SNIPPET_CHARS).text, hit.kind, hit.createdAt)
+        }))
     }
 }
 
@@ -108,7 +122,10 @@ class RecentChatsTool(
                 .append(" · session: ").append(session.id).append('\n')
         }
         out.append("[Use read_chat_snippet with a session ID and no message ID to read the latest messages.]")
-        return ToolResult(true, out.toString())
+        return ToolResult(true, out.toString(), chatHistory = ChatHistoryReceipt(list.map { session ->
+            ChatHistoryMatch(session.id, title = session.title.take(100),
+                kind = ConversationConfig.decode(session.conversationJson).kind, updatedAt = session.updatedAt)
+        }))
     }
 }
 
@@ -136,7 +153,7 @@ class ReadChatSnippetTool(
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         val sid = args["session_id"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
         if (sid.isBlank()) throw ToolFailure("Missing required argument: session_id")
-        if (!canAccess(ctx.sessionId, sid)) throw ToolFailure("That conversation is outside this agent's history access.")
+        if (!canAccess(ctx.sessionId, sid)) throw ToolFailure("That conversation is outside the current history access settings.")
         val meta = session(sid) ?: throw ToolFailure("That chat no longer exists.")
         val visible = load(sid).mapNotNull { message ->
             if (message.role != Role.USER && message.role != Role.ASSISTANT) return@mapNotNull null
@@ -174,7 +191,11 @@ class ReadChatSnippetTool(
             out.append(label).append(": ").append(body).append('\n')
             if (body.length < text.length) break
         }
-        return ToolResult(true, out.toString().trimEnd())
+        val anchor = visible.getOrNull(target) ?: visible.last()
+        return ToolResult(true, out.toString().trimEnd(), chatHistory = ChatHistoryReceipt(listOf(
+            ChatHistoryMatch(sid, anchor.first.id, title.take(100), anchor.second.take(MAX_SNIPPET_CHARS),
+                ConversationConfig.decode(meta.conversationJson).kind, anchor.first.createdAt)
+        )))
     }
 }
 

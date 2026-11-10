@@ -37,6 +37,7 @@ data class ToolResult(
     val execution: List<com.androidharness.app.data.env.ExecutionReceipt> = emptyList(),
     val research: com.androidharness.app.core.ResearchReceipt? = null,
     val settings: com.androidharness.app.core.SettingsReceipt? = null,
+    val chatHistory: com.androidharness.app.core.ChatHistoryReceipt? = null,
 )
 
 class ToolFailure(message: String) : Exception(message)

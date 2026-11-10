@@ -494,6 +494,10 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         "keep alive wake lock cpu awake background terminal runs", within = listOf(R.string.settings_device_background)),
 
     // Personalize
+    control(SettingsPage.CHAT_OPTIONS, R.string.chat_search_code_chats, R.string.chat_search_code_chats_desc,
+        "history search past code chats conversations cross mode"),
+    control(SettingsPage.CODING, R.string.code_search_chat_chats, R.string.code_search_chat_chats_desc,
+        "history search past chat conversations cross mode"),
     control(SettingsPage.CHAT_OPTIONS, R.string.chat_keep_thinking_collapsed, R.string.chat_keep_thinking_collapsed_desc,
         "thinking reasoning collapsed expanded hide show details"),
     control(SettingsPage.CHAT_OPTIONS, R.string.settings_image_frequency, R.string.settings_image_frequency_desc,

@@ -1636,19 +1636,8 @@
         <item quantity="other">"%1$d Zeilen"</item>
     </plurals>
     <string name="voice_transcribing">"Transkription…"</string>
-    <string name="donate_upi_title">"Mit UPI spenden"</string>
-    <string name="donate_upi_copy_id">"UPI-ID kopieren"</string>
-    <string name="donate_upi_copied">"UPI-ID kopiert"</string>
-    <string name="donate_upi_show_qr">"QR-Code anzeigen"</string>
-    <string name="donate_upi_hide_qr">"QR-Code ausblenden"</string>
-    <string name="donate_upi_qr_description">"UPI-Spenden-QR-Code"</string>
-    <string name="donate_upi_save_qr">"In Galerie speichern"</string>
-    <string name="donate_upi_qr_saved">"QR-Code in Galerie gespeichert"</string>
-    <string name="donate_upi_save_failed">"QR-Code konnte nicht gespeichert werden"</string>
-    <string name="donate_upi_storage_required">"Erlaube Speicherzugriff, um den QR-Code in deiner Galerie zu speichern."</string>
     <string name="donate_funding_message">"Uns fehlen die Mittel, um AndroidHarness weiterzuentwickeln. Deine Unterstützung hilft uns, weiterzumachen."</string>
     <string name="donate_dismiss_message">"Spendenhinweis schließen"</string>
-    <string name="donate_upi_saving_qr">"Wird gespeichert…"</string>
     <string name="background_settings_title">Hintergrund und Benachrichtigungen</string>
     <string name="background_settings_description">Hintergrundarbeit und Benachrichtigungen verwalten.</string>
     <string name="background_run_title">Im Hintergrund ausführen</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">Denkmodell · Reasoning anfordern</string>
     <string name="local_thinking_direct">Kein Denkmodell · direkte Antworten</string>
     <string name="local_thinking_help">Denkmodell fordert Reasoning über das Modell-Template an. Auto folgt dem Denk-Schalter im Chat. Ohne Denken wird eine direkte Antwort angefordert. Manche Modelle ignorieren diese Anfrage; erkannte Denk-Marker werden trotzdem separat angezeigt.</string>
+    <string name="discord_join_title">"Tritt unserer Discord-Community bei"</string>
+    <string name="discord_join_subtitle">"Hol dir Hilfe, teile Feedback und triff andere Nutzer"</string>
+    <string name="discord_open_invite">"Discord-Einladung öffnen"</string>
+    <string name="discord_no_browser">"Kein Browser verfügbar. Besuche discord.gg/NdC5K3XeWF, um beizutreten."</string>
 </resources>

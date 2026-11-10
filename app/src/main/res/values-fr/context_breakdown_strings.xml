@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Ce qui remplit le contexte"</string>
+    <string name="context_breakdown_note">"Estimé d\'après la longueur du texte, environ 4 caractères par jeton. Le décompte du fournisseur peut varier légèrement."</string>
+    <string name="context_breakdown_expand">"Afficher les détails"</string>
+    <string name="context_breakdown_collapse">"Masquer les détails"</string>
+    <string name="context_group_tools">"Définitions des outils"</string>
+    <string name="context_free_space">"Espace libre"</string>
+
+    <string name="context_part_core">"Instructions de base"</string>
+    <string name="context_part_skills">"Compétences"</string>
+    <string name="context_part_environment">"Environnement en direct et index des outils"</string>
+    <string name="context_part_instructions">"Instructions du projet et du chat"</string>
+    <string name="context_part_memory">"Mémoire enregistrée"</string>
+    <string name="context_part_repo_map">"Carte du référentiel"</string>
+    <string name="context_part_tools_built_in">"Outils intégrés (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Vos messages"</string>
+    <string name="context_part_assistant">"Réponses de l\'assistant"</string>
+    <string name="context_part_tool_calls">"Arguments des appels d\'outils"</string>
+    <string name="context_part_tool_results">"Résultats des outils"</string>
+    <string name="context_part_notes">"Notes système"</string>
+
+    <string name="context_largest_results">"Principaux résultats d\'outils"</string>
+    <string name="context_hints_title">"Moyens de libérer de l\'espace"</string>
+    <string name="context_hint_near_limit">"Le contexte est presque plein. Lancez /compact pour résumer les tours plus anciens."</string>
+    <string name="context_hint_tool_results">"Les résultats d\'outils occupent %1$s jetons, et le plus gros vient de %2$s. Lancez /compact ou demandez des lectures et recherches plus ciblées."</string>
+    <string name="context_hint_tool_results_unnamed">"Les résultats d\'outils occupent %1$s jetons. Lancez /compact ou demandez des lectures et recherches plus ciblées."</string>
+    <string name="context_hint_mcp_tools">"Les outils MCP ajoutent %1$s jetons à chaque requête. Déconnectez les serveurs que vous n\'utilisez pas dans ce chat."</string>
+    <string name="context_hint_skills">"Le catalogue de compétences ajoute %1$s jetons à chaque requête. Désactivez les compétences que vous n\'utilisez pas."</string>
+    <string name="context_hint_memory">"La mémoire enregistrée ajoute %1$s jetons à chaque requête. Supprimez les notes obsolètes."</string>
+
+    <string name="context_command_title">"Répartition du contexte"</string>
+    <string name="context_command_hint">"Voyez ce qui remplit la fenêtre de contexte et ce que vous pouvez réduire"</string>
+</resources>

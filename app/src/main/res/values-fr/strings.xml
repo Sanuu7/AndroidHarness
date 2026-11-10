@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Rechercher des fournisseurs ou des modèles"</string>
     <string name="settings_providers_search_all_models">"Rechercher tous les modèles"</string>
     <string name="settings_permissions_title">"Autorisations mémorisées"</string>
-    <string name="settings_permissions_note">"Espace de travail actuel uniquement. « Toujours » dure jusqu\'à la fin de l\'exécution active. La révocation demande à nouveau quand l\'approbation est requise ; il ne peut pas arrêter une action déjà approuvée. L\'accès entièrement automatique et complet peut toujours contourner ces invites."</string>
+    <string name="settings_permissions_note">"Espace de travail actuel uniquement. « Toujours » est enregistré ici et s\'applique à chaque nouvelle exécution jusqu\'à ce que vous le révoquiez. Une approbation de shell couvre une commande, comme git status. Les installations, les envois, les demandes de tirage et les commandes ouvertes ne sont jamais enregistrés. La révocation demande à nouveau quand l\'approbation est requise ; elle ne peut pas arrêter une action déjà approuvée. « Confirmez tout » ignore les autorisations enregistrées, et Entièrement automatique et Accès complet peuvent toujours contourner ces invites."</string>
+    <string name="settings_permissions_saved">"Enregistré pour cet espace de travail"</string>
+    <string name="settings_permissions_revoke_all">"Tout révoquer"</string>
+    <string name="approval_for_this_run">"Cette exécution"</string>
+    <string name="review_changes_action">"Réviser"</string>
     <string name="settings_permissions_empty">"Aucune autorisation mémorisée"</string>
     <string name="settings_action_revoke">"Révoquer"</string>
     <string name="settings_root_title">"Accès racine"</string>
@@ -1023,4 +1027,14 @@
         <item quantity="many">"Le service suggère de réessayer dans environ %1$d minutes."</item>
         <item quantity="other">"Le service suggère de réessayer dans environ %1$d minutes."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Autoriser Chat à rechercher dans les chats Code"</string>
+    <string name="chat_search_code_chats_desc">"Retrouvez et lisez vos anciennes conversations Code dans vos projets quand vous les évoquez. L\'historique Chat reste consultable quand c\'est désactivé."</string>
+    <string name="code_search_chat_chats">"Autoriser Code à rechercher dans les chats"</string>
+    <string name="code_search_chat_chats_desc">"Retrouvez et lisez vos anciennes conversations Chat quand vous les évoquez. L\'historique Code reste consultable quand c\'est désactivé."</string>
+    <string name="chat_history_matches">"Conversations passées"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Ouvrir le message correspondant"</string>
+    <string name="chat_history_open_chat">"Ouvrir la conversation"</string>
+    <string name="chat_history_unavailable">"Cette conversation n\'est plus disponible."</string>
 </resources>

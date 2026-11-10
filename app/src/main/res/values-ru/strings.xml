@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Поиск провайдеров или моделей"</string>
     <string name="settings_providers_search_all_models">"Поиск всех моделей"</string>
     <string name="settings_permissions_title">"Сохранённые разрешения"</string>
-    <string name="settings_permissions_note">"Только для текущей рабочей области. «Всегда» действует до завершения текущего запуска. После отзыва подтверждение запрашивается снова, если оно требуется; уже одобренное действие остановить нельзя. Полностью автоматический режим и полный доступ могут обходить эти запросы."</string>
+    <string name="settings_permissions_note">"Только для текущей рабочей области. «Всегда» сохраняется здесь и действует для каждого нового запуска, пока вы его не отзовёте. Одобрение shell охватывает одну команду, например git status. Установки, отправки, пул-реквесты и открытые команды никогда не сохраняются. После отзыва подтверждение запрашивается снова, если оно требуется; уже одобренное действие остановить нельзя. «Подтверждать всё» игнорирует сохранённые разрешения, а полностью автоматический режим и полный доступ могут обходить эти запросы."</string>
+    <string name="settings_permissions_saved">"Сохранено для этой рабочей области"</string>
+    <string name="settings_permissions_revoke_all">"Отозвать все"</string>
+    <string name="approval_for_this_run">"Этот запуск"</string>
+    <string name="review_changes_action">"Проверить"</string>
     <string name="settings_permissions_empty">"Нет сохранённых разрешений"</string>
     <string name="settings_action_revoke">"Отозвать"</string>
     <string name="settings_root_title">"Root-доступ"</string>
@@ -1026,4 +1030,14 @@
         <item quantity="many">"Сервис предлагает повторить попытку примерно через %1$d минут."</item>
         <item quantity="other">"Сервис предлагает повторить попытку примерно через %1$d минуты."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Разрешить чату искать в чатах Code"</string>
+    <string name="chat_search_code_chats_desc">"Находите и читайте прежние беседы Code в своих проектах, когда спрашиваете о них. История чата остаётся доступной для поиска, когда это выключено."</string>
+    <string name="code_search_chat_chats">"Разрешить коду искать в чатах"</string>
+    <string name="code_search_chat_chats_desc">"Находите и читайте прежние беседы чата, когда спрашиваете о них. История кода остаётся доступной для поиска, когда это выключено."</string>
+    <string name="chat_history_matches">"Прежние беседы"</string>
+    <string name="chat_history_kind_chat">"Чат"</string>
+    <string name="chat_history_kind_code">"Код"</string>
+    <string name="chat_history_open_message">"Открыть совпадающее сообщение"</string>
+    <string name="chat_history_open_chat">"Открыть беседу"</string>
+    <string name="chat_history_unavailable">"Эта беседа больше недоступна."</string>
 </resources>

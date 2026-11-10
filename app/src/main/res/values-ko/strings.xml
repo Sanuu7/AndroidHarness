@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"공급자 또는 모델 검색"</string>
     <string name="settings_providers_search_all_models">"모든 모델 검색"</string>
     <string name="settings_permissions_title">"기억된 권한"</string>
-    <string name="settings_permissions_note">"현재 작업공간에만 해당됩니다. \"항상\"은 활성 실행이 끝날 때까지 지속됩니다. 취소는 승인이 필요할 때 다시 묻습니다. 이미 승인된 작업은 중지할 수 없습니다. 전체 자동 및 전체 액세스는 여전히 이러한 메시지를 무시할 수 있습니다."</string>
+    <string name="settings_permissions_note">"현재 작업공간에만 해당됩니다. \"항상\"은 여기에 저장되어 취소할 때까지 새 실행마다 적용됩니다. Shell 승인은 git status 같은 명령 하나만 포함합니다. 설치, 푸시, 풀 리퀘스트, 자유 형식 명령은 절대 저장되지 않습니다. 취소는 승인이 필요할 때 다시 묻습니다. 이미 승인된 작업은 중지할 수 없습니다. \"모든 것을 확인하세요\"는 저장된 권한을 무시하며, 완전 자동 및 전체 액세스는 여전히 이러한 메시지를 무시할 수 있습니다."</string>
+    <string name="settings_permissions_saved">"이 작업공간에 저장됨"</string>
+    <string name="settings_permissions_revoke_all">"모두 취소"</string>
+    <string name="approval_for_this_run">"이번 실행"</string>
+    <string name="review_changes_action">"검토"</string>
     <string name="settings_permissions_empty">"기억된 권한이 없습니다."</string>
     <string name="settings_action_revoke">"취소"</string>
     <string name="settings_root_title">"루트 액세스"</string>
@@ -1017,4 +1021,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">"서비스에서 약 %1$d분 후 다시 시도할 것을 권장합니다."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Chat에서 Code 대화 검색 허용"</string>
+    <string name="chat_search_code_chats_desc">"질문할 때 프로젝트의 지난 Code 대화를 찾아 읽습니다. 꺼도 Chat 기록은 계속 검색할 수 있습니다."</string>
+    <string name="code_search_chat_chats">"Code에서 Chat 대화 검색 허용"</string>
+    <string name="code_search_chat_chats_desc">"질문할 때 지난 Chat 대화를 찾아 읽습니다. 꺼도 Code 기록은 계속 검색할 수 있습니다."</string>
+    <string name="chat_history_matches">"지난 대화"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"일치하는 메시지 열기"</string>
+    <string name="chat_history_open_chat">"대화 열기"</string>
+    <string name="chat_history_unavailable">"이 대화는 더 이상 사용할 수 없습니다."</string>
 </resources>

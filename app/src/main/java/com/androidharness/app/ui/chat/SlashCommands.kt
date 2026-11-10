@@ -9,7 +9,7 @@ import com.androidharness.app.skills.buildSlashSkillMessage
 object SlashCommands {
 
     enum class Kind {
-        CLEAR, COMPACT, AUTO_COMPACT, COST, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW,
+        CLEAR, COMPACT, AUTO_COMPACT, COST, CONTEXT, DOCTOR, INIT, SKILLS, SKILL, SNIPPET, UNKNOWN, PLAIN, PLAN, ENV, BTW, REVIEW,
     }
 
     enum class Dispatch { START, QUEUE }
@@ -149,6 +149,10 @@ object SlashCommands {
         val parts = trimmed.split(WHITESPACE, limit = 2)
         val command = parts[0].lowercase()
         val argument = parts.getOrNull(1).orEmpty()
+        // A skill or snippet the user saved under the same name keeps the command.
+        if (command == "/review" && "review" !in skillNames && snippetBodies.keys.none { it.equals("review", ignoreCase = true) }) {
+            return Result(Kind.REVIEW, agentText = com.androidharness.app.core.ChangeReview.prompt(focus = argument))
+        }
         return when (command) {
             "/clear" -> Result(Kind.CLEAR)
             "/compact" -> Result(Kind.COMPACT)
@@ -160,6 +164,8 @@ object SlashCommands {
                 else Result(Kind.UNKNOWN, error = "Unknown command: $command")
             }
             "/cost" -> Result(Kind.COST)
+            // Same dialog as /cost: the breakdown lives in the context panel.
+            "/context" -> Result(Kind.CONTEXT)
             "/doctor" -> Result(Kind.DOCTOR, agentText = DOCTOR_PROMPT)
             "/skills" -> Result(Kind.SKILLS)
             "/env" -> Result(Kind.ENV)

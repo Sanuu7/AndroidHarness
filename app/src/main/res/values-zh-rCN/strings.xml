@@ -434,7 +434,11 @@
     <string name="settings_providers_search_placeholder">搜索提供商或模型</string>
     <string name="settings_providers_search_all_models">搜索所有模型</string>
     <string name="settings_permissions_title">记住的权限</string>
-    <string name="settings_permissions_note">仅限当前工作区。「始终允许」在本次运行结束前有效。撤销后，需要批准时会再次询问；但无法阻止已获批准的操作。全自动和完全访问仍可绕过这些提示。</string>
+    <string name="settings_permissions_note">仅限当前工作区。「始终允许」会保存在这里，并对每次新运行生效，直到你撤销。Shell 批准只覆盖一条命令，例如 git status。安装、推送、拉取请求和开放式命令永远不会保存。撤销后，需要批准时会再次询问；无法阻止已获批准的操作。「每次都确认」会忽略已保存的权限，完全自动和完全访问仍可绕过这些提示。</string>
+    <string name="settings_permissions_saved">已为此工作区保存</string>
+    <string name="settings_permissions_revoke_all">全部撤销</string>
+    <string name="approval_for_this_run">本次运行</string>
+    <string name="review_changes_action">审查</string>
     <string name="settings_permissions_empty">没有记住的权限</string>
     <string name="settings_action_revoke">撤销</string>
     <string name="settings_root_title">Root 访问</string>
@@ -1048,4 +1052,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">服务建议约 %1$d 分钟后重试。</item>
     </plurals>
+    <string name="chat_search_code_chats">"允许聊天搜索代码对话"</string>
+    <string name="chat_search_code_chats_desc">"当你提到这些内容时，在项目中查找并阅读以前的代码对话。关闭后，聊天记录仍可搜索。"</string>
+    <string name="code_search_chat_chats">"允许代码搜索聊天对话"</string>
+    <string name="code_search_chat_chats_desc">"当你提到这些内容时，查找并阅读以前的聊天对话。关闭后，代码记录仍可搜索。"</string>
+    <string name="chat_history_matches">"过去的对话"</string>
+    <string name="chat_history_kind_chat">"聊天"</string>
+    <string name="chat_history_kind_code">"代码"</string>
+    <string name="chat_history_open_message">"打开匹配的消息"</string>
+    <string name="chat_history_open_chat">"打开对话"</string>
+    <string name="chat_history_unavailable">"此对话已不可用。"</string>
 </resources>

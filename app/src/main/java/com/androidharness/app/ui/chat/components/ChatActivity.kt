@@ -613,12 +613,12 @@ private fun activityLabel(name: String, running: Boolean): String = stringResour
 })
 
 @Composable
-internal fun ChatShimmerText(text: String, running: Boolean) {
+internal fun ChatShimmerText(text: String, running: Boolean, style: androidx.compose.ui.text.TextStyle = MaterialTheme.typography.labelLarge) {
     val scheme = MaterialTheme.colorScheme
     if (!running) {
         Text(
             text,
-            style = MaterialTheme.typography.labelLarge,
+            style = style,
             color = scheme.onSurfaceVariant,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
@@ -630,7 +630,7 @@ internal fun ChatShimmerText(text: String, running: Boolean) {
         infiniteRepeatable(tween(1600, easing = LinearEasing), RepeatMode.Restart), label = "Chat text shimmer")
     Text(
         text,
-        style = MaterialTheme.typography.labelLarge.copy(brush = Brush.linearGradient(
+        style = style.copy(brush = Brush.linearGradient(
             listOf(scheme.onSurfaceVariant, scheme.onSurface, scheme.onSurfaceVariant),
             start = Offset(x, 0f), end = Offset(x + 160f, 0f))),
         maxLines = 1,

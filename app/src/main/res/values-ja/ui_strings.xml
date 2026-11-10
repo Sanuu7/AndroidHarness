@@ -1634,19 +1634,8 @@
         <item quantity="other">"%1$d行"</item>
     </plurals>
     <string name="voice_transcribing">"文字起こし中…"</string>
-    <string name="donate_upi_title">"UPIで寄付"</string>
-    <string name="donate_upi_copy_id">"UPI IDをコピー"</string>
-    <string name="donate_upi_copied">"UPI IDをコピーしました"</string>
-    <string name="donate_upi_show_qr">"QRコードを表示"</string>
-    <string name="donate_upi_hide_qr">"QRコードを非表示"</string>
-    <string name="donate_upi_qr_description">"UPI寄付用QRコード"</string>
-    <string name="donate_upi_save_qr">"ギャラリーに保存"</string>
-    <string name="donate_upi_qr_saved">"QRコードをギャラリーに保存しました"</string>
-    <string name="donate_upi_save_failed">"QRコードを保存できませんでした"</string>
-    <string name="donate_upi_storage_required">"QRコードをギャラリーに保存するにはストレージへのアクセスを許可してください。"</string>
     <string name="donate_funding_message">"AndroidHarnessの開発を続ける資金が不足しています。ご支援いただけると開発を続けられます。"</string>
     <string name="donate_dismiss_message">"寄付メッセージを閉じる"</string>
-    <string name="donate_upi_saving_qr">"保存中…"</string>
     <string name="background_settings_title">バックグラウンドと通知</string>
     <string name="background_settings_description">バックグラウンド処理と通知を管理します。</string>
     <string name="background_run_title">バックグラウンドで実行</string>
@@ -1817,4 +1806,8 @@
     <string name="local_thinking_on">思考モデル · 推論を要求</string>
     <string name="local_thinking_direct">思考なしモデル · 直接回答</string>
     <string name="local_thinking_help">思考モデルはモデルテンプレートを通じて推論を要求します。自動はチャットの思考スイッチに従います。思考なしでは直接回答を要求します。モデルによってはこの要求を無視することがあります。認識された思考マーカーは引き続き別に表示されます。</string>
+    <string name="discord_join_title">"Discord コミュニティに参加"</string>
+    <string name="discord_join_subtitle">"助けを求め、フィードバックを共有し、ほかのユーザーと交流できます"</string>
+    <string name="discord_open_invite">"Discord の招待を開く"</string>
+    <string name="discord_no_browser">"利用できるブラウザがありません。discord.gg/NdC5K3XeWF にアクセスして参加してください。"</string>
 </resources>

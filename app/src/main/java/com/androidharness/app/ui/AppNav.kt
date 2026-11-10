@@ -698,6 +698,9 @@ fun AppNav(container: AppContainer) {
                     onNavigateToSession = { sid ->
                         nav.navigateToConversation("chat/$sid")
                     },
+                    onNavigateToMessage = { sid, mid ->
+                        nav.navigateToConversation("chat/${encode(sid)}" + (mid?.let { "?messageId=${encode(it)}" } ?: ""))
+                    },
                 )
             }
             composable(
@@ -745,6 +748,9 @@ fun AppNav(container: AppContainer) {
                     onOpenSettings = { nav.navigate("settings") },
                     onNavigateToSession = { sid ->
                         nav.navigateToConversation("chat/$sid")
+                    },
+                    onNavigateToMessage = { sid, mid ->
+                        nav.navigateToConversation("chat/${encode(sid)}" + (mid?.let { "?messageId=${encode(it)}" } ?: ""))
                     },
                 )
             }

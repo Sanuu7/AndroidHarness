@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">What fills the context</string>
+    <string name="context_breakdown_note">Estimated from text length, about 4 characters per token. The provider\'s own count can differ a little.</string>
+    <string name="context_breakdown_expand">Show details</string>
+    <string name="context_breakdown_collapse">Hide details</string>
+    <string name="context_group_tools">Tool definitions</string>
+    <string name="context_free_space">Free space</string>
+
+    <string name="context_part_core">Core instructions</string>
+    <string name="context_part_skills">Skills</string>
+    <string name="context_part_environment">Live environment and tool index</string>
+    <string name="context_part_instructions">Project and chat instructions</string>
+    <string name="context_part_memory">Saved memory</string>
+    <string name="context_part_repo_map">Repository map</string>
+    <string name="context_part_tools_built_in">Built-in tools (%1$d)</string>
+    <string name="context_part_tools_codegraph">CodeGraph (%1$d)</string>
+    <string name="context_part_tools_mcp">MCP: %1$s (%2$d)</string>
+    <string name="context_part_user">Your messages</string>
+    <string name="context_part_assistant">Assistant replies</string>
+    <string name="context_part_tool_calls">Tool call arguments</string>
+    <string name="context_part_tool_results">Tool results</string>
+    <string name="context_part_notes">System notes</string>
+
+    <string name="context_largest_results">Largest tool results</string>
+    <string name="context_hints_title">Ways to free space</string>
+    <string name="context_hint_near_limit">The context is nearly full. Run /compact to summarize the older turns.</string>
+    <string name="context_hint_tool_results">Tool results take %1$s tokens, and the largest comes from %2$s. Run /compact, or ask for narrower reads and searches.</string>
+    <string name="context_hint_tool_results_unnamed">Tool results take %1$s tokens. Run /compact, or ask for narrower reads and searches.</string>
+    <string name="context_hint_mcp_tools">MCP tools add %1$s tokens to every request. Disconnect the servers you are not using in this chat.</string>
+    <string name="context_hint_skills">The skills catalog adds %1$s tokens to every request. Turn off the skills you do not use.</string>
+    <string name="context_hint_memory">Saved memory adds %1$s tokens to every request. Remove notes that are out of date.</string>
+
+    <string name="context_command_title">Context breakdown</string>
+    <string name="context_command_hint">See what fills the context window and what you can trim</string>
+</resources>

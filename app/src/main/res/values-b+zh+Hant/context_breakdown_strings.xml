@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"上下文的組成"</string>
+    <string name="context_breakdown_note">"依文字長度估算，約每 4 個字元算 1 個 Token。供應商自己的計數可能略有不同。"</string>
+    <string name="context_breakdown_expand">"顯示詳細資料"</string>
+    <string name="context_breakdown_collapse">"隱藏詳細資料"</string>
+    <string name="context_group_tools">"工具定義"</string>
+    <string name="context_free_space">"剩餘空間"</string>
+
+    <string name="context_part_core">"核心指令"</string>
+    <string name="context_part_skills">"技能"</string>
+    <string name="context_part_environment">"即時環境與工具索引"</string>
+    <string name="context_part_instructions">"專案與聊天指令"</string>
+    <string name="context_part_memory">"已儲存的記憶"</string>
+    <string name="context_part_repo_map">"儲存庫地圖"</string>
+    <string name="context_part_tools_built_in">"內建工具（%1$d）"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph（%1$d）"</string>
+    <string name="context_part_tools_mcp">"MCP：%1$s（%2$d）"</string>
+    <string name="context_part_user">"你的訊息"</string>
+    <string name="context_part_assistant">"助理回覆"</string>
+    <string name="context_part_tool_calls">"工具呼叫引數"</string>
+    <string name="context_part_tool_results">"工具結果"</string>
+    <string name="context_part_notes">"系統備註"</string>
+
+    <string name="context_largest_results">"最大的工具結果"</string>
+    <string name="context_hints_title">"釋放空間的方法"</string>
+    <string name="context_hint_near_limit">"上下文快滿了。執行 /compact 來彙總較早的回合。"</string>
+    <string name="context_hint_tool_results">"工具結果佔 %1$s 個 Token，最大的一筆來自 %2$s。執行 /compact，或要求更精確的讀取與搜尋。"</string>
+    <string name="context_hint_tool_results_unnamed">"工具結果佔 %1$s 個 Token。執行 /compact，或要求更精確的讀取與搜尋。"</string>
+    <string name="context_hint_mcp_tools">"MCP 工具會為每個請求增加 %1$s 個 Token。請中斷此聊天中用不到的伺服器。"</string>
+    <string name="context_hint_skills">"技能目錄會為每個請求增加 %1$s 個 Token。請關閉用不到的技能。"</string>
+    <string name="context_hint_memory">"已儲存的記憶會為每個請求增加 %1$s 個 Token。請刪除過時的筆記。"</string>
+
+    <string name="context_command_title">"上下文明細"</string>
+    <string name="context_command_hint">"查看上下文視窗被什麼佔滿，以及可以精簡什麼"</string>
+</resources>

@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Cari pembekal atau model"</string>
     <string name="settings_providers_search_all_models">"Cari semua model"</string>
     <string name="settings_permissions_title">"Keizinan yang diingati"</string>
-    <string name="settings_permissions_note">"Ruang kerja semasa sahaja. \"Sentiasa\" berlangsung sehingga larian aktif tamat. Pembatalan meminta lagi apabila kelulusan diperlukan; ia tidak boleh menghentikan tindakan yang telah diluluskan. Auto penuh dan Akses penuh masih boleh memintas gesaan ini."</string>
+    <string name="settings_permissions_note">"Ruang kerja semasa sahaja. \"Sentiasa\" disimpan di sini dan terpakai pada setiap larian baharu sehingga anda menarik baliknya. Kelulusan shell merangkumi satu arahan, seperti git status. Pemasangan, push, permintaan tarik dan arahan terbuka tidak pernah disimpan. Menarik balik akan bertanya lagi apabila kelulusan diperlukan; ia tidak boleh menghentikan tindakan yang telah diluluskan. \"Sahkan semuanya\" mengabaikan kebenaran yang disimpan, dan Auto penuh serta Akses penuh masih boleh memintas gesaan ini."</string>
+    <string name="settings_permissions_saved">"Disimpan untuk ruang kerja ini"</string>
+    <string name="settings_permissions_revoke_all">"Tarik balik semua"</string>
+    <string name="approval_for_this_run">"Larian ini"</string>
+    <string name="review_changes_action">"Semak"</string>
     <string name="settings_permissions_empty">"Tiada kebenaran yang diingati"</string>
     <string name="settings_action_revoke">"Tarik balik"</string>
     <string name="settings_root_title">"Akses akar"</string>
@@ -1017,4 +1021,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">"Perkhidmatan mencadangkan cuba lagi dalam kira-kira %1$d minit."</item>
     </plurals>
+    <string name="chat_search_code_chats">"Benarkan Chat mencari chat Code"</string>
+    <string name="chat_search_code_chats_desc">"Cari dan baca perbualan Code lalu dalam projek anda apabila anda bertanya tentangnya. Sejarah Chat kekal boleh dicari apabila ini dimatikan."</string>
+    <string name="code_search_chat_chats">"Benarkan Code mencari chat"</string>
+    <string name="code_search_chat_chats_desc">"Cari dan baca perbualan Chat lalu apabila anda bertanya tentangnya. Sejarah Code kekal boleh dicari apabila ini dimatikan."</string>
+    <string name="chat_history_matches">"Perbualan lalu"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Code"</string>
+    <string name="chat_history_open_message">"Buka mesej yang sepadan"</string>
+    <string name="chat_history_open_chat">"Buka perbualan"</string>
+    <string name="chat_history_unavailable">"Perbualan ini tidak lagi tersedia."</string>
 </resources>

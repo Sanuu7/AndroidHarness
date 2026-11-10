@@ -1630,19 +1630,8 @@
     <plurals name="answer_table_columns"><item quantity="other">"%1$d kolom"</item></plurals>
     <plurals name="answer_table_rows"><item quantity="other">"%1$d baris"</item></plurals>
     <string name="voice_transcribing">Mentranskripsikan…</string>
-    <string name="donate_upi_title">Donasi melalui UPI</string>
-    <string name="donate_upi_copy_id">Salin ID UPI</string>
-    <string name="donate_upi_copied">ID UPI disalin</string>
-    <string name="donate_upi_show_qr">Tampilkan kode QR</string>
-    <string name="donate_upi_hide_qr">Sembunyikan kode QR</string>
-    <string name="donate_upi_qr_description">Kode QR donasi UPI</string>
-    <string name="donate_upi_save_qr">Simpan ke galeri</string>
-    <string name="donate_upi_qr_saved">Kode QR disimpan ke galeri</string>
-    <string name="donate_upi_save_failed">Tidak dapat menyimpan kode QR</string>
-    <string name="donate_upi_storage_required">Izinkan akses penyimpanan untuk menyimpan kode QR ke galeri.</string>
     <string name="donate_funding_message">Dana untuk melanjutkan pengembangan AndroidHarness mulai menipis. Dukungan Anda membantu kami terus berkarya.</string>
     <string name="donate_dismiss_message">Tutup pesan donasi</string>
-    <string name="donate_upi_saving_qr">Menyimpan…</string>
     <string name="background_settings_title">Latar belakang &amp; notifikasi</string>
     <string name="background_settings_description">Atur pekerjaan latar belakang dan notifikasi.</string>
     <string name="background_run_title">Jalankan di latar belakang</string>
@@ -1813,4 +1802,8 @@
     <string name="local_thinking_on">Model berpikir · minta penalaran</string>
     <string name="local_thinking_direct">Model non-berpikir · jawaban langsung</string>
     <string name="local_thinking_help">Model berpikir meminta penalaran melalui templat model. Otomatis mengikuti sakelar berpikir di chat. Non-berpikir meminta jawaban langsung. Sebagian model dapat mengabaikan permintaan ini; penanda penalaran yang dikenali tetap ditampilkan terpisah.</string>
+    <string name="discord_join_title">"Gabung komunitas Discord kami"</string>
+    <string name="discord_join_subtitle">"Dapatkan bantuan, bagikan masukan, dan bertemu pengguna lain"</string>
+    <string name="discord_open_invite">"Buka undangan Discord"</string>
+    <string name="discord_no_browser">"Tidak ada browser yang tersedia. Kunjungi discord.gg/NdC5K3XeWF untuk bergabung."</string>
 </resources>

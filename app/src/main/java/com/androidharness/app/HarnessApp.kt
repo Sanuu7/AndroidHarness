@@ -163,8 +163,8 @@ class AppContainer(val appContext: Context) {
         val source = from?.let { sessions.session(it) } ?: return false
         val destination = sessions.session(target) ?: return false
         val config = com.androidharness.app.data.ConversationConfig.decode(source.conversationJson)
-        return config.personalizationEnabled && com.androidharness.app.data.ChatAgentPolicy.canReadHistory(config,
-            com.androidharness.app.data.ConversationConfig.decode(destination.conversationJson))
+        return com.androidharness.app.data.ChatHistoryPolicy.canRead(config,
+            com.androidharness.app.data.ConversationConfig.decode(destination.conversationJson), settings.settings.first())
     }
     val chatBackup by lazy { ChatBackupManager(db, appContext, workspace) }
     val snippets = com.androidharness.app.data.SnippetRepository(db.dao())
@@ -325,8 +325,8 @@ class AppContainer(val appContext: Context) {
         chatOnlyTools = listOf(com.androidharness.app.tools.ReadChatTextTool(sessions::messages),
             com.androidharness.app.tools.ViewChatImageTool(images),
             com.androidharness.app.tools.BrowserReadTool(browser),
-            com.androidharness.app.tools.SearchChatsTool { query, fuzzy, limit ->
-                sessions.searchMessages(query, fuzzy, limit)
+            com.androidharness.app.tools.SearchChatsTool { query, fuzzy, limit, offset ->
+                sessions.searchRecallMessages(query, fuzzy, limit, offset)
             }.apply { canAccess = ::canRecallChat },
             com.androidharness.app.tools.RecentChatsTool(sessions.sessions).apply { canAccess = ::canRecallChat },
             com.androidharness.app.tools.ReadChatSnippetTool(sessions::messages, sessions::session).apply { canAccess = ::canRecallChat },

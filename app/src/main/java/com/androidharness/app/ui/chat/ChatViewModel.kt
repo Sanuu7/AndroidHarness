@@ -896,7 +896,7 @@ class ChatViewModel(
                 }
                 return true
             }
-            SlashCommands.Kind.COST -> {
+            SlashCommands.Kind.COST, SlashCommands.Kind.CONTEXT -> {
                 _state.update { it.copy(showCostDialog = true) }
                 return true
             }
@@ -916,6 +916,7 @@ class ChatViewModel(
             SlashCommands.Kind.PLAIN,
             SlashCommands.Kind.INIT,
             SlashCommands.Kind.DOCTOR,
+            SlashCommands.Kind.REVIEW,
             SlashCommands.Kind.SKILL,
             SlashCommands.Kind.SNIPPET,
             // /plan is handled after the when: mode flips, then the expanded

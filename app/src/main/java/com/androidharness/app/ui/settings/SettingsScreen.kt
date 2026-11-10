@@ -328,6 +328,7 @@ fun SettingsScreen(
                             onInstructions = { container.settings.setChatInstructions(it) },
                             agentCount = settings.chatAgents.size,
                             onManageAgents = { showChatAgents = true },
+                            onSearchCodeChats = { value -> scope.launch { container.settings.setChatSearchCodeChats(value) } },
                         )
                         SettingsPage.MEMORY -> {
                             MemoryOptionsSection(
@@ -343,6 +344,7 @@ fun SettingsScreen(
                             CodeStartOptionsSection(
                                 settings,
                                 onCodeStart = { value -> scope.launch { container.settings.setCodeStart(value) } },
+                                onSearchChatChats = { value -> scope.launch { container.settings.setCodeSearchChatChats(value) } },
                             )
                             CodingSection { page -> openPage(page) }
                         }

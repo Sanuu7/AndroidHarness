@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"ارائه دهندگان یا مدل ها را جستجو کنید"</string>
     <string name="settings_providers_search_all_models">"جستجو در تمام مدل ها"</string>
     <string name="settings_permissions_title">مجوزهای ذخیره‌شده</string>
-    <string name="settings_permissions_note">فقط برای فضای کاری فعلی. گزینهٔ «همیشه» تا پایان اجرای فعال معتبر است. لغو مجوز باعث می‌شود در صورت نیاز دوباره تأیید گرفته شود؛ عملیاتی که قبلاً تأیید شده است متوقف نمی‌شود. در حالت‌های کاملاً خودکار و دسترسی کامل، ممکن است این درخواست‌های تأیید همچنان نمایش داده نشوند.</string>
+    <string name="settings_permissions_note">فقط برای فضای کاری فعلی. «همیشه» اینجا ذخیره می‌شود و تا زمانی که لغو نکنید برای هر اجرای جدید اعمال می‌شود. تأیید shell شامل یک فرمان مانند git status است. نصب‌ها، پوش‌ها، درخواست‌های کشش و فرمان‌های باز هرگز ذخیره نمی‌شوند. لغو مجوز باعث می‌شود در صورت نیاز دوباره تأیید گرفته شود؛ عملیاتی که قبلاً تأیید شده است متوقف نمی‌شود. «تأیید همه اقدامات» مجوزهای ذخیره‌شده را نادیده می‌گیرد و حالت‌های کاملاً خودکار و دسترسی کامل همچنان می‌توانند این درخواست‌ها را دور بزنند.</string>
+    <string name="settings_permissions_saved">برای این فضای کاری ذخیره شد</string>
+    <string name="settings_permissions_revoke_all">لغو همه</string>
+    <string name="approval_for_this_run">این اجرا</string>
+    <string name="review_changes_action">بررسی</string>
     <string name="settings_permissions_empty">هیچ مجوز ذخیره‌شده‌ای وجود ندارد</string>
     <string name="settings_action_revoke">"لغو"</string>
     <string name="settings_root_title">دسترسی Root</string>
@@ -1020,4 +1024,14 @@
         <item quantity="one">سرویس پیشنهاد می‌کند حدود %1$d دقیقه دیگر دوباره امتحان کنید.</item>
         <item quantity="other">سرویس پیشنهاد می‌کند حدود %1$d دقیقه دیگر دوباره امتحان کنید.</item>
     </plurals>
+    <string name="chat_search_code_chats">"اجازه دادن به گفتگو برای جستجو در کد"</string>
+    <string name="chat_search_code_chats_desc">"وقتی دربارهٔ آن‌ها می‌پرسید، گفتگوهای پیشین کد را در پروژه‌هایتان بیابید و بخوانید. وقتی این گزینه خاموش است، تاریخچهٔ گفتگو هنوز قابل جستجو می‌ماند."</string>
+    <string name="code_search_chat_chats">"اجازه دادن به کد برای جستجو در گفتگوها"</string>
+    <string name="code_search_chat_chats_desc">"وقتی دربارهٔ آن‌ها می‌پرسید، گفتگوهای پیشین را بیابید و بخوانید. وقتی این گزینه خاموش است، تاریخچهٔ کد هنوز قابل جستجو می‌ماند."</string>
+    <string name="chat_history_matches">"گفتگوهای پیشین"</string>
+    <string name="chat_history_kind_chat">"گفتگو"</string>
+    <string name="chat_history_kind_code">"کد"</string>
+    <string name="chat_history_open_message">"باز کردن پیام مطابق"</string>
+    <string name="chat_history_open_chat">"باز کردن گفتگو"</string>
+    <string name="chat_history_unavailable">"این گفتگو دیگر در دسترس نیست."</string>
 </resources>

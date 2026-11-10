@@ -414,7 +414,11 @@
     <string name="settings_providers_search_placeholder">"Cari penyedia atau model"</string>
     <string name="settings_providers_search_all_models">"Cari semua model"</string>
     <string name="settings_permissions_title">"Izin tersimpan"</string>
-    <string name="settings_permissions_note">"Hanya ruang kerja saat ini. \"Selalu\" berlaku hingga eksekusi aktif berakhir. Mencabut izin akan meminta lagi saat persetujuan diperlukan; tidak dapat menghentikan tindakan yang telah disetujui. Otomatis penuh dan Akses penuh tetap dapat melewati permintaan ini."</string>
+    <string name="settings_permissions_note">"Hanya ruang kerja saat ini. \"Selalu\" disimpan di sini dan berlaku untuk setiap eksekusi baru sampai Anda mencabutnya. Persetujuan shell mencakup satu perintah, seperti git status. Instalasi, push, pull request, dan perintah terbuka tidak pernah disimpan. Mencabut izin akan meminta lagi saat persetujuan diperlukan; tidak dapat menghentikan tindakan yang telah disetujui. \"Konfirmasi semua tindakan\" mengabaikan izin tersimpan, dan Otomatis penuh serta Akses penuh tetap dapat melewati permintaan ini."</string>
+    <string name="settings_permissions_saved">"Disimpan untuk ruang kerja ini"</string>
+    <string name="settings_permissions_revoke_all">"Cabut semua"</string>
+    <string name="approval_for_this_run">"Eksekusi ini"</string>
+    <string name="review_changes_action">"Tinjau"</string>
     <string name="settings_permissions_empty">"Tidak ada izin tersimpan"</string>
     <string name="settings_action_revoke">"Cabut"</string>
     <string name="settings_root_title">"Akses root"</string>
@@ -1017,4 +1021,14 @@
     <plurals name="harness_free_retry_minutes">
         <item quantity="other">Layanan menyarankan mencoba lagi dalam sekitar %1$d menit.</item>
     </plurals>
+    <string name="chat_search_code_chats">"Izinkan Chat mencari chat Code"</string>
+    <string name="chat_search_code_chats_desc">"Temukan dan baca percakapan Code sebelumnya di proyek Anda saat Anda menanyakannya. Riwayat Chat tetap bisa dicari saat ini dimatikan."</string>
+    <string name="code_search_chat_chats">"Izinkan Code mencari chat"</string>
+    <string name="code_search_chat_chats_desc">"Temukan dan baca percakapan Chat sebelumnya saat Anda menanyakannya. Riwayat Code tetap bisa dicari saat ini dimatikan."</string>
+    <string name="chat_history_matches">"Percakapan sebelumnya"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Kode"</string>
+    <string name="chat_history_open_message">"Buka pesan yang cocok"</string>
+    <string name="chat_history_open_chat">"Buka percakapan"</string>
+    <string name="chat_history_unavailable">"Percakapan ini tidak tersedia lagi."</string>
 </resources>

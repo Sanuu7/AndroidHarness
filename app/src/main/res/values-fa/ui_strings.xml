@@ -1636,19 +1636,8 @@
         <item quantity="other">"%1$d سطر"</item>
     </plurals>
     <string name="voice_transcribing">در حال تبدیل گفتار به متن…</string>
-    <string name="donate_upi_title">حمایت مالی با UPI</string>
-    <string name="donate_upi_copy_id">کپی شناسهٔ UPI</string>
-    <string name="donate_upi_copied">شناسهٔ UPI کپی شد</string>
-    <string name="donate_upi_show_qr">نمایش کد QR</string>
-    <string name="donate_upi_hide_qr">پنهان کردن کد QR</string>
-    <string name="donate_upi_qr_description">کد QR برای حمایت مالی با UPI</string>
-    <string name="donate_upi_save_qr">ذخیره در گالری</string>
-    <string name="donate_upi_qr_saved">کد QR در گالری ذخیره شد</string>
-    <string name="donate_upi_save_failed">ذخیرهٔ کد QR ناموفق بود</string>
-    <string name="donate_upi_storage_required">برای ذخیرهٔ کد QR در گالری، اجازهٔ دسترسی به حافظه را بدهید.</string>
     <string name="donate_funding_message">برای ادامهٔ توسعهٔ AndroidHarness با کمبود بودجه روبه‌رو هستیم. حمایت شما به ادامهٔ کار ما کمک می‌کند.</string>
     <string name="donate_dismiss_message">بستن پیام حمایت مالی</string>
-    <string name="donate_upi_saving_qr">در حال ذخیره…</string>
     <string name="background_settings_title">پس‌زمینه و اعلان‌ها</string>
     <string name="background_settings_description">مدیریت کار پس‌زمینه و اعلان‌ها.</string>
     <string name="background_run_title">اجرا در پس‌زمینه</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">مدل متفکر · درخواست استدلال</string>
     <string name="local_thinking_direct">مدل غیرمتفکر · پاسخ مستقیم</string>
     <string name="local_thinking_help">مدل متفکر استدلال را از قالب مدل درخواست می‌کند. خودکار از کلید تفکر در گفتگو پیروی می‌کند. در حالت غیرمتفکر پاسخ مستقیم درخواست می‌شود. برخی مدل‌ها ممکن است این درخواست را نادیده بگیرند؛ نشانه‌های تفکر شناسایی‌شده همچنان جداگانه نمایش داده می‌شوند.</string>
+    <string name="discord_join_title">"به اجتماع Discord ما بپیوندید"</string>
+    <string name="discord_join_subtitle">"کمک بگیرید، بازخورد بدهید و با کاربران دیگر آشنا شوید"</string>
+    <string name="discord_open_invite">"باز کردن دعوت Discord"</string>
+    <string name="discord_no_browser">"مرورگری در دسترس نیست. برای پیوستن به discord.gg/NdC5K3XeWF بروید."</string>
 </resources>

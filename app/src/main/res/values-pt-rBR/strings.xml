@@ -424,7 +424,11 @@
     <string name="settings_providers_search_placeholder">"Buscar provedores ou modelos"</string>
     <string name="settings_providers_search_all_models">"Buscar todos os modelos"</string>
     <string name="settings_permissions_title">"Permissões lembradas"</string>
-    <string name="settings_permissions_note">"Somente na área de trabalho atual. “Sempre” vale até o fim da execução atual. Ao revogar, a aprovação será solicitada novamente quando necessária; isso não interrompe uma ação já aprovada. Os modos Totalmente automático e Acesso total ainda podem dispensar essas solicitações."</string>
+    <string name="settings_permissions_note">"Somente na área de trabalho atual. “Sempre” é salvo aqui e vale para cada nova execução até você revogar. A aprovação de shell cobre um comando, como git status. Instalações, envios, pull requests e comandos abertos nunca são salvos. Revogar solicita novamente quando a aprovação for necessária; isso não interrompe uma ação já aprovada. “Confirmar tudo” ignora as permissões salvas, e Totalmente automático e Acesso total ainda podem dispensar essas solicitações."</string>
+    <string name="settings_permissions_saved">"Salvo para esta área de trabalho"</string>
+    <string name="settings_permissions_revoke_all">"Revogar tudo"</string>
+    <string name="approval_for_this_run">"Esta execução"</string>
+    <string name="review_changes_action">"Revisar"</string>
     <string name="settings_permissions_empty">"Nenhuma permissão lembrada"</string>
     <string name="settings_action_revoke">"Revogar"</string>
     <string name="settings_root_title">"Acesso Root"</string>
@@ -1030,4 +1034,14 @@
         <item quantity="one">O serviço sugere tentar novamente em cerca de %1$d minuto.</item>
         <item quantity="other">O serviço sugere tentar novamente em cerca de %1$d minutos.</item>
     </plurals>
+    <string name="chat_search_code_chats">"Permitir que o Chat busque chats do Code"</string>
+    <string name="chat_search_code_chats_desc">"Encontre e leia conversas anteriores do Code nos seus projetos quando perguntar sobre elas. O histórico do Chat continua pesquisável com isto desativado."</string>
+    <string name="code_search_chat_chats">"Permitir que o Code busque chats"</string>
+    <string name="code_search_chat_chats_desc">"Encontre e leia conversas anteriores do Chat quando perguntar sobre elas. O histórico do Code continua pesquisável com isto desativado."</string>
+    <string name="chat_history_matches">"Conversas anteriores"</string>
+    <string name="chat_history_kind_chat">"Chat"</string>
+    <string name="chat_history_kind_code">"Código"</string>
+    <string name="chat_history_open_message">"Abrir mensagem correspondente"</string>
+    <string name="chat_history_open_chat">"Abrir conversa"</string>
+    <string name="chat_history_unavailable">"Esta conversa não está mais disponível."</string>
 </resources>

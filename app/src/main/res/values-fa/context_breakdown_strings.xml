@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"چه چیزی زمینه را پر می‌کند"</string>
+    <string name="context_breakdown_note">"برآورد از طول متن، حدود ۴ نویسه برای هر توکن. شمارش ارائه‌دهنده ممکن است کمی متفاوت باشد."</string>
+    <string name="context_breakdown_expand">"نمایش جزئیات"</string>
+    <string name="context_breakdown_collapse">"پنهان کردن جزئیات"</string>
+    <string name="context_group_tools">"تعریف ابزارها"</string>
+    <string name="context_free_space">"فضای آزاد"</string>
+
+    <string name="context_part_core">"دستورهای اصلی"</string>
+    <string name="context_part_skills">"مهارت‌ها"</string>
+    <string name="context_part_environment">"محیط زنده و فهرست ابزار"</string>
+    <string name="context_part_instructions">"دستورهای پروژه و گفتگو"</string>
+    <string name="context_part_memory">"حافظه ذخیره‌شده"</string>
+    <string name="context_part_repo_map">"نقشه مخزن"</string>
+    <string name="context_part_tools_built_in">"ابزارهای داخلی (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"پیام‌های شما"</string>
+    <string name="context_part_assistant">"پاسخ‌های دستیار"</string>
+    <string name="context_part_tool_calls">"آرگومان‌های فراخوانی ابزار"</string>
+    <string name="context_part_tool_results">"نتایج ابزار"</string>
+    <string name="context_part_notes">"یادداشت‌های سیستم"</string>
+
+    <string name="context_largest_results">"بزرگ‌ترین نتایج ابزار"</string>
+    <string name="context_hints_title">"راه‌های آزاد کردن فضا"</string>
+    <string name="context_hint_near_limit">"زمینه تقریباً پر است. برای خلاصه کردن نوبت‌های قدیمی‌تر /compact را اجرا کنید."</string>
+    <string name="context_hint_tool_results">"نتایج ابزار %1$s توکن می‌گیرند و بزرگ‌ترینش از %2$s است. /compact را اجرا کنید یا خواندن و جستجوی محدودتر بخواهید."</string>
+    <string name="context_hint_tool_results_unnamed">"نتایج ابزار %1$s توکن می‌گیرند. /compact را اجرا کنید یا خواندن و جستجوی محدودتر بخواهید."</string>
+    <string name="context_hint_mcp_tools">"ابزارهای MCP با هر درخواست %1$s توکن اضافه می‌کنند. سرورهایی را که در این گفتگو استفاده نمی‌کنید قطع کنید."</string>
+    <string name="context_hint_skills">"فهرست مهارت‌ها با هر درخواست %1$s توکن اضافه می‌کند. مهارت‌هایی را که استفاده نمی‌کنید خاموش کنید."</string>
+    <string name="context_hint_memory">"حافظه ذخیره‌شده با هر درخواست %1$s توکن اضافه می‌کند. یادداشت‌های قدیمی را حذف کنید."</string>
+
+    <string name="context_command_title">"تفکیک زمینه"</string>
+    <string name="context_command_hint">"ببینید چه چیزی پنجره زمینه را پر می‌کند و چه چیزی را می‌توانید کم کنید"</string>
+</resources>

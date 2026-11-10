@@ -1639,19 +1639,8 @@
         <item quantity="other">"%1$d पंक्तियाँ"</item>
     </plurals>
     <string name="voice_transcribing">"प्रतिलेखन..."</string>
-    <string name="donate_upi_title">"UPI से दान करें"</string>
-    <string name="donate_upi_copy_id">"यूपीआई आईडी कॉपी करें"</string>
-    <string name="donate_upi_copied">"यूपीआई आईडी कॉपी की गई"</string>
-    <string name="donate_upi_show_qr">"QR कोड दिखाएँ"</string>
-    <string name="donate_upi_hide_qr">"QR कोड छिपाएँ"</string>
-    <string name="donate_upi_qr_description">"यूपीआई दान क्यूआर कोड"</string>
-    <string name="donate_upi_save_qr">"गैलरी में सहेजें"</string>
-    <string name="donate_upi_qr_saved">"क्यूआर कोड गैलरी में सहेजा गया"</string>
-    <string name="donate_upi_save_failed">"QR कोड सहेजा नहीं जा सका"</string>
-    <string name="donate_upi_storage_required">"क्यूआर कोड को अपनी गैलरी में सहेजने के लिए स्टोरेज एक्सेस की अनुमति दें।"</string>
     <string name="donate_funding_message">"AndroidHarness के विकास को जारी रखने के लिए हमारे पास धन की कमी है। आपका समर्थन हमें निर्माण जारी रखने में मदद करता है।"</string>
     <string name="donate_dismiss_message">"दान संदेश ख़ारिज करें"</string>
-    <string name="donate_upi_saving_qr">"सहेजा जा रहा है..."</string>
     <string name="background_settings_title">"पृष्ठभूमि और सूचनाएं"</string>
     <string name="background_settings_description">"पृष्ठभूमि कार्य और सूचनाएं प्रबंधित करें."</string>
     <string name="background_run_title">"पृष्ठभूमि में चलाएँ"</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">"सोच मॉडल · तर्क का अनुरोध करें"</string>
     <string name="local_thinking_direct">"गैर-सोच मॉडल · सीधे उत्तर"</string>
     <string name="local_thinking_help">"सोच मॉडल मॉडल टेम्पलेट से तर्क का अनुरोध करता है। ऑटो चैट के सोच स्विच का अनुसरण करता है। गैर-सोच सीधे उत्तर का अनुरोध करता है। कुछ मॉडल इस अनुरोध को अनदेखा कर सकते हैं; मान्यता प्राप्त सोच मार्कर अभी भी अलग से प्रदर्शित किए जाते हैं।"</string>
+    <string name="discord_join_title">"हमारी Discord कम्युनिटी से जुड़ें"</string>
+    <string name="discord_join_subtitle">"मदद पाएं, फ़ीडबैक साझा करें और दूसरे उपयोगकर्ताओं से मिलें"</string>
+    <string name="discord_open_invite">"Discord निमंत्रण खोलें"</string>
+    <string name="discord_no_browser">"कोई ब्राउज़र उपलब्ध नहीं है। जुड़ने के लिए discord.gg/NdC5K3XeWF पर जाएं।"</string>
 </resources>

@@ -139,6 +139,8 @@ data class AppSettings(
     /** Chat opens a fresh conversation unless the user asks to continue the latest one. */
     val chatStart: ChatStartMode = ChatStartMode.NEW_CHAT,
     val chatKeepThinkingCollapsed: Boolean = true,
+    val chatSearchCodeChats: Boolean = true,
+    val codeSearchChatChats: Boolean = true,
     /** AH Rumble: a haptic pulse whenever a Chat turn moves to a new step. */
     val rumbleEnabled: Boolean = true,
     /** 0..100 percent of the motor's amplitude. */
@@ -339,6 +341,8 @@ class SettingsRepository(private val context: Context) {
         val CHAT_IMAGE_FREQUENCY = stringPreferencesKey("chat_image_frequency")
         val CHAT_INSTRUCTIONS = stringPreferencesKey("chat_instructions")
         val CHAT_AGENTS = stringPreferencesKey("chat_agents")
+        val CHAT_SEARCH_CODE_CHATS = booleanPreferencesKey("chat_search_code_chats")
+        val CODE_SEARCH_CHAT_CHATS = booleanPreferencesKey("code_search_chat_chats")
         val CHAT_START = stringPreferencesKey("chat_start")
         val CODE_START = stringPreferencesKey("code_start")
         val SEARCH_DEPTH = stringPreferencesKey("search_depth")
@@ -460,6 +464,8 @@ class SettingsRepository(private val context: Context) {
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
             startScreen = StartScreen.fromStored(prefs[Keys.START_SCREEN]),
             chatStart = ChatStartMode.fromStored(prefs[Keys.CHAT_START]),
+            chatSearchCodeChats = prefs[Keys.CHAT_SEARCH_CODE_CHATS] ?: true,
+            codeSearchChatChats = prefs[Keys.CODE_SEARCH_CHAT_CHATS] ?: true,
             chatKeepThinkingCollapsed = prefs[Keys.CHAT_KEEP_THINKING_COLLAPSED] ?: true,
             rumbleEnabled = prefs[Keys.RUMBLE_ENABLED] ?: true,
             rumbleStrength = (prefs[Keys.RUMBLE_STRENGTH] ?: RUMBLE_DEFAULT_STRENGTH).coerceIn(0, 100),
@@ -559,6 +565,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.RESUME_LAST_CHAT] = s.resumeLastChat
             p[Keys.START_SCREEN] = s.startScreen.name
             p[Keys.CHAT_START] = s.chatStart.name
+            p[Keys.CHAT_SEARCH_CODE_CHATS] = s.chatSearchCodeChats
+            p[Keys.CODE_SEARCH_CHAT_CHATS] = s.codeSearchChatChats
             p[Keys.CHAT_KEEP_THINKING_COLLAPSED] = s.chatKeepThinkingCollapsed
             p[Keys.RUMBLE_ENABLED] = s.rumbleEnabled
             p[Keys.RUMBLE_STRENGTH] = s.rumbleStrength.coerceIn(0, 100)
@@ -1202,6 +1210,14 @@ class SettingsRepository(private val context: Context) {
         context.settingsStore.edit { prefs ->
             prefs[Keys.CHAT_AGENTS] = ChatAgentProfile.encodeList(ChatAgentProfile.decodeList(prefs[Keys.CHAT_AGENTS]).filterNot { it.id == id })
         }
+    }
+
+    suspend fun setChatSearchCodeChats(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.CHAT_SEARCH_CODE_CHATS] = enabled }
+    }
+
+    suspend fun setCodeSearchChatChats(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.CODE_SEARCH_CHAT_CHATS] = enabled }
     }
 
     suspend fun setChatStart(value: ChatStartMode) {

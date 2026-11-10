@@ -1630,19 +1630,8 @@
     <plurals name="answer_table_columns"><item quantity="one">%1$d 列</item><item quantity="other">%1$d 列</item></plurals>
     <plurals name="answer_table_rows"><item quantity="one">%1$d 行</item><item quantity="other">%1$d 行</item></plurals>
     <string name="voice_transcribing">正在转写…</string>
-    <string name="donate_upi_title">通过 UPI 捐赠</string>
-    <string name="donate_upi_copy_id">复制 UPI ID</string>
-    <string name="donate_upi_copied">已复制 UPI ID</string>
-    <string name="donate_upi_show_qr">显示二维码</string>
-    <string name="donate_upi_hide_qr">隐藏二维码</string>
-    <string name="donate_upi_qr_description">UPI 捐赠二维码</string>
-    <string name="donate_upi_save_qr">保存到相册</string>
-    <string name="donate_upi_qr_saved">二维码已保存到相册</string>
-    <string name="donate_upi_save_failed">无法保存二维码</string>
-    <string name="donate_upi_storage_required">请允许存储访问权限，以将二维码保存到相册。</string>
     <string name="donate_funding_message">我们用于持续开发 AndroidHarness 的资金不足。您的支持能帮助我们继续开发。</string>
     <string name="donate_dismiss_message">关闭捐赠提示</string>
-    <string name="donate_upi_saving_qr">正在保存…</string>
     <string name="background_settings_title">后台与通知</string>
     <string name="background_settings_description">管理后台工作和通知。</string>
     <string name="background_run_title">在后台运行</string>
@@ -1813,4 +1802,8 @@
     <string name="local_thinking_on">思考模型 · 请求推理</string>
     <string name="local_thinking_direct">非思考模型 · 直接回答</string>
     <string name="local_thinking_help">思考模型会通过模型模板请求推理。自动跟随聊天中的思考开关。非思考则请求直接回答。部分模型可能忽略此请求；已识别的思考标记仍会单独显示。</string>
+    <string name="discord_join_title">"加入我们的 Discord 社区"</string>
+    <string name="discord_join_subtitle">"获取帮助、分享反馈，并结识其他用户"</string>
+    <string name="discord_open_invite">"打开 Discord 邀请"</string>
+    <string name="discord_no_browser">"没有可用的浏览器。请访问 discord.gg/NdC5K3XeWF 加入。"</string>
 </resources>

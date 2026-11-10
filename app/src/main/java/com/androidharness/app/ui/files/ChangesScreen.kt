@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,6 +24,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -127,6 +129,13 @@ fun ChangesScreen(
                         modifier = Modifier.weight(1f),
                     )
                     DiffStatText(totalAdded, totalRemoved)
+                    if (merged.isNotEmpty()) {
+                        Spacer(Modifier.width(8.dp))
+                        FilledTonalButton(onClick = {
+                            onAskAgent(com.androidharness.app.core.ChangeReview.prompt(
+                                changedPaths = merged.map { (fs as? com.androidharness.app.workspace.ChatWorkspaceFs)?.displayPathFor(it.relPath) ?: it.relPath }))
+                        }, contentPadding = PaddingValues(horizontal = 14.dp)) { Text(uiContext.getString(R.string.review_changes_action)) }
+                    }
                 }
             }
 

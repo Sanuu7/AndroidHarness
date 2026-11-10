@@ -588,36 +588,6 @@ class LocalizationDeviceTest {
         } finally { target.deleteSharedPreferences(preference) }
     }
 
-    @Test fun brazilianPortugueseDonationDialogKeepsTheUpiIdAndQrControlsReadable() = checkDonationDialog("pt-BR", "portuguese-brazil")
-
-    @Test fun germanDonationDialogKeepsTheUpiIdAndQrControlsReadable() = checkDonationDialog("de", "german")
-
-    @Test fun spanishDonationDialogKeepsTheUpiIdAndQrControlsReadable() = checkDonationDialog("es", "spanish")
-
-    @Test fun japaneseDonationDialogKeepsTheUpiIdAndQrControlsReadable() = checkDonationDialog("ja", "japanese")
-
-    private fun checkDonationDialog(locale: String, screenshotPrefix: String) {
-        val localized = context(locale)
-        val open = mutableStateOf(true)
-        ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
-            scenario.onActivity { activity -> show(activity, scale = 1.5f, locale = locale) {
-                if (open.value) com.androidharness.app.ui.chat.components.UpiDonationDialog { open.value = false }
-            } }
-            awaitText("sanuj69@ybl")
-            click(localized.getString(R.string.donate_upi_copy_id))
-            instrumentation.runOnMainSync {
-                assertEquals("sanuj69@ybl", target.getSystemService(android.content.ClipboardManager::class.java)
-                    .primaryClip!!.getItemAt(0).text.toString())
-            }
-            click(localized.getString(R.string.donate_upi_show_qr))
-            awaitText(localized.getString(R.string.donate_upi_qr_description))
-            awaitText(localized.getString(R.string.donate_upi_save_qr))
-            screenshot("$screenshotPrefix-donation-qr-150-percent.png")
-            click(localized.getString(R.string.settings_action_close))
-            assertFalse(open.value)
-        }
-    }
-
     @Test fun persianSearchAndPermissionControlsWorkWithLargeText() {
         val fa = context("fa")
         var selected: Pair<SettingsPage, Int?>? = null
@@ -705,28 +675,6 @@ class LocalizationDeviceTest {
         val fileSummary = fa.getString(R.string.ui_in, "3", "references", "4", "files")
         assertTrue(fileSummary, fileSummary.contains("3") && fileSummary.contains("4"))
         assertFalse(fileSummary, fileSummary.contains("references") || fileSummary.contains("files"))
-    }
-
-    @Test fun persianDonationDialogKeepsTheUpiIdAndQrControlsReadable() {
-        val fa = context("fa")
-        val open = mutableStateOf(true)
-        ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
-            scenario.onActivity { activity -> show(activity, scale = 1.5f, locale = "fa") {
-                if (open.value) com.androidharness.app.ui.chat.components.UpiDonationDialog { open.value = false }
-            } }
-            awaitText("sanuj69@ybl")
-            click(fa.getString(R.string.donate_upi_copy_id))
-            instrumentation.runOnMainSync {
-                assertEquals("sanuj69@ybl", target.getSystemService(android.content.ClipboardManager::class.java)
-                    .primaryClip!!.getItemAt(0).text.toString())
-            }
-            click(fa.getString(R.string.donate_upi_show_qr))
-            awaitText(fa.getString(R.string.donate_upi_qr_description))
-            awaitText(fa.getString(R.string.donate_upi_save_qr))
-            screenshot("persian-donation-qr-150-percent.png")
-            click(fa.getString(R.string.settings_action_close))
-            assertFalse(open.value)
-        }
     }
 
     @Test fun arabicResourcesSelectAllPluralFormsAndKeepDomainValues() {

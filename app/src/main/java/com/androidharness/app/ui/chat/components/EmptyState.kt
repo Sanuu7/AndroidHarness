@@ -210,7 +210,7 @@ internal fun EmptyState(
                                 color = scheme.outlineVariant.copy(alpha = 0.5f),
                                 modifier = Modifier.padding(start = 56.dp),
                             )
-                            UpiDonationRow()
+                            DiscordCommunityRow()
                         }
                     }
                 } else {

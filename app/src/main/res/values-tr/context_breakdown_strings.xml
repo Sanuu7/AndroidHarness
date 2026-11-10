@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="context_breakdown_title">"Bağlamı ne dolduruyor"</string>
+    <string name="context_breakdown_note">"Metin uzunluğundan tahmin edilir, jeton başına yaklaşık 4 karakter. Sağlayıcının kendi sayımı biraz farklı olabilir."</string>
+    <string name="context_breakdown_expand">"Ayrıntıları göster"</string>
+    <string name="context_breakdown_collapse">"Ayrıntıları gizle"</string>
+    <string name="context_group_tools">"Araç tanımları"</string>
+    <string name="context_free_space">"Boş alan"</string>
+
+    <string name="context_part_core">"Temel talimatlar"</string>
+    <string name="context_part_skills">"Beceriler"</string>
+    <string name="context_part_environment">"Canlı ortam ve araç dizini"</string>
+    <string name="context_part_instructions">"Proje ve sohbet talimatları"</string>
+    <string name="context_part_memory">"Kayıtlı bellek"</string>
+    <string name="context_part_repo_map">"Depo haritası"</string>
+    <string name="context_part_tools_built_in">"Yerleşik araçlar (%1$d)"</string>
+    <string name="context_part_tools_codegraph">"CodeGraph (%1$d)"</string>
+    <string name="context_part_tools_mcp">"MCP: %1$s (%2$d)"</string>
+    <string name="context_part_user">"Mesajlarınız"</string>
+    <string name="context_part_assistant">"Asistan yanıtları"</string>
+    <string name="context_part_tool_calls">"Araç çağrısı bağımsız değişkenleri"</string>
+    <string name="context_part_tool_results">"Araç sonuçları"</string>
+    <string name="context_part_notes">"Sistem notları"</string>
+
+    <string name="context_largest_results">"En büyük araç sonuçları"</string>
+    <string name="context_hints_title">"Alan açma yolları"</string>
+    <string name="context_hint_near_limit">"Bağlam neredeyse dolu. Eski turları özetlemek için /compact çalıştırın."</string>
+    <string name="context_hint_tool_results">"Araç sonuçları %1$s jeton tutuyor ve en büyüğü %2$s kaynaklı. /compact çalıştırın ya da daha dar okuma ve aramalar isteyin."</string>
+    <string name="context_hint_tool_results_unnamed">"Araç sonuçları %1$s jeton tutuyor. /compact çalıştırın ya da daha dar okuma ve aramalar isteyin."</string>
+    <string name="context_hint_mcp_tools">"MCP araçları her isteğe %1$s jeton ekliyor. Bu sohbette kullanmadığınız sunucuların bağlantısını kesin."</string>
+    <string name="context_hint_skills">"Beceri kataloğu her isteğe %1$s jeton ekliyor. Kullanmadığınız becerileri kapatın."</string>
+    <string name="context_hint_memory">"Kayıtlı bellek her isteğe %1$s jeton ekliyor. Eskimiş notları silin."</string>
+
+    <string name="context_command_title">"Bağlam dökümü"</string>
+    <string name="context_command_hint">"Bağlam penceresini neyin doldurduğunu ve neyi kısaltabileceğinizi görün"</string>
+</resources>

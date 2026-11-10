@@ -1639,19 +1639,8 @@
         <item quantity="other">"%1$d na mga hilera"</item>
     </plurals>
     <string name="voice_transcribing">"Tina-transcribe..."</string>
-    <string name="donate_upi_title">"Mag-donate sa UPI"</string>
-    <string name="donate_upi_copy_id">"Kopyahin ang UPI ID"</string>
-    <string name="donate_upi_copied">"Nakopya ang UPI ID"</string>
-    <string name="donate_upi_show_qr">"Ipakita ang QR code"</string>
-    <string name="donate_upi_hide_qr">"Itago ang QR code"</string>
-    <string name="donate_upi_qr_description">"QR code ng donasyon ng UPI"</string>
-    <string name="donate_upi_save_qr">"I-save sa gallery"</string>
-    <string name="donate_upi_qr_saved">"Na-save ang QR code sa gallery"</string>
-    <string name="donate_upi_save_failed">"Hindi ma-save ang QR code"</string>
-    <string name="donate_upi_storage_required">"Payagan ang access sa storage upang i-save ang QR code sa iyong gallery."</string>
     <string name="donate_funding_message">"Kapos kami sa pondo para mapanatili ang pag-unlad ng AndroidHarness. Ang iyong suporta ay tumutulong sa amin na magpatuloy sa pagbuo."</string>
     <string name="donate_dismiss_message">"I-dismiss ang mensahe ng donasyon"</string>
-    <string name="donate_upi_saving_qr">"Sine-save..."</string>
     <string name="background_settings_title">"Background at mga notification"</string>
     <string name="background_settings_description">"Pamahalaan ang background work at mga notification."</string>
     <string name="background_run_title">"Tumakbo sa background"</string>
@@ -1819,4 +1808,8 @@
     <string name="local_thinking_on">"Modelo ng pag-iisip · humiling ng pangangatwiran"</string>
     <string name="local_thinking_direct">"Modelong walang pag-iisip · direktang sagot"</string>
     <string name="local_thinking_help">"Humihiling ng pangangatwiran ang Thinking model mula sa template ng modelo. Awtomatikong sumusunod sa switch ng pag-iisip ng chat. Ang hindi pag-iisip ay humihiling ng direktang sagot. Maaaring balewalain ng ilang modelo ang kahilingang ito; ang mga kinikilalang tanda ng pag-iisip ay ipinapakita pa rin nang hiwalay."</string>
+    <string name="discord_join_title">"Sumali sa aming komunidad sa Discord"</string>
+    <string name="discord_join_subtitle">"Humingi ng tulong, magbahagi ng feedback, at makilala ang ibang gumagamit"</string>
+    <string name="discord_open_invite">"Buksan ang imbitasyon sa Discord"</string>
+    <string name="discord_no_browser">"Walang available na browser. Bisitahin ang discord.gg/NdC5K3XeWF para sumali."</string>
 </resources>

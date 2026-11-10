@@ -1634,19 +1634,8 @@
         <item quantity="other">"%1$d 行"</item>
     </plurals>
     <string name="voice_transcribing">"正在轉寫…"</string>
-    <string name="donate_upi_title">"透過 UPI 捐贈"</string>
-    <string name="donate_upi_copy_id">"複製 UPI ID"</string>
-    <string name="donate_upi_copied">"已複製 UPI ID"</string>
-    <string name="donate_upi_show_qr">"顯示二維碼"</string>
-    <string name="donate_upi_hide_qr">"隱藏二維碼"</string>
-    <string name="donate_upi_qr_description">"UPI 捐贈二維碼"</string>
-    <string name="donate_upi_save_qr">"儲存到相簿"</string>
-    <string name="donate_upi_qr_saved">"二維碼已儲存到相簿"</string>
-    <string name="donate_upi_save_failed">"無法儲存二維碼"</string>
-    <string name="donate_upi_storage_required">"請允許儲存訪問許可權，以將二維碼儲存到相簿。"</string>
     <string name="donate_funding_message">"我們用於持續開發 AndroidHarness 的資金不足。您的支援能幫助我們繼續開發。"</string>
     <string name="donate_dismiss_message">"關閉捐贈提示"</string>
-    <string name="donate_upi_saving_qr">"正在儲存…"</string>
     <string name="background_settings_title">"後臺與通知"</string>
     <string name="background_settings_description">"管理後臺工作和通知。"</string>
     <string name="background_run_title">"在後臺執行"</string>
@@ -1817,4 +1806,8 @@
     <string name="local_thinking_on">"思考模型 · 請求推理"</string>
     <string name="local_thinking_direct">"非思考模型 · 直接回答"</string>
     <string name="local_thinking_help">"思考模型會透過模型模板請求推理。自動跟隨聊天中的思考開關。非思考則請求直接回答。部分模型可能忽略此請求；已識別的思考標記仍會單獨顯示。"</string>
+    <string name="discord_join_title">"加入我們的 Discord 社群"</string>
+    <string name="discord_join_subtitle">"取得協助、分享意見，並認識其他使用者"</string>
+    <string name="discord_open_invite">"開啟 Discord 邀請"</string>
+    <string name="discord_no_browser">"沒有可用的瀏覽器。請前往 discord.gg/NdC5K3XeWF 加入。"</string>
 </resources>

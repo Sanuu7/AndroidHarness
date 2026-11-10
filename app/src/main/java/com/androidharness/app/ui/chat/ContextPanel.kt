@@ -1,24 +1,55 @@
 package com.androidharness.app.ui.chat
 
+import android.content.Context
 import com.androidharness.app.R
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.KeyboardArrowDown
+import androidx.compose.material.icons.outlined.KeyboardArrowUp
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import com.androidharness.app.agent.ContextBreakdown
+import com.androidharness.app.agent.ContextEstimate
 import com.androidharness.app.llm.ModelPrices
+import com.androidharness.app.ui.theme.expressiveDefaultSpatialSpec
+import com.androidharness.app.ui.theme.expressiveEffectsSpec
 import com.androidharness.app.ui.common.ThinLinearProgress
 
 import com.androidharness.app.ui.common.formatTokenCount
@@ -47,7 +78,6 @@ fun ContextUsageDialog(
         else state.maxContextTokens).toLong()
     val fraction = (used.toFloat() / max.toFloat()).coerceIn(0f, 1f)
     val estimate = state.estimate
-    val estimateTotal = estimate?.total?.takeIf { it > 0 } ?: 1
     // Fresh prompt tokens = total input minus cache reads/writes (pi semantics).
     val freshInput = (state.usage.totalInput - state.usage.totalCached - state.usage.totalCacheWrite)
         .coerceAtLeast(0)
@@ -120,12 +150,7 @@ fun ContextUsageDialog(
                     )
                 }
 
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    BreakdownRow(uiContext.getString(R.string.ui_messages), estimate?.messagesTokens, estimateTotal)
-                    BreakdownRow(uiContext.getString(R.string.ui_tools_and_skills), estimate?.toolsTokens, estimateTotal)
-                    BreakdownRow(uiContext.getString(R.string.ui_system_prompt), estimate?.systemTokens, estimateTotal)
-                    BreakdownRow(uiContext.getString(R.string.ui_meta_context), estimate?.metaTokens, estimateTotal)
-                }
+                ContextBreakdownSection(estimate = estimate, used = used.toInt(), limit = max.toInt())
 
                 HorizontalDivider()
 
@@ -216,17 +241,220 @@ private fun TokenRow(label: String, value: String) {
     }
 }
 
+private data class BreakdownGroup(
+    val label: String,
+    val tokens: Int,
+    val color: Color,
+    val rows: List<Pair<String, Int>>,
+)
+
+/**
+ * The estimated request split into messages, tool definitions, system prompt and
+ * meta overhead: a bar drawn against the whole window, one row per group that
+ * opens into what the group is made of, then the largest tool results and a few
+ * ways to free space.
+ */
 @Composable
-private fun BreakdownRow(label: String, tokens: Int?, total: Int) {
-    Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-    ) {
-        Text(label, style = MaterialTheme.typography.bodyMedium)
-        Text(
-            tokens?.let { "%.1f%%".format(it.toFloat() / total * 100) } ?: "0.0%",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+private fun ContextBreakdownSection(estimate: ContextEstimate?, used: Int, limit: Int) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val breakdown = estimate?.breakdown
+    val groups = remember(estimate, scheme) {
+        listOf(
+            BreakdownGroup(context.getString(R.string.ui_messages), estimate?.messagesTokens ?: 0, scheme.primary,
+                breakdown?.messages.orEmpty().map { sliceLabel(context, it) to it.tokens }),
+            BreakdownGroup(context.getString(R.string.context_group_tools), estimate?.toolsTokens ?: 0, scheme.tertiary,
+                breakdown?.tools.orEmpty().map { sliceLabel(context, it) to it.tokens }),
+            BreakdownGroup(context.getString(R.string.ui_system_prompt), estimate?.systemTokens ?: 0, scheme.secondary,
+                breakdown?.system.orEmpty().map { sliceLabel(context, it) to it.tokens }),
+            BreakdownGroup(context.getString(R.string.ui_meta_context), estimate?.metaTokens ?: 0, scheme.outline, emptyList()),
         )
     }
+    val total = groups.sumOf { it.tokens }.coerceAtLeast(1)
+    val span = maxOf(limit, total).toFloat()
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(
+            context.getString(R.string.context_breakdown_title),
+            style = MaterialTheme.typography.labelLarge,
+            color = scheme.onSurfaceVariant,
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(10.dp)
+                .clip(RoundedCornerShape(5.dp))
+                .background(scheme.surfaceContainerHighest),
+            horizontalArrangement = Arrangement.spacedBy(2.dp),
+        ) {
+            groups.filter { it.tokens > 0 }.forEach { group ->
+                val weight by animateFloatAsState(
+                    targetValue = (group.tokens / span).coerceAtLeast(0.001f),
+                    animationSpec = expressiveDefaultSpatialSpec(),
+                    label = "contextSegment",
+                )
+                Box(Modifier.weight(weight).fillMaxHeight().background(group.color))
+            }
+            val free = span - total
+            if (free > 0f) Spacer(Modifier.weight((free / span).coerceAtLeast(0.001f)))
+        }
+        groups.forEach { group -> BreakdownGroupRow(group, span) }
+        BreakdownRowLine(
+            label = context.getString(R.string.context_free_space),
+            tokens = (span - total).toInt().coerceAtLeast(0),
+            span = span,
+            dot = scheme.surfaceContainerHighest,
+        )
+        Text(
+            context.getString(R.string.context_breakdown_note),
+            style = MaterialTheme.typography.labelSmall,
+            color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+        )
+        if (breakdown != null) {
+            if (breakdown.largestResults.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    context.getString(R.string.context_largest_results),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = scheme.onSurfaceVariant,
+                )
+                breakdown.largestResults.forEach { result ->
+                    TokenRow(result.toolName, formatTokenCount(result.tokens))
+                }
+            }
+            val hints = remember(breakdown, used, limit) { breakdown.hints(used, limit) }
+            if (hints.isNotEmpty()) {
+                Spacer(Modifier.height(4.dp))
+                Text(
+                    context.getString(R.string.context_hints_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = scheme.onSurfaceVariant,
+                )
+                hints.forEach { hint ->
+                    Text(
+                        hintText(context, hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = scheme.onSurface,
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BreakdownGroupRow(group: BreakdownGroup, span: Float) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    var expanded by rememberSaveable(group.label) { mutableStateOf(false) }
+    val canExpand = group.rows.isNotEmpty()
+    Column {
+        BreakdownRowLine(
+            label = group.label,
+            tokens = group.tokens,
+            span = span,
+            dot = group.color,
+            modifier = if (canExpand) Modifier.clickable { expanded = !expanded } else Modifier,
+            trailing = if (canExpand) {
+                {
+                    Icon(
+                        if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                        contentDescription = context.getString(
+                            if (expanded) R.string.context_breakdown_collapse else R.string.context_breakdown_expand,
+                        ),
+                        modifier = Modifier.size(18.dp),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            } else null,
+        )
+        AnimatedVisibility(
+            visible = expanded && canExpand,
+            enter = expandVertically(expressiveDefaultSpatialSpec()) + fadeIn(expressiveEffectsSpec()),
+            exit = shrinkVertically(expressiveDefaultSpatialSpec()) + fadeOut(expressiveEffectsSpec()),
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 18.dp, top = 2.dp, bottom = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp),
+            ) {
+                group.rows.forEach { (label, tokens) ->
+                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(
+                            label,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            modifier = Modifier.weight(1f),
+                        )
+                        Spacer(Modifier.width(8.dp))
+                        Text(
+                            formatTokenCount(tokens),
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = HarnessMono,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun BreakdownRowLine(
+    label: String,
+    tokens: Int,
+    span: Float,
+    dot: Color,
+    modifier: Modifier = Modifier,
+    trailing: (@Composable () -> Unit)? = null,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().padding(vertical = 2.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Box(Modifier.size(10.dp).clip(CircleShape).background(dot))
+        Spacer(Modifier.width(8.dp))
+        Text(label, style = MaterialTheme.typography.bodyMedium, modifier = Modifier.weight(1f))
+        Text(
+            formatTokenCount(tokens),
+            style = MaterialTheme.typography.bodyMedium,
+            fontFamily = HarnessMono,
+        )
+        Spacer(Modifier.width(8.dp))
+        Text(
+            "%.1f%%".format(tokens / span * 100),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.width(52.dp),
+            textAlign = TextAlign.End,
+        )
+        if (trailing != null) { Spacer(Modifier.width(4.dp)); trailing() }
+        else Spacer(Modifier.width(22.dp))
+    }
+}
+
+private fun sliceLabel(context: Context, slice: ContextBreakdown.Slice): String = when (slice.part) {
+    ContextBreakdown.Part.CORE -> context.getString(R.string.context_part_core)
+    ContextBreakdown.Part.SKILLS -> context.getString(R.string.context_part_skills)
+    ContextBreakdown.Part.ENVIRONMENT -> context.getString(R.string.context_part_environment)
+    ContextBreakdown.Part.INSTRUCTIONS -> context.getString(R.string.context_part_instructions)
+    ContextBreakdown.Part.MEMORY -> context.getString(R.string.context_part_memory)
+    ContextBreakdown.Part.REPO_MAP -> context.getString(R.string.context_part_repo_map)
+    ContextBreakdown.Part.TOOLS_BUILT_IN -> context.getString(R.string.context_part_tools_built_in, slice.count)
+    ContextBreakdown.Part.TOOLS_CODEGRAPH -> context.getString(R.string.context_part_tools_codegraph, slice.count)
+    ContextBreakdown.Part.TOOLS_MCP -> context.getString(R.string.context_part_tools_mcp, slice.detail, slice.count)
+    ContextBreakdown.Part.USER -> context.getString(R.string.context_part_user)
+    ContextBreakdown.Part.ASSISTANT -> context.getString(R.string.context_part_assistant)
+    ContextBreakdown.Part.TOOL_CALLS -> context.getString(R.string.context_part_tool_calls)
+    ContextBreakdown.Part.TOOL_RESULTS -> context.getString(R.string.context_part_tool_results)
+    ContextBreakdown.Part.NOTES -> context.getString(R.string.context_part_notes)
+}
+
+private fun hintText(context: Context, hint: ContextBreakdown.Hint): String = when (hint.kind) {
+    ContextBreakdown.HintKind.NEAR_LIMIT -> context.getString(R.string.context_hint_near_limit)
+    ContextBreakdown.HintKind.TOOL_RESULTS ->
+        if (hint.detail.isBlank()) context.getString(R.string.context_hint_tool_results_unnamed, formatTokenCount(hint.tokens))
+        else context.getString(R.string.context_hint_tool_results, formatTokenCount(hint.tokens), hint.detail)
+    ContextBreakdown.HintKind.MCP_TOOLS -> context.getString(R.string.context_hint_mcp_tools, formatTokenCount(hint.tokens))
+    ContextBreakdown.HintKind.SKILLS -> context.getString(R.string.context_hint_skills, formatTokenCount(hint.tokens))
+    ContextBreakdown.HintKind.MEMORY -> context.getString(R.string.context_hint_memory, formatTokenCount(hint.tokens))
 }
