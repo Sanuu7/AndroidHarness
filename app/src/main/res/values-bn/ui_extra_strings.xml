@@ -466,4 +466,14 @@
     <string name="settings_tts_custom_model">কাস্টম মডেল আইডি</string>
     <string name="settings_tts_custom_voice">কাস্টম ভয়েস আইডি</string>
     <string name="settings_voice_choose_model">মডেল বাছুন</string>
+    <string name="settings_anchor_auto_send">স্বয়ংক্রিয় পাঠান</string>
+    <string name="settings_search_auto_send_title">স্বয়ংক্রিয় পাঠান</string>
+    <string name="settings_search_auto_send_desc">নীরবতার পরে বলা লেখা স্বয়ংক্রিয়ভাবে পাঠায়।</string>
+    <string name="settings_voice_auto_send">স্বয়ংক্রিয় পাঠান</string>
+    <string name="settings_voice_auto_send_desc">কথা বলা বন্ধ করলে পাঠান বোতামের অপেক্ষা না করে স্বয়ংক্রিয়ভাবে পাঠায়।</string>
+    <string name="settings_voice_auto_send_show_in_plus">+ মেনুতে দেখান</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">+ বোতামের মেনুতে স্বয়ংক্রিয় পাঠানোর সুইচ দেয়।</string>
+    <string name="settings_voice_auto_send_timeout">নীরবতার সময়</string>
+    <string name="settings_voice_auto_send_timeout_desc">পাঠানোর আগে কতক্ষণ নীরবতা অপেক্ষা করবে।</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s সে.</string>
 </resources>

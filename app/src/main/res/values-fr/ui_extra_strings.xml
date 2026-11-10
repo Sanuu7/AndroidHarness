@@ -468,4 +468,14 @@
     <string name="settings_tts_custom_model">ID de modèle personnalisé</string>
     <string name="settings_tts_custom_voice">ID de voix personnalisé</string>
     <string name="settings_voice_choose_model">Choisir un modèle</string>
+    <string name="settings_anchor_auto_send">Envoi automatique</string>
+    <string name="settings_search_auto_send_title">Envoi automatique</string>
+    <string name="settings_search_auto_send_desc">Envoie le texte dicté automatiquement après un silence.</string>
+    <string name="settings_voice_auto_send">Envoi automatique</string>
+    <string name="settings_voice_auto_send_desc">Envoie le message automatiquement dès que vous arrêtez de parler, sans attendre le bouton d\'envoi.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Afficher dans le menu +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Propose l\'envoi automatique dans le menu du bouton + pour basculer vite.</string>
+    <string name="settings_voice_auto_send_timeout">Délai de silence</string>
+    <string name="settings_voice_auto_send_timeout_desc">Combien de temps attendre en silence avant l\'envoi.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s s</string>
 </resources>

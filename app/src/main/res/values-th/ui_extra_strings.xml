@@ -464,4 +464,14 @@
     <string name="settings_tts_custom_model">ID โมเดลกำหนดเอง</string>
     <string name="settings_tts_custom_voice">ID เสียงกำหนดเอง</string>
     <string name="settings_voice_choose_model">เลือกโมเดล</string>
+    <string name="settings_anchor_auto_send">ส่งอัตโนมัติ</string>
+    <string name="settings_search_auto_send_title">ส่งอัตโนมัติ</string>
+    <string name="settings_search_auto_send_desc">ส่งข้อความที่พูดอัตโนมัติหลังจากเงียบ</string>
+    <string name="settings_voice_auto_send">ส่งอัตโนมัติ</string>
+    <string name="settings_voice_auto_send_desc">ส่งข้อความอัตโนมัติเมื่อคุณหยุดพูด โดยไม่ต้องรอปุ่มส่ง</string>
+    <string name="settings_voice_auto_send_show_in_plus">แสดงในเมนู +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">มีสวิตช์ส่งอัตโนมัติในเมนูปุ่ม + เพื่อสลับเร็ว</string>
+    <string name="settings_voice_auto_send_timeout">ระยะเวลาเงียบ</string>
+    <string name="settings_voice_auto_send_timeout_desc">รอความเงียบนานเท่าไรก่อนส่ง</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s วิ</string>
 </resources>

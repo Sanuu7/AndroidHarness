@@ -466,4 +466,14 @@
     <string name="settings_tts_custom_model">Custom model ID</string>
     <string name="settings_tts_custom_voice">Custom voice ID</string>
     <string name="settings_voice_choose_model">Pumili ng model</string>
+    <string name="settings_anchor_auto_send">Auto send</string>
+    <string name="settings_search_auto_send_title">Auto send</string>
+    <string name="settings_search_auto_send_desc">Awtomatikong ipinapadala ang dictation pagkatapos ng katahimikan.</string>
+    <string name="settings_voice_auto_send">Auto send</string>
+    <string name="settings_voice_auto_send_desc">Awtomatikong ipinapadala kapag tumigil kang magsalita, nang hindi hinihintay ang send button.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Ipakita sa + menu</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Naglalagay ng auto send switch sa + button menu para mabilis lumipat.</string>
+    <string name="settings_voice_auto_send_timeout">Tagal ng katahimikan</string>
+    <string name="settings_voice_auto_send_timeout_desc">Gaano katagal maghintay ng katahimikan bago ipadala.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s s</string>
 </resources>

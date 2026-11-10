@@ -466,4 +466,14 @@
     <string name="settings_tts_custom_model">தனிப்பயன் மாதிரி ID</string>
     <string name="settings_tts_custom_voice">தனிப்பயன் குரல் ID</string>
     <string name="settings_voice_choose_model">மாதிரியைத் தேர்ந்து</string>
+    <string name="settings_anchor_auto_send">தானாக அனுப்பு</string>
+    <string name="settings_search_auto_send_title">தானாக அனுப்பு</string>
+    <string name="settings_search_auto_send_desc">அமைதிக்குப் பின் பேசிய உரையைத் தானாக அனுப்பும்.</string>
+    <string name="settings_voice_auto_send">தானாக அனுப்பு</string>
+    <string name="settings_voice_auto_send_desc">பேசுவதை நிறுத்தியதும் அனுப்பு பொத்தானை எதிர்பார்க்காமல் தானாக அனுப்பும்.</string>
+    <string name="settings_voice_auto_send_show_in_plus">+ மெனுவில் காட்டு</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">+ பொத்தான் மெனுவில் தானாக அனுப்பு சுவிட்சை வழங்குகிறது.</string>
+    <string name="settings_voice_auto_send_timeout">அமைதி நேரம்</string>
+    <string name="settings_voice_auto_send_timeout_desc">அனுப்பும் முன் எவ்வளவு நேரம் அமைதி காக்க வேண்டும்.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s வி.</string>
 </resources>

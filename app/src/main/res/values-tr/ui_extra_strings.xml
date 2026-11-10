@@ -466,4 +466,14 @@
     <string name="settings_tts_custom_model">Özel model kimliği</string>
     <string name="settings_tts_custom_voice">Özel ses kimliği</string>
     <string name="settings_voice_choose_model">Model seç</string>
+    <string name="settings_anchor_auto_send">Otomatik gönder</string>
+    <string name="settings_search_auto_send_title">Otomatik gönder</string>
+    <string name="settings_search_auto_send_desc">Sessizlikten sonra dikte edilen metni otomatik gönderir.</string>
+    <string name="settings_voice_auto_send">Otomatik gönder</string>
+    <string name="settings_voice_auto_send_desc">Konuşmayı bıraktığınızda gönder düğmesini beklemeden otomatik gönderir.</string>
+    <string name="settings_voice_auto_send_show_in_plus">+ menüsünde göster</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">+ düğmesi menüsünde otomatik gönder anahtarı sunar.</string>
+    <string name="settings_voice_auto_send_timeout">Sessizlik süresi</string>
+    <string name="settings_voice_auto_send_timeout_desc">Göndermeden önce ne kadar sessizlik bekleneceği.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s sn</string>
 </resources>

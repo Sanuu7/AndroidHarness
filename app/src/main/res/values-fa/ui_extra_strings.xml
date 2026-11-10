@@ -466,4 +466,14 @@
     <string name="settings_tts_custom_model">شناسه مدل سفارشی</string>
     <string name="settings_tts_custom_voice">شناسه صدا سفارشی</string>
     <string name="settings_voice_choose_model">انتخاب مدل</string>
+    <string name="settings_anchor_auto_send">ارسال خودکار</string>
+    <string name="settings_search_auto_send_title">ارسال خودکار</string>
+    <string name="settings_search_auto_send_desc">متن دیکته‌شده را پس از سکوت خودکار ارسال می‌کند.</string>
+    <string name="settings_voice_auto_send">ارسال خودکار</string>
+    <string name="settings_voice_auto_send_desc">با توقف صحبت، بدون انتظار برای دکمه ارسال، خودکار ارسال می‌کند.</string>
+    <string name="settings_voice_auto_send_show_in_plus">نمایش در منوی +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">کلید ارسال خودکار را در منوی دکمه + برای تغییر سریع فراهم می‌کند.</string>
+    <string name="settings_voice_auto_send_timeout">مدت سکوت</string>
+    <string name="settings_voice_auto_send_timeout_desc">چه مدت سکوت پیش از ارسال منتظر بماند.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s ثانیه</string>
 </resources>
