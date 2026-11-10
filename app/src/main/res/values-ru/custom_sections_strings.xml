@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Ваши разделы"</string>
+    <string name="custom_sections_add">"Новый раздел"</string>
+    <string name="custom_sections_new_sub">"Новый подраздел"</string>
+    <string name="custom_sections_edit">"Изменить раздел"</string>
+    <string name="custom_sections_name">"Название"</string>
+    <string name="custom_sections_icon">"Значок"</string>
+    <string name="custom_sections_create">"Создать"</string>
+    <string name="custom_sections_save">"Сохранить"</string>
+    <string name="custom_sections_cancel">"Отмена"</string>
+    <string name="custom_sections_rename">"Переименовать"</string>
+    <string name="custom_sections_delete">"Удалить"</string>
+    <string name="custom_sections_delete_title">"Удалить %1$s?"</string>
+    <string name="custom_sections_delete_body">"Раздел и все вложенные подразделы будут удалены. Сами настройки сохранят свои значения."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d элемент"</item>
+        <item quantity="few">"%1$d элемента"</item>
+        <item quantity="many">"%1$d элементов"</item>
+        <item quantity="other">"%1$d элемента"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Здесь пока пусто"</string>
+    <string name="custom_sections_empty_body">"Добавьте переключатели, ползунки и страницы, которыми пользуетесь чаще всего, и расставьте их в удобном порядке."</string>
+    <string name="custom_sections_add_settings">"Добавить настройки"</string>
+    <string name="custom_sections_add_sub">"Добавить подраздел"</string>
+    <string name="custom_sections_arrange">"Изменить"</string>
+    <string name="custom_sections_done">"Готово"</string>
+    <string name="custom_sections_move_up">"Переместить %1$s вверх"</string>
+    <string name="custom_sections_move_down">"Переместить %1$s вниз"</string>
+    <string name="custom_sections_remove">"Убрать %1$s"</string>
+    <string name="custom_sections_picker_title">"Добавить в %1$s"</string>
+    <string name="custom_sections_picker_search">"Поиск настроек"</string>
+    <string name="custom_sections_picker_pages">"Страницы"</string>
+    <string name="custom_sections_picker_empty">"Ничего не найдено."</string>
+    <string name="custom_sections_picker_full">"Раздел заполнен. Уберите что-нибудь, чтобы добавить ещё."</string>
+    <string name="custom_sections_kind_switch">"Переключатель"</string>
+    <string name="custom_sections_kind_slider">"Ползунок"</string>
+    <string name="custom_sections_kind_number">"Число"</string>
+    <string name="custom_sections_kind_choice">"Выбор"</string>
+    <string name="custom_sections_kind_text">"Текст"</string>
+    <string name="custom_sections_kind_page">"Открывает страницу"</string>
+    <string name="custom_sections_number_range">"Введите число от %1$s до %2$s."</string>
+    <string name="custom_sections_text_empty">"Не задано"</string>
+    <string name="custom_sections_limit">"Можно сохранить до %1$d разделов."</string>
+    <string name="custom_sections_kind_shortcut">"Открывает эту настройку"</string>
+    <string name="custom_sections_add_heading">"Добавить заголовок"</string>
+    <string name="custom_sections_heading">"Заголовок"</string>
+    <string name="custom_sections_move_section_up">"Раздел выше"</string>
+    <string name="custom_sections_move_section_down">"Раздел ниже"</string>
+    <string name="custom_sections_filter_all">"Все"</string>
+    <string name="custom_sections_filter_switches">"Переключатели"</string>
+    <string name="custom_sections_filter_sliders">"Ползунки"</string>
+    <string name="custom_sections_filter_choices">"Выборы"</string>
+    <string name="custom_sections_filter_text">"Текст"</string>
+    <string name="custom_sections_filter_shortcuts">"Ярлыки"</string>
+    <string name="custom_sections_filter_pages">"Страницы"</string>
+</resources>

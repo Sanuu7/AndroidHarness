@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Suas seções"</string>
+    <string name="custom_sections_add">"Nova seção"</string>
+    <string name="custom_sections_new_sub">"Nova subseção"</string>
+    <string name="custom_sections_edit">"Editar seção"</string>
+    <string name="custom_sections_name">"Nome"</string>
+    <string name="custom_sections_icon">"Ícone"</string>
+    <string name="custom_sections_create">"Criar"</string>
+    <string name="custom_sections_save">"Salvar"</string>
+    <string name="custom_sections_cancel">"Cancelar"</string>
+    <string name="custom_sections_rename">"Renomear"</string>
+    <string name="custom_sections_delete">"Excluir"</string>
+    <string name="custom_sections_delete_title">"Excluir %1$s?"</string>
+    <string name="custom_sections_delete_body">"Isso remove a seção e todas as subseções dentro dela. As configurações em si mantêm seus valores."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d item"</item>
+        <item quantity="other">"%1$d itens"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Ainda não há nada aqui"</string>
+    <string name="custom_sections_empty_body">"Adicione os interruptores, controles deslizantes e páginas que você mais usa e coloque-os na ordem que preferir."</string>
+    <string name="custom_sections_add_settings">"Adicionar configurações"</string>
+    <string name="custom_sections_add_sub">"Adicionar subseção"</string>
+    <string name="custom_sections_arrange">"Editar"</string>
+    <string name="custom_sections_done">"Pronto"</string>
+    <string name="custom_sections_move_up">"Mover %1$s para cima"</string>
+    <string name="custom_sections_move_down">"Mover %1$s para baixo"</string>
+    <string name="custom_sections_remove">"Remover %1$s"</string>
+    <string name="custom_sections_picker_title">"Adicionar a %1$s"</string>
+    <string name="custom_sections_picker_search">"Pesquisar configurações"</string>
+    <string name="custom_sections_picker_pages">"Páginas"</string>
+    <string name="custom_sections_picker_empty">"Nenhuma configuração corresponde."</string>
+    <string name="custom_sections_picker_full">"Esta seção está cheia. Remova algo para adicionar mais."</string>
+    <string name="custom_sections_kind_switch">"Interruptor"</string>
+    <string name="custom_sections_kind_slider">"Controle deslizante"</string>
+    <string name="custom_sections_kind_number">"Número"</string>
+    <string name="custom_sections_kind_choice">"Opção"</string>
+    <string name="custom_sections_kind_text">"Texto"</string>
+    <string name="custom_sections_kind_page">"Abre a página"</string>
+    <string name="custom_sections_number_range">"Digite um número de %1$s a %2$s."</string>
+    <string name="custom_sections_text_empty">"Não definido"</string>
+    <string name="custom_sections_limit">"Você pode manter até %1$d seções."</string>
+    <string name="custom_sections_kind_shortcut">"Abre esta configuração"</string>
+    <string name="custom_sections_add_heading">"Adicionar título"</string>
+    <string name="custom_sections_heading">"Título"</string>
+    <string name="custom_sections_move_section_up">"Mover seção para cima"</string>
+    <string name="custom_sections_move_section_down">"Mover seção para baixo"</string>
+    <string name="custom_sections_filter_all">"Tudo"</string>
+    <string name="custom_sections_filter_switches">"Interruptores"</string>
+    <string name="custom_sections_filter_sliders">"Controles deslizantes"</string>
+    <string name="custom_sections_filter_choices">"Opções"</string>
+    <string name="custom_sections_filter_text">"Texto"</string>
+    <string name="custom_sections_filter_shortcuts">"Atalhos"</string>
+    <string name="custom_sections_filter_pages">"Páginas"</string>
+</resources>

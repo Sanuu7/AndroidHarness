@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">Your sections</string>
+    <string name="custom_sections_add">New section</string>
+    <string name="custom_sections_new_sub">New sub-section</string>
+    <string name="custom_sections_edit">Edit section</string>
+    <string name="custom_sections_name">Name</string>
+    <string name="custom_sections_icon">Icon</string>
+    <string name="custom_sections_create">Create</string>
+    <string name="custom_sections_save">Save</string>
+    <string name="custom_sections_cancel">Cancel</string>
+    <string name="custom_sections_rename">Rename</string>
+    <string name="custom_sections_delete">Delete</string>
+    <string name="custom_sections_delete_title">Delete %1$s?</string>
+    <string name="custom_sections_delete_body">This removes the section and any sub-sections inside it. The settings themselves keep their values.</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <string name="custom_sections_empty_title">Nothing here yet</string>
+    <string name="custom_sections_empty_body">Add the switches, sliders and pages you use most, then put them in the order you like.</string>
+    <string name="custom_sections_add_settings">Add settings</string>
+    <string name="custom_sections_add_sub">Add sub-section</string>
+    <string name="custom_sections_arrange">Edit</string>
+    <string name="custom_sections_done">Done</string>
+    <string name="custom_sections_move_up">Move %1$s up</string>
+    <string name="custom_sections_move_down">Move %1$s down</string>
+    <string name="custom_sections_remove">Remove %1$s</string>
+    <string name="custom_sections_picker_title">Add to %1$s</string>
+    <string name="custom_sections_picker_search">Search settings</string>
+    <string name="custom_sections_picker_pages">Pages</string>
+    <string name="custom_sections_picker_empty">No settings match.</string>
+    <string name="custom_sections_picker_full">This section is full. Remove something to add more.</string>
+    <string name="custom_sections_kind_switch">Switch</string>
+    <string name="custom_sections_kind_slider">Slider</string>
+    <string name="custom_sections_kind_number">Number</string>
+    <string name="custom_sections_kind_choice">Choice</string>
+    <string name="custom_sections_kind_text">Text</string>
+    <string name="custom_sections_kind_page">Opens the page</string>
+    <string name="custom_sections_number_range">Enter a number from %1$s to %2$s.</string>
+    <string name="custom_sections_text_empty">Not set</string>
+    <string name="custom_sections_limit">You can keep up to %1$d sections.</string>
+    <string name="custom_sections_kind_shortcut">Opens this setting</string>
+    <string name="custom_sections_add_heading">Add heading</string>
+    <string name="custom_sections_heading">Heading</string>
+    <string name="custom_sections_move_section_up">Move section up</string>
+    <string name="custom_sections_move_section_down">Move section down</string>
+    <string name="custom_sections_filter_all">All</string>
+    <string name="custom_sections_filter_switches">Switches</string>
+    <string name="custom_sections_filter_sliders">Sliders</string>
+    <string name="custom_sections_filter_choices">Choices</string>
+    <string name="custom_sections_filter_text">Text</string>
+    <string name="custom_sections_filter_shortcuts">Shortcuts</string>
+    <string name="custom_sections_filter_pages">Pages</string>
+</resources>

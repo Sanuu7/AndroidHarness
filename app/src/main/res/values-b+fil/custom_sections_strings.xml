@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Mga seksyon mo"</string>
+    <string name="custom_sections_add">"Bagong seksyon"</string>
+    <string name="custom_sections_new_sub">"Bagong subseksyon"</string>
+    <string name="custom_sections_edit">"I-edit ang seksyon"</string>
+    <string name="custom_sections_name">"Pangalan"</string>
+    <string name="custom_sections_icon">"Icon"</string>
+    <string name="custom_sections_create">"Gumawa"</string>
+    <string name="custom_sections_save">"I-save"</string>
+    <string name="custom_sections_cancel">"Kanselahin"</string>
+    <string name="custom_sections_rename">"Palitan ang pangalan"</string>
+    <string name="custom_sections_delete">"Tanggalin"</string>
+    <string name="custom_sections_delete_title">"Tanggalin ang %1$s?"</string>
+    <string name="custom_sections_delete_body">"Aalisin nito ang seksyon at lahat ng subseksyon sa loob nito. Ang mga setting mismo ay mananatili ang mga halaga."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d item"</item>
+        <item quantity="other">"%1$d item"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Wala pang laman dito"</string>
+    <string name="custom_sections_empty_body">"Idagdag ang mga switch, slider at pahinang pinakamadalas mong gamitin, tapos ayusin sa gustong pagkakasunod-sunod."</string>
+    <string name="custom_sections_add_settings">"Magdagdag ng mga setting"</string>
+    <string name="custom_sections_add_sub">"Magdagdag ng subseksyon"</string>
+    <string name="custom_sections_arrange">"I-edit"</string>
+    <string name="custom_sections_done">"Tapos"</string>
+    <string name="custom_sections_move_up">"Ilipat pataas ang %1$s"</string>
+    <string name="custom_sections_move_down">"Ilipat pababa ang %1$s"</string>
+    <string name="custom_sections_remove">"Alisin ang %1$s"</string>
+    <string name="custom_sections_picker_title">"Idagdag sa %1$s"</string>
+    <string name="custom_sections_picker_search">"Maghanap ng mga setting"</string>
+    <string name="custom_sections_picker_pages">"Mga pahina"</string>
+    <string name="custom_sections_picker_empty">"Walang tugmang setting."</string>
+    <string name="custom_sections_picker_full">"Puno na ang seksyong ito. Mag-alis ng gamit para makadagdag pa."</string>
+    <string name="custom_sections_kind_switch">"Switch"</string>
+    <string name="custom_sections_kind_slider">"Slider"</string>
+    <string name="custom_sections_kind_number">"Numero"</string>
+    <string name="custom_sections_kind_choice">"Pagpipilian"</string>
+    <string name="custom_sections_kind_text">"Teksto"</string>
+    <string name="custom_sections_kind_page">"Binubuksan ang pahina"</string>
+    <string name="custom_sections_number_range">"Maglagay ng numero mula %1$s hanggang %2$s."</string>
+    <string name="custom_sections_text_empty">"Hindi nakatakda"</string>
+    <string name="custom_sections_limit">"Hanggang %1$d seksyon ang pwedeng itago."</string>
+    <string name="custom_sections_kind_shortcut">"Binubuksan ang setting na ito"</string>
+    <string name="custom_sections_add_heading">"Magdagdag ng pamagat"</string>
+    <string name="custom_sections_heading">"Pamagat"</string>
+    <string name="custom_sections_move_section_up">"Ilipat pataas ang seksyon"</string>
+    <string name="custom_sections_move_section_down">"Ilipat pababa ang seksyon"</string>
+    <string name="custom_sections_filter_all">"Lahat"</string>
+    <string name="custom_sections_filter_switches">"Mga switch"</string>
+    <string name="custom_sections_filter_sliders">"Mga slider"</string>
+    <string name="custom_sections_filter_choices">"Mga pagpipilian"</string>
+    <string name="custom_sections_filter_text">"Teksto"</string>
+    <string name="custom_sections_filter_shortcuts">"Mga shortcut"</string>
+    <string name="custom_sections_filter_pages">"Mga pahina"</string>
+</resources>

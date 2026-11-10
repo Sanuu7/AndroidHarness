@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"بخش‌های شما"</string>
+    <string name="custom_sections_add">"بخش جدید"</string>
+    <string name="custom_sections_new_sub">"زیربخش جدید"</string>
+    <string name="custom_sections_edit">"ویرایش بخش"</string>
+    <string name="custom_sections_name">"نام"</string>
+    <string name="custom_sections_icon">"نماد"</string>
+    <string name="custom_sections_create">"ایجاد"</string>
+    <string name="custom_sections_save">"ذخیره"</string>
+    <string name="custom_sections_cancel">"لغو"</string>
+    <string name="custom_sections_rename">"تغییر نام"</string>
+    <string name="custom_sections_delete">"حذف"</string>
+    <string name="custom_sections_delete_title">"حذف %1$s؟"</string>
+    <string name="custom_sections_delete_body">"این بخش و هر زیربخش داخل آن حذف می‌شود. خود تنظیمات مقادیرشان را حفظ می‌کنند."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d مورد"</item>
+        <item quantity="other">"%1$d مورد"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"هنوز چیزی اینجا نیست"</string>
+    <string name="custom_sections_empty_body">"سوئیچ‌ها، لغزنده‌ها و صفحه‌هایی را که بیشتر استفاده می‌کنید اضافه کنید و به ترتیب دلخواه بچینید."</string>
+    <string name="custom_sections_add_settings">"افزودن تنظیمات"</string>
+    <string name="custom_sections_add_sub">"افزودن زیربخش"</string>
+    <string name="custom_sections_arrange">"ویرایش"</string>
+    <string name="custom_sections_done">"تمام"</string>
+    <string name="custom_sections_move_up">"انتقال %1$s به بالا"</string>
+    <string name="custom_sections_move_down">"انتقال %1$s به پایین"</string>
+    <string name="custom_sections_remove">"حذف %1$s"</string>
+    <string name="custom_sections_picker_title">"افزودن به %1$s"</string>
+    <string name="custom_sections_picker_search">"جستجوی تنظیمات"</string>
+    <string name="custom_sections_picker_pages">"صفحه‌ها"</string>
+    <string name="custom_sections_picker_empty">"هیچ تنظیمی مطابقت ندارد."</string>
+    <string name="custom_sections_picker_full">"این بخش پر است. برای افزودن بیشتر چیزی را حذف کنید."</string>
+    <string name="custom_sections_kind_switch">"سوئیچ"</string>
+    <string name="custom_sections_kind_slider">"لغزنده"</string>
+    <string name="custom_sections_kind_number">"عدد"</string>
+    <string name="custom_sections_kind_choice">"گزینه"</string>
+    <string name="custom_sections_kind_text">"متن"</string>
+    <string name="custom_sections_kind_page">"صفحه را باز می‌کند"</string>
+    <string name="custom_sections_number_range">"عددی از %1$s تا %2$s وارد کنید."</string>
+    <string name="custom_sections_text_empty">"تنظیم نشده"</string>
+    <string name="custom_sections_limit">"می‌توانید تا %1$d بخش نگه دارید."</string>
+    <string name="custom_sections_kind_shortcut">"این تنظیم را باز می‌کند"</string>
+    <string name="custom_sections_add_heading">"افزودن سرتیتر"</string>
+    <string name="custom_sections_heading">"سرتیتر"</string>
+    <string name="custom_sections_move_section_up">"انتقال بخش به بالا"</string>
+    <string name="custom_sections_move_section_down">"انتقال بخش به پایین"</string>
+    <string name="custom_sections_filter_all">"همه"</string>
+    <string name="custom_sections_filter_switches">"سوئیچ‌ها"</string>
+    <string name="custom_sections_filter_sliders">"لغزنده‌ها"</string>
+    <string name="custom_sections_filter_choices">"گزینه‌ها"</string>
+    <string name="custom_sections_filter_text">"متن"</string>
+    <string name="custom_sections_filter_shortcuts">"میانبرها"</string>
+    <string name="custom_sections_filter_pages">"صفحه‌ها"</string>
+</resources>

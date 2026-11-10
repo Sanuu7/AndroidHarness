@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Bahagian anda"</string>
+    <string name="custom_sections_add">"Bahagian baharu"</string>
+    <string name="custom_sections_new_sub">"Subbahagian baharu"</string>
+    <string name="custom_sections_edit">"Edit bahagian"</string>
+    <string name="custom_sections_name">"Nama"</string>
+    <string name="custom_sections_icon">"Ikon"</string>
+    <string name="custom_sections_create">"Cipta"</string>
+    <string name="custom_sections_save">"Simpan"</string>
+    <string name="custom_sections_cancel">"Batal"</string>
+    <string name="custom_sections_rename">"Namakan semula"</string>
+    <string name="custom_sections_delete">"Padam"</string>
+    <string name="custom_sections_delete_title">"Padam %1$s?"</string>
+    <string name="custom_sections_delete_body">"Ini membuang bahagian dan semua subbahagian di dalamnya. Tetapan itu sendiri kekal dengan nilainya."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="other">"%1$d item"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Belum ada apa-apa di sini"</string>
+    <string name="custom_sections_empty_body">"Tambah suis, peleret dan halaman yang paling kerap anda guna, kemudian susun mengikut citarasa anda."</string>
+    <string name="custom_sections_add_settings">"Tambah tetapan"</string>
+    <string name="custom_sections_add_sub">"Tambah subbahagian"</string>
+    <string name="custom_sections_arrange">"Edit"</string>
+    <string name="custom_sections_done">"Selesai"</string>
+    <string name="custom_sections_move_up">"Alih %1$s ke atas"</string>
+    <string name="custom_sections_move_down">"Alih %1$s ke bawah"</string>
+    <string name="custom_sections_remove">"Buang %1$s"</string>
+    <string name="custom_sections_picker_title">"Tambah ke %1$s"</string>
+    <string name="custom_sections_picker_search">"Cari tetapan"</string>
+    <string name="custom_sections_picker_pages">"Halaman"</string>
+    <string name="custom_sections_picker_empty">"Tiada tetapan yang sepadan."</string>
+    <string name="custom_sections_picker_full">"Bahagian ini penuh. Buang sesuatu untuk menambah lagi."</string>
+    <string name="custom_sections_kind_switch">"Suis"</string>
+    <string name="custom_sections_kind_slider">"Peleret"</string>
+    <string name="custom_sections_kind_number">"Nombor"</string>
+    <string name="custom_sections_kind_choice">"Pilihan"</string>
+    <string name="custom_sections_kind_text">"Teks"</string>
+    <string name="custom_sections_kind_page">"Membuka halaman"</string>
+    <string name="custom_sections_number_range">"Masukkan nombor dari %1$s hingga %2$s."</string>
+    <string name="custom_sections_text_empty">"Belum ditetapkan"</string>
+    <string name="custom_sections_limit">"Anda boleh simpan sehingga %1$d bahagian."</string>
+    <string name="custom_sections_kind_shortcut">"Membuka tetapan ini"</string>
+    <string name="custom_sections_add_heading">"Tambah tajuk"</string>
+    <string name="custom_sections_heading">"Tajuk"</string>
+    <string name="custom_sections_move_section_up">"Alih bahagian ke atas"</string>
+    <string name="custom_sections_move_section_down">"Alih bahagian ke bawah"</string>
+    <string name="custom_sections_filter_all">"Semua"</string>
+    <string name="custom_sections_filter_switches">"Suis"</string>
+    <string name="custom_sections_filter_sliders">"Peleret"</string>
+    <string name="custom_sections_filter_choices">"Pilihan"</string>
+    <string name="custom_sections_filter_text">"Teks"</string>
+    <string name="custom_sections_filter_shortcuts">"Pintasan"</string>
+    <string name="custom_sections_filter_pages">"Halaman"</string>
+</resources>

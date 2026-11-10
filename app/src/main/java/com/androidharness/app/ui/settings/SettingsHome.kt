@@ -39,11 +39,15 @@ internal fun SettingsHome(
     onQueryChange: (String) -> Unit,
     onOpen: (SettingsPage, Int?) -> Unit,
     modifier: Modifier = Modifier,
+    customSections: List<com.androidharness.app.data.CustomSettingsSection> = emptyList(),
+    onOpenSection: (String) -> Unit = {},
+    onAddSection: () -> Unit = {},
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val index = remember(context) { settingsSearchIndex(context) }
     val results = remember(query, index) { index.search(query) }
+    val sections = remember(query, customSections) { customSections.filter { it.name.contains(query.trim(), ignoreCase = true) } }
     Column(
         modifier.padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
@@ -67,7 +71,18 @@ internal fun SettingsHome(
             ),
             modifier = Modifier.fillMaxWidth(),
         )
-        if (results.isEmpty()) {
+        // Same footprint as the search field above it, so the two read as a pair.
+        if (query.isBlank()) Surface(
+            onClick = onAddSection,
+            shape = RoundedCornerShape(18.dp),
+            color = colors.primaryContainer,
+            contentColor = colors.onPrimaryContainer,
+            modifier = Modifier.fillMaxWidth().height(56.dp).semantics { contentDescription = context.getString(R.string.custom_sections_add) },
+        ) {
+            Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.Add, null, Modifier.size(28.dp)) }
+        }
+        CustomSectionsHomeGroup(sections, onOpenSection)
+        if (results.isEmpty() && sections.isEmpty()) {
             Column(
                 Modifier.fillMaxWidth().padding(vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -141,6 +156,10 @@ internal fun SettingsHome(
 internal fun DesktopSettingsNavigation(
     selected: SettingsPage?, query: String, onQueryChange: (String) -> Unit,
     onOpen: (SettingsPage, Int?) -> Unit, modifier: Modifier = Modifier,
+    customSections: List<com.androidharness.app.data.CustomSettingsSection> = emptyList(),
+    selectedSection: String? = null,
+    onOpenSection: (String) -> Unit = {},
+    onAddSection: () -> Unit = {},
 ) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
@@ -161,7 +180,30 @@ internal fun DesktopSettingsNavigation(
                 shape = MaterialTheme.shapes.medium,
                 modifier = Modifier.fillMaxWidth().padding(12.dp))
             LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 8.dp, vertical = 4.dp)) {
-                if (results.isEmpty()) item { Text(stringResource(R.string.settings_search_empty_title), Modifier.padding(12.dp),
+                val sections = customSections.filter { it.name.contains(query.trim(), ignoreCase = true) }
+                if (query.isBlank() || sections.isNotEmpty()) item(key = "custom-sections-header") {
+                    Row(Modifier.padding(start = 12.dp, top = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.custom_sections_group), Modifier.weight(1f),
+                            style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                        IconButton(onClick = onAddSection) {
+                            Icon(Icons.Outlined.Add, stringResource(R.string.custom_sections_add), Modifier.size(18.dp))
+                        }
+                    }
+                }
+                items(sections, key = { "custom-section:${it.id}" }) { section ->
+                    val active = section.id == selectedSection
+                    Surface(onClick = { onOpenSection(section.id) },
+                        color = if (active) scheme.secondaryContainer else scheme.surfaceContainerLow,
+                        contentColor = if (active) scheme.onSecondaryContainer else scheme.onSurface,
+                        shape = MaterialTheme.shapes.medium, modifier = Modifier.fillMaxWidth()) {
+                        Row(Modifier.heightIn(min = 44.dp).padding(horizontal = 12.dp, vertical = 10.dp),
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            Icon(customSectionIcon(section.icon), null, Modifier.size(18.dp))
+                            Text(section.name, style = MaterialTheme.typography.labelLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+                if (results.isEmpty() && sections.isEmpty()) item { Text(stringResource(R.string.settings_search_empty_title), Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
                 settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).forEach { (group, entries) ->
                     if (entries.size > 1) {

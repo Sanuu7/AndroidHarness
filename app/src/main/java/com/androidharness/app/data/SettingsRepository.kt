@@ -34,6 +34,8 @@ data class AppSettings(
     val dynamicColor: Boolean = true,
     val colorPalette: ThemePalette = ThemePalette.BLUE,
     val customPalettes: List<CustomThemePalette> = emptyList(),
+    /** Settings sections the user built for themselves, shown on the settings home. */
+    val customSections: List<CustomSettingsSection> = emptyList(),
     val activeCustomPaletteId: String? = null,
     val harnessCanvas: HarnessCanvasSettings = HarnessCanvasSettings(),
     val harnessGlassEnabled: Boolean = false,
@@ -255,6 +257,7 @@ class SettingsRepository(private val context: Context) {
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
         val COLOR_PALETTE = stringPreferencesKey("color_palette")
         val CUSTOM_PALETTES = stringPreferencesKey("custom_palettes")
+        val CUSTOM_SECTIONS = stringPreferencesKey("custom_settings_sections")
         val ACTIVE_CUSTOM_PALETTE = stringPreferencesKey("active_custom_palette")
         val HARNESS_CANVAS = stringPreferencesKey("harness_canvas")
         val HARNESS_GLASS_ENABLED = booleanPreferencesKey("harness_glass_enabled")
@@ -382,6 +385,7 @@ class SettingsRepository(private val context: Context) {
             dynamicColor = prefs[Keys.DYNAMIC_COLOR] ?: true,
             colorPalette = ThemePalette.fromStored(prefs[Keys.COLOR_PALETTE]),
             customPalettes = runCatching { kotlinx.serialization.json.Json.decodeFromString<List<CustomThemePalette>>(prefs[Keys.CUSTOM_PALETTES] ?: "[]") }.getOrDefault(emptyList()),
+            customSections = CustomSettingsSections.decode(prefs[Keys.CUSTOM_SECTIONS]),
             activeCustomPaletteId = prefs[Keys.ACTIVE_CUSTOM_PALETTE],
             harnessCanvas = runCatching { kotlinx.serialization.json.Json.decodeFromString<HarnessCanvasSettings>(prefs[Keys.HARNESS_CANVAS] ?: "{}") }.getOrDefault(HarnessCanvasSettings()),
             harnessGlassEnabled = prefs[Keys.HARNESS_GLASS_ENABLED] ?: false,
@@ -505,6 +509,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.DYNAMIC_COLOR] = s.dynamicColor
             p[Keys.COLOR_PALETTE] = s.colorPalette.name
             p[Keys.CUSTOM_PALETTES] = kotlinx.serialization.json.Json.encodeToString(s.customPalettes)
+            p[Keys.CUSTOM_SECTIONS] = CustomSettingsSections.encode(s.customSections)
             s.activeCustomPaletteId?.let { p[Keys.ACTIVE_CUSTOM_PALETTE] = it } ?: p.remove(Keys.ACTIVE_CUSTOM_PALETTE)
             p[Keys.HARNESS_CANVAS] = kotlinx.serialization.json.Json.encodeToString(s.harnessCanvas)
             p[Keys.HARNESS_GLASS_ENABLED] = s.harnessGlassEnabled
@@ -670,6 +675,14 @@ class SettingsRepository(private val context: Context) {
     private fun canvasFrom(raw: String?) = runCatching {
         kotlinx.serialization.json.Json.decodeFromString<HarnessCanvasSettings>(raw ?: "{}")
     }.getOrDefault(HarnessCanvasSettings())
+
+    /** Applies [transform] to the saved custom sections; a result that breaks the limits is dropped. */
+    suspend fun updateCustomSections(transform: (List<CustomSettingsSection>) -> List<CustomSettingsSection>) {
+        context.settingsStore.edit { prefs ->
+            val next = transform(CustomSettingsSections.decode(prefs[Keys.CUSTOM_SECTIONS]))
+            if (CustomSettingsSections.valid(next)) prefs[Keys.CUSTOM_SECTIONS] = CustomSettingsSections.encode(next)
+        }
+    }
 
     suspend fun saveCustomPalette(palette: CustomThemePalette) {
         require(palette.valid())

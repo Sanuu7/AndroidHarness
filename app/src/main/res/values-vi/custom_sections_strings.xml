@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Phần của bạn"</string>
+    <string name="custom_sections_add">"Phần mới"</string>
+    <string name="custom_sections_new_sub">"Phần con mới"</string>
+    <string name="custom_sections_edit">"Sửa phần"</string>
+    <string name="custom_sections_name">"Tên"</string>
+    <string name="custom_sections_icon">"Biểu tượng"</string>
+    <string name="custom_sections_create">"Tạo"</string>
+    <string name="custom_sections_save">"Lưu"</string>
+    <string name="custom_sections_cancel">"Hủy"</string>
+    <string name="custom_sections_rename">"Đổi tên"</string>
+    <string name="custom_sections_delete">"Xóa"</string>
+    <string name="custom_sections_delete_title">"Xóa %1$s?"</string>
+    <string name="custom_sections_delete_body">"Thao tác này gỡ phần này và mọi phần con bên trong. Bản thân các cài đặt vẫn giữ nguyên giá trị."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="other">"%1$d mục"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Chưa có gì ở đây"</string>
+    <string name="custom_sections_empty_body">"Thêm các công tắc, thanh trượt và trang bạn dùng nhiều nhất, rồi sắp xếp theo ý bạn."</string>
+    <string name="custom_sections_add_settings">"Thêm cài đặt"</string>
+    <string name="custom_sections_add_sub">"Thêm phần con"</string>
+    <string name="custom_sections_arrange">"Sửa"</string>
+    <string name="custom_sections_done">"Xong"</string>
+    <string name="custom_sections_move_up">"Chuyển %1$s lên"</string>
+    <string name="custom_sections_move_down">"Chuyển %1$s xuống"</string>
+    <string name="custom_sections_remove">"Gỡ %1$s"</string>
+    <string name="custom_sections_picker_title">"Thêm vào %1$s"</string>
+    <string name="custom_sections_picker_search">"Tìm cài đặt"</string>
+    <string name="custom_sections_picker_pages">"Trang"</string>
+    <string name="custom_sections_picker_empty">"Không có cài đặt nào khớp."</string>
+    <string name="custom_sections_picker_full">"Phần này đã đầy. Gỡ bớt để thêm."</string>
+    <string name="custom_sections_kind_switch">"Công tắc"</string>
+    <string name="custom_sections_kind_slider">"Thanh trượt"</string>
+    <string name="custom_sections_kind_number">"Số"</string>
+    <string name="custom_sections_kind_choice">"Lựa chọn"</string>
+    <string name="custom_sections_kind_text">"Văn bản"</string>
+    <string name="custom_sections_kind_page">"Mở trang"</string>
+    <string name="custom_sections_number_range">"Nhập số từ %1$s đến %2$s."</string>
+    <string name="custom_sections_text_empty">"Chưa đặt"</string>
+    <string name="custom_sections_limit">"Bạn có thể giữ tối đa %1$d phần."</string>
+    <string name="custom_sections_kind_shortcut">"Mở cài đặt này"</string>
+    <string name="custom_sections_add_heading">"Thêm tiêu đề"</string>
+    <string name="custom_sections_heading">"Tiêu đề"</string>
+    <string name="custom_sections_move_section_up">"Chuyển phần lên"</string>
+    <string name="custom_sections_move_section_down">"Chuyển phần xuống"</string>
+    <string name="custom_sections_filter_all">"Tất cả"</string>
+    <string name="custom_sections_filter_switches">"Công tắc"</string>
+    <string name="custom_sections_filter_sliders">"Thanh trượt"</string>
+    <string name="custom_sections_filter_choices">"Lựa chọn"</string>
+    <string name="custom_sections_filter_text">"Văn bản"</string>
+    <string name="custom_sections_filter_shortcuts">"Lối tắt"</string>
+    <string name="custom_sections_filter_pages">"Trang"</string>
+</resources>

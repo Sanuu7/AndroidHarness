@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"உங்கள் பிரிவுகள்"</string>
+    <string name="custom_sections_add">"புதிய பிரிவு"</string>
+    <string name="custom_sections_new_sub">"புதிய துணைப் பிரிவு"</string>
+    <string name="custom_sections_edit">"பிரிவைத் திருத்து"</string>
+    <string name="custom_sections_name">"பெயர்"</string>
+    <string name="custom_sections_icon">"ஐகான்"</string>
+    <string name="custom_sections_create">"உருவாக்கு"</string>
+    <string name="custom_sections_save">"சேமி"</string>
+    <string name="custom_sections_cancel">"ரத்து செய்"</string>
+    <string name="custom_sections_rename">"மறுபெயரிடு"</string>
+    <string name="custom_sections_delete">"நீக்கு"</string>
+    <string name="custom_sections_delete_title">"%1$s நீக்கவா?"</string>
+    <string name="custom_sections_delete_body">"இது பிரிவையும் அதிலுள்ள அனைத்து துணைப் பிரிவுகளையும் நீக்கும். அமைப்புகள் தங்கள் மதிப்புகளைத் தக்கவைத்துக்கொள்ளும்."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d உருப்படி"</item>
+        <item quantity="other">"%1$d உருப்படிகள்"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"இங்கே இன்னும் எதுவும் இல்லை"</string>
+    <string name="custom_sections_empty_body">"நீங்கள் அதிகம் பயன்படுத்தும் சுவிட்சுகள், ஸ்லைடர்கள், பக்கங்களைச் சேர்த்து, உங்களுக்குப் பிடித்த வரிசையில் வைக்கவும்."</string>
+    <string name="custom_sections_add_settings">"அமைப்புகளைச் சேர்"</string>
+    <string name="custom_sections_add_sub">"துணைப் பிரிவைச் சேர்"</string>
+    <string name="custom_sections_arrange">"திருத்து"</string>
+    <string name="custom_sections_done">"முடிந்தது"</string>
+    <string name="custom_sections_move_up">"%1$s ஐ மேலே நகர்த்து"</string>
+    <string name="custom_sections_move_down">"%1$s ஐ கீழே நகர்த்து"</string>
+    <string name="custom_sections_remove">"%1$s ஐ அகற்று"</string>
+    <string name="custom_sections_picker_title">"%1$s இல் சேர்"</string>
+    <string name="custom_sections_picker_search">"அமைப்புகளைத் தேடு"</string>
+    <string name="custom_sections_picker_pages">"பக்கங்கள்"</string>
+    <string name="custom_sections_picker_empty">"எந்த அமைப்பும் பொருந்தவில்லை."</string>
+    <string name="custom_sections_picker_full">"இந்தப் பிரிவு நிரம்பியுள்ளது. மேலும் சேர்க்க ஏதேனும் ஒன்றை அகற்றவும்."</string>
+    <string name="custom_sections_kind_switch">"சுவிட்ச்"</string>
+    <string name="custom_sections_kind_slider">"ஸ்லைடர்"</string>
+    <string name="custom_sections_kind_number">"எண்"</string>
+    <string name="custom_sections_kind_choice">"தேர்வு"</string>
+    <string name="custom_sections_kind_text">"உரை"</string>
+    <string name="custom_sections_kind_page">"பக்கத்தைத் திறக்கும்"</string>
+    <string name="custom_sections_number_range">"%1$s முதல் %2$s வரை ஒரு எண்ணை உள்ளிடவும்."</string>
+    <string name="custom_sections_text_empty">"அமைக்கப்படவில்லை"</string>
+    <string name="custom_sections_limit">"நீங்கள் %1$d பிரிவுகள் வரை வைத்திருக்கலாம்."</string>
+    <string name="custom_sections_kind_shortcut">"இந்த அமைப்பைத் திறக்கும்"</string>
+    <string name="custom_sections_add_heading">"தலைப்பைச் சேர்"</string>
+    <string name="custom_sections_heading">"தலைப்பு"</string>
+    <string name="custom_sections_move_section_up">"பிரிவை மேலே நகர்த்து"</string>
+    <string name="custom_sections_move_section_down">"பிரிவை கீழே நகர்த்து"</string>
+    <string name="custom_sections_filter_all">"அனைத்தும்"</string>
+    <string name="custom_sections_filter_switches">"சுவிட்சுகள்"</string>
+    <string name="custom_sections_filter_sliders">"ஸ்லைடர்கள்"</string>
+    <string name="custom_sections_filter_choices">"தேர்வுகள்"</string>
+    <string name="custom_sections_filter_text">"உரை"</string>
+    <string name="custom_sections_filter_shortcuts">"குறுக்குவழிகள்"</string>
+    <string name="custom_sections_filter_pages">"பக்கங்கள்"</string>
+</resources>

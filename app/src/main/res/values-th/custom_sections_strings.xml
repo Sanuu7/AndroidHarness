@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"ส่วนของคุณ"</string>
+    <string name="custom_sections_add">"ส่วนใหม่"</string>
+    <string name="custom_sections_new_sub">"ส่วนย่อยใหม่"</string>
+    <string name="custom_sections_edit">"แก้ไขส่วน"</string>
+    <string name="custom_sections_name">"ชื่อ"</string>
+    <string name="custom_sections_icon">"ไอคอน"</string>
+    <string name="custom_sections_create">"สร้าง"</string>
+    <string name="custom_sections_save">"บันทึก"</string>
+    <string name="custom_sections_cancel">"ยกเลิก"</string>
+    <string name="custom_sections_rename">"เปลี่ยนชื่อ"</string>
+    <string name="custom_sections_delete">"ลบ"</string>
+    <string name="custom_sections_delete_title">"ลบ %1$s?"</string>
+    <string name="custom_sections_delete_body">"การทำเช่นนี้จะลบส่วนนี้และส่วนย่อยทั้งหมดข้างใน การตั้งค่าเองยังคงค่าที่ตั้งไว้"</string>
+    <plurals name="custom_sections_items">
+        <item quantity="other">"%1$d รายการ"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"ยังไม่มีอะไรที่นี่"</string>
+    <string name="custom_sections_empty_body">"เพิ่มสวิตช์ แถบเลื่อน และหน้าที่คุณใช้บ่อย แล้วจัดลำดับตามที่ต้องการ"</string>
+    <string name="custom_sections_add_settings">"เพิ่มการตั้งค่า"</string>
+    <string name="custom_sections_add_sub">"เพิ่มส่วนย่อย"</string>
+    <string name="custom_sections_arrange">"แก้ไข"</string>
+    <string name="custom_sections_done">"เสร็จ"</string>
+    <string name="custom_sections_move_up">"เลื่อน %1$s ขึ้น"</string>
+    <string name="custom_sections_move_down">"เลื่อน %1$s ลง"</string>
+    <string name="custom_sections_remove">"นำ %1$s ออก"</string>
+    <string name="custom_sections_picker_title">"เพิ่มใน %1$s"</string>
+    <string name="custom_sections_picker_search">"ค้นหาการตั้งค่า"</string>
+    <string name="custom_sections_picker_pages">"หน้า"</string>
+    <string name="custom_sections_picker_empty">"ไม่มีการตั้งค่าที่ตรงกัน"</string>
+    <string name="custom_sections_picker_full">"ส่วนนี้เต็มแล้ว นำบางอย่างออกเพื่อเพิ่ม"</string>
+    <string name="custom_sections_kind_switch">"สวิตช์"</string>
+    <string name="custom_sections_kind_slider">"แถบเลื่อน"</string>
+    <string name="custom_sections_kind_number">"ตัวเลข"</string>
+    <string name="custom_sections_kind_choice">"ตัวเลือก"</string>
+    <string name="custom_sections_kind_text">"ข้อความ"</string>
+    <string name="custom_sections_kind_page">"เปิดหน้า"</string>
+    <string name="custom_sections_number_range">"ป้อนตัวเลขตั้งแต่ %1$s ถึง %2$s"</string>
+    <string name="custom_sections_text_empty">"ยังไม่ได้ตั้ง"</string>
+    <string name="custom_sections_limit">"คุณเก็บได้สูงสุด %1$d ส่วน"</string>
+    <string name="custom_sections_kind_shortcut">"เปิดการตั้งค่านี้"</string>
+    <string name="custom_sections_add_heading">"เพิ่มหัวข้อ"</string>
+    <string name="custom_sections_heading">"หัวข้อ"</string>
+    <string name="custom_sections_move_section_up">"เลื่อนส่วนขึ้น"</string>
+    <string name="custom_sections_move_section_down">"เลื่อนส่วนลง"</string>
+    <string name="custom_sections_filter_all">"ทั้งหมด"</string>
+    <string name="custom_sections_filter_switches">"สวิตช์"</string>
+    <string name="custom_sections_filter_sliders">"แถบเลื่อน"</string>
+    <string name="custom_sections_filter_choices">"ตัวเลือก"</string>
+    <string name="custom_sections_filter_text">"ข้อความ"</string>
+    <string name="custom_sections_filter_shortcuts">"ทางลัด"</string>
+    <string name="custom_sections_filter_pages">"หน้า"</string>
+</resources>

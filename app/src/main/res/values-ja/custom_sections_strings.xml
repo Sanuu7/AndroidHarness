@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"あなたのセクション"</string>
+    <string name="custom_sections_add">"新しいセクション"</string>
+    <string name="custom_sections_new_sub">"新しいサブセクション"</string>
+    <string name="custom_sections_edit">"セクションを編集"</string>
+    <string name="custom_sections_name">"名前"</string>
+    <string name="custom_sections_icon">"アイコン"</string>
+    <string name="custom_sections_create">"作成"</string>
+    <string name="custom_sections_save">"保存"</string>
+    <string name="custom_sections_cancel">"キャンセル"</string>
+    <string name="custom_sections_rename">"名前を変更"</string>
+    <string name="custom_sections_delete">"削除"</string>
+    <string name="custom_sections_delete_title">"%1$sを削除しますか？"</string>
+    <string name="custom_sections_delete_body">"このセクションと中のサブセクションもすべて削除されます。設定の値自体はそのまま残ります。"</string>
+    <plurals name="custom_sections_items">
+        <item quantity="other">"%1$d 件"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"まだ何もありません"</string>
+    <string name="custom_sections_empty_body">"よく使うスイッチ、スライダー、ページを追加して、好きな順番に並べられます。"</string>
+    <string name="custom_sections_add_settings">"設定を追加"</string>
+    <string name="custom_sections_add_sub">"サブセクションを追加"</string>
+    <string name="custom_sections_arrange">"編集"</string>
+    <string name="custom_sections_done">"完了"</string>
+    <string name="custom_sections_move_up">"%1$sを上へ"</string>
+    <string name="custom_sections_move_down">"%1$sを下へ"</string>
+    <string name="custom_sections_remove">"%1$sを削除"</string>
+    <string name="custom_sections_picker_title">"%1$sに追加"</string>
+    <string name="custom_sections_picker_search">"設定を検索"</string>
+    <string name="custom_sections_picker_pages">"ページ"</string>
+    <string name="custom_sections_picker_empty">"一致する設定はありません。"</string>
+    <string name="custom_sections_picker_full">"このセクションは上限です。追加するには何かを削除してください。"</string>
+    <string name="custom_sections_kind_switch">"スイッチ"</string>
+    <string name="custom_sections_kind_slider">"スライダー"</string>
+    <string name="custom_sections_kind_number">"数値"</string>
+    <string name="custom_sections_kind_choice">"選択肢"</string>
+    <string name="custom_sections_kind_text">"テキスト"</string>
+    <string name="custom_sections_kind_page">"ページを開きます"</string>
+    <string name="custom_sections_number_range">"%1$s から %2$s の数値を入力してください。"</string>
+    <string name="custom_sections_text_empty">"未設定"</string>
+    <string name="custom_sections_limit">"セクションは最大 %1$d 個まで保存できます。"</string>
+    <string name="custom_sections_kind_shortcut">"この設定を開きます"</string>
+    <string name="custom_sections_add_heading">"見出しを追加"</string>
+    <string name="custom_sections_heading">"見出し"</string>
+    <string name="custom_sections_move_section_up">"セクションを上へ"</string>
+    <string name="custom_sections_move_section_down">"セクションを下へ"</string>
+    <string name="custom_sections_filter_all">"すべて"</string>
+    <string name="custom_sections_filter_switches">"スイッチ"</string>
+    <string name="custom_sections_filter_sliders">"スライダー"</string>
+    <string name="custom_sections_filter_choices">"選択肢"</string>
+    <string name="custom_sections_filter_text">"テキスト"</string>
+    <string name="custom_sections_filter_shortcuts">"ショートカット"</string>
+    <string name="custom_sections_filter_pages">"ページ"</string>
+</resources>

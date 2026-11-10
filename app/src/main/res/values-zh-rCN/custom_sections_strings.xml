@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"你的分区"</string>
+    <string name="custom_sections_add">"新建分区"</string>
+    <string name="custom_sections_new_sub">"新建子分区"</string>
+    <string name="custom_sections_edit">"编辑分区"</string>
+    <string name="custom_sections_name">"名称"</string>
+    <string name="custom_sections_icon">"图标"</string>
+    <string name="custom_sections_create">"创建"</string>
+    <string name="custom_sections_save">"保存"</string>
+    <string name="custom_sections_cancel">"取消"</string>
+    <string name="custom_sections_rename">"重命名"</string>
+    <string name="custom_sections_delete">"删除"</string>
+    <string name="custom_sections_delete_title">"删除 %1$s？"</string>
+    <string name="custom_sections_delete_body">"这会移除该分区及其中的所有子分区。设置本身的值保持不变。"</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d 项"</item>
+        <item quantity="other">"%1$d 项"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"这里还什么都没有"</string>
+    <string name="custom_sections_empty_body">"添加常用的开关、滑块和页面，然后按你喜欢的顺序排列。"</string>
+    <string name="custom_sections_add_settings">"添加设置"</string>
+    <string name="custom_sections_add_sub">"添加子分区"</string>
+    <string name="custom_sections_arrange">"编辑"</string>
+    <string name="custom_sections_done">"完成"</string>
+    <string name="custom_sections_move_up">"将 %1$s 上移"</string>
+    <string name="custom_sections_move_down">"将 %1$s 下移"</string>
+    <string name="custom_sections_remove">"移除 %1$s"</string>
+    <string name="custom_sections_picker_title">"添加到 %1$s"</string>
+    <string name="custom_sections_picker_search">"搜索设置"</string>
+    <string name="custom_sections_picker_pages">"页面"</string>
+    <string name="custom_sections_picker_empty">"没有匹配的设置。"</string>
+    <string name="custom_sections_picker_full">"此分区已满。移除一些内容后再添加。"</string>
+    <string name="custom_sections_kind_switch">"开关"</string>
+    <string name="custom_sections_kind_slider">"滑块"</string>
+    <string name="custom_sections_kind_number">"数字"</string>
+    <string name="custom_sections_kind_choice">"选项"</string>
+    <string name="custom_sections_kind_text">"文本"</string>
+    <string name="custom_sections_kind_page">"打开页面"</string>
+    <string name="custom_sections_number_range">"输入 %1$s 到 %2$s 之间的数字。"</string>
+    <string name="custom_sections_text_empty">"未设置"</string>
+    <string name="custom_sections_limit">"最多可保留 %1$d 个分区。"</string>
+    <string name="custom_sections_kind_shortcut">"打开此设置"</string>
+    <string name="custom_sections_add_heading">"添加标题"</string>
+    <string name="custom_sections_heading">"标题"</string>
+    <string name="custom_sections_move_section_up">"分区上移"</string>
+    <string name="custom_sections_move_section_down">"分区下移"</string>
+    <string name="custom_sections_filter_all">"全部"</string>
+    <string name="custom_sections_filter_switches">"开关"</string>
+    <string name="custom_sections_filter_sliders">"滑块"</string>
+    <string name="custom_sections_filter_choices">"选项"</string>
+    <string name="custom_sections_filter_text">"文本"</string>
+    <string name="custom_sections_filter_shortcuts">"快捷方式"</string>
+    <string name="custom_sections_filter_pages">"页面"</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"আপনার বিভাগসমূহ"</string>
+    <string name="custom_sections_add">"নতুন বিভাগ"</string>
+    <string name="custom_sections_new_sub">"নতুন উপবিভাগ"</string>
+    <string name="custom_sections_edit">"বিভাগ সম্পাদনা করুন"</string>
+    <string name="custom_sections_name">"নাম"</string>
+    <string name="custom_sections_icon">"আইকন"</string>
+    <string name="custom_sections_create">"তৈরি করুন"</string>
+    <string name="custom_sections_save">"সংরক্ষণ"</string>
+    <string name="custom_sections_cancel">"বাতিল"</string>
+    <string name="custom_sections_rename">"নাম বদলান"</string>
+    <string name="custom_sections_delete">"মুছুন"</string>
+    <string name="custom_sections_delete_title">"%1$s মুছবেন?"</string>
+    <string name="custom_sections_delete_body">"এতে বিভাগটি এবং এর ভেতরের সব উপবিভাগ মুছে যাবে। সেটিংসের মান নিজেরাই অপরিবর্তিত থাকবে।"</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$dটি আইটেম"</item>
+        <item quantity="other">"%1$dটি আইটেম"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"এখনো এখানে কিছু নেই"</string>
+    <string name="custom_sections_empty_body">"যে সুইচ, স্লাইডার ও পৃষ্ঠাগুলো আপনি সবচেয়ে বেশি ব্যবহার করেন সেগুলো যোগ করুন, তারপর আপনার পছন্দের ক্রমে সাজান।"</string>
+    <string name="custom_sections_add_settings">"সেটিংস যোগ করুন"</string>
+    <string name="custom_sections_add_sub">"উপবিভাগ যোগ করুন"</string>
+    <string name="custom_sections_arrange">"সম্পাদনা"</string>
+    <string name="custom_sections_done">"সম্পন্ন"</string>
+    <string name="custom_sections_move_up">"%1$s উপরে সরান"</string>
+    <string name="custom_sections_move_down">"%1$s নিচে সরান"</string>
+    <string name="custom_sections_remove">"%1$s সরান"</string>
+    <string name="custom_sections_picker_title">"%1$s-এ যোগ করুন"</string>
+    <string name="custom_sections_picker_search">"সেটিংস খুঁজুন"</string>
+    <string name="custom_sections_picker_pages">"পৃষ্ঠা"</string>
+    <string name="custom_sections_picker_empty">"কোনো সেটিংস মেলেনি।"</string>
+    <string name="custom_sections_picker_full">"এই বিভাগটি ভর্তি। আরও যোগ করতে কিছু সরান।"</string>
+    <string name="custom_sections_kind_switch">"সুইচ"</string>
+    <string name="custom_sections_kind_slider">"স্লাইডার"</string>
+    <string name="custom_sections_kind_number">"সংখ্যা"</string>
+    <string name="custom_sections_kind_choice">"বিকল্প"</string>
+    <string name="custom_sections_kind_text">"টেক্সট"</string>
+    <string name="custom_sections_kind_page">"পৃষ্ঠা খোলে"</string>
+    <string name="custom_sections_number_range">"%1$s থেকে %2$s এর মধ্যে একটি সংখ্যা লিখুন।"</string>
+    <string name="custom_sections_text_empty">"সেট করা হয়নি"</string>
+    <string name="custom_sections_limit">"আপনি সর্বোচ্চ %1$dটি বিভাগ রাখতে পারেন।"</string>
+    <string name="custom_sections_kind_shortcut">"এই সেটিংটি খোলে"</string>
+    <string name="custom_sections_add_heading">"শিরোনাম যোগ করুন"</string>
+    <string name="custom_sections_heading">"শিরোনাম"</string>
+    <string name="custom_sections_move_section_up">"বিভাগ উপরে সরান"</string>
+    <string name="custom_sections_move_section_down">"বিভাগ নিচে সরান"</string>
+    <string name="custom_sections_filter_all">"সব"</string>
+    <string name="custom_sections_filter_switches">"সুইচ"</string>
+    <string name="custom_sections_filter_sliders">"স্লাইডার"</string>
+    <string name="custom_sections_filter_choices">"বিকল্প"</string>
+    <string name="custom_sections_filter_text">"টেক্সট"</string>
+    <string name="custom_sections_filter_shortcuts">"শর্টকাট"</string>
+    <string name="custom_sections_filter_pages">"পৃষ্ঠা"</string>
+</resources>

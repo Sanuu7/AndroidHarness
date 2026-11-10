@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"ඔබේ කොටස්"</string>
+    <string name="custom_sections_add">"නව කොටස"</string>
+    <string name="custom_sections_new_sub">"නව උප කොටස"</string>
+    <string name="custom_sections_edit">"කොටස සංස්කරණය"</string>
+    <string name="custom_sections_name">"නම"</string>
+    <string name="custom_sections_icon">"අයිකනය"</string>
+    <string name="custom_sections_create">"සාදන්න"</string>
+    <string name="custom_sections_save">"සුරකින්න"</string>
+    <string name="custom_sections_cancel">"අවලංගු කරන්න"</string>
+    <string name="custom_sections_rename">"නැවත නම කරන්න"</string>
+    <string name="custom_sections_delete">"මකන්න"</string>
+    <string name="custom_sections_delete_title">"%1$s මකන්නද?"</string>
+    <string name="custom_sections_delete_body">"මෙය කොටස සහ ඒ තුළ ඇති සියලුම උප කොටස් ඉවත් කරයි. සැකසීම්වල අගයන් එලෙසම රැඳේ."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d අයිතමය"</item>
+        <item quantity="other">"%1$d අයිතම"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"මෙහි තවම කිසිවක් නැත"</string>
+    <string name="custom_sections_empty_body">"ඔබ වැඩිපුරම භාවිත කරන ස්විච, ස්ලයිඩර සහ පිටු එකතු කර, ඔබ කැමති අනුපිළිවෙලට සකසන්න."</string>
+    <string name="custom_sections_add_settings">"සැකසීම් එකතු කරන්න"</string>
+    <string name="custom_sections_add_sub">"උප කොටස එකතු කරන්න"</string>
+    <string name="custom_sections_arrange">"සංස්කරණය"</string>
+    <string name="custom_sections_done">"අවසන්"</string>
+    <string name="custom_sections_move_up">"%1$s ඉහළට ගෙනයන්න"</string>
+    <string name="custom_sections_move_down">"%1$s පහළට ගෙනයන්න"</string>
+    <string name="custom_sections_remove">"%1$s ඉවත් කරන්න"</string>
+    <string name="custom_sections_picker_title">"%1$s ට එකතු කරන්න"</string>
+    <string name="custom_sections_picker_search">"සැකසීම් සොයන්න"</string>
+    <string name="custom_sections_picker_pages">"පිටු"</string>
+    <string name="custom_sections_picker_empty">"ගැළපෙන සැකසීම් නැත."</string>
+    <string name="custom_sections_picker_full">"මෙම කොටස පිරී ඇත. තව එකතු කිරීමට යමක් ඉවත් කරන්න."</string>
+    <string name="custom_sections_kind_switch">"ස්විචය"</string>
+    <string name="custom_sections_kind_slider">"ස්ලයිඩරය"</string>
+    <string name="custom_sections_kind_number">"අංකය"</string>
+    <string name="custom_sections_kind_choice">"තේරීම"</string>
+    <string name="custom_sections_kind_text">"පෙළ"</string>
+    <string name="custom_sections_kind_page">"පිටුව විවෘත කරයි"</string>
+    <string name="custom_sections_number_range">"%1$s සිට %2$s දක්වා අංකයක් ඇතුළත් කරන්න."</string>
+    <string name="custom_sections_text_empty">"සකසා නැත"</string>
+    <string name="custom_sections_limit">"ඔබට කොටස් %1$dක් දක්වා තබා ගත හැක."</string>
+    <string name="custom_sections_kind_shortcut">"මෙම සැකසීම විවෘත කරයි"</string>
+    <string name="custom_sections_add_heading">"ශීර්ෂය එකතු කරන්න"</string>
+    <string name="custom_sections_heading">"ශීර්ෂය"</string>
+    <string name="custom_sections_move_section_up">"කොටස ඉහළට ගෙනයන්න"</string>
+    <string name="custom_sections_move_section_down">"කොටස පහළට ගෙනයන්න"</string>
+    <string name="custom_sections_filter_all">"සියල්ල"</string>
+    <string name="custom_sections_filter_switches">"ස්විච"</string>
+    <string name="custom_sections_filter_sliders">"ස්ලයිඩර"</string>
+    <string name="custom_sections_filter_choices">"තේරීම්"</string>
+    <string name="custom_sections_filter_text">"පෙළ"</string>
+    <string name="custom_sections_filter_shortcuts">"කෙටිමං"</string>
+    <string name="custom_sections_filter_pages">"පිටු"</string>
+</resources>

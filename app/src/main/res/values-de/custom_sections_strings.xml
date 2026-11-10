@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Deine Bereiche"</string>
+    <string name="custom_sections_add">"Neuer Bereich"</string>
+    <string name="custom_sections_new_sub">"Neuer Unterbereich"</string>
+    <string name="custom_sections_edit">"Bereich bearbeiten"</string>
+    <string name="custom_sections_name">"Name"</string>
+    <string name="custom_sections_icon">"Symbol"</string>
+    <string name="custom_sections_create">"Erstellen"</string>
+    <string name="custom_sections_save">"Speichern"</string>
+    <string name="custom_sections_cancel">"Abbrechen"</string>
+    <string name="custom_sections_rename">"Umbenennen"</string>
+    <string name="custom_sections_delete">"Löschen"</string>
+    <string name="custom_sections_delete_title">"%1$s löschen?"</string>
+    <string name="custom_sections_delete_body">"Damit wird der Bereich samt aller Unterbereiche entfernt. Die Einstellungen selbst behalten ihre Werte."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d Eintrag"</item>
+        <item quantity="other">"%1$d Einträge"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Noch nichts hier"</string>
+    <string name="custom_sections_empty_body">"Füge die Schalter, Regler und Seiten hinzu, die du am meisten nutzt, und sortiere sie, wie du willst."</string>
+    <string name="custom_sections_add_settings">"Einstellungen hinzufügen"</string>
+    <string name="custom_sections_add_sub">"Unterbereich hinzufügen"</string>
+    <string name="custom_sections_arrange">"Bearbeiten"</string>
+    <string name="custom_sections_done">"Fertig"</string>
+    <string name="custom_sections_move_up">"%1$s nach oben"</string>
+    <string name="custom_sections_move_down">"%1$s nach unten"</string>
+    <string name="custom_sections_remove">"%1$s entfernen"</string>
+    <string name="custom_sections_picker_title">"Zu %1$s hinzufügen"</string>
+    <string name="custom_sections_picker_search">"Einstellungen suchen"</string>
+    <string name="custom_sections_picker_pages">"Seiten"</string>
+    <string name="custom_sections_picker_empty">"Keine Einstellungen gefunden."</string>
+    <string name="custom_sections_picker_full">"Dieser Bereich ist voll. Entferne etwas, um mehr hinzuzufügen."</string>
+    <string name="custom_sections_kind_switch">"Schalter"</string>
+    <string name="custom_sections_kind_slider">"Regler"</string>
+    <string name="custom_sections_kind_number">"Zahl"</string>
+    <string name="custom_sections_kind_choice">"Auswahl"</string>
+    <string name="custom_sections_kind_text">"Text"</string>
+    <string name="custom_sections_kind_page">"Öffnet die Seite"</string>
+    <string name="custom_sections_number_range">"Gib eine Zahl von %1$s bis %2$s ein."</string>
+    <string name="custom_sections_text_empty">"Nicht gesetzt"</string>
+    <string name="custom_sections_limit">"Du kannst bis zu %1$d Bereiche anlegen."</string>
+    <string name="custom_sections_kind_shortcut">"Öffnet diese Einstellung"</string>
+    <string name="custom_sections_add_heading">"Überschrift hinzufügen"</string>
+    <string name="custom_sections_heading">"Überschrift"</string>
+    <string name="custom_sections_move_section_up">"Bereich nach oben"</string>
+    <string name="custom_sections_move_section_down">"Bereich nach unten"</string>
+    <string name="custom_sections_filter_all">"Alle"</string>
+    <string name="custom_sections_filter_switches">"Schalter"</string>
+    <string name="custom_sections_filter_sliders">"Regler"</string>
+    <string name="custom_sections_filter_choices">"Auswahlen"</string>
+    <string name="custom_sections_filter_text">"Text"</string>
+    <string name="custom_sections_filter_shortcuts">"Verknüpfungen"</string>
+    <string name="custom_sections_filter_pages">"Seiten"</string>
+</resources>

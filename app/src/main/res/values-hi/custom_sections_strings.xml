@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"आपके अनुभाग"</string>
+    <string name="custom_sections_add">"नया अनुभाग"</string>
+    <string name="custom_sections_new_sub">"नया उप-अनुभाग"</string>
+    <string name="custom_sections_edit">"अनुभाग संपादित करें"</string>
+    <string name="custom_sections_name">"नाम"</string>
+    <string name="custom_sections_icon">"आइकन"</string>
+    <string name="custom_sections_create">"बनाएँ"</string>
+    <string name="custom_sections_save">"सहेजें"</string>
+    <string name="custom_sections_cancel">"रद्द करें"</string>
+    <string name="custom_sections_rename">"नाम बदलें"</string>
+    <string name="custom_sections_delete">"हटाएँ"</string>
+    <string name="custom_sections_delete_title">"%1$s हटाएँ?"</string>
+    <string name="custom_sections_delete_body">"इससे अनुभाग और उसके भीतर के सभी उप-अनुभाग हट जाते हैं। सेटिंग्स का मान अपरिवर्तित रहता है।"</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d वस्तु"</item>
+        <item quantity="other">"%1$d वस्तुएँ"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"यहाँ अभी कुछ नहीं है"</string>
+    <string name="custom_sections_empty_body">"जो स्विच, स्लाइडर और पेज आप सबसे ज़्यादा इस्तेमाल करते हैं उन्हें जोड़ें, फिर अपनी पसंद के क्रम में रखें।"</string>
+    <string name="custom_sections_add_settings">"सेटिंग्स जोड़ें"</string>
+    <string name="custom_sections_add_sub">"उप-अनुभाग जोड़ें"</string>
+    <string name="custom_sections_arrange">"संपादित करें"</string>
+    <string name="custom_sections_done">"हो गया"</string>
+    <string name="custom_sections_move_up">"%1$s को ऊपर ले जाएँ"</string>
+    <string name="custom_sections_move_down">"%1$s को नीचे ले जाएँ"</string>
+    <string name="custom_sections_remove">"%1$s हटाएँ"</string>
+    <string name="custom_sections_picker_title">"%1$s में जोड़ें"</string>
+    <string name="custom_sections_picker_search">"सेटिंग्स खोजें"</string>
+    <string name="custom_sections_picker_pages">"पेज"</string>
+    <string name="custom_sections_picker_empty">"कोई सेटिंग मेल नहीं खाती।"</string>
+    <string name="custom_sections_picker_full">"यह अनुभाग भर गया है। और जोड़ने के लिए कुछ हटाएँ।"</string>
+    <string name="custom_sections_kind_switch">"स्विच"</string>
+    <string name="custom_sections_kind_slider">"स्लाइडर"</string>
+    <string name="custom_sections_kind_number">"संख्या"</string>
+    <string name="custom_sections_kind_choice">"विकल्प"</string>
+    <string name="custom_sections_kind_text">"टेक्स्ट"</string>
+    <string name="custom_sections_kind_page">"पेज खोलता है"</string>
+    <string name="custom_sections_number_range">"%1$s से %2$s के बीच कोई संख्या दर्ज करें।"</string>
+    <string name="custom_sections_text_empty">"सेट नहीं है"</string>
+    <string name="custom_sections_limit">"आप %1$d अनुभाग तक रख सकते हैं।"</string>
+    <string name="custom_sections_kind_shortcut">"यह सेटिंग खोलता है"</string>
+    <string name="custom_sections_add_heading">"शीर्षक जोड़ें"</string>
+    <string name="custom_sections_heading">"शीर्षक"</string>
+    <string name="custom_sections_move_section_up">"अनुभाग ऊपर ले जाएँ"</string>
+    <string name="custom_sections_move_section_down">"अनुभाग नीचे ले जाएँ"</string>
+    <string name="custom_sections_filter_all">"सभी"</string>
+    <string name="custom_sections_filter_switches">"स्विच"</string>
+    <string name="custom_sections_filter_sliders">"स्लाइडर"</string>
+    <string name="custom_sections_filter_choices">"विकल्प"</string>
+    <string name="custom_sections_filter_text">"टेक्स्ट"</string>
+    <string name="custom_sections_filter_shortcuts">"शॉर्टकट"</string>
+    <string name="custom_sections_filter_pages">"पेज"</string>
+</resources>

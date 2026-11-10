@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"내 섹션"</string>
+    <string name="custom_sections_add">"새 섹션"</string>
+    <string name="custom_sections_new_sub">"새 하위 섹션"</string>
+    <string name="custom_sections_edit">"섹션 편집"</string>
+    <string name="custom_sections_name">"이름"</string>
+    <string name="custom_sections_icon">"아이콘"</string>
+    <string name="custom_sections_create">"만들기"</string>
+    <string name="custom_sections_save">"저장"</string>
+    <string name="custom_sections_cancel">"취소"</string>
+    <string name="custom_sections_rename">"이름 변경"</string>
+    <string name="custom_sections_delete">"삭제"</string>
+    <string name="custom_sections_delete_title">"%1$s을(를) 삭제할까요?"</string>
+    <string name="custom_sections_delete_body">"이 섹션과 그 안의 모든 하위 섹션이 제거됩니다. 설정 값 자체는 그대로 유지됩니다."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="other">"%1$d개 항목"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"아직 아무것도 없습니다"</string>
+    <string name="custom_sections_empty_body">"자주 쓰는 스위치, 슬라이더, 페이지를 추가하고 원하는 순서로 배치하세요."</string>
+    <string name="custom_sections_add_settings">"설정 추가"</string>
+    <string name="custom_sections_add_sub">"하위 섹션 추가"</string>
+    <string name="custom_sections_arrange">"편집"</string>
+    <string name="custom_sections_done">"완료"</string>
+    <string name="custom_sections_move_up">"%1$s 위로 이동"</string>
+    <string name="custom_sections_move_down">"%1$s 아래로 이동"</string>
+    <string name="custom_sections_remove">"%1$s 제거"</string>
+    <string name="custom_sections_picker_title">"%1$s에 추가"</string>
+    <string name="custom_sections_picker_search">"설정 검색"</string>
+    <string name="custom_sections_picker_pages">"페이지"</string>
+    <string name="custom_sections_picker_empty">"일치하는 설정이 없습니다."</string>
+    <string name="custom_sections_picker_full">"이 섹션이 가득 찼습니다. 더 추가하려면 무언가를 제거하세요."</string>
+    <string name="custom_sections_kind_switch">"스위치"</string>
+    <string name="custom_sections_kind_slider">"슬라이더"</string>
+    <string name="custom_sections_kind_number">"숫자"</string>
+    <string name="custom_sections_kind_choice">"선택"</string>
+    <string name="custom_sections_kind_text">"텍스트"</string>
+    <string name="custom_sections_kind_page">"페이지를 엽니다"</string>
+    <string name="custom_sections_number_range">"%1$s에서 %2$s 사이의 숫자를 입력하세요."</string>
+    <string name="custom_sections_text_empty">"설정 안 됨"</string>
+    <string name="custom_sections_limit">"섹션은 최대 %1$d개까지 보관할 수 있습니다."</string>
+    <string name="custom_sections_kind_shortcut">"이 설정을 엽니다"</string>
+    <string name="custom_sections_add_heading">"제목 추가"</string>
+    <string name="custom_sections_heading">"제목"</string>
+    <string name="custom_sections_move_section_up">"섹션 위로 이동"</string>
+    <string name="custom_sections_move_section_down">"섹션 아래로 이동"</string>
+    <string name="custom_sections_filter_all">"전체"</string>
+    <string name="custom_sections_filter_switches">"스위치"</string>
+    <string name="custom_sections_filter_sliders">"슬라이더"</string>
+    <string name="custom_sections_filter_choices">"선택"</string>
+    <string name="custom_sections_filter_text">"텍스트"</string>
+    <string name="custom_sections_filter_shortcuts">"바로가기"</string>
+    <string name="custom_sections_filter_pages">"페이지"</string>
+</resources>

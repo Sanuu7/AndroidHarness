@@ -218,24 +218,34 @@ fun SettingsScreen(
     }
     var query by rememberSaveable { mutableStateOf("") }
     val homeScroll = rememberScrollState()
+    // A custom section shows over whatever page is selected. Its path is the
+    // ids from a top-level section down to the open sub-section.
+    var customPath by rememberSaveable { mutableStateOf(listOf<String>()) }
+    // The section a page shortcut was opened from, so Back returns to it.
+    var customReturn by rememberSaveable { mutableStateOf(listOf<String>()) }
+    var creatingSection by rememberSaveable { mutableStateOf(false) }
+    val customSection = com.androidharness.app.data.CustomSettingsSections.find(settings.customSections, customPath)
     fun goBack() {
         when {
+            customSection != null -> customPath = customPath.dropLast(1)
             page == SettingsPage.LEARN && learnLessonId != null -> {
                 learnLessonId = learnLessonHistory.lastOrNull()
                 learnLessonHistory = learnLessonHistory.dropLast(1)
             }
             pageHistory.isNotEmpty() -> { pageName = pageHistory.last(); pageHistory = pageHistory.dropLast(1); highlight = null }
+            customReturn.isNotEmpty() -> { customPath = customReturn; customReturn = emptyList(); if (!desktop) pageName = null }
             desktop -> onBack()
             page != null -> pageName = null
             query.isNotBlank() -> query = ""
             else -> onBack()
         }
     }
-    BackHandler(enabled = page != null || query.isNotBlank()) { goBack() }
+    BackHandler(enabled = page != null || query.isNotBlank() || customSection != null) { goBack() }
     LaunchedEffect(Unit) {
         container.pendingSettingsScroll.filterNotNull().collect { target ->
             settingsDeepLink(target)?.let { destination ->
                 if (target == "chat-agents") showChatAgents = true
+                customPath = emptyList(); customReturn = emptyList()
                 val current = pageName
                 if (current != null && current != destination.name) pageHistory = pageHistory + current
                 pageName = destination.name
@@ -251,6 +261,7 @@ fun SettingsScreen(
             SettingsPage.USAGE -> onOpenStats()
             SettingsPage.SETUP -> onRunSetup()
             else -> {
+                customPath = emptyList(); customReturn = emptyList()
                 val current = pageName
                 if (desktop && page != SettingsPage.LEARN && !(page == SettingsPage.CODING && destination in settingsCodingPages)) pageHistory = emptyList()
                 else if (current != null && current != destination.name) pageHistory = pageHistory + current
@@ -258,6 +269,31 @@ fun SettingsScreen(
             }
         }
     }
+
+    /** Opens a page from a shortcut inside a custom section, keeping the way back to that section. */
+    fun openPageFromSection(destination: SettingsPage, anchor: Int?) {
+        val from = customPath
+        openPage(destination, anchor)
+        if (destination !in setOf(SettingsPage.SKILLS, SettingsPage.USAGE, SettingsPage.SETUP)) customReturn = from
+    }
+    fun startNewSection() {
+        if (settings.customSections.size < com.androidharness.app.data.CustomSettingsSections.MAX_SECTIONS) creatingSection = true
+        else android.widget.Toast.makeText(uiContext, uiContext.getString(R.string.custom_sections_limit,
+            com.androidharness.app.data.CustomSettingsSections.MAX_SECTIONS), android.widget.Toast.LENGTH_LONG).show()
+    }
+    if (creatingSection) CustomSectionEditorDialog(
+        title = stringResource(R.string.custom_sections_add), confirm = stringResource(R.string.custom_sections_create),
+        onDismiss = { creatingSection = false },
+        onSave = { name, icon ->
+            creatingSection = false
+            val created = com.androidharness.app.data.CustomSettingsSection(java.util.UUID.randomUUID().toString(), name, icon)
+            scope.launch {
+                container.settings.updateCustomSections { it + created }
+                customReturn = emptyList()
+                customPath = listOf(created.id)
+            }
+        },
+    )
 
     val folderPicker = rememberLauncherForActivityResult(
         ActivityResultContracts.OpenDocumentTree(),
@@ -269,25 +305,55 @@ fun SettingsScreen(
         containerColor = MaterialTheme.colorScheme.surface,
         topBar = {
             AppHeader(
-                title = if (desktop) stringResource(R.string.settings_page_title) else page?.let { stringResource(it.title) }
+                title = if (desktop) stringResource(R.string.settings_page_title) else customSection?.name ?: page?.let { stringResource(it.title) }
                     ?: stringResource(R.string.settings_page_title),
                 onBack = { if (desktop) onBack() else goBack() },
             )
         },
+
     ) { padding ->
         Row(Modifier.fillMaxSize().padding(padding)) {
             if (desktop) {
-                DesktopSettingsNavigation(page, query, { query = it }, ::openPage,
-                    Modifier.width(240.dp).fillMaxHeight())
+                DesktopSettingsNavigation(page.takeIf { customSection == null }, query, { query = it }, ::openPage,
+                    Modifier.width(240.dp).fillMaxHeight(), customSections = settings.customSections,
+                    selectedSection = customPath.firstOrNull()?.takeIf { customSection != null },
+                    onOpenSection = { customReturn = emptyList(); customPath = listOf(it) }, onAddSection = ::startNewSection)
                 VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             }
             Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
-        if (page == null) {
+        if (customSection != null) {
+            val path = customPath
+            key(path) {
+                CustomSectionPage(
+                    section = customSection,
+                    depth = path.size,
+                    settings = settings,
+                    repository = container.settings,
+                    onChange = { transform ->
+                        scope.launch { container.settings.updateCustomSections { com.androidharness.app.data.CustomSettingsSections.update(it, path, transform) } }
+                    },
+                    onDelete = {
+                        customPath = path.dropLast(1)
+                        scope.launch { container.settings.updateCustomSections { com.androidharness.app.data.CustomSettingsSections.remove(it, path) } }
+                    },
+                    onOpenSection = { customPath = path + it },
+                    onOpenPage = ::openPageFromSection,
+                    onMoveUp = if (path.size != 1 || settings.customSections.firstOrNull()?.id == path[0]) null
+                        else ({ scope.launch { container.settings.updateCustomSections { com.androidharness.app.data.CustomSettingsSections.move(it, path[0], -1) } } }),
+                    onMoveDown = if (path.size != 1 || settings.customSections.lastOrNull()?.id == path[0]) null
+                        else ({ scope.launch { container.settings.updateCustomSections { com.androidharness.app.data.CustomSettingsSections.move(it, path[0], 1) } } }),
+                    modifier = Modifier.then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier).fillMaxSize(),
+                )
+            }
+        } else if (page == null) {
             SettingsHome(
                 query = query,
                 onQueryChange = { query = it },
                 onOpen = ::openPage,
                 modifier = Modifier.fillMaxSize().verticalScroll(homeScroll),
+                customSections = settings.customSections,
+                onOpenSection = { customReturn = emptyList(); customPath = listOf(it) },
+                onAddSection = ::startNewSection,
             )
         } else {
             key(page) {

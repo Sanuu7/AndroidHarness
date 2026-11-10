@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"你的分區"</string>
+    <string name="custom_sections_add">"新增分區"</string>
+    <string name="custom_sections_new_sub">"新增子分區"</string>
+    <string name="custom_sections_edit">"編輯分區"</string>
+    <string name="custom_sections_name">"名稱"</string>
+    <string name="custom_sections_icon">"圖示"</string>
+    <string name="custom_sections_create">"建立"</string>
+    <string name="custom_sections_save">"儲存"</string>
+    <string name="custom_sections_cancel">"取消"</string>
+    <string name="custom_sections_rename">"重新命名"</string>
+    <string name="custom_sections_delete">"刪除"</string>
+    <string name="custom_sections_delete_title">"刪除 %1$s？"</string>
+    <string name="custom_sections_delete_body">"這會移除該分區及其中的所有子分區。設定本身的值維持不變。"</string>
+    <plurals name="custom_sections_items">
+        <item quantity="other">"%1$d 項"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"這裡還沒有任何內容"</string>
+    <string name="custom_sections_empty_body">"加入常用的開關、滑桿和頁面，再依你喜歡的順序排列。"</string>
+    <string name="custom_sections_add_settings">"加入設定"</string>
+    <string name="custom_sections_add_sub">"加入子分區"</string>
+    <string name="custom_sections_arrange">"編輯"</string>
+    <string name="custom_sections_done">"完成"</string>
+    <string name="custom_sections_move_up">"將 %1$s 上移"</string>
+    <string name="custom_sections_move_down">"將 %1$s 下移"</string>
+    <string name="custom_sections_remove">"移除 %1$s"</string>
+    <string name="custom_sections_picker_title">"加到 %1$s"</string>
+    <string name="custom_sections_picker_search">"搜尋設定"</string>
+    <string name="custom_sections_picker_pages">"頁面"</string>
+    <string name="custom_sections_picker_empty">"沒有符合的設定。"</string>
+    <string name="custom_sections_picker_full">"此分區已滿。移除一些項目後再加入。"</string>
+    <string name="custom_sections_kind_switch">"開關"</string>
+    <string name="custom_sections_kind_slider">"滑桿"</string>
+    <string name="custom_sections_kind_number">"數字"</string>
+    <string name="custom_sections_kind_choice">"選項"</string>
+    <string name="custom_sections_kind_text">"文字"</string>
+    <string name="custom_sections_kind_page">"開啟頁面"</string>
+    <string name="custom_sections_number_range">"輸入 %1$s 到 %2$s 之間的數字。"</string>
+    <string name="custom_sections_text_empty">"未設定"</string>
+    <string name="custom_sections_limit">"最多可保留 %1$d 個分區。"</string>
+    <string name="custom_sections_kind_shortcut">"開啟此設定"</string>
+    <string name="custom_sections_add_heading">"加入標題"</string>
+    <string name="custom_sections_heading">"標題"</string>
+    <string name="custom_sections_move_section_up">"分區上移"</string>
+    <string name="custom_sections_move_section_down">"分區下移"</string>
+    <string name="custom_sections_filter_all">"全部"</string>
+    <string name="custom_sections_filter_switches">"開關"</string>
+    <string name="custom_sections_filter_sliders">"滑桿"</string>
+    <string name="custom_sections_filter_choices">"選項"</string>
+    <string name="custom_sections_filter_text">"文字"</string>
+    <string name="custom_sections_filter_shortcuts">"捷徑"</string>
+    <string name="custom_sections_filter_pages">"頁面"</string>
+</resources>

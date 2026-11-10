@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="custom_sections_group">"Bölümlerin"</string>
+    <string name="custom_sections_add">"Yeni bölüm"</string>
+    <string name="custom_sections_new_sub">"Yeni alt bölüm"</string>
+    <string name="custom_sections_edit">"Bölümü düzenle"</string>
+    <string name="custom_sections_name">"Ad"</string>
+    <string name="custom_sections_icon">"Simge"</string>
+    <string name="custom_sections_create">"Oluştur"</string>
+    <string name="custom_sections_save">"Kaydet"</string>
+    <string name="custom_sections_cancel">"İptal"</string>
+    <string name="custom_sections_rename">"Yeniden adlandır"</string>
+    <string name="custom_sections_delete">"Sil"</string>
+    <string name="custom_sections_delete_title">"%1$s silinsin mi?"</string>
+    <string name="custom_sections_delete_body">"Bu, bölümü ve içindeki tüm alt bölümleri kaldırır. Ayarların kendisi değerlerini korur."</string>
+    <plurals name="custom_sections_items">
+        <item quantity="one">"%1$d öğe"</item>
+        <item quantity="other">"%1$d öğe"</item>
+    </plurals>
+    <string name="custom_sections_empty_title">"Burada henüz bir şey yok"</string>
+    <string name="custom_sections_empty_body">"En çok kullandığın anahtarları, kaydırıcıları ve sayfaları ekle, sonra istediğin sıraya koy."</string>
+    <string name="custom_sections_add_settings">"Ayar ekle"</string>
+    <string name="custom_sections_add_sub">"Alt bölüm ekle"</string>
+    <string name="custom_sections_arrange">"Düzenle"</string>
+    <string name="custom_sections_done">"Bitti"</string>
+    <string name="custom_sections_move_up">"%1$s öğesini yukarı taşı"</string>
+    <string name="custom_sections_move_down">"%1$s öğesini aşağı taşı"</string>
+    <string name="custom_sections_remove">"%1$s öğesini kaldır"</string>
+    <string name="custom_sections_picker_title">"%1$s bölümüne ekle"</string>
+    <string name="custom_sections_picker_search">"Ayar ara"</string>
+    <string name="custom_sections_picker_pages">"Sayfalar"</string>
+    <string name="custom_sections_picker_empty">"Eşleşen ayar yok."</string>
+    <string name="custom_sections_picker_full">"Bu bölüm dolu. Daha fazla eklemek için bir şey kaldır."</string>
+    <string name="custom_sections_kind_switch">"Anahtar"</string>
+    <string name="custom_sections_kind_slider">"Kaydırıcı"</string>
+    <string name="custom_sections_kind_number">"Sayı"</string>
+    <string name="custom_sections_kind_choice">"Seçim"</string>
+    <string name="custom_sections_kind_text">"Metin"</string>
+    <string name="custom_sections_kind_page">"Sayfayı açar"</string>
+    <string name="custom_sections_number_range">"%1$s ile %2$s arasında bir sayı gir."</string>
+    <string name="custom_sections_text_empty">"Ayarlanmadı"</string>
+    <string name="custom_sections_limit">"En fazla %1$d bölüm tutabilirsin."</string>
+    <string name="custom_sections_kind_shortcut">"Bu ayarı açar"</string>
+    <string name="custom_sections_add_heading">"Başlık ekle"</string>
+    <string name="custom_sections_heading">"Başlık"</string>
+    <string name="custom_sections_move_section_up">"Bölümü yukarı taşı"</string>
+    <string name="custom_sections_move_section_down">"Bölümü aşağı taşı"</string>
+    <string name="custom_sections_filter_all">"Tümü"</string>
+    <string name="custom_sections_filter_switches">"Anahtarlar"</string>
+    <string name="custom_sections_filter_sliders">"Kaydırıcılar"</string>
+    <string name="custom_sections_filter_choices">"Seçimler"</string>
+    <string name="custom_sections_filter_text">"Metin"</string>
+    <string name="custom_sections_filter_shortcuts">"Kısayollar"</string>
+    <string name="custom_sections_filter_pages">"Sayfalar"</string>
+</resources>
