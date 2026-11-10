@@ -16,6 +16,8 @@ object VoiceGateway {
             VoiceProtocol.DEEPGRAM -> DeepgramVoiceClient.validateKey(provider.resolvedBaseUrl(), apiKey)
             VoiceProtocol.CARTESIA -> CartesiaClient.validateKey(provider.resolvedBaseUrl(), apiKey)
             VoiceProtocol.ASSEMBLYAI -> AssemblyAiClient.validateKey(provider.resolvedBaseUrl(), apiKey)
+            // Edge needs no credential, so there is nothing to validate.
+            VoiceProtocol.EDGE -> Result.success(Unit)
         }
 
     /** Model ids the provider can serve, or the shipped preset list as a fallback. */
@@ -71,6 +73,8 @@ object VoiceGateway {
         }
         VoiceProtocol.CARTESIA ->
             Result.failure(UnsupportedOperationException("Cartesia does not offer speech to text"))
+        VoiceProtocol.EDGE ->
+            Result.failure(UnsupportedOperationException("Edge does not offer speech to text"))
     }
 
     suspend fun synthesizeCached(

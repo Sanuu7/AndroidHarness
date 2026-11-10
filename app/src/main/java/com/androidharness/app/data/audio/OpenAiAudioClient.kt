@@ -214,6 +214,7 @@ object OpenAiAudioClient {
             VoiceProtocol.DEEPGRAM -> DeepgramVoiceClient.synthesize(provider, apiKey, text, model, voice, speed)
             VoiceProtocol.ASSEMBLYAI ->
                 Result.failure(UnsupportedOperationException("AssemblyAI does not offer text to speech"))
+            VoiceProtocol.EDGE -> EdgeTtsClient.synthesize(text, voice, speed)
         }
     }
 
@@ -269,6 +270,7 @@ object OpenAiAudioClient {
     const val ORPHEUS_MAX_INPUT_CHARS = 190
 
     fun maxInputChars(provider: VoiceProviderConfig, model: String): Int = when {
+        provider.protocol == VoiceProtocol.EDGE -> EdgeTtsClient.MAX_INPUT_CHARS
         model.contains("orpheus", true) -> ORPHEUS_MAX_INPUT_CHARS
         else -> MAX_INPUT_CHARS
     }
@@ -296,6 +298,7 @@ object OpenAiAudioClient {
         VoiceProtocol.CARTESIA -> CARTESIA_VOICES.keys.toList()
         VoiceProtocol.DEEPGRAM -> DEMO_VOICES
         VoiceProtocol.ASSEMBLYAI -> emptyList()
+        VoiceProtocol.EDGE -> VoicePresets.edgeVoices
     }
 
     fun defaultVoiceFor(provider: VoiceProviderConfig, model: String): String? =

@@ -16,6 +16,12 @@ enum class VoiceProtocol(val label: String) {
     DEEPGRAM("Deepgram"),
     CARTESIA("Cartesia"),
     ASSEMBLYAI("AssemblyAI"),
+
+    /**
+     * Microsoft Edge Read Aloud: a WebSocket session, not an HTTP endpoint, and
+     * it needs no key. [EdgeTtsClient] speaks this protocol.
+     */
+    EDGE("Edge"),
 }
 
 /**
@@ -76,25 +82,17 @@ object VoicePresets {
     const val KEY_URL_ASSEMBLYAI = "https://www.assemblyai.com/dashboard/api-keys"
 
     /**
-     * Local routers that expose Edge TTS (9Router, LiteLLM, one-api). Edge needs
-     * no key, so the provider ships with [VoiceProviderConfig.requiresKey] off;
-     * the address is a guess at the common 9Router port and stays editable.
-     */
-    const val EDGE_DEFAULT_BASE_URL = "http://localhost:20128/v1"
-
-    /**
-     * Edge voices. The router takes the id after the slash as the model, so the
-     * Edge provider sends an empty model id and passes the voice name instead.
+     * Fallback voice list, used only when the live catalogue cannot be fetched.
+     * These are real ShortNames from Microsoft's voices endpoint; the full list
+     * carries 300+ entries across 140 locales, so this keeps the common ones.
      */
     val edgeVoices = listOf(
-        "pt-BR-FranciscaNeural", "pt-BR-AntonioNeural", "pt-BR-BrendaNeural",
-        "pt-BR-DonatoNeural", "pt-BR-ElzaNeural", "pt-BR-FabioNeural",
-        "pt-BR-GiovannaNeural", "pt-BR-HumbertoNeural", "pt-BR-JulioNeural",
-        "pt-BR-LeilaNeural", "pt-BR-LeticiaNeural", "pt-BR-ManuelaNeural",
-        "pt-BR-NicolauNeural", "pt-BR-ValerioNeural", "pt-BR-YaraNeural",
+        "pt-BR-FranciscaNeural", "pt-BR-AntonioNeural", "pt-BR-ThalitaMultilingualNeural",
+        "pt-PT-RaquelNeural", "pt-PT-DuarteNeural",
         "en-US-AriaNeural", "en-US-GuyNeural", "en-US-JennyNeural",
-        "en-US-ChristopherNeural", "en-US-MichelleNeural",
-        "es-ES-ElviraNeural", "es-ES-AlvaroNeural",
+        "en-US-AvaNeural", "en-US-AndrewNeural", "en-US-EmmaNeural", "en-US-BrianNeural",
+        "en-GB-SoniaNeural", "en-GB-RyanNeural",
+        "es-ES-ElviraNeural", "es-ES-AlvaroNeural", "es-MX-DaliaNeural", "es-MX-JorgeNeural",
         "fr-FR-DeniseNeural", "fr-FR-HenriNeural",
         "de-DE-KatjaNeural", "de-DE-ConradNeural",
         "it-IT-ElsaNeural", "it-IT-DiegoNeural",
@@ -129,10 +127,9 @@ object VoicePresets {
         VoiceProviderConfig(
             id = EDGE,
             name = "Edge (free)",
-            protocol = VoiceProtocol.OPENAI_AUDIO,
-            baseUrl = EDGE_DEFAULT_BASE_URL,
-            // The router splits "provider/model", so an empty model after the
-            // slash is what selects plain Edge TTS.
+            // Speaks the Read Aloud WebSocket protocol directly: no router, no key.
+            protocol = VoiceProtocol.EDGE,
+            baseUrl = EdgeTtsClient.VOICE_LIST_URL,
             sttModel = "",
             ttsModel = "",
             ttsVoice = "pt-BR-FranciscaNeural",
