@@ -444,4 +444,26 @@
     <string name="subagents_running_count">"%1$d இயங்குகிறது"</string>
     <string name="subagents_running_background">"பின்னணியில் இயங்குகிறது"</string>
     <string name="subagents_back_to_list">"துணைப் பொருட்களுக்குத் திரும்பு"</string>
+    <string name="settings_voice_manage_providers">குரல் வழங்குநர்களை நிர்வகி</string>
+    <string name="settings_voice_add_provider">வழங்குநரைச் சேர்</string>
+    <string name="settings_voice_edit_provider">திருத்து</string>
+    <string name="settings_voice_new_provider">புதிய குரல் வழங்குநர்</string>
+    <string name="settings_voice_provider_name">வழங்குநர் பெயர்</string>
+    <string name="settings_voice_base_url">அடிப்படை URL</string>
+    <string name="settings_voice_protocol">API நெறிமுறை</string>
+    <string name="settings_voice_get_key">API விசையைப் பெறு</string>
+    <string name="settings_voice_add_key">API விசையைச் சேர்</string>
+    <string name="settings_voice_replace_key">விசையை மாற்று</string>
+    <string name="settings_voice_no_providers">குரல் வழங்குநர் அமைக்கப்படவில்லை. கிளவுட் குரலுக்கு ஒன்றைச் சேர்க்கவும்.</string>
+    <string name="settings_voice_presets_hint">Groq, OpenAI, ElevenLabs, Deepgram, Cartesia, AssemblyAI மற்றும் Edge உள்ளன. தனிப்பயன் முனை OpenAI Audio வடிவத்தைப் பயன்படுத்துகிறது.</string>
+    <string name="settings_voice_no_key_needed">விசை தேவையில்லை</string>
+    <string name="settings_voice_requires_key">API விசை தேவை</string>
+    <string name="settings_tts_provider">வழங்குநர்</string>
+    <string name="settings_stt_provider_cloud">கிளவுட்</string>
+    <string name="settings_stt_engine">பேச்சிலிருந்து உரை</string>
+    <string name="settings_stt_model">எழுத்தாக்க மாதிரி</string>
+    <string name="settings_stt_provider">பேச்சு-உரை வழங்குநர்</string>
+    <string name="settings_tts_custom_model">தனிப்பயன் மாதிரி ID</string>
+    <string name="settings_tts_custom_voice">தனிப்பயன் குரல் ID</string>
+    <string name="settings_voice_choose_model">மாதிரியைத் தேர்ந்து</string>
 </resources>

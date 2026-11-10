@@ -444,4 +444,26 @@
     <string name="subagents_running_count">"%1$d ක්‍රියාත්මකයි"</string>
     <string name="subagents_running_background">"පසුබිමින් ක්‍රියාත්මක වේ"</string>
     <string name="subagents_back_to_list">"උප නියෝජිතයන් වෙත ආපසු"</string>
+    <string name="settings_voice_manage_providers">හඬ සපයන්නන් කළමනාකරණය</string>
+    <string name="settings_voice_add_provider">සපයන්නෙකු එක් කරන්න</string>
+    <string name="settings_voice_edit_provider">සංස්කරණය</string>
+    <string name="settings_voice_new_provider">නව හඬ සපයන්නෙක්</string>
+    <string name="settings_voice_provider_name">සපයන්නාගේ නම</string>
+    <string name="settings_voice_base_url">මූලික URL</string>
+    <string name="settings_voice_protocol">API ප්‍රොටෝකෝලය</string>
+    <string name="settings_voice_get_key">API යතුර ලබා ගන්න</string>
+    <string name="settings_voice_add_key">API යතුර එක් කරන්න</string>
+    <string name="settings_voice_replace_key">යතුර ප්‍රතිස්ථාපනය</string>
+    <string name="settings_voice_no_providers">හඬ සපයන්නෙකු සකසා නැත. ක්ලවුඩ් හඬ සඳහා එකක් එක් කරන්න.</string>
+    <string name="settings_voice_presets_hint">Groq, OpenAI, ElevenLabs, Deepgram, Cartesia, AssemblyAI සහ Edge ඇතුළත්ය. අභිරුචි අන්තය OpenAI Audio ආකෘතිය භාවිත කරයි.</string>
+    <string name="settings_voice_no_key_needed">යතුරක් අවශ්‍ය නැත</string>
+    <string name="settings_voice_requires_key">API යතුර අවශ්‍යයි</string>
+    <string name="settings_tts_provider">සපයන්නා</string>
+    <string name="settings_stt_provider_cloud">ක්ලවුඩ්</string>
+    <string name="settings_stt_engine">හඬ සිට පෙළ</string>
+    <string name="settings_stt_model">පෙළගැස්ම ආකෘතිය</string>
+    <string name="settings_stt_provider">හඬ-පෙළ සපයන්නා</string>
+    <string name="settings_tts_custom_model">අභිරුචි ආකෘති ID</string>
+    <string name="settings_tts_custom_voice">අභිරුචි හඬ ID</string>
+    <string name="settings_voice_choose_model">ආකෘතිය තෝරන්න</string>
 </resources>

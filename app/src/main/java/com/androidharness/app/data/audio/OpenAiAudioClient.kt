@@ -301,8 +301,16 @@ object OpenAiAudioClient {
         VoiceProtocol.EDGE -> VoicePresets.edgeVoices
     }
 
-    fun defaultVoiceFor(provider: VoiceProviderConfig, model: String): String? =
-        voicesFor(provider, model).firstOrNull() ?: provider.ttsVoice.ifBlank { null }
+    /**
+     * Default voice for a model. Only falls back to the provider's configured
+     * voice when the model is the provider's own default; an unknown model id
+     * returns null so the UI asks for a voice instead of guessing.
+     */
+    fun defaultVoiceFor(provider: VoiceProviderConfig, model: String): String? {
+        voicesFor(provider, model).firstOrNull()?.let { return it }
+        val isProviderDefault = model.isBlank() || model == provider.ttsModel
+        return if (isProviderDefault) provider.ttsVoice.ifBlank { null } else null
+    }
 
     fun modelLabel(provider: VoiceProviderConfig, model: String): String = when {
         provider.id == VoicePresets.EDGE -> provider.name

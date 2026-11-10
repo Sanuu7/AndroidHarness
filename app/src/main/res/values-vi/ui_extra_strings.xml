@@ -442,4 +442,26 @@
     <string name="subagents_running_count">"%1$d đang chạy"</string>
     <string name="subagents_running_background">"Đang chạy trong nền"</string>
     <string name="subagents_back_to_list">"Quay lại trợ lý phụ"</string>
+    <string name="settings_voice_manage_providers">Quản lý nhà cung cấp giọng nói</string>
+    <string name="settings_voice_add_provider">Thêm nhà cung cấp</string>
+    <string name="settings_voice_edit_provider">Sửa</string>
+    <string name="settings_voice_new_provider">Nhà cung cấp giọng nói mới</string>
+    <string name="settings_voice_provider_name">Tên nhà cung cấp</string>
+    <string name="settings_voice_base_url">URL cơ sở</string>
+    <string name="settings_voice_protocol">Giao thức API</string>
+    <string name="settings_voice_get_key">Lấy khóa API</string>
+    <string name="settings_voice_add_key">Thêm khóa API</string>
+    <string name="settings_voice_replace_key">Thay khóa</string>
+    <string name="settings_voice_no_providers">Chưa có nhà cung cấp giọng nói. Thêm một cái để dùng giọng đám mây.</string>
+    <string name="settings_voice_presets_hint">Groq, OpenAI, ElevenLabs, Deepgram, Cartesia, AssemblyAI và Edge đã có sẵn. Điểm cuối tùy chỉnh dùng định dạng OpenAI Audio.</string>
+    <string name="settings_voice_no_key_needed">không cần khóa</string>
+    <string name="settings_voice_requires_key">Cần khóa API</string>
+    <string name="settings_tts_provider">Nhà cung cấp</string>
+    <string name="settings_stt_provider_cloud">Đám mây</string>
+    <string name="settings_stt_engine">Giọng nói thành văn bản</string>
+    <string name="settings_stt_model">Mô hình phiên âm</string>
+    <string name="settings_stt_provider">Nhà cung cấp giọng nói thành văn bản</string>
+    <string name="settings_tts_custom_model">ID mô hình tùy chỉnh</string>
+    <string name="settings_tts_custom_voice">ID giọng nói tùy chỉnh</string>
+    <string name="settings_voice_choose_model">Chọn mô hình</string>
 </resources>

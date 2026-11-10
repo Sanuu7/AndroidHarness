@@ -444,4 +444,26 @@
     <string name="subagents_running_count">%1$d در حال اجرا</string>
     <string name="subagents_running_background">در حال اجرا در پس‌زمینه</string>
     <string name="subagents_back_to_list">بازگشت به زیرعامل‌ها</string>
+    <string name="settings_voice_manage_providers">مدیریت ارائه‌دهندگان صدا</string>
+    <string name="settings_voice_add_provider">افزودن ارائه‌دهنده</string>
+    <string name="settings_voice_edit_provider">ویرایش</string>
+    <string name="settings_voice_new_provider">ارائه‌دهنده صدای جدید</string>
+    <string name="settings_voice_provider_name">نام ارائه‌دهنده</string>
+    <string name="settings_voice_base_url">نشانی پایه</string>
+    <string name="settings_voice_protocol">پروتکل API</string>
+    <string name="settings_voice_get_key">دریافت کلید API</string>
+    <string name="settings_voice_add_key">افزودن کلید API</string>
+    <string name="settings_voice_replace_key">جایگزینی کلید</string>
+    <string name="settings_voice_no_providers">هیچ ارائه‌دهنده صدایی تنظیم نشده است. برای صدای ابری یکی اضافه کنید.</string>
+    <string name="settings_voice_presets_hint">Groq، OpenAI، ElevenLabs، Deepgram، Cartesia، AssemblyAI و Edge از پیش موجودند. نقطه پایانی سفارشی از قالب OpenAI Audio استفاده می‌کند.</string>
+    <string name="settings_voice_no_key_needed">بدون نیاز به کلید</string>
+    <string name="settings_voice_requires_key">نیازمند کلید API</string>
+    <string name="settings_tts_provider">ارائه‌دهنده</string>
+    <string name="settings_stt_provider_cloud">ابر</string>
+    <string name="settings_stt_engine">گفتار به متن</string>
+    <string name="settings_stt_model">مدل رونویسی</string>
+    <string name="settings_stt_provider">ارائه‌دهنده گفتار به متن</string>
+    <string name="settings_tts_custom_model">شناسه مدل سفارشی</string>
+    <string name="settings_tts_custom_voice">شناسه صدا سفارشی</string>
+    <string name="settings_voice_choose_model">انتخاب مدل</string>
 </resources>

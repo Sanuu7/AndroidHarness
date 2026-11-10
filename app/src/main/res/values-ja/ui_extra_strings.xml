@@ -442,4 +442,26 @@
     <string name="subagents_running_count">%1$d 実行中</string>
     <string name="subagents_running_background">バックグラウンドで実行中</string>
     <string name="subagents_back_to_list">サブエージェントに戻る</string>
+    <string name="settings_voice_manage_providers">音声プロバイダーを管理</string>
+    <string name="settings_voice_add_provider">プロバイダーを追加</string>
+    <string name="settings_voice_edit_provider">編集</string>
+    <string name="settings_voice_new_provider">新しい音声プロバイダー</string>
+    <string name="settings_voice_provider_name">プロバイダー名</string>
+    <string name="settings_voice_base_url">ベースURL</string>
+    <string name="settings_voice_protocol">APIプロトコル</string>
+    <string name="settings_voice_get_key">APIキーを取得</string>
+    <string name="settings_voice_add_key">APIキーを追加</string>
+    <string name="settings_voice_replace_key">キーを置き換え</string>
+    <string name="settings_voice_no_providers">音声プロバイダーが設定されていません。クラウド音声を使うには追加してください。</string>
+    <string name="settings_voice_presets_hint">Groq、OpenAI、ElevenLabs、Deepgram、Cartesia、AssemblyAI、Edge が含まれています。カスタムエンドポイントは OpenAI Audio 形式を使います。</string>
+    <string name="settings_voice_no_key_needed">キー不要</string>
+    <string name="settings_voice_requires_key">APIキーが必要</string>
+    <string name="settings_tts_provider">プロバイダー</string>
+    <string name="settings_stt_provider_cloud">クラウド</string>
+    <string name="settings_stt_engine">音声からテキスト</string>
+    <string name="settings_stt_model">文字起こしモデル</string>
+    <string name="settings_stt_provider">音声テキスト化プロバイダー</string>
+    <string name="settings_tts_custom_model">カスタムモデルID</string>
+    <string name="settings_tts_custom_voice">カスタム音声ID</string>
+    <string name="settings_voice_choose_model">モデルを選択</string>
 </resources>

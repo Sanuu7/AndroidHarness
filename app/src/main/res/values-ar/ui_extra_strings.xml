@@ -452,4 +452,26 @@
     <string name="subagents_running_count">%1$d قيد التشغيل</string>
     <string name="subagents_running_background">قيد التشغيل في الخلفية</string>
     <string name="subagents_back_to_list">العودة إلى الوكلاء الفرعيين</string>
+    <string name="settings_voice_manage_providers">إدارة مزودي الصوت</string>
+    <string name="settings_voice_add_provider">إضافة مزود</string>
+    <string name="settings_voice_edit_provider">تعديل</string>
+    <string name="settings_voice_new_provider">مزود صوت جديد</string>
+    <string name="settings_voice_provider_name">اسم المزود</string>
+    <string name="settings_voice_base_url">عنوان URL الأساسي</string>
+    <string name="settings_voice_protocol">بروتوكول API</string>
+    <string name="settings_voice_get_key">احصل على مفتاح API</string>
+    <string name="settings_voice_add_key">إضافة مفتاح API</string>
+    <string name="settings_voice_replace_key">استبدال المفتاح</string>
+    <string name="settings_voice_no_providers">لم يتم إعداد أي مزود صوت. أضف واحدًا لاستخدام الصوت السحابي.</string>
+    <string name="settings_voice_presets_hint">Groq وOpenAI وElevenLabs وDeepgram وCartesia وAssemblyAI وEdge مضمنة. تستخدم نقطة النهاية المخصصة تنسيق OpenAI Audio.</string>
+    <string name="settings_voice_no_key_needed">لا حاجة لمفتاح</string>
+    <string name="settings_voice_requires_key">يتطلب مفتاح API</string>
+    <string name="settings_tts_provider">المزود</string>
+    <string name="settings_stt_provider_cloud">سحابة</string>
+    <string name="settings_stt_engine">الكلام إلى نص</string>
+    <string name="settings_stt_model">نموذج النسخ</string>
+    <string name="settings_stt_provider">مزود الكلام إلى نص</string>
+    <string name="settings_tts_custom_model">معرّف نموذج مخصص</string>
+    <string name="settings_tts_custom_voice">معرّف صوت مخصص</string>
+    <string name="settings_voice_choose_model">اختيار نموذج</string>
 </resources>

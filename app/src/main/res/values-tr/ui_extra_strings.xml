@@ -444,4 +444,26 @@
     <string name="subagents_running_count">"%1$d çalışıyor"</string>
     <string name="subagents_running_background">"Arka planda çalışıyor"</string>
     <string name="subagents_back_to_list">"Alt ajanlara dön"</string>
+    <string name="settings_voice_manage_providers">Ses sağlayıcılarını yönet</string>
+    <string name="settings_voice_add_provider">Sağlayıcı ekle</string>
+    <string name="settings_voice_edit_provider">Düzenle</string>
+    <string name="settings_voice_new_provider">Yeni ses sağlayıcısı</string>
+    <string name="settings_voice_provider_name">Sağlayıcı adı</string>
+    <string name="settings_voice_base_url">Temel URL</string>
+    <string name="settings_voice_protocol">API protokolü</string>
+    <string name="settings_voice_get_key">API anahtarı al</string>
+    <string name="settings_voice_add_key">API anahtarı ekle</string>
+    <string name="settings_voice_replace_key">Anahtarı değiştir</string>
+    <string name="settings_voice_no_providers">Ses sağlayıcısı ayarlanmadı. Bulut sesi için bir tane ekleyin.</string>
+    <string name="settings_voice_presets_hint">Groq, OpenAI, ElevenLabs, Deepgram, Cartesia, AssemblyAI ve Edge dahildir. Özel uç nokta OpenAI Audio biçimini kullanır.</string>
+    <string name="settings_voice_no_key_needed">anahtar gerekmez</string>
+    <string name="settings_voice_requires_key">API anahtarı gerekir</string>
+    <string name="settings_tts_provider">Sağlayıcı</string>
+    <string name="settings_stt_provider_cloud">Bulut</string>
+    <string name="settings_stt_engine">Konuşmadan metne</string>
+    <string name="settings_stt_model">Yazıya dökme modeli</string>
+    <string name="settings_stt_provider">Konuşmadan metne sağlayıcı</string>
+    <string name="settings_tts_custom_model">Özel model kimliği</string>
+    <string name="settings_tts_custom_voice">Özel ses kimliği</string>
+    <string name="settings_voice_choose_model">Model seç</string>
 </resources>

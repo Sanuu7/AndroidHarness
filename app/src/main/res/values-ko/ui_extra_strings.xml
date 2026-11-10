@@ -442,4 +442,26 @@
     <string name="subagents_running_count">"%1$d개 실행 중"</string>
     <string name="subagents_running_background">"백그라운드에서 실행 중"</string>
     <string name="subagents_back_to_list">"하위 에이전트로 돌아가기"</string>
+    <string name="settings_voice_manage_providers">음성 공급자 관리</string>
+    <string name="settings_voice_add_provider">공급자 추가</string>
+    <string name="settings_voice_edit_provider">편집</string>
+    <string name="settings_voice_new_provider">새 음성 공급자</string>
+    <string name="settings_voice_provider_name">공급자 이름</string>
+    <string name="settings_voice_base_url">기본 URL</string>
+    <string name="settings_voice_protocol">API 프로토콜</string>
+    <string name="settings_voice_get_key">API 키 받기</string>
+    <string name="settings_voice_add_key">API 키 추가</string>
+    <string name="settings_voice_replace_key">키 교체</string>
+    <string name="settings_voice_no_providers">설정된 음성 공급자가 없습니다. 클라우드 음성을 쓰려면 추가하세요.</string>
+    <string name="settings_voice_presets_hint">Groq, OpenAI, ElevenLabs, Deepgram, Cartesia, AssemblyAI, Edge가 포함되어 있습니다. 사용자 지정 엔드포인트는 OpenAI Audio 형식을 사용합니다.</string>
+    <string name="settings_voice_no_key_needed">키 필요 없음</string>
+    <string name="settings_voice_requires_key">API 키 필요</string>
+    <string name="settings_tts_provider">공급자</string>
+    <string name="settings_stt_provider_cloud">클라우드</string>
+    <string name="settings_stt_engine">음성-텍스트</string>
+    <string name="settings_stt_model">전사 모델</string>
+    <string name="settings_stt_provider">음성-텍스트 공급자</string>
+    <string name="settings_tts_custom_model">사용자 지정 모델 ID</string>
+    <string name="settings_tts_custom_voice">사용자 지정 음성 ID</string>
+    <string name="settings_voice_choose_model">모델 선택</string>
 </resources>

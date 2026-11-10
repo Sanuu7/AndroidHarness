@@ -444,4 +444,26 @@
     <string name="subagents_running_count">"%1$d ang tumatakbo"</string>
     <string name="subagents_running_background">"Tumatakbo sa background"</string>
     <string name="subagents_back_to_list">"Bumalik sa mga subagents"</string>
+    <string name="settings_voice_manage_providers">Pamahalaan ang mga voice provider</string>
+    <string name="settings_voice_add_provider">Magdagdag ng provider</string>
+    <string name="settings_voice_edit_provider">I-edit</string>
+    <string name="settings_voice_new_provider">Bagong voice provider</string>
+    <string name="settings_voice_provider_name">Pangalan ng provider</string>
+    <string name="settings_voice_base_url">Base URL</string>
+    <string name="settings_voice_protocol">Protocol ng API</string>
+    <string name="settings_voice_get_key">Kumuha ng API key</string>
+    <string name="settings_voice_add_key">Magdagdag ng API key</string>
+    <string name="settings_voice_replace_key">Palitan ang key</string>
+    <string name="settings_voice_no_providers">Walang nakatakdang voice provider. Magdagdag ng isa para sa cloud voice.</string>
+    <string name="settings_voice_presets_hint">Kasama na ang Groq, OpenAI, ElevenLabs, Deepgram, Cartesia, AssemblyAI at Edge. Gumagamit ng OpenAI Audio format ang custom endpoint.</string>
+    <string name="settings_voice_no_key_needed">hindi kailangan ng key</string>
+    <string name="settings_voice_requires_key">Kailangan ng API key</string>
+    <string name="settings_tts_provider">Provider</string>
+    <string name="settings_stt_provider_cloud">Cloud</string>
+    <string name="settings_stt_engine">Pagsasalita sa teksto</string>
+    <string name="settings_stt_model">Model ng transkripsyon</string>
+    <string name="settings_stt_provider">Provider ng pagsasalita sa teksto</string>
+    <string name="settings_tts_custom_model">Custom model ID</string>
+    <string name="settings_tts_custom_voice">Custom voice ID</string>
+    <string name="settings_voice_choose_model">Pumili ng model</string>
 </resources>

@@ -442,4 +442,26 @@
     <string name="subagents_running_count">"%1$d 個執行中"</string>
     <string name="subagents_running_background">"正在背景執行"</string>
     <string name="subagents_back_to_list">"返回子代理"</string>
+    <string name="settings_voice_manage_providers">管理語音提供者</string>
+    <string name="settings_voice_add_provider">新增提供者</string>
+    <string name="settings_voice_edit_provider">編輯</string>
+    <string name="settings_voice_new_provider">新增語音提供者</string>
+    <string name="settings_voice_provider_name">提供者名稱</string>
+    <string name="settings_voice_base_url">基礎 URL</string>
+    <string name="settings_voice_protocol">API 協定</string>
+    <string name="settings_voice_get_key">取得 API 金鑰</string>
+    <string name="settings_voice_add_key">新增 API 金鑰</string>
+    <string name="settings_voice_replace_key">取代金鑰</string>
+    <string name="settings_voice_no_providers">尚未設定語音提供者。新增一個即可使用雲端語音。</string>
+    <string name="settings_voice_presets_hint">已內建 Groq、OpenAI、ElevenLabs、Deepgram、Cartesia、AssemblyAI 與 Edge。自訂端點使用 OpenAI Audio 格式。</string>
+    <string name="settings_voice_no_key_needed">無需金鑰</string>
+    <string name="settings_voice_requires_key">需要 API 金鑰</string>
+    <string name="settings_tts_provider">提供者</string>
+    <string name="settings_stt_provider_cloud">雲端</string>
+    <string name="settings_stt_engine">語音轉文字</string>
+    <string name="settings_stt_model">轉錄模型</string>
+    <string name="settings_stt_provider">語音轉文字提供者</string>
+    <string name="settings_tts_custom_model">自訂模型 ID</string>
+    <string name="settings_tts_custom_voice">自訂語音 ID</string>
+    <string name="settings_voice_choose_model">選擇模型</string>
 </resources>
