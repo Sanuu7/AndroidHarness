@@ -127,6 +127,150 @@ internal fun VoiceProvidersSection(
 
     SettingsHeader(uiContext.getString(R.string.ui_voice_speech))
 
+    // --- Text to speech -----------------------------------------------------
+    SettingsHeader(uiContext.getString(R.string.settings_tts_output))
+    SettingsPanel(Modifier.fillMaxWidth()) {
+        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Icon(
+                    Icons.Outlined.VolumeUp,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                    modifier = Modifier.size(20.dp),
+                )
+                Spacer(Modifier.width(10.dp))
+                Column(Modifier.weight(1f)) {
+                    SettingsAnchor(R.string.settings_anchor_tts) {
+                        Text(stringResource(R.string.settings_anchor_tts), style = MaterialTheme.typography.titleSmall)
+                    }
+                    Text(
+                        when {
+                            isSystemTts -> uiContext.getString(R.string.settings_tts_device_hint)
+                            ttsProvider == null -> uiContext.getString(R.string.settings_voice_no_providers)
+                            hasTtsKey -> ttsProvider.name + " · " + ttsModel
+                            else -> ttsProvider.name + " · " + uiContext.getString(R.string.settings_tts_groq_key_needed)
+                        },
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                StatusText(
+                    when {
+                        isSystemTts -> uiContext.getString(R.string.ui_inbuilt)
+                        hasTtsKey -> ttsProvider?.name ?: ""
+                        else -> uiContext.getString(R.string.ui_no_key)
+                    },
+                    ok = isSystemTts || hasTtsKey,
+                )
+            }
+
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                listOf(
+                    AppSettings.TTS_ENGINE_SYSTEM to uiContext.getString(R.string.settings_tts_device),
+                    (ttsProvider?.id ?: "cloud") to (ttsProvider?.name ?: uiContext.getString(R.string.settings_tts_provider)),
+                ).forEachIndexed { index, (value, label) ->
+                    SegmentedButton(
+                        selected = ttsEngine == value || (!isSystemTts && index == 1),
+                        onClick = {
+                            if (index == 0) {
+                                scope.launch { container.settings.setTtsEngine(AppSettings.TTS_ENGINE_SYSTEM) }
+                            } else {
+                                ttsProviderPicker = true
+                            }
+                        },
+                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
+                    ) { Text(label, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) }
+                }
+            }
+
+            if (!isSystemTts && ttsProvider != null) {
+                Text(
+                    stringResource(R.string.settings_tts_model),
+                    Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_model),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+                OutlinedButton(
+                    onClick = { ttsModelPicker = true },
+                    modifier = Modifier.fillMaxWidth(),
+                ) {
+                    Text(
+                        com.androidharness.app.data.audio.VoiceGateway.modelLabel(ttsProvider, ttsModel),
+                        Modifier.weight(1f),
+                    )
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
+                }
+            }
+
+            Text(
+                stringResource(R.string.settings_tts_voice),
+                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_voice),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            OutlinedButton(onClick = { voicePicker = true }, modifier = Modifier.fillMaxWidth()) {
+                Text(
+                    when {
+                        isSystemTts -> settings.ttsSystemVoice?.replace('_', ' ')
+                            ?: uiContext.getString(R.string.settings_tts_voice_automatic)
+                        else -> ttsVoice.ifBlank { uiContext.getString(R.string.settings_tts_voice_automatic) }
+                    },
+                    Modifier.weight(1f),
+                )
+                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
+            }
+
+            Text(
+                stringResource(R.string.settings_tts_speed),
+                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_speed),
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                listOf(0.75f to "0.75×", 1f to "1×", 1.25f to "1.25×", 1.5f to "1.5×")
+                    .forEachIndexed { index, (value, label) ->
+                        SegmentedButton(
+                            selected = settings.ttsSpeed == value,
+                            onClick = { scope.launch { container.settings.setTtsSpeed(value) } },
+                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 4),
+                        ) { Text(label) }
+                    }
+            }
+
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    SettingsAnchor(R.string.settings_tts_always_speak) {
+                        Text(stringResource(R.string.settings_tts_always_speak), style = MaterialTheme.typography.titleSmall)
+                    }
+                    Text(
+                        stringResource(R.string.settings_tts_always_speak_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+                Switch(
+                    checked = settings.ttsAlwaysSpeak,
+                    onCheckedChange = { scope.launch { container.settings.setTtsAlwaysSpeak(it) } },
+                )
+            }
+
+            OutlinedButton(onClick = { container.tts.preview() }, modifier = Modifier.fillMaxWidth()) {
+                Icon(Icons.Outlined.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(Modifier.width(6.dp))
+                Text(stringResource(R.string.settings_tts_test))
+            }
+
+            if (!isSystemTts) {
+                OutlinedButton(onClick = { managing = true }, modifier = Modifier.fillMaxWidth()) {
+                    Icon(Icons.Outlined.Dns, contentDescription = null, modifier = Modifier.size(16.dp))
+                    Spacer(Modifier.width(6.dp))
+                    Text(stringResource(R.string.settings_voice_manage_providers), Modifier.weight(1f))
+                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
+                }
+            }
+        }
+    }
+
     // --- Speech to text -----------------------------------------------------
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -303,150 +447,6 @@ internal fun VoiceProvidersSection(
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
-        }
-    }
-
-    // --- Text to speech -----------------------------------------------------
-    SettingsHeader(uiContext.getString(R.string.settings_tts_output))
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.VolumeUp,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    SettingsAnchor(R.string.settings_anchor_tts) {
-                        Text(stringResource(R.string.settings_anchor_tts), style = MaterialTheme.typography.titleSmall)
-                    }
-                    Text(
-                        when {
-                            isSystemTts -> uiContext.getString(R.string.settings_tts_device_hint)
-                            ttsProvider == null -> uiContext.getString(R.string.settings_voice_no_providers)
-                            hasTtsKey -> ttsProvider.name + " · " + ttsModel
-                            else -> ttsProvider.name + " · " + uiContext.getString(R.string.settings_tts_groq_key_needed)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                StatusText(
-                    when {
-                        isSystemTts -> uiContext.getString(R.string.ui_inbuilt)
-                        hasTtsKey -> ttsProvider?.name ?: ""
-                        else -> uiContext.getString(R.string.ui_no_key)
-                    },
-                    ok = isSystemTts || hasTtsKey,
-                )
-            }
-
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(
-                    AppSettings.TTS_ENGINE_SYSTEM to uiContext.getString(R.string.settings_tts_device),
-                    (ttsProvider?.id ?: "cloud") to (ttsProvider?.name ?: uiContext.getString(R.string.settings_tts_provider)),
-                ).forEachIndexed { index, (value, label) ->
-                    SegmentedButton(
-                        selected = ttsEngine == value || (!isSystemTts && index == 1),
-                        onClick = {
-                            if (index == 0) {
-                                scope.launch { container.settings.setTtsEngine(AppSettings.TTS_ENGINE_SYSTEM) }
-                            } else {
-                                ttsProviderPicker = true
-                            }
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
-                    ) { Text(label, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) }
-                }
-            }
-
-            if (!isSystemTts && ttsProvider != null) {
-                Text(
-                    stringResource(R.string.settings_tts_model),
-                    Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_model),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedButton(
-                    onClick = { ttsModelPicker = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        com.androidharness.app.data.audio.VoiceGateway.modelLabel(ttsProvider, ttsModel),
-                        Modifier.weight(1f),
-                    )
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-                }
-            }
-
-            Text(
-                stringResource(R.string.settings_tts_voice),
-                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_voice),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            OutlinedButton(onClick = { voicePicker = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    when {
-                        isSystemTts -> settings.ttsSystemVoice?.replace('_', ' ')
-                            ?: uiContext.getString(R.string.settings_tts_voice_automatic)
-                        else -> ttsVoice.ifBlank { uiContext.getString(R.string.settings_tts_voice_automatic) }
-                    },
-                    Modifier.weight(1f),
-                )
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-            }
-
-            Text(
-                stringResource(R.string.settings_tts_speed),
-                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_speed),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(0.75f to "0.75×", 1f to "1×", 1.25f to "1.25×", 1.5f to "1.5×")
-                    .forEachIndexed { index, (value, label) ->
-                        SegmentedButton(
-                            selected = settings.ttsSpeed == value,
-                            onClick = { scope.launch { container.settings.setTtsSpeed(value) } },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 4),
-                        ) { Text(label) }
-                    }
-            }
-
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    SettingsAnchor(R.string.settings_tts_always_speak) {
-                        Text(stringResource(R.string.settings_tts_always_speak), style = MaterialTheme.typography.titleSmall)
-                    }
-                    Text(
-                        stringResource(R.string.settings_tts_always_speak_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = settings.ttsAlwaysSpeak,
-                    onCheckedChange = { scope.launch { container.settings.setTtsAlwaysSpeak(it) } },
-                )
-            }
-
-            OutlinedButton(onClick = { container.tts.preview() }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.settings_tts_test))
-            }
-
-            if (!isSystemTts) {
-                OutlinedButton(onClick = { managing = true }, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Outlined.Dns, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.settings_voice_manage_providers), Modifier.weight(1f))
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-                }
-            }
         }
     }
 
