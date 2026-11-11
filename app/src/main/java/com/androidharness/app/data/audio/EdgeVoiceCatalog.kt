@@ -114,25 +114,25 @@ class EdgeVoiceCatalog(
     }
 
     /** Parses the array of `{ShortName, Locale, LocaleName, Gender, ...}` objects. */
-    internal fun parse(body: String): List<EdgeVoice>? = runCatching {
-        json.parseToJsonElement(body).let { element ->
-            val array = element as? kotlinx.serialization.json.JsonArray ?: return@runCatching null
-            array.mapNotNull { item ->
-                val obj = item as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
-                fun field(name: String): String =
-                    obj[name]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content } ?: ""
-                val short = field("ShortName")
-                if (short.isBlank()) return@mapNotNull null
-                EdgeVoice(
-                    shortName = short,
-                    locale = field("Locale"),
-                    localeName = field("LocaleName"),
-                    gender = field("Gender"),
-                    displayName = displayNameFor(short),
-                )
-            }
+    internal fun parse(body: String): List<EdgeVoice>? {
+        val element = runCatching { json.parseToJsonElement(body) }.getOrNull() ?: return null
+        val array = element as? kotlinx.serialization.json.JsonArray ?: return null
+        val voices = array.mapNotNull { item ->
+            val obj = item as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
+            fun field(name: String): String =
+                obj[name]?.let { (it as? kotlinx.serialization.json.JsonPrimitive)?.content } ?: ""
+            val short = field("ShortName")
+            if (short.isBlank()) return@mapNotNull null
+            EdgeVoice(
+                shortName = short,
+                locale = field("Locale"),
+                localeName = field("LocaleName"),
+                gender = field("Gender"),
+                displayName = displayNameFor(short),
+            )
         }
-    }?.takeIf { it.isNotEmpty() }
+        return voices.takeIf { it.isNotEmpty() }
+    }
 
     private fun cacheFile() = File(cacheDir, "voices.json")
 
@@ -191,7 +191,7 @@ class EdgeVoiceCatalog(
                     entry.key.substringBefore('-').equals(language, ignoreCase = true) -> 1
                     else -> 2
                 }
-            }.thenBy { (a, b) -> titleFor(a, b).lowercase(Locale.ROOT) },
+            }.thenBy { entry -> titleFor(entry.key, entry.value.firstOrNull()?.localeName.orEmpty()).lowercase(Locale.ROOT) },
         )
         return ordered.map { (locale, list) ->
             EdgeVoiceGroup(

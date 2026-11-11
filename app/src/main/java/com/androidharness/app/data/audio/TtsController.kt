@@ -177,10 +177,10 @@ class TtsController(
             VoiceProtocol.EDGE -> {
                 // Edge voices are grouped by language; flatten for the plain list
                 // API, keeping the group order so related voices stay together.
-                val groups = edgeVoices.group(edgeVoices.voices())
+                val groups = edgeCatalog.group(edgeCatalog.voices())
                 return groups.flatMap { group ->
                     group.voices.map { voice ->
-                        TtsVoiceOption(voice.shortName, "${'$'}{voice.displayName} · ${'$'}{group.title}")
+                        TtsVoiceOption(voice.shortName, "${voice.displayName} · ${group.title}")
                     }
                 }
             }
@@ -190,11 +190,11 @@ class TtsController(
     }
 
     /** Edge voices grouped by language, for the sectioned picker. */
-    suspend fun edgeVoiceGroups(): List<EdgeVoiceGroup> = edgeVoices.group(edgeVoices.voices())
+    suspend fun edgeVoiceGroups(): List<EdgeVoiceGroup> = edgeCatalog.group(edgeCatalog.voices())
 
     /** Forces a catalogue refresh; used by the picker's refresh action. */
     suspend fun refreshEdgeVoices(): List<EdgeVoiceGroup> =
-        edgeVoices.group(edgeVoices.voices(forceRefresh = true))
+        edgeCatalog.group(edgeCatalog.voices(forceRefresh = true))
 
     /** "pt-BR-FranciscaNeural" reads better as "Francisca · pt-BR". */
     private fun voiceLabel(id: String): String {
