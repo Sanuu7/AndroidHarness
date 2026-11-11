@@ -67,6 +67,7 @@ class TtsController(
     private val settings: SettingsRepository,
     private val keys: KeyStoreManager,
     private val voices: VoiceProviderRepository,
+    private val edgeCatalog: EdgeVoiceCatalog,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val audioManager = context.getSystemService(AudioManager::class.java)
@@ -161,16 +162,39 @@ class TtsController(
         return VoiceGateway.ttsModels(provider, key)
     }
 
-    /** Voices of the configured provider, or of the installed engine for "system". */
+    /**
+     * Voices of the configured provider. Edge gets its full catalogue grouped by
+     * language; ElevenLabs asks the account; the rest use documented voices.
+     */
     suspend fun providerVoices(providerId: String?, model: String): List<TtsVoiceOption> {
         val provider = voices.byId(providerId) ?: return emptyList()
-        if (provider.protocol == VoiceProtocol.ELEVENLABS) {
-            val key = keys.voiceApiKey(provider.id).orEmpty()
-            val remote = ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).getOrNull()
-            if (!remote.isNullOrEmpty()) return remote.map { TtsVoiceOption(it.id, it.name) }
+        when (provider.protocol) {
+            VoiceProtocol.ELEVENLABS -> {
+                val key = keys.voiceApiKey(provider.id).orEmpty()
+                val remote = ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).getOrNull()
+                if (!remote.isNullOrEmpty()) return remote.map { TtsVoiceOption(it.id, it.name) }
+            }
+            VoiceProtocol.EDGE -> {
+                // Edge voices are grouped by language; flatten for the plain list
+                // API, keeping the group order so related voices stay together.
+                val groups = edgeVoices.group(edgeVoices.voices())
+                return groups.flatMap { group ->
+                    group.voices.map { voice ->
+                        TtsVoiceOption(voice.shortName, "${'$'}{voice.displayName} · ${'$'}{group.title}")
+                    }
+                }
+            }
+            else -> Unit
         }
         return VoiceGateway.voicesFor(provider, model).map { TtsVoiceOption(it, voiceLabel(it)) }
     }
+
+    /** Edge voices grouped by language, for the sectioned picker. */
+    suspend fun edgeVoiceGroups(): List<EdgeVoiceGroup> = edgeVoices.group(edgeVoices.voices())
+
+    /** Forces a catalogue refresh; used by the picker's refresh action. */
+    suspend fun refreshEdgeVoices(): List<EdgeVoiceGroup> =
+        edgeVoices.group(edgeVoices.voices(forceRefresh = true))
 
     /** "pt-BR-FranciscaNeural" reads better as "Francisca · pt-BR". */
     private fun voiceLabel(id: String): String {

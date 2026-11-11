@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">Eigene Modell-ID</string>
     <string name="settings_tts_custom_voice">Eigene Stimmen-ID</string>
     <string name="settings_voice_choose_model">Modell wählen</string>
+    <string name="settings_voice_search_voices">Stimmen suchen</string>
+    <string name="settings_voice_loading_voices">Stimmen werden geladen…</string>
+    <string name="settings_voice_no_match">Keine Stimme passt zu dieser Suche.</string>
+    <string name="settings_voice_voice_count">%1$d Stimmen</string>
+    <string name="settings_voice_female">Weiblich</string>
+    <string name="settings_voice_male">Männlich</string>
+    <string name="settings_voice_multilingual">Multi</string>
 </resources>

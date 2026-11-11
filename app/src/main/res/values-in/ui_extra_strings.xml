@@ -464,4 +464,11 @@
     <string name="settings_tts_custom_model">ID model khusus</string>
     <string name="settings_tts_custom_voice">ID suara khusus</string>
     <string name="settings_voice_choose_model">Pilih model</string>
+    <string name="settings_voice_search_voices">Cari suara</string>
+    <string name="settings_voice_loading_voices">Memuat suara…</string>
+    <string name="settings_voice_no_match">Tiada suara sepadan dengan carian itu.</string>
+    <string name="settings_voice_voice_count">%1$d suara</string>
+    <string name="settings_voice_female">Wanita</string>
+    <string name="settings_voice_male">Pria</string>
+    <string name="settings_voice_multilingual">Multi</string>
 </resources>

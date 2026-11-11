@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">අභිරුචි ආකෘති ID</string>
     <string name="settings_tts_custom_voice">අභිරුචි හඬ ID</string>
     <string name="settings_voice_choose_model">ආකෘතිය තෝරන්න</string>
+    <string name="settings_voice_search_voices">හඬ සොයන්න</string>
+    <string name="settings_voice_loading_voices">හඬ පූරණය වෙමින්…</string>
+    <string name="settings_voice_no_match">එම සෙවුමට ගැළපෙන හඬක් නැත.</string>
+    <string name="settings_voice_voice_count">හඬ %1$d</string>
+    <string name="settings_voice_female">ගැහැනු</string>
+    <string name="settings_voice_male">පිරිමි</string>
+    <string name="settings_voice_multilingual">බහුභාෂා</string>
 </resources>

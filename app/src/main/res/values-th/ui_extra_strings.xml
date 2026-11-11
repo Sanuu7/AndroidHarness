@@ -464,4 +464,11 @@
     <string name="settings_tts_custom_model">ID โมเดลกำหนดเอง</string>
     <string name="settings_tts_custom_voice">ID เสียงกำหนดเอง</string>
     <string name="settings_voice_choose_model">เลือกโมเดล</string>
+    <string name="settings_voice_search_voices">ค้นหาเสียง</string>
+    <string name="settings_voice_loading_voices">กำลังโหลดเสียง…</string>
+    <string name="settings_voice_no_match">ไม่มีเสียงที่ตรงกับการค้นหา</string>
+    <string name="settings_voice_voice_count">%1$d เสียง</string>
+    <string name="settings_voice_female">เสียงหญิง</string>
+    <string name="settings_voice_male">เสียงชาย</string>
+    <string name="settings_voice_multilingual">หลายภาษา</string>
 </resources>

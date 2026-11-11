@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">தனிப்பயன் மாதிரி ID</string>
     <string name="settings_tts_custom_voice">தனிப்பயன் குரல் ID</string>
     <string name="settings_voice_choose_model">மாதிரியைத் தேர்ந்து</string>
+    <string name="settings_voice_search_voices">குரல்களைத் தேடு</string>
+    <string name="settings_voice_loading_voices">குரல்கள் ஏற்றப்படுகிறது…</string>
+    <string name="settings_voice_no_match">இந்தத் தேடலுக்கு பொருந்தும் குரல் இல்லை.</string>
+    <string name="settings_voice_voice_count">%1$d குரல்கள்</string>
+    <string name="settings_voice_female">பெண்</string>
+    <string name="settings_voice_male">ஆண்</string>
+    <string name="settings_voice_multilingual">பல்மொழி</string>
 </resources>

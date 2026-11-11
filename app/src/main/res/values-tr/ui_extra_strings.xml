@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">Özel model kimliği</string>
     <string name="settings_tts_custom_voice">Özel ses kimliği</string>
     <string name="settings_voice_choose_model">Model seç</string>
+    <string name="settings_voice_search_voices">Ses ara</string>
+    <string name="settings_voice_loading_voices">Sesler yükleniyor…</string>
+    <string name="settings_voice_no_match">Bu aramayla eşleşen ses yok.</string>
+    <string name="settings_voice_voice_count">%1$d ses</string>
+    <string name="settings_voice_female">Kadın</string>
+    <string name="settings_voice_male">Erkek</string>
+    <string name="settings_voice_multilingual">Çoklu</string>
 </resources>

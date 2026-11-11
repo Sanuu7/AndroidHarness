@@ -464,4 +464,11 @@
     <string name="settings_tts_custom_model">사용자 지정 모델 ID</string>
     <string name="settings_tts_custom_voice">사용자 지정 음성 ID</string>
     <string name="settings_voice_choose_model">모델 선택</string>
+    <string name="settings_voice_search_voices">음성 검색</string>
+    <string name="settings_voice_loading_voices">음성 불러오는 중…</string>
+    <string name="settings_voice_no_match">검색과 일치하는 음성이 없습니다.</string>
+    <string name="settings_voice_voice_count">%1$d개 음성</string>
+    <string name="settings_voice_female">여성</string>
+    <string name="settings_voice_male">남성</string>
+    <string name="settings_voice_multilingual">다국어</string>
 </resources>

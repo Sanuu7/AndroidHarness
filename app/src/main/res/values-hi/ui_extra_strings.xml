@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">कस्टम मॉडल ID</string>
     <string name="settings_tts_custom_voice">कस्टम वॉइस ID</string>
     <string name="settings_voice_choose_model">मॉडल चुनें</string>
+    <string name="settings_voice_search_voices">आवाज़ खोजें</string>
+    <string name="settings_voice_loading_voices">आवाज़ें लोड हो रही हैं…</string>
+    <string name="settings_voice_no_match">इस खोज से कोई आवाज़ मेल नहीं खाती।</string>
+    <string name="settings_voice_voice_count">%1$d आवाज़ें</string>
+    <string name="settings_voice_female">महिला</string>
+    <string name="settings_voice_male">पुरुष</string>
+    <string name="settings_voice_multilingual">बहुभाषी</string>
 </resources>

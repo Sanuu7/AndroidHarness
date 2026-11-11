@@ -470,4 +470,11 @@
     <string name="settings_tts_custom_model">Свой ID модели</string>
     <string name="settings_tts_custom_voice">Свой ID голоса</string>
     <string name="settings_voice_choose_model">Выбрать модель</string>
+    <string name="settings_voice_search_voices">Поиск голосов</string>
+    <string name="settings_voice_loading_voices">Загрузка голосов…</string>
+    <string name="settings_voice_no_match">Голосов по этому запросу нет.</string>
+    <string name="settings_voice_voice_count">%1$d голосов</string>
+    <string name="settings_voice_female">Женский</string>
+    <string name="settings_voice_male">Мужской</string>
+    <string name="settings_voice_multilingual">Мульти</string>
 </resources>

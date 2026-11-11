@@ -474,4 +474,11 @@
     <string name="settings_tts_custom_model">معرّف نموذج مخصص</string>
     <string name="settings_tts_custom_voice">معرّف صوت مخصص</string>
     <string name="settings_voice_choose_model">اختيار نموذج</string>
+    <string name="settings_voice_search_voices">ابحث عن الأصوات</string>
+    <string name="settings_voice_loading_voices">جارٍ تحميل الأصوات…</string>
+    <string name="settings_voice_no_match">لا يوجد صوت يطابق البحث.</string>
+    <string name="settings_voice_voice_count">%1$d صوت</string>
+    <string name="settings_voice_female">أنثى</string>
+    <string name="settings_voice_male">ذكر</string>
+    <string name="settings_voice_multilingual">متعدد</string>
 </resources>

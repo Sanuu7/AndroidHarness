@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">Custom model ID</string>
     <string name="settings_tts_custom_voice">Custom voice ID</string>
     <string name="settings_voice_choose_model">Pumili ng model</string>
+    <string name="settings_voice_search_voices">Maghanap ng boses</string>
+    <string name="settings_voice_loading_voices">Naglo-load ng mga boses…</string>
+    <string name="settings_voice_no_match">Walang boses na tumutugma sa paghahanap.</string>
+    <string name="settings_voice_voice_count">%1$d na boses</string>
+    <string name="settings_voice_female">Babae</string>
+    <string name="settings_voice_male">Lalaki</string>
+    <string name="settings_voice_multilingual">Multi</string>
 </resources>

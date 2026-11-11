@@ -91,6 +91,7 @@ internal fun VoiceProvidersSection(
     var managing by remember { mutableStateOf(false) }
     var ttsTermsError by remember { mutableStateOf<TtsError?>(null) }
     var modelEpoch by remember { mutableStateOf(0) }
+    var voiceEpoch by remember { mutableStateOf(0) }
 
     val sttKey = sttProvider?.let { remember(keyEpoch, it.id) { container.voiceProviders.apiKeyFor(it.id) } }
     val ttsKey = ttsProvider?.let { remember(keyEpoch, it.id) { container.voiceProviders.apiKeyFor(it.id) } }
@@ -514,26 +515,52 @@ internal fun VoiceProvidersSection(
         val deviceVoices by produceState(initialValue = emptyList<TtsVoiceOption>(), ttsEngine) {
             value = if (ttsEngine == AppSettings.TTS_ENGINE_SYSTEM) container.tts.systemVoices() else emptyList()
         }
-        val options = if (isSystemTts) {
-            listOf(TtsVoiceOption("", uiContext.getString(R.string.settings_tts_voice_automatic))) + deviceVoices
-        } else {
-            emptyList()
+        // Edge has its own sectioned picker: 300+ voices need grouping and search.
+        val isEdge = ttsProvider?.protocol == com.androidharness.app.data.audio.VoiceProtocol.EDGE
+        val edgeGroups by produceState(initialValue = emptyList<com.androidharness.app.data.audio.EdgeVoiceGroup>(), ttsProvider?.id, voiceEpoch) {
+            value = if (isEdge) container.tts.edgeVoiceGroups() else emptyList()
         }
         val providerVoices by produceState(initialValue = emptyList<TtsVoiceOption>(), ttsProvider?.id, ttsModel) {
-            value = if (isSystemTts) emptyList() else container.tts.providerVoices(ttsProvider?.id, ttsModel)
+            value = if (isSystemTts || isEdge) emptyList() else container.tts.providerVoices(ttsProvider?.id, ttsModel)
         }
-        VoicePickerDialog(
-            options = if (isSystemTts) options else providerVoices,
-            selectedId = if (isSystemTts) settings.ttsSystemVoice.orEmpty() else ttsVoice,
-            onSelect = { id ->
-                voicePicker = false
-                scope.launch {
-                    if (isSystemTts) container.settings.setTtsSystemVoice(id.ifBlank { null })
-                    else ttsProvider?.let { container.settings.setVoiceProviderTtsVoice(it.id, id) }
-                }
-            },
-            onDismiss = { voicePicker = false },
-        )
+        if (isEdge) {
+            EdgeVoicePickerDialog(
+                groups = edgeGroups,
+                selectedId = ttsVoice,
+                loading = edgeGroups.isEmpty(),
+                onSelect = { voice ->
+                    voicePicker = false
+                    scope.launch {
+                        ttsProvider?.let { container.settings.setVoiceProviderTtsVoice(it.id, voice.shortName) }
+                    }
+                },
+                onRefresh = {
+                    scope.launch {
+                        edgeGroups = emptyList()
+                        container.tts.refreshEdgeVoices()
+                        voiceEpoch++
+                    }
+                },
+                onDismiss = { voicePicker = false },
+            )
+        } else {
+            VoicePickerDialog(
+                options = if (isSystemTts) {
+                    listOf(TtsVoiceOption("", uiContext.getString(R.string.settings_tts_voice_automatic))) + deviceVoices
+                } else {
+                    providerVoices
+                },
+                selectedId = if (isSystemTts) settings.ttsSystemVoice.orEmpty() else ttsVoice,
+                onSelect = { id ->
+                    voicePicker = false
+                    scope.launch {
+                        if (isSystemTts) container.settings.setTtsSystemVoice(id.ifBlank { null })
+                        else ttsProvider?.let { container.settings.setVoiceProviderTtsVoice(it.id, id) }
+                    }
+                },
+                onDismiss = { voicePicker = false },
+            )
+        }
     }
     if (managing) {
         VoiceProvidersManagerDialog(

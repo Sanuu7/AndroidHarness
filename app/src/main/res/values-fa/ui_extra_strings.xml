@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">شناسه مدل سفارشی</string>
     <string name="settings_tts_custom_voice">شناسه صدا سفارشی</string>
     <string name="settings_voice_choose_model">انتخاب مدل</string>
+    <string name="settings_voice_search_voices">جستجوی صداها</string>
+    <string name="settings_voice_loading_voices">در حال بارگذاری صداها…</string>
+    <string name="settings_voice_no_match">هیچ صدایی با این جستجو مطابقت ندارد.</string>
+    <string name="settings_voice_voice_count">%1$d صدا</string>
+    <string name="settings_voice_female">زن</string>
+    <string name="settings_voice_male">مرد</string>
+    <string name="settings_voice_multilingual">چندزبانه</string>
 </resources>

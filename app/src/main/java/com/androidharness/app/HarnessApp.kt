@@ -105,8 +105,10 @@ class AppContainer(val appContext: Context) {
     internal val runtimePolicy = AppRuntimePolicy(appContext, settings)
     /** Voice providers (speech-to-text and text-to-speech) with per-provider keys. */
     val voiceProviders = com.androidharness.app.data.audio.VoiceProviderRepository(appContext, keys)
+    /** Microsoft Edge voice catalogue, cached on disk for a day. */
+    val edgeVoices = com.androidharness.app.data.audio.EdgeVoiceCatalog(appContext)
     /** Reads assistant replies with Android TTS or the selected voice provider. */
-    val tts = com.androidharness.app.data.audio.TtsController(appContext, settings, keys, voiceProviders)
+    val tts = com.androidharness.app.data.audio.TtsController(appContext, settings, keys, voiceProviders, edgeVoices)
     internal val editorScope = kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     internal val editorDrafts = com.androidharness.app.ui.files.EditorDraftStore(
         java.io.File(appContext.noBackupFilesDir, "editor-drafts"), editorScope)

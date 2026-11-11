@@ -466,4 +466,11 @@
     <string name="settings_tts_custom_model">কাস্টম মডেল আইডি</string>
     <string name="settings_tts_custom_voice">কাস্টম ভয়েস আইডি</string>
     <string name="settings_voice_choose_model">মডেল বাছুন</string>
+    <string name="settings_voice_search_voices">ভয়েস খুঁজুন</string>
+    <string name="settings_voice_loading_voices">ভয়েস লোড হচ্ছে…</string>
+    <string name="settings_voice_no_match">এই অনুসন্ধানের সাথে কোনো ভয়েস মেলে না।</string>
+    <string name="settings_voice_voice_count">%1$d ভয়েস</string>
+    <string name="settings_voice_female">মহিলা</string>
+    <string name="settings_voice_male">পুরুষ</string>
+    <string name="settings_voice_multilingual">বহুভাষিক</string>
 </resources>

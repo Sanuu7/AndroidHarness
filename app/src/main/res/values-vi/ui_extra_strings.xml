@@ -464,4 +464,11 @@
     <string name="settings_tts_custom_model">ID mô hình tùy chỉnh</string>
     <string name="settings_tts_custom_voice">ID giọng nói tùy chỉnh</string>
     <string name="settings_voice_choose_model">Chọn mô hình</string>
+    <string name="settings_voice_search_voices">Tìm giọng nói</string>
+    <string name="settings_voice_loading_voices">Đang tải giọng nói…</string>
+    <string name="settings_voice_no_match">Không có giọng nói nào khớp.</string>
+    <string name="settings_voice_voice_count">%1$d giọng nói</string>
+    <string name="settings_voice_female">Nữ</string>
+    <string name="settings_voice_male">Nam</string>
+    <string name="settings_voice_multilingual">Đa ngữ</string>
 </resources>

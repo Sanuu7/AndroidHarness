@@ -462,4 +462,11 @@
     <string name="settings_tts_custom_model">自定义模型 ID</string>
     <string name="settings_tts_custom_voice">自定义语音 ID</string>
     <string name="settings_voice_choose_model">选择模型</string>
+    <string name="settings_voice_search_voices">搜索语音</string>
+    <string name="settings_voice_loading_voices">正在加载语音…</string>
+    <string name="settings_voice_no_match">没有匹配的语音。</string>
+    <string name="settings_voice_voice_count">%1$d 个语音</string>
+    <string name="settings_voice_female">女声</string>
+    <string name="settings_voice_male">男声</string>
+    <string name="settings_voice_multilingual">多语言</string>
 </resources>

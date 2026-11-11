@@ -464,4 +464,11 @@
     <string name="subagents_running_count">%1$d running</string>
     <string name="subagents_running_background">Running in the background</string>
     <string name="subagents_back_to_list">Back to subagents</string>
+    <string name="settings_voice_search_voices">Search voices</string>
+    <string name="settings_voice_loading_voices">Loading voices…</string>
+    <string name="settings_voice_no_match">No voice matches that search.</string>
+    <string name="settings_voice_voice_count">%1$d voices</string>
+    <string name="settings_voice_female">Female</string>
+    <string name="settings_voice_male">Male</string>
+    <string name="settings_voice_multilingual">Multi</string>
 </resources>
