@@ -417,7 +417,9 @@ internal fun VoiceProvidersSection(
 
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    Text(stringResource(R.string.settings_tts_always_speak), style = MaterialTheme.typography.titleSmall)
+                    SettingsAnchor(R.string.settings_tts_always_speak) {
+                        Text(stringResource(R.string.settings_tts_always_speak), style = MaterialTheme.typography.titleSmall)
+                    }
                     Text(
                         stringResource(R.string.settings_tts_always_speak_desc),
                         style = MaterialTheme.typography.bodySmall,

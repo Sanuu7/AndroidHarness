@@ -200,7 +200,7 @@ internal fun VoiceProviderCard(
     var status by remember { mutableStateOf<String?>(null) }
     val hasKey = remember(keyEpoch, provider.id) { container.voiceProviders.apiKeyFor(provider.id) != null }
 
-    SettingsPanel(Modifier.fillMaxWidth()) {
+    SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_groq_key)) {
         Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
