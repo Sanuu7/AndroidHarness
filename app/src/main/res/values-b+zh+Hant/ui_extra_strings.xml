@@ -474,4 +474,7 @@
     <string name="settings_voice_promo_body">你可以口述訊息，而不必打字。手機內建的辨識器無需設定。</string>
     <string name="settings_voice_promo_device">使用手機音訊</string>
     <string name="settings_voice_promo_cloud">設定雲端語音</string>
+    <string name="settings_voice_provider_key">%1$s API 金鑰</string>
+    <string name="settings_voice_key_needed">新增 API 金鑰</string>
+    <string name="settings_voice_key_saved">金鑰已儲存</string>
 </resources>

@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">টাইপ করার বদলে বার্তা বলতে পারেন। ফোনের নিজস্ব রিকগনাইজার সেটআপ ছাড়াই কাজ করে।</string>
     <string name="settings_voice_promo_device">ফোনের অডিও ব্যবহার করুন</string>
     <string name="settings_voice_promo_cloud">ক্লাউড ভয়েস সেট করুন</string>
+    <string name="settings_voice_provider_key">%1$s API কী</string>
+    <string name="settings_voice_key_needed">API কী যোগ করুন</string>
+    <string name="settings_voice_key_saved">কী সংরক্ষিত</string>
 </resources>

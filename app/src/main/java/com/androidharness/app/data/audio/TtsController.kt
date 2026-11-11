@@ -68,6 +68,7 @@ class TtsController(
     private val keys: KeyStoreManager,
     private val voices: VoiceProviderRepository,
     private val edgeCatalog: EdgeVoiceCatalog,
+    private val edgeVersion: EdgeVersionProvider,
 ) {
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private val audioManager = context.getSystemService(AudioManager::class.java)
@@ -173,6 +174,11 @@ class TtsController(
                 val key = keys.voiceApiKey(provider.id).orEmpty()
                 val remote = ElevenLabsClient.voices(provider.resolvedBaseUrl(), key).getOrNull()
                 if (!remote.isNullOrEmpty()) return remote.map { TtsVoiceOption(it.id, it.name) }
+            }
+            VoiceProtocol.CARTESIA -> {
+                val key = keys.voiceApiKey(provider.id).orEmpty()
+                val remote = CartesiaClient.voices(provider.resolvedBaseUrl(), key).getOrNull()
+                if (!remote.isNullOrEmpty()) return remote.map { TtsVoiceOption(it.first, it.second) }
             }
             VoiceProtocol.EDGE -> {
                 // Edge voices are grouped by language; flatten for the plain list
@@ -280,6 +286,11 @@ class TtsController(
         saved: AppSettings,
         provider: VoiceProviderConfig,
     ): Boolean = coroutineScope {
+        // Edge refuses clients advertising an outdated build, so make sure the
+        // advertised one is current before the first request.
+        if (provider.protocol == VoiceProtocol.EDGE) {
+            runCatching { edgeVersion.ensureFresh() }
+        }
         val apiKey = keys.voiceApiKey(provider.id).orEmpty()
         // Free endpoints (Edge) authenticate elsewhere or not at all.
         if (apiKey.isBlank() && provider.requiresKey) {
@@ -307,6 +318,11 @@ class TtsController(
                 permits.withPermit {
                     VoiceGateway.synthesizeCached(
                         context.cacheDir, provider, apiKey, chunk, model, voice, saved.ttsSpeed,
+                        // A refused handshake usually means the advertised Edge
+                        // build is stale, so refresh it and let the client retry.
+                        onEdgeForbidden = if (provider.protocol == VoiceProtocol.EDGE) {
+                            { edgeVersion.refresh() }
+                        } else null,
                     )
                 }
             }

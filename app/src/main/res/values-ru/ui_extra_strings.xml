@@ -480,4 +480,7 @@
     <string name="settings_voice_promo_body">Можно надиктовывать сообщения вместо набора. Встроенный распознаватель телефона не требует настройки.</string>
     <string name="settings_voice_promo_device">Аудио телефона</string>
     <string name="settings_voice_promo_cloud">Настроить облачный голос</string>
+    <string name="settings_voice_provider_key">Ключ API %1$s</string>
+    <string name="settings_voice_key_needed">Добавьте ключ API</string>
+    <string name="settings_voice_key_saved">Ключ сохранён</string>
 </resources>

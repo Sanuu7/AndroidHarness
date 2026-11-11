@@ -474,4 +474,7 @@
     <string name="settings_voice_promo_body">Anda bisa mendikte pesan alih-alih mengetik. Pengenal bawaan ponsel tidak perlu penyiapan.</string>
     <string name="settings_voice_promo_device">Pakai audio ponsel</string>
     <string name="settings_voice_promo_cloud">Siapkan suara cloud</string>
+    <string name="settings_voice_provider_key">Kunci API %1$s</string>
+    <string name="settings_voice_key_needed">Tambahkan kunci API</string>
+    <string name="settings_voice_key_saved">Kunci disimpan</string>
 </resources>

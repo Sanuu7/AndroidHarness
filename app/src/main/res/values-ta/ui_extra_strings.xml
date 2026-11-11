@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">தட்டச்சு செய்வதற்குப் பதிலாக செய்திகளைப் பேசலாம். தொலைபேசியின் உள்ளமைந்த அறிதல் அமைப்பு தேவையில்லை.</string>
     <string name="settings_voice_promo_device">தொலைபேசி ஒலியைப் பயன்படுத்து</string>
     <string name="settings_voice_promo_cloud">கிளவுட் குரலை அமை</string>
+    <string name="settings_voice_provider_key">%1$s API விசை</string>
+    <string name="settings_voice_key_needed">API விசையைச் சேர்</string>
+    <string name="settings_voice_key_saved">விசை சேமிக்கப்பட்டது</string>
 </resources>

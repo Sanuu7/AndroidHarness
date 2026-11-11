@@ -484,4 +484,7 @@
     <string name="settings_voice_promo_body">يمكنك إملاء الرسائل بدلًا من كتابتها. يتعرف مُعرّف الهاتف المدمج دون أي إعداد.</string>
     <string name="settings_voice_promo_device">استخدام صوت الهاتف</string>
     <string name="settings_voice_promo_cloud">إعداد الصوت السحابي</string>
+    <string name="settings_voice_provider_key">مفتاح API لـ %1$s</string>
+    <string name="settings_voice_key_needed">أضف مفتاح API</string>
+    <string name="settings_voice_key_saved">تم حفظ المفتاح</string>
 </resources>

@@ -176,6 +176,7 @@ object OpenAiAudioClient {
         model: String,
         voice: String,
         speed: Float,
+        onEdgeForbidden: (suspend () -> Unit)? = null,
     ): Result<File> = withContext(Dispatchers.IO) {
         val dir = File(cacheDir, "tts").apply { mkdirs() }
         val format = responseFormat(provider, model)
@@ -184,7 +185,7 @@ object OpenAiAudioClient {
         val key = sha256("v3|${provider.id}|$model|$voice|$speed|$text")
         val file = File(dir, "$key.$format")
         if (file.exists() && file.length() > 0) return@withContext Result.success(file)
-        synthesize(provider, apiKey, text, model, voice, speed).mapCatching { bytes ->
+        synthesize(provider, apiKey, text, model, voice, speed, onEdgeForbidden).mapCatching { bytes ->
             val temp = File(dir, "$key.part")
             temp.writeBytes(bytes)
             if (!temp.renameTo(file)) {
@@ -203,6 +204,7 @@ object OpenAiAudioClient {
         model: String,
         voice: String,
         speed: Float,
+        onEdgeForbidden: (suspend () -> Unit)? = null,
     ): Result<ByteArray> {
         if (text.isBlank() || text.none(Char::isLetterOrDigit)) {
             return Result.failure(IllegalArgumentException("Nothing to speak"))
@@ -214,7 +216,7 @@ object OpenAiAudioClient {
             VoiceProtocol.DEEPGRAM -> DeepgramVoiceClient.synthesize(provider, apiKey, text, model, voice, speed)
             VoiceProtocol.ASSEMBLYAI ->
                 Result.failure(UnsupportedOperationException("AssemblyAI does not offer text to speech"))
-            VoiceProtocol.EDGE -> EdgeTtsClient.synthesize(text, voice, speed)
+            VoiceProtocol.EDGE -> EdgeTtsClient.synthesize(text, voice, speed, onForbidden = onEdgeForbidden)
         }
     }
 

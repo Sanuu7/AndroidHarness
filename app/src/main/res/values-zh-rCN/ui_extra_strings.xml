@@ -472,4 +472,7 @@
     <string name="settings_voice_promo_body">你可以口述消息，而不必打字。手机自带的识别器无需配置。</string>
     <string name="settings_voice_promo_device">使用手机音频</string>
     <string name="settings_voice_promo_cloud">设置云端语音</string>
+    <string name="settings_voice_provider_key">%1$s API 密钥</string>
+    <string name="settings_voice_key_needed">添加 API 密钥</string>
+    <string name="settings_voice_key_saved">密钥已保存</string>
 </resources>

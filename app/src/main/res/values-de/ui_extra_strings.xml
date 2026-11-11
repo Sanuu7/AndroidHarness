@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">Du kannst Nachrichten diktieren statt tippen. Der Spracherkenner des Telefons braucht keine Einrichtung.</string>
     <string name="settings_voice_promo_device">Telefon-Audio verwenden</string>
     <string name="settings_voice_promo_cloud">Cloud-Stimme einrichten</string>
+    <string name="settings_voice_provider_key">API-Schlüssel für %1$s</string>
+    <string name="settings_voice_key_needed">API-Schlüssel hinzufügen</string>
+    <string name="settings_voice_key_saved">Schlüssel gespeichert</string>
 </resources>

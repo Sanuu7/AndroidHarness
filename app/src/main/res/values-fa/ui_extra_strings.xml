@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">می‌توانید پیام‌ها را به‌جای تایپ دیکته کنید. تشخیص‌دهنده خود گوشی نیازی به تنظیم ندارد.</string>
     <string name="settings_voice_promo_device">استفاده از صدای گوشی</string>
     <string name="settings_voice_promo_cloud">تنظیم صدای ابری</string>
+    <string name="settings_voice_provider_key">کلید API %1$s</string>
+    <string name="settings_voice_key_needed">کلید API اضافه کنید</string>
+    <string name="settings_voice_key_saved">کلید ذخیره شد</string>
 </resources>

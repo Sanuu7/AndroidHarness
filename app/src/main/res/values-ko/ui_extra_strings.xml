@@ -474,4 +474,7 @@
     <string name="settings_voice_promo_body">입력하는 대신 음성으로 메시지를 보낼 수 있습니다. 휴대폰 자체 인식기는 설정이 필요 없습니다.</string>
     <string name="settings_voice_promo_device">휴대폰 음성 사용</string>
     <string name="settings_voice_promo_cloud">클라우드 음성 설정</string>
+    <string name="settings_voice_provider_key">%1$s API 키</string>
+    <string name="settings_voice_key_needed">API 키 추가</string>
+    <string name="settings_voice_key_saved">키 저장됨</string>
 </resources>

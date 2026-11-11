@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">ටයිප් කරනවා වෙනුවට පණිවිඩ කථනය කළ හැක. දුරකථනයේ හඬ හඳුනාගැනීමට සැකසුම් අවශ්‍ය නැත.</string>
     <string name="settings_voice_promo_device">දුරකථන හඬ භාවිතා කරන්න</string>
     <string name="settings_voice_promo_cloud">ක්ලවුඩ් හඬ සකසන්න</string>
+    <string name="settings_voice_provider_key">%1$s API යතුර</string>
+    <string name="settings_voice_key_needed">API යතුරක් එක් කරන්න</string>
+    <string name="settings_voice_key_saved">යතුර සුරකින ලදී</string>
 </resources>

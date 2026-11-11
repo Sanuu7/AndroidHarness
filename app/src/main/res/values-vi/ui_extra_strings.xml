@@ -474,4 +474,7 @@
     <string name="settings_voice_promo_body">Bạn có thể đọc chính tả thay vì gõ. Bộ nhận dạng sẵn có của điện thoại không cần thiết lập.</string>
     <string name="settings_voice_promo_device">Dùng âm thanh điện thoại</string>
     <string name="settings_voice_promo_cloud">Thiết lập giọng đám mây</string>
+    <string name="settings_voice_provider_key">Khóa API %1$s</string>
+    <string name="settings_voice_key_needed">Thêm khóa API</string>
+    <string name="settings_voice_key_saved">Đã lưu khóa</string>
 </resources>

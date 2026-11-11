@@ -474,4 +474,7 @@
     <string name="settings_voice_promo_body">You can dictate messages instead of typing them. The phone\'s own recognizer needs no setup.</string>
     <string name="settings_voice_promo_device">Use phone audio</string>
     <string name="settings_voice_promo_cloud">Set up cloud voice</string>
+    <string name="settings_voice_provider_key">%1$s API key</string>
+    <string name="settings_voice_key_needed">Add an API key</string>
+    <string name="settings_voice_key_saved">Key saved</string>
 </resources>

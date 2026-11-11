@@ -213,8 +213,8 @@ internal fun VoiceProviderCard(
                 Column(Modifier.weight(1f)) {
                     Text(provider.name, style = MaterialTheme.typography.titleSmall)
                     Text(
-                        if (hasKey) stringResource(R.string.settings_tts_groq_key_saved)
-                        else stringResource(R.string.settings_tts_groq_key_needed),
+                        if (hasKey) stringResource(R.string.settings_voice_key_saved)
+                        else stringResource(R.string.settings_voice_key_needed),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )

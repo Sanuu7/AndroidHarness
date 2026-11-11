@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">Mesajları yazmak yerine dikte edebilirsiniz. Telefonun kendi tanıyıcısı kurulum gerektirmez.</string>
     <string name="settings_voice_promo_device">Telefon sesini kullan</string>
     <string name="settings_voice_promo_cloud">Bulut sesini ayarla</string>
+    <string name="settings_voice_provider_key">%1$s API anahtarı</string>
+    <string name="settings_voice_key_needed">API anahtarı ekle</string>
+    <string name="settings_voice_key_saved">Anahtar kaydedildi</string>
 </resources>

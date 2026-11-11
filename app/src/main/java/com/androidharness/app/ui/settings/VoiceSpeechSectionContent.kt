@@ -148,7 +148,7 @@ internal fun VoiceProvidersSection(
                             isSystemTts -> uiContext.getString(R.string.settings_tts_device_hint)
                             ttsProvider == null -> uiContext.getString(R.string.settings_voice_no_providers)
                             hasTtsKey -> ttsProvider.name + " · " + ttsModel
-                            else -> ttsProvider.name + " · " + uiContext.getString(R.string.settings_tts_groq_key_needed)
+                            else -> ttsProvider.name + " · " + uiContext.getString(R.string.settings_voice_key_needed)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -184,6 +184,17 @@ internal fun VoiceProvidersSection(
             }
 
             if (!isSystemTts && ttsProvider != null) {
+                // The provider's key belongs here, not in a separate section:
+                // choosing a provider is when the user needs it.
+                if (ttsProvider.requiresKey) {
+                    VoiceProviderKeyRow(
+                        container = container,
+                        provider = ttsProvider,
+                        scope = scope,
+                        keyEpoch = keyEpoch,
+                        onKeyChanged = { keyEpoch++ },
+                    )
+                }
                 Text(
                     stringResource(R.string.settings_tts_model),
                     Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_model),
@@ -291,7 +302,7 @@ internal fun VoiceProvidersSection(
                             isInbuiltStt -> uiContext.getString(R.string.ui_inbuilt_android_recognizer)
                             sttProvider == null -> uiContext.getString(R.string.settings_voice_no_providers)
                             hasSttKey -> sttProvider.name + " · " + sttModel
-                            else -> sttProvider.name + " · " + uiContext.getString(R.string.settings_tts_groq_key_needed)
+                            else -> sttProvider.name + " · " + uiContext.getString(R.string.settings_voice_key_needed)
                         },
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
@@ -334,6 +345,15 @@ internal fun VoiceProvidersSection(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
             } else if (sttProvider != null) {
+                if (sttProvider.requiresKey) {
+                    VoiceProviderKeyRow(
+                        container = container,
+                        provider = sttProvider,
+                        scope = scope,
+                        keyEpoch = keyEpoch,
+                        onKeyChanged = { keyEpoch++ },
+                    )
+                }
                 SettingsAnchor(R.string.settings_anchor_whisper) {
                     Text(
                         stringResource(R.string.settings_stt_model),
@@ -370,24 +390,9 @@ internal fun VoiceProvidersSection(
         }
     }
 
-    // --- Keys for whichever providers are in play ---------------------------
-    // Providers that need no key (Edge) never show a key card.
-    val keyProviders = remember(providers, voiceEngine, ttsEngine) {
-        listOf(sttProvider, ttsProvider)
-            .filterNotNull()
-            .filter { it.requiresKey }
-            .distinctBy { it.id }
-    }
-    keyProviders.forEach { provider ->
-        VoiceProviderCard(
-            container = container,
-            provider = provider,
-            scope = scope,
-            keyEpoch = keyEpoch,
-            onKeyChanged = { keyEpoch++ },
-            onEdit = { editing = provider },
-        )
-    }
+    // --- Keys live inside each provider's own card --------------------------
+    // A key is never a section of its own: choosing a provider shows its key
+    // field right there, so there is no separate "API key" block to hunt for.
 
     SettingsHeader(uiContext.getString(R.string.settings_voice_auto_send))
     SettingsPanel(Modifier.fillMaxWidth()) {

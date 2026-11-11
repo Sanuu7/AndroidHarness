@@ -39,6 +39,44 @@ object CartesiaClient {
         .writeTimeout(90, TimeUnit.SECONDS)
         .build()
 
+    /** The account's voices: GET /voices with the Cartesia key. */
+    suspend fun voices(baseUrl: String, apiKey: String): Result<List<Pair<String, String>>> =
+        withContext(Dispatchers.IO) {
+            if (apiKey.isBlank()) return@withContext Result.failure(IllegalArgumentException("API key is missing"))
+            val request = Request.Builder()
+                .url("${baseUrl.trimEnd('/')}/voices?limit=100")
+                .header("X-API-Key", apiKey.trim())
+                .header("Cartesia-Version", API_VERSION)
+                .get()
+                .build()
+            try {
+                execute(request).use { response ->
+                    val body = response.body?.string().orEmpty()
+                    if (!response.isSuccessful) {
+                        Result.failure(OpenAiAudioClient.apiError(body, response.code, "Cartesia"))
+                    } else {
+                        // {"data":[{"id":"...","name":"..."}, ...]}
+                        val list = runCatching {
+                            val root = json.parseToJsonElement(body).jsonObject
+                            val arr = root["data"] as? kotlinx.serialization.json.JsonArray
+                                ?: json.parseToJsonElement(body) as? kotlinx.serialization.json.JsonArray
+                                ?: return@runCatching emptyList()
+                            arr.mapNotNull { item ->
+                                val obj = item as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
+                                val id = obj["id"]?.jsonPrimitive?.content ?: return@mapNotNull null
+                                id to (obj["name"]?.jsonPrimitive?.content ?: id)
+                            }
+                        }.getOrDefault(emptyList())
+                        Result.success(list)
+                    }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
     suspend fun validateKey(baseUrl: String, apiKey: String): Result<Unit> = withContext(Dispatchers.IO) {
         if (apiKey.isBlank()) return@withContext Result.failure(IllegalArgumentException("API key cannot be blank"))
         val request = Request.Builder()

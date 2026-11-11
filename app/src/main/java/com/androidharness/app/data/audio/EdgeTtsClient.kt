@@ -45,8 +45,12 @@ object EdgeTtsClient {
     /** Public client token every Edge read-aloud client uses. Not a secret. */
     private const val TRUSTED_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4"
 
-    /** Synthesis WebSocket. The old speech.platform.bing.com host now answers 403. */
-    private const val WSS_URL = "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1"
+    /**
+     * Synthesis WebSocket. Verified against the reference implementations
+     * (rany2/edge-tts, msedge-tts): the service still speaks on the original
+     * host, with the client token passed as a query parameter.
+     */
+    private const val WSS_URL = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1"
 
     /**
      * Voice catalogue. Still served from the original host — the equivalent path
@@ -60,7 +64,19 @@ object EdgeTtsClient {
     const val OUTPUT_FORMAT = "audio-24khz-48kbitrate-mono-mp3"
 
     /** Pinned client build string; the service accepts this format today. */
-    private const val GEC_VERSION = "1-130.0.2849.68"
+    /**
+     * Chromium build advertised to the service. Microsoft bumps this with each
+     * Edge release and rejects clients claiming an old build, so
+     * [EdgeVersionProvider] refreshes it at runtime.
+     */
+    @Volatile
+    var chromiumVersion: String = FALLBACK_CHROMIUM_VERSION
+
+    /** Used until, or if, the live Edge build number cannot be fetched. */
+    const val FALLBACK_CHROMIUM_VERSION = "156.0.4314.80"
+
+    /** The service requires the "2-" generation prefix since 2025. */
+    internal fun gecVersion(): String = "2-$chromiumVersion"
 
     /** Seconds between the Windows epoch (1601) and the Unix epoch (1970). */
     private const val WINDOWS_EPOCH_OFFSET_SECONDS = 11_644_473_600L
@@ -143,20 +159,47 @@ object EdgeTtsClient {
 
     /** Builds the authenticated WebSocket URL for one session. */
     internal fun sessionUrl(nowMillis: Long): String =
-        "$WSS_URL?Ocp-Apim-Subscription-Key=$TRUSTED_TOKEN" +
+        "$WSS_URL?TrustedClientToken=$TRUSTED_TOKEN" +
             "&Sec-MS-GEC=${gecToken(nowMillis)}" +
-            "&Sec-MS-GEC-Version=$GEC_VERSION" +
+            "&Sec-MS-GEC-Version=${gecVersion()}" +
             "&ConnectionId=${UUID.randomUUID().toString().replace("-", "")}"
 
     /**
+     * Headers the Read Aloud endpoint expects. [Origin] identifies the Edge
+     * extension and is the difference between a 101 and a 403: the service
+     * checks it even though the parameter is not a browser-issued request.
+     */
+    internal fun handshakeHeaders(): Map<String, String> {
+        val major = chromiumVersion.substringBefore('.')
+        return mapOf(
+            "Pragma" to "no-cache",
+            "Cache-Control" to "no-cache",
+            "Origin" to "chrome-extension://jdiccldimpdaibmpdkjnbmckianbfold",
+            "Accept-Encoding" to "gzip, deflate, br",
+            "Accept-Language" to "en-US,en;q=0.9",
+            "User-Agent" to (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 " +
+                    "(KHTML, like Gecko) Chrome/$major.0.0.0 Safari/537.36 " +
+                    "Edg/$major.0.0.0"
+                ),
+        )
+    }
+
+    /**
      * Synthesizes one clip. Returns MP3 bytes, or a failure describing what the
-     * service rejected — 403 usually means the clock-derived token was refused.
+     * service rejected.
+     *
+     * [onForbidden] runs once if the handshake is refused with 403, so the
+     * caller can refresh the advertised build and retry: Microsoft bumps Edge
+     * regularly and an outdated build number is the usual reason for a refusal.
      */
     suspend fun synthesize(
         text: String,
         shortName: String,
         speed: Float = 1f,
         nowMillis: Long = System.currentTimeMillis(),
+        onForbidden: (suspend () -> Unit)? = null,
+        retried: Boolean = false,
     ): Result<ByteArray> {
         if (text.isBlank() || text.none(Char::isLetterOrDigit)) {
             return Result.failure(IllegalArgumentException("Nothing to speak"))
@@ -166,15 +209,25 @@ object EdgeTtsClient {
         }
         val clip = text.take(MAX_INPUT_CHARS)
         return withContext(Dispatchers.IO) {
-            try {
+            val first = try {
                 requestAudio(clip, shortName, speed, nowMillis)
             } catch (e: kotlinx.coroutines.CancellationException) {
                 throw e
             } catch (e: Exception) {
                 Result.failure(e)
             }
+            val failure = first.exceptionOrNull()
+            val forbidden = failure is EdgeApiException && failure.status == 403
+            if (!forbidden || retried || onForbidden == null) return@withContext first
+            // A refused handshake usually means the advertised build is stale:
+            // refresh it and try once more.
+            onForbidden.invoke()
+            synthesize(clip, shortName, speed, nowMillis, onForbidden = null, retried = true)
         }
     }
+
+    /** A handshake or protocol failure carrying the HTTP status when known. */
+    class EdgeApiException(message: String, val status: Int?) : java.io.IOException(message)
 
     private suspend fun requestAudio(
         text: String,
@@ -184,7 +237,10 @@ object EdgeTtsClient {
     ): Result<ByteArray> = suspendCancellableCoroutine { continuation ->
         val requestId = UUID.randomUUID().toString().replace("-", "")
         val audio = ByteArrayOutputStream()
-        val request = Request.Builder().url(sessionUrl(nowMillis)).build()
+        val request = Request.Builder()
+            .url(sessionUrl(nowMillis))
+            .apply { handshakeHeaders().forEach { (name, value) -> header(name, value) } }
+            .build()
         var socket: WebSocket? = null
         var finished = false
 
@@ -240,11 +296,14 @@ object EdgeTtsClient {
             override fun onFailure(webSocket: WebSocket, t: Throwable, response: Response?) {
                 val status = response?.code
                 val message = when (status) {
-                    403 -> "Edge rejected the request (403). The clock-derived token was refused; check the device date and time."
+                    403 -> "Edge recusou a conexão (403) com a versão $chromiumVersion. " +
+                        "Se persistir, a Microsoft mudou o protocolo."
+                    401 -> "Edge pediu autenticação (401)."
+                    451 -> "Edge bloqueou por região (451)."
                     null -> t.message ?: "Edge connection failed"
                     else -> "Edge connection failed (HTTP $status)"
                 }
-                finish(Result.failure(IOException(message, t)))
+                finish(Result.failure(EdgeApiException(message, status)))
             }
 
             override fun onClosing(webSocket: WebSocket, code: Int, reason: String) {

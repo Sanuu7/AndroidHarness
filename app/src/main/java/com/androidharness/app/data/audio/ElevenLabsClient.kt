@@ -65,6 +65,46 @@ object ElevenLabsClient {
             }
         }
 
+    /** Text-to-speech models the account can use. GET /v1/models with the key. */
+    suspend fun models(baseUrl: String, apiKey: String): Result<List<String>> =
+        withContext(Dispatchers.IO) {
+            if (apiKey.isBlank()) return@withContext Result.failure(IllegalArgumentException("API key is missing"))
+            val request = Request.Builder()
+                .url("${baseUrl.trimEnd('/')}/models")
+                .header("xi-api-key", apiKey.trim())
+                .get()
+                .build()
+            try {
+                execute(request).use { response ->
+                    val body = response.body?.string().orEmpty()
+                    if (!response.isSuccessful) {
+                        Result.failure(OpenAiAudioClient.apiError(body, response.code, "ElevenLabs"))
+                    } else {
+                        // An array, or an object with a "models" array.
+                        val ids = runCatching {
+                            val element = json.parseToJsonElement(body)
+                            val array = when (element) {
+                                is kotlinx.serialization.json.JsonArray -> element
+                                is kotlinx.serialization.json.JsonObject ->
+                                    element["models"] as? kotlinx.serialization.json.JsonArray
+                                else -> null
+                            }
+                            array?.mapNotNull { item ->
+                                val obj = item as? kotlinx.serialization.json.JsonObject ?: return@mapNotNull null
+                                obj["model_id"]?.jsonPrimitive?.contentOrNull
+                                    ?: obj["id"]?.jsonPrimitive?.contentOrNull
+                            }.orEmpty()
+                        }.getOrDefault(emptyList())
+                        Result.success(ids)
+                    }
+                }
+            } catch (e: CancellationException) {
+                throw e
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
+        }
+
     /** The account's own voices plus the shared "premade" library. */
     suspend fun voices(baseUrl: String, apiKey: String): Result<List<VoiceEntry>> =
         withContext(Dispatchers.IO) {

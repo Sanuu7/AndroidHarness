@@ -478,4 +478,7 @@
     <string name="settings_voice_promo_body">Vous pouvez dicter vos messages au lieu de les écrire. Le reconnaisseur du téléphone ne demande aucune configuration.</string>
     <string name="settings_voice_promo_device">Utiliser l\'audio du téléphone</string>
     <string name="settings_voice_promo_cloud">Configurer la voix cloud</string>
+    <string name="settings_voice_provider_key">Clé d\'API %1$s</string>
+    <string name="settings_voice_key_needed">Ajoutez une clé d\'API</string>
+    <string name="settings_voice_key_saved">Clé enregistrée</string>
 </resources>

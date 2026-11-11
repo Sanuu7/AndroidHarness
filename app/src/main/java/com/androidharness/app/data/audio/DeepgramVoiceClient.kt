@@ -40,6 +40,44 @@ object DeepgramVoiceClient {
         .writeTimeout(90, TimeUnit.SECONDS)
         .build()
 
+    /** Speech and voice models the account can use. GET /v1/models. */
+    suspend fun models(baseUrl: String, apiKey: String): Result<List<String>> = withContext(Dispatchers.IO) {
+        if (apiKey.isBlank()) return@withContext Result.failure(IllegalArgumentException("API key is missing"))
+        val request = Request.Builder()
+            .url("${baseUrl.trimEnd('/')}/models")
+            .header("Authorization", "Token ${apiKey.trim()}")
+            .get()
+            .build()
+        try {
+            execute(request).use { response ->
+                val body = response.body?.string().orEmpty()
+                if (!response.isSuccessful) {
+                    Result.failure(OpenAiAudioClient.apiError(body, response.code, "Deepgram"))
+                } else {
+                    // {"stt":[{...}],"tts":[{...}]}, each entry has a "canonical_name".
+                    val ids = runCatching {
+                        val root = json.parseToJsonElement(body).jsonObject
+                        val out = mutableListOf<String>()
+                        for (key in listOf("stt", "tts")) {
+                            val arr = root[key] as? kotlinx.serialization.json.JsonArray ?: continue
+                            arr.mapNotNullTo(out) { item ->
+                                val obj = item as? kotlinx.serialization.json.JsonObject ?: return@mapNotNullTo null
+                                obj["canonical_name"]?.jsonPrimitive?.contentOrNull
+                                    ?: obj["name"]?.jsonPrimitive?.contentOrNull
+                            }
+                        }
+                        out.distinct()
+                    }.getOrDefault(emptyList())
+                    Result.success(ids)
+                }
+            }
+        } catch (e: CancellationException) {
+            throw e
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
     suspend fun validateKey(baseUrl: String, apiKey: String): Result<Unit> = withContext(Dispatchers.IO) {
         if (apiKey.isBlank()) return@withContext Result.failure(IllegalArgumentException("API key cannot be blank"))
         val request = Request.Builder()

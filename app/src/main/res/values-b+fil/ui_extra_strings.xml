@@ -476,4 +476,7 @@
     <string name="settings_voice_promo_body">Maaari kang mag-dictate ng mensahe sa halip na mag-type. Hindi kailangan ng setup ang built-in na recognizer ng telepono.</string>
     <string name="settings_voice_promo_device">Gamitin ang audio ng telepono</string>
     <string name="settings_voice_promo_cloud">I-setup ang cloud voice</string>
+    <string name="settings_voice_provider_key">%1$s API key</string>
+    <string name="settings_voice_key_needed">Magdagdag ng API key</string>
+    <string name="settings_voice_key_saved">Na-save ang key</string>
 </resources>
