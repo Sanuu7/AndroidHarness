@@ -536,8 +536,9 @@ internal fun VoiceProvidersSection(
                 },
                 onRefresh = {
                     scope.launch {
-                        edgeGroups = emptyList()
                         container.tts.refreshEdgeVoices()
+                        // Bumping the epoch re-runs produceState, which reads the
+                        // freshly refreshed catalogue.
                         voiceEpoch++
                     }
                 },
