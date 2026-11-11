@@ -46,11 +46,11 @@ object EdgeTtsClient {
     private const val TRUSTED_TOKEN = "6A5AA1D4EAFF4E9FB37E23D68491D6F4"
 
     /**
-     * Synthesis WebSocket. Verified against the reference implementations
-     * (rany2/edge-tts, msedge-tts): the service still speaks on the original
-     * host, with the client token passed as a query parameter.
+     * Synthesis WebSocket. Measured against the live service: the old
+     * speech.platform.bing.com host now answers 401, while this one completes
+     * the handshake with the "1-" version prefix.
      */
-    private const val WSS_URL = "wss://speech.platform.bing.com/consumer/speech/synthesize/readaloud/edge/v1"
+    private const val WSS_URL = "wss://api.msedgeservices.com/tts/cognitiveservices/websocket/v1"
 
     /**
      * Voice catalogue. Still served from the original host — the equivalent path
@@ -75,8 +75,12 @@ object EdgeTtsClient {
     /** Used until, or if, the live Edge build number cannot be fetched. */
     const val FALLBACK_CHROMIUM_VERSION = "156.0.4314.80"
 
-    /** The service requires the "2-" generation prefix since 2025. */
-    internal fun gecVersion(): String = "2-$chromiumVersion"
+    /**
+     * The "1-" generation prefix is what the live service accepts; "2-" is
+     * refused with 403 even with an otherwise valid token (measured
+     * 2026-11-11).
+     */
+    internal fun gecVersion(): String = "1-$chromiumVersion"
 
     /** Seconds between the Windows epoch (1601) and the Unix epoch (1970). */
     private const val WINDOWS_EPOCH_OFFSET_SECONDS = 11_644_473_600L
@@ -159,7 +163,7 @@ object EdgeTtsClient {
 
     /** Builds the authenticated WebSocket URL for one session. */
     internal fun sessionUrl(nowMillis: Long): String =
-        "$WSS_URL?TrustedClientToken=$TRUSTED_TOKEN" +
+        "$WSS_URL?Ocp-Apim-Subscription-Key=$TRUSTED_TOKEN" +
             "&Sec-MS-GEC=${gecToken(nowMillis)}" +
             "&Sec-MS-GEC-Version=${gecVersion()}" +
             "&ConnectionId=${UUID.randomUUID().toString().replace("-", "")}"
