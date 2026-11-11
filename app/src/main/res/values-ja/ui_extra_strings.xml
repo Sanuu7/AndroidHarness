@@ -471,4 +471,7 @@
     <string name="settings_voice_female">女性</string>
     <string name="settings_voice_male">男性</string>
     <string name="settings_voice_multilingual">多言語</string>
+    <string name="settings_voice_promo_body">入力の代わりに音声でメッセージを送れます。スマートフォン内蔵の認識機能は設定不要です。</string>
+    <string name="settings_voice_promo_device">スマホの音声を使う</string>
+    <string name="settings_voice_promo_cloud">クラウド音声を設定</string>
 </resources>

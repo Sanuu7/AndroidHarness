@@ -69,20 +69,26 @@ jobs:
           distribution: temurin
           java-version: "21"
 
-      # The Kotlin compiler daemon and the incremental build output live here.
-      # Restoring them is what makes a second run skip unchanged files instead
-      # of recompiling the whole module from zero.
-      - name: Cache Gradle and Kotlin build cache
+      # setup-gradle already manages ~/.gradle/caches with a rolling key that
+      # does save on every run. This cache therefore only keeps the Kotlin
+      # incremental output, which Gradle does not manage.
+      #
+      # The key includes the commit sha on purpose: with a fixed key the first
+      # save wins and every later run reports "Cache hit occurred on the
+      # primary key, not saving cache", so the stored output goes stale and no
+      # task ever comes FROM-CACHE. restore-keys still finds the newest entry
+      # for this branch, so a run starts from the previous output.
+      - name: Cache Kotlin incremental output
         uses: actions/cache@v4
         with:
           path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
             ~/.kotlin
             app/build/kotlin
             app/build/classes
-          key: kotlin-${{ runner.os }}-${{ hashFiles('**/*.gradle.kts', 'gradle/libs.versions.toml') }}
+            app/build/tmp/kotlin-classes
+          key: kotlin-${{ runner.os }}-${{ github.ref_name }}-${{ github.sha }}
           restore-keys: |
+            kotlin-${{ runner.os }}-${{ github.ref_name }}-
             kotlin-${{ runner.os }}-
 
       - name: Set up Gradle (caching)

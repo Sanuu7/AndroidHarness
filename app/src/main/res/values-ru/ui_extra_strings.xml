@@ -477,4 +477,7 @@
     <string name="settings_voice_female">Женский</string>
     <string name="settings_voice_male">Мужской</string>
     <string name="settings_voice_multilingual">Мульти</string>
+    <string name="settings_voice_promo_body">Можно надиктовывать сообщения вместо набора. Встроенный распознаватель телефона не требует настройки.</string>
+    <string name="settings_voice_promo_device">Аудио телефона</string>
+    <string name="settings_voice_promo_cloud">Настроить облачный голос</string>
 </resources>

@@ -473,4 +473,7 @@
     <string name="settings_voice_female">Feminina</string>
     <string name="settings_voice_male">Masculina</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">Você pode ditar mensagens em vez de digitar. O reconhecedor do próprio celular não precisa de configuração.</string>
+    <string name="settings_voice_promo_device">Usar áudio do celular</string>
+    <string name="settings_voice_promo_cloud">Configurar voz na nuvem</string>
 </resources>

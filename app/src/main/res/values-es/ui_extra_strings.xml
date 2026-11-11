@@ -473,4 +473,7 @@
     <string name="settings_voice_female">Femenina</string>
     <string name="settings_voice_male">Masculina</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">Puedes dictar mensajes en vez de escribirlos. El reconocedor del teléfono no necesita configuración.</string>
+    <string name="settings_voice_promo_device">Usar audio del teléfono</string>
+    <string name="settings_voice_promo_cloud">Configurar voz en la nube</string>
 </resources>

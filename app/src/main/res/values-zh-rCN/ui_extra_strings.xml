@@ -469,4 +469,7 @@
     <string name="settings_voice_female">女声</string>
     <string name="settings_voice_male">男声</string>
     <string name="settings_voice_multilingual">多语言</string>
+    <string name="settings_voice_promo_body">你可以口述消息，而不必打字。手机自带的识别器无需配置。</string>
+    <string name="settings_voice_promo_device">使用手机音频</string>
+    <string name="settings_voice_promo_cloud">设置云端语音</string>
 </resources>

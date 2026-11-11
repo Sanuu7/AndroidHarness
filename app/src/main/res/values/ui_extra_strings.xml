@@ -471,4 +471,7 @@
     <string name="settings_voice_female">Female</string>
     <string name="settings_voice_male">Male</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">You can dictate messages instead of typing them. The phone\'s own recognizer needs no setup.</string>
+    <string name="settings_voice_promo_device">Use phone audio</string>
+    <string name="settings_voice_promo_cloud">Set up cloud voice</string>
 </resources>

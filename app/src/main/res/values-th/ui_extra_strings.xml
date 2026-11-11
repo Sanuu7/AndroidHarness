@@ -471,4 +471,7 @@
     <string name="settings_voice_female">เสียงหญิง</string>
     <string name="settings_voice_male">เสียงชาย</string>
     <string name="settings_voice_multilingual">หลายภาษา</string>
+    <string name="settings_voice_promo_body">คุณสามารถพูดข้อความแทนการพิมพ์ได้ ตัวรู้จำในเครื่องไม่ต้องตั้งค่า</string>
+    <string name="settings_voice_promo_device">ใช้เสียงในเครื่อง</string>
+    <string name="settings_voice_promo_cloud">ตั้งค่าเสียงคลาวด์</string>
 </resources>

@@ -473,4 +473,7 @@
     <string name="settings_voice_female">Babae</string>
     <string name="settings_voice_male">Lalaki</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">Maaari kang mag-dictate ng mensahe sa halip na mag-type. Hindi kailangan ng setup ang built-in na recognizer ng telepono.</string>
+    <string name="settings_voice_promo_device">Gamitin ang audio ng telepono</string>
+    <string name="settings_voice_promo_cloud">I-setup ang cloud voice</string>
 </resources>

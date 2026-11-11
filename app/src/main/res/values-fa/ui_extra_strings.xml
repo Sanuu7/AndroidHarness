@@ -473,4 +473,7 @@
     <string name="settings_voice_female">زن</string>
     <string name="settings_voice_male">مرد</string>
     <string name="settings_voice_multilingual">چندزبانه</string>
+    <string name="settings_voice_promo_body">می‌توانید پیام‌ها را به‌جای تایپ دیکته کنید. تشخیص‌دهنده خود گوشی نیازی به تنظیم ندارد.</string>
+    <string name="settings_voice_promo_device">استفاده از صدای گوشی</string>
+    <string name="settings_voice_promo_cloud">تنظیم صدای ابری</string>
 </resources>

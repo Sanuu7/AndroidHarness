@@ -471,4 +471,7 @@
     <string name="settings_voice_female">Wanita</string>
     <string name="settings_voice_male">Lelaki</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">Anda boleh imlak mesej dan bukan menaip. Pengecam terbina dalam telefon tidak perlu persediaan.</string>
+    <string name="settings_voice_promo_device">Guna audio telefon</string>
+    <string name="settings_voice_promo_cloud">Sediakan suara awan</string>
 </resources>

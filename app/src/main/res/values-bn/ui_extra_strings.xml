@@ -473,4 +473,7 @@
     <string name="settings_voice_female">মহিলা</string>
     <string name="settings_voice_male">পুরুষ</string>
     <string name="settings_voice_multilingual">বহুভাষিক</string>
+    <string name="settings_voice_promo_body">টাইপ করার বদলে বার্তা বলতে পারেন। ফোনের নিজস্ব রিকগনাইজার সেটআপ ছাড়াই কাজ করে।</string>
+    <string name="settings_voice_promo_device">ফোনের অডিও ব্যবহার করুন</string>
+    <string name="settings_voice_promo_cloud">ক্লাউড ভয়েস সেট করুন</string>
 </resources>

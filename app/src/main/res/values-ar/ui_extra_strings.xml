@@ -481,4 +481,7 @@
     <string name="settings_voice_female">أنثى</string>
     <string name="settings_voice_male">ذكر</string>
     <string name="settings_voice_multilingual">متعدد</string>
+    <string name="settings_voice_promo_body">يمكنك إملاء الرسائل بدلًا من كتابتها. يتعرف مُعرّف الهاتف المدمج دون أي إعداد.</string>
+    <string name="settings_voice_promo_device">استخدام صوت الهاتف</string>
+    <string name="settings_voice_promo_cloud">إعداد الصوت السحابي</string>
 </resources>

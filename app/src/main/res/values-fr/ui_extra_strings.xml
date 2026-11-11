@@ -475,4 +475,7 @@
     <string name="settings_voice_female">Féminine</string>
     <string name="settings_voice_male">Masculine</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">Vous pouvez dicter vos messages au lieu de les écrire. Le reconnaisseur du téléphone ne demande aucune configuration.</string>
+    <string name="settings_voice_promo_device">Utiliser l\'audio du téléphone</string>
+    <string name="settings_voice_promo_cloud">Configurer la voix cloud</string>
 </resources>

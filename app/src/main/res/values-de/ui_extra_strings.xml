@@ -473,4 +473,7 @@
     <string name="settings_voice_female">Weiblich</string>
     <string name="settings_voice_male">Männlich</string>
     <string name="settings_voice_multilingual">Multi</string>
+    <string name="settings_voice_promo_body">Du kannst Nachrichten diktieren statt tippen. Der Spracherkenner des Telefons braucht keine Einrichtung.</string>
+    <string name="settings_voice_promo_device">Telefon-Audio verwenden</string>
+    <string name="settings_voice_promo_cloud">Cloud-Stimme einrichten</string>
 </resources>

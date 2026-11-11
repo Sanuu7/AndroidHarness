@@ -473,4 +473,7 @@
     <string name="settings_voice_female">महिला</string>
     <string name="settings_voice_male">पुरुष</string>
     <string name="settings_voice_multilingual">बहुभाषी</string>
+    <string name="settings_voice_promo_body">आप टाइप करने के बजाय संदेश बोल सकते हैं। फ़ोन का अपना पहचानकर्ता बिना सेटअप काम करता है।</string>
+    <string name="settings_voice_promo_device">फ़ोन का ऑडियो उपयोग करें</string>
+    <string name="settings_voice_promo_cloud">क्लाउड आवाज़ सेट करें</string>
 </resources>

@@ -473,4 +473,7 @@
     <string name="settings_voice_female">பெண்</string>
     <string name="settings_voice_male">ஆண்</string>
     <string name="settings_voice_multilingual">பல்மொழி</string>
+    <string name="settings_voice_promo_body">தட்டச்சு செய்வதற்குப் பதிலாக செய்திகளைப் பேசலாம். தொலைபேசியின் உள்ளமைந்த அறிதல் அமைப்பு தேவையில்லை.</string>
+    <string name="settings_voice_promo_device">தொலைபேசி ஒலியைப் பயன்படுத்து</string>
+    <string name="settings_voice_promo_cloud">கிளவுட் குரலை அமை</string>
 </resources>

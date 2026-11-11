@@ -473,4 +473,7 @@
     <string name="settings_voice_female">ගැහැනු</string>
     <string name="settings_voice_male">පිරිමි</string>
     <string name="settings_voice_multilingual">බහුභාෂා</string>
+    <string name="settings_voice_promo_body">ටයිප් කරනවා වෙනුවට පණිවිඩ කථනය කළ හැක. දුරකථනයේ හඬ හඳුනාගැනීමට සැකසුම් අවශ්‍ය නැත.</string>
+    <string name="settings_voice_promo_device">දුරකථන හඬ භාවිතා කරන්න</string>
+    <string name="settings_voice_promo_cloud">ක්ලවුඩ් හඬ සකසන්න</string>
 </resources>

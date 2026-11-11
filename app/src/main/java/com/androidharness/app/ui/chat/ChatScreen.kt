@@ -497,23 +497,21 @@ private fun ChatScreenContent(
         AlertDialog(
             onDismissRequest = { viewModel.dismissVoicePromo() },
             title = { Text(uiContext.getString(R.string.ui_voice_speech_input)) },
-            text = {
-                Text(
-                    uiContext.getString(R.string.ui_you_can_transcribe_speech_with_groq_whisper) +
-                        uiContext.getString(R.string.ui_configure_groq_whisper_in_settings_with_your),
-                )
-            },
+            text = { Text(uiContext.getString(R.string.settings_voice_promo_body)) },
             confirmButton = {
+                // The safe choice comes first: the built-in recognizer needs no
+                // account and no key, so someone who only wants to dictate is
+                // never pushed into configuring a provider.
                 Button(onClick = {
-                    viewModel.selectVoiceEngineFromPromo(AppSettings.VOICE_ENGINE_GROQ)
-                    viewModel.container.pendingSettingsScroll.value = "voice"
-                    onOpenSettings()
-                }) { Text(uiContext.getString(R.string.ui_configure_groq_whisper)) }
+                    viewModel.selectVoiceEngineFromPromo(AppSettings.VOICE_ENGINE_INBUILT)
+                }) { Text(uiContext.getString(R.string.settings_voice_promo_device)) }
             },
             dismissButton = {
                 TextButton(onClick = {
-                    viewModel.selectVoiceEngineFromPromo(AppSettings.VOICE_ENGINE_INBUILT)
-                }) { Text(uiContext.getString(R.string.ui_use_inbuilt_speech)) }
+                    viewModel.dismissVoicePromo()
+                    viewModel.container.pendingSettingsScroll.value = "voice"
+                    onOpenSettings()
+                }) { Text(uiContext.getString(R.string.settings_voice_promo_cloud)) }
             },
         )
     }

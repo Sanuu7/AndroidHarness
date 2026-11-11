@@ -473,4 +473,7 @@
     <string name="settings_voice_female">Kadın</string>
     <string name="settings_voice_male">Erkek</string>
     <string name="settings_voice_multilingual">Çoklu</string>
+    <string name="settings_voice_promo_body">Mesajları yazmak yerine dikte edebilirsiniz. Telefonun kendi tanıyıcısı kurulum gerektirmez.</string>
+    <string name="settings_voice_promo_device">Telefon sesini kullan</string>
+    <string name="settings_voice_promo_cloud">Bulut sesini ayarla</string>
 </resources>

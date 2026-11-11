@@ -471,4 +471,7 @@
     <string name="settings_voice_female">Nữ</string>
     <string name="settings_voice_male">Nam</string>
     <string name="settings_voice_multilingual">Đa ngữ</string>
+    <string name="settings_voice_promo_body">Bạn có thể đọc chính tả thay vì gõ. Bộ nhận dạng sẵn có của điện thoại không cần thiết lập.</string>
+    <string name="settings_voice_promo_device">Dùng âm thanh điện thoại</string>
+    <string name="settings_voice_promo_cloud">Thiết lập giọng đám mây</string>
 </resources>
