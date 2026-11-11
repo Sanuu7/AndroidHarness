@@ -42,9 +42,25 @@ object ProviderHeaders {
         !com.androidharness.app.chatgpt.ChatGptProtocol.isProvider(config.id) &&
         !com.androidharness.app.local.LocalModelCatalog.isLocal(config.id) && !config.baseUrl.startsWith("local://")
 
-    fun apply(builder: Request.Builder, config: ProviderConfig): Request.Builder {
+    fun apply(
+        builder: Request.Builder,
+        config: ProviderConfig,
+        attempt: Int = 1,
+        keySlot: Int = 0,
+        group: String? = null,
+        sessionId: String? = null,
+    ): Request.Builder {
         if (editable(config)) normalized(config.headers).filter { it.enabled }.forEach { builder.header(it.name, it.value) }
-        return builder
+        // The debug console reads these tags back; providers stay unaware of capture.
+        builder.tag(
+            com.androidharness.app.llm.debug.DebugTag::class.java,
+            com.androidharness.app.llm.debug.DebugTag(config.id, config.name, config.model, config.type.name,
+                attempt, keySlot, group, sessionId),
+        )
+        return builder.tag(
+            com.androidharness.app.llm.debug.DebugStreamKey::class.java,
+            com.androidharness.app.llm.debug.DebugStreamKey(java.util.UUID.randomUUID().toString()),
+        )
     }
 
     /** Custom headers can contain credentials; never forward them through a redirect. */

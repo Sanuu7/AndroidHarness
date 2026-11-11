@@ -54,6 +54,10 @@ class FallbackProvider(
         val original = primary ?: config.also { primary = it }
         val tried = mutableSetOf(FallbackTarget(current.id, current.model), FallbackTarget(original.id, original.model))
         var attempts = 0
+        // One group per turn keeps every retry and failover attempt together in the console.
+        val debugGroup = options.debugGroup ?: java.util.UUID.randomUUID().toString()
+        // Counts every send of this turn, including failover hops (attempts resets per provider).
+        var debugAttempts = 0
         var lastFailure: StreamEvent.Failure? = null
         val initialPolicy = consent.policy()
         val approvedPrimary = consent.primary ?: original
@@ -108,7 +112,8 @@ class FallbackProvider(
             val timeout = if (com.androidharness.app.local.LocalModelCatalog.isLocal(current.id)) 600_000 else stallTimeoutMs
             flow {
                 factory(current).streamChat(current, key, systemPrompt, messages, tools,
-                    options.copy(thinking = ThinkingSpecs.resolvedForModel(current.model, options.thinking, ModelsDev.providerKeyFor(current.baseUrl)).level))
+                    options.copy(thinking = ThinkingSpecs.resolvedForModel(current.model, options.thinking, ModelsDev.providerKeyFor(current.baseUrl)).level,
+                        debugGroup = debugGroup, debugAttempt = ++debugAttempts))
                     .collect { emit(it) }
             }.flattenEvents().stallGuard(timeout).catch { e ->
                 when (e) {

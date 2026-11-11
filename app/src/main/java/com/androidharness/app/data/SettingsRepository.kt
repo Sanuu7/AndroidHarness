@@ -199,6 +199,12 @@ data class AppSettings(
     val localModelAgentContext: Boolean = false,
     /** Explicit, device-local consent for experimental local model features. */
     val localModelExperimental: Boolean = false,
+    /** Provider debug console. Capture is memory-only unless keep-on-device is on. */
+    val debugConsoleEnabled: Boolean = false,
+    val debugConsoleBodies: Boolean = false,
+    val debugConsolePersist: Boolean = false,
+    /** Set once the user agreed that bodies may hold prompts and replies. */
+    val debugConsoleConsent: Boolean = false,
     val cavemanInstalled: Boolean = false,
     val cavemanIntensity: com.androidharness.app.caveman.CavemanIntensity = com.androidharness.app.caveman.CavemanIntensity.OFF,
     val cavemanWenyan: Boolean = false,
@@ -255,6 +261,10 @@ class SettingsRepository(private val context: Context) {
         val SUBAGENT_MODEL = stringPreferencesKey("subagent_model")
         val THEME_MODE = stringPreferencesKey("theme_mode")
         val DYNAMIC_COLOR = booleanPreferencesKey("dynamic_color")
+        val DEBUG_CONSOLE_ENABLED = booleanPreferencesKey("debug_console_enabled")
+        val DEBUG_CONSOLE_BODIES = booleanPreferencesKey("debug_console_bodies")
+        val DEBUG_CONSOLE_PERSIST = booleanPreferencesKey("debug_console_persist")
+        val DEBUG_CONSOLE_CONSENT = booleanPreferencesKey("debug_console_consent")
         val COLOR_PALETTE = stringPreferencesKey("color_palette")
         val CUSTOM_PALETTES = stringPreferencesKey("custom_palettes")
         val CUSTOM_SECTIONS = stringPreferencesKey("custom_settings_sections")
@@ -500,6 +510,10 @@ class SettingsRepository(private val context: Context) {
                 runCatching { com.androidharness.app.caveman.CavemanIntensity.valueOf(it) }.getOrNull()
             } ?: com.androidharness.app.caveman.CavemanIntensity.OFF,
             cavemanWenyan = prefs[Keys.CAVEMAN_WENYAN] ?: false,
+            debugConsoleEnabled = prefs[Keys.DEBUG_CONSOLE_ENABLED] ?: false,
+            debugConsoleBodies = prefs[Keys.DEBUG_CONSOLE_BODIES] ?: false,
+            debugConsolePersist = prefs[Keys.DEBUG_CONSOLE_PERSIST] ?: false,
+            debugConsoleConsent = prefs[Keys.DEBUG_CONSOLE_CONSENT] ?: false,
         )
     }
 
@@ -619,6 +633,18 @@ class SettingsRepository(private val context: Context) {
             )
             prefs[Keys.PROVIDER_ORDER] = ProviderListPreferences.encodeOrder(order)
         }
+    }
+
+    suspend fun setDebugConsole(enabled: Boolean, bodies: Boolean, persist: Boolean) {
+        context.settingsStore.edit {
+            it[Keys.DEBUG_CONSOLE_ENABLED] = enabled
+            it[Keys.DEBUG_CONSOLE_BODIES] = bodies && enabled
+            it[Keys.DEBUG_CONSOLE_PERSIST] = persist && enabled
+        }
+    }
+
+    suspend fun setDebugConsent() {
+        context.settingsStore.edit { it[Keys.DEBUG_CONSOLE_CONSENT] = true }
     }
 
     suspend fun setPermissionMode(mode: PermissionMode) {

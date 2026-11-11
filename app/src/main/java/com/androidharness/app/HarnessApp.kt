@@ -81,6 +81,44 @@ class AppContainer(val appContext: Context) {
     val keys = KeyStoreManager(appContext)
     init { com.androidharness.app.llm.ProviderNetwork.settings = keys::providerProxy }
     val settings = SettingsRepository(appContext)
+
+    /** Durable request log; opened lazily so a user who never enables it pays nothing. */
+    val debugLog: com.androidharness.app.llm.debug.DebugLogRepository by lazy {
+        com.androidharness.app.llm.debug.DebugLogRepository(
+            com.androidharness.app.llm.debug.DebugLogDatabase.open(appContext).dao(),
+        ) { id -> db.dao().session(id)?.title }
+    }
+
+    @Volatile private var debugPersist = false
+
+    init {
+        // Provider debug console: persisted switches. History lives in its own database,
+        // so nothing has to be restored into memory at startup.
+        val debugCapture = com.androidharness.app.llm.debug.DebugCapture
+        // The file-based archive is gone; drop its leftover so no old log lingers.
+        runCatching { java.io.File(appContext.filesDir, "provider-debug-traces.enc").delete() }
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO).launch {
+            settings.settings.collect { value ->
+                debugCapture.enabled = value.debugConsoleEnabled
+                debugCapture.captureBodies = value.debugConsoleBodies
+                debugPersist = value.debugConsolePersist && value.debugConsoleEnabled
+            }
+        }
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO).launch {
+            // A live stream republishes every half second; debounce the write so a
+            // running answer does not hit SQLite on every event.
+            var pending: kotlinx.coroutines.Job? = null
+            debugCapture.store.traces.collect { traces ->
+                if (!debugPersist) return@collect
+                pending?.cancel()
+                pending = launch {
+                    kotlinx.coroutines.delay(800)
+                    debugLog.save(traces)
+                    debugLog.prune()
+                }
+            }
+        }
+    }
     private val configurationRevision = kotlinx.coroutines.flow.MutableStateFlow(0L)
     val pluginManager = com.androidharness.app.plugins.PluginManager(appContext, configurationRevision,
         com.androidharness.app.plugins.PluginDownloads(githubToken = { github.accessToken() })) { pluginRuntime }

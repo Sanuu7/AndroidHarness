@@ -46,7 +46,7 @@ class GeminiProvider(
             .url(url)
             .header("x-goog-api-key", apiKey)
             .post(body.toString().toRequestBody("application/json; charset=utf-8".toMediaType()))
-            .apply { ProviderHeaders.apply(this, config) }
+            .apply { ProviderHeaders.apply(this, config, options.debugAttempt, options.debugKeySlot, options.debugGroup, options.cacheKey) }
             .build()
 
 

@@ -475,6 +475,7 @@ fun SettingsScreen(
                         SettingsPage.STORAGE -> StorageSection(container)
                         SettingsPage.ENVIRONMENT -> TerminalSection(container, envState, shizukuState, serviceState)
                         SettingsPage.TROUBLESHOOTING -> TroubleshootingSection(container, ::openPage)
+                        SettingsPage.PROVIDER_DEBUG -> ProviderDebugSection(container)
                         SettingsPage.BACKUP -> {
                             SettingsBackupSection(container)
                             ChatsBackupSection(container)

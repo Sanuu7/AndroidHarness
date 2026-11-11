@@ -316,6 +316,7 @@ internal fun settingsIcon(page: SettingsPage): ImageVector = when (page) {
     SettingsPage.STORAGE -> Icons.Outlined.Storage
     SettingsPage.ENVIRONMENT -> Icons.Outlined.Terminal
     SettingsPage.TROUBLESHOOTING -> Icons.Outlined.Build
+    SettingsPage.PROVIDER_DEBUG -> Icons.Outlined.BugReport
     SettingsPage.BACKUP -> Icons.Outlined.Archive
     SettingsPage.SYNC -> Icons.Outlined.CloudSync
     SettingsPage.FTP_SERVER -> Icons.Outlined.Storage

@@ -81,6 +81,10 @@ data class RequestOptions(
     val thinking: com.androidharness.app.agent.ThinkingLevel =
         com.androidharness.app.agent.ThinkingLevel.OFF,
     val cacheKey: String? = null,
+    /** Debug console only: links every retry and failover attempt of one turn. Never sent to a provider. */
+    val debugGroup: String? = null,
+    val debugAttempt: Int = 1,
+    val debugKeySlot: Int = 0,
     /** The same provider catalog snapshot used by the chat controls, also available to model overrides. */
     val modelCatalogs: Map<String, List<ModelEntry>> = emptyMap(),
     val customReasoning: Map<String, com.androidharness.app.agent.CustomReasoningConfig> = emptyMap(),
@@ -204,6 +208,10 @@ object ProviderFactory {
     val json: Json = Json { ignoreUnknownKeys = true }
 
     private val client = OkHttpClient.Builder()
+        // Network interceptor, not application interceptor: only here does the
+        // request already carry Host, Content-Length, Content-Type, User-Agent and
+        // Accept-Encoding, which is exactly where compatibility bugs live.
+        .addNetworkInterceptor(com.androidharness.app.llm.debug.DebugInterceptor())
         .connectTimeout(30, TimeUnit.SECONDS)
         .writeTimeout(60, TimeUnit.SECONDS)
         .readTimeout(0, TimeUnit.MILLISECONDS) // SSE streams are long-lived
@@ -255,19 +263,28 @@ object ProviderFactory {
                         throw ApiException(it.code, errBody ?: it.message, retryAfterHeaderSeconds(it.header("Retry-After")))
                     }
                     val source = it.body!!.source()
-                    while (true) {
-                        val line = readSseLine(source) ?: break
-                        if (!line.startsWith("data:")) continue
-                        val payload = line.removePrefix("data:").trim()
-                        if (payload == "[DONE]") { onDone(); break }
-                        if (payload.isEmpty()) continue
-                        try {
-                            send(json.parseToJsonElement(payload))
-                        } catch (e: kotlinx.coroutines.CancellationException) {
-                            throw e
-                        } catch (_: kotlinx.serialization.SerializationException) {
-                            // Skip malformed keep-alive lines, never drop valid stream chunks.
+                    // Debug console tap. Reads the same lines the parser just read, so it
+                    // cannot reorder or drop a chunk, and it stops appending at the cap.
+                    val tap = com.androidharness.app.llm.debug.DebugCapture
+                        .streamTap(request.tag(com.androidharness.app.llm.debug.DebugStreamKey::class.java)?.value)
+                    try {
+                        while (true) {
+                            val line = readSseLine(source) ?: break
+                            tap?.line(line)
+                            if (!line.startsWith("data:")) continue
+                            val payload = line.removePrefix("data:").trim()
+                            if (payload == "[DONE]") { onDone(); break }
+                            if (payload.isEmpty()) continue
+                            try {
+                                send(json.parseToJsonElement(payload))
+                            } catch (e: kotlinx.coroutines.CancellationException) {
+                                throw e
+                            } catch (_: kotlinx.serialization.SerializationException) {
+                                // Skip malformed keep-alive lines, never drop valid stream chunks.
+                            }
                         }
+                    } finally {
+                        tap?.finish()
                     }
                 }
                 close()

@@ -1,5 +1,11 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- **Provider request log** (#97): Settings → Provider request log records what the app actually sends to a provider and what comes back. A single switch turns capture on; a second one includes request and response bodies, and a third keeps the log on the device in an encrypted database. Entries show the URL, the final headers as they left the app with credentials masked by name, the body, the status code, the response or error body, the duration, the token usage and the raw streamed chunks, and the list can be filtered by chat and by failure, copied per entry or shared and saved as a file. Long bodies are shortened field by field so the JSON stays parseable for replay, file paths are replaced, and turning bodies on asks for consent first. The same console is one tap away from Settings → Troubleshooting.
+
 ## 3.4 (2026-11-09)
 
 ### Added
