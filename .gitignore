@@ -67,6 +67,3 @@ id_ed25519
 # --- Backend dependencies / local logs ---
 node_modules/
 *.log
-
-# --- Agent-only helper workflows (not part of the published project) ---
-.github/workflows/kotlin-check.yml
