@@ -166,6 +166,7 @@ internal fun TroubleshootingSection(container: AppContainer, onOpen: (SettingsPa
         }) { Text(stringResource(R.string.settings_troubleshooting_check_models)) }
         TextButton(onClick = { onOpen(if (local) SettingsPage.LOCAL_MODELS else SettingsPage.MODELS) }) { Text(stringResource(R.string.settings_troubleshooting_manage_provider)) }
     }
+    ProviderDebugCard(container, onOpen)
     DiagnosticCard(uiContext.getString(R.string.ui_storage_access_required), states.getValue(DiagnosticArea.STORAGE),
         if (storage.granted) uiContext.getString(R.string.ui_the_app_has_storage_permission) else uiContext.getString(R.string.ui_grant_storage_access_to_complete_setup_and)) {
         if (!storage.granted) TextButton(onClick = storage.request) { Text(stringResource(R.string.settings_troubleshooting_grant)) }

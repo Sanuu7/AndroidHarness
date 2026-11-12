@@ -28,12 +28,16 @@ class RotatingKeyProvider(
             return@flow
         }
         val start = if (pool.rotate) Math.floorMod(cursor.getAndIncrement(), enabled.size.toLong()).toInt() else 0
+        // One group per turn keeps every rotated attempt together in the debug console.
+        val debugGroup = options.debugGroup ?: java.util.UUID.randomUUID().toString()
         for (attempt in enabled.indices) {
             val key = enabled[(start + attempt) % enabled.size]
+            val attemptOptions = options.copy(debugGroup = debugGroup, debugAttempt = attempt + 1,
+                debugKeySlot = (start + attempt) % enabled.size)
             var output = false
             var failure: StreamEvent.Failure? = null
             try {
-                delegate.streamChat(config, key.value, systemPrompt, messages, tools, options)
+                delegate.streamChat(config, key.value, systemPrompt, messages, tools, attemptOptions)
                     .takeWhile { event ->
                         fun flatten(value: StreamEvent): List<StreamEvent> = if (value is StreamEvent.Batch) value.events.flatMap(::flatten) else listOf(value)
                         val batch = if (event is StreamEvent.Batch) flatten(event) else listOf(event)

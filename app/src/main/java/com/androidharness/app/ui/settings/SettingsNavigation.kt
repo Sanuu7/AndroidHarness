@@ -211,6 +211,12 @@ internal enum class SettingsPage(
         "shizuku shevery dhizuku device owner shell packages environment battery optimization keep alive wireless adb wifi pairing debugging developer options notification",
         onHome = false,
     ),
+    PROVIDER_DEBUG(
+        R.string.settings_page_provider_debug_title,
+        R.string.settings_page_provider_debug_desc,
+        R.string.settings_group_app_data,
+        "provider debug console log request response http error sse trace stream retry fallback key rotation diagnostics",
+    ),
     TROUBLESHOOTING(
         R.string.settings_page_troubleshooting_title,
         R.string.settings_page_troubleshooting_desc,
@@ -291,7 +297,7 @@ internal val settingsHomePages = listOf(
     SettingsPage.GITHUB, SettingsPage.SEARCH, SettingsPage.MCP,
     SettingsPage.TELEGRAM, SettingsPage.SYNC, SettingsPage.FTP_SERVER,
     SettingsPage.BACKGROUND, SettingsPage.STORAGE,
-    SettingsPage.BACKUP, SettingsPage.USAGE, SettingsPage.TROUBLESHOOTING,
+    SettingsPage.BACKUP, SettingsPage.USAGE, SettingsPage.PROVIDER_DEBUG, SettingsPage.TROUBLESHOOTING,
     SettingsPage.UPDATES, SettingsPage.SETUP, SettingsPage.ABOUT,
 )
 
@@ -413,6 +419,7 @@ internal fun settingsDeepLink(target: String): SettingsPage? = when (target) {
     "updates" -> SettingsPage.UPDATES
     "language" -> SettingsPage.LANGUAGE
     "troubleshooting" -> SettingsPage.TROUBLESHOOTING
+    "provider-debug", "provider-log" -> SettingsPage.PROVIDER_DEBUG
     "github" -> SettingsPage.GITHUB
     "chatgpt" -> SettingsPage.CONNECTED_ACCOUNTS
     "planning" -> SettingsPage.MODELS

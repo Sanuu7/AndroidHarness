@@ -1062,4 +1062,23 @@
     <string name="chat_history_open_message">"打开匹配的消息"</string>
     <string name="chat_history_open_chat">"打开对话"</string>
     <string name="chat_history_unavailable">"此对话已不可用。"</string>
+    <!-- Provider request log (Settings > Troubleshooting). -->
+    <string name="settings_debug_title">提供商请求日志</string>
+    <string name="settings_debug_summary">记录本应用发送给提供商的内容。仅保存在内存中，应用关闭后清空。</string>
+    <string name="settings_debug_bodies">包含请求与响应正文</string>
+    <string name="settings_debug_local_note">本地模型不走 HTTP，因此不会出现在这里。</string>
+    <string name="settings_debug_empty">还没有记录到请求。</string>
+    <string name="settings_debug_close">关闭请求日志</string>
+    <!-- Provider request log, keeping it on the device. -->
+    <string name="settings_debug_persist">保存在本机</string>
+    <string name="settings_debug_persist_note">以加密形式保存在应用存储中。</string>
+    <string name="settings_debug_search">筛选请求</string>
+    <string name="settings_debug_export">导出</string>
+    <!-- Provider request log page. -->
+    <string name="settings_page_provider_debug_title">提供商请求日志</string>
+    <string name="settings_page_provider_debug_desc">记录发送给提供商的内容，查看错误与流式响应。</string>
+    <string name="settings_debug_count">已记录 %1$d 条</string>
+    <string name="settings_debug_events">%1$d 个事件</string>
+    <string name="settings_debug_save">保存到文件</string>
+    <string name="settings_debug_consent">请求与响应正文会包含你的提示词和模型回复。开启后这些内容会保存在本机，并可能出现在你分享的日志里。</string>
 </resources>

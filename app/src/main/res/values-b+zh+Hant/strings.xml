@@ -1031,4 +1031,23 @@
     <string name="chat_history_open_message">"開啟符合的訊息"</string>
     <string name="chat_history_open_chat">"開啟對話"</string>
     <string name="chat_history_unavailable">"此對話已無法使用。"</string>
+    <!-- Provider request log (Settings > Troubleshooting). -->
+    <string name="settings_debug_title">提供者請求日誌</string>
+    <string name="settings_debug_summary">記錄本應用程式傳送給提供者的內容。僅保存在記憶體中，應用程式關閉後清空。</string>
+    <string name="settings_debug_bodies">包含請求與回應內文</string>
+    <string name="settings_debug_local_note">本機模型不走 HTTP，因此不會出現在這裡。</string>
+    <string name="settings_debug_empty">還沒有記錄到請求。</string>
+    <string name="settings_debug_close">關閉請求日誌</string>
+    <!-- Provider request log, keeping it on the device. -->
+    <string name="settings_debug_persist">保存在本機</string>
+    <string name="settings_debug_persist_note">以加密形式儲存在應用程式儲存空間中。</string>
+    <string name="settings_debug_search">篩選請求</string>
+    <string name="settings_debug_export">匯出</string>
+    <!-- Provider request log page. -->
+    <string name="settings_page_provider_debug_title">提供者請求日誌</string>
+    <string name="settings_page_provider_debug_desc">記錄傳送給提供者的內容，檢視錯誤與串流回應。</string>
+    <string name="settings_debug_count">已記錄 %1$d 條</string>
+    <string name="settings_debug_events">%1$d 個事件</string>
+    <string name="settings_debug_save">儲存到檔案</string>
+    <string name="settings_debug_consent">請求與回應內文會包含你的提示詞與模型回覆。開啟後這些內容會保存在本機，並可能出現在你分享的日誌裡。</string>
 </resources>

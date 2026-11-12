@@ -452,7 +452,7 @@ class OpenAiCompatProvider(
             requestBuilder.header("HTTP-Referer", "https://github.com/Sanuu7/AndroidHarness")
             requestBuilder.header("X-Title", "Android Harness")
         }
-        return ProviderHeaders.apply(requestBuilder, config).post(body).build()
+        return ProviderHeaders.apply(requestBuilder, config, options.debugAttempt, options.debugKeySlot, options.debugGroup, options.cacheKey).post(body).build()
     }
 
     /**

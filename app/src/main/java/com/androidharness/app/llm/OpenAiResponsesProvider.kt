@@ -98,7 +98,7 @@ class OpenAiResponsesProvider(
         if (HarnessProvider.isOpenCode(config)) {
             HarnessProvider.withSession(requestBuilder, options.cacheKey)
         }
-        return ProviderHeaders.apply(requestBuilder, config).post(body).build()
+        return ProviderHeaders.apply(requestBuilder, config, options.debugAttempt, options.debugKeySlot, options.debugGroup, options.cacheKey).post(body).build()
     }
 
     internal fun buildRequestBody(
