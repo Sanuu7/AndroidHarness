@@ -13,6 +13,8 @@ Harness reaches files through four different storage stories: its private data d
 - **`DeviceAccessManager.pinsAppUser`**: forces the app UID for the private data dir and, by default, for app-owned external folders.
 - **`ShellTierRouter`**: maps a path region to `ExecutionTier` and attaches a note when access is degraded.
 - **`StorageManager`**: derives scan roots from projects and protects workspaces during cleanup.
+- **`StorageGate` / `SharedStorage`**: the single decision point for tools on shared storage. Classifies paths, stops calls that lack the grant, raises the in-app request and lets a waiting call continue after a grant.
+- **`StorageAccessPrompt`**: the global dialog mounted in `MainActivity` that shows `StorageGate.request`.
 - **`rememberStorageAccess` / `SystemGrants`**: the in-app grant flow and the intent ladder that opens the OS page.
 
 ## Architecture and Flow
@@ -52,6 +54,19 @@ else -> runtimePermissions(sdkInt).all(permissionGranted)
 - **Runtime list**: `runtimePermissions` returns an empty array at API 30 and above, otherwise the read and write pair (`StorageAccess.kt:32-38`). The manifest caps `WRITE_EXTERNAL_STORAGE` at SDK 29 and `READ_EXTERNAL_STORAGE` at SDK 32 (`AndroidManifest.xml:59-64`).
 
 The UI flow in `rememberStorageAccess` (`ui/common/StorageAccessState.kt:31-75`) refreshes on `ON_RESUME`. Its `request` first opens the all-files settings page when the SDK is 30 or above or access is already granted. Below 30 it requests runtime permissions, and if a permission is permanently denied it falls back to the settings page. `SystemGrants.openAllFilesAccess` (`ui/common/SystemGrants.kt:54-68`) tries `ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION` with the package URI, then the global all-files page, then app details. Below 30 it goes straight to app details because the all-files page does not exist.
+
+### Storage Gate
+
+Without the grant, Android 11+ does not fail cleanly on shared storage: the app UID sees a filtered tree where other apps' files are missing, and it can still create some files. Tools would return wrong results instead of errors, so `StorageGate` (`data/env/StorageGate.kt`) stops them before they run.
+
+- **Path rule**: `SharedStorage.needsGrant` treats `/sdcard`, `/storage/...`, `/mnt/sdcard`, `/mnt/user`, `/mnt/media_rw` and `/data/media` as shared, except this package's own `Android/data`, `Android/media` and `Android/obb` folders. The app workspace lives in the first of those, so it never needs the grant.
+- **Tool routing**: `WorkspaceToolRouting.requireStorage` runs right after `route` in both engine dispatch paths. File tools on a shared root call `awaitFiles`. `shell`, `shell_background` and `git_*` call `awaitCommand`, which passes when `DeviceAccessManager.liveTier` is `ROOT` or `PRIVILEGED`, or when the call pins `access=shizuku|root`.
+- **Full access**: `UnboundedFileFs` calls `requireFiles` on every resolved path, so an absolute path into shared storage is stopped too.
+- **Asking**: a block sets `StorageGate.request`, which `StorageAccessPrompt` shows over any screen. If the dialog is observed, the suspended call waits up to three minutes; a grant lets it continue, otherwise it fails with a message that tells the model not to retry or route around the block. "Not now" calls `decline`, which suppresses new dialogs for ten minutes and changes the failure text to say the user declined.
+- **Commands that only name a shared path**: `ShellTierRouter.runApp` adds `StorageGate.commandNote` when an app-UID command line mentions shared storage, and raises the request if that command failed. Command text is not parsed for a hard block.
+- **Picked folders**: `WorkspaceManager.directFolderOrNull` refuses the real path while the grant is missing, so `fsFor` keeps `SafFs` and the picker grant.
+
+Until `StorageGate.install` runs (unit tests), every path is allowed.
 
 ### Storage Roots
 
@@ -120,7 +135,8 @@ The setting is stored per device, not in portable settings, in the `device_acces
 
 ## Known gaps
 
-- There is no per-folder storage grant record. A `SHELL` project stores an absolute path and depends on the global grant at run time; adding one while access is missing is possible, and failures appear when tools run.
+- There is no per-folder storage grant record. A `SHELL` project stores an absolute path and depends on the global grant at run time; adding one while access is missing is possible, and `StorageGate` stops its tools and asks when they run.
+- CodeGraph, package and other tools that run commands through `ShellTierRouter` directly are not hard blocked on a shared root; they get the router note only.
 - `StorageManager` never scans SAF tree contents, so storage totals exclude picked-folder usage by design. The UI labels this as a scan gap, not an error.
 
 Sources: [app/src/main/java/com/androidharness/app/data/env/StorageAccess.kt](../app/src/main/java/com/androidharness/app/data/env/StorageAccess.kt)#L11-L38), [app/src/main/java/com/androidharness/app/data/env/LinuxEnvironment.kt](../app/src/main/java/com/androidharness/app/data/env/LinuxEnvironment.kt)#L305-L351), [app/src/main/java/com/androidharness/app/workspace/WorkspaceManager.kt](../app/src/main/java/com/androidharness/app/workspace/WorkspaceManager.kt)#L44-L181), [app/src/main/java/com/androidharness/app/data/env/DeviceAccessManager.kt](../app/src/main/java/com/androidharness/app/data/env/DeviceAccessManager.kt)#L172-L188), [app/src/main/java/com/androidharness/app/data/env/DeviceAccessStore.kt](../app/src/main/java/com/androidharness/app/data/env/DeviceAccessStore.kt)#L13-L31), [app/src/main/java/com/androidharness/app/data/storage/StorageManager.kt](../app/src/main/java/com/androidharness/app/data/storage/StorageManager.kt)#L24-L163), [app/src/main/java/com/androidharness/app/ui/common/StorageAccessState.kt](../app/src/main/java/com/androidharness/app/ui/common/StorageAccessState.kt)#L31-L75), [app/src/main/AndroidManifest.xml](../app/src/main/AndroidManifest.xml)#L54-L68)

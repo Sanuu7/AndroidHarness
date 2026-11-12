@@ -1061,4 +1061,9 @@
     <string name="settings_voice_auto_send_timeout">Время тишины</string>
     <string name="settings_voice_auto_send_timeout_desc">Сколько ждать тишины перед отправкой.</string>
     <string name="settings_voice_auto_send_timeout_value">%1$s с</string>
+    <string name="storage_prompt_title">Storage access needed</string>
+    <string name="storage_prompt_body">The agent was stopped because this location is in shared storage, and the app does not have storage access.</string>
+    <string name="storage_prompt_alternative">Grant access and the agent continues from here. Without it, the agent keeps working in the app workspace and in folders you pick.</string>
+    <string name="storage_prompt_grant">Grant access</string>
+    <string name="storage_prompt_later">Not now</string>
 </resources>

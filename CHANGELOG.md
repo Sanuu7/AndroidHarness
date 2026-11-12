@@ -9,8 +9,16 @@
   - Each request opens into Overview, Request, Response and Stream tabs: a plain explanation of the status code, rate limit and Retry-After headers, the provider request ID, the final headers with credentials masked, bodies as formatted and coloured JSON with search, and the raw stream events in order with malformed chunks flagged.
   - The list filters by outcome, provider and chat, and searches provider, model, URL, status and request ID. Export shares or saves the visible requests as text or JSON, and a single request can be copied whole, as a cURL command, or body by body.
 
+- **Storage access is asked for only when it is needed**: storage access stays optional, and the app now stops the agent cleanly at the point where a task needs it instead of letting it see half a folder.
+  - When a file tool, a command or Git would touch shared storage (Download, Documents, DCIM, an SD card and other device folders) without storage access, the call is stopped before it runs and a dialog names the location with Grant access and Not now.
+  - Grant access and the stopped call continues by itself. Not now tells the agent you declined, and the app stays quiet for ten minutes instead of asking on every step.
+  - The app workspace, folders you pick with the system picker and SSH workspaces never need storage access. Commands that run through Shizuku, Wireless ADB or root are not stopped, because they do not depend on it.
+  - Full access lifts the workspace boundary but not this rule, so an absolute path into shared storage is stopped the same way.
+  - A command run from the app workspace that names a shared path such as `/sdcard/Download` gets a note explaining that missing files there are not real, and the dialog appears if the command failed.
+
 ### Changed
 
+- **Picked folders without storage access**: a folder chosen with the system picker now always uses the picker's own access while storage access is off. Android could report such a folder as writable while hiding files made by other apps, so file tools saw an incomplete folder. Commands in that folder need storage access.
 - **Settings in Material 3 Expressive**: every settings page now shares one look and one set of motions.
   - Lists are segmented groups: rows sit a hair apart with wide outer corners and tight inner ones, and a row rounds off under your finger. Panels are tonal, without outlines.
   - Pages slide in and out along one axis with spring motion, and each page opens with its icon on a soft Material shape that turns into place.

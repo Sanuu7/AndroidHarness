@@ -283,11 +283,16 @@ class UnboundedFileFs(root: File) : WorkspaceFs {
         throw e
     }
 
+    // Full access lifts the workspace boundary, not Android's storage permission.
+    private fun gated(path: String): File = openResolve(path).also {
+        com.androidharness.app.data.env.StorageGate.requireFiles("This file tool", it)
+    }
+
     override fun resolve(path: String): FsNode =
-        FileFsNode(openResolve(path), rootPath)
+        FileFsNode(gated(path), rootPath)
 
     override fun walk(path: String): Sequence<FsNode> {
-        val file = openResolve(path)
+        val file = gated(path)
         if (!file.exists()) throw ToolFailure("Path does not exist: $path")
         if (file.isFile) return sequenceOf(FileFsNode(file, rootPath))
         return file.walkTopDown()

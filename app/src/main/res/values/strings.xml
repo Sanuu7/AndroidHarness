@@ -718,6 +718,11 @@
     <string name="settings_backup_provider_line">%1$s\n%2$s</string>
     <string name="settings_env_storage_access">Storage access</string>
     <string name="settings_env_storage_granted">Granted: the shell and file tools can use shared storage.</string>
+    <string name="storage_prompt_title">Storage access needed</string>
+    <string name="storage_prompt_body">The agent was stopped because this location is in shared storage, and the app does not have storage access.</string>
+    <string name="storage_prompt_alternative">Grant access and the agent continues from here. Without it, the agent keeps working in the app workspace and in folders you pick.</string>
+    <string name="storage_prompt_grant">Grant access</string>
+    <string name="storage_prompt_later">Not now</string>
     <string name="settings_env_storage_optional">Optional: use the app workspace, or grant access for device folders.</string>
     <string name="settings_privacy_lock_enable_title">Enable Biometric Lock</string>
     <string name="settings_privacy_lock_disable_title">Disable Biometric Lock</string>

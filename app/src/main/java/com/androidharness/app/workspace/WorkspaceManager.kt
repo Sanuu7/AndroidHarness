@@ -395,9 +395,16 @@ class WorkspaceManager(
         const val KIND_SHELL = "SHELL"
         const val KIND_SSH = "SSH"
 
-        /** A mapped path alone does not grant permission to read or write it. */
+        /**
+         * A mapped path alone does not grant permission to read or write it. Without the
+         * storage grant Android can still report a shared folder as readable and writable
+         * while hiding other apps' files, so the picker grant stays the way in.
+         */
         internal fun directFolderOrNull(path: String?): File? = runCatching {
-            path?.let { File(it) }?.takeIf { it.isDirectory && it.canRead() && it.canWrite() }
+            path?.let { File(it) }?.takeIf {
+                !com.androidharness.app.data.env.StorageGate.needsGrant(it.path) &&
+                    it.isDirectory && it.canRead() && it.canWrite()
+            }
         }.getOrNull()
 
         /**

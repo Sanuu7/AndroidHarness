@@ -178,6 +178,7 @@ class MainActivity : AppCompatActivity() {
                         onDispose { container.browser.unbindReadCaptureHost(host) }
                     }
                     AppNav(container)
+                    com.androidharness.app.ui.common.StorageAccessPrompt()
                 }
 
                 // The one global update dialog, above everything else.

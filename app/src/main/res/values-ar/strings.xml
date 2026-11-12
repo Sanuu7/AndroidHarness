@@ -1067,4 +1067,9 @@
     <string name="settings_voice_auto_send_timeout">مدة الصمت</string>
     <string name="settings_voice_auto_send_timeout_desc">كم من الوقت يُنتظر الصمت قبل الإرسال.</string>
     <string name="settings_voice_auto_send_timeout_value">%1$s ث</string>
+    <string name="storage_prompt_title">Storage access needed</string>
+    <string name="storage_prompt_body">The agent was stopped because this location is in shared storage, and the app does not have storage access.</string>
+    <string name="storage_prompt_alternative">Grant access and the agent continues from here. Without it, the agent keeps working in the app workspace and in folders you pick.</string>
+    <string name="storage_prompt_grant">Grant access</string>
+    <string name="storage_prompt_later">Not now</string>
 </resources>

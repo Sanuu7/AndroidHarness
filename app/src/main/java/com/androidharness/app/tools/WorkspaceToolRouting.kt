@@ -63,6 +63,23 @@ object WorkspaceToolRouting {
         return Route(target, binding, selected)
     }
 
+    /**
+     * Stops a call that would touch shared storage without the storage grant. File tools always
+     * run as the app user; commands pass when a privileged shell runs them or the call pins one.
+     */
+    suspend fun requireStorage(tool: Tool, args: JsonObject, route: Route) {
+        val root = (route.binding?.fs ?: route.workspace).shellRoot ?: return
+        fun text(key: String) = (args[key] as? JsonPrimitive)?.takeIf { it.isString }?.content
+        when {
+            tool.name in fileTools -> com.androidharness.app.data.env.StorageGate.awaitFiles(tool.name, root)
+            requiresCommandPath(tool.name) -> {
+                if (text("access") in setOf("shizuku", "root")) return
+                val cwd = text("cwd")?.trim()?.takeIf { it.startsWith('/') }?.let { java.io.File(it) } ?: root
+                com.androidharness.app.data.env.StorageGate.awaitCommand(tool.name, cwd)
+            }
+        }
+    }
+
     fun instructions(workspace: ChatWorkspaceFs): String = buildString {
         append("\nSelected workspaces for this chat (never infer access from other chats):\n")
         workspace.bindings.forEach { binding ->

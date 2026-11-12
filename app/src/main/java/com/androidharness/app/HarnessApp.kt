@@ -44,7 +44,15 @@ class HarnessApp : Application() {
         // Paused LazyColumn prefetch crashes in LayoutNode.onChildRemoved when chat items change.
         ComposeFoundationFlags.isPausableCompositionInPrefetchEnabled = false
         WebView.enableSlowWholeDocumentDraw()
+        // Before any workspace is resolved, so no tool ever sees a filtered shared-storage tree.
+        com.androidharness.app.data.env.StorageGate.install(packageName,
+            granted = { com.androidharness.app.data.env.StorageAccess.isGranted(this) })
         container = AppContainer(this)
+        com.androidharness.app.data.env.StorageGate.installPrivilegedRoute { cwd ->
+            container.deviceAccess.liveTier(cwd).let {
+                it == com.androidharness.app.data.env.ExecutionTier.ROOT || it == com.androidharness.app.data.env.ExecutionTier.PRIVILEGED
+            }
+        }
         memoryScope.launch { container.settings.ensureRumbleCombo() }
     }
     override fun onTrimMemory(level: Int) {

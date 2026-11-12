@@ -1055,4 +1055,9 @@
     <string name="settings_page_provider_debug_desc">Capture what is sent to your providers, inspect errors and streaming responses.</string>
     <string name="settings_debug_count">%1$d recorded</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
+    <string name="storage_prompt_title">Storage access needed</string>
+    <string name="storage_prompt_body">The agent was stopped because this location is in shared storage, and the app does not have storage access.</string>
+    <string name="storage_prompt_alternative">Grant access and the agent continues from here. Without it, the agent keeps working in the app workspace and in folders you pick.</string>
+    <string name="storage_prompt_grant">Grant access</string>
+    <string name="storage_prompt_later">Not now</string>
 </resources>

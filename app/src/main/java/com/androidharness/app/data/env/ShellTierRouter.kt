@@ -85,7 +85,7 @@ class ShellTierRouter(
     fun permissionNote(cwd: File, tier: ExecutionTier): String? {
         val region = regionOf(cwd)
         return when {
-            tier == ExecutionTier.APP_LINUX &&
+            (tier == ExecutionTier.APP_LINUX || tier == ExecutionTier.TOYBOX) &&
                 region == PathClassifier.Region.SHARED_STORAGE &&
                 !isAllFilesAccess() ->
                 "[note: shared storage access is not granted: expect permission errors here. Grant it in Settings → Storage access, use the app workspace, or connect a privileged shell in Settings → Terminal.]"
@@ -303,7 +303,7 @@ class ShellTierRouter(
             stdout.toString(),
             stderr.toString(),
             tier,
-            permissionNote(cwd, tier),
+            permissionNote(cwd, tier) ?: StorageGate.commandNote(command, failed = timedOut || exitCode != 0),
         )
     }
 

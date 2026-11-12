@@ -1036,7 +1036,8 @@ class AgentEngine(
             "${call.name} needs approval here, and side questions never ask for it. Answer from the context you already have.")
         val args = try { json.parseToJsonElement(call.argumentsJson).jsonObject }
             catch (e: Exception) { return ToolResult(false, "Invalid tool arguments: ${e.message}") }
-        val route = try { WorkspaceToolRouting.route(tool, args, context.workspace, ToolContext(context.workspace, context.sandboxOff, context.sessionId)) }
+        val route = try { WorkspaceToolRouting.route(tool, args, context.workspace, ToolContext(context.workspace, context.sandboxOff, context.sessionId))
+                .also { WorkspaceToolRouting.requireStorage(tool, args, it) } }
             catch (e: CancellationException) { throw e }
             catch (e: Exception) { return ToolResult(false, e.message ?: "Workspace access was denied.") }
         val toolContext = ToolContext(route.workspace, context.sandboxOff, context.sessionId,
@@ -1203,7 +1204,9 @@ class AgentEngine(
         val checkpointWorkspace = workspace
         val parsedArgs = try { json.parseToJsonElement(call.argumentsJson).jsonObject }
         catch (e: Exception) { return ToolResult(false, "Invalid tool arguments: ${e.message}") }
-        val route = try { WorkspaceToolRouting.route(tool, parsedArgs, workspace, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS && workspace !is ChatWorkspaceFs, sessionId)) }
+        val route = try { WorkspaceToolRouting.route(tool, parsedArgs, workspace, ToolContext(workspace, mode == PermissionMode.FULL_ACCESS && workspace !is ChatWorkspaceFs, sessionId))
+            .also { WorkspaceToolRouting.requireStorage(tool, parsedArgs, it) } }
+        catch (e: CancellationException) { throw e }
         catch (e: Exception) { return ToolResult(false, e.message ?: "Workspace access was denied.") }
         val workspace = route.workspace
         val sandboxOff = mode == PermissionMode.FULL_ACCESS && checkpointWorkspace !is ChatWorkspaceFs
@@ -2343,6 +2346,7 @@ ${if (appSettings.subagentsEnabled) "- For broad exploration whose raw output wo
                 append("Package caches: ").append(HarnessEnvironmentPrompt.value(linuxEnv.sharedCacheRoot.path)).append(" (managed by the harness).\n")
                 append("User skills: ").append(HarnessEnvironmentPrompt.value(linuxEnv.prefix.parentFile!!.resolve("skills").path)).append("; project skills: .harness/skills/; bundled skill assets are read with skill_view.\n")
                 append("App storage access granted: ").append(linuxEnv.storageAccessGranted).append('\n')
+                if (!linuxEnv.storageAccessGranted) append("Storage access is optional and the user has not granted it. Shared storage (/sdcard, /storage/emulated/0: Download, Documents, DCIM and other device folders) is blocked for file tools and for commands that run as the app user; the app asks the user when a call is blocked. The app workspace and folders the user picked keep working. Do not probe shared storage or route around a block.\n")
                 append("Use the active command's PREFIX, JAVA_HOME and HARNESS_SCRATCH; the harness sets PATH and library loading for the execution tier. Never borrow another app/package's prefix or invoke linker/su/sudo workarounds. Use pkg_search/pkg_install instead of apt/pkg directly.\n")
             }
             append(HarnessEnvironmentPrompt.toolIndex(tools))
