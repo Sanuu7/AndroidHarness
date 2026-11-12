@@ -189,7 +189,7 @@ class AppContainer(val appContext: Context) {
 
     private val db = Room.databaseBuilder(appContext, AppDatabase::class.java, "harness.db")
         .addMigrations(
-            AppDatabase.MIGRATION_24_25, AppDatabase.MIGRATION_23_24, AppDatabase.MIGRATION_22_23, AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_20_21, AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_18_19, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6,
+            AppDatabase.MIGRATION_25_26, AppDatabase.MIGRATION_24_25, AppDatabase.MIGRATION_23_24, AppDatabase.MIGRATION_22_23, AppDatabase.MIGRATION_21_22, AppDatabase.MIGRATION_20_21, AppDatabase.MIGRATION_19_20, AppDatabase.MIGRATION_18_19, AppDatabase.MIGRATION_4_5, AppDatabase.MIGRATION_5_6,
             AppDatabase.MIGRATION_6_7, AppDatabase.MIGRATION_7_8,
             AppDatabase.MIGRATION_8_9, AppDatabase.MIGRATION_9_10, AppDatabase.MIGRATION_10_11, AppDatabase.MIGRATION_11_12, AppDatabase.MIGRATION_12_13, AppDatabase.MIGRATION_13_14, AppDatabase.MIGRATION_14_15, AppDatabase.MIGRATION_15_16, AppDatabase.MIGRATION_16_17, AppDatabase.MIGRATION_17_18,
         )
@@ -444,6 +444,10 @@ class AppContainer(val appContext: Context) {
                         settings.clearMissingLocalProviderSelections(availableIds)
                     }
                 }
+        }
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            // Chats that held several workspaces before projects existed each move into a project of their own.
+            runCatching { workspace.adoptUnfiledChats() }
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             // Learned wire per Harness model (chat vs anthropic vs responses),

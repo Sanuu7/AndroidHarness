@@ -70,6 +70,18 @@ flowchart TD
 - **Storage concurrency.** `StorageManager.withIdle` nests `runManager.withIdleStorage`, `backgroundProcesses.withIdleStorage`, and `terminal.withClosedStorage` (`StorageManager.kt:143-145`), so no task, background shell, or terminal session can start while a clean or toolchain uninstall runs. Package cleanup additionally holds `env.withPackageStorageLock`.
 - **Scan gaps.** SSH projects become `StorageGap.SSH_HOST`, SAF-only projects become `StorageGap.SAF_FOLDER`, unreadable or missing roots get `PERMISSION_DENIED` or `MISSING`, and no scan root is registered for them (`StorageManager.kt:41-53`).
 
+## Workspaces and Projects
+
+The names in the code are older than the model. A row in the `projects` table (`ProjectEntity`) is a **workspace**: one folder with one backend. `projectId` on a session, in a grant and in a route argument always means a workspace id. A **project** in the product sense is a `WorkProjectEntity` row in `work_projects`: an id, a name, a creation time and `selectionJson`, which is an encoded `ChatWorkspaceSelection` (the grant list plus the main workspace).
+
+- **Normal chat.** `sessions.workProjectId` is null and the chat has one workspace. `assignSelection` stores a selection of one editable grant as a plain `projectId` with no selection JSON, unless the chat already has saved `@workspaces/` paths that need the JSON to resolve.
+- **Project chat.** `sessions.workProjectId` points at the project and the chat carries a copy of the project's selection. `RunManager.createProjectChat` creates one, `moveChatToProject` files an existing chat, and `assignProjectWorkspaces` saves an edited selection to the project and applies it to every chat in it. That call is all or nothing: it computes the change for every chat first and refuses if any of them is running.
+- **Adding a folder.** `addSafProject`, `addPickedFolder`, `addShellProject` and `addSshProject` insert a workspace row and nothing else. No project is created by any of them.
+- **Adoption.** `adoptUnfiledChats`, launched once from `HarnessApp` at startup, takes each chat that has selection JSON with more than one grant and no `workProjectId`, creates a project named after its main workspace plus the number of other folders, and files the chat under it. Chats with the same grants and main workspace share one project. It is idempotent, so it also repairs a run that was interrupted.
+- **Deletion.** `RunManager.deleteWorkProject` deletes the project row and its chats and returns their ids. Workspace rows and files are not touched. Deleting a workspace still goes through `ProjectDeletion`.
+
+The UI follows the same split. `WorkspaceSwitcher` (`ui/chat/components/WorkspaceSwitcherSheet.kt`) lists workspaces for a normal chat and offers New project and Move to a project. For a project chat it shows the project and opens `ProjectEditorSheet`, the only place where membership changes. `WorkProjectsScreen` and `WorkProjectScreen` (`ui/projects/WorkProjectsScreen.kt`) are the project list and page. `ProjectsScreen` and `ProjectScreen` are the workspace list and page.
+
 ## Extension Points
 
 - New backend kinds: add a constant to `WorkspaceManager.Companion` (393-396), a branch in `fsFor` (167-181), a label in `describe` (328-367), and a dedupe rule in `dedupeKey` (421-429).
@@ -78,6 +90,8 @@ flowchart TD
 - Tool routing can be extended by adding names to `WorkspaceToolRouting.fileTools` or `independentTools`; file tools receive grant-preserving nodes, independent tools bypass workspace binding entirely.
 
 ## Known gaps
+
+- Deleting a workspace does not remove its grant from a project that includes it. The project editor shows the grant as an unavailable workspace until the user removes it.
 
 - None of the routing code verifies that a `SHELL` project path still exists at tool time beyond the `scopedFs` directory check and per-node existence checks. A folder removed while a chat is open surfaces as a tool error, not a selection invalidation.
 

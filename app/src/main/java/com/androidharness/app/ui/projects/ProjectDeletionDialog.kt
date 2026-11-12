@@ -30,20 +30,20 @@ internal fun ProjectDeletionDialog(
     LaunchedEffect(project.id) {
         try { preview = container.projectDeletion.preview(project.id) }
         catch (e: CancellationException) { throw e }
-        catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.ui_could_not_review_this_project) }
+        catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.wp_workspace_delete_review_failed) }
     }
     AlertDialog(
         onDismissRequest = { if (!deleting) onDismiss() },
-        title = { Text(uiContext.getString(R.string.ui_delete_project_1680)) },
+        title = { Text(uiContext.getString(R.string.wp_workspace_delete_title)) },
         text = {
             Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(project.name, style = MaterialTheme.typography.titleSmall)
                 val review = preview
-                if (review == null && error == null) Text(uiContext.getString(R.string.ui_checking_project))
+                if (review == null && error == null) Text(uiContext.getString(R.string.wp_workspace_delete_checking))
                 if (review != null) {
                     val chats = "${review.chatIds.size} saved ${if (review.chatIds.size == 1) "chat" else "chats"}"
                     val automations = "${review.automationIds.size} ${if (review.automationIds.size == 1) "automation" else "automations"}"
-                    Text(uiContext.getString(R.string.ui_removes_this_project_and_from_the_app, (chats).toString(), (automations).toString()))
+                    Text(uiContext.getString(R.string.wp_workspace_delete_body, (chats).toString(), (automations).toString()))
                     Text(uiContext.getString(R.string.ui_your_folder_and_files_stay_on_disk), style = MaterialTheme.typography.bodyMedium)
                     review.blocker?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 }

@@ -38,6 +38,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.focus.onFocusChanged
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.key.*
 import androidx.compose.ui.input.pointer.PointerIcon
@@ -53,6 +54,7 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.agent.RunManager
 import com.androidharness.app.data.MessageHit
 import com.androidharness.app.data.db.ProjectEntity
+import com.androidharness.app.data.db.WorkProjectEntity
 import com.androidharness.app.data.db.SessionEntity
 import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.SwipeDismissibleSnackbarHost
@@ -101,7 +103,7 @@ internal fun ProjectNavigationSidebar(
     messageHits: List<MessageHit>, fuzzy: Boolean, onFuzzyChange: () -> Unit,
     activity: @Composable (SessionEntity) -> SidebarActivity?,
     onNewChat: () -> Unit, onChat: (String) -> Unit, onMessage: (MessageHit) -> Unit,
-    onProjectChat: (ProjectEntity) -> Unit, onProjects: () -> Unit,
+    onProjectChat: (WorkProjectEntity) -> Unit, onProjects: () -> Unit,
     onChatActions: (SessionEntity) -> Unit, onAction: (SessionEntity, SidebarChatAction) -> Unit,
     onBuild: () -> Unit, onTerminal: () -> Unit, onAutomation: () -> Unit, onProviders: () -> Unit, onSettings: () -> Unit,
     workspaceLabel: String, workspaceSummary: String, onWorkspaces: () -> Unit,
@@ -110,7 +112,8 @@ internal fun ProjectNavigationSidebar(
     snackbar: SnackbarHostState = remember { SnackbarHostState() },
     projectsView: Boolean = false, onProjectsViewChange: (Boolean) -> Unit = {},
     projectPins: Set<String> = emptySet(), projectArchives: Set<String> = emptySet(),
-    onProjectAction: (ProjectEntity, SidebarProjectAction) -> Unit = { _, _ -> },
+    onProjectAction: (WorkProjectEntity, SidebarProjectAction) -> Unit = { _, _ -> },
+    workProjects: List<WorkProjectEntity> = emptyList(), onCreateProject: () -> Unit = {},
     chatOnly: Boolean = false,
     sectionSwitchEnabled: Boolean = true,
     onSelectSection: (com.androidharness.app.data.ConversationKind) -> Unit = {},
@@ -133,7 +136,7 @@ internal fun ProjectNavigationSidebar(
     var toolsOpen by rememberSaveable { mutableStateOf(false) }
     val density = LocalDensity.current
     var footerHeight by remember { mutableStateOf(0.dp) }
-    val currentProject = sessions.firstOrNull { it.id == selectedSession }?.projectId ?: selectedProject
+    val currentProject = sessions.firstOrNull { it.id == selectedSession }?.workProjectId ?: selectedProject
     val expanded = expandedProjects
     val grouped = remember(projects, sessions, pinned, archived) { SidebarChats.of(projects, sessions, pinned, archived) }
     val matching = remember(sessions, projects, query) {
@@ -146,7 +149,7 @@ internal fun ProjectNavigationSidebar(
     val selectableIds = when {
         query.isNotBlank() -> (matching.map { it.id } + messageHits.map { it.sessionId }).toSet() intersect sessions.mapTo(mutableSetOf()) { it.id }
         showSaved -> emptySet()
-        projectsView -> sessions.filter { it.id !in archived && it.projectId in expandedProjects && projects.any { p -> p.id == it.projectId && (p.id in projectArchives) == showArchived } }.mapTo(mutableSetOf()) { it.id }
+        projectsView -> sessions.filter { it.id !in archived && it.workProjectId in expandedProjects && workProjects.any { p -> p.id == it.workProjectId && (p.id in projectArchives) == showArchived } }.mapTo(mutableSetOf()) { it.id }
         showArchived -> grouped.archived.mapTo(mutableSetOf()) { it.id }
         else -> sessions.filter { it.id !in archived }.mapTo(mutableSetOf()) { it.id }
     }
@@ -315,12 +318,15 @@ internal fun ProjectNavigationSidebar(
                                 Text(if (showArchived) uiContext.getString(R.string.ui_archived_projects) else uiContext.getString(R.string.ui_your_projects), Modifier.weight(1f),
                                     style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
                                 TextButton(onClick = onProjects) { Text(uiContext.getString(R.string.ui_manage_projects), style = MaterialTheme.typography.labelSmall) }
+                                ExpressiveIconButton(onClick = onCreateProject, colors = IconButtonDefaults.filledTonalIconButtonColors()) {
+                                    Icon(Icons.Outlined.Add, uiContext.getString(R.string.wp_create_project), Modifier.size(20.dp))
+                                }
                             }
                         }
-                        val visibleProjects = projects.filter { (it.id in projectArchives) == showArchived }
+                        val visibleProjects = workProjects.filter { (it.id in projectArchives) == showArchived }
                             .sortedBy { if (it.id in projectPins) 0 else 1 }
                         visibleProjects.forEachIndexed { index, project ->
-                            val chats = sessions.filter { it.projectId == project.id && it.id !in archived }
+                            val chats = sessions.filter { it.workProjectId == project.id && it.id !in archived }
                                 .sortedBy { if (it.id in pinned) 0 else 1 }
                             if (!showArchived && project.id in projectPins && index == 0) item { SidebarSectionHeader(uiContext.getString(R.string.ui_pinned), true, null) }
                             if (!showArchived && project.id !in projectPins && index > 0 && visibleProjects[index - 1].id in projectPins)
@@ -330,7 +336,8 @@ internal fun ProjectNavigationSidebar(
                                     project.id == currentProject, chats.size,
                                     onExpand = { expandedProjects = if (project.id in expanded) expanded - project.id else expanded + project.id },
                                     onNewChat = { onProjectChat(project) }, creationEnabled = projectCreationEnabled,
-                                    onAction = { onProjectAction(project, it) })
+                                    onAction = { onProjectAction(project, it) },
+                                    modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()))
                             }
                             if (project.id in expanded) {
                                 items(chats, key = { "project-chat:${it.id}" }) { Chat(it, indented = true) }
@@ -341,8 +348,14 @@ internal fun ProjectNavigationSidebar(
                             }
                         }
                         if (visibleProjects.isEmpty()) item {
-                            Text(if (showArchived) uiContext.getString(R.string.ui_no_archived_projects) else uiContext.getString(R.string.ui_add_a_project_to_organize_its_chats),
-                                Modifier.padding(20.dp), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                            Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                                Text(if (showArchived) uiContext.getString(R.string.ui_no_archived_projects) else uiContext.getString(R.string.wp_projects_empty),
+                                    style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+                                if (!showArchived) com.androidharness.app.ui.common.FilledTonalButton(onClick = onCreateProject) {
+                                    Icon(Icons.Outlined.Add, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
+                                    Text(uiContext.getString(R.string.wp_create_project))
+                                }
+                            }
                         }
                     } else if (showSaved) {
                         item { SidebarSectionHeader(uiContext.getString(R.string.sidebar_saved_answers), true, null) }
@@ -385,31 +398,39 @@ internal fun ProjectNavigationSidebar(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun SidebarProjectRow(project: ProjectEntity, expanded: Boolean, pinned: Boolean, archived: Boolean,
+private fun SidebarProjectRow(project: WorkProjectEntity, expanded: Boolean, pinned: Boolean, archived: Boolean,
     selected: Boolean, count: Int, onExpand: () -> Unit, onNewChat: () -> Unit, creationEnabled: Boolean,
-    onAction: (SidebarProjectAction) -> Unit) {
+    onAction: (SidebarProjectAction) -> Unit, modifier: Modifier = Modifier) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scheme = MaterialTheme.colorScheme
     var menu by remember { mutableStateOf(false) }
     val press = remember { MutableInteractionSource() }
-    Row(Modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 2.dp)
-        .background(if (selected) scheme.surfaceContainer else scheme.surface, RoundedCornerShape(10.dp)),
+    // The row rounds off and tints while its chats are open, and the chevron turns with a spring.
+    val corner by animateDpAsState(if (expanded || selected) 22.dp else 12.dp, expressiveSpatialSpec(), label = "project row shape")
+    val fill by animateColorAsState(if (selected) scheme.secondaryContainer else if (expanded) scheme.surfaceContainerHigh else scheme.surface,
+        expressiveEffectsSpec(), label = "project row color")
+    val turn by androidx.compose.animation.core.animateFloatAsState(if (expanded) 90f else 0f, expressiveSpatialSpec(), label = "project chevron")
+    val shape = RoundedCornerShape(corner.coerceAtLeast(0.dp))
+    Row(modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 2.dp).background(fill, shape),
         verticalAlignment = Alignment.CenterVertically) {
-        Row(Modifier.weight(1f).expressivePressFeedback(press).clip(RoundedCornerShape(10.dp)).secondaryClick { menu = true }
+        Row(Modifier.weight(1f).expressivePressFeedback(press).clip(shape).secondaryClick { menu = true }
             .combinedClickable(interactionSource = press, indication = ripple(color = scheme.primary),
                 onClick = onExpand, onLongClick = { menu = true })
             .semantics { contentDescription = "${if (expanded) uiContext.getString(R.string.ui_collapse) else uiContext.getString(R.string.ui_expand)} ${project.name}"; stateDescription = if (expanded) uiContext.getString(R.string.ui_expanded) else uiContext.getString(R.string.ui_collapsed) }
-            .heightIn(min = 48.dp).padding(start = 8.dp, end = 4.dp),
-            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(7.dp)) {
-            Icon(if (expanded) Icons.Outlined.KeyboardArrowDown else Icons.AutoMirrored.Outlined.KeyboardArrowRight,
-                null, Modifier.size(15.dp), tint = scheme.onSurfaceVariant)
-            Box(Modifier.size(26.dp).background(scheme.secondaryContainer, RoundedCornerShape(8.dp)), contentAlignment = Alignment.Center) {
-                Icon(Icons.Outlined.Folder, null, Modifier.size(16.dp), tint = scheme.onSecondaryContainer)
+            .heightIn(min = 52.dp).padding(start = 8.dp, end = 4.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null,
+                Modifier.size(16.dp).graphicsLayer { rotationZ = turn }, tint = scheme.onSurfaceVariant)
+            com.androidharness.app.ui.common.ExpressiveIconBadge(Icons.Outlined.Layers, size = 30.dp, selected = selected)
+            Column(Modifier.weight(1f)) {
+                Text(project.name, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium,
+                    maxLines = if (LocalDensity.current.fontScale > 1.3f) 2 else 1, overflow = TextOverflow.Ellipsis)
+                Text(com.androidharness.app.ui.chat.components.projectWorkspaceCount(uiContext, project),
+                    style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1)
             }
-            Text(project.name, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Medium,
-                maxLines = if (LocalDensity.current.fontScale > 1.3f) 2 else 1, overflow = TextOverflow.Ellipsis)
             if (pinned) Icon(Icons.Outlined.PushPin, null, Modifier.size(12.dp), tint = scheme.onSurfaceVariant)
-            Text(count.toString(), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+            Text(count.toString(), Modifier.background(scheme.surfaceContainerHighest, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp),
+                style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
         }
         Box {
             ExpressiveIconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreHoriz, uiContext.getString(R.string.ui_actions_for_project, (project.name).toString()), Modifier.size(18.dp), tint = scheme.onSurfaceVariant) }
@@ -423,12 +444,10 @@ private fun SidebarProjectRow(project: ProjectEntity, expanded: Boolean, pinned:
                     Triple(SidebarProjectAction.ARCHIVE, if (archived) uiContext.getString(R.string.ui_restore_project) else uiContext.getString(R.string.ui_archive_project), Icons.Outlined.Archive)).forEach { (action, label, icon) ->
                     DropdownMenuItem(text = { Text(label) }, leadingIcon = { Icon(icon, null) }, onClick = { menu = false; onAction(action) })
                 }
-                if (project.kind != com.androidharness.app.workspace.WorkspaceManager.KIND_APP) {
-                    HorizontalDivider()
-                    DropdownMenuItem(text = { Text(uiContext.getString(R.string.ui_delete_project), color = scheme.error) },
-                        leadingIcon = { Icon(Icons.Outlined.DeleteOutline, null, tint = scheme.error) },
-                        onClick = { menu = false; onAction(SidebarProjectAction.DELETE) })
-                }
+                HorizontalDivider()
+                DropdownMenuItem(text = { Text(uiContext.getString(R.string.ui_delete_project), color = scheme.error) },
+                    leadingIcon = { Icon(Icons.Outlined.DeleteOutline, null, tint = scheme.error) },
+                    onClick = { menu = false; onAction(SidebarProjectAction.DELETE) })
             }
         }
     }

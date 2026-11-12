@@ -84,6 +84,10 @@ Sharing differs by selection size. A single item's action sheet offers Share and
 - **Attachment limits differ from file manager limits.** Chat attachment import rejects files over 64 MB, reads text-like files up to `FileAttachments.INLINE_CHAR_LIMIT` (32,000 characters), and copies other files into `.harness/attachments` under a timestamp and import id. In Chat mode, a file that is neither readable text nor a readable PDF becomes `UNSUPPORTED` instead of silently disappearing; in Code mode it is copied into the workspace.
 - **The editor is not the file manager.** Files above `MAX_EDIT_BYTES` (16,000,000 bytes) are handled by `CodeEditorScreen` as share or open-with cases, not by `FilesScreen`.
 
+## Presentation
+
+`FilesScreen` renders inside `SettingsExpressiveTheme` and builds its list from the shared pieces in `ui/common/ExpressiveList.kt`: dense `ExpressiveListRow` segments with `ExpressiveIconBadge` leads, `ExpressiveRefreshButton`, `ExpressiveEmptyState`, and `ExpressiveSearchField` for the filter. Rows use `animateItem` with the expressive spring specs from `ui/theme/Motion.kt`. The workspace button opens `WorkspaceSwitcher`, the same host the chat header uses, so the file manager holds no add-workspace or picker state of its own. `WorkspaceToolsSheet` (quick open, project search, commands) uses `SettingsChoiceGroup` for the mode and the same rows for results.
+
 ## Extension Points
 
 - **`FileOps` is an object with suspend methods.** New operations can follow the `FsNode` primitives and reuse `batch`, `uniqueChildName`, and `FileBatchResult`.

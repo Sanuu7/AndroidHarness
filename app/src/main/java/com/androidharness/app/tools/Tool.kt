@@ -38,6 +38,7 @@ data class ToolResult(
     val research: com.androidharness.app.core.ResearchReceipt? = null,
     val settings: com.androidharness.app.core.SettingsReceipt? = null,
     val chatHistory: com.androidharness.app.core.ChatHistoryReceipt? = null,
+    val storageAccess: com.androidharness.app.core.StorageAccessReceipt? = null,
 )
 
 class ToolFailure(message: String) : Exception(message)
@@ -139,6 +140,7 @@ class ToolRegistry(private val tools: List<Tool>) {
                 WebSearchTool(httpClient, searchApi, refreshApi = searchApiRefresh),
                 HttpRequestTool(httpClient) { linuxEnv.githubToken() },
                 AskUserTool(),
+                StorageAccessTool { shellRouter.isAllFilesAccess() },
                 VisualGuideTool(),
                 TaskTool(),
                 MemoryWriteTool(),

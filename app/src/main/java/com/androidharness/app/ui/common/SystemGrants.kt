@@ -46,6 +46,13 @@ object SystemGrants {
         }
     }
 
+    /** The app's own permission page in Android settings. */
+    fun openAppDetails(context: Context) {
+        val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:${context.packageName}"))
+            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+        runCatching { context.startActivity(intent) }
+    }
+
     /**
      * Opens the OS "All files access" page for this app. Samsung/OEM builds often
      * ignore the plain ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION + package URI, so

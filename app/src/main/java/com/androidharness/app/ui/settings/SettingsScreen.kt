@@ -112,6 +112,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.key
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.flow.map
+import androidx.compose.material3.Switch
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -780,7 +782,10 @@ private fun TerminalSection(
     SettingsAnchor(R.string.settings_anchor_shared_storage) {
     SettingsDisclosure(Icons.Rounded.SdStorage, stringResource(R.string.settings_anchor_shared_storage), storageText,
         anchors = setOf(R.string.settings_anchor_shared_storage)) {
-        StorageAccessCard(allFiles = allFiles, onGrant = storageAccess.request)
+        val cardsOn by container.settings.settings.map { it.storageAccessCards }.collectAsStateWithLifecycle(initialValue = true)
+        val cardScope = rememberCoroutineScope()
+        StorageAccessCard(allFiles = allFiles, onGrant = storageAccess.request, cards = cardsOn,
+            onCards = { cardScope.launch { container.settings.setStorageAccessCards(it) } })
     }
     }
     SettingsGroupHeading(R.string.settings_device_tools)
@@ -1695,7 +1700,7 @@ private fun McpServerDialog(
 }
 
 @Composable
-private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit) {
+private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit, cards: Boolean, onCards: (Boolean) -> Unit) {
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -1713,6 +1718,14 @@ private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit) {
                 if (!allFiles) {
                     Button(onClick = onGrant) { Text(stringResource(R.string.settings_action_grant)) }
                 }
+            }
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_storage_cards_title), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.settings_storage_cards_desc), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = cards, onCheckedChange = onCards)
             }
         }
     }

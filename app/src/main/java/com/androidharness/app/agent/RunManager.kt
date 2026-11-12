@@ -166,21 +166,69 @@ class RunManager(
         } } || subagents.runs.value.any { it.status.active && it.sessionId != except && workspacePathsOverlap(fs.workspacePaths(), it.workspacePaths) }
 
     suspend fun assignWorkspaces(sessionId: String, selection: ChatWorkspaceSelection) = workspaceGuard.withLock {
+        if (selectionChange(sessionId, selection)) applySelection(sessionId, selection)
+    }
+
+    /** Checks that [sessionId] may take [selection]. False when nothing would change. */
+    private suspend fun selectionChange(sessionId: String, selection: ChatWorkspaceSelection): Boolean {
         selection.validated()
         check(!isRunning(sessionId) && !hasActiveSubagents(sessionId)) { "Wait for this chat's task to finish before changing workspace access." }
         check(!controls.flow(sessionId).value.resumable) { "Resume or stop this chat's saved task before changing workspace access." }
         val saved = requireNotNull(sessions.session(sessionId)) { "This chat no longer exists." }
         val prior = saved.workspaceSelectionJson?.let { runCatching { ChatWorkspaceSelection.decode(it) }.getOrNull() }
             ?: saved.projectId?.let(ChatWorkspaceSelection::single)
-        if (prior == selection) return@withLock
+        if (prior == selection) return false
         val hasChanges = checkpoints.turnsWithCheckpoints(sessionId).isNotEmpty() || sessions.fileChangesFor(sessionId).first().isNotEmpty()
         if (hasChanges) {
             check(prior != null && prior.primaryId == selection.primaryId && selection.grants.map { it.projectId }.containsAll(prior.grants.map { it.projectId })) {
-                "This chat has saved file changes. Keep its primary and existing workspaces so undo stays available; you can add workspaces or change access."
+                "The chat \"${saved.title}\" has saved file changes. Keep its primary and existing workspaces so undo stays available; you can add workspaces or change access."
             }
         }
+        return true
+    }
+
+    private suspend fun applySelection(sessionId: String, selection: ChatWorkspaceSelection) {
         workspace.assignSelection(sessionId, selection)
         synchronized(lock) { allowedTools.remove(sessionId) }
+    }
+
+    /** A project's workspaces reach the project and every chat in it, or nothing changes. */
+    suspend fun assignProjectWorkspaces(workProjectId: String, selection: ChatWorkspaceSelection) = workspaceGuard.withLock {
+        workspace.validateSelection(selection.validated())
+        val changed = workspace.workProjectChats(workProjectId).filter { selectionChange(it.id, selection) }
+        changed.forEach { applySelection(it.id, selection) }
+        workspace.saveWorkProjectSelection(workProjectId, selection)
+    }
+
+    /** Files an existing chat under a project; it takes the project's workspaces. */
+    suspend fun moveChatToProject(sessionId: String, workProjectId: String) = workspaceGuard.withLock {
+        val project = requireNotNull(workspace.workProject(workProjectId)) { "This project is no longer available." }
+        val selection = ChatWorkspaceSelection.decode(project.selectionJson)
+        if (selectionChange(sessionId, selection)) applySelection(sessionId, selection)
+        workspace.setChatWorkProject(sessionId, workProjectId)
+    }
+
+    suspend fun createProjectChat(workProjectId: String, title: String): String = workspaceGuard.withLock {
+        val project = requireNotNull(workspace.workProject(workProjectId)) { "This project is no longer available." }
+        val selection = ChatWorkspaceSelection.decode(project.selectionJson)
+        workspace.validateSelection(selection)
+        val id = sessions.createSession(title, selection.primaryId)
+        workspace.assignSelection(id, selection)
+        workspace.setChatWorkProject(id, workProjectId)
+        id
+    }
+
+    /** Removes a project and its chats. Workspaces and the files in them are left alone. */
+    suspend fun deleteWorkProject(workProjectId: String): Set<String> {
+        val chats = workspace.workProjectChats(workProjectId)
+        chats.forEach { stopAndJoin(it.id) }
+        return workspaceGuard.withLock {
+            val current = workspace.workProjectChats(workProjectId)
+            check(current.none { isRunning(it.id) }) { "Stop running tasks in this project before deleting it." }
+            sessions.deleteSessions(current)
+            workspace.deleteWorkProjectRow(workProjectId)
+            current.mapTo(mutableSetOf()) { it.id }
+        }
     }
     private val states = mutableMapOf<String, MutableStateFlow<LiveRunState>>()
     private val jobs = mutableMapOf<String, Job>()

@@ -56,6 +56,7 @@ fun ProjectMemoryScreen(container: AppContainer, projectId: String, onBack: () -
     BackHandler { leave() }
 
     val ssh = remember(project) { project?.let { runCatching { container.workspace.fsFor(it) }.getOrNull() as? com.androidharness.app.workspace.SshFs } }
+    com.androidharness.app.ui.settings.SettingsExpressiveTheme {
     Scaffold(topBar = {
         Column {
             AppHeader(uiContext.getString(R.string.ui_memory), subtitle = project?.name, onBack = ::leave)
@@ -106,6 +107,7 @@ fun ProjectMemoryScreen(container: AppContainer, projectId: String, onBack: () -
                     modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) { Text(if (loaded) uiContext.getString(R.string.ui_reload_latest_notes) else uiContext.getString(R.string.ui_retry)) }
             }
         }
+    }
     }
     if (discardFor != null) AlertDialog(onDismissRequest = { discardFor = null },
         title = { Text(uiContext.getString(R.string.ui_discard_your_changes)) }, text = { Text(uiContext.getString(R.string.ui_your_unsaved_notes_will_be_lost)) },

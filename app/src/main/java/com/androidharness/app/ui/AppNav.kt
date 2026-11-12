@@ -120,6 +120,7 @@ fun AppNav(container: AppContainer) {
         .collectAsStateWithLifecycle(initialValue = null)
     val providers by container.providers.providers.collectAsStateWithLifecycle(initialValue = emptyList())
     val allWorkspaces by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
+    val workProjects by container.workspace.workProjects.collectAsStateWithLifecycle(initialValue = emptyList())
     val keyboard = LocalSoftwareKeyboardController.current
 
     // Setup fires exactly once, decided from DataStore's REAL first emission.
@@ -262,8 +263,9 @@ fun AppNav(container: AppContainer) {
     var viewingSavedAnswer by remember { mutableStateOf<com.androidharness.app.data.db.SavedAnswerRow?>(null) }
     val savedAnswerRows by remember { container.sessions.savedAnswers() }.collectAsStateWithLifecycle(initialValue = emptyList())
     var renamingSession by remember { mutableStateOf<SessionEntity?>(null) }
-    var renamingProject by remember { mutableStateOf<ProjectEntity?>(null) }
-    var deletingProject by remember { mutableStateOf<ProjectEntity?>(null) }
+    var renamingProject by remember { mutableStateOf<com.androidharness.app.data.db.WorkProjectEntity?>(null) }
+    var deletingProject by remember { mutableStateOf<com.androidharness.app.data.db.WorkProjectEntity?>(null) }
+    var creatingProject by remember { mutableStateOf(false) }
     var projectName by remember { mutableStateOf("") }
     var detailsSession by remember { mutableStateOf<SessionEntity?>(null) }
     var deletingSession by remember { mutableStateOf<SessionEntity?>(null) }
@@ -278,7 +280,6 @@ fun AppNav(container: AppContainer) {
     }
     val sidebarSnackbar = remember { androidx.compose.material3.SnackbarHostState() }
     var showWorkspaceSheet by remember { mutableStateOf(false) }
-    var showAddWorkspace by remember { mutableStateOf(false) }
 
     // One-time notice for installs whose Linux environment predates a package
     // addition (gh): shown once, then never again, whichever button closes it.
@@ -293,13 +294,6 @@ fun AppNav(container: AppContainer) {
         showLatePackagesNotice = false
     }
 
-    // System folder picker for adding a SAF workspace from the drawer.
-    val safWorkspacePicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree(),
-    ) { uri -> uri?.let { scope.launch {
-        try { selectWorkspace(container.workspace.addPickedFolder(it).id) }
-        catch (e: Exception) { workspaceError = e.message }
-    } } }
 
     // Run-result notifications deep-link into the session's chat.
     androidx.compose.runtime.LaunchedEffect(Unit) {
@@ -452,7 +446,9 @@ fun AppNav(container: AppContainer) {
             currentSessionId?.let(container.sessions::fileChangesFor) ?: kotlinx.coroutines.flow.flowOf(emptyList())
         }.collectAsStateWithLifecycle(initialValue = emptyList())
         ProjectNavigationSidebar(
-            projects = if (activeConversation.isChat) emptyList() else allWorkspaces, sessions = sessions.filter { com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == activeKind }, selectedSession = currentSessionId, selectedProject = currentWorkspace?.id,
+            projects = if (activeConversation.isChat) emptyList() else allWorkspaces, sessions = sessions.filter { com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == activeKind }, selectedSession = currentSessionId, selectedProject = currentEntry?.arguments?.getString("workProjectId"),
+            workProjects = if (activeConversation.isChat) emptyList() else workProjects,
+            onCreateProject = { selectedChatIds = emptyList(); scope.launch { drawerState.close() }; creatingProject = true },
             pinned = settings.pinnedSessions.toSet(), archived = settings.archivedSessions.toSet(), query = searchQuery,
             onQueryChange = { searchQuery = it }, messageHits = messageHits.filter { hit -> sessions.any { it.id == hit.sessionId && com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == activeKind } }, fuzzy = fuzzySearch, onFuzzyChange = { fuzzySearch = !fuzzySearch },
             activity = { session ->
@@ -468,7 +464,7 @@ fun AppNav(container: AppContainer) {
             onProjectChat = { project -> if (!creatingProjectChat) {
                 creatingProjectChat = true
                 val create = { scope.launch {
-                    try { openChat(container.sessions.createSession(uiContext.getString(R.string.settings_telegram_new_chat), project.id)) }
+                    try { openChat(container.runManager.createProjectChat(project.id, uiContext.getString(R.string.settings_telegram_new_chat))) }
                     catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; workspaceError = e.message ?: uiContext.getString(R.string.ui_could_not_create_chat) }
                     finally { creatingProjectChat = false }
                 }; Unit }
@@ -478,7 +474,7 @@ fun AppNav(container: AppContainer) {
                     desktopGuard.navigate { creatingProjectChat = true; create() }
                 } else create()
             } },
-            onProjects = { navigateFromSidebar { nav.navigate("projects") { launchSingleTop = true } } },
+            onProjects = { navigateFromSidebar { nav.navigate("work-projects") { launchSingleTop = true } } },
             onChatActions = { actionsSession = it }, onAction = ::sidebarAction,
             selectedChats = selectedChatIds.toSet(), onSelectedChatsChange = { selectedChatIds = it.toList() },
             onSelectedChatsAction = ::selectedChatAction, selectionBusy = batchBusy,
@@ -509,7 +505,7 @@ fun AppNav(container: AppContainer) {
             onProjectsViewChange = { scope.launch { container.settings.setSidebarProjects(it) } },
             projectPins = settings.pinnedProjects, projectArchives = settings.archivedProjects,
             onProjectAction = { project, action -> when (action) {
-                SidebarProjectAction.OPEN -> navigateFromSidebar { nav.navigate("project/${encode(project.id)}") { launchSingleTop = true } }
+                SidebarProjectAction.OPEN -> navigateFromSidebar { nav.navigate("work-project/${encode(project.id)}") { launchSingleTop = true } }
                 SidebarProjectAction.RENAME -> { projectName = project.name; renamingProject = project }
                 SidebarProjectAction.DELETE -> {
                     val show = { deletingProject = project; Unit }
@@ -850,6 +846,27 @@ fun AppNav(container: AppContainer) {
                     onBack = { nav.popBackStack() },
                     onOpenSession = { openChat(it) })
             }
+            composable("work-projects") {
+                com.androidharness.app.ui.projects.WorkProjectsScreen(container, onBack = { nav.popBackStack() },
+                    onOpenProject = { nav.navigate("work-project/${encode(it)}") }, onCreate = { creatingProject = true })
+            }
+            composable("work-project/{workProjectId}", arguments = listOf(navArgument("workProjectId") { type = NavType.StringType })) { entry ->
+                val id = requireNotNull(entry.arguments?.getString("workProjectId"))
+                com.androidharness.app.ui.projects.WorkProjectScreen(container, id, onBack = { nav.popBackStack() },
+                    onOpenChat = { openChat(it) },
+                    onNewChat = {
+                        if (!creatingProjectChat) {
+                            creatingProjectChat = true
+                            scope.launch {
+                                try { openChat(container.runManager.createProjectChat(id, uiContext.getString(R.string.settings_telegram_new_chat))) }
+                                catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; workspaceError = e.message ?: uiContext.getString(R.string.ui_could_not_create_chat) }
+                                finally { creatingProjectChat = false }
+                            }
+                        }
+                    }, creatingChat = creatingProjectChat,
+                    onOpenWorkspace = { nav.navigate("project/${encode(it)}") },
+                    onDelete = { deletingProject = it })
+            }
             composable("projects") {
                 ProjectsScreen(container, onBack = { nav.popBackStack() },
                     onOpenProject = { nav.navigate("project/${encode(it)}") },
@@ -993,42 +1010,24 @@ fun AppNav(container: AppContainer) {
 
     com.androidharness.app.ui.common.ShizukuDisabledWarning(container.shizuku.workspaceWarning)
 
-    // The sidebar opens the same per-chat access editor, including unsent chats.
+    // One switcher for the sidebar, the chat header and unsent chats.
     if (showWorkspaceSheet) {
         com.androidharness.app.ui.common.ShizukuWorkspaceWarningEffect(container.shizuku)
-        if (chatWorkspaceContext) com.androidharness.app.ui.chat.components.ChatWorkspaceManagerSheet(
-            container, workspaceSessionId, onDismiss = { showWorkspaceSheet = false },
-            onSave = workspaceChatViewModel?.let { vm -> vm::saveWorkspaces })
-        else com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
-            projects = allWorkspaces,
-            currentProjectId = currentWorkspace?.id,
-            chatWorkspace = workspaceSessionId != null,
-            describe = { container.workspace.describe(it) },
-            onSelect = ::selectWorkspace,
-            onAdd = { showAddWorkspace = true },
-            onDismiss = { showWorkspaceSheet = false },
-            onDelete = { project ->
-                scope.launch {
-                    try { container.workspace.deleteProject(project) }
-                    catch (e: Exception) { workspaceError = e.message }
-                }
-            },
+        com.androidharness.app.ui.chat.components.WorkspaceSwitcher(
+            container, sessionId = workspaceSessionId, currentWorkspaceId = currentWorkspace?.id,
+            onSelect = ::selectWorkspace, onDismiss = { showWorkspaceSheet = false },
+            onError = { workspaceError = it },
+            onOpenProject = { id -> nav.navigate("work-project/${encode(id)}") { launchSingleTop = true } },
+            onManageWorkspaces = { nav.navigate("projects") { launchSingleTop = true } },
+            chatContext = chatWorkspaceContext,
         )
     }
+    if (creatingProject) com.androidharness.app.ui.chat.components.ProjectEditorSheet(container, project = null,
+        initialWorkspaceId = currentWorkspace?.id, onDismiss = { creatingProject = false },
+        onSaved = { created -> creatingProject = false; nav.navigate("work-project/${encode(created.id)}") { launchSingleTop = true } })
     workspaceError?.let { message ->
         AlertDialog(onDismissRequest = { workspaceError = null }, title = { Text(uiContext.getString(R.string.ui_workspace)) },
             text = { Text(message) }, confirmButton = { TextButton(onClick = { workspaceError = null }) { Text(uiContext.getString(R.string.ui_ok)) } })
-    }
-    if (showAddWorkspace) {
-        com.androidharness.app.ui.common.AddWorkspaceDialog(
-            container = container,
-            onSelected = ::selectWorkspace,
-            onDismiss = { showAddWorkspace = false },
-            onPickSaf = {
-                showAddWorkspace = false
-                safWorkspacePicker.launch(null)
-            },
-        )
     }
 
     // One-time "the toolchain gained new packages" notice for installs that
@@ -1179,12 +1178,12 @@ fun AppNav(container: AppContainer) {
     }
 
     deletingProject?.let { project ->
-        com.androidharness.app.ui.projects.ProjectDeletionDialog(container, project,
+        com.androidharness.app.ui.projects.WorkProjectDeletionDialog(container, project,
             onDismiss = { deletingProject = null }, onDeleted = { deletedChats ->
                 deletingProject = null
                 scope.launch { drawerState.close() }
                 if (draftSessionId in deletedChats) draftSessionId = null
-                nav.navigate("projects") { popUpTo(nav.graph.id); launchSingleTop = true }
+                if (currentSessionId in deletedChats || currentEntry?.arguments?.getString("workProjectId") == project.id) openChat(null)
             })
     }
 
@@ -1192,7 +1191,7 @@ fun AppNav(container: AppContainer) {
         AlertDialog(onDismissRequest = { renamingProject = null }, title = { Text(uiContext.getString(R.string.ui_rename_project)) },
             text = { OutlinedTextField(projectName, { projectName = it }, singleLine = true, label = { Text(uiContext.getString(R.string.ui_project_name)) }) },
             confirmButton = { TextButton(enabled = projectName.isNotBlank(), onClick = { scope.launch {
-                try { container.workspace.renameProject(project.id, projectName); renamingProject = null }
+                try { container.workspace.renameWorkProject(project.id, projectName); renamingProject = null }
                 catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; workspaceError = e.message }
             } }) { Text(uiContext.getString(R.string.settings_action_save)) } },
             dismissButton = { TextButton(onClick = { renamingProject = null }) { Text(uiContext.getString(R.string.settings_action_cancel)) } })

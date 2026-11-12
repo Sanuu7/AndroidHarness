@@ -38,6 +38,22 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.isActive
 import com.androidharness.app.ui.common.Button
+import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.ExpressiveDropdownMenu
+import com.androidharness.app.ui.common.ExpressiveDropdownMenuItem
+import com.androidharness.app.ui.common.ExpressiveEmptyState
+import com.androidharness.app.ui.common.ExpressiveIconBadge
+import com.androidharness.app.ui.common.ExpressiveIconButton
+import com.androidharness.app.ui.common.ExpressiveListRow
+import com.androidharness.app.ui.common.ExpressiveRefreshButton
+import com.androidharness.app.ui.common.ExpressiveSectionLabel
+import com.androidharness.app.ui.common.workspaceKindIcon
+import com.androidharness.app.ui.settings.SettingsChoiceGroup
+import com.androidharness.app.ui.settings.SettingsExpressiveTheme
+import com.androidharness.app.ui.settings.SettingsHeroBadge
+import com.androidharness.app.ui.theme.expressiveEffectsSpec
+import com.androidharness.app.ui.theme.expressiveSpatialSpec
+import androidx.compose.foundation.lazy.itemsIndexed
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.TextButton
@@ -68,40 +84,38 @@ fun ProjectsScreen(container: AppContainer, onBack: () -> Unit, onOpenProject: (
         }
     }
 
-    Scaffold(topBar = { AppHeader(uiContext.getString(R.string.ui_projects), onBack = onBack) }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), state = rememberLazyListState(),
+    SettingsExpressiveTheme {
+    Scaffold(topBar = { AppHeader(uiContext.getString(R.string.wp_workspaces), subtitle = uiContext.getString(R.string.wp_workspaces_sub), onBack = onBack) }) { padding ->
+        LazyColumn(Modifier.fillMaxSize().padding(padding), state = rememberLazyListState(), verticalArrangement = Arrangement.spacedBy(2.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
-            items(projects, key = { it.id }) { project ->
+            itemsIndexed(projects, key = { _, it -> it.id }) { index, project ->
                 val count = counts[project.id] ?: 0
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Box(Modifier.weight(1f)) {
-                        ProjectRow(project.name, "${container.workspace.describe(project).kindLabel} · $count ${if (count == 1) "chat" else "chats"}",
-                            Icons.Outlined.Folder, onClick = { onOpenProject(project.id) })
-                    }
-                    if (project.kind != com.androidharness.app.workspace.WorkspaceManager.KIND_APP) {
-                        var menu by remember { mutableStateOf(false) }
-                        Box {
-                            IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreHoriz, uiContext.getString(R.string.ui_actions_for_project, (project.name).toString())) }
-                            DropdownMenu(menu, { menu = false }) {
-                                DropdownMenuItem(text = { Text(uiContext.getString(R.string.ui_delete_project), color = MaterialTheme.colorScheme.error) },
-                                    leadingIcon = { Icon(Icons.Outlined.DeleteOutline, null) },
+                var menu by remember { mutableStateOf(false) }
+                ExpressiveListRow(index, projects.size, project.name,
+                    subtitle = "${container.workspace.describe(project).kindLabel} · $count ${if (count == 1) "chat" else "chats"}",
+                    onClick = { onOpenProject(project.id) }, onLongClick = { if (project.kind != com.androidharness.app.workspace.WorkspaceManager.KIND_APP) menu = true },
+                    modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()),
+                    leading = { ExpressiveIconBadge(workspaceKindIcon(project.kind)) },
+                    trailing = {
+                        if (project.kind != com.androidharness.app.workspace.WorkspaceManager.KIND_APP) Box {
+                            ExpressiveIconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, uiContext.getString(R.string.wp_actions_for_workspace, project.name)) }
+                            ExpressiveDropdownMenu(menu, { menu = false }) {
+                                ExpressiveDropdownMenuItem(text = { Text(uiContext.getString(R.string.wp_workspace_delete), color = MaterialTheme.colorScheme.error) },
+                                    leadingIcon = { Icon(Icons.Outlined.DeleteOutline, null, tint = MaterialTheme.colorScheme.error) },
                                     onClick = { menu = false; deleting = project })
                             }
                         }
-                    }
-                }
+                    })
             }
-            item {
-                HorizontalDivider(Modifier.padding(vertical = 12.dp))
-                ProjectRow(uiContext.getString(R.string.ui_add_project), icon = Icons.Outlined.Add, onClick = {
-                    scope.launch {
-                        container.workspace.currentProjectOnce()
-                        adding = true
-                    }
-                })
+            item(key = "\u0000add") {
+                ExpressiveListRow(0, 1, uiContext.getString(R.string.wp_add_workspace), subtitle = uiContext.getString(R.string.wp_add_sheet_sub),
+                    color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.padding(top = 14.dp),
+                    onClick = { scope.launch { container.workspace.currentProjectOnce(); adding = true } },
+                    leading = { ExpressiveIconBadge(Icons.Outlined.Add, container = MaterialTheme.colorScheme.primaryContainer, tint = MaterialTheme.colorScheme.onPrimaryContainer) })
             }
             error?.let { message -> item { Text(message, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(12.dp)) } }
         }
+    }
     }
     if (adding) AddWorkspaceDialog(container, onDismiss = { finishAdd(null) },
         onPickSaf = { adding = false; picker.launch(null) }, onSelected = { finishAdd(it) }, activateWorkspace = false)
@@ -214,90 +228,105 @@ fun ProjectScreen(
     }
 
     val ssh = remember(project) { project?.let { runCatching { container.workspace.fsFor(it) }.getOrNull() as? com.androidharness.app.workspace.SshFs } }
+    val scheme = MaterialTheme.colorScheme
+    SettingsExpressiveTheme {
     Scaffold(topBar = {
         Column {
-            AppHeader(project?.name ?: uiContext.getString(R.string.ui_project), subtitle = project?.let { container.workspace.describe(it).kindLabel }, onBack = onBack,
-                actions = { IconButton(onClick = { refresh++ }) { Icon(Icons.Outlined.Refresh, uiContext.getString(R.string.ui_refresh_project)) } })
+            AppHeader(project?.name ?: uiContext.getString(R.string.wp_workspace_page), subtitle = project?.let { container.workspace.describe(it).kindLabel }, onBack = onBack,
+                actions = { ExpressiveRefreshButton(uiContext.getString(R.string.wp_refresh_workspace), onClick = { refresh++ }) })
             com.androidharness.app.ui.common.SshWorkspaceBar(container, ssh, includeStatusBarPadding = false)
         }
     }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), state = rememberLazyListState(),
-            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
+        LazyColumn(Modifier.fillMaxSize().padding(padding), state = rememberLazyListState(), verticalArrangement = Arrangement.spacedBy(2.dp),
+            contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp)) {
             if (project == null) {
-                item { Text(uiContext.getString(R.string.ui_this_project_is_unavailable_your_chats_are), modifier = Modifier.padding(12.dp)) }
+                item { ExpressiveEmptyState(Icons.Outlined.FolderOff, uiContext.getString(R.string.wp_workspace_unavailable), seed = 4) }
             } else {
-                item {
-                    ProjectRow(uiContext.getString(R.string.ui_repository), repository ?: uiContext.getString(R.string.ui_connect_or_manage_repository), Icons.Outlined.AccountTree,
-                        onClick = { showRepository = true })
-                    Column(Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(git?.branch?.let { uiContext.getString(R.string.ui_branch_1649, (it).toString()) } ?: git?.note ?: uiContext.getString(R.string.ui_checking_repository),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        git?.changedFiles?.let { count -> Text(if (count == 0) uiContext.getString(R.string.ui_working_tree_clean) else "$count changed ${if (count == 1) "file" else "files"}",
-                            style = MaterialTheme.typography.bodySmall) }
-                        if (git?.branch != null && git?.note != null) Text(git!!.note!!, style = MaterialTheme.typography.bodySmall)
-                    }
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        OutlinedButton(onClick = onOpenFiles, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Outlined.FolderOpen, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(uiContext.getString(R.string.ui_files))
-                        }
-                        OutlinedButton(onClick = onOpenTerminal, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Outlined.Terminal, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(uiContext.getString(R.string.ui_terminal))
+                item(key = "hero") {
+                    Row(Modifier.fillMaxWidth().padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 16.dp), verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                        SettingsHeroBadge(project.id.hashCode(), size = 72.dp) { tint -> Icon(workspaceKindIcon(project.kind), null, Modifier.size(32.dp), tint = tint) }
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(project.name, style = MaterialTheme.typography.headlineSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                            Text(git?.branch?.let { uiContext.getString(R.string.ui_branch_1649, (it).toString()) } ?: git?.note ?: uiContext.getString(R.string.ui_checking_repository),
+                                style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+                            git?.changedFiles?.let { count -> Text(if (count == 0) uiContext.getString(R.string.ui_working_tree_clean) else "$count changed ${if (count == 1) "file" else "files"}",
+                                style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
+                            if (git?.branch != null && git?.note != null) Text(git!!.note!!, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
                         }
                     }
-                    val check = checks[projectId]
-                    ProjectRow(uiContext.getString(R.string.ui_build_test), check?.let {
-                        val status = when (it.status) {
-                            com.androidharness.app.data.ProjectCheckStatus.RUNNING -> uiContext.getString(R.string.ui_running_1587)
-                            com.androidharness.app.data.ProjectCheckStatus.PASSED -> uiContext.getString(R.string.ui_passed)
-                            com.androidharness.app.data.ProjectCheckStatus.FAILED -> uiContext.getString(R.string.ui_failed_64)
-                            com.androidharness.app.data.ProjectCheckStatus.INTERRUPTED -> uiContext.getString(R.string.ui_interrupted)
+                }
+                item(key = "open") {
+                    Row(Modifier.fillMaxWidth().padding(bottom = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilledTonalButton(onClick = onOpenFiles, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                            Icon(Icons.Outlined.FolderOpen, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text(uiContext.getString(R.string.ui_files))
                         }
-                        uiContext.getString(R.string.ui_last_check, (it.name).toString(), (status).toString(), (formatRelativeTime(it.updatedAt)).toString())
-                    } ?: uiContext.getString(R.string.ui_no_checks_run_yet), Icons.Outlined.Build, onClick = onOpenBuildTest)
-                    ProjectRow(uiContext.getString(R.string.ui_preview), when {
-                        serverPreview != null || backgroundPreview != null -> uiContext.getString(R.string.ui_running_1654, (preview).toString())
-                        serverRunning -> uiContext.getString(R.string.ui_server_running_open_build_test)
-                        staticPreview != null -> uiContext.getString(R.string.ui_open_1656, (staticPreview).toString())
-                        else -> uiContext.getString(R.string.ui_run_your_project_from_build_test)
-                    }, Icons.Outlined.Language, onClick = { if (preview != null) openPreview = preview else onOpenBuildTest() })
-                    Row(Modifier.fillMaxWidth().padding(vertical = 12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        FilterChip(tab == 0, { tab = 0 }, label = {
-                            Text(uiContext.getString(R.string.ui_chats), style = MaterialTheme.typography.labelLarge, maxLines = 1)
-                        }, modifier = Modifier.weight(0.4f))
-                        FilterChip(tab == 1, { tab = 1 }, label = {
-                            Text(uiContext.getString(R.string.ui_automations), style = MaterialTheme.typography.labelLarge, maxLines = 1)
-                        }, modifier = Modifier.weight(0.6f))
+                        FilledTonalButton(onClick = onOpenTerminal, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                            Icon(Icons.Outlined.Terminal, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text(uiContext.getString(R.string.ui_terminal))
+                        }
                     }
+                }
+                item(key = "tools") {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        ProjectRow(uiContext.getString(R.string.ui_repository), repository ?: uiContext.getString(R.string.ui_connect_or_manage_repository), Icons.Outlined.AccountTree,
+                            index = 0, count = 3, onClick = { showRepository = true })
+                        val check = checks[projectId]
+                        ProjectRow(uiContext.getString(R.string.ui_build_test), check?.let {
+                            val status = when (it.status) {
+                                com.androidharness.app.data.ProjectCheckStatus.RUNNING -> uiContext.getString(R.string.ui_running_1587)
+                                com.androidharness.app.data.ProjectCheckStatus.PASSED -> uiContext.getString(R.string.ui_passed)
+                                com.androidharness.app.data.ProjectCheckStatus.FAILED -> uiContext.getString(R.string.ui_failed_64)
+                                com.androidharness.app.data.ProjectCheckStatus.INTERRUPTED -> uiContext.getString(R.string.ui_interrupted)
+                            }
+                            uiContext.getString(R.string.ui_last_check, (it.name).toString(), (status).toString(), (formatRelativeTime(it.updatedAt)).toString())
+                        } ?: uiContext.getString(R.string.ui_no_checks_run_yet), Icons.Outlined.Build, index = 1, count = 3, onClick = onOpenBuildTest)
+                        ProjectRow(uiContext.getString(R.string.ui_preview), when {
+                            serverPreview != null || backgroundPreview != null -> uiContext.getString(R.string.ui_running_1654, (preview).toString())
+                            serverRunning -> uiContext.getString(R.string.ui_server_running_open_build_test)
+                            staticPreview != null -> uiContext.getString(R.string.ui_open_1656, (staticPreview).toString())
+                            else -> uiContext.getString(R.string.ui_run_your_project_from_build_test)
+                        }, Icons.Outlined.Language, index = 2, count = 3, onClick = { if (preview != null) openPreview = preview else onOpenBuildTest() })
+                    }
+                }
+                item(key = "tabs") {
+                    SettingsChoiceGroup(
+                        options = listOf(0 to uiContext.getString(R.string.ui_chats), 1 to uiContext.getString(R.string.ui_automations)),
+                        selected = { it == tab }, onSelect = { tab = it }, modifier = Modifier.padding(top = 20.dp, bottom = 12.dp))
                 }
                 if (tab == 0) {
-                    item {
+                    item(key = "new-chat") {
                         Button(onClick = { onNewChat(projectId) }, enabled = !creatingChat,
-                            modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                            Icon(Icons.Outlined.Add, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
-                            Text(if (creatingChat) uiContext.getString(R.string.ui_creating) else uiContext.getString(R.string.settings_telegram_new_chat))
+                            modifier = Modifier.fillMaxWidth().padding(bottom = 10.dp).heightIn(min = 56.dp)) {
+                            Icon(Icons.Outlined.Add, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
+                            Text(if (creatingChat) uiContext.getString(R.string.ui_creating) else uiContext.getString(R.string.settings_telegram_new_chat), style = MaterialTheme.typography.titleMedium)
                         }
                     }
-                    if (chats.isEmpty()) item { Text(uiContext.getString(R.string.ui_no_chats_yet_start_one_in_this), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(12.dp)) }
-                    items(chats, key = { it.id }) { session ->
+                    if (chats.isEmpty()) item { Text(uiContext.getString(R.string.wp_workspace_no_chats), color = scheme.onSurfaceVariant, modifier = Modifier.padding(16.dp)) }
+                    itemsIndexed(chats, key = { _, it -> it.id }) { index, session ->
                         ProjectRow(session.title, if (session.id in running) uiContext.getString(R.string.ui_running_1587) else formatRelativeTime(session.updatedAt),
-                            Icons.Outlined.ChatBubbleOutline, onClick = { onOpenChat(session.id) })
+                            Icons.Outlined.ChatBubbleOutline, index = index, count = chats.size, onClick = { onOpenChat(session.id) },
+                            modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()))
                     }
                 } else {
-                    if (projectTasks.isEmpty()) item { Text(uiContext.getString(R.string.ui_no_automations_yet), color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(12.dp)) }
-                    items(projectTasks, key = { it.id }) { task ->
-                        ProjectRow(task.title, task.projectStatus(), Icons.Outlined.Schedule,
+                    if (projectTasks.isEmpty()) item { Text(uiContext.getString(R.string.ui_no_automations_yet), color = scheme.onSurfaceVariant, modifier = Modifier.padding(16.dp)) }
+                    val extra = if (projectTasks.isNotEmpty()) 2 else 1
+                    itemsIndexed(projectTasks, key = { _, it -> it.id }) { index, task ->
+                        ProjectRow(task.title, task.projectStatus(), Icons.Outlined.Schedule, index = index, count = projectTasks.size + extra,
                             onClick = { onAutomation(task.id, false) })
                     }
-                    item { ProjectRow(uiContext.getString(R.string.ui_add_automation), icon = Icons.Outlined.Add, onClick = { onAutomation(null, true) }) }
-                    if (projectTasks.isNotEmpty()) item { ProjectRow(uiContext.getString(R.string.ui_manage_automations), icon = Icons.Outlined.AutoMode, onClick = { onAutomation(null, false) }) }
+                    item { ProjectRow(uiContext.getString(R.string.ui_add_automation), icon = Icons.Outlined.Add, index = projectTasks.size, count = projectTasks.size + extra, onClick = { onAutomation(null, true) }) }
+                    if (projectTasks.isNotEmpty()) item { ProjectRow(uiContext.getString(R.string.ui_manage_automations), icon = Icons.Outlined.AutoMode, index = projectTasks.size + 1, count = projectTasks.size + extra, onClick = { onAutomation(null, false) }) }
                 }
-                item {
-                    HorizontalDivider(Modifier.padding(vertical = 12.dp))
-                    ProjectRow(uiContext.getString(R.string.ui_project_memory), icon = Icons.Outlined.Description, onClick = onMemory)
-                    ProjectRow(uiContext.getString(R.string.ui_project_details), icon = Icons.Outlined.FolderOpen, onClick = { showDetails = true })
+                item(key = "more") {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        ExpressiveSectionLabel(uiContext.getString(R.string.wp_workspace_more))
+                        ProjectRow(uiContext.getString(R.string.wp_workspace_memory), icon = Icons.Outlined.Description, index = 0, count = 2, onClick = onMemory)
+                        ProjectRow(uiContext.getString(R.string.wp_workspace_details), icon = Icons.Outlined.Tune, index = 1, count = 2, onClick = { showDetails = true })
+                    }
                 }
             }
         }
+    }
     }
     if (showRepository && project != null) GitHubWorkspaceDialog(container, project.id, project.name,
         onOpenSettings = onOpenSettings, onDismiss = { showRepository = false })
@@ -315,17 +344,11 @@ private fun AutomationTask.projectStatus(): String = when {
 }
 
 @Composable
-internal fun ProjectRow(title: String, subtitle: String? = null, icon: ImageVector, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).clickable(onClick = onClick).padding(horizontal = 12.dp, vertical = 12.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-        Icon(icon, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.titleSmall, maxLines = 2, overflow = TextOverflow.Ellipsis)
-            subtitle?.let { Text(it, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
-                maxLines = 2, overflow = TextOverflow.Ellipsis) }
-        }
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
+internal fun ProjectRow(title: String, subtitle: String? = null, icon: ImageVector, index: Int = 0, count: Int = 1,
+    modifier: Modifier = Modifier, onClick: () -> Unit) {
+    ExpressiveListRow(index, count, title, modifier = modifier, subtitle = subtitle, onClick = onClick,
+        leading = { ExpressiveIconBadge(icon, container = MaterialTheme.colorScheme.surfaceContainerHighest, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+        trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant) })
 }
 
 @Composable
@@ -335,9 +358,10 @@ private fun ProjectDetailsDialog(container: AppContainer, project: ProjectEntity
     var error by remember { mutableStateOf<String?>(null) }
     var saving by remember { mutableStateOf(false) }
     val scope = rememberCoroutineScope()
-    AlertDialog(onDismissRequest = { if (!saving) onDismiss() }, title = { Text(uiContext.getString(R.string.ui_project_details)) }, text = {
+    SettingsExpressiveTheme {
+    AlertDialog(onDismissRequest = { if (!saving) onDismiss() }, title = { Text(uiContext.getString(R.string.wp_workspace_details)) }, text = {
         Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            OutlinedTextField(name, { if (it.length <= 100) name = it }, label = { Text(uiContext.getString(R.string.ui_project_name)) },
+            OutlinedTextField(name, { if (it.length <= 100) name = it }, label = { Text(uiContext.getString(R.string.wp_workspace_name)) },
                 enabled = !saving, singleLine = true, modifier = Modifier.fillMaxWidth())
             Text(uiContext.getString(R.string.ui_workspace), style = MaterialTheme.typography.labelMedium)
             SelectionContainer { Text(runCatching { container.workspace.fsFor(project).displayPath }.getOrDefault(uiContext.getString(R.string.ui_unavailable)),
@@ -346,7 +370,7 @@ private fun ProjectDetailsDialog(container: AppContainer, project: ProjectEntity
                 HorizontalDivider()
                 TextButton(onClick = onDelete, enabled = !saving,
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
-                    Icon(Icons.Outlined.DeleteOutline, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(uiContext.getString(R.string.ui_delete_project))
+                    Icon(Icons.Outlined.DeleteOutline, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(uiContext.getString(R.string.wp_workspace_delete))
                 }
             } else Text(uiContext.getString(R.string.ui_the_app_workspace_cannot_be_deleted), style = MaterialTheme.typography.bodySmall)
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
@@ -362,4 +386,5 @@ private fun ProjectDetailsDialog(container: AppContainer, project: ProjectEntity
             }
         }) { Text(if (saving) uiContext.getString(R.string.ui_saving) else uiContext.getString(R.string.settings_action_save)) }
     }, dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(uiContext.getString(R.string.settings_action_cancel)) } })
+    }
 }

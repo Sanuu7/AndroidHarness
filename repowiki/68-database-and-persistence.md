@@ -6,7 +6,7 @@ All persistent chat state lives in one Room database defined in `app/src/main/ja
 
 ## Module Responsibilities
 
-- **Schema ownership**: `AppDatabase` (`Database.kt:759`) defines the entity list, schema version 25, and the migration objects.
+- **Schema ownership**: `AppDatabase` (`Database.kt:759`) defines the entity list, schema version 26, and the migration objects.
 - **Query surface**: `HarnessDao` (`Database.kt:280`) is one large DAO for every table, including FTS search.
 - **Connection lifecycle**: `HarnessApp` (`HarnessApp.kt:138-148`) builds `harness.db` with `Room.databaseBuilder`, registers 21 migrations, attaches `OVERSIZED_ROW_SANITIZER`, and enables destructive fallback for pre-v4 databases.
 - **Write orchestration**: repositories group related DAO calls. For example `SessionRepository.recordFileEdit` writes `file_edits` and `code_activity` in one transaction (`SessionRepository.kt:643-672`).
@@ -22,7 +22,7 @@ flowchart TD
     Dao --> Room[(harness.db)]
     Room --> Msg[messages]
     Msg -. content-sync triggers .-> Fts[message_fts]
-    Room --> Mig[Migration 4_5 .. 24_25]
+    Room --> Mig[Migration 4_5 .. 25_26]
     Room --> San[OVERSIZED_ROW_SANITIZER onOpen]
     Backup[ChatBackupManager] --> Tx
 ```
@@ -80,7 +80,7 @@ Deletes are manual. `SessionRepository.deleteSessions` removes answer versions, 
 
 ## Migrations and Version History
 
-Current version is 25, `exportSchema = false` (`Database.kt:740-758`). Migrations are registered in ascending order in `HarnessApp.kt:139-143`.
+Current version is 26, `exportSchema = false` (`Database.kt:740-758`). Migrations are registered in ascending order in `HarnessApp.kt:139-143`.
 
 | Migration | Change |
 |---|---|

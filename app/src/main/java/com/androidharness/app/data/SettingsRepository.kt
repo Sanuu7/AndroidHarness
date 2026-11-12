@@ -199,6 +199,8 @@ data class AppSettings(
     val showTodoList: Boolean = true,
     /** Off removes the task tool and every subagent control, so nothing can start a subagent. */
     val subagentsEnabled: Boolean = true,
+    /** Lets the agent show a card with buttons to Android's storage access pages. Never grants anything itself. */
+    val storageAccessCards: Boolean = true,
     /** ID of the last active chat session. */
     val lastActiveSessionId: String? = null,
     /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
@@ -412,6 +414,7 @@ class SettingsRepository(private val context: Context) {
         val AUTO_CONTINUE_QUESTIONS = booleanPreferencesKey("auto_continue_questions")
         val SHOW_TODO_LIST = booleanPreferencesKey("show_todo_list")
         val SUBAGENTS_ENABLED = booleanPreferencesKey("subagents_enabled")
+        val STORAGE_ACCESS_CARDS = booleanPreferencesKey("storage_access_cards")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
         val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
         val LOCAL_MODEL_AGENT_CONTEXT = booleanPreferencesKey("local_model_agent_context")
@@ -554,6 +557,7 @@ class SettingsRepository(private val context: Context) {
             autoContinueQuestions = prefs[Keys.AUTO_CONTINUE_QUESTIONS] ?: true,
             showTodoList = prefs[Keys.SHOW_TODO_LIST] ?: true,
             subagentsEnabled = prefs[Keys.SUBAGENTS_ENABLED] ?: true,
+            storageAccessCards = prefs[Keys.STORAGE_ACCESS_CARDS] ?: true,
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
             repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
             localModelAgentContext = prefs[Keys.LOCAL_MODEL_AGENT_CONTEXT] ?: false,
@@ -656,6 +660,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.AUTO_CONTINUE_QUESTIONS] = s.autoContinueQuestions
             p[Keys.SHOW_TODO_LIST] = s.showTodoList
             p[Keys.SUBAGENTS_ENABLED] = s.subagentsEnabled
+            p[Keys.STORAGE_ACCESS_CARDS] = s.storageAccessCards
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
             p[Keys.LOCAL_MODEL_AGENT_CONTEXT] = s.localModelAgentContext
             p[Keys.LOCAL_MODEL_EXPERIMENTAL] = s.localModelExperimental
@@ -711,6 +716,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setSubagentFullAccess(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.SUBAGENT_FULL_ACCESS] = enabled }
+    }
+
+    suspend fun setStorageAccessCards(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.STORAGE_ACCESS_CARDS] = enabled }
     }
 
     suspend fun setSubagentsEnabled(enabled: Boolean) {

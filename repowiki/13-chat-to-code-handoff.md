@@ -15,7 +15,7 @@ The handoff begins with the model-only `offer_code_handoff` tool. It never navig
 - **`ChatWorkspaceSelection` / `ChatWorkspaceGrant`**: the persisted grant set with a primary project id.
 - **`ChatWorkspaceFs`**: a `WorkspaceFs` implementation that routes `@workspaces/<id>/path` to the bound project and enforces grants.
 - **`WorkspaceManager`**: loads, saves, and validates per-chat selections.
-- **`ChatWorkspacesSheet` / `ChatWorkspaceManagerSheet`**: the access editor used from the drawer, sidebar, and Files screen.
+- **`WorkspaceSwitcher` / `ProjectEditorSheet`**: the workspace switcher used from the chat header, sidebar and Files screen, and the access editor for a project's workspaces.
 
 ## Architecture and Flow
 
@@ -76,9 +76,9 @@ Plain paths resolve against the primary binding. `target` also accepts the `@wor
 
 ## Saving Selection and Isolation Between Chats
 
-`ChatWorkspaceManagerSheet` reads the current selection, falls back to a single selection from the primary project or the first project, and renders `ChatWorkspacesSheet`. Saving calls either the supplied `onSave` or `runManager.assignWorkspaces` (`ChatWorkspacesSheet.kt` lines 35 to 63). `ChatViewModel.saveWorkspaces` calls `assignWorkspaces(ensureSession(), selection)`, so even a draft chat gets a session before the grant set is stored (`ChatViewModel.kt` lines 2330 to 2332).
+A normal Code chat holds one workspace. `WorkspaceSwitcher` (`ui/chat/components/WorkspaceSwitcherSheet.kt`) changes it through `runManager.assignWorkspace`, and offers New project and Move to a project where it used to offer more folders.
 
-`ChatWorkspacesSheet` keeps a JSON draft, allows an empty grant list while the user is choosing, and validates only on Save. It shows a checkbox per project, an access menu with Read only or Can edit, a primary radio, missing grants with a remove action, and an optional Add workspace. It warns when any grant is read-only that commands and integrations require edit access, and when more than one workspace is selected that workspace MCP servers are unavailable (`ChatWorkspacesSheet.kt` lines 67 to 165).
+Several workspaces belong to a project (`WorkProjectEntity`, see [Workspace Manager and Routing](45-workspace-manager-and-routing.md)). `ProjectEditorSheet` is the access editor: it keeps a draft selection, shows a checkbox per workspace, a Read only or Can edit choice, a main workspace radio and missing grants with a remove action, and validates on Save. Saving calls `RunManager.assignProjectWorkspaces`, which applies the selection to every chat in the project or to none of them.
 
 `RunManager.assignWorkspaces` takes `workspaceGuard` and refuses while the chat is running, has active subagents, or has a resumable task. If the chat has saved checkpoints or file changes, it requires the same primary and a superset of the existing project ids, so undo stays valid. It then calls `workspace.assignSelection` and clears the chat's cached allowed tools (`app/src/main/java/com/androidharness/app/agent/RunManager.kt` lines 164 to 181).
 
@@ -88,7 +88,7 @@ Isolation beyond a single chat comes from two rules. Each session stores its own
 
 ## Draft Chats
 
-A chat before its first message has no session id. In that state `selectionForChat(null)` returns the current project as a single editable grant, and `ChatWorkspaceManagerSheet` starts from that value. Pressing Save calls `saveWorkspaces`, which calls `ensureSession()` to create the session with the current project, then assigns the chosen grants. The composer text is kept in `ChatScreen` state and in the draft-save job, which is independent of workspace assignment (`ChatViewModel.kt` lines 306 to 314 and 2097 to 2107), so assigning workspaces does not clear what the user typed. This is the behavior summarized by the feature note that Workspaces also works on a draft chat without losing the typed text (`FEATURES.md` line 46).
+A chat before its first message has no session id. In that state `selectionForChat(null)` returns the current workspace as a single editable grant. Picking another workspace in the switcher sets the active workspace, and the session is created with it when the first message is sent, so switching does not clear what the user typed.
 
 Switching a chat between sections or starting an agent chat explicitly saves the draft text into the current conversation before opening the next session (`ChatViewModel.kt` lines 1661 to 1678 and 1700 to 1704).
 
@@ -126,6 +126,7 @@ Sources: [app/src/main/java/com/androidharness/app/core/ChatExperience.kt](../ap
 - `app/src/main/java/com/androidharness/app/workspace/ChatWorkspaces.kt`
 - `app/src/main/java/com/androidharness/app/workspace/WorkspaceManager.kt`
 - `app/src/main/java/com/androidharness/app/agent/RunManager.kt`
-- `app/src/main/java/com/androidharness/app/ui/chat/components/ChatWorkspacesSheet.kt`
+- `app/src/main/java/com/androidharness/app/ui/chat/components/WorkspaceSwitcherSheet.kt`
+- `app/src/main/java/com/androidharness/app/ui/chat/components/ProjectEditorSheet.kt`
 - `app/src/main/java/com/androidharness/app/data/db/Database.kt`
 - `app/src/main/java/com/androidharness/app/ui/AppNav.kt`

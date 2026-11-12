@@ -466,6 +466,7 @@ class AgentEngine(
                 runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry)
                 .filter { !runContext.denies(it) && com.androidharness.app.config.ConfigToolPolicy.permission(projectConfig, it, effectiveMode) != "deny" }
                 .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
+                .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
             val searchConfiguration = (roundRegistry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.configurationNote()
             var tools = if (!agentContextEnabled) emptyList() else roundRegistry.schemas(
                 readOnlyOnly = mode == AgentMode.PLAN,
@@ -674,6 +675,7 @@ class AgentEngine(
                     visionAvailable = false
                     roundRegistry = runRegistry.without(setOf("view_chat_image", "zoom_chat_image"))
                         .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
+                .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
                     tools = tools.filterNot { it.name in setOf("view_chat_image", "zoom_chat_image") }
                     requestSystemPrompt += "\nImage input was rejected by the provider. You cannot inspect or zoom images in this turn; say so rather than claiming to see them.\n"
                 }
@@ -793,7 +795,7 @@ class AgentEngine(
                 toolName = call.name,
                 isError = !result.ok,
                 images = listOfNotNull(result.image), artifact = result.artifact,
-                generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory),
+                generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
             )
             // Side questions see each finished result while the rest still run.
             fun publishResults() = publishSide(working + calls.mapNotNull { call -> results[call.id]?.let { toolMessage(call, it) } })
@@ -1008,7 +1010,7 @@ class AgentEngine(
                     val message = ChatMessage(
                         role = Role.TOOL, text = result.output, toolCallId = call.id, toolName = call.name,
                         isError = !result.ok, images = listOfNotNull(result.image),
-                        generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory),
+                        generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
                     )
                     working += if (imageInput) message.withImagesResolved() else message
                     send(SideEvent.ToolFinished(message))
@@ -1164,7 +1166,7 @@ class AgentEngine(
             emitEvent(AgentEvent.ToolMessageCommitted(ChatMessage(
                 role = Role.TOOL, text = result.output, toolCallId = call.id,
                 toolName = call.name, isError = !result.ok, images = listOfNotNull(result.image), artifact = result.artifact,
-                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory),
+                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
             )))
         }
         return result
@@ -1929,7 +1931,7 @@ class AgentEngine(
                     toolName = call.name,
                     isError = !result.ok,
                     images = listOfNotNull(result.image), artifact = result.artifact,
-                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory),
+                    generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
                 )
                 history += toolMessage.withImagesResolved()
                 emitEvent(AgentEvent.SubagentMessageCommitted(parentCallId, toolMessage))

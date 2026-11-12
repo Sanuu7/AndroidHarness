@@ -14,6 +14,7 @@ Harness reaches files through four different storage stories: its private data d
 - **`ShellTierRouter`**: maps a path region to `ExecutionTier` and attaches a note when access is degraded.
 - **`StorageManager`**: derives scan roots from projects and protects workspaces during cleanup.
 - **`StorageGate` / `SharedStorage`**: the single decision point for tools on shared storage. Classifies paths, stops calls that lack the grant, raises the in-app request and lets a waiting call continue after a grant.
+- **`StorageAccessTool` / `StorageAccessCard`**: the `request_storage_access` tool returns a `StorageAccessReceipt` that is stored in `GenerationMetadata` and drawn as a chat card. The card reads live state from `rememberStorageAccess` and only opens Android pages. `AppSettings.storageAccessCards` (default on) removes the tool from the registry in `AgentEngine`.
 - **`StorageAccessPrompt`**: the global dialog mounted in `MainActivity` that shows `StorageGate.request`.
 - **`rememberStorageAccess` / `SystemGrants`**: the in-app grant flow and the intent ladder that opens the OS page.
 

@@ -1,7 +1,6 @@
 package com.androidharness.app.ui.common
 
 import com.androidharness.app.R
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,7 +19,21 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.IconButtonDefaults
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.background
+import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
+import androidx.compose.material.icons.outlined.Lock
+import androidx.compose.material.icons.outlined.FolderOff
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import com.androidharness.app.ui.settings.SettingsExpressiveTheme
+import com.androidharness.app.ui.theme.expressiveEffectsSpec
+import com.androidharness.app.ui.theme.expressiveSpatialSpec
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -55,6 +68,7 @@ import java.io.File
  * neither, the dialog explains exactly which permission to grant instead of
  * showing a dead empty list.
  */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun FolderPickerDialog(
     container: AppContainer,
@@ -73,86 +87,55 @@ fun FolderPickerDialog(
     val canList = storageAccess.granted ||
         shizukuState == com.androidharness.app.data.env.ShizukuState.GRANTED
 
+    fun goUp() {
+        val parent = File(currentDir).parent
+        if (parent != null && currentDir != root && parent.startsWith(root)) currentDir = parent
+    }
     Dialog(
         onDismissRequest = onDismiss,
         properties = DialogProperties(usePlatformDefaultWidth = false),
     ) {
-        Surface(
-            modifier = Modifier.fillMaxSize(),
-            color = scheme.surface,
-        ) {
+        SettingsExpressiveTheme {
+        Surface(modifier = Modifier.fillMaxSize(), color = scheme.surface) {
             Column(Modifier.fillMaxSize()) {
-                // ----- Top bar -----
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .statusBarsPadding()
-                        .padding(start = 4.dp, end = 4.dp, top = 4.dp, bottom = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.fillMaxWidth().statusBarsPadding().padding(horizontal = 12.dp, vertical = 8.dp),
                 ) {
-                    IconButton(
-                        onClick = {
-                            val parent = File(currentDir).parent
-                            if (parent != null && currentDir != root &&
-                                parent.startsWith(root)
-                            ) {
-                                currentDir = parent
-                            }
-                        },
-                        enabled = currentDir != root,
-                    ) {
-                        Icon(
-                            Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = uiContext.getString(R.string.ui_up),
-                            tint = if (currentDir != root) scheme.onSurface
-                            else scheme.onSurfaceVariant.copy(alpha = 0.4f),
-                        )
+                    ExpressiveIconButton(onClick = ::goUp, enabled = currentDir != root, colors = IconButtonDefaults.filledTonalIconButtonColors()) {
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = uiContext.getString(R.string.ui_up))
                     }
                     Column(Modifier.weight(1f)) {
-                        Text(uiContext.getString(R.string.ui_choose_a_folder), style = MaterialTheme.typography.titleMediumEmphasized)
-                        Text(
-                            currentDir,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = HarnessMono,
-                            color = scheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
+                        Text(uiContext.getString(R.string.ui_choose_a_folder), style = MaterialTheme.typography.titleLarge)
+                        Text(currentDir, style = MaterialTheme.typography.labelMedium, fontFamily = HarnessMono,
+                            color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.StartEllipsis)
                     }
-                    IconButton(onClick = onDismiss) {
+                    ExpressiveIconButton(onClick = onDismiss) {
                         Icon(Icons.Filled.Close, contentDescription = uiContext.getString(R.string.settings_action_close))
                     }
                 }
-                HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
 
                 if (!canList) {
-                    // ----- Permission gate -----
                     Column(
-                        verticalArrangement = Arrangement.spacedBy(10.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp),
+                        modifier = Modifier.fillMaxWidth().weight(1f).padding(horizontal = 16.dp),
                     ) {
-                        Text(
-                            uiContext.getString(R.string.ui_storage_access_needed),
-                            style = MaterialTheme.typography.titleSmallEmphasized,
-                        )
+                        ExpressiveEmptyState(Icons.Outlined.Lock, uiContext.getString(R.string.ui_storage_access_needed), seed = 3,
+                            modifier = Modifier.padding(bottom = 0.dp))
                         Text(
                             uiContext.getString(R.string.ui_browsing_device_folders_needs_one_of_these) +
                                 uiContext.getString(R.string.ui_grant_either_to_use_the_in_app),
-                            style = MaterialTheme.typography.bodySmall,
+                            style = MaterialTheme.typography.bodyMedium,
                             color = scheme.onSurfaceVariant,
+                            modifier = Modifier.padding(horizontal = 8.dp),
                         )
-                        Button(
-                            onClick = storageAccess.request,
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text(uiContext.getString(R.string.ui_grant_storage_access)) }
-                        OutlinedButton(
-                            onClick = {
-                                container.shizuku.requestPermission()
-                            },
-                            modifier = Modifier.fillMaxWidth(),
-                        ) { Text(uiContext.getString(R.string.ui_use_shizuku_instead)) }
+                        Button(onClick = storageAccess.request, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                            Text(uiContext.getString(R.string.ui_grant_storage_access))
+                        }
+                        FilledTonalButton(onClick = { container.shizuku.requestPermission() }, modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp)) {
+                            Text(uiContext.getString(R.string.ui_use_shizuku_instead))
+                        }
                         TextButton(
                             onClick = {
                                 storageAccess.refresh()
@@ -163,8 +146,9 @@ fun FolderPickerDialog(
                         ) { Text(uiContext.getString(R.string.ui_i_ve_granted_it_check_again)) }
                     }
                 } else {
-                    // ----- Folder list -----
-                    val entries by produceState(initialValue = emptyList<String>(), currentDir, permTick, storageAccess.granted, shizukuState) {
+                    // Null while a folder is being read, so the list does not flash "empty" between folders.
+                    val entries by produceState<List<String>?>(initialValue = null, currentDir, permTick, storageAccess.granted, shizukuState) {
+                        value = null
                         value = withContext(Dispatchers.IO) {
                             runCatching {
                                 if (container.shellRouter.isAllFilesAccess()) {
@@ -191,91 +175,52 @@ fun FolderPickerDialog(
                             }.getOrDefault(emptyList())
                         }
                     }
-
-                    if (currentDir != root) {
-                        FolderRow(
-                            name = "..",
-                            onClick = {
-                                File(currentDir).parent?.let { currentDir = it }
-                            },
-                        )
-                    }
-                    LazyColumn(Modifier.weight(1f)) {
-                        items(entries, key = { it }) { name ->
-                            FolderRow(
-                                name = name,
-                                onClick = { currentDir = "$currentDir/$name" },
-                            )
+                    val folders = entries
+                    if (folders == null) Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                        LoadingIndicator(Modifier.size(56.dp))
+                    } else LazyColumn(Modifier.weight(1f), contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        if (currentDir != root) item(key = "\u0000parent") {
+                            ExpressiveListRow(0, 1, uiContext.getString(R.string.wp_picker_parent), dense = true, onClick = ::goUp,
+                                color = scheme.surfaceContainerHigh, modifier = Modifier.padding(bottom = 6.dp),
+                                leading = { ExpressiveIconBadge(Icons.AutoMirrored.Outlined.DriveFileMove, size = 36.dp,
+                                    container = scheme.tertiaryContainer, tint = scheme.onTertiaryContainer) })
                         }
-                        if (entries.isEmpty()) {
-                            item {
-                                Text(
-                                    uiContext.getString(R.string.ui_no_folders_here),
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = scheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(20.dp),
-                                )
-                            }
+                        itemsIndexed(folders, key = { _, name -> name }) { index, name ->
+                            ExpressiveListRow(index, folders.size, name, dense = true, onClick = { currentDir = "$currentDir/$name" },
+                                modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()),
+                                leading = { ExpressiveIconBadge(Icons.Outlined.Folder, size = 36.dp) },
+                                trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, Modifier.padding(end = 8.dp).size(20.dp), tint = scheme.onSurfaceVariant) })
+                        }
+                        if (folders.isEmpty()) item {
+                            ExpressiveEmptyState(Icons.Outlined.FolderOff, uiContext.getString(R.string.ui_no_folders_here), seed = 5)
                         }
                     }
                 }
 
-                // ----- Confirm bar -----
                 if (canList) {
-                    HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .navigationBarsPadding()
-                            .padding(horizontal = 16.dp, vertical = 10.dp),
-                    ) {
-                        Text(
-                            currentDir,
-                            style = MaterialTheme.typography.labelSmall,
-                            fontFamily = HarnessMono,
-                            color = scheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                            modifier = Modifier.weight(1f),
-                        )
-                        Spacer(Modifier.width(12.dp))
-                        Button(onClick = {
-                            onPick(currentDir)
-                            onDismiss()
-                        }) { Text(uiContext.getString(R.string.ui_use_this_folder)) }
+                    Surface(color = scheme.surfaceContainer, shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 16.dp, vertical = 12.dp),
+                        ) {
+                            Text(
+                                currentDir.substringAfterLast('/').ifBlank { currentDir },
+                                style = MaterialTheme.typography.titleMedium,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                                modifier = Modifier.weight(1f),
+                            )
+                            Spacer(Modifier.width(12.dp))
+                            Button(onClick = {
+                                onPick(currentDir)
+                                onDismiss()
+                            }, modifier = Modifier.heightIn(min = 52.dp)) { Text(uiContext.getString(R.string.ui_use_this_folder)) }
+                        }
                     }
                 }
             }
         }
+        }
     }
-}
-
-@Composable
-private fun FolderRow(name: String, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 11.dp),
-    ) {
-        Icon(
-            Icons.Outlined.Folder,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(20.dp),
-        )
-        Spacer(Modifier.width(12.dp))
-        Text(
-            name,
-            style = MaterialTheme.typography.bodyMedium,
-            maxLines = 1,
-            overflow = TextOverflow.Ellipsis,
-        )
-    }
-    HorizontalDivider(
-        color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.25f),
-        modifier = Modifier.padding(start = 48.dp),
-    )
 }

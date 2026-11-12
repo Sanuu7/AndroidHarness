@@ -2232,7 +2232,14 @@ private fun ChatScreenContent(
                                     }
                                 }
                             }
-                            Role.TOOL -> if (!state.conversation.isChat && message.generation.chatHistory != null) {
+                            Role.TOOL -> if (message.generation.storageAccess != null) {
+                                val receipt = message.generation.storageAccess
+                                indexedItem(key = "message-$messageKey-storage", contentType = ChatListContentType.History) {
+                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                        com.androidharness.app.ui.chat.components.StorageAccessCard(receipt)
+                                    }
+                                }
+                            } else if (!state.conversation.isChat && message.generation.chatHistory != null) {
                                 val call = state.messages.firstOrNull { it.role == Role.ASSISTANT && it.toolCalls.any { call -> call.id == message.toolCallId } }
                                 val matches = com.androidharness.app.core.ChatHistoryPresentation.matches(listOfNotNull(call, message))
                                 if (matches.isNotEmpty()) indexedItem(key = "message-$messageKey-history", contentType = ChatListContentType.History) {

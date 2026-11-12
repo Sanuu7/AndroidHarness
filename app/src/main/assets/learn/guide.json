@@ -2389,40 +2389,40 @@
     {
       "id": "multi-workspace",
       "category": "code",
-      "title": "Use several workspaces in one Code chat",
-      "summary": "Let one task compare or coordinate selected projects.",
-      "location": "Code → workspace selector → Workspaces for this chat.",
+      "title": "Work across several workspaces with a project",
+      "summary": "Group workspaces into a project so one chat can work across all of them.",
+      "location": "Sidebar → Projects → plus button, or Code → workspace selector → New project.",
       "before": [
-        "Add each project to AndroidHarness first.",
-        "Pause active work before changing the conversation’s file access."
+        "Add each folder as a workspace first.",
+        "Pause active work in the project’s chats before changing its workspaces."
       ],
       "steps": [
         {
-          "title": "Choose the projects",
-          "body": "Open Workspaces for this chat and select only the projects the task needs."
+          "title": "Create the project",
+          "body": "Tap the plus button next to Projects in the sidebar, name the project and select only the workspaces the work needs."
         },
         {
           "title": "Set access for each",
-          "body": "Choose Read only or Can edit per workspace. Pick the Primary workspace; it is the default destination for new files."
+          "body": "Choose Read only or Can edit per workspace. Pick the main workspace. It is the default destination for new files."
         },
         {
           "title": "Save and name the task boundaries",
-          "body": "Save the selection, then tell the assistant which project each part belongs to. Check the workspace context before approving edits."
+          "body": "Save the project and start a chat in it, then tell the assistant which workspace each part belongs to. Check the workspace context before approving edits."
         },
         {
           "title": "Use file tools within the grants",
-          "body": "The assistant can read the selected projects and edit the ones granted edit access. Review every affected project after a cross-project change."
+          "body": "The assistant can read the project’s workspaces and edit the ones granted edit access. Review every affected workspace after a change that spans several."
         }
       ],
-      "outcome": "The conversation has explicit per-project access and a clear primary workspace.",
+      "outcome": "Every chat in the project has explicit access per workspace and a clear main workspace.",
       "limits": [
         "Commands and integrations require edit access to all selected workspaces.",
-        "Workspace MCP servers are not available in multi-workspace chats yet. Per-workspace access still matters even if another chat can edit that folder."
+        "Workspace MCP servers are not available in project chats with several workspaces yet. A normal Code chat uses one workspace; only a project holds several."
       ],
       "fixes": [
         {
           "problem": "Commands or integrations disappear",
-          "solution": "Review the access warning in the sheet. Use a single workspace or grant the required edit access only when appropriate."
+          "solution": "Review the access warning in the project editor. Use a single workspace or grant the required edit access only when appropriate."
         }
       ],
       "related": [
@@ -2438,7 +2438,7 @@
         }
       ],
       "sources": [
-        "ui/chat/components/ChatWorkspacesSheet.kt",
+        "ui/chat/components/ProjectEditorSheet.kt",
         "workspace/ChatWorkspaces.kt",
         "tools/WorkspaceToolRouting.kt"
       ],

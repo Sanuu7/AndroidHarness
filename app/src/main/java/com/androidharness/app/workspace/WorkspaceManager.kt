@@ -6,6 +6,7 @@ import android.net.Uri
 import androidx.core.net.toUri
 import com.androidharness.app.data.db.HarnessDao
 import com.androidharness.app.data.db.ProjectEntity
+import com.androidharness.app.data.db.WorkProjectEntity
 import com.androidharness.app.data.env.PathClassifier
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -33,8 +34,10 @@ data class PathAssessment(
 )
 
 /**
- * Project-aware workspace manager. A "project" is either the app-private
- * workspace (real filesystem, shell-capable) or a user-picked SAF folder.
+ * Owns workspaces and the projects built from them. A workspace is one folder: the
+ * app-private workspace, a picked or browsed device folder, or an SSH folder. Its row
+ * is a [ProjectEntity] for historical reasons. A project ([WorkProjectEntity]) exists
+ * only when the user creates one, and is the only thing that holds several workspaces.
  */
 class WorkspaceManager(
     private val context: Context,
@@ -47,6 +50,64 @@ class WorkspaceManager(
             .apply { mkdirs() }
 
     val projects: Flow<List<ProjectEntity>> = dao.projectsFlow()
+
+    /** Projects the user created. Adding a workspace never adds one. */
+    val workProjects: Flow<List<WorkProjectEntity>> = dao.workProjectsFlow()
+
+    fun workProjectForChat(sessionId: String?): Flow<WorkProjectEntity?> = if (sessionId == null) flowOf(null)
+        else combine(dao.sessionFlow(sessionId), workProjects) { saved, list ->
+            list.firstOrNull { it.id == saved?.workProjectId }
+        }.distinctUntilChanged()
+
+    suspend fun workProject(id: String): WorkProjectEntity? = dao.workProject(id)
+
+    suspend fun workProjectChats(id: String) = dao.workProjectSessions(id)
+
+    suspend fun createWorkProject(name: String, selection: ChatWorkspaceSelection): WorkProjectEntity {
+        val label = projectLabel(name)
+        validateSelection(selection)
+        val project = WorkProjectEntity(UUID.randomUUID().toString(), label, ChatWorkspaceSelection.encode(selection), System.currentTimeMillis())
+        dao.insertWorkProject(project)
+        return project
+    }
+
+    suspend fun renameWorkProject(id: String, name: String) {
+        requireNotNull(dao.workProject(id)) { "This project is no longer available." }
+        dao.renameWorkProject(id, projectLabel(name))
+    }
+
+    private fun projectLabel(name: String): String = name.trim().also {
+        require(it.isNotEmpty() && it.length <= 100) { "Use a project name between 1 and 100 characters." }
+    }
+
+    /** Call through RunManager, which checks every chat in the project first. */
+    suspend fun saveWorkProjectSelection(id: String, selection: ChatWorkspaceSelection) {
+        requireNotNull(dao.workProject(id)) { "This project is no longer available." }
+        dao.setWorkProjectSelection(id, ChatWorkspaceSelection.encode(selection))
+    }
+
+    suspend fun setChatWorkProject(sessionId: String, workProjectId: String?) = dao.setSessionWorkProject(sessionId, workProjectId)
+
+    suspend fun deleteWorkProjectRow(id: String) = dao.deleteWorkProject(id)
+
+    /**
+     * Chats that hold several workspaces without a project predate projects, or came from
+     * a backup. Each distinct set becomes a project so the chats keep their access.
+     */
+    suspend fun adoptUnfiledChats() {
+        val names = projects.first().associate { it.id to it.name }
+        val existing = dao.workProjectsFlow().first().associateBy { it.selectionJson }.toMutableMap()
+        dao.unfiledSelectionSessions().forEach { chat ->
+            val selection = runCatching { ChatWorkspaceSelection.decode(requireNotNull(chat.workspaceSelectionJson)) }.getOrNull() ?: return@forEach
+            if (selection.grants.size < 2) return@forEach
+            val key = ChatWorkspaceSelection.encode(selection.copy(grants = selection.grants.sortedBy { it.projectId }))
+            val project = existing.getOrPut(key) {
+                val label = (names[selection.primaryId] ?: "Workspaces") + " +" + (selection.grants.size - 1)
+                WorkProjectEntity(UUID.randomUUID().toString(), label.take(100), key, System.currentTimeMillis()).also { dao.insertWorkProject(it) }
+            }
+            dao.setSessionWorkProject(chat.id, project.id)
+        }
+    }
 
     val currentProject: Flow<ProjectEntity> = projects.map { list ->
         list.firstOrNull() ?: ensureDefaultProject(list)
@@ -126,7 +187,11 @@ class WorkspaceManager(
     suspend fun assignSelection(sessionId: String, selection: ChatWorkspaceSelection) {
         val saved = requireNotNull(dao.session(sessionId)) { "This chat no longer exists." }
         validateSelection(selection)
-        dao.saveChatWorkspaces(sessionId, selection.primaryId, ChatWorkspaceSelection.encode(selection), qualifyLegacy = saved.workspaceSelectionJson == null)
+        // One editable workspace is an ordinary chat, which keeps its shell root and workspace tools.
+        val plain = selection.grants.size == 1 && selection.grants.single().canEdit &&
+            (saved.workspaceSelectionJson == null || dao.savedWorkspacePaths(sessionId).isEmpty())
+        if (plain) dao.setSessionProject(sessionId, selection.primaryId)
+        else dao.saveChatWorkspaces(sessionId, selection.primaryId, ChatWorkspaceSelection.encode(selection), qualifyLegacy = saved.workspaceSelectionJson == null)
     }
 
     /** Restores use the same overlap and availability checks as the normal access editor. */

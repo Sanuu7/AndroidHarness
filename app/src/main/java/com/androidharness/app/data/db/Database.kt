@@ -35,6 +35,8 @@ data class SessionEntity(
     val modelSelectionJson: String? = null,
     val workspaceSelectionJson: String? = null,
     val conversationJson: String? = null,
+    /** The user-made project this chat belongs to. Null for an ordinary chat with one workspace. */
+    val workProjectId: String? = null,
 )
 
 @kotlinx.serialization.Serializable
@@ -107,13 +109,26 @@ data class MessageFtsEntity(
     val text: String,
 )
 
+/** One workspace: a folder the agent can work in. The table keeps its original name. */
 @Entity(tableName = "projects")
 data class ProjectEntity(
     @PrimaryKey val id: String,
     val name: String,
-    val kind: String, // "APP" or "SAF"
+    val kind: String, // "APP", "SAF", "SHELL" or "SSH"
     val uri: String?,
     val lastUsedAt: Long,
+)
+
+/**
+ * A project the user created: a name and the workspaces its chats work across.
+ * [selectionJson] is an encoded ChatWorkspaceSelection (grants plus the primary workspace).
+ */
+@Entity(tableName = "work_projects")
+data class WorkProjectEntity(
+    @PrimaryKey val id: String,
+    val name: String,
+    val selectionJson: String,
+    val createdAt: Long,
 )
 
 /** A saved fact or reviewed digest, owned by a section and optionally scoped to a project. */
@@ -545,7 +560,35 @@ interface HarnessDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertImportedMessages(messages: List<MessageEntity>)
 
-    // projects
+    // user-made projects
+    @Query("SELECT * FROM work_projects ORDER BY createdAt DESC")
+    fun workProjectsFlow(): Flow<List<WorkProjectEntity>>
+
+    @Query("SELECT * FROM work_projects WHERE id = :id")
+    suspend fun workProject(id: String): WorkProjectEntity?
+
+    @Insert
+    suspend fun insertWorkProject(project: WorkProjectEntity)
+
+    @Query("UPDATE work_projects SET name = :name WHERE id = :id")
+    suspend fun renameWorkProject(id: String, name: String)
+
+    @Query("UPDATE work_projects SET selectionJson = :selection WHERE id = :id")
+    suspend fun setWorkProjectSelection(id: String, selection: String)
+
+    @Query("DELETE FROM work_projects WHERE id = :id")
+    suspend fun deleteWorkProject(id: String)
+
+    @Query("SELECT * FROM sessions WHERE workProjectId = :id")
+    suspend fun workProjectSessions(id: String): List<SessionEntity>
+
+    @Query("UPDATE sessions SET workProjectId = :workProjectId WHERE id = :id")
+    suspend fun setSessionWorkProject(id: String, workProjectId: String?)
+
+    @Query("SELECT * FROM sessions WHERE workProjectId IS NULL AND workspaceSelectionJson IS NOT NULL")
+    suspend fun unfiledSelectionSessions(): List<SessionEntity>
+
+    // workspaces
     @Query("SELECT * FROM projects ORDER BY lastUsedAt DESC")
     fun projectsFlow(): Flow<List<ProjectEntity>>
 
@@ -755,6 +798,7 @@ interface HarnessDao {
         SessionEntity::class,
         MessageEntity::class,
         ProjectEntity::class,
+        WorkProjectEntity::class,
         CheckpointEntity::class,
         SnippetEntity::class,
         UsageEventEntity::class,
@@ -766,13 +810,19 @@ interface HarnessDao {
         ChatAnswerVersionEntity::class,
         SavedAnswerEntity::class,
     ],
-    version = 25,
+    version = 26,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_25_26 = object : androidx.room.migration.Migration(25, 26) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("CREATE TABLE IF NOT EXISTS work_projects (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, selectionJson TEXT NOT NULL, createdAt INTEGER NOT NULL)")
+                db.execSQL("ALTER TABLE sessions ADD COLUMN workProjectId TEXT")
+            }
+        }
         val MIGRATION_24_25 = object : androidx.room.migration.Migration(24, 25) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS saved_answers (messageId TEXT NOT NULL PRIMARY KEY, sessionId TEXT NOT NULL, text TEXT NOT NULL, answeredAt INTEGER NOT NULL, savedAt INTEGER NOT NULL)")

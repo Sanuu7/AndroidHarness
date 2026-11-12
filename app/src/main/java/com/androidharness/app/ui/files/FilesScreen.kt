@@ -53,12 +53,34 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
+import com.androidharness.app.ui.common.ExpressiveDropdownMenu as DropdownMenu
+import com.androidharness.app.ui.common.ExpressiveDropdownMenuItem as DropdownMenuItem
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.ModalBottomSheet
+import com.androidharness.app.ui.theme.HarnessGlassModalBottomSheet as ModalBottomSheet
+import androidx.compose.material3.rememberModalBottomSheetState
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.automirrored.outlined.DriveFileMove
+import androidx.compose.material.icons.outlined.FolderOff
+import com.androidharness.app.ui.common.ExpressiveEmptyState
+import com.androidharness.app.ui.common.ExpressiveIconBadge
+import com.androidharness.app.ui.common.ExpressiveIconButton
+import com.androidharness.app.ui.common.ExpressiveListRow
+import com.androidharness.app.ui.common.ExpressiveRefreshButton
+import com.androidharness.app.ui.settings.ExpressiveSearchField
+import com.androidharness.app.ui.settings.SettingsExpressiveTheme
+import com.androidharness.app.ui.theme.expressiveEffectsSpec
+import com.androidharness.app.ui.theme.expressiveSpatialSpec
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
@@ -175,10 +197,7 @@ fun FilesScreen(
     val activeChanges = mergedChanges.filter { !it.isDeleted }
 
     // ---- workspace switcher (same sheet the drawer and chat overflow use) ----
-    val allWorkspaces by container.workspace.projects
-        .collectAsStateWithLifecycle(initialValue = emptyList())
     var showWorkspaceSheet by remember { mutableStateOf(false) }
-    var showAddWorkspace by remember { mutableStateOf(false) }
     fun selectWorkspace(id: String) {
         scope.launch {
             try {
@@ -188,12 +207,6 @@ fun FilesScreen(
         }
     }
     var githubProject by remember { mutableStateOf<Pair<String, String>?>(null) }
-    val safWorkspacePicker = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocumentTree(),
-    ) { uri -> uri?.let { scope.launch {
-        try { selectWorkspace(container.workspace.addPickedFolder(it).id) }
-        catch (e: Exception) { loadError = e.message }
-    } } }
 
     // Session updates can recreate fs without changing its workspace. Keep navigation
     // through those refreshes and the initial null emission after activity recreation.
@@ -310,6 +323,7 @@ fun FilesScreen(
             ))
     }
 
+    SettingsExpressiveTheme {
     Scaffold(
         modifier = Modifier.onPreviewKeyEvent { event ->
             if(event.isCtrlPressed && !event.isAltPressed) {
@@ -337,21 +351,19 @@ fun FilesScreen(
                             Text(if (visibleEntries.isNotEmpty() && visibleEntries.all { it.relPath in selectedPaths }) uiContext.getString(R.string.ui_deselect_all) else uiContext.getString(R.string.ui_select_all))
                         }
                     } else {
-                        if (projectId == null || sessionId != null) IconButton(onClick = { showWorkspaceSheet = true }) {
+                        if (projectId == null || sessionId != null) ExpressiveIconButton(onClick = { showWorkspaceSheet = true }) {
                             Icon(
                                 Icons.Outlined.Folder,
                                 contentDescription = uiContext.getString(R.string.ui_switch_workspace),
                                 tint = if (currentWorkspace != null) scheme.onSurfaceVariant else scheme.primary,
                             )
                         }
-                        IconButton(onClick = { workspaceTools = WorkspaceToolMode.SEARCH }) {
+                        ExpressiveIconButton(onClick = { workspaceTools = WorkspaceToolMode.SEARCH }) {
                             Icon(Icons.Outlined.Search, contentDescription = uiContext.getString(R.string.ui_search_project))
                         }
-                        IconButton(onClick = { refreshTick++ }) {
-                            Icon(Icons.Outlined.Refresh, contentDescription = uiContext.getString(R.string.ui_refresh))
-                        }
+                        ExpressiveRefreshButton(uiContext.getString(R.string.ui_refresh), onClick = { refreshTick++ })
                         Box {
-                            IconButton(onClick = { headerMenuOpen = true }) {
+                            ExpressiveIconButton(onClick = { headerMenuOpen = true }) {
                                 Icon(Icons.Filled.MoreVert, contentDescription = uiContext.getString(R.string.ui_more))
                             }
                             DropdownMenu(expanded = headerMenuOpen, onDismissRequest = { headerMenuOpen = false }) {
@@ -398,7 +410,7 @@ fun FilesScreen(
         },
         bottomBar = {
             if (selecting) {
-                Surface(color = scheme.surfaceContainerHigh, tonalElevation = 2.dp) {
+                Surface(color = scheme.surfaceContainerHigh, shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)) {
                     Column(Modifier.fillMaxWidth().navigationBarsPadding().padding(horizontal = 8.dp, vertical = 8.dp)) {
                         if (batchBusy) AppLinearProgressIndicator(Modifier.fillMaxWidth())
                         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly) {
@@ -436,17 +448,18 @@ fun FilesScreen(
 
             if (!selecting && sessionId != null && onOpenChanges != null && activeChanges.isNotEmpty()) {
                 Surface(
-                    color = scheme.surfaceContainerHigh,
-                    shape = RoundedCornerShape(12.dp),
+                    color = scheme.secondaryContainer,
+                    contentColor = scheme.onSecondaryContainer,
+                    shape = RoundedCornerShape(24.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 6.dp)
-                        .clip(RoundedCornerShape(12.dp)),
+                        .padding(horizontal = 12.dp, vertical = 6.dp)
+                        .clip(RoundedCornerShape(24.dp)),
                     onClick = onOpenChanges!!,
                 ) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 14.dp),
                     ) {
                         Icon(
                             Icons.Outlined.Difference,
@@ -474,16 +487,11 @@ fun FilesScreen(
                 }
             }
 
-            if (filterActive) {
-                OutlinedTextField(
-                    value = filter,
-                    onValueChange = { filter = it },
-                    singleLine = true,
-                    placeholder = { Text(uiContext.getString(R.string.ui_filter_this_folder), style = MaterialTheme.typography.bodySmall) },
-                    textStyle = MaterialTheme.typography.bodySmall,
-                    shape = MaterialTheme.shapes.medium,
-                    modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp, vertical = 4.dp),
-                )
+            AnimatedVisibility(filterActive,
+                enter = expandVertically(expressiveSpatialSpec()) + fadeIn(expressiveEffectsSpec()),
+                exit = shrinkVertically(expressiveSpatialSpec()) + fadeOut(expressiveEffectsSpec())) {
+                ExpressiveSearchField(filter, { filter = it }, uiContext.getString(R.string.wp_files_filter),
+                    Modifier.padding(horizontal = 12.dp, vertical = 6.dp))
             }
 
             if (importing) AppLinearProgressIndicator(Modifier.fillMaxWidth())
@@ -499,38 +507,27 @@ fun FilesScreen(
 
             if (loading && entries.isEmpty()) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
+                    @OptIn(ExperimentalMaterial3ExpressiveApi::class) LoadingIndicator(Modifier.size(56.dp))
                 }
             } else {
-                LazyColumn(modifier = Modifier.fillMaxSize()) {
+                val visible = visibleEntries
+                LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp),
+                    contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 24.dp)) {
                     if (currentPath != ".") {
-                        item(key = "__parent__") {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .clickable(enabled = !selecting && !batchBusy) { currentPath = parentOf(currentPath) }
-                                    .padding(horizontal = 16.dp, vertical = 12.dp),
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Folder,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(19.dp),
-                                    tint = scheme.onSurfaceVariant,
-                                )
-                                Spacer(Modifier.width(14.dp))
-                                Text("..", style = MaterialTheme.typography.bodyLarge)
-                            }
-                            HorizontalDivider(
-                                color = scheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(start = 49.dp),
-                            )
+                        item(key = "\u0000parent") {
+                            val parent = parentOf(currentPath)
+                            ExpressiveListRow(0, 1,
+                                uiContext.getString(R.string.wp_files_parent, if (parent == ".") uiContext.getString(R.string.wp_files_root) else parent.substringAfterLast('/')),
+                                dense = true, enabled = !selecting && !batchBusy, color = scheme.surfaceContainerHigh,
+                                onClick = { currentPath = parent },
+                                modifier = Modifier.padding(bottom = 6.dp)
+                                    .animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()),
+                                leading = { ExpressiveIconBadge(Icons.AutoMirrored.Outlined.DriveFileMove, size = 36.dp,
+                                    container = scheme.tertiaryContainer, tint = scheme.onTertiaryContainer) })
                         }
                     }
 
-                    val visible = visibleEntries
-
-                    items(visible, key = { it.relPath }) { row ->
+                    itemsIndexed(visible, key = { _, it -> it.relPath }) { index, row ->
                         val node = row.node
                         val nodeKey = normalizeRelPath(row.relPath)
                         val change = if (row.isFile) activeChanges.firstOrNull {
@@ -538,109 +535,45 @@ fun FilesScreen(
                                 nodeKey.endsWith("/${it.relPath}") ||
                                 it.relPath.endsWith("/$nodeKey")
                         } else null
-
-                        Column(
-                            Modifier
-                                .fillMaxWidth()
-                                .background(if (row.relPath in selectedPaths) scheme.primaryContainer.copy(alpha = 0.45f) else Color.Transparent)
-                                .combinedClickable(
-                                    enabled = !batchBusy,
-                                    onClick = {
-                                        if (selecting) {
-                                            toggleSelection(node)
-                                        } else if (row.isDirectory) {
-                                            filter = ""
-                                            filterActive = false
-                                            currentPath = row.relPath
-                                        } else {
-                                            onOpenFile(row.relPath)
-                                        }
-                                    },
-                                    onLongClick = { toggleSelection(node) },
-                                ),
-                        ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 16.dp, vertical = 11.dp),
-                            ) {
+                        val picked = row.relPath in selectedPaths
+                        ExpressiveListRow(index, visible.size, row.name, subtitle = subtitleFor(row), dense = true,
+                            selected = picked, enabled = !batchBusy,
+                            titleColor = if (row.isFile && change != null) statusSuccess else Color.Unspecified,
+                            modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()),
+                            onClick = {
                                 if (selecting) {
-                                    Checkbox(
-                                        checked = row.relPath in selectedPaths,
-                                        enabled = !batchBusy,
-                                        onCheckedChange = { toggleSelection(node) },
-                                    )
+                                    toggleSelection(node)
+                                } else if (row.isDirectory) {
+                                    filter = ""
+                                    filterActive = false
+                                    currentPath = row.relPath
+                                } else {
+                                    onOpenFile(row.relPath)
                                 }
-                                Icon(
-                                    iconFor(row),
-                                    contentDescription = null,
-                                    modifier = Modifier.size(19.dp),
-                                    tint = tintFor(row, change, scheme, statusSuccess),
-                                )
-                                Spacer(Modifier.width(14.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(
-                                        row.name,
-                                        style = MaterialTheme.typography.bodyLarge,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                        color = if (row.isFile && change != null) statusSuccess
-                                        else Color.Unspecified,
-                                    )
-                                    Text(
-                                        subtitleFor(row),
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = scheme.onSurfaceVariant,
-                                    )
-                                }
-                                if (row.isFile && change != null) {
-                                    DiffStatText(change.added, change.removed)
-                                }
+                            },
+                            onLongClick = { toggleSelection(node) },
+                            leading = {
+                                if (selecting) Checkbox(checked = picked, enabled = !batchBusy, onCheckedChange = { toggleSelection(node) })
+                                if (row.isDirectory) ExpressiveIconBadge(iconFor(row), size = 36.dp, selected = picked)
+                                else ExpressiveIconBadge(iconFor(row), size = 36.dp, selected = picked,
+                                    container = scheme.surfaceContainerHighest, tint = tintFor(row, change, scheme, statusSuccess))
+                            },
+                            trailing = {
+                                if (row.isFile && change != null) DiffStatText(change.added, change.removed)
                                 if (!selecting) {
-                                    IconButton(onClick = { menuNode = node }) {
-                                        Icon(Icons.Filled.MoreVert, contentDescription = uiContext.getString(R.string.settings_provider_actions_cd, (row.name).toString()))
+                                    ExpressiveIconButton(onClick = { menuNode = node }) {
+                                        Icon(Icons.Filled.MoreVert, contentDescription = uiContext.getString(R.string.settings_provider_actions_cd, (row.name).toString()),
+                                            tint = scheme.onSurfaceVariant)
                                     }
-                                }
-                                if (row.isDirectory && !selecting) {
-                                    Spacer(Modifier.width(10.dp))
-                                    Icon(
-                                        Icons.AutoMirrored.Filled.KeyboardArrowRight,
-                                        contentDescription = null,
-                                        modifier = Modifier.size(18.dp),
-                                        tint = scheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                    )
-                                }
-                            }
-                            HorizontalDivider(
-                                color = scheme.outlineVariant.copy(alpha = 0.5f),
-                                modifier = Modifier.padding(start = 49.dp),
-                            )
-                        }
+                                } else Spacer(Modifier.width(8.dp))
+                            })
                     }
 
                     if (visible.isEmpty()) {
-                        item {
-                            Column(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .padding(horizontal = 24.dp, vertical = 64.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                            ) {
-                                Icon(
-                                    Icons.Outlined.Folder,
-                                    contentDescription = null,
-                                    modifier = Modifier.size(40.dp),
-                                    tint = scheme.onSurfaceVariant.copy(alpha = 0.6f),
-                                )
-                                Text(
-                                    if (filter.isNotBlank()) uiContext.getString(R.string.ui_nothing_matches, (filter).toString())
-                                    else uiContext.getString(R.string.ui_empty_directory),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = scheme.onSurfaceVariant,
-                                    modifier = Modifier.padding(top = 12.dp),
-                                )
-                            }
+                        item(key = "\u0000empty") {
+                            ExpressiveEmptyState(Icons.Outlined.FolderOff,
+                                if (filter.isNotBlank()) uiContext.getString(R.string.ui_nothing_matches, (filter).toString())
+                                else uiContext.getString(R.string.ui_empty_directory), seed = 6)
                         }
                     }
                 }
@@ -650,7 +583,7 @@ fun FilesScreen(
 
     // ---- long-press sheet: fully expanded, divider-separated tap targets ----
     menuNode?.let { node ->
-        ModalBottomSheet(onDismissRequest = { menuNode = null }) {
+        @OptIn(ExperimentalMaterial3Api::class) ModalBottomSheet(onDismissRequest = { menuNode = null }, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
             Text(
                 node.name,
                 style = MaterialTheme.typography.titleMediumEmphasized,
@@ -667,9 +600,7 @@ fun FilesScreen(
                 modifier = Modifier.padding(horizontal = 20.dp),
             )
             Spacer(Modifier.height(8.dp))
-            val divider = @Composable { m: Modifier ->
-                HorizontalDivider(m, color = scheme.outlineVariant.copy(alpha = 0.4f))
-            }
+            val divider = @Composable { _: Modifier -> Spacer(Modifier.height(2.dp)) }
             SheetAction(if (node.isDirectory) Icons.Outlined.Folder else Icons.Outlined.OpenInNew,
                 if (node.isDirectory) uiContext.getString(R.string.ui_open) else uiContext.getString(R.string.ui_open_in_editor)) {
                 menuNode = null
@@ -876,37 +807,10 @@ fun FilesScreen(
     }
     if (showWorkspaceSheet) {
         com.androidharness.app.ui.common.ShizukuWorkspaceWarningEffect(container.shizuku)
-        if (sessionId != null) com.androidharness.app.ui.chat.components.ChatWorkspaceManagerSheet(
-            container, sessionId, onDismiss = { showWorkspaceSheet = false })
-        else com.androidharness.app.ui.chat.components.WorkspaceSwitcherSheet(
-            projects = allWorkspaces,
-            currentProjectId = currentWorkspace?.id,
-            chatWorkspace = sessionId != null,
-            describe = { container.workspace.describe(it) },
-            onSelect = { id ->
-                selectWorkspace(id)
-                showWorkspaceSheet = false
-            },
-            onAdd = { showAddWorkspace = true },
-            onDismiss = { showWorkspaceSheet = false },
-            onDelete = { project ->
-                scope.launch {
-                    try { container.workspace.deleteProject(project) }
-                    catch (e: Exception) { toast(e.message ?: uiContext.getString(R.string.ui_could_not_remove_workspace)) }
-                }
-            },
-        )
+        com.androidharness.app.ui.chat.components.WorkspaceSwitcher(container, sessionId = sessionId,
+            currentWorkspaceId = currentWorkspace?.id, onSelect = ::selectWorkspace,
+            onDismiss = { showWorkspaceSheet = false }, onError = { toast(it) }, chatContext = sessionId != null)
     }
-    if (showAddWorkspace) {
-        com.androidharness.app.ui.common.AddWorkspaceDialog(
-            container = container,
-            onSelected = ::selectWorkspace,
-            onDismiss = { showAddWorkspace = false },
-            onPickSaf = {
-                showAddWorkspace = false
-                safWorkspacePicker.launch(null)
-            },
-        )
     }
 }
 
@@ -942,17 +846,11 @@ fun DiffStatText(added: Long, removed: Long, modifier: Modifier = Modifier) {
 
 @Composable
 private fun SheetAction(icon: ImageVector, title: String, tint: Color = MaterialTheme.colorScheme.onSurface, onClick: () -> Unit) {
-    Row(
-        verticalAlignment = Alignment.CenterVertically,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 20.dp, vertical = 13.dp),
-    ) {
-        Icon(icon, contentDescription = null, modifier = Modifier.size(19.dp), tint = tint)
-        Spacer(Modifier.width(16.dp))
-        Text(title, style = MaterialTheme.typography.bodyLarge, color = tint)
-    }
+    val scheme = MaterialTheme.colorScheme
+    val danger = tint == scheme.error
+    ExpressiveListRow(0, 1, title, dense = true, onClick = onClick, titleColor = tint, modifier = Modifier.padding(horizontal = 16.dp),
+        leading = { ExpressiveIconBadge(icon, size = 36.dp, container = if (danger) scheme.errorContainer else scheme.surfaceContainerHighest,
+            tint = if (danger) scheme.onErrorContainer else scheme.onSurfaceVariant) })
 }
 
 /** One listing entry, read once on the IO thread so drawing never touches the filesystem. */

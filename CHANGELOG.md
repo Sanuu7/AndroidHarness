@@ -16,7 +16,22 @@
   - Full access lifts the workspace boundary but not this rule, so an absolute path into shared storage is stopped the same way.
   - A command run from the app workspace that names a shared path such as `/sdcard/Download` gets a note explaining that missing files there are not real, and the dialog appears if the command failed.
 
+- **Storage access card**: when a task needs shared storage and access is off, the agent can show a card in the chat with its reason and the location it tried to reach. All files access opens Android's page for it (the app's storage permission prompt before Android 11), and App permissions opens the app's own settings page. The card grants nothing itself and turns into a confirmation as soon as access exists, however you granted it. Settings → Shared storage has a switch to stop the agent from showing it, and the tool does nothing when access is already on.
+
 ### Changed
+
+- **Workspaces and projects are now two separate things**: a workspace is one folder, and a project is a group of workspaces you put together yourself.
+  - Adding a folder only adds a workspace. Nothing else is created for it.
+  - A project exists only when you create one, with the plus button next to Projects in the sidebar or with New project in the workspace switcher. Give it a name, pick its workspaces and choose which of them is the main one.
+  - A normal coding chat works in one workspace, and the switcher simply moves it to another. Where the switcher used to offer adding more folders to a chat, it now offers New project and Move to a project.
+  - Only a project holds several workspaces. Add workspace, remove, read only and main workspace all live in the project, and a change applies to every chat in that project. The app refuses the change while one of those chats is running.
+  - Chats that already worked across several folders keep everything. On first start each one moves into a project named after its main folder, with the same folders and the same access. Chats that used the same set of folders share one project.
+  - Deleting a project deletes its chats after a confirmation that says how many. The workspaces and the files in them stay.
+  - The page that used to be called a project (one folder with its chats, memory and tasks) is now the workspace page.
+- **Workspaces, projects and files in Material 3 Expressive**: the workspace switcher, the project editor, the add workspace sheet, the folder picker, the workspace and project pages, the Projects section of the sidebar and the file manager now share the look and motion of Settings.
+  - Lists are segmented rows that round off under your finger and stay rounded while selected. Icons sit on tonal badges, empty lists show a Material shape that springs into place, and rows move with spring motion when a list changes.
+  - In the file manager the filter is a pill search field that slides open, refresh takes one turn per tap, the selection bar and changes banner are rounded tonal surfaces, and file actions open as a list of rounded rows.
+  - Quick open, project search and the command palette use a connected toggle group for the mode, a pill query field and the same segmented rows for results.
 
 - **Picked folders without storage access**: a folder chosen with the system picker now always uses the picker's own access while storage access is off. Android could report such a folder as writable while hiding files made by other apps, so file tools saw an incomplete folder. Commands in that folder need storage access.
 - **Settings in Material 3 Expressive**: every settings page now shares one look and one set of motions.

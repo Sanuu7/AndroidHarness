@@ -105,6 +105,10 @@ The sidebar has a fixed header and a scrolling list:
 
 Multi-select lives in the sidebar header as `ChatSelectionToolbar`. `selectableIds` is derived from the current list context: search results, saved answers, expanded project chats, archived chats, or active chats.
 
+### Projects section
+
+The sidebar's Projects view lists `WorkProjectEntity` rows from `WorkspaceManager.workProjects`, not workspace rows. A tonal plus button next to the header calls `onCreateProject`, which opens `WorkspaceSwitcher` at its new-project stage, and Manage opens the `work-projects` route. Each project row expands to its chats and offers a new chat in that project. With no projects the section shows an empty state with a create button. Routes `work-projects` and `work-project/{workProjectId}` are the project list and page. `projects` and `project/{projectId}` remain and show workspaces.
+
 ## Back Behavior
 
 - Switching conversations replaces the destination: `navigateToConversation` calls `navigate(route) { popUpTo(graph.id); launchSingleTop = true }`. Back does not replay previously selected chats.

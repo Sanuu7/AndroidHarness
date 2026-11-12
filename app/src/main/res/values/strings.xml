@@ -718,6 +718,14 @@
     <string name="settings_backup_provider_line">%1$s\n%2$s</string>
     <string name="settings_env_storage_access">Storage access</string>
     <string name="settings_env_storage_granted">Granted: the shell and file tools can use shared storage.</string>
+    <string name="settings_storage_cards_title">Storage access cards</string>
+    <string name="settings_storage_cards_desc">Let the agent show a card with buttons to Android\'s storage pages when a task needs access. It never grants anything itself.</string>
+    <string name="storage_card_title">Storage access needed</string>
+    <string name="storage_card_title_granted">Storage access granted</string>
+    <string name="storage_card_granted_body">The agent can use shared storage now. Tell it to continue.</string>
+    <string name="storage_card_all_files">All files access</string>
+    <string name="storage_card_app_permissions">App permissions</string>
+    <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
     <string name="storage_prompt_title">Storage access needed</string>
     <string name="storage_prompt_body">The agent was stopped because this location is in shared storage, and the app does not have storage access.</string>
     <string name="storage_prompt_alternative">Grant access and the agent continues from here. Without it, the agent keeps working in the app workspace and in folders you pick.</string>
