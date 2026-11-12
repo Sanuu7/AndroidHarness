@@ -128,6 +128,16 @@ class TtsController(
         speak(PREVIEW_ID, context.getString(R.string.settings_tts_test_sentence))
     }
 
+    /**
+     * Plays the sample sentence in one voice of the engine in use, without saving
+     * it, so a voice picker can let the user listen before choosing. Models and
+     * speed are the saved ones; the clip cache makes a second listen instant.
+     */
+    fun previewVoice(voiceId: String) {
+        autoQueue.clear()
+        speak(sampleId(voiceId), context.getString(R.string.settings_tts_test_sentence), voiceOverride = voiceId)
+    }
+
     fun stop() {
         autoQueue.clear()
         halt()
@@ -226,7 +236,8 @@ class TtsController(
             .map { TtsVoiceOption(it.name, "${it.name.replace('_', ' ')} · ${it.locale.displayName}") }
     }
 
-    private fun speak(messageId: String, text: String) {
+    /** [voiceOverride] speaks in that voice instead of the saved one; blank means the engine default. */
+    private fun speak(messageId: String, text: String, voiceOverride: String? = null) {
         val plain = SpeechText.forSpeech(RichResponse.plainText(text))
         if (!SpeechText.isSpeakable(plain)) return
         halt()
@@ -238,9 +249,10 @@ class TtsController(
                 if (saved.ttsEngine != AppSettings.TTS_ENGINE_SYSTEM && provider == null) {
                     report(R.string.tts_error_unavailable)
                 } else if (provider != null) {
-                    speakProvider(messageId, plain, saved, provider)
+                    speakProvider(messageId, plain, saved, provider, voiceOverride)
                 } else {
-                    speakSystem(messageId, plain, saved)
+                    val effective = if (voiceOverride != null) saved.copy(ttsSystemVoice = voiceOverride.ifBlank { null }) else saved
+                    speakSystem(messageId, plain, effective)
                 }
             } catch (e: CancellationException) {
                 throw e
@@ -285,6 +297,7 @@ class TtsController(
         text: String,
         saved: AppSettings,
         provider: VoiceProviderConfig,
+        voiceOverride: String? = null,
     ): Boolean = coroutineScope {
         // Edge refuses clients advertising an outdated build, so make sure the
         // advertised one is current before the first request.
@@ -300,7 +313,8 @@ class TtsController(
         // An empty saved model is meaningful for Edge, so fall back only when
         // the key is absent from the map entirely.
         val model = selection?.ttsModel ?: provider.ttsModel
-        val voice = selection?.ttsVoice?.ifBlank { null }
+        val voice = voiceOverride?.ifBlank { null }
+            ?: selection?.ttsVoice?.ifBlank { null }
             ?: VoiceGateway.defaultVoiceFor(provider, model)
             ?: provider.ttsVoice
         val chunks = TtsTextChunker.chunk(text, VoiceGateway.maxInputChars(provider, model))
@@ -503,5 +517,10 @@ class TtsController(
 
     companion object {
         const val PREVIEW_ID = "__tts_preview__"
+
+        /** Message ids of voice samples start with this, followed by the voice id. */
+        const val SAMPLE_PREFIX = "__tts_voice_sample__:"
+
+        fun sampleId(voiceId: String): String = SAMPLE_PREFIX + voiceId
     }
 }

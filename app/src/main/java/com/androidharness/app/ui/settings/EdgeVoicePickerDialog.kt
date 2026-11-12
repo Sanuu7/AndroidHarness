@@ -19,7 +19,6 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -49,6 +48,7 @@ internal fun EdgeVoicePickerDialog(
     onSelect: (EdgeVoice) -> Unit,
     onRefresh: () -> Unit,
     onDismiss: () -> Unit,
+    sample: VoiceSample? = null,
 ) {
     var query by remember { mutableStateOf("") }
     val listState = rememberLazyListState()
@@ -91,7 +91,7 @@ internal fun EdgeVoicePickerDialog(
         },
         text = {
             Column {
-                OutlinedTextField(
+                VoiceField(
                     value = query,
                     onValueChange = { query = it },
                     singleLine = true,
@@ -161,6 +161,13 @@ internal fun EdgeVoicePickerDialog(
                                         subtitle,
                                         style = MaterialTheme.typography.bodySmall,
                                         color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    )
+                                }
+                                if (sample != null) {
+                                    VoiceListenButton(
+                                        label = voice.displayName,
+                                        phase = sample.phaseOf(voice.shortName),
+                                        onClick = { sample.onToggle(voice.shortName) },
                                     )
                                 }
                             }

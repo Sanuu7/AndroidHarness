@@ -1,120 +1,130 @@
+@file:OptIn(ExperimentalMaterial3ExpressiveApi::class)
+
 package com.androidharness.app.ui.settings
 
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Dns
-import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.VolumeUp
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.Warning
+import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialShapes
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.RadioButton
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Slider
-import androidx.compose.material3.Switch
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
+import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.androidharness.app.AppContainer
 import com.androidharness.app.R
 import com.androidharness.app.data.AppSettings
+import com.androidharness.app.data.audio.EdgeVoiceGroup
+import com.androidharness.app.data.audio.TtsController
 import com.androidharness.app.data.audio.TtsError
+import com.androidharness.app.data.audio.TtsPhase
 import com.androidharness.app.data.audio.TtsVoiceOption
+import com.androidharness.app.data.audio.VoiceGateway
+import com.androidharness.app.data.audio.VoiceProtocol
+import com.androidharness.app.data.audio.VoiceProviderConfig
+import com.androidharness.app.ui.common.Button
 import com.androidharness.app.ui.common.TtsTermsDialog
 import kotlin.math.roundToInt
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
+import java.util.Locale
 
 // ---------------------------------------------------------------------------
-// Voice & speech (multiple providers)
+// Voice & speech
+//
+// One page for hearing you and speaking back, in the order a person uses it:
+// a headline that says whether voice works, Listening (speech to text), Auto send
+// for dictation, Speaking (text to speech), and the list of providers with Add
+// first. Choosing a provider, its key, model and voice all happen on the page
+// itself; sheets only open for the longer jobs (a provider's details, adding one,
+// a long list of models or voices).
 // ---------------------------------------------------------------------------
+
+private enum class VoicePicker { STT_MODEL, TTS_MODEL, VOICE }
 
 @Composable
 internal fun VoiceProvidersSection(
     container: AppContainer,
     settings: AppSettings,
-    scope: kotlinx.coroutines.CoroutineScope,
+    scope: CoroutineScope,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val voiceEngine = settings.voiceEngine
-    val isInbuiltStt = voiceEngine == AppSettings.VOICE_ENGINE_INBUILT
-    val ttsEngine = settings.ttsEngine
-    val isSystemTts = ttsEngine == AppSettings.TTS_ENGINE_SYSTEM
-
-    val providers by container.voiceProviders.providers.collectAsStateWithLifecycle(initialValue = emptyList())
-    val sttProvider = remember(voiceEngine, providers) {
-        providers.firstOrNull { it.id == voiceEngine }
-    }
-    val ttsProvider = remember(ttsEngine, providers) {
-        providers.firstOrNull { it.id == ttsEngine }
-    }
-    val sttSelection = sttProvider?.let { settings.voiceSelections[it.id] }
-    val ttsSelection = ttsProvider?.let { settings.voiceSelections[it.id] }
-    val sttModel = sttSelection?.sttModel?.ifBlank { null } ?: sttProvider?.sttModel.orEmpty()
-    val ttsModel = ttsSelection?.ttsModel?.ifBlank { null } ?: ttsProvider?.ttsModel.orEmpty()
-    val ttsVoice = ttsSelection?.ttsVoice?.ifBlank { null }
-        ?: ttsProvider?.ttsVoice.orEmpty()
+    val loaded by container.voiceProviders.providers.collectAsStateWithLifecycle(initialValue = null)
+    val providers = loaded ?: return
 
     var keyEpoch by remember { mutableStateOf(0) }
-    var sttProviderPicker by remember { mutableStateOf(false) }
-    var ttsProviderPicker by remember { mutableStateOf(false) }
-    var sttModelPicker by remember { mutableStateOf(false) }
-    var ttsModelPicker by remember { mutableStateOf(false) }
-    var voicePicker by remember { mutableStateOf(false) }
-    var editing by remember { mutableStateOf<com.androidharness.app.data.audio.VoiceProviderConfig?>(null) }
-    var managing by remember { mutableStateOf(false) }
-    var ttsTermsError by remember { mutableStateOf<TtsError?>(null) }
+    var picker by remember { mutableStateOf<VoicePicker?>(null) }
     var modelEpoch by remember { mutableStateOf(0) }
     var voiceEpoch by remember { mutableStateOf(0) }
+    var detailId by remember { mutableStateOf<String?>(null) }
+    var editing by remember { mutableStateOf<VoiceProviderConfig?>(null) }
+    var editingNew by remember { mutableStateOf(false) }
+    var ttsTermsError by remember { mutableStateOf<TtsError?>(null) }
 
-    val sttKey = sttProvider?.let { remember(keyEpoch, it.id) { container.voiceProviders.apiKeyFor(it.id) } }
-    val ttsKey = ttsProvider?.let { remember(keyEpoch, it.id) { container.voiceProviders.apiKeyFor(it.id) } }
-    val hasSttKey = sttKey != null || sttProvider?.requiresKey == false
-    val hasTtsKey = ttsKey != null || ttsProvider?.requiresKey == false
-
-    // Model lists come from the provider when it exposes /models, so new ids
-    // appear without an app update. Fetched only while the dialog is open.
-    val sttModels by produceState<List<String>?>(null, sttModelPicker, sttProvider?.id, hasSttKey, modelEpoch) {
-        value = if (sttModelPicker && sttProvider != null) {
-            com.androidharness.app.data.audio.VoiceGateway.sttModels(
-                sttProvider!!,
-                container.voiceProviders.apiKeyFor(sttProvider.id).orEmpty(),
-            )
-        } else null
+    // Keys are read once per change, not on every recomposition.
+    val keyed = remember(providers, keyEpoch) {
+        providers.filter { container.voiceProviders.apiKeyFor(it.id) != null }.map { it.id }.toSet()
     }
-    val ttsModels by produceState<List<String>?>(null, ttsModelPicker, ttsProvider?.id, hasTtsKey, modelEpoch) {
-        value = if (ttsModelPicker && ttsProvider != null) {
-            com.androidharness.app.data.audio.VoiceGateway.ttsModels(
-                ttsProvider!!,
-                container.voiceProviders.apiKeyFor(ttsProvider.id).orEmpty(),
-            )
-        } else null
+    val listen = remember(settings.voiceEngine, providers, keyed) {
+        engineState(providers, keyed, settings.voiceEngine, AppSettings.VOICE_ENGINE_INBUILT, forTts = false)
+    }
+    val speak = remember(settings.ttsEngine, providers, keyed) {
+        engineState(providers, keyed, settings.ttsEngine, AppSettings.TTS_ENGINE_SYSTEM, forTts = true)
+    }
+
+    val actions = remember(container) {
+        VoiceActions(
+            addProvider = { editingNew = true; editing = container.voiceProviders.newCustomProvider() },
+            openProvider = { id -> detailId = id },
+            pickSttModel = { picker = VoicePicker.STT_MODEL },
+            pickTtsModel = { picker = VoicePicker.TTS_MODEL },
+            pickVoice = { picker = VoicePicker.VOICE },
+            keyChanged = { keyEpoch++ },
+        )
     }
 
     // "Test voice" failures otherwise have no surface to appear on.
@@ -125,469 +135,129 @@ internal fun VoiceProvidersSection(
         }
     }
 
-    SettingsHeader(uiContext.getString(R.string.ui_voice_speech))
-
-    // --- Text to speech -----------------------------------------------------
-    SettingsHeader(uiContext.getString(R.string.settings_tts_output))
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.VolumeUp,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    SettingsAnchor(R.string.settings_anchor_tts) {
-                        Text(stringResource(R.string.settings_anchor_tts), style = MaterialTheme.typography.titleSmall)
-                    }
-                    Text(
-                        when {
-                            isSystemTts -> uiContext.getString(R.string.settings_tts_device_hint)
-                            ttsProvider == null -> uiContext.getString(R.string.settings_voice_no_providers)
-                            hasTtsKey -> ttsProvider.name + " · " + ttsModel
-                            else -> ttsProvider.name + " · " + uiContext.getString(R.string.settings_voice_key_needed)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                StatusText(
-                    when {
-                        isSystemTts -> uiContext.getString(R.string.ui_inbuilt)
-                        hasTtsKey -> ttsProvider?.name ?: ""
-                        else -> uiContext.getString(R.string.ui_no_key)
-                    },
-                    ok = isSystemTts || hasTtsKey,
-                )
-            }
-
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(
-                    AppSettings.TTS_ENGINE_SYSTEM to uiContext.getString(R.string.settings_tts_device),
-                    (ttsProvider?.id ?: "cloud") to (ttsProvider?.name ?: uiContext.getString(R.string.settings_tts_provider)),
-                ).forEachIndexed { index, (value, label) ->
-                    SegmentedButton(
-                        selected = ttsEngine == value || (!isSystemTts && index == 1),
-                        onClick = {
-                            if (index == 0) {
-                                scope.launch { container.settings.setTtsEngine(AppSettings.TTS_ENGINE_SYSTEM) }
-                            } else {
-                                ttsProviderPicker = true
-                            }
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
-                    ) { Text(label, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) }
-                }
-            }
-
-            if (!isSystemTts && ttsProvider != null) {
-                // The provider's key belongs here, not in a separate section:
-                // choosing a provider is when the user needs it.
-                if (ttsProvider.requiresKey) {
-                    VoiceProviderKeyRow(
-                        container = container,
-                        provider = ttsProvider,
-                        scope = scope,
-                        keyEpoch = keyEpoch,
-                        onKeyChanged = { keyEpoch++ },
-                    )
-                }
-                Text(
-                    stringResource(R.string.settings_tts_model),
-                    Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_model),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                OutlinedButton(
-                    onClick = { ttsModelPicker = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(
-                        com.androidharness.app.data.audio.VoiceGateway.modelLabel(ttsProvider, ttsModel),
-                        Modifier.weight(1f),
-                    )
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-                }
-            }
-
-            Text(
-                stringResource(R.string.settings_tts_voice),
-                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_voice),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            OutlinedButton(onClick = { voicePicker = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(
-                    when {
-                        isSystemTts -> settings.ttsSystemVoice?.replace('_', ' ')
-                            ?: uiContext.getString(R.string.settings_tts_voice_automatic)
-                        else -> ttsVoice.ifBlank { uiContext.getString(R.string.settings_tts_voice_automatic) }
-                    },
-                    Modifier.weight(1f),
-                )
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-            }
-
-            Text(
-                stringResource(R.string.settings_tts_speed),
-                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_tts_speed),
-                style = MaterialTheme.typography.labelMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(0.75f to "0.75×", 1f to "1×", 1.25f to "1.25×", 1.5f to "1.5×")
-                    .forEachIndexed { index, (value, label) ->
-                        SegmentedButton(
-                            selected = settings.ttsSpeed == value,
-                            onClick = { scope.launch { container.settings.setTtsSpeed(value) } },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 4),
-                        ) { Text(label) }
-                    }
-            }
-
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    SettingsAnchor(R.string.settings_tts_always_speak) {
-                        Text(stringResource(R.string.settings_tts_always_speak), style = MaterialTheme.typography.titleSmall)
-                    }
-                    Text(
-                        stringResource(R.string.settings_tts_always_speak_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = settings.ttsAlwaysSpeak,
-                    onCheckedChange = { scope.launch { container.settings.setTtsAlwaysSpeak(it) } },
-                )
-            }
-
-            OutlinedButton(onClick = { container.tts.preview() }, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.VolumeUp, contentDescription = null, modifier = Modifier.size(16.dp))
-                Spacer(Modifier.width(6.dp))
-                Text(stringResource(R.string.settings_tts_test))
-            }
-
-            if (!isSystemTts) {
-                OutlinedButton(onClick = { managing = true }, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Outlined.Dns, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.settings_voice_manage_providers), Modifier.weight(1f))
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-                }
-            }
-        }
+    // Model lists come from the provider when it exposes /models, so new ids
+    // appear without an app update. Fetched only while the sheet is open.
+    val sttProvider = listen.provider
+    val ttsProvider = speak.provider
+    val sttModels by produceState<List<String>?>(null, picker, sttProvider?.id, modelEpoch) {
+        value = if (picker == VoicePicker.STT_MODEL && sttProvider != null) {
+            VoiceGateway.sttModels(sttProvider, container.voiceProviders.apiKeyFor(sttProvider.id).orEmpty())
+        } else null
+    }
+    val ttsModels by produceState<List<String>?>(null, picker, ttsProvider?.id, modelEpoch) {
+        value = if (picker == VoicePicker.TTS_MODEL && ttsProvider != null) {
+            VoiceGateway.ttsModels(ttsProvider, container.voiceProviders.apiKeyFor(ttsProvider.id).orEmpty())
+        } else null
     }
 
-    // --- Speech to text -----------------------------------------------------
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.Mic,
-                    contentDescription = null,
-                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp),
-                )
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    SettingsAnchor(R.string.settings_anchor_stt) {
-                        Text(stringResource(R.string.settings_anchor_stt), style = MaterialTheme.typography.titleSmall)
-                    }
-                    Text(
-                        when {
-                            isInbuiltStt -> uiContext.getString(R.string.ui_inbuilt_android_recognizer)
-                            sttProvider == null -> uiContext.getString(R.string.settings_voice_no_providers)
-                            hasSttKey -> sttProvider.name + " · " + sttModel
-                            else -> sttProvider.name + " · " + uiContext.getString(R.string.settings_voice_key_needed)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                StatusText(
-                    when {
-                        isInbuiltStt -> uiContext.getString(R.string.ui_inbuilt)
-                        hasSttKey -> sttProvider?.name ?: ""
-                        else -> uiContext.getString(R.string.ui_no_key)
-                    },
-                    ok = isInbuiltStt || hasSttKey,
-                )
-            }
+    // --- The page -----------------------------------------------------------
+    VoiceStatusHero(listen, speak, onAddKey = { provider -> detailId = provider.id })
 
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(
-                    AppSettings.VOICE_ENGINE_INBUILT to uiContext.getString(R.string.ui_inbuilt),
-                    (sttProvider?.id ?: "cloud") to (sttProvider?.name ?: uiContext.getString(R.string.settings_stt_provider_cloud)),
-                ).forEachIndexed { index, (value, label) ->
-                    SegmentedButton(
-                        selected = voiceEngine == value ||
-                            (!isInbuiltStt && index == 1),
-                        onClick = {
-                            if (index == 0) {
-                                scope.launch { container.settings.setVoiceEngine(AppSettings.VOICE_ENGINE_INBUILT) }
-                            } else {
-                                sttProviderPicker = true
-                            }
-                        },
-                        shape = SegmentedButtonDefaults.itemShape(index = index, count = 2),
-                    ) { Text(label, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis) }
-                }
-            }
+    VoiceListeningCard(container, settings, scope, providers, keyed, listen, actions)
 
-            if (isInbuiltStt) {
-                Text(
-                    uiContext.getString(R.string.ui_uses_the_on_device_or_system_speech),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            } else if (sttProvider != null) {
-                if (sttProvider.requiresKey) {
-                    VoiceProviderKeyRow(
-                        container = container,
-                        provider = sttProvider,
-                        scope = scope,
-                        keyEpoch = keyEpoch,
-                        onKeyChanged = { keyEpoch++ },
-                    )
-                }
-                SettingsAnchor(R.string.settings_anchor_whisper) {
-                    Text(
-                        stringResource(R.string.settings_stt_model),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                OutlinedButton(
-                    onClick = { sttModelPicker = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Text(sttModel.ifBlank { stringResource(R.string.settings_voice_choose_model) }, Modifier.weight(1f))
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-                }
-                OutlinedButton(
-                    onClick = { managing = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.Dns, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.settings_voice_manage_providers), Modifier.weight(1f))
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null)
-                }
-            } else {
-                OutlinedButton(
-                    onClick = { managing = true },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.settings_voice_add_provider))
-                }
-            }
-        }
-    }
+    VoiceAutoSendGroup(container, settings, scope)
 
-    // --- Keys live inside each provider's own card --------------------------
-    // A key is never a section of its own: choosing a provider shows its key
-    // field right there, so there is no separate "API key" block to hunt for.
+    VoiceSpeakingCard(container, settings, scope, providers, keyed, speak, actions)
 
-    SettingsHeader(uiContext.getString(R.string.settings_voice_auto_send))
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            Row(Modifier.settingsAnchor(R.string.settings_anchor_auto_send), verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    Text(stringResource(R.string.settings_voice_auto_send), style = MaterialTheme.typography.titleSmall)
-                    Text(
-                        stringResource(R.string.settings_voice_auto_send_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = settings.voiceAutoSend,
-                    onCheckedChange = { scope.launch { container.settings.setVoiceAutoSend(it) } },
-                )
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Column(Modifier.weight(1f).padding(end = 12.dp)) {
-                    Text(
-                        stringResource(R.string.settings_voice_auto_send_show_in_plus),
-                        style = MaterialTheme.typography.titleSmall,
-                    )
-                    Text(
-                        stringResource(R.string.settings_voice_auto_send_show_in_plus_desc),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = settings.voiceAutoSendShowInPlus,
-                    onCheckedChange = { scope.launch { container.settings.setVoiceAutoSendShowInPlus(it) } },
-                )
-            }
-            val ms = settings.voiceAutoSendTimeoutMs
-            Text(
-                uiContext.getString(R.string.settings_voice_auto_send_timeout) + " · " +
-                    uiContext.getString(R.string.settings_voice_auto_send_timeout_value, (ms / 1000f).toString()),
-                style = MaterialTheme.typography.titleSmall,
-            )
-            var slideTimeoutMs by remember(ms) { mutableStateOf(ms.toFloat()) }
-            androidx.compose.material3.Slider(
-                value = slideTimeoutMs,
-                onValueChange = { slideTimeoutMs = it },
-                onValueChangeFinished = {
-                    val snapped = (slideTimeoutMs / 100).roundToInt() * 100
-                    slideTimeoutMs = snapped.toFloat()
-                    scope.launch { container.settings.setVoiceAutoSendTimeoutMs(snapped) }
-                },
-                valueRange = 1000f..5000f,
-                steps = 39,
-                modifier = Modifier.fillMaxWidth(),
-            )
-            Text(
-                stringResource(R.string.settings_voice_auto_send_timeout_desc),
-                style = MaterialTheme.typography.bodySmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-        }
-    }
+    VoiceProvidersHub(
+        providers = providers,
+        keyed = keyed,
+        settings = settings,
+        onAdd = actions.addProvider,
+        onOpen = actions.openProvider,
+    )
 
-    // --- Dialogs ------------------------------------------------------------
-    if (sttProviderPicker) {
-        VoiceProviderPickerDialog(
-            providers = providers,
-            selectedId = sttProvider?.id,
-            forTts = false,
-            onSelect = { id ->
-                sttProviderPicker = false
-                scope.launch { container.settings.setVoiceEngine(id) }
-            },
-            onManage = { managing = true },
-            onDismiss = { sttProviderPicker = false },
-        )
-    }
-    if (ttsProviderPicker) {
-        VoiceProviderPickerDialog(
-            providers = providers,
-            selectedId = ttsProvider?.id,
-            forTts = true,
-            onSelect = { id ->
-                ttsProviderPicker = false
-                scope.launch { container.settings.setTtsEngine(id) }
-            },
-            onManage = { managing = true },
-            onDismiss = { ttsProviderPicker = false },
-        )
-    }
-    if (sttModelPicker && sttProvider != null) {
-        val activeStt = sttProvider
-        VoiceModelPickerDialog(
+    // --- Sheets and dialogs -------------------------------------------------
+    if (picker == VoicePicker.STT_MODEL && sttProvider != null) {
+        val selected = settings.voiceSelections[sttProvider.id]?.sttModel?.ifBlank { null } ?: sttProvider.sttModel
+        VoiceChoiceSheet(
             title = stringResource(R.string.settings_stt_model),
-            models = sttModels,
-            selected = sttModel,
-            labelFor = { it },
+            options = sttModels?.map { VoiceChoice(it, it) },
+            selectedId = selected,
+            customLabel = stringResource(R.string.settings_tts_custom_model),
             onSelect = { id ->
-                sttModelPicker = false
-                scope.launch { container.settings.setVoiceProviderSttModel(activeStt.id, id) }
+                picker = null
+                scope.launch { container.settings.setVoiceProviderSttModel(sttProvider.id, id) }
             },
+            onDismiss = { picker = null },
             onRefresh = { modelEpoch++ },
-            onDismiss = { sttModelPicker = false },
         )
     }
-    if (ttsModelPicker && ttsProvider != null) {
-        val activeTts = ttsProvider
-        VoiceModelPickerDialog(
+    if (picker == VoicePicker.TTS_MODEL && ttsProvider != null) {
+        val selected = settings.voiceSelections[ttsProvider.id]?.ttsModel?.ifBlank { null } ?: ttsProvider.ttsModel
+        VoiceChoiceSheet(
             title = stringResource(R.string.settings_tts_model),
-            models = ttsModels,
-            selected = ttsModel,
-            labelFor = { id -> com.androidharness.app.data.audio.VoiceGateway.modelLabel(activeTts, id) },
+            options = ttsModels?.map { id ->
+                val label = VoiceGateway.modelLabel(ttsProvider, id)
+                VoiceChoice(id, label, id.takeIf { label != id })
+            },
+            selectedId = selected,
+            customLabel = stringResource(R.string.settings_tts_custom_model),
             onSelect = { id ->
-                ttsModelPicker = false
+                picker = null
                 scope.launch {
-                    container.settings.setVoiceProviderTtsModel(activeTts.id, id)
-                    val voice = com.androidharness.app.data.audio.VoiceGateway.defaultVoiceFor(activeTts, id)
-                    if (voice != null) container.settings.setVoiceProviderTtsVoice(activeTts.id, voice)
+                    container.settings.setVoiceProviderTtsModel(ttsProvider.id, id)
+                    VoiceGateway.defaultVoiceFor(ttsProvider, id)?.let { container.settings.setVoiceProviderTtsVoice(ttsProvider.id, it) }
                 }
             },
+            onDismiss = { picker = null },
             onRefresh = { modelEpoch++ },
-            onDismiss = { ttsModelPicker = false },
         )
     }
-    if (voicePicker) {
-        val deviceVoices by produceState(initialValue = emptyList<TtsVoiceOption>(), ttsEngine) {
-            value = if (ttsEngine == AppSettings.TTS_ENGINE_SYSTEM) container.tts.systemVoices() else emptyList()
-        }
-        // Edge has its own sectioned picker: 300+ voices need grouping and search.
-        val isEdge = ttsProvider?.protocol == com.androidharness.app.data.audio.VoiceProtocol.EDGE
-        val edgeGroups by produceState(initialValue = emptyList<com.androidharness.app.data.audio.EdgeVoiceGroup>(), ttsProvider?.id, voiceEpoch) {
-            value = if (isEdge) container.tts.edgeVoiceGroups() else emptyList()
-        }
-        val providerVoices by produceState(initialValue = emptyList<TtsVoiceOption>(), ttsProvider?.id, ttsModel) {
-            value = if (isSystemTts || isEdge) emptyList() else container.tts.providerVoices(ttsProvider?.id, ttsModel)
-        }
-        if (isEdge) {
-            EdgeVoicePickerDialog(
-                groups = edgeGroups,
-                selectedId = ttsVoice,
-                loading = edgeGroups.isEmpty(),
-                onSelect = { voice ->
-                    voicePicker = false
-                    scope.launch {
-                        ttsProvider?.let { container.settings.setVoiceProviderTtsVoice(it.id, voice.shortName) }
-                    }
-                },
-                onRefresh = {
-                    scope.launch {
-                        container.tts.refreshEdgeVoices()
-                        // Bumping the epoch re-runs produceState, which reads the
-                        // freshly refreshed catalogue.
-                        voiceEpoch++
-                    }
-                },
-                onDismiss = { voicePicker = false },
-            )
-        } else {
-            VoicePickerDialog(
-                options = if (isSystemTts) {
-                    listOf(TtsVoiceOption("", uiContext.getString(R.string.settings_tts_voice_automatic))) + deviceVoices
-                } else {
-                    providerVoices
-                },
-                selectedId = if (isSystemTts) settings.ttsSystemVoice.orEmpty() else ttsVoice,
-                onSelect = { id ->
-                    voicePicker = false
-                    scope.launch {
-                        if (isSystemTts) container.settings.setTtsSystemVoice(id.ifBlank { null })
-                        else ttsProvider?.let { container.settings.setVoiceProviderTtsVoice(it.id, id) }
-                    }
-                },
-                onDismiss = { voicePicker = false },
-            )
-        }
-    }
-    if (managing) {
-        VoiceProvidersManagerDialog(
+    if (picker == VoicePicker.VOICE) {
+        VoicePickerHost(
             container = container,
-            providers = providers,
+            settings = settings,
             scope = scope,
-            onEdit = { provider ->
-                managing = false
-                editing = provider
-            },
-            onDismiss = { managing = false },
+            provider = ttsProvider,
+            onPhone = speak.onPhone,
+            voiceEpoch = voiceEpoch,
+            onRefreshEdge = { scope.launch { container.tts.refreshEdgeVoices(); voiceEpoch++ } },
+            onDismiss = { picker = null },
         )
     }
+
+    detailId?.let { id ->
+        providers.firstOrNull { it.id == id }?.let { provider ->
+            VoiceProviderSheet(
+                container = container,
+                provider = provider,
+                settings = settings,
+                saved = provider.id in keyed,
+                scope = scope,
+                onKeyChanged = { keyEpoch++ },
+                onEdit = {
+                    detailId = null
+                    editingNew = false
+                    editing = provider
+                },
+                onRemove = {
+                    detailId = null
+                    scope.launch {
+                        container.voiceProviders.delete(provider.id)
+                        // Nothing may keep pointing at a provider that no longer exists.
+                        if (settings.voiceEngine == provider.id) container.settings.setVoiceEngine(AppSettings.VOICE_ENGINE_INBUILT)
+                        if (settings.ttsEngine == provider.id) container.settings.setTtsEngine(AppSettings.TTS_ENGINE_SYSTEM)
+                        keyEpoch++
+                    }
+                },
+                onDismiss = { detailId = null },
+            )
+        }
+    }
+
     editing?.let { provider ->
-        VoiceProviderEditorDialog(
+        val isNew = editingNew
+        VoiceProviderEditorSheet(
             initial = provider,
+            isNew = isNew,
             onSave = { updated ->
                 editing = null
                 scope.launch {
                     container.voiceProviders.save(updated)
                     keyEpoch++
+                    // A new provider opens straight to its key.
+                    if (isNew) detailId = updated.id
                 }
             },
             onDismiss = { editing = null },
@@ -597,119 +267,278 @@ internal fun VoiceProvidersSection(
     ttsTermsError?.let { TtsTermsDialog(it) { ttsTermsError = null } }
 }
 
-/** Lists every provider, with add and edit affordances. */
+/** Where one direction stands: on the phone, on a provider (with or without its key), or on one that is gone. */
+private fun engineState(
+    providers: List<VoiceProviderConfig>,
+    keyed: Set<String>,
+    id: String,
+    phoneId: String,
+    forTts: Boolean,
+): VoiceEngineState {
+    if (id == phoneId) return VoiceEngineState(provider = null, onPhone = true, keyReady = true)
+    val provider = providers.firstOrNull { it.id == id && (if (forTts) it.supportsTts else it.supportsStt) }
+        ?: return VoiceEngineState(provider = null, onPhone = false, keyReady = false)
+    return VoiceEngineState(provider, onPhone = false, keyReady = !provider.requiresKey || provider.id in keyed)
+}
+
+// ---------------------------------------------------------------------------
+// Headline
+// ---------------------------------------------------------------------------
+
+private data class HeroText(val title: String, val body: String)
+
+/**
+ * Says at a glance whether voice works. It fills with the primary tone and shows a
+ * check while both directions are ready; otherwise it turns secondary, the badge
+ * turns a quarter, and a button goes to whatever is missing.
+ */
 @Composable
-private fun VoiceProvidersManagerDialog(
+private fun VoiceStatusHero(
+    listen: VoiceEngineState,
+    speak: VoiceEngineState,
+    onAddKey: (VoiceProviderConfig) -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val motion = MaterialTheme.motionScheme
+    val problem = listOf(listen, speak).firstOrNull { it.readiness != VoiceReadiness.READY }
+    val ready = problem == null
+    val keyProvider = problem?.provider?.takeIf { problem.readiness == VoiceReadiness.NEEDS_KEY }
+
+    val fill by animateColorAsState(if (ready) scheme.primaryContainer else scheme.secondaryContainer, motion.defaultEffectsSpec(), label = "heroFill")
+    val content by animateColorAsState(if (ready) scheme.onPrimaryContainer else scheme.onSecondaryContainer, motion.defaultEffectsSpec(), label = "heroContent")
+    val badge by animateColorAsState(if (ready) scheme.primary else scheme.secondary, motion.defaultEffectsSpec(), label = "heroBadge")
+    val glyph by animateColorAsState(if (ready) scheme.onPrimary else scheme.onSecondary, motion.defaultEffectsSpec(), label = "heroGlyph")
+    val corner by animateDpAsState(if (ready) 40.dp else 28.dp, motion.defaultSpatialSpec(), label = "heroCorner")
+    val turn by animateFloatAsState(if (ready) 0f else 90f, motion.slowSpatialSpec(), label = "heroTurn")
+
+    val phone = stringResource(R.string.settings_voice_engine_phone_lower)
+    val text = when {
+        ready -> HeroText(
+            stringResource(R.string.settings_voice_status_ready),
+            stringResource(R.string.settings_voice_status_ready_body, listen.provider?.name ?: phone, speak.provider?.name ?: phone),
+        )
+        keyProvider != null -> HeroText(
+            stringResource(R.string.settings_voice_status_attention),
+            stringResource(R.string.settings_voice_status_attention_body, keyProvider.name),
+        )
+        else -> HeroText(
+            stringResource(R.string.settings_voice_status_attention),
+            stringResource(R.string.settings_voice_status_missing_body),
+        )
+    }
+
+    Surface(
+        shape = RoundedCornerShape(corner.coerceAtLeast(0.dp)),
+        color = fill,
+        contentColor = content,
+        modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().padding(horizontal = 20.dp, vertical = 22.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(
+                Modifier.size(56.dp).graphicsLayer { rotationZ = turn }.background(badge, MaterialShapes.Cookie9Sided.toShape()),
+                contentAlignment = Alignment.Center,
+            ) {
+                AnimatedContent(
+                    targetState = ready to (keyProvider != null),
+                    transitionSpec = { fadeIn(motion.defaultEffectsSpec()) togetherWith fadeOut(motion.fastEffectsSpec()) },
+                    label = "heroGlyphSwap",
+                    modifier = Modifier.graphicsLayer { rotationZ = -turn },
+                ) { (isReady, isKey) ->
+                    Icon(
+                        when {
+                            isReady -> Icons.Rounded.Check
+                            isKey -> Icons.Rounded.Key
+                            else -> Icons.Rounded.Warning
+                        },
+                        contentDescription = null,
+                        tint = glyph,
+                        modifier = Modifier.size(28.dp),
+                    )
+                }
+            }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                AnimatedContent(
+                    targetState = text,
+                    transitionSpec = {
+                        (fadeIn(motion.defaultEffectsSpec()) + slideInVertically(motion.defaultSpatialSpec()) { it / 4 }) togetherWith
+                            (fadeOut(motion.fastEffectsSpec()) + slideOutVertically(motion.fastSpatialSpec()) { -it / 4 })
+                    },
+                    label = "heroText",
+                ) { shown ->
+                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(shown.title, style = MaterialTheme.typography.titleLargeEmphasized)
+                        Text(shown.body, style = MaterialTheme.typography.bodyMedium, color = content.copy(alpha = 0.78f))
+                    }
+                }
+                AnimatedVisibility(
+                    visible = keyProvider != null,
+                    enter = fadeIn(motion.defaultEffectsSpec()) + expandVertically(motion.defaultSpatialSpec()),
+                    exit = fadeOut(motion.fastEffectsSpec()) + shrinkVertically(motion.fastSpatialSpec()),
+                ) {
+                    Button(onClick = { keyProvider?.let(onAddKey) }) {
+                        Icon(Icons.Rounded.Key, null, Modifier.size(18.dp))
+                        androidx.compose.foundation.layout.Spacer(Modifier.size(8.dp))
+                        Text(stringResource(R.string.settings_voice_status_add_key))
+                    }
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Auto send
+// ---------------------------------------------------------------------------
+
+/** Dictation hands-free: send on silence, a shortcut in the + menu, and how long the silence lasts. */
+@Composable
+private fun VoiceAutoSendGroup(container: AppContainer, settings: AppSettings, scope: CoroutineScope) {
+    val ms = settings.voiceAutoSendTimeoutMs
+    var slide by remember(ms) { mutableFloatStateOf(ms.toFloat()) }
+    SettingsAnchor(R.string.settings_anchor_auto_send) {
+        SettingsGroup {
+            item(onClick = { scope.launch { container.settings.setVoiceAutoSend(!settings.voiceAutoSend) } }) {
+                SettingsItemRow(
+                    title = stringResource(R.string.settings_voice_auto_send),
+                    subtitle = stringResource(R.string.settings_voice_auto_send_desc),
+                    leading = { SettingsIconBadge(Icons.AutoMirrored.Rounded.Send, SettingsTone.PRIMARY, 40.dp) },
+                    trailing = {
+                        Switch(
+                            checked = settings.voiceAutoSend,
+                            onCheckedChange = { on -> scope.launch { container.settings.setVoiceAutoSend(on) } },
+                        )
+                    },
+                )
+            }
+            item(onClick = { scope.launch { container.settings.setVoiceAutoSendShowInPlus(!settings.voiceAutoSendShowInPlus) } }) {
+                SettingsItemRow(
+                    title = stringResource(R.string.settings_voice_auto_send_show_in_plus),
+                    subtitle = stringResource(R.string.settings_voice_auto_send_show_in_plus_desc),
+                    leading = { SettingsIconBadge(Icons.Rounded.Add, SettingsTone.SECONDARY, 40.dp) },
+                    trailing = {
+                        Switch(
+                            checked = settings.voiceAutoSendShowInPlus,
+                            onCheckedChange = { on -> scope.launch { container.settings.setVoiceAutoSendShowInPlus(on) } },
+                        )
+                    },
+                )
+            }
+            item {
+                val label = stringResource(R.string.settings_voice_auto_send_timeout)
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                        SettingsIconBadge(Icons.Rounded.Timer, SettingsTone.SECONDARY, 40.dp)
+                        Text(label, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                        SettingsStatusPill(
+                            stringResource(R.string.settings_voice_auto_send_timeout_value, String.format(Locale.getDefault(), "%.1f", slide / 1000f)),
+                            ok = false,
+                        )
+                    }
+                    Slider(
+                        value = slide,
+                        onValueChange = { slide = it },
+                        onValueChangeFinished = {
+                            val snapped = (slide / 100).roundToInt() * 100
+                            slide = snapped.toFloat()
+                            scope.launch { container.settings.setVoiceAutoSendTimeoutMs(snapped) }
+                        },
+                        valueRange = 1000f..5000f,
+                        steps = 39,
+                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
+                    )
+                    Text(
+                        stringResource(R.string.settings_voice_auto_send_timeout_desc),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+    }
+}
+
+// ---------------------------------------------------------------------------
+// Voice list
+// ---------------------------------------------------------------------------
+
+/** Voice list for the engine in use. Edge has its own grouped, searchable picker; everything else shares the choice sheet. */
+@Composable
+private fun VoicePickerHost(
     container: AppContainer,
-    providers: List<com.androidharness.app.data.audio.VoiceProviderConfig>,
-    scope: kotlinx.coroutines.CoroutineScope,
-    onEdit: (com.androidharness.app.data.audio.VoiceProviderConfig) -> Unit,
+    settings: AppSettings,
+    scope: CoroutineScope,
+    provider: VoiceProviderConfig?,
+    onPhone: Boolean,
+    voiceEpoch: Int,
+    onRefreshEdge: () -> Unit,
     onDismiss: () -> Unit,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.settings_voice_manage_providers)) },
-        text = {
-            Column(
-                Modifier.heightIn(max = 460.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(4.dp),
-            ) {
-                providers.forEach { provider ->
-                    Row(
-                        Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        val hasKey = remember(provider.id) { container.voiceProviders.apiKeyFor(provider.id) != null }
-                        Column(Modifier.weight(1f)) {
-                            Text(provider.name, style = MaterialTheme.typography.bodyLarge)
-                            Text(
-                                provider.protocol.label + when {
-                                    !provider.requiresKey -> " · " + uiContext.getString(R.string.settings_voice_no_key_needed)
-                                    hasKey -> " · " + uiContext.getString(R.string.ui_on)
-                                    else -> " · " + uiContext.getString(R.string.ui_no_key)
-                                },
-                                style = MaterialTheme.typography.bodySmall,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                        }
-                        TextButton(onClick = { onEdit(provider) }) {
-                            Text(stringResource(R.string.settings_voice_edit_provider))
-                        }
-                    }
-                }
-                TextButton(
-                    onClick = {
-                        onEdit(container.voiceProviders.newCustomProvider())
-                    },
-                    modifier = Modifier.fillMaxWidth(),
-                ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-                    Spacer(Modifier.width(6.dp))
-                    Text(stringResource(R.string.settings_voice_add_provider))
-                }
-                VoicePresetHint()
-            }
-        },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_done)) }
-        },
-    )
-}
+    val isEdge = provider?.protocol == VoiceProtocol.EDGE
+    val selection = provider?.let { settings.voiceSelections[it.id] }
+    val model = selection?.ttsModel?.ifBlank { null } ?: provider?.ttsModel.orEmpty()
+    val voice = selection?.ttsVoice?.ifBlank { null } ?: provider?.ttsVoice.orEmpty()
 
-/** Voice list for the selected engine, with a free-form id for unknown voices. */
-@Composable
-private fun VoicePickerDialog(
-    options: List<TtsVoiceOption>,
-    selectedId: String,
-    onSelect: (String) -> Unit,
-    onDismiss: () -> Unit,
-) {
-    var custom by remember { mutableStateOf("") }
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        title = { Text(stringResource(R.string.settings_tts_voice)) },
-        text = {
-            Column(
-                Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-            ) {
-                options.forEach { option ->
-                    Row(
-                        Modifier.fillMaxWidth().padding(vertical = 2.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        RadioButton(
-                            selected = option.id == selectedId,
-                            onClick = { onSelect(option.id) },
-                        )
-                        Column(Modifier.weight(1f)) {
-                            Text(option.label, style = MaterialTheme.typography.bodyLarge)
-                            if (option.label != option.id && option.id.isNotBlank()) {
-                                Text(
-                                    option.id,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                )
-                            }
-                        }
-                    }
-                }
-                androidx.compose.material3.OutlinedTextField(
-                    value = custom,
-                    onValueChange = { custom = it },
-                    label = { Text(stringResource(R.string.settings_tts_custom_voice)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                com.androidharness.app.ui.common.Button(
-                    enabled = custom.isNotBlank(),
-                    onClick = { onSelect(custom.trim()) },
-                ) { Text(stringResource(R.string.settings_tts_save)) }
+    // Samples ride on the same player as "Test voice"; their message id carries the voice.
+    val playback by container.tts.state.collectAsStateWithLifecycle()
+    val sample = remember(playback) {
+        val playing = playback.messageId
+            ?.takeIf { it.startsWith(TtsController.SAMPLE_PREFIX) && playback.phase != TtsPhase.IDLE }
+            ?.removePrefix(TtsController.SAMPLE_PREFIX)
+        VoiceSample(playing, playback.phase) { id ->
+            if (playing == id) container.tts.stop() else container.tts.previewVoice(id)
+        }
+    }
+    // Closing the picker, with or without a pick, ends whatever sample is still sounding.
+    DisposableEffect(Unit) {
+        onDispose {
+            val now = container.tts.state.value
+            if (now.messageId?.startsWith(TtsController.SAMPLE_PREFIX) == true && now.phase != TtsPhase.IDLE) container.tts.stop()
+        }
+    }
+
+    if (isEdge && provider != null) {
+        val groups by produceState(initialValue = emptyList<EdgeVoiceGroup>(), provider.id, voiceEpoch) {
+            value = container.tts.edgeVoiceGroups()
+        }
+        EdgeVoicePickerDialog(
+            groups = groups,
+            selectedId = voice,
+            loading = groups.isEmpty(),
+            onSelect = { picked ->
+                onDismiss()
+                scope.launch { container.settings.setVoiceProviderTtsVoice(provider.id, picked.shortName) }
+            },
+            onRefresh = onRefreshEdge,
+            onDismiss = onDismiss,
+            sample = sample,
+        )
+        return
+    }
+
+    // null while the list is still being asked for.
+    val options by produceState<List<TtsVoiceOption>?>(null, provider?.id, model, onPhone) {
+        value = if (onPhone) {
+            listOf(TtsVoiceOption("", uiContext.getString(R.string.settings_tts_voice_automatic))) + container.tts.systemVoices()
+        } else container.tts.providerVoices(provider?.id, model)
+    }
+    VoiceChoiceSheet(
+        title = stringResource(R.string.settings_tts_voice),
+        options = options?.map { VoiceChoice(it.id, it.label, it.id.takeIf { id -> id.isNotBlank() && id != it.label }) },
+        selectedId = if (onPhone) settings.ttsSystemVoice.orEmpty() else voice,
+        customLabel = if (onPhone) null else stringResource(R.string.settings_tts_custom_voice),
+        onSelect = { id ->
+            onDismiss()
+            scope.launch {
+                if (onPhone) container.settings.setTtsSystemVoice(id.ifBlank { null })
+                else provider?.let { container.settings.setVoiceProviderTtsVoice(it.id, id) }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) { Text(stringResource(R.string.settings_action_done)) }
-        },
+        onDismiss = onDismiss,
+        sample = sample,
     )
 }

@@ -17,6 +17,15 @@
   - Short choices (speech engine, voice speed, lock timeout, search provider and more) are connected toggle groups instead of segmented buttons. Switches show a check mark while on.
   - Voice & speech and Live mode are rebuilt on these pieces. Live mode's main switch is a hero card that fills with color while it is on.
   - Icons use the rounded set, small spinners became the morphing loading indicator, and dialogs, sheets, menus and fields inside Settings use rounder corners.
+- **Voice & speech, rebuilt around the providers**: the page now reads top to bottom in the order you use it, and every provider is one tap away instead of behind "Manage voice providers".
+  - A headline at the top says whether voice works. It turns into a prompt with an Add key button when the provider you picked still needs its key.
+  - Listening comes first, then Auto send for dictation, then Speaking, then the provider list. Both Listening and Speaking show every engine as a chip (This phone and each provider, with a key icon on the ones that still need one) and a tonal Add chip. The rows below the chips follow your choice: the key field, the model, the voice, and for Speaking the speed, Speak every reply and a Test voice button that shows preparing and stop states.
+  - Voice providers lists every provider with its state (Ready, No key, Free) and where it is in use. Add a provider is the first row. A provider opens in a sheet with its key, Use for listening and Use for speaking, Edit details and Remove, and a new provider opens straight to its key after you save it.
+  - Adding a provider is a sheet with a name, a URL checked for http or https, the protocol, what it can do and optional default models. Removing a custom provider also puts Listening and Speaking back on this phone if they used it.
+  - Models and voices open in a searchable bottom sheet with a refresh button and a field for an id that is not listed.
+  - Every voice in the picker has its own speaker button, so you can hear it read the sample sentence before you choose it. It works for This phone, for providers with a voice list, for the Edge voices and for a custom voice id you type in. The button shows a loading shape while the clip is made, then a stop glyph while it plays, and a sample stops when you close the picker. Test voice stays where it was.
+  - The API key block sits on the normal surface instead of a tinted slate card. It has a soft badge, a rounded filled field that rings while you type, and the same field style in the add and edit sheets.
+  - The chips, status pill, badges and sheets use the expressive spring motion: chosen chips morph and show a check, the rows below slide in as the group resizes, and the key block turns from a prompt into a saved state.
 
 ## 3.4 (2026-11-09)
 

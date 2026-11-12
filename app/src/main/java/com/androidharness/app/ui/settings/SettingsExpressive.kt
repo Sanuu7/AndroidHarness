@@ -127,6 +127,7 @@ internal fun SettingsSegment(
     onClick: (() -> Unit)? = null,
     selected: Boolean = false,
     color: Color = MaterialTheme.colorScheme.surfaceContainer,
+    contentColor: Color = Color.Unspecified,
     content: @Composable () -> Unit,
 ) {
     val interaction = remember { MutableInteractionSource() }
@@ -143,7 +144,12 @@ internal fun SettingsSegment(
         if (selected) MaterialTheme.colorScheme.secondaryContainer else color,
         MaterialTheme.motionScheme.defaultEffectsSpec(), label = "segmentFill",
     )
-    val onFill = if (selected) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurface
+    val onTarget = when {
+        selected -> MaterialTheme.colorScheme.onSecondaryContainer
+        contentColor != Color.Unspecified -> contentColor
+        else -> MaterialTheme.colorScheme.onSurface
+    }
+    val onFill by animateColorAsState(onTarget, MaterialTheme.motionScheme.defaultEffectsSpec(), label = "segmentContent")
     val border = settingsPanelBorder()
     if (onClick != null) HarnessGlassSurface(
         onClick = onClick, modifier = modifier.fillMaxWidth(), shape = shape, color = fill, contentColor = onFill,
@@ -154,16 +160,25 @@ internal fun SettingsSegment(
 }
 
 internal class SettingsGroupScope {
-    internal class Item(val onClick: (() -> Unit)?, val selected: Boolean, val modifier: Modifier, val content: @Composable () -> Unit)
+    internal class Item(
+        val onClick: (() -> Unit)?, val selected: Boolean, val modifier: Modifier,
+        val color: Color, val contentColor: Color, val content: @Composable () -> Unit,
+    )
     internal val items = mutableListOf<Item>()
 
+    /**
+     * [color] and [contentColor] tint a row that should stand out from its neighbours,
+     * such as a call to action; leave them off for the ordinary tonal row.
+     */
     fun item(
         onClick: (() -> Unit)? = null,
         selected: Boolean = false,
         modifier: Modifier = Modifier,
+        color: Color = Color.Unspecified,
+        contentColor: Color = Color.Unspecified,
         content: @Composable () -> Unit,
     ) {
-        items += Item(onClick, selected, modifier, content)
+        items += Item(onClick, selected, modifier, color, contentColor, content)
     }
 }
 
@@ -173,7 +188,11 @@ internal fun SettingsGroup(modifier: Modifier = Modifier, content: SettingsGroup
     val items = SettingsGroupScope().apply(content).items
     Column(modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(SettingsSegmentGap)) {
         items.forEachIndexed { index, item ->
-            SettingsSegment(index, items.size, item.modifier, item.onClick, item.selected, content = item.content)
+            SettingsSegment(
+                index, items.size, item.modifier, item.onClick, item.selected,
+                color = if (item.color != Color.Unspecified) item.color else MaterialTheme.colorScheme.surfaceContainer,
+                contentColor = item.contentColor, content = item.content,
+            )
         }
     }
 }
