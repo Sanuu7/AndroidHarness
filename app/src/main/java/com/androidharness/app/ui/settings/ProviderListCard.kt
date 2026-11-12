@@ -2,7 +2,6 @@ package com.androidharness.app.ui.settings
 
 import com.androidharness.app.ui.theme.HarnessGlassSurface as Surface
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.ExperimentalFoundationApi
@@ -10,7 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.*
 import com.androidharness.app.ui.common.ExpressiveDropdownMenu as DropdownMenu
 import com.androidharness.app.ui.common.ExpressiveDropdownMenuItem as DropdownMenuItem
@@ -90,7 +89,7 @@ internal fun ProviderListCard(
                     }
                 }
                 if (!selectionMode) Box {
-                    IconButton(onClick = { menu = true }) { Icon(Icons.Filled.MoreVert, stringResource(R.string.settings_provider_actions_cd, provider.name)) }
+                    IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.settings_provider_actions_cd, provider.name)) }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                         DropdownMenuItem(text = { Text(stringResource(R.string.settings_provider_select)) }, onClick = { menu = false; onLongPress() })
                         DropdownMenuItem(text = { Text(stringResource(R.string.settings_action_move_up)) }, enabled = canMoveUp, onClick = { menu = false; onMove(-1) })

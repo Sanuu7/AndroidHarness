@@ -8,8 +8,8 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -71,7 +71,7 @@ internal fun SettingsBackupSection(container: AppContainer) {
     }
     SecureScreenEffect(container, source != null || destination != null || preview != null || busy)
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_backup_title)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.settings_backup_title), style = MaterialTheme.typography.titleSmall)
             Text(stringResource(R.string.settings_backup_desc),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -100,7 +100,7 @@ internal fun SettingsBackupSection(container: AppContainer) {
                         singleLine = true, enabled = !busy, visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
                         trailingIcon = {
                             IconButton(onClick = { showPassword = !showPassword }, enabled = !busy) {
-                                Icon(if (showPassword) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                Icon(if (showPassword) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                                     contentDescription = if (showPassword) stringResource(R.string.settings_backup_hide_password)
                                     else stringResource(R.string.settings_backup_show_password))
                             }
@@ -111,7 +111,7 @@ internal fun SettingsBackupSection(container: AppContainer) {
                             singleLine = true, enabled = !busy, visualTransformation = if (showConfirmation) VisualTransformation.None else PasswordVisualTransformation(),
                             trailingIcon = {
                                 IconButton(onClick = { showConfirmation = !showConfirmation }, enabled = !busy) {
-                                    Icon(if (showConfirmation) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                    Icon(if (showConfirmation) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                                         contentDescription = if (showConfirmation) uiContext.getString(R.string.ui_hide_confirmation_password) else uiContext.getString(R.string.ui_show_confirmation_password))
                                 }
                             },

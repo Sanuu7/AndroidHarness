@@ -9,7 +9,7 @@ import android.os.Build
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -134,7 +134,7 @@ internal fun TroubleshootingSection(container: AppContainer, onOpen: (SettingsPa
     Text(stringResource(R.string.settings_troubleshooting_intro),
         style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
     FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-        OutlinedButton(onClick = ::refresh) { Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_env_refresh_status)) }
+        OutlinedButton(onClick = ::refresh) { Icon(Icons.Rounded.Refresh, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_env_refresh_status)) }
         OutlinedButton(onClick = {
             (context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager).setPrimaryClip(ClipData.newPlainText(uiContext.getString(R.string.settings_page_troubleshooting_title), report))
             copied = true
@@ -238,9 +238,9 @@ private fun DiagnosticCard(title: String, state: DiagnosticState, detail: String
             Text(title, style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold)
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 Icon(when (state) {
-                    DiagnosticState.ISSUE -> Icons.Outlined.ErrorOutline
-                    DiagnosticState.READY, DiagnosticState.REACHABLE -> Icons.Outlined.CheckCircleOutline
-                    else -> Icons.Outlined.Info
+                    DiagnosticState.ISSUE -> Icons.Rounded.ErrorOutline
+                    DiagnosticState.READY, DiagnosticState.REACHABLE -> Icons.Rounded.CheckCircleOutline
+                    else -> Icons.Rounded.Info
                 }, null, Modifier.size(18.dp), tint = tint)
                 Text(localizedOption(state.label), style = MaterialTheme.typography.labelMedium, color = tint)
             }

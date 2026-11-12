@@ -76,7 +76,7 @@ object DebugBodies {
             if (element.isString && value.length > stringLimit) {
                 val cut = value.length - stringLimit
                 onOmit(cut)
-                JsonPrimitive(value.take(stringLimit) + "…[省略 $cut 字符]")
+                JsonPrimitive(value.take(stringLimit) + "…[$cut characters omitted]")
             } else {
                 element
             }
@@ -91,7 +91,7 @@ object DebugBodies {
         val omitted = raw.length - head - tail
         if (omitted <= 0) return Body(raw)
         return Body(
-            raw.take(head) + "\n…[省略 $omitted 字符]…\n" + raw.takeLast(tail),
+            raw.take(head) + "\n…[$omitted characters omitted]…\n" + raw.takeLast(tail),
             elided = true,
             omitted = omitted,
             validJson = false,

@@ -153,6 +153,33 @@ data class DebugTrace(
         }
     }.trimEnd()
 
+    /** Rate limit, quota and retry headers: the first thing to read on a 429. */
+    val limitHeaders: List<Pair<String, String>>
+        get() = responseHeaders.filter { (name, _) ->
+            val lower = name.lowercase()
+            lower == "retry-after" || lower.contains("ratelimit") || lower.contains("rate-limit") || lower.contains("quota")
+        }
+
+    val retryAfter: String?
+        get() = responseHeaders.firstOrNull { it.first.equals("retry-after", ignoreCase = true) }?.second?.takeIf { it.isNotBlank() }
+
+    /**
+     * The request as a curl command, for replaying it outside the app.
+     * Credentials are already masked in the log, so the masked values are
+     * replaced by a placeholder the reader fills in.
+     */
+    fun asCurl(): String = buildString {
+        append("curl -X ").append(method).append(" '").append(url.replace("'", "'\\''")).append("'")
+        requestHeaders.forEach { (name, value) ->
+            val lower = name.lowercase()
+            // Set by curl itself; a stale Content-Length breaks an edited body.
+            if (lower == "content-length" || lower == "host" || lower == "accept-encoding" || lower == "connection") return@forEach
+            val shown = if (DebugRedact.isSecretName(name)) "<your key>" else value
+            append(" \\\n  -H '").append(name).append(": ").append(shown.replace("'", "'\\''")).append("'")
+        }
+        requestBody?.let { append(" \\\n  --data-raw '").append(it.replace("'", "'\\''")).append("'") }
+    }
+
     private companion object {
         /** Headers that carry a provider-side request id. */
         val TRACE_HEADERS = listOf("x-ds-trace-id", "x-request-id", "request-id", "cf-ray", "x-amzn-requestid")

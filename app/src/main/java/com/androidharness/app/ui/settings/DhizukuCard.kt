@@ -19,7 +19,7 @@ internal fun DhizukuCard(manager: DhizukuManager) {
     val connection by manager.state.collectAsStateWithLifecycle()
     LaunchedEffect(manager) { while (true) { manager.refresh(); delay(3_000) } }
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.dhizuku_title)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.dhizuku_title), style = MaterialTheme.typography.titleSmall)
             Text(stringResource(when (connection.status) {
                 DhizukuStatus.NOT_INSTALLED -> R.string.ui_not_installed_optional

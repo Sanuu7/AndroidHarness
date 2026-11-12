@@ -1,6 +1,23 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package com.androidharness.app.ui.settings
 
-import androidx.compose.foundation.clickable
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.rounded.AutoAwesome
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.material3.toShape
+import androidx.compose.ui.graphics.graphicsLayer
+import com.androidharness.app.ui.common.FilledTonalButton
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,7 +28,7 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
@@ -46,7 +63,6 @@ import com.androidharness.app.ui.chat.components.LiveGlyph
 import com.androidharness.app.ui.chat.components.ModelPickerSheet
 import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import kotlinx.coroutines.launch
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -59,34 +75,50 @@ internal fun LiveModeSection(container: AppContainer, settings: AppSettings, onO
         scope.launch { container.settings.updateLiveMode(transform) }
     }
 
-    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-        SettingsAnchor(R.string.live_settings_enable) {
-            SettingsPanel(Modifier.fillMaxWidth()) {
-                Row(
-                    Modifier.fillMaxWidth().toggleable(live.enabled, role = Role.Switch) { on -> update { it.copy(enabled = on) } }
-                        .padding(horizontal = 16.dp, vertical = 14.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    LiveGlyph(color = MaterialTheme.colorScheme.primary, size = 22.dp)
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(stringResource(R.string.live_settings_enable), style = MaterialTheme.typography.titleSmall)
-                            ExperimentalTag()
-                        }
-                        Text(stringResource(R.string.live_settings_enable_desc), style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Switch(checked = live.enabled, onCheckedChange = null)
-                }
-            }
-        }
+    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+        SettingsAnchor(R.string.live_settings_enable) { LiveHeroToggle(live.enabled) { on -> update { it.copy(enabled = on) } } }
         Text(stringResource(R.string.live_settings_experimental_note), style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 4.dp))
+            color = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.padding(horizontal = 16.dp))
 
         LiveModelPanel(container, settings)
         LiveAccessPanel(live.access) { access -> update { it.copy(access = access) } }
         LiveVoicePanel(live, settings, onOpenVoice, update = ::update)
+    }
+}
+
+/** The master switch as the hero of the page: it fills with the primary tone and rounds off further while Live mode is on. */
+@Composable
+private fun LiveHeroToggle(enabled: Boolean, onToggle: (Boolean) -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val motion = MaterialTheme.motionScheme
+    val fill by animateColorAsState(if (enabled) scheme.primaryContainer else scheme.surfaceContainer, motion.defaultEffectsSpec(), label = "liveHeroFill")
+    val content by animateColorAsState(if (enabled) scheme.onPrimaryContainer else scheme.onSurface, motion.defaultEffectsSpec(), label = "liveHeroContent")
+    val badge by animateColorAsState(if (enabled) scheme.primary else scheme.surfaceContainerHighest, motion.defaultEffectsSpec(), label = "liveHeroBadge")
+    val glyph by animateColorAsState(if (enabled) scheme.onPrimary else scheme.onSurfaceVariant, motion.defaultEffectsSpec(), label = "liveHeroGlyph")
+    val corner by animateDpAsState(if (enabled) 40.dp else 28.dp, motion.defaultSpatialSpec(), label = "liveHeroCorner")
+    val turn by animateFloatAsState(if (enabled) 90f else 0f, motion.slowSpatialSpec(), label = "liveHeroTurn")
+    Surface(
+        shape = RoundedCornerShape(corner.coerceAtLeast(0.dp)), color = fill, contentColor = content,
+        border = if (enabled) null else settingsPanelBorder(), modifier = Modifier.fillMaxWidth(),
+    ) {
+        Row(
+            Modifier.fillMaxWidth().toggleable(enabled, role = Role.Switch, onValueChange = onToggle)
+                .padding(horizontal = 20.dp, vertical = 22.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+            Box(
+                Modifier.size(56.dp).graphicsLayer { rotationZ = turn }.background(badge, MaterialShapes.Cookie9Sided.toShape()),
+                contentAlignment = Alignment.Center,
+            ) { LiveGlyph(color = glyph, modifier = Modifier.graphicsLayer { rotationZ = -turn }, size = 26.dp) }
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.live_settings_enable), style = MaterialTheme.typography.titleLargeEmphasized)
+                ExperimentalTag()
+                Text(stringResource(R.string.live_settings_enable_desc), style = MaterialTheme.typography.bodyMedium,
+                    color = content.copy(alpha = 0.78f))
+            }
+            Switch(checked = enabled, onCheckedChange = null)
+        }
     }
 }
 
@@ -101,32 +133,31 @@ private fun LiveModelPanel(container: AppContainer, settings: AppSettings) {
     val selected = providers.firstOrNull { it.id == live.providerId }
 
     SettingsAnchor(R.string.live_settings_model) {
-        SettingsPanel(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Row(
-                    Modifier.fillMaxWidth().heightIn(min = 48.dp).clickable { picking = true },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(stringResource(R.string.live_settings_model), style = MaterialTheme.typography.titleSmall)
-                        Text(
-                            when {
-                                live.providerId == null -> uiContext.getString(R.string.live_settings_model_chat)
-                                selected == null -> uiContext.getString(R.string.ui_selected_provider_unavailable)
-                                else -> "${selected.name} · ${live.model ?: selected.model}"
-                            },
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = stringResource(R.string.live_settings_model_choose))
-                }
-                Text(stringResource(R.string.live_settings_model_desc), style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-                if (live.providerId != null) {
-                    TextButton(onClick = { scope.launch { container.settings.updateLiveMode { it.copy(providerId = null, model = null) } } }) {
-                        Text(stringResource(R.string.live_settings_model_chat))
+        SettingsGroup {
+            item(onClick = { picking = true }) {
+                SettingsItemRow(
+                    title = stringResource(R.string.live_settings_model),
+                    subtitle = when {
+                        live.providerId == null -> uiContext.getString(R.string.live_settings_model_chat)
+                        selected == null -> uiContext.getString(R.string.ui_selected_provider_unavailable)
+                        else -> "${selected.name} · ${live.model ?: selected.model}"
+                    },
+                    leading = { SettingsIconBadge(Icons.Rounded.AutoAwesome, SettingsTone.TERTIARY) },
+                    trailing = {
+                        Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, contentDescription = stringResource(R.string.live_settings_model_choose),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    },
+                )
+            }
+            item {
+                Column(Modifier.fillMaxWidth().animateContentSize(MaterialTheme.motionScheme.defaultSpatialSpec())
+                    .padding(horizontal = 16.dp, vertical = 14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.live_settings_model_desc), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (live.providerId != null) {
+                        FilledTonalButton(onClick = { scope.launch { container.settings.updateLiveMode { it.copy(providerId = null, model = null) } } }) {
+                            Text(stringResource(R.string.live_settings_model_chat))
+                        }
                     }
                 }
             }
@@ -180,30 +211,30 @@ private fun LiveAccessPanel(access: LiveModeAccess, onSelect: (LiveModeAccess) -
         Triple(LiveModeAccess.START_TASKS, R.string.live_access_tasks, R.string.live_access_tasks_desc),
     )
     SettingsAnchor(R.string.live_settings_access) {
-        SettingsPanel(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                Text(stringResource(R.string.live_settings_access), style = MaterialTheme.typography.titleSmall)
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(R.string.live_settings_access), style = MaterialTheme.typography.labelLargeEmphasized,
+                    color = MaterialTheme.colorScheme.primary)
                 Text(stringResource(R.string.live_settings_access_desc), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
-                Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    choices.forEach { (value, title, description) ->
-                        val isSelected = value == access
-                        Surface(
-                            shape = MaterialTheme.shapes.large,
-                            color = if (isSelected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface,
+            }
+            // The chosen level fills with the secondary tone and takes the full radius.
+            SettingsGroup(Modifier.selectableGroup()) {
+                choices.forEach { (value, title, description) ->
+                    val isSelected = value == access
+                    item(selected = isSelected) {
+                        Row(
+                            Modifier.fillMaxWidth().selectable(isSelected, role = Role.RadioButton) { onSelect(value) }
+                                .heightIn(min = 72.dp).padding(horizontal = 16.dp, vertical = 14.dp),
+                            horizontalArrangement = Arrangement.spacedBy(14.dp),
+                            verticalAlignment = Alignment.CenterVertically,
                         ) {
-                            Row(
-                                Modifier.fillMaxWidth().selectable(isSelected, role = Role.RadioButton) { onSelect(value) }
-                                    .padding(horizontal = 12.dp, vertical = 12.dp),
-                                horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                            ) {
-                                RadioButton(selected = isSelected, onClick = null)
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(stringResource(title), style = MaterialTheme.typography.titleSmall)
-                                    Text(stringResource(description), style = MaterialTheme.typography.bodySmall,
-                                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                                }
+                            RadioButton(selected = isSelected, onClick = null)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                                Text(stringResource(title), style = MaterialTheme.typography.titleMedium)
+                                Text(stringResource(description), style = MaterialTheme.typography.bodySmall,
+                                    color = if (isSelected) MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
+                                    else MaterialTheme.colorScheme.onSurfaceVariant)
                             }
                         }
                     }
@@ -222,53 +253,45 @@ private fun LiveVoicePanel(
 ) {
     var silence by remember { mutableFloatStateOf(live.silenceMs.toFloat()) }
     LaunchedEffect(live.silenceMs) { silence = live.silenceMs.toFloat() }
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            SettingsAnchor(R.string.live_settings_speak) {
-                Row(
-                    Modifier.fillMaxWidth().toggleable(live.speakReplies, role = Role.Switch) { on -> update { it.copy(speakReplies = on) } },
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                ) {
-                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                        Text(stringResource(R.string.live_settings_speak), style = MaterialTheme.typography.titleSmall)
-                        Text(stringResource(R.string.live_settings_speak_desc), style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
-                    Switch(checked = live.speakReplies, onCheckedChange = null)
+    SettingsGroup {
+        item(onClick = { update { it.copy(speakReplies = !live.speakReplies) } }) {
+            SettingsItemRow(
+                title = stringResource(R.string.live_settings_speak),
+                subtitle = stringResource(R.string.live_settings_speak_desc),
+                modifier = Modifier.settingsAnchor(R.string.live_settings_speak),
+                leading = { SettingsIconBadge(Icons.Rounded.VolumeUp, SettingsTone.SECONDARY) },
+                trailing = { Switch(checked = live.speakReplies, onCheckedChange = { on -> update { it.copy(speakReplies = on) } }) },
+            )
+        }
+        item {
+            val label = stringResource(R.string.live_settings_silence)
+            Column(Modifier.fillMaxWidth().settingsAnchor(R.string.live_settings_silence).padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                    SettingsIconBadge(Icons.Rounded.Timer, SettingsTone.SECONDARY)
+                    Text(label, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
+                    SettingsStatusPill(stringResource(R.string.live_settings_seconds, String.format(Locale.getDefault(), "%.1f", silence / 1000f)), ok = false)
                 }
-            }
-            SettingsAnchor(R.string.live_settings_silence) {
-                val label = stringResource(R.string.live_settings_silence)
-                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(label, style = MaterialTheme.typography.titleSmall)
-                        Text(stringResource(R.string.live_settings_seconds, String.format(Locale.getDefault(), "%.1f", silence / 1000f)),
-                            style = MaterialTheme.typography.bodyMedium)
-                    }
-                    Slider(
-                        value = silence,
-                        onValueChange = { silence = (it / 100f).roundToInt() * 100f },
-                        valueRange = LiveModeSettings.MIN_SILENCE_MS.toFloat()..LiveModeSettings.MAX_SILENCE_MS.toFloat(),
-                        onValueChangeFinished = { update { it.copy(silenceMs = silence.roundToInt()) } },
-                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
-                    )
-                    Text(stringResource(R.string.live_settings_silence_desc), style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    stringResource(
-                        R.string.live_settings_engines,
-                        stringResource(if (settings.voiceEngine != AppSettings.VOICE_ENGINE_INBUILT) R.string.live_engine_groq else R.string.live_engine_system),
-                    ),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.weight(1f),
+                Slider(
+                    value = silence,
+                    onValueChange = { silence = (it / 100f).roundToInt() * 100f },
+                    valueRange = LiveModeSettings.MIN_SILENCE_MS.toFloat()..LiveModeSettings.MAX_SILENCE_MS.toFloat(),
+                    onValueChangeFinished = { update { it.copy(silenceMs = silence.roundToInt()) } },
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = label },
                 )
-                TextButton(onClick = onOpenVoice) { Text(stringResource(R.string.live_settings_open_voice)) }
+                Text(stringResource(R.string.live_settings_silence_desc), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
+        }
+        item(onClick = onOpenVoice) {
+            SettingsItemRow(
+                title = stringResource(R.string.live_settings_open_voice),
+                subtitle = stringResource(
+                    R.string.live_settings_engines,
+                    stringResource(if (settings.voiceEngine != AppSettings.VOICE_ENGINE_INBUILT) R.string.live_engine_groq else R.string.live_engine_system),
+                ),
+                leading = { SettingsIconBadge(Icons.Rounded.Mic, SettingsTone.SECONDARY) },
+                trailing = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) },
+            )
         }
     }
 }

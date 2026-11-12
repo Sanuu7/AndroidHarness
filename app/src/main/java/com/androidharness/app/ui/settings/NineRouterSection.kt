@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
@@ -9,7 +8,7 @@ import androidx.compose.animation.core.spring
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -60,7 +59,7 @@ internal fun NineRouterPanel(
             Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
                     Surface(shape = RoundedCornerShape(if (running) 24.dp else 16.dp), color = tint) {
-                        Icon(Icons.Outlined.AccountTree, null, Modifier.padding(16.dp).size(28.dp))
+                        Icon(Icons.Rounded.AccountTree, null, Modifier.padding(16.dp).size(28.dp))
                     }
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.nine_router_title), style = MaterialTheme.typography.headlineSmall)
@@ -92,7 +91,7 @@ internal fun NineRouterPanel(
                 state.error?.let { error ->
                     var expanded by remember(error) { mutableStateOf(false) }
                     Surface(color = MaterialTheme.colorScheme.errorContainer, shape = RoundedCornerShape(16.dp)) {
-                        Column(Modifier.padding(14.dp).animateContentSize()) {
+                        Column(Modifier.padding(16.dp).animateContentSize()) {
                             Text(error.substringBefore('\n'), style = MaterialTheme.typography.bodySmall)
                             if ('\n' in error) {
                                 TextButton(onClick = { expanded = !expanded }) { Text(stringResource(if (expanded) R.string.nine_router_hide_details else R.string.nine_router_show_details)) }
@@ -110,7 +109,7 @@ internal fun NineRouterPanel(
                             NineRouterPhase.RUNNING -> onOpen
                             else -> onStart
                         }, shapes = ButtonDefaults.shapes()) {
-                            Icon(if (running) Icons.Outlined.OpenInBrowser else if (!installed) Icons.Outlined.Download else Icons.Outlined.PlayArrow, null, Modifier.size(20.dp))
+                            Icon(if (running) Icons.Rounded.OpenInBrowser else if (!installed) Icons.Rounded.Download else Icons.Rounded.PlayArrow, null, Modifier.size(20.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(when (state.phase) {
                                 NineRouterPhase.SETUP_LINUX -> R.string.nine_router_install_linux
@@ -120,7 +119,7 @@ internal fun NineRouterPanel(
                             }))
                         }
                     }
-                    if (running) OutlinedButton(onClick = onStop) { Icon(Icons.Outlined.Stop, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.nine_router_stop)) }
+                    if (running) OutlinedButton(onClick = onStop) { Icon(Icons.Rounded.Stop, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.nine_router_stop)) }
                     if (installed) FilledTonalButton(onClick = if (state.updateAvailable) onUpdate else onCheckUpdate,
                         enabled = !state.busy && !state.checkingUpdate, shapes = ButtonDefaults.shapes()) {
                         AnimatedContent(Triple(state.checkingUpdate, state.updateAvailable, state.latestVersion), label = "Update button") { (checking, available, version) ->
@@ -138,7 +137,7 @@ internal fun NineRouterPanel(
                         Switch(checked = state.autoStart, onCheckedChange = onAutoStart, enabled = !state.busy)
                     }
                     FilledTonalButton(onClick = onAddProvider, enabled = !state.busy, shapes = ButtonDefaults.shapes(), modifier = Modifier.fillMaxWidth()) {
-                        Icon(Icons.Outlined.Add, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
+                        Icon(Icons.Rounded.Add, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
                         Text(stringResource(if (state.providerAdded) R.string.nine_router_refresh_provider else R.string.nine_router_add_provider))
                     }
                     Text(stringResource(R.string.nine_router_provider_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

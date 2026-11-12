@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.ui.common.localizedOption
 import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import androidx.compose.foundation.layout.*
@@ -63,16 +62,12 @@ internal fun CavemanSection(container: AppContainer, settings: AppSettings) {
     }
     if (settings.cavemanInstalled) {
         CavemanPanel(uiContext.getString(R.string.ui_reply_intensity)) {
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                CavemanIntensity.entries.forEachIndexed { index, intensity ->
-                    SegmentedButton(
-                        selected = settings.cavemanIntensity == intensity,
-                        onClick = { save { container.settings.setCavemanIntensity(intensity) } },
-                        enabled = !busy,
-                        shape = SegmentedButtonDefaults.itemShape(index, CavemanIntensity.entries.size),
-                    ) { Text(localizedOption(intensity.label), maxLines = 1) }
-                }
-            }
+            SettingsChoiceGroup(
+                options = CavemanIntensity.entries.map { it to localizedOption(it.label) },
+                selected = { it == settings.cavemanIntensity },
+                onSelect = { intensity -> save { container.settings.setCavemanIntensity(intensity) } },
+                enabled = !busy,
+            )
             Text(localizedOption(settings.cavemanIntensity.description), style = MaterialTheme.typography.bodyMedium)
             Text(stringResource(R.string.settings_caveman_mode_desc),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

@@ -8,8 +8,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -123,7 +123,7 @@ internal fun LocalBenchmarkScreen(
             Column(Modifier.fillMaxSize()) {
                 TopAppBar(title = { Text(stringResource(R.string.local_benchmark_title)) },
                     navigationIcon = { IconButton(enabled = !saving, onClick = { if (running) confirmStop = true else onDismiss() }) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, stringResource(R.string.settings_action_cancel))
+                        Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.settings_action_cancel))
                     } })
 
                 Box(Modifier.weight(1f).fillMaxWidth().clipToBounds()) {
@@ -141,7 +141,7 @@ internal fun LocalBenchmarkScreen(
                                     OutlinedCard(onClick = { modelMenu = true }, modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.large) {
                                         Row(Modifier.padding(18.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
                                             Text(model.title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                                            Icon(Icons.Default.ExpandMore, null)
+                                            Icon(Icons.Rounded.ExpandMore, null)
                                         }
                                     }
                                     DropdownMenu(expanded = modelMenu, onDismissRequest = { modelMenu = false }) {

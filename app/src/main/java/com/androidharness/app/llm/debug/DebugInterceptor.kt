@@ -22,7 +22,7 @@ import java.util.concurrent.TimeUnit
 class DebugInterceptor : Interceptor {
 
     override fun intercept(chain: Interceptor.Chain): Response {
-        if (!DebugCapture.enabled) return chain.proceed(chain.request())
+        if (!DebugCapture.recording) return chain.proceed(chain.request())
         val request = chain.request()
         val tag = request.tag(DebugTag::class.java)
         val streamKey = request.tag(DebugStreamKey::class.java)?.value.orEmpty()
@@ -117,7 +117,10 @@ class DebugInterceptor : Interceptor {
 
     private fun preview(response: Response, limit: Int, secrets: List<String>): Pair<String, Boolean> {
         val peeked = try {
-            response.peekBody(limit.toLong()).string()
+            val body = response.peekBody(limit.toLong())
+            // A network interceptor sees the body before OkHttp inflates it.
+            if (response.header("Content-Encoding").equals("gzip", ignoreCase = true)) gunzip(body.source(), limit)
+            else body.string()
         } catch (_: Exception) {
             return "" to false
         }
@@ -126,6 +129,22 @@ class DebugInterceptor : Interceptor {
         return DebugCapture.cap(DebugRedact.body(peeked, secrets), limit).let { (text, capped) ->
             (text ?: "") to (cut || capped)
         }
+    }
+
+    /**
+     * Inflates a peeked gzip body. The peek may stop mid-stream, so whatever was
+     * inflated before the data ran out is kept instead of failing the preview.
+     */
+    private fun gunzip(source: okio.BufferedSource, limit: Int): String {
+        val out = Buffer()
+        try {
+            okio.GzipSource(source).use { gzip ->
+                while (out.size < limit && gzip.read(out, 8_192) != -1L) Unit
+            }
+        } catch (_: IOException) {
+            // Truncated by the peek limit.
+        }
+        return out.readUtf8()
     }
 
     private companion object {

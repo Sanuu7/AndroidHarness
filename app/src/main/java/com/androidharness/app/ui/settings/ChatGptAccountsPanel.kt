@@ -1,3 +1,5 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package com.androidharness.app.ui.settings
 
 import com.androidharness.app.R
@@ -5,7 +7,7 @@ import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -37,7 +39,7 @@ internal fun ChatGptAccountsPanel(
                     color = colors.onSurfaceVariant)
                 SettingsAnchor(R.string.settings_anchor_continue_chatgpt) {
                     Button(onClick = onAdd, enabled = !state.signingIn) {
-                        Icon(Icons.Outlined.Add, null, Modifier.size(18.dp))
+                        Icon(Icons.Rounded.Add, null, Modifier.size(18.dp))
                         Spacer(Modifier.width(8.dp))
                         Text(if (state.accounts.isEmpty()) uiContext.getString(R.string.settings_search_continue_chatgpt_title) else uiContext.getString(R.string.ui_add_account))
                     }
@@ -76,10 +78,10 @@ internal fun ChatGptAccountsPanel(
                                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
                                 if (selected) Text(stringResource(R.string.settings_chatgpt_selected), style = MaterialTheme.typography.labelSmall, color = colors.primary)
                             }
-                            if (selecting == account.providerId) CircularProgressIndicator(Modifier.size(20.dp), strokeWidth = 2.dp)
-                            else if (selected) Icon(Icons.Outlined.CheckCircle, null, tint = colors.primary, modifier = Modifier.size(20.dp))
+                            if (selecting == account.providerId) LoadingIndicator(Modifier.size(24.dp))
+                            else if (selected) Icon(Icons.Rounded.CheckCircle, null, tint = colors.primary, modifier = Modifier.size(20.dp))
                             Box {
-                                IconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, stringResource(R.string.settings_accounts_manage_cd, account.label)) }
+                                IconButton(onClick = { menu = true }) { Icon(Icons.Rounded.MoreVert, stringResource(R.string.settings_accounts_manage_cd, account.label)) }
                                 DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                                     if (account.connected) {
                                         DropdownMenuItem(text = { Text(stringResource(R.string.settings_chatgpt_refresh_models)) }, onClick = { menu = false; onRefresh(account) })
@@ -106,7 +108,7 @@ internal fun ChatGptAccountsPanel(
             }
             HorizontalDivider(color = colors.outlineVariant)
             TextButton(onClick = onUsage, modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)) {
-                Icon(Icons.Outlined.OpenInNew, null, Modifier.size(16.dp))
+                Icon(Icons.Rounded.OpenInNew, null, Modifier.size(16.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_chatgpt_limits_usage))
             }

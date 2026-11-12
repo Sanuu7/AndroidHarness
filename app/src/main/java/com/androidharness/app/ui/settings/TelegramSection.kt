@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.ui.common.localizedOption
 import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import android.Manifest
@@ -22,17 +21,17 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.Send
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.AccountCircle
-import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.FolderOpen
-import androidx.compose.material.icons.automirrored.outlined.HelpOutline
-import androidx.compose.material.icons.outlined.MoreVert
-import androidx.compose.material.icons.outlined.Security
-import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.automirrored.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.AccountCircle
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.automirrored.rounded.HelpOutline
+import androidx.compose.material.icons.rounded.MoreVert
+import androidx.compose.material.icons.rounded.Security
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -139,7 +138,7 @@ import com.androidharness.app.ui.common.TextButton
                 verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 Box(Modifier.size(38.dp).background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp)),
                     contentAlignment = Alignment.Center) {
-                    Icon(Icons.AutoMirrored.Outlined.Send, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(22.dp))
+                    Icon(Icons.AutoMirrored.Rounded.Send, null, tint = MaterialTheme.colorScheme.onPrimaryContainer, modifier = Modifier.size(22.dp))
                 }
                 Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                     Text(stringResource(R.string.settings_telegram_remote), style = MaterialTheme.typography.titleSmall)
@@ -149,7 +148,7 @@ import com.androidharness.app.ui.common.TextButton
                 Switch(checked = setup.enabled, enabled = canEnable, onCheckedChange = null)
             }
             Box {
-                IconButton(onClick = { moreMenu = true }) { Icon(Icons.Outlined.MoreVert, uiContext.getString(R.string.ui_more_options)) }
+                IconButton(onClick = { moreMenu = true }) { Icon(Icons.Rounded.MoreVert, uiContext.getString(R.string.ui_more_options)) }
                 DropdownMenu(moreMenu, { moreMenu = false }) {
                     if (setup.botUsername != null) {
                         DropdownMenuItem(text = { Text(stringResource(R.string.settings_telegram_change_token)) }, enabled = !busy && canConfigure,
@@ -188,7 +187,7 @@ import com.androidharness.app.ui.common.TextButton
         if (!failed) message?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
         runtime.action?.let { Text(it, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.primary) }
     }
-    TelegramGroup(uiContext.getString(R.string.ui_connection), Icons.Outlined.AccountCircle) {
+    TelegramGroup(uiContext.getString(R.string.ui_connection), Icons.Rounded.AccountCircle) {
         TelegramDetail(uiContext.getString(R.string.ui_bot), setup.botUsername?.let { "@$it" } ?: uiContext.getString(R.string.ui_not_connected), setup.botUsername != null)
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f))
         TelegramDetail(uiContext.getString(R.string.ui_account), setup.ownerName?.let { "$it · Paired" } ?: uiContext.getString(R.string.ui_not_paired), setup.ownerId != null)
@@ -202,7 +201,7 @@ import com.androidharness.app.ui.common.TextButton
                 onClick = { action(uiContext.getString(R.string.ui_pairing_started)) { manager.beginPairing() } }) { Text(stringResource(R.string.settings_telegram_pair_account)) }
         }
     }
-    TelegramGroup(uiContext.getString(R.string.ui_workspace), Icons.Outlined.FolderOpen) {
+    TelegramGroup(uiContext.getString(R.string.ui_workspace), Icons.Rounded.FolderOpen) {
         TelegramChoice(uiContext.getString(R.string.ui_project), projects.firstOrNull { it.id == setup.projectId }?.label ?: uiContext.getString(R.string.ui_choose_project), projects, !busy && canConfigure && projects.isNotEmpty()) { id -> action(uiContext.getString(R.string.ui_project_selected)) { manager.selectDestination(id, null) } }
         TelegramChoice(uiContext.getString(R.string.ui_chat), chats.firstOrNull { it.id == setup.sessionId }?.label ?: uiContext.getString(R.string.ui_new_telegram_chat), listOf(TelegramChoiceItem("", uiContext.getString(R.string.ui_new_telegram_chat))) + chats, !busy && canConfigure && setup.projectId != null) { id -> action(uiContext.getString(R.string.ui_chat_selected)) { manager.selectDestination(requireNotNull(setup.projectId), id.ifBlank { null }) } }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -230,7 +229,7 @@ import com.androidharness.app.ui.common.TextButton
         catch (e: CancellationException) { throw e } catch (e: Exception) { modelError = e.message ?: uiContext.getString(R.string.ui_could_not_refresh_models_please_retry) }
         finally { loadingModels = false }
     }
-    TelegramGroup(uiContext.getString(R.string.ui_agent), Icons.Outlined.Tune) {
+    TelegramGroup(uiContext.getString(R.string.ui_agent), Icons.Rounded.Tune) {
         if (modelState?.settings?.sameModelAcrossChats == true) Text(stringResource(R.string.settings_telegram_shared), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
         TelegramChoice(uiContext.getString(R.string.ui_provider), providers.firstOrNull { it.id == providerChoice }?.label ?: uiContext.getString(R.string.ui_choose_provider), providers, !busy && canConfigure && setup.sessionId != null) { providerChoice = it }
         val selectedModel = if (providerChoice == activeChoice?.providerId) activeChoice?.model else null
@@ -245,22 +244,22 @@ import com.androidharness.app.ui.common.TextButton
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = .4f))
         Row(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_telegram_permissions).clickable(role = Role.Button, onClick = onPermissions).padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Icon(Icons.Outlined.Security, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.Rounded.Security, null, modifier = Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
             Column(Modifier.weight(1f)) {
                 Text(stringResource(R.string.settings_telegram_permissions), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(modelState?.settings?.permissionMode?.label ?: uiContext.getString(R.string.ui_app_default), style = MaterialTheme.typography.bodyMedium)
             }
-            Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+            Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
     TextButton(onClick = { helpDialog = true }) {
-        Icon(Icons.AutoMirrored.Outlined.HelpOutline, null, modifier = Modifier.size(18.dp))
+        Icon(Icons.AutoMirrored.Rounded.HelpOutline, null, modifier = Modifier.size(18.dp))
         Spacer(Modifier.width(8.dp))
         Text(stringResource(R.string.settings_telegram_help))
     }
     val requests = saved.requests.filter { it.retryable && it.sessionId != null && it.callback == null }.asReversed()
     val deliveries = saved.deliveries.filter { it.status in listOf(TelegramDeliveryStatus.FAILED, TelegramDeliveryStatus.UNCERTAIN) }.asReversed()
-    if (requests.isNotEmpty() || deliveries.isNotEmpty()) TelegramGroup(uiContext.getString(R.string.ui_saved_work), Icons.Outlined.Tune) {
+    if (requests.isNotEmpty() || deliveries.isNotEmpty()) TelegramGroup(uiContext.getString(R.string.ui_saved_work), Icons.Rounded.Tune) {
         (if (showAllSaved) requests else requests.take(5)).forEach { request ->
             Text(stringResource(R.string.settings_telegram_request, request.id.toString()), style = MaterialTheme.typography.titleSmall)
             Text(request.text.take(160), style = MaterialTheme.typography.bodySmall)
@@ -281,7 +280,7 @@ import com.androidharness.app.ui.common.TextButton
         Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Text(stringResource(R.string.settings_telegram_token_hint), style = MaterialTheme.typography.bodySmall)
             OutlinedTextField(token, { token = it }, singleLine = true, label = { Text(stringResource(R.string.settings_telegram_bot_token)) }, visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(), trailingIcon = {
-                IconButton(onClick = { visible = !visible }) { Icon(if (visible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility, if (visible) uiContext.getString(R.string.ui_hide_bot_token) else uiContext.getString(R.string.ui_show_bot_token)) }
+                IconButton(onClick = { visible = !visible }) { Icon(if (visible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility, if (visible) uiContext.getString(R.string.ui_hide_bot_token) else uiContext.getString(R.string.ui_show_bot_token)) }
             }, modifier = Modifier.fillMaxWidth())
             if (busy) AppLinearProgressIndicator(Modifier.fillMaxWidth())
             if (failed) message?.let { Text(it, color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall) }
@@ -334,7 +333,7 @@ import com.androidharness.app.ui.common.TextButton
 }
 
 @Composable private fun TelegramPanel(content: @Composable ColumnScope.() -> Unit) = SettingsPanel(Modifier.fillMaxWidth()) {
-    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
+    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp), content = content)
 }
 @Composable private fun TelegramGroup(title: String, icon: ImageVector, content: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -352,7 +351,7 @@ import com.androidharness.app.ui.common.TextButton
             Text(title, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
             Text(value, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        if (connected) Icon(Icons.Outlined.Check, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
+        if (connected) Icon(Icons.Rounded.Check, null, modifier = Modifier.size(18.dp), tint = MaterialTheme.colorScheme.primary)
     }
 }
 @OptIn(ExperimentalMaterial3Api::class)

@@ -1,6 +1,7 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.ui.common.localizedOption
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
@@ -12,7 +13,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -60,13 +61,13 @@ internal fun RootAccessSection(container: AppContainer) {
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(Modifier.settingsAnchor(R.string.settings_root_title), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Icon(Icons.Outlined.AdminPanelSettings, null, tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Rounded.AdminPanelSettings, null, tint = MaterialTheme.colorScheme.primary)
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_root_title), style = MaterialTheme.typography.titleMedium)
                     Text(localizedOption(root.status.label), style = MaterialTheme.typography.bodySmall,
                         color = if (root.status == RootStatus.READY) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (busy || root.status == RootStatus.REQUESTING) CircularProgressIndicator(Modifier.size(22.dp), strokeWidth = 2.dp)
+                if (busy || root.status == RootStatus.REQUESTING) LoadingIndicator(Modifier.size(28.dp))
             }
             Text(root.detail, style = MaterialTheme.typography.bodySmall,
                 color = if (root.status == RootStatus.DENIED || (root.status == RootStatus.UNAVAILABLE && root.checkedAt > 0))
@@ -89,7 +90,7 @@ internal fun RootAccessSection(container: AppContainer) {
                 ) {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Outlined.CheckCircle, null, Modifier.size(18.dp))
+                        Icon(Icons.Rounded.CheckCircle, null, Modifier.size(18.dp))
                         Text(stringResource(R.string.settings_root_enabled), style = MaterialTheme.typography.titleSmall)
                     }
                 } else Button(onClick = { scope.launch {
@@ -146,7 +147,7 @@ internal fun RootAccessSection(container: AppContainer) {
                 Text(stringResource(R.string.settings_root_temp_use), style = MaterialTheme.typography.titleSmall)
                 Box {
                     OutlinedButton(onClick = { useMenu = true }, modifier = Modifier.fillMaxWidth()) {
-                        Text(localizedOption(prefs.rootUse.label), Modifier.weight(1f)); Icon(Icons.Outlined.ExpandMore, null)
+                        Text(localizedOption(prefs.rootUse.label), Modifier.weight(1f)); Icon(Icons.Rounded.ExpandMore, null)
                     }
                     DropdownMenu(expanded = useMenu, onDismissRequest = { useMenu = false }) {
                         RootUse.entries.forEach { use -> DropdownMenuItem(text = { Text(localizedOption(use.label)) },
@@ -158,7 +159,7 @@ internal fun RootAccessSection(container: AppContainer) {
             } else Text(stringResource(R.string.settings_root_temp_note),
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             OutlinedButton(onClick = { projectPicker = true }, enabled = prefs.temporaryRoot, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_project_permissions)) {
-                Icon(Icons.Outlined.Folder, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
+                Icon(Icons.Rounded.Folder, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_root_project_permissions), Modifier.weight(1f))
                 Text(stringResource(R.string.settings_root_project_count, projects.count { it.id in prefs.rootProjects }.toString()), style = MaterialTheme.typography.labelMedium)
             }
@@ -178,7 +179,7 @@ internal fun RootAccessSection(container: AppContainer) {
                     busy = true
                     try { report = access.stopPrivileged() } finally { busy = false }
                 } }, enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                    Icon(Icons.Outlined.StopCircle, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.settings_root_stop_tasks))
+                    Icon(Icons.Rounded.StopCircle, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.settings_root_stop_tasks))
                 }
             }
         }
@@ -198,7 +199,7 @@ internal fun RootAccessSection(container: AppContainer) {
         } }, confirmButton = { TextButton(onClick = { projectPicker = false }) { Text(stringResource(R.string.settings_action_done)) } })
     if (confirmUnlimited) AlertDialog(
         onDismissRequest = { confirmUnlimited = false },
-        icon = { Icon(Icons.Outlined.WarningAmber, null, tint = MaterialTheme.colorScheme.error) },
+        icon = { Icon(Icons.Rounded.WarningAmber, null, tint = MaterialTheme.colorScheme.error) },
         title = { Text(stringResource(R.string.settings_root_everywhere_title)) },
         text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Text(stringResource(R.string.settings_root_everywhere_note))

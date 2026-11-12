@@ -1,9 +1,8 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
-import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -62,7 +61,7 @@ internal fun SubagentSettingsSection(
         }
     }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        SettingRow(androidx.compose.material.icons.Icons.Outlined.Notifications,
+        SettingRow(androidx.compose.material.icons.Icons.Rounded.Notifications,
             stringResource(R.string.background_settings_title), stringResource(R.string.background_settings_description),
             onClick = onOpenBackgroundSettings)
     }

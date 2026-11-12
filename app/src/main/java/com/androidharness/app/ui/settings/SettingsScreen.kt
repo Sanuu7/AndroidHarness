@@ -1,6 +1,7 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.ui.common.localizedOption
 import com.androidharness.app.ui.common.localizedThinkingOption
 import android.Manifest
@@ -15,6 +16,15 @@ import androidx.activity.compose.BackHandler
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.selection.toggleable
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -41,27 +51,39 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.BatteryFull
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.Archive
-import androidx.compose.material.icons.outlined.CheckCircle
-import androidx.compose.material.icons.outlined.Code
-import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Extension
-import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material.icons.outlined.FolderOpen
-import androidx.compose.material.icons.outlined.Key
-import androidx.compose.material.icons.outlined.Mic
-import androidx.compose.material.icons.outlined.OpenInNew
-import androidx.compose.material.icons.outlined.SdStorage
-import androidx.compose.material.icons.outlined.Shield
-import androidx.compose.material.icons.outlined.SystemUpdate
-import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.Terminal
+import androidx.compose.material.icons.rounded.Screenshot
+import androidx.compose.material.icons.rounded.Timer
+import androidx.compose.material.icons.rounded.Fingerprint
+import androidx.compose.material.icons.rounded.AccountTree
+import androidx.compose.material.icons.rounded.Checklist
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.PlayArrow
+import androidx.compose.material.icons.rounded.Campaign
+import androidx.compose.material.icons.rounded.Speed
+import androidx.compose.material.icons.rounded.RecordVoiceOver
+import androidx.compose.material.icons.rounded.GraphicEq
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.BatteryFull
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Archive
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Delete
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Extension
+import androidx.compose.material.icons.rounded.Folder
+import androidx.compose.material.icons.rounded.FolderOpen
+import androidx.compose.material.icons.rounded.Key
+import androidx.compose.material.icons.rounded.Mic
+import androidx.compose.material.icons.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.VolumeUp
+import androidx.compose.material.icons.rounded.SdStorage
+import androidx.compose.material.icons.rounded.Shield
+import androidx.compose.material.icons.rounded.SystemUpdate
+import androidx.compose.material.icons.rounded.Inventory2
+import androidx.compose.material.icons.rounded.Terminal
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
@@ -149,6 +171,12 @@ import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
 
 
+/** Where the settings pane is: a custom section (by path), a page, or the home list when both are null. */
+private data class SettingsDestination(val section: List<String>?, val page: SettingsPage?) {
+    /** How deep in the hierarchy this is, which only decides the direction of the transition. */
+    var depth = 0
+}
+
 @Composable
 fun SettingsScreen(
     container: AppContainer,
@@ -158,6 +186,20 @@ fun SettingsScreen(
     onOpenSkills: () -> Unit = {},
     onOpenProviders: () -> Unit = {},
     onOpenLearnDestination: (com.androidharness.app.ui.learn.LearnDestination) -> Unit = {},
+) = SettingsExpressiveTheme {
+    SettingsScreenContent(container, onBack, onOpenStats, onRunSetup, onOpenSkills, onOpenProviders, onOpenLearnDestination)
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun SettingsScreenContent(
+    container: AppContainer,
+    onBack: () -> Unit,
+    onOpenStats: () -> Unit,
+    onRunSetup: () -> Unit,
+    onOpenSkills: () -> Unit,
+    onOpenProviders: () -> Unit,
+    onOpenLearnDestination: (com.androidharness.app.ui.learn.LearnDestination) -> Unit,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
@@ -318,9 +360,40 @@ fun SettingsScreen(
                     onOpenSection = { customReturn = emptyList(); customPath = listOf(it) }, onAddSection = ::startNewSection)
                 VerticalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
             }
-            Box(Modifier.weight(1f).fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
+            val destination = SettingsDestination(customPath.takeIf { customSection != null }, page).apply {
+                depth = when {
+                    section != null -> 100 + section.size
+                    page != null -> 1 + pageHistory.size + if (customReturn.isEmpty()) 0 else 200
+                    else -> 0
+                }
+            }
+            val motion = MaterialTheme.motionScheme
+            val rtl = androidx.compose.ui.platform.LocalLayoutDirection.current == androidx.compose.ui.unit.LayoutDirection.Rtl
+            // Shared axis: a deeper page arrives from the end side, Back sends it out the same way.
+            androidx.compose.animation.AnimatedContent(
+                targetState = destination,
+                modifier = Modifier.weight(1f).fillMaxHeight(),
+                contentAlignment = Alignment.TopCenter,
+                label = "settingsPage",
+                transitionSpec = {
+                    val forward = (targetState.depth >= initialState.depth) != rtl
+                    if (desktop) {
+                        (fadeIn(motion.defaultEffectsSpec()) + slideInVertically(motion.defaultSpatialSpec()) { it / 32 }) togetherWith
+                            fadeOut(motion.fastEffectsSpec())
+                    } else {
+                        (slideInHorizontally(motion.defaultSpatialSpec()) { if (forward) it / 5 else -it / 5 } + fadeIn(motion.defaultEffectsSpec())) togetherWith
+                            (slideOutHorizontally(motion.fastSpatialSpec()) { if (forward) -it / 5 else it / 5 } + fadeOut(motion.fastEffectsSpec()))
+                    }
+                },
+            ) { shown ->
+            Box(Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+        // The outgoing pane keeps drawing what it showed, so everything below reads the pane's own destination.
+        @Suppress("NAME_SHADOWING")
+        val customSection = shown.section?.let { com.androidharness.app.data.CustomSettingsSections.find(settings.customSections, it) }
+        @Suppress("NAME_SHADOWING")
+        val page = shown.page
         if (customSection != null) {
-            val path = customPath
+            val path = shown.section.orEmpty()
             key(path) {
                 CustomSectionPage(
                     section = customSection,
@@ -415,11 +488,11 @@ fun SettingsScreen(
                             SettingsPanel(Modifier.fillMaxWidth()) {
                                 SettingsAnchor(R.string.settings_anchor_manage_providers) {
                                     SettingRow(
-                                        icon = Icons.Outlined.Key,
+                                        icon = Icons.Rounded.Key,
                                         title = stringResource(R.string.settings_anchor_manage_providers),
                                         subtitle = stringResource(R.string.settings_models_manage_subtitle),
                                         onClick = onOpenProviders,
-                                        trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) },
+                                        trailing = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null) },
                                     )
                                 }
                             }
@@ -489,6 +562,7 @@ fun SettingsScreen(
                 }
             }
         }
+            }
             }
         }
     }
@@ -574,7 +648,7 @@ private fun WorkspaceSection(
                 modifier = Modifier.fillMaxWidth().padding(14.dp),
             ) {
                 Icon(
-                    Icons.Outlined.Folder,
+                    Icons.Rounded.Folder,
                     contentDescription = null,
                     tint = scheme.primary,
                 )
@@ -589,7 +663,7 @@ private fun WorkspaceSection(
                     )
                 }
                 Icon(
-                    Icons.Outlined.CheckCircle,
+                    Icons.Rounded.CheckCircle,
                     contentDescription = stringResource(R.string.settings_workspace_active_badge),
                     tint = scheme.primary,
                 )
@@ -603,17 +677,17 @@ private fun WorkspaceSection(
                 val desc = container.workspace.describe(project)
                 val isActive = project.id == currentProject?.id
                 SettingRow(
-                    icon = if (project.kind == "APP") Icons.Outlined.Folder else Icons.Outlined.FolderOpen,
+                    icon = if (project.kind == "APP") Icons.Rounded.Folder else Icons.Rounded.FolderOpen,
                     title = project.name,
                     subtitle = desc.kindLabel + " · " + if (desc.shellCapable) uiContext.getString(R.string.ui_full_shell_1091) else uiContext.getString(R.string.ui_file_tools_only_1092),
                     onClick = { onSelectWorkspace(project.id) }.takeIf { !isActive },
                     divider = index != projects.lastIndex,
                     trailing = {
                         if (isActive) {
-                            Icon(Icons.Outlined.CheckCircle, contentDescription = stringResource(R.string.settings_workspace_active), tint = MaterialTheme.colorScheme.primary)
+                            Icon(Icons.Rounded.CheckCircle, contentDescription = stringResource(R.string.settings_workspace_active), tint = MaterialTheme.colorScheme.primary)
                         } else if (project.kind != "APP") {
                             IconButton(onClick = { onDeleteWorkspace(project) }) {
-                                Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.settings_workspace_delete_cd, project.name), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
+                                Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.settings_workspace_delete_cd, project.name), tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(20.dp))
                             }
                         }
                     },
@@ -624,7 +698,7 @@ private fun WorkspaceSection(
             onClick = onAddWorkspace,
             modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_add_workspace_title).padding(horizontal = 14.dp, vertical = 10.dp),
         ) {
-            Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
             Text(stringResource(R.string.settings_workspace_add))
         }
@@ -669,7 +743,7 @@ private fun TerminalSection(
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Icon(Icons.Outlined.Terminal, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
+                Icon(Icons.Rounded.Terminal, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.primary)
                 Text(stringResource(R.string.settings_terminal_access), Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
                 StatusText(if (container.shizuku.isServiceReady()) container.shizuku.transportLabel else stringResource(R.string.ui_ready), ok = true)
             }
@@ -689,7 +763,7 @@ private fun TerminalSection(
     SettingsGroupHeading(R.string.settings_device_connections)
     WirelessAdbSection(container)
     SettingsAnchor(R.string.settings_anchor_system_paths) {
-    SettingsDisclosure(Icons.Outlined.Shield, "Shizuku / Shery", systemText,
+    SettingsDisclosure(Icons.Rounded.Shield, "Shizuku / Shery", systemText,
         anchors = setOf(R.string.settings_anchor_system_paths)) {
     ShizukuCard(
         state = shizukuState,
@@ -704,26 +778,26 @@ private fun TerminalSection(
     }
     }
     SettingsAnchor(R.string.settings_anchor_shared_storage) {
-    SettingsDisclosure(Icons.Outlined.SdStorage, stringResource(R.string.settings_anchor_shared_storage), storageText,
+    SettingsDisclosure(Icons.Rounded.SdStorage, stringResource(R.string.settings_anchor_shared_storage), storageText,
         anchors = setOf(R.string.settings_anchor_shared_storage)) {
         StorageAccessCard(allFiles = allFiles, onGrant = storageAccess.request)
     }
     }
     SettingsGroupHeading(R.string.settings_device_tools)
     SettingsAnchor(R.string.settings_anchor_app_shell) {
-    SettingsDisclosure(Icons.Outlined.Terminal, stringResource(R.string.settings_search_linux_title),
+    SettingsDisclosure(Icons.Rounded.Terminal, stringResource(R.string.settings_search_linux_title),
         stringResource(if (appShellOk) R.string.ui_installed else R.string.settings_linux_optional),
         anchors = setOf(R.string.settings_anchor_app_shell),
         forceExpanded = envState is com.androidharness.app.data.env.EnvState.Downloading || envState is com.androidharness.app.data.env.EnvState.Installing || envState is com.androidharness.app.data.env.EnvState.Preparing) {
         LinuxEnvironmentCard(container = container, envState = envState)
     }
     }
-    SettingsDisclosure(Icons.Outlined.Shield, stringResource(R.string.settings_device_advanced), stringResource(R.string.settings_device_advanced_summary),
+    SettingsDisclosure(Icons.Rounded.Shield, stringResource(R.string.settings_device_advanced), stringResource(R.string.settings_device_advanced_summary),
         anchors = setOf(R.string.settings_root_title)) {
         RootAccessSection(container)
         DhizukuCard(container.dhizuku)
     }
-    SettingsDisclosure(Icons.Outlined.BatteryFull, stringResource(R.string.settings_device_background), stringResource(R.string.settings_device_background_summary)) {
+    SettingsDisclosure(Icons.Rounded.BatteryFull, stringResource(R.string.settings_device_background), stringResource(R.string.settings_device_background_summary)) {
         BatteryCard(container = container)
     }
 }
@@ -755,10 +829,10 @@ private fun CodeIntelligenceSection(
 
     SettingsHeader("CodeGraph")
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_codegraph_title)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.Code,
+                    Icons.Rounded.Code,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp),
@@ -840,9 +914,9 @@ private fun CodeIntelligenceSection(
 
     SettingsHeader(uiContext.getString(R.string.settings_workspace_active))
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Icon(Icons.Rounded.Folder, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(currentProject?.name ?: uiContext.getString(R.string.ui_no_workspace), style = MaterialTheme.typography.titleSmall)
@@ -864,10 +938,7 @@ private fun CodeIntelligenceSection(
 
             if (workspaceBusy) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    androidx.compose.material3.CircularProgressIndicator(
-                        strokeWidth = 2.dp,
-                        modifier = Modifier.size(14.dp),
-                    )
+                    androidx.compose.material3.LoadingIndicator(Modifier.size(22.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(
                         workspaceAction ?: uiContext.getString(R.string.ui_working),
@@ -964,7 +1035,7 @@ private fun CodeIntelligenceSection(
     }
 
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_codegraph_agent_integration)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(stringResource(R.string.settings_codegraph_agent_integration), style = MaterialTheme.typography.titleSmall)
             Text(
                 uiContext.getString(R.string.ui_when_this_workspace_is_indexed_harness_exposes),
@@ -1009,10 +1080,10 @@ private fun WebSearchSection(container: AppContainer) {
 
     SettingsHeader(uiContext.getString(R.string.settings_page_search_title))
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_web_backend_label)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.Key,
+                    Icons.Rounded.Key,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp),
@@ -1041,22 +1112,15 @@ private fun WebSearchSection(container: AppContainer) {
                 )
             }
 
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf("keyless" to uiContext.getString(R.string.ui_keyless), "brave" to "Brave", "tavily" to "Tavily")
-                    .forEachIndexed { index, (value, label) ->
-                        SegmentedButton(
-                            selected = provider == value,
-                            onClick = {
-                                if (provider != value) {
-                                    draft = null
-                                    status = null
-                                    scope.launch { container.settings.setWebSearchProvider(value) }
-                                }
-                            },
-                            shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
-                        ) { Text(label) }
-                    }
-            }
+            SettingsChoiceGroup(
+                options = listOf("keyless" to uiContext.getString(R.string.ui_keyless), "brave" to "Brave", "tavily" to "Tavily"),
+                selected = { it == provider },
+                onSelect = { value ->
+                    draft = null
+                    status = null
+                    scope.launch { container.settings.setWebSearchProvider(value) }
+                },
+            )
 
             when {
                 provider == "keyless" -> Text(
@@ -1086,7 +1150,7 @@ private fun WebSearchSection(container: AppContainer) {
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         Icon(
-                            Icons.Outlined.OpenInNew,
+                            Icons.Rounded.OpenInNew,
                             contentDescription = null,
                             modifier = Modifier.size(16.dp),
                         )
@@ -1252,7 +1316,7 @@ private fun McpSection(container: AppContainer, onOpenPlugins: () -> Unit, onOpe
     SettingsHeader(uiContext.getString(R.string.settings_search_mcp_title))
     PluginMcpServersSection(container, onOpenPlugins, onOpenConfiguration)
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_mcp_title)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             if (configTampered) {
                 Text(
                     uiContext.getString(R.string.ui_the_mcp_server_list_was_modified_outside) +
@@ -1263,7 +1327,7 @@ private fun McpSection(container: AppContainer, onOpenPlugins: () -> Unit, onOpe
             }
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.Extension,
+                    Icons.Rounded.Extension,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp),
@@ -1365,7 +1429,7 @@ private fun McpSection(container: AppContainer, onOpenPlugins: () -> Unit, onOpe
             }
 
             OutlinedButton(onClick = { showAdd = true }, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_action_add_server)) {
-                Icon(Icons.Outlined.Add, contentDescription = null, modifier = Modifier.size(16.dp))
+                Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(16.dp))
                 Spacer(Modifier.width(6.dp))
                 Text(stringResource(R.string.settings_action_add_server))
             }
@@ -1533,16 +1597,11 @@ private fun McpServerDialog(
                     isError = duplicate,
                     modifier = Modifier.fillMaxWidth(),
                 )
-                SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                    listOf("stdio" to uiContext.getString(R.string.ui_local), "http" to "HTTP", "sse" to "SSE")
-                        .forEachIndexed { index, (value, label) ->
-                            SegmentedButton(
-                                selected = type == value,
-                                onClick = { type = value },
-                                shape = SegmentedButtonDefaults.itemShape(index = index, count = 3),
-                            ) { Text(label, maxLines = 1) }
-                        }
-                }
+                SettingsChoiceGroup(
+                    options = listOf("stdio" to uiContext.getString(R.string.ui_local), "http" to "HTTP", "sse" to "SSE"),
+                    selected = { it == type },
+                    onSelect = { type = it },
+                )
                 if (type == "stdio") {
                     OutlinedTextField(
                         value = command,
@@ -1638,9 +1697,9 @@ private fun McpServerDialog(
 @Composable
 private fun StorageAccessCard(allFiles: Boolean, onGrant: () -> Unit) {
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.SdStorage, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.SdStorage, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_env_storage_access), style = MaterialTheme.typography.titleSmall)
@@ -1672,9 +1731,9 @@ internal fun ShizukuCard(
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(providerLabel, style = MaterialTheme.typography.titleSmall)
@@ -1765,9 +1824,9 @@ private fun WirelessAdbSection(container: AppContainer) {
     }
 
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.wireless_adb_section_title)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Terminal, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.Terminal, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.wireless_adb_section_title), style = MaterialTheme.typography.titleSmall)
@@ -1828,7 +1887,7 @@ private fun WirelessAdbSection(container: AppContainer) {
                 if (busy) ThinLinearProgress(Modifier.fillMaxWidth())
                 TextButton(onClick = { options = !options }) {
                     Text(stringResource(R.string.settings_connection_options))
-                    Icon(Icons.Outlined.ExpandMore, null, Modifier.size(18.dp))
+                    Icon(Icons.Rounded.ExpandMore, null, Modifier.size(18.dp))
                 }
                 AnimatedVisibility(options) {
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1971,9 +2030,9 @@ private fun LinuxEnvironmentCard(
     var showPackagesSheet by remember { mutableStateOf(false) }
 
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_search_linux_title), style = MaterialTheme.typography.titleSmall)
@@ -2018,7 +2077,7 @@ private fun LinuxEnvironmentCard(
                         modifier = Modifier.fillMaxWidth(),
                     ) {
                         FilledTonalButton(onClick = { showPackagesSheet = true }) {
-                            Icon(Icons.Outlined.Inventory2, contentDescription = null, modifier = Modifier.size(16.dp))
+                            Icon(Icons.Rounded.Inventory2, contentDescription = null, modifier = Modifier.size(16.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(stringResource(R.string.settings_env_packages))
                         }
@@ -2314,7 +2373,7 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
     SettingsHeader(uiContext.getString(R.string.settings_page_appearance_title))
     WorkspaceLayoutSection(settings.workspaceLayout) { scope.launch { container.settings.setWorkspaceLayout(it) } }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SettingsAnchor(R.string.settings_anchor_theme) {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(stringResource(R.string.settings_anchor_theme), style = MaterialTheme.typography.titleSmall)
@@ -2370,54 +2429,43 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
 private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     SettingsHeader(stringResource(R.string.settings_page_chat_title))
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            SettingsAnchor(R.string.settings_anchor_show_live_code) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
-                    .clickable { scope.launch { container.settings.setShowLiveCode(!settings.showLiveCode) } }) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.settings_anchor_show_live_code), style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(R.string.settings_chat_show_live_code_subtitle),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+    SettingsGroup {
+        item(onClick = { scope.launch { container.settings.setShowLiveCode(!settings.showLiveCode) } }) {
+            SettingsItemRow(
+                title = stringResource(R.string.settings_anchor_show_live_code),
+                subtitle = stringResource(R.string.settings_chat_show_live_code_subtitle),
+                modifier = Modifier.settingsAnchor(R.string.settings_anchor_show_live_code),
+                leading = { SettingsIconBadge(Icons.Rounded.Code, SettingsTone.SECONDARY) },
+                trailing = {
                     Switch(checked = settings.showLiveCode,
                         onCheckedChange = { scope.launch { container.settings.setShowLiveCode(it) } })
-                }
-            }
-            HorizontalDivider()
-            SettingsAnchor(R.string.show_todo_title) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()
-                    .clickable { scope.launch { container.settings.setShowTodoList(!settings.showTodoList) } }) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.show_todo_title), style = MaterialTheme.typography.bodyLarge)
-                        Text(stringResource(R.string.show_todo_desc),
-                            style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    }
+                },
+            )
+        }
+        item(onClick = { scope.launch { container.settings.setShowTodoList(!settings.showTodoList) } }) {
+            SettingsItemRow(
+                title = stringResource(R.string.show_todo_title),
+                subtitle = stringResource(R.string.show_todo_desc),
+                modifier = Modifier.settingsAnchor(R.string.show_todo_title),
+                leading = { SettingsIconBadge(Icons.Rounded.Checklist, SettingsTone.SECONDARY) },
+                trailing = {
                     Switch(checked = settings.showTodoList,
                         onCheckedChange = { scope.launch { container.settings.setShowTodoList(it) } })
-                }
-            }
-            HorizontalDivider()
-            SettingsAnchor(R.string.settings_anchor_repo_map) {
-                Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(R.string.settings_anchor_repo_map), style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            if (settings.repoMapEnabled) {
-                                uiContext.getString(R.string.ui_on_injects_a_compact_project_symbol_map)
-                            } else {
-                                uiContext.getString(R.string.ui_off_agent_explores_files_only_using_tool)
-                            },
-                            style = MaterialTheme.typography.bodySmall,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        )
-                    }
-                    Switch(
-                        checked = settings.repoMapEnabled,
-                        onCheckedChange = { scope.launch { container.settings.setRepoMapEnabled(it) } },
-                    )
-                }
-            }
+                },
+            )
+        }
+        item(onClick = { scope.launch { container.settings.setRepoMapEnabled(!settings.repoMapEnabled) } }) {
+            SettingsItemRow(
+                title = stringResource(R.string.settings_anchor_repo_map),
+                subtitle = if (settings.repoMapEnabled) uiContext.getString(R.string.ui_on_injects_a_compact_project_symbol_map)
+                else uiContext.getString(R.string.ui_off_agent_explores_files_only_using_tool),
+                modifier = Modifier.settingsAnchor(R.string.settings_anchor_repo_map),
+                leading = { SettingsIconBadge(Icons.Rounded.AccountTree, SettingsTone.SECONDARY) },
+                trailing = {
+                    Switch(checked = settings.repoMapEnabled,
+                        onCheckedChange = { scope.launch { container.settings.setRepoMapEnabled(it) } })
+                },
+            )
         }
     }
 }
@@ -2427,81 +2475,67 @@ private fun PrivacySection(container: AppContainer, settings: AppSettings, scope
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val context = LocalContext.current
     SettingsHeader(uiContext.getString(R.string.ui_privacy))
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_app_lock_title)) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_search_app_lock_title), style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        if (settings.biometricLockEnabled) {
-                            uiContext.getString(R.string.ui_on_requires_fingerprint_face_or_device_pin)
-                        } else {
-                            uiContext.getString(R.string.ui_off_the_app_opens_immediately_without_authentication)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+    val biometricTitle = if (settings.biometricLockEnabled)
+        stringResource(R.string.settings_privacy_lock_disable_title)
+    else stringResource(R.string.settings_privacy_lock_enable_title)
+    val biometricPrompt = stringResource(R.string.settings_privacy_biometric_prompt)
+    fun setLock(targetState: Boolean) {
+        val activity = context.findFragmentActivity()
+        if (activity != null) {
+            BiometricAuth.prompt(
+                activity = activity,
+                title = biometricTitle,
+                subtitle = biometricPrompt,
+                onSuccess = {
+                    scope.launch { container.settings.setBiometricLockEnabled(targetState) }
+                },
+            )
+        } else {
+            scope.launch { container.settings.setBiometricLockEnabled(targetState) }
+        }
+    }
+    SettingsGroup {
+        item(onClick = { setLock(!settings.biometricLockEnabled) }) {
+            SettingsItemRow(
+                title = stringResource(R.string.settings_search_app_lock_title),
+                subtitle = if (settings.biometricLockEnabled) uiContext.getString(R.string.ui_on_requires_fingerprint_face_or_device_pin)
+                else uiContext.getString(R.string.ui_off_the_app_opens_immediately_without_authentication),
+                modifier = Modifier.settingsAnchor(R.string.settings_search_app_lock_title),
+                leading = { SettingsIconBadge(Icons.Rounded.Fingerprint, SettingsTone.PRIMARY) },
+                trailing = { Switch(checked = settings.biometricLockEnabled, onCheckedChange = { setLock(it) }) },
+            )
+        }
+        if (settings.biometricLockEnabled) item {
+            Column(
+                Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_autolock_title).padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp),
+            ) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    SettingsIconBadge(Icons.Rounded.Timer, SettingsTone.NEUTRAL)
+                    Spacer(Modifier.width(14.dp))
+                    Text(stringResource(R.string.settings_search_autolock_title), style = MaterialTheme.typography.titleMedium)
                 }
-                val biometricTitle = if (settings.biometricLockEnabled)
-                    stringResource(R.string.settings_privacy_lock_disable_title)
-                else stringResource(R.string.settings_privacy_lock_enable_title)
-                val biometricPrompt = stringResource(R.string.settings_privacy_biometric_prompt)
-                Switch(
-                    checked = settings.biometricLockEnabled,
-                    onCheckedChange = { targetState ->
-                        val activity = context.findFragmentActivity()
-                        if (activity != null) {
-                            BiometricAuth.prompt(
-                                activity = activity,
-                                title = biometricTitle,
-                                subtitle = biometricPrompt,
-                                onSuccess = {
-                                    scope.launch { container.settings.setBiometricLockEnabled(targetState) }
-                                },
-                            )
-                        } else {
-                            scope.launch { container.settings.setBiometricLockEnabled(targetState) }
-                        }
-                    },
+                val timeouts = listOf(0 to uiContext.getString(R.string.ui_instant), 1 to "1m", 5 to "5m", 15 to "15m")
+                SettingsChoiceGroup(
+                    options = timeouts,
+                    selected = { it == settings.biometricLockTimeoutMinutes },
+                    onSelect = { mins -> scope.launch { container.settings.setBiometricLockTimeout(mins) } },
                 )
             }
-            if (settings.biometricLockEnabled) {
-                Column(Modifier.settingsAnchor(R.string.settings_search_autolock_title), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                    Text(stringResource(R.string.settings_search_autolock_title), style = MaterialTheme.typography.labelLarge)
-                    val timeouts = listOf(0 to uiContext.getString(R.string.ui_instant), 1 to "1m", 5 to "5m", 15 to "15m")
-                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                        timeouts.forEachIndexed { index, (mins, label) ->
-                            SegmentedButton(
-                                selected = settings.biometricLockTimeoutMinutes == mins,
-                                onClick = { scope.launch { container.settings.setBiometricLockTimeout(mins) } },
-                                shape = SegmentedButtonDefaults.itemShape(index = index, count = timeouts.size),
-                            ) {
-                                Text(label, maxLines = 1)
-                            }
-                        }
-                    }
-                }
-            }
-            HorizontalDivider()
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_screenshots_title)) {
-                Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_search_screenshots_title), style = MaterialTheme.typography.bodyLarge)
-                    Text(
-                        if (settings.allowScreenshots) {
-                            uiContext.getString(R.string.ui_on_screenshots_work_everywhere_except_while_a)
-                        } else {
-                            uiContext.getString(R.string.ui_off_screenshots_and_the_recents_preview_are) +
-                                uiContext.getString(R.string.ui_key_screens_stay_blocked_even_when_this)
-                        },
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                }
-                Switch(
-                    checked = settings.allowScreenshots,
-                    onCheckedChange = { scope.launch { container.settings.setAllowScreenshots(it) } },
-                )
-            }
+        }
+        item(onClick = { scope.launch { container.settings.setAllowScreenshots(!settings.allowScreenshots) } }) {
+            SettingsItemRow(
+                title = stringResource(R.string.settings_search_screenshots_title),
+                subtitle = if (settings.allowScreenshots) uiContext.getString(R.string.ui_on_screenshots_work_everywhere_except_while_a)
+                else uiContext.getString(R.string.ui_off_screenshots_and_the_recents_preview_are) +
+                    uiContext.getString(R.string.ui_key_screens_stay_blocked_even_when_this),
+                modifier = Modifier.settingsAnchor(R.string.settings_search_screenshots_title),
+                leading = { SettingsIconBadge(Icons.Rounded.Screenshot, SettingsTone.PRIMARY) },
+                trailing = {
+                    Switch(checked = settings.allowScreenshots,
+                        onCheckedChange = { scope.launch { container.settings.setAllowScreenshots(it) } })
+                },
+            )
         }
     }
 }
@@ -2525,7 +2559,7 @@ private fun PlanningModelSection(
 
     SettingsHeader(uiContext.getString(R.string.settings_search_dual_planning_title))
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.fillMaxWidth()) {
                 Text(stringResource(R.string.settings_models_dual_subtitle), style = MaterialTheme.typography.bodyLarge)
                 Text(
@@ -2654,7 +2688,7 @@ private fun ModelRoleRow(label: String, model: String?, onClick: () -> Unit) {
             )
         }
         Icon(
-            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+            Icons.AutoMirrored.Rounded.KeyboardArrowRight,
             contentDescription = stringResource(R.string.settings_models_choose_model, label),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -2669,7 +2703,7 @@ private fun SlashCommandsSection(container: AppContainer) {
         SettingsHeader(uiContext.getString(R.string.settings_search_slash_commands_title))
     }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             var snippetName by remember { mutableStateOf("") }
             var snippetBody by remember { mutableStateOf("") }
             var showAdd by remember { mutableStateOf(false) }
@@ -2705,7 +2739,7 @@ private fun SlashCommandsSection(container: AppContainer) {
                         modifier = Modifier.weight(1f),
                     )
                     IconButton(onClick = { scope.launch { container.snippets.delete(snippet) } }) {
-                        Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.settings_action_delete), modifier = Modifier.size(18.dp))
+                        Icon(Icons.Rounded.Delete, contentDescription = stringResource(R.string.settings_action_delete), modifier = Modifier.size(18.dp))
                     }
                 }
             }
@@ -2722,9 +2756,9 @@ private fun BatteryCard(container: AppContainer) {
     var exempt by remember { mutableStateOf(isIgnoringBatteryOptimizations(context)) }
 
     SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(Modifier.settingsAnchor(R.string.settings_env_keep_alive), verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.Terminal, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
                     Text(stringResource(R.string.settings_env_keep_alive), style = MaterialTheme.typography.titleSmall)
@@ -2774,9 +2808,9 @@ private fun requestBatteryExemption(context: android.content.Context) =
 internal fun SettingsHeader(title: String) {
     Text(
         title,
-        style = MaterialTheme.typography.labelMediumEmphasized,
-        color = MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(start = 2.dp, top = 14.dp, bottom = 2.dp),
+        style = MaterialTheme.typography.labelLargeEmphasized,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 0.dp),
     )
 }
 
@@ -2790,7 +2824,7 @@ internal fun SettingRow(
     trailing: @Composable RowScope.() -> Unit = {},
 ) = SettingsRow(
     leading = {
-        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
+        SettingsIconBadge(icon, SettingsTone.SECONDARY, 40.dp)
     },
     title = title,
     subtitle = subtitle,
@@ -2815,32 +2849,22 @@ private fun SettingsRow(
             .fillMaxWidth()
             .settingsAnchor(title)
             .clickable(enabled = onClick != null) { onClick?.invoke() }
-            .padding(horizontal = 14.dp, vertical = 12.dp),
+            .heightIn(min = 64.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
         leading()
         Spacer(Modifier.width(14.dp))
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyLarge)
+        Column(Modifier.weight(1f).padding(end = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.titleMedium)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
         trailing()
     }
-    if (divider) {
-        HorizontalDivider(
-            Modifier.padding(start = 50.dp),
-            color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f),
-        )
-    }
+    if (divider) SettingsGap()
 }
 
 @Composable
-internal fun StatusText(text: String, ok: Boolean) {
-    Text(
-        text,
-        style = MaterialTheme.typography.labelMedium,
-        color = if (ok) LocalStatusColors.current.success else MaterialTheme.colorScheme.onSurfaceVariant,
-    )
-}
+internal fun StatusText(text: String, ok: Boolean) = SettingsStatusPill(text, ok)
 
 @Composable
 private fun DropdownSetting(
@@ -2864,7 +2888,7 @@ private fun DropdownSetting(
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Icon(
-                    Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                     contentDescription = stringResource(R.string.settings_models_change_model, label),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -2872,10 +2896,10 @@ private fun DropdownSetting(
         }
         if (divider) HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
         Box {
-            DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            com.androidharness.app.ui.common.ExpressiveDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
                 entries.forEach { (value, entryLabel) ->
                     val isFullAccess = value == PermissionMode.FULL_ACCESS.name
-                    DropdownMenuItem(
+                    com.androidharness.app.ui.common.ExpressiveDropdownMenuItem(
                         text = {
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Text(
@@ -2885,7 +2909,7 @@ private fun DropdownSetting(
                                 )
                                 if (entryLabel == current) {
                                     Icon(
-                                        Icons.Outlined.CheckCircle,
+                                        Icons.Rounded.CheckCircle,
                                         contentDescription = null,
                                         tint = if (isFullAccess) FullAccessOrange else MaterialTheme.colorScheme.primary,
                                         modifier = Modifier.size(18.dp),
@@ -2914,7 +2938,7 @@ private fun UpdatesCard(container: AppContainer) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.SystemUpdate,
+                    Icons.Rounded.SystemUpdate,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary,
                     modifier = Modifier.size(20.dp),
@@ -2935,10 +2959,7 @@ private fun UpdatesCard(container: AppContainer) {
                         step !is com.androidharness.app.data.update.UpdateManager.Step.Downloading,
                 ) {
                     if (step is com.androidharness.app.data.update.UpdateManager.Step.Checking) {
-                        androidx.compose.material3.CircularProgressIndicator(
-                            modifier = Modifier.size(16.dp),
-                            strokeWidth = 2.dp,
-                        )
+                        androidx.compose.material3.LoadingIndicator(Modifier.size(22.dp), color = androidx.compose.material3.LocalContentColor.current)
                         Spacer(Modifier.width(8.dp))
                     }
                     Text(if (step is com.androidharness.app.data.update.UpdateManager.Step.Checking) uiContext.getString(R.string.ui_checking) else uiContext.getString(R.string.settings_search_updates_title))
@@ -2947,7 +2968,7 @@ private fun UpdatesCard(container: AppContainer) {
                     is com.androidharness.app.data.update.UpdateManager.Step.UpToDate -> {
                         Spacer(Modifier.width(12.dp))
                         Icon(
-                            Icons.Outlined.CheckCircle,
+                            Icons.Rounded.CheckCircle,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(18.dp),
@@ -3056,7 +3077,7 @@ private fun AboutSection(container: AppContainer) {
         )
         SettingsRow(
             leading = {
-                Icon(Icons.Outlined.Code, contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
+                Icon(Icons.Rounded.Code, contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(22.dp))
             },
             title = stringResource(R.string.settings_about_source),
             subtitle = "github.com/Sanuu7/AndroidHarness",
@@ -3069,7 +3090,7 @@ private fun AboutSection(container: AppContainer) {
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                Icon(Icons.Outlined.Description, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(20.dp))
+                Icon(Icons.Rounded.Description, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(20.dp))
                 Spacer(Modifier.width(10.dp))
                 Text(stringResource(R.string.settings_about_license), style = MaterialTheme.typography.titleSmall, modifier = Modifier.weight(1f))
                 Surface(color = scheme.primaryContainer, shape = CircleShape) {
@@ -3093,7 +3114,7 @@ private fun AboutSection(container: AppContainer) {
             ) {
                 Text(stringResource(R.string.settings_about_read_license), style = MaterialTheme.typography.labelLarge, color = scheme.primary)
                 Spacer(Modifier.width(6.dp))
-                Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(16.dp))
+                Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, tint = scheme.primary, modifier = Modifier.size(16.dp))
             }
         }
     }
@@ -3143,7 +3164,7 @@ private fun CreditsGroup(label: String, credits: List<Credit>, onOpen: (String) 
                 Text(credit.name, style = MaterialTheme.typography.bodyMedium)
                 Text(credit.role, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
             }
-            Icon(Icons.AutoMirrored.Outlined.OpenInNew, contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
+            Icon(Icons.AutoMirrored.Rounded.OpenInNew, contentDescription = null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
         }
         if (index != credits.lastIndex) {
             HorizontalDivider(
@@ -3168,7 +3189,7 @@ private fun GitHubMark() {
 @Composable
 private fun ExternalLinkIcon() {
     Icon(
-        Icons.AutoMirrored.Outlined.OpenInNew,
+        Icons.AutoMirrored.Rounded.OpenInNew,
         contentDescription = null,
         tint = MaterialTheme.colorScheme.onSurfaceVariant,
         modifier = Modifier.size(18.dp),
@@ -3249,10 +3270,10 @@ private fun ChatsBackupSection(container: AppContainer) {
             report(uiContext.getString(R.string.ui_imported_chats_messages_already_present, (result.sessions).toString(), (result.messages).toString(), (result.memories).toString(), (result.skipped).toString()))
         }) }
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_backup_chat_backup)) {
-        Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.Archive,
+                    Icons.Rounded.Archive,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(20.dp),

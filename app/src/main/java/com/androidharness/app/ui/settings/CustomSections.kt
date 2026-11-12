@@ -2,7 +2,6 @@ package com.androidharness.app.ui.settings
 
 import com.androidharness.app.ui.theme.HarnessGlassModalBottomSheet as ModalBottomSheet
 import com.androidharness.app.ui.theme.HarnessGlassSurface as Surface
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import android.widget.Toast
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.foundation.background
@@ -18,9 +17,9 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Check
 import androidx.compose.material.icons.rounded.KeyboardArrowDown
@@ -67,14 +66,14 @@ import com.androidharness.app.ui.common.TextButton
 import kotlinx.coroutines.launch
 
 internal val customSectionIcons: List<Pair<String, ImageVector>> = listOf(
-    "TUNE" to Icons.Outlined.Tune, "STAR" to Icons.Outlined.StarOutline, "FAVORITE" to Icons.Outlined.FavoriteBorder,
-    "BOLT" to Icons.Outlined.Bolt, "ROCKET" to Icons.Outlined.RocketLaunch, "CODE" to Icons.Outlined.Code,
-    "CHAT" to Icons.Outlined.ChatBubbleOutline, "PALETTE" to Icons.Outlined.Palette, "MIC" to Icons.Outlined.Mic,
-    "SHIELD" to Icons.Outlined.Shield, "BUILD" to Icons.Outlined.Build, "FOLDER" to Icons.Outlined.Folder,
+    "TUNE" to Icons.Rounded.Tune, "STAR" to Icons.Rounded.StarOutline, "FAVORITE" to Icons.Rounded.FavoriteBorder,
+    "BOLT" to Icons.Rounded.Bolt, "ROCKET" to Icons.Rounded.RocketLaunch, "CODE" to Icons.Rounded.Code,
+    "CHAT" to Icons.Rounded.ChatBubbleOutline, "PALETTE" to Icons.Rounded.Palette, "MIC" to Icons.Rounded.Mic,
+    "SHIELD" to Icons.Rounded.Shield, "BUILD" to Icons.Rounded.Build, "FOLDER" to Icons.Rounded.Folder,
 )
 
 internal fun customSectionIcon(name: String): ImageVector =
-    customSectionIcons.firstOrNull { it.first == name }?.second ?: Icons.Outlined.Tune
+    customSectionIcons.firstOrNull { it.first == name }?.second ?: Icons.Rounded.Tune
 
 /**
  * Settings whose own page asks for something first (the screen lock, or a
@@ -147,34 +146,29 @@ internal fun CustomSectionsHomeGroup(sections: List<CustomSettingsSection>, onOp
     if (sections.isEmpty()) return
     val colors = MaterialTheme.colorScheme
     val links = rememberSettingLinks()
-    Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             stringResource(R.string.custom_sections_group),
-            style = MaterialTheme.typography.titleSmall,
-            color = colors.onSurfaceVariant,
-            modifier = Modifier.padding(start = 4.dp),
+            style = MaterialTheme.typography.labelLargeEmphasized,
+            color = colors.primary,
+            modifier = Modifier.padding(start = 16.dp, bottom = 2.dp),
         )
-        SettingsPanel(Modifier.fillMaxWidth()) {
-            sections.forEachIndexed { index, section ->
-                Surface(onClick = { onOpen(section.id) }, color = colors.surfaceContainerLow, modifier = Modifier.fillMaxWidth()) {
+        SettingsGroup {
+            sections.forEach { section ->
+                item(onClick = { onOpen(section.id) }) {
                     Row(
-                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+                        modifier = Modifier.heightIn(min = 72.dp).padding(horizontal = 16.dp, vertical = 14.dp),
                         verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(14.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp),
                     ) {
-                        SectionBadge(section.icon, 40.dp)
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                            Text(section.name, style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Medium,
+                        SectionBadge(section.icon, 44.dp)
+                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(section.name, style = MaterialTheme.typography.titleMedium,
                                 maxLines = 2, overflow = TextOverflow.Ellipsis)
-                            Text(itemCount(section, links), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+                            Text(itemCount(section, links), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
                         }
-                        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = colors.onSurfaceVariant, modifier = Modifier.size(18.dp))
                     }
                 }
-                if (index != sections.lastIndex) HorizontalDivider(
-                    modifier = Modifier.padding(start = 70.dp, end = 16.dp),
-                    color = colors.outlineVariant.copy(alpha = 0.4f),
-                )
             }
         }
     }
@@ -252,8 +246,8 @@ private fun DeleteSectionDialog(name: String, onDismiss: () -> Unit, onDelete: (
 
 /** Rows of one group share a card look: wide corners on the outside, tight ones where rows meet. */
 private fun groupedShape(first: Boolean, last: Boolean): Shape {
-    val top = if (first) 22.dp else 6.dp
-    val bottom = if (last) 22.dp else 6.dp
+    val top = if (first) SettingsOuterCorner else SettingsInnerCorner
+    val bottom = if (last) SettingsOuterCorner else SettingsInnerCorner
     return RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom)
 }
 
@@ -301,19 +295,19 @@ internal fun CustomSectionPage(
                             Text(itemCount(section, links), style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
                         }
                         FilledTonalButton(onClick = { editing = !editing }, modifier = Modifier.testTag("custom-section-edit")) {
-                            Icon(if (editing) Icons.Rounded.Check else Icons.Outlined.Edit, null, Modifier.size(18.dp))
+                            Icon(if (editing) Icons.Rounded.Check else Icons.Rounded.Edit, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(if (editing) R.string.custom_sections_done else R.string.custom_sections_arrange))
                         }
                     }
                     if (editing) FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         OutlinedButton(onClick = { renaming = true }) {
-                            Icon(Icons.Outlined.DriveFileRenameOutline, null, Modifier.size(18.dp))
+                            Icon(Icons.Rounded.DriveFileRenameOutline, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.custom_sections_rename))
                         }
                         OutlinedButton(onClick = { deleting = true }, colors = ButtonDefaults.outlinedButtonColors(contentColor = scheme.error)) {
-                            Icon(Icons.Outlined.Delete, null, Modifier.size(18.dp))
+                            Icon(Icons.Rounded.Delete, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.custom_sections_delete))
                         }
@@ -367,7 +361,7 @@ internal fun CustomSectionPage(
                             title = itemTitle(item, links),
                             icon = when {
                                 sub != null -> customSectionIcon(sub.icon)
-                                heading != null -> Icons.Outlined.Title
+                                heading != null -> Icons.Rounded.Title
                                 else -> (page ?: link?.page)?.let(::settingsIcon) ?: kindIcon(setting?.kind)
                             },
                             onUp = rows.getOrNull(index - 1)?.let { above -> { onChange { CustomSettingsSections.swap(it, item.key, above.key) } } },
@@ -404,12 +398,12 @@ internal fun CustomSectionPage(
                     }
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (depth < CustomSettingsSections.MAX_DEPTH) FilledTonalButton(onClick = { addingSub = true }, enabled = !full, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Outlined.CreateNewFolder, null, Modifier.size(18.dp))
+                            Icon(Icons.Rounded.CreateNewFolder, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.custom_sections_add_sub), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
                         FilledTonalButton(onClick = { addingHeading = true }, enabled = !full, modifier = Modifier.weight(1f)) {
-                            Icon(Icons.Outlined.Title, null, Modifier.size(18.dp))
+                            Icon(Icons.Rounded.Title, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.custom_sections_add_heading), maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
@@ -466,7 +460,7 @@ private fun LinkRow(leading: @Composable () -> Unit, title: String, subtitle: St
     ) {
         leading()
         RowLabels(title, subtitle, Modifier.weight(1f))
-        Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
     }
 }
 
@@ -487,17 +481,17 @@ private fun ArrangeRow(title: String, icon: ImageVector, onUp: (() -> Unit)?, on
             Icon(Icons.Rounded.KeyboardArrowDown, stringResource(R.string.custom_sections_move_down, title))
         }
         IconButton(onClick = onRemove) {
-            Icon(Icons.Outlined.RemoveCircleOutline, stringResource(R.string.custom_sections_remove, title), tint = scheme.error)
+            Icon(Icons.Rounded.RemoveCircleOutline, stringResource(R.string.custom_sections_remove, title), tint = scheme.error)
         }
     }
 }
 
 private fun kindIcon(kind: SettingKind?): ImageVector = when (kind) {
-    SettingKind.Toggle -> Icons.Outlined.ToggleOn
-    is SettingKind.Range -> Icons.Outlined.Tune
-    is SettingKind.Choice -> Icons.Outlined.Checklist
-    is SettingKind.Text -> Icons.Outlined.Notes
-    null -> Icons.Outlined.Settings
+    SettingKind.Toggle -> Icons.Rounded.ToggleOn
+    is SettingKind.Range -> Icons.Rounded.Tune
+    is SettingKind.Choice -> Icons.Rounded.Checklist
+    is SettingKind.Text -> Icons.Rounded.Notes
+    null -> Icons.Rounded.Settings
 }
 
 /** A range small enough to drag across; wider ones are typed in. */
@@ -601,7 +595,7 @@ private fun SettingControl(setting: AgentSetting, settings: AppSettings, reposit
                         }
                     }
                 }
-                Icon(Icons.Outlined.UnfoldMore, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+                Icon(Icons.Rounded.UnfoldMore, null, tint = scheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
             }
         }
         is SettingKind.Text -> {
@@ -623,7 +617,7 @@ private fun ValueRow(title: String, subtitle: String, value: String?, padding: M
     ) {
         RowLabels(title, subtitle, Modifier.weight(1f))
         if (value != null) Text(value, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-        Icon(Icons.Outlined.Edit, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
+        Icon(Icons.Rounded.Edit, null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp))
     }
 }
 
@@ -722,13 +716,13 @@ private fun CustomSectionPickerSheet(
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(R.string.custom_sections_picker_title, section.name), style = MaterialTheme.typography.titleLarge,
                     maxLines = 2, overflow = TextOverflow.Ellipsis, modifier = Modifier.weight(1f))
-                IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, stringResource(R.string.custom_sections_done)) }
+                IconButton(onClick = onDismiss) { Icon(Icons.Rounded.Close, stringResource(R.string.custom_sections_done)) }
             }
             OutlinedTextField(
                 value = query, onValueChange = { query = it }, singleLine = true,
                 placeholder = { Text(stringResource(R.string.custom_sections_picker_search)) },
-                leadingIcon = { Icon(Icons.Outlined.Search, null) },
-                shape = RoundedCornerShape(18.dp),
+                leadingIcon = { Icon(Icons.Rounded.Search, null) },
+                shape = RoundedCornerShape(20.dp),
                 modifier = Modifier.fillMaxWidth(),
             )
             LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {

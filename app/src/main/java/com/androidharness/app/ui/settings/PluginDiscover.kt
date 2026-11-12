@@ -11,7 +11,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,12 +55,12 @@ internal fun ExpressiveSearchField(
         singleLine = true,
         shape = CircleShape,
         placeholder = { Text(placeholder, maxLines = 1, overflow = TextOverflow.Ellipsis) },
-        leadingIcon = { Icon(Icons.Outlined.Search, null) },
+        leadingIcon = { Icon(Icons.Rounded.Search, null) },
         trailingIcon = {
             when {
                 busy -> @OptIn(ExperimentalMaterial3ExpressiveApi::class) LoadingIndicator(Modifier.size(28.dp))
                 value.isNotEmpty() -> IconButton(onClick = { onValueChange("") }) {
-                    Icon(Icons.Outlined.Close, stringResource(R.string.pm_clear_search))
+                    Icon(Icons.Rounded.Close, stringResource(R.string.pm_clear_search))
                 }
             }
         },
@@ -96,7 +96,7 @@ internal fun <T> MenuFilterChip(
             onClick = { open = true },
             label = { Text(if (value == default && !alwaysShowValue) label else current, maxLines = 1) },
             leadingIcon = { Icon(icon, null, Modifier.size(FilterChipDefaults.IconSize)) },
-            trailingIcon = { Icon(Icons.Outlined.ArrowDropDown, null, Modifier.size(FilterChipDefaults.IconSize)) },
+            trailingIcon = { Icon(Icons.Rounded.ArrowDropDown, null, Modifier.size(FilterChipDefaults.IconSize)) },
             shape = CircleShape,
             modifier = Modifier.semantics { contentDescription = "$label: $current" },
         )
@@ -109,7 +109,7 @@ internal fun <T> MenuFilterChip(
                 ExpressiveDropdownMenuItem(
                     text = { Text(text) },
                     onClick = { onSelect(option); open = false },
-                    trailingIcon = if (option == value) ({ Icon(Icons.Outlined.Check, null) }) else null,
+                    trailingIcon = if (option == value) ({ Icon(Icons.Rounded.Check, null) }) else null,
                 )
             }
         }
@@ -133,7 +133,7 @@ internal fun <T> ConnectedChoice(options: List<Triple<T, String, Int?>>, selecte
                 modifier = Modifier.heightIn(min = 44.dp),
             ) {
                 if (value == selected) {
-                    Icon(Icons.Outlined.Check, null, Modifier.size(ToggleButtonDefaults.IconSize))
+                    Icon(Icons.Rounded.Check, null, Modifier.size(ToggleButtonDefaults.IconSize))
                     Spacer(Modifier.width(ToggleButtonDefaults.IconSpacing))
                 }
                 Text(if (count != null) "$label $count" else label, maxLines = 1)
@@ -174,11 +174,11 @@ internal fun DiscoverControls(
                 CatalogSort.NEWEST to stringResource(R.string.pm_sort_newest),
                 CatalogSort.OLDEST to stringResource(R.string.pm_sort_oldest),
                 CatalogSort.NAME to stringResource(R.string.pm_sort_name),
-            ), Icons.Outlined.SwapVert, { onFilter(filter.copy(sort = it)) }, hint = stringResource(R.string.pm_sort_hint), alwaysShowValue = true)
+            ), Icons.Rounded.SwapVert, { onFilter(filter.copy(sort = it)) }, hint = stringResource(R.string.pm_sort_hint), alwaysShowValue = true)
             MenuFilterChip(stringResource(R.string.pm_filter_type), filter.kind, "all", listOf(
                 "all" to stringResource(R.string.pm_type_any), "skill" to stringResource(R.string.pm_kind_skills),
                 "plugin" to stringResource(R.string.pm_kind_plugins), "mcp" to stringResource(R.string.pm_kind_mcp),
-            ), Icons.Outlined.Category, { onFilter(filter.copy(kind = it)) })
+            ), Icons.Rounded.Category, { onFilter(filter.copy(kind = it)) })
             MenuFilterChip(stringResource(R.string.pm_filter_source), filter.source, null, listOf(
                 null to stringResource(R.string.pm_source_any),
                 CatalogSource.FEATURED to stringResource(R.string.pm_source_featured),
@@ -186,24 +186,24 @@ internal fun DiscoverControls(
                 CatalogSource.GITHUB to "GitHub",
                 CatalogSource.NPM to "npm",
                 CatalogSource.MCP_REGISTRY to stringResource(R.string.pm_source_mcp),
-            ), Icons.Outlined.Public, { onFilter(filter.copy(source = it)) })
+            ), Icons.Rounded.Public, { onFilter(filter.copy(source = it)) })
             if (categories.isNotEmpty() || filter.category.isNotBlank()) {
                 MenuFilterChip(stringResource(R.string.pm_filter_category), filter.category, "",
                     listOf("" to stringResource(R.string.pm_category_any)) + categories.map { it to it },
-                    Icons.Outlined.Label, { onFilter(filter.copy(category = it)) })
+                    Icons.Rounded.Label, { onFilter(filter.copy(category = it)) })
             }
             MenuFilterChip(stringResource(R.string.pm_filter_setup), filter.setup, CatalogSetup.ANY, listOf(
                 CatalogSetup.ANY to stringResource(R.string.pm_setup_any),
                 CatalogSetup.NONE_NEEDED to stringResource(R.string.pm_setup_none),
                 CatalogSetup.RUNTIME to stringResource(R.string.pm_setup_runtime),
-            ), Icons.Outlined.Memory, { onFilter(filter.copy(setup = it)) }, hint = stringResource(R.string.pm_setup_hint))
+            ), Icons.Rounded.Memory, { onFilter(filter.copy(setup = it)) }, hint = stringResource(R.string.pm_setup_hint))
         }
         if (shown != null) Row(verticalAlignment = Alignment.CenterVertically) {
             Text(pluralStringResource(R.plurals.pm_results, shown, shown), Modifier.weight(1f),
                 style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
             AnimatedVisibility(filter.active > 0 || filter.sort != CatalogSort.RELEVANCE) {
                 TextButton(onClick = { onFilter(CatalogFilter()) }) {
-                    Icon(Icons.Outlined.FilterAltOff, null, Modifier.size(18.dp))
+                    Icon(Icons.Rounded.FilterAltOff, null, Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp))
                     Text(stringResource(R.string.pm_clear_filters))
                 }
@@ -224,7 +224,7 @@ internal fun KindBadge(kind: String, modifier: Modifier = Modifier, size: Int = 
     }
     Surface(modifier.size(size.dp), shape = shape.toShape(), color = container, contentColor = content) {
         Box(contentAlignment = Alignment.Center) {
-            Icon(when (kind) { "skill" -> Icons.Outlined.AutoAwesome; "mcp" -> Icons.Outlined.Hub; else -> Icons.Outlined.Extension },
+            Icon(when (kind) { "skill" -> Icons.Rounded.AutoAwesome; "mcp" -> Icons.Rounded.Hub; else -> Icons.Rounded.Extension },
                 null, Modifier.size((size * .46f).dp))
         }
     }
@@ -272,7 +272,7 @@ internal fun CatalogListingCard(
                         style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                 }
                 if (listing.homepage.startsWith("https://")) IconButton(onClick = { runCatching { uri.openUri(listing.homepage) } }) {
-                    Icon(Icons.Outlined.OpenInNew, stringResource(R.string.pm_open_page, listing.name))
+                    Icon(Icons.Rounded.OpenInNew, stringResource(R.string.pm_open_page, listing.name))
                 }
             }
             if (entry.isInstalled) InstalledBanner(entry)
@@ -281,11 +281,11 @@ internal fun CatalogListingCard(
             FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 listing.stars?.let { stars ->
                     val described = pluralStringResource(R.plurals.pm_stars, stars, stars)
-                    StatPill(Icons.Outlined.StarOutline, formatTokenCount(stars.toLong()), Modifier.semantics { contentDescription = described },
+                    StatPill(Icons.Rounded.StarOutline, formatTokenCount(stars.toLong()), Modifier.semantics { contentDescription = described },
                         container = scheme.tertiaryContainer.copy(alpha = .7f), content = scheme.onTertiaryContainer)
                 }
-                listing.downloads?.takeIf { it > 0 }?.let { StatPill(Icons.Outlined.Download, stringResource(R.string.pm_downloads_month, formatTokenCount(it))) }
-                listing.updatedAt?.let { StatPill(Icons.Outlined.Update, relativeTime(it)) }
+                listing.downloads?.takeIf { it > 0 }?.let { StatPill(Icons.Rounded.Download, stringResource(R.string.pm_downloads_month, formatTokenCount(it))) }
+                listing.updatedAt?.let { StatPill(Icons.Rounded.Update, relativeTime(it)) }
                 StatPill(null, kindLabel(listing.kind))
                 if (listing.category.isNotBlank()) StatPill(null, listing.category.replaceFirstChar(Char::titlecase))
                 if (listing.version.isNotBlank()) StatPill(null, listing.version.let { if (it.first().isDigit()) "v$it" else it })
@@ -296,13 +296,13 @@ internal fun CatalogListingCard(
                     val label = stringResource(R.string.pm_update_named, listing.name)
                     com.androidharness.app.ui.common.Button(onClick = { onUpdate(update) }, enabled = enabled,
                         modifier = Modifier.fillMaxWidth().heightIn(min = 54.dp).semantics { contentDescription = label }) {
-                        Icon(Icons.Outlined.Upgrade, null, Modifier.size(20.dp))
+                        Icon(Icons.Rounded.Upgrade, null, Modifier.size(20.dp))
                         Spacer(Modifier.width(10.dp))
                         Text(stringResource(R.string.pm_update))
                     }
                 }
                 entry.isInstalled && !preparing -> OutlinedButton(onClick = onInstall, enabled = enabled, modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp)) {
-                    Icon(Icons.Outlined.AddCircleOutline, null, Modifier.size(18.dp))
+                    Icon(Icons.Rounded.AddCircleOutline, null, Modifier.size(18.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(stringResource(R.string.pm_install_again))
                 }
@@ -320,10 +320,10 @@ internal fun CatalogListingCard(
 private fun InstalledBanner(entry: CatalogEntry) {
     val scheme = MaterialTheme.colorScheme
     val update = entry.update != null
-    Surface(shape = RoundedCornerShape(18.dp), color = if (update) scheme.primaryContainer else scheme.secondaryContainer) {
+    Surface(shape = RoundedCornerShape(20.dp), color = if (update) scheme.primaryContainer else scheme.secondaryContainer) {
         Row(Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-            Icon(if (update) Icons.Outlined.NewReleases else Icons.Outlined.CheckCircle, null, Modifier.size(20.dp))
+            Icon(if (update) Icons.Rounded.NewReleases else Icons.Rounded.CheckCircle, null, Modifier.size(20.dp))
             Column(Modifier.weight(1f)) {
                 Text(stringResource(if (update) R.string.pm_update_available else R.string.pm_status_installed), style = MaterialTheme.typography.labelLarge)
                 Text(stringResource(R.string.pm_installed_in, entry.installed.map { scopeName(it) }.distinct().joinToString(", ")),
@@ -344,7 +344,7 @@ internal fun DiscoverEmpty(onClear: () -> Unit) = Surface(Modifier.fillMaxWidth(
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         @OptIn(ExperimentalMaterial3ExpressiveApi::class)
         Surface(Modifier.size(72.dp), shape = MaterialShapes.Puffy.toShape(), color = MaterialTheme.colorScheme.secondaryContainer) {
-            Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.SearchOff, null, Modifier.size(32.dp)) }
+            Box(contentAlignment = Alignment.Center) { Icon(Icons.Rounded.SearchOff, null, Modifier.size(32.dp)) }
         }
         Text(stringResource(R.string.pm_no_matches), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Text(stringResource(R.string.pm_no_matches_hint), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center,

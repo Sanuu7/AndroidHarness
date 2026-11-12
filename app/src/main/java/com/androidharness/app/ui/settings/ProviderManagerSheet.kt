@@ -10,8 +10,8 @@ import com.androidharness.app.llm.ProviderModelSearch
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.rounded.Add
+import androidx.compose.material.icons.rounded.Close
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
@@ -108,7 +108,7 @@ fun ProviderManagerSheet(
                                 TextButton(enabled = !selection.busy, onClick = {
                                     if (selection.selecting) selection.done() else selection.selecting = true
                                 }) { Text(if (selection.selecting) uiContext.getString(R.string.settings_action_done) else uiContext.getString(R.string.ui_select_providers)) }
-                                IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.settings_action_close)) }
+                                IconButton(onClick = onDismiss) { Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.settings_action_close)) }
                             }
                             Text(stringResource(R.string.settings_providers_disabled_note),
                                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

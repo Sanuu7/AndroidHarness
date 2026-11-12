@@ -2,14 +2,13 @@ package com.androidharness.app.ui.settings
 
 import com.androidharness.app.ui.theme.HarnessGlassSurface as Surface
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DeleteOutline
-import androidx.compose.material.icons.outlined.Visibility
-import androidx.compose.material.icons.outlined.VisibilityOff
+import androidx.compose.material.icons.rounded.DeleteOutline
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -74,7 +73,7 @@ internal fun ProviderKeysEditor(pool: ProviderKeyPool, onChange: (ProviderKeyPoo
                             IconButton(enabled = enabled, onClick = {
                                 revealed = if (visible) revealed - apiKey.id else revealed + apiKey.id
                             }) {
-                                Icon(if (visible) Icons.Outlined.VisibilityOff else Icons.Outlined.Visibility,
+                                Icon(if (visible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
                                     stringResource(if (visible) R.string.provider_hide_key else R.string.provider_show_key, index + 1))
                             }
                         }, modifier = Modifier.fillMaxWidth())
@@ -88,7 +87,7 @@ internal fun ProviderKeysEditor(pool: ProviderKeyPool, onChange: (ProviderKeyPoo
                         ExpressiveIconButton(enabled = enabled, onClick = {
                             revealed = revealed - apiKey.id
                             onChange(pool.copy(keys = pool.keys.filterNot { it.id == apiKey.id }))
-                        }) { Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.provider_remove_key, index + 1)) }
+                        }) { Icon(Icons.Rounded.DeleteOutline, stringResource(R.string.provider_remove_key, index + 1)) }
                     }
                 }
             }

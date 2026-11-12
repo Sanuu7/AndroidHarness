@@ -1,14 +1,13 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.MoreVert
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -144,7 +143,7 @@ fun FallbackEditorSheet(
                         Text(if (chatMode == null) uiContext.getString(R.string.ui_default_for_chats) else uiContext.getString(R.string.ui_for_this_chat), style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
-                    IconButton(onClick = onDismiss, enabled = !saving) { Icon(Icons.Default.Close, uiContext.getString(R.string.ui_close_fallbacks)) }
+                    IconButton(onClick = onDismiss, enabled = !saving) { Icon(Icons.Rounded.Close, uiContext.getString(R.string.ui_close_fallbacks)) }
                 }
             }
             if (chatMode != null) item {
@@ -185,7 +184,7 @@ fun FallbackEditorSheet(
                             color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                     if (editable) Box {
-                        IconButton(onClick = { menu = true }, enabled = !saving) { Icon(Icons.Default.MoreVert, uiContext.getString(R.string.ui_fallback_actions, (index + 1).toString())) }
+                        IconButton(onClick = { menu = true }, enabled = !saving) { Icon(Icons.Rounded.MoreVert, uiContext.getString(R.string.ui_fallback_actions, (index + 1).toString())) }
                         DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                             fun move(offset: Int) {
                                 val targets = draft.targets.toMutableList()

@@ -11,8 +11,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -96,7 +96,7 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
             item {
                 Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.primaryContainer) {
                     Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Icon(Icons.Outlined.DataObject, null, Modifier.size(32.dp))
+                        Icon(Icons.Rounded.DataObject, null, Modifier.size(32.dp))
                         Text(stringResource(if (global) R.string.config_global_title else R.string.config_project_title), style = MaterialTheme.typography.headlineSmall)
                         Text(stringResource(if (global) R.string.config_global_hint else R.string.config_project_hint), style = MaterialTheme.typography.bodyMedium)
                         if (!global) Text(if (workspaceOverride == null) project?.name ?: stringResource(R.string.config_no_workspace)
@@ -115,11 +115,11 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
                             Button(onClick = {
                                 editorWorkspace = fs; editorDocument = document; editWorkspacePath = fs?.displayPath.orEmpty(); editor = true
                             }, enabled = document != null && !loading, modifier = Modifier.weight(1f)) {
-                                Icon(Icons.Outlined.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
+                                Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
                                 Text(stringResource(if (document?.second == null) R.string.config_create else R.string.config_edit))
                             }
                             IconButton(onClick = { refresh++ }, enabled = !loading) {
-                                Icon(Icons.Outlined.Refresh, stringResource(R.string.config_reload))
+                                Icon(Icons.Rounded.Refresh, stringResource(R.string.config_reload))
                             }
                         }
                     }
@@ -256,7 +256,7 @@ private fun ConfigDetails(title: String, entries: List<String>, initiallyExpande
         Surface(onClick = { expanded = !expanded }, color = MaterialTheme.colorScheme.surfaceContainerLow) {
             Row(Modifier.fillMaxWidth().padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
                 Text(title, Modifier.weight(1f), style = MaterialTheme.typography.titleMedium)
-                Icon(if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                Icon(if (expanded) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore,
                     stringResource(if (expanded) R.string.config_collapse else R.string.config_expand))
             }
         }
@@ -271,7 +271,7 @@ private fun ConfigDetails(title: String, entries: List<String>, initiallyExpande
 private fun ConfigRemoveRow(name: String, remove: () -> Unit) {
     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
         Text(name, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
-        IconButton(onClick = remove) { Icon(Icons.Outlined.Close, stringResource(R.string.config_remove_named, name)) }
+        IconButton(onClick = remove) { Icon(Icons.Rounded.Close, stringResource(R.string.config_remove_named, name)) }
     }
 }
 
@@ -295,7 +295,7 @@ private fun ConfigEditor(container: AppContainer, fs: WorkspaceFs, global: Boole
         Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface) {
             Scaffold(topBar = {
                 TopAppBar(title = { Text(stringResource(R.string.config_edit), style = MaterialTheme.typography.titleLarge) },
-                    navigationIcon = { IconButton(onClick = ::close, enabled = !busy) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.config_back)) } },
+                    navigationIcon = { IconButton(onClick = ::close, enabled = !busy) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, stringResource(R.string.config_back)) } },
                     actions = { TextButton(onClick = { scope.launch {
                         busy = true; message = null
                         try {

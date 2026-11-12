@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.compose.foundation.clickable
@@ -9,9 +8,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.StarBorder
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Star
+import androidx.compose.material.icons.rounded.StarBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -115,7 +114,7 @@ internal fun MemoryOptionsSection(
                             )
                         }
                         Icon(
-                            Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                            Icons.AutoMirrored.Rounded.KeyboardArrowRight,
                             contentDescription = null,
                             tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -376,7 +375,7 @@ private fun MemoryRow(
         }
         IconButton(enabled = enabled, onClick = { onPinned(!memory.pinned) }) {
             Icon(
-                if (memory.pinned) Icons.Filled.Star else Icons.Outlined.StarBorder,
+                if (memory.pinned) Icons.Rounded.Star else Icons.Rounded.StarBorder,
                 contentDescription = stringResource(R.string.settings_memory_pin),
                 tint = if (memory.pinned) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
             )

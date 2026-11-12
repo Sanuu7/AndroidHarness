@@ -40,7 +40,7 @@ class DebugBodiesTest {
         val body = DebugBodies.shrink("{\"a\": " + "z".repeat(500), 100)
         assertTrue(body.elided)
         assertFalse(body.validJson)
-        assertTrue(body.text.contains("省略"))
+        assertTrue(body.text.contains("characters omitted"))
         assertTrue(body.text.length < 200)
     }
 

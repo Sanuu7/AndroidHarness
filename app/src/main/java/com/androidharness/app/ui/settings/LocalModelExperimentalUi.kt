@@ -1,13 +1,12 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -39,7 +38,7 @@ internal fun LocalExperimentalSwitch(container: AppContainer) {
         Row(Modifier.fillMaxWidth().toggleable(settings.localModelExperimental, role = Role.Switch, onValueChange = onToggle)
             .padding(horizontal = 18.dp, vertical = 12.dp),
             verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-            Icon(Icons.Default.Science, null, tint = MaterialTheme.colorScheme.primary)
+            Icon(Icons.Rounded.Science, null, tint = MaterialTheme.colorScheme.primary)
             Column(Modifier.weight(1f)) {
                 Text(stringResource(R.string.local_experimental_title), style = MaterialTheme.typography.titleSmall)
                 Text(stringResource(R.string.local_experimental_subtitle), style = MaterialTheme.typography.bodySmall,
@@ -49,7 +48,7 @@ internal fun LocalExperimentalSwitch(container: AppContainer) {
         }
     }
     if (warning) AlertDialog(onDismissRequest = { warning = false },
-        icon = { Icon(Icons.Default.Science, null) },
+        icon = { Icon(Icons.Rounded.Science, null) },
         title = { Text(stringResource(R.string.local_experimental_warning_title)) },
         text = { Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(14.dp)) {
             Text(stringResource(R.string.local_experimental_warning_acceleration))

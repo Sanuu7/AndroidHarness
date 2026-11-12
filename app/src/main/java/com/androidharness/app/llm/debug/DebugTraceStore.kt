@@ -74,9 +74,17 @@ object DebugCapture {
     @Volatile var enabled: Boolean = false
     @Volatile var captureBodies: Boolean = false
 
+    /** Holds capture without touching the saved switches, so a noisy run can be skipped. Not persisted. */
+    @Volatile var paused: Boolean = false
+
+    /** True when a request made right now would be recorded. */
+    val recording: Boolean get() = enabled && !paused
+
     val store = DebugTraceStore()
 
-    private val nextId = java.util.concurrent.atomic.AtomicLong(1)
+    // Ids are the primary key of the saved log, so they must not restart at 1 with
+    // each process: seeding from the clock keeps a new run from replacing old rows.
+    private val nextId = java.util.concurrent.atomic.AtomicLong(System.currentTimeMillis() * 1_000)
 
     fun nextTraceId(): Long = nextId.getAndIncrement()
 
@@ -89,7 +97,7 @@ object DebugCapture {
 
     /** A tap for one stream, or null when capture is off or the body is not wanted. */
     fun streamTap(key: String?): DebugStreamTap? =
-        if (enabled && captureBodies && !key.isNullOrEmpty()) DebugStreamTap(key, store.maxBodyChars) else null
+        if (recording && captureBodies && !key.isNullOrEmpty()) DebugStreamTap(key, store.maxBodyChars) else null
 }
 
 /**

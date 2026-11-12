@@ -1034,24 +1034,16 @@
     <string name="chat_history_open_message">"Eşleşen mesajı aç"</string>
     <string name="chat_history_open_chat">"Konuşmayı aç"</string>
     <string name="chat_history_unavailable">"Bu konuşma artık kullanılamıyor."</string>
-    <!-- Provider request log (Settings > Troubleshooting). -->
     <string name="settings_debug_title">Provider request log</string>
-    <string name="settings_debug_summary">Records what this app sends to your providers. Kept in memory only, and cleared when the app is closed.</string>
+    <string name="settings_debug_summary">Records what this app sends to your providers and what they answer. Kept in memory unless you choose to keep it on this device.</string>
     <string name="settings_debug_bodies">Include bodies</string>
     <string name="settings_debug_local_note">Local models do not use HTTP, so they never appear here.</string>
-    <string name="settings_debug_empty">No requests recorded yet.</string>
     <string name="settings_debug_close">Close request log</string>
-    <!-- Provider request log, keeping it on the device. -->
     <string name="settings_debug_persist">Keep on this device</string>
     <string name="settings_debug_persist_note">Stored encrypted in app storage.</string>
-    <string name="settings_debug_search">Filter requests</string>
-    <string name="settings_debug_export">Export</string>
-    <!-- Provider request log page. -->
     <string name="settings_page_provider_debug_title">Provider request log</string>
     <string name="settings_page_provider_debug_desc">Capture what is sent to your providers, inspect errors and streaming responses.</string>
     <string name="settings_debug_count">%1$d recorded</string>
-    <string name="settings_debug_events">%1$d events</string>
-    <string name="settings_debug_save">Save to file</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
     <string name="settings_anchor_auto_send">Otomatik gönder</string>
     <string name="settings_search_auto_send_title">Otomatik gönder</string>

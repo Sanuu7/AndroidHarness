@@ -115,7 +115,7 @@ internal fun CustomPaletteDialog(existing: CustomThemePalette?, onDismiss: () ->
                 isError = parseThemeHex(hex) == null, singleLine = true, modifier = Modifier.fillMaxWidth())
             if (parseThemeHex(hex) == null) Text(stringResource(R.string.theme_custom_invalid_hex), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
             TextButton(onClick = { accent = null; highlight = null }) { Text(stringResource(R.string.theme_custom_automatic)) }
-            Surface(shape = RoundedCornerShape(18.dp), color = scheme.surfaceContainer, contentColor = scheme.onSurface) {
+            Surface(shape = RoundedCornerShape(20.dp), color = scheme.surfaceContainer, contentColor = scheme.onSurface) {
                 Row(Modifier.fillMaxWidth().padding(14.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                     PaletteSwatch(scheme, Modifier.size(40.dp)); Text(stringResource(R.string.theme_custom_preview), style = MaterialTheme.typography.labelLarge)
                 }

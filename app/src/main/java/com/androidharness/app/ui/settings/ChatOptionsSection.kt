@@ -1,15 +1,14 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.annotation.StringRes
-import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.rounded.Code
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.outlined.ChevronRight
-import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.rounded.Edit
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -57,7 +56,7 @@ internal fun ChatOptionsSection(
                     Text(stringResource(if (agentCount == 0) R.string.chat_agents_description else R.string.chat_agents_count, agentCount),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Icon(androidx.compose.material.icons.Icons.Outlined.ChevronRight, null)
+                Icon(androidx.compose.material.icons.Icons.Rounded.ChevronRight, null)
             }
         }
     }
@@ -77,7 +76,7 @@ internal fun ChatOptionsSection(
                         maxLines = 2, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                Icon(androidx.compose.material.icons.Icons.Outlined.Edit, null, Modifier.padding(start = 12.dp).size(20.dp))
+                Icon(androidx.compose.material.icons.Icons.Rounded.Edit, null, Modifier.padding(start = 12.dp).size(20.dp))
             }
         }
         if (editing) AlertDialog(
@@ -177,7 +176,7 @@ internal fun CodeStartOptionsSection(settings: AppSettings, onSearchChatChats: (
     fun label(mode: CodeStartMode) = if (mode == CodeStartMode.NEW_CODE) R.string.settings_start_code_new else R.string.settings_start_code_last
     fun description(mode: CodeStartMode) = if (mode == CodeStartMode.NEW_CODE) R.string.settings_start_code_new_desc else R.string.settings_start_code_last_desc
     SettingsAnchor(R.string.settings_start_code) {
-        SettingsFeatureRow(androidx.compose.material.icons.Icons.Outlined.Code, stringResource(R.string.settings_start_code),
+        SettingsFeatureRow(androidx.compose.material.icons.Icons.Rounded.Code, stringResource(R.string.settings_start_code),
             stringResource(label(settings.codeStart)), { choosing = true })
     }
     if (choosing) androidx.compose.material3.ModalBottomSheet(onDismissRequest = { choosing = false }) {

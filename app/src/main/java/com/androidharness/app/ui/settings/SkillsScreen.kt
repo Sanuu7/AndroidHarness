@@ -24,7 +24,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -64,7 +64,6 @@ import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.SwipeDismissibleSnackbarHost
 import com.androidharness.app.ui.common.TextButton
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.ui.theme.HarnessMono
 import kotlinx.coroutines.launch
 
@@ -151,7 +150,7 @@ fun SkillsScreen(
                     onBack = onBack,
                     actions = {
                         IconButton(onClick = { selectMode = true }, enabled = skills.isNotEmpty()) {
-                            Icon(Icons.Outlined.Checklist, stringResource(R.string.sk_select))
+                            Icon(Icons.Rounded.Checklist, stringResource(R.string.sk_select))
                         }
                     },
                 )
@@ -161,7 +160,7 @@ fun SkillsScreen(
             AnimatedVisibility(!selecting, enter = scaleIn() + fadeIn(), exit = scaleOut() + fadeOut()) {
                 MediumExtendedFloatingActionButton(
                     text = { Text(stringResource(R.string.sk_new)) },
-                    icon = { Icon(Icons.Outlined.Add, null) },
+                    icon = { Icon(Icons.Rounded.Add, null) },
                     onClick = { editor = SkillEditRequest(context.getString(R.string.settings_skills_add), skillTemplate()) },
                     expanded = !listState.canScrollBackward,
                 )
@@ -239,9 +238,9 @@ fun SkillsScreen(
             ) {
                 val deletable = skills.filter { it.name in chosen && it.source == SkillSource.USER }.map { it.name }
                 HorizontalFloatingToolbar(expanded = true, colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors()) {
-                    ToolbarAction(Icons.Outlined.ToggleOn, stringResource(R.string.sk_turn_on), chosen.isNotEmpty()) { bulkEnable(true) }
-                    ToolbarAction(Icons.Outlined.ToggleOff, stringResource(R.string.sk_turn_off), chosen.isNotEmpty()) { bulkEnable(false) }
-                    ToolbarAction(Icons.Outlined.DeleteOutline, stringResource(R.string.settings_action_delete), deletable.isNotEmpty()) { confirmDelete = deletable }
+                    ToolbarAction(Icons.Rounded.ToggleOn, stringResource(R.string.sk_turn_on), chosen.isNotEmpty()) { bulkEnable(true) }
+                    ToolbarAction(Icons.Rounded.ToggleOff, stringResource(R.string.sk_turn_off), chosen.isNotEmpty()) { bulkEnable(false) }
+                    ToolbarAction(Icons.Rounded.DeleteOutline, stringResource(R.string.settings_action_delete), deletable.isNotEmpty()) { confirmDelete = deletable }
                 }
             }
         }
@@ -275,7 +274,7 @@ fun SkillsScreen(
     confirmDelete?.let { targets ->
         AlertDialog(
             onDismissRequest = { confirmDelete = null },
-            icon = { Icon(Icons.Outlined.DeleteOutline, null) },
+            icon = { Icon(Icons.Rounded.DeleteOutline, null) },
             title = { Text(pluralStringResource(R.plurals.sk_delete_title, targets.size, targets.size)) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -316,9 +315,9 @@ private fun sourceTitle(source: SkillSource) = stringResource(when (source) {
 })
 
 private fun sourceIcon(source: SkillSource) = when (source) {
-    SkillSource.USER -> Icons.Outlined.Person
-    SkillSource.PROJECT -> Icons.Outlined.FolderOpen
-    SkillSource.BUNDLED -> Icons.Outlined.Inventory2
+    SkillSource.USER -> Icons.Rounded.Person
+    SkillSource.PROJECT -> Icons.Rounded.FolderOpen
+    SkillSource.BUNDLED -> Icons.Rounded.Inventory2
 }
 
 /** Expressive grouped lists round the outer corners of a group and keep the joins tight. */
@@ -338,12 +337,12 @@ private fun SelectionHeader(count: Int, allSelected: Boolean, onClose: () -> Uni
             Modifier.fillMaxWidth().statusBarsPadding().heightIn(min = 64.dp).padding(start = 4.dp, end = 8.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            IconButton(onClick = onClose) { Icon(Icons.Outlined.Close, stringResource(R.string.sk_stop_selecting)) }
+            IconButton(onClick = onClose) { Icon(Icons.Rounded.Close, stringResource(R.string.sk_stop_selecting)) }
             AnimatedContent(count, label = "selected count", modifier = Modifier.weight(1f).padding(horizontal = 8.dp)) { n ->
                 Text(pluralStringResource(R.plurals.sk_selected, n, n), style = MaterialTheme.typography.titleMediumEmphasized)
             }
             TextButton(onClick = { onSelectAll(!allSelected) }) {
-                Icon(if (allSelected) Icons.Outlined.Deselect else Icons.Outlined.SelectAll, null, Modifier.size(18.dp))
+                Icon(if (allSelected) Icons.Rounded.Deselect else Icons.Rounded.SelectAll, null, Modifier.size(18.dp))
                 Spacer(Modifier.width(8.dp))
                 Text(stringResource(if (allSelected) R.string.sk_clear_selection else R.string.sk_select_all))
             }
@@ -436,7 +435,7 @@ private fun SkillsEmpty(onClear: () -> Unit) = Surface(Modifier.fillMaxWidth().p
         verticalArrangement = Arrangement.spacedBy(12.dp)) {
         @OptIn(ExperimentalMaterial3ExpressiveApi::class)
         Surface(Modifier.size(72.dp), shape = MaterialShapes.Puffy.toShape(), color = MaterialTheme.colorScheme.tertiaryContainer) {
-            Box(contentAlignment = Alignment.Center) { Icon(Icons.Outlined.SearchOff, null, Modifier.size(32.dp)) }
+            Box(contentAlignment = Alignment.Center) { Icon(Icons.Rounded.SearchOff, null, Modifier.size(32.dp)) }
         }
         Text(stringResource(R.string.sk_empty), style = MaterialTheme.typography.titleMedium, textAlign = TextAlign.Center)
         Text(stringResource(R.string.sk_empty_hint), style = MaterialTheme.typography.bodyMedium, textAlign = TextAlign.Center,
@@ -472,7 +471,7 @@ private fun SkillDetailSheet(
                     Text(meta.name, style = MaterialTheme.typography.titleLargeEmphasized, fontFamily = HarnessMono)
                     FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         StatPill(sourceIcon(meta.source), sourceLabel(meta.source))
-                        if (meta.category.isNotBlank()) StatPill(Icons.Outlined.Label, meta.category.replaceFirstChar(Char::titlecase))
+                        if (meta.category.isNotBlank()) StatPill(Icons.Rounded.Label, meta.category.replaceFirstChar(Char::titlecase))
                     }
                 }
             }
@@ -492,20 +491,20 @@ private fun SkillDetailSheet(
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 when (meta.source) {
                     SkillSource.USER -> Button(onClick = onEdit, modifier = Modifier.weight(1f).heightIn(min = 52.dp)) {
-                        Icon(Icons.Outlined.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.settings_action_edit))
+                        Icon(Icons.Rounded.Edit, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.settings_action_edit))
                     }
                     SkillSource.BUNDLED -> FilledTonalButton(onClick = onEdit, modifier = Modifier.weight(1f).heightIn(min = 52.dp)) {
-                        Icon(Icons.Outlined.EditNote, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sk_edit_copy))
+                        Icon(Icons.Rounded.EditNote, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sk_edit_copy))
                     }
                     SkillSource.PROJECT -> Text(stringResource(R.string.sk_workspace_note), Modifier.weight(1f), style = MaterialTheme.typography.bodySmall,
                         color = scheme.onSurfaceVariant)
                 }
                 OutlinedButton(onClick = { clipboard.setText(AnnotatedString(document.raw)); onCopied() }, modifier = Modifier.heightIn(min = 52.dp)) {
-                    Icon(Icons.Outlined.ContentCopy, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sk_copy))
+                    Icon(Icons.Rounded.ContentCopy, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sk_copy))
                 }
                 if (meta.source == SkillSource.USER) com.androidharness.app.ui.common.FilledTonalIconButton(onClick = onDelete, modifier = Modifier.size(52.dp),
                     colors = IconButtonDefaults.filledTonalIconButtonColors(containerColor = scheme.errorContainer, contentColor = scheme.onErrorContainer)) {
-                    Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.settings_action_delete))
+                    Icon(Icons.Rounded.DeleteOutline, stringResource(R.string.settings_action_delete))
                 }
             }
             ConnectedChoice(listOf(Triple(false, stringResource(R.string.sk_preview), null), Triple(true, stringResource(R.string.sk_markdown), null)),
@@ -520,10 +519,10 @@ private fun SkillDetailSheet(
             if (document.files.isNotEmpty()) {
                 Text(stringResource(R.string.sk_files, document.files.size), style = MaterialTheme.typography.titleSmall)
                 Surface(shape = RoundedCornerShape(20.dp), color = scheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
-                    Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
                         document.files.take(40).forEach { file ->
                             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                Icon(Icons.Outlined.Description, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
+                                Icon(Icons.Rounded.Description, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                                 Text(file, style = MaterialTheme.typography.bodySmall, fontFamily = HarnessMono, maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
                         }
@@ -560,20 +559,20 @@ private fun SkillEditor(
         Surface(Modifier.fillMaxSize(), color = scheme.surface) {
             Column(Modifier.fillMaxSize().systemBarsPadding().imePadding()) {
                 Row(Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(start = 4.dp, end = 12.dp), verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(onClick = ::close) { Icon(Icons.Outlined.Close, stringResource(R.string.settings_action_cancel)) }
+                    IconButton(onClick = ::close) { Icon(Icons.Rounded.Close, stringResource(R.string.settings_action_cancel)) }
                     Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
                         Text(request.title, style = MaterialTheme.typography.titleMediumEmphasized, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         Text(stringResource(R.string.ui_catalog_line, parsed?.name ?: "?", parsed?.catalogDescription ?: stringResource(R.string.sk_fix_frontmatter)),
                             style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                     Button(onClick = ::save, enabled = error == null && parsed != null) {
-                        Icon(Icons.Outlined.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_action_save))
+                        Icon(Icons.Rounded.Check, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_action_save))
                     }
                 }
                 request.note?.let { note ->
                     Surface(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), shape = RoundedCornerShape(20.dp), color = scheme.tertiaryContainer) {
-                        Row(Modifier.padding(14.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            Icon(Icons.Outlined.Info, null, Modifier.size(20.dp))
+                        Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Icon(Icons.Rounded.Info, null, Modifier.size(20.dp))
                             Text(note, style = MaterialTheme.typography.bodySmall)
                         }
                     }

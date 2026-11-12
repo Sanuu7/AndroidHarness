@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
@@ -55,10 +54,10 @@ internal fun HarnessCanvasSection(settings: HarnessCanvasSettings, repository: S
                 Surface(shape = RoundedCornerShape(24.dp)) {
                     HarnessCanvasBackdrop(settings.copy(enabled = true, chat = true, dim = dim), true, Modifier.fillMaxWidth().height(220.dp)) {
                         Column(Modifier.fillMaxSize().padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp, Alignment.Bottom)) {
-                            Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
                                 Text(stringResource(R.string.theme_canvas_preview_message), Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium)
                             }
-                            Surface(shape = RoundedCornerShape(18.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.align(Alignment.End)) {
+                            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceContainerHigh, modifier = Modifier.align(Alignment.End)) {
                                 Text(stringResource(R.string.theme_canvas_preview_reply), Modifier.padding(12.dp), style = MaterialTheme.typography.bodyMedium)
                             }
                         }

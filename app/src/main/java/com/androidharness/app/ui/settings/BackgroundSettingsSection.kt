@@ -1,13 +1,12 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import android.content.Intent
 import android.provider.Settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.outlined.Notifications
+import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
+import androidx.compose.material.icons.rounded.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -55,9 +54,9 @@ internal fun BackgroundSettingsSection(container: AppContainer, settings: AppSet
         }
     }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        SettingRow(Icons.Outlined.Notifications, stringResource(R.string.background_android_title),
+        SettingRow(Icons.Rounded.Notifications, stringResource(R.string.background_android_title),
             stringResource(R.string.background_android_description), onClick = ::openAndroidNotifications,
-            trailing = { Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, null) })
+            trailing = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null) })
     }
     LiveUpdatesSetting(settings) { enabled -> scope.launch { container.settings.setLiveUpdatesEnabled(enabled) } }
 }

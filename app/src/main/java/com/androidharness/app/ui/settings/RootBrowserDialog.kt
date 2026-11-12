@@ -5,8 +5,8 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -66,12 +66,12 @@ internal fun RootBrowserDialog(access: DeviceAccessManager, projectId: String?, 
                         if (opened != null) { opened = null; edit = false }
                         else if (path != "/") { directory = null; path = path.substringBeforeLast('/').ifBlank { "/" } }
                         else onDismiss()
-                    } }) { Icon(Icons.AutoMirrored.Outlined.ArrowBack, uiContext.getString(R.string.settings_action_back)) }
+                    } }) { Icon(Icons.AutoMirrored.Rounded.ArrowBack, uiContext.getString(R.string.settings_action_back)) }
                     Column(Modifier.weight(1f)) {
                         Text(stringResource(R.string.settings_root_browser), style = MaterialTheme.typography.titleMedium)
                         Text(opened?.path ?: path, style = MaterialTheme.typography.bodySmall, maxLines = 2)
                     }
-                    IconButton(onClick = { requestLeave(onDismiss) }) { Icon(Icons.Outlined.Close, uiContext.getString(R.string.ui_close_root_browser)) }
+                    IconButton(onClick = { requestLeave(onDismiss) }) { Icon(Icons.Rounded.Close, uiContext.getString(R.string.ui_close_root_browser)) }
                 }
                 HorizontalDivider()
                 if (busy) LinearProgressIndicator(Modifier.fillMaxWidth())
@@ -100,7 +100,7 @@ internal fun RootBrowserDialog(access: DeviceAccessManager, projectId: String?, 
                                         else stringResource(R.string.settings_root_size_bytes, entry.size.toString()),
                                     )
                                 },
-                                leadingContent = { Icon(if (entry.directory) Icons.Outlined.Folder else Icons.Outlined.InsertDriveFile, null) },
+                                leadingContent = { Icon(if (entry.directory) Icons.Rounded.Folder else Icons.Rounded.InsertDriveFile, null) },
                                 modifier = Modifier.fillMaxWidth().clickable(enabled = !busy) {
                                     if (entry.directory) { directory = null; path = entry.path }
                                     else scope.launch {

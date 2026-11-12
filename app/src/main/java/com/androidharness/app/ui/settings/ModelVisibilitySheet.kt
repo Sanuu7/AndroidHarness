@@ -8,8 +8,8 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -72,7 +72,7 @@ fun ModelVisibilitySheet(
                 item {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.settings_provider_manage_models), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                        IconButton(onClick = onDismiss) { Icon(Icons.Filled.Close, uiContext.getString(R.string.ui_close_model_management)) }
+                        IconButton(onClick = onDismiss) { Icon(Icons.Rounded.Close, uiContext.getString(R.string.ui_close_model_management)) }
                     }
                     Text(stringResource(R.string.settings_models_visibility_subtitle), style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -82,7 +82,7 @@ fun ModelVisibilitySheet(
                         }
                     }
                     OutlinedTextField(query, { query = it }, singleLine = true, label = { Text(stringResource(R.string.settings_models_visibility_search)) },
-                        leadingIcon = { Icon(Icons.Outlined.Search, null) }, modifier = Modifier.fillMaxWidth())
+                        leadingIcon = { Icon(Icons.Rounded.Search, null) }, modifier = Modifier.fillMaxWidth())
                     Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                         Text(stringResource(R.string.settings_models_visibility_selected, available.count { it.id in selected }.toString(), available.size.toString()), style = MaterialTheme.typography.labelMedium,
                             modifier = Modifier.weight(1f))

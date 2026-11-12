@@ -18,12 +18,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material.icons.outlined.Storage
-import androidx.compose.material.icons.outlined.Download
-import androidx.compose.material.icons.outlined.Inventory2
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Inventory2
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -155,7 +155,7 @@ fun PackageManagerSheet(
             // Header
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
-                    Icons.Outlined.Inventory2,
+                    Icons.Rounded.Inventory2,
                     contentDescription = null,
                     tint = scheme.primary,
                     modifier = Modifier.size(24.dp),
@@ -208,7 +208,7 @@ fun PackageManagerSheet(
                             modifier = Modifier.size(40.dp),
                         ) {
                             Icon(
-                                Icons.Outlined.Close,
+                                Icons.Rounded.Close,
                                 contentDescription = stringResource(R.string.settings_action_dismiss),
                                 tint = scheme.error,
                                 modifier = Modifier.size(17.dp),
@@ -224,17 +224,17 @@ fun PackageManagerSheet(
                 onValueChange = { query = it },
                 placeholder = { Text(stringResource(R.string.settings_packages_search)) },
                 leadingIcon = {
-                    Icon(Icons.Outlined.Search, contentDescription = null, tint = scheme.onSurfaceVariant)
+                    Icon(Icons.Rounded.Search, contentDescription = null, tint = scheme.onSurfaceVariant)
                 },
                 trailingIcon = {
                     if (query.isNotEmpty()) {
                         IconButton(onClick = { query = "" }) {
-                            Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.settings_search_clear), tint = scheme.onSurfaceVariant)
+                            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.settings_search_clear), tint = scheme.onSurfaceVariant)
                         }
                     }
                 },
                 singleLine = true,
-                shape = RoundedCornerShape(14.dp),
+                shape = RoundedCornerShape(16.dp),
                 modifier = Modifier.fillMaxWidth(),
             )
 
@@ -417,7 +417,7 @@ private fun PackageItemRow(
                         verticalAlignment = Alignment.CenterVertically,
                     ) {
                         Icon(
-                            Icons.Default.Check,
+                            Icons.Rounded.Check,
                             contentDescription = null,
                             tint = scheme.primary,
                             modifier = Modifier.size(14.dp),
@@ -438,7 +438,7 @@ private fun PackageItemRow(
                         modifier = Modifier.size(40.dp),
                     ) {
                         Icon(
-                            Icons.Outlined.Storage,
+                            Icons.Rounded.Storage,
                             contentDescription = stringResource(R.string.settings_packages_review_storage),
                             tint = scheme.onSurfaceVariant,
                             modifier = Modifier.size(17.dp),
@@ -452,7 +452,7 @@ private fun PackageItemRow(
                     shape = RoundedCornerShape(10.dp),
                 ) {
                     Icon(
-                        Icons.Outlined.Download,
+                        Icons.Rounded.Download,
                         contentDescription = null,
                         modifier = Modifier.size(14.dp),
                     )
@@ -502,7 +502,7 @@ private fun InstalledPackageRow(
                     modifier = Modifier.size(40.dp),
                 ) {
                     Icon(
-                        Icons.Outlined.Storage,
+                        Icons.Rounded.Storage,
                         contentDescription = stringResource(R.string.settings_packages_review_cd, name),
                         tint = scheme.error.copy(alpha = 0.7f),
                         modifier = Modifier.size(17.dp),

@@ -3,7 +3,7 @@ package com.androidharness.app.ui.settings
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Hub
+import androidx.compose.material.icons.rounded.Hub
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -61,7 +61,7 @@ internal fun PluginMcpServersSection(container: AppContainer, onOpenPlugins: () 
                     project?.name ?: stringResource(R.string.ui_app_workspace) else stringResource(R.string.config_project)
                 val status = workspace?.let { statuses[container.mcp.workspaceConnectionName(it, server)] } ?: statuses[server.name]
                 Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Icon(Icons.Outlined.Hub, null, Modifier.size(24.dp))
+                    Icon(Icons.Rounded.Hub, null, Modifier.size(24.dp))
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                         Text(origin.name, style = MaterialTheme.typography.titleSmall)
                         Text("${origin.plugin} · $scopeName", style = MaterialTheme.typography.bodySmall)

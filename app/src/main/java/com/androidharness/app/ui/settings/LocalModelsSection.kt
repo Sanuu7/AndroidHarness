@@ -1,6 +1,5 @@
 package com.androidharness.app.ui.settings
 
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -21,7 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -178,7 +177,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
         Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(14.dp)) {
             Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.primary) {
-                Icon(Icons.Default.Memory, null, Modifier.padding(14.dp).size(30.dp), tint = MaterialTheme.colorScheme.onPrimary)
+                Icon(Icons.Rounded.Memory, null, Modifier.padding(16.dp).size(30.dp), tint = MaterialTheme.colorScheme.onPrimary)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.settings_local_models_on_device), style = MaterialTheme.typography.titleLarge)
@@ -186,7 +185,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
                     style = MaterialTheme.typography.bodySmall)
             }
             FilledTonalIconButton(onClick = { options = true }) {
-                Icon(Icons.Default.Tune, stringResource(R.string.local_options))
+                Icon(Icons.Rounded.Tune, stringResource(R.string.local_options))
             }
         }
     }
@@ -212,7 +211,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
             }
             Text(stringResource(R.string.settings_local_models_system_tools_desc), style = MaterialTheme.typography.bodySmall)
             TextButton(onClick = { options = false; deviceDialog = true }) {
-                Icon(Icons.Default.Info, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.settings_local_models_about))
+                Icon(Icons.Rounded.Info, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.settings_local_models_about))
             }
             if (experimental) LocalGpuInformation(manager)
         }
@@ -220,7 +219,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
     message?.let { text ->
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(text, modifier = Modifier.weight(1f), style = MaterialTheme.typography.bodySmall)
-            IconButton(onClick = { message = null }) { Icon(Icons.Default.Close, uiContext.getString(R.string.ui_dismiss_message)) }
+            IconButton(onClick = { message = null }) { Icon(Icons.Rounded.Close, uiContext.getString(R.string.ui_dismiss_message)) }
         }
     }
     AnimatedVisibility(panel == 0, enter = fadeIn(expressiveEffectsSpec()) + expandVertically(expressiveSpatialSpec()),
@@ -315,7 +314,7 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
     }
     importProgress?.let { text ->
         SettingsPanel(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(text, style = MaterialTheme.typography.bodyMedium)
                 AppLinearProgressIndicator(Modifier.fillMaxWidth())
                 TextButton(onClick = { importProgress = uiContext.getString(R.string.ui_cancelling_import); importJob?.cancel() }) { Text(stringResource(R.string.settings_local_models_cancel_import)) }
@@ -334,21 +333,21 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         OutlinedButton(onClick = { customDialog = true }, enabled = importJob == null, modifier = Modifier.weight(1f)) {
-            Icon(Icons.Default.Link, null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_local_models_from_link))
+            Icon(Icons.Rounded.Link, null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_local_models_from_link))
         }
         OutlinedButton(onClick = { when (format) {
             LocalModelFormat.GGUF -> filePicker.launch(arrayOf("*/*"))
             LocalModelFormat.SAFETENSORS -> folderPicker.launch(null)
         } },
             enabled = importJob == null, modifier = Modifier.weight(1f)) {
-            Icon(Icons.Default.FolderOpen, null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
+            Icon(Icons.Rounded.FolderOpen, null, modifier = Modifier.size(18.dp)); Spacer(Modifier.width(6.dp))
             Text(if (format != LocalModelFormat.SAFETENSORS) uiContext.getString(R.string.ui_import_file) else uiContext.getString(R.string.ui_import_folder))
         }
     }
     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
         FilterChip(selected = !hubSource, onClick = { hubSource = false }, label = { Text(stringResource(R.string.local_hub_curated)) })
         FilterChip(selected = hubSource, onClick = { hubSource = true }, label = { Text(stringResource(R.string.local_hub_search_tab)) },
-            leadingIcon = { Icon(Icons.Default.Search, null, Modifier.size(18.dp)) })
+            leadingIcon = { Icon(Icons.Rounded.Search, null, Modifier.size(18.dp)) })
     }
     if (!hubSource) {
         val suggestions = capability?.let { LocalModelSuggestions.suggest(it, catalog, installed, format) }.orEmpty()
@@ -368,8 +367,8 @@ private fun ColumnScope.LocalModelsContent(container: AppContainer, scrollConten
     OutlinedTextField(search, { search = it }, placeholder = { Text(stringResource(
         if (!hubSource) R.string.settings_local_models_search
         else if (format == LocalModelFormat.GGUF) R.string.local_hub_search_hint_gguf else R.string.local_hub_search_hint_safetensors)) }, singleLine = true,
-        leadingIcon = { Icon(Icons.Default.Search, null) }, trailingIcon = {
-            if (search.isNotEmpty()) IconButton(onClick = { search = "" }) { Icon(Icons.Default.Close, uiContext.getString(R.string.ui_clear_model_search)) }
+        leadingIcon = { Icon(Icons.Rounded.Search, null) }, trailingIcon = {
+            if (search.isNotEmpty()) IconButton(onClick = { search = "" }) { Icon(Icons.Rounded.Close, uiContext.getString(R.string.ui_clear_model_search)) }
         }, modifier = Modifier.fillMaxWidth())
     if (hubSource) HubSearchPanel(manager, format, device, search) { hubTarget = it } else {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -483,7 +482,7 @@ internal fun LocalModelCard(model: LocalModelSpec, context: Int, device: LocalDe
                 }
                 Box {
                     IconButton(onClick = { menu = true }, modifier = Modifier.size(48.dp)) {
-                        Icon(Icons.Default.MoreVert, uiContext.getString(R.string.ui_options_for, (model.title).toString()))
+                        Icon(Icons.Rounded.MoreVert, uiContext.getString(R.string.ui_options_for, (model.title).toString()))
                     }
                     DropdownMenu(expanded = menu, onDismissRequest = { menu = false }) {
                         DropdownMenuItem(text = { Text(stringResource(R.string.settings_local_models_details)) }, onClick = { menu = false; onDetails() })
@@ -526,7 +525,7 @@ internal fun LocalModelCard(model: LocalModelSpec, context: Int, device: LocalDe
                     Text(if (transfer != null) uiContext.getString(R.string.local_pause) else if (paused) uiContext.getString(R.string.local_resume) else if (installed && selected) uiContext.getString(R.string.local_load_model) else if (installed) uiContext.getString(R.string.ui_use_in_chat) else uiContext.getString(R.string.ui_download))
                 }
                 onSettings?.let { action -> OutlinedButton(onClick = action, enabled = enabled) {
-                    Icon(Icons.Default.Tune, null, modifier = Modifier.size(18.dp))
+                    Icon(Icons.Rounded.Tune, null, modifier = Modifier.size(18.dp))
                     Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.settings_local_models_settings))
                 } }
                 onDiscard?.let { action -> OutlinedButton(onClick = action, enabled = enabled) { Text(stringResource(R.string.local_discard)) } }
@@ -662,7 +661,7 @@ internal fun LocalLimitsDialog(model: LocalModelSpec, manager: LocalModelManager
                     if (advanced) stringResource(R.string.settings_local_models_advanced_hide)
                     else stringResource(R.string.settings_local_models_advanced_show),
                 )
-                Spacer(Modifier.width(6.dp)); Icon(if (advanced) Icons.Default.ExpandLess else Icons.Default.ExpandMore, null)
+                Spacer(Modifier.width(6.dp)); Icon(if (advanced) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null)
             }
             AnimatedVisibility(visible = advanced) { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 LocalNumberField(uiContext.getString(R.string.ui_input_budget), input, "tokens", uiContext.getString(R.string.ui_includes_instructions_and_chat_history_you_can), !saving) { input = it }

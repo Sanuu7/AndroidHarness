@@ -4,7 +4,19 @@
 
 ### Added
 
-- **Provider request log** (#97): Settings → Provider request log records what the app actually sends to a provider and what comes back. A single switch turns capture on; a second one includes request and response bodies, and a third keeps the log on the device in an encrypted database. Entries show the URL, the final headers as they left the app with credentials masked by name, the body, the status code, the response or error body, the duration, the token usage and the raw streamed chunks, and the list can be filtered by chat and by failure, copied per entry or shared and saved as a file. Long bodies are shortened field by field so the JSON stays parseable for replay, file paths are replaced, and turning bodies on asks for consent first. The same console is one tap away from Settings → Troubleshooting.
+- **Provider request log** (#97): Settings → Provider request log records what the app actually sends to a provider and what comes back. Capture is off until you turn it on; a second switch includes request and response bodies (after a consent prompt) and a third keeps the log on the device in an encrypted database. Capture can be paused without changing those switches.
+  - Requests are grouped into turns, so retries, key rotation and fallback hops sit together and each one says why it happened, for example "Key 2 after HTTP 429".
+  - Each request opens into Overview, Request, Response and Stream tabs: a plain explanation of the status code, rate limit and Retry-After headers, the provider request ID, the final headers with credentials masked, bodies as formatted and coloured JSON with search, and the raw stream events in order with malformed chunks flagged.
+  - The list filters by outcome, provider and chat, and searches provider, model, URL, status and request ID. Export shares or saves the visible requests as text or JSON, and a single request can be copied whole, as a cURL command, or body by body.
+
+### Changed
+
+- **Settings in Material 3 Expressive**: every settings page now shares one look and one set of motions.
+  - Lists are segmented groups: rows sit a hair apart with wide outer corners and tight inner ones, and a row rounds off under your finger. Panels are tonal, without outlines.
+  - Pages slide in and out along one axis with spring motion, and each page opens with its icon on a soft Material shape that turns into place.
+  - Short choices (speech engine, voice speed, lock timeout, search provider and more) are connected toggle groups instead of segmented buttons. Switches show a check mark while on.
+  - Voice & speech and Live mode are rebuilt on these pieces. Live mode's main switch is a hero card that fills with color while it is on.
+  - Icons use the rounded set, small spinners became the morphing loading indicator, and dialogs, sheets, menus and fields inside Settings use rounder corners.
 
 ## 3.4 (2026-11-09)
 

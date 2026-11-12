@@ -3,7 +3,7 @@ package com.androidharness.app.ui.settings
 import android.content.Context
 import androidx.annotation.StringRes
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.graphics.vector.ImageVector
 import com.androidharness.app.R
 import com.androidharness.app.data.storage.StorageCategory
@@ -98,11 +98,11 @@ internal fun storageNote(context: Context, item: StorageItem): String = context.
 }
 
 internal fun storageCategoryIcon(category: StorageCategory): ImageVector = when (category) {
-    StorageCategory.APP_DATA -> Icons.Outlined.Apps
-    StorageCategory.PLUGINS -> Icons.Outlined.Extension
-    StorageCategory.SKILLS -> Icons.Outlined.AutoAwesome
-    StorageCategory.WORKSPACES -> Icons.Outlined.Folder
-    StorageCategory.LINUX_PACKAGES -> Icons.Outlined.Terminal
-    StorageCategory.LOCAL_MODELS -> Icons.Outlined.Memory
-    StorageCategory.CACHES -> Icons.Outlined.Cached
+    StorageCategory.APP_DATA -> Icons.Rounded.Apps
+    StorageCategory.PLUGINS -> Icons.Rounded.Extension
+    StorageCategory.SKILLS -> Icons.Rounded.AutoAwesome
+    StorageCategory.WORKSPACES -> Icons.Rounded.Folder
+    StorageCategory.LINUX_PACKAGES -> Icons.Rounded.Terminal
+    StorageCategory.LOCAL_MODELS -> Icons.Rounded.Memory
+    StorageCategory.CACHES -> Icons.Rounded.Cached
 }

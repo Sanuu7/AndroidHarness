@@ -960,7 +960,7 @@ fun AppNav(container: AppContainer) {
                 )
             }
             composable("skills") {
-                SkillsScreen(container = container, onBack = { nav.popBackStack() })
+                com.androidharness.app.ui.settings.SettingsExpressiveTheme { SkillsScreen(container = container, onBack = { nav.popBackStack() }) }
             }
             composable("stats") {
                 com.androidharness.app.ui.stats.StatsScreen(
@@ -969,7 +969,7 @@ fun AppNav(container: AppContainer) {
                 )
             }
             composable("providers") {
-                ProvidersScreen(container = container, onBack = { nav.popBackStack() })
+                com.androidharness.app.ui.settings.SettingsExpressiveTheme { ProvidersScreen(container = container, onBack = { nav.popBackStack() }) }
             }
             composable("setup") {
                 com.androidharness.app.ui.setup.SetupScreen(

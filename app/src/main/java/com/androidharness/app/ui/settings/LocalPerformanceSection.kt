@@ -6,7 +6,7 @@ import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material.icons.rounded.Tune
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -69,7 +69,7 @@ internal fun LocalPerformanceSection(manager: LocalModelManager, canBenchmark: B
                 Text(hardware?.device ?: stringResource(R.string.device_overview), style = MaterialTheme.typography.headlineSmall)
                 Text(stringResource(R.string.device_live), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
             }
-            FilledTonalIconButton(onClick = onOptions) { Icon(Icons.Default.Tune, stringResource(R.string.local_options)) }
+            FilledTonalIconButton(onClick = onOptions) { Icon(Icons.Rounded.Tune, stringResource(R.string.local_options)) }
         }
         val live = sample
         if (live == null) {

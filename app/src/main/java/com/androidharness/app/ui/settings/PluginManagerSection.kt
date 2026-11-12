@@ -18,7 +18,7 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -45,7 +45,6 @@ import androidx.compose.ui.res.pluralStringResource
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.TextButton
-import com.androidharness.app.ui.common.Switch
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -185,8 +184,8 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
     }
     Column(Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         PrimaryScrollableTabRow(selectedTabIndex = tab, edgePadding = 0.dp, containerColor = MaterialTheme.colorScheme.surface) {
-            listOf(Triple(R.string.pm_installed, Icons.Outlined.Inventory2, installed.size), Triple(R.string.pm_discover, Icons.Outlined.Explore, 0),
-                Triple(R.string.pm_add, Icons.Outlined.AddCircleOutline, 0)).forEachIndexed { index, (title, icon, count) ->
+            listOf(Triple(R.string.pm_installed, Icons.Rounded.Inventory2, installed.size), Triple(R.string.pm_discover, Icons.Rounded.Explore, 0),
+                Triple(R.string.pm_add, Icons.Rounded.AddCircleOutline, 0)).forEachIndexed { index, (title, icon, count) ->
                 Tab(selected = tab == index, onClick = { tab = index }, text = {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Icon(icon, null, Modifier.size(20.dp))
@@ -202,7 +201,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
             if (tab != 1) item {
                 Surface(shape = RoundedCornerShape(28.dp), color = MaterialTheme.colorScheme.primaryContainer) {
                     Column(Modifier.fillMaxWidth().padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Icon(Icons.Outlined.Extension, null, Modifier.size(28.dp))
+                        Icon(Icons.Rounded.Extension, null, Modifier.size(28.dp))
                         Text(stringResource(R.string.pm_intro), style = MaterialTheme.typography.headlineSmall)
                         Text(stringResource(R.string.pm_intro_hint), style = MaterialTheme.typography.bodyMedium)
                     }
@@ -241,7 +240,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                         Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.primaryContainer) {
                             Row(Modifier.fillMaxWidth().padding(start = 18.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically,
                                 horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                                Icon(Icons.Outlined.NewReleases, null)
+                                Icon(Icons.Rounded.NewReleases, null)
                                 Text(pluralStringResource(R.plurals.pm_updates_found, updates.size, updates.size), Modifier.weight(1f), style = MaterialTheme.typography.titleSmall)
                                 TextButton(onClick = { scopeFilter = "updates" }) { Text(stringResource(R.string.pm_show_updates)) }
                             }
@@ -285,7 +284,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                                 } }, enabled = !busy, modifier = Modifier.semantics { contentDescription = label })
                             }
                             updates[record.id]?.let { listing ->
-                                StatPill(Icons.Outlined.NewReleases, stringResource(R.string.pm_update_available) +
+                                StatPill(Icons.Rounded.NewReleases, stringResource(R.string.pm_update_available) +
                                     listing.version.takeIf { it.isNotBlank() }?.let { " · $it" }.orEmpty(),
                                     container = MaterialTheme.colorScheme.primaryContainer, content = MaterialTheme.colorScheme.onPrimaryContainer)
                             }
@@ -300,11 +299,11 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                                 } }, enabled = !busy) { Text(stringResource(R.string.pm_details)) }
                                 if (record.origin.kind !in setOf("archive", "folder")) {
                                     if (record.id in updates) FilledTonalButton(onClick = { prepare(record.origin, record) }, enabled = !busy) {
-                                        Icon(Icons.Outlined.Upgrade, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.pm_update))
+                                        Icon(Icons.Rounded.Upgrade, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.pm_update))
                                     } else TextButton(onClick = { prepare(record.origin, record) }, enabled = !busy) { Text(stringResource(R.string.pm_update)) }
                                 }
                                 IconButton(onClick = { deleting = record }, enabled = !busy) {
-                                    Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.pm_uninstall_named, record.name))
+                                    Icon(Icons.Rounded.DeleteOutline, stringResource(R.string.pm_uninstall_named, record.name))
                                 }
                             }
                         }
@@ -356,7 +355,7 @@ internal fun PluginManagerSection(container: AppContainer, managerOverride: Plug
                                             Text(market.repo, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                                         }
                                         IconButton(onClick = { manager.removeMarketplace(market.repo); marketList = manager.marketplaces.list(); sections = null; search() }, enabled = !busy) {
-                                            Icon(Icons.Outlined.DeleteOutline, stringResource(R.string.pm_remove_marketplace, market.repo))
+                                            Icon(Icons.Rounded.DeleteOutline, stringResource(R.string.pm_remove_marketplace, market.repo))
                                         }
                                     }
                                 }
@@ -499,7 +498,7 @@ internal fun PluginInstallButton(enabled: Boolean, preparing: Boolean, progress:
         colors = ButtonDefaults.buttonColors(disabledContainerColor = if (preparing) scheme.primaryContainer else scheme.onSurface.copy(alpha = .12f),
             disabledContentColor = if (preparing) scheme.onPrimaryContainer else scheme.onSurface.copy(alpha = .38f))) {
         if (preparing) LoadingIndicator(Modifier.size(26.dp), color = scheme.onPrimaryContainer)
-        else Icon(Icons.Outlined.Download, null, Modifier.size(20.dp))
+        else Icon(Icons.Rounded.Download, null, Modifier.size(20.dp))
         Spacer(Modifier.width(10.dp))
         Text(if (preparing) pluginProgressLabel(progress) else stringResource(R.string.settings_action_install),
             Modifier.semantics { liveRegion = LiveRegionMode.Polite }, maxLines = 2, overflow = TextOverflow.Ellipsis)

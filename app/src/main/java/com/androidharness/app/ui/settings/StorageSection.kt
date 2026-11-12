@@ -14,7 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.*
+import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -121,9 +121,9 @@ internal fun StorageSection(container: AppContainer) {
                 }
             }
             if (scanning) OutlinedButton(onClick = ::stop) {
-                Icon(Icons.Outlined.Stop, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.storage_stop))
+                Icon(Icons.Rounded.Stop, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.storage_stop))
             } else FilledTonalButton(onClick = ::rescan, enabled = !cleaning && confirmation == null) {
-                Icon(Icons.Outlined.Refresh, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.storage_rescan))
+                Icon(Icons.Rounded.Refresh, null, Modifier.size(18.dp)); Spacer(Modifier.width(6.dp)); Text(stringResource(R.string.storage_rescan))
             }
         }
         AnimatedVisibility(scanning) { progress?.let { ScanProgressCard(it) } }
@@ -171,7 +171,7 @@ internal fun StorageSection(container: AppContainer) {
             }
             Button(onClick = { reviewing = true; selected = data.candidates.filter { it.group == "Downloads" }.map { it.id }.toSet() },
                 enabled = !busy, modifier = Modifier.fillMaxWidth()) {
-                Icon(Icons.Outlined.CleaningServices, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
+                Icon(Icons.Rounded.CleaningServices, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_storage_review_cleanup))
             }
             Text(stringResource(R.string.storage_measure_note_full), style = MaterialTheme.typography.labelSmall,
@@ -329,12 +329,12 @@ private fun StorageSummary(report: StorageReport, cleanable: Long) {
                 }
             }
             FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                StatPill(Icons.Outlined.Inventory2, pluralStringResource(R.plurals.storage_items, report.items.size, report.items.size))
-                if (report.notMeasured.isNotEmpty()) StatPill(Icons.Outlined.ErrorOutline,
+                StatPill(Icons.Rounded.Inventory2, pluralStringResource(R.plurals.storage_items, report.items.size, report.items.size))
+                if (report.notMeasured.isNotEmpty()) StatPill(Icons.Rounded.ErrorOutline,
                     stringResource(R.string.storage_not_measured_count, report.notMeasured.size),
                     container = MaterialTheme.colorScheme.errorContainer, content = MaterialTheme.colorScheme.onErrorContainer)
-                if (report.partial > 0) StatPill(Icons.Outlined.VisibilityOff, stringResource(R.string.storage_partial_count, report.partial))
-                if (cleanable > 0) StatPill(Icons.Outlined.CleaningServices, stringResource(R.string.ui_available_to_review, storageSize(cleanable)),
+                if (report.partial > 0) StatPill(Icons.Rounded.VisibilityOff, stringResource(R.string.storage_partial_count, report.partial))
+                if (cleanable > 0) StatPill(Icons.Rounded.CleaningServices, stringResource(R.string.ui_available_to_review, storageSize(cleanable)),
                     container = MaterialTheme.colorScheme.primaryContainer, content = MaterialTheme.colorScheme.onPrimaryContainer)
             }
             if (report.notMeasured.isNotEmpty()) Text(
@@ -379,10 +379,10 @@ private fun CategoryCard(group: StorageGroup, report: StorageReport, searching: 
                     Text(pluralStringResource(R.plurals.storage_items, group.items.size, group.items.size),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
-                if (group.notMeasured > 0) StatPill(Icons.Outlined.ErrorOutline, group.notMeasured.toString(),
+                if (group.notMeasured > 0) StatPill(Icons.Rounded.ErrorOutline, group.notMeasured.toString(),
                     container = MaterialTheme.colorScheme.errorContainer, content = MaterialTheme.colorScheme.onErrorContainer)
                 Text(storageSize(group.bytes), style = MaterialTheme.typography.titleSmall)
-                Icon(if (open) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
+                Icon(if (open) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null)
             }
             if (open) {
                 val limit = 8
@@ -478,13 +478,13 @@ private fun ItemDetailDialog(item: StorageItem, report: StorageReport, onDismiss
         text = {
             Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(storageNote(context, item), style = MaterialTheme.typography.bodyMedium)
-                DetailLine(Icons.Outlined.DataUsage, stringResource(R.string.storage_detail_size), when {
+                DetailLine(Icons.Rounded.DataUsage, stringResource(R.string.storage_detail_size), when {
                     item.bytes != null -> storageSize(item.bytes) + " · " + pluralStringResource(R.plurals.storage_detail_files, item.files, item.files)
                     item.gap?.included == true -> itemStatus(item, report)
                     else -> stringResource(R.string.storage_not_measured)
                 })
                 item.gap?.takeUnless { it.included && it != com.androidharness.app.data.storage.StorageGap.UNTRACKED }?.let { gap ->
-                    DetailLine(Icons.Outlined.ErrorOutline, stringResource(R.string.storage_detail_reason), stringResource(storageGapText(gap)),
+                    DetailLine(Icons.Rounded.ErrorOutline, stringResource(R.string.storage_detail_reason), stringResource(storageGapText(gap)),
                         tint = if (item.notMeasured) MaterialTheme.colorScheme.error else null)
                     if (item.seenBytes > 0) Text(stringResource(R.string.storage_timed_out_seen, storageSize(item.seenBytes)),
                         style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -512,7 +512,7 @@ private fun ItemDetailDialog(item: StorageItem, report: StorageReport, onDismiss
                             }
                         }
                         TextButton(onClick = { clipboard.setText(AnnotatedString(path)); copied = true }) {
-                            Icon(if (copied) Icons.Outlined.Check else Icons.Outlined.ContentCopy, null, Modifier.size(18.dp))
+                            Icon(if (copied) Icons.Rounded.Check else Icons.Rounded.ContentCopy, null, Modifier.size(18.dp))
                             Spacer(Modifier.width(6.dp))
                             Text(stringResource(when {
                                 copied && many -> R.string.storage_paths_copied
@@ -567,12 +567,12 @@ private fun CleanupReview(data: StorageInventory, selected: Set<String>, busy: B
         }
     }
     SettingsPanel(Modifier.fillMaxWidth()) {
-        StorageRow(Icons.Outlined.Inventory2, uiContext.getString(R.string.ui_unused_managed_packages),
+        StorageRow(Icons.Rounded.Inventory2, uiContext.getString(R.string.ui_unused_managed_packages),
             uiContext.getString(R.string.ui_unknown_ownership_or_workspace_requirements_stay_protected), uiContext.getString(R.string.ui_details)) {
             onInfo(uiContext.getString(R.string.ui_managed_packages), uiContext.getString(R.string.ui_new_installs_record_files_dependencies_and_requirements))
         }
         HorizontalDivider()
-        StorageRow(Icons.Outlined.Shield, uiContext.getString(R.string.settings_storage_always_kept),
+        StorageRow(Icons.Rounded.Shield, uiContext.getString(R.string.settings_storage_always_kept),
             uiContext.getString(R.string.ui_source_folders_required_dependencies_models_history_undo), "") {
             onInfo(uiContext.getString(R.string.settings_storage_always_kept), uiContext.getString(R.string.settings_storage_always_kept_detail))
         }

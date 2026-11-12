@@ -11,9 +11,9 @@ import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.ExpandLess
-import androidx.compose.material.icons.outlined.ExpandMore
-import androidx.compose.material.icons.outlined.Vibration
+import androidx.compose.material.icons.rounded.ExpandLess
+import androidx.compose.material.icons.rounded.ExpandMore
+import androidx.compose.material.icons.rounded.Vibration
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.clickable
 import androidx.compose.runtime.LaunchedEffect
@@ -59,7 +59,6 @@ import com.androidharness.app.ui.common.deviceSupportsSystemHaptics
 import com.androidharness.app.ui.common.rememberRumbleFlowPreview
 import com.androidharness.app.ui.common.rememberRumblePreview
 import com.androidharness.app.ui.common.rumbleStyle
-import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import androidx.compose.material3.Icon
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -187,7 +186,7 @@ internal fun RumbleSection(settings: AppSettings, repository: SettingsRepository
                 Text(stringResource(R.string.rumble_advanced_desc), style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Icon(if (advanced) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null)
+            Icon(if (advanced) Icons.Rounded.ExpandLess else Icons.Rounded.ExpandMore, null)
         }
     }
     AnimatedVisibility(advanced) {
@@ -337,7 +336,7 @@ private fun CueEditor(cue: RumbleCue, config: RumbleCueConfig, onChange: (Rumble
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             IconButton(onClick = { onFeel(config.copy(level = level.roundToInt())) }, enabled = config.pattern != RumblePattern.OFF) {
-                Icon(Icons.Outlined.Vibration, stringResource(R.string.rumble_play_cue, title))
+                Icon(Icons.Rounded.Vibration, stringResource(R.string.rumble_play_cue, title))
             }
         }
         FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {

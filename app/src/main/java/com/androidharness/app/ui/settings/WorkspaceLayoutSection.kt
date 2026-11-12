@@ -19,7 +19,7 @@ import com.androidharness.app.ui.common.RadioButton
 internal fun WorkspaceLayoutSection(selected: WorkspaceLayoutMode, onSelect: (WorkspaceLayoutMode) -> Unit) {
     SettingsAnchor(R.string.settings_anchor_layout) {
         SettingsPanel(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(14.dp).selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            Column(Modifier.padding(16.dp).selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.settings_anchor_layout), style = MaterialTheme.typography.titleSmall)
                 Text(stringResource(R.string.settings_layout_narrow_note),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)

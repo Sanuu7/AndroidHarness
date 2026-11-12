@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Provider request log: capture state. -->
+    <string name="debug_console_recording">Recording</string>
+    <string name="debug_console_paused">Paused</string>
+    <string name="debug_console_pause">Pause</string>
+    <string name="debug_console_resume">Resume</string>
+    <string name="debug_console_bodies_note">Prompts, replies and raw stream events. Without this only URLs, headers and status are kept.</string>
+    <string name="debug_console_off_title">Capture is off</string>
+    <string name="debug_console_off_body">Turn it on, send a message, then come back to see the request and what the provider answered.</string>
+    <string name="debug_console_waiting_title">Nothing recorded yet</string>
+    <string name="debug_console_waiting_body">Send a message in any chat. Every request to a provider shows up here as it happens.</string>
+    <string name="debug_console_empty_filtered">Nothing matches these filters.</string>
+
+    <!-- Provider request log: list. -->
+    <string name="debug_console_stat_requests">Requests</string>
+    <string name="debug_console_stat_failed">Failed</string>
+    <string name="debug_console_stat_retried">Retried</string>
+    <string name="debug_console_filter_all">All</string>
+    <string name="debug_console_filter_failed">Failed</string>
+    <string name="debug_console_filter_retried">Retried</string>
+    <string name="debug_console_filter_streamed">Streamed</string>
+    <string name="debug_console_search">Provider, model, URL, status or request ID</string>
+    <string name="debug_console_clear_search">Clear search</string>
+    <string name="debug_console_export">Export the visible requests</string>
+    <string name="debug_console_share_text">Share as text</string>
+    <string name="debug_console_share_json">Share as JSON</string>
+    <string name="debug_console_save_text">Save as text</string>
+    <string name="debug_console_save_json">Save as JSON</string>
+    <string name="debug_console_clear">Clear the log</string>
+    <string name="debug_console_attempts">%1$d attempts</string>
+    <string name="debug_console_recovered">Recovered</string>
+    <string name="debug_console_probe">Model list check</string>
+    <string name="debug_console_retry_after">Retry after %1$s</string>
+    <string name="debug_console_key_after">Key %1$d after %2$s</string>
+    <string name="debug_console_fallback_after">Fallback after %1$s</string>
+    <string name="debug_console_fallback_from">Fallback from %1$s after %2$s</string>
+    <string name="debug_console_cause_http">HTTP %1$d</string>
+    <string name="debug_console_cause_network">a network error</string>
+    <string name="debug_console_cause_unknown">the previous attempt</string>
+    <string name="debug_console_events_short">%1$d events</string>
+
+    <!-- Provider request log: one request. -->
+    <string name="debug_console_tab_overview">Overview</string>
+    <string name="debug_console_tab_request">Request</string>
+    <string name="debug_console_tab_response">Response</string>
+    <string name="debug_console_tab_stream">Stream</string>
+    <string name="debug_console_attempt_of">Attempt %1$d of %2$d</string>
+    <string name="debug_console_headers">Headers</string>
+    <string name="debug_console_body">Body</string>
+    <string name="debug_console_error_body">Error body</string>
+    <string name="debug_console_limits">Limits and retry</string>
+    <string name="debug_console_endpoint">Endpoint</string>
+    <string name="debug_console_no_headers">No headers were recorded.</string>
+    <string name="debug_console_no_body">No body was captured. Turn on Include bodies before sending.</string>
+    <string name="debug_console_no_response">No response arrived.</string>
+    <string name="debug_console_streamed_body">This response was streamed. Its events are on the Stream tab.</string>
+    <string name="debug_console_elided">Long fields were shortened by %1$d characters. The JSON structure is intact.</string>
+    <string name="debug_console_cut">This body was not JSON and was cut by %1$d characters.</string>
+    <string name="debug_console_truncated">Only the first part of this body was kept.</string>
+    <string name="debug_console_formatted">Formatted</string>
+    <string name="debug_console_raw">Raw</string>
+    <string name="debug_console_show_all">Show all %1$d lines</string>
+    <string name="debug_console_show_less">Show less</string>
+    <string name="debug_console_fact_duration">Duration</string>
+    <string name="debug_console_fact_started">Started</string>
+    <string name="debug_console_fact_model">Model</string>
+    <string name="debug_console_fact_protocol">Protocol</string>
+    <string name="debug_console_fact_attempt">Attempt</string>
+    <string name="debug_console_fact_key">Key slot</string>
+    <string name="debug_console_fact_request_id">Provider request ID</string>
+    <string name="debug_console_fact_usage">Tokens</string>
+    <string name="debug_console_fact_events">Stream events</string>
+    <string name="debug_console_fact_chat">Chat</string>
+
+    <!-- Provider request log: search inside a request. -->
+    <string name="debug_console_find">Find in this tab</string>
+    <string name="debug_console_find_count">%1$d of %2$d</string>
+    <string name="debug_console_find_none">No matches</string>
+    <string name="debug_console_find_previous">Previous match</string>
+    <string name="debug_console_find_next">Next match</string>
+
+    <!-- Provider request log: stream events. -->
+    <string name="debug_console_stream_done">End of stream</string>
+    <string name="debug_console_stream_malformed">Not valid JSON</string>
+    <string name="debug_console_stream_missing">The stream was not captured. Turn on Include bodies before the turn starts.</string>
+    <string name="debug_console_stream_truncated">The log stopped keeping events at its size limit. The answer itself continued.</string>
+    <string name="debug_console_stream_no_done">The stream ended without a [DONE] event.</string>
+
+    <!-- Provider request log: copy and share. -->
+    <string name="debug_console_copy">Copy</string>
+    <string name="debug_console_share">Share</string>
+    <string name="debug_console_copy_all">Full trace</string>
+    <string name="debug_console_copy_curl">As a cURL command</string>
+    <string name="debug_console_copy_request">Request body</string>
+    <string name="debug_console_copy_response">Response body</string>
+    <string name="debug_console_copied">Copied</string>
+
+    <!-- Provider request log: what a status usually means. -->
+    <string name="debug_console_hint_400">The provider rejected the request. The error body usually names the field or value it did not accept.</string>
+    <string name="debug_console_hint_401">Authentication failed. The key is missing, wrong, expired, or not allowed to use this model.</string>
+    <string name="debug_console_hint_402">Payment is required. The account has no credit left, or this model is not part of its plan.</string>
+    <string name="debug_console_hint_404">Nothing exists at this address. Check the model ID and the base URL of the provider.</string>
+    <string name="debug_console_hint_408">The provider gave up waiting. The request took too long to arrive or to process.</string>
+    <string name="debug_console_hint_413">The request is too large for this provider. Shorten the conversation or attach less.</string>
+    <string name="debug_console_hint_429">A rate limit or quota was reached.</string>
+    <string name="debug_console_hint_429_wait">A rate limit or quota was reached. The provider asks to wait %1$s.</string>
+    <string name="debug_console_hint_5xx">The provider, or a gateway in front of it, failed. The request itself is usually not the cause.</string>
+    <string name="debug_console_hint_other">The provider answered with an error. Read the error body for its reason.</string>
+    <string name="debug_console_hint_network">No response arrived. The connection, DNS, TLS or a timeout stopped the request before the provider answered.</string>
+    <string name="debug_console_seconds">%1$s s</string>
+</resources>

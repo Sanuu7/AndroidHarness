@@ -23,11 +23,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.CheckCircle
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -325,9 +325,9 @@ internal fun ProviderSheetContent(
                             value = providerQuery,
                             onValueChange = { providerQuery = it },
                             placeholder = { Text(stringResource(R.string.settings_provider_search_count, devProviders.size.toString())) },
-                            leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
                             singleLine = true,
-                            shape = RoundedCornerShape(14.dp),
+                            shape = RoundedCornerShape(16.dp),
                             modifier = Modifier.fillMaxWidth(),
                         )
                         Spacer(Modifier.height(10.dp))
@@ -394,7 +394,7 @@ internal fun ProviderSheetContent(
                                 label = { Text(stringResource(R.string.settings_provider_protocol)) },
                                 trailingIcon = {
                                     IconButton(onClick = { typeMenu = true }) {
-                                        Icon(Icons.Filled.KeyboardArrowDown, contentDescription = stringResource(R.string.settings_provider_choose_protocol))
+                                        Icon(Icons.Rounded.KeyboardArrowDown, contentDescription = stringResource(R.string.settings_provider_choose_protocol))
                                     }
                                 },
                                 modifier = Modifier.fillMaxWidth(),
@@ -489,9 +489,9 @@ internal fun ProviderSheetContent(
                         value = modelQuery,
                         onValueChange = { modelQuery = it },
                         placeholder = { Text(stringResource(R.string.settings_provider_search_model)) },
-                        leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
+                        leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
                         singleLine = true,
-                        shape = RoundedCornerShape(14.dp),
+                        shape = RoundedCornerShape(16.dp),
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Spacer(Modifier.height(8.dp))
@@ -587,7 +587,7 @@ private fun ProviderFlowHeader(
     ) {
         if (step != AddStep.PROVIDER) {
             IconButton(onClick = onBack) {
-                Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = stringResource(R.string.settings_action_back))
+                Icon(Icons.AutoMirrored.Rounded.ArrowBack, contentDescription = stringResource(R.string.settings_action_back))
             }
         }
         Column(Modifier.weight(1f)) {
@@ -636,7 +636,7 @@ private fun ProviderFlowHeader(
             )
         }
         IconButton(onClick = onClose) {
-            Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.settings_action_close))
+            Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.settings_action_close))
         }
     }
 }
@@ -740,7 +740,7 @@ private fun ModelPickRow(
             com.androidharness.app.ui.common.ModelReasoningIcon(entry, providerType, directory)
             if (selected) {
                 Icon(
-                    Icons.Filled.CheckCircle,
+                    Icons.Rounded.CheckCircle,
                     contentDescription = stringResource(R.string.settings_chatgpt_selected),
                     tint = scheme.primary,
                     modifier = Modifier.size(19.dp),
@@ -860,7 +860,7 @@ private fun ProviderRow(
     Surface(
         onClick = onClick,
         color = if (selected) scheme.secondaryContainer else scheme.surfaceContainerLow,
-        shape = RoundedCornerShape(14.dp),
+        shape = RoundedCornerShape(16.dp),
         border = BorderStroke(
             1.dp,
             if (selected) scheme.primary.copy(alpha = 0.28f)
@@ -914,7 +914,7 @@ private fun ProviderRow(
             }
             if (selected) {
                 Icon(
-                    Icons.Filled.CheckCircle,
+                    Icons.Rounded.CheckCircle,
                     contentDescription = stringResource(R.string.settings_chatgpt_selected),
                     tint = scheme.primary,
                     modifier = Modifier.size(19.dp),
