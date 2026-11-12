@@ -141,8 +141,14 @@ class AppContainer(val appContext: Context) {
     val configuration = com.androidharness.app.config.HarnessConfigRepository(appContext, keys, pluginManager, configurationRevision)
     val pluginHooks = com.androidharness.app.config.PluginHooks(appContext) { linuxEnv.shellProcessBuilder(it) }
     internal val runtimePolicy = AppRuntimePolicy(appContext, settings)
-    /** Reads assistant replies with Android TTS or Groq PlayAI. */
-    val tts = com.androidharness.app.data.audio.TtsController(appContext, settings, keys)
+    /** Voice providers (speech-to-text and text-to-speech) with per-provider keys. */
+    val voiceProviders = com.androidharness.app.data.audio.VoiceProviderRepository(appContext, keys)
+    /** Microsoft Edge voice catalogue, cached on disk for a day. */
+    val edgeVoices = com.androidharness.app.data.audio.EdgeVoiceCatalog(appContext)
+    /** Keeps the advertised Edge build current so read-aloud is not refused. */
+    val edgeVersion = com.androidharness.app.data.audio.EdgeVersionProvider(appContext)
+    /** Reads assistant replies with Android TTS or the selected voice provider. */
+    val tts = com.androidharness.app.data.audio.TtsController(appContext, settings, keys, voiceProviders, edgeVoices, edgeVersion)
     internal val editorScope = kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     internal val editorDrafts = com.androidharness.app.ui.files.EditorDraftStore(
         java.io.File(appContext.noBackupFilesDir, "editor-drafts"), editorScope)

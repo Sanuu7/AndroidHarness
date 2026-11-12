@@ -261,7 +261,7 @@ private fun LiveVoicePanel(
                 Text(
                     stringResource(
                         R.string.live_settings_engines,
-                        stringResource(if (settings.voiceEngine == AppSettings.VOICE_ENGINE_GROQ) R.string.live_engine_groq else R.string.live_engine_system),
+                        stringResource(if (settings.voiceEngine != AppSettings.VOICE_ENGINE_INBUILT) R.string.live_engine_groq else R.string.live_engine_system),
                     ),
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,

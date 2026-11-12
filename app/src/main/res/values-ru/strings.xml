@@ -1059,4 +1059,14 @@
     <string name="settings_debug_events">%1$d events</string>
     <string name="settings_debug_save">Save to file</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
+    <string name="settings_anchor_auto_send">Автоотправка</string>
+    <string name="settings_search_auto_send_title">Автоотправка</string>
+    <string name="settings_search_auto_send_desc">Автоматически отправляет надиктованный текст после паузы.</string>
+    <string name="settings_voice_auto_send">Автоотправка</string>
+    <string name="settings_voice_auto_send_desc">Автоматически отправляет запрос, когда вы замолкаете, без кнопки отправки.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Показывать в меню +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Показывает переключатель автоотправки в меню кнопки +.</string>
+    <string name="settings_voice_auto_send_timeout">Время тишины</string>
+    <string name="settings_voice_auto_send_timeout_desc">Сколько ждать тишины перед отправкой.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s с</string>
 </resources>

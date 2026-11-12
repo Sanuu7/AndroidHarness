@@ -74,6 +74,7 @@ import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Description
+import androidx.compose.material.icons.automirrored.outlined.Send
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.LoadingIndicator
 import androidx.compose.material3.Icon
@@ -185,6 +186,15 @@ internal fun MessageComposer(
     onAskAside: (() -> Unit)? = null,
     /** Opens hands-free Live Mode; null while the experiment is switched off. */
     onLiveMode: (() -> Unit)? = null,
+    /** When true, send `onSilenceDetected` to auto-transcribe an idle locked recording. */
+    autoSendEnabled: Boolean = false,
+    /** Silence before auto-send in milliseconds (1000..5000, 100ms steps). */
+    autoSendTimeoutMs: Int = 2000,
+    onSilenceDetected: () -> Unit = {},
+    /** Toggle for auto-send, shown in the + menu. */
+    onToggleAutoSend: (() -> Unit)? = null,
+    /** Whether to show the Auto Send item in the + menu. */
+    autoSendShowInPlus: Boolean = true,
     /** Coding-only context meter, anchored immediately to the left of the text field. */
     contextControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
@@ -200,7 +210,7 @@ internal fun MessageComposer(
     var inputLineCount by remember { mutableIntStateOf(1) }
     val inputAlignment = if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically
 
-    val isGroq = voiceEngine == AppSettings.VOICE_ENGINE_GROQ
+    val isGroq = voiceEngine != AppSettings.VOICE_ENGINE_INBUILT
     val isGroqActive = isGroq && groqRecordState != GroqRecordState.IDLE
     val isGroqLocked = groqRecordState == GroqRecordState.LOCKED
     val isGroqTranscribing = groqRecordState == GroqRecordState.TRANSCRIBING
@@ -249,6 +259,31 @@ internal fun MessageComposer(
         label = "sendCorner",
     )
 
+    // Auto-send: detect silence in a locked Groq recording.
+    // Only fires AFTER the user actually spoke (avoids sending "." for silence).
+    var silenceSamples by remember { mutableIntStateOf(0) }
+    var hasSpoken by remember { mutableStateOf(false) }
+    LaunchedEffect(autoSendEnabled, autoSendTimeoutMs, isGroqLocked, levels) {
+        if (!autoSendEnabled || !isGroqLocked) {
+            silenceSamples = 0
+            hasSpoken = false
+        } else {
+            val last = levels.lastOrNull() ?: 0f
+            // Lower thresholds than before: 0.03 speech, 0.02 silence floor.
+            if (last > 0.03f) {
+                hasSpoken = true
+                if (silenceSamples >= 0) silenceSamples = 0
+            } else if (hasSpoken && last <= 0.02f) {
+                silenceSamples += 1
+                val threshold = (autoSendTimeoutMs / 60).coerceAtLeast(1)
+                if (silenceSamples >= threshold) {
+                    silenceSamples = -Int.MAX_VALUE / 2 // fire only once per recording
+                    onSilenceDetected()
+                }
+            }
+        }
+    }
+
     val actionSize = if (desktopInput) 36.dp else if (desktop) 52.dp else 44.dp
     val leading: @Composable () -> Unit = {
         // Leading button: discard recording when locked, otherwise attachments/skills
@@ -268,6 +303,9 @@ internal fun MessageComposer(
                 onSchedule = onSchedule,
                 scheduleUnavailableReason = scheduleUnavailableReason,
                 onLiveMode = onLiveMode,
+                autoSendEnabled = autoSendEnabled,
+                autoSendShowInPlus = autoSendShowInPlus,
+                onToggleAutoSend = onToggleAutoSend,
                 size = actionSize,
             )
         }
@@ -883,6 +921,9 @@ private fun ComposerLeadingButton(
     onSchedule: (() -> Unit)?,
     scheduleUnavailableReason: String?,
     onLiveMode: (() -> Unit)?,
+    autoSendEnabled: Boolean = false,
+    autoSendShowInPlus: Boolean = true,
+    onToggleAutoSend: (() -> Unit)? = null,
     size: Dp = 52.dp,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
@@ -924,6 +965,21 @@ private fun ComposerLeadingButton(
                     onPickFile()
                 },
             )
+            if (onToggleAutoSend != null && autoSendShowInPlus) {
+                androidx.compose.material3.HorizontalDivider()
+                DropdownMenuItem(
+                    text = {
+                        androidx.compose.foundation.layout.Column {
+                            Text(uiContext.getString(R.string.settings_voice_auto_send))
+                            Text(uiContext.getString(R.string.settings_voice_auto_send_desc), style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    },
+                    leadingIcon = { Icon(Icons.AutoMirrored.Outlined.Send, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(18.dp)) },
+                    trailingIcon = { Text(if (autoSendEnabled) "ON" else "OFF", style = MaterialTheme.typography.labelSmall, color = if (autoSendEnabled) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant) },
+                    onClick = { expanded = false; onToggleAutoSend() },
+                )
+            }
             if (onLiveMode != null) {
                 androidx.compose.material3.HorizontalDivider()
                 DropdownMenuItem(

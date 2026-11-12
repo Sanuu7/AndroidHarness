@@ -1050,4 +1050,14 @@
     <string name="settings_debug_events">%1$d events</string>
     <string name="settings_debug_save">Save to file</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
+    <string name="settings_anchor_auto_send">Tự động gửi</string>
+    <string name="settings_search_auto_send_title">Tự động gửi</string>
+    <string name="settings_search_auto_send_desc">Tự động gửi văn bản đọc sau khi im lặng.</string>
+    <string name="settings_voice_auto_send">Tự động gửi</string>
+    <string name="settings_voice_auto_send_desc">Tự động gửi khi bạn ngừng nói, không cần chờ nút gửi.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Hiện trong menu +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Cung cấp công tắc tự động gửi trong menu nút + để chuyển nhanh.</string>
+    <string name="settings_voice_auto_send_timeout">Thời gian im lặng</string>
+    <string name="settings_voice_auto_send_timeout_desc">Chờ im lặng bao lâu trước khi gửi.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s giây</string>
 </resources>

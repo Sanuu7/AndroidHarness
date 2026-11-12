@@ -109,16 +109,18 @@ data class AppSettings(
     val biometricLockEnabled: Boolean = false,
     /** Grace period in minutes before re-locking when app is backgrounded (0 = immediately). */
     val biometricLockTimeoutMinutes: Int = 0,
-    /** Voice speech-to-text engine: "inbuilt" (native Android recognizer) or "groq" (Groq Whisper API). */
+    /** Voice speech-to-text engine: "inbuilt" (native Android recognizer) or a [VoiceProviderConfig] id. */
     val voiceEngine: String = "inbuilt",
-    /** Groq Whisper model: "whisper-large-v3" (default) or "whisper-large-v3-turbo". */
+    /** Legacy Groq Whisper model; kept in sync while Groq is the selected provider. */
     val groqWhisperModel: String = "whisper-large-v3",
-    /** Text-to-speech engine: "system" (Android TTS) or "groq" (Groq PlayAI). */
+    /** Text-to-speech engine: "system" (Android TTS) or a [VoiceProviderConfig] id. */
     val ttsEngine: String = TTS_ENGINE_SYSTEM,
-    /** Groq TTS model id, fetched from the account's model list when possible. */
+    /** Legacy Groq TTS model id; kept in sync while Groq is the selected provider. */
     val ttsGroqModel: String = DEFAULT_TTS_GROQ_MODEL,
-    /** Groq TTS voice id, e.g. "Fritz-PlayAI" or "autumn". */
+    /** Legacy Groq TTS voice id; kept in sync while Groq is the selected provider. */
     val ttsGroqVoice: String = DEFAULT_TTS_GROQ_VOICE,
+    /** Per-provider model and voice choices, keyed by provider id. */
+    val voiceSelections: Map<String, VoiceSelection> = emptyMap(),
     /** Android TTS voice name; null picks the best voice for the app language. */
     val ttsSystemVoice: String? = null,
     /** Speech rate multiplier shared by both engines. */
@@ -127,6 +129,12 @@ data class AppSettings(
     val ttsAlwaysSpeak: Boolean = false,
     /** The one-time voice configuration promo dialog was dismissed. */
     val voicePromoSeen: Boolean = false,
+    /** Auto-send dictation after silence without waiting for the user to press send. */
+    val voiceAutoSend: Boolean = false,
+    /** Show the Auto Send toggle in the + (composer leading) menu. */
+    val voiceAutoSendShowInPlus: Boolean = true,
+    /** Silence before auto-sending dictation, in milliseconds (1000..5000, 100ms steps). */
+    val voiceAutoSendTimeoutMs: Int = 2000,
     /** Experimental hands-free voice planning. Device-local, never restored from a backup. */
     val liveMode: LiveModeSettings = LiveModeSettings(),
     /** Legacy Code resume toggle kept for old backups; codeStart is authoritative. */
@@ -209,6 +217,8 @@ data class AppSettings(
     val cavemanIntensity: com.androidharness.app.caveman.CavemanIntensity = com.androidharness.app.caveman.CavemanIntensity.OFF,
     val cavemanWenyan: Boolean = false,
 ) {
+    /** Backwards-compat accessor: timeout in seconds (for old callers / backups). */
+    val voiceAutoSendTimeoutSeconds: Int get() = voiceAutoSendTimeoutMs / 1000
     companion object {
         const val DEFAULT_MAX_CONTEXT = 1_000_000
         const val DEFAULT_MAX_OUTPUT = 32_768
@@ -219,10 +229,23 @@ data class AppSettings(
         const val GROQ_MODEL_WHISPER_TURBO = "whisper-large-v3-turbo"
         const val TTS_ENGINE_SYSTEM = "system"
         const val TTS_ENGINE_GROQ = "groq"
+        const val VOICE_PROVIDER_GROQ = "groq"
         const val DEFAULT_TTS_GROQ_MODEL = "playai-tts"
         const val DEFAULT_TTS_GROQ_VOICE = "Fritz-PlayAI"
     }
 }
+
+/**
+ * Model and voice the user picked for one voice provider. Stored as a map so
+ * adding a provider never needs a new settings field, and a provider that is
+ * removed simply leaves an unused entry behind.
+ */
+@kotlinx.serialization.Serializable
+data class VoiceSelection(
+    val sttModel: String = "",
+    val ttsModel: String = "",
+    val ttsVoice: String = "",
+)
 
 class SettingsRepository(private val context: Context) {
     suspend fun setFallbackPolicy(policy: com.androidharness.app.llm.FallbackPolicy) {
@@ -235,6 +258,27 @@ class SettingsRepository(private val context: Context) {
 
     private fun decodeCustomLevels(raw: String?): Map<String, String> =
         raw?.let { kotlinx.serialization.json.Json.decodeFromString(it) } ?: emptyMap()
+
+    private fun decodeVoiceSelections(raw: String?): Map<String, VoiceSelection> =
+        raw?.let {
+            runCatching {
+                kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+                    .decodeFromString<Map<String, VoiceSelection>>(it)
+            }.getOrNull()
+        } ?: emptyMap()
+
+    private fun encodeVoiceSelections(selections: Map<String, VoiceSelection>): String =
+        kotlinx.serialization.json.Json.encodeToString(selections)
+
+    private fun updateVoiceSelection(
+        raw: String?,
+        providerId: String,
+        transform: (VoiceSelection) -> VoiceSelection,
+    ): String {
+        val saved = decodeVoiceSelections(raw).toMutableMap()
+        saved[providerId] = transform(saved[providerId] ?: VoiceSelection())
+        return encodeVoiceSelections(saved)
+    }
 
     suspend fun setReasoningConfig(key: String, config: com.androidharness.app.agent.CustomReasoningConfig?) {
         context.settingsStore.edit { prefs ->
@@ -320,10 +364,15 @@ class SettingsRepository(private val context: Context) {
         val TTS_ENGINE = stringPreferencesKey("tts_engine")
         val TTS_GROQ_MODEL = stringPreferencesKey("tts_groq_model")
         val TTS_GROQ_VOICE = stringPreferencesKey("tts_groq_voice")
+        val VOICE_SELECTIONS = stringPreferencesKey("voice_provider_selections")
         val TTS_SYSTEM_VOICE = stringPreferencesKey("tts_system_voice")
         val TTS_SPEED = floatPreferencesKey("tts_speed")
         val TTS_ALWAYS_SPEAK = booleanPreferencesKey("tts_always_speak")
         val VOICE_PROMO_SEEN = booleanPreferencesKey("voice_promo_seen")
+        val VOICE_AUTO_SEND = booleanPreferencesKey("voice_auto_send")
+        val VOICE_AUTO_SEND_SHOW_IN_PLUS = booleanPreferencesKey("voice_auto_send_show_in_plus")
+        val VOICE_AUTO_SEND_TIMEOUT_SECONDS = intPreferencesKey("voice_auto_send_timeout_seconds")
+        val VOICE_AUTO_SEND_TIMEOUT_MS = intPreferencesKey("voice_auto_send_timeout_ms")
         val LIVE_MODE = stringPreferencesKey("live_mode")
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val START_SCREEN = stringPreferencesKey("start_screen")
@@ -455,10 +504,14 @@ class SettingsRepository(private val context: Context) {
             ttsEngine = prefs[Keys.TTS_ENGINE] ?: AppSettings.TTS_ENGINE_SYSTEM,
             ttsGroqModel = prefs[Keys.TTS_GROQ_MODEL] ?: AppSettings.DEFAULT_TTS_GROQ_MODEL,
             ttsGroqVoice = prefs[Keys.TTS_GROQ_VOICE] ?: AppSettings.DEFAULT_TTS_GROQ_VOICE,
+            voiceSelections = decodeVoiceSelections(prefs[Keys.VOICE_SELECTIONS]),
             ttsSystemVoice = prefs[Keys.TTS_SYSTEM_VOICE]?.ifBlank { null },
             ttsSpeed = prefs[Keys.TTS_SPEED] ?: 1f,
             ttsAlwaysSpeak = prefs[Keys.TTS_ALWAYS_SPEAK] ?: false,
             voicePromoSeen = prefs[Keys.VOICE_PROMO_SEEN] ?: false,
+            voiceAutoSend = prefs[Keys.VOICE_AUTO_SEND] ?: false,
+            voiceAutoSendShowInPlus = prefs[Keys.VOICE_AUTO_SEND_SHOW_IN_PLUS] ?: true,
+            voiceAutoSendTimeoutMs = (prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] ?: prefs[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS]?.let { it * 1000 } ?: 2000).coerceIn(1000, 5000),
             liveMode = liveModeFrom(prefs[Keys.LIVE_MODE]),
             resumeLastChat = prefs[Keys.RESUME_LAST_CHAT] ?: true,
             startScreen = StartScreen.fromStored(prefs[Keys.START_SCREEN]),
@@ -559,9 +612,14 @@ class SettingsRepository(private val context: Context) {
             p[Keys.TTS_ENGINE] = s.ttsEngine
             p[Keys.TTS_GROQ_MODEL] = s.ttsGroqModel
             p[Keys.TTS_GROQ_VOICE] = s.ttsGroqVoice
+            p[Keys.VOICE_SELECTIONS] = encodeVoiceSelections(s.voiceSelections)
             p[Keys.TTS_SYSTEM_VOICE] = s.ttsSystemVoice.orEmpty()
             p[Keys.TTS_SPEED] = s.ttsSpeed
             p[Keys.TTS_ALWAYS_SPEAK] = s.ttsAlwaysSpeak
+            p[Keys.VOICE_AUTO_SEND] = s.voiceAutoSend
+            p[Keys.VOICE_AUTO_SEND_SHOW_IN_PLUS] = s.voiceAutoSendShowInPlus
+            p[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] = s.voiceAutoSendTimeoutMs.coerceIn(1000, 5000)
+            p[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = s.voiceAutoSendTimeoutMs.coerceIn(1000, 5000) / 1000
             p[Keys.RESUME_LAST_CHAT] = s.resumeLastChat
             p[Keys.START_SCREEN] = s.startScreen.name
             p[Keys.CHAT_START] = s.chatStart.name
@@ -814,8 +872,29 @@ class SettingsRepository(private val context: Context) {
     }
 
     suspend fun setGroqWhisperModel(model: String) {
-        context.settingsStore.edit { it[Keys.GROQ_WHISPER_MODEL] = model }
+        context.settingsStore.edit {
+            it[Keys.GROQ_WHISPER_MODEL] = model
+            it[Keys.VOICE_SELECTIONS] = updateVoiceSelection(it[Keys.VOICE_SELECTIONS], AppSettings.VOICE_PROVIDER_GROQ) { sel ->
+                sel.copy(sttModel = model)
+            }
+        }
     }
+
+    /** Remembers the model/voice the user picked for one provider. */
+    suspend fun setVoiceSelection(providerId: String, transform: (VoiceSelection) -> VoiceSelection) {
+        context.settingsStore.edit { prefs ->
+            prefs[Keys.VOICE_SELECTIONS] = updateVoiceSelection(prefs[Keys.VOICE_SELECTIONS], providerId, transform)
+        }
+    }
+
+    suspend fun setVoiceProviderSttModel(providerId: String, model: String) =
+        setVoiceSelection(providerId) { it.copy(sttModel = model) }
+
+    suspend fun setVoiceProviderTtsModel(providerId: String, model: String) =
+        setVoiceSelection(providerId) { it.copy(ttsModel = model) }
+
+    suspend fun setVoiceProviderTtsVoice(providerId: String, voice: String) =
+        setVoiceSelection(providerId) { it.copy(ttsVoice = voice) }
 
     suspend fun setTtsEngine(engine: String) {
         context.settingsStore.edit { it[Keys.TTS_ENGINE] = engine }
@@ -839,6 +918,27 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setTtsAlwaysSpeak(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.TTS_ALWAYS_SPEAK] = enabled }
+    }
+
+    suspend fun setVoiceAutoSend(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.VOICE_AUTO_SEND] = enabled }
+    }
+
+    suspend fun setVoiceAutoSendShowInPlus(visible: Boolean) {
+        context.settingsStore.edit { it[Keys.VOICE_AUTO_SEND_SHOW_IN_PLUS] = visible }
+    }
+
+    suspend fun setVoiceAutoSendTimeoutMs(ms: Int) {
+        val clamped = ms.coerceIn(1000, 5000)
+        context.settingsStore.edit {
+            it[Keys.VOICE_AUTO_SEND_TIMEOUT_MS] = clamped
+            it[Keys.VOICE_AUTO_SEND_TIMEOUT_SECONDS] = clamped / 1000
+        }
+    }
+
+    // Backwards-compat overload taking seconds (old callers / backups).
+    suspend fun setVoiceAutoSendTimeoutSeconds(seconds: Int) {
+        setVoiceAutoSendTimeoutMs(seconds.coerceIn(1, 5) * 1000)
     }
 
     private fun liveModeFrom(raw: String?): LiveModeSettings =

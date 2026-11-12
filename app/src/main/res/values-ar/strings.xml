@@ -1065,4 +1065,14 @@
     <string name="settings_debug_events">%1$d events</string>
     <string name="settings_debug_save">Save to file</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
+    <string name="settings_anchor_auto_send">الإرسال التلقائي</string>
+    <string name="settings_search_auto_send_title">الإرسال التلقائي</string>
+    <string name="settings_search_auto_send_desc">يرسل النص المملى تلقائيًا بعد الصمت.</string>
+    <string name="settings_voice_auto_send">الإرسال التلقائي</string>
+    <string name="settings_voice_auto_send_desc">يرسل الطلب تلقائيًا عند التوقف عن الكلام دون انتظار زر الإرسال.</string>
+    <string name="settings_voice_auto_send_show_in_plus">إظهار في قائمة +</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">يوفر مفتاح الإرسال التلقائي في قائمة زر + للتبديل السريع.</string>
+    <string name="settings_voice_auto_send_timeout">مدة الصمت</string>
+    <string name="settings_voice_auto_send_timeout_desc">كم من الوقت يُنتظر الصمت قبل الإرسال.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s ث</string>
 </resources>

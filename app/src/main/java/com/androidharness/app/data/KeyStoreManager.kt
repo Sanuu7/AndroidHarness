@@ -233,6 +233,42 @@ class KeyStoreManager(context: Context) {
     private fun mcpOAuthSlot(server: String) =
         "${KEY_MCP_OAUTH}_${McpServerNameSanitizer.sanitize(server)}"
 
+    /**
+     * One credential per voice provider. Speech-to-text and text-to-speech of
+     * the same provider share the key, exactly like Groq did before providers
+     * became configurable.
+     */
+    @Synchronized fun putVoiceApiKey(providerId: String, key: String) {
+        check(prefs.edit().putString(voiceKeySlot(providerId), key.trim()).commit()) {
+            "Could not save the voice provider key."
+        }
+    }
+
+    fun voiceApiKey(providerId: String): String? =
+        prefs.getString(voiceKeySlot(providerId), null)?.trim()?.ifBlank { null }
+
+    @Synchronized fun removeVoiceApiKey(providerId: String) {
+        check(prefs.edit().remove(voiceKeySlot(providerId)).commit()) {
+            "Could not remove the voice provider key."
+        }
+    }
+
+    /**
+     * Copies the single pre-provider Groq key into the per-provider slot once,
+     * so an existing setup keeps working after the upgrade. Returns true when a
+     * key was migrated.
+     */
+    @Synchronized fun migrateGroqKeyToVoiceProviders(): Boolean {
+        val legacy = prefs.getString(KEY_GROQ_API, null)?.trim()?.ifBlank { null } ?: return false
+        val slot = voiceKeySlot("groq")
+        if (prefs.getString(slot, null) != null) return false
+        check(prefs.edit().putString(slot, legacy).commit()) { "Could not migrate the voice key." }
+        return true
+    }
+
+    private fun voiceKeySlot(providerId: String) =
+        "${KEY_VOICE_API}_${McpServerNameSanitizer.sanitize(providerId)}"
+
     /** Groq API key used for high-speed Whisper speech-to-text transcriptions. */
     fun putGroqApiKey(key: String) {
         prefs.edit().putString(KEY_GROQ_API, key.trim()).apply()
@@ -266,5 +302,6 @@ class KeyStoreManager(context: Context) {
         const val KEY_SEARCH_API = "search_api_key"
         const val KEY_MCP_OAUTH = "mcp_oauth"
         const val KEY_GROQ_API = "groq_api_key"
+        const val KEY_VOICE_API = "voice_api_key"
     }
 }

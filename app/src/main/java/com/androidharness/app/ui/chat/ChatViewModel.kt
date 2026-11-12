@@ -184,14 +184,22 @@ data class ChatUiState(
     val showForkPromo: Boolean = false,
     /** Pending message for which fork was requested while promo was pending. */
     val pendingForkMessage: ChatMessage? = null,
-    /** Voice speech-to-text engine ("inbuilt" or "groq"). */
+    /** Voice speech-to-text engine: "inbuilt" or a voice provider id. */
     val voiceEngine: String = AppSettings.VOICE_ENGINE_INBUILT,
-    /** Groq Whisper model ("whisper-large-v3" or "whisper-large-v3-turbo"). */
+    /** Legacy Groq Whisper model, used while Groq is the selected provider. */
     val groqWhisperModel: String = AppSettings.GROQ_MODEL_WHISPER_V3,
+    /** Model and voice choices per voice provider id. */
+    val voiceSelections: Map<String, com.androidharness.app.data.VoiceSelection> = emptyMap(),
     /** False until the one-time voice configuration promo dialog is dismissed. */
     val voicePromoSeen: Boolean = false,
     /** True while the one-time voice promo dialog should be shown. */
     val showVoicePromo: Boolean = false,
+    /** Auto-send dictation after the configured silence timeout. */
+    val voiceAutoSend: Boolean = false,
+    /** Show the Auto Send toggle in the + (composer leading) menu. */
+    val voiceAutoSendShowInPlus: Boolean = true,
+    /** Silence before auto-send in milliseconds (1000..5000, 100ms steps). */
+    val voiceAutoSendTimeoutMs: Int = 2000,
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Workspace .harness/mcp.json server names awaiting user approval before a run. */
@@ -760,7 +768,11 @@ class ChatViewModel(
             forkPromoSeen = settings.forkPromoSeen,
             voiceEngine = settings.voiceEngine,
             groqWhisperModel = settings.groqWhisperModel,
+            voiceSelections = settings.voiceSelections,
             voicePromoSeen = settings.voicePromoSeen,
+            voiceAutoSend = settings.voiceAutoSend,
+            voiceAutoSendShowInPlus = settings.voiceAutoSendShowInPlus,
+            voiceAutoSendTimeoutMs = settings.voiceAutoSendTimeoutMs,
         ) }
     }
 
@@ -1869,6 +1881,13 @@ class ChatViewModel(
             c.settings.setVoiceEngine(engine)
             c.settings.setVoicePromoSeen(true)
         }
+    }
+
+    /** Optimistic toggle for the + menu: the Chat hears it immediately, then persists. */
+    fun toggleVoiceAutoSend() {
+        val next = !_state.value.voiceAutoSend
+        _state.update { it.copy(voiceAutoSend = next) }
+        viewModelScope.launch { c.settings.setVoiceAutoSend(next) }
     }
 
     private fun forkFrom(messageId: String, onForked: (String) -> Unit) {

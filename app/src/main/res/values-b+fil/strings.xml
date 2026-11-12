@@ -1053,4 +1053,14 @@
     <string name="settings_debug_events">%1$d events</string>
     <string name="settings_debug_save">Save to file</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
+    <string name="settings_anchor_auto_send">Auto send</string>
+    <string name="settings_search_auto_send_title">Auto send</string>
+    <string name="settings_search_auto_send_desc">Awtomatikong ipinapadala ang dictation pagkatapos ng katahimikan.</string>
+    <string name="settings_voice_auto_send">Auto send</string>
+    <string name="settings_voice_auto_send_desc">Awtomatikong ipinapadala kapag tumigil kang magsalita, nang hindi hinihintay ang send button.</string>
+    <string name="settings_voice_auto_send_show_in_plus">Ipakita sa + menu</string>
+    <string name="settings_voice_auto_send_show_in_plus_desc">Naglalagay ng auto send switch sa + button menu para mabilis lumipat.</string>
+    <string name="settings_voice_auto_send_timeout">Tagal ng katahimikan</string>
+    <string name="settings_voice_auto_send_timeout_desc">Gaano katagal maghintay ng katahimikan bago ipadala.</string>
+    <string name="settings_voice_auto_send_timeout_value">%1$s s</string>
 </resources>
