@@ -1065,4 +1065,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">モーションブラー</string>
+    <string name="motion_blur_description">速いスクロールに追従する柔らかなブレ。カメラのパンのように。</string>
+    <string name="motion_blur_enable">スクロール時のモーションブラー</string>
+    <string name="motion_blur_enable_hint">素早くスワイプすると動く内容がぼやけます。ゆっくり読むときは鮮明なままです。</string>
+    <string name="motion_blur_intensity">強さ</string>
+    <string name="motion_blur_intensity_hint">速いスクロール時に内容がどれだけぼやけるか。</string>
+    <string name="motion_blur_unsupported">モーションブラーには Android 12 以降が必要です。</string>
 </resources>

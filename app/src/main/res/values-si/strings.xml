@@ -1068,4 +1068,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">චලන බොඳවීම</string>
+    <string name="motion_blur_description">වේගවත් අනුචලනය සමඟ එන මෘදු බොඳවීමක්, කැමරා චලනයක් මෙන්.</string>
+    <string name="motion_blur_enable">අනුචලනය කරන විට චලන බොඳවීම</string>
+    <string name="motion_blur_enable_hint">වේගවත් ස්වයිප් කිරීමෙන් චලනය වන අන්තර්ගතය බොඳ වේ. මන්දගාමී කියවීම තියුණු ලෙස පවතී.</string>
+    <string name="motion_blur_intensity">ශක්තිය</string>
+    <string name="motion_blur_intensity_hint">වේගවත් අනුචලනයේදී අන්තර්ගතය කොපමණ බොඳ වේද.</string>
+    <string name="motion_blur_unsupported">චලන බොඳවීමට Android 12 හෝ ඊට වැඩි අවශ්‍යයි.</string>
 </resources>

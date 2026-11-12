@@ -1074,4 +1074,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Размытие движения</string>
+    <string name="motion_blur_description">Мягкое размытие при быстрой прокрутке, как панорама камеры.</string>
+    <string name="motion_blur_enable">Размытие при прокрутке</string>
+    <string name="motion_blur_enable_hint">Быстрый свайп размывает движущееся содержимое. Медленное чтение остаётся чётким.</string>
+    <string name="motion_blur_intensity">Сила</string>
+    <string name="motion_blur_intensity_hint">Насколько сильно размывается содержимое при быстрой прокрутке.</string>
+    <string name="motion_blur_unsupported">Для размытия движения нужен Android 12 или новее.</string>
 </resources>

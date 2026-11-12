@@ -1065,4 +1065,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Kabur gerakan</string>
+    <string name="motion_blur_description">Kabur lembut yang mengikut skrol pantas, seperti gerakan kamera.</string>
+    <string name="motion_blur_enable">Kabur gerakan semasa menatal</string>
+    <string name="motion_blur_enable_hint">Leret pantas mengaburkan kandungan yang bergerak. Bacaan perlahan kekal tajam.</string>
+    <string name="motion_blur_intensity">Kekuatan</string>
+    <string name="motion_blur_intensity_hint">Sejauh mana kandungan kabur semasa menatal pantas.</string>
+    <string name="motion_blur_unsupported">Kabur gerakan memerlukan Android 12 atau lebih baharu.</string>
 </resources>

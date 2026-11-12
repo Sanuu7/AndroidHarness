@@ -1068,4 +1068,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">محوی حرکت</string>
+    <string name="motion_blur_description">محوی نرمی که با اسکرول سریع همراه می‌شود، مثل چرخش دوربین.</string>
+    <string name="motion_blur_enable">محوی حرکت هنگام اسکرول</string>
+    <string name="motion_blur_enable_hint">کشیدن سریع، محتوای در حال حرکت را محو می‌کند. خواندن آهسته واضح می‌ماند.</string>
+    <string name="motion_blur_intensity">شدت</string>
+    <string name="motion_blur_intensity_hint">میزان محوشدگی محتوا در اسکرول سریع.</string>
+    <string name="motion_blur_unsupported">محوی حرکت به Android 12 یا جدیدتر نیاز دارد.</string>
 </resources>

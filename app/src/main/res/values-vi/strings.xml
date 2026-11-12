@@ -1065,4 +1065,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Nhòe chuyển động</string>
+    <string name="motion_blur_description">Vệt nhòe nhẹ theo thao tác cuộn nhanh, như lia máy ảnh.</string>
+    <string name="motion_blur_enable">Nhòe chuyển động khi cuộn</string>
+    <string name="motion_blur_enable_hint">Vuốt nhanh làm nhòe nội dung đang di chuyển. Đọc chậm vẫn sắc nét.</string>
+    <string name="motion_blur_intensity">Độ mạnh</string>
+    <string name="motion_blur_intensity_hint">Mức độ nhòe của nội dung khi cuộn nhanh.</string>
+    <string name="motion_blur_unsupported">Nhòe chuyển động cần Android 12 trở lên.</string>
 </resources>

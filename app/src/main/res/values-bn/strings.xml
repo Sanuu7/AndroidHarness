@@ -1068,4 +1068,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">মোশন ব্লার</string>
+    <string name="motion_blur_description">দ্রুত স্ক্রলের সাথে আসা নরম ব্লার, ক্যামেরা প্যানের মতো।</string>
+    <string name="motion_blur_enable">স্ক্রল করার সময় মোশন ব্লার</string>
+    <string name="motion_blur_enable_hint">দ্রুত সোয়াইপে চলমান কনটেন্ট ব্লার হয়। ধীরে পড়া স্পষ্ট থাকে।</string>
+    <string name="motion_blur_intensity">শক্তি</string>
+    <string name="motion_blur_intensity_hint">দ্রুত স্ক্রলের সময় কনটেন্ট কতটা ব্লার হবে।</string>
+    <string name="motion_blur_unsupported">মোশন ব্লারের জন্য Android 12 বা নতুন প্রয়োজন।</string>
 </resources>

@@ -1065,4 +1065,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">ภาพเบลอจากการเคลื่อนไหว</string>
+    <string name="motion_blur_description">ภาพเบลอนุ่มที่ตามการเลื่อนเร็ว เหมือนการแพนกล้อง</string>
+    <string name="motion_blur_enable">ภาพเบลอจากการเคลื่อนไหวขณะเลื่อน</string>
+    <string name="motion_blur_enable_hint">การปัดเร็วจะทำให้เนื้อหาที่เคลื่อนที่เบลอ การอ่านช้าๆ ยังคมชัด</string>
+    <string name="motion_blur_intensity">ความแรง</string>
+    <string name="motion_blur_intensity_hint">ระดับความเบลอของเนื้อหาเมื่อเลื่อนเร็ว</string>
+    <string name="motion_blur_unsupported">ภาพเบลอจากการเคลื่อนไหวต้องใช้ Android 12 ขึ้นไป</string>
 </resources>

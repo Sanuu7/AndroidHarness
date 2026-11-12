@@ -1096,4 +1096,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">动态模糊</string>
+    <string name="motion_blur_description">快速滚动时出现的柔和模糊，就像镜头平移。</string>
+    <string name="motion_blur_enable">滚动时的动态模糊</string>
+    <string name="motion_blur_enable_hint">快速滑动会让移动的内容模糊，慢速阅读仍然清晰。</string>
+    <string name="motion_blur_intensity">强度</string>
+    <string name="motion_blur_intensity_hint">快速滚动时内容的模糊程度。</string>
+    <string name="motion_blur_unsupported">动态模糊需要 Android 12 或更高版本。</string>
 </resources>

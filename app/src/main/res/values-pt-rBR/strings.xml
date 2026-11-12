@@ -1068,4 +1068,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Desfoque de movimento</string>
+    <string name="motion_blur_description">Um desfoque suave que acompanha a rolagem rápida, como um movimento de câmera.</string>
+    <string name="motion_blur_enable">Desfoque ao rolar</string>
+    <string name="motion_blur_enable_hint">Deslizar rápido desfoca o conteúdo em movimento. A leitura lenta continua nítida.</string>
+    <string name="motion_blur_intensity">Intensidade</string>
+    <string name="motion_blur_intensity_hint">Quanto o conteúdo desfoca durante uma rolagem rápida.</string>
+    <string name="motion_blur_unsupported">O desfoque de movimento precisa do Android 12 ou superior.</string>
 </resources>

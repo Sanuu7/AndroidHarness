@@ -1068,4 +1068,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">இயக்க மங்கல்</string>
+    <string name="motion_blur_description">வேகமான உருட்டலுடன் வரும் மென்மையான மங்கல், கேமரா அசைவு போல.</string>
+    <string name="motion_blur_enable">உருட்டும்போது இயக்க மங்கல்</string>
+    <string name="motion_blur_enable_hint">வேகமாக ஸ்வைப் செய்தால் நகரும் உள்ளடக்கம் மங்கும். மெதுவாக படிக்கும்போது தெளிவாக இருக்கும்.</string>
+    <string name="motion_blur_intensity">வலிமை</string>
+    <string name="motion_blur_intensity_hint">வேகமான உருட்டலில் உள்ளடக்கம் எவ்வளவு மங்குகிறது.</string>
+    <string name="motion_blur_unsupported">இயக்க மங்கலுக்கு Android 12 அல்லது அதற்கு மேல் தேவை.</string>
 </resources>

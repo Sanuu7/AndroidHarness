@@ -1071,4 +1071,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Flou de mouvement</string>
+    <string name="motion_blur_description">Un flou doux qui suit le défilement rapide, comme un panoramique.</string>
+    <string name="motion_blur_enable">Flou de mouvement pendant le défilement</string>
+    <string name="motion_blur_enable_hint">Un balayage rapide floute le contenu en mouvement. La lecture lente reste nette.</string>
+    <string name="motion_blur_intensity">Intensité</string>
+    <string name="motion_blur_intensity_hint">À quel point le contenu se floute pendant un défilement rapide.</string>
+    <string name="motion_blur_unsupported">Le flou de mouvement nécessite Android 12 ou plus.</string>
 </resources>

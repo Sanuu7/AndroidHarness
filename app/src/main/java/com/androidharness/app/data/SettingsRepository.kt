@@ -41,6 +41,9 @@ data class AppSettings(
     val harnessGlassEnabled: Boolean = false,
     val harnessLiquidGlass: Boolean = false,
     val harnessGlassTransparency: Float = 0.5f,
+    /** Motion blur that follows fast vertical scrolling. Only drawn on Android 12+. */
+    val motionBlurEnabled: Boolean = false,
+    val motionBlurIntensity: Float = 0.5f,
     val progressBarStyle: ProgressBarStyle = ProgressBarStyle.FLAT,
     val workspaceLayout: WorkspaceLayoutMode = WorkspaceLayoutMode.AUTO,
     val editorWordWrap: Boolean = false,
@@ -319,6 +322,8 @@ class SettingsRepository(private val context: Context) {
         val HARNESS_GLASS_ENABLED = booleanPreferencesKey("harness_glass_enabled")
         val HARNESS_LIQUID_GLASS = booleanPreferencesKey("harness_liquid_glass")
         val HARNESS_GLASS_TRANSPARENCY = floatPreferencesKey("harness_glass_transparency")
+        val MOTION_BLUR_ENABLED = booleanPreferencesKey("motion_blur_enabled")
+        val MOTION_BLUR_INTENSITY = floatPreferencesKey("motion_blur_intensity")
         val PROGRESS_BAR_STYLE = stringPreferencesKey("progress_bar_style")
         val WORKSPACE_LAYOUT = stringPreferencesKey("workspace_layout")
         val EDITOR_WORD_WRAP = booleanPreferencesKey("editor_word_wrap")
@@ -453,6 +458,8 @@ class SettingsRepository(private val context: Context) {
             harnessGlassEnabled = prefs[Keys.HARNESS_GLASS_ENABLED] ?: false,
             harnessLiquidGlass = prefs[Keys.HARNESS_LIQUID_GLASS] ?: false,
             harnessGlassTransparency = (prefs[Keys.HARNESS_GLASS_TRANSPARENCY] ?: .5f).let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f },
+            motionBlurEnabled = prefs[Keys.MOTION_BLUR_ENABLED] ?: false,
+            motionBlurIntensity = (prefs[Keys.MOTION_BLUR_INTENSITY] ?: .5f).let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f },
             progressBarStyle = ProgressBarStyle.entries.firstOrNull { it.name == prefs[Keys.PROGRESS_BAR_STYLE] }
                 ?: ProgressBarStyle.FLAT,
             workspaceLayout = WorkspaceLayoutMode.fromStored(prefs[Keys.WORKSPACE_LAYOUT])
@@ -586,6 +593,8 @@ class SettingsRepository(private val context: Context) {
             p[Keys.HARNESS_GLASS_ENABLED] = s.harnessGlassEnabled
             p[Keys.HARNESS_LIQUID_GLASS] = s.harnessLiquidGlass
             p[Keys.HARNESS_GLASS_TRANSPARENCY] = s.harnessGlassTransparency.let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f }
+            p[Keys.MOTION_BLUR_ENABLED] = s.motionBlurEnabled
+            p[Keys.MOTION_BLUR_INTENSITY] = s.motionBlurIntensity.let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f }
             p[Keys.PROGRESS_BAR_STYLE] = s.progressBarStyle.name
             p[Keys.WORKSPACE_LAYOUT] = s.workspaceLayout.name
             p[Keys.EDITOR_WORD_WRAP] = s.editorWordWrap
@@ -819,6 +828,15 @@ class SettingsRepository(private val context: Context) {
     suspend fun setHarnessGlassTransparency(value: Float) {
         if (!value.isFinite()) return
         context.settingsStore.edit { it[Keys.HARNESS_GLASS_TRANSPARENCY] = value.coerceIn(0f, 1f) }
+    }
+
+    suspend fun setMotionBlurEnabled(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.MOTION_BLUR_ENABLED] = enabled }
+    }
+
+    suspend fun setMotionBlurIntensity(value: Float) {
+        if (!value.isFinite()) return
+        context.settingsStore.edit { it[Keys.MOTION_BLUR_INTENSITY] = value.coerceIn(0f, 1f) }
     }
 
     suspend fun updateHarnessCanvas(transform: (HarnessCanvasSettings) -> HarnessCanvasSettings) {

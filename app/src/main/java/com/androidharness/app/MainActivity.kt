@@ -109,6 +109,8 @@ class MainActivity : AppCompatActivity() {
                 glassEnabled = currentSettings.harnessGlassEnabled,
                 liquidGlass = currentSettings.harnessLiquidGlass,
                 glassTransparency = currentSettings.harnessGlassTransparency,
+                motionBlurEnabled = currentSettings.motionBlurEnabled,
+                motionBlurIntensity = currentSettings.motionBlurIntensity,
             ) {
                 // Biometric lock prompt on start / when enabled.
                 LaunchedEffect(currentSettings.biometricLockEnabled) {

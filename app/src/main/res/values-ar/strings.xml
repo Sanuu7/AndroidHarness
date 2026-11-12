@@ -1080,4 +1080,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">ضبابية الحركة</string>
+    <string name="motion_blur_description">تعتيم ناعم يتبع التمرير السريع، مثل حركة الكاميرا.</string>
+    <string name="motion_blur_enable">ضبابية الحركة أثناء التمرير</string>
+    <string name="motion_blur_enable_hint">السحب السريع يضبب المحتوى المتحرك. القراءة البطيئة تبقى حادة.</string>
+    <string name="motion_blur_intensity">القوة</string>
+    <string name="motion_blur_intensity_hint">مقدار ضبابية المحتوى أثناء التمرير السريع.</string>
+    <string name="motion_blur_unsupported">تحتاج ضبابية الحركة إلى Android 12 أو أحدث.</string>
 </resources>

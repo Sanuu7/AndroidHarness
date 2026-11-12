@@ -1068,4 +1068,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Motion blur</string>
+    <string name="motion_blur_description">Malambot na paglabo na sumusunod sa mabilis na pag-scroll, tulad ng paggalaw ng kamera.</string>
+    <string name="motion_blur_enable">Motion blur habang nag-scroll</string>
+    <string name="motion_blur_enable_hint">Ang mabilis na pag-swipe ay nagpapalabo sa gumagalaw na nilalaman. Nananatiling matalas ang mabagal na pagbabasa.</string>
+    <string name="motion_blur_intensity">Lakas</string>
+    <string name="motion_blur_intensity_hint">Gaano kalabo ang nilalaman habang mabilis ang pag-scroll.</string>
+    <string name="motion_blur_unsupported">Kailangan ng motion blur ang Android 12 o mas bago.</string>
 </resources>

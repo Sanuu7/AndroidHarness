@@ -1043,6 +1043,13 @@
     <string name="glass_transparency">Transparency</string>
     <string name="glass_transparency_percent">%1$d%%</string>
     <string name="glass_transparency_hint">Slide right for clearer glass. Preview updates as you drag; your choice applies when you release. Action buttons and pop-ups keep a readable tint.</string>
+    <string name="motion_blur_title">Motion blur</string>
+    <string name="motion_blur_description">A soft smear that follows fast scrolling, like a camera pan.</string>
+    <string name="motion_blur_enable">Motion blur while scrolling</string>
+    <string name="motion_blur_enable_hint">Fast flicks blur the moving content. Slow reading stays sharp.</string>
+    <string name="motion_blur_intensity">Strength</string>
+    <string name="motion_blur_intensity_hint">How much the content smears during a fast scroll.</string>
+    <string name="motion_blur_unsupported">Motion blur needs Android 12 or later.</string>
     <string name="settings_language_vietnamese">Tiếng Việt</string>
     <string name="settings_language_turkish">Türkçe</string>
     <string name="settings_language_malay">Bahasa Melayu</string>

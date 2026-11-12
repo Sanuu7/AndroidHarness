@@ -39,6 +39,8 @@ fun HarnessTheme(
     glassEnabled: Boolean = false,
     liquidGlass: Boolean = false,
     glassTransparency: Float = .5f,
+    motionBlurEnabled: Boolean = false,
+    motionBlurIntensity: Float = .5f,
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -70,6 +72,7 @@ fun HarnessTheme(
     CompositionLocalProvider(
         LocalStatusColors provides (if (dark) StatusDark else StatusLight),
         LocalProgressBarStyle provides progressBarStyle,
+        LocalMotionBlur provides MotionBlurStyle(motionBlurEnabled, motionBlurIntensity),
     ) {
         MaterialTheme(
             colorScheme = if (glass.mode == HarnessGlassMode.OFF) colorScheme else colorScheme.copy(

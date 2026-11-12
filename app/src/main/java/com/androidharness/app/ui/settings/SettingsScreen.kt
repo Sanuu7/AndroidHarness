@@ -160,6 +160,7 @@ import com.androidharness.app.ui.common.rememberStorageAccess
 import com.androidharness.app.ui.common.ThinLinearProgress
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.LocalStatusColors
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.tools.mcp.McpConfigParser
 import com.androidharness.app.tools.mcp.McpServerConfig
 import kotlinx.coroutines.Dispatchers
@@ -423,7 +424,7 @@ private fun SettingsScreenContent(
                 query = query,
                 onQueryChange = { query = it },
                 onOpen = ::openPage,
-                modifier = Modifier.fillMaxSize().verticalScroll(homeScroll),
+                modifier = Modifier.motionBlur().fillMaxSize().verticalScroll(homeScroll),
                 customSections = settings.customSections,
                 onOpenSection = { customReturn = emptyList(); customPath = listOf(it) },
                 onAddSection = ::startNewSection,
@@ -436,7 +437,7 @@ private fun SettingsScreenContent(
                 val reveal = remember(highlight) { settingsRevealFor(highlight) }
                 SettingsHighlightScope(highlight, reveal, scroller.takeUnless { lazyPage }) {
                     Column(
-                        modifier = Modifier.then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
+                        modifier = Modifier.motionBlur().then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
                             .fillMaxSize().then(if (lazyPage) Modifier else Modifier.onGloballyPositioned { scroller.viewport = it }.verticalScroll(pageScroll))
                             .then(if (page == SettingsPage.LEARN) Modifier else Modifier.padding(horizontal = 16.dp, vertical = 16.dp)),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -2430,6 +2431,9 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
     }
     SettingsAnchor(R.string.theme_canvas_title) {
         HarnessCanvasSection(settings.harnessCanvas, container.settings)
+    }
+    SettingsAnchor(R.string.motion_blur_title) {
+        MotionBlurSection(settings, container.settings)
     }
     if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) {
         SettingsAnchor(R.string.glass_title) {

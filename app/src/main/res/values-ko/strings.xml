@@ -1065,4 +1065,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">모션 블러</string>
+    <string name="motion_blur_description">빠른 스크롤을 따라가는 부드러운 번짐, 카메라 팬처럼.</string>
+    <string name="motion_blur_enable">스크롤 중 모션 블러</string>
+    <string name="motion_blur_enable_hint">빠르게 넘기면 움직이는 콘텐츠가 번집니다. 천천히 읽을 때는 선명합니다.</string>
+    <string name="motion_blur_intensity">강도</string>
+    <string name="motion_blur_intensity_hint">빠르게 스크롤할 때 콘텐츠가 얼마나 번지는지.</string>
+    <string name="motion_blur_unsupported">모션 블러는 Android 12 이상이 필요합니다.</string>
 </resources>

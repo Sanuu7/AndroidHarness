@@ -173,6 +173,7 @@ import com.androidharness.app.ui.github.GitHubWorkspaceDialog
 import com.androidharness.app.ui.settings.ProviderManagerSheet
 import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.theme.fastEffectsSpec
+import com.androidharness.app.ui.theme.motionBlur
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
@@ -1734,7 +1735,7 @@ private fun ChatScreenContent(
                     } else {
                         LazyColumn(
                             state = listState,
-                            modifier = Modifier.fillMaxSize().glassViewportExtra(if (floatingGlass) glassComposerHeight else 0)
+                            modifier = Modifier.motionBlur().fillMaxSize().glassViewportExtra(if (floatingGlass) glassComposerHeight else 0)
                                 .recordHarnessGlassScene(glassScene,
                                     fadeTop = if (floatingGlass) with(density) { padding.calculateTopPadding().toPx() } else 0f,
                                     fadeBottom = if (floatingGlass) glassComposerHeight.toFloat() else 0f)

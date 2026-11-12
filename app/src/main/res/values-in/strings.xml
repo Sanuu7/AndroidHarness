@@ -1065,4 +1065,11 @@
     <string name="storage_card_all_files">All files access</string>
     <string name="storage_card_app_permissions">App permissions</string>
     <string name="storage_card_note">You can turn this off or revoke access at any time in Settings.</string>
+    <string name="motion_blur_title">Blur gerakan</string>
+    <string name="motion_blur_description">Kabur lembut yang mengikuti gulir cepat, seperti gerakan kamera.</string>
+    <string name="motion_blur_enable">Blur gerakan saat menggulir</string>
+    <string name="motion_blur_enable_hint">Gesek cepat mengaburkan konten yang bergerak. Membaca pelan tetap tajam.</string>
+    <string name="motion_blur_intensity">Kekuatan</string>
+    <string name="motion_blur_intensity_hint">Seberapa kabur konten saat menggulir cepat.</string>
+    <string name="motion_blur_unsupported">Blur gerakan membutuhkan Android 12 atau lebih baru.</string>
 </resources>
