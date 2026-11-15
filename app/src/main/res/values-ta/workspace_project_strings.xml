@@ -93,4 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset">ஆப் பணியிடத்தை மீட்டமை…</string>
+    <string name="wp_app_workspace_reset_title">ஆப் பணியிடத்தை மீட்டமைக்கவா?</string>
+    <string name="wp_app_workspace_reset_body">இந்தச் சாதனத்தில் ஆப் பணியிட கோப்புறையில் உள்ள %1$s, %2$s மற்றும் அனைத்து கோப்புகளையும் (மொத்தம் %3$s) நீக்குகிறது, திட்ட நினைவகம் மற்றும் செயல்தவிர் வரலாறு உட்பட. பணியிடம் காலியான இயல்புநிலையாக இருக்கும். இதை மீளச் செய்ய முடியாது.</string>
+    <string name="wp_app_workspace_reset_confirm">பணியிடத்தை மீட்டமை</string>
 </resources>
