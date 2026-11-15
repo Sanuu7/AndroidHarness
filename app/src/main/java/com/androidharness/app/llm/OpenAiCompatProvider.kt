@@ -155,6 +155,12 @@ class OpenAiCompatProvider(
                 thinking.effort?.takeUnless { it == "none" && thinking.spec.toggleField != null }
                     ?.let { put("reasoning_effort", it) }
             }
+            // llama.cpp local models (Qwen3 etc.) think by default and burn the
+            // context budget; mirror agent.py and pass the chat-template flag so
+            // "off" actually disables thinking on the server.
+            if (isLocalHost(config.baseUrl) && thinking.level == com.androidharness.app.agent.ThinkingLevel.OFF) {
+                putJsonObject("chat_template_kwargs") { put("enable_thinking", false) }
+            }
             // Pins all requests of one session to the same cache shard where
             // the endpoint supports it; gated by host so strict OpenAI-compat
             // servers that reject unknown fields keep working.
@@ -438,7 +444,7 @@ class OpenAiCompatProvider(
     ): Request {
         val host = config.baseUrl.lowercase()
         val requestBuilder = Request.Builder()
-            .url(config.baseUrl.trimEnd('/') + "/chat/completions")
+            .url(normalizeOpenAiBase(config.baseUrl) + "/chat/completions")
         // A local server with no key must get no header at all: "Bearer local"
         // is not a credential, and some builds reject an empty one.
         if (apiKey.isNotBlank() && apiKey != LOCAL_KEY) {
@@ -578,6 +584,21 @@ class OpenAiCompatProvider(
             return host == "localhost" || host == "0.0.0.0" || host.startsWith("127.") ||
                 host.startsWith("192.168.") || host.startsWith("10.") ||
                 Regex("^172\\.(1[6-9]|2[0-9]|3[01])\\.").containsMatchIn(host)
+        }
+
+        /**
+         * Normalize an OpenAI-compatible base URL so it ends with a version
+         * segment. Users frequently paste a bare host (http://host:port) or a
+         * full endpoint (…/chat/completions); the OpenAI-compatible routes
+         * live under /v1 (or /vN). Mirrors the agent.py normalization so local
+         * llama.cpp front-ends and proxies work whether or not the user typed /v1.
+         */
+        fun normalizeOpenAiBase(baseUrl: String): String {
+            var base = baseUrl.trim().trimEnd('/')
+            if (base.endsWith("/chat/completions")) base = base.removeSuffix("/chat/completions")
+            if (base.endsWith("/models")) base = base.removeSuffix("/models")
+            if (Regex("/v\\d+$").containsMatchIn(base)) return base
+            return base + "/v1"
         }
 
         /** Model families that reject `max_tokens` in favor of `max_completion_tokens`. */

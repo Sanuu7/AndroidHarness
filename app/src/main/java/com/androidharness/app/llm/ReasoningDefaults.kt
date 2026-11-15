@@ -8,7 +8,8 @@ import kotlinx.serialization.json.*
 /** Inherited model rules override protocol defaults. Custom level names never consult a preset allowlist. */
 object ReasoningDefaults {
     fun isLocal(config: ProviderConfig): Boolean = config.baseUrl.startsWith("local://") ||
-        com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
+        com.androidharness.app.local.LocalModelCatalog.isLocal(config.id) ||
+        OpenAiCompatProvider.isLocalHost(config.baseUrl)
 
     fun effective(custom: com.androidharness.app.agent.CustomReasoningConfig, config: ProviderConfig,
         spec: ThinkingSpecs.Spec): String? = custom.mapping.trim().takeIf { it.isNotEmpty() } ?: inherited(config, spec)

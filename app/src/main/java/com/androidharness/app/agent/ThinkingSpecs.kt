@@ -156,7 +156,7 @@ object ThinkingSpecs {
                 else if (it.style == Style.BUDGET || it.style == Style.TOGGLE) automatic.copy(outputMax = it.outputMax) else it
             }
             ProviderType.OPENAI_COMPAT -> {
-                if (OpenAiCompatProvider.isLocalHost(config.baseUrl)) return automatic
+                if (OpenAiCompatProvider.isLocalHost(config.baseUrl)) return Spec(Style.TOGGLE, listOf(ThinkingLevel.OFF, ThinkingLevel.HIGH))
                 val spec = forModel(config.model, key)
                 when {
                     usesRouterReasoning(config) -> spec

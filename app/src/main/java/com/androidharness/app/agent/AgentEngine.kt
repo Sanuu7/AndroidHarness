@@ -386,6 +386,10 @@ class AgentEngine(
             .let { if (memoryOn) it else it.without(memoryToolNames) }
             .let { if (conversation.personalizationEnabled) it else it.without(recallToolNames) }
             .let { if (conversation.isChat && !imageCapable) it.without(setOf("view_chat_image", "zoom_chat_image")) else it }
+        // Dynamic tool management: start with always-on set, model requests more.
+        val toolManager = ToolManager(allToolNames = runRegistry.schemas().map { it.name }.toSet())
+        val requestTool = com.androidharness.app.tools.RequestToolTool(toolManager)
+        val runRegistryWithRequest = runRegistry.withExtra(listOf(requestTool))
         val provider = providerFactory(config)
         // Stable per-session cache routing for providers that support it.
         val requestOptions = options.copy(cacheKey = sessionId)
@@ -462,11 +466,12 @@ class AgentEngine(
                     workspace
                 }
 
-            var roundRegistry = (if (conversation.isChat && !visionAvailable)
-                runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry)
+            var fullRegistry = (if (conversation.isChat && !visionAvailable)
+                runRegistryWithRequest.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistryWithRequest)
                 .filter { !runContext.denies(it) && com.androidharness.app.config.ConfigToolPolicy.permission(projectConfig, it, effectiveMode) != "deny" }
                 .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
                 .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
+            var roundRegistry = fullRegistry.restrictedTo(toolManager.activeSet())
             val searchConfiguration = (roundRegistry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.configurationNote()
             var tools = if (!agentContextEnabled) emptyList() else roundRegistry.schemas(
                 readOnlyOnly = mode == AgentMode.PLAN,
@@ -505,6 +510,19 @@ class AgentEngine(
                 run {
                     working.clear()
                     working.addAll(compacted)
+                    // Ensure the last message is a user message so the model
+                    // has a clear "current turn" to continue from. Without
+                    // this, llama.cpp's Jinja template fails with
+                    // "No user query found in messages" when the compacted
+                    // tail ends on an assistant or tool message.
+                    if (working.lastOrNull()?.role != Role.USER) {
+                        working.add(ChatMessage(role = Role.USER, text = "Continue."))
+                    }
+                    // Advance tool lifecycle: remove stale/unused tools.
+                    val removed = toolManager.onCompact()
+                    if (removed.isNotEmpty()) {
+                        emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)))
+                    }
                     // The window just shrank: refresh the context panel now
                     // instead of waiting for the next request's usage row.
                     emit(AgentEvent.EstimatedContext(estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)))
@@ -518,7 +536,7 @@ class AgentEngine(
             // Mirrors what this round sends, so /btw replays the same cached prefix.
             fun publishSide(messages: List<ChatMessage> = working) = sideContexts.publish(SideContext(
                 sessionId, turnId, config, apiKey, requestSystemPrompt, tools, messages.toList(), requestOptions,
-                roundRegistry, execWorkspace, sandboxOff, effectiveMode, runContext))
+                fullRegistry, execWorkspace, sandboxOff, effectiveMode, runContext))
 
             var text = StringBuilder()
             var thinking = StringBuilder()
@@ -673,9 +691,10 @@ class AgentEngine(
                 working.addAll(stripped)
                 if (conversation.isChat) {
                     visionAvailable = false
-                    roundRegistry = runRegistry.without(setOf("view_chat_image", "zoom_chat_image"))
+                    fullRegistry = runRegistry.without(setOf("view_chat_image", "zoom_chat_image"))
                         .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
-                .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
+                        .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
+                    roundRegistry = fullRegistry.restrictedTo(toolManager.activeSet())
                     tools = tools.filterNot { it.name in setOf("view_chat_image", "zoom_chat_image") }
                     requestSystemPrompt += "\nImage input was rejected by the provider. You cannot inspect or zoom images in this turn; say so rather than claiming to see them.\n"
                 }
@@ -825,7 +844,7 @@ class AgentEngine(
                                 val result = executeWithPermission(
                                     call, effectiveMode, sessionAllowedTools, execWorkspace,
                                     sessionId, turnId, mode, requestOptions, config, apiKey,
-                                    roundRegistry, resolveSubagentModel, serialEmit,
+                                    fullRegistry, resolveSubagentModel, serialEmit,
                                     subagentRuns = subagentRuns,
                                 )
                                 android.util.Log.d("HarnessSpawn", "task ${call.id} END ${System.currentTimeMillis()}")
@@ -834,9 +853,9 @@ class AgentEngine(
                         }.awaitAll().forEach { (id, result) -> results[id] = result }
                     }
                     publishResults()
-                } else if (parallelSafeReadOnly(first, roundRegistry)) {
+                } else if (parallelSafeReadOnly(first, fullRegistry)) {
                     val group = mutableListOf<ToolCallData>()
-                    while (ordinaryIndex < calls.size && calls[ordinaryIndex].name != "task" && parallelSafeReadOnly(calls[ordinaryIndex], roundRegistry)) {
+                    while (ordinaryIndex < calls.size && calls[ordinaryIndex].name != "task" && parallelSafeReadOnly(calls[ordinaryIndex], fullRegistry)) {
                         group += calls[ordinaryIndex++]
                     }
                     group.forEach { emit(AgentEvent.ToolStarted(it)) }
@@ -848,7 +867,7 @@ class AgentEngine(
                                 call.id to executeWithFailureGuard(
                                     call, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
                                     sessionId, turnId, mode, requestOptions, config, apiKey,
-                                    roundRegistry, resolveSubagentModel, serialEmit,
+                                    fullRegistry, resolveSubagentModel, serialEmit,
                                 )
                             }
                         }.awaitAll().forEach { (id, result) -> results[id] = result }
@@ -860,7 +879,7 @@ class AgentEngine(
                     results[first.id] = executeWithFailureGuard(
                         first, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
                         sessionId, turnId, mode, requestOptions, config, apiKey,
-                        roundRegistry, resolveSubagentModel,
+                        fullRegistry, resolveSubagentModel,
                     ) { emit(it) }
                     publishResults()
                 }
@@ -874,6 +893,8 @@ class AgentEngine(
                 val result = results.getValue(call.id)
                 working += toolMessage(call, result).withImagesResolved()
                 emit(AgentEvent.ToolFinished(call.id, result))
+                // Track tool usage for dynamic tool management.
+                if (result.ok) toolManager.onToolCalled(call.name)
             }
         }
         } finally {
@@ -2336,6 +2357,7 @@ ${if (appSettings.subagentsEnabled) "- For broad exploration whose raw output wo
             if (selected?.hasReadOnly == true) append("At least one selected workspace is read only: command/Git/integration tools are blocked for this selection; file tools retain each workspace's grant.\n")
             if (local) {
                 if (!linuxEnv.isReady) append("Linux environment is not installed or ready. First use the native file tools for reading and editing and the Android shell for commands available on the selected access route. Do not assume desktop Linux tools exist; only offer Linux setup if a required tool actually fails and the task cannot proceed without it. Preserve explicit Shizuku or root access when requested.\n")
+            else append("IMPORTANT: Before running any command that requires a specific tool (git, python, node, java, etc.), verify it appears in the installed packages list below. If a tool is not listed, it is NOT installed — do not attempt to run it. Use Android-native alternatives or offer to install it via pkg_install.\n")
                 append("\nLinux userspace state: ").append(linuxEnv.state.value.javaClass.simpleName).append(". This is Android with Termux-derived packages, not a desktop Linux distro or the separate Termux app.\n")
                 val installed = linuxEnv.installedPackages()
                 append("Installed package records (${installed.size}): ")

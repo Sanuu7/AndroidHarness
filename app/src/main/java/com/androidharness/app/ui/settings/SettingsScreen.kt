@@ -2262,6 +2262,22 @@ private fun AgentSection(
     scope: kotlinx.coroutines.CoroutineScope,
 ) {
     var showAgentsDialog by remember { mutableStateOf(false) }
+
+    // Load the active model's reported context window (n_ctx) from the catalog.
+    var modelContextWindow by remember { mutableStateOf<Long?>(null) }
+    LaunchedEffect(settings.activeModel, settings.activeProviderId) {
+        modelContextWindow = null
+        val model = settings.activeModel
+        val providerId = settings.activeProviderId
+        if (model != null && providerId != null) {
+            modelContextWindow = runCatching {
+                container.providers.catalog(providerId)
+                    .firstOrNull { it.id == model }
+                    ?.contextTokens
+            }.getOrNull()
+        }
+    }
+
     AgentBehaviorSection(
         settings = settings,
         onPermissionMode = { scope.launch { container.settings.setPermissionMode(it) } },
@@ -2276,6 +2292,7 @@ private fun AgentSection(
         onRunTips = { scope.launch { container.settings.setRunTipsEnabled(it) } },
         onAutoContinueQuestions = { scope.launch { container.settings.setAutoContinueQuestions(it) } },
         onAgentSettingsAccess = { scope.launch { container.settings.setAgentSettingsAccess(it) } },
+        modelContextWindow = modelContextWindow,
     )
     if (showAgentsDialog) {
         AgentsInstructionsDialog(container, onDismiss = { showAgentsDialog = false })
@@ -2285,19 +2302,32 @@ private fun AgentSection(
 /** Maximum size injected into the system prompt (AgentEngine.readWorkspaceDoc). */
 private const val AGENTS_MD_CAP = 16_000
 
-private val AGENTS_MD_TEMPLATE = """# AGENTS.md
+private val AGENTS_MD_TEMPLATE = """# Communication & Execution Rules
 
-## Project
-(What this project is, in one or two sentences.)
+## Style
+- Minimize tokens. Every word must earn its place. No repetition.
+- No greeting, hedging, pleasantries, recap, or closer.
+- Prefer short sentences and simple words. Active voice.
+- Articles are optional when the sentence remains clear in one pass.
+- Compress style, not language. Match the user's language.
+- Answer first. Then reason or next step if needed.
+- When brevity and precision conflict, choose precision.
 
-## Build & run
-(Commands to build, run, and test; plain names, e.g. `gradlew assembleDebug`.)
+## Tooling & Execution
+- Never output tool calls or shell commands as plain text. Use the actual tool invocation. Exception: intentionally showing an example.
+- Between routine tool calls: minimal status only.
+- Before complex changes: propose a short plan, execute, then probe (read/exit code/output). Compose the final result from evidence.
+- Before acting, split the request into independent units. Run independent units in parallel. Run dependent units in sequence.
+- Code blocks and payloads: verbatim.
 
-## Conventions
-(Code style, naming, file organization the agent should follow.)
+## Safety & Clarity
+- Use plain prose (not compressed style) for: security warnings, irreversible actions, step order that a fragment could scramble, or when the user is confused.
+- Resume compressed style after the clear part.
 
-## Constraints
-(Things the agent must never do in this workspace.)
+## Boundaries
+- Code, comments, commits, PRs, and docs: write normally.
+- Keep existing comments unless asked to change them.
+- Floor (never drop or alter): code, commands, paths, numbers, error strings, and words that change meaning (not / never / no / only / must / except).
 """
 
 @Composable

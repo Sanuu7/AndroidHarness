@@ -124,7 +124,7 @@ object ModelCatalog {
         val (url, requestBuilder) = when (config.type) {
             // Responses is OpenAI-only; its model listing is identical.
             ProviderType.OPENAI_COMPAT, ProviderType.OPENAI_RESPONSES ->
-                config.baseUrl.trimEnd('/') + "/models" to
+                OpenAiCompatProvider.normalizeOpenAiBase(config.baseUrl) + "/models" to
                     Request.Builder().apply { if (authed) header("Authorization", "Bearer $apiKey") }
 
             ProviderType.ANTHROPIC -> config.baseUrl.trimEnd('/') + "/v1/models" to
@@ -172,8 +172,11 @@ object ModelCatalog {
                     }
                     // llm7 reports {"tokens":400000,"chars":null} rather than
                     // a scalar context_window. Unknown metadata must not block setup.
+                    // Local OpenAI-compatible proxies (e.g. llama.cpp front-ends)
+                    // advertise the window as a plain "ctx" field, so honor it
+                    // before the ambiguous "max_tokens" (which may mean max output).
                     val window = obj["context_window"]
-                    val ctx = sequenceOf(obj["context_length"], obj["max_tokens"], window,
+                    val ctx = sequenceOf(obj["context_length"], obj["ctx"], obj["max_tokens"], window,
                         window.jsonObjectOrAbsent()?.get("tokens"))
                         .mapNotNull { (it as? JsonPrimitive)?.longOrNull }.firstOrNull()
                     ModelEntry(id, reasoning, ctx,

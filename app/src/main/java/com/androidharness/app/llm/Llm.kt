@@ -114,7 +114,7 @@ data class RequestOptions(
         val custom = resolved.customConfig ?: return body
         ReasoningMapping.validate(custom, config, com.androidharness.app.agent.ThinkingSpecs.forProvider(config,
             modelCatalogs[config.id]?.firstOrNull { it.id == config.model }))
-        val expression = requireNotNull(resolved.requestMapping) { "No inherited reasoning mapping is available. Add a CEL mapping." }
+        val expression = resolved.requestMapping ?: return body
         return ReasoningMapping.merge(body, ReasoningMapping.evaluate(expression, requireNotNull(resolved.customLevel)))
     }
 }

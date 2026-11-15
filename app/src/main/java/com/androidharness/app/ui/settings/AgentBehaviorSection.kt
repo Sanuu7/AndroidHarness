@@ -107,6 +107,8 @@ internal fun AgentBehaviorSection(
      * Production callers leave this null so the real biometric/PIN prompt runs.
      */
     fullAccessApproval: ((onApproved: () -> Unit) -> Unit)? = null,
+    /** The active model's reported context window (n_ctx), if known. */
+    modelContextWindow: Long? = null,
 ) {
     var editAutoCompact by rememberSaveable { mutableStateOf(false) }
     var autoCompactText by rememberSaveable { mutableStateOf("") }
@@ -300,10 +302,16 @@ internal fun AgentBehaviorSection(
                 title = stringResource(R.string.settings_anchor_max_context)
                 description = stringResource(R.string.settings_agent_context_cap_detail)
                 selected = settings.maxContextTokens.toString()
-                choices = (listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000) + settings.maxContextTokens)
-                    .distinct().sorted().map {
-                        BehaviorChoice(it.toString(), stringResource(R.string.settings_agent_context_value, formatTokenCount(it.toLong())), "")
-                    }
+                val baseValues = listOf(8_192L, 16_384L, 32_768L, 65_536L, 131_072L, 262_144L, 524_288L, 1_000_000L, 2_000_000L)
+                val modelCtx = modelContextWindow
+                val allValues: List<Long> = if (modelCtx != null && modelCtx > 0 && modelCtx !in baseValues) {
+                    (baseValues + modelCtx).distinct().sorted()
+                } else {
+                    baseValues
+                }
+                choices = allValues.map {
+                    BehaviorChoice(it.toString(), stringResource(R.string.settings_agent_context_value, formatTokenCount(it)), "")
+                }
             }
             BehaviorPicker.STEERING -> {
                 title = stringResource(R.string.settings_anchor_steering)
@@ -369,7 +377,7 @@ internal fun AgentBehaviorSection(
                                                     apply()
                                                 }
                                             }
-                                            BehaviorPicker.CONTEXT -> onContextLimit(choice.key.toInt())
+                                            BehaviorPicker.CONTEXT -> onContextLimit(choice.key.toLong().toInt())
                                             BehaviorPicker.ITERATIONS -> onIterationLimit(choice.key.toInt())
                                             BehaviorPicker.STEERING -> onSteeringMode(SteeringMode.valueOf(choice.key))
                                             BehaviorPicker.AGENT_SETTINGS -> onAgentSettingsAccess(AgentSettingsAccess.valueOf(choice.key))
