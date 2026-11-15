@@ -1368,6 +1368,23 @@ class RunManager(
             allowModelFallback = saved.allowModelFallback)
     }
 
+    /**
+     * Leaves a paused or interrupted task the user chose not to continue (issue #102).
+     * History, usage and settings stay saved; the saved task stops blocking the chat,
+     * and the next message starts a fresh run.
+     */
+    suspend fun dismissPausedTask(sessionId: String) = kotlinx.coroutines.withContext(Dispatchers.IO) {
+        check(!isRunning(sessionId)) { "Stop the running task before dismissing it" }
+        // A pending auto-continue or queued send would otherwise start a new run
+        // and put the same failure back on screen.
+        followUps.stop(sessionId)
+        synchronized(lock) {
+            followUpJobs[sessionId]?.cancel()
+            jobs[sessionId]?.cancel()
+        }
+        controls.update(sessionId) { it.copy(status = "idle", reason = null) }
+    }
+
     // ------------------------------------------------------------------
     // Edit / rewind
     // ------------------------------------------------------------------

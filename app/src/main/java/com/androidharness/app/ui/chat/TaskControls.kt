@@ -26,6 +26,11 @@ import com.androidharness.app.ui.common.FilledTonalButton
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.TextButton
 
+/** True while a paused task is worth a card; the list host and the card share this gate. */
+internal fun shouldShowTaskProgress(record: TaskRecord, busy: Boolean): Boolean =
+    record.resumable && record.status != "running" && !busy &&
+        !com.androidharness.app.llm.HarnessFreeLimit.suppressRecovery(record.reason, record.provider)
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun TaskProgressCard(
@@ -36,10 +41,13 @@ fun TaskProgressCard(
     onResetPrompt: (() -> Unit)? = null,
     /** True while any custom resume prompt (this chat's or the app's) is in effect. */
     customPrompt: Boolean = false,
+    /** Leaves the paused state without retrying; null hides the button. */
+    onDismiss: (() -> Unit)? = null,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    if (!record.resumable || record.status == "running" || busy ||
-        com.androidharness.app.llm.HarnessFreeLimit.suppressRecovery(record.reason, record.provider)) return
+    if (!shouldShowTaskProgress(record, busy)) return
+    var details by remember { mutableStateOf(false) }
+    val summary = PausedReason.summary(record.reason)
     val scheme = MaterialTheme.colorScheme
     val interrupted = record.status == "interrupted"
     MaterialTheme(motionScheme = MotionScheme.expressive()) {
@@ -58,10 +66,11 @@ fun TaskProgressCard(
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
                         Text(if (interrupted) uiContext.getString(R.string.ui_task_interrupted) else uiContext.getString(R.string.ui_task_paused),
                             style = MaterialTheme.typography.titleMedium)
-                        SelectionContainer {
-                            Text(record.reason ?: uiContext.getString(R.string.ui_your_progress_is_saved_continue_from_the),
-                                style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
-                        }
+                        // A provider's raw error body can be kilobytes long; the card keeps
+                        // one short lead and the full text stays behind Details.
+                        Text(summary ?: uiContext.getString(R.string.ui_your_progress_is_saved_continue_from_the),
+                            style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant,
+                            maxLines = PausedReason.SUMMARY_LINES, overflow = TextOverflow.Ellipsis)
                     }
                     record.reason?.let { CopyIconButton(it) }
                 }
@@ -72,6 +81,11 @@ fun TaskProgressCard(
                 FlowRow(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                     verticalArrangement = Arrangement.spacedBy(4.dp), itemVerticalAlignment = Alignment.CenterVertically) {
                     if (customPrompt && onEditPrompt != null) CustomPromptChip(onClick = onEditPrompt)
+                    if (PausedReason.hasMore(record.reason))
+                        TextButton(onClick = { details = true }) { Text(uiContext.getString(R.string.ui_details)) }
+                    onDismiss?.let { dismiss ->
+                        TextButton(onClick = dismiss) { Text(uiContext.getString(R.string.settings_action_close)) }
+                    }
                     TextButton(onClick = onSettings) { Text(uiContext.getString(R.string.ui_context_limits)) }
                     ResumeSplitButton(uiContext.getString(R.string.ui_resume_task), onResume,
                         onEditPrompt = onEditPrompt, onResetPrompt = onResetPrompt)
@@ -79,6 +93,22 @@ fun TaskProgressCard(
             }
         }
     }
+    if (details) AlertDialog(
+        onDismissRequest = { details = false },
+        title = {
+            Text(uiContext.getString(if (interrupted) R.string.ui_task_interrupted else R.string.ui_task_paused))
+        },
+        text = {
+            // Scrolls inside the dialog: the alert itself never grows past the screen.
+            SelectionContainer {
+                Text(record.reason.orEmpty(), style = MaterialTheme.typography.bodySmall,
+                    modifier = Modifier.heightIn(max = 360.dp).verticalScroll(rememberScrollState()))
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { details = false }) { Text(uiContext.getString(R.string.settings_action_close)) }
+        },
+    )
 }
 
 @Composable
