@@ -375,6 +375,32 @@ interface HarnessDao {
         deleteProject(project)
     }
 
+    /**
+     * Deletes the app workspace's chats but keeps its row: the workspace itself is the
+     * permanent default, so "reset" only empties it. Its folder is cleared separately.
+     */
+    @androidx.room.Transaction
+    suspend fun deleteAppWorkspaceChats(projectId: String, expectedChatIds: Set<String>) {
+        val project = requireNotNull(project(projectId)) { "This workspace is no longer available." }
+        check(project.kind == "APP") { "Only the app workspace can be reset this way." }
+        val chats = projectSessions(projectId)
+        check(chats.all { it.projectId == projectId }) {
+            "Chats in another project still use this workspace. Remove its access from those chats before resetting it."
+        }
+        check(chats.map { it.id }.toSet() == expectedChatIds) {
+            "The workspace's chats changed. Close this dialog and review the reset again."
+        }
+        chats.forEach { chat ->
+            deleteSavedAnswers(chat.id)
+            deleteMessages(chat.id)
+            deleteCheckpoints(chat.id)
+            deleteUsageEvents(chat.id)
+            deleteFileEdits(chat.id)
+            deleteSessionFileChanges(chat.id)
+            deleteSession(chat)
+        }
+    }
+
     @Insert
     suspend fun insertSession(session: SessionEntity)
 

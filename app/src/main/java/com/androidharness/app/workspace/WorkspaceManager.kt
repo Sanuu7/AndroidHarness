@@ -331,6 +331,21 @@ class WorkspaceManager(
         releaseProjectResources(project)
     }
 
+    /**
+     * Empties the app workspace (issue #106): its chats and every file under the
+     * app-private folder, which is the closest thing to deleting it. The row stays
+     * because every chat needs a default workspace to fall back on.
+     */
+    suspend fun resetAppWorkspace(projectId: String, expectedChatIds: Set<String>) {
+        val project = requireNotNull(dao.project(projectId)) { "This workspace is no longer available." }
+        require(project.kind == KIND_APP) { "Only the app workspace can be reset." }
+        dao.deleteAppWorkspaceChats(projectId, expectedChatIds)
+        AppWorkspaceReset.clear(appPrivateRoot)
+    }
+
+    /** Size of the app workspace folder, shown before a reset. */
+    fun appWorkspaceBytes(): Long = AppWorkspaceReset.bytes(appPrivateRoot)
+
     private suspend fun releaseProjectResources(project: ProjectEntity) {
         if (project.kind == KIND_SSH) {
             val id = runCatching { kotlinx.serialization.json.Json.decodeFromString<SshLocation>(requireNotNull(project.uri)).connectionId }.getOrNull()

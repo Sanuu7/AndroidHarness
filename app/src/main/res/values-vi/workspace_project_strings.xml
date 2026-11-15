@@ -93,4 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset">Đặt lại không gian làm việc của ứng dụng…</string>
+    <string name="wp_app_workspace_reset_title">Đặt lại không gian làm việc của ứng dụng?</string>
+    <string name="wp_app_workspace_reset_body">Xóa %1$s, %2$s và mọi tệp trong thư mục không gian làm việc của ứng dụng trên thiết bị này (tổng cộng %3$s), bao gồm bộ nhớ dự án và lịch sử hoàn tác. Không gian làm việc vẫn là mặc định trống. Không thể hoàn tác thao tác này.</string>
+    <string name="wp_app_workspace_reset_confirm">Đặt lại không gian làm việc</string>
 </resources>

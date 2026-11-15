@@ -1,0 +1,62 @@
+name: PR build
+
+# Verifies every pull request that touches build inputs: unit tests plus a debug
+# APK build, using the same toolchain as the nightly "Debug build" workflow.
+# The intent is to catch a broken change during review instead of at the next
+# nightly run, and to give reviewers a green/red signal on the PR itself.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - "app/**"
+      - "gradle/**"
+      - "**/*.gradle.kts"
+      - "gradle.properties"
+      - ".github/workflows/pr-build.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pr-build-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Set up Gradle (caching)
+        uses: gradle/actions/setup-gradle@v6
+
+      # Same toolchain the nightly build installs: the runner image does not
+      # carry the pinned NDK, and AGP refuses to configure without it.
+      - name: Install pinned NDK
+        run: "${ANDROID_HOME:-/usr/local/lib/android/sdk}/cmdline-tools/latest/bin/sdkmanager --install 'ndk;27.2.12479018'"
+
+      - name: Install Vulkan shader compiler
+        run: sudo apt-get update && sudo apt-get install -y glslc
+
+      - name: Run unit tests
+        run: ./gradlew :app:testDebugUnitTest --no-daemon --stacktrace
+
+      - name: Upload test report (on failure)
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr-unit-test-report
+          path: app/build/reports/tests/testDebugUnitTest
+
+      - name: Build debug APK
+        run: ./gradlew :app:assembleDebug --no-daemon --stacktrace
