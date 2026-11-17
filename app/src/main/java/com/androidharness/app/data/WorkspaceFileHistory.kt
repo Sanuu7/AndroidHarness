@@ -51,7 +51,11 @@ class WorkspaceFileHistory(private val directory: File) {
                         if (fs.displayPath != version.workspace) return@mapNotNull null
                         version.path
                     }
-                    path.takeIf { !fs.resolve(it).exists }
+                    // Full access saves absolute paths outside the root, which the
+                    // bounded workspace refuses to resolve. That is not a lost file,
+                    // and one such entry must not block every later send (#121).
+                    val node = runCatching { fs.resolve(path) }.getOrNull() ?: return@mapNotNull null
+                    path.takeIf { !node.exists }
                 }
         }
     }

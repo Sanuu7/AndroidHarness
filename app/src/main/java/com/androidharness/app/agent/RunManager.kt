@@ -494,7 +494,11 @@ class RunManager(
             "This chat's workspace changed while preparing the request. Send the message again."
         }
         val runWorkspace = workspaceOverride ?: assignedWorkspace
-        checkpoints.history?.takeUnless { conversation.isChat }?.missingFiles(sid, runWorkspace)?.takeIf { it.isNotEmpty() }?.let { missing ->
+        // Advisory only: a failed history scan must never stop the message from sending.
+        try { checkpoints.history?.takeUnless { conversation.isChat }?.missingFiles(sid, runWorkspace) }
+        catch (e: kotlinx.coroutines.CancellationException) { throw e }
+        catch (e: Exception) { null }
+            ?.takeIf { it.isNotEmpty() }?.let { missing ->
             sessions.addMessage(sid, ChatMessage(role = Role.SYSTEM,
                 text = "Saved workspace files are missing: ${missing.take(20).joinToString()}. " +
                     "Durable copies are available through file_history and file_restore. Inspect prior tool results and recover saved versions if the deletion was unintended. Do not replay completed edits.",

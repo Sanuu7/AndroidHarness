@@ -1,6 +1,7 @@
 package com.androidharness.app.data
 
 import com.androidharness.app.workspace.FileFs
+import com.androidharness.app.workspace.UnboundedFileFs
 import java.io.File
 import kotlinx.coroutines.runBlocking
 import org.junit.Assert.*
@@ -77,6 +78,18 @@ class WorkspaceFileHistoryTest {
         history.record("chat", fs, "site.js", "before edit")
         history.record("chat", fs, "site.js", "after failed edit")
         assertEquals(listOf("site.js"), history.missingFiles("chat", fs))
+    }
+
+    @Test fun `full access writes outside the workspace do not break the missing file scan`() = runBlocking {
+        val root = temp.newFolder("workspace")
+        val outside = File(temp.newFolder("downloads"), "example.md").apply { writeText("report") }
+        val history = WorkspaceFileHistory(temp.newFolder("history"))
+        history.record("chat", UnboundedFileFs(root), outside.absolutePath, "write")!!
+        val fs = FileFs(root)
+        fs.resolve("kept.js").writeText("saved")
+        history.record("chat", fs, "kept.js", "write")
+        fs.resolve("kept.js").delete()
+        assertEquals(listOf("kept.js"), history.missingFiles("chat", fs))
     }
 
     @Test fun `oversized compressed versions are bounded before replacing current work`() = runBlocking {
