@@ -71,6 +71,7 @@ fun ProjectsScreen(container: AppContainer, onBack: () -> Unit, onOpenProject: (
     var adding by rememberSaveable { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var deleting by remember { mutableStateOf<ProjectEntity?>(null) }
+    var resetting by remember { mutableStateOf<ProjectEntity?>(null) }
     val scope = rememberCoroutineScope()
     fun finishAdd(id: String?) {
         adding = false
@@ -93,16 +94,22 @@ fun ProjectsScreen(container: AppContainer, onBack: () -> Unit, onOpenProject: (
                 var menu by remember { mutableStateOf(false) }
                 ExpressiveListRow(index, projects.size, project.name,
                     subtitle = "${container.workspace.describe(project).kindLabel} · $count ${if (count == 1) "chat" else "chats"}",
-                    onClick = { onOpenProject(project.id) }, onLongClick = { if (project.kind != com.androidharness.app.workspace.WorkspaceManager.KIND_APP) menu = true },
+                    onClick = { onOpenProject(project.id) }, onLongClick = { menu = true },
                     modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec()),
                     leading = { ExpressiveIconBadge(workspaceKindIcon(project.kind)) },
                     trailing = {
-                        if (project.kind != com.androidharness.app.workspace.WorkspaceManager.KIND_APP) Box {
+                        Box {
                             ExpressiveIconButton(onClick = { menu = true }) { Icon(Icons.Outlined.MoreVert, uiContext.getString(R.string.wp_actions_for_workspace, project.name)) }
                             ExpressiveDropdownMenu(menu, { menu = false }) {
-                                ExpressiveDropdownMenuItem(text = { Text(uiContext.getString(R.string.wp_workspace_delete), color = MaterialTheme.colorScheme.error) },
-                                    leadingIcon = { Icon(Icons.Outlined.DeleteOutline, null, tint = MaterialTheme.colorScheme.error) },
-                                    onClick = { menu = false; deleting = project })
+                                if (project.kind == com.androidharness.app.workspace.WorkspaceManager.KIND_APP) {
+                                    ExpressiveDropdownMenuItem(text = { Text(uiContext.getString(R.string.wp_app_workspace_reset), color = MaterialTheme.colorScheme.error) },
+                                        leadingIcon = { Icon(Icons.Outlined.RestartAlt, null, tint = MaterialTheme.colorScheme.error) },
+                                        onClick = { menu = false; resetting = project })
+                                } else {
+                                    ExpressiveDropdownMenuItem(text = { Text(uiContext.getString(R.string.wp_workspace_delete), color = MaterialTheme.colorScheme.error) },
+                                        leadingIcon = { Icon(Icons.Outlined.DeleteOutline, null, tint = MaterialTheme.colorScheme.error) },
+                                        onClick = { menu = false; deleting = project })
+                                }
                             }
                         }
                     })
@@ -121,6 +128,8 @@ fun ProjectsScreen(container: AppContainer, onBack: () -> Unit, onOpenProject: (
         onPickSaf = { adding = false; picker.launch(null) }, onSelected = { finishAdd(it) }, activateWorkspace = false)
     deleting?.let { project -> ProjectDeletionDialog(container, project,
         onDismiss = { deleting = null }, onDeleted = { deleting = null; onProjectDeleted() }) }
+    resetting?.let { project -> AppWorkspaceResetDialog(container, project,
+        onDismiss = { resetting = null }, onReset = { resetting = null; onProjectDeleted() }) }
 }
 
 @Composable
@@ -158,6 +167,7 @@ fun ProjectScreen(
     var showRepository by rememberSaveable(projectId) { mutableStateOf(false) }
     var showDetails by rememberSaveable(projectId) { mutableStateOf(false) }
     var deletingProject by remember(projectId) { mutableStateOf<ProjectEntity?>(null) }
+    var resettingProject by remember(projectId) { mutableStateOf<ProjectEntity?>(null) }
     var repository by remember(projectId) { mutableStateOf<String?>(null) }
     val environment by container.linuxEnv.state.collectAsStateWithLifecycle()
     var refresh by remember(projectId) { mutableIntStateOf(0) }
@@ -331,9 +341,12 @@ fun ProjectScreen(
     if (showRepository && project != null) GitHubWorkspaceDialog(container, project.id, project.name,
         onOpenSettings = onOpenSettings, onDismiss = { showRepository = false })
     if (showDetails && project != null) ProjectDetailsDialog(container, project, onDismiss = { showDetails = false },
-        onDelete = { showDetails = false; deletingProject = project })
+        onDelete = { showDetails = false; deletingProject = project },
+        onResetApp = { showDetails = false; resettingProject = project })
     deletingProject?.let { target -> ProjectDeletionDialog(container, target,
         onDismiss = { deletingProject = null }, onDeleted = { deletingProject = null; onProjectDeleted() }) }
+    resettingProject?.let { target -> AppWorkspaceResetDialog(container, target,
+        onDismiss = { resettingProject = null }, onReset = { resettingProject = null; onProjectDeleted() }) }
 }
 
 private fun AutomationTask.projectStatus(): String = when {
@@ -352,7 +365,7 @@ internal fun ProjectRow(title: String, subtitle: String? = null, icon: ImageVect
 }
 
 @Composable
-private fun ProjectDetailsDialog(container: AppContainer, project: ProjectEntity, onDismiss: () -> Unit, onDelete: () -> Unit) {
+private fun ProjectDetailsDialog(container: AppContainer, project: ProjectEntity, onDismiss: () -> Unit, onDelete: () -> Unit, onResetApp: () -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     var name by rememberSaveable(project.id) { mutableStateOf(project.name) }
     var error by remember { mutableStateOf<String?>(null) }
@@ -372,7 +385,14 @@ private fun ProjectDetailsDialog(container: AppContainer, project: ProjectEntity
                     colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
                     Icon(Icons.Outlined.DeleteOutline, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(uiContext.getString(R.string.wp_workspace_delete))
                 }
-            } else Text(uiContext.getString(R.string.ui_the_app_workspace_cannot_be_deleted), style = MaterialTheme.typography.bodySmall)
+            } else {
+                HorizontalDivider()
+                TextButton(onClick = onResetApp, enabled = !saving,
+                    colors = ButtonDefaults.textButtonColors(contentColor = MaterialTheme.colorScheme.error)) {
+                    Icon(Icons.Outlined.RestartAlt, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
+                    Text(uiContext.getString(R.string.wp_app_workspace_reset))
+                }
+            }
             error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
         }
     }, confirmButton = {

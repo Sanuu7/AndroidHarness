@@ -93,4 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset">Uygulama çalışma alanını sıfırla…</string>
+    <string name="wp_app_workspace_reset_title">Uygulama çalışma alanı sıfırlansın mı?</string>
+    <string name="wp_app_workspace_reset_body">Bu cihazdaki uygulama çalışma alanı klasöründeki %1$s, %2$s ve tüm dosyaları (toplam %3$s), proje belleği ve geri alma geçmişi dahil siler. Çalışma alanı boş varsayılan olarak kalır. Bu işlem geri alınamaz.</string>
+    <string name="wp_app_workspace_reset_confirm">Çalışma alanını sıfırla</string>
 </resources>

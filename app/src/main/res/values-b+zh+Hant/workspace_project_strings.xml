@@ -93,4 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset">重設應用程式工作區…</string>
+    <string name="wp_app_workspace_reset_title">要重設應用程式工作區嗎？</string>
+    <string name="wp_app_workspace_reset_body">刪除應用程式工作區資料夾中的 %1$s、%2$s 以及所有檔案（共 %3$s，包含專案記憶與復原記錄）。此工作區會保留為空白的預設工作區。此動作無法復原。</string>
+    <string name="wp_app_workspace_reset_confirm">重設工作區</string>
 </resources>
