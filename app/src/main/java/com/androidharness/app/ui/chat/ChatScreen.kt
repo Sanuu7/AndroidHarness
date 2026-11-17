@@ -2288,6 +2288,20 @@ private fun ChatScreenContent(
                         }
                     }
 
+                    if (!state.conversation.isChat && shouldShowTaskProgress(state.taskControl, state.busy)) {
+                        indexedItem(key = "task-progress", contentType = ChatListContentType.Approval) {
+                            TaskProgressCard(
+                                record = state.taskControl, busy = state.busy,
+                                onResume = viewModel::resumeInterruptedTask,
+                                onSettings = { showContext = true },
+                                onEditPrompt = { showResumePrompt = true },
+                                onResetPrompt = state.taskControl.resumePrompt?.let { { viewModel.saveResumePrompt(null) } },
+                                customPrompt = state.taskControl.resumePrompt != null || state.resumePrompt.isNotBlank(),
+                                onDismiss = viewModel::dismissPausedTask,
+                            )
+                        }
+                    }
+
                     // Live streaming items are rendered only while not yet in the committed list.
                     val streamAlreadyCommitted = state.streamingMessageId != null &&
                         state.messages.any { it.id == state.streamingMessageId }
@@ -2506,14 +2520,6 @@ private fun ChatScreenContent(
                         CacheUsageFooter(state.turnCacheUsage[state.currentTurnId].orEmpty(), running = true)
                     }
                 }
-                if (!state.conversation.isChat) TaskProgressCard(
-                    record = state.taskControl, busy = state.busy,
-                    onResume = viewModel::resumeInterruptedTask,
-                    onSettings = { showContext = true },
-                    onEditPrompt = { showResumePrompt = true },
-                    onResetPrompt = state.taskControl.resumePrompt?.let { { viewModel.saveResumePrompt(null) } },
-                    customPrompt = state.taskControl.resumePrompt != null || state.resumePrompt.isNotBlank(),
-                )
                 RunTipHost(
                     busy = state.busy,
                     isChat = state.conversation.isChat,

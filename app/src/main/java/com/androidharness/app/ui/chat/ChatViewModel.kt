@@ -1026,6 +1026,16 @@ class ChatViewModel(
         }
     }
 
+    /** Leaves a paused or interrupted task the user chose not to continue; the chat is usable again. */
+    fun dismissPausedTask() {
+        val sid = sessionId ?: return
+        if (c.runManager.isRunning(sid)) return
+        viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
+            try { c.runManager.dismissPausedTask(sid) }
+            catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+        }
+    }
+
     /** Null makes this chat follow the app setting again. */
     fun saveResumePrompt(prompt: String?) {
         viewModelScope.launch(kotlinx.coroutines.Dispatchers.IO) {
