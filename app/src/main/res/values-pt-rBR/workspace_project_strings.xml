@@ -93,8 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
-    <string name="wp_app_workspace_reset">Redefinir espaço de trabalho do app…</string>
-    <string name="wp_app_workspace_reset_title">Redefinir o espaço de trabalho do app?</string>
-    <string name="wp_app_workspace_reset_body">Exclui %1$s, %2$s e todos os arquivos da pasta do espaço de trabalho do app neste dispositivo (%3$s no total), incluindo a memória do projeto e o histórico de desfazer. O espaço de trabalho permanece como padrão vazio. Esta ação não pode ser desfeita.</string>
-    <string name="wp_app_workspace_reset_confirm">Redefinir espaço de trabalho</string>
+    <string name="wp_app_workspace_reset">Reset app workspace…</string>
+    <string name="wp_app_workspace_reset_title">Reset app workspace?</string>
+    <string name="wp_app_workspace_reset_body">Deletes %1$s, %2$s and every file in the app workspace folder on this device (%3$s in total), including project memory and undo history. The workspace stays as an empty default. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset_confirm">Reset workspace</string>
 </resources>

@@ -93,8 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
-    <string name="wp_app_workspace_reset">Setel ulang ruang kerja aplikasi…</string>
-    <string name="wp_app_workspace_reset_title">Setel ulang ruang kerja aplikasi?</string>
-    <string name="wp_app_workspace_reset_body">Menghapus %1$s, %2$s, dan semua file di folder ruang kerja aplikasi di perangkat ini (total %3$s), termasuk memori proyek dan riwayat pembatalan. Ruang kerja tetap sebagai default kosong. Tindakan ini tidak dapat dibatalkan.</string>
-    <string name="wp_app_workspace_reset_confirm">Setel ulang ruang kerja</string>
+    <string name="wp_app_workspace_reset">Reset app workspace…</string>
+    <string name="wp_app_workspace_reset_title">Reset app workspace?</string>
+    <string name="wp_app_workspace_reset_body">Deletes %1$s, %2$s and every file in the app workspace folder on this device (%3$s in total), including project memory and undo history. The workspace stays as an empty default. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset_confirm">Reset workspace</string>
 </resources>

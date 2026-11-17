@@ -93,8 +93,8 @@
     <string name="wp_workspace_delete_checking">Checking workspace…</string>
     <string name="wp_workspace_delete_review_failed">Could not review this workspace</string>
     <string name="wp_workspace_delete_body">Removes this workspace, %1$s and %2$s from the app. Conversation history and undo history for these chats will be deleted. This cannot be undone.</string>
-    <string name="wp_app_workspace_reset">앱 작업 공간 초기화…</string>
-    <string name="wp_app_workspace_reset_title">앱 작업 공간을 초기화할까요?</string>
-    <string name="wp_app_workspace_reset_body">이 기기의 앱 작업 공간 폴더에 있는 %1$s, %2$s 및 모든 파일(총 %3$s, 프로젝트 메모리와 실행 취소 기록 포함)을 삭제합니다. 작업 공간은 빈 기본값으로 남습니다. 이 작업은 되돌릴 수 없습니다.</string>
-    <string name="wp_app_workspace_reset_confirm">작업 공간 초기화</string>
+    <string name="wp_app_workspace_reset">Reset app workspace…</string>
+    <string name="wp_app_workspace_reset_title">Reset app workspace?</string>
+    <string name="wp_app_workspace_reset_body">Deletes %1$s, %2$s and every file in the app workspace folder on this device (%3$s in total), including project memory and undo history. The workspace stays as an empty default. This cannot be undone.</string>
+    <string name="wp_app_workspace_reset_confirm">Reset workspace</string>
 </resources>
