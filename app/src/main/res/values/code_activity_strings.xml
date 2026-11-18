@@ -39,4 +39,29 @@
     <string name="context_requests_short">Requests</string>
     <string name="context_limit_used">%1$s of %2$s used</string>
     <string name="code_cache_catalog_price">Some requests use the model\'s catalog list price. Your provider may charge differently.</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">opened %1$d page</item>
+        <item quantity="other">opened %1$d pages</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">clicked once</item>
+        <item quantity="other">clicked %1$d times</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">typed once</item>
+        <item quantity="other">typed %1$d times</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">took %1$d screenshot</item>
+        <item quantity="other">took %1$d screenshots</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">read the page once</item>
+        <item quantity="other">read the page %1$d times</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d other step</item>
+        <item quantity="other">%1$d other steps</item>
+    </plurals>
+    <string name="browser_steps_using">Using the browser</string>
 </resources>

@@ -151,23 +151,18 @@ internal fun ToolCallCard(
     }
     val scheme = MaterialTheme.colorScheme
 
-    CodeCard(onClick = { expanded = !expanded }, expanded = expanded,
-        accent = state.takeIf { it == WorkState.Failed || it == WorkState.Waiting }) {
-        CodeCardHeader(
-            badge = { MorphingStatusBadge(state, toolIcon(call.name)) },
-            title = presentation.title,
-            subtitle = presentation.detail,
-            subtitleMono = call.name in shellTools || call.name in pathTools,
-            trailing = {
-                ExpandChevron(expanded, if (expanded) uiContext.getString(R.string.ui_collapse) else uiContext.getString(R.string.ui_expand))
-            },
-        )
-        val receipts = result?.generation?.execution?.distinctBy { it.label }.orEmpty()
-        if (receipts.isNotEmpty()) {
-            Row(
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.padding(start = 60.dp, end = 12.dp, bottom = 10.dp),
-            ) {
+    val receipts = result?.generation?.execution?.distinctBy { it.label }.orEmpty()
+    val images = result?.images?.takeIf { call.name != "read_image" && it.isNotEmpty() }
+    InlineActivityRow(
+        icon = toolIcon(call.name),
+        title = presentation.title,
+        detail = presentation.detail,
+        detailMono = call.name in shellTools || call.name in pathTools,
+        state = state,
+        expanded = expanded,
+        onToggle = { expanded = !expanded },
+        always = if (receipts.isEmpty() && images == null) null else ({
+            if (receipts.isNotEmpty()) Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                 receipts.forEach { receipt ->
                     StatusPill(
                         receipt.label + if (receipt.fallbackReason != null) " · fallback" else "",
@@ -175,64 +170,36 @@ internal fun ToolCallCard(
                     )
                 }
             }
-        }
-        AnimatedVisibility(
-            active,
-            enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
-            exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
-        ) {
-            ToolCallProgress(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(start = 60.dp, end = 16.dp, bottom = 12.dp),
-            )
-        }
-        result?.images?.takeIf { call.name != "read_image" && it.isNotEmpty() }?.let { imgs ->
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
-            ) {
-                imgs.forEach { ref -> ToolResultImage(ref) }
+            images?.forEach { ref -> ToolResultImage(ref) }
+        }),
+    ) {
+        when {
+            patchDiff != null -> Surface(color = scheme.surfaceContainerLowest, shape = RoundedCornerShape(16.dp)) {
+                Box(Modifier.padding(6.dp)) {
+                    VisualDiffViewer(
+                        diffText = patchDiff,
+                        maxHeight = 280.dp,
+                        showFileHeader = false,
+                        onOpenFile = { path -> onOpenFile(path, null) },
+                    )
+                }
             }
+            command != null -> CodePanel(command, label = call.name, prompt = "$")
+            else -> CodePanel(pretty, label = call.name)
         }
-        AnimatedVisibility(
-            expanded,
-            enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
-            exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
-        ) {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-            ) {
-                when {
-                    patchDiff != null -> Surface(color = scheme.surfaceContainerLowest, shape = RoundedCornerShape(16.dp)) {
-                        Box(Modifier.padding(6.dp)) {
-                            VisualDiffViewer(
-                                diffText = patchDiff,
-                                maxHeight = 280.dp,
-                                showFileHeader = false,
-                                onOpenFile = { path -> onOpenFile(path, null) },
-                            )
-                        }
-                    }
-                    command != null -> CodePanel(command, label = call.name, prompt = "$")
-                    else -> CodePanel(pretty, label = call.name)
-                }
-                result?.let {
-                    if (call.name in listOf("grep", "search_files", "web_search")) {
-                        Surface(color = scheme.surfaceContainerLowest, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
-                            Box(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
-                                ClickableOutput(it.text.take(4000), onOpenFile)
-                            }
-                        }
-                    } else {
-                        CodePanel(
-                            it.text.take(4000).ifBlank { "∅" },
-                            label = uiContext.getString(if (it.isError) R.string.ui_failed_64 else R.string.ui_output_1407),
-                            tone = if (it.isError) WorkState.Failed else null,
-                        )
+        result?.let {
+            if (call.name in listOf("grep", "search_files", "web_search")) {
+                Surface(color = scheme.surfaceContainerLowest, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
+                    Box(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                        ClickableOutput(it.text.take(4000), onOpenFile)
                     }
                 }
+            } else {
+                CodePanel(
+                    it.text.take(4000).ifBlank { "∅" },
+                    label = uiContext.getString(if (it.isError) R.string.ui_failed_64 else R.string.ui_output_1407),
+                    tone = if (it.isError) WorkState.Failed else null,
+                )
             }
         }
     }
@@ -431,7 +398,8 @@ internal fun TurnActivityCard(
                         is ActivityRow.Thinking -> ThinkingBlock(row.message.thinking,
                             thinkingMs = row.message.thinkingMs, reasoningTokens = row.message.generation.reasoningTokens)
                         is ActivityRow.Text -> Box(Modifier.padding(horizontal = 8.dp)) { AssistantText(row.text) }
-                        is ActivityRow.Explore -> ExploreGroupCard(row.group, results, emptySet(), live = false, onOpenFile = onOpenFile)
+                        is ActivityRow.Explore -> ExploreGroupCard(row.group, results, emptySet(), live = false, onOpenFile = onOpenFile,
+                            onWatchBrowser = onWatchBrowser, browserTargets = browserTargets)
                         is ActivityRow.Tool -> ToolCallCard(
                             call = row.call,
                             result = results[row.call.id],

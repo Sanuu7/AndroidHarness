@@ -17,17 +17,18 @@ import androidx.compose.ui.unit.dp
 internal fun <T> CardHistory(
     entries: List<T>,
     key: (T) -> String,
+    spacing: androidx.compose.ui.unit.Dp = 8.dp,
     content: @Composable (T) -> Unit,
 ) {
     if (entries.size <= 12) {
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(verticalArrangement = Arrangement.spacedBy(spacing)) {
             entries.forEach { entry -> compositionKey(key(entry)) { content(entry) } }
         }
     } else {
         LazyColumn(
             modifier = Modifier.fillMaxWidth()
                 .heightIn(max = (LocalConfiguration.current.screenHeightDp * .65f).dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp),
+            verticalArrangement = Arrangement.spacedBy(spacing),
         ) {
             items(entries, key = key) { content(it) }
         }

@@ -123,7 +123,9 @@ internal fun InlineActivityRow(
                     }, label = "activity title") { text -> InlineTitle(text, working, state, titleStyle) }
                     else InlineTitle(title, working, state, titleStyle)
                 }
-                if (!detail.isNullOrBlank()) Text(detail, Modifier.weight(1f, fill = false),
+                // Some titles already quote their detail ("Run ls -la"); never say it twice.
+                val extra = detail?.trim()?.takeIf { it.isNotEmpty() && !title.contains(it.removeSuffix("…").take(16)) }
+                if (extra != null) Text(extra, Modifier.weight(1f, fill = false),
                     style = MaterialTheme.typography.bodySmall.let { if (detailMono) it.copy(fontFamily = FontFamily.Monospace) else it },
                     color = scheme.onSurfaceVariant.copy(alpha = 0.75f), maxLines = 1, overflow = TextOverflow.Ellipsis)
             }

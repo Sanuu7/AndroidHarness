@@ -50,6 +50,21 @@ class CodeActivityGroupsTest {
         assertTrue(plan.foldedThinking.isEmpty())
     }
 
+    @Test fun `browser steps fold into their own run apart from reads`() {
+        val plan = CodeActivityGroups.plan(listOf(
+            step("m1", call("c1", "read_file"), call("c2", "browser_navigate", "{\"url\":\"https://a.dev\"}")),
+            step("m2", call("c3", "browser_click"), thinking = "click it"),
+            step("m3", call("c4", "browser_screenshot"), call("c5", "grep")),
+        ))
+        val first = plan.slots.getValue("m1")
+        assertEquals(CodeActivityGroups.Kind.EXPLORE, (first[0] as Slot.Explore).group.kind)
+        val browser = (first[1] as Slot.Explore).group
+        assertEquals(CodeActivityGroups.Kind.BROWSER, browser.kind)
+        assertEquals(listOf("c2", "c3", "c4"), browser.calls.map { it.id })
+        assertEquals(setOf("m2"), plan.foldedThinking)
+        assertEquals(listOf("c5"), (plan.slots.getValue("m3").single() as Slot.Explore).group.calls.map { it.id })
+    }
+
     @Test fun `a run never crosses into the next turn`() {
         val plan = CodeActivityGroups.plan(listOf(
             step("m1", call("c1", "read_file")).copy(turnId = "t1"),

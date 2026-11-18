@@ -8,8 +8,9 @@ import com.androidharness.app.core.ToolCallData
  * Code feed layout for a turn. Read-only "explore" calls (reading, searching, listing,
  * looking things up) fold into one disclosure per run, the way a terminal agent shows
  * "Read 4 files, searched 2 patterns". Anything that changes or runs something (edits,
- * commands, installs, browser, subagents, questions) keeps its own card, and visible
- * prose ends a run so the transcript stays chronological.
+ * commands, installs, subagents, questions) keeps its own card, and visible prose ends a
+ * run so the transcript stays chronological. Browser steps fold the same way into their
+ * own run, since an agent testing a page can fire dozens of them in a row.
  */
 object CodeActivityGroups {
 
@@ -21,7 +22,10 @@ object CodeActivityGroups {
         data class Call(val call: ToolCallData) : Entry
     }
 
-    data class Group(val key: String, val entries: List<Entry>) {
+    /** What a run is made of; each kind forms its own runs and summary. */
+    enum class Kind { EXPLORE, BROWSER }
+
+    data class Group(val key: String, val entries: List<Entry>, val kind: Kind = Kind.EXPLORE) {
         val calls: List<ToolCallData> get() = entries.filterIsInstance<Entry.Call>().map { it.call }
     }
 
@@ -47,11 +51,18 @@ object CodeActivityGroups {
 
     fun isExplore(call: ToolCallData): Boolean {
         if (call.name in standalone || call.name in LiveCodePreview.tools) return false
-        if (com.androidharness.app.browser.BrowserToolActivity.isBrowserTool(call.name) && call.name != "browser_read") return false
+        if (com.androidharness.app.browser.BrowserToolActivity.isBrowserTool(call.name)) return false
         if (call.name in bookkeeping) return true
         return toolPresentation(call).kind in setOf(
             ToolActivityKind.READ, ToolActivityKind.SEARCH, ToolActivityKind.WEB, ToolActivityKind.MEMORY,
         )
+    }
+
+    /** The kind of run [call] joins, or null when it stands on its own. */
+    fun kindOf(call: ToolCallData): Kind? = when {
+        com.androidharness.app.browser.BrowserToolActivity.isBrowserTool(call.name) -> Kind.BROWSER
+        isExplore(call) -> Kind.EXPLORE
+        else -> null
     }
 
     fun verb(name: String): Verb = when (name) {
@@ -77,12 +88,13 @@ object CodeActivityGroups {
         val folded = HashSet<String>()
         var open: MutableList<Entry>? = null
         var openKey: String? = null
+        var openKind: Kind? = null
         var openOwner: MutableList<Slot>? = null
         var openIndex = -1
         fun close() {
             val entries = open ?: return
-            openOwner!![openIndex] = Slot.Explore(Group(openKey!!, entries.toList()))
-            open = null; openKey = null; openOwner = null; openIndex = -1
+            openOwner!![openIndex] = Slot.Explore(Group(openKey!!, entries.toList(), openKind!!))
+            open = null; openKey = null; openKind = null; openOwner = null; openIndex = -1
         }
         var lastTurn: String? = null
         for (message in turn) {
@@ -96,18 +108,21 @@ object CodeActivityGroups {
             if (message.toolCalls.any { it.name == "task" }) close()
             val mine = ArrayList<Slot>(calls.size)
             val thought = message.thinking.isNotBlank() || (message.generation.reasoningTokens ?: 0) > 0
-            if (open != null && thought && calls.firstOrNull()?.let(::isExplore) == true) {
+            if (open != null && thought && calls.firstOrNull()?.let(::kindOf) == openKind) {
                 folded += id
                 open!! += Entry.Thought(message)
             }
             for (call in calls) {
-                if (isExplore(call)) {
+                val kind = kindOf(call)
+                if (kind != null) {
+                    if (open != null && openKind != kind) close()
                     if (open == null) {
                         open = mutableListOf()
-                        openKey = "explore-${call.id}"
+                        openKey = (if (kind == Kind.BROWSER) "browser-" else "explore-") + call.id
+                        openKind = kind
                         openOwner = mine
                         openIndex = mine.size
-                        mine += Slot.Explore(Group(openKey!!, emptyList()))
+                        mine += Slot.Explore(Group(openKey!!, emptyList(), kind))
                     }
                     open!! += Entry.Call(call)
                 } else {

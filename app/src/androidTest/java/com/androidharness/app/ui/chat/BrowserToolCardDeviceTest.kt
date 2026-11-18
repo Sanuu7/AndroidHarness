@@ -77,7 +77,7 @@ class BrowserToolCardDeviceTest {
                                 }
                             }
                         } }
-                        await("In progress"); assertFits("Watch browser")
+                        await("Capturing screenshot…"); assertFits("Watch browser")
                         assertNull(find { it.className?.toString()?.contains("WebView") == true })
                         screenshot("browser-card-$scale-running")
                         tap("Watch browser"); await("Browser watch fixture")
@@ -87,7 +87,7 @@ class BrowserToolCardDeviceTest {
                         assertFalse(running.value)
                         tap("More browser actions"); tap("Close"); await("Watch browser")
                         instrumentation.runOnMainSync { result.value = completed }
-                        await("Completed"); SystemClock.sleep(300)
+                        await("Capture screenshot"); SystemClock.sleep(300)
                         assertNull(find { it.contentDescription?.toString() == image.name })
                         assertNull(find { it.className?.toString()?.contains("WebView") == true })
                         screenshot("browser-card-$scale-completed")
@@ -99,7 +99,7 @@ class BrowserToolCardDeviceTest {
                         instrumentation.runOnMainSync { result.value = completed; grouped.value = true }
                         await("Ran 3 tools"); SystemClock.sleep(300)
                         assertNull(find { it.contentDescription?.toString() == image.name })
-                        tap("Expand"); await("Watch browser")
+                        tap("Expand"); tap("Capture screenshot"); await("Watch browser")
                         assertNull(find { it.contentDescription?.toString() == image.name })
                     }
                 } finally { controller.close() }
@@ -128,7 +128,7 @@ class BrowserToolCardDeviceTest {
                 scenario.onActivity { activity -> activity.setContent { HarnessTheme {
                     ChatScreen(vm!!, {}, { _, _ -> }, {}, {}, onOpenSubagent = {})
                 } } }
-                await("Work summary"); tap("Expand activity"); await("Watch browser")
+                await("Work summary"); tap("Expand activity"); tap("Read the page once"); tap("Read page content"); await("Watch browser")
                 assertNull(find { it.className?.toString()?.contains("WebView") == true })
                 tap("Watch browser"); await("Saved browser page")
                 screenshot("browser-saved-chat-watch")
@@ -154,7 +154,8 @@ class BrowserToolCardDeviceTest {
     private fun await(text: String): AccessibilityNodeInfo {
         val end = SystemClock.uptimeMillis() + 15000
         while (SystemClock.uptimeMillis() < end) {
-            find { it.text?.toString() == text || it.contentDescription?.toString() == text }?.let { return it }
+            // A tappable row merges its texts into one label, such as "Capture screenshot, Workspace page".
+            find { node -> listOfNotNull(node.text, node.contentDescription).any { it.toString() == text || text in it.split(", ") } }?.let { return it }
             find { it.isScrollable }?.performAction(AccessibilityNodeInfo.ACTION_SCROLL_FORWARD)
             SystemClock.sleep(100)
         }
