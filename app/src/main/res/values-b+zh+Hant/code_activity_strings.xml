@@ -25,5 +25,11 @@
     <string name="code_live_writing_line">正在寫入第 %1$d 行</string>
     <string name="code_live_editing_lines">正在改寫 %1$d 行</string>
     <string name="code_live_waiting_for_code">等待程式碼</string>
+    <string name="context_tab_limits">上限</string>
+    <string name="context_free_tokens">剩餘 %1$s</string>
+    <string name="context_used">已用</string>
+    <string name="context_cache_hit_rate_short">快取命中率</string>
+    <string name="context_requests_short">請求</string>
+    <string name="context_limit_used">已用 %1$s / %2$s</string>
     <string name="code_cache_catalog_price">部分請求採用模型的目錄標價。你的供應商收費可能不同。</string>
 </resources>

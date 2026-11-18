@@ -32,5 +32,11 @@
     <string name="code_live_writing_line">Isinusulat ang linya %1$d</string>
     <string name="code_live_editing_lines">Isinusulat muli ang %1$d linya</string>
     <string name="code_live_waiting_for_code">Naghihintay ng code</string>
+    <string name="context_tab_limits">Mga limitasyon</string>
+    <string name="context_free_tokens">%1$s ang libre</string>
+    <string name="context_used">nagamit</string>
+    <string name="context_cache_hit_rate_short">Rate ng cache hit</string>
+    <string name="context_requests_short">Mga kahilingan</string>
+    <string name="context_limit_used">%1$s sa %2$s ang nagamit</string>
     <string name="code_cache_catalog_price">May mga kahilingang gumagamit ng list price ng catalog ng modelo. Maaaring iba ang singil ng provider mo.</string>
 </resources>

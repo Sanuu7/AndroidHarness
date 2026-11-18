@@ -60,5 +60,11 @@
     <string name="code_live_writing_line">كتابة السطر %1$d</string>
     <string name="code_live_editing_lines">إعادة كتابة %1$d سطراً</string>
     <string name="code_live_waiting_for_code">بانتظار الكود</string>
+    <string name="context_tab_limits">الحدود</string>
+    <string name="context_free_tokens">%1$s متاح</string>
+    <string name="context_used">مستخدم</string>
+    <string name="context_cache_hit_rate_short">معدل إصابة الذاكرة المؤقتة</string>
+    <string name="context_requests_short">الطلبات</string>
+    <string name="context_limit_used">%1$s من %2$s مستخدمة</string>
     <string name="code_cache_catalog_price">بعض الطلبات تستخدم سعر الكتالوج لهذا النموذج. قد يفرض مزوّدك سعرًا مختلفًا.</string>
 </resources>
