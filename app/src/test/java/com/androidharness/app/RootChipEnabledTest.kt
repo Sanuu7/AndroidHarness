@@ -14,19 +14,24 @@ import org.junit.Test
 class RootChipEnabledTest {
     @Test
     fun verifiedRootWithActiveUseShowsTheChip() {
-        assertTrue(rootChipEnabled(RootStatus.READY, useActive = true))
+        assertTrue(rootChipEnabled(RootStatus.READY, connected = true, useActive = true))
     }
 
     @Test
     fun deniedOrUnavailableRootNeverShowsTheChip() {
-        assertFalse(rootChipEnabled(RootStatus.DENIED, useActive = true))
-        assertFalse(rootChipEnabled(RootStatus.UNAVAILABLE, useActive = true))
-        assertFalse(rootChipEnabled(RootStatus.NOT_CHECKED, useActive = true))
-        assertFalse(rootChipEnabled(RootStatus.REQUESTING, useActive = true))
+        assertFalse(rootChipEnabled(RootStatus.DENIED, connected = true, useActive = true))
+        assertFalse(rootChipEnabled(RootStatus.UNAVAILABLE, connected = true, useActive = true))
+        assertFalse(rootChipEnabled(RootStatus.NOT_CHECKED, connected = true, useActive = true))
+        assertFalse(rootChipEnabled(RootStatus.REQUESTING, connected = true, useActive = true))
+    }
+
+    @Test
+    fun lostRunnerShowsTheGrantActionEvenWhenStatusIsStale() {
+        assertFalse(rootChipEnabled(RootStatus.READY, connected = false, useActive = true))
     }
 
     @Test
     fun verifiedRootWithRevokedUseShowsTheEnableAction() {
-        assertFalse(rootChipEnabled(RootStatus.READY, useActive = false))
+        assertFalse(rootChipEnabled(RootStatus.READY, connected = true, useActive = false))
     }
 }

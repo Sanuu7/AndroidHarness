@@ -21,6 +21,8 @@ internal class VerifiedDeviceAccess(val backend: DeviceBackend, val uid: Int?) :
     companion object Key : CoroutineContext.Key<VerifiedDeviceAccess>
 }
 
+private val ROOT_MODES = setOf(AccessMode.AUTO, AccessMode.ROOT, AccessMode.BOTH)
+
 class DeviceAccessManager(
     private val context: Context,
     val shizuku: ShizukuManager,
@@ -50,7 +52,11 @@ class DeviceAccessManager(
                 .collect { if (!it) szUid.value = null }
         }
         // Package-only; never invokes su. The full check runs after a grant.
-        scope.launch { root.refreshManagerDetection() }
+        scope.launch {
+            root.refreshManagerDetection()
+            // A runner bound before an app restart is gone; re-bind it when root was granted earlier.
+            if (store.preferences.first().mode in ROOT_MODES) reconnectRoot()
+        }
     }
 
     suspend fun grantRoot(projectId: String?, sessionId: String?): Boolean {
@@ -78,6 +84,10 @@ class DeviceAccessManager(
         }
     }
     fun disableRootUse() { temporaryRoot.revoke(); allowance.value = "Root use is disabled" }
+
+    /** Re-binds the root runner after it was lost; a no-op until root has been granted once. */
+    suspend fun reconnectRoot(force: Boolean = false): Boolean =
+        root.ensureConnected(resumeCommands = !stopped.value, force = force)
 
     /** True when the current chat/session may use the connected root service right now. */
     fun rootUseActive(sessionId: String?, prefs: AccessPreferences): Boolean =
@@ -128,8 +138,8 @@ class DeviceAccessManager(
         val prefs = store.preferences.first()
         if (appWorkspace && !request.forceDevice && !request.requireRoot && !request.requireShizuku) return AccessDecision(DeviceBackend.NORMAL)
         val allowed = rootAllowed(request, prefs)
-        val rootReady = !request.requireShizuku && prefs.mode in setOf(AccessMode.AUTO, AccessMode.ROOT, AccessMode.BOTH) && allowed &&
-            DeviceBackend.ROOT !in excluded && root.service != null && root.verify()
+        val rootReady = !request.requireShizuku && prefs.mode in ROOT_MODES && allowed &&
+            DeviceBackend.ROOT !in excluded && reconnectRoot()
         val uid = if (prefs.mode == AccessMode.NORMAL || DeviceBackend.SHIZUKU in excluded) null else probeShizuku()
         return DeviceAccessPolicy.choose(prefs.mode, prefs.autoFallback, rootReady, uid,
             allowed, stopped.value, appWorkspace && !request.forceDevice, request.requireRoot, request.requireShizuku)
@@ -278,7 +288,7 @@ class DeviceAccessManager(
 
     suspend fun checkConnections(): String {
         dhizuku?.checkConnection()
-        root.verify()
+        reconnectRoot(force = true)
         probeShizuku()
         return report()
     }
