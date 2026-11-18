@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"Anhang"</string>
     <string name="ui_image_counter">"%1$d von %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"In Galerie speichern"</string>
+    <string name="automation_approval_title">"Diese Nachricht planen?"</string>
+    <string name="phone_control_approval_title">"Darf der Agent dein Telefon steuern?"</string>
+    <string name="phone_control_allow">"In diesem Chat erlauben"</string>
+    <string name="settings_ask_phone_control">"Vor der Telefonsteuerung fragen"</string>
+    <string name="settings_ask_phone_control_desc">"Agenten fragen einmal pro Chat, bevor sie Shizuku, root oder Device Owner nutzen. Dein eigenes Terminal wird nie gefragt."</string>
+    <string name="chat_message_options">"Nachrichtenoptionen"</string>
 </resources>

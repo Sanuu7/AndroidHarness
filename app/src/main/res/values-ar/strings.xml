@@ -1109,4 +1109,11 @@
     <string name="ui_attachment">"مرفق"</string>
     <string name="ui_image_counter">"%1$d من %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"حفظ في المعرض"</string>
+    <string name="automation_approval_title">"هل تريد جدولة هذه الرسالة؟"</string>
+    <string name="phone_control_approval_title">"هل تسمح للوكيل بالتحكم في هاتفك؟"</string>
+    <string name="phone_control_allow">"السماح في هذه المحادثة"</string>
+    <string name="settings_ask_phone_control">"اسأل قبل التحكم في الهاتف"</string>
+    <string name="settings_ask_phone_control_desc">"يسأل الوكلاء مرة واحدة لكل محادثة قبل استخدام Shizuku أو root أو Device Owner. لا يُسأل طرفيتك الخاصة أبدًا."</string>
+    <string name="chat_message_options">"خيارات الرسالة"</string>
 </resources>

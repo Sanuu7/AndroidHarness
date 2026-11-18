@@ -1094,4 +1094,11 @@
     <string name="ui_attachment">"ไฟล์แนบ"</string>
     <string name="ui_image_counter">"%1$d จาก %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"บันทึกไปยังแกลเลอรี"</string>
+    <string name="automation_approval_title">"ตั้งเวลาให้ข้อความนี้หรือไม่?"</string>
+    <string name="phone_control_approval_title">"ให้เอเจนต์ควบคุมโทรศัพท์ของคุณหรือไม่?"</string>
+    <string name="phone_control_allow">"อนุญาตในแชทนี้"</string>
+    <string name="settings_ask_phone_control">"ถามก่อนควบคุมโทรศัพท์"</string>
+    <string name="settings_ask_phone_control_desc">"เอเจนต์จะถามครั้งเดียวต่อแชทก่อนใช้ Shizuku, root หรือ Device Owner เทอร์มินัลของคุณเองจะไม่ถูกถาม"</string>
+    <string name="chat_message_options">"ตัวเลือกข้อความ"</string>
 </resources>

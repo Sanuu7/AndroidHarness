@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"Ek"</string>
     <string name="ui_image_counter">"%2$d / %1$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"Galeriye kaydet"</string>
+    <string name="automation_approval_title">"Bu mesaj planlansın mı?"</string>
+    <string name="phone_control_approval_title">"Aracının telefonunuzu kontrol etmesine izin verilsin mi?"</string>
+    <string name="phone_control_allow">"Bu sohbette izin ver"</string>
+    <string name="settings_ask_phone_control">"Telefonu kontrol etmeden önce sor"</string>
+    <string name="settings_ask_phone_control_desc">"Aracılar Shizuku, root veya Device Owner kullanmadan önce sohbet başına bir kez sorar. Kendi terminaliniz hiç sorulmaz."</string>
+    <string name="chat_message_options">"Mesaj seçenekleri"</string>
 </resources>

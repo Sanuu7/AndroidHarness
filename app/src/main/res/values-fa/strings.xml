@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"پیوست"</string>
     <string name="ui_image_counter">"%1$d از %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"ذخیره در گالری"</string>
+    <string name="automation_approval_title">"این پیام زمان‌بندی شود؟"</string>
+    <string name="phone_control_approval_title">"اجازه می‌دهید عامل تلفن شما را کنترل کند؟"</string>
+    <string name="phone_control_allow">"اجازه در این گفتگو"</string>
+    <string name="settings_ask_phone_control">"قبل از کنترل تلفن بپرس"</string>
+    <string name="settings_ask_phone_control_desc">"عامل‌ها پیش از استفاده از Shizuku، root یا Device Owner یک بار در هر گفتگو می‌پرسند. از ترمینال خودتان هرگز پرسیده نمی‌شود."</string>
+    <string name="chat_message_options">"گزینه‌های پیام"</string>
 </resources>

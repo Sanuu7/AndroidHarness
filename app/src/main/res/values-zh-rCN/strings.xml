@@ -1125,4 +1125,11 @@
     <string name="ui_attachment">附件</string>
     <string name="ui_image_counter">第 %1$d 张，共 %2$d 张</string>
     <string name="ui_more_images">+%1$d</string>
+    <string name="chat_image_save_to_gallery">保存到相册</string>
+    <string name="automation_approval_title">要定时发送这条消息吗？</string>
+    <string name="phone_control_approval_title">允许代理控制你的手机吗？</string>
+    <string name="phone_control_allow">在此对话中允许</string>
+    <string name="settings_ask_phone_control">控制手机前先询问</string>
+    <string name="settings_ask_phone_control_desc">代理每次对话首次使用 Shizuku、root 或 Device Owner 前会询问一次。你自己的终端不会被询问。</string>
+    <string name="chat_message_options">消息选项</string>
 </resources>

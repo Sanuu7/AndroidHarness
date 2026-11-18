@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"अनुलग्नक"</string>
     <string name="ui_image_counter">"%2$d में से %1$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"गैलरी में सहेजें"</string>
+    <string name="automation_approval_title">"इस संदेश को शेड्यूल करें?"</string>
+    <string name="phone_control_approval_title">"एजेंट को आपका फ़ोन नियंत्रित करने दें?"</string>
+    <string name="phone_control_allow">"इस चैट में अनुमति दें"</string>
+    <string name="settings_ask_phone_control">"फ़ोन नियंत्रित करने से पहले पूछें"</string>
+    <string name="settings_ask_phone_control_desc">"Shizuku, root या Device Owner का उपयोग करने से पहले एजेंट हर चैट में एक बार पूछते हैं। आपके अपने टर्मिनल से कभी नहीं पूछा जाता।"</string>
+    <string name="chat_message_options">"संदेश विकल्प"</string>
 </resources>

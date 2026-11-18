@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"সংযুক্তি"</string>
     <string name="ui_image_counter">"%2$d এর মধ্যে %1$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"গ্যালারিতে সংরক্ষণ করুন"</string>
+    <string name="automation_approval_title">"এই বার্তাটি নির্ধারিত সময়ে পাঠাবেন?"</string>
+    <string name="phone_control_approval_title">"এজেন্টকে আপনার ফোন নিয়ন্ত্রণ করতে দেবেন?"</string>
+    <string name="phone_control_allow">"এই চ্যাটে অনুমতি দিন"</string>
+    <string name="settings_ask_phone_control">"ফোন নিয়ন্ত্রণের আগে জিজ্ঞাসা করুন"</string>
+    <string name="settings_ask_phone_control_desc">"Shizuku, root বা Device Owner ব্যবহারের আগে এজেন্টরা প্রতি চ্যাটে একবার জিজ্ঞাসা করে। আপনার নিজের টার্মিনালকে কখনও জিজ্ঞাসা করা হয় না।"</string>
+    <string name="chat_message_options">"বার্তার বিকল্প"</string>
 </resources>

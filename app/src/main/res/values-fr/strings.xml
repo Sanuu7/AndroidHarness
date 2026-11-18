@@ -1100,4 +1100,11 @@
     <string name="ui_attachment">"Pièce jointe"</string>
     <string name="ui_image_counter">"%1$d sur %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"Enregistrer dans la galerie"</string>
+    <string name="automation_approval_title">"Programmer ce message ?"</string>
+    <string name="phone_control_approval_title">"Autoriser l\'agent à contrôler votre téléphone ?"</string>
+    <string name="phone_control_allow">"Autoriser dans cette discussion"</string>
+    <string name="settings_ask_phone_control">"Demander avant de contrôler le téléphone"</string>
+    <string name="settings_ask_phone_control_desc">"L\'agent demande une fois par discussion avant d\'utiliser Shizuku, root ou Device Owner. Votre propre terminal n\'est jamais sollicité."</string>
+    <string name="chat_message_options">"Options du message"</string>
 </resources>

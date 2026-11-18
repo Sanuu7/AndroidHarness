@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"ඇමුණුම"</string>
     <string name="ui_image_counter">"%2$d න් %1$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"ගැලරියට සුරකින්න"</string>
+    <string name="automation_approval_title">"මෙම පණිවිඩය නියමිත වේලාවට යවන්නද?"</string>
+    <string name="phone_control_approval_title">"නියෝජිතයාට ඔබේ දුරකථනය පාලනය කිරීමට ඉඩ දෙන්නද?"</string>
+    <string name="phone_control_allow">"මෙම කතාබහේදී ඉඩ දෙන්න"</string>
+    <string name="settings_ask_phone_control">"දුරකථනය පාලනය කිරීමට පෙර අසන්න"</string>
+    <string name="settings_ask_phone_control_desc">"Shizuku, root හෝ Device Owner භාවිතා කිරීමට පෙර නියෝජිතයන් සෑම කතාබහකම එක් වරක් අසයි. ඔබේම ටර්මිනලයෙන් කිසිවිටෙක අසන්නේ නැත."</string>
+    <string name="chat_message_options">"පණිවිඩ විකල්ප"</string>
 </resources>

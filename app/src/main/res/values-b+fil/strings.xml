@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"Attachment"</string>
     <string name="ui_image_counter">"%1$d ng %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"I-save sa gallery"</string>
+    <string name="automation_approval_title">"I-iskedyul ang mensaheng ito?"</string>
+    <string name="phone_control_approval_title">"Payagan ang agent na kontrolin ang iyong telepono?"</string>
+    <string name="phone_control_allow">"Payagan sa chat na ito"</string>
+    <string name="settings_ask_phone_control">"Magtanong bago kontrolin ang telepono"</string>
+    <string name="settings_ask_phone_control_desc">"Nagtatanong ang mga agent nang isang beses bawat chat bago gumamit ng Shizuku, root o Device Owner. Ang sarili mong terminal ay hindi tinatanong."</string>
+    <string name="chat_message_options">"Mga opsyon ng mensahe"</string>
 </resources>

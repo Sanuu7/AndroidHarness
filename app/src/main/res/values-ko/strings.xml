@@ -1094,4 +1094,11 @@
     <string name="ui_attachment">"첨부파일"</string>
     <string name="ui_image_counter">"%2$d 중 %1$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"갤러리에 저장"</string>
+    <string name="automation_approval_title">"이 메시지를 예약할까요?"</string>
+    <string name="phone_control_approval_title">"에이전트가 휴대폰을 제어하도록 허용할까요?"</string>
+    <string name="phone_control_allow">"이 채팅에서 허용"</string>
+    <string name="settings_ask_phone_control">"휴대폰 제어 전에 확인"</string>
+    <string name="settings_ask_phone_control_desc">"에이전트는 Shizuku, root 또는 Device Owner를 사용하기 전에 채팅마다 한 번 확인합니다. 직접 쓰는 터미널은 묻지 않습니다."</string>
+    <string name="chat_message_options">"메시지 옵션"</string>
 </resources>

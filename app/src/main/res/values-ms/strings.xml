@@ -1094,4 +1094,11 @@
     <string name="ui_attachment">"Lampiran"</string>
     <string name="ui_image_counter">"%1$d daripada %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"Simpan ke galeri"</string>
+    <string name="automation_approval_title">"Jadualkan mesej ini?"</string>
+    <string name="phone_control_approval_title">"Benarkan ejen mengawal telefon anda?"</string>
+    <string name="phone_control_allow">"Benarkan dalam sembang ini"</string>
+    <string name="settings_ask_phone_control">"Tanya sebelum mengawal telefon"</string>
+    <string name="settings_ask_phone_control_desc">"Ejen bertanya sekali setiap sembang sebelum menggunakan Shizuku, root atau Device Owner. Terminal anda sendiri tidak pernah ditanya."</string>
+    <string name="chat_message_options">"Pilihan mesej"</string>
 </resources>

@@ -1097,4 +1097,11 @@
     <string name="ui_attachment">"இணைப்பு"</string>
     <string name="ui_image_counter">"%2$d இல் %1$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"கேலரியில் சேமி"</string>
+    <string name="automation_approval_title">"இந்தச் செய்தியைத் திட்டமிடவா?"</string>
+    <string name="phone_control_approval_title">"ஏஜென்ட் உங்கள் மொபைலைக் கட்டுப்படுத்த அனுமதிக்கவா?"</string>
+    <string name="phone_control_allow">"இந்த அரட்டையில் அனுமதி"</string>
+    <string name="settings_ask_phone_control">"மொபைலைக் கட்டுப்படுத்தும் முன் கேட்கவும்"</string>
+    <string name="settings_ask_phone_control_desc">"Shizuku, root அல்லது Device Owner பயன்படுத்தும் முன் ஏஜென்ட்கள் ஒரு அரட்டைக்கு ஒரு முறை கேட்கும். உங்கள் சொந்த முனையத்தில் கேட்கப்படுவதில்லை."</string>
+    <string name="chat_message_options">"செய்தி விருப்பங்கள்"</string>
 </resources>

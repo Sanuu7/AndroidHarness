@@ -1094,4 +1094,11 @@
     <string name="ui_attachment">"Tệp đính kèm"</string>
     <string name="ui_image_counter">"%1$d trên %2$d"</string>
     <string name="ui_more_images">"+%1$d"</string>
+    <string name="chat_image_save_to_gallery">"Lưu vào thư viện ảnh"</string>
+    <string name="automation_approval_title">"Lên lịch tin nhắn này?"</string>
+    <string name="phone_control_approval_title">"Cho phép tác nhân điều khiển điện thoại của bạn?"</string>
+    <string name="phone_control_allow">"Cho phép trong cuộc trò chuyện này"</string>
+    <string name="settings_ask_phone_control">"Hỏi trước khi điều khiển điện thoại"</string>
+    <string name="settings_ask_phone_control_desc">"Tác nhân hỏi một lần mỗi cuộc trò chuyện trước khi dùng Shizuku, root hoặc Device Owner. Terminal của bạn không bao giờ bị hỏi."</string>
+    <string name="chat_message_options">"Tùy chọn tin nhắn"</string>
 </resources>
