@@ -14,7 +14,12 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.LiveRegionMode
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.liveRegion
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -24,15 +29,31 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.androidharness.app.R
 import com.androidharness.app.llm.ProviderApiKey
+import com.androidharness.app.llm.ProviderKeyCheck
 import com.androidharness.app.llm.ProviderKeyPool
 import com.androidharness.app.ui.common.ExpressiveIconButton
 import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.OutlinedButton
+import com.androidharness.app.ui.common.TextButton
+import kotlinx.coroutines.launch
 
-/** The same draft editor is used by Add, Edit and Connection controls. */
+/**
+ * The same draft editor is used by Add, Edit and Connection controls.
+ * [onTest] adds a Test button per key; a result only shows while the key
+ * still holds the value that was tested.
+ */
 @Composable
-internal fun ProviderKeysEditor(pool: ProviderKeyPool, onChange: (ProviderKeyPool) -> Unit, enabled: Boolean = true) {
+internal fun ProviderKeysEditor(
+    pool: ProviderKeyPool,
+    onChange: (ProviderKeyPool) -> Unit,
+    enabled: Boolean = true,
+    onTest: (suspend (String) -> ProviderKeyCheck.Result)? = null,
+) {
     var revealed by remember { mutableStateOf(emptySet<String>()) }
+    // Key id to (tested value, result); a null result means the test is running.
+    var tests by remember { mutableStateOf(emptyMap<String, Pair<String, ProviderKeyCheck.Result?>>()) }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
     DisposableEffect(owner) {
         val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_STOP) revealed = emptySet() }
@@ -57,8 +78,12 @@ internal fun ProviderKeysEditor(pool: ProviderKeyPool, onChange: (ProviderKeyPoo
             }
             Switch(pool.rotate, onCheckedChange = null, enabled = enabled)
         }
+        if (onTest != null) Text(stringResource(R.string.provider_test_key_hint), style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         pool.keys.forEachIndexed { index, apiKey -> key(apiKey.id) {
             val visible = apiKey.id in revealed
+            val test = tests[apiKey.id]?.takeIf { it.first == apiKey.value }
+            val testing = test != null && test.second == null
             Surface(shape = MaterialTheme.shapes.large, color = MaterialTheme.colorScheme.surfaceContainerHigh) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(apiKey.label, { value -> update(apiKey.id) { it.copy(label = value.take(80)) } },
@@ -84,10 +109,41 @@ internal fun ProviderKeysEditor(pool: ProviderKeyPool, onChange: (ProviderKeyPoo
                             Spacer(Modifier.width(8.dp))
                             Text(stringResource(R.string.provider_use_key, index + 1))
                         }
+                        if (onTest != null) TextButton(
+                            enabled = enabled && !testing && apiKey.value.isNotEmpty() && apiKey.value.all { it in '!'..'~' },
+                            onClick = {
+                                val value = apiKey.value
+                                tests = tests + (apiKey.id to (value to null))
+                                scope.launch {
+                                    val result = onTest(value)
+                                    tests = tests + (apiKey.id to (value to result))
+                                }
+                            },
+                        ) { Text(stringResource(R.string.provider_test_key), Modifier.semantics {
+                            contentDescription = context.getString(R.string.provider_test_key_description, index + 1)
+                        }) }
                         ExpressiveIconButton(enabled = enabled, onClick = {
                             revealed = revealed - apiKey.id
                             onChange(pool.copy(keys = pool.keys.filterNot { it.id == apiKey.id }))
                         }) { Icon(Icons.Rounded.DeleteOutline, stringResource(R.string.provider_remove_key, index + 1)) }
+                    }
+                    test?.let { (_, result) ->
+                        Text(
+                            when (result) {
+                                null -> stringResource(R.string.provider_testing_key)
+                                is ProviderKeyCheck.Result.Ok -> result.model?.let {
+                                    stringResource(R.string.provider_key_works_model, it, result.latencyMs.toInt())
+                                } ?: stringResource(R.string.provider_key_works, result.latencyMs.toInt())
+                                is ProviderKeyCheck.Result.Failed -> stringResource(R.string.provider_key_failed, result.message)
+                            },
+                            style = MaterialTheme.typography.bodySmall,
+                            color = when (result) {
+                                is ProviderKeyCheck.Result.Failed -> MaterialTheme.colorScheme.error
+                                is ProviderKeyCheck.Result.Ok -> MaterialTheme.colorScheme.primary
+                                null -> MaterialTheme.colorScheme.onSurfaceVariant
+                            },
+                            modifier = Modifier.semantics { liveRegion = LiveRegionMode.Polite },
+                        )
                     }
                 }
             }

@@ -280,6 +280,13 @@
     <string name="provider_use_key">"استخدام المفتاح %1$d"</string>
     <string name="provider_remove_key">"حذف المفتاح %1$d"</string>
     <string name="provider_add_key">"إضافة مفتاح API"</string>
+    <string name="provider_test_key">Test</string>
+    <string name="provider_test_key_description">Test key %1$d</string>
+    <string name="provider_testing_key">Testing…</string>
+    <string name="provider_key_works">Key works (%1$d ms)</string>
+    <string name="provider_key_works_model">Key works with %1$s (%2$d ms)</string>
+    <string name="provider_key_failed">Key failed: %1$s</string>
+    <string name="provider_test_key_hint">Sends one short message capped at a few tokens.</string>
     <string name="provider_proxy_title">"وكيل"</string>
     <string name="provider_proxy_system">"اتصال النظام"</string>
     <string name="provider_proxy_inherit">"استخدام الإعداد العام"</string>

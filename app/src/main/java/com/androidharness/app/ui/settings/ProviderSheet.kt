@@ -425,7 +425,11 @@ internal fun ProviderSheetContent(
                     }
 
                     if (requiresKey || keyPool.keys.any { it.value.isNotEmpty() }) {
-                        if (keysLoaded) ProviderKeysEditor(keyPool, onChange = { keyPool = it; fetchError = null }, enabled = !fetching)
+                        if (keysLoaded) ProviderKeysEditor(keyPool, onChange = { keyPool = it; fetchError = null }, enabled = !fetching,
+                            onTest = { key ->
+                                com.androidharness.app.llm.ProviderKeyCheck.check(
+                                    ProviderConfig(existing?.id.orEmpty(), name, effectiveType, effectiveBaseUrl, model, headers = headers), key)
+                            })
                         else if (!keysLoadFailed) androidx.compose.material3.LinearProgressIndicator(Modifier.fillMaxWidth())
                         keyPool.error()?.takeUnless { keyPool.keys.any { key -> key.value.isBlank() } }?.let {
                             Text(it, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.error)

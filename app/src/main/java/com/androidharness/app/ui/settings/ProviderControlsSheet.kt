@@ -64,7 +64,8 @@ internal fun ProviderControlsSheet(container: AppContainer, connection: Provider
             Column(Modifier.weight(1f).verticalScroll(rememberScrollState()).padding(horizontal = 24.dp, vertical = 12.dp),
                 verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 if (loaded && canEditKeys) {
-                    ProviderKeysEditor(pool, onChange = { pool = it }, enabled = !saving)
+                    ProviderKeysEditor(pool, onChange = { pool = it }, enabled = !saving,
+                        onTest = { key -> ProviderKeyCheck.check(connection!!, key, proxy = draftProxy.takeIf { it.error() == null }) })
                     HorizontalDivider()
                 }
                 if (loaded) {

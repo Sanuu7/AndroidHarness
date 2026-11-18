@@ -276,6 +276,13 @@
     <string name="provider_use_key">"%1$d விசையைப் பயன்படுத்தவும்"</string>
     <string name="provider_remove_key">"%1$d விசையை அகற்று"</string>
     <string name="provider_add_key">"API விசையைச் சேர்க்கவும்"</string>
+    <string name="provider_test_key">Test</string>
+    <string name="provider_test_key_description">Test key %1$d</string>
+    <string name="provider_testing_key">Testing…</string>
+    <string name="provider_key_works">Key works (%1$d ms)</string>
+    <string name="provider_key_works_model">Key works with %1$s (%2$d ms)</string>
+    <string name="provider_key_failed">Key failed: %1$s</string>
+    <string name="provider_test_key_hint">Sends one short message capped at a few tokens.</string>
     <string name="provider_proxy_title">"பதிலாள்"</string>
     <string name="provider_proxy_system">"கணினி இணைப்பு"</string>
     <string name="provider_proxy_inherit">"உலகளாவிய அமைப்பைப் பயன்படுத்தவும்"</string>
