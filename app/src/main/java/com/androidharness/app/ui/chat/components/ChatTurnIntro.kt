@@ -28,6 +28,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clipToBounds
@@ -42,6 +43,7 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.common.HarnessActivityLogo
 import com.androidharness.app.ui.common.LogoShape
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
@@ -51,24 +53,28 @@ private const val WORDMARK = "Android Harness"
 private val Emphasized = CubicBezierEasing(0.05f, 0.7f, 0.1f, 1f)
 
 /**
- * Plays once at the start of a Chat turn, in the exact spot and size of the
+ * Plays at the start of a Chat turn, in the exact spot and size of the
  * activity row it hands over to: the small AH glyph pops into the row's
- * circle, "Android Harness" unrolls beside it, rolls back into the glyph,
- * the AH holds on its own for a moment, then morphs into the thinking
- * sparkle so the live row takes over without a jump.
+ * circle and "Android Harness" unrolls beside it. The wordmark stays out,
+ * shimmering, for as long as the model has not answered, so the row never
+ * claims to be thinking before it is. Once [started] turns true it rolls
+ * back into the glyph, the AH holds on its own for a moment, then morphs
+ * into the thinking sparkle so the live row takes over without a jump.
  */
 @Composable
-internal fun ChatTurnIntro(onFinished: () -> Unit, modifier: Modifier = Modifier) {
+internal fun ChatTurnIntro(started: Boolean, onFinished: () -> Unit, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
     val pop = remember { Animatable(0f) }
     val reveal = remember { Animatable(0f) }
     var shape by remember { mutableStateOf(LogoShape.Monogram) }
     val finished by rememberUpdatedState(onFinished)
+    val modelStarted by rememberUpdatedState(started)
     LaunchedEffect(Unit) {
         launch { pop.animateTo(1f, spring(dampingRatio = 0.55f, stiffness = 380f)) }
         delay(120)
         reveal.animateTo(1f, tween(420, easing = Emphasized))
         delay(650)
+        snapshotFlow { modelStarted }.first { it }
         reveal.animateTo(0f, tween(320, easing = Emphasized))
         delay(520)
         shape = LogoShape.Sparkles

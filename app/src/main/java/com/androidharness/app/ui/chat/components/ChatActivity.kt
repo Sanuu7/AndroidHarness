@@ -97,7 +97,8 @@ internal fun ChatActivity(
         live && completedPhase -> if (lastTool!!.result?.isError == true) stringResource(R.string.chat_tool_failed) else activityLabel(lastTool.call.name, false)
         live && writing -> stringResource(R.string.chat_writing_reply)
         live -> stringResource(R.string.chat_thinking)
-        seconds > 0 && !showThinkingMetrics -> stringResource(R.string.chat_thought_seconds, seconds)
+        seconds > 0 && !showThinkingMetrics -> stringResource(R.string.chat_thought_duration,
+            com.androidharness.app.ui.common.formatDuration(seconds * 1000))
         else -> stringResource(R.string.chat_thought)
     }
     // Each step change of a live turn is felt once; a row that merely scrolls back into view stays silent.
@@ -115,10 +116,14 @@ internal fun ChatActivity(
         if (step != null) onStep(step.first)
     }
     val introContext = androidx.compose.ui.platform.LocalContext.current
-    // The brand intro plays once, only for a turn that has just started (not when scrolling back to it).
+    // The model has sent something of its own: reasoning, words, or a tool call.
+    val modelStarted = entries.isNotEmpty() || writing || runningCalls.isNotEmpty() ||
+        streamingThinking.isNotEmpty() || thinkingTiming?.startedAt != null
+    // The brand intro plays for a turn that has just started, and for one still waiting on
+    // the model when it comes back into view, but not for a turn already under way.
     var introDone by rememberSaveable(turnStartedAt != null) {
         mutableStateOf(!(live && turnStartedAt != null &&
-            com.androidharness.app.agent.ThinkingTiming.now() - turnStartedAt < 1_500 &&
+            (!modelStarted || com.androidharness.app.agent.ThinkingTiming.now() - turnStartedAt < 1_500) &&
             android.provider.Settings.Global.getFloat(introContext.contentResolver,
                 android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f))
     }
@@ -127,7 +132,7 @@ internal fun ChatActivity(
     AnimatedContent(introDone || !live, transitionSpec = {
         fadeIn(tween(160)) togetherWith fadeOut(tween(120))
     }, label = "Chat turn intro") { showActivity ->
-    if (!showActivity) ChatTurnIntro(onFinished = { introDone = true }) else
+    if (!showActivity) ChatTurnIntro(started = modelStarted || !live, onFinished = { introDone = true }) else
     ChatActivityRow(title, if (live && showToolPhase) (active ?: lastTool?.call?.takeIf { completedPhase })?.name else null, live, entries.isNotEmpty(), followLatest = live, autoExpand = autoExpand,
         writing = live && writing && active == null,
         progress = research,
@@ -139,7 +144,7 @@ internal fun ChatActivity(
                     item(key = entry.key + "-heading") {
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(5.dp)) {
                         Icon(painterResource(R.drawable.ic_brain), null, Modifier.size(13.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                        Text(if (entry.milliseconds >= 1000) stringResource(R.string.chat_thought_seconds, entry.milliseconds / 1000)
+                        Text(if (entry.milliseconds >= 1000) stringResource(R.string.chat_thought_duration, com.androidharness.app.ui.common.formatDuration(entry.milliseconds))
                             else stringResource(R.string.chat_thought), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                     }
