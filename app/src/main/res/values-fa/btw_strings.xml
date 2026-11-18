@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">هر سؤالی دربارهٔ کار فعلی بپرسید. پاسخ از آنچه عامل خوانده و تصمیم گرفته استفاده می‌کند، حافظهٔ نهان پرامپت را دوباره به کار می‌برد و هرگز وارد گفتگو نمی‌شود.</string>
     <string name="btw_input_hint">یک سؤال جانبی بپرسید</string>
     <string name="btw_input_again">یک سؤال جانبی دیگر بپرسید</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">بپرس</string>
     <string name="btw_stop">توقف</string>
     <string name="btw_copy">کپی</string>

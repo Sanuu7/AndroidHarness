@@ -1,6 +1,18 @@
 package com.androidharness.app.ui.chat.components
 
 import android.content.ClipData
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.gestures.detectVerticalDragGestures
+import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material3.BottomSheetDefaults
+import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.semantics.CustomAccessibilityAction
+import androidx.compose.ui.semantics.customActions
+import com.androidharness.app.ui.chat.SideThreadUi
+import kotlinx.coroutines.launch
 import android.content.ClipboardManager
 import android.widget.Toast
 import androidx.compose.animation.AnimatedVisibility
@@ -87,33 +99,50 @@ import com.androidharness.app.ui.theme.expressiveEffectsSpec
 import com.androidharness.app.ui.theme.expressiveSpatialSpec
 
 /**
- * The /btw sheet: a quick question answered on the running task's context.
- * Everything here is ephemeral; dismissing the sheet discards the exchange.
+ * The /btw sheet: a short side thread answered on the running task's context.
+ * Everything here is ephemeral. Hiding keeps the thread for this chat; Clear
+ * forgets it. Drag the handle up to give a long thread more room.
  */
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun SideQuestionSheet(
-    state: SideQuestionUi,
+    thread: SideThreadUi,
     onAsk: (String) -> Unit,
     onStop: () -> Unit,
-    onDismiss: () -> Unit,
+    onHide: () -> Unit,
+    onClear: () -> Unit,
     onOpenUrl: (String) -> Unit = {},
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val maxBody = (LocalConfiguration.current.screenHeightDp * 0.62f).dp
+    val scope = rememberCoroutineScope()
+    var expanded by rememberSaveable { mutableStateOf(false) }
+    val screen = LocalConfiguration.current.screenHeightDp
+    val maxBody by animateDpAsState(
+        (screen * if (expanded) EXPANDED_BODY else COMPACT_BODY).dp, expressiveSpatialSpec(), label = "btw body height",
+    )
     val scroll = rememberScrollState()
+    val current = thread.current
     // Follow a streaming answer unless the reader has scrolled up to reread.
     LaunchedEffect(scroll.maxValue) {
-        if (state.running && scroll.maxValue - scroll.value < FOLLOW_SLACK_PX) scroll.scrollTo(scroll.maxValue)
+        if (thread.running && scroll.maxValue - scroll.value < FOLLOW_SLACK_PX) scroll.scrollTo(scroll.maxValue)
     }
-    HarnessGlassModalBottomSheet(onDismissRequest = onDismiss, sheetState = sheetState) {
+    // A new question jumps to the bottom so it is never asked out of sight.
+    LaunchedEffect(thread.turns.size) { if (thread.turns.isNotEmpty()) scroll.animateScrollTo(scroll.maxValue) }
+    fun hide() {
+        scope.launch { sheetState.hide() }.invokeOnCompletion { onHide() }
+    }
+    HarnessGlassModalBottomSheet(
+        onDismissRequest = onHide,
+        sheetState = sheetState,
+        dragHandle = { SideThreadHandle(expanded, onExpandedChange = { expanded = it }, onHide = ::hide) },
+    ) {
         MaterialTheme(motionScheme = MotionScheme.expressive()) {
             Column(
                 Modifier.fillMaxWidth().navigationBarsPadding().imePadding()
                     .padding(horizontal = 20.dp).padding(bottom = 12.dp)
                     .testTag("side-question-sheet"),
             ) {
-                SideQuestionHeader(state, onStop, onDismiss)
+                SideQuestionHeader(current, thread.running, hasTurns = thread.turns.isNotEmpty(), onStop, onClear, ::hide)
                 Spacer(Modifier.size(12.dp))
                 // Weighted so the body gives up height when the keyboard opens; a fixed
                 // cap alone pushed the input row below the keyboard.
@@ -122,53 +151,108 @@ internal fun SideQuestionSheet(
                         .animateContentSize(expressiveSpatialSpec()),
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                 ) {
-                    if (state.asked) SideQuestionBody(state, onOpenUrl)
-                    else Text(
+                    if (thread.turns.isEmpty()) Text(
                         stringResource(R.string.btw_empty_hint),
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
+                    ) else thread.turns.forEachIndexed { index, turn ->
+                        if (index > 0) Spacer(Modifier.size(6.dp))
+                        SideQuestionBody(turn, latest = index == thread.turns.lastIndex, onOpenUrl)
+                    }
                 }
                 Spacer(Modifier.size(12.dp))
-                SideQuestionInput(state, onAsk)
+                SideQuestionInput(asked = thread.turns.isNotEmpty(), running = thread.running, onAsk)
             }
         }
     }
 }
 
+/**
+ * The sheet's grab bar. Dragging up expands the thread, dragging down
+ * collapses it first and hides it from the compact size.
+ */
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SideThreadHandle(expanded: Boolean, onExpandedChange: (Boolean) -> Unit, onHide: () -> Unit) {
+    val threshold = with(LocalDensity.current) { 24.dp.toPx() }
+    var travel by remember { mutableFloatStateOf(0f) }
+    val expand = stringResource(R.string.btw_expand)
+    val collapse = stringResource(R.string.btw_collapse)
+    Box(
+        Modifier.fillMaxWidth()
+            .semantics {
+                customActions = listOf(CustomAccessibilityAction(if (expanded) collapse else expand) {
+                    onExpandedChange(!expanded); true
+                })
+            }
+            .pointerInput(expanded) {
+                detectVerticalDragGestures(
+                    onDragStart = { travel = 0f },
+                    onDragCancel = { travel = 0f },
+                    onDragEnd = {
+                        when {
+                            travel < -threshold -> onExpandedChange(true)
+                            travel > threshold && expanded -> onExpandedChange(false)
+                            travel > threshold -> onHide()
+                        }
+                    },
+                ) { change, amount ->
+                    change.consume()
+                    travel += amount
+                }
+            },
+        contentAlignment = Alignment.Center,
+    ) { BottomSheetDefaults.DragHandle() }
+}
+
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun SideQuestionHeader(state: SideQuestionUi, onStop: () -> Unit, onDismiss: () -> Unit) {
+private fun SideQuestionHeader(
+    state: SideQuestionUi?,
+    running: Boolean,
+    hasTurns: Boolean,
+    onStop: () -> Unit,
+    onClear: () -> Unit,
+    onHide: () -> Unit,
+) {
     val scheme = MaterialTheme.colorScheme
     Row(verticalAlignment = Alignment.CenterVertically) {
-        SideQuestionBadge(state.running)
+        SideQuestionBadge(running)
         Spacer(Modifier.width(12.dp))
         Column(Modifier.weight(1f)) {
             Text(stringResource(R.string.btw_title), style = MaterialTheme.typography.titleMedium)
-            val source = if (state.warm) stringResource(R.string.btw_source_live) else stringResource(R.string.btw_source_saved)
+            val source = if (state?.warm != false) stringResource(R.string.btw_source_live) else stringResource(R.string.btw_source_saved)
             Text(
-                listOf(source, state.model, stringResource(R.string.btw_private)).filter { it.isNotBlank() }.joinToString(" · "),
+                listOf(source, state?.model.orEmpty(), stringResource(R.string.btw_private)).filter { it.isNotBlank() }.joinToString(" · "),
                 style = MaterialTheme.typography.labelMedium,
                 color = scheme.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis,
             )
         }
-        if (state.running) {
+        val neutral = IconButtonDefaults.iconButtonColors(containerColor = scheme.surfaceContainerHighest, contentColor = scheme.onSurfaceVariant)
+        if (running) {
             val stop = stringResource(R.string.btw_stop)
             ExpressiveIconButton(
                 onClick = onStop,
                 modifier = Modifier.size(40.dp).semantics { contentDescription = stop },
                 colors = IconButtonDefaults.iconButtonColors(containerColor = scheme.errorContainer, contentColor = scheme.onErrorContainer),
             ) { StopGlyph(color = scheme.onErrorContainer, size = 18.dp) }
-        } else {
-            val close = stringResource(R.string.settings_action_close)
+        } else if (hasTurns) {
+            val clear = stringResource(R.string.btw_clear)
             ExpressiveIconButton(
-                onClick = onDismiss,
-                modifier = Modifier.size(40.dp).semantics { contentDescription = close },
-                colors = IconButtonDefaults.iconButtonColors(containerColor = scheme.surfaceContainerHighest, contentColor = scheme.onSurfaceVariant),
-            ) { Icon(Icons.Filled.Close, null, Modifier.size(18.dp)) }
+                onClick = onClear,
+                modifier = Modifier.size(40.dp).semantics { contentDescription = clear }.testTag("side-question-clear"),
+                colors = neutral,
+            ) { Icon(Icons.Filled.Delete, null, Modifier.size(18.dp)) }
         }
+        Spacer(Modifier.width(8.dp))
+        val hide = stringResource(R.string.btw_hide)
+        ExpressiveIconButton(
+            onClick = onHide,
+            modifier = Modifier.size(40.dp).semantics { contentDescription = hide },
+            colors = neutral,
+        ) { Icon(Icons.Filled.Close, null, Modifier.size(18.dp)) }
     }
 }
 
@@ -192,7 +276,7 @@ private fun SideQuestionBadge(running: Boolean) {
 }
 
 @Composable
-private fun ColumnScope.SideQuestionBody(state: SideQuestionUi, onOpenUrl: (String) -> Unit) {
+private fun ColumnScope.SideQuestionBody(state: SideQuestionUi, latest: Boolean, onOpenUrl: (String) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val context = LocalContext.current
     Surface(
@@ -237,7 +321,7 @@ private fun ColumnScope.SideQuestionBody(state: SideQuestionUi, onOpenUrl: (Stri
     AnimatedVisibility(state.usage.isNotEmpty() || (!state.running && answer.isNotBlank()), enter = fadeIn(), exit = fadeOut()) {
         Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             // Same footer as a main turn: hit rate, cached tokens and per-request detail.
-            if (state.usage.isNotEmpty()) CacheUsageFooter(state.usage, running = state.running)
+            if (latest && state.usage.isNotEmpty()) CacheUsageFooter(state.usage, running = state.running)
             if (!state.running && answer.isNotBlank()) Row(verticalAlignment = Alignment.CenterVertically) {
                 if (state.toolCount > 0) Text(
                     pluralStringResource(R.plurals.btw_tool_count, state.toolCount, state.toolCount),
@@ -262,13 +346,13 @@ private fun ColumnScope.SideQuestionBody(state: SideQuestionUi, onOpenUrl: (Stri
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun SideQuestionInput(state: SideQuestionUi, onAsk: (String) -> Unit) {
+private fun SideQuestionInput(asked: Boolean, running: Boolean, onAsk: (String) -> Unit) {
     val scheme = MaterialTheme.colorScheme
     val haptics = LocalHapticFeedback.current
     var draft by rememberSaveable { mutableStateOf("") }
     val focus = remember { FocusRequester() }
-    LaunchedEffect(state.asked) { if (!state.asked) runCatching { focus.requestFocus() } }
-    val canAsk = draft.isNotBlank() && !state.running
+    LaunchedEffect(asked) { if (!asked) runCatching { focus.requestFocus() } }
+    val canAsk = draft.isNotBlank() && !running
     fun ask() {
         if (!canAsk) return
         haptics.performHapticFeedback(HapticFeedbackType.Confirm)
@@ -281,7 +365,7 @@ private fun SideQuestionInput(state: SideQuestionUi, onAsk: (String) -> Unit) {
             onValueChange = { draft = it },
             modifier = Modifier.weight(1f).focusRequester(focus).testTag("side-question-input"),
             placeholder = {
-                Text(stringResource(if (state.asked) R.string.btw_input_again else R.string.btw_input_hint), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                Text(stringResource(if (asked) R.string.btw_input_again else R.string.btw_input_hint), maxLines = 1, overflow = TextOverflow.Ellipsis)
             },
             shape = RoundedCornerShape(28.dp),
             maxLines = 4,
@@ -310,3 +394,5 @@ private fun SideQuestionInput(state: SideQuestionUi, onAsk: (String) -> Unit) {
 }
 
 private const val FOLLOW_SLACK_PX = 480
+private const val COMPACT_BODY = 0.5f
+private const val EXPANDED_BODY = 0.8f

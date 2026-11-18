@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"Tanya apa-apa tentang tugas semasa. Jawapan menggunakan maklumat yang telah dibaca dan diputuskan oleh ejen, menggunakan semula cache arahannya dan tidak ditambahkan pada perbualan utama."</string>
     <string name="btw_input_hint">"Tanya soalan sampingan"</string>
     <string name="btw_input_again">"Tanya soalan sampingan yang lain"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"Tanya"</string>
     <string name="btw_stop">"Berhenti"</string>
     <string name="btw_copy">"salin"</string>

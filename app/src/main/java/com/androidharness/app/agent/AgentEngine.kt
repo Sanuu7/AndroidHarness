@@ -888,8 +888,8 @@ class AgentEngine(
      * reasoning options unchanged, so the cached prefix is read instead of
      * billed again. Only read-only tools run, and nothing is persisted.
      */
-    fun askAside(context: SideContext, question: String): Flow<SideEvent> =
-        streamAside(context, SideQuestion.requestMessages(context, question))
+    fun askAside(context: SideContext, question: String, history: List<SideTurn> = emptyList()): Flow<SideEvent> =
+        streamAside(context, SideQuestion.requestMessages(context, question, history))
 
     /**
      * The side-question loop over an explicit request. Live Mode sends its own

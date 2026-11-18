@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"Demandez n\'importe quoi sur la tâche en cours. La réponse utilise ce que l\'agent a déjà lu et décidé, réutilise son cache d\'invites et ne rejoint jamais la conversation."</string>
     <string name="btw_input_hint">"Posez une question secondaire"</string>
     <string name="btw_input_again">"Posez une autre question secondaire"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"Demander"</string>
     <string name="btw_stop">"Arrêter"</string>
     <string name="btw_copy">"Copier"</string>

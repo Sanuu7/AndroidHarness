@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"বর্তমান কাজ সম্পর্কে কিছু জিজ্ঞাসা করুন. উত্তরটি এজেন্ট ইতিমধ্যে যা পড়েছে এবং সিদ্ধান্ত নিয়েছে তা ব্যবহার করে, এর প্রম্পট ক্যাশে পুনরায় ব্যবহার করে এবং কখনই কথোপকথনে যোগ দেয় না।"</string>
     <string name="btw_input_hint">"একটি পার্শ্ব প্রশ্ন জিজ্ঞাসা করুন"</string>
     <string name="btw_input_again">"অন্য পার্শ্ব প্রশ্ন জিজ্ঞাসা করুন"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"জিজ্ঞাসা করুন"</string>
     <string name="btw_stop">"থামো"</string>
     <string name="btw_copy">"কপি"</string>

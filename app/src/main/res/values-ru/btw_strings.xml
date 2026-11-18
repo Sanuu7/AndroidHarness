@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">Спросите что угодно о текущей задаче. Ответ использует то, что агент уже прочитал и решил, повторно использует его кеш промптов и не попадает в разговор.</string>
     <string name="btw_input_hint">Задать побочный вопрос</string>
     <string name="btw_input_again">Задать ещё один побочный вопрос</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">Спросить</string>
     <string name="btw_stop">Остановить</string>
     <string name="btw_copy">Копировать</string>

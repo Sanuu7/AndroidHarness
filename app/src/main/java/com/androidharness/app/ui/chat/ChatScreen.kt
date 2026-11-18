@@ -873,13 +873,14 @@ private fun ChatScreenContent(
     liveSession?.let { session ->
         LiveModeOverlay(session, onClose = viewModel::closeLive)
     }
-    val sideQuestion by viewModel.sideQuestion.collectAsStateWithLifecycle()
-    sideQuestion?.let { side ->
+    val sideThread by viewModel.sideThread.collectAsStateWithLifecycle()
+    sideThread?.takeIf { it.visible && it.sessionId == state.sessionId }?.let { thread ->
         com.androidharness.app.ui.chat.components.SideQuestionSheet(
-            state = side,
+            thread = thread,
             onAsk = { viewModel.askAside(it) },
             onStop = viewModel::stopAside,
-            onDismiss = viewModel::dismissAside,
+            onHide = viewModel::hideAside,
+            onClear = viewModel::clearAside,
             onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true },
         )
     }

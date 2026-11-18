@@ -47,6 +47,9 @@ class SideContexts(private val capacity: Int = 4) {
     @Synchronized fun clear(sessionId: String) { contexts.remove(sessionId) }
 }
 
+/** One finished exchange of a /btw thread, as later follow-ups replay it. */
+data class SideTurn(val question: String, val answer: String)
+
 /** What a side question streams back. None of it is ever persisted to the chat. */
 sealed interface SideEvent {
     data class Text(val text: String) : SideEvent
@@ -117,14 +120,42 @@ object SideQuestion {
         }
     }
 
-    fun requestMessages(context: SideContext, question: String): List<ChatMessage> {
+    /**
+     * The request for [question] on top of the main task's latest context.
+     * Earlier exchanges of the same /btw thread ([history], oldest first) sit
+     * between that context and the new question as plain text turns, so a
+     * follow-up keeps its thread while the main prefix stays byte-identical
+     * and cached. Every ask takes the newest [context], so the thread always
+     * reads the main task's live state.
+     */
+    fun requestMessages(context: SideContext, question: String, history: List<SideTurn> = emptyList()): List<ChatMessage> {
+        val turns = history.takeLast(MAX_THREAD_TURNS)
         val messages = closePendingCalls(context.messages)
+        val first = turns.firstOrNull()?.question ?: question
         // A warm prefix must stay byte-identical; a cold transcript has no cache to keep.
         val last = messages.lastOrNull()
-        if (!context.warm && last?.role == Role.USER)
-            return messages.dropLast(1) + last.copy(text = last.text + "\n\n" + prompt(question))
-        return messages + ChatMessage(role = Role.USER, text = prompt(question))
+        val opening = if (!context.warm && last?.role == Role.USER)
+            messages.dropLast(1) + last.copy(text = last.text + "\n\n" + prompt(first))
+        else messages + ChatMessage(role = Role.USER, text = prompt(first))
+        if (turns.isEmpty()) return opening
+        // Later turns repeat the exact follow-up wording they were first sent with, so the thread caches too.
+        val followUps = turns.mapIndexed { index, turn ->
+            val next = turns.getOrNull(index + 1)?.question ?: question
+            listOf(
+                ChatMessage(role = Role.ASSISTANT, text = turn.answer),
+                ChatMessage(role = Role.USER, text = followUpPrompt(next)),
+            )
+        }.flatten()
+        return opening + followUps
     }
+
+    /** Side turns kept per thread. Older ones drop off so a long thread cannot grow without bound. */
+    const val MAX_THREAD_TURNS = 8
+
+    fun followUpPrompt(question: String): String = prompt(
+        "(Follow-up in the same side thread. The main task context above is its latest state, so prefer it over " +
+            "older side answers when they disagree.)\n\n" + question.trim(),
+    )
 
     /** For a cold context: one bounded plain-text transcript, valid for every provider without tools. */
     const val COLD_SYSTEM_PROMPT =

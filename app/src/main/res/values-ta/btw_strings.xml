@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"தற்போதைய பணியைப் பற்றி எதையும் கேளுங்கள். பதில் முகவர் ஏற்கனவே படித்து முடிவு செய்ததைப் பயன்படுத்துகிறது, அதன் உடனடி தற்காலிக சேமிப்பை மீண்டும் பயன்படுத்துகிறது மற்றும் உரையாடலில் ஒருபோதும் சேராது."</string>
     <string name="btw_input_hint">"ஒரு பக்க கேள்வி கேளுங்கள்"</string>
     <string name="btw_input_again">"இன்னொரு பக்கம் கேள்வி கேளுங்க"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"கேள்"</string>
     <string name="btw_stop">"நிறுத்து"</string>
     <string name="btw_copy">"நகலெடுக்கவும்"</string>

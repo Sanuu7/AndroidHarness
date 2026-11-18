@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"वर्तमान कार्य के बारे में कुछ भी पूछें. उत्तर में वही उपयोग किया जाता है जो एजेंट ने पहले ही पढ़ लिया है और निर्णय ले लिया है, इसके त्वरित कैश का पुन: उपयोग करता है, और कभी भी बातचीत में शामिल नहीं होता है।"</string>
     <string name="btw_input_hint">"एक पार्श्व प्रश्न पूछें"</string>
     <string name="btw_input_again">"दूसरे पक्ष का प्रश्न पूछें"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"पूछो"</string>
     <string name="btw_stop">"रुकें"</string>
     <string name="btw_copy">"प्रतिलिपि"</string>

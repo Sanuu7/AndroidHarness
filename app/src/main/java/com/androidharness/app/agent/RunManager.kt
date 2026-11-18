@@ -1557,7 +1557,7 @@ class RunManager(
      * own turn id, so it never moves a main turn's cache footer, and nothing
      * else about the exchange is written anywhere.
      */
-    fun askAside(context: SideContext, question: String): kotlinx.coroutines.flow.Flow<SideEvent> {
+    fun askAside(context: SideContext, question: String, history: List<SideTurn> = emptyList()): kotlinx.coroutines.flow.Flow<SideEvent> {
         val sid = context.sessionId
         check(!(com.androidharness.app.local.LocalModelCatalog.isLocal(context.config.id) && isRunning(sid))) {
             this.context.getString(com.androidharness.app.R.string.btw_error_local_busy)
@@ -1567,7 +1567,7 @@ class RunManager(
             val chat = controls.flow(sid).value
             com.androidharness.app.llm.effectiveFallback(settings.settings.first().fallbackPolicy, chat.fallbackMode, chat.fallbackOverride)
         }
-        return engine.askAside(context, question).onEach { event ->
+        return engine.askAside(context, question, history).onEach { event ->
             if (event is SideEvent.Usage) with(event.usage) {
                 sessions.addUsage(sid, inputTokens.toLong(), outputTokens.toLong(), cachedInputTokens.toLong(), cacheWriteTokens.toLong())
                 sessions.recordUsage(sid, providerName, model, inputTokens.toLong(), outputTokens.toLong(),

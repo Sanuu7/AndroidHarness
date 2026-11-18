@@ -91,6 +91,58 @@ class SideQuestionTest {
     }
 
     @Test
+    fun `follow ups replay the thread after the live prefix in order`() {
+        val prefix = listOf(user, assistant, result("a"), result("b"))
+        val history = listOf(SideTurn("Why Room?", "It caches well."), SideTurn("And migrations?", "They are versioned."))
+        val request = SideQuestion.requestMessages(context(prefix), "Which table first?", history)
+        assertEquals(prefix, request.take(prefix.size))
+        val thread = request.drop(prefix.size)
+        assertEquals(listOf(Role.USER, Role.ASSISTANT, Role.USER, Role.ASSISTANT, Role.USER), thread.map { it.role })
+        assertEquals(SideQuestion.prompt("Why Room?"), thread[0].text)
+        assertEquals("It caches well.", thread[1].text)
+        assertEquals(SideQuestion.followUpPrompt("And migrations?"), thread[2].text)
+        assertEquals(SideQuestion.followUpPrompt("Which table first?"), thread[4].text)
+    }
+
+    @Test
+    fun `a follow up keeps the earlier request as its exact cached prefix`() {
+        val prefix = listOf(user, assistant, result("a"), result("b"))
+        val first = SideQuestion.requestMessages(context(prefix), "Why Room?")
+        val second = SideQuestion.requestMessages(context(prefix), "And migrations?", listOf(SideTurn("Why Room?", "It caches well.")))
+        assertEquals(first, second.take(first.size))
+        val third = SideQuestion.requestMessages(context(prefix), "Which table?",
+            listOf(SideTurn("Why Room?", "It caches well."), SideTurn("And migrations?", "Versioned.")))
+        assertEquals(second, third.take(second.size))
+    }
+
+    @Test
+    fun `a newer live context replaces the prefix under the same thread`() {
+        val older = listOf(user, assistant, result("a"), result("b"))
+        val newer = older + ChatMessage(role = Role.ASSISTANT, text = "Parser refactored")
+        val history = listOf(SideTurn("Why Room?", "It caches well."))
+        val request = SideQuestion.requestMessages(context(newer), "Done yet?", history)
+        assertEquals(newer, request.take(newer.size))
+        assertEquals(3, request.size - newer.size)
+    }
+
+    @Test
+    fun `long threads keep only the newest turns`() {
+        val history = (1..20).map { SideTurn("q$it", "a$it") }
+        val request = SideQuestion.requestMessages(context(listOf(user)), "last", history)
+        assertEquals(1 + SideQuestion.MAX_THREAD_TURNS * 2 + 1, request.size)
+        assertTrue(request[1].text.contains("q13"))
+    }
+
+    @Test
+    fun `cold follow ups fold only the first question into the transcript`() {
+        val transcript = SideQuestion.coldMessages(listOf(user, ChatMessage(role = Role.ASSISTANT, text = "Done")), 10_000)
+        val request = SideQuestion.requestMessages(context(transcript, warm = false), "Why not Realm?", listOf(SideTurn("Why Room?", "It caches.")))
+        assertEquals(listOf(Role.USER, Role.ASSISTANT, Role.USER), request.map { it.role })
+        assertTrue(request[0].text.startsWith("<transcript>") && request[0].text.contains("Why Room?"))
+        assertTrue(request[2].text.contains("Why not Realm?"))
+    }
+
+    @Test
     fun `cold transcripts keep the newest part when bounded`() {
         val long = (1..400).map { ChatMessage(role = Role.USER, text = "message $it") }
         val text = SideQuestion.coldMessages(long, 2_000).single().text

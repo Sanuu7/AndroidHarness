@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">වත්මන් කාර්යය ගැන ඕනෑම දෙයක් අසන්න. පිළිතුර නියෝජිතයා දැනටමත් කියවූ සහ තීරණය කළ දේ භාවිත කරයි, එහි prompt හැඹිලිය නැවත භාවිත කරයි, සහ කිසිදා සංවාදයට එක් නොවේ.</string>
     <string name="btw_input_hint">පැති ප්‍රශ්නයක් අසන්න</string>
     <string name="btw_input_again">තවත් පැති ප්‍රශ්නයක් අසන්න</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">අසන්න</string>
     <string name="btw_stop">නවත්වන්න</string>
     <string name="btw_copy">පිටපත් කරන්න</string>

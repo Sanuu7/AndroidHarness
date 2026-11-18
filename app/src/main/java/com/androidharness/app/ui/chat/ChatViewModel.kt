@@ -397,8 +397,8 @@ class ChatViewModel(
     private var compactionJob: kotlinx.coroutines.Job? = null
 
     /** The open /btw sheet; held apart from [state] so its token stream redraws only the sheet. */
-    private val _sideQuestion = MutableStateFlow<SideQuestionUi?>(null)
-    val sideQuestion: StateFlow<SideQuestionUi?> = _sideQuestion
+    private val _sideThread = MutableStateFlow<SideThreadUi?>(null)
+    val sideThread: StateFlow<SideThreadUi?> = _sideThread
     private var sideJob: kotlinx.coroutines.Job? = null
     private var sideGeneration = 0
 
@@ -985,15 +985,18 @@ class ChatViewModel(
 
     private suspend fun resumeTaskNow(sid: String) {
         var record = c.runManager.controls.flow(sid).value
-        // A manual provider choice after a free-limit notice must also apply to Continue.
-        // Other interrupted tasks retain their saved provider and recovery behavior.
-        if (record.provider?.id == com.androidharness.app.llm.HarnessProvider.ID &&
-            com.androidharness.app.llm.HarnessFreeLimit.notice(record.reason) != null) {
-            val current = _state.value
-            val target = current.modelSelectionTarget
-            val chosen = current.providers.firstOrNull { it.id == current.selectedProviderIdFor(target) }
-                ?.let { it.copy(model = current.selectedModelFor(target) ?: it.model) }
-            if (chosen != null && (chosen.id != record.provider?.id || chosen.model != record.provider?.model)) {
+        // Resume follows the model the chat shows. A provider or model picked after the
+        // pause replaces the saved one, whatever stopped the task (#118), so a quota or
+        // 429 on the old provider is not retried forever. An untouched selection still
+        // matches the saved run or its fallback primary, and keeps its recovery as is.
+        val current = _state.value
+        val target = current.modelSelectionTarget
+        val chosen = current.providers.firstOrNull { it.id == current.selectedProviderIdFor(target) }
+            ?.let { it.copy(model = current.selectedModelFor(target) ?: it.model) }
+        if (chosen != null) {
+            val resolvedModel = runCatching { c.providers.resolveHarnessConfig(chosen).model }.getOrNull()
+            if (!ResumeSelection.matches(chosen, resolvedModel, record.provider) &&
+                !ResumeSelection.matches(chosen, resolvedModel, record.fallbackPrimary)) {
                 record = c.runManager.controls.update(sid) { it.copy(provider = chosen, fallbackPrimary = null) }
             }
         }
@@ -1109,7 +1112,8 @@ class ChatViewModel(
     /**
      * Asks [question] on the main task's latest request, so the answer sees
      * everything the agent has read and decided and reuses its prompt cache.
-     * A blank question opens the sheet ready for typing.
+     * Earlier answers of this chat's /btw thread ride along, so follow-ups
+     * keep their context. A blank question reopens the thread ready for typing.
      */
     fun askAside(question: String): Boolean {
         val sid = sessionId
@@ -1118,25 +1122,34 @@ class ChatViewModel(
             return false
         }
         val text = question.trim()
-        sideJob?.cancel()
-        val generation = ++sideGeneration
-        if (text.isEmpty()) {
-            _sideQuestion.value = SideQuestionUi()
+        // A thread belongs to one chat; opening /btw elsewhere starts fresh.
+        val thread = _sideThread.value?.takeIf { it.sessionId == sid } ?: run {
+            sideJob?.cancel()
+            sideGeneration++
+            SideThreadUi(sid)
+        }
+        if (text.isEmpty() || thread.running) {
+            _sideThread.value = thread.copy(visible = true)
             return true
         }
+        val history = thread.history()
+        val generation = ++sideGeneration
         val starting = SideQuestionUi(question = text, running = true, startedAt = System.currentTimeMillis())
-        _sideQuestion.value = starting
-        fun publish(ui: SideQuestionUi) { if (generation == sideGeneration) _sideQuestion.value = ui }
+        _sideThread.value = thread.copy(turns = thread.turns + starting, visible = true)
+        fun publish(ui: SideQuestionUi) {
+            if (generation == sideGeneration) _sideThread.update { it?.withCurrent(ui) }
+        }
         sideJob = viewModelScope.launch {
             var ui = starting
             try {
+                // Taken fresh on every ask, so each follow-up reads the main task's live state.
                 val context = c.runManager.sideContext(sid) ?: coldAsideContext(sid)
                 ui = ui.copy(warm = context.warm, capturedAt = context.capturedAt, model = context.config.model)
                 publish(ui)
                 val events = kotlinx.coroutines.channels.Channel<com.androidharness.app.agent.SideEvent>(kotlinx.coroutines.channels.Channel.UNLIMITED)
                 launch {
                     try {
-                        c.runManager.askAside(context, text).collect { events.send(it) }
+                        c.runManager.askAside(context, text, history).collect { events.send(it) }
                         events.close()
                     } catch (e: kotlinx.coroutines.CancellationException) {
                         events.close()
@@ -1197,10 +1210,16 @@ class ChatViewModel(
 
     fun stopAside() { sideJob?.cancel() }
 
-    fun dismissAside() {
+    /** Hides the sheet. The thread stays, and an answer still streaming keeps going. */
+    fun hideAside() {
+        _sideThread.update { it?.copy(visible = false) }
+    }
+
+    /** Ends the thread: stops any answer and forgets every side exchange of this chat. */
+    fun clearAside() {
         sideJob?.cancel()
         sideGeneration++
-        _sideQuestion.value = null
+        _sideThread.update { it?.let { thread -> SideThreadUi(thread.sessionId, visible = thread.visible) } }
     }
 
     private suspend fun coldAsideContext(sid: String): com.androidharness.app.agent.SideContext {

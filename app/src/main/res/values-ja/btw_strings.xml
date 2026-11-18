@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">現在のタスクについて何でも質問できます。回答はエージェントがすでに読んだ内容と決定を使い、プロンプトキャッシュを再利用し、会話には加わりません。</string>
     <string name="btw_input_hint">サイド質問をする</string>
     <string name="btw_input_again">別のサイド質問をする</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">質問</string>
     <string name="btw_stop">停止</string>
     <string name="btw_copy">コピー</string>

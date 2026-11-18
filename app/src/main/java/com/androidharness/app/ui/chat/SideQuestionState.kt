@@ -2,13 +2,37 @@ package com.androidharness.app.ui.chat
 
 import androidx.compose.runtime.Immutable
 import com.androidharness.app.agent.SideEvent
+import com.androidharness.app.agent.SideQuestion
+import com.androidharness.app.agent.SideTurn
 import com.androidharness.app.agent.ThinkingTiming
 import com.androidharness.app.core.ChatMessage
 import com.androidharness.app.core.Role
 import com.androidharness.app.core.ToolCallData
 import com.androidharness.app.data.db.UsageEventEntity
 
-/** One /btw exchange as the sheet shows it. Lives only in memory and dies with the sheet. */
+/**
+ * A /btw thread for one chat. It lives only in memory: hiding the sheet keeps
+ * it, Clear or another chat ends it, and nothing is ever saved.
+ */
+@Immutable
+data class SideThreadUi(
+    val sessionId: String,
+    val turns: List<SideQuestionUi> = emptyList(),
+    val visible: Boolean = true,
+) {
+    val current: SideQuestionUi? get() = turns.lastOrNull()
+    val running: Boolean get() = current?.running == true
+
+    /** Finished exchanges a follow-up replays, newest last and bounded like the request. */
+    fun history(): List<SideTurn> = turns.filter { !it.running && it.answer.isNotBlank() }
+        .map { SideTurn(it.question, it.answer) }
+        .takeLast(SideQuestion.MAX_THREAD_TURNS)
+
+    fun withCurrent(update: SideQuestionUi): SideThreadUi =
+        if (turns.isEmpty()) copy(turns = listOf(update)) else copy(turns = turns.dropLast(1) + update)
+}
+
+/** One /btw exchange as the sheet shows it. Lives only in memory. */
 @Immutable
 data class SideQuestionUi(
     val question: String = "",

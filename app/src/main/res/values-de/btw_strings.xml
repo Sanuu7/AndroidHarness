@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">Frag alles zur laufenden Aufgabe. Die Antwort nutzt, was der Agent schon gelesen und entschieden hat, verwendet seinen Prompt-Cache und wird nie Teil des Gesprächs.</string>
     <string name="btw_input_hint">Nebenfrage stellen</string>
     <string name="btw_input_again">Weitere Nebenfrage stellen</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">Fragen</string>
     <string name="btw_stop">Stopp</string>
     <string name="btw_copy">Kopieren</string>

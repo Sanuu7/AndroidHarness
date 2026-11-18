@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"ถามอะไรก็ได้เกี่ยวกับงานปัจจุบัน คำตอบจะใช้ข้อมูลที่เอเจนต์อ่านและตัดสินใจแล้ว ใช้แคชพรอมต์ซ้ำ และไม่ถูกเพิ่มในการสนทนาหลัก"</string>
     <string name="btw_input_hint">"ถามคำถามเพิ่มเติม"</string>
     <string name="btw_input_again">"ถามคำถามเพิ่มเติมอีกข้อ"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"ถาม"</string>
     <string name="btw_stop">"หยุด"</string>
     <string name="btw_copy">"คัดลอก"</string>

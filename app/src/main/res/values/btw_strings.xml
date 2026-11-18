@@ -4,9 +4,13 @@
     <string name="btw_source_live">Live context</string>
     <string name="btw_source_saved">Saved history</string>
     <string name="btw_private">Not added to the chat</string>
-    <string name="btw_empty_hint">Ask anything about the current task. The answer uses what the agent has already read and decided, reuses its prompt cache, and never joins the conversation.</string>
+    <string name="btw_empty_hint">Ask anything about the current task. The answer uses what the agent has already read and decided, reuses its prompt cache, and never joins the conversation. Follow-ups remember this thread until you clear it.</string>
     <string name="btw_input_hint">Ask a side question</string>
-    <string name="btw_input_again">Ask another side question</string>
+    <string name="btw_input_again">Ask a follow-up</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">Ask</string>
     <string name="btw_stop">Stop</string>
     <string name="btw_copy">Copy</string>

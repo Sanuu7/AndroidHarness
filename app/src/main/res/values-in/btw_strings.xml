@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">Tanyakan apa saja tentang tugas saat ini. Jawaban memakai apa yang sudah dibaca dan diputuskan agen, memakai ulang cache prompt-nya, dan tidak pernah masuk ke percakapan.</string>
     <string name="btw_input_hint">Ajukan pertanyaan sampingan</string>
     <string name="btw_input_again">Ajukan pertanyaan sampingan lain</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">Tanya</string>
     <string name="btw_stop">Hentikan</string>
     <string name="btw_copy">Salin</string>

@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"Geçerli görev hakkında istediğinizi sorun. Yanıt, ajanın daha önce okuduklarını ve kararlarını kullanır; istem önbelleğinden yararlanır ve ana sohbete eklenmez."</string>
     <string name="btw_input_hint">"Bir yan soru sorun"</string>
     <string name="btw_input_again">"Başka bir yan soru sor"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"Sor"</string>
     <string name="btw_stop">"Durdur"</string>
     <string name="btw_copy">"Kopyala"</string>

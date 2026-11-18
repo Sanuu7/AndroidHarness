@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">"Hỏi bất kỳ điều gì về tác vụ hiện tại. Câu trả lời dùng những gì trợ lý đã đọc và quyết định, tận dụng bộ nhớ đệm lời nhắc và không được thêm vào hội thoại."</string>
     <string name="btw_input_hint">"Đặt một câu hỏi phụ"</string>
     <string name="btw_input_again">"Hỏi một câu hỏi phụ khác"</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">"Hỏi"</string>
     <string name="btw_stop">"Dừng lại"</string>
     <string name="btw_copy">"Sao chép"</string>

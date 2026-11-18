@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">Pregunta lo que quieras sobre la tarea actual. La respuesta usa lo que el agente ya leyó y decidió, reutiliza su caché de prompts y nunca entra en la conversación.</string>
     <string name="btw_input_hint">Haz una pregunta aparte</string>
     <string name="btw_input_again">Haz otra pregunta aparte</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">Preguntar</string>
     <string name="btw_stop">Detener</string>
     <string name="btw_copy">Copiar</string>

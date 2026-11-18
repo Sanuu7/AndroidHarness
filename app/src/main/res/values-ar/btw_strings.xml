@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">اسأل عن أي شيء يخص المهمة الحالية. تستخدم الإجابة ما قرأه الوكيل وقرره بالفعل، وتعيد استخدام ذاكرة التخزين المؤقت للموجّه، ولا تنضم إلى المحادثة أبدًا.</string>
     <string name="btw_input_hint">اطرح سؤالًا جانبيًا</string>
     <string name="btw_input_again">اطرح سؤالًا جانبيًا آخر</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">اسأل</string>
     <string name="btw_stop">إيقاف</string>
     <string name="btw_copy">نسخ</string>

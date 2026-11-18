@@ -7,6 +7,10 @@
     <string name="btw_empty_hint">可以就当前任务提出任何问题。回答会使用智能体已经读取和决定的内容，复用其提示缓存，且永远不会加入对话。</string>
     <string name="btw_input_hint">提一个旁支问题</string>
     <string name="btw_input_again">再提一个旁支问题</string>
+    <string name="btw_clear">Clear side thread</string>
+    <string name="btw_hide">Hide</string>
+    <string name="btw_expand">Expand</string>
+    <string name="btw_collapse">Collapse</string>
     <string name="btw_ask">提问</string>
     <string name="btw_stop">停止</string>
     <string name="btw_copy">复制</string>
