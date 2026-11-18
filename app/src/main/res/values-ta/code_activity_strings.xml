@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d கோப்பு படிக்கப்பட்டது</item>
+        <item quantity="other">%1$d கோப்புகள் படிக்கப்பட்டன</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d முறை தேடப்பட்டது</item>
+        <item quantity="other">%1$d முறை தேடப்பட்டது</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d கோப்புறை பட்டியலிடப்பட்டது</item>
+        <item quantity="other">%1$d கோப்புறைகள் பட்டியலிடப்பட்டன</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d இணைய மூலம் சரிபார்க்கப்பட்டது</item>
+        <item quantity="other">%1$d இணைய மூலங்கள் சரிபார்க்கப்பட்டன</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d நினைவு மீட்டெடுக்கப்பட்டது</item>
+        <item quantity="other">%1$d நினைவுகள் மீட்டெடுக்கப்பட்டன</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d சரிபார்ப்பு இயக்கப்பட்டது</item>
+        <item quantity="other">%1$d சரிபார்ப்புகள் இயக்கப்பட்டன</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d தோல்வி</item>
+        <item quantity="other">%1$d தோல்வி</item>
+    </plurals>
+    <string name="code_explore_exploring">ஆராய்கிறது</string>
+    <string name="code_live_writing_line">வரி %1$d எழுதப்படுகிறது</string>
+    <string name="code_live_editing_lines">%1$d வரிகளை மீண்டும் எழுதுகிறது</string>
+    <string name="code_live_waiting_for_code">குறியீட்டிற்காக காத்திருக்கிறது</string>
+    <string name="code_cache_catalog_price">சில கோரிக்கைகள் மாதிரியின் பட்டியல் விலையைப் பயன்படுத்துகின்றன. உங்கள் வழங்குநர் வேறு கட்டணம் வசூலிக்கலாம்.</string>
+    <string name="context_tab_limits">வரம்புகள்</string>
+    <string name="context_free_tokens">%1$s காலி</string>
+    <string name="context_used">பயன்படுத்தப்பட்டது</string>
+    <string name="context_cache_hit_rate_short">கேச் ஹிட் விகிதம்</string>
+    <string name="context_requests_short">கோரிக்கைகள்</string>
+    <string name="context_limit_used">%2$s இல் %1$s பயன்படுத்தப்பட்டது</string>
+</resources>

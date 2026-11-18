@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">讀取了 %1$d 個檔案</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">搜尋了 %1$d 次</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">列出了 %1$d 個資料夾</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">檢查了 %1$d 個網頁來源</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">召回了 %1$d 則記憶</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">執行了 %1$d 項檢查</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d 項失敗</item>
+    </plurals>
+    <string name="code_explore_exploring">正在探索</string>
+    <string name="code_live_writing_line">正在寫入第 %1$d 行</string>
+    <string name="code_live_editing_lines">正在改寫 %1$d 行</string>
+    <string name="code_live_waiting_for_code">等待程式碼</string>
+    <string name="code_cache_catalog_price">部分請求採用模型的目錄標價。你的供應商收費可能不同。</string>
+</resources>

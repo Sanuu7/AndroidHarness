@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">nagbasa ng %1$d file</item>
+        <item quantity="other">nagbasa ng %1$d file</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">naghana ng %1$d beses</item>
+        <item quantity="other">naghana ng %1$d beses</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">naglista ng %1$d folder</item>
+        <item quantity="other">naglista ng %1$d folder</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">sinuri ang %1$d web source</item>
+        <item quantity="other">sinuri ang %1$d web source</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">naalala ang %1$d memory</item>
+        <item quantity="other">naalala ang %1$d memory</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">nagpatakbo ng %1$d check</item>
+        <item quantity="other">nagpatakbo ng %1$d check</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d ang nabigo</item>
+        <item quantity="other">%1$d ang nabigo</item>
+    </plurals>
+    <string name="code_explore_exploring">Nag-e-explore</string>
+    <string name="code_live_writing_line">Isinusulat ang linya %1$d</string>
+    <string name="code_live_editing_lines">Isinusulat muli ang %1$d linya</string>
+    <string name="code_live_waiting_for_code">Naghihintay ng code</string>
+    <string name="code_cache_catalog_price">May mga kahilingang gumagamit ng list price ng catalog ng modelo. Maaaring iba ang singil ng provider mo.</string>
+</resources>

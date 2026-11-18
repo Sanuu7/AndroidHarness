@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">%1$d ファイルを読み取り</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">%1$d 回検索</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">%1$d フォルダを一覧表示</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">%1$d 件のウェブソースを確認</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">%1$d 件のメモリを思い出し</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">%1$d 件のチェックを実行</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d 件失敗</item>
+    </plurals>
+    <string name="code_explore_exploring">探索中</string>
+    <string name="code_live_writing_line">%1$d 行目を書き込み中</string>
+    <string name="code_live_editing_lines">%1$d 行を書き換え中</string>
+    <string name="code_live_waiting_for_code">コードを待機中</string>
+    <string name="code_cache_catalog_price">一部のリクエストはモデルのカタログ表示価格を使用します。プロバイダーの請求額は異なる場合があります。</string>
+    <string name="context_tab_limits">上限</string>
+    <string name="context_free_tokens">残り %1$s</string>
+    <string name="context_used">使用中</string>
+    <string name="context_cache_hit_rate_short">キャッシュヒット率</string>
+    <string name="context_requests_short">リクエスト</string>
+    <string name="context_limit_used">%2$s 中 %1$s 使用</string>
+</resources>

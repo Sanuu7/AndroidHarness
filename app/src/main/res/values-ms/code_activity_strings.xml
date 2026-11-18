@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">membaca %1$d fail</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">mencari %1$d kali</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">menyenaraikan %1$d folder</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">menyemak %1$d sumber web</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">mengingat semula %1$d memori</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">menjalankan %1$d semakan</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d gagal</item>
+    </plurals>
+    <string name="code_explore_exploring">Meneroka</string>
+    <string name="code_live_writing_line">Menulis baris %1$d</string>
+    <string name="code_live_editing_lines">Menulis semula %1$d baris</string>
+    <string name="code_live_waiting_for_code">Menunggu kod</string>
+    <string name="code_cache_catalog_price">Sesetengah permintaan menggunakan harga senarai katalog model. Penyedia anda mungkin mengenakan caj berbeza.</string>
+    <string name="context_tab_limits">Had</string>
+    <string name="context_free_tokens">%1$s bebas</string>
+    <string name="context_used">digunakan</string>
+    <string name="context_cache_hit_rate_short">Kadar hit cache</string>
+    <string name="context_requests_short">Permintaan</string>
+    <string name="context_limit_used">%1$s daripada %2$s digunakan</string>
+</resources>

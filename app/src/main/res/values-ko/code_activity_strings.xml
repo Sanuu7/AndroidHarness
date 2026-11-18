@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">파일 %1$d개 읽음</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">%1$d번 검색함</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">폴더 %1$d개 나열함</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">웹 소스 %1$d개 확인함</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">메모리 %1$d개 떠올림</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">검사 %1$d개 실행함</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d개 실패</item>
+    </plurals>
+    <string name="code_explore_exploring">탐색 중</string>
+    <string name="code_live_writing_line">%1$d번째 줄 쓰는 중</string>
+    <string name="code_live_editing_lines">%1$d줄 다시 쓰는 중</string>
+    <string name="code_live_waiting_for_code">코드 기다리는 중</string>
+    <string name="code_cache_catalog_price">일부 요청은 모델의 카탈로그 정가를 사용합니다. 공급자의 청구 금액은 다를 수 있습니다.</string>
+    <string name="context_tab_limits">한도</string>
+    <string name="context_free_tokens">%1$s 남음</string>
+    <string name="context_used">사용됨</string>
+    <string name="context_cache_hit_rate_short">캐시 적중률</string>
+    <string name="context_requests_short">요청</string>
+    <string name="context_limit_used">%2$s 중 %1$s 사용</string>
+</resources>

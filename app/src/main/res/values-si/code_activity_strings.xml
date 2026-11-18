@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">ගොනු %1$dක් කියවා ඇත</item>
+        <item quantity="other">ගොනු %1$dක් කියවා ඇත</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d වතාවක් සොයා ඇත</item>
+        <item quantity="other">%1$d වතාවක් සොයා ඇත</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">ෆෝල්ඩර %1$dක් ලැයිස්තුගත කර ඇත</item>
+        <item quantity="other">ෆෝල්ඩර %1$dක් ලැයිස්තුගත කර ඇත</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">වෙබ් මූලාශ්‍ර %1$dක් පරීක්ෂා කර ඇත</item>
+        <item quantity="other">වෙබ් මූලාශ්‍ර %1$dක් පරීක්ෂා කර ඇත</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">මතක %1$dක් සිහිපත් කර ඇත</item>
+        <item quantity="other">මතක %1$dක් සිහිපත් කර ඇත</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">පරීක්ෂණ %1$dක් ධාවනය කර ඇත</item>
+        <item quantity="other">පරීක්ෂණ %1$dක් ධාවනය කර ඇත</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$dක් අසාර්ථක</item>
+        <item quantity="other">%1$dක් අසාර්ථක</item>
+    </plurals>
+    <string name="code_explore_exploring">ගවේෂණය කරමින්</string>
+    <string name="code_live_writing_line">%1$d වන පේළිය ලියමින්</string>
+    <string name="code_live_editing_lines">පේළි %1$dක් නැවත ලියමින්</string>
+    <string name="code_live_waiting_for_code">කේතය එනතුරු බලා සිටී</string>
+    <string name="code_cache_catalog_price">සමහර ඉල්ලීම් ආකෘතියේ නාමාවලි මිල භාවිතා කරයි. ඔබේ සපයන්නා වෙනස් ගාස්තුවක් අය කළ හැක.</string>
+    <string name="context_tab_limits">සීමා</string>
+    <string name="context_free_tokens">%1$s නිදහස්</string>
+    <string name="context_used">භාවිතයි</string>
+    <string name="context_cache_hit_rate_short">කෑෂ් ගැලපුම් අනුපාතය</string>
+    <string name="context_requests_short">ඉල්ලීම්</string>
+    <string name="context_limit_used">%2$sන් %1$s භාවිතයි</string>
+</resources>

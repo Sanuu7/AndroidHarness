@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">membaca %1$d file</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">mencari %1$d kali</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">mendaftar %1$d folder</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">memeriksa %1$d sumber web</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">mengingat kembali %1$d memori</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">menjalankan %1$d pemeriksaan</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d gagal</item>
+    </plurals>
+    <string name="code_explore_exploring">Menjelajah</string>
+    <string name="code_live_writing_line">Menulis baris %1$d</string>
+    <string name="code_live_editing_lines">Menulis ulang %1$d baris</string>
+    <string name="code_live_waiting_for_code">Menunggu kode</string>
+    <string name="code_cache_catalog_price">Beberapa permintaan memakai harga daftar model. Penyedia Anda mungkin menagih berbeda.</string>
+    <string name="context_tab_limits">Batas</string>
+    <string name="context_free_tokens">%1$s tersisa</string>
+    <string name="context_used">terpakai</string>
+    <string name="context_cache_hit_rate_short">Rasio cache</string>
+    <string name="context_requests_short">Permintaan</string>
+    <string name="context_limit_used">%1$s dari %2$s terpakai</string>
+</resources>

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="zero">قرأت %1$d ملف</item>
+        <item quantity="one">قرأت %1$d ملف</item>
+        <item quantity="two">قرأت %1$d ملفين</item>
+        <item quantity="few">قرأت %1$d ملفات</item>
+        <item quantity="many">قرأت %1$d ملفًا</item>
+        <item quantity="other">قرأت %1$d ملف</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="zero">بحثت %1$d مرة</item>
+        <item quantity="one">بحثت %1$d مرة</item>
+        <item quantity="two">بحثت %1$d مرتين</item>
+        <item quantity="few">بحثت %1$d مرات</item>
+        <item quantity="many">بحثت %1$d مرة</item>
+        <item quantity="other">بحثت %1$d مرة</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="zero">عرضت %1$d مجلد</item>
+        <item quantity="one">عرضت %1$d مجلد</item>
+        <item quantity="two">عرضت %1$d مجلدين</item>
+        <item quantity="few">عرضت %1$d مجلدات</item>
+        <item quantity="many">عرضت %1$d مجلدًا</item>
+        <item quantity="other">عرضت %1$d مجلد</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="zero">فحصت %1$d مصدر ويب</item>
+        <item quantity="one">فحصت %1$d مصدر ويب</item>
+        <item quantity="two">فحصت %1$d مصدرين ويب</item>
+        <item quantity="few">فحصت %1$d مصادر ويب</item>
+        <item quantity="many">فحصت %1$d مصدرًا ويب</item>
+        <item quantity="other">فحصت %1$d مصدر ويب</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="zero">استرجعت %1$d ذكرى</item>
+        <item quantity="one">استرجعت %1$d ذكرى</item>
+        <item quantity="two">استرجعت %1$d ذكرتين</item>
+        <item quantity="few">استرجعت %1$d ذكريات</item>
+        <item quantity="many">استرجعت %1$d ذكرى</item>
+        <item quantity="other">استرجعت %1$d ذكرى</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="zero">أجريت %1$d فحص</item>
+        <item quantity="one">أجريت %1$d فحص</item>
+        <item quantity="two">أجريت %1$d فحصين</item>
+        <item quantity="few">أجريت %1$d فحوصات</item>
+        <item quantity="many">أجريت %1$d فحصًا</item>
+        <item quantity="other">أجريت %1$d فحص</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="zero">فشل %1$d</item>
+        <item quantity="one">فشل %1$d</item>
+        <item quantity="two">فشل %1$d</item>
+        <item quantity="few">فشل %1$d</item>
+        <item quantity="many">فشل %1$d</item>
+        <item quantity="other">فشل %1$d</item>
+    </plurals>
+    <string name="code_explore_exploring">يستكشف</string>
+    <string name="code_live_writing_line">كتابة السطر %1$d</string>
+    <string name="code_live_editing_lines">إعادة كتابة %1$d سطراً</string>
+    <string name="code_live_waiting_for_code">بانتظار الكود</string>
+    <string name="code_cache_catalog_price">بعض الطلبات تستخدم سعر الكتالوج لهذا النموذج. قد يفرض مزوّدك سعرًا مختلفًا.</string>
+</resources>

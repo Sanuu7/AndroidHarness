@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">อ่าน %1$d ไฟล์</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">ค้นหา %1$d ครั้ง</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">แสดงรายการ %1$d โฟลเดอร์</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">ตรวจ %1$d แหล่งข้อมูลเว็บ</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">เรียกคืน %1$d ความจำ</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">รัน %1$d การตรวจสอบ</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d ล้มเหลว</item>
+    </plurals>
+    <string name="code_explore_exploring">กำลังสำรวจ</string>
+    <string name="code_live_writing_line">กำลังเขียนบรรทัดที่ %1$d</string>
+    <string name="code_live_editing_lines">กำลังเขียน %1$d บรรทัดใหม่</string>
+    <string name="code_live_waiting_for_code">รอโค้ด</string>
+    <string name="code_cache_catalog_price">บางคำขอใช้ราคาตามแค็ตตาล็อกของโมเดล ผู้ให้บริการของคุณอาจคิดต่างออกไป</string>
+    <string name="context_tab_limits">ขีดจำกัด</string>
+    <string name="context_free_tokens">ว่าง %1$s</string>
+    <string name="context_used">ใช้แล้ว</string>
+    <string name="context_cache_hit_rate_short">อัตราแคชที่ตรง</string>
+    <string name="context_requests_short">คำขอ</string>
+    <string name="context_limit_used">ใช้ %1$s จาก %2$s</string>
+</resources>

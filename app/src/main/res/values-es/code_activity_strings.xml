@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d archivo leído</item>
+        <item quantity="other">%1$d archivos leídos</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">búsqueda de %1$d vez</item>
+        <item quantity="other">búsqueda de %1$d veces</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d carpeta listada</item>
+        <item quantity="other">%1$d carpetas listadas</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d fuente web revisada</item>
+        <item quantity="other">%1$d fuentes web revisadas</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d recuerdo recuperado</item>
+        <item quantity="other">%1$d recuerdos recuperados</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d comprobación ejecutada</item>
+        <item quantity="other">%1$d comprobaciones ejecutadas</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d falló</item>
+        <item quantity="other">%1$d fallaron</item>
+    </plurals>
+    <string name="code_explore_exploring">Explorando</string>
+    <string name="code_live_writing_line">Escribiendo la línea %1$d</string>
+    <string name="code_live_editing_lines">Reescribiendo %1$d líneas</string>
+    <string name="code_live_waiting_for_code">Esperando el código</string>
+    <string name="code_cache_catalog_price">Algunas solicitudes usan el precio de catálogo del modelo. Tu proveedor puede cobrar distinto.</string>
+    <string name="context_tab_limits">Límites</string>
+    <string name="context_free_tokens">%1$s libre</string>
+    <string name="context_used">usado</string>
+    <string name="context_cache_hit_rate_short">Tasa de aciertos de caché</string>
+    <string name="context_requests_short">Solicitudes</string>
+    <string name="context_limit_used">%1$s de %2$s usado</string>
+</resources>

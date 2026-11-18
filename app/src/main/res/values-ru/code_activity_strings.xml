@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">прочитан %1$d файл</item>
+        <item quantity="few">прочитано %1$d файла</item>
+        <item quantity="many">прочитано %1$d файлов</item>
+        <item quantity="other">прочитано %1$d файла</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">выполнен %1$d поиск</item>
+        <item quantity="few">выполнено %1$d поиска</item>
+        <item quantity="many">выполнено %1$d поисков</item>
+        <item quantity="other">выполнено %1$d поиска</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">показан %1$d каталог</item>
+        <item quantity="few">показано %1$d каталога</item>
+        <item quantity="many">показано %1$d каталогов</item>
+        <item quantity="other">показано %1$d каталога</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">проверен %1$d веб-источник</item>
+        <item quantity="few">проверено %1$d веб-источника</item>
+        <item quantity="many">проверено %1$d веб-источников</item>
+        <item quantity="other">проверено %1$d веб-источника</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">восстановлена %1$d запись памяти</item>
+        <item quantity="few">восстановлено %1$d записи памяти</item>
+        <item quantity="many">восстановлено %1$d записей памяти</item>
+        <item quantity="other">восстановлено %1$d записи памяти</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">выполнена %1$d проверка</item>
+        <item quantity="few">выполнено %1$d проверки</item>
+        <item quantity="many">выполнено %1$d проверок</item>
+        <item quantity="other">выполнено %1$d проверки</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d сбой</item>
+        <item quantity="few">%1$d сбоя</item>
+        <item quantity="many">%1$d сбоев</item>
+        <item quantity="other">%1$d сбоя</item>
+    </plurals>
+    <string name="code_explore_exploring">Изучает</string>
+    <string name="code_live_writing_line">Запись строки %1$d</string>
+    <string name="code_live_editing_lines">Перезапись %1$d строк</string>
+    <string name="code_live_waiting_for_code">Ожидание кода</string>
+    <string name="code_cache_catalog_price">Некоторые запросы считаются по каталожной цене модели. Провайдер может брать иначе.</string>
+    <string name="context_tab_limits">Лимиты</string>
+    <string name="context_free_tokens">%1$s свободно</string>
+    <string name="context_used">занято</string>
+    <string name="context_cache_hit_rate_short">Попадания в кэш</string>
+    <string name="context_requests_short">Запросы</string>
+    <string name="context_limit_used">занято %1$s из %2$s</string>
+</resources>

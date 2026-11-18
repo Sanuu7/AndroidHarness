@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="other">读取了 %1$d 个文件</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="other">搜索了 %1$d 次</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="other">列出了 %1$d 个文件夹</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="other">检查了 %1$d 个网络来源</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="other">回忆了 %1$d 条记忆</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="other">执行了 %1$d 项检查</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="other">%1$d 项失败</item>
+    </plurals>
+    <string name="code_explore_exploring">正在探索</string>
+    <string name="code_live_writing_line">正在写入第 %1$d 行</string>
+    <string name="code_live_editing_lines">正在重写 %1$d 行</string>
+    <string name="code_live_waiting_for_code">正在等待代码</string>
+    <string name="code_cache_catalog_price">部分请求使用模型的目录标价。你的提供商可能收费不同。</string>
+    <string name="context_tab_limits">上限</string>
+    <string name="context_free_tokens">剩余 %1$s</string>
+    <string name="context_used">已用</string>
+    <string name="context_cache_hit_rate_short">缓存命中率</string>
+    <string name="context_requests_short">请求</string>
+    <string name="context_limit_used">已用 %1$s / %2$s</string>
+</resources>

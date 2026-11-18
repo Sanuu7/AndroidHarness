@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d فایل خوانده شد</item>
+        <item quantity="other">%1$d فایل خوانده شد</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d بار جست‌وجو شد</item>
+        <item quantity="other">%1$d بار جست‌وجو شد</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d پوشه فهرست شد</item>
+        <item quantity="other">%1$d پوشه فهرست شد</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d منبع وب بررسی شد</item>
+        <item quantity="other">%1$d منبع وب بررسی شد</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d حافظه یادآوری شد</item>
+        <item quantity="other">%1$d حافظه یادآوری شد</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d بررسی اجرا شد</item>
+        <item quantity="other">%1$d بررسی اجرا شد</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d ناموفق</item>
+        <item quantity="other">%1$d ناموفق</item>
+    </plurals>
+    <string name="code_explore_exploring">در حال بررسی</string>
+    <string name="code_live_writing_line">نوشتن خط %1$d</string>
+    <string name="code_live_editing_lines">بازنویسی %1$d خط</string>
+    <string name="code_live_waiting_for_code">در انتظار کد</string>
+    <string name="code_cache_catalog_price">برخی درخواست‌ها از قیمت فهرست مدل استفاده می‌کنند. ممکن است ارائه‌دهنده شما مبلغ دیگری بگیرد.</string>
+    <string name="context_tab_limits">محدودیت‌ها</string>
+    <string name="context_free_tokens">%1$s آزاد</string>
+    <string name="context_used">استفاده‌شده</string>
+    <string name="context_cache_hit_rate_short">نرخ اصابت کش</string>
+    <string name="context_requests_short">درخواست‌ها</string>
+    <string name="context_limit_used">%1$s از %2$s استفاده شده</string>
+</resources>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$d arquivo lido</item>
+        <item quantity="other">%1$d arquivos lidos</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d busca</item>
+        <item quantity="other">%1$d buscas</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$d pasta listada</item>
+        <item quantity="other">%1$d pastas listadas</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$d fonte web verificada</item>
+        <item quantity="other">%1$d fontes web verificadas</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$d memória recuperada</item>
+        <item quantity="other">%1$d memórias recuperadas</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$d verificação executada</item>
+        <item quantity="other">%1$d verificações executadas</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$d falhou</item>
+        <item quantity="other">%1$d falharam</item>
+    </plurals>
+    <string name="code_explore_exploring">Explorando</string>
+    <string name="code_live_writing_line">Escrevendo a linha %1$d</string>
+    <string name="code_live_editing_lines">Reescrevendo %1$d linhas</string>
+    <string name="code_live_waiting_for_code">Aguardando o código</string>
+    <string name="code_cache_catalog_price">Algumas solicitações usam o preço de catálogo do modelo. Seu provedor pode cobrar diferente.</string>
+    <string name="context_tab_limits">Limites</string>
+    <string name="context_free_tokens">%1$s livre</string>
+    <string name="context_used">usado</string>
+    <string name="context_cache_hit_rate_short">Taxa de acerto do cache</string>
+    <string name="context_requests_short">Solicitações</string>
+    <string name="context_limit_used">%1$s de %2$s usado</string>
+</resources>

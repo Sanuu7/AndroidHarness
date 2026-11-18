@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">%1$dটি ফাইল পড়া হয়েছে</item>
+        <item quantity="other">%1$dটি ফাইল পড়া হয়েছে</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">%1$d বার খোঁজা হয়েছে</item>
+        <item quantity="other">%1$d বার খোঁজা হয়েছে</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">%1$dটি ফোল্ডার দেখা হয়েছে</item>
+        <item quantity="other">%1$dটি ফোল্ডার দেখা হয়েছে</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">%1$dটি ওয়েব উৎস দেখা হয়েছে</item>
+        <item quantity="other">%1$dটি ওয়েব উৎস দেখা হয়েছে</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">%1$dটি স্মৃতি মনে করানো হয়েছে</item>
+        <item quantity="other">%1$dটি স্মৃতি মনে করানো হয়েছে</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">%1$dটি যাচাই চালানো হয়েছে</item>
+        <item quantity="other">%1$dটি যাচাই চালানো হয়েছে</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%1$dটি ব্যর্থ</item>
+        <item quantity="other">%1$dটি ব্যর্থ</item>
+    </plurals>
+    <string name="code_explore_exploring">অনুসন্ধান করছে</string>
+    <string name="code_live_writing_line">লাইন %1$d লেখা হচ্ছে</string>
+    <string name="code_live_editing_lines">%1$d লাইন পুনরায় লেখা হচ্ছে</string>
+    <string name="code_live_waiting_for_code">কোডের জন্য অপেক্ষা করছে</string>
+    <string name="code_cache_catalog_price">কিছু অনুরোধ মডেলের ক্যাটালগ তালিকা মূল্য ব্যবহার করে। আপনার প্রদানকারী ভিন্ন চার্জ নিতে পারে।</string>
+    <string name="context_tab_limits">সীমা</string>
+    <string name="context_free_tokens">%1$s ফাঁকা</string>
+    <string name="context_used">ব্যবহৃত</string>
+    <string name="context_cache_hit_rate_short">ক্যাশ হিটের হার</string>
+    <string name="context_requests_short">অনুরোধ</string>
+    <string name="context_limit_used">%2$s এর মধ্যে %1$s ব্যবহৃত</string>
+</resources>
