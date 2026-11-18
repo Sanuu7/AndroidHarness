@@ -63,10 +63,11 @@ class WorkspaceManager(
 
     suspend fun workProjectChats(id: String) = dao.workProjectSessions(id)
 
-    suspend fun createWorkProject(name: String, selection: ChatWorkspaceSelection): WorkProjectEntity {
+    suspend fun createWorkProject(name: String, selection: ChatWorkspaceSelection, chatNamePattern: String? = null): WorkProjectEntity {
         val label = projectLabel(name)
         validateSelection(selection)
-        val project = WorkProjectEntity(UUID.randomUUID().toString(), label, ChatWorkspaceSelection.encode(selection), System.currentTimeMillis())
+        val project = WorkProjectEntity(UUID.randomUUID().toString(), label, ChatWorkspaceSelection.encode(selection), System.currentTimeMillis(),
+            com.androidharness.app.core.ChatSeries.normalize(chatNamePattern))
         dao.insertWorkProject(project)
         return project
     }
@@ -74,6 +75,11 @@ class WorkspaceManager(
     suspend fun renameWorkProject(id: String, name: String) {
         requireNotNull(dao.workProject(id)) { "This project is no longer available." }
         dao.renameWorkProject(id, projectLabel(name))
+    }
+
+    suspend fun setWorkProjectChatNames(id: String, pattern: String?) {
+        requireNotNull(dao.workProject(id)) { "This project is no longer available." }
+        dao.setWorkProjectChatNames(id, com.androidharness.app.core.ChatSeries.normalize(pattern))
     }
 
     private fun projectLabel(name: String): String = name.trim().also {

@@ -460,7 +460,7 @@ fun AppNav(container: AppContainer) {
         val direction = if (origin == destination) 0 else if (destination == com.androidharness.app.data.ConversationKind.CHAT) 1 else -1
         return direction * if (sectionRtl) -1 else 1
     }
-    @Composable fun Sidebar(onCollapse: () -> Unit) {
+    @Composable fun Sidebar(opened: Boolean, onCollapse: () -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
         val changes by remember(currentSessionId) {
             currentSessionId?.let(container.sessions::fileChangesFor) ?: kotlinx.coroutines.flow.flowOf(emptyList())
@@ -478,7 +478,8 @@ fun AppNav(container: AppContainer) {
                 } else sidebarActivity(false, session.pendingPlan)
             },
             onNewChat = { navigateFromSidebar {
-                scope.launch { currentWorkspace?.id?.let { container.workspace.setActiveProject(it) }; openChat(null) }
+                // New chats start in the workspace the user last picked, not the open chat's.
+                openChat(null)
             } }, onChat = { sid -> navigateFromSidebar { openChat(sid) } },
             onMessage = { hit -> navigateFromSidebar { openChat(hit.sessionId, hit.messageId) } },
             onProjectChat = { project -> if (!creatingProjectChat) {
@@ -508,6 +509,7 @@ fun AppNav(container: AppContainer) {
             workspaceLabel = if (chatWorkspaceContext) uiContext.getString(R.string.ui_workspaces_for_this_chat) else uiContext.getString(R.string.ui_workspace), workspaceSummary = workspaceSummary,
             onWorkspaces = { selectedChatIds = emptyList(); scope.launch { drawerState.close() }; showWorkspaceSheet = true },
             onCollapse = { if (!batchBusy) { selectedChatIds = emptyList(); onCollapse() } },
+            opened = opened,
             currentRoute = currentRoute, projectCreationEnabled = !creatingProjectChat,
             changesSummary = changes.takeIf { it.isNotEmpty() }?.let { uiContext.getString(R.string.ui_files_changed_758, (it.size).toString()) },
             onChanges = { currentSessionId?.let { sid -> navigateFromSidebar { nav.navigate("changes/${encode(sid)}") } } },
@@ -621,7 +623,8 @@ fun AppNav(container: AppContainer) {
                 androidx.compose.runtime.CompositionLocalProvider(
                     LocalHarnessGlassCaptureActive provides glassDrawerCapture,
                     LocalHarnessGlassBackdrop provides (LocalHarnessGlassOverlayBackdrop.current ?: LocalHarnessGlassBackdrop.current)) {
-                Sidebar { scope.launch { drawerState.close() } }
+                val drawerOpening by remember(drawerState) { androidx.compose.runtime.derivedStateOf { drawerState.targetValue == DrawerValue.Open } }
+                Sidebar(drawerOpening) { scope.launch { drawerState.close() } }
                 }
             }
         },
@@ -640,7 +643,7 @@ fun AppNav(container: AppContainer) {
         }.then(if (desktopNavigation) Modifier.focusable() else Modifier).then(if (desktopNavigation) Modifier.statusBarsPadding().navigationBarsPadding() else Modifier)) {
             RetainedWorkspaceContent(desktopNavigation && sidebarVisible,
                 Modifier.width(if (desktopNavigation && sidebarVisible) 232.dp else 0.dp)) {
-                Sidebar { sidebarVisible = false }
+                Sidebar(desktopNavigation && sidebarVisible) { sidebarVisible = false }
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {
         if (currentRoute?.startsWith("project") != true) {
@@ -878,11 +881,11 @@ fun AppNav(container: AppContainer) {
                 val id = requireNotNull(entry.arguments?.getString("workProjectId"))
                 com.androidharness.app.ui.projects.WorkProjectScreen(container, id, onBack = { nav.popBackStack() },
                     onOpenChat = { openChat(it) },
-                    onNewChat = {
+                    onNewChat = { customTitle ->
                         if (!creatingProjectChat) {
                             creatingProjectChat = true
                             scope.launch {
-                                try { openChat(container.runManager.createProjectChat(id, uiContext.getString(R.string.settings_telegram_new_chat))) }
+                                try { openChat(container.runManager.createProjectChat(id, uiContext.getString(R.string.settings_telegram_new_chat), customTitle)) }
                                 catch (e: Exception) { if (e is kotlinx.coroutines.CancellationException) throw e; workspaceError = e.message ?: uiContext.getString(R.string.ui_could_not_create_chat) }
                                 finally { creatingProjectChat = false }
                             }

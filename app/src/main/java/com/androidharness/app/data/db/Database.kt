@@ -129,6 +129,8 @@ data class WorkProjectEntity(
     val name: String,
     val selectionJson: String,
     val createdAt: Long,
+    /** How new chats in this project are named, such as "ALPHA #". Null keeps "New chat". See ChatSeries. */
+    val chatNamePattern: String? = null,
 )
 
 /** A saved fact or reviewed digest, owned by a section and optionally scoped to a project. */
@@ -604,6 +606,9 @@ interface HarnessDao {
     @Query("UPDATE work_projects SET name = :name WHERE id = :id")
     suspend fun renameWorkProject(id: String, name: String)
 
+    @Query("UPDATE work_projects SET chatNamePattern = :pattern WHERE id = :id")
+    suspend fun setWorkProjectChatNames(id: String, pattern: String?)
+
     @Query("UPDATE work_projects SET selectionJson = :selection WHERE id = :id")
     suspend fun setWorkProjectSelection(id: String, selection: String)
 
@@ -841,13 +846,18 @@ interface HarnessDao {
         ChatAnswerVersionEntity::class,
         SavedAnswerEntity::class,
     ],
-    version = 26,
+    version = 27,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_26_27 = object : androidx.room.migration.Migration(26, 27) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE work_projects ADD COLUMN chatNamePattern TEXT")
+            }
+        }
         val MIGRATION_25_26 = object : androidx.room.migration.Migration(25, 26) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("CREATE TABLE IF NOT EXISTS work_projects (id TEXT NOT NULL PRIMARY KEY, name TEXT NOT NULL, selectionJson TEXT NOT NULL, createdAt INTEGER NOT NULL)")

@@ -167,6 +167,8 @@ class RunManager(
 
     suspend fun assignWorkspaces(sessionId: String, selection: ChatWorkspaceSelection) = workspaceGuard.withLock {
         if (selectionChange(sessionId, selection)) applySelection(sessionId, selection)
+        // A chat's own primary pick is the latest choice; project chats follow their project instead.
+        if (sessions.session(sessionId)?.workProjectId == null) workspace.setActiveProject(selection.primaryId)
     }
 
     /** Checks that [sessionId] may take [selection]. False when nothing would change. */
@@ -208,10 +210,24 @@ class RunManager(
         workspace.setChatWorkProject(sessionId, workProjectId)
     }
 
-    suspend fun createProjectChat(workProjectId: String, title: String): String = workspaceGuard.withLock {
+    /** The name the next chat in this project's series gets, for prefilling a name field. */
+    suspend fun nextProjectChatTitle(workProjectId: String): String? =
+        workspace.workProject(workProjectId)?.chatNamePattern?.let { nextProjectChatTitle(it, workProjectId) }
+
+    private suspend fun nextProjectChatTitle(pattern: String, workProjectId: String): String =
+        com.androidharness.app.core.ChatSeries.next(pattern, workspace.workProjectChats(workProjectId).map { it.title })
+
+    /**
+     * [customTitle] names this one chat; otherwise the project's chat name series picks the
+     * next number, and a project without one uses [defaultTitle].
+     */
+    suspend fun createProjectChat(workProjectId: String, defaultTitle: String, customTitle: String? = null): String = workspaceGuard.withLock {
         val project = requireNotNull(workspace.workProject(workProjectId)) { "This project is no longer available." }
         val selection = ChatWorkspaceSelection.decode(project.selectionJson)
         workspace.validateSelection(selection)
+        val title = customTitle?.trim()?.take(200)?.takeIf { it.isNotEmpty() }
+            ?: project.chatNamePattern?.let { nextProjectChatTitle(it, workProjectId) }
+            ?: defaultTitle
         val id = sessions.createSession(title, selection.primaryId)
         workspace.assignSelection(id, selection)
         workspace.setChatWorkProject(id, workProjectId)

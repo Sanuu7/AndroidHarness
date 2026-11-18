@@ -87,6 +87,7 @@ fun ProjectEditorSheet(
     val scope = rememberCoroutineScope()
     val workspaces by container.workspace.projects.collectAsStateWithLifecycle(initialValue = emptyList())
     var name by rememberSaveable(project?.id) { mutableStateOf(project?.name.orEmpty()) }
+    var chatNames by rememberSaveable(project?.id) { mutableStateOf(project?.chatNamePattern.orEmpty()) }
     // Kept as raw JSON so an empty draft survives while the user is still choosing.
     var draftJson by rememberSaveable(project?.id) {
         val start = project?.let { runCatching { ChatWorkspaceSelection.decode(it.selectionJson) }.getOrNull() }
@@ -119,6 +120,23 @@ fun ProjectEditorSheet(
                     item(key = "name") {
                         TextField(name, { if (it.length <= 100) name = it }, enabled = !saving, singleLine = true,
                             label = { Text(context.getString(R.string.wp_editor_name)) }, shape = RoundedCornerShape(20.dp),
+                            colors = TextFieldDefaults.colors(focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
+                                disabledIndicatorColor = Color.Transparent, focusedContainerColor = scheme.surfaceContainerHigh,
+                                unfocusedContainerColor = scheme.surfaceContainerHigh),
+                            modifier = Modifier.fillMaxWidth())
+                    }
+                    item(key = "chat-names") {
+                        val pattern = com.androidharness.app.core.ChatSeries.normalize(chatNames)
+                        TextField(chatNames, { if (it.length <= com.androidharness.app.core.ChatSeries.MAX_PATTERN_CHARS) chatNames = it },
+                            enabled = !saving, singleLine = true,
+                            label = { Text(context.getString(R.string.wp_editor_chat_names)) },
+                            placeholder = { Text(context.getString(R.string.wp_editor_chat_names_placeholder)) },
+                            supportingText = {
+                                Text(if (pattern == null) context.getString(R.string.wp_editor_chat_names_hint)
+                                    else context.getString(R.string.wp_editor_chat_names_preview,
+                                        com.androidharness.app.core.ChatSeries.title(pattern, 1), com.androidharness.app.core.ChatSeries.title(pattern, 2)))
+                            },
+                            shape = RoundedCornerShape(20.dp),
                             colors = TextFieldDefaults.colors(focusedIndicatorColor = Color.Transparent, unfocusedIndicatorColor = Color.Transparent,
                                 disabledIndicatorColor = Color.Transparent, focusedContainerColor = scheme.surfaceContainerHigh,
                                 unfocusedContainerColor = scheme.surfaceContainerHigh),
@@ -179,9 +197,10 @@ fun ProjectEditorSheet(
                         scope.launch {
                             try {
                                 val selection = draft.validated()
-                                val saved = if (project == null) container.workspace.createWorkProject(name, selection) else {
+                                val saved = if (project == null) container.workspace.createWorkProject(name, selection, chatNames) else {
                                     container.runManager.assignProjectWorkspaces(project.id, selection)
                                     container.workspace.renameWorkProject(project.id, name)
+                                    container.workspace.setWorkProjectChatNames(project.id, chatNames)
                                     requireNotNull(container.workspace.workProject(project.id))
                                 }
                                 onSaved(saved)

@@ -896,8 +896,16 @@ class SessionRepository(
      * no unsent draft, are removed; [keep] protects the open and running ones.
      */
     suspend fun pruneUntouchedChats(keep: Set<String>, defaultTitles: Set<String>): Int {
+        // A project's numbered names ("ALPHA 3") count as default titles for its own chats.
+        val patterns = HashMap<String, String?>()
+        suspend fun seriesTitle(session: SessionEntity): Boolean {
+            val projectId = session.workProjectId ?: return false
+            val pattern = if (projectId in patterns) patterns[projectId]
+                else db.dao().workProject(projectId)?.chatNamePattern.also { patterns[projectId] = it }
+            return pattern != null && com.androidharness.app.core.ChatSeries.numberOf(pattern, session.title) != null
+        }
         val targets = db.dao().untouchedSessions().filter { session ->
-            session.id !in keep && session.title.trim() in defaultTitles &&
+            session.id !in keep && (session.title.trim() in defaultTitles || seriesTitle(session)) &&
                 ConversationConfig.decode(session.conversationJson).draftText.isBlank()
         }
         deleteSessions(targets)

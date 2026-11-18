@@ -57,6 +57,37 @@ class ProjectsDeviceTest {
         } finally { db.close(); context.deleteDatabase(name); root.deleteRecursively() }
     }
 
+    @Test fun projectChatNameSeriesNumbersCustomNamesAndPrunesEmptyOnes() = runBlocking {
+        val roots = File(c.appContext.cacheDir, "series-${System.nanoTime()}").apply { mkdirs() }
+        val workspace = c.workspace.addShellProject(File(roots, "series").apply { mkdirs() }.path, activate = false)
+        val project = c.workspace.createWorkProject("Series project",
+            ChatWorkspaceSelection(workspace.id, listOf(ChatWorkspaceGrant(workspace.id, true))), "  ALPHA ")
+        try {
+            assertEquals("ALPHA", project.chatNamePattern)
+            assertEquals("ALPHA 1", c.runManager.nextProjectChatTitle(project.id))
+            val first = c.runManager.createProjectChat(project.id, "New chat")
+            val second = c.runManager.createProjectChat(project.id, "New chat")
+            val named = c.runManager.createProjectChat(project.id, "New chat", "  Login bug ")
+            assertEquals(listOf("ALPHA 1", "ALPHA 2", "Login bug"), listOf(first, second, named).map { c.sessions.session(it)?.title })
+            // Deleting the first never brings its number back.
+            c.sessions.deleteSession(requireNotNull(c.sessions.session(first)))
+            assertEquals("ALPHA 3", c.runManager.nextProjectChatTitle(project.id))
+            // Empty numbered chats are cleared like empty "New chat" rows; a name the user typed stays.
+            val others = c.sessions.sessions.first().filter { it.workProjectId != project.id }.mapTo(mutableSetOf()) { it.id }
+            c.sessions.pruneUntouchedChats(others, setOf("New chat"))
+            assertEquals(listOf("Login bug"), c.workspace.workProjectChats(project.id).map { it.title })
+            c.workspace.setWorkProjectChatNames(project.id, "Run #!")
+            assertEquals("Run 1!", c.sessions.session(c.runManager.createProjectChat(project.id, "New chat"))?.title)
+            c.workspace.setWorkProjectChatNames(project.id, "   ")
+            assertNull(c.workspace.workProject(project.id)?.chatNamePattern)
+            assertEquals("New chat", c.sessions.session(c.runManager.createProjectChat(project.id, "New chat"))?.title)
+        } finally {
+            c.workspace.workProjectChats(project.id).forEach { c.sessions.deleteSession(it) }
+            c.runManager.deleteWorkProject(project.id)
+            c.workspace.deleteProject(workspace); roots.deleteRecursively()
+        }
+    }
+
     @Test fun drawerBrowsingKeepsDraftAndNewChatUsesOpenedProject() = runBlocking {
         fixture { _, a, b, sa, _ ->
             awaitText("Alpha project chat")

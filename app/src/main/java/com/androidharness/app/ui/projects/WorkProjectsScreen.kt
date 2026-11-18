@@ -42,6 +42,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -117,7 +118,8 @@ fun WorkProjectScreen(
     projectId: String,
     onBack: () -> Unit,
     onOpenChat: (String) -> Unit,
-    onNewChat: () -> Unit,
+    /** Null lets the project's chat name series (or "New chat") name it. */
+    onNewChat: (customTitle: String?) -> Unit,
     creatingChat: Boolean,
     onOpenWorkspace: (String) -> Unit,
     onDelete: (WorkProjectEntity) -> Unit,
@@ -137,6 +139,9 @@ fun WorkProjectScreen(
     }
     var editing by remember { mutableStateOf(false) }
     var menu by remember { mutableStateOf(false) }
+    // The name dialog's starting text; null while it is closed.
+    var naming by remember { mutableStateOf<String?>(null) }
+    val scope = rememberCoroutineScope()
     SettingsExpressiveTheme {
         Scaffold(topBar = {
             AppHeader(project?.name ?: context.getString(R.string.ui_project), subtitle = context.getString(R.string.ui_project), onBack = onBack, actions = {
@@ -191,9 +196,18 @@ fun WorkProjectScreen(
                             leading = { ExpressiveIconBadge(Icons.Outlined.Add, container = scheme.primaryContainer, tint = scheme.onPrimaryContainer) })
                     }
                     item(key = "new-chat") {
-                        Button(onClick = onNewChat, enabled = !creatingChat, modifier = Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 4.dp).heightIn(min = 56.dp)) {
-                            Icon(Icons.Outlined.Add, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
-                            Text(if (creatingChat) context.getString(R.string.ui_creating) else context.getString(R.string.wp_project_new_chat), style = MaterialTheme.typography.titleMedium)
+                        Row(Modifier.fillMaxWidth().padding(top = 20.dp, bottom = 4.dp), verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Button(onClick = { onNewChat(null) }, enabled = !creatingChat, modifier = Modifier.weight(1f).heightIn(min = 56.dp)) {
+                                Icon(Icons.Outlined.Add, null, Modifier.size(20.dp)); Spacer(Modifier.width(8.dp))
+                                Text(if (creatingChat) context.getString(R.string.ui_creating) else context.getString(R.string.wp_project_new_chat),
+                                    style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                            }
+                            androidx.compose.material3.FilledTonalIconButton(onClick = {
+                                scope.launch { naming = container.runManager.nextProjectChatTitle(projectId).orEmpty() }
+                            }, enabled = !creatingChat, modifier = Modifier.size(56.dp)) {
+                                Icon(Icons.Outlined.Edit, context.getString(R.string.wp_project_name_chat))
+                            }
                         }
                     }
                     item(key = "chats-label") { ExpressiveSectionLabel(context.getString(R.string.wp_project_chats)) }
@@ -213,6 +227,26 @@ fun WorkProjectScreen(
         }
     }
     if (editing && project != null) ProjectEditorSheet(container, project, null, onDismiss = { editing = false }, onSaved = { editing = false })
+    naming?.let { start ->
+        var title by remember { mutableStateOf(androidx.compose.ui.text.input.TextFieldValue(start, androidx.compose.ui.text.TextRange(0, start.length))) }
+        val focus = remember { androidx.compose.ui.focus.FocusRequester() }
+        androidx.compose.runtime.LaunchedEffect(Unit) { focus.requestFocus() }
+        fun create() { if (title.text.isNotBlank()) { naming = null; onNewChat(title.text.trim()) } }
+        AlertDialog(
+            onDismissRequest = { naming = null },
+            icon = { Icon(Icons.Outlined.Edit, null) },
+            title = { Text(context.getString(R.string.wp_project_name_chat_title)) },
+            text = {
+                androidx.compose.material3.OutlinedTextField(title, { if (it.text.length <= 200) title = it }, singleLine = true,
+                    label = { Text(context.getString(R.string.wp_project_chat_name)) },
+                    keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(imeAction = androidx.compose.ui.text.input.ImeAction.Done),
+                    keyboardActions = androidx.compose.foundation.text.KeyboardActions(onDone = { create() }),
+                    modifier = Modifier.fillMaxWidth().focusRequester(focus))
+            },
+            confirmButton = { TextButton(enabled = title.text.isNotBlank(), onClick = ::create) { Text(context.getString(R.string.ui_create)) } },
+            dismissButton = { TextButton(onClick = { naming = null }) { Text(context.getString(R.string.settings_action_cancel)) } },
+        )
+    }
 }
 
 /** Deletes a project with its chats. Workspaces and their files are not touched. */
