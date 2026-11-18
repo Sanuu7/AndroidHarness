@@ -224,6 +224,8 @@ class HarnessConfigLoader(
         require(refs.size <= 256) { "At most 256 reference files may be listed." }
         val skillFiles = linkedMapOf<String, SkillStore.BundledSkill>()
         val scannedSkillDirs = mutableSetOf<Pair<String, String>>()
+        /** Set while a plugin's skills are scanned, so they can resolve ${CLAUDE_PLUGIN_ROOT}. */
+        var activePluginRoot: String? = null
         fun skillDir(fs: WorkspaceFs, directory: String) {
             if (!scannedSkillDirs.add(fs.displayPath to directory)) return
             val dir = fs.resolve(directory)
@@ -254,7 +256,7 @@ class HarnessConfigLoader(
                         }
                     }
                     if (folder == null) SkillStore.SUPPORT_DIRS.forEach { scan(it, 0) }
-                    skillFiles[parsed.name] = SkillStore.BundledSkill(base, content, support, folder?.path)
+                    skillFiles[parsed.name] = SkillStore.BundledSkill(base, content, support, folder?.path, activePluginRoot)
                 }
             }
         }
@@ -274,7 +276,10 @@ class HarnessConfigLoader(
             val enable = pluginSettings?.get("enable")?.strings().orEmpty()
             val disable = pluginSettings?.get("disable")?.strings().orEmpty()
             if (disable.any { ConfigGlob.matches(it, name) } || enable.isNotEmpty() && enable.none { ConfigGlob.matches(it, name) }) return
-            manifest["skills"]?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
+            activePluginRoot = baseFs.shellRoot?.resolve(base)?.canonicalPath
+            try {
+                manifest["skills"]?.items.orEmpty().forEach { v -> path(v).let { skillDir(it.first, it.second) } }
+            } finally { activePluginRoot = null }
             manifest["instructions"]?.let { field ->
                 require(field.json is JsonArray && field.items.all { it.string() != null && !it.string().orEmpty().startsWith('!') }) {
                     "$manifestPath instructions must be an array of bundle-relative files."

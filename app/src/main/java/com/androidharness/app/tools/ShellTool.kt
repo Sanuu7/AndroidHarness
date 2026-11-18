@@ -58,7 +58,7 @@ class ShellTool(
 
             // Full access skips the denylist re-check; the engine already
             // gated this call against the same policy.
-            val deny = if (ctx.sandboxOff) null else ShellPolicy.denyReason(rawCommand, root, cwd)
+            val deny = if (ctx.sandboxOff) null else ShellPolicy.denyReason(rawCommand, root, cwd, ctx.skills?.folders().orEmpty())
             if (deny != null) {
                 return@withContext ToolResult(false, deny)
             }

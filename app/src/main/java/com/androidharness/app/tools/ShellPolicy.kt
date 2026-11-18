@@ -10,7 +10,14 @@ import java.io.File
  */
 object ShellPolicy {
 
-    fun denyReason(command: String, workspaceRoot: File? = null, cwd: File? = null): String? {
+    /**
+     * [skillFolders] are installed skill and plugin folders outside the workspace. A command may read and run
+     * what is inside them (cat, ls, grep, cp out of them, python3 script.py) but never change it.
+     */
+    fun denyReason(command: String, workspaceRoot: File? = null, cwd: File? = null, skillFolders: Collection<File> = emptyList()): String? =
+        deny(command, workspaceRoot, cwd, SkillFolders(skillFolders))
+
+    private fun deny(command: String, workspaceRoot: File?, cwd: File?, skill: SkillFolders): String? {
         val cmd = command.trim()
         if (cmd.isEmpty()) return null
 
@@ -37,24 +44,24 @@ object ShellPolicy {
         val effectiveCwd = cwd ?: workspaceRoot
 
         // Check raw command
-        val rawCheck = checkSandbox(cmd, workspaceRoot, effectiveCwd)
+        val rawCheck = checkSandbox(cmd, workspaceRoot, effectiveCwd, skill)
         if (rawCheck != null) return rawCheck
 
         // Check expanded command ($PWD, ${PWD}, $HOME, variable assignments, $'\x2e\x2e', $(pwd), etc.)
         val expanded = expandVariables(cmd, workspaceRoot, effectiveCwd)
         if (expanded != cmd) {
-            val expandedCheck = checkSandbox(expanded, workspaceRoot, effectiveCwd)
+            val expandedCheck = checkSandbox(expanded, workspaceRoot, effectiveCwd, skill)
             if (expandedCheck != null) return expandedCheck
         }
 
         return null
     }
 
-    private fun checkSandbox(cmd: String, workspaceRoot: File?, cwd: File?): String? {
+    private fun checkSandbox(cmd: String, workspaceRoot: File?, cwd: File?, skill: SkillFolders): String? {
         // 2. Recursively check command substitutions $(...) and `...`
         val subshellMatch = extractSubshells(cmd)
         for (subcmd in subshellMatch) {
-            val subDeny = denyReason(subcmd, workspaceRoot, cwd)
+            val subDeny = deny(subcmd, workspaceRoot, cwd, skill)
             if (subDeny != null) {
                 return subDeny
             }
@@ -65,7 +72,7 @@ object ShellPolicy {
         for ((name, value) in varAssignments) {
             val trimmedVal = value.trim('\'', '"', ' ')
             if (trimmedVal.isNotEmpty()) {
-                val pathDeny = checkSinglePath(trimmedVal, workspaceRoot, cwd, isSymlink = false, isRedirection = false)
+                val pathDeny = checkSinglePath(trimmedVal, workspaceRoot, cwd, isSymlink = false, isRedirection = false, skill = skill)
                 if (pathDeny != null) {
                     return "Blocked: variable $name contains out-of-workspace path: $trimmedVal"
                 }
@@ -86,7 +93,7 @@ object ShellPolicy {
 
         // 5. Check all tokens, commands, arguments, and explicit redirections
         val tokens = extractTokens(cmd)
-        val tokenCheck = checkCommandTokens(tokens, workspaceRoot, cwd)
+        val tokenCheck = checkCommandTokens(tokens, workspaceRoot, cwd, skill)
         if (tokenCheck != null) return tokenCheck
 
         // 6. Full-text scan for relative traversals (../ or /..)
@@ -102,7 +109,7 @@ object ShellPolicy {
         return null
     }
 
-    private fun checkCommandTokens(tokens: List<String>, workspaceRoot: File?, cwd: File?): String? {
+    private fun checkCommandTokens(tokens: List<String>, workspaceRoot: File?, cwd: File?, skill: SkillFolders): String? {
         val isSymlinkCmd = isSymlinkCreation(tokens)
         if (isSymlinkCmd && cwd != null && isSharedStorage(cwd) && !isScratchOnlySymlink(tokens)) {
             return "Blocked: symlinks are not supported on Android shared storage (/storage/emulated/0). (symlink not supported/allowed)"
@@ -123,7 +130,7 @@ object ShellPolicy {
         if (cur.isNotEmpty()) subCommands += cur
 
         for (sub in subCommands) {
-            val check = checkSubCommand(sub, workspaceRoot, cwd, isSymlinkCmd)
+            val check = checkSubCommand(sub, workspaceRoot, cwd, isSymlinkCmd, skill)
             if (check != null) return check
         }
         return null
@@ -134,6 +141,7 @@ object ShellPolicy {
         workspaceRoot: File?,
         cwd: File?,
         isSymlinkCmd: Boolean,
+        skill: SkillFolders,
     ): String? {
         var cmdName: String? = null
         var cmdIndex = -1
@@ -152,11 +160,21 @@ object ShellPolicy {
         val isStreamEdit = cmdName == "sed" || cmdName == "awk"
 
         var patternSeen = false
+        val argSkill = skillAccess(cmdName, cmdIndex, sub, skill)
 
         for (i in sub.indices) {
             val token = sub[i]
             val isRedirection = i > 0 && isRedirectionOp(sub[i - 1])
             if (isRedirectionOp(token)) continue
+
+            // --target-directory=/skill and -C/skill carry a path inside the option. Pointing one into a skill
+            // folder is only fine for a command that reads it.
+            if (!skill.isEmpty && argSkill(i) === SkillFolders.NONE) {
+                val value = optionValue(token)
+                if (value != null && value.startsWith("/") && skill.contains(try { File(value).canonicalPath } catch (_: Exception) { value })) {
+                    return "Blocked: accessing path outside workspace is not allowed: $value"
+                }
+            }
 
             if (isRedirection) {
                 val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = true)
@@ -165,7 +183,7 @@ object ShellPolicy {
             }
 
             if (i == cmdIndex) {
-                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false, skill = skill)
                 if (check != null) return check
                 continue
             }
@@ -181,7 +199,7 @@ object ShellPolicy {
                     patternSeen = true
                     continue // First non-option is search pattern/regex
                 }
-                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+                val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false, skill = argSkill(i))
                 if (check != null) return check
                 continue
             }
@@ -216,11 +234,32 @@ object ShellPolicy {
 
             if (token.startsWith("-")) continue
 
-            val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false)
+            val check = checkSinglePath(token, workspaceRoot, cwd, isSymlinkCmd, isRedirection = false, skill = argSkill(i))
             if (check != null) return check
         }
 
         return null
+    }
+
+    /** The path glued to an option, as in --target-directory=/x or -C/x; null for anything else. */
+    private fun optionValue(token: String): String? = when {
+        token.startsWith("--") && '=' in token -> token.substringAfter('=').trim('\'', '"')
+        token.length > 2 && token[0] == '-' && token[1].isLetter() && token[2] == '/' -> token.substring(2).trim('\'', '"')
+        else -> null
+    }
+
+    /** Which argument positions of this command may point into a skill folder: only ones that read or run it. */
+    private fun skillAccess(cmdName: String?, cmdIndex: Int, sub: List<String>, skill: SkillFolders): (Int) -> SkillFolders {
+        if (skill.isEmpty || cmdName == null || cmdName !in SKILL_READERS) return { SkillFolders.NONE }
+        if (cmdName == "find" && sub.any { it in FIND_ACTIONS }) return { SkillFolders.NONE }
+        if (cmdName == "cp") {
+            if (sub.any { it == "-t" || it.startsWith("--target-directory") || (it.startsWith("-") && !it.startsWith("--") && 't' in it) }) return { SkillFolders.NONE }
+            // The last operand of cp is where it writes.
+            val operands = sub.indices.filter { it > cmdIndex && !sub[it].startsWith("-") && !isRedirectionOp(sub[it]) && !isRedirectionOp(sub[it - 1]) }
+            val destination = operands.lastOrNull()
+            return { i -> if (i == destination) SkillFolders.NONE else skill }
+        }
+        return { skill }
     }
 
     private fun extractEmbeddedPaths(text: String): List<String> {
@@ -234,10 +273,11 @@ object ShellPolicy {
         cwd: File?,
         isSymlink: Boolean,
         isRedirection: Boolean,
+        skill: SkillFolders = SkillFolders.NONE,
     ): String? {
         val clean = token.trim('\'', '"', '`', '{', '}', '(', ')')
         if (clean.startsWith("/")) {
-            return checkAbsolutePath(clean, workspaceRoot, isSymlink, isRedirection)
+            return checkAbsolutePath(clean, workspaceRoot, isSymlink, isRedirection, skill)
         }
         if (clean == ".." || clean.startsWith("../") || clean.contains("/..") || clean.startsWith("./..")) {
             return checkRelativePath(clean, workspaceRoot, cwd, isSymlink, isRedirection)
@@ -250,6 +290,7 @@ object ShellPolicy {
         workspaceRoot: File?,
         isSymlink: Boolean,
         isRedirection: Boolean,
+        skill: SkillFolders = SkillFolders.NONE,
     ): String? {
         val canon = try { File(path).canonicalPath } catch (_: Exception) { path }
         if (workspaceRoot != null) {
@@ -258,6 +299,9 @@ object ShellPolicy {
                 return null // In workspace
             }
         }
+        // Installed skills: reading and running are fine, writing is not. A symlink out of the folder
+        // canonicalizes to its target, so it cannot be used to reach anything else.
+        if (!isSymlink && !isRedirection && skill.contains(canon)) return null
         if (isAllowedSystemPath(canon)) {
             return null // Allowed system/toolchain path
         }
@@ -641,6 +685,14 @@ object ShellPolicy {
      */
     const val SCRATCH_TMP = "/data/local/tmp/androidharness-scratch"
 
+    /** Commands that only read their arguments, or run a script they are given. cp is handled separately. */
+    private val SKILL_READERS = setOf(
+        "cat", "head", "tail", "ls", "stat", "file", "wc", "sort", "diff", "cmp", "less", "more", "tree", "du",
+        "sha1sum", "sha256sum", "md5sum", "grep", "egrep", "fgrep", "rg", "xxd", "od", "readlink", "realpath",
+        "test", "[", "find", "cp", "python", "python3", "node", "bash", "sh", "perl", "ruby",
+    )
+    private val FIND_ACTIONS = setOf("-delete", "-exec", "-execdir", "-ok", "-okdir", "-fprint", "-fprint0", "-fprintf", "-fls")
+
     /**
      * App-private scratch mirror for when SELinux denies the shell uid
      * /data/local/tmp access on newer builds: owned by this app's uid,
@@ -652,4 +704,13 @@ object ShellPolicy {
 
     /** Every exec-capable scratch root for all flavors of this app. */
     val SCRATCH_ROOTS = listOf(SCRATCH_TMP, SCRATCH_APPDATA, SCRATCH_APPDATA_DEBUG)
+}
+
+/** Installed skill and plugin folders, as canonical paths. The shell may read and run what is inside, never change it. */
+class SkillFolders(folders: Collection<File>) {
+    private val paths = folders.mapNotNull { runCatching { it.canonicalPath }.getOrNull() }.distinct()
+    val isEmpty: Boolean get() = paths.isEmpty()
+    fun contains(canonical: String): Boolean = paths.any { canonical == it || canonical.startsWith("$it/") }
+
+    companion object { val NONE = SkillFolders(emptyList()) }
 }

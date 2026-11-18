@@ -166,6 +166,73 @@ class SkillStoreTest {
         assertTrue(captured.view("androidharness-environment").getOrThrow().content.contains("Alpha guide"))
     }
 
+    @Test fun `plugin skill expands its folder and plugin root and keeps the editable text raw`() {
+        val plugin = tmp.newFolder("plugin-founder")
+        val folder = plugin.resolve("skills/founder-consumer").apply { mkdirs() }
+        folder.resolve("references").mkdirs()
+        folder.resolve("references/notes.md").writeText("Run \${CLAUDE_SKILL_DIR}/panel.py from \${CLAUDE_PLUGIN_ROOT}")
+        val raw = skill("founder-consumer", "work", "python3 \"\${CLAUDE_SKILL_DIR}/panel.py\" init")
+        val store = SkillStore(emptyMap(), tmp.newFolder("shared-plugin"), { null }, { emptySet() },
+            configuredSkills = mapOf("founder-consumer" to SkillStore.BundledSkill("skills/founder-consumer", raw, emptyMap(), folder.path, plugin.path)))
+        val viewed = store.view("founder-consumer").getOrThrow().content
+        assertTrue(viewed, viewed.contains("python3 \"${folder.path}/panel.py\" init"))
+        assertTrue(viewed, !viewed.contains("\${CLAUDE_SKILL_DIR}"))
+        assertEquals("Run ${folder.path}/panel.py from ${plugin.path}", store.view("founder-consumer", "references/notes.md").getOrThrow().content)
+        assertTrue(store.document("founder-consumer")!!.raw.contains("\${CLAUDE_SKILL_DIR}/panel.py"))
+    }
+
+    @Test fun `user skill folder resolves and a project variable needs a known workspace`() {
+        val userDir = tmp.newFolder("own-skills")
+        val mine = userDir.resolve("runner").apply { mkdirs() }
+        mine.resolve("SKILL.md").writeText(skill("runner", "work", "Run \${CLAUDE_SKILL_DIR}/go.sh in \${CLAUDE_PROJECT_DIR}"))
+        val base = SkillStore(emptyMap(), userDir, { null }, { emptySet() })
+        val unbound = base.view("runner").getOrThrow().content
+        assertTrue(unbound, unbound.contains("Run ${mine.path}/go.sh in \${CLAUDE_PROJECT_DIR}"))
+        val workspace = tmp.newFolder("open-project")
+        val bound = base.forWorkspace(com.androidharness.app.workspace.FileFs(workspace))
+        val withProject = bound.view("runner").getOrThrow().content
+        assertTrue(withProject, withProject.contains("Run ${mine.path}/go.sh in ${workspace.path}"))
+    }
+
+    @Test fun `project skill resolves its own folder and a bundled skill with no folder is untouched`() {
+        val workspace = tmp.newFolder("project-with-skill")
+        val inProject = workspace.resolve(".harness/skills/helper").apply { mkdirs() }
+        inProject.resolve("SKILL.md").writeText(skill("helper", "work", "Use \${CLAUDE_SKILL_DIR}/tool.py"))
+        val base = store(bundled = mapOf("plain" to SkillStore.BundledSkill("plain", skill("plain", "work", "See \${CLAUDE_SKILL_DIR}/x"))))
+        val bound = base.forWorkspace(com.androidharness.app.workspace.FileFs(workspace))
+        assertTrue(bound.view("helper").getOrThrow().content.contains("Use ${inProject.path}/tool.py"))
+        assertTrue(bound.view("plain").getOrThrow().content.contains("See \${CLAUDE_SKILL_DIR}/x"))
+    }
+
+    @Test fun `folders lists enabled skill and plugin folders for the shell and skips bundled and disabled ones`() {
+        val plugin = tmp.newFolder("folders-plugin")
+        val folder = plugin.resolve("skills/runner").apply { mkdirs() }
+        val offFolder = plugin.resolve("skills/off").apply { mkdirs() }
+        val userDir = tmp.newFolder("folders-user")
+        val mine = userDir.resolve("mine").apply { mkdirs() }
+        mine.resolve("SKILL.md").writeText(skill("mine", "work"))
+        val store = SkillStore(
+            mapOf("plain" to SkillStore.BundledSkill("plain", skill("plain", "work"))), userDir, { null }, { setOf("off") },
+            configuredSkills = mapOf(
+                "runner" to SkillStore.BundledSkill("skills/runner", skill("runner", "work"), emptyMap(), folder.path, plugin.path),
+                "off" to SkillStore.BundledSkill("skills/off", skill("off", "work"), emptyMap(), offFolder.path, plugin.path),
+            ),
+        ).freeze()
+        assertEquals(setOf(folder, plugin, mine), store.folders().toSet())
+        assertTrue(store.folders().none { it == offFolder })
+    }
+
+    @Test fun `a skill written for another host gets the task tool note only when it asks to delegate`() {
+        val both = store(bundled = mapOf(
+            "panel" to SkillStore.BundledSkill("panel", skill("panel", "work", "Send one Agent tool call per buyer with subagent_type general-purpose.")),
+            "git" to SkillStore.BundledSkill("git", skill("git", "repo")),
+        ))
+        val note = both.view("panel").getOrThrow().content
+        assertTrue(note, note.contains("use this app's task tool"))
+        assertTrue(note, note.contains("Subagent action tools"))
+        assertTrue(!both.view("git").getOrThrow().content.contains("task tool"))
+    }
+
     @Test fun `bundled environment guide references all load through the app skill parser`() {
         val folder = java.io.File("src/main/assets/skills/androidharness-environment")
         val raw = folder.resolve("SKILL.md").readText()

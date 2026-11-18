@@ -187,6 +187,18 @@ class HarnessConfigTest {
         script.writeText("module.exports={'tool.before': () => ({})};")
         assertNotEquals(before.fingerprint, load(root).fingerprint)
     }
+    @Test fun `plugin skills record their folder and plugin root and other skills do not`() {
+        val root = tmp.newFolder()
+        file(root, "harness.json", """{"plugins":{"paths":[".harness/plugins"]}}""")
+        file(root, ".harness/plugins/test/plugin.json", """{"name":"test","version":"1","skills":["skills"]}""")
+        file(root, ".harness/plugins/test/skills/android-safe/SKILL.md", skill("android-safe"))
+        file(root, ".harness/skills/own-skill/SKILL.md", skill("own-skill"))
+        val config = load(root)
+        val pluginFolder = root.resolve(".harness/plugins/test").canonicalPath
+        assertEquals(pluginFolder, config.skills.getValue("android-safe").pluginRoot)
+        assertEquals("$pluginFolder/skills/android-safe", config.skills.getValue("android-safe").directory)
+        assertNull(config.skills.getValue("own-skill").pluginRoot)
+    }
     @Test fun `partial MCP overrides can disable a global transport and null clears servers`() {
         val root = tmp.newFolder(); val home = tmp.newFolder()
         file(home, "config/harness.json", """{"mcp":{"fs":{"command":"node","args":["server.js"]}}}""")

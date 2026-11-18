@@ -1350,7 +1350,7 @@ class AgentEngine(
         val root = workspace.shellRoot
         // Full access skips the shell denylist entirely, that is the point of the mode.
         if (mode != PermissionMode.FULL_ACCESS) {
-            com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty(), root, root)?.let { reason ->
+            com.androidharness.app.tools.ShellPolicy.denyReason(command.orEmpty(), root, root, runConfig?.skills?.folders().orEmpty())?.let { reason ->
                 if (com.androidharness.app.tools.ShellPolicy.isShellTool(call.name)) {
                     return ToolResult(false, reason)
                 }

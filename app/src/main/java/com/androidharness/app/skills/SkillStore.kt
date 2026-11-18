@@ -14,6 +14,8 @@ class SkillStore(
     private val optionalBundled: () -> Map<String, BundledSkill> = { emptyMap() },
     private val configuredSkills: Map<String, BundledSkill> = emptyMap(),
     private val configuration: com.androidharness.app.config.HarnessConfig? = null,
+    /** The selected workspace folder, used for ${CLAUDE_PROJECT_DIR} in third-party skills. */
+    private val workspaceRoot: File? = null,
 ) {
     private var frozen: List<Located>? = null
     fun freeze(): SkillStore {
@@ -23,20 +25,25 @@ class SkillStore(
     /** A fixed project directory keeps one chat's catalog independent of the selected workspace. */
     fun forProject(directory: File?): SkillStore = SkillStore(bundled, userDir, { directory }, disabled, optionalBundled)
     fun configured(config: com.androidharness.app.config.HarnessConfig): SkillStore =
-        if (!config.present) this else SkillStore(bundled, userDir, { null }, disabled, optionalBundled, config.skills, config)
+        if (!config.present) this else SkillStore(bundled, userDir, { null }, disabled, optionalBundled, config.skills, config, workspaceRoot)
 
     fun forWorkspace(workspace: com.androidharness.app.workspace.WorkspaceFs): SkillStore {
         if (configuration != null) return this
         val primary = (workspace as? com.androidharness.app.workspace.ChatWorkspaceFs)?.primary?.fs ?: workspace
-        return forProject(primary.shellRoot?.resolve(".harness/skills"))
+        val root = primary.shellRoot
+        return SkillStore(bundled, userDir, { root?.resolve(".harness/skills") }, disabled, optionalBundled, workspaceRoot = root)
     }
 
-    /** [directory] is the skill's real folder when it has one; its files are then listed and read on demand. */
+    /**
+     * [directory] is the skill's real folder when it has one; its files are then listed and read on demand.
+     * [pluginRoot] is the installed plugin the skill came from, for ${CLAUDE_PLUGIN_ROOT}.
+     */
     data class BundledSkill(
         val relativeDir: String,
         val content: String,
         val files: Map<String, String> = emptyMap(),
         val directory: String? = null,
+        val pluginRoot: String? = null,
     )
 
     fun list(): List<SkillMeta> {
@@ -49,7 +56,7 @@ class SkillStore(
         projectDir()?.let { dir ->
             scanDir(dir, SkillSource.PROJECT).forEach { byName[it.name] = it }
         }
-        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files, it.directory)?.meta }
+        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files, it.directory, pluginRoot = it.pluginRoot)?.meta }
             .forEach { byName[it.name] = it }
         val off = disabled()
         return byName.values
@@ -75,6 +82,24 @@ class SkillStore(
     }
 
     fun slashNames(): Set<String> = enabled().map { it.name }.toSet()
+
+    private var folderMemo: List<File>? = null
+
+    /**
+     * Real folders of the enabled skills that were picked for each name, plus the installed plugin each came from.
+     * The shell sandbox lets commands read and run what is inside them, so a skill's bundled scripts work from
+     * where they are installed. Remembered once the catalog is frozen, because every shell call asks.
+     */
+    fun folders(): List<File> {
+        folderMemo?.let { return it }
+        val found = linkedSetOf<File>()
+        enabled().forEach { meta ->
+            val located = pickWinner(findAll(meta.name)) ?: return@forEach
+            located.skillFolder?.takeIf { it.isDirectory }?.let(found::add)
+            located.pluginRoot?.let(::File)?.takeIf { it.isDirectory }?.let(found::add)
+        }
+        return found.toList().also { if (frozen != null) folderMemo = it }
+    }
 
     fun view(name: String, filePath: String? = null): Result<SkillView> {
         val key = name.trim()
@@ -114,7 +139,7 @@ class SkillStore(
                     name = winner.meta.name,
                     description = winner.meta.description,
                     category = winner.meta.category,
-                    content = extra,
+                    content = expand(extra, winner),
                     source = winner.meta.source,
                     linkedFiles = winner.linkedFiles,
                 ),
@@ -130,7 +155,7 @@ class SkillStore(
                 name = winner.meta.name,
                 description = winner.meta.description,
                 category = winner.meta.category,
-                content = header + winner.content,
+                content = header + SkillHostNotes.forBody(winner.content) + expand(winner.content, winner),
                 source = winner.meta.source,
                 linkedFiles = winner.linkedFiles,
             ),
@@ -181,13 +206,19 @@ class SkillStore(
         return Result.success("Patched ${parsed.name} (saved to your skills).")
     }
 
+    /** [skillFolder] is where the skill's files really live, even when they are held in memory; [pluginRoot] is its plugin. */
     private data class Located(
         val meta: SkillMeta,
         val content: String,
         val linkedFiles: List<String>,
         val support: Map<String, String>,
         val directory: File? = null,
+        val skillFolder: File? = directory,
+        val pluginRoot: String? = null,
     )
+
+    private fun expand(text: String, located: Located): String =
+        SkillVariables.expand(text, located.skillFolder?.path, located.pluginRoot, workspaceRoot?.path)
 
     private fun findAll(name: String): List<Located> {
         frozen?.let { return it.filter { located -> located.meta.name == name } }
@@ -196,15 +227,15 @@ class SkillStore(
             parseLocated(b.content, SkillSource.BUNDLED, b.relativeDir, b.files)?.let { out += it }
         }
         scanDirFiles(userDir).filter { it.first == name }.forEach { (_, content, files, rel) ->
-            parseLocated(content, SkillSource.USER, rel, files)?.let { out += it }
+            parseLocated(content, SkillSource.USER, rel, files, home = File(userDir, rel))?.let { out += it }
         }
         projectDir()?.let { dir ->
             scanDirFiles(dir).filter { it.first == name }.forEach { (_, content, files, rel) ->
-                parseLocated(content, SkillSource.PROJECT, rel, files)?.let { out += it }
+                parseLocated(content, SkillSource.PROJECT, rel, files, home = File(dir, rel))?.let { out += it }
             }
         }
         configuredSkills[name]?.let { b ->
-            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files, b.directory)?.let { out += it }
+            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files, b.directory, pluginRoot = b.pluginRoot)?.let { out += it }
         }
         return out
     }
@@ -227,6 +258,8 @@ class SkillStore(
         relativeDir: String,
         files: Map<String, String>,
         directory: String? = null,
+        home: File? = null,
+        pluginRoot: String? = null,
     ): Located? {
         val parsed = runCatching { SkillParser.parse(content) }.getOrNull() ?: return null
         val folder = directory?.let(::File)?.takeIf { it.isDirectory }
@@ -242,9 +275,9 @@ class SkillStore(
             val listed = folder.walkTopDown().onEnter { it == folder || !it.name.startsWith(".") && it.name !in setOf("node_modules", "__pycache__") }
                 .filter { it.isFile && it.name != "SKILL.md" }.take(MAX_LISTED + 1)
                 .map { it.relativeTo(folder).invariantSeparatorsPath }.sorted().toList()
-            return Located(meta, parsed.raw, listed.take(MAX_LISTED), files, folder)
+            return Located(meta, parsed.raw, listed.take(MAX_LISTED), files, folder, folder, pluginRoot)
         }
-        return Located(meta, parsed.raw, files.keys.sorted(), files)
+        return Located(meta, parsed.raw, files.keys.sorted(), files, null, home, pluginRoot)
     }
 
     private fun scanBundled(): List<SkillMeta> =
