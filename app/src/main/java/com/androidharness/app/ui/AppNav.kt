@@ -256,6 +256,22 @@ fun AppNav(container: AppContainer) {
             container.settings.setLastActiveSessionId(currentSessionId)
         }
     }
+    // Opening the app or moving between chats clears blank "New chat" rows left
+    // behind, so the sidebar never collects duplicates. The open chat, the one
+    // the screen is still bound to, pinned chats and running chats are kept.
+    androidx.compose.runtime.LaunchedEffect(currentSessionId, currentEntry?.destination?.route) {
+        if (currentEntry == null) return@LaunchedEffect
+        val keep = buildSet {
+            currentSessionId?.let(::add)
+            draftSessionId?.let(::add)
+            workspaceChatViewModel?.state?.value?.sessionId?.let(::add)
+            addAll(container.runManager.runningSessionIds.value)
+            addAll(settings.pinnedSessions)
+        }
+        runCatching {
+            container.sessions.pruneUntouchedChats(keep, setOf("New chat", uiContext.getString(R.string.settings_telegram_new_chat)))
+        }
+    }
     val currentRoute = currentEntry?.destination?.route
     val drawerGesturesEnabled = drawerSwipeAllowed(currentRoute)
     // A drawer that was opening on the previous screen must not cover Settings.

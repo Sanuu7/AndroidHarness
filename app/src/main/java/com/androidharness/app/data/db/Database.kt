@@ -572,6 +572,11 @@ interface HarnessDao {
     @Query("SELECT * FROM sessions WHERE id IN (:ids)")
     suspend fun sessionsByIds(ids: List<String>): List<SessionEntity>
 
+    /** Chats that were created but never used: no messages, no requests, no summary or plan. */
+    @Query("SELECT * FROM sessions WHERE requestCount = 0 AND compactionSummary = '' AND pendingPlan IS NULL " +
+        "AND NOT EXISTS (SELECT 1 FROM messages WHERE messages.sessionId = sessions.id)")
+    suspend fun untouchedSessions(): List<SessionEntity>
+
     // chat backup (export/import)
     @Query("SELECT * FROM sessions ORDER BY createdAt ASC")
     suspend fun allSessions(): List<SessionEntity>

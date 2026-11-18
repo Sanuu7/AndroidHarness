@@ -888,6 +888,22 @@ class SessionRepository(
         db.dao().setCompaction(sessionId, "", 0)
     }
 
+    /**
+     * Removes blank "New chat" sessions the user has left. Changing a model or
+     * setting on a fresh chat saves it before any message is sent, so without
+     * this every visit to a new chat could leave another empty row in the
+     * sidebar. Only chats still carrying a default title, with no messages and
+     * no unsent draft, are removed; [keep] protects the open and running ones.
+     */
+    suspend fun pruneUntouchedChats(keep: Set<String>, defaultTitles: Set<String>): Int {
+        val targets = db.dao().untouchedSessions().filter { session ->
+            session.id !in keep && session.title.trim() in defaultTitles &&
+                ConversationConfig.decode(session.conversationJson).draftText.isBlank()
+        }
+        deleteSessions(targets)
+        return targets.size
+    }
+
     suspend fun deleteSession(session: SessionEntity) = deleteSessions(listOf(session))
 
     /** Delete the selected histories together, then collect images no remaining chat uses. */
