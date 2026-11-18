@@ -127,8 +127,21 @@ internal object StreamRetrier {
     fun firstOutputWindow(stallTimeoutMs: Long, options: RequestOptions, config: ProviderConfig): Long =
         firstOutputWindow(stallTimeoutMs, resolvedThinking(options, config), config)
 
-    private fun resolvedThinking(options: RequestOptions, config: ProviderConfig): ThinkingLevel =
-        runCatching { options.resolveThinking(config).level }.getOrDefault(options.thinking)
+    /**
+     * The reasoning work this request may actually cause. Always-on models
+     * turn an Off selection into a real level, so that wins. Models with no
+     * reasoning control get the plain window. Unknown or self-managed models
+     * (thinking style Automatic) send no dial, so the user's own selection is
+     * the only intent available and it is kept.
+     */
+    private fun resolvedThinking(options: RequestOptions, config: ProviderConfig): ThinkingLevel {
+        val resolved = runCatching { options.resolveThinking(config) }.getOrNull() ?: return options.thinking
+        return when {
+            resolved.spec.style == ThinkingSpecs.Style.NONE -> ThinkingLevel.OFF
+            resolved.level != ThinkingLevel.OFF -> resolved.level
+            else -> maxOf(resolved.level, options.thinking)
+        }
+    }
 
     /**
      * How long a server on this device or the local network may stay silent

@@ -390,6 +390,12 @@ class StreamRetrierTest {
         val plain = alwaysOn.copy(model = "claude-3-5-haiku-20241022")
         assertEquals(90_000L,
             StreamRetrier.firstOutputWindow(90_000, RequestOptions(thinking = ThinkingLevel.OFF), plain))
+        // A model with no reasoning dial sends nothing, but the user still asked
+        // for thinking, so an unknown model keeps the request's own intent.
+        val unknown = alwaysOn.copy(id = "openrouter", type = ProviderType.OPENAI_COMPAT,
+            baseUrl = "https://openrouter.ai/api/v1", model = "acme-unknown-1")
+        assertEquals(StreamRetrier.REASONING_FIRST_OUTPUT_MS,
+            StreamRetrier.firstOutputWindow(90_000, RequestOptions(thinking = ThinkingLevel.HIGH), unknown))
     }
 
     @Test
