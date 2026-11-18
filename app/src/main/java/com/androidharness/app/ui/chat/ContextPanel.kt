@@ -1,6 +1,14 @@
 package com.androidharness.app.ui.chat
 
 import android.content.Context
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.text.font.FontWeight
 import com.androidharness.app.R
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -57,25 +65,22 @@ import com.androidharness.app.ui.theme.HarnessMono
 import com.androidharness.app.ui.common.TextButton
 
 /**
- * Current-context dialog, modeled on GUI harnesses like Cline: a live
- * context-window bar (last request's total vs the model's window), the
- * cumulative ↑in / ↓out / cache reads/writes breakdown for this session,
- * and a list-price cost estimate at the same bucket rates they use.
+ * Usage page of the Context and limits sheet. A wavy dial shows how full the context
+ * window is, the estimated request splits into a bar whose segments grow in one after
+ * another, and session totals sit on tonal tiles whose numbers count up when shown.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-fun ContextUsageDialog(
-    state: ChatUiState,
-    onDismiss: () -> Unit,
-    onContextLimits: () -> Unit,
-) {
+fun ContextUsageContent(state: ChatUiState) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val scheme = MaterialTheme.colorScheme
     val used = state.contextUsed.toLong().coerceAtLeast(0)
     val provider = state.activeProvider
     val local = provider?.let { com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) } == true
     val modelLimit = provider?.let { p -> state.catalogs[p.id]?.firstOrNull { it.id == state.effectiveModel }?.contextTokens }
     val localLimit = if (local && state.taskControl.provider?.id == provider?.id) state.taskControl.maxContext else com.androidharness.app.agent.ChatContextPolicy.LIMIT
     val max = (if (state.conversation.isChat) com.androidharness.app.agent.ChatContextPolicy.limit(localLimit, modelLimit, local)
-        else state.maxContextTokens).toLong()
+        else state.maxContextTokens).toLong().coerceAtLeast(1)
     val fraction = (used.toFloat() / max.toFloat()).coerceIn(0f, 1f)
     val estimate = state.estimate
     // Fresh prompt tokens = total input minus cache reads/writes (pi semantics).
@@ -113,117 +118,125 @@ fun ContextUsageDialog(
             )
         }
     }
+    val dial = remember { Animatable(0f) }
+    LaunchedEffect(fraction) { dial.animateTo(fraction, spring(dampingRatio = 0.75f, stiffness = 70f)) }
+    val tight = fraction >= 0.85f
+    val dialColor = when {
+        tight -> scheme.error
+        fraction >= 0.6f -> scheme.tertiary
+        else -> scheme.primary
+    }
 
-    AlertDialog(
-        onDismissRequest = onDismiss,
-        confirmButton = {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                if (!state.conversation.isChat) TextButton(onClick = onContextLimits) { Text(uiContext.getString(R.string.ui_context_limits_extra71)) }
-                TextButton(onClick = onDismiss) { Text(uiContext.getString(R.string.settings_action_close)) }
-            }
-        },
-        title = { Text(uiContext.getString(R.string.ui_context_and_usage)) },
-        text = {
-            Column(
-                verticalArrangement = Arrangement.spacedBy(12.dp),
-                modifier = Modifier.verticalScroll(rememberScrollState()),
-            ) {
-                Column {
-                    Text(
-                        uiContext.getString(R.string.ui_context_window),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        // Context window dial.
+        Surface(color = scheme.surfaceContainer, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
+            Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(16.dp)) {
+                Box(Modifier.size(104.dp), contentAlignment = Alignment.Center) {
+                    androidx.compose.material3.CircularWavyProgressIndicator(
+                        progress = { dial.value }, modifier = Modifier.fillMaxSize(),
+                        color = dialColor, trackColor = scheme.surfaceContainerHighest,
                     )
-                    Spacer(Modifier.height(2.dp))
-                    Text(
-                        "${formatTokenCount(used)} / ${formatTokenCount(max)} tokens (" +
-                            "%.1f%%".format(fraction * 100) + ")",
-                        style = MaterialTheme.typography.titleMedium,
-                    )
-                    Spacer(Modifier.height(8.dp))
-                    ThinLinearProgress(
-                        progress = { fraction },
-                        modifier = Modifier.fillMaxWidth(),
-                    )
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text("%.0f%%".format(dial.value * 100), style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.SemiBold, color = scheme.onSurface)
+                        Text(uiContext.getString(R.string.context_used), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+                    }
                 }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(uiContext.getString(R.string.ui_context_window), style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
+                    Text("${formatTokenCount(used)} / ${formatTokenCount(max)}", style = MaterialTheme.typography.titleMedium,
+                        fontFamily = HarnessMono)
+                    val chip by animateColorAsState(if (tight) scheme.errorContainer else scheme.secondaryContainer, label = "Context free chip")
+                    Text(uiContext.getString(R.string.context_free_tokens, formatTokenCount((max - used).coerceAtLeast(0))),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = if (tight) scheme.onErrorContainer else scheme.onSecondaryContainer,
+                        modifier = Modifier.background(chip, CircleShape).padding(horizontal = 10.dp, vertical = 4.dp))
+                }
+            }
+        }
 
+        Surface(color = scheme.surfaceContainerLow, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
+            Box(Modifier.padding(16.dp)) {
                 ContextBreakdownSection(estimate = estimate, used = used.toInt(), limit = max.toInt())
-
-                HorizontalDivider()
-
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(
-                        uiContext.getString(R.string.ui_session_tokens),
-                        style = MaterialTheme.typography.labelLarge,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.height(2.dp))
-                    TokenRow(uiContext.getString(R.string.ui_fresh_input_tokens), formatTokenCount(freshInput))
-                    TokenRow(uiContext.getString(R.string.ui_cached_tokens_hits), formatTokenCount(state.usage.totalCached))
-                    if (state.usage.totalCacheWrite > 0) {
-                        TokenRow(uiContext.getString(R.string.ui_cache_writes_created), formatTokenCount(state.usage.totalCacheWrite))
-                    }
-                    TokenRow(uiContext.getString(R.string.ui_output_tokens), formatTokenCount(state.usage.totalOutput))
-                    TokenRow(uiContext.getString(R.string.ui_total_requests), state.usage.requests.toString())
-                }
-
-                HorizontalDivider()
-
-                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    val hitRateText = when {
-                        state.usage.requests == 0L && state.busy -> uiContext.getString(R.string.ui_calculating)
-                        state.usage.totalInput > 0 -> "%.1f%%".format(state.usage.avgCacheHitRate * 100)
-                        else -> "0.0%"
-                    }
-                    TokenRow(uiContext.getString(R.string.ui_overall_cache_hit_rate), hitRateText)
-                    Text(
-                        uiContext.getString(R.string.ui_hit_rate_updates_after_each_completed_turn),
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    )
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                    ) {
-                        Text(uiContext.getString(R.string.ui_estimated_cost), style = MaterialTheme.typography.bodyMedium)
-                        Text(
-                            if (usesChatGptPlan) "ChatGPT plan" else "$%.4f".format(estimatedCost ?: 0.0),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontFamily = HarnessMono,
-                            color = MaterialTheme.colorScheme.primary,
-                        )
-                    }
-                    val subText = if (usesChatGptPlan) {
-                        uiContext.getString(R.string.ui_review_plan_usage_and_credits_in_chatgpt)
-                    } else if (state.sessionModelUsage.size > 1) {
-                        uiContext.getString(R.string.ui_sum_across_models_used_in_this_session, (state.sessionModelUsage.size).toString())
-                    } else {
-                        uiContext.getString(R.string.ui_calculated_from_rates, (model ?: "current model").toString())
-                    }
-                    Text(
-                        subText,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                    )
-                }
-
-                if (usesChatGptPlan) {
-                    val context = androidx.compose.ui.platform.LocalContext.current
-                    TextButton(onClick = {
-                        com.androidharness.app.ui.common.openOAuthBrowser(context, android.net.Uri.parse(com.androidharness.app.chatgpt.ChatGptProtocol.USAGE_URL))
-                    }) { Text(uiContext.getString(R.string.ui_manage_usage)) }
-                } else Text(
-                    uiContext.getString(R.string.ui_reasoning_and_thinking_tokens_are_billed_as),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
-                )
             }
-        },
-    )
+        }
+
+        Text(uiContext.getString(R.string.ui_session_tokens), style = MaterialTheme.typography.labelLarge,
+            color = scheme.onSurfaceVariant, modifier = Modifier.padding(start = 4.dp, top = 4.dp))
+        val hitRate = if (state.usage.totalInput > 0) state.usage.avgCacheHitRate.toFloat() else 0f
+        val tiles = buildList<Triple<String, Long?, String?>> {
+            add(Triple(uiContext.getString(R.string.ui_fresh_input_tokens), freshInput, null))
+            add(Triple(uiContext.getString(R.string.ui_cached_tokens_hits), state.usage.totalCached, null))
+            if (state.usage.totalCacheWrite > 0) add(Triple(uiContext.getString(R.string.ui_cache_writes_created), state.usage.totalCacheWrite, null))
+            add(Triple(uiContext.getString(R.string.ui_output_tokens), state.usage.totalOutput, null))
+            add(Triple(uiContext.getString(R.string.context_requests_short), null, state.usage.requests.toString()))
+            add(Triple(uiContext.getString(R.string.context_cache_hit_rate_short), null,
+                if (state.usage.requests == 0L && state.busy) uiContext.getString(R.string.ui_calculating) else "%.1f%%".format(hitRate * 100)))
+        }
+        tiles.chunked(2).forEachIndexed { row, pair ->
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                pair.forEachIndexed { column, (label, count, text) ->
+                    StatTile(label, count, text, row * 2 + column, Modifier.weight(1f))
+                }
+                if (pair.size == 1) Spacer(Modifier.weight(1f))
+            }
+        }
+        Text(uiContext.getString(R.string.ui_hit_rate_updates_after_each_completed_turn),
+            style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+            modifier = Modifier.padding(horizontal = 4.dp))
+
+        // Cost, the one number people come here for, gets the accent container.
+        Surface(color = scheme.primaryContainer, shape = RoundedCornerShape(28.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 20.dp, vertical = 16.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(uiContext.getString(R.string.ui_estimated_cost), style = MaterialTheme.typography.labelLarge, color = scheme.onPrimaryContainer)
+                val shown = remember { Animatable(0f) }
+                LaunchedEffect(estimatedCost) { shown.animateTo((estimatedCost ?: 0.0).toFloat(), spring(dampingRatio = 1f, stiffness = 60f)) }
+                Text(if (usesChatGptPlan) "ChatGPT plan" else "$%.4f".format(if (shown.isRunning) shown.value.toDouble() else estimatedCost ?: 0.0),
+                    style = MaterialTheme.typography.headlineMedium, fontFamily = HarnessMono, fontWeight = FontWeight.SemiBold,
+                    color = scheme.onPrimaryContainer)
+                Text(when {
+                    usesChatGptPlan -> uiContext.getString(R.string.ui_review_plan_usage_and_credits_in_chatgpt)
+                    state.sessionModelUsage.size > 1 -> uiContext.getString(R.string.ui_sum_across_models_used_in_this_session, (state.sessionModelUsage.size).toString())
+                    else -> uiContext.getString(R.string.ui_calculated_from_rates, (model ?: "current model").toString())
+                }, style = MaterialTheme.typography.labelSmall, color = scheme.onPrimaryContainer.copy(alpha = 0.75f))
+            }
+        }
+        if (usesChatGptPlan) {
+            TextButton(onClick = {
+                com.androidharness.app.ui.common.openOAuthBrowser(uiContext, android.net.Uri.parse(com.androidharness.app.chatgpt.ChatGptProtocol.USAGE_URL))
+            }) { Text(uiContext.getString(R.string.ui_manage_usage)) }
+        } else Text(
+            uiContext.getString(R.string.ui_reasoning_and_thinking_tokens_are_billed_as),
+            style = MaterialTheme.typography.labelSmall,
+            color = scheme.onSurfaceVariant.copy(alpha = 0.7f),
+            modifier = Modifier.padding(horizontal = 4.dp),
+        )
+    }
+}
+
+/** Tonal stat tile; numbers count up and the tile springs in, a beat after the one before it. */
+@Composable
+private fun StatTile(label: String, count: Long?, text: String?, order: Int, modifier: Modifier) {
+    val scheme = MaterialTheme.colorScheme
+    val arrive = remember { Animatable(0f) }
+    LaunchedEffect(Unit) {
+        kotlinx.coroutines.delay(45L * order)
+        arrive.animateTo(1f, spring(dampingRatio = 0.6f, stiffness = 380f))
+    }
+    val value = remember { Animatable(0f) }
+    LaunchedEffect(count) { if (count != null) value.animateTo(count.toFloat(), spring(dampingRatio = 1f, stiffness = 50f)) }
+    Surface(color = scheme.surfaceContainerHigh, shape = RoundedCornerShape(20.dp), modifier = modifier.graphicsLayer {
+        alpha = arrive.value.coerceIn(0f, 1f)
+        val s = 0.9f + 0.1f * arrive.value
+        scaleX = s; scaleY = s
+    }) {
+        Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text ?: formatTokenCount(if (value.isRunning) value.value.toLong() else count ?: 0),
+                style = MaterialTheme.typography.titleMedium, fontFamily = HarnessMono, fontWeight = FontWeight.SemiBold,
+                maxLines = 1)
+            Text(label, style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 2)
+        }
+    }
 }
 
 @Composable
@@ -282,21 +295,25 @@ private fun ContextBreakdownSection(estimate: ContextEstimate?, used: Int, limit
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(10.dp)
-                .clip(RoundedCornerShape(5.dp))
+                .height(14.dp)
+                .clip(RoundedCornerShape(7.dp))
                 .background(scheme.surfaceContainerHighest),
             horizontalArrangement = Arrangement.spacedBy(2.dp),
         ) {
-            groups.filter { it.tokens > 0 }.forEach { group ->
-                val weight by animateFloatAsState(
-                    targetValue = (group.tokens / span).coerceAtLeast(0.001f),
-                    animationSpec = expressiveDefaultSpatialSpec(),
-                    label = "contextSegment",
-                )
-                Box(Modifier.weight(weight).fillMaxHeight().background(group.color))
+            // Segments grow in from nothing one after another; the free space takes up the rest.
+            var grown = 0f
+            groups.filter { it.tokens > 0 }.forEachIndexed { index, group ->
+                val target = (group.tokens / span).coerceAtLeast(0.001f)
+                val weight = remember { Animatable(0.001f) }
+                LaunchedEffect(target) {
+                    kotlinx.coroutines.delay(90L * index)
+                    weight.animateTo(target, spring(dampingRatio = 0.7f, stiffness = 140f))
+                }
+                grown += weight.value
+                Box(Modifier.weight(weight.value.coerceAtLeast(0.001f)).fillMaxHeight().clip(RoundedCornerShape(4.dp)).background(group.color))
             }
-            val free = span - total
-            if (free > 0f) Spacer(Modifier.weight((free / span).coerceAtLeast(0.001f)))
+            val free = 1f - grown
+            if (free > 0.001f) Spacer(Modifier.weight(free))
         }
         groups.forEach { group -> BreakdownGroupRow(group, span) }
         BreakdownRowLine(
@@ -353,15 +370,16 @@ private fun BreakdownGroupRow(group: BreakdownGroup, span: Float) {
             tokens = group.tokens,
             span = span,
             dot = group.color,
-            modifier = if (canExpand) Modifier.clickable { expanded = !expanded } else Modifier,
+            modifier = if (canExpand) Modifier.clip(RoundedCornerShape(12.dp)).clickable { expanded = !expanded } else Modifier,
             trailing = if (canExpand) {
                 {
+                    val turn by animateFloatAsState(if (expanded) 180f else 0f, spring(dampingRatio = 0.55f, stiffness = 500f), label = "Breakdown chevron")
                     Icon(
-                        if (expanded) Icons.Outlined.KeyboardArrowUp else Icons.Outlined.KeyboardArrowDown,
+                        Icons.Outlined.KeyboardArrowDown,
                         contentDescription = context.getString(
                             if (expanded) R.string.context_breakdown_collapse else R.string.context_breakdown_expand,
                         ),
-                        modifier = Modifier.size(18.dp),
+                        modifier = Modifier.size(18.dp).graphicsLayer { rotationZ = turn },
                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
@@ -370,7 +388,7 @@ private fun BreakdownGroupRow(group: BreakdownGroup, span: Float) {
         AnimatedVisibility(
             visible = expanded && canExpand,
             enter = expandVertically(expressiveDefaultSpatialSpec()) + fadeIn(expressiveEffectsSpec()),
-            exit = shrinkVertically(expressiveDefaultSpatialSpec()) + fadeOut(expressiveEffectsSpec()),
+            exit = shrinkVertically(androidx.compose.animation.core.tween(160)) + fadeOut(androidx.compose.animation.core.tween(90)),
         ) {
             Column(
                 modifier = Modifier.padding(start = 18.dp, top = 2.dp, bottom = 4.dp),

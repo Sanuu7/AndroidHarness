@@ -2,6 +2,22 @@ package com.androidharness.app.ui.chat
 
 import com.androidharness.app.ui.theme.HarnessGlassSwitch as Switch
 import com.androidharness.app.R
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.ui.graphics.graphicsLayer
+
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.ui.text.input.KeyboardType
@@ -192,8 +208,6 @@ fun TaskSettingsSheet(
     var cost by remember { mutableStateOf(record.limits.cost.takeIf { it > 0 }?.toString().orEmpty()) }
     var minutes by remember { mutableStateOf(record.limits.minutes.takeIf { it > 0 }?.toString().orEmpty()) }
     var clearOlder by remember { mutableStateOf(false) }
-    var section by remember { mutableStateOf(0) }
-    var usage by remember { mutableStateOf(true) }
     val valid = (tokens.isBlank() || (tokens.toLongOrNull() ?: -1) > 0) &&
         (cost.isBlank() || cost.toDoubleOrNull()?.let { it.isFinite() && it > 0 } == true) &&
         (minutes.isBlank() || (minutes.toLongOrNull() ?: -1) in 1..525600)
@@ -208,28 +222,29 @@ fun TaskSettingsSheet(
             onDismiss = { editPrompt = false },
         )
     }
-    if (usage) {
-        ContextUsageDialog(
-            state = state,
-            onDismiss = onDismiss,
-            onContextLimits = { usage = false },
-        )
-    } else {
-        ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)) {
-            Column(Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp)) {
-                Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-                    Text(uiContext.getString(R.string.ui_context_limits), style = MaterialTheme.typography.titleLarge, modifier = Modifier.weight(1f))
-                    TextButton(onClick = { usage = true }) { Text(uiContext.getString(R.string.settings_page_usage_title)) }
-                }
-                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    FilterChip(selected = section == 0, onClick = { section = 0 }, label = { Text(uiContext.getString(R.string.ui_context)) })
-                    FilterChip(selected = section == 1, onClick = { section = 1 }, label = { Text(uiContext.getString(R.string.ui_task_limits)) })
-                    FilterChip(selected = section == 2, onClick = { section = 2 }, label = { Text(uiContext.getString(R.string.ui_recovery)) })
-                }
-                Column(Modifier.weight(1f, fill = false).heightIn(max = 440.dp).verticalScroll(rememberScrollState()),
+    val isChat = state.conversation.isChat
+    // Usage first; the other pages exist only for coding tasks.
+    val pages = if (isChat) listOf(0) else listOf(0, 1, 2, 3)
+    var page by rememberSaveable { mutableIntStateOf(0) }
+    ModalBottomSheet(onDismissRequest = onDismiss, sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+        containerColor = MaterialTheme.colorScheme.surfaceContainerLow) {
+        Column(Modifier.fillMaxWidth().imePadding().padding(horizontal = 20.dp)) {
+            Text(uiContext.getString(if (isChat) R.string.ui_context_and_usage else R.string.ui_context_limits),
+                style = MaterialTheme.typography.headlineSmall, modifier = Modifier.padding(bottom = 12.dp))
+            if (pages.size > 1) ContextSheetTabs(page) { page = it }
+            AnimatedContent(page, transitionSpec = {
+                val forward = targetState > initialState
+                (slideInHorizontally(spring(dampingRatio = 0.8f, stiffness = 420f)) { if (forward) it / 3 else -it / 3 } +
+                    fadeIn(tween(200, delayMillis = 40))) togetherWith
+                    (slideOutHorizontally(tween(160)) { if (forward) -it / 4 else it / 4 } + fadeOut(tween(110))) using
+                    SizeTransform(clip = false) { _, _ -> spring(dampingRatio = 0.85f, stiffness = 420f) }
+            }, label = "Context sheet page", modifier = Modifier.weight(1f, fill = false)) { current ->
+                Column(Modifier.fillMaxWidth().heightIn(max = 560.dp).verticalScroll(rememberScrollState()).padding(top = 14.dp),
                     verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    if (state.busy && section != 2) Text(uiContext.getString(R.string.ui_pause_the_task_to_edit_these_settings), style = MaterialTheme.typography.bodySmall)
-                    if (section == 0) {
+                    if (state.busy && (current == 1 || current == 2)) PauseNote(uiContext.getString(R.string.ui_pause_the_task_to_edit_these_settings))
+                    when (current) {
+                        0 -> ContextUsageContent(state)
+                        1 -> {
                         Text(uiContext.getString(R.string.ui_keep_the_instructions_that_matter_and_choose),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         OutlinedTextField(pins, { pins = it }, label = { Text(uiContext.getString(R.string.ui_pinned_instructions)) },
@@ -246,7 +261,8 @@ fun TaskSettingsSheet(
                             }
                             Switch(clearOlder, { clearOlder = it }, enabled = !state.busy)
                         }
-                    } else if (section == 1) {
+}
+                        2 -> {
                         Text(uiContext.getString(R.string.ui_optional_limits_for_the_whole_task_including),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         OutlinedTextField(tokens, { tokens = it }, label = { Text(uiContext.getString(R.string.ui_total_tokens)) }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -261,7 +277,10 @@ fun TaskSettingsSheet(
                             uiContext.getString(R.string.ui_used_tokens_min, (record.usedTokens).toString(), ("%.4f".format(record.usedCost)).toString(), (record.elapsedMs / 60000).toString()),
                             style = MaterialTheme.typography.labelMedium)
                         if (!valid) Text(uiContext.getString(R.string.ui_enter_a_positive_number_or_leave_blank), color = MaterialTheme.colorScheme.error)
-                    } else {
+
+                            LimitMeters(record, tokens, cost, minutes)
+                        }
+                        else -> {
                         Row(Modifier.fillMaxWidth().clickable {
                             onRecoveryChange(!record.autoContinue, record.autoContinueLimit)
                         }.heightIn(min = 48.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -302,15 +321,103 @@ fun TaskSettingsSheet(
                         Text(uiContext.getString(R.string.ui_automatic_continues_used_a_new_task_resets, (record.autoContinueAttempts).toString()),
                             style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(uiContext.getString(R.string.ui_changes_are_saved_immediately), style = MaterialTheme.typography.labelMedium)
+                        }
                     }
                 }
-                if (section == 2) {
-                    Button(onClick = onDismiss, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) { Text(uiContext.getString(R.string.settings_action_done)) }
+            }
+            val action = when (page) { 0, 3 -> 0; else -> 1 }
+            AnimatedContent(action, transitionSpec = {
+                (fadeIn(tween(180)) + scaleIn(spring(dampingRatio = 0.6f, stiffness = 500f), initialScale = 0.92f)) togetherWith fadeOut(tween(90))
+            }, label = "Context sheet action") { kind ->
+                if (kind == 0) FilledTonalButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+                    Text(uiContext.getString(if (page == 0) R.string.settings_action_close else R.string.settings_action_done))
                 } else Button(onClick = {
                     onSave(pins, if (summary == savedSummary && !clearOlder) record.summaryOverride else summary,
                         TaskLimits(tokens.toLongOrNull() ?: 0, cost.toDoubleOrNull() ?: 0.0, minutes.toLongOrNull() ?: 0), clearOlder)
                     onDismiss()
-                }, enabled = valid && !state.busy, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) { Text(uiContext.getString(R.string.settings_root_browser_save_confirm)) }
+                }, enabled = valid && !state.busy, modifier = Modifier.fillMaxWidth().padding(vertical = 16.dp)) {
+                    Text(uiContext.getString(R.string.settings_root_browser_save_confirm))
+                }
+            }
+        }
+    }
+}
+
+
+/** Material 3 Expressive connected button group: the picked page's button widens its corners into a pill. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun ContextSheetTabs(page: Int, onPage: (Int) -> Unit) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val tabs = listOf(
+        Icons.Default.DataUsage to R.string.settings_page_usage_title,
+        Icons.Default.PushPin to R.string.ui_context,
+        Icons.Default.Speed to R.string.context_tab_limits,
+        Icons.Default.Restore to R.string.ui_recovery,
+    )
+    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(ButtonGroupDefaults.ConnectedSpaceBetween)) {
+        tabs.forEachIndexed { index, (icon, label) ->
+            ToggleButton(
+                checked = page == index,
+                onCheckedChange = { onPage(index) },
+                shapes = when (index) {
+                    0 -> ButtonGroupDefaults.connectedLeadingButtonShapes()
+                    tabs.lastIndex -> ButtonGroupDefaults.connectedTrailingButtonShapes()
+                    else -> ButtonGroupDefaults.connectedMiddleButtonShapes()
+                },
+                contentPadding = PaddingValues(horizontal = 6.dp, vertical = 8.dp),
+                modifier = Modifier.weight(1f).heightIn(min = 48.dp).semantics { role = androidx.compose.ui.semantics.Role.Tab },
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    val pop by animateFloatAsState(if (page == index) 1.15f else 1f, spring(dampingRatio = 0.4f, stiffness = 600f), label = "Tab icon pop")
+                    Icon(icon, null, Modifier.size(18.dp).graphicsLayer { scaleX = pop; scaleY = pop })
+                    Text(uiContext.getString(label), style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun PauseNote(text: String) {
+    Surface(color = MaterialTheme.colorScheme.tertiaryContainer, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 10.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            Icon(Icons.Default.PauseCircle, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onTertiaryContainer)
+            Text(text, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onTertiaryContainer)
+        }
+    }
+}
+
+/** How much of each set limit this task has used, as wavy meters that fill when shown. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun LimitMeters(record: com.androidharness.app.agent.TaskRecord, tokens: String, cost: String, minutes: String) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val meters = listOfNotNull(
+        tokens.toLongOrNull()?.takeIf { it > 0 }?.let { Triple(uiContext.getString(R.string.ui_total_tokens), record.usedTokens.toFloat() / it,
+            uiContext.getString(R.string.context_limit_used, com.androidharness.app.ui.common.formatTokenCount(record.usedTokens), com.androidharness.app.ui.common.formatTokenCount(it))) },
+        cost.toDoubleOrNull()?.takeIf { it > 0 }?.let { Triple(uiContext.getString(R.string.ui_estimated_cost_usd), (record.usedCost / it).toFloat(),
+            uiContext.getString(R.string.context_limit_used, "$%.4f".format(record.usedCost), "$%.2f".format(it))) },
+        minutes.toLongOrNull()?.takeIf { it > 0 }?.let { Triple(uiContext.getString(R.string.ui_active_time_minutes), record.elapsedMs / 60000f / it,
+            uiContext.getString(R.string.context_limit_used, "${record.elapsedMs / 60000}", "$it")) },
+    )
+    meters.forEachIndexed { index, (label, fraction, detail) ->
+        val fill = remember { androidx.compose.animation.core.Animatable(0f) }
+        LaunchedEffect(fraction) {
+            kotlinx.coroutines.delay(80L * index)
+            fill.animateTo(fraction.coerceIn(0f, 1f), spring(dampingRatio = 0.8f, stiffness = 90f))
+        }
+        val tight = fraction >= 0.85f
+        Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(label, style = MaterialTheme.typography.labelLarge, modifier = Modifier.weight(1f))
+                    Text(detail, style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                LinearWavyProgressIndicator(progress = { fill.value }, modifier = Modifier.fillMaxWidth(),
+                    color = if (tight) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary,
+                    trackColor = MaterialTheme.colorScheme.surfaceContainerHighest)
             }
         }
     }
