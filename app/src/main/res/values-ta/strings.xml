@@ -705,10 +705,16 @@
     <string name="chat_create_code">"Code உரையாடலை உருவாக்கவும்"</string>
     <string name="chat_from_chat">"Chat இலிருந்து"</string>
     <string name="chat_empty_title">"உங்கள் மனதில் என்ன இருக்கிறது?"</string>
-    <string name="chat_empty_description">"ஒரு கேள்வியைக் கேளுங்கள், ஒரு யோசனையை ஆராயுங்கள் அல்லது அதைப் பேசுங்கள்."</string>
+    <string name="chat_empty_description">"கீழே ஒரு தொடக்கத்தைத் தேர்ந்தெடுக்கவும் அல்லது நேரடியாகத் தட்டச்சு செய்யவும்."</string>
     <string name="chat_suggestion_explain">"ஒரு தந்திரமான தலைப்பை எளிமையாக விளக்குங்கள்"</string>
     <string name="chat_suggestion_ideas">"ஒரு யோசனையை உருவாக்க எனக்கு உதவுங்கள்"</string>
     <string name="chat_suggestion_draft">"தெளிவான செய்தியை எழுத எனக்கு உதவுங்கள்"</string>
+    <string name="chat_suggestion_think">"ஒன்றைப் பற்றி யோசிக்க உதவுங்கள்"</string>
+    <string name="chat_prefill_explain">"இதை எளிமையாக விளக்குங்கள்:"</string>
+    <string name="chat_prefill_ideas">"இதற்கான யோசனைகளை உருவாக்க உதவுங்கள்"</string>
+    <string name="chat_prefill_draft">"தெளிவான செய்தியை எழுத உதவுங்கள்:"</string>
+    <string name="chat_prefill_think">"யோசித்துப் பார்க்க உதவுங்கள்:"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"பிரிவுகளை மாற்றுவதற்கு முன் இணைப்புகளை அனுப்பவும் அல்லது அகற்றவும். உங்கள் வரைவு வைக்கப்படும்."</string>
     <string name="chat_file_requires_code">"இந்தக் கோப்பிற்கு Code ஐப் பயன்படுத்தவும். Chat பிரித்தெடுக்கக்கூடிய உரையுடன் படங்கள், உரை கோப்புகள் மற்றும் PDFகளைப் படிக்க முடியும்."</string>
     <string name="chat_thinking">"யோசிக்கிறேன்"</string>

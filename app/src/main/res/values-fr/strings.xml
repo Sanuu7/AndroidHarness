@@ -706,10 +706,16 @@
     <string name="chat_create_code">"Créer une conversation Code"</string>
     <string name="chat_from_chat">"De Chat"</string>
     <string name="chat_empty_title">"Qu\'avez-vous en tête ?"</string>
-    <string name="chat_empty_description">"Posez une question, explorez une idée ou discutez-en."</string>
+    <string name="chat_empty_description">"Choisissez une amorce ci-dessous ou commencez à écrire."</string>
     <string name="chat_suggestion_explain">"Expliquez simplement un sujet délicat"</string>
     <string name="chat_suggestion_ideas">"Aide-moi à réfléchir à une idée"</string>
     <string name="chat_suggestion_draft">"Aide-moi à écrire un message clair"</string>
+    <string name="chat_suggestion_think">"Aide-moi à réfléchir à quelque chose"</string>
+    <string name="chat_prefill_explain">"Explique-moi cela simplement :"</string>
+    <string name="chat_prefill_ideas">"Aide-moi à trouver des idées pour"</string>
+    <string name="chat_prefill_draft">"Aide-moi à écrire un message clair à"</string>
+    <string name="chat_prefill_think">"Aide-moi à réfléchir à"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Envoyez ou supprimez des pièces jointes avant de changer de section. Votre brouillon sera conservé."</string>
     <string name="chat_file_requires_code">"Utilisez Code pour ce fichier. Chat peut lire des images, des fichiers texte et des PDF avec du texte extractible."</string>
     <string name="chat_thinking">"Penser"</string>

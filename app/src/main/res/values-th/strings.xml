@@ -704,10 +704,16 @@
     <string name="chat_create_code">"สร้างการสนทนา Code"</string>
     <string name="chat_from_chat">"จาก Chat"</string>
     <string name="chat_empty_title">"อะไรอยู่ในใจของคุณ?"</string>
-    <string name="chat_empty_description">"ถามคำถาม สำรวจความคิด หรือพูดคุยผ่านมัน"</string>
+    <string name="chat_empty_description">"เลือกจุดเริ่มต้นด้านล่างหรือพิมพ์ได้เลย"</string>
     <string name="chat_suggestion_explain">"อธิบายหัวข้อที่ยุ่งยากง่ายๆ"</string>
     <string name="chat_suggestion_ideas">"ช่วยระดมความคิดหน่อยค่ะ"</string>
     <string name="chat_suggestion_draft">"ช่วยฉันเขียนข้อความที่ชัดเจน"</string>
+    <string name="chat_suggestion_think">"ช่วยฉันคิดเรื่องหนึ่งให้รอบคอบ"</string>
+    <string name="chat_prefill_explain">"อธิบายเรื่องนี้ให้เข้าใจง่าย ๆ:"</string>
+    <string name="chat_prefill_ideas">"ช่วยคิดไอเดียสำหรับ"</string>
+    <string name="chat_prefill_draft">"ช่วยเขียนข้อความที่ชัดเจนถึง"</string>
+    <string name="chat_prefill_think">"ช่วยฉันคิดเรื่อง"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"ส่งหรือลบไฟล์แนบก่อนเปลี่ยนส่วน ฉบับร่างของคุณจะถูกเก็บไว้"</string>
     <string name="chat_file_requires_code">"ใช้ Code สำหรับไฟล์นี้ Chat สามารถอ่านรูปภาพ ไฟล์ข้อความ และ PDF พร้อมข้อความที่แยกออกมาได้"</string>
     <string name="chat_thinking">"กำลังคิด"</string>

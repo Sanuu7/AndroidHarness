@@ -704,10 +704,16 @@
     <string name="chat_create_code">"Tạo cuộc trò chuyện Code"</string>
     <string name="chat_from_chat">"Từ Chat"</string>
     <string name="chat_empty_title">"Bạn đang nghĩ gì vậy?"</string>
-    <string name="chat_empty_description">"Đặt câu hỏi, khám phá một ý tưởng hoặc nói chuyện về nó."</string>
+    <string name="chat_empty_description">"Chọn một gợi ý bên dưới hoặc bắt đầu gõ."</string>
     <string name="chat_suggestion_explain">"Giải thích một chủ đề phức tạp một cách đơn giản"</string>
     <string name="chat_suggestion_ideas">"Giúp tôi nghĩ ra một ý tưởng"</string>
     <string name="chat_suggestion_draft">"Giúp tôi viết một thông điệp rõ ràng"</string>
+    <string name="chat_suggestion_think">"Giúp tôi suy nghĩ kỹ về một chuyện"</string>
+    <string name="chat_prefill_explain">"Giải thích điều này cho tôi thật đơn giản:"</string>
+    <string name="chat_prefill_ideas">"Giúp tôi nghĩ ý tưởng cho"</string>
+    <string name="chat_prefill_draft">"Giúp tôi viết một tin nhắn rõ ràng cho"</string>
+    <string name="chat_prefill_think">"Giúp tôi suy nghĩ kỹ về"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Gửi hoặc xóa tệp đính kèm trước khi chuyển đổi phần. Bản nháp của bạn sẽ được giữ lại."</string>
     <string name="chat_file_requires_code">"Sử dụng Code cho tệp này. Chat có thể đọc hình ảnh, tệp văn bản và tệp PDF có văn bản có thể trích xuất được."</string>
     <string name="chat_thinking">"Suy nghĩ"</string>

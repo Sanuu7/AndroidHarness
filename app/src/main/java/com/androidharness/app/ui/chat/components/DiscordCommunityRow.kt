@@ -36,7 +36,7 @@ import com.androidharness.app.R
 internal const val DISCORD_INVITE_URL = "https://discord.gg/NdC5K3XeWF"
 
 // Discord's brand blurple, the background its own mark is drawn on.
-private val DiscordBlurple = Color(0xFF5865F2)
+internal val DiscordBlurple = Color(0xFF5865F2)
 
 /** Row that opens the AndroidHarness Discord invite in the user's browser or the Discord app. */
 @Composable

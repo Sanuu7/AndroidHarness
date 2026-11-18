@@ -715,10 +715,16 @@
     <string name="chat_create_code">"Criar conversa de Código"</string>
     <string name="chat_from_chat">"Do Chat"</string>
     <string name="chat_empty_title">"O que está em sua mente?"</string>
-    <string name="chat_empty_description">"Faça uma pergunta, explore uma ideia ou converse sobre ela."</string>
+    <string name="chat_empty_description">"Escolha um início abaixo ou comece a digitar."</string>
     <string name="chat_suggestion_explain">"Explique um tema difícil de forma simples"</string>
     <string name="chat_suggestion_ideas">"Me ajude a ter ideias"</string>
     <string name="chat_suggestion_draft">"Me ajude a escrever uma mensagem clara"</string>
+    <string name="chat_suggestion_think">"Me ajude a pensar em algo"</string>
+    <string name="chat_prefill_explain">"Explique isto de forma simples:"</string>
+    <string name="chat_prefill_ideas">"Me ajude a ter ideias para"</string>
+    <string name="chat_prefill_draft">"Me ajude a escrever uma mensagem clara para"</string>
+    <string name="chat_prefill_think">"Me ajude a pensar sobre"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Envie ou remova anexos antes de trocar de seção. Seu rascunho será mantido."</string>
     <string name="chat_file_requires_code">"Use o Code para este arquivo. O Chat pode ler imagens, arquivos de texto e PDFs com texto extraível."</string>
     <string name="chat_thinking">"Pensando"</string>

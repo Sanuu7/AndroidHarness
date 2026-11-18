@@ -705,10 +705,16 @@
     <string name="chat_create_code">"Lumikha ng Code na pag-uusap"</string>
     <string name="chat_from_chat">"Mula sa Chat"</string>
     <string name="chat_empty_title">"Ano ang nasa isip mo?"</string>
-    <string name="chat_empty_description">"Magtanong, galugarin ang isang ideya, o pag-usapan ito."</string>
+    <string name="chat_empty_description">"Pumili ng simula sa ibaba o magsimulang mag-type."</string>
     <string name="chat_suggestion_explain">"Ipaliwanag nang simple ang isang nakakalito na paksa"</string>
     <string name="chat_suggestion_ideas">"Tulungan akong mag-brainstorm ng ideya"</string>
     <string name="chat_suggestion_draft">"Tulungan akong magsulat ng malinaw na mensahe"</string>
+    <string name="chat_suggestion_think">"Tulungan mo akong pag-isipan ang isang bagay"</string>
+    <string name="chat_prefill_explain">"Ipaliwanag ito sa akin nang simple:"</string>
+    <string name="chat_prefill_ideas">"Tulungan mo akong mag-isip ng mga ideya para sa"</string>
+    <string name="chat_prefill_draft">"Tulungan mo akong sumulat ng malinaw na mensahe kay"</string>
+    <string name="chat_prefill_think">"Tulungan mo akong pag-isipan ang"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Magpadala o mag-alis ng mga attachment bago lumipat ng mga seksyon. Itatago ang iyong draft."</string>
     <string name="chat_file_requires_code">"Gamitin ang Code para sa file na ito. Ang Chat ay maaaring magbasa ng mga larawan, text file, at PDF na may na-extract na text."</string>
     <string name="chat_thinking">"Nag-iisip"</string>

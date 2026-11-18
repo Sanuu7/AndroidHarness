@@ -60,20 +60,20 @@ class DiscordCommunityDeviceTest {
                 awaitCondition { find(label(R.string.donate_funding_message)) == null }
                 assertTrue(com.androidharness.app.data.SettingsRepository(context).donationNoticeDismissed.first())
                 reveal(label(R.string.ui_donate))
-                reveal(label(R.string.discord_join_title))
+                reveal(label(R.string.chat_support_discord))
                 screenshot("donation-message-dismissed")
                 scenario.recreate()
                 scenario.onActivity(::display)
-                reveal(label(R.string.discord_join_title))
+                reveal(label(R.string.chat_support_discord))
                 assertNull(find(label(R.string.donate_funding_message)))
                 scenario.onActivity { chat.value = false }
-                reveal(label(R.string.discord_join_title))
+                reveal(label(R.string.chat_support_discord))
                 assertNull(find(label(R.string.donate_funding_message)))
             }
         } finally { settings.setDonationNoticeDismissed(saved) }
     }
 
-    @Test fun chatAndCodeOfferDiscordBelowCoffeeWithLargeText() {
+    @Test fun chatAndCodeOfferCoffeeAndDiscordWithLargeText() {
         val chat = mutableStateOf(true)
         val dark = mutableStateOf(false)
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
@@ -91,16 +91,9 @@ class DiscordCommunityDeviceTest {
             } }
             for (isChat in listOf(true, false)) for (isDark in listOf(false, true)) {
                 scenario.onActivity { chat.value = isChat; dark.value = isDark }
-                reveal(label(R.string.discord_join_title))
-                // The funding notice can still be expanding after its saved dismissal loads.
-                awaitCondition {
-                    val tree = nodes()
-                    val discord = tree.firstOrNull { matches(it, label(R.string.discord_join_title)) }
-                    val coffee = tree.firstOrNull { matches(it, label(R.string.ui_donate)) }
-                    discord != null && coffee != null && bounds(discord).top >= bounds(coffee).bottom
-                }
-                assertNotNull("Subtitle stays visible at large fonts", find(label(R.string.discord_join_subtitle)))
-                assertNull("UPI donation is gone", find("Donate with UPI"))
+                // Chat and Code show donation and Discord as two quiet chips side by side.
+                reveal(label(R.string.chat_support_discord))
+                assertNotNull(find(label(R.string.ui_donate)))
                 screenshot("discord-${if (isChat) "chat" else "code"}-${if (isDark) "dark" else "light"}-row")
             }
         }

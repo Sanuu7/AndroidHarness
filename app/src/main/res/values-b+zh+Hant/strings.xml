@@ -704,10 +704,16 @@
     <string name="chat_create_code">"建立程式碼對話"</string>
     <string name="chat_from_chat">"來自聊天"</string>
     <string name="chat_empty_title">"你想聊些什麼？"</string>
-    <string name="chat_empty_description">"提出問題、探索想法，或一起討論。"</string>
+    <string name="chat_empty_description">"從下方選一個開始，或直接輸入。"</string>
     <string name="chat_suggestion_explain">"簡單解釋一個複雜話題"</string>
     <string name="chat_suggestion_ideas">"幫我構思想法"</string>
     <string name="chat_suggestion_draft">"幫我寫一條清晰的訊息"</string>
+    <string name="chat_suggestion_think">"幫我想清楚一件事"</string>
+    <string name="chat_prefill_explain">"簡單說明一下這件事："</string>
+    <string name="chat_prefill_ideas">"幫我腦力激盪一些想法，主題是"</string>
+    <string name="chat_prefill_draft">"幫我寫一則清楚的訊息給"</string>
+    <string name="chat_prefill_think">"幫我想清楚"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"請先傳送或移除附件，再切換區域。草稿將保留。"</string>
     <string name="chat_file_requires_code">"請在程式碼中使用此檔案。聊天可以讀取圖片、文字檔案以及可提取文字的 PDF。"</string>
     <string name="chat_thinking">"正在思考"</string>

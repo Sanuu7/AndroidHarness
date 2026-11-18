@@ -229,8 +229,9 @@ class HarnessGlassDeviceTest {
             assertEquals("Create a Python hello world and run it", selected)
             screenshot("welcome-code-glass").recycle()
             instrumentation.runOnMainSync { chat.value = true }
+            // Chat starters that need the user's words prefill the composer instead of sending.
             tap("Explain a tricky topic simply")
-            assertEquals("Explain a tricky topic simply", selected)
+            assertEquals("Explain this to me simply: ", selected)
             screenshot("welcome-chat-glass").recycle()
             instrumentation.runOnMainSync { rich.value = true; transparency.value = 0f }
             await("Glass profile")

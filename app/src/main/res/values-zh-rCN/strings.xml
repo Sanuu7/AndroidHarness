@@ -735,10 +735,16 @@
     <string name="chat_create_code">创建代码对话</string>
     <string name="chat_from_chat">来自聊天</string>
     <string name="chat_empty_title">你想聊些什么？</string>
-    <string name="chat_empty_description">提出问题、探索想法，或一起讨论。</string>
+    <string name="chat_empty_description">从下方选一个开始，或直接输入。</string>
     <string name="chat_suggestion_explain">简单解释一个复杂话题</string>
     <string name="chat_suggestion_ideas">帮我构思想法</string>
     <string name="chat_suggestion_draft">帮我写一条清晰的消息</string>
+    <string name="chat_suggestion_think">帮我想清楚一件事</string>
+    <string name="chat_prefill_explain">简单解释一下这个：</string>
+    <string name="chat_prefill_ideas">帮我围绕这个想些点子：</string>
+    <string name="chat_prefill_draft">帮我写一条清楚的留言给</string>
+    <string name="chat_prefill_think">帮我想清楚</string>
+    <string name="chat_support_discord">Discord</string>
     <string name="chat_switch_attachments">请先发送或移除附件，再切换区域。草稿将保留。</string>
     <string name="chat_file_requires_code">请在代码中使用此文件。聊天可以读取图片、文本文件以及可提取文本的 PDF。</string>
     <string name="chat_thinking">正在思考</string>

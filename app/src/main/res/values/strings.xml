@@ -760,10 +760,16 @@
     <string name="chat_create_code">Create Code conversation</string>
     <string name="chat_from_chat">From Chat</string>
     <string name="chat_empty_title">What is on your mind?</string>
-    <string name="chat_empty_description">Ask a question, explore an idea, or talk it through.</string>
+    <string name="chat_empty_description">Pick a starter below or just start typing.</string>
     <string name="chat_suggestion_explain">Explain a tricky topic simply</string>
     <string name="chat_suggestion_ideas">Help me brainstorm an idea</string>
     <string name="chat_suggestion_draft">Help me write a clear message</string>
+    <string name="chat_suggestion_think">Help me think something through</string>
+    <string name="chat_prefill_explain">Explain this to me simply:</string>
+    <string name="chat_prefill_ideas">Help me brainstorm ideas for</string>
+    <string name="chat_prefill_draft">Help me write a clear message to</string>
+    <string name="chat_prefill_think">Help me think through</string>
+    <string name="chat_support_discord">Discord</string>
     <string name="chat_switch_attachments">Send or remove attachments before switching sections. Your draft will be kept.</string>
     <string name="chat_file_requires_code">Use Code for this file. Chat can read images, text files, and PDFs with extractable text.</string>
     <string name="chat_thinking">Thinking</string>

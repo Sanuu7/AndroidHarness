@@ -705,10 +705,16 @@
     <string name="chat_create_code">"Code konuşması oluştur"</string>
     <string name="chat_from_chat">"Chat\'den"</string>
     <string name="chat_empty_title">"Aklında ne var?"</string>
-    <string name="chat_empty_description">"Bir soru sorun, bir fikri keşfedin veya üzerinde konuşun."</string>
+    <string name="chat_empty_description">"Aşağıdan bir başlangıç seçin ya da doğrudan yazmaya başlayın."</string>
     <string name="chat_suggestion_explain">"Zor bir konuyu basitçe açıklayın"</string>
     <string name="chat_suggestion_ideas">"Bir fikir için beyin fırtınası yapmama yardım et"</string>
     <string name="chat_suggestion_draft">"Açık bir mesaj yazmama yardım et"</string>
+    <string name="chat_suggestion_think">"Bir şeyi iyice düşünmeme yardım et"</string>
+    <string name="chat_prefill_explain">"Bunu bana basitçe açıkla:"</string>
+    <string name="chat_prefill_ideas">"Şunun için fikir üretmeme yardım et:"</string>
+    <string name="chat_prefill_draft">"Şuna net bir mesaj yazmama yardım et:"</string>
+    <string name="chat_prefill_think">"Şunu iyice düşünmeme yardım et:"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Bölümleri değiştirmeden önce ekleri gönderin veya kaldırın. Taslağınız saklanacaktır."</string>
     <string name="chat_file_requires_code">"Bu dosya için Code kullanın. Chat, görüntüleri, metin dosyalarını ve çıkarılabilir metin içeren PDF\'leri okuyabilir."</string>
     <string name="chat_thinking">"Düşünme"</string>

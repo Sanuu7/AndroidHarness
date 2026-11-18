@@ -704,10 +704,16 @@
     <string name="chat_create_code">"Code 대화 만들기"</string>
     <string name="chat_from_chat">"Chat에서"</string>
     <string name="chat_empty_title">"당신의 마음에는 무엇이 있습니까?"</string>
-    <string name="chat_empty_description">"질문하고, 아이디어를 탐구하고, 자세히 이야기해 보세요."</string>
+    <string name="chat_empty_description">"아래에서 시작 문구를 고르거나 바로 입력하세요."</string>
     <string name="chat_suggestion_explain">"까다로운 주제를 간단하게 설명하세요."</string>
     <string name="chat_suggestion_ideas">"아이디어를 브레인스토밍하는 데 도움을 주세요."</string>
     <string name="chat_suggestion_draft">"명확한 메시지를 작성하도록 도와주세요"</string>
+    <string name="chat_suggestion_think">"어떤 일을 차근차근 생각해 보고 싶어요"</string>
+    <string name="chat_prefill_explain">"이걸 쉽게 설명해 줘:"</string>
+    <string name="chat_prefill_ideas">"아이디어를 내고 싶은 주제:"</string>
+    <string name="chat_prefill_draft">"명확한 메시지를 쓰고 싶은 대상:"</string>
+    <string name="chat_prefill_think">"차근차근 생각해 보고 싶은 것:"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"섹션을 전환하기 전에 첨부파일을 보내거나 제거하세요. 초안은 보관됩니다."</string>
     <string name="chat_file_requires_code">"이 파일에는 Code를 사용하십시오. Chat는 추출 가능한 텍스트가 포함된 이미지, 텍스트 파일 및 PDF를 읽을 수 있습니다."</string>
     <string name="chat_thinking">"생각"</string>

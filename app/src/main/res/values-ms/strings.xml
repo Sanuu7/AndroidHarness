@@ -704,10 +704,16 @@
     <string name="chat_create_code">"Cipta perbualan Code"</string>
     <string name="chat_from_chat">"Daripada Chat"</string>
     <string name="chat_empty_title">"Apa yang ada dalam fikiran anda?"</string>
-    <string name="chat_empty_description">"Tanya soalan, teroka idea, atau bincangkannya."</string>
+    <string name="chat_empty_description">"Pilih pemula di bawah atau terus taip."</string>
     <string name="chat_suggestion_explain">"Terangkan topik yang rumit dengan mudah"</string>
     <string name="chat_suggestion_ideas">"Bantu saya brainstorming idea"</string>
     <string name="chat_suggestion_draft">"Bantu saya menulis mesej yang jelas"</string>
+    <string name="chat_suggestion_think">"Bantu saya fikirkan sesuatu"</string>
+    <string name="chat_prefill_explain">"Terangkan ini dengan mudah:"</string>
+    <string name="chat_prefill_ideas">"Bantu saya jana idea untuk"</string>
+    <string name="chat_prefill_draft">"Bantu saya tulis mesej yang jelas kepada"</string>
+    <string name="chat_prefill_think">"Bantu saya fikirkan"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Hantar atau alih keluar lampiran sebelum menukar bahagian. Draf anda akan disimpan."</string>
     <string name="chat_file_requires_code">"Gunakan Code untuk fail ini. Chat boleh membaca imej, fail teks dan PDF dengan teks yang boleh diekstrak."</string>
     <string name="chat_thinking">"Berfikir"</string>

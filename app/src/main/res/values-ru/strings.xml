@@ -707,10 +707,16 @@
     <string name="chat_create_code">"Создать чат с кодом"</string>
     <string name="chat_from_chat">"Из чата"</string>
     <string name="chat_empty_title">"Что у вас на уме?"</string>
-    <string name="chat_empty_description">"Задайте вопрос, изучите идею или обсудите её."</string>
+    <string name="chat_empty_description">"Выберите заготовку ниже или просто начните печатать."</string>
     <string name="chat_suggestion_explain">"Объясни сложную тему простыми словами"</string>
     <string name="chat_suggestion_ideas">"Помоги придумать идею"</string>
     <string name="chat_suggestion_draft">"Помоги написать понятное сообщение"</string>
+    <string name="chat_suggestion_think">"Помоги мне всё обдумать"</string>
+    <string name="chat_prefill_explain">"Объясни мне это попроще:"</string>
+    <string name="chat_prefill_ideas">"Помоги придумать идеи для"</string>
+    <string name="chat_prefill_draft">"Помоги написать понятное сообщение для"</string>
+    <string name="chat_prefill_think">"Помоги мне обдумать"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"Перед переключением раздела отправьте или уберите вложения. Черновик сохранится."</string>
     <string name="chat_file_requires_code">"Используйте раздел «Код» для этого файла. Чат может читать изображения, текстовые файлы и PDF с извлекаемым текстом."</string>
     <string name="chat_thinking">"Размышление"</string>

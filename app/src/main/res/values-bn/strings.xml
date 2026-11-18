@@ -705,10 +705,16 @@
     <string name="chat_create_code">"Code কথোপকথন তৈরি করুন"</string>
     <string name="chat_from_chat">"Chat থেকে"</string>
     <string name="chat_empty_title">"আপনার মনে কি আছে?"</string>
-    <string name="chat_empty_description">"একটি প্রশ্ন জিজ্ঞাসা করুন, একটি ধারণা অন্বেষণ, বা এটি মাধ্যমে কথা বলুন."</string>
+    <string name="chat_empty_description">"নিচে থেকে একটি শুরু বেছে নিন বা সরাসরি টাইপ শুরু করুন."</string>
     <string name="chat_suggestion_explain">"একটি জটিল বিষয় সহজভাবে ব্যাখ্যা করুন"</string>
     <string name="chat_suggestion_ideas">"আমাকে একটি ধারণা নিয়ে চিন্তা করতে সাহায্য করুন"</string>
     <string name="chat_suggestion_draft">"আমাকে একটি পরিষ্কার বার্তা লিখতে সাহায্য করুন"</string>
+    <string name="chat_suggestion_think">"কোনো বিষয় নিয়ে ভাবতে সাহায্য করুন"</string>
+    <string name="chat_prefill_explain">"এটি আমাকে সহজভাবে ব্যাখ্যা করুন:"</string>
+    <string name="chat_prefill_ideas">"এই বিষয়ে ধারণা বের করতে সাহায্য করুন"</string>
+    <string name="chat_prefill_draft">"একজনকে পরিষ্কার বার্তা লিখতে সাহায্য করুন"</string>
+    <string name="chat_prefill_think">"ভেবে দেখতে সাহায্য করুন"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"বিভাগগুলি পরিবর্তন করার আগে সংযুক্তিগুলি পাঠান বা সরান৷ আপনার খসড়া রাখা হবে."</string>
     <string name="chat_file_requires_code">"এই ফাইলের জন্য Code ব্যবহার করুন। Chat এক্সট্রাক্টেবল টেক্সট সহ ছবি, টেক্সট ফাইল এবং PDF পড়তে পারে।"</string>
     <string name="chat_thinking">"ভাবছেন"</string>

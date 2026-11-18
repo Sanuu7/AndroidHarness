@@ -705,10 +705,16 @@
     <string name="chat_create_code">"කේත සංවාදය නිර්මාණය කරන්න"</string>
     <string name="chat_from_chat">"චැට් සිට"</string>
     <string name="chat_empty_title">"ඔබේ සිතේ තිබෙන්නේ කුමක්ද?"</string>
-    <string name="chat_empty_description">"ප්‍රශ්නයක් අසන්න, අදහසක් විමසන්න, නැතහොත් ඒ ගැන කතා කරන්න."</string>
+    <string name="chat_empty_description">"පහළින් ආරම්භකයක් තෝරන්න හෝ කෙලින්ම ලියන්න."</string>
     <string name="chat_suggestion_explain">"අසීරු මාතෘකාවක් සරලව පැහැදිලි කරන්න"</string>
     <string name="chat_suggestion_ideas">"අදහසක් ගොඩනඟා ගැනීමට උදව් කරන්න"</string>
     <string name="chat_suggestion_draft">"පැහැදිලි පණිවිඩයක් ලිවීමට උදව් කරන්න"</string>
+    <string name="chat_suggestion_think">"යමක් ගැන සිතීමට මට උදව් කරන්න"</string>
+    <string name="chat_prefill_explain">"මෙය මට සරලව පැහැදිලි කරන්න:"</string>
+    <string name="chat_prefill_ideas">"මේ සඳහා අදහස් සොයා ගැනීමට උදව් කරන්න"</string>
+    <string name="chat_prefill_draft">"පැහැදිලි පණිවිඩයක් ලිවීමට උදව් කරන්න:"</string>
+    <string name="chat_prefill_think">"සිතා බැලීමට උදව් කරන්න:"</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"කොටස් මාරු කිරීමට පෙර ඇදවුම් යැවීම හෝ ඉවත් කරන්න.ඔබේ ව්‍යාපෘතිය ඉතිරි කරනු ඇත."</string>
     <string name="chat_file_requires_code">"මෙම ගොනු සඳහා කේතය භාවිතා කරන්න. චැට් ඡායාරූප, පෙළ ගොනු, සහ ඉවත් කළ හැකි පෙළ සමඟ PDF ගොනු කියවිය හැකිය."</string>
     <string name="chat_thinking">"සිතමින්"</string>

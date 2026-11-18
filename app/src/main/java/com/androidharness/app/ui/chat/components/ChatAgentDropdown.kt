@@ -9,6 +9,8 @@ import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,21 +32,21 @@ internal fun ChatAgentDropdown(
     modifier: Modifier = Modifier,
     setupCard: Boolean = false,
 ) {
-    val setupTrigger: (@Composable (Boolean, () -> Unit) -> Unit)? = if (!setupCard) null else { _, open ->
-        Row(Modifier.fillMaxWidth().clickable(enabled = enabled, role = Role.Button, onClick = open)
-            .padding(horizontal = 14.dp, vertical = 16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(30.dp).clip(RoundedCornerShape(9.dp)).background(MaterialTheme.colorScheme.secondaryContainer),
-                contentAlignment = Alignment.Center) {
-                Icon(Icons.Outlined.AutoAwesome, null, Modifier.size(18.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
-            }
-            Spacer(Modifier.width(12.dp))
-            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(stringResource(R.string.chat_agents_set), style = MaterialTheme.typography.bodyLarge)
-                Text(stringResource(R.string.chat_agents_description), style = MaterialTheme.typography.bodySmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+    // New Chat shows a compact tonal pill under the headline rather than a list row.
+    val setupTrigger: (@Composable (Boolean, () -> Unit) -> Unit)? = if (!setupCard) null else { expanded, open ->
+        val scheme = MaterialTheme.colorScheme
+        val chevron by androidx.compose.animation.core.animateFloatAsState(if (expanded) 180f else 0f,
+            com.androidharness.app.ui.theme.expressiveSpatialSpec(), label = "agentPillChevron")
+        val shape = RoundedCornerShape(50)
+        Row(Modifier.clip(shape).background(scheme.secondaryContainer)
+            .clickable(enabled = enabled, role = Role.Button, onClickLabel = stringResource(R.string.chat_agents_description), onClick = open)
+            .heightIn(min = 44.dp).padding(start = 14.dp, end = 12.dp), verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Outlined.AutoAwesome, null, Modifier.size(18.dp), tint = scheme.onSecondaryContainer)
             Spacer(Modifier.width(8.dp))
-            Icon(Icons.Filled.KeyboardArrowDown, null, Modifier.size(20.dp))
+            Text(stringResource(R.string.chat_agents_set), style = MaterialTheme.typography.labelLarge, color = scheme.onSecondaryContainer)
+            Spacer(Modifier.width(4.dp))
+            Icon(Icons.Filled.KeyboardArrowDown, null, Modifier.size(18.dp)
+                .graphicsLayer { rotationZ = chevron }, tint = scheme.onSecondaryContainer)
         }
     }
     ChatStartDropdown(selected?.name ?: stringResource(R.string.chat_agents_choose), enabled, modifier, setupTrigger) { dismiss ->

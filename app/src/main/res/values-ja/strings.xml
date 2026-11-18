@@ -704,10 +704,16 @@
     <string name="chat_create_code">"Code会話を作成"</string>
     <string name="chat_from_chat">"Chatから"</string>
     <string name="chat_empty_title">"何を考えていますか？"</string>
-    <string name="chat_empty_description">"質問する、アイデアを探る、または話し合ってください。"</string>
+    <string name="chat_empty_description">"下からスターターを選ぶか、そのまま入力してください。"</string>
     <string name="chat_suggestion_explain">"難しいトピックを簡単に説明"</string>
     <string name="chat_suggestion_ideas">"アイデアのブレインストーミングを手伝って"</string>
     <string name="chat_suggestion_draft">"分かりやすいメッセージを書くのを手伝って"</string>
+    <string name="chat_suggestion_think">"あることをじっくり考えたい"</string>
+    <string name="chat_prefill_explain">"これを簡単に説明して："</string>
+    <string name="chat_prefill_ideas">"アイデアを出してほしいテーマ："</string>
+    <string name="chat_prefill_draft">"わかりやすいメッセージを書きたい相手："</string>
+    <string name="chat_prefill_think">"じっくり考えたいこと："</string>
+    <string name="chat_support_discord">"Discord"</string>
     <string name="chat_switch_attachments">"セクションを切り替える前に添付ファイルを送信または削除してください。下書きは保持されます。"</string>
     <string name="chat_file_requires_code">"このファイルにはCodeを使用してください。Chatは画像、テキストファイル、抽出可能なテキスト付きPDFを読めます。"</string>
     <string name="chat_thinking">"思考中"</string>

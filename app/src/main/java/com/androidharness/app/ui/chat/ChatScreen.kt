@@ -103,6 +103,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import com.androidharness.app.ui.common.formatTokenCount
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -1757,6 +1758,8 @@ private fun ChatScreenContent(
                             // Top-anchored: a sent question stays put while the
                             // answer grows below; short chats no longer sit at the bottom.
                             verticalArrangement = Arrangement.spacedBy(12.dp),
+                            // A new conversation has nothing to scroll; its empty state scrolls itself if it must.
+                            userScrollEnabled = !(state.messages.isEmpty() && state.streamingText == null && !state.isLoadingOlderMessages),
                         ) {
                             // Indices are recorded while the item scope is built,
                             // so a brand-new question can be anchored before it
@@ -1819,8 +1822,18 @@ private fun ChatScreenContent(
                             }
                             if (state.messages.isEmpty() && state.streamingText == null) {
                                 indexedItem(key = "empty-state", contentType = ChatListContentType.Empty) {
+                                    // Exactly the visible area between the list's top and bottom padding
+                                    // (top bar, floating composer), so it centers there and never scrolls.
+                                    val emptyHeightPx by remember(listState) { derivedStateOf {
+                                        listState.layoutInfo.let { it.viewportSize.height - it.beforeContentPadding - it.afterContentPadding }
+                                    } }
                                     EmptyState(
-                                        modifier = Modifier.fillParentMaxHeight(),
+                                        // Fade out under the first message instead of vanishing in one frame.
+                                        modifier = (if (emptyHeightPx > 0) Modifier.height(with(density) { emptyHeightPx.toDp() })
+                                            else Modifier.fillParentMaxHeight()).animateItem(
+                                            fadeInSpec = null, placementSpec = null,
+                                            fadeOutSpec = com.androidharness.app.ui.theme.fastEffectsSpec(),
+                                        ),
                                         hasProvider = state.activeProvider != null,
                                         chatOnly = state.conversation.isChat,
                                         agent = state.conversation.agent,
@@ -1835,6 +1848,12 @@ private fun ChatScreenContent(
                                             )
                                         },
                                         onSuggestion = { viewModel.send(it) },
+                                        onStarter = { prefill ->
+                                            setComposerText(prefill)
+                                            quoteComposerFocus?.requestFocus()
+                                            scheduleKeyboard?.show()
+                                        },
+                                        startersVisible = composerText.isBlank(),
                                         onAddProvider = { addProviderInitially = true; activeProviderManagerTarget = ModelSelectionTarget.ACTIVE },
                                     )
                                 }
