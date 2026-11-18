@@ -1078,4 +1078,11 @@
     <string name="motion_blur_intensity">강도</string>
     <string name="motion_blur_intensity_hint">빠르게 스크롤할 때 콘텐츠가 얼마나 번지는지.</string>
     <string name="motion_blur_unsupported">모션 블러는 Android 12 이상이 필요합니다.</string>
+    <string name="chat_logo_replay">"로고 애니메이션 다시 재생"</string>
+    <string name="settings_group_ai_models">"AI 및 모델"</string>
+    <string name="settings_group_look_feel">"모양과 느낌"</string>
+    <string name="settings_group_device_privacy">"기기 및 개인정보"</string>
+    <string name="settings_group_data_sync">"데이터 및 동기화"</string>
+    <string name="settings_group_help_about">"도움말 및 정보"</string>
+    <string name="settings_page_background_desc">"백그라운드 작업, 배터리 및 알림"</string>
 </resources>

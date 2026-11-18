@@ -1109,4 +1109,11 @@
     <string name="motion_blur_intensity">强度</string>
     <string name="motion_blur_intensity_hint">快速滚动时内容的模糊程度。</string>
     <string name="motion_blur_unsupported">动态模糊需要 Android 12 或更高版本。</string>
+    <string name="chat_logo_replay">重播标志动画</string>
+    <string name="settings_group_ai_models">AI 与模型</string>
+    <string name="settings_group_look_feel">外观与手感</string>
+    <string name="settings_group_device_privacy">设备与隐私</string>
+    <string name="settings_group_data_sync">数据与同步</string>
+    <string name="settings_group_help_about">帮助与关于</string>
+    <string name="settings_page_background_desc">后台工作、电池和通知</string>
 </resources>

@@ -1084,4 +1084,11 @@
     <string name="motion_blur_intensity">Intensité</string>
     <string name="motion_blur_intensity_hint">À quel point le contenu se floute pendant un défilement rapide.</string>
     <string name="motion_blur_unsupported">Le flou de mouvement nécessite Android 12 ou plus.</string>
+    <string name="chat_logo_replay">"Rejouer l\'animation du logo"</string>
+    <string name="settings_group_ai_models">"IA et modèles"</string>
+    <string name="settings_group_look_feel">"Apparence et ressenti"</string>
+    <string name="settings_group_device_privacy">"Appareil et confidentialité"</string>
+    <string name="settings_group_data_sync">"Données et synchronisation"</string>
+    <string name="settings_group_help_about">"Aide et à propos"</string>
+    <string name="settings_page_background_desc">"Travail en arrière-plan, batterie et notifications"</string>
 </resources>

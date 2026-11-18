@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">வலிமை</string>
     <string name="motion_blur_intensity_hint">வேகமான உருட்டலில் உள்ளடக்கம் எவ்வளவு மங்குகிறது.</string>
     <string name="motion_blur_unsupported">இயக்க மங்கலுக்கு Android 12 அல்லது அதற்கு மேல் தேவை.</string>
+    <string name="chat_logo_replay">"லோகோ அனிமேஷனை மீண்டும் இயக்கு"</string>
+    <string name="settings_group_ai_models">"AI மற்றும் மாதிரிகள்"</string>
+    <string name="settings_group_look_feel">"தோற்றமும் உணர்வும்"</string>
+    <string name="settings_group_device_privacy">"சாதனம் மற்றும் தனியுரிமை"</string>
+    <string name="settings_group_data_sync">"தரவு மற்றும் ஒத்திசைவு"</string>
+    <string name="settings_group_help_about">"உதவி மற்றும் பற்றி"</string>
+    <string name="settings_page_background_desc">"பின்னணி வேலை, பேட்டரி மற்றும் அறிவிப்புகள்"</string>
 </resources>

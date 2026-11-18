@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">ශක්තිය</string>
     <string name="motion_blur_intensity_hint">වේගවත් අනුචලනයේදී අන්තර්ගතය කොපමණ බොඳ වේද.</string>
     <string name="motion_blur_unsupported">චලන බොඳවීමට Android 12 හෝ ඊට වැඩි අවශ්‍යයි.</string>
+    <string name="chat_logo_replay">"ලාංඡන සජීවීකරණය නැවත ධාවනය කරන්න"</string>
+    <string name="settings_group_ai_models">"AI සහ ආකෘති"</string>
+    <string name="settings_group_look_feel">"පෙනුම සහ හැඟීම"</string>
+    <string name="settings_group_device_privacy">"උපාංග සහ පෞද්ගලිකත්වය"</string>
+    <string name="settings_group_data_sync">"දත්ත සහ සමමුහුර්තකරණය"</string>
+    <string name="settings_group_help_about">"උදව් සහ ගැන"</string>
+    <string name="settings_page_background_desc">"පසුබිම් කටයුතු, බැටරිය සහ දැනුම්දීම්"</string>
 </resources>

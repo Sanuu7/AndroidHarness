@@ -1078,4 +1078,11 @@
     <string name="motion_blur_intensity">強さ</string>
     <string name="motion_blur_intensity_hint">速いスクロール時に内容がどれだけぼやけるか。</string>
     <string name="motion_blur_unsupported">モーションブラーには Android 12 以降が必要です。</string>
+    <string name="chat_logo_replay">"ロゴアニメーションを再生"</string>
+    <string name="settings_group_ai_models">"AI とモデル"</string>
+    <string name="settings_group_look_feel">"見た目と操作感"</string>
+    <string name="settings_group_device_privacy">"デバイスとプライバシー"</string>
+    <string name="settings_group_data_sync">"データと同期"</string>
+    <string name="settings_group_help_about">"ヘルプと情報"</string>
+    <string name="settings_page_background_desc">"バックグラウンド動作、バッテリー、通知"</string>
 </resources>

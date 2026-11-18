@@ -1078,4 +1078,11 @@
     <string name="motion_blur_intensity">ความแรง</string>
     <string name="motion_blur_intensity_hint">ระดับความเบลอของเนื้อหาเมื่อเลื่อนเร็ว</string>
     <string name="motion_blur_unsupported">ภาพเบลอจากการเคลื่อนไหวต้องใช้ Android 12 ขึ้นไป</string>
+    <string name="chat_logo_replay">"เล่นแอนิเมชันโลโก้อีกครั้ง"</string>
+    <string name="settings_group_ai_models">"AI และโมเดล"</string>
+    <string name="settings_group_look_feel">"หน้าตาและการใช้งาน"</string>
+    <string name="settings_group_device_privacy">"อุปกรณ์และความเป็นส่วนตัว"</string>
+    <string name="settings_group_data_sync">"ข้อมูลและการซิงค์"</string>
+    <string name="settings_group_help_about">"ช่วยเหลือและเกี่ยวกับ"</string>
+    <string name="settings_page_background_desc">"งานเบื้องหลัง แบตเตอรี่ และการแจ้งเตือน"</string>
 </resources>

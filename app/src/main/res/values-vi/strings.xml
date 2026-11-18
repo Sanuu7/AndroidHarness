@@ -1078,4 +1078,11 @@
     <string name="motion_blur_intensity">Độ mạnh</string>
     <string name="motion_blur_intensity_hint">Mức độ nhòe của nội dung khi cuộn nhanh.</string>
     <string name="motion_blur_unsupported">Nhòe chuyển động cần Android 12 trở lên.</string>
+    <string name="chat_logo_replay">"Phát lại hoạt ảnh biểu trưng"</string>
+    <string name="settings_group_ai_models">"AI và mô hình"</string>
+    <string name="settings_group_look_feel">"Giao diện và cảm giác"</string>
+    <string name="settings_group_device_privacy">"Thiết bị và quyền riêng tư"</string>
+    <string name="settings_group_data_sync">"Dữ liệu và đồng bộ"</string>
+    <string name="settings_group_help_about">"Trợ giúp và giới thiệu"</string>
+    <string name="settings_page_background_desc">"Hoạt động nền, pin và thông báo"</string>
 </resources>

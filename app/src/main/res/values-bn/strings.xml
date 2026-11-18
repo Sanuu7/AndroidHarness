@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">শক্তি</string>
     <string name="motion_blur_intensity_hint">দ্রুত স্ক্রলের সময় কনটেন্ট কতটা ব্লার হবে।</string>
     <string name="motion_blur_unsupported">মোশন ব্লারের জন্য Android 12 বা নতুন প্রয়োজন।</string>
+    <string name="chat_logo_replay">"লোগো অ্যানিমেশন আবার চালান"</string>
+    <string name="settings_group_ai_models">"AI ও মডেল"</string>
+    <string name="settings_group_look_feel">"রূপ ও অনুভূতি"</string>
+    <string name="settings_group_device_privacy">"ডিভাইস ও গোপনীয়তা"</string>
+    <string name="settings_group_data_sync">"ডেটা ও সিঙ্ক"</string>
+    <string name="settings_group_help_about">"সহায়তা ও পরিচিতি"</string>
+    <string name="settings_page_background_desc">"ব্যাকগ্রাউন্ড কাজ, ব্যাটারি ও বিজ্ঞপ্তি"</string>
 </resources>

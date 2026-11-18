@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">Lakas</string>
     <string name="motion_blur_intensity_hint">Gaano kalabo ang nilalaman habang mabilis ang pag-scroll.</string>
     <string name="motion_blur_unsupported">Kailangan ng motion blur ang Android 12 o mas bago.</string>
+    <string name="chat_logo_replay">"I-play muli ang animation ng logo"</string>
+    <string name="settings_group_ai_models">"AI at mga modelo"</string>
+    <string name="settings_group_look_feel">"Itsura at pakiramdam"</string>
+    <string name="settings_group_device_privacy">"Device at privacy"</string>
+    <string name="settings_group_data_sync">"Data at sync"</string>
+    <string name="settings_group_help_about">"Tulong at tungkol"</string>
+    <string name="settings_page_background_desc">"Trabaho sa background, baterya at mga notification"</string>
 </resources>

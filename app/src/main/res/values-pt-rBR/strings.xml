@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">Intensidade</string>
     <string name="motion_blur_intensity_hint">Quanto o conteúdo desfoca durante uma rolagem rápida.</string>
     <string name="motion_blur_unsupported">O desfoque de movimento precisa do Android 12 ou superior.</string>
+    <string name="chat_logo_replay">"Reproduzir novamente a animação do logo"</string>
+    <string name="settings_group_ai_models">"IA e modelos"</string>
+    <string name="settings_group_look_feel">"Aparência e sensação"</string>
+    <string name="settings_group_device_privacy">"Dispositivo e privacidade"</string>
+    <string name="settings_group_data_sync">"Dados e sincronização"</string>
+    <string name="settings_group_help_about">"Ajuda e sobre"</string>
+    <string name="settings_page_background_desc">"Trabalho em segundo plano, bateria e notificações"</string>
 </resources>

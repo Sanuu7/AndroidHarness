@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">Güç</string>
     <string name="motion_blur_intensity_hint">Hızlı kaydırmada içeriğin ne kadar bulanıklaştığı.</string>
     <string name="motion_blur_unsupported">Hareket bulanıklığı için Android 12 veya üzeri gerekir.</string>
+    <string name="chat_logo_replay">"Logo animasyonunu yeniden oynat"</string>
+    <string name="settings_group_ai_models">"Yapay zeka ve modeller"</string>
+    <string name="settings_group_look_feel">"Görünüm ve his"</string>
+    <string name="settings_group_device_privacy">"Cihaz ve gizlilik"</string>
+    <string name="settings_group_data_sync">"Veriler ve eşitleme"</string>
+    <string name="settings_group_help_about">"Yardım ve hakkında"</string>
+    <string name="settings_page_background_desc">"Arka plan çalışması, pil ve bildirimler"</string>
 </resources>

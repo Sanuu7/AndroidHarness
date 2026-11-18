@@ -1078,4 +1078,11 @@
     <string name="motion_blur_intensity">Kekuatan</string>
     <string name="motion_blur_intensity_hint">Seberapa kabur konten saat menggulir cepat.</string>
     <string name="motion_blur_unsupported">Blur gerakan membutuhkan Android 12 atau lebih baru.</string>
+    <string name="chat_logo_replay">"Putar ulang animasi logo"</string>
+    <string name="settings_group_ai_models">"AI &amp; model"</string>
+    <string name="settings_group_look_feel">"Tampilan &amp; nuansa"</string>
+    <string name="settings_group_device_privacy">"Perangkat &amp; privasi"</string>
+    <string name="settings_group_data_sync">"Data &amp; sinkronisasi"</string>
+    <string name="settings_group_help_about">"Bantuan &amp; tentang"</string>
+    <string name="settings_page_background_desc">"Kerja latar belakang, baterai, dan notifikasi"</string>
 </resources>

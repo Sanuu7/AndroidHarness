@@ -1081,4 +1081,11 @@
     <string name="motion_blur_intensity">तीव्रता</string>
     <string name="motion_blur_intensity_hint">तेज़ स्क्रॉल में सामग्री कितनी धुंधली होती है।</string>
     <string name="motion_blur_unsupported">मोशन ब्लर के लिए Android 12 या नया चाहिए।</string>
+    <string name="chat_logo_replay">"लोगो एनिमेशन फिर चलाएँ"</string>
+    <string name="settings_group_ai_models">"AI और मॉडल"</string>
+    <string name="settings_group_look_feel">"रूप और अनुभव"</string>
+    <string name="settings_group_device_privacy">"डिवाइस और गोपनीयता"</string>
+    <string name="settings_group_data_sync">"डेटा और सिंक"</string>
+    <string name="settings_group_help_about">"सहायता और परिचय"</string>
+    <string name="settings_page_background_desc">"पृष्ठभूमि कार्य, बैटरी और सूचनाएँ"</string>
 </resources>

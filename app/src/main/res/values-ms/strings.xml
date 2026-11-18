@@ -1078,4 +1078,11 @@
     <string name="motion_blur_intensity">Kekuatan</string>
     <string name="motion_blur_intensity_hint">Sejauh mana kandungan kabur semasa menatal pantas.</string>
     <string name="motion_blur_unsupported">Kabur gerakan memerlukan Android 12 atau lebih baharu.</string>
+    <string name="chat_logo_replay">"Main semula animasi logo"</string>
+    <string name="settings_group_ai_models">"AI &amp; model"</string>
+    <string name="settings_group_look_feel">"Rupa &amp; rasa"</string>
+    <string name="settings_group_device_privacy">"Peranti &amp; privasi"</string>
+    <string name="settings_group_data_sync">"Data &amp; penyegerakan"</string>
+    <string name="settings_group_help_about">"Bantuan &amp; perihal"</string>
+    <string name="settings_page_background_desc">"Kerja latar belakang, bateri dan pemberitahuan"</string>
 </resources>
