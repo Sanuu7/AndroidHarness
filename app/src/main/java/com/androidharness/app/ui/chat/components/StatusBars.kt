@@ -1,6 +1,9 @@
 package com.androidharness.app.ui.chat.components
 
 import com.androidharness.app.R
+import androidx.compose.animation.togetherWith
+import com.androidharness.app.ui.common.HarnessActivityLogo
+import com.androidharness.app.ui.common.LogoShape
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
@@ -71,53 +74,73 @@ import com.androidharness.app.ui.common.IconButton
 import com.androidharness.app.ui.common.TextButton
 
 /**
- * Slim live-activity strip above the composer: one small gently-pulsing accent
- * dot and a single muted line of text. No scale wobble, no colored container.
+ * Slim live-activity strip above the composer. The AH monogram morphs into whatever
+ * the agent is doing (an eye while reading, a magnifier while searching, a pencil
+ * while editing, a prompt while running commands, sparkles while thinking, lines
+ * while writing) and the line of text beside it rolls up to each new step.
  */
 @Composable
-internal fun AgentStatusBar(action: String?, busy: Boolean) {
+internal fun AgentStatusBar(action: String?, busy: Boolean, shape: LogoShape = LogoShape.Monogram) {
     AnimatedVisibility(
         visible = busy && action != null,
         enter = fadeIn(tween(150)) + expandVertically(animationSpec = fastSpatialSpec()),
         exit = fadeOut(tween(120)) + shrinkVertically(animationSpec = fastSpatialSpec()),
     ) {
         val scheme = MaterialTheme.colorScheme
+        val context = androidx.compose.ui.platform.LocalContext.current
+        val motion = remember(context) { android.provider.Settings.Global.getFloat(context.contentResolver,
+            android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f }
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier
                 .fillMaxWidth()
                 .background(scheme.surface)
-                .padding(horizontal = 18.dp, vertical = 7.dp),
+                .padding(horizontal = 14.dp, vertical = 6.dp),
         ) {
-            StatusDot()
+            HarnessActivityLogo(shape, scheme.primary, Modifier.size(18.dp), animate = motion)
             Spacer(Modifier.width(10.dp))
-            Text(
-                action ?: "",
-                style = MaterialTheme.typography.labelMedium,
-                color = scheme.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis,
-            )
+            androidx.compose.animation.AnimatedContent(action.orEmpty(), transitionSpec = {
+                (androidx.compose.animation.slideInVertically(tween(240)) { it } + fadeIn(tween(200))) togetherWith
+                    (androidx.compose.animation.slideOutVertically(tween(180)) { -it } + fadeOut(tween(120)))
+            }, label = "Agent status line", modifier = Modifier.weight(1f)) { text ->
+                ChatShimmerText(text, running = motion, style = MaterialTheme.typography.labelMedium)
+            }
         }
     }
 }
 
-@Composable
-private fun StatusDot() {
-    val transition = rememberInfiniteTransition(label = "status dot")
-    val alpha by transition.animateFloat(
-        initialValue = 0.3f,
-        targetValue = 1f,
-        animationSpec = infiniteRepeatable(animation = tween(900), repeatMode = RepeatMode.Reverse),
-        label = "status dot alpha",
-    )
-    Box(
-        modifier = Modifier
-            .size(7.dp)
-            .graphicsLayer { this.alpha = alpha }
-            .clip(CircleShape)
-            .background(MaterialTheme.colorScheme.primary),
-    )
+/** Which outline the status monogram takes for the agent's current step. */
+internal fun codeLogoShape(
+    runningCall: com.androidharness.app.core.ToolCallData?,
+    waiting: Boolean,
+    drafting: Boolean,
+    thinking: Boolean,
+    writing: Boolean,
+    lastTool: LogoShape?,
+): LogoShape = when {
+    waiting -> LogoShape.Monogram
+    runningCall != null -> toolLogoShape(runningCall)
+    drafting -> LogoShape.Pencil
+    thinking -> LogoShape.Sparkles
+    writing -> LogoShape.Lines
+    lastTool != null -> lastTool
+    else -> LogoShape.Sparkles
+}
+
+internal fun toolLogoShape(call: com.androidharness.app.core.ToolCallData): LogoShape {
+    if (call.name in com.androidharness.app.agent.LiveCodePreview.tools) return LogoShape.Pencil
+    if (call.name == "task") return LogoShape.Sparkles
+    return when (com.androidharness.app.agent.toolPresentation(call).kind) {
+        com.androidharness.app.agent.ToolActivityKind.READ, com.androidharness.app.agent.ToolActivityKind.MEMORY -> LogoShape.Eye
+        com.androidharness.app.agent.ToolActivityKind.SEARCH -> LogoShape.Magnifier
+        com.androidharness.app.agent.ToolActivityKind.WEB -> if (call.name == "web_search") LogoShape.Magnifier else LogoShape.Eye
+        com.androidharness.app.agent.ToolActivityKind.EDIT -> if (call.name == "pkg_install" || call.name == "android_sdk_install") LogoShape.Terminal else LogoShape.Pencil
+        com.androidharness.app.agent.ToolActivityKind.COMMAND, com.androidharness.app.agent.ToolActivityKind.VERIFY -> LogoShape.Terminal
+        com.androidharness.app.agent.ToolActivityKind.SUBAGENT -> LogoShape.Sparkles
+        com.androidharness.app.agent.ToolActivityKind.QUESTION -> LogoShape.Monogram
+        com.androidharness.app.agent.ToolActivityKind.OTHER -> if (call.name in setOf("delete_file", "move_file", "create_dir", "file_restore"))
+            LogoShape.Pencil else if (call.name.startsWith("git_")) LogoShape.Terminal else LogoShape.Code
+    }
 }
 
 /**
