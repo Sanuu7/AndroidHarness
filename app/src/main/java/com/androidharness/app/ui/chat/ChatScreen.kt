@@ -63,6 +63,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.offset
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyItemScope
@@ -183,6 +186,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import com.androidharness.app.ui.common.Button
 import com.androidharness.app.ui.common.IconButton
+import androidx.compose.material.icons.outlined.Edit
 import com.androidharness.app.ui.common.TextButton
 
 /**
@@ -1807,8 +1811,6 @@ private fun ChatScreenContent(
                                         onStep = rumble,
                                         runningCalls = if (running) state.runningCalls else emptyList(),
                                         streamingThinking = if (running && !committed) state.streamingThinking.orEmpty() else "",
-                                        // Text is not the answer until the round ends without more work, so it streams here first.
-                                        streamingCommentary = if (running && !committed && !state.streamingCommitted) state.streamingText.orEmpty() else "",
                                         writing = running && !state.streamingText.isNullOrBlank(),
                                         streamId = state.streamingMessageId ?: "live",
                                         onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true })
@@ -1927,7 +1929,19 @@ private fun ChatScreenContent(
                                 if (message.turnId != null && message.turnId == latestUserTurnId) latestTurnStarted = true
                                 val userIndex = nextItemIndex
                                 indexedItem(key = "message-$messageKey-user", contentType = ChatListContentType.User) {
-                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                    // A message the user just sent rises out of the composer instead of appearing in place.
+                                    val justSent = message.turnId == latestUserTurnId &&
+                                        (message.createdAt == 0L || System.currentTimeMillis() - message.createdAt < 2_000)
+                                    val rise = remember(messageKey) { androidx.compose.animation.core.Animatable(if (justSent) 0f else 1f) }
+                                    LaunchedEffect(messageKey) { rise.animateTo(1f, androidx.compose.animation.core.spring(dampingRatio = 0.78f, stiffness = 360f)) }
+                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null).graphicsLayer {
+                                        val p = rise.value
+                                        translationY = (1f - p) * 72.dp.toPx()
+                                        scaleX = 0.92f + 0.08f * p
+                                        scaleY = 0.92f + 0.08f * p
+                                        transformOrigin = androidx.compose.ui.graphics.TransformOrigin(1f, 1f)
+                                        alpha = (0.3f + 0.7f * p).coerceIn(0f, 1f)
+                                    }) {
                                         Column(horizontalAlignment = Alignment.End) {
                                             val (visibleText, fileChips) = FileAttachments.splitForDisplay(
                                                 slashSkillInstruction(UserMessageContent.visibleText(message.text))
@@ -1947,7 +1961,15 @@ private fun ChatScreenContent(
                                                 onOpenImage = { imagePreview = it },
                                                 onLongPress = { actionsMessage = message },
                                             )
-
+                                            // The latest question gets a visible edit button; long-press still opens every action.
+                                            AnimatedVisibility(state.conversation.isChat && message.turnId == latestUserTurnId && !state.busy,
+                                                enter = fadeIn(fastEffectsSpec()) + scaleIn(initialScale = 0.8f, animationSpec = fastEffectsSpec()),
+                                                exit = fadeOut(fastEffectsSpec())) {
+                                                IconButton(onClick = { editingMessage = message }, modifier = Modifier.size(36.dp)) {
+                                                    Icon(Icons.Outlined.Edit, uiContext.getString(R.string.settings_action_edit),
+                                                        Modifier.size(17.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                }
+                                            }
                                         }
                                     }
                                 }
@@ -1966,14 +1988,15 @@ private fun ChatScreenContent(
                                         chatActivityItem(activityKey, conversationTurn, isTurnRunning, chatStreamCommitted)
                                     }
                                     // Progress prose stays in the chronological disclosure; only the answer renders here.
+                                    val answerItemIndex = nextItemIndex
                                     if (message.text.isNotBlank() && message.toolCalls.isEmpty() && (isTurnFinal || message.turnId == null)) indexedItem(key = "chat-$messageKey-answer", contentType = ChatListContentType.AssistantText) {
-                                        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            val revealing = message.id != null && message.id in state.revealAnswerIds
-                                            val shownText = com.androidharness.app.ui.chat.components.rememberAnswerReveal(message.text, revealing) {
-                                                message.id?.let(viewModel::answerRevealed)
+                                        val headingAnchors = remember(message.text) { com.androidharness.app.ui.chat.components.HeadingAnchors() }
+                                        Column(Modifier.onGloballyPositioned { headingAnchors.root = it }, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                            val replyText = remember(message.text) { com.androidharness.app.core.response.ChatRichResponse.normalize(message.text) }
+                                            if (!isTurnRunning) com.androidharness.app.ui.chat.components.AnswerOutlineButton(headingAnchors) { y ->
+                                                pinnedToBottom = false
+                                                scope.launch { listState.animateScrollToItem(answerItemIndex, (y - 12 * density.density).toInt().coerceAtLeast(0)) }
                                             }
-                                            val typing = shownText.length < message.text.length
-                                            val replyText = remember(shownText, typing) { com.androidharness.app.core.response.ChatRichResponse.normalize(shownText, typing) }
                                             com.androidharness.app.ui.chat.components.QuoteReplySelection(onQuote = { selected ->
                                                 attachedConceptJson = null
                                                 attachedResponseJson = ResponseAttachment(uiContext.getString(R.string.chat_quoted_text), selected.take(1500)).encode()
@@ -1986,8 +2009,9 @@ private fun ChatScreenContent(
                                                     com.androidharness.app.ui.chat.components.LocalChatImageSources provides imageSources,
                                                     com.androidharness.app.ui.chat.components.LocalChatImageOpen provides { url -> viewerImageUrl = url },
                                                     LocalChatImagesEnabled provides (effectiveImageFrequency != com.androidharness.app.data.ImageFrequency.NONE),
+                                                    com.androidharness.app.ui.chat.components.LocalHeadingAnchors provides headingAnchors,
                                                 ) {
-                                                    AssistantText(replyText, streaming = typing, showPreviewChip = false, chatImages = responseImages,
+                                                    AssistantText(replyText, showPreviewChip = false, chatImages = responseImages,
                                                         onFollowUp = { action ->
                                                             attachedConceptJson = null
                                                             attachedResponseJson = ResponseAttachment(action.title, action.context).encode()
@@ -1998,8 +2022,10 @@ private fun ChatScreenContent(
                                             if (isTurnFinal && message.toolCalls.isEmpty() && !isTurnRunning) {
                                                 if (message.turnId == latestUserTurnId) {
                                                     val followUps = message.generation.followUps
-                                                    if (followUps.isNotEmpty()) {
-                                                        com.androidharness.app.ui.chat.components.FollowUpChips(followUps) { suggestion ->
+                                                    val searched = conversationTurn.any { turnMessage -> turnMessage.toolCalls.any { it.name == "web_search" } }
+                                                    val digDeeper: (() -> Unit)? = if (searched && !state.busy) ({ viewModel.digDeeper() }) else null
+                                                    if (followUps.isNotEmpty() || digDeeper != null) {
+                                                        com.androidharness.app.ui.chat.components.FollowUpChips(followUps, digDeeper) { suggestion ->
                                                             attachedConceptJson = null
                                                             attachedResponseJson = null
                                                             setComposerText(suggestion)
@@ -2402,9 +2428,9 @@ private fun ChatScreenContent(
                             }
                         }
                         state.streamingText?.let { streaming ->
-                            // Chat streams unconfirmed text in the live working log above; the
-                            // answer bubble appears only for a committed final answer.
-                            if (!state.conversation.isChat) {
+                            // In chat the live disclosure above already shows
+                            // progress; a blank dots bubble under it is noise.
+                            if (streaming.isNotBlank() || !state.conversation.isChat) {
                                 // Preserve the item identity and scroll offset when the same response is saved.
                                 val answerKey = if (state.conversation.isChat) "chat-$streamKey-answer" else "message-$streamKey-text"
                                 indexedItem(key = answerKey, contentType = ChatListContentType.AssistantText) {
@@ -2551,9 +2577,19 @@ private fun ChatScreenContent(
                     targetValue = if (snackbar.currentSnackbarData != null) 68.dp else 10.dp,
                     label = "fab-bottom-pad",
                 )
+                // Lines of reply that landed since the reader scrolled away, shown on the button.
+                val latestAssistant = state.messages.lastOrNull { it.role == Role.ASSISTANT && it.toolCallId == null }
+                val latestReplyId = state.streamingMessageId ?: latestAssistant?.id
+                val latestReply = state.streamingText ?: latestAssistant?.text.orEmpty()
+                var awayFrom by remember { mutableStateOf<Pair<String?, Int>?>(null) }
+                LaunchedEffect(showJumpToLatest) { awayFrom = if (showJumpToLatest) latestReplyId to latestReply.length else null }
+                val newLines = awayFrom?.let { (id, length) ->
+                    (if (id == latestReplyId) latestReply.drop(length) else latestReply).lines().count { it.isNotBlank() }
+                } ?: 0
                 ScrollToBottomFab(
                     visible = showJumpToLatest,
                     unread = unreadWhileAway,
+                    newLines = newLines,
                     onJump = {
                         showJumpToLatest = false
                         unreadWhileAway = false
@@ -3101,6 +3137,7 @@ private const val FOLLOW_MIN_INTERVAL_MS = 16L
 private fun ScrollToBottomFab(
     visible: Boolean,
     unread: Boolean,
+    newLines: Int = 0,
     onJump: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -3147,6 +3184,21 @@ private fun ScrollToBottomFab(
                     else MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.size(22.dp),
                 )
+            }
+        }
+        // A small count of new lines rides on the button's corner and rolls as it grows.
+        AnimatedVisibility(newLines > 0, enter = scaleIn(fastEffectsSpec()) + fadeIn(fastEffectsSpec()),
+            exit = scaleOut(fastEffectsSpec()) + fadeOut(fastEffectsSpec()),
+            modifier = Modifier.offset(x = 30.dp, y = (-6).dp)) {
+            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+                androidx.compose.animation.AnimatedContent(newLines.coerceAtMost(99), transitionSpec = {
+                    (androidx.compose.animation.slideInVertically(tween(160)) { it / 2 } + fadeIn(tween(160))) togetherWith
+                        (androidx.compose.animation.slideOutVertically(tween(120)) { -it / 2 } + fadeOut(tween(120)))
+                }, label = "new lines") { count ->
+                    Text(if (count >= 99) "99+" else "+$count", style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onPrimary,
+                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
+                }
             }
         }
     }

@@ -43,6 +43,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.key
@@ -462,6 +463,7 @@ private fun MarkdownBlocks(
     blocks.forEachIndexed { index, block -> key(index) {
         val live = index >= liveFrom
         val plain = live && block is Block.Paragraph && block.text.length > STREAM_INLINE_CAP
+        androidx.compose.runtime.CompositionLocalProvider(LocalStreamFade provides live) {
         when (block) {
             is Block.Image -> when {
                 com.androidharness.app.core.ChatResponseImages.imageId(block.url) != null -> {
@@ -521,13 +523,14 @@ private fun MarkdownBlocks(
                     else -> MaterialTheme.typography.titleSmall.copy(fontSize = 16.sp, lineHeight = 24.sp)
                 }
                 val styled = styledParagraph(block.content, onOpenUrl, math = !live, linkIcons = !live)
+                val anchors = com.androidharness.app.ui.chat.components.LocalHeadingAnchors.current
                 LinkedText(
                     styled.text,
                     headingStyle,
                     onOpenUrl = onOpenUrl,
                     inlineContent = styled.inlineContent,
-                    modifier = Modifier,
-
+                    modifier = if (anchors == null || live || block.level > 3) Modifier
+                        else Modifier.onGloballyPositioned { anchors.record(index, styled.text.text, it) },
                 )
             }
             is Block.Quote -> QuoteBlock(block.lines, onOpenUrl = onOpenUrl)
@@ -542,6 +545,7 @@ private fun MarkdownBlocks(
             } else {
                 ParagraphText(block.text, onOpenUrl = onOpenUrl, linkIcons = !live, math = !live)
             }
+        }
         }
         if (index != blocks.lastIndex) Spacer(Modifier.height(when {
             blocks[index + 1] is Block.Heading -> 20.dp
@@ -754,6 +758,7 @@ private fun LinkedText(
     var layout by remember { mutableStateOf<TextLayoutResult?>(null) }
     val context = LocalContext.current
     val currentOpenUrl by androidx.compose.runtime.rememberUpdatedState(onOpenUrl)
+    val fade = rememberStreamFade(styled.length)
     Text(
         text = styled,
         style = style,
@@ -761,7 +766,7 @@ private fun LinkedText(
         color = MaterialTheme.colorScheme.onSurface,
         inlineContent = inlineContent,
         onTextLayout = { layout = it },
-        modifier = modifier.pointerInput(styled) {
+        modifier = modifier.streamFade(fade) { layout }.pointerInput(styled) {
             detectTapGestures { pos ->
                 val offset = layout?.getOffsetForPosition(pos) ?: return@detectTapGestures
                 styled.getStringAnnotations("url", offset, offset)
@@ -1072,6 +1077,22 @@ private fun styled(
                             val file = if (fileLinks) WorkspaceFileReference.fromLink(url) else null
                             if (file != null) {
                                 appendFile(label, file)
+                            } else if (url.startsWith("check:")) {
+                                // A claim the model flagged: a small marker that explains itself on tap.
+                                // While streaming it stays hidden rather than showing raw markup.
+                                if (linkIcons) {
+                                    val id = "claim-check-${linkIndex++}"
+                                    appendInlineContent(id, " ")
+                                    val sources = url.removePrefix("check:").split(',').map { it.trim() }
+                                        .filter { it.startsWith("https://") || it.startsWith("http://") }
+                                    inlineContent[id] = InlineTextContent(
+                                        Placeholder(width = 18.sp, height = 18.sp, placeholderVerticalAlign = PlaceholderVerticalAlign.Center),
+                                    ) {
+                                        com.androidharness.app.ui.chat.components.ClaimCheckMarker(label, sources) { source ->
+                                            openMarkdownLink(context, source, currentOpenUrl)
+                                        }
+                                    }
+                                }
                             } else if (linkIcons && isCitationLink(label, url, normalized.substring(0, i))) {
                                 // A cited site becomes a small chain icon; the label
                                 // stays as alternate text for copying and selection.

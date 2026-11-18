@@ -112,7 +112,23 @@ internal fun ChatActivity(
         seenStep = step
         if (step != null) onStep(step.first)
     }
+    val introContext = androidx.compose.ui.platform.LocalContext.current
+    // The brand intro plays once, only for a turn that has just started (not when scrolling back to it).
+    var introDone by rememberSaveable(turnStartedAt != null) {
+        mutableStateOf(!(live && turnStartedAt != null &&
+            com.androidharness.app.agent.ThinkingTiming.now() - turnStartedAt < 1_500 &&
+            android.provider.Settings.Global.getFloat(introContext.contentResolver,
+                android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f))
+    }
+    Column(Modifier.fillMaxWidth()) {
+    AnimatedContent(introDone || !live, transitionSpec = {
+        (fadeIn(tween(240, delayMillis = 60)) + slideInHorizontally(tween(280)) { -it / 12 }) togetherWith
+            (fadeOut(tween(180)) + scaleOut(tween(220), targetScale = 0.6f,
+                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)))
+    }, label = "Chat turn intro") { showActivity ->
+    if (!showActivity) ChatTurnIntro(onFinished = { introDone = true }) else
     ChatActivityRow(title, if (live && showToolPhase) (active ?: lastTool?.call?.takeIf { completedPhase })?.name else null, live, entries.isNotEmpty(), followLatest = live, autoExpand = autoExpand,
+        writing = live && writing && active == null,
         progress = research,
         trailing = if (showThinkingMetrics) ({ ChatThinkingMetrics(messages, streamingThinking, thinkingTiming, reasoningTokens, live,
             turnStartedAt = turnStartedAt, streamId = streamId) }) else null) {
@@ -142,6 +158,12 @@ internal fun ChatActivity(
                     running = live && entry.result == null, onOpenUrl) }
             }
         }
+    }
+    }
+    if (live && (introDone || !live)) {
+        val sources = remember(messages) { ChatActivityPresentation.sources(messages, limit = 12) }
+        LiveSourceChips(sources, onOpenUrl)
+    }
     }
 }
 
@@ -235,6 +257,8 @@ private fun ChatActivityRow(
     expandable: Boolean,
     followLatest: Boolean = false,
     autoExpand: Boolean = true,
+    /** The answer is streaming: the working log steps aside so the reply has the focus. */
+    writing: Boolean = false,
     progress: ChatActivityPresentation.ResearchProgress? = null,
     trailing: (@Composable () -> Unit)? = null,
     compactPreview: Boolean = false,
@@ -259,6 +283,11 @@ private fun ChatActivityRow(
             expanded = false
             autoOpened = false
         }
+    }
+    // Fold the log away while the answer streams and reopen it if the model goes back to work.
+    LaunchedEffect(writing) {
+        if (!autoOpened || !live) return@LaunchedEffect
+        if (writing) { kotlinx.coroutines.delay(350); expanded = false } else expanded = true
     }
     val scroll = rememberChatListState()
     // Retain the reader's follow preference when this disclosure survives a stream commit.
