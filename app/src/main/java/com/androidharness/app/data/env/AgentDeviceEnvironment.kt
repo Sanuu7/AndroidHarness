@@ -36,7 +36,7 @@ internal data class AgentDeviceEnvironment(
             append(if (wirelessConnected) "connected" else "paired but not connected (it connects on the first privileged command)")
             append("; UID: ${shizukuUid ?: "checked before the first command"}.\n")
             append("The Wireless ADB shell is this app's own ADB transport and uses the same privileged route as Shizuku. ")
-            append("Commands run as the ADB shell user (normally UID 2000), never as root and never as the app UID. ")
+            append("Commands run as the ADB shell user (normally UID 2000, or UID 0 when adbd itself runs as root; a UID 0 shell does not grant direct-root permission), never as the app UID. ")
             append("Use shell access=\"shizuku\" to pin Android system commands to it; /system/bin/am, pm, cmd, settings, dumpsys and appops work there, su and sudo do not. ")
             append("The user must keep Android's Wireless debugging toggle on; pairing survives a reboot, the toggle does not. Settings > Coding > Terminal > Wireless ADB shows the live state and can reconnect or forget the pairing.\n")
         }

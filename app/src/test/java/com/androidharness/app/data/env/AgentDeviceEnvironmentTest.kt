@@ -99,7 +99,8 @@ class AgentDeviceEnvironmentTest {
         assertTrue(text.contains("connected; UID: 2000"))
         assertTrue(text.contains("Default command route: built-in Wireless ADB shell, UID 2000"))
         assertTrue(text.contains("access=\"shizuku\""))
-        assertTrue(text.contains("never as root"))
+        assertTrue(text.contains("normally UID 2000, or UID 0 when adbd itself runs as root"))
+        assertTrue(text.contains("never as the app UID"))
         assertTrue(text.contains("Settings > Coding > Terminal > Wireless ADB"))
         assertFalse(text.contains("Shizuku: "))
     }

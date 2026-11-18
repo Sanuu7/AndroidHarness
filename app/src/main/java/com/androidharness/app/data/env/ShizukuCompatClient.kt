@@ -20,8 +20,10 @@ import java.util.concurrent.atomic.AtomicLong
 internal class ShizukuCompatClient private constructor(
     private val process: CompatProcess,
     private val onDied: () -> Unit,
-    val uid: Int,
 ) {
+    /** The UID the runner reported in its hello. Set once the identity check passes, before [start] returns. */
+    @Volatile var uid: Int = -1
+        private set
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
     private val closed = AtomicBoolean(false)
     private val ids = AtomicLong(0)
@@ -106,26 +108,37 @@ internal class ShizukuCompatClient private constructor(
             check(uid == 0 || uid == 2000) { "Shizuku did not provide shell/root privileges" }
             val server = IShizukuService.Stub.asInterface(Shizuku.getBinder())
             val process = requireNotNull(server.newProcess(ShizukuCompatProtocol.launchCommand(apkPath), null, null))
-            start(ShizukuCompatProcess(process), uid, onDied).also { client ->
+            start(ShizukuCompatProcess(process), setOf(uid), onDied).also { client ->
                 if (!client.isAlive) { runCatching { process.destroy() }; error("Compatibility runner did not stay alive") }
             }
         }
 
-        /** Starts the same runner as shell over a direct ADB shell stream. */
+        /** adbd normally runs as shell (2000); with `service.adb.root` or a root manager it runs as root (0). */
+        private val ADB_UIDS = setOf(0, 2000)
+
+        /**
+         * Starts the same runner over a direct ADB shell stream. The runner inherits adbd's
+         * UID, which is the shell user on a stock device and root where adbd itself is rooted.
+         */
         suspend fun startWithAdb(shell: AdbShell, onDied: () -> Unit): ShizukuCompatClient = withContext(Dispatchers.IO) {
-            start(AdbCompatProcess(shell), 2000, onDied)
+            start(AdbCompatProcess(shell), ADB_UIDS, onDied)
         }
 
-        private suspend fun start(process: CompatProcess, uid: Int, onDied: () -> Unit): ShizukuCompatClient {
-            val client = try { ShizukuCompatClient(process, onDied, uid) } catch (e: Exception) {
+        /**
+         * Waits for the runner's hello and accepts it only when it reports one of [allowedUids].
+         * An `id -u` run through the runner must then agree with that reported UID.
+         */
+        internal suspend fun start(process: CompatProcess, allowedUids: Set<Int>, onDied: () -> Unit): ShizukuCompatClient {
+            val client = try { ShizukuCompatClient(process, onDied) } catch (e: Exception) {
                 runCatching { process.destroy() }
                 throw e
             }
             return try {
                 val hello = withTimeout(10_000) { client.hello.await() }
-                check(hello.protocol == 1 && hello.uid == uid) { "Compatibility runner identity check failed" }
+                check(hello.protocol == 1 && hello.uid in allowedUids) { "Compatibility runner identity check failed" }
                 val raw = client.request(CompatRequest(0, "exec", command = listOf("/system/bin/id", "-u"), timeoutMs = 3_000))
-                check(raw.startsWith("exit=0\ntimeout=0\n$uid\n")) { "Compatibility runner execution check failed" }
+                check(raw.startsWith("exit=0\ntimeout=0\n${hello.uid}\n")) { "Compatibility runner execution check failed" }
+                client.uid = hello.uid
                 client
             } catch (e: Exception) { client.close(); throw e }
         }
