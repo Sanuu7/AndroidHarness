@@ -965,6 +965,10 @@
     <string name="chat_attachment_failed">Could not read file</string>
     <string name="chat_attachment_ready">Ready</string>
     <string name="chat_attachment_image_unconfirmed">Ready · image support is unconfirmed for this model</string>
+    <string name="chat_attachment_image_unconfirmed_hint">Image support is unconfirmed for this model.</string>
+    <string name="ui_attachment">Attachment</string>
+    <string name="ui_image_counter">%1$d of %2$d</string>
+    <string name="ui_more_images">+%1$d</string>
     <string name="chat_quote_shortened">Quoted the first 1,500 characters of the selection.</string>
     <string name="chat_handoff_default_title">Continue in your project</string>
     <string name="chat_handoff_default_reason">Use your Chat context to make changes in a workspace.</string>

@@ -143,7 +143,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import com.androidharness.app.ui.chat.components.AgentStatusBar
 import com.androidharness.app.ui.chat.components.ApprovalCard
 import com.androidharness.app.ui.chat.components.AssistantText
-import com.androidharness.app.ui.chat.components.AttachmentChips
 import com.androidharness.app.ui.chat.components.EmptyState
 import com.androidharness.app.ui.chat.components.EnvSheet
 import com.androidharness.app.ui.chat.components.EnvironmentInstallCard
@@ -157,7 +156,6 @@ import com.androidharness.app.skills.slashSkillInstruction
 import com.androidharness.app.ui.chat.components.CompactionBanner
 import com.androidharness.app.ui.chat.components.CompactionResultCard
 import com.androidharness.app.ui.chat.components.CompactionNoticeLine
-import com.androidharness.app.ui.chat.components.FileAttachmentChips
 import com.androidharness.app.ui.chat.components.MentionSuggestions
 import com.androidharness.app.ui.chat.components.SkillsPickerSheet
 import com.androidharness.app.ui.chat.components.SkillUsedBadge
@@ -255,7 +253,23 @@ private fun ChatScreenContent(
     val conversationStart = state.conversationReady && !state.isLoadingMessages &&
         state.messages.isEmpty() && !state.busy && state.streamingText == null
     val showChatStartControls = state.conversation.isChat && conversationStart
-    // Code gets a workspace picker in the same place, only when there is a choice to make.
+    var addingStartWorkspace by remember { mutableStateOf(false) }
+    // The system folder picker for the add sheet's "System picker" choice.
+    val startFolderPicker = androidx.activity.compose.rememberLauncherForActivityResult(
+        androidx.activity.result.contract.ActivityResultContracts.OpenDocumentTree()) { uri ->
+        if (uri != null) viewModel.addStartFolder(uri)
+    }
+    if (addingStartWorkspace) {
+        com.androidharness.app.ui.common.AddWorkspaceDialog(viewModel.container,
+            onDismiss = { addingStartWorkspace = false },
+            onPickSaf = {
+                addingStartWorkspace = false
+                startFolderPicker.launch(null)
+            },
+            onSelected = viewModel::chooseStartWorkspace,
+            activateWorkspace = state.sessionId == null)
+    }
+    // Code gets a workspace picker in the same place, with a way to add another workspace.
     val startWorkspaces by remember(state.conversation.isChat) {
         if (state.conversation.isChat) kotlinx.coroutines.flow.flowOf(emptyList()) else viewModel.workspaces
     }.collectAsStateWithLifecycle(initialValue = emptyList())
@@ -268,7 +282,7 @@ private fun ChatScreenContent(
         else viewModel.container.workspace.selectionForChat(state.sessionId)
     }.collectAsStateWithLifecycle(initialValue = null)
     // Project chats and multi-folder chats keep their own access, edited from the workspace sheet.
-    val showCodeWorkspacePicker = !state.conversation.isChat && conversationStart && startWorkspaces.size > 1 &&
+    val showCodeWorkspacePicker = !state.conversation.isChat && conversationStart && startWorkspaces.isNotEmpty() &&
         startProject == null && (startSelection?.grants?.size ?: 1) <= 1
     val effectiveImageFrequency = com.androidharness.app.core.ChatExperience
         .effectiveImageFrequency(state.conversation.imageFrequency, globalSettings.chatImageFrequency)
@@ -693,7 +707,7 @@ private fun ChatScreenContent(
     val searchItemIndex = remember(activeFindId) { mutableStateOf<Int?>(null) }
     val searchTurnId = state.messages.firstOrNull { it.id == activeFindId }?.turnId
     var diffFile by remember { mutableStateOf<Pair<String, String>?>(null) }
-    var imagePreview by remember { mutableStateOf<com.androidharness.app.core.ImageRef?>(null) }
+    var imagePreview by remember { mutableStateOf<Pair<List<com.androidharness.app.core.ImageRef>, Int>?>(null) }
     diffFile?.let { (turnId, path) ->
         ChatFileDiffSheet(
             path = path,
@@ -702,9 +716,10 @@ private fun ChatScreenContent(
             onDismiss = { diffFile = null },
         )
     }
-    imagePreview?.let { ref ->
+    imagePreview?.let { (refs, start) ->
         com.androidharness.app.ui.chat.components.ImagePreviewDialog(
-            ref = ref,
+            refs = refs,
+            startIndex = start,
             dir = viewModel.container.images.imagesDir,
             onDismiss = { imagePreview = null },
         )
@@ -1400,8 +1415,9 @@ private fun ChatScreenContent(
         }
     }
 
+    // The system photo picker: grid of recent photos, albums and multi-select, no storage permission.
     val galleryLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.GetMultipleContents()
+        ActivityResultContracts.PickMultipleVisualMedia()
     ) { uris: List<Uri> -> uris.forEach { viewModel.attachImage(it) } }
 
     val fileLauncher = rememberLauncherForActivityResult(
@@ -1633,6 +1649,7 @@ private fun ChatScreenContent(
                         enabled = !state.busy && !state.conversationSaving,
                         describe = viewModel::workspaceDescription,
                         onSelect = viewModel::chooseStartWorkspace,
+                        onAdd = { addingStartWorkspace = true },
                     )
                 }
             }
@@ -2040,7 +2057,7 @@ private fun ChatScreenContent(
                                                 message.images,
                                                 fileChips,
                                                 imageDir = viewModel.container.images.imagesDir,
-                                                onOpenImage = { imagePreview = it },
+                                                onOpenImage = { index -> imagePreview = message.images to index },
                                                 onLongPress = { actionsMessage = message },
                                             )
                                             // The latest question gets a visible edit button; long-press still opens every action.
@@ -2776,8 +2793,6 @@ private fun ChatScreenContent(
                     attachedConcept?.let { concept ->
                         com.androidharness.app.ui.chat.components.ConceptAttachmentChip(concept) { attachedConceptJson = null }
                     }
-                    if (state.attachments.isNotEmpty()) AttachmentChips(state.attachments, viewModel::removeAttachment)
-                    if (state.fileAttachments.isNotEmpty()) FileAttachmentChips(state.fileAttachments, viewModel::removeFileAttachment)
                 }
 
                 state.compactionNote?.let { note ->
@@ -2827,16 +2842,18 @@ private fun ChatScreenContent(
                         attachedConcept?.let { concept ->
                             com.androidharness.app.ui.chat.components.ConceptAttachmentChip(concept) { attachedConceptJson = null }
                         }
-                        if (state.conversation.isChat) {
-                            com.androidharness.app.ui.chat.components.ChatAttachmentReadiness(state, viewModel::removeAttachment,
-                                viewModel::removeFileAttachment, viewModel::removeAttachmentImport)
-                        } else {
-                            if (state.attachments.isNotEmpty()) AttachmentChips(state.attachments, viewModel::removeAttachment)
-                            if (state.fileAttachments.isNotEmpty()) FileAttachmentChips(state.fileAttachments, viewModel::removeFileAttachment)
-                            if (state.attachmentImports.isNotEmpty()) com.androidharness.app.ui.chat.components.ChatAttachmentReadiness(
-                                state.copy(attachments = emptyList(), fileAttachments = emptyList()), viewModel::removeAttachment,
-                                viewModel::removeFileAttachment, viewModel::removeAttachmentImport)
-                        }
+                        com.androidharness.app.ui.chat.components.ComposerAttachmentTray(
+                            images = state.attachments,
+                            files = state.fileAttachments,
+                            imports = state.attachmentImports,
+                            imageDir = viewModel.container.images.imagesDir,
+                            // Code models fall back gracefully, so only Chat warns about image support.
+                            imageSupport = if (state.conversation.isChat) state.imageInputSupport() else true,
+                            onRemoveImage = viewModel::removeAttachment,
+                            onRemoveFile = viewModel::removeFileAttachment,
+                            onRemoveImport = viewModel::removeAttachmentImport,
+                            onOpenImage = { refs, index -> imagePreview = refs to index },
+                        )
 
                     },
                     busy = state.busy,
@@ -2899,7 +2916,7 @@ private fun ChatScreenContent(
                             slashExpanded = false
                         }
                     } else null,
-                    onAttachImage = { galleryLauncher.launch("image/*") },
+                    onAttachImage = { galleryLauncher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     onAttachFile = { fileLauncher.launch("*/*") },
                     onLiveMode = startLive,
                     voiceEngine = state.voiceEngine,
