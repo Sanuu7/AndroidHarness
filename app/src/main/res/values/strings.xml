@@ -824,6 +824,7 @@
     <string name="chat_sources_library_empty">No web sources in this chat yet.</string>
     <string name="chat_thought_seconds">Thought for %1$ds</string>
     <string name="chat_writing_reply">Writing a reply</string>
+    <string name="chat_draft_checking">Draft. Checking a few more sources</string>
     <string name="chat_searching">Searching the web</string>
     <string name="chat_searched">Searched the web</string>
     <string name="chat_searching_chats">Searching past chats</string>

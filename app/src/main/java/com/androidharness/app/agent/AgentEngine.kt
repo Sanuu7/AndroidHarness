@@ -423,6 +423,8 @@ class AgentEngine(
         var answerNudges = 0
         var researchNudges = 0
         var imageNudges = 0
+        var imageReminders = 0
+        var turnFoundImage = false
         val alwaysImages = conversation.isChat && com.androidharness.app.core.ChatExperience
             .effectiveImageFrequency(conversation.imageFrequency, chatImageFrequency) == com.androidharness.app.data.ImageFrequency.ALWAYS
         val firstChatAnswer = history.count { it.role == Role.USER } <= 1
@@ -946,6 +948,29 @@ class AgentEngine(
                 val result = results.getValue(call.id)
                 working += toolMessage(call, result).withImagesResolved()
                 emit(AgentEvent.ToolFinished(call.id, result))
+            }
+            // Tell the model what the answer still needs before it writes one.
+            // These checks used to run only after a finished answer, so a whole
+            // reply streamed in and was then pulled back for more research,
+            // which read as the answer being cut off. Notes go to the model's
+            // copy of the newest tool result only; the screen never shows them.
+            if (calls.any { results[it.id]?.output?.hasImageCandidate() == true }) turnFoundImage = true
+            if (conversation.isChat && calls.isNotEmpty()) {
+                val notes = mutableListOf<String>()
+                scopedSearch?.budget()?.let { budget ->
+                    if (budget.minReads > 0 && budget.used > 0 && budget.pagesRead < budget.minReads)
+                        notes += "This turn's research level needs at least ${budget.minReads} pages read before the answer; " +
+                            "${budget.pagesRead} so far. Keep reading (passages returned by web_search count) and write the answer only after that."
+                }
+                if (alwaysImages && imageReminders < MAX_IMAGE_REMINDERS && calls.any { it.name in IMAGE_SOURCE_TOOLS } && !turnFoundImage) {
+                    imageReminders++
+                    notes += "This chat shows a picture with every answer and none has been found yet. " +
+                        "Before writing the answer, call web_fetch or browser_read with images=true on a relevant page."
+                }
+                if (notes.isNotEmpty()) {
+                    val last = working.lastIndex
+                    working[last] = working[last].copy(text = working[last].text + "\n\n[Harness note for you, not the user: " + notes.joinToString(" ") + "]")
+                }
             }
         }
         } finally {
@@ -2541,6 +2566,11 @@ ${if (appSettings.subagentsEnabled) "- For broad exploration whose raw output wo
 
         /** How many times an Always-images chat answer without a picture is sent back for one. */
         const val MAX_IMAGE_NUDGES = 1
+        /** Pre-answer image reminders per turn, so a chat with no usable pictures is not nagged forever. */
+        const val MAX_IMAGE_REMINDERS = 2
+        private val IMAGE_SOURCE_TOOLS = setOf("web_search", "web_fetch", "browser_read")
+        private fun String.hasImageCandidate() = contains(com.androidharness.app.tools.PageImageText.MARKER) ||
+            contains("display_url") || contains("image_attached")
         private val ANSWER_NUDGE =
             "Your previous reply ended without any visible answer: it was likely cut off " +
                 "mid-generation. Respond now with your actual answer (or the tool calls you intended)."
