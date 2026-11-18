@@ -356,13 +356,20 @@ class OpenAiCompatProvider(
             val index = tc["index"]?.primitiveOrAbsent()?.intOrNull ?: 0
             val newId = tc["id"]?.primitiveOrAbsent()?.contentOrNull
             // Key by call id; the stream index only links fragments that carry
-            // no id. A gateway that reuses index 0 for a SECOND call (new id)
-            // therefore opens a new entry instead of corrupting the first.
-            val key = if (!newId.isNullOrBlank()) {
-                indexToId[index] = newId
-                newId
-            } else {
-                indexToId[index] ?: "idx_$index"
+            // no id. A gateway that reuses index 0 for a SECOND call (new id
+            // plus a function name) therefore opens a new entry instead of
+            // corrupting the first. Some gateways stamp a fresh id on every
+            // fragment: a new id with no name, while the call at this index
+            // already has its name, is that call's next argument fragment.
+            // Opening an entry for it would run the call with {} (#123).
+            val hasName = (tc["function"] as? JsonObject)?.get("name")
+                ?.primitiveOrAbsent()?.contentOrNull?.isNotBlank() == true
+            val open = indexToId[index] ?: "idx_$index".takeIf { it in acc }
+            val key = when {
+                newId.isNullOrBlank() -> open ?: "idx_$index"
+                newId in acc -> newId.also { indexToId[index] = it }
+                !hasName && open != null && acc[open]?.second?.isNotEmpty() == true -> open
+                else -> newId.also { indexToId[index] = it }
             }
             val entry = acc.getOrPut(key) {
                 Triple(StringBuilder(newId ?: "call_${System.nanoTime()}"), StringBuilder(), StringBuilder())
