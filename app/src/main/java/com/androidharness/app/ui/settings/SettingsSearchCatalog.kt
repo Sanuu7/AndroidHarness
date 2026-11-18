@@ -478,6 +478,8 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         "root fallback shizuku automatic switch", within = listOf(R.string.settings_device_advanced)),
     control(SettingsPage.ENVIRONMENT, R.string.settings_root_access_mode, null,
         "root shizuku normal both auto access mode privileges", within = listOf(R.string.settings_device_advanced)),
+    control(SettingsPage.ENVIRONMENT, R.string.settings_ask_phone_control, R.string.settings_ask_phone_control_desc,
+        "ask permission phone control agent shizuku root device owner dhizuku approve allow confirm", within = listOf(R.string.settings_device_advanced)),
     control(SettingsPage.ENVIRONMENT, R.string.settings_root_app_workspace_privileged, null,
         "app workspace uid 2000 shell user adb wireless shizuku privileged app user", within = listOf(R.string.settings_device_advanced)),
     control(SettingsPage.ENVIRONMENT, R.string.settings_root_temp_mode, null,

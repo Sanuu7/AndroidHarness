@@ -28,6 +28,7 @@ class DeviceOwnerShellTool(private val manager: DhizukuManager, private val acce
             val root = ctx.workspace.shellRoot ?: throw ToolFailure("Device Owner commands require an editable device workspace.")
             ShellPolicy.denyReason(command, root, java.io.File("/"))?.let { return ToolResult(false, it) }
         }
+        access.clearPhoneControl(DeviceBackend.DHIZUKU, command)?.let { return ToolResult(false, it) }
         val timeout = (args["timeout_seconds"]?.jsonPrimitive?.intOrNull ?: 30).coerceIn(1, 120)
         return try {
             val result = manager.run(command, timeout * 1000L)

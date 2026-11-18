@@ -15,6 +15,16 @@ class AgentDeviceEnvironmentTest {
         shizukuReady = shizuku || wirelessConnected || wirelessPaired, shizukuUid = uid, paused = paused,
         wirelessPaired = wirelessPaired, wirelessConnected = wirelessConnected, wirelessActive = wirelessActive)
 
+    @Test fun promptTellsTheAgentWhenPhoneControlStillNeedsPermission() {
+        assertTrue(AccessPreferences().askPhoneControl)
+        val asking = state().copy(phoneControlAllowed = false).describe(false, true)
+        assertTrue(asking.contains("has not allowed phone control in this chat yet"))
+        assertTrue(asking.contains("input tap"))
+        assertTrue(state().describe(false, true).contains("already allowed phone control in this chat"))
+        val off = state().copy(preferences = AccessPreferences(askPhoneControl = false)).describe(false, true)
+        assertTrue(off.contains("turned off the phone control question"))
+    }
+
     @Test fun neitherRunnerStillSupportsNormalWork() {
         val text = state().describe(false, false)
         assertTrue(text.contains("Neither privileged runner is ready"))

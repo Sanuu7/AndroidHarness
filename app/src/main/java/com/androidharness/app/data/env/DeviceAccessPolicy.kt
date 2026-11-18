@@ -39,6 +39,10 @@ data class AccessPreferences(
     val temporaryRoot: Boolean = true,
     /** When true, app-owned workspaces follow [mode] instead of always running as the app user. */
     val appWorkspacePrivileged: Boolean = false,
+    /** When true, an agent asks once per chat before it uses Shizuku, root or Device Owner. */
+    val askPhoneControl: Boolean = true,
+    /** Chats where the user already allowed phone control. */
+    val phoneControlChats: Set<String> = emptySet(),
 )
 
 data class AccessDecision(val backend: DeviceBackend?, val reason: String? = null, val uid: Int? = null)

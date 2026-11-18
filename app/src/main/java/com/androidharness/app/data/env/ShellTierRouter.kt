@@ -118,6 +118,7 @@ class ShellTierRouter(
             deviceAccess?.let { access ->
                 return@withContext access.execute(
                     appWorkspace = access.pinsAppUser(cwd),
+                    command = command,
                     normal = { runApp(command, cwd, timeoutMs, maxOutput, if (linuxEnv.isReady) ExecutionTier.APP_LINUX else ExecutionTier.TOYBOX) },
                     shizukuRun = { runPrivileged(command, cwd, timeoutMs, maxOutput, allowFallback = false) },
                     rootRun = { access.runRoot(command, cwd, timeoutMs, maxOutput) },

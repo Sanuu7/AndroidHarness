@@ -125,6 +125,14 @@ internal fun RootAccessSection(container: AppContainer) {
                 !prefs.autoFallback && prefs.mode != AccessMode.NORMAL -> uiContext.getString(R.string.ui_commands_fail_if_the_selected_access_is)
                 else -> uiContext.getString(R.string.ui_fallback_applies_before_a_command_starts_interrupted)
             }, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_ask_phone_control)) {
+                Column(Modifier.weight(1f).padding(end = 12.dp)) {
+                    Text(stringResource(R.string.settings_ask_phone_control), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.settings_ask_phone_control_desc),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = prefs.askPhoneControl, onCheckedChange = { scope.launch { access.store.setAskPhoneControl(it) } })
+            }
             Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.fillMaxWidth().settingsAnchor(R.string.settings_root_app_workspace_privileged)) {
                 Column(Modifier.weight(1f).padding(end = 12.dp)) {
                     Text(stringResource(R.string.settings_root_app_workspace_privileged), style = MaterialTheme.typography.titleSmall)

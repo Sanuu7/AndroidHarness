@@ -40,6 +40,7 @@ internal class PrefsGrantPersistence(private val context: Context) : GrantPersis
 internal object GrantPolicy {
     private val neverSaved = setOf(
         "pkg_install", "android_sdk_install", "device_owner_shell", "github_create_pull_request", "git_push",
+        "automation_create", "automation_manage",
     )
 
     /** First words that can run anything, or that are destructive no matter what follows. */
@@ -55,7 +56,7 @@ internal object GrantPolicy {
     fun canSave(key: String): Boolean {
         if (key.startsWith("config:") || key.startsWith("app_settings:")) return false
         val base = key.replace(workspacePrefix, "")
-        if (base.isBlank() || base in neverSaved) return false
+        if (base.isBlank() || base in neverSaved || base.startsWith(PHONE_CONTROL_KEY)) return false
         val hash = base.indexOf('#')
         if (hash < 0) return true
         val tool = base.substring(0, hash)
