@@ -97,4 +97,12 @@
     <string name="wp_app_workspace_reset_title">Reset app workspace?</string>
     <string name="wp_app_workspace_reset_body">Deletes %1$s, %2$s and every file in the app workspace folder on this device (%3$s in total), including project memory and undo history. The workspace stays as an empty default. This cannot be undone.</string>
     <string name="wp_app_workspace_reset_confirm">Reset workspace</string>
+    <string name="wp_editor_chat_names">Chat names (optional)</string>
+    <string name="wp_editor_chat_names_placeholder">For example ALPHA</string>
+    <string name="wp_editor_chat_names_hint">New chats are numbered in order. Put # where the number goes. Leave empty to use New chat.</string>
+    <string name="wp_editor_chat_names_preview">New chats: %1$s, %2$s, and so on</string>
+    <string name="wp_project_name_chat">Name the new chat</string>
+    <string name="wp_project_name_chat_title">New chat</string>
+    <string name="wp_project_chat_name">Chat name</string>
+    <string name="ui_replay_intro">Replay intro</string>
 </resources>
