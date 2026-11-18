@@ -58,7 +58,6 @@ import com.androidharness.app.data.MessageHit
 import com.androidharness.app.data.db.ProjectEntity
 import com.androidharness.app.data.db.WorkProjectEntity
 import com.androidharness.app.data.db.SessionEntity
-import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.SwipeDismissibleSnackbarHost
 import com.androidharness.app.ui.theme.LocalStatusColors
 import com.androidharness.app.ui.common.formatRelativeTime
@@ -125,6 +124,7 @@ internal fun ProjectNavigationSidebar(
     selectionBusy: Boolean = false,
     savedAnswers: List<SavedAnswerRow> = emptyList(),
     onOpenSavedAnswer: (SavedAnswerRow) -> Unit = {},
+    opened: Boolean = true,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scheme = MaterialTheme.colorScheme
@@ -248,9 +248,14 @@ internal fun ProjectNavigationSidebar(
                     if (!selecting) {
                     Row(Modifier.fillMaxWidth().heightIn(min = 60.dp).padding(start = 18.dp, end = 8.dp, top = 4.dp),
                         verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        HarnessMark(30.dp, Modifier.semantics { contentDescription = uiContext.getString(R.string.ui_androidharness_icon) })
-                        Text("AndroidHarness", Modifier.weight(1f), style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.SemiBold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        // Tapping the brand replays its entrance.
+                        var brandReplay by remember { mutableIntStateOf(0) }
+                        Row(Modifier.weight(1f).clickable(remember { MutableInteractionSource() }, indication = null,
+                            onClickLabel = uiContext.getString(R.string.ui_replay_intro)) { brandReplay++ },
+                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                            com.androidharness.app.ui.common.SidebarBrandLogo(opened, 30.dp, description = uiContext.getString(R.string.ui_androidharness_icon), replay = brandReplay)
+                            com.androidharness.app.ui.common.SidebarBrandName("AndroidHarness", opened, MaterialTheme.typography.titleMedium, Modifier.weight(1f), replay = brandReplay)
+                        }
                         ExpressiveIconButton(onClick = onCollapse) { Icon(Icons.AutoMirrored.Outlined.MenuOpen, uiContext.getString(R.string.ui_collapse_sidebar), Modifier.size(19.dp)) }
                     }
                     com.androidharness.app.ui.chat.components.ConversationSectionSwitcher(
