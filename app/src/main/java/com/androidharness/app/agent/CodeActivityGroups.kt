@@ -45,7 +45,7 @@ object CodeActivityGroups {
 
     private val standalone = setOf(
         "task", "ask_user", "todo_write", "pkg_install", "android_sdk_install", "github_create_pull_request",
-        "offer_code_handoff", "app_settings_change", "create_artifact", "memory_write", "remember",
+        "offer_code_handoff", "app_settings_change", "create_artifact", "memory_write", "remember", "automation_create",
     )
     private val bookkeeping = setOf("env_status", "doctor", "file_history", "bg_list", "pkg_search", "pkg_list")
 
