@@ -63,7 +63,10 @@ internal object HistoryCompactor {
                 retryReason = { it },
                 emitEvent = { progress("Retrying summary · attempt ${it.attempt}") },
                 stallTimeoutMs = if (managedFallback) maxOf(stallTimeoutMs, 610_000) else stallTimeoutMs,
+                firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
+                    if (managedFallback) maxOf(stallTimeoutMs, 610_000) else stallTimeoutMs, ThinkingLevel.OFF, cfg),
                 allowRetries = !managedFallback,
+                retryStalls = !StreamRetrier.selfHosted(cfg),
             )
             if (failure != null) error(listOfNotNull(failureCode?.let { "HTTP $it" }, failure).joinToString(": "))
             check(done) { "The summary stream ended before completion. Retry /compact." }

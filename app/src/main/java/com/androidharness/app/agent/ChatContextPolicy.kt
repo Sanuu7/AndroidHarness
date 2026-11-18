@@ -9,6 +9,10 @@ internal object ChatContextPolicy {
         return minOf(LIMIT.toLong(), available.toLong(), modelLimit?.takeIf { it > 0 } ?: LIMIT.toLong()).toInt()
     }
 
+    /** Code keeps its configured context unless the server reports a smaller one. */
+    fun cap(configured: Int, serverLimit: Long?): Int =
+        serverLimit?.takeIf { it > 0 }?.let { minOf(configured.toLong(), it).toInt() } ?: configured
+
     /** Reserve room for the reply and estimation error before the context is full. */
     fun compactAt(limit: Int, output: Int): Int {
         val reserve = maxOf(limit / 20, output.coerceAtLeast(0)).coerceAtMost(limit / 2)

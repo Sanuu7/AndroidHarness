@@ -335,8 +335,9 @@ class AgentEngine(
         // is told about change with it.
         var replySettings = cavemanSettings()
         val localChat = com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
-        val contextLimit = if (conversation.isChat) ChatContextPolicy.limit(maxContextTokens,
-            options.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.contextTokens, localChat) else maxContextTokens
+        // RunManager already folded in a self-hosted server's real context; never raise past it.
+        val contextLimit = if (conversation.isChat) minOf(maxContextTokens, ChatContextPolicy.limit(maxContextTokens,
+            options.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.contextTokens, localChat)) else maxContextTokens
         val agentContextEnabled = !localChat || replySettings.localModelAgentContext
         var suppliedMemories = emptyList<com.androidharness.app.core.SuppliedMemory>()
         var memoryQuery = recentMemoryQuery(history)
@@ -663,8 +664,9 @@ class AgentEngine(
                 emitEvent = { emit(it) },
                 stallTimeoutMs = if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000,
                 firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                    if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000, requestOptions.thinking),
+                    if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000, requestOptions.thinking, config),
                 allowRetries = !localChat && !managedFallback,
+                retryStalls = !StreamRetrier.selfHosted(config),
                 onTerminalFailure = { recoverableFailure = it },
             )
 
@@ -709,8 +711,9 @@ class AgentEngine(
                     emitEvent = { emit(it) },
                     stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
                     firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                        if (managedFallback) 610_000 else 90_000, requestOptions.thinking),
+                        if (managedFallback) 610_000 else 90_000, requestOptions.thinking, config),
                     allowRetries = !managedFallback,
+                    retryStalls = !StreamRetrier.selfHosted(config),
                     onTerminalFailure = { recoverableFailure = it },
                 )
             }
@@ -977,8 +980,9 @@ class AgentEngine(
                     emitEvent = { send(SideEvent.Retrying(it.attempt, it.reason)) },
                     stallTimeoutMs = if (local) 600_000 else 90_000,
                     firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                        if (local) 600_000 else 90_000, context.options.thinking),
+                        if (local) 600_000 else 90_000, context.options.thinking, config),
                     allowRetries = !local,
+                    retryStalls = !StreamRetrier.selfHosted(config),
                 )
                 if (failure != null) {
                     send(SideEvent.Failed(failure))
@@ -1863,8 +1867,9 @@ class AgentEngine(
                 emitEvent = { emitEvent(it) },
                 stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
                 firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                    if (managedFallback) 610_000 else 90_000, requestOptions.thinking),
+                    if (managedFallback) 610_000 else 90_000, requestOptions.thinking, config),
                 allowRetries = !managedFallback,
+                retryStalls = !StreamRetrier.selfHosted(config),
             )
 
             if (text.isBlank() && calls.isEmpty()) {

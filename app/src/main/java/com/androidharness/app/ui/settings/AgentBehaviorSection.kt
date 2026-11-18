@@ -300,7 +300,7 @@ internal fun AgentBehaviorSection(
                 title = stringResource(R.string.settings_anchor_max_context)
                 description = stringResource(R.string.settings_agent_context_cap_detail)
                 selected = settings.maxContextTokens.toString()
-                choices = (listOf(131_072, 262_144, 400_000, 1_000_000, 2_000_000) + settings.maxContextTokens)
+                choices = (listOf(32_768, 65_536, 131_072, 262_144, 400_000, 1_000_000, 2_000_000) + settings.maxContextTokens)
                     .distinct().sorted().map {
                         BehaviorChoice(it.toString(), stringResource(R.string.settings_agent_context_value, formatTokenCount(it.toLong())), "")
                     }

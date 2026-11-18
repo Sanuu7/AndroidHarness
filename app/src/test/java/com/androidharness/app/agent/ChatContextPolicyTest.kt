@@ -15,4 +15,10 @@ class ChatContextPolicyTest {
         assertEquals(237_500, ChatContextPolicy.compactAt(250_000, 2_000))
         assertEquals(218_000, ChatContextPolicy.compactAt(250_000, 32_000))
     }
+    @Test fun `code context shrinks to what the server reports and never grows`() {
+        assertEquals(16_384, ChatContextPolicy.cap(1_000_000, 16_384))
+        assertEquals(131_072, ChatContextPolicy.cap(131_072, 262_144))
+        assertEquals(131_072, ChatContextPolicy.cap(131_072, null))
+        assertEquals(131_072, ChatContextPolicy.cap(131_072, 0))
+    }
 }

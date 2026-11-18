@@ -165,7 +165,8 @@ sealed interface StreamEvent {
     data class Done(val finishReason: String? = null) : StreamEvent
 }
 
-class ApiException(val code: Int, message: String, retryAfterSecondsHeader: Long? = null) : IOException("HTTP $code: $message") {
+class ApiException(val code: Int, message: String, retryAfterSecondsHeader: Long? = null) :
+    IOException("HTTP $code: ${ServerContext.overflowMessage(message) ?: message}") {
     val retryAfterSeconds: Long? = retryAfterSecondsHeader ?: runCatching {
         providerRetryAfterSeconds(Json.parseToJsonElement(message))
     }.getOrNull()

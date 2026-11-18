@@ -362,4 +362,30 @@ class StreamRetrierTest {
         assertEquals(StreamRetrier.STALLED_STREAM_MESSAGE, StreamStalledException(90_000).message)
         assertTrue(RetryPolicy.isRetryable(null, StreamStalledException(90_000).message!!, null))
     }
+    @Test
+    fun `a self-hosted stall is final instead of resending the prompt`() = runBlocking {
+        var builds = 0
+        val result = StreamRetrier.run(
+            streamFor = { builds++; flow<StreamEvent> { awaitCancellation() } },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {}, retryReason = { it },
+            emitEvent = { error("A resend would restart the server's prompt processing") },
+            sleep = {}, stallTimeoutMs = 150, retryStalls = false,
+        )
+        assertEquals("Generation stalled - no data received for 0s (timed out)", result)
+        assertEquals(1, builds)
+    }
+
+    @Test
+    fun `self-hosted servers get time to read a long prompt before the first token`() {
+        val llama = com.androidharness.app.llm.ProviderConfig("llama", "llama.cpp",
+            com.androidharness.app.llm.ProviderType.OPENAI_COMPAT, "http://127.0.0.1:8080/v1", "qwen")
+        val lan = llama.copy(baseUrl = "http://192.168.1.20:8080/v1")
+        val cloud = llama.copy(baseUrl = "https://openrouter.ai/api/v1")
+        assertEquals(600_000L, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.OFF, llama))
+        assertEquals(600_000L, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.HIGH, lan))
+        assertEquals(90_000L, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.OFF, cloud))
+        assertEquals(300_000L, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.HIGH, cloud))
+        assertTrue(StreamRetrier.selfHosted(llama))
+        assertEquals(false, StreamRetrier.selfHosted(cloud))
+    }
 }

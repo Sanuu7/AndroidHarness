@@ -1,5 +1,6 @@
 package com.androidharness.app.agent
 
+import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.StreamEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -97,8 +98,25 @@ internal object StreamRetrier {
      * gateway that sends no keep-alives can be quiet for minutes while it
      * reasons, so it gets [REASONING_FIRST_OUTPUT_MS] instead of [stallTimeoutMs].
      */
-    fun firstOutputWindow(stallTimeoutMs: Long, thinking: ThinkingLevel): Long =
-        if (thinking == ThinkingLevel.OFF) stallTimeoutMs else maxOf(stallTimeoutMs, REASONING_FIRST_OUTPUT_MS)
+    fun firstOutputWindow(stallTimeoutMs: Long, thinking: ThinkingLevel, config: ProviderConfig? = null): Long {
+        val window = if (thinking == ThinkingLevel.OFF) stallTimeoutMs else maxOf(stallTimeoutMs, REASONING_FIRST_OUTPUT_MS)
+        return if (config != null && selfHosted(config)) maxOf(window, SELF_HOSTED_FIRST_OUTPUT_MS) else window
+    }
+
+    /**
+     * How long a server on this device or the local network may stay silent
+     * before its first token. llama.cpp sends nothing while it reads the
+     * prompt, and on a phone CPU a full agent prompt can take minutes.
+     */
+    const val SELF_HOSTED_FIRST_OUTPUT_MS = 600_000L
+
+    /**
+     * A server on this device or the local network (llama.cpp, Ollama, LM
+     * Studio). Resending a request it is still reading only restarts that
+     * work, so a silent stall there is final instead of retried.
+     */
+    fun selfHosted(config: ProviderConfig): Boolean =
+        com.androidharness.app.llm.OpenAiCompatProvider.isLocalHost(config.baseUrl)
 
     /**
      * Streams until completion or terminal failure. Returns null on success,
@@ -116,6 +134,8 @@ internal object StreamRetrier {
      * @param stallTimeoutMs   stallGuard window; injectable for tests.
      * @param firstOutputTimeoutMs stallGuard window before the first event,
      *                         longer while a model may reason in silence.
+     * @param retryStalls      false when resending a silent request would only
+     *                         restart the work, as on a self-hosted server.
      */
     internal suspend fun run(
         streamFor: () -> Flow<StreamEvent>,
@@ -128,6 +148,7 @@ internal object StreamRetrier {
         stallTimeoutMs: Long = 90_000,
         firstOutputTimeoutMs: Long = stallTimeoutMs,
         allowRetries: Boolean = true,
+        retryStalls: Boolean = true,
         onTerminalFailure: (recoverable: Boolean) -> Unit = {},
     ): String? {
         var attempt = 0
@@ -154,6 +175,7 @@ internal object StreamRetrier {
                 // stallGuard: a silent gateway kept the socket open, treat
                 // like any transient failure so retries can kick in.
                 failure = stalledMessage(stall.silentMs)
+                if (!retryStalls) retryAllowed = false
             } catch (ce: CancellationException) {
                 throw ce
             } catch (e: Exception) {

@@ -486,9 +486,12 @@ class RunManager(
             "This chat's model is no longer available. Choose another model in the picker."
         }
         val conversation = com.androidharness.app.data.ConversationConfig.decode(sessions.session(sid)?.conversationJson)
+        // A llama.cpp server holds only what it was started with, whatever the settings say.
+        val serverContext = com.androidharness.app.llm.ServerContext.tokens(runConfig, apiKey)
         val contextLimit = if (conversation.isChat) ChatContextPolicy.limit(maxContextTokens,
-            providers.catalogs.first()[runConfig.id]?.firstOrNull { it.id == runConfig.model }?.contextTokens,
-            com.androidharness.app.local.LocalModelCatalog.isLocal(runConfig.id)) else maxContextTokens
+            serverContext ?: providers.catalogs.first()[runConfig.id]?.firstOrNull { it.id == runConfig.model }?.contextTokens,
+            com.androidharness.app.local.LocalModelCatalog.isLocal(runConfig.id))
+            else ChatContextPolicy.cap(maxContextTokens, serverContext)
         val assignedWorkspace = workspace.forSession(sid)
         require(workspaceOverride == null || workspaceOverride.displayPath == assignedWorkspace.displayPath) {
             "This chat's workspace changed while preparing the request. Send the message again."
