@@ -819,6 +819,13 @@
     <string name="chat_image_save_failed">Could not save image</string>
     <string name="chat_image_shared">Image ready to share</string>
     <string name="chat_image_share_failed">Could not share image</string>
+    <string name="chat_image_save_to_gallery">Save to gallery</string>
+    <string name="automation_approval_title">Schedule this message?</string>
+    <string name="phone_control_approval_title">Let the agent control your phone?</string>
+    <string name="phone_control_allow">Allow in this chat</string>
+    <string name="settings_ask_phone_control">Ask before controlling the phone</string>
+    <string name="settings_ask_phone_control_desc">Agents ask once per chat before they use Shizuku, root or Device Owner. Your own terminal is never asked.</string>
+    <string name="chat_message_options">Message options</string>
     <string name="chat_sources_library">Sources in this chat</string>
     <string name="chat_sources_library_count">%1$d sources</string>
     <string name="chat_sources_library_empty">No web sources in this chat yet.</string>

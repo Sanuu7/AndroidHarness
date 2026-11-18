@@ -60,6 +60,12 @@ class ApprovalRequest(
     val response = CompletableDeferred<Boolean>()
 }
 
+/** Grant key prefix of the once-per-chat card that lets an agent control the phone. */
+const val PHONE_CONTROL_KEY = "phone:"
+const val PHONE_CONTROL_TITLE = "Control your phone"
+
+val ApprovalRequest.isPhoneControl: Boolean get() = grantKey.startsWith(PHONE_CONTROL_KEY)
+
 class QuestionRequest(
     val callId: String,
     val question: String,
@@ -1553,6 +1559,12 @@ class AgentEngine(
                     request.response.await()
                 }
             }
+            tool is com.androidharness.app.tools.AutomationCreateTool -> {
+                // A schedule later runs unattended, so it is confirmed in every mode and never remembered.
+                val request = ApprovalRequest(call, "Schedule a message in this chat", tool.approvalPreview(parsedArgs), "automation:${call.id}")
+                emitEvent(AgentEvent.ApprovalNeeded(request))
+                request.response.await()
+            }
             isPkgInstall -> {
                 // Mandatory confirmation: even in FULL_ACCESS or FULL_AUTO mode,
                 // package installation ALWAYS requires explicit user confirmation (Decline or Allow).
@@ -1613,15 +1625,24 @@ class AgentEngine(
         kotlin.coroutines.coroutineContext[TaskBudget]?.check()
         val startedAt = System.currentTimeMillis()
         val linuxWasReady = linuxEnv.isReady
+        // Asked at most once per chat, when the user turned on "Ask before controlling the phone".
+        val phoneGate = com.androidharness.app.data.env.PhoneControlGate(sessionId, turnId) { backend, privileged ->
+            val request = ApprovalRequest(call, PHONE_CONTROL_TITLE,
+                com.androidharness.app.data.env.PhoneControlPreview.describe(backend, privileged), "$PHONE_CONTROL_KEY$sessionId")
+            emitEvent(AgentEvent.ApprovalNeeded(request))
+            request.response.await()
+        }
         var executed = try {
             if (call.name in setOf("git_push", "git_pull", "github_create_pull_request", "http_request", "shell", "shell_background") &&
                 workspace !is com.androidharness.app.workspace.SshFs) prepareGitHub()
             val execute = suspend {
                 var outcome: ToolResult? = null
                 try {
-                    val completed = deviceAccess?.traceTool(route.binding?.id ?: (route.workspace as? ChatWorkspaceFs)?.primaryId, sessionId, args["access"]?.jsonPrimitive?.content == "root", args["access"]?.jsonPrimitive?.content == "shizuku") {
-                        tool.execute(args, toolContext)
-                    } ?: tool.execute(args, toolContext)
+                    val completed = kotlinx.coroutines.withContext(phoneGate) {
+                        deviceAccess?.traceTool(route.binding?.id ?: (route.workspace as? ChatWorkspaceFs)?.primaryId, sessionId, args["access"]?.jsonPrimitive?.content == "root", args["access"]?.jsonPrimitive?.content == "shizuku") {
+                            tool.execute(args, toolContext)
+                        } ?: tool.execute(args, toolContext)
+                    }
                     outcome = completed
                     completed
                 } finally {
@@ -1687,9 +1708,11 @@ class AgentEngine(
                     // Repaired: run the exact same command again for the model.
                     kotlin.coroutines.coroutineContext[TaskBudget]?.check()
                     val retry = try {
-                        deviceAccess?.traceTool(route.binding?.id ?: (route.workspace as? ChatWorkspaceFs)?.primaryId, sessionId, args["access"]?.jsonPrimitive?.content == "root", args["access"]?.jsonPrimitive?.content == "shizuku") {
-                            tool.execute(args, toolContext)
-                        } ?: tool.execute(args, toolContext)
+                        kotlinx.coroutines.withContext(phoneGate) {
+                            deviceAccess?.traceTool(route.binding?.id ?: (route.workspace as? ChatWorkspaceFs)?.primaryId, sessionId, args["access"]?.jsonPrimitive?.content == "root", args["access"]?.jsonPrimitive?.content == "shizuku") {
+                                tool.execute(args, toolContext)
+                            } ?: tool.execute(args, toolContext)
+                        }
                     } catch (ce: CancellationException) {
                         throw ce
                     } catch (e: Exception) {

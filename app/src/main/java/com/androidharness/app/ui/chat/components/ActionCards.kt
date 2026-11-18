@@ -21,8 +21,11 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.PhoneAndroid
+import com.androidharness.app.agent.isPhoneControl
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Merge
+import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
 import androidx.compose.material.icons.outlined.WarningAmber
@@ -97,6 +100,8 @@ private fun ActionCard(
     }
 }
 
+private const val PHONE_FIRST_COMMAND = "First command:"
+
 @Composable
 internal fun ApprovalCard(
     approval: ApprovalRequest,
@@ -106,31 +111,55 @@ internal fun ApprovalCard(
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val isPkg = approval.call.name == "pkg_install" || approval.call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
     val isPullRequest = approval.call.name == "github_create_pull_request"
+    // A schedule is approved one at a time, so there is no "Always" for it.
+    val isSchedule = approval.call.name == com.androidharness.app.tools.AutomationCreateTool.NAME
+    // Phone control is allowed for the whole chat at once, so it has one Allow button.
+    val isPhone = approval.isPhoneControl
     val scheme = MaterialTheme.colorScheme
     ActionCard(
         title = when {
             isPkg -> uiContext.getString(R.string.ui_install_linux_package)
             isPullRequest -> uiContext.getString(R.string.pr_approval_title)
+            isSchedule -> uiContext.getString(R.string.automation_approval_title)
+            isPhone -> uiContext.getString(R.string.phone_control_approval_title)
             else -> uiContext.getString(R.string.ui_approve_this_action)
         },
         icon = when {
             isPkg -> Icons.Outlined.Inventory2
             isPullRequest -> Icons.Outlined.Merge
+            isSchedule -> Icons.Outlined.Schedule
+            isPhone -> Icons.Outlined.PhoneAndroid
             else -> Icons.Outlined.Shield
         },
         iconTint = if (isPkg) scheme.tertiary else scheme.primary,
         actions = {
             TextButton(onClick = onDeny) { Text(if (isPkg) uiContext.getString(R.string.ui_decline) else uiContext.getString(R.string.ui_deny)) }
-            if (!isPkg) {
+            if (!isPkg && !isSchedule && !isPhone) {
                 // Only approvals that are safe to keep are saved, anything else lasts for this run.
                 val saved = com.androidharness.app.agent.GrantPolicy.canSave(approval.grantKey)
                 FilledTonalButton(onClick = { onApprove(true) }) {
                     Text(uiContext.getString(if (saved) R.string.ui_always else R.string.approval_for_this_run))
                 }
             }
-            Button(onClick = { onApprove(false) }) { Text(uiContext.getString(R.string.ui_allow)) }
+            Button(onClick = { onApprove(false) }) {
+                Text(uiContext.getString(if (isPhone) R.string.phone_control_allow else R.string.ui_allow))
+            }
         },
     ) {
+        if (isPhone) {
+            val preview = approval.diffPreview.orEmpty()
+            val command = preview.substringAfter(PHONE_FIRST_COMMAND, "").trim()
+            Text(
+                preview.substringBefore(PHONE_FIRST_COMMAND).trim(),
+                style = MaterialTheme.typography.bodyMedium,
+                color = scheme.onSurfaceVariant,
+            )
+            if (command.isNotEmpty()) {
+                Spacer(Modifier.height(10.dp))
+                CodePanel(command, label = approval.call.name)
+            }
+            return@ActionCard
+        }
         if (isPkg) {
             Surface(
                 color = scheme.errorContainer.copy(alpha = 0.6f),
