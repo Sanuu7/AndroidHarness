@@ -150,4 +150,10 @@
     <string name="pm_settings_saved">设置已保存。将在下次 Code 运行时生效。</string>
     <string name="pm_auto_updated">已更新 %1$s。</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">在每个 Code 工作区都可用。适合大多数插件。</string>
+    <string name="pm_workspace_scope_hint">只在此工作区加载</string>
+    <string name="pm_no_workspace_scope_hint">打开 Code 工作区以便安装到那里</string>
+    <string name="pm_scope_locked_hint">更新会留在插件已安装的位置</string>
+    <string name="pm_source">来源</string>
+    <string name="pm_included">包含内容</string>
 </resources>

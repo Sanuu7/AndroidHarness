@@ -150,4 +150,10 @@
     <string name="pm_settings_saved">"บันทึกการตั้งค่าแล้ว จะมีผลกับการรัน Code ครั้งถัดไป"</string>
     <string name="pm_auto_updated">"อัปเดต %1$s แล้ว"</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">"ใช้ได้ในทุกพื้นที่ทำงาน Code เหมาะกับปลั๊กอินส่วนใหญ่"</string>
+    <string name="pm_workspace_scope_hint">"โหลดเฉพาะในพื้นที่ทำงานนี้"</string>
+    <string name="pm_no_workspace_scope_hint">"เปิดพื้นที่ทำงาน Code เพื่อติดตั้งที่นั่น"</string>
+    <string name="pm_scope_locked_hint">"การอัปเดตจะอยู่ที่เดิมที่ติดตั้งปลั๊กอินไว้"</string>
+    <string name="pm_source">"แหล่งที่มา"</string>
+    <string name="pm_included">"สิ่งที่รวมอยู่"</string>
 </resources>

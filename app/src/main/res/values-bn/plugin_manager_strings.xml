@@ -153,4 +153,10 @@
     <string name="pm_settings_saved">"সেটিংস সংরক্ষিত হয়েছে। পরবর্তী Code রানে প্রযোজ্য হবে।"</string>
     <string name="pm_auto_updated">"%1$s আপডেট করা হয়েছে।"</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">"প্রতিটি Code ওয়ার্কস্পেসে উপলব্ধ। বেশিরভাগ প্লাগইনের জন্য সেরা।"</string>
+    <string name="pm_workspace_scope_hint">"শুধু এই ওয়ার্কস্পেসে লোড হয়"</string>
+    <string name="pm_no_workspace_scope_hint">"সেখানে ইনস্টল করতে একটি Code ওয়ার্কস্পেস খুলুন"</string>
+    <string name="pm_scope_locked_hint">"প্লাগইন যেখানে ইতিমধ্যে ইনস্টল করা আছে সেখানেই আপডেট থাকবে"</string>
+    <string name="pm_source">"উৎস"</string>
+    <string name="pm_included">"যা অন্তর্ভুক্ত"</string>
 </resources>

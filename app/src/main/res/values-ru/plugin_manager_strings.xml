@@ -159,4 +159,10 @@
     <string name="pm_settings_saved">Настройки сохранены. Они действуют со следующего запуска Code.</string>
     <string name="pm_auto_updated">%1$s обновлён.</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">Доступен во всех рабочих областях Code. Лучше всего подходит для большинства плагинов.</string>
+    <string name="pm_workspace_scope_hint">Загружается только в этой рабочей области</string>
+    <string name="pm_no_workspace_scope_hint">Откройте рабочую область Code, чтобы установить его там</string>
+    <string name="pm_scope_locked_hint">Обновления остаются там, где плагин уже установлен</string>
+    <string name="pm_source">Источник</string>
+    <string name="pm_included">Что входит</string>
 </resources>

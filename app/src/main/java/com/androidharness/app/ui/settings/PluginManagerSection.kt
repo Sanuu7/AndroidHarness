@@ -684,7 +684,8 @@ private fun PluginContentsView(contents: PluginContents) {
 private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceFs?, workspaceLabel: String, manager: PluginManager,
     previous: InstalledPlugin?, busy: Boolean, progress: PluginProgress?, onCancel: () -> Unit,
     onDismiss: () -> Unit, onInstall: (String, String) -> Unit) {
-    var global by rememberSaveable(candidate.token) { mutableStateOf(previous?.let { it.scope == "global" } ?: (workspace == null)) }
+    // Global is the default: most plugins are wanted in every Code workspace.
+    var global by rememberSaveable(candidate.token) { mutableStateOf(previous?.let { it.scope == "global" } ?: true) }
     var manifest by remember { mutableStateOf<String?>(null) }
     LaunchedEffect(candidate.token) {
         try { manifest = withContext(Dispatchers.IO) { candidate.root.resolve("plugin.json").readText() } }
@@ -692,6 +693,7 @@ private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceF
         catch (_: Exception) { manifest = null }
     }
     var reviewManifest by remember { mutableStateOf(false) }
+    val scopeLocked = candidate.replacing != null || busy
     AlertDialog(onDismissRequest = { if (!busy) { if (reviewManifest) reviewManifest = false else onDismiss() } },
         shape = RoundedCornerShape(32.dp),
         containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
@@ -702,25 +704,47 @@ private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceF
             Column(Modifier.verticalScroll(rememberScrollState())) {
                 Text(manifest.orEmpty(), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
             }
-        } else Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            Text(candidate.contents.name, style = MaterialTheme.typography.titleLarge)
-            Text(candidate.contents.version, style = MaterialTheme.typography.labelLarge)
-            if (candidate.contents.description.isNotBlank()) Text(candidate.contents.description, style = MaterialTheme.typography.bodyMedium, maxLines = 6, overflow = TextOverflow.Ellipsis)
-            Text(pluginOriginLabel(candidate.origin), style = MaterialTheme.typography.bodySmall)
-            Text(candidate.revision, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace)
-            PluginContentsView(candidate.contents)
-            Text(stringResource(R.string.pm_scope), style = MaterialTheme.typography.titleSmall)
-            Row(Modifier.fillMaxWidth().selectable(selected = !global, onClick = { global = false }, role = Role.RadioButton,
-                enabled = workspace != null && candidate.replacing == null && !busy), verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = !global, onClick = null, enabled = workspace != null && candidate.replacing == null && !busy)
-                Text(workspaceLabel.ifBlank { stringResource(R.string.config_project) }, Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+        } else Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(14.dp)) {
+                Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.primaryContainer) {
+                    Icon(Icons.Rounded.Extension, null, Modifier.padding(12.dp).size(28.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+                }
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    Text(candidate.contents.name, style = MaterialTheme.typography.titleLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
+                    if (candidate.contents.version.isNotBlank()) Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondaryContainer) {
+                        Text(candidate.contents.version, Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    }
+                }
             }
-            Row(Modifier.fillMaxWidth().selectable(selected = global, onClick = { global = true }, role = Role.RadioButton,
-                enabled = candidate.replacing == null && !busy), verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(selected = global, onClick = null, enabled = candidate.replacing == null && !busy)
-                Text(stringResource(R.string.pm_global_scope), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+            if (candidate.contents.description.isNotBlank()) Text(candidate.contents.description, style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 6, overflow = TextOverflow.Ellipsis)
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(stringResource(R.string.pm_scope), style = MaterialTheme.typography.titleSmall)
+                PluginScopeOption(Icons.Rounded.Public, stringResource(R.string.pm_global_scope), stringResource(R.string.pm_global_scope_hint),
+                    selected = global, enabled = !scopeLocked, onClick = { global = true })
+                PluginScopeOption(Icons.Rounded.FolderOpen, workspaceLabel.ifBlank { stringResource(R.string.config_project) },
+                    stringResource(if (workspace == null) R.string.pm_no_workspace_scope_hint else R.string.pm_workspace_scope_hint),
+                    selected = !global, enabled = workspace != null && !scopeLocked, onClick = { global = false })
+                if (candidate.replacing != null) Text(stringResource(R.string.pm_scope_locked_hint), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            Text(stringResource(R.string.pm_review_hint), style = MaterialTheme.typography.bodySmall)
+
+            Surface(shape = RoundedCornerShape(20.dp), color = MaterialTheme.colorScheme.surfaceContainer) {
+                Column(Modifier.fillMaxWidth().padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    Text(stringResource(R.string.pm_included), style = MaterialTheme.typography.titleSmall)
+                    PluginContentsView(candidate.contents)
+                }
+            }
+
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(stringResource(R.string.pm_source), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(pluginOriginLabel(candidate.origin), style = MaterialTheme.typography.bodySmall)
+                if (candidate.revision.isNotBlank()) Text(candidate.revision, style = MaterialTheme.typography.bodySmall, fontFamily = FontFamily.Monospace,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            }
+            Text(stringResource(R.string.pm_review_hint), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             TextButton(onClick = { reviewManifest = true }, enabled = manifest != null && !busy) { Text(stringResource(R.string.pm_manifest)) }
         }
     }, confirmButton = {
@@ -730,6 +754,32 @@ private fun PluginInstallDialog(candidate: PreparedPlugin, workspace: WorkspaceF
         onInstall(destination, previous?.scopeLabel ?: if (global) "Global" else workspaceLabel)
     }, enabled = !busy && (candidate.replacing == null || previous != null) && (global || workspace != null || previous != null)) { Text(stringResource(if (candidate.replacing == null) R.string.pm_install else R.string.pm_apply_update)) } },
         dismissButton = { if (!reviewManifest || busy) TextButton(onClick = if (busy) onCancel else onDismiss) { Text(stringResource(android.R.string.cancel)) } })
+}
+
+@Composable
+private fun PluginScopeOption(icon: androidx.compose.ui.graphics.vector.ImageVector, title: String, hint: String,
+    selected: Boolean, enabled: Boolean, onClick: () -> Unit) {
+    val colors = MaterialTheme.colorScheme
+    Surface(
+        shape = RoundedCornerShape(20.dp),
+        color = if (selected) colors.secondaryContainer else colors.surfaceContainer,
+        border = if (selected) androidx.compose.foundation.BorderStroke(2.dp, colors.primary) else null,
+        modifier = Modifier.fillMaxWidth().selectable(selected = selected, enabled = enabled, role = Role.RadioButton, onClick = onClick),
+    ) {
+        Row(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            val tint = if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant
+            Icon(icon, null, Modifier.size(24.dp), tint = if (enabled || selected) tint else tint.copy(alpha = 0.38f))
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                val alpha = if (enabled || selected) 1f else 0.38f
+                Text(title, style = MaterialTheme.typography.bodyLarge, maxLines = 2, overflow = TextOverflow.Ellipsis,
+                    color = (if (selected) colors.onSecondaryContainer else colors.onSurface).copy(alpha = alpha))
+                Text(hint, style = MaterialTheme.typography.bodySmall,
+                    color = (if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant).copy(alpha = alpha))
+            }
+            RadioButton(selected = selected, onClick = null, enabled = enabled)
+        }
+    }
 }
 
 @Composable

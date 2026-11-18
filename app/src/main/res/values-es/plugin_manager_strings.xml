@@ -153,4 +153,10 @@
     <string name="pm_settings_saved">Configuración guardada. Se aplica en la siguiente ejecución de Code.</string>
     <string name="pm_auto_updated">%1$s actualizado.</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">Disponible en todos los espacios de trabajo Code. Ideal para la mayoría de los plugins.</string>
+    <string name="pm_workspace_scope_hint">Solo se carga en este espacio de trabajo</string>
+    <string name="pm_no_workspace_scope_hint">Abre un espacio de trabajo Code para instalarlo allí</string>
+    <string name="pm_scope_locked_hint">Las actualizaciones se quedan donde ya está instalado el plugin</string>
+    <string name="pm_source">Origen</string>
+    <string name="pm_included">Qué incluye</string>
 </resources>

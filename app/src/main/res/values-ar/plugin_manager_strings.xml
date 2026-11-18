@@ -165,4 +165,10 @@
     <string name="pm_settings_saved">تم حفظ الإعدادات. تُطبَّق على تشغيل Code التالي.</string>
     <string name="pm_auto_updated">تم تحديث %1$s.</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">متاحة في كل مساحة عمل Code. الأفضل لمعظم الإضافات.</string>
+    <string name="pm_workspace_scope_hint">تُحمَّل في مساحة العمل هذه فقط</string>
+    <string name="pm_no_workspace_scope_hint">افتح مساحة عمل Code لتثبيت الإضافة هناك</string>
+    <string name="pm_scope_locked_hint">تبقى التحديثات حيث تكون الإضافة مثبَّتة بالفعل</string>
+    <string name="pm_source">المصدر</string>
+    <string name="pm_included">ما يتضمنه</string>
 </resources>

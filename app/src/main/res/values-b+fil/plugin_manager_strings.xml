@@ -153,4 +153,10 @@
     <string name="pm_settings_saved">"Nai-save ang mga setting. Nalalapat sa susunod na Code run."</string>
     <string name="pm_auto_updated">"Na-update ang %1$s."</string>
     <string name="pm_load_more">@string/local_hub_load_more</string>
+    <string name="pm_global_scope_hint">"Available sa bawat Code workspace. Pinakamainam para sa karamihan ng plugin."</string>
+    <string name="pm_workspace_scope_hint">"Naglo-load lang sa workspace na ito"</string>
+    <string name="pm_no_workspace_scope_hint">"Magbukas ng Code workspace para ma-install doon"</string>
+    <string name="pm_scope_locked_hint">"Mananatili ang mga update kung saan naka-install na ang plugin"</string>
+    <string name="pm_source">"Pinagmulan"</string>
+    <string name="pm_included">"Ano ang kasama"</string>
 </resources>
