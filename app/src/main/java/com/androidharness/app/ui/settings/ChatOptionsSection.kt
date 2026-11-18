@@ -44,6 +44,8 @@ internal fun ChatOptionsSection(
     agentCount: Int = 0,
     onManageAgents: () -> Unit = {},
     onSearchCodeChats: (Boolean) -> Unit = {},
+    reminders: com.androidharness.app.reminders.ReminderManager? = null,
+    onRemindersEnabled: (Boolean) -> Unit = {},
 ) {
     ChatHistoryAccessOption(chat = true, enabled = settings.chatSearchCodeChats, onChange = onSearchCodeChats)
     SettingsAnchor(R.string.chat_agents_title) {
@@ -113,6 +115,7 @@ internal fun ChatOptionsSection(
             Switch(checked = settings.chatKeepThinkingCollapsed, onCheckedChange = null)
         }
     }
+    if (reminders != null) ChatRemindersSection(settings.chatRemindersEnabled, reminders, onRemindersEnabled)
     SettingsAnchor(R.string.settings_image_frequency) {
         ChoicePanel(
             title = R.string.settings_image_frequency,

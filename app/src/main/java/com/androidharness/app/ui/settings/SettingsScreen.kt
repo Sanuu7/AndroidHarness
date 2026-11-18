@@ -468,6 +468,8 @@ private fun SettingsScreenContent(
                             agentCount = settings.chatAgents.size,
                             onManageAgents = { showChatAgents = true },
                             onSearchCodeChats = { value -> scope.launch { container.settings.setChatSearchCodeChats(value) } },
+                            reminders = container.reminders,
+                            onRemindersEnabled = { value -> scope.launch { container.settings.setChatRemindersEnabled(value) } },
                         )
                         SettingsPage.MEMORY -> {
                             MemoryOptionsSection(
