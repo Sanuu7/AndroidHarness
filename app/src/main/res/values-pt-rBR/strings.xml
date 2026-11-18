@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"Perguntar antes de controlar o telefone"</string>
     <string name="settings_ask_phone_control_desc">"Os agentes perguntam uma vez por chat antes de usar Shizuku, root ou Device Owner. Seu próprio terminal nunca é questionado."</string>
     <string name="chat_message_options">"Opções da mensagem"</string>
+    <string name="reminders_title">"Lembretes e alarmes"</string>
+    <string name="reminders_desc">"O Chat pode criar lembretes, alarmes do app Relógio e timers quando você pedir, como \"me lembre de ligar para o banco às 10\" ou \"me acorde às 6:30\". Você aprova cada um."</string>
+    <string name="reminders_on_time">"Lembretes pontuais"</string>
+    <string name="reminders_on_time_on">"Ativado. Os lembretes aparecem no minuto exato."</string>
+    <string name="reminders_on_time_off">"Desativado. O Android pode mostrar lembretes alguns minutos atrasados. Toque para permitir."</string>
+    <string name="reminders_notifications_blocked">"As notificações do AndroidHarness estão bloqueadas, então os lembretes não aparecerão. Toque para permitir."</string>
+    <string name="reminders_upcoming">"Próximos"</string>
+    <string name="reminders_cancel">"Cancelar lembrete"</string>
+    <string name="reminders_channel">"Lembretes"</string>
+    <string name="reminders_channel_desc">"Lembretes que você criou no Chat."</string>
+    <string name="reminders_notification_title">"Lembrete"</string>
+    <string name="reminders_snooze">"Adiar 10 min"</string>
+    <string name="reminders_done">"Concluído"</string>
+    <string name="reminders_approval_title">"Criar este lembrete?"</string>
+    <string name="reminders_set">"Criar lembrete"</string>
+    <string name="alarm_approval_title">"Criar este alarme?"</string>
+    <string name="alarm_set">"Criar alarme"</string>
+    <string name="timer_approval_title">"Iniciar este timer?"</string>
+    <string name="timer_start">"Iniciar timer"</string>
 </resources>

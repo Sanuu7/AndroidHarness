@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"Tanya sebelum mengendalikan ponsel"</string>
     <string name="settings_ask_phone_control_desc">"Agen bertanya sekali per chat sebelum memakai Shizuku, root, atau Device Owner. Terminal Anda sendiri tidak pernah ditanya."</string>
     <string name="chat_message_options">"Opsi pesan"</string>
+    <string name="reminders_title">"Pengingat dan alarm"</string>
+    <string name="reminders_desc">"Chat dapat membuat pengingat, alarm di aplikasi Jam, dan timer saat Anda minta, seperti \"ingatkan saya menelepon bank jam 10\" atau \"bangunkan saya jam 6:30\". Anda menyetujui masing-masing."</string>
+    <string name="reminders_on_time">"Pengingat tepat waktu"</string>
+    <string name="reminders_on_time_on">"Aktif. Pengingat muncul pada menit yang tepat."</string>
+    <string name="reminders_on_time_off">"Nonaktif. Android mungkin menampilkan pengingat beberapa menit terlambat. Ketuk untuk mengizinkan."</string>
+    <string name="reminders_notifications_blocked">"Notifikasi AndroidHarness diblokir, jadi pengingat tidak akan muncul. Ketuk untuk mengizinkan."</string>
+    <string name="reminders_upcoming">"Mendatang"</string>
+    <string name="reminders_cancel">"Batalkan pengingat"</string>
+    <string name="reminders_channel">"Pengingat"</string>
+    <string name="reminders_channel_desc">"Pengingat yang Anda buat di Chat."</string>
+    <string name="reminders_notification_title">"Pengingat"</string>
+    <string name="reminders_snooze">"Tunda 10 mnt"</string>
+    <string name="reminders_done">"Selesai"</string>
+    <string name="reminders_approval_title">"Buat pengingat ini?"</string>
+    <string name="reminders_set">"Buat pengingat"</string>
+    <string name="alarm_approval_title">"Setel alarm ini?"</string>
+    <string name="alarm_set">"Setel alarm"</string>
+    <string name="timer_approval_title">"Mulai timer ini?"</string>
+    <string name="timer_start">"Mulai timer"</string>
 </resources>

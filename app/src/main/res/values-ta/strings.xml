@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"மொபைலைக் கட்டுப்படுத்தும் முன் கேட்கவும்"</string>
     <string name="settings_ask_phone_control_desc">"Shizuku, root அல்லது Device Owner பயன்படுத்தும் முன் ஏஜென்ட்கள் ஒரு அரட்டைக்கு ஒரு முறை கேட்கும். உங்கள் சொந்த முனையத்தில் கேட்கப்படுவதில்லை."</string>
     <string name="chat_message_options">"செய்தி விருப்பங்கள்"</string>
+    <string name="reminders_title">"நினைவூட்டல்கள் மற்றும் அலாரங்கள்"</string>
+    <string name="reminders_desc">"நீங்கள் கேட்டால் சாட் நினைவூட்டல்கள், கடிகார செயலியின் அலாரங்கள் மற்றும் டைமர்களை அமைக்கும், எடுத்துக்காட்டாக \"10 மணிக்கு வங்கியை அழைக்க நினைவூட்டு\" அல்லது \"6:30க்கு என்னை எழுப்பு\". ஒவ்வொன்றையும் நீங்கள் அனுமதிக்கிறீர்கள்."</string>
+    <string name="reminders_on_time">"சரியான நேர நினைவூட்டல்கள்"</string>
+    <string name="reminders_on_time_on">"இயக்கத்தில். நினைவூட்டல்கள் சரியான நிமிடத்தில் தோன்றும்."</string>
+    <string name="reminders_on_time_off">"முடக்கத்தில். Android சில நிமிடங்கள் தாமதமாகக் காட்டலாம். அனுமதிக்கத் தட்டவும்."</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness அறிவிப்புகள் தடுக்கப்பட்டுள்ளன, எனவே நினைவூட்டல்கள் தோன்றாது. அனுமதிக்கத் தட்டவும்."</string>
+    <string name="reminders_upcoming">"வரவிருக்கும்"</string>
+    <string name="reminders_cancel">"நினைவூட்டலை ரத்து செய்"</string>
+    <string name="reminders_channel">"நினைவூட்டல்கள்"</string>
+    <string name="reminders_channel_desc">"சாட்டில் நீங்கள் அமைத்த நினைவூட்டல்கள்."</string>
+    <string name="reminders_notification_title">"நினைவூட்டல்"</string>
+    <string name="reminders_snooze">"10 நிமிடம் தள்ளு"</string>
+    <string name="reminders_done">"முடிந்தது"</string>
+    <string name="reminders_approval_title">"இந்த நினைவூட்டலை அமைக்கவா?"</string>
+    <string name="reminders_set">"நினைவூட்டலை அமை"</string>
+    <string name="alarm_approval_title">"இந்த அலாரத்தை அமைக்கவா?"</string>
+    <string name="alarm_set">"அலாரத்தை அமை"</string>
+    <string name="timer_approval_title">"இந்த டைமரைத் தொடங்கவா?"</string>
+    <string name="timer_start">"டைமரைத் தொடங்கு"</string>
 </resources>

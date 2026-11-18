@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"ফোন নিয়ন্ত্রণের আগে জিজ্ঞাসা করুন"</string>
     <string name="settings_ask_phone_control_desc">"Shizuku, root বা Device Owner ব্যবহারের আগে এজেন্টরা প্রতি চ্যাটে একবার জিজ্ঞাসা করে। আপনার নিজের টার্মিনালকে কখনও জিজ্ঞাসা করা হয় না।"</string>
     <string name="chat_message_options">"বার্তার বিকল্প"</string>
+    <string name="reminders_title">"রিমাইন্ডার ও অ্যালার্ম"</string>
+    <string name="reminders_desc">"আপনি বললে চ্যাট রিমাইন্ডার, ঘড়ি অ্যাপের অ্যালার্ম ও টাইমার সেট করতে পারে, যেমন \"১০টায় ব্যাংকে ফোন করার কথা মনে করিয়ে দাও\" বা \"৬:৩০-এ আমাকে জাগাও\"। আপনি প্রতিটির অনুমোদন দেন।"</string>
+    <string name="reminders_on_time">"সময়মতো রিমাইন্ডার"</string>
+    <string name="reminders_on_time_on">"চালু। রিমাইন্ডার সঠিক মিনিটে দেখা যায়।"</string>
+    <string name="reminders_on_time_off">"বন্ধ। Android কয়েক মিনিট দেরিতে রিমাইন্ডার দেখাতে পারে। অনুমতি দিতে ট্যাপ করুন।"</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness-এর বিজ্ঞপ্তি ব্লক করা আছে, তাই রিমাইন্ডার দেখাবে না। অনুমতি দিতে ট্যাপ করুন।"</string>
+    <string name="reminders_upcoming">"আসন্ন"</string>
+    <string name="reminders_cancel">"রিমাইন্ডার বাতিল করুন"</string>
+    <string name="reminders_channel">"রিমাইন্ডার"</string>
+    <string name="reminders_channel_desc">"চ্যাটে সেট করা রিমাইন্ডার।"</string>
+    <string name="reminders_notification_title">"রিমাইন্ডার"</string>
+    <string name="reminders_snooze">"১০ মিনিট পরে"</string>
+    <string name="reminders_done">"সম্পন্ন"</string>
+    <string name="reminders_approval_title">"এই রিমাইন্ডার সেট করবেন?"</string>
+    <string name="reminders_set">"রিমাইন্ডার সেট করুন"</string>
+    <string name="alarm_approval_title">"এই অ্যালার্ম সেট করবেন?"</string>
+    <string name="alarm_set">"অ্যালার্ম সেট করুন"</string>
+    <string name="timer_approval_title">"এই টাইমার শুরু করবেন?"</string>
+    <string name="timer_start">"টাইমার শুরু করুন"</string>
 </resources>

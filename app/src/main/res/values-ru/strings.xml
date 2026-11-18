@@ -1110,4 +1110,23 @@
     <string name="settings_ask_phone_control">"Спрашивать перед управлением телефоном"</string>
     <string name="settings_ask_phone_control_desc">"Агенты спрашивают один раз на чат перед использованием Shizuku, root или Device Owner. Ваш собственный терминал не спрашивают."</string>
     <string name="chat_message_options">"Параметры сообщения"</string>
+    <string name="reminders_title">"Напоминания и будильники"</string>
+    <string name="reminders_desc">"Чат может ставить напоминания, будильники в приложении «Часы» и таймеры по вашей просьбе, например «напомни позвонить в банк в 10» или «разбуди в 6:30». Каждое вы подтверждаете."</string>
+    <string name="reminders_on_time">"Точные напоминания"</string>
+    <string name="reminders_on_time_on">"Вкл. Напоминания приходят в точную минуту."</string>
+    <string name="reminders_on_time_off">"Выкл. Android может показать напоминания с опозданием на несколько минут. Нажмите, чтобы разрешить."</string>
+    <string name="reminders_notifications_blocked">"Уведомления AndroidHarness заблокированы, напоминания не появятся. Нажмите, чтобы разрешить."</string>
+    <string name="reminders_upcoming">"Предстоящие"</string>
+    <string name="reminders_cancel">"Отменить напоминание"</string>
+    <string name="reminders_channel">"Напоминания"</string>
+    <string name="reminders_channel_desc">"Напоминания, созданные в чате."</string>
+    <string name="reminders_notification_title">"Напоминание"</string>
+    <string name="reminders_snooze">"Отложить на 10 мин"</string>
+    <string name="reminders_done">"Готово"</string>
+    <string name="reminders_approval_title">"Поставить это напоминание?"</string>
+    <string name="reminders_set">"Поставить напоминание"</string>
+    <string name="alarm_approval_title">"Поставить этот будильник?"</string>
+    <string name="alarm_set">"Поставить будильник"</string>
+    <string name="timer_approval_title">"Запустить этот таймер?"</string>
+    <string name="timer_start">"Запустить таймер"</string>
 </resources>

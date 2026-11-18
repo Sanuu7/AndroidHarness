@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"휴대폰 제어 전에 확인"</string>
     <string name="settings_ask_phone_control_desc">"에이전트는 Shizuku, root 또는 Device Owner를 사용하기 전에 채팅마다 한 번 확인합니다. 직접 쓰는 터미널은 묻지 않습니다."</string>
     <string name="chat_message_options">"메시지 옵션"</string>
+    <string name="reminders_title">"리마인더 및 알람"</string>
+    <string name="reminders_desc">"채팅은 요청에 따라 리마인더, 시계 앱 알람, 타이머를 설정할 수 있습니다. 예: \"10시에 은행에 전화하라고 알려줘\", \"6시 30분에 깨워줘\". 각 항목은 먼저 승인합니다."</string>
+    <string name="reminders_on_time">"정시 리마인더"</string>
+    <string name="reminders_on_time_on">"켜짐. 리마인더가 정확한 분에 표시됩니다."</string>
+    <string name="reminders_on_time_off">"꺼짐. Android가 몇 분 늦게 표시할 수 있습니다. 눌러서 허용하세요."</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness 알림이 차단되어 리마인더가 표시되지 않습니다. 눌러서 허용하세요."</string>
+    <string name="reminders_upcoming">"예정"</string>
+    <string name="reminders_cancel">"리마인더 취소"</string>
+    <string name="reminders_channel">"리마인더"</string>
+    <string name="reminders_channel_desc">"채팅에서 설정한 리마인더."</string>
+    <string name="reminders_notification_title">"리마인더"</string>
+    <string name="reminders_snooze">"10분 미루기"</string>
+    <string name="reminders_done">"완료"</string>
+    <string name="reminders_approval_title">"이 리마인더를 설정할까요?"</string>
+    <string name="reminders_set">"리마인더 설정"</string>
+    <string name="alarm_approval_title">"이 알람을 설정할까요?"</string>
+    <string name="alarm_set">"알람 설정"</string>
+    <string name="timer_approval_title">"이 타이머를 시작할까요?"</string>
+    <string name="timer_start">"타이머 시작"</string>
 </resources>

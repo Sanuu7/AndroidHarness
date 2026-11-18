@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"قبل از کنترل تلفن بپرس"</string>
     <string name="settings_ask_phone_control_desc">"عامل‌ها پیش از استفاده از Shizuku، root یا Device Owner یک بار در هر گفتگو می‌پرسند. از ترمینال خودتان هرگز پرسیده نمی‌شود."</string>
     <string name="chat_message_options">"گزینه‌های پیام"</string>
+    <string name="reminders_title">"یادآورها و زنگ‌ها"</string>
+    <string name="reminders_desc">"گفتگو می‌تواند با درخواست شما یادآور، زنگ ساعت برنامه ساعت و تایمر تنظیم کند، مثل «ساعت ۱۰ یادم بینداز به بانک زنگ بزنم» یا «ساعت ۶:۳۰ بیدارم کن». هر کدام را شما تأیید می‌کنید."</string>
+    <string name="reminders_on_time">"یادآورهای سر وقت"</string>
+    <string name="reminders_on_time_on">"روشن. یادآورها در دقیقه دقیق نمایش داده می‌شوند."</string>
+    <string name="reminders_on_time_off">"خاموش. اندروید ممکن است یادآورها را چند دقیقه دیر نشان دهد. برای اجازه ضربه بزنید."</string>
+    <string name="reminders_notifications_blocked">"اعلان‌های AndroidHarness مسدود است، بنابراین یادآورها نمایش داده نمی‌شوند. برای اجازه ضربه بزنید."</string>
+    <string name="reminders_upcoming">"پیش‌رو"</string>
+    <string name="reminders_cancel">"لغو یادآور"</string>
+    <string name="reminders_channel">"یادآورها"</string>
+    <string name="reminders_channel_desc">"یادآورهایی که در گفتگو تنظیم کرده‌اید."</string>
+    <string name="reminders_notification_title">"یادآور"</string>
+    <string name="reminders_snooze">"۱۰ دقیقه بعد"</string>
+    <string name="reminders_done">"انجام شد"</string>
+    <string name="reminders_approval_title">"این یادآور تنظیم شود؟"</string>
+    <string name="reminders_set">"تنظیم یادآور"</string>
+    <string name="alarm_approval_title">"این زنگ تنظیم شود؟"</string>
+    <string name="alarm_set">"تنظیم زنگ"</string>
+    <string name="timer_approval_title">"این تایمر شروع شود؟"</string>
+    <string name="timer_start">"شروع تایمر"</string>
 </resources>

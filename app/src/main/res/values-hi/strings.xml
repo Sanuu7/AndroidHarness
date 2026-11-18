@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"फ़ोन नियंत्रित करने से पहले पूछें"</string>
     <string name="settings_ask_phone_control_desc">"Shizuku, root या Device Owner का उपयोग करने से पहले एजेंट हर चैट में एक बार पूछते हैं। आपके अपने टर्मिनल से कभी नहीं पूछा जाता।"</string>
     <string name="chat_message_options">"संदेश विकल्प"</string>
+    <string name="reminders_title">"रिमाइंडर और अलार्म"</string>
+    <string name="reminders_desc">"चैट आपके कहने पर रिमाइंडर, घड़ी ऐप के अलार्म और टाइमर सेट कर सकता है, जैसे \"10 बजे बैंक को कॉल करने की याद दिलाना\" या \"6:30 पर जगाना\"। आप हर एक को मंज़ूरी देते हैं।"</string>
+    <string name="reminders_on_time">"समय पर रिमाइंडर"</string>
+    <string name="reminders_on_time_on">"चालू। रिमाइंडर ठीक मिनट पर दिखते हैं।"</string>
+    <string name="reminders_on_time_off">"बंद। Android रिमाइंडर कुछ मिनट देर से दिखा सकता है। अनुमति देने के लिए टैप करें।"</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness के लिए सूचनाएँ बंद हैं, इसलिए रिमाइंडर नहीं दिखेंगे। अनुमति देने के लिए टैप करें।"</string>
+    <string name="reminders_upcoming">"आने वाले"</string>
+    <string name="reminders_cancel">"रिमाइंडर रद्द करें"</string>
+    <string name="reminders_channel">"रिमाइंडर"</string>
+    <string name="reminders_channel_desc">"चैट में सेट किए गए रिमाइंडर।"</string>
+    <string name="reminders_notification_title">"रिमाइंडर"</string>
+    <string name="reminders_snooze">"10 मिनट बाद"</string>
+    <string name="reminders_done">"पूर्ण"</string>
+    <string name="reminders_approval_title">"यह रिमाइंडर सेट करें?"</string>
+    <string name="reminders_set">"रिमाइंडर सेट करें"</string>
+    <string name="alarm_approval_title">"यह अलार्म सेट करें?"</string>
+    <string name="alarm_set">"अलार्म सेट करें"</string>
+    <string name="timer_approval_title">"यह टाइमर शुरू करें?"</string>
+    <string name="timer_start">"टाइमर शुरू करें"</string>
 </resources>

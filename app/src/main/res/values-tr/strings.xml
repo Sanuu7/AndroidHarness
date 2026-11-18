@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"Telefonu kontrol etmeden önce sor"</string>
     <string name="settings_ask_phone_control_desc">"Aracılar Shizuku, root veya Device Owner kullanmadan önce sohbet başına bir kez sorar. Kendi terminaliniz hiç sorulmaz."</string>
     <string name="chat_message_options">"Mesaj seçenekleri"</string>
+    <string name="reminders_title">"Hatırlatıcılar ve alarmlar"</string>
+    <string name="reminders_desc">"Chat istediğinizde hatırlatıcı, Saat uygulaması alarmı ve zamanlayıcı kurabilir; örneğin \"10\'da bankayı aramamı hatırlat\" veya \"6:30\'da beni uyandır\". Her birini siz onaylarsınız."</string>
+    <string name="reminders_on_time">"Zamanında hatırlatıcılar"</string>
+    <string name="reminders_on_time_on">"Açık. Hatırlatıcılar tam dakikasında görünür."</string>
+    <string name="reminders_on_time_off">"Kapalı. Android hatırlatıcıları birkaç dakika geç gösterebilir. İzin vermek için dokunun."</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness bildirimleri engellenmiş, hatırlatıcılar görünmeyecek. İzin vermek için dokunun."</string>
+    <string name="reminders_upcoming">"Yaklaşan"</string>
+    <string name="reminders_cancel">"Hatırlatıcıyı iptal et"</string>
+    <string name="reminders_channel">"Hatırlatıcılar"</string>
+    <string name="reminders_channel_desc">"Chat\'te kurduğunuz hatırlatıcılar."</string>
+    <string name="reminders_notification_title">"Hatırlatıcı"</string>
+    <string name="reminders_snooze">"10 dk ertele"</string>
+    <string name="reminders_done">"Tamam"</string>
+    <string name="reminders_approval_title">"Bu hatırlatıcı kurulsun mu?"</string>
+    <string name="reminders_set">"Hatırlatıcı kur"</string>
+    <string name="alarm_approval_title">"Bu alarm kurulsun mu?"</string>
+    <string name="alarm_set">"Alarm kur"</string>
+    <string name="timer_approval_title">"Bu zamanlayıcı başlatılsın mı?"</string>
+    <string name="timer_start">"Zamanlayıcıyı başlat"</string>
 </resources>

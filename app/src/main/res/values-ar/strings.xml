@@ -1116,4 +1116,23 @@
     <string name="settings_ask_phone_control">"اسأل قبل التحكم في الهاتف"</string>
     <string name="settings_ask_phone_control_desc">"يسأل الوكلاء مرة واحدة لكل محادثة قبل استخدام Shizuku أو root أو Device Owner. لا يُسأل طرفيتك الخاصة أبدًا."</string>
     <string name="chat_message_options">"خيارات الرسالة"</string>
+    <string name="reminders_title">"التذكيرات والمنبهات"</string>
+    <string name="reminders_desc">"يمكن للمحادثة ضبط تذكيرات ومنبهات ومؤقتات تطبيق الساعة عندما تطلب ذلك، مثل «ذكّرني بالاتصال بالبنك الساعة 10» أو «أيقظني الساعة 6:30». توافق على كل واحد أولاً."</string>
+    <string name="reminders_on_time">"تذكيرات في الوقت المحدد"</string>
+    <string name="reminders_on_time_on">"مفعّل. تظهر التذكيرات في الدقيقة المحددة."</string>
+    <string name="reminders_on_time_off">"متوقف. قد يعرض Android التذكيرات متأخرة بضع دقائق. اضغط للسماح."</string>
+    <string name="reminders_notifications_blocked">"الإشعارات محظورة لتطبيق AndroidHarness، لذا لن تظهر التذكيرات. اضغط للسماح بها."</string>
+    <string name="reminders_upcoming">"القادمة"</string>
+    <string name="reminders_cancel">"إلغاء التذكير"</string>
+    <string name="reminders_channel">"التذكيرات"</string>
+    <string name="reminders_channel_desc">"التذكيرات التي تضبطها في المحادثة."</string>
+    <string name="reminders_notification_title">"تذكير"</string>
+    <string name="reminders_snooze">"تأجيل 10 دقائق"</string>
+    <string name="reminders_done">"تم"</string>
+    <string name="reminders_approval_title">"هل تريد ضبط هذا التذكير؟"</string>
+    <string name="reminders_set">"ضبط التذكير"</string>
+    <string name="alarm_approval_title">"هل تريد ضبط هذا المنبه؟"</string>
+    <string name="alarm_set">"ضبط المنبه"</string>
+    <string name="timer_approval_title">"هل تريد تشغيل هذا المؤقت؟"</string>
+    <string name="timer_start">"تشغيل المؤقت"</string>
 </resources>

@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"Preguntar antes de controlar el teléfono"</string>
     <string name="settings_ask_phone_control_desc">"Los agentes preguntan una vez por chat antes de usar Shizuku, root o Device Owner. A tu propia terminal nunca se le pregunta."</string>
     <string name="chat_message_options">"Opciones del mensaje"</string>
+    <string name="reminders_title">"Recordatorios y alarmas"</string>
+    <string name="reminders_desc">"Chat puede poner recordatorios, alarmas de la app Reloj y temporizadores cuando se lo pidas, como «recuérdame llamar al banco a las 10» o «despiértame a las 6:30». Tú apruebas cada uno."</string>
+    <string name="reminders_on_time">"Recordatorios puntuales"</string>
+    <string name="reminders_on_time_on">"Activado. Los recordatorios aparecen al minuto exacto."</string>
+    <string name="reminders_on_time_off">"Desactivado. Android puede mostrarlos unos minutos tarde. Toca para permitirlo."</string>
+    <string name="reminders_notifications_blocked">"Las notificaciones de AndroidHarness están bloqueadas, así que no aparecerán los recordatorios. Toca para permitirlas."</string>
+    <string name="reminders_upcoming">"Próximos"</string>
+    <string name="reminders_cancel">"Cancelar recordatorio"</string>
+    <string name="reminders_channel">"Recordatorios"</string>
+    <string name="reminders_channel_desc">"Recordatorios que pusiste en Chat."</string>
+    <string name="reminders_notification_title">"Recordatorio"</string>
+    <string name="reminders_snooze">"Posponer 10 min"</string>
+    <string name="reminders_done">"Hecho"</string>
+    <string name="reminders_approval_title">"¿Poner este recordatorio?"</string>
+    <string name="reminders_set">"Poner recordatorio"</string>
+    <string name="alarm_approval_title">"¿Poner esta alarma?"</string>
+    <string name="alarm_set">"Poner alarma"</string>
+    <string name="timer_approval_title">"¿Iniciar este temporizador?"</string>
+    <string name="timer_start">"Iniciar temporizador"</string>
 </resources>

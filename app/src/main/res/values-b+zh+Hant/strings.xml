@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"控制手機前先詢問"</string>
     <string name="settings_ask_phone_control_desc">"代理在每次對話首次使用 Shizuku、root 或 Device Owner 前會詢問一次。你自己的終端機不會被詢問。"</string>
     <string name="chat_message_options">"訊息選項"</string>
+    <string name="reminders_title">"提醒與鬧鐘"</string>
+    <string name="reminders_desc">"只要你開口，聊天就能設定提醒、時鐘應用程式的鬧鐘和計時器，例如「10 點提醒我打給銀行」或「6:30 叫我起床」。每一項都會先由你核准。"</string>
+    <string name="reminders_on_time">"準時提醒"</string>
+    <string name="reminders_on_time_on">"已開啟。提醒會在準確的分鐘顯示。"</string>
+    <string name="reminders_on_time_off">"已關閉。Android 可能延遲幾分鐘顯示提醒。點按即可允許。"</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness 的通知被封鎖，提醒不會顯示。點按即可允許。"</string>
+    <string name="reminders_upcoming">"即將到來"</string>
+    <string name="reminders_cancel">"取消提醒"</string>
+    <string name="reminders_channel">"提醒"</string>
+    <string name="reminders_channel_desc">"你在聊天中設定的提醒。"</string>
+    <string name="reminders_notification_title">"提醒"</string>
+    <string name="reminders_snooze">"延後 10 分鐘"</string>
+    <string name="reminders_done">"完成"</string>
+    <string name="reminders_approval_title">"要設定這項提醒嗎？"</string>
+    <string name="reminders_set">"設定提醒"</string>
+    <string name="alarm_approval_title">"要設定這個鬧鐘嗎？"</string>
+    <string name="alarm_set">"設定鬧鐘"</string>
+    <string name="timer_approval_title">"要啟動這個計時器嗎？"</string>
+    <string name="timer_start">"啟動計時器"</string>
 </resources>

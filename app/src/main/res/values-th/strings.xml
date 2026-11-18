@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"ถามก่อนควบคุมโทรศัพท์"</string>
     <string name="settings_ask_phone_control_desc">"เอเจนต์จะถามครั้งเดียวต่อแชทก่อนใช้ Shizuku, root หรือ Device Owner เทอร์มินัลของคุณเองจะไม่ถูกถาม"</string>
     <string name="chat_message_options">"ตัวเลือกข้อความ"</string>
+    <string name="reminders_title">"การเตือนและนาฬิกาปลุก"</string>
+    <string name="reminders_desc">"แชทตั้งการเตือน นาฬิกาปลุกในแอปนาฬิกา และตัวจับเวลาได้เมื่อคุณขอ เช่น \"เตือนฉันโทรธนาคารตอน 10 โมง\" หรือ \"ปลุกฉันตอน 6:30\" คุณอนุมัติทีละรายการ"</string>
+    <string name="reminders_on_time">"การเตือนตรงเวลา"</string>
+    <string name="reminders_on_time_on">"เปิดอยู่ การเตือนจะแสดงตรงนาทีที่กำหนด"</string>
+    <string name="reminders_on_time_off">"ปิดอยู่ Android อาจแสดงการเตือนช้าไปไม่กี่นาที แตะเพื่ออนุญาต"</string>
+    <string name="reminders_notifications_blocked">"การแจ้งเตือนของ AndroidHarness ถูกบล็อก การเตือนจึงไม่แสดง แตะเพื่ออนุญาต"</string>
+    <string name="reminders_upcoming">"กำลังจะมาถึง"</string>
+    <string name="reminders_cancel">"ยกเลิกการเตือน"</string>
+    <string name="reminders_channel">"การเตือน"</string>
+    <string name="reminders_channel_desc">"การเตือนที่คุณตั้งในแชท"</string>
+    <string name="reminders_notification_title">"การเตือน"</string>
+    <string name="reminders_snooze">"เลื่อน 10 นาที"</string>
+    <string name="reminders_done">"เสร็จ"</string>
+    <string name="reminders_approval_title">"ตั้งการเตือนนี้หรือไม่?"</string>
+    <string name="reminders_set">"ตั้งการเตือน"</string>
+    <string name="alarm_approval_title">"ตั้งนาฬิกาปลุกนี้หรือไม่?"</string>
+    <string name="alarm_set">"ตั้งนาฬิกาปลุก"</string>
+    <string name="timer_approval_title">"เริ่มตัวจับเวลานี้หรือไม่?"</string>
+    <string name="timer_start">"เริ่มตัวจับเวลา"</string>
 </resources>

@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"දුරකථනය පාලනය කිරීමට පෙර අසන්න"</string>
     <string name="settings_ask_phone_control_desc">"Shizuku, root හෝ Device Owner භාවිතා කිරීමට පෙර නියෝජිතයන් සෑම කතාබහකම එක් වරක් අසයි. ඔබේම ටර්මිනලයෙන් කිසිවිටෙක අසන්නේ නැත."</string>
     <string name="chat_message_options">"පණිවිඩ විකල්ප"</string>
+    <string name="reminders_title">"මතක් කිරීම් සහ අලාම්"</string>
+    <string name="reminders_desc">"ඔබ ඉල්ලූ විට චැට් ට මතක් කිරීම්, ඔරලෝසු යෙදුමේ අලාම් සහ ටයිමර් සැකසිය හැක, උදා: \"10ට බැංකුවට කතා කරන්න මතක් කරන්න\" හෝ \"6:30ට මා අවදි කරන්න\". එක් එක් එක ඔබ අනුමත කරයි."</string>
+    <string name="reminders_on_time">"වේලාවට මතක් කිරීම්"</string>
+    <string name="reminders_on_time_on">"සක්‍රීයයි. මතක් කිරීම් නිශ්චිත මිනිත්තුවේ පෙන්වයි."</string>
+    <string name="reminders_on_time_off">"අක්‍රීයයි. Android මිනිත්තු කිහිපයක් ප්‍රමාදව පෙන්විය හැක. ඉඩ දීමට තට්ටු කරන්න."</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness සඳහා දැනුම්දීම් අවහිරයි, එබැවින් මතක් කිරීම් නොපෙනේ. ඉඩ දීමට තට්ටු කරන්න."</string>
+    <string name="reminders_upcoming">"ඉදිරියේ"</string>
+    <string name="reminders_cancel">"මතක් කිරීම අවලංගු කරන්න"</string>
+    <string name="reminders_channel">"මතක් කිරීම්"</string>
+    <string name="reminders_channel_desc">"ඔබ චැට් තුළ සැකසූ මතක් කිරීම්."</string>
+    <string name="reminders_notification_title">"මතක් කිරීම"</string>
+    <string name="reminders_snooze">"මිනිත්තු 10කට පසු"</string>
+    <string name="reminders_done">"අවසන්"</string>
+    <string name="reminders_approval_title">"මෙම මතක් කිරීම සකසන්නද?"</string>
+    <string name="reminders_set">"මතක් කිරීම සකසන්න"</string>
+    <string name="alarm_approval_title">"මෙම අලාම් සකසන්නද?"</string>
+    <string name="alarm_set">"අලාම් සකසන්න"</string>
+    <string name="timer_approval_title">"මෙම ටයිමරය අරඹන්නද?"</string>
+    <string name="timer_start">"ටයිමරය අරඹන්න"</string>
 </resources>

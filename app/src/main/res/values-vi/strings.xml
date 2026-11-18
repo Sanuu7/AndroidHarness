@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"Hỏi trước khi điều khiển điện thoại"</string>
     <string name="settings_ask_phone_control_desc">"Tác nhân hỏi một lần mỗi cuộc trò chuyện trước khi dùng Shizuku, root hoặc Device Owner. Terminal của bạn không bao giờ bị hỏi."</string>
     <string name="chat_message_options">"Tùy chọn tin nhắn"</string>
+    <string name="reminders_title">"Nhắc nhở và báo thức"</string>
+    <string name="reminders_desc">"Chat có thể đặt nhắc nhở, báo thức trong ứng dụng Đồng hồ và hẹn giờ khi bạn yêu cầu, như \"nhắc tôi gọi ngân hàng lúc 10\" hoặc \"đánh thức tôi lúc 6:30\". Bạn duyệt từng mục."</string>
+    <string name="reminders_on_time">"Nhắc nhở đúng giờ"</string>
+    <string name="reminders_on_time_on">"Bật. Nhắc nhở hiện đúng phút."</string>
+    <string name="reminders_on_time_off">"Tắt. Android có thể hiện nhắc nhở trễ vài phút. Nhấn để cho phép."</string>
+    <string name="reminders_notifications_blocked">"Thông báo của AndroidHarness đang bị chặn nên nhắc nhở sẽ không hiện. Nhấn để cho phép."</string>
+    <string name="reminders_upcoming">"Sắp tới"</string>
+    <string name="reminders_cancel">"Hủy nhắc nhở"</string>
+    <string name="reminders_channel">"Nhắc nhở"</string>
+    <string name="reminders_channel_desc">"Nhắc nhở bạn đặt trong Chat."</string>
+    <string name="reminders_notification_title">"Nhắc nhở"</string>
+    <string name="reminders_snooze">"Hoãn 10 phút"</string>
+    <string name="reminders_done">"Xong"</string>
+    <string name="reminders_approval_title">"Đặt nhắc nhở này?"</string>
+    <string name="reminders_set">"Đặt nhắc nhở"</string>
+    <string name="alarm_approval_title">"Đặt báo thức này?"</string>
+    <string name="alarm_set">"Đặt báo thức"</string>
+    <string name="timer_approval_title">"Bắt đầu hẹn giờ này?"</string>
+    <string name="timer_start">"Bắt đầu hẹn giờ"</string>
 </resources>

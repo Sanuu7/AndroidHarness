@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"Magtanong bago kontrolin ang telepono"</string>
     <string name="settings_ask_phone_control_desc">"Nagtatanong ang mga agent nang isang beses bawat chat bago gumamit ng Shizuku, root o Device Owner. Ang sarili mong terminal ay hindi tinatanong."</string>
     <string name="chat_message_options">"Mga opsyon ng mensahe"</string>
+    <string name="reminders_title">"Mga paalala at alarma"</string>
+    <string name="reminders_desc">"Maaaring magtakda ang Chat ng mga paalala, alarma sa Clock app at timer kapag hiniling mo, tulad ng \"paalalahanan mo akong tumawag sa bangko nang 10\" o \"gisingin mo ako nang 6:30\". Inaaprubahan mo muna ang bawat isa."</string>
+    <string name="reminders_on_time">"Mga paalalang nasa oras"</string>
+    <string name="reminders_on_time_on">"Naka-on. Lumalabas ang mga paalala sa eksaktong minuto."</string>
+    <string name="reminders_on_time_off">"Naka-off. Maaaring ipakita ng Android ang mga paalala nang ilang minuto ang huli. I-tap para payagan."</string>
+    <string name="reminders_notifications_blocked">"Naka-block ang mga notification para sa AndroidHarness, kaya hindi lalabas ang mga paalala. I-tap para payagan."</string>
+    <string name="reminders_upcoming">"Paparating"</string>
+    <string name="reminders_cancel">"Kanselahin ang paalala"</string>
+    <string name="reminders_channel">"Mga paalala"</string>
+    <string name="reminders_channel_desc">"Mga paalalang itinakda mo sa Chat."</string>
+    <string name="reminders_notification_title">"Paalala"</string>
+    <string name="reminders_snooze">"I-snooze nang 10 min"</string>
+    <string name="reminders_done">"Tapos"</string>
+    <string name="reminders_approval_title">"Itakda ang paalalang ito?"</string>
+    <string name="reminders_set">"Itakda ang paalala"</string>
+    <string name="alarm_approval_title">"Itakda ang alarmang ito?"</string>
+    <string name="alarm_set">"Itakda ang alarma"</string>
+    <string name="timer_approval_title">"Simulan ang timer na ito?"</string>
+    <string name="timer_start">"Simulan ang timer"</string>
 </resources>

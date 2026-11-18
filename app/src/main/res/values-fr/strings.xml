@@ -1107,4 +1107,23 @@
     <string name="settings_ask_phone_control">"Demander avant de contrôler le téléphone"</string>
     <string name="settings_ask_phone_control_desc">"L\'agent demande une fois par discussion avant d\'utiliser Shizuku, root ou Device Owner. Votre propre terminal n\'est jamais sollicité."</string>
     <string name="chat_message_options">"Options du message"</string>
+    <string name="reminders_title">"Rappels et alarmes"</string>
+    <string name="reminders_desc">"Chat peut créer des rappels, des alarmes dans l\'application Horloge et des minuteurs quand vous le demandez, par exemple « rappelle-moi d\'appeler la banque à 10 h » ou « réveille-moi à 6 h 30 ». Vous approuvez chacun."</string>
+    <string name="reminders_on_time">"Rappels à l\'heure"</string>
+    <string name="reminders_on_time_on">"Activé. Les rappels s\'affichent à la minute exacte."</string>
+    <string name="reminders_on_time_off">"Désactivé. Android peut afficher les rappels quelques minutes plus tard. Touchez pour autoriser."</string>
+    <string name="reminders_notifications_blocked">"Les notifications d\'AndroidHarness sont bloquées, les rappels ne s\'afficheront pas. Touchez pour les autoriser."</string>
+    <string name="reminders_upcoming">"À venir"</string>
+    <string name="reminders_cancel">"Annuler le rappel"</string>
+    <string name="reminders_channel">"Rappels"</string>
+    <string name="reminders_channel_desc">"Rappels que vous avez créés dans Chat."</string>
+    <string name="reminders_notification_title">"Rappel"</string>
+    <string name="reminders_snooze">"Reporter 10 min"</string>
+    <string name="reminders_done">"Terminé"</string>
+    <string name="reminders_approval_title">"Créer ce rappel ?"</string>
+    <string name="reminders_set">"Créer le rappel"</string>
+    <string name="alarm_approval_title">"Créer cette alarme ?"</string>
+    <string name="alarm_set">"Créer l\'alarme"</string>
+    <string name="timer_approval_title">"Démarrer ce minuteur ?"</string>
+    <string name="timer_start">"Démarrer le minuteur"</string>
 </resources>

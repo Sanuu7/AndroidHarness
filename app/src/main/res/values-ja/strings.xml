@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"端末を操作する前に確認する"</string>
     <string name="settings_ask_phone_control_desc">"エージェントは Shizuku、root、Device Owner を使う前にチャットごとに一度確認します。あなた自身のターミナルでは確認しません。"</string>
     <string name="chat_message_options">"メッセージのオプション"</string>
+    <string name="reminders_title">"リマインダーとアラーム"</string>
+    <string name="reminders_desc">"チャットは依頼に応じてリマインダー、時計アプリのアラーム、タイマーを設定できます。たとえば「10 時に銀行へ電話するよう知らせて」「6:30 に起こして」など。どれも先に承認します。"</string>
+    <string name="reminders_on_time">"時間どおりのリマインダー"</string>
+    <string name="reminders_on_time_on">"オン。リマインダーは正確な時刻に表示されます。"</string>
+    <string name="reminders_on_time_off">"オフ。Android が数分遅れて表示することがあります。タップして許可。"</string>
+    <string name="reminders_notifications_blocked">"AndroidHarness の通知がブロックされているため、リマインダーは表示されません。タップして許可。"</string>
+    <string name="reminders_upcoming">"今後の予定"</string>
+    <string name="reminders_cancel">"リマインダーを削除"</string>
+    <string name="reminders_channel">"リマインダー"</string>
+    <string name="reminders_channel_desc">"チャットで設定したリマインダー。"</string>
+    <string name="reminders_notification_title">"リマインダー"</string>
+    <string name="reminders_snooze">"10 分延期"</string>
+    <string name="reminders_done">"完了"</string>
+    <string name="reminders_approval_title">"このリマインダーを設定しますか？"</string>
+    <string name="reminders_set">"リマインダーを設定"</string>
+    <string name="alarm_approval_title">"このアラームを設定しますか？"</string>
+    <string name="alarm_set">"アラームを設定"</string>
+    <string name="timer_approval_title">"このタイマーを開始しますか？"</string>
+    <string name="timer_start">"タイマーを開始"</string>
 </resources>

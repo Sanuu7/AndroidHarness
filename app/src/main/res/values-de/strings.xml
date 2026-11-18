@@ -1104,4 +1104,23 @@
     <string name="settings_ask_phone_control">"Vor der Telefonsteuerung fragen"</string>
     <string name="settings_ask_phone_control_desc">"Agenten fragen einmal pro Chat, bevor sie Shizuku, root oder Device Owner nutzen. Dein eigenes Terminal wird nie gefragt."</string>
     <string name="chat_message_options">"Nachrichtenoptionen"</string>
+    <string name="reminders_title">"Erinnerungen und Wecker"</string>
+    <string name="reminders_desc">"Chat kann auf Wunsch Erinnerungen, Wecker der Uhr-App und Timer stellen, etwa \"erinnere mich um 10 an den Anruf bei der Bank\" oder \"weck mich um 6:30\". Du bestätigst jede einzeln."</string>
+    <string name="reminders_on_time">"Pünktliche Erinnerungen"</string>
+    <string name="reminders_on_time_on">"An. Erinnerungen erscheinen zur genauen Minute."</string>
+    <string name="reminders_on_time_off">"Aus. Android zeigt Erinnerungen eventuell ein paar Minuten später. Tippen zum Erlauben."</string>
+    <string name="reminders_notifications_blocked">"Benachrichtigungen sind für AndroidHarness blockiert, Erinnerungen erscheinen daher nicht. Tippen zum Erlauben."</string>
+    <string name="reminders_upcoming">"Bevorstehend"</string>
+    <string name="reminders_cancel">"Erinnerung löschen"</string>
+    <string name="reminders_channel">"Erinnerungen"</string>
+    <string name="reminders_channel_desc">"Erinnerungen, die du in Chat gestellt hast."</string>
+    <string name="reminders_notification_title">"Erinnerung"</string>
+    <string name="reminders_snooze">"10 Min. später"</string>
+    <string name="reminders_done">"Fertig"</string>
+    <string name="reminders_approval_title">"Diese Erinnerung stellen?"</string>
+    <string name="reminders_set">"Erinnerung stellen"</string>
+    <string name="alarm_approval_title">"Diesen Wecker stellen?"</string>
+    <string name="alarm_set">"Wecker stellen"</string>
+    <string name="timer_approval_title">"Diesen Timer starten?"</string>
+    <string name="timer_start">"Timer starten"</string>
 </resources>

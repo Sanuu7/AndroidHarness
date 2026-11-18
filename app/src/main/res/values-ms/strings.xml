@@ -1101,4 +1101,23 @@
     <string name="settings_ask_phone_control">"Tanya sebelum mengawal telefon"</string>
     <string name="settings_ask_phone_control_desc">"Ejen bertanya sekali setiap sembang sebelum menggunakan Shizuku, root atau Device Owner. Terminal anda sendiri tidak pernah ditanya."</string>
     <string name="chat_message_options">"Pilihan mesej"</string>
+    <string name="reminders_title">"Peringatan dan penggera"</string>
+    <string name="reminders_desc">"Sembang boleh menetapkan peringatan, penggera dalam aplikasi Jam dan pemasa apabila anda minta, seperti \"ingatkan saya hubungi bank pada 10\" atau \"bangunkan saya pada 6:30\". Anda meluluskan setiap satu."</string>
+    <string name="reminders_on_time">"Peringatan tepat masa"</string>
+    <string name="reminders_on_time_on">"Hidup. Peringatan muncul pada minit yang tepat."</string>
+    <string name="reminders_on_time_off">"Mati. Android mungkin menunjukkan peringatan beberapa minit lewat. Ketik untuk benarkan."</string>
+    <string name="reminders_notifications_blocked">"Pemberitahuan AndroidHarness disekat, jadi peringatan tidak akan muncul. Ketik untuk benarkan."</string>
+    <string name="reminders_upcoming">"Akan datang"</string>
+    <string name="reminders_cancel">"Batal peringatan"</string>
+    <string name="reminders_channel">"Peringatan"</string>
+    <string name="reminders_channel_desc">"Peringatan yang anda tetapkan dalam Sembang."</string>
+    <string name="reminders_notification_title">"Peringatan"</string>
+    <string name="reminders_snooze">"Tunda 10 min"</string>
+    <string name="reminders_done">"Selesai"</string>
+    <string name="reminders_approval_title">"Tetapkan peringatan ini?"</string>
+    <string name="reminders_set">"Tetapkan peringatan"</string>
+    <string name="alarm_approval_title">"Tetapkan penggera ini?"</string>
+    <string name="alarm_set">"Tetapkan penggera"</string>
+    <string name="timer_approval_title">"Mulakan pemasa ini?"</string>
+    <string name="timer_start">"Mulakan pemasa"</string>
 </resources>
