@@ -671,6 +671,8 @@ class AgentEngine(
             // re-emitting deltas the UI already showed would duplicate output.
             var recoverableFailure = false
             val managedFallback = kotlin.coroutines.coroutineContext[com.androidharness.app.llm.FallbackRun]?.policy()?.enabled == true
+            val stallWindow: Long = if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000
+            val firstOutputWindow = StreamRetrier.firstOutputWindow(stallWindow, requestOptions, config)
 
             var failure = StreamRetrier.run(
                 streamFor = {
@@ -697,9 +699,8 @@ class AgentEngine(
                 handleEvent = streamEventHandler,
                 retryReason = { f -> f.take(200) },
                 emitEvent = { emit(it) },
-                stallTimeoutMs = if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000,
-                firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                    if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000, requestOptions.thinking, config),
+                stallTimeoutMs = stallWindow,
+                firstOutputTimeoutMs = firstOutputWindow,
                 allowRetries = !localChat && !managedFallback,
                 retryStalls = !StreamRetrier.selfHosted(config),
                 onTerminalFailure = { recoverableFailure = it },
@@ -744,9 +745,8 @@ class AgentEngine(
                     handleEvent = streamEventHandler,
                     retryReason = { f -> f.take(200) },
                     emitEvent = { emit(it) },
-                    stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
-                    firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                        if (managedFallback) 610_000 else 90_000, requestOptions.thinking, config),
+                    stallTimeoutMs = stallWindow,
+                    firstOutputTimeoutMs = firstOutputWindow,
                     allowRetries = !managedFallback,
                     retryStalls = !StreamRetrier.selfHosted(config),
                     onTerminalFailure = { recoverableFailure = it },
@@ -1029,7 +1029,7 @@ class AgentEngine(
                     emitEvent = { send(SideEvent.Retrying(it.attempt, it.reason)) },
                     stallTimeoutMs = if (local) 600_000 else 90_000,
                     firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                        if (local) 600_000 else 90_000, context.options.thinking, config),
+                        if (local) 600_000 else 90_000, context.options, config),
                     allowRetries = !local,
                     retryStalls = !StreamRetrier.selfHosted(config),
                 )
@@ -1997,7 +1997,7 @@ class AgentEngine(
                 emitEvent = { emitEvent(it) },
                 stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
                 firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                    if (managedFallback) 610_000 else 90_000, requestOptions.thinking, config),
+                    if (managedFallback) 610_000 else 90_000, requestOptions, config),
                 allowRetries = !managedFallback,
                 retryStalls = !StreamRetrier.selfHosted(config),
             )

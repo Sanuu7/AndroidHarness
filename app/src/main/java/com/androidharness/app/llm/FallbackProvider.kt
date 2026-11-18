@@ -109,12 +109,16 @@ class FallbackProvider(
                 return@flow
             }
             val timeout = if (com.androidharness.app.local.LocalModelCatalog.isLocal(current.id)) 600_000 else stallTimeoutMs
+            // What this attempt actually asks the model to reason with, so the
+            // stall guard's first-output window matches the work requested.
+            val attemptThinking = ThinkingSpecs.resolvedForModel(current.model, options.thinking,
+                ModelsDev.providerKeyFor(current.baseUrl)).level
             flow {
                 factory(current).streamChat(current, key, systemPrompt, messages, tools,
-                    options.copy(thinking = ThinkingSpecs.resolvedForModel(current.model, options.thinking, ModelsDev.providerKeyFor(current.baseUrl)).level,
+                    options.copy(thinking = attemptThinking,
                         debugGroup = debugGroup, debugAttempt = ++debugAttempts))
                     .collect { emit(it) }
-            }.flattenEvents().stallGuard(timeout, StreamRetrier.firstOutputWindow(timeout, options.thinking)).catch { e ->
+            }.flattenEvents().stallGuard(timeout, StreamRetrier.firstOutputWindow(timeout, attemptThinking, current)).catch { e ->
                 when (e) {
                     is com.androidharness.app.agent.StreamStalledException ->
                         emit(StreamEvent.Failure("Generation stalled (timed out)"))

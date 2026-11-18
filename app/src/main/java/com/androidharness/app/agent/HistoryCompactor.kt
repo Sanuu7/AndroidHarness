@@ -37,11 +37,12 @@ internal object HistoryCompactor {
             var done = false
             var failureCode: Int? = null
             val managedFallback = coroutineContext[FallbackRun]?.policy()?.enabled == true
+            val options = RequestOptions(maxOutputTokens = outputTokens, thinking = ThinkingLevel.OFF, cacheKey = sessionId)
+            val stallWindow = if (managedFallback) maxOf(stallTimeoutMs, 610_000) else stallTimeoutMs
             val failure = StreamRetrier.run(
                 streamFor = {
                     provider.streamChat(cfg, apiKey, PROMPT,
-                        listOf(ChatMessage(role = Role.USER, text = input)), emptyList(),
-                        RequestOptions(maxOutputTokens = outputTokens, thinking = ThinkingLevel.OFF, cacheKey = sessionId))
+                        listOf(ChatMessage(role = Role.USER, text = input)), emptyList(), options)
                         .transform { batch ->
                             fun flatten(e: StreamEvent): List<StreamEvent> = if (e is StreamEvent.Batch) e.events.flatMap(::flatten) else listOf(e)
                             for (e in flatten(batch)) { if (e is StreamEvent.Failure) failureCode = e.code; emit(e) }
@@ -62,9 +63,8 @@ internal object HistoryCompactor {
                 },
                 retryReason = { it },
                 emitEvent = { progress("Retrying summary · attempt ${it.attempt}") },
-                stallTimeoutMs = if (managedFallback) maxOf(stallTimeoutMs, 610_000) else stallTimeoutMs,
-                firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                    if (managedFallback) maxOf(stallTimeoutMs, 610_000) else stallTimeoutMs, ThinkingLevel.OFF, cfg),
+                stallTimeoutMs = stallWindow,
+                firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(stallWindow, options, cfg),
                 allowRetries = !managedFallback,
                 retryStalls = !StreamRetrier.selfHosted(cfg),
             )

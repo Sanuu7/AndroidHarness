@@ -1,6 +1,7 @@
 package com.androidharness.app.agent
 
 import com.androidharness.app.llm.ProviderConfig
+import com.androidharness.app.llm.RequestOptions
 import com.androidharness.app.llm.StreamEvent
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.channels.Channel
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import java.io.IOException
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
@@ -45,32 +47,45 @@ internal fun stalledMessage(silentMs: Long): String =
  * Fails a silent stream instead of hanging forever: the SSE client's read
  * timeout is infinite by design, so a dead gateway that keeps the socket open
  * would stall a request indefinitely. Any event or any line on the wire
- * (see [StreamActivity]) resets the window. Before the first event the
+ * (see [StreamActivity]) resets the window. Before the first output the
  * window is [firstOutputTimeoutMs], since a model may reason for minutes
  * before it says anything. Throws [StreamStalledException], which
  * [StreamRetrier] routes into the normal retry policy.
+ *
+ * Only real output ends that longer window. The client emits its own notices
+ * ([StreamEvent.ThinkingConfigured], [StreamEvent.ProviderChanged],
+ * [StreamEvent.Retrying]) before the provider has sent a byte, and counting
+ * those as output used to drop every reasoning request back to the plain
+ * window at t=0.
  */
 internal fun <T> Flow<T>.stallGuard(timeoutMs: Long = 90_000, firstOutputTimeoutMs: Long = timeoutMs): Flow<T> {
     val upstream = this
     return channelFlow {
         val activity = StreamActivity(currentCoroutineContext()[StreamActivity])
-        var produced = false
+        val produced = AtomicBoolean(false)
         val watchdog = launch {
             while (true) {
-                val limit = if (produced) timeoutMs else maxOf(timeoutMs, firstOutputTimeoutMs)
+                val limit = if (produced.get()) timeoutMs else maxOf(timeoutMs, firstOutputTimeoutMs)
                 withTimeoutOrNull(limit) { activity.signals.receive() } ?: throw StreamStalledException(limit)
             }
         }
         withContext(activity) {
-            upstream.collect {
-                produced = true
+            upstream.collect { event ->
+                if (event !is StreamEvent || !event.isLocalNotice()) produced.set(true)
                 activity.touch()
-                send(it)
+                send(event)
                 activity.touch()
             }
         }
         watchdog.cancel()
     }
+}
+
+/** Events this client emits itself, before the provider has sent anything. */
+private fun StreamEvent.isLocalNotice(): Boolean = when (this) {
+    is StreamEvent.ThinkingConfigured, is StreamEvent.ProviderChanged, is StreamEvent.Retrying -> true
+    is StreamEvent.Batch -> events.all { it.isLocalNotice() }
+    else -> false
 }
 
 /**
@@ -102,6 +117,18 @@ internal object StreamRetrier {
         val window = if (thinking == ThinkingLevel.OFF) stallTimeoutMs else maxOf(stallTimeoutMs, REASONING_FIRST_OUTPUT_MS)
         return if (config != null && selfHosted(config)) maxOf(window, SELF_HOSTED_FIRST_OUTPUT_MS) else window
     }
+
+    /**
+     * [firstOutputWindow] for the level the request will actually send. A user
+     * selection of Off does not mean the server was asked for no reasoning:
+     * models with always-on thinking resolve Off to their default level, so
+     * the window has to follow the resolved value, not the selection.
+     */
+    fun firstOutputWindow(stallTimeoutMs: Long, options: RequestOptions, config: ProviderConfig): Long =
+        firstOutputWindow(stallTimeoutMs, resolvedThinking(options, config), config)
+
+    private fun resolvedThinking(options: RequestOptions, config: ProviderConfig): ThinkingLevel =
+        runCatching { options.resolveThinking(config).level }.getOrDefault(options.thinking)
 
     /**
      * How long a server on this device or the local network may stay silent

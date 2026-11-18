@@ -1,6 +1,9 @@
 package com.androidharness.app.agent
 
 import com.androidharness.app.llm.ApiException
+import com.androidharness.app.llm.ProviderConfig
+import com.androidharness.app.llm.ProviderType
+import com.androidharness.app.llm.RequestOptions
 import com.androidharness.app.llm.StreamEvent
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.currentCoroutineContext
@@ -355,6 +358,38 @@ class StreamRetrierTest {
         assertEquals(90_000L, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.OFF))
         assertEquals(StreamRetrier.REASONING_FIRST_OUTPUT_MS, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.HIGH))
         assertEquals(610_000L, StreamRetrier.firstOutputWindow(610_000, ThinkingLevel.HIGH))
+    }
+
+    @Test
+    fun `a request's own notices do not consume the first output window`() = runBlocking {
+        val seen = mutableListOf<StreamEvent>()
+        val result = StreamRetrier.run(
+            streamFor = {
+                flow {
+                    // Every provider emits this before the request hits the wire.
+                    emit(StreamEvent.ThinkingConfigured("high"))
+                    delay(300)
+                    emit(StreamEvent.TextDelta("thought"))
+                }
+            },
+            onAttemptStart = {}, hasOutput = { seen.isNotEmpty() }, handleEvent = { seen += it },
+            retryReason = { it }, emitEvent = { error("a local notice must not shorten the reasoning window") },
+            sleep = {}, stallTimeoutMs = 150, firstOutputTimeoutMs = 1_000,
+        )
+        assertEquals(null, result)
+        assertEquals(listOf<StreamEvent>(StreamEvent.ThinkingConfigured("high"), StreamEvent.TextDelta("thought")), seen)
+    }
+
+    @Test
+    fun `the first output window follows the thinking level the request actually sends`() {
+        val alwaysOn = ProviderConfig("anthropic", "Anthropic", ProviderType.ANTHROPIC,
+            "https://api.anthropic.com", "claude-opus-5-5")
+        // Off is a selection, not the wire value: always-on models still reason.
+        assertEquals(StreamRetrier.REASONING_FIRST_OUTPUT_MS,
+            StreamRetrier.firstOutputWindow(90_000, RequestOptions(thinking = ThinkingLevel.OFF), alwaysOn))
+        val plain = alwaysOn.copy(model = "claude-3-5-haiku-20241022")
+        assertEquals(90_000L,
+            StreamRetrier.firstOutputWindow(90_000, RequestOptions(thinking = ThinkingLevel.OFF), plain))
     }
 
     @Test
