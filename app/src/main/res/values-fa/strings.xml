@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"پرش به بخش"</string>
     <string name="chat_claim_check">"این ادعا را بررسی کن"</string>
     <string name="chat_claim_sources">"منابع با هم اختلاف دارند یا تنها یکی آن را تأیید می‌کند"</string>
+    <string name="chat_draft_checking">"پیش‌نویس. چند منبع دیگر بررسی می‌شود"</string>
 </resources>

@@ -1089,4 +1089,5 @@
     <string name="chat_answer_outline">"Lompat ke bagian"</string>
     <string name="chat_claim_check">"Periksa klaim ini"</string>
     <string name="chat_claim_sources">"Sumber berbeda pendapat atau hanya satu yang mendukung"</string>
+    <string name="chat_draft_checking">"Draf. Memeriksa beberapa sumber lagi"</string>
 </resources>

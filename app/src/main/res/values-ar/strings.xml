@@ -1104,4 +1104,5 @@
     <string name="chat_answer_outline">"انتقل إلى قسم"</string>
     <string name="chat_claim_check">"تحقق من هذا الادعاء"</string>
     <string name="chat_claim_sources">"المصادر متعارضة أو مصدر واحد فقط يدعم هذا"</string>
+    <string name="chat_draft_checking">"مسودة. أتحقق من مصادر إضافية"</string>
 </resources>

@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"Zu Abschnitt springen"</string>
     <string name="chat_claim_check">"Diese Aussage prüfen"</string>
     <string name="chat_claim_sources">"Quellen widersprechen sich oder nur eine stützt das"</string>
+    <string name="chat_draft_checking">"Entwurf. Prüfe noch ein paar Quellen"</string>
 </resources>

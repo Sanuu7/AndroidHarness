@@ -1095,4 +1095,5 @@
     <string name="chat_answer_outline">"Aller à la section"</string>
     <string name="chat_claim_check">"Vérifier cette affirmation"</string>
     <string name="chat_claim_sources">"Les sources divergent ou une seule l\'appuie"</string>
+    <string name="chat_draft_checking">"Brouillon. Vérification de quelques sources de plus"</string>
 </resources>

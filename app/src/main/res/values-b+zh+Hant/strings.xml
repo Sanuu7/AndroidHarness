@@ -1089,4 +1089,5 @@
     <string name="chat_answer_outline">"跳到區段"</string>
     <string name="chat_claim_check">"查核這項說法"</string>
     <string name="chat_claim_sources">"來源說法不一，或只有一個來源支持"</string>
+    <string name="chat_draft_checking">"草稿。再核對幾個來源"</string>
 </resources>

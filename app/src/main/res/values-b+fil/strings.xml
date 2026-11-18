@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"Lumukso sa seksyon"</string>
     <string name="chat_claim_check">"Suriin ang pahayag na ito"</string>
     <string name="chat_claim_sources">"Magkasalungat ang mga source o isa lang ang sumusuporta dito"</string>
+    <string name="chat_draft_checking">"Draft. Sinusuri ang ilang source pa"</string>
 </resources>

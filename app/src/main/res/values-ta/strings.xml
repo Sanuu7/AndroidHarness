@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"பகுதிக்குச் செல்"</string>
     <string name="chat_claim_check">"இந்தக் கூற்றைச் சரிபார்"</string>
     <string name="chat_claim_sources">"மூலங்கள் முரண்படுகின்றன அல்லது ஒன்று மட்டுமே இதை ஆதரிக்கிறது"</string>
+    <string name="chat_draft_checking">"வரைவு. இன்னும் சில மூலங்களைச் சரிபார்க்கிறது"</string>
 </resources>

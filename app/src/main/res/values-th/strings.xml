@@ -1089,4 +1089,5 @@
     <string name="chat_answer_outline">"ไปยังหัวข้อ"</string>
     <string name="chat_claim_check">"ตรวจสอบข้อกล่าวอ้างนี้"</string>
     <string name="chat_claim_sources">"แหล่งข้อมูลขัดแย้งกันหรือมีเพียงแหล่งเดียวที่สนับสนุน"</string>
+    <string name="chat_draft_checking">"ฉบับร่าง กำลังตรวจแหล่งข้อมูลเพิ่มอีกเล็กน้อย"</string>
 </resources>

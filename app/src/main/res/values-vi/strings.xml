@@ -1089,4 +1089,5 @@
     <string name="chat_answer_outline">"Đến mục"</string>
     <string name="chat_claim_check">"Kiểm tra nhận định này"</string>
     <string name="chat_claim_sources">"Các nguồn mâu thuẫn hoặc chỉ một nguồn ủng hộ"</string>
+    <string name="chat_draft_checking">"Bản nháp. Đang kiểm tra thêm vài nguồn"</string>
 </resources>

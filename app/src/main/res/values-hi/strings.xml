@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"अनुभाग पर जाएँ"</string>
     <string name="chat_claim_check">"इस दावे की जाँच करें"</string>
     <string name="chat_claim_sources">"स्रोत अलग-अलग हैं या केवल एक ही इसका समर्थन करता है"</string>
+    <string name="chat_draft_checking">"ड्राफ़्ट। कुछ और स्रोत जाँचे जा रहे हैं"</string>
 </resources>

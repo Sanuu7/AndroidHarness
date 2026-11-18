@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"বিভাগে যান"</string>
     <string name="chat_claim_check">"এই দাবিটি যাচাই করুন"</string>
     <string name="chat_claim_sources">"উৎসগুলি পরস্পরবিরোধী বা কেবল একটি উৎস এটি সমর্থন করে"</string>
+    <string name="chat_draft_checking">"খসড়া। আরও কিছু উৎস যাচাই করা হচ্ছে"</string>
 </resources>

@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"කොටසට යන්න"</string>
     <string name="chat_claim_check">"මෙම ප්‍රකාශය පරීක්ෂා කරන්න"</string>
     <string name="chat_claim_sources">"මූලාශ්‍ර එකඟ නොවේ නැතහොත් එකක් පමණක් මෙය තහවුරු කරයි"</string>
+    <string name="chat_draft_checking">"කෙටුම්පත. තවත් මූලාශ්‍ර කිහිපයක් පරීක්ෂා කරමින්"</string>
 </resources>

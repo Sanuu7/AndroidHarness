@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"Ir para a seção"</string>
     <string name="chat_claim_check">"Verificar esta afirmação"</string>
     <string name="chat_claim_sources">"As fontes divergem ou só uma a sustenta"</string>
+    <string name="chat_draft_checking">"Rascunho. Verificando mais algumas fontes"</string>
 </resources>

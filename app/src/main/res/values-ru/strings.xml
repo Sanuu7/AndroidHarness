@@ -1098,4 +1098,5 @@
     <string name="chat_answer_outline">"Перейти к разделу"</string>
     <string name="chat_claim_check">"Проверить утверждение"</string>
     <string name="chat_claim_sources">"Источники расходятся или только один подтверждает"</string>
+    <string name="chat_draft_checking">"Черновик. Проверяю ещё несколько источников"</string>
 </resources>

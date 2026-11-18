@@ -1092,4 +1092,5 @@
     <string name="chat_answer_outline">"Ir a la sección"</string>
     <string name="chat_claim_check">"Verificar esta afirmación"</string>
     <string name="chat_claim_sources">"Las fuentes no coinciden o solo una la respalda"</string>
+    <string name="chat_draft_checking">"Borrador. Revisando algunas fuentes más"</string>
 </resources>

@@ -1089,4 +1089,5 @@
     <string name="chat_answer_outline">"セクションへ移動"</string>
     <string name="chat_claim_check">"この主張を確認"</string>
     <string name="chat_claim_sources">"情報源が食い違っているか、1 件しか裏付けがありません"</string>
+    <string name="chat_draft_checking">"下書き。追加の情報源を確認中"</string>
 </resources>

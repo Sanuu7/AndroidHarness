@@ -1089,4 +1089,5 @@
     <string name="chat_answer_outline">"섹션으로 이동"</string>
     <string name="chat_claim_check">"이 주장 확인"</string>
     <string name="chat_claim_sources">"출처가 서로 다르거나 하나만 뒷받침합니다"</string>
+    <string name="chat_draft_checking">"초안. 출처 몇 개를 더 확인 중"</string>
 </resources>
