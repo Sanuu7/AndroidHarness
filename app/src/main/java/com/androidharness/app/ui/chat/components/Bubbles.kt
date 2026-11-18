@@ -76,22 +76,36 @@ internal fun UserBubble(
     images: List<ImageRef> = emptyList(),
     fileChips: List<com.androidharness.app.ui.chat.FileAttachments.Block> = emptyList(),
     imageDir: java.io.File? = null,
-    onOpenImage: ((ImageRef) -> Unit)? = null,
+    onOpenImage: ((Int) -> Unit)? = null,
     onLongPress: (() -> Unit)? = null,
 ) {
     val press = remember { MutableInteractionSource() }
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val scheme = MaterialTheme.colorScheme
+    val bubbleShape = RoundedCornerShape(18.dp, 18.dp, 5.dp, 18.dp)
+    val hasBubble = text.isNotBlank() || fileChips.isNotEmpty() || (images.isNotEmpty() && imageDir == null)
     androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
         val bubbleMaxWidth = minOf(560.dp, maxWidth * 0.88f)
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-            Surface(
+        Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.End,
+            verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // Photos sit above the bubble as their own media block, like a messaging app,
+            // instead of stacking full-width rows inside the text bubble.
+            if (images.isNotEmpty() && imageDir != null) {
+                UserImageGallery(
+                    images = images,
+                    dir = imageDir,
+                    maxWidth = minOf(bubbleMaxWidth, 300.dp),
+                    onOpen = { onOpenImage?.invoke(it) },
+                    onLongPress = onLongPress,
+                )
+            }
+            if (hasBubble) Surface(
                 color = scheme.surfaceContainerHigh,
                 contentColor = scheme.onSurface,
-                shape = RoundedCornerShape(18.dp, 18.dp, 5.dp, 18.dp),
+                shape = bubbleShape,
                 modifier = Modifier.widthIn(max = bubbleMaxWidth).let { m ->
                     if (onLongPress != null) {
-                        m.expressivePressFeedback(press).clip(RoundedCornerShape(18.dp, 18.dp, 5.dp, 18.dp))
+                        m.expressivePressFeedback(press).clip(bubbleShape)
                             .combinedClickable(interactionSource = press, indication = ripple(color = scheme.primary),
                                 onClick = {}, onLongClick = onLongPress)
                     } else m
@@ -101,16 +115,12 @@ internal fun UserBubble(
                     verticalArrangement = Arrangement.spacedBy(6.dp),
                     modifier = Modifier.padding(horizontal = 15.dp, vertical = 10.dp),
                 ) {
-                    images.forEach { img ->
-                        if (imageDir != null) {
-                            ImageThumbnail(img, imageDir) { onOpenImage?.invoke(img) }
-                        } else {
-                            AttachmentChip(
-                                name = img.name,
-                                detail = uiContext.getString(R.string.ui_image),
-                                icon = Icons.Outlined.Image,
-                            )
-                        }
+                    if (imageDir == null) images.forEach { img ->
+                        AttachmentChip(
+                            name = img.caption?.takeIf { it.isNotBlank() } ?: img.name,
+                            detail = uiContext.getString(R.string.ui_image),
+                            icon = Icons.Outlined.Image,
+                        )
                     }
                     fileChips.forEach { chip ->
                         AttachmentChip(
