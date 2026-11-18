@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src=".github/assets/icon.png" alt="AndroidHarness icon" width="120">
+<img src=".github/assets/icon.svg" alt="AndroidHarness logo" width="128">
 
 # AndroidHarness
 
