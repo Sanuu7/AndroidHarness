@@ -278,7 +278,12 @@ object RichResponse {
         return (value as? JsonArray ?: error("Expected a list")).also { require(it.size <= max && (!required || it.isNotEmpty())) }
     }
 
-    fun plainText(text: String, streaming: Boolean = false): String = if (!hasRichFence(text, streaming)) text else parse(text, streaming).joinToString("\n\n") {
+    /** Claim check markers ("[reason](check:urls)") are UI, not prose; copy and read-aloud leave them out. */
+    private val claimMarker = Regex("""\s?\[[^\]]*]\(check:[^)\s]*\)""")
+
+    fun plainText(text: String, streaming: Boolean = false): String = plainTextWithMarkers(claimMarker.replace(text, ""), streaming)
+
+    private fun plainTextWithMarkers(text: String, streaming: Boolean): String = if (!hasRichFence(text, streaming)) text else parse(text, streaming).joinToString("\n\n") {
         when (it) {
             is Part.Markdown -> it.text; is Part.Content -> describe(it.node)
             Part.Pending, is Part.PendingVisual -> "Preparing content…"; Part.Unavailable -> "Rich content unavailable"

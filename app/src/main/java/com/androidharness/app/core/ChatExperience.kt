@@ -101,6 +101,8 @@ In Chat, the presentation choice above means the clearest layout for a phone rea
             "those pages count as read. Answer from the passages when they cover the question, and do not fetch a page it already read. " +
             "Use web_fetch for a strong result it did not read, or when a passage is cut short and you need more. " +
             "When search passages disagree on a fact, number or date, run one targeted search on that point before answering. " +
+            "If they still disagree, or an important claim rests on a single source, put a check marker right after that sentence: " +
+            "[short reason](check:URL1,URL2) with the URLs of the sources involved, comma separated, no spaces. Use it only for claims that matter. " +
             "Run independent searches for different angles in the same message: they run at the same time."
         return if (depth.maxSources == null) base + reading
         else base + reading + " web_search enforces this turn's source budget and reports how many sources remain; when it is used up, answer from the sources already collected instead of searching more."

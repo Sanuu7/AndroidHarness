@@ -856,6 +856,10 @@
     <string name="chat_open_link">Open link</string>
     <string name="chat_sources_explanation">Pages found or read during this reply. Inline citations identify the source for each claim.</string>
     <string name="chat_source_read">Read page</string>
+    <string name="chat_dig_deeper">Dig deeper</string>
+    <string name="chat_answer_outline">Jump to section</string>
+    <string name="chat_claim_check">Check this claim</string>
+    <string name="chat_claim_sources">Sources disagree or only one supports this</string>
     <string name="chat_source_found">Found in search</string>
     <string name="chat_search_failed">Search unavailable</string>
     <string name="chat_page_failed">Could not read page</string>

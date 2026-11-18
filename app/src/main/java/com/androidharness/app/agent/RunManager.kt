@@ -430,11 +430,14 @@ class RunManager(
         onlyIfIdle: Boolean = false,
         automationRunId: String? = null,
         allowModelFallback: Boolean = true,
+        /** Research depth for this run only, instead of the saved setting (Chat's "Dig deeper"). */
+        searchDepthOverride: com.androidharness.app.data.SearchDepth? = null,
     ): String = kotlinx.coroutines.withContext(Dispatchers.IO) { workspaceGuard.withLock {
         startRunLocked(sessionId, text, imageRefs, config, apiKey, permissionMode, mode,
             maxOutputTokens, maxContextTokens, thinking, maxIterations, workspaceOverride,
             notifyOnFinish, resume, queuedPromptId, replacementMessageId,
-            onlyIfIdle = onlyIfIdle, automationRunId = automationRunId, allowModelFallback = allowModelFallback)
+            onlyIfIdle = onlyIfIdle, automationRunId = automationRunId, allowModelFallback = allowModelFallback,
+            searchDepthOverride = searchDepthOverride)
     } }
 
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
@@ -460,6 +463,7 @@ class RunManager(
         automationRunId: String? = null,
         allowModelFallback: Boolean = true,
         subagentContinuation: Boolean = false,
+        searchDepthOverride: com.androidharness.app.data.SearchDepth? = null,
     ): String {
         check(canRun()) { context.getString(com.androidharness.app.R.string.background_run_blocked) }
         val sid = sessionId ?: sessions.createSession(
@@ -674,7 +678,7 @@ class RunManager(
                         ?: settings.settings.first().autoCompactTokens },
                     mode = if (conversation.isChat) AgentMode.ACT else mode,
                     conversation = conversation,
-                    searchDepth = reasoningPrefs.searchDepth,
+                    searchDepth = searchDepthOverride ?: reasoningPrefs.searchDepth,
                     chatImageFrequency = reasoningPrefs.chatImageFrequency,
                     chatInstructions = reasoningPrefs.chatInstructions,
                     maxIterations = maxIterations,
