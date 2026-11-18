@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.stats
 
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.ui.common.localizedOption
 import com.androidharness.app.R
 import androidx.compose.foundation.background
@@ -77,7 +78,7 @@ internal fun StatsScreen(repository: SessionRepository, onBack: () -> Unit) {
     Scaffold(containerColor = scheme.surface, topBar = {
         AppHeader(uiContext.getString(R.string.settings_page_usage_title), subtitle = uiContext.getString(R.string.ui_model_activity_and_ai_code_changes), onBack = onBack)
     }) { padding ->
-        Column(Modifier.fillMaxSize().padding(padding).verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
+        Column(Modifier.fillMaxSize().padding(padding).motionBlur().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp, vertical = 12.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)) {
             if (LocalDensity.current.fontScale > 1.2f) Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 StatsRange.entries.chunked(2).forEach { row ->

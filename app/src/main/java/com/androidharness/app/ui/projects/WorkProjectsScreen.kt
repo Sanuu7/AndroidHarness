@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.projects
 
+import com.androidharness.app.ui.theme.motionBlur
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -93,7 +94,7 @@ fun WorkProjectsScreen(container: AppContainer, onBack: () -> Unit, onOpenProjec
                     icon = { Icon(Icons.Outlined.Add, null) }, text = { Text(context.getString(R.string.wp_new_project)) })
             },
         ) { padding ->
-            LazyColumn(Modifier.fillMaxSize().padding(padding), state = list, verticalArrangement = Arrangement.spacedBy(2.dp),
+            LazyColumn(Modifier.fillMaxSize().padding(padding).motionBlur(list), state = list, verticalArrangement = Arrangement.spacedBy(2.dp),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 96.dp)) {
                 itemsIndexed(projects, key = { _, it -> it.id }) { index, project ->
                     ExpressiveListRow(index, projects.size, project.name,
@@ -152,7 +153,7 @@ fun WorkProjectScreen(
                 }
             })
         }) { padding ->
-            LazyColumn(Modifier.fillMaxSize().padding(padding), verticalArrangement = Arrangement.spacedBy(2.dp),
+            LazyColumn(Modifier.fillMaxSize().padding(padding).motionBlur(), verticalArrangement = Arrangement.spacedBy(2.dp),
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp)) {
                 if (projects != null && project == null) item { ExpressiveEmptyState(Icons.Outlined.LinkOff, context.getString(R.string.wp_project_unavailable), seed = 2) }
                 if (project != null) {

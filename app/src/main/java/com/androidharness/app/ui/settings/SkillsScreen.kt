@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.settings
 
+import com.androidharness.app.ui.theme.motionBlur
 import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedVisibility
@@ -169,7 +170,7 @@ fun SkillsScreen(
     ) { padding ->
         Box(Modifier.fillMaxSize().padding(padding)) {
             LazyColumn(
-                Modifier.fillMaxSize(),
+                Modifier.fillMaxSize().motionBlur(listState),
                 state = listState,
                 contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 120.dp),
                 verticalArrangement = Arrangement.spacedBy(2.dp),

@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.automation
 
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.R
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
@@ -123,7 +124,8 @@ fun AutomationScreen(
         LazyColumn(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .motionBlur(),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 14.dp),
             verticalArrangement = Arrangement.spacedBy(14.dp),
         ) {

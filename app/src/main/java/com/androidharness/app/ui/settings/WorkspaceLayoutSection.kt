@@ -15,11 +15,17 @@ import com.androidharness.app.R
 import com.androidharness.app.data.WorkspaceLayoutMode
 import com.androidharness.app.ui.common.RadioButton
 
+/** Layout mode radios. [extra] renders below them in the same panel, after a divider. */
 @Composable
-internal fun WorkspaceLayoutSection(selected: WorkspaceLayoutMode, onSelect: (WorkspaceLayoutMode) -> Unit) {
+internal fun WorkspaceLayoutSection(
+    selected: WorkspaceLayoutMode,
+    extra: (@Composable () -> Unit)? = null,
+    onSelect: (WorkspaceLayoutMode) -> Unit,
+) {
     SettingsAnchor(R.string.settings_anchor_layout) {
         SettingsPanel(Modifier.fillMaxWidth()) {
-            Column(Modifier.padding(16.dp).selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+          Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.selectableGroup(), verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Text(stringResource(R.string.settings_anchor_layout), style = MaterialTheme.typography.titleSmall)
                 Text(stringResource(R.string.settings_layout_narrow_note),
                     style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -34,6 +40,11 @@ internal fun WorkspaceLayoutSection(selected: WorkspaceLayoutMode, onSelect: (Wo
                     }
                 }
             }
+            if (extra != null) {
+                HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+                extra()
+            }
+          }
         }
     }
 }

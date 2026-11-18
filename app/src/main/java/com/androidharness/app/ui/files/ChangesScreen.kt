@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.files
 
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.R
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -151,7 +152,7 @@ fun ChangesScreen(
                 return@Column
             }
 
-            LazyColumn(Modifier.fillMaxSize()) {
+            LazyColumn(Modifier.fillMaxSize().motionBlur()) {
                 itemsIndexed(merged, key = { _, c -> c.relPath }) { _, change ->
                     ChangeRow(fs = fs, change = change, successColor = colors.success,
                         canUndo = fs != null && running.none { container.runManager.controls.flow(it).value.workspacePath == fs?.displayPath }, onAskAgent = onAskAgent, onUndo = { preview, section ->

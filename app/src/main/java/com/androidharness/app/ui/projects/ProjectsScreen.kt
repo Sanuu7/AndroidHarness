@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.projects
 
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.R
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -87,7 +88,7 @@ fun ProjectsScreen(container: AppContainer, onBack: () -> Unit, onOpenProject: (
 
     SettingsExpressiveTheme {
     Scaffold(topBar = { AppHeader(uiContext.getString(R.string.wp_workspaces), subtitle = uiContext.getString(R.string.wp_workspaces_sub), onBack = onBack) }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), state = rememberLazyListState(), verticalArrangement = Arrangement.spacedBy(2.dp),
+        LazyColumn(Modifier.fillMaxSize().padding(padding).motionBlur(), state = rememberLazyListState(), verticalArrangement = Arrangement.spacedBy(2.dp),
             contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp)) {
             itemsIndexed(projects, key = { _, it -> it.id }) { index, project ->
                 val count = counts[project.id] ?: 0
@@ -247,7 +248,7 @@ fun ProjectScreen(
             com.androidharness.app.ui.common.SshWorkspaceBar(container, ssh, includeStatusBarPadding = false)
         }
     }) { padding ->
-        LazyColumn(Modifier.fillMaxSize().padding(padding), state = rememberLazyListState(), verticalArrangement = Arrangement.spacedBy(2.dp),
+        LazyColumn(Modifier.fillMaxSize().padding(padding).motionBlur(), state = rememberLazyListState(), verticalArrangement = Arrangement.spacedBy(2.dp),
             contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 32.dp)) {
             if (project == null) {
                 item { ExpressiveEmptyState(Icons.Outlined.FolderOff, uiContext.getString(R.string.wp_workspace_unavailable), seed = 4) }

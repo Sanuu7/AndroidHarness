@@ -1736,10 +1736,14 @@ private fun ChatScreenContent(
                     } else {
                         LazyColumn(
                             state = listState,
-                            modifier = Modifier.motionBlur().fillMaxSize().glassViewportExtra(if (floatingGlass) glassComposerHeight else 0)
+                            modifier = Modifier.fillMaxSize().glassViewportExtra(if (floatingGlass) glassComposerHeight else 0)
                                 .recordHarnessGlassScene(glassScene,
                                     fadeTop = if (floatingGlass) with(density) { padding.calculateTopPadding().toPx() } else 0f,
                                     fadeBottom = if (floatingGlass) glassComposerHeight.toFloat() else 0f)
+                                // After the viewport growth so the blur layer covers the rows under
+                                // a floating composer, and inside the glass recording so the glass
+                                // shows the same smear as the list.
+                                .motionBlur(listState)
                                 .nestedScroll(userScrollObserver),
                             contentPadding = PaddingValues(
                                 start = 18.dp, top = 24.dp + (if (floatingGlass) padding.calculateTopPadding() else 0.dp), end = 18.dp,

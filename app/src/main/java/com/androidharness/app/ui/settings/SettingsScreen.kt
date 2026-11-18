@@ -424,7 +424,7 @@ private fun SettingsScreenContent(
                 query = query,
                 onQueryChange = { query = it },
                 onOpen = ::openPage,
-                modifier = Modifier.motionBlur().fillMaxSize().verticalScroll(homeScroll),
+                modifier = Modifier.motionBlur(homeScroll).fillMaxSize().verticalScroll(homeScroll),
                 customSections = settings.customSections,
                 onOpenSection = { customReturn = emptyList(); customPath = listOf(it) },
                 onAddSection = ::startNewSection,
@@ -437,7 +437,7 @@ private fun SettingsScreenContent(
                 val reveal = remember(highlight) { settingsRevealFor(highlight) }
                 SettingsHighlightScope(highlight, reveal, scroller.takeUnless { lazyPage }) {
                     Column(
-                        modifier = Modifier.motionBlur().then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
+                        modifier = (if (lazyPage) Modifier.motionBlur() else Modifier.motionBlur(pageScroll)).then(if (desktop) Modifier.widthIn(max = 880.dp) else Modifier)
                             .fillMaxSize().then(if (lazyPage) Modifier else Modifier.onGloballyPositioned { scroller.viewport = it }.verticalScroll(pageScroll))
                             .then(if (page == SettingsPage.LEARN) Modifier else Modifier.padding(horizontal = 16.dp, vertical = 16.dp)),
                         verticalArrangement = Arrangement.spacedBy(14.dp),
@@ -2385,7 +2385,9 @@ private fun AgentsInstructionsDialog(container: AppContainer, onDismiss: () -> U
 private fun AppearanceSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     SettingsHeader(uiContext.getString(R.string.settings_page_appearance_title))
-    WorkspaceLayoutSection(settings.workspaceLayout) { scope.launch { container.settings.setWorkspaceLayout(it) } }
+    WorkspaceLayoutSection(settings.workspaceLayout, extra = {
+        SettingsAnchor(R.string.motion_blur_title) { MotionBlurSection(settings, container.settings) }
+    }) { scope.launch { container.settings.setWorkspaceLayout(it) } }
     SettingsPanel(Modifier.fillMaxWidth()) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             SettingsAnchor(R.string.settings_anchor_theme) {
@@ -2431,9 +2433,6 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
     }
     SettingsAnchor(R.string.theme_canvas_title) {
         HarnessCanvasSection(settings.harnessCanvas, container.settings)
-    }
-    SettingsAnchor(R.string.motion_blur_title) {
-        MotionBlurSection(settings, container.settings)
     }
     if (com.androidharness.app.data.FeatureAvailability.HARNESS_GLASS) {
         SettingsAnchor(R.string.glass_title) {

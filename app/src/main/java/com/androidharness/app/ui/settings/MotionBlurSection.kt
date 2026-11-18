@@ -30,43 +30,38 @@ import com.androidharness.app.data.SettingsRepository
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-/** Scroll motion blur: strength slider plus the Android 12 requirement note. */
+/** Scroll motion blur: switch, strength slider and the Android 12 note. Sits inside the Workspace layout panel. */
 @Composable
 internal fun MotionBlurSection(settings: AppSettings, repository: SettingsRepository) {
     val scope = rememberCoroutineScope()
     val supported = Build.VERSION.SDK_INT >= 31
     var intensity by remember(settings.motionBlurIntensity) { mutableFloatStateOf(settings.motionBlurIntensity) }
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
-            Text(stringResource(R.string.motion_blur_title), style = MaterialTheme.typography.titleLarge)
-            Text(stringResource(R.string.motion_blur_description), style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Row(Modifier.fillMaxWidth().toggleable(settings.motionBlurEnabled, enabled = supported, role = Role.Switch) {
-                scope.launch { repository.setMotionBlurEnabled(it) }
-            }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(stringResource(R.string.motion_blur_enable), style = MaterialTheme.typography.titleSmall)
-                    Text(stringResource(R.string.motion_blur_enable_hint), style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                Switch(settings.motionBlurEnabled, onCheckedChange = null, enabled = supported)
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        Row(Modifier.fillMaxWidth().toggleable(settings.motionBlurEnabled, enabled = supported, role = Role.Switch) {
+            scope.launch { repository.setMotionBlurEnabled(it) }
+        }, verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(stringResource(R.string.motion_blur_enable), style = MaterialTheme.typography.titleSmall)
+                Text(stringResource(R.string.motion_blur_enable_hint), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            if (supported && settings.motionBlurEnabled) {
-                val label = stringResource(R.string.motion_blur_intensity)
-                Column {
-                    Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                        Text(label, style = MaterialTheme.typography.titleSmall)
-                        Text(stringResource(R.string.glass_transparency_percent, (intensity * 100).roundToInt()),
-                            style = MaterialTheme.typography.bodyMedium)
-                    }
-                    Slider(value = intensity, onValueChange = { intensity = it },
-                        onValueChangeFinished = { scope.launch { repository.setMotionBlurIntensity(intensity) } },
-                        modifier = Modifier.fillMaxWidth().semantics { contentDescription = label })
-                    Text(stringResource(R.string.motion_blur_intensity_hint), style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            }
-            if (!supported) Text(stringResource(R.string.motion_blur_unsupported), style = MaterialTheme.typography.bodySmall)
+            Switch(settings.motionBlurEnabled, onCheckedChange = null, enabled = supported)
         }
+        if (supported && settings.motionBlurEnabled) {
+            val label = stringResource(R.string.motion_blur_intensity)
+            Column {
+                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                    Text(label, style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.glass_transparency_percent, (intensity * 100).roundToInt()),
+                        style = MaterialTheme.typography.bodyMedium)
+                }
+                Slider(value = intensity, onValueChange = { intensity = it },
+                    onValueChangeFinished = { scope.launch { repository.setMotionBlurIntensity(intensity) } },
+                    modifier = Modifier.fillMaxWidth().semantics { contentDescription = label })
+                Text(stringResource(R.string.motion_blur_intensity_hint), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+        if (!supported) Text(stringResource(R.string.motion_blur_unsupported), style = MaterialTheme.typography.bodySmall)
     }
 }

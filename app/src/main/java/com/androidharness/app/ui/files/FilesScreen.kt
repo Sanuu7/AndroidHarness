@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.files
 
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.R
 import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import androidx.activity.compose.BackHandler
@@ -511,7 +512,7 @@ fun FilesScreen(
                 }
             } else {
                 val visible = visibleEntries
-                LazyColumn(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(2.dp),
+                LazyColumn(modifier = Modifier.fillMaxSize().motionBlur(), verticalArrangement = Arrangement.spacedBy(2.dp),
                     contentPadding = PaddingValues(start = 12.dp, end = 12.dp, top = 6.dp, bottom = 24.dp)) {
                     if (currentPath != ".") {
                         item(key = "\u0000parent") {

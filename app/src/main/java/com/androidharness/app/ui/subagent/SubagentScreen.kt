@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.subagent
 
+import com.androidharness.app.ui.theme.motionBlur
 import com.androidharness.app.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -191,7 +192,8 @@ fun SubagentScreen(
             state = listState,
             modifier = Modifier
                 .fillMaxSize()
-                .padding(padding),
+                .padding(padding)
+                .motionBlur(listState),
             contentPadding = PaddingValues(horizontal = 14.dp, vertical = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
