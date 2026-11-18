@@ -67,4 +67,53 @@
     <string name="context_requests_short">الطلبات</string>
     <string name="context_limit_used">%1$s من %2$s مستخدمة</string>
     <string name="code_cache_catalog_price">بعض الطلبات تستخدم سعر الكتالوج لهذا النموذج. قد يفرض مزوّدك سعرًا مختلفًا.</string>
+    <plurals name="browser_steps_open">
+        <item quantity="zero">فتحت %1$d صفحة</item>
+        <item quantity="one">فتحت %1$d صفحة</item>
+        <item quantity="two">فتحت %1$d صفحتين</item>
+        <item quantity="few">فتحت %1$d صفحات</item>
+        <item quantity="many">فتحت %1$d صفحة</item>
+        <item quantity="other">فتحت %1$d صفحة</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="zero">%1$d نقرة</item>
+        <item quantity="one">نقرة واحدة</item>
+        <item quantity="two">نقرتان</item>
+        <item quantity="few">%1$d نقرات</item>
+        <item quantity="many">%1$d نقرة</item>
+        <item quantity="other">%1$d نقرة</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="zero">%1$d كتابة</item>
+        <item quantity="one">كتابة واحدة</item>
+        <item quantity="two">كتابتان</item>
+        <item quantity="few">%1$d كتابات</item>
+        <item quantity="many">%1$d كتابة</item>
+        <item quantity="other">%1$d كتابة</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="zero">%1$d لقطة شاشة</item>
+        <item quantity="one">لقطة شاشة واحدة</item>
+        <item quantity="two">لقطتا شاشة</item>
+        <item quantity="few">%1$d لقطات شاشة</item>
+        <item quantity="many">%1$d لقطة شاشة</item>
+        <item quantity="other">%1$d لقطة شاشة</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="zero">قراءة الصفحة %1$d مرة</item>
+        <item quantity="one">قراءة الصفحة مرة</item>
+        <item quantity="two">قراءة الصفحة مرتين</item>
+        <item quantity="few">قراءة الصفحة %1$d مرات</item>
+        <item quantity="many">قراءة الصفحة %1$d مرة</item>
+        <item quantity="other">قراءة الصفحة %1$d مرة</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="zero">%1$d خطوة أخرى</item>
+        <item quantity="one">خطوة أخرى واحدة</item>
+        <item quantity="two">خطوتان أخريان</item>
+        <item quantity="few">%1$d خطوات أخرى</item>
+        <item quantity="many">%1$d خطوة أخرى</item>
+        <item quantity="other">%1$d خطوة أخرى</item>
+    </plurals>
+    <string name="browser_steps_using">يستخدم المتصفح</string>
 </resources>

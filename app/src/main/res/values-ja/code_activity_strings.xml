@@ -32,4 +32,23 @@
     <string name="context_cache_hit_rate_short">キャッシュヒット率</string>
     <string name="context_requests_short">リクエスト</string>
     <string name="context_limit_used">%2$s 中 %1$s 使用</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">%1$d ページを開きました</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">%1$d 回クリック</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">%1$d 回入力</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">%1$d 件のスクリーンショット</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">ページを %1$d 回読み取り</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">その他 %1$d ステップ</item>
+    </plurals>
+    <string name="browser_steps_using">ブラウザを使用中</string>
 </resources>

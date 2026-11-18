@@ -39,4 +39,29 @@
     <string name="context_cache_hit_rate_short">கேச் ஹிட் விகிதம்</string>
     <string name="context_requests_short">கோரிக்கைகள்</string>
     <string name="context_limit_used">%2$s இல் %1$s பயன்படுத்தப்பட்டது</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d பக்கம் திறக்கப்பட்டது</item>
+        <item quantity="other">%1$d பக்கங்கள் திறக்கப்பட்டன</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">ஒரு முறை கிளிக்</item>
+        <item quantity="other">%1$d முறை கிளிக்</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">ஒரு முறை தட்டச்சு</item>
+        <item quantity="other">%1$d முறை தட்டச்சு</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d திரைப்படம் எடுக்கப்பட்டது</item>
+        <item quantity="other">%1$d திரைப்படங்கள் எடுக்கப்பட்டன</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">பக்கம் ஒரு முறை படிக்கப்பட்டது</item>
+        <item quantity="other">பக்கம் %1$d முறை படிக்கப்பட்டது</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d மற்ற படி</item>
+        <item quantity="other">%1$d மற்ற படிகள்</item>
+    </plurals>
+    <string name="browser_steps_using">உலாவியைப் பயன்படுத்துகிறது</string>
 </resources>

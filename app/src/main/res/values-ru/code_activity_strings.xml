@@ -53,4 +53,41 @@
     <string name="context_cache_hit_rate_short">Попадания в кэш</string>
     <string name="context_requests_short">Запросы</string>
     <string name="context_limit_used">занято %1$s из %2$s</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">открыта %1$d страница</item>
+        <item quantity="few">открыто %1$d страницы</item>
+        <item quantity="many">открыто %1$d страниц</item>
+        <item quantity="other">открыто %1$d страницы</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">один клик</item>
+        <item quantity="few">%1$d клика</item>
+        <item quantity="many">%1$d кликов</item>
+        <item quantity="other">%1$d клика</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">ввод один раз</item>
+        <item quantity="few">ввод %1$d раза</item>
+        <item quantity="many">ввод %1$d раз</item>
+        <item quantity="other">ввод %1$d раза</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">сделан %1$d снимок</item>
+        <item quantity="few">сделано %1$d снимка</item>
+        <item quantity="many">сделано %1$d снимков</item>
+        <item quantity="other">сделано %1$d снимка</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">страница прочитана один раз</item>
+        <item quantity="few">страница прочитана %1$d раза</item>
+        <item quantity="many">страница прочитана %1$d раз</item>
+        <item quantity="other">страница прочитана %1$d раза</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d другой шаг</item>
+        <item quantity="few">%1$d других шага</item>
+        <item quantity="many">%1$d других шагов</item>
+        <item quantity="other">%1$d других шага</item>
+    </plurals>
+    <string name="browser_steps_using">Используется браузер</string>
 </resources>

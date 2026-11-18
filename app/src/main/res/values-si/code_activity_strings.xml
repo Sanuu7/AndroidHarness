@@ -39,4 +39,29 @@
     <string name="context_cache_hit_rate_short">කෑෂ් ගැලපුම් අනුපාතය</string>
     <string name="context_requests_short">ඉල්ලීම්</string>
     <string name="context_limit_used">%2$sන් %1$s භාවිතයි</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">පිටු %1$dක් විවෘත කර ඇත</item>
+        <item quantity="other">පිටු %1$dක් විවෘත කර ඇත</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">එක් වරක් ක්ලික්</item>
+        <item quantity="other">%1$d වතාවක් ක්ලික්</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">එක් වරක් ටයිප්</item>
+        <item quantity="other">%1$d වතාවක් ටයිප්</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">තිර රුව %1$dක් ගන්නා ලදී</item>
+        <item quantity="other">තිර රුව %1$dක් ගන්නා ලදී</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">පිටුව එක් වරක් කියවා ඇත</item>
+        <item quantity="other">පිටුව %1$d වතාවක් කියවා ඇත</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">වෙනත් පියවර %1$dක්</item>
+        <item quantity="other">වෙනත් පියවර %1$dක්</item>
+    </plurals>
+    <string name="browser_steps_using">බ්‍රවුසරය භාවිතා කරමින්</string>
 </resources>

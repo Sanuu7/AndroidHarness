@@ -39,4 +39,29 @@
     <string name="context_cache_hit_rate_short">نرخ اصابت کش</string>
     <string name="context_requests_short">درخواست‌ها</string>
     <string name="context_limit_used">%1$s از %2$s استفاده شده</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d صفحه باز شد</item>
+        <item quantity="other">%1$d صفحه باز شد</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">یک بار کلیک</item>
+        <item quantity="other">%1$d بار کلیک</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">یک بار تایپ</item>
+        <item quantity="other">%1$d بار تایپ</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d اسکرین‌شات گرفته شد</item>
+        <item quantity="other">%1$d اسکرین‌شات گرفته شد</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">صفحه یک بار خوانده شد</item>
+        <item quantity="other">صفحه %1$d بار خوانده شد</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d گام دیگر</item>
+        <item quantity="other">%1$d گام دیگر</item>
+    </plurals>
+    <string name="browser_steps_using">در حال استفاده از مرورگر</string>
 </resources>

@@ -32,4 +32,23 @@
     <string name="context_cache_hit_rate_short">캐시 적중률</string>
     <string name="context_requests_short">요청</string>
     <string name="context_limit_used">%2$s 중 %1$s 사용</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">페이지 %1$d개 열음</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">%1$d번 클릭</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">%1$d번 입력</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">스크린샷 %1$d개</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">페이지를 %1$d번 읽음</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">기타 단계 %1$d개</item>
+    </plurals>
+    <string name="browser_steps_using">브라우저 사용 중</string>
 </resources>

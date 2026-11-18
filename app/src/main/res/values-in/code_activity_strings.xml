@@ -32,4 +32,23 @@
     <string name="context_cache_hit_rate_short">Rasio cache</string>
     <string name="context_requests_short">Permintaan</string>
     <string name="context_limit_used">%1$s dari %2$s terpakai</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">membuka %1$d halaman</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">mengeklik %1$d kali</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">mengetik %1$d kali</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">%1$d tangkapan layar</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">halaman dibaca %1$d kali</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">%1$d langkah lain</item>
+    </plurals>
+    <string name="browser_steps_using">Menggunakan browser</string>
 </resources>

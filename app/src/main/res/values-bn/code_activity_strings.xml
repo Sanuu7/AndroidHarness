@@ -39,4 +39,29 @@
     <string name="context_cache_hit_rate_short">ক্যাশ হিটের হার</string>
     <string name="context_requests_short">অনুরোধ</string>
     <string name="context_limit_used">%2$s এর মধ্যে %1$s ব্যবহৃত</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$dটি পৃষ্ঠা খোলা হয়েছে</item>
+        <item quantity="other">%1$dটি পৃষ্ঠা খোলা হয়েছে</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">একবার ক্লিক</item>
+        <item quantity="other">%1$d বার ক্লিক</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">একবার টাইপ</item>
+        <item quantity="other">%1$d বার টাইপ</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$dটি স্ক্রিনশট নেওয়া হয়েছে</item>
+        <item quantity="other">%1$dটি স্ক্রিনশট নেওয়া হয়েছে</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">পৃষ্ঠাটি একবার পড়া হয়েছে</item>
+        <item quantity="other">পৃষ্ঠাটি %1$d বার পড়া হয়েছে</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$dটি অন্যান্য ধাপ</item>
+        <item quantity="other">%1$dটি অন্যান্য ধাপ</item>
+    </plurals>
+    <string name="browser_steps_using">ব্রাউজার ব্যবহার করছে</string>
 </resources>

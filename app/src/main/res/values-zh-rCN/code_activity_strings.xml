@@ -32,4 +32,23 @@
     <string name="context_cache_hit_rate_short">缓存命中率</string>
     <string name="context_requests_short">请求</string>
     <string name="context_limit_used">已用 %1$s / %2$s</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">打开了 %1$d 个页面</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">点击了 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">输入了 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">截取了 %1$d 张截图</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">读取页面 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">%1$d 个其他步骤</item>
+    </plurals>
+    <string name="browser_steps_using">正在使用浏览器</string>
 </resources>

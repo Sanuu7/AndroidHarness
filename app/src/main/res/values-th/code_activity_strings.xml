@@ -32,4 +32,23 @@
     <string name="context_cache_hit_rate_short">อัตราแคชที่ตรง</string>
     <string name="context_requests_short">คำขอ</string>
     <string name="context_limit_used">ใช้ %1$s จาก %2$s</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">เปิด %1$d หน้า</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">คลิก %1$d ครั้ง</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">พิมพ์ %1$d ครั้ง</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">จับภาพหน้าจอ %1$d ครั้ง</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">อ่านหน้าเว็บ %1$d ครั้ง</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">ขั้นตอนอื่น %1$d</item>
+    </plurals>
+    <string name="browser_steps_using">กำลังใช้เบราว์เซอร์</string>
 </resources>

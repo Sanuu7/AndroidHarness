@@ -39,4 +39,29 @@
     <string name="context_cache_hit_rate_short">Tasa de aciertos de caché</string>
     <string name="context_requests_short">Solicitudes</string>
     <string name="context_limit_used">%1$s de %2$s usado</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d página abierta</item>
+        <item quantity="other">%1$d páginas abiertas</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">un clic</item>
+        <item quantity="other">%1$d clics</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">escribió una vez</item>
+        <item quantity="other">escribió %1$d veces</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d captura tomada</item>
+        <item quantity="other">%1$d capturas tomadas</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">página leída una vez</item>
+        <item quantity="other">página leída %1$d veces</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d paso más</item>
+        <item quantity="other">%1$d pasos más</item>
+    </plurals>
+    <string name="browser_steps_using">Usando el navegador</string>
 </resources>

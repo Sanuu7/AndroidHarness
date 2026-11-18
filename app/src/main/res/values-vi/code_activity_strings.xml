@@ -32,4 +32,23 @@
     <string name="context_cache_hit_rate_short">Tỷ lệ trúng bộ nhớ đệm</string>
     <string name="context_requests_short">Yêu cầu</string>
     <string name="context_limit_used">đã dùng %1$s trên %2$s</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">đã mở %1$d trang</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">đã nhấp %1$d lần</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">đã nhập %1$d lần</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">đã chụp %1$d ảnh màn hình</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">đã đọc trang %1$d lần</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">%1$d bước khác</item>
+    </plurals>
+    <string name="browser_steps_using">Đang dùng trình duyệt</string>
 </resources>

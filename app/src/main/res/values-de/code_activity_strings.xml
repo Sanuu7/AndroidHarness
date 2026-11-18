@@ -39,4 +39,29 @@
     <string name="context_cache_hit_rate_short">Cache-Trefferquote</string>
     <string name="context_requests_short">Anfragen</string>
     <string name="context_limit_used">%1$s von %2$s belegt</string>
+    <plurals name="browser_steps_open">
+        <item quantity="one">%1$d Seite geöffnet</item>
+        <item quantity="other">%1$d Seiten geöffnet</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="one">einmal geklickt</item>
+        <item quantity="other">%1$d Mal geklickt</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="one">einmal getippt</item>
+        <item quantity="other">%1$d Mal getippt</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="one">%1$d Screenshot aufgenommen</item>
+        <item quantity="other">%1$d Screenshots aufgenommen</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="one">Seite einmal gelesen</item>
+        <item quantity="other">Seite %1$d Mal gelesen</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="one">%1$d weiterer Schritt</item>
+        <item quantity="other">%1$d weitere Schritte</item>
+    </plurals>
+    <string name="browser_steps_using">Browser wird verwendet</string>
 </resources>

@@ -32,4 +32,23 @@
     <string name="context_requests_short">請求</string>
     <string name="context_limit_used">已用 %1$s / %2$s</string>
     <string name="code_cache_catalog_price">部分請求採用模型的目錄標價。你的供應商收費可能不同。</string>
+    <plurals name="browser_steps_open">
+        <item quantity="other">開啟了 %1$d 個頁面</item>
+    </plurals>
+    <plurals name="browser_steps_click">
+        <item quantity="other">點擊了 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_type">
+        <item quantity="other">輸入了 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_screenshot">
+        <item quantity="other">擷取了 %1$d 張截圖</item>
+    </plurals>
+    <plurals name="browser_steps_read">
+        <item quantity="other">讀取頁面 %1$d 次</item>
+    </plurals>
+    <plurals name="browser_steps_other">
+        <item quantity="other">%1$d 個其他步驟</item>
+    </plurals>
+    <string name="browser_steps_using">正在使用瀏覽器</string>
 </resources>
