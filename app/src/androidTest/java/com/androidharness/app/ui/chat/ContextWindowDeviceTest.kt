@@ -27,7 +27,9 @@ import com.androidharness.app.llm.ProviderConfig
 import com.androidharness.app.llm.ProviderType
 import com.androidharness.app.ui.LocalDesktopInput
 import com.androidharness.app.ui.LocalDesktopLayout
-import com.androidharness.app.ui.chat.components.ContextWindowButton
+import com.androidharness.app.agent.PermissionMode
+import com.androidharness.app.ui.chat.components.PermissionModeButton
+import com.androidharness.app.ui.chat.components.rememberContextRing
 import com.androidharness.app.ui.chat.components.MessageComposer
 import com.androidharness.app.ui.theme.HarnessTheme
 import org.junit.Assert.*
@@ -55,6 +57,7 @@ class ContextWindowDeviceTest {
         val compacts = AtomicInteger()
         val limits = AtomicInteger()
         val mode = mutableIntStateOf(0)
+        val permission = mutableStateOf(PermissionMode.CONFIRM_RISKY)
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> activity.setContent {
                 val density = LocalDensity.current
@@ -66,28 +69,37 @@ class ContextWindowDeviceTest {
                                 MessageComposer(state.value.busy, draft.value, null, { draft.value = it }, {},
                                     onSend = { error("Compact must not send the draft") }, onStop = {},
                                     onAttachImage = {}, onAttachFile = {}, chatOnly = state.value.conversation.isChat,
-                                    contextControl = {
-                                        ContextWindowButton(state.value, { limits.incrementAndGet() }, {
-                                            compacts.incrementAndGet()
-                                            state.value = state.value.copy(estimate = estimate(50_000),
-                                                taskControl = state.value.taskControl.copy(summaryOverride = "Earlier work"))
-                                        })
+                                    contextRing = rememberContextRing(state.value, { limits.incrementAndGet() }, {
+                                        compacts.incrementAndGet()
+                                        state.value = state.value.copy(estimate = estimate(50_000),
+                                            taskControl = state.value.taskControl.copy(summaryOverride = "Earlier work"))
+                                    }),
+                                    permissionControl = {
+                                        PermissionModeButton(permission.value, { permission.value = it })
                                     })
                             }
                         }
                     }
                 }
             } }
-            val label = context.getString(R.string.context_window_button)
+            val plus = context.getString(R.string.ui_message_actions)
+            val contextItem = context.getString(R.string.ui_context_and_usage)
+            fun permissionLabel(mode: PermissionMode) = context.getString(R.string.ui_permission, mode.label)
             val compact = context.getString(R.string.context_window_compact)
             fun remaining(tokens: String) = context.getString(R.string.context_window_remaining, tokens)
             fun used(tokens: String) = context.getString(R.string.context_window_used, tokens, "1M")
             for (layout in 0..2) {
                 scenario.onActivity { mode.intValue = layout; state.value = fixture() }
-                await(label)
-                val meterBounds = bounds(label)
-                assertFalse(Rect.intersects(meterBounds, bounds(context.getString(R.string.ui_send_message))))
-                click(label)
+                await(plus)
+                val plusBounds = bounds(plus)
+                val permissionBounds = bounds(permissionLabel(PermissionMode.CONFIRM_RISKY))
+                val sendBounds = bounds(context.getString(R.string.ui_send_message))
+                assertFalse(Rect.intersects(plusBounds, permissionBounds))
+                assertFalse(Rect.intersects(permissionBounds, sendBounds))
+                // Tap: the + menu leads with context and usage.
+                click(plus)
+                await(context.getString(R.string.ui_any_file))
+                click(contextItem)
                 await(used("250K"))
                 await(remaining("750K"))
                 await("600K")
@@ -100,7 +112,8 @@ class ContextWindowDeviceTest {
                 waitFor { compacts.get() == layout + 1 }
                 assertEquals("Keep this draft", draft.value.text)
                 assertEquals(listOf("draft.png"), state.value.attachments)
-                click(label)
+                // Long-press: straight to context and usage.
+                longClick(plus)
                 await(remaining("950K"))
                 await(used("50K"))
                 await(context.getString(R.string.context_window_summarized))
@@ -114,13 +127,45 @@ class ContextWindowDeviceTest {
                 waitFor { limits.get() == layout + 1 }
             }
             scenario.onActivity { state.value = fixture().copy(estimate = null, usage = UsageStats()) }
-            click(label)
+            longClick(plus)
             await(context.getString(R.string.context_window_pending))
             await("0.0%")
             instrumentation.uiAutomation.performGlobalAction(android.accessibilityservice.AccessibilityService.GLOBAL_ACTION_BACK)
             waitFor { find(context.getString(R.string.context_window_pending)) == null }
             scenario.onActivity { state.value = state.value.copy(conversation = ConversationConfig(kind = ConversationKind.CHAT)) }
-            waitFor { find(label) == null }
+            waitFor { find(permissionLabel(PermissionMode.CONFIRM_RISKY)) == null }
+            click(plus)
+            await(context.getString(R.string.ui_any_file))
+            assertNull("Chat has no context entry", find(contextItem))
+        }
+    }
+
+    @Test fun permissionButtonSwitchesModesWithIcons() {
+        val permission = mutableStateOf(PermissionMode.CONFIRM_RISKY)
+        val draft = mutableStateOf(TextFieldValue(""))
+        ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
+            scenario.onActivity { activity -> activity.setContent { HarnessTheme(ThemeMode.DARK, dynamicColor = false) {
+                Surface(Modifier.fillMaxSize().systemBarsPadding()) {
+                    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
+                        MessageComposer(false, draft.value, null, { draft.value = it }, {}, {}, {}, {}, {},
+                            contextRing = rememberContextRing(fixture(), {}, {}),
+                            permissionControl = { PermissionModeButton(permission.value, { permission.value = it }) })
+                    }
+                }
+            } } }
+            fun label(mode: PermissionMode) = context.getString(R.string.ui_permission, mode.label)
+            click(label(PermissionMode.CONFIRM_RISKY))
+            PermissionMode.entries.forEach { await(it.label) }
+            await(context.getString(R.string.settings_agent_perm_full_auto))
+            screenshot("permission-menu")
+            click(PermissionMode.FULL_AUTO.label)
+            waitFor { permission.value == PermissionMode.FULL_AUTO }
+            await(label(PermissionMode.FULL_AUTO))
+            click(label(PermissionMode.FULL_AUTO))
+            click(PermissionMode.CONFIRM_ALL.label)
+            waitFor { permission.value == PermissionMode.CONFIRM_ALL }
+            await(label(PermissionMode.CONFIRM_ALL))
+            screenshot("permission-confirm-all")
         }
     }
 
@@ -132,10 +177,13 @@ class ContextWindowDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> activity.setContent { HarnessTheme(dynamicColor = false) {
                 Surface(Modifier.fillMaxSize().systemBarsPadding()) {
-                    Box(Modifier.padding(24.dp)) { ContextWindowButton(state, {}, {}) }
+                    Column(Modifier.fillMaxHeight(), verticalArrangement = Arrangement.Bottom) {
+                        MessageComposer(false, TextFieldValue(""), null, {}, {}, {}, {}, {}, {},
+                            contextRing = rememberContextRing(state, {}, {}))
+                    }
                 }
             } } }
-            click(context.getString(R.string.context_window_button))
+            longClick(context.getString(R.string.ui_message_actions))
             await(context.getString(R.string.context_window_remaining, "0"))
             await(context.getString(R.string.context_window_used, "40K", "32K"))
         }
@@ -168,6 +216,12 @@ class ContextWindowDeviceTest {
         var node = await(label)
         while (!node.isClickable) node = node.parent ?: error("No click target: $label")
         assertTrue(node.performAction(AccessibilityNodeInfo.ACTION_CLICK))
+        SystemClock.sleep(250)
+    }
+    private fun longClick(label: String) {
+        var node = await(label)
+        while (!node.isLongClickable) node = node.parent ?: error("No long-click target: $label")
+        assertTrue(node.performAction(AccessibilityNodeInfo.ACTION_LONG_CLICK))
         SystemClock.sleep(250)
     }
     private fun screenshot(name: String) {

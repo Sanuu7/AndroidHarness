@@ -2557,12 +2557,16 @@ private fun ChatScreenContent(
                     if (chatSchedules.size == 1) scheduleDraft = chatSchedules.first() else showScheduledList = true
                 }
                 MessageComposer(
-                    contextControl = if (state.conversation.isChat) null else {
+                    contextRing = com.androidharness.app.ui.chat.components.rememberContextRing(
+                        state = state,
+                        onOpenLimits = { showContext = true },
+                        onCompact = { viewModel.send("/compact") },
+                    ),
+                    permissionControl = if (state.conversation.isChat) null else {
                         {
-                            com.androidharness.app.ui.chat.components.ContextWindowButton(
-                                state = state,
-                                onOpenLimits = { showContext = true },
-                                onCompact = { viewModel.send("/compact") },
+                            com.androidharness.app.ui.chat.components.PermissionModeButton(
+                                mode = state.permissionMode,
+                                onSetMode = viewModel::setPermissionMode,
                             )
                         }
                     },

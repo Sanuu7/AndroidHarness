@@ -44,6 +44,9 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.combinedClickable
+import androidx.compose.ui.draw.drawWithContent
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.foundation.gestures.awaitEachGesture
 import androidx.compose.foundation.gestures.awaitFirstDown
 import androidx.compose.foundation.indication
@@ -195,8 +198,10 @@ internal fun MessageComposer(
     onToggleAutoSend: (() -> Unit)? = null,
     /** Whether to show the Auto Send item in the + menu. */
     autoSendShowInPlus: Boolean = true,
-    /** Coding-only context meter, anchored immediately to the left of the text field. */
-    contextControl: (@Composable () -> Unit)? = null,
+    /** Coding-only context ring drawn around the + button; long-press opens its details. */
+    contextRing: ContextRing? = null,
+    /** Coding-only permission mode control, anchored immediately to the left of the text field. */
+    permissionControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     attachments: @Composable () -> Unit = {},
 ) {
@@ -307,6 +312,7 @@ internal fun MessageComposer(
                 autoSendShowInPlus = autoSendShowInPlus,
                 onToggleAutoSend = onToggleAutoSend,
                 size = actionSize,
+                contextRing = if (chatOnly) null else contextRing,
             )
         }
 
@@ -581,7 +587,7 @@ internal fun MessageComposer(
                 verticalAlignment = if (isGroqActive) Alignment.CenterVertically else inputAlignment,
             ) {
                 Box(Modifier.width(slotSize), contentAlignment = Alignment.Center) { leading() }
-                if (!chatOnly && !isGroqActive) contextControl?.let { control ->
+                if (!chatOnly && !isGroqActive) permissionControl?.let { control ->
                     Box(Modifier.width(48.dp), contentAlignment = Alignment.Center) { control() }
                 }
                 field()
@@ -925,13 +931,21 @@ private fun ComposerLeadingButton(
     autoSendShowInPlus: Boolean = true,
     onToggleAutoSend: (() -> Unit)? = null,
     size: Dp = 52.dp,
+    contextRing: ContextRing? = null,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val haptics = LocalHapticFeedback.current
     var expanded by remember { mutableStateOf(false) }
+    var contextOpen by remember { mutableStateOf(false) }
 
     Box {
-        ExpressiveIconButton(
+        if (contextRing != null) ContextRingPlusButton(
+            meter = contextRing.meter,
+            active = expanded || contextOpen,
+            size = size,
+            onClick = { haptics.performHapticFeedback(HapticFeedbackType.Confirm); expanded = true },
+            onLongClick = { haptics.performHapticFeedback(HapticFeedbackType.LongPress); contextOpen = true },
+        ) else ExpressiveIconButton(
             onClick = { haptics.performHapticFeedback(HapticFeedbackType.Confirm); expanded = true },
             glassDecoration = false,
             modifier = Modifier.size(size)
@@ -949,6 +963,21 @@ private fun ComposerLeadingButton(
             expanded = expanded,
             onDismissRequest = { expanded = false },
         ) {
+            if (contextRing != null) {
+                DropdownMenuItem(
+                    text = {
+                        Column {
+                            Text(uiContext.getString(R.string.ui_context_and_usage))
+                            Text(contextRing.meter.summary, style = MaterialTheme.typography.labelSmall,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                    },
+                    leadingIcon = { ContextRingGlyph(contextRing.meter) },
+                    onClick = { expanded = false; contextOpen = true },
+                    modifier = Modifier.testTag("composer-context-item"),
+                )
+                androidx.compose.material3.HorizontalDivider()
+            }
             DropdownMenuItem(
                 text = { Text(uiContext.getString(R.string.ui_photo_or_image)) },
                 leadingIcon = { ImageGlyph(color = MaterialTheme.colorScheme.onSurfaceVariant, size = 18.dp) },
@@ -1008,6 +1037,67 @@ private fun ComposerLeadingButton(
                     onClick = { expanded = false; onSchedule() },
                 )
             }
+        }
+        contextRing?.popover?.invoke(contextOpen) { contextOpen = false }
+    }
+}
+
+/**
+ * The + button for coding conversations: the context window fills a ring around it.
+ * Tap opens the + menu, long-press jumps straight to context and usage.
+ */
+@Composable
+private fun ContextRingPlusButton(
+    meter: ContextMeter,
+    active: Boolean,
+    size: Dp,
+    onClick: () -> Unit,
+    onLongClick: () -> Unit,
+) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val interactions = remember { MutableInteractionSource() }
+    val pressed by interactions.collectIsPressedAsState()
+    val scale by animateFloatAsState(if (pressed) .88f else 1f, expressiveSpatialSpec(), label = "plusRingScale")
+    val progress by animateFloatAsState(meter.fraction, expressiveEffectsSpec(), label = "plusRingProgress")
+    val container by animateColorAsState(if (active) scheme.secondaryContainer else Color.Transparent,
+        expressiveEffectsSpec(), label = "plusRingContainer")
+    val glyph by animateColorAsState(if (active) scheme.onSecondaryContainer else scheme.onSurfaceVariant,
+        expressiveEffectsSpec(), label = "plusRingGlyph")
+    val ringSize = (size - 6.dp).coerceIn(30.dp, 40.dp)
+    val actions = uiContext.getString(R.string.ui_message_actions)
+    val contextLabel = uiContext.getString(R.string.ui_context_and_usage)
+    Box(
+        Modifier.size(size)
+            .combinedClickable(
+                interactionSource = interactions,
+                indication = null,
+                onClickLabel = actions,
+                role = androidx.compose.ui.semantics.Role.Button,
+                onLongClickLabel = contextLabel,
+                onLongClick = onLongClick,
+                onClick = onClick,
+            )
+            .semantics {
+                contentDescription = actions
+                stateDescription = "$contextLabel: ${meter.summary}"
+            }
+            .testTag("composer-plus"),
+        contentAlignment = Alignment.Center,
+    ) {
+        Box(
+            Modifier.size(ringSize)
+                .graphicsLayer { scaleX = scale; scaleY = scale }
+                .clip(CircleShape)
+                .background(container)
+                .indication(interactions, ripple())
+                .drawWithContent {
+                    drawContent()
+                    drawContextRing(meter, 2.5.dp, progress)
+                },
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(painterResource(R.drawable.ic_chat_plus), null, Modifier.size(18.dp), tint = glyph)
         }
     }
 }
