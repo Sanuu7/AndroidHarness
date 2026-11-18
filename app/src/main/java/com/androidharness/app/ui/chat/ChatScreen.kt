@@ -205,7 +205,11 @@ fun ChatScreen(
     onNavigateToMessage: (String, String?) -> Unit = { sid, _ -> onNavigateToSession(sid) },
 ) {
     ChatAppearance {
-        val appearance by viewModel.container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
+        // Start from the canvas the previous screen was showing; the bare default would paint
+        // one frame without it while the settings flow catches up.
+        val appearance by viewModel.container.settings.settings.collectAsStateWithLifecycle(initialValue = remember {
+            AppSettings(harnessCanvas = com.androidharness.app.ui.theme.HarnessCanvasMemory.settings ?: com.androidharness.app.data.HarnessCanvasSettings())
+        })
         val conversation by viewModel.state.collectAsStateWithLifecycle()
         com.androidharness.app.ui.theme.HarnessCanvasBackdrop(appearance.harnessCanvas, conversation.conversation.isChat, Modifier.fillMaxSize()) {
         ChatScreenContent(viewModel, onOpenDrawer, onOpenFile, onNewChat, onOpenTerminal,

@@ -637,26 +637,30 @@ fun AppNav(container: AppContainer) {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeIn(tween(220, easing = FastOutSlowInEasing)) +
                     slideInVertically(tween(240, easing = FastOutSlowInEasing)) { it / 28 }
-                else fadeIn(tween(260, delayMillis = 40, easing = FastOutSlowInEasing)) +
+                // The new section fades in on top right away while the old one stays solid
+                // underneath, so the window background never shows through mid-switch.
+                else fadeIn(tween(200, easing = FastOutSlowInEasing)) +
                     androidx.compose.animation.slideInHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { it / 14 * direction }
             },
             exitTransition = {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeOut(tween(180, easing = FastOutSlowInEasing))
-                else fadeOut(tween(140, easing = FastOutSlowInEasing)) +
+                else fadeOut(tween(100, delayMillis = 200)) +
                     androidx.compose.animation.slideOutHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { -it / 24 * direction }
             },
             popEnterTransition = {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeIn(tween(220, easing = FastOutSlowInEasing))
-                else fadeIn(tween(260, delayMillis = 40, easing = FastOutSlowInEasing)) +
+                // The new section fades in on top right away while the old one stays solid
+                // underneath, so the window background never shows through mid-switch.
+                else fadeIn(tween(200, easing = FastOutSlowInEasing)) +
                     androidx.compose.animation.slideInHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { it / 14 * direction }
             },
             popExitTransition = {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeOut(tween(180, easing = FastOutSlowInEasing)) +
                     slideOutVertically(tween(200, easing = FastOutSlowInEasing)) { it / 28 }
-                else fadeOut(tween(140, easing = FastOutSlowInEasing)) +
+                else fadeOut(tween(100, delayMillis = 200)) +
                     androidx.compose.animation.slideOutHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { -it / 24 * direction }
             },
         ) {

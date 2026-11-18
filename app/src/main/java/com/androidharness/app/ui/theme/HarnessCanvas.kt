@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
@@ -34,10 +35,15 @@ internal fun HarnessCanvasBackdrop(
     val context = LocalContext.current
     val file = remember(context, settings.imageId) { HarnessCanvasStore.image(context, settings.imageId) }
     val visible = file != null && settings.enabled && (if (isChat) settings.chat else settings.code)
-    val bitmap by produceState<ImageBitmap?>(null, file, visible) {
-        value = if (visible) withContext(Dispatchers.IO) {
+    SideEffect { HarnessCanvasMemory.settings = settings }
+    // A screen opened by navigation finds the decoded image already in memory, so its first
+    // frame has the canvas instead of a bare surface that the image then fades over.
+    val cacheKey = file?.let { "${it.path}:${it.lastModified()}" }
+    val cached = if (visible) HarnessCanvasMemory.bitmapFor(cacheKey) else null
+    val bitmap by produceState(cached, cacheKey, visible) {
+        value = if (!visible) null else HarnessCanvasMemory.bitmapFor(cacheKey) ?: withContext(Dispatchers.IO) {
             runCatching { BitmapFactory.decodeFile(file!!.path)?.asImageBitmap() }.getOrNull()
-        } else null
+        }?.also { HarnessCanvasMemory.remember(cacheKey, it) }
     }
     val parentBackdrop = LocalHarnessGlassBackdrop.current
     val wallpaperBackdrop = rememberHarnessGlassScene(backgroundOnly = true)
@@ -57,4 +63,13 @@ internal fun HarnessCanvasBackdrop(
         CompositionLocalProvider(LocalHarnessCanvasVisible provides (visible && bitmap != null),
             LocalHarnessGlassBackdrop provides (combinedBackdrop ?: parentBackdrop)) { content() }
     }
+}
+
+/** Last canvas settings and decoded image, shared by every chat screen in this process. */
+internal object HarnessCanvasMemory {
+    @Volatile var settings: HarnessCanvasSettings? = null
+    private var key: String? = null
+    private var image: ImageBitmap? = null
+    fun bitmapFor(cacheKey: String?): ImageBitmap? = synchronized(this) { image.takeIf { cacheKey != null && key == cacheKey } }
+    fun remember(cacheKey: String?, bitmap: ImageBitmap) = synchronized(this) { key = cacheKey; image = bitmap }
 }

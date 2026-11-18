@@ -93,6 +93,25 @@ internal fun <T> bouncySpec() = spring<T>(dampingRatio = 0.62f, stiffness = 520f
 
 private fun <T> settleSpec() = spring<T>(dampingRatio = 0.82f, stiffness = 650f)
 
+private val morphCache = HashMap<Pair<RoundedPolygon, RoundedPolygon>, Morph>()
+
+/** Morph matching is costly; a code chat can show dozens of badges, so each shape pair is built once. */
+private fun morphBetween(from: RoundedPolygon, to: RoundedPolygon): Morph =
+    morphCache.getOrPut(from to to) { Morph(from, to) }
+
+/** An endless animation while [active]; a still value otherwise, so idle screens stop drawing. */
+@Composable
+private fun rememberLoop(active: Boolean, from: Float, to: Float, periodMs: Int, reverse: Boolean): androidx.compose.runtime.State<Float> =
+    if (active) {
+        rememberInfiniteTransition(label = "loop").animateFloat(
+            from, to,
+            infiniteRepeatable(tween(periodMs, easing = LinearEasing), if (reverse) RepeatMode.Reverse else RepeatMode.Restart),
+            label = "loop value",
+        )
+    } else {
+        remember(from) { androidx.compose.runtime.mutableFloatStateOf(if (reverse) to else from) }
+    }
+
 @Composable
 internal fun workContainer(state: WorkState): Color {
     val scheme = MaterialTheme.colorScheme
@@ -151,22 +170,17 @@ internal fun MorphingStatusBadge(
             progress.animateTo(1f, bouncySpec())
         }
     }
-    val morph = remember(from, to) { Morph(from, to) }
+    val morph = remember(from, to) { morphBetween(from, to) }
     val container by animateColorAsState(workContainer(state), settleSpec(), label = "badge container")
     val content by animateColorAsState(onWorkContainer(state), settleSpec(), label = "badge content")
     val moving = state == WorkState.Running || state == WorkState.Waiting
-    val transition = rememberInfiniteTransition(label = "badge motion")
-    val spin by transition.animateFloat(
-        0f, 360f,
-        infiniteRepeatable(tween(if (state == WorkState.Waiting) 9000 else 4200, easing = LinearEasing)),
-        label = "badge spin",
-    )
-    val breathe by transition.animateFloat(
-        0.9f, 1f,
-        infiniteRepeatable(tween(900), RepeatMode.Reverse),
-        label = "badge breathe",
-    )
-    val entrance by animateFloatAsState(if (moving) 1f else 0f, settleSpec(), label = "badge spin weight")
+    // Endless motion only exists while the badge is actually working. A resting badge draws
+    // once and stays still; otherwise every finished card on screen redraws every frame.
+    val spinState = rememberLoop(moving, 0f, 360f, if (state == WorkState.Waiting) 9000 else 4200, reverse = false)
+    val breatheState = rememberLoop(moving, 0.9f, 1f, 900, reverse = true)
+    val spin by spinState
+    val breathe by breatheState
+    val entrance = if (moving) 1f else 0f
     Box(modifier.size(size), contentAlignment = Alignment.Center) {
         Box(
             Modifier
@@ -311,9 +325,8 @@ internal fun OutcomeStrip(outcomes: List<WorkState>, modifier: Modifier = Modifi
             }
         }
     }
-    val glow by rememberInfiniteTransition(label = "strip").animateFloat(
-        0.45f, 1f, infiniteRepeatable(tween(700), RepeatMode.Reverse), label = "strip glow",
-    )
+    val glowState = rememberLoop(outcomes.any { it == WorkState.Running }, 0.45f, 1f, 700, reverse = true)
+    val glow by glowState
     Row(modifier.fillMaxWidth().height(6.dp), horizontalArrangement = Arrangement.spacedBy(3.dp)) {
         runs.forEach { (state, weight) ->
             val color = when (state) {
