@@ -474,6 +474,7 @@ class AgentEngine(
             )
             val environment = if (agentContextEnabled)
                 runtimeEnvironment(workspace, sessionId, mode, effectiveMode, tools, conversation.isChat) +
+                    modelIdentity(config, options.modelCatalogs) +
                     searchConfiguration?.let { "\n## Current web research configuration\n$it\n" }.orEmpty() else ""
             turnImages.update(working)
             val imageInventory = if (conversation.isChat && visionAvailable)
@@ -1799,7 +1800,8 @@ class AgentEngine(
             }
             val subTools = subagentTools(registry.filter { runConfig?.denies(it) != true && (runConfig == null || com.androidharness.app.config.ConfigToolPolicy.permission(runConfig.config, it, permissionMode) != "deny") }, ctx, actionTools)
             val liveSystem = system + (runConfig?.config?.prompt(runConfig.agent) ?: "") + runtimeEnvironment(workspace, sessionId,
-                if (actionTools) AgentMode.ACT else AgentMode.PLAN, permissionMode, subTools)
+                if (actionTools) AgentMode.ACT else AgentMode.PLAN, permissionMode, subTools) +
+                modelIdentity(config, requestOptions.modelCatalogs)
             val managedFallback = kotlin.coroutines.coroutineContext[com.androidharness.app.llm.FallbackRun]?.policy()?.enabled == true
 
             // Same transient-failure retry policy as the main loop. Unlike the
@@ -2292,6 +2294,12 @@ ${if (appSettings.subagentsEnabled) "- For broad exploration whose raw output wo
             }
         }?.take(16_000)
     }.getOrNull()
+
+    private fun modelIdentity(
+        config: com.androidharness.app.llm.ProviderConfig,
+        catalogs: Map<String, List<com.androidharness.app.llm.ModelEntry>>,
+    ): String = HarnessEnvironmentPrompt.modelIdentity(config.model,
+        catalogs[config.id]?.firstOrNull { it.id == config.model }?.displayName, config.name)
 
     /** No commands, permission requests or root-allowance consumption while describing the environment. */
     private suspend fun runtimeEnvironment(
