@@ -65,7 +65,7 @@ class SettingsNavigationTest {
 
     @Test
     fun `home groups run from setup to help in a fixed order`() {
-        val displayGroups = settingsDisplayGroups(matchingSettingsEntries("", settingsTestStrings()), "")
+        val displayGroups = settingsDisplayGroups(matchingSettingsEntries("", settingsTestStrings()))
         assertEquals(listOf(R.string.learn_group, R.string.settings_group_ai_models, R.string.settings_group_your_assistant,
             R.string.settings_group_integrations, R.string.settings_group_look_feel, R.string.settings_group_device_privacy,
             R.string.settings_group_data_sync, R.string.settings_group_help_about), displayGroups.keys.toList())

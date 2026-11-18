@@ -70,6 +70,5 @@ internal fun SettingsDisclosure(icon: ImageVector, title: String, subtitle: Stri
 
 @Composable
 internal fun SettingsGroupHeading(@StringRes title: Int) {
-    Text(stringResource(title), Modifier.settingsAnchor(title).padding(start = 16.dp, top = 10.dp, bottom = 2.dp),
-        style = MaterialTheme.typography.labelLargeEmphasized, color = MaterialTheme.colorScheme.primary)
+    SettingsSectionLabel(stringResource(title), Modifier.settingsAnchor(title))
 }

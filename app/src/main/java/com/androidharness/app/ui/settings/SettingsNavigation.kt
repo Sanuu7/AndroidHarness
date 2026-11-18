@@ -306,7 +306,7 @@ internal val settingsHomePages = listOf(
 )
 
 /** Results grouped under their page's group, in the order the groups first appear. */
-internal fun settingsDisplayGroups(entries: List<SettingsSearchEntry>, @Suppress("UNUSED_PARAMETER") query: String = "") =
+internal fun settingsDisplayGroups(entries: List<SettingsSearchEntry>) =
     entries.groupBy { it.page.group }
 
 /** The Coding hub, in the order and groups it shows them. */

@@ -28,6 +28,8 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.layout.Arrangement
@@ -2815,14 +2817,7 @@ private fun requestBatteryExemption(context: android.content.Context) =
 // ---------------------------------------------------------------------------
 
 @Composable
-internal fun SettingsHeader(title: String) {
-    Text(
-        title,
-        style = MaterialTheme.typography.labelLargeEmphasized,
-        color = MaterialTheme.colorScheme.primary,
-        modifier = Modifier.padding(start = 16.dp, top = 12.dp, bottom = 0.dp),
-    )
-}
+internal fun SettingsHeader(title: String) = SettingsSectionLabel(title, top = 12.dp)
 
 @Composable
 internal fun SettingRow(
@@ -2833,8 +2828,11 @@ internal fun SettingRow(
     divider: Boolean = false,
     trailing: @Composable RowScope.() -> Unit = {},
 ) = SettingsRow(
-    leading = {
-        SettingsIconBadge(icon, SettingsTone.SECONDARY, 40.dp)
+    leading = { pressed ->
+        // Rests in a soft polygon and rounds into a circle under the finger, like the home list.
+        SettingsMorphBadge(title.hashCode(), pressed, tone = SettingsTone.SECONDARY, size = 40.dp) { tint ->
+            Icon(icon, null, Modifier.size(20.dp), tint = tint)
+        }
     },
     title = title,
     subtitle = subtitle,
@@ -2846,23 +2844,25 @@ internal fun SettingRow(
 /** Same row, for the places that need something other than a themed icon up front. */
 @Composable
 private fun SettingsRow(
-    leading: @Composable () -> Unit,
+    leading: @Composable (pressed: Boolean) -> Unit,
     title: String,
     subtitle: String,
     onClick: (() -> Unit)? = null,
     divider: Boolean = false,
     trailing: @Composable RowScope.() -> Unit = {},
 ) {
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .settingsAnchor(title)
-            .clickable(enabled = onClick != null) { onClick?.invoke() }
+            .clickable(interactionSource = interaction, indication = androidx.compose.material3.ripple(), enabled = onClick != null) { onClick?.invoke() }
             .heightIn(min = 64.dp)
             .padding(horizontal = 16.dp, vertical = 12.dp),
     ) {
-        leading()
+        leading(pressed)
         Spacer(Modifier.width(14.dp))
         Column(Modifier.weight(1f).padding(end = 8.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
             Text(title, style = MaterialTheme.typography.titleMedium)

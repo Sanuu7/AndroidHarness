@@ -9,6 +9,7 @@ import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
@@ -62,6 +63,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.heading
+import androidx.compose.ui.semantics.selected
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
@@ -448,6 +451,60 @@ internal fun Modifier.settingsEntrance(order: Int): Modifier = composed {
         val p = progress.value
         alpha = p.coerceIn(0f, 1f)
         translationY = (1f - p) * 28.dp.toPx()
+    }
+}
+
+/** The label over a group of rows, marked as a heading so screen readers can jump between groups. */
+@Composable
+internal fun SettingsSectionLabel(text: String, modifier: Modifier = Modifier, top: Dp = 10.dp) {
+    Text(
+        text,
+        modifier.padding(start = 16.dp, top = top, bottom = 2.dp).semantics { heading() },
+        style = MaterialTheme.typography.labelLargeEmphasized,
+        color = MaterialTheme.colorScheme.primary,
+    )
+}
+
+/**
+ * One entry of the desktop settings rail. The selected entry fills in and rounds out to a
+ * full pill; a press squeezes the corners the other way, so the rail answers the finger
+ * the same way the segmented rows do.
+ */
+@Composable
+internal fun SettingsRailItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+    icon: @Composable () -> Unit,
+    content: @Composable ColumnScope.() -> Unit,
+) {
+    val scheme = MaterialTheme.colorScheme
+    val interaction = remember { MutableInteractionSource() }
+    val pressed by interaction.collectIsPressedAsState()
+    val corner by animateDpAsState(
+        when { pressed -> 12.dp; selected -> 28.dp; else -> 20.dp },
+        MaterialTheme.motionScheme.fastSpatialSpec(), label = "railCorner",
+    )
+    val fill by animateColorAsState(
+        if (selected) scheme.secondaryContainer else scheme.surfaceContainerLow,
+        MaterialTheme.motionScheme.defaultEffectsSpec(), label = "railFill",
+    )
+    val onFill by animateColorAsState(
+        if (selected) scheme.onSecondaryContainer else scheme.onSurface,
+        MaterialTheme.motionScheme.defaultEffectsSpec(), label = "railContent",
+    )
+    HarnessGlassSurface(
+        onClick = onClick, color = fill, contentColor = onFill, interactionSource = interaction,
+        shape = RoundedCornerShape(corner.coerceAtLeast(0.dp)),
+        modifier = modifier.fillMaxWidth().padding(vertical = 1.dp).semantics { this.selected = selected },
+    ) {
+        Row(
+            Modifier.heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp),
+        ) {
+            icon()
+            Column(Modifier.weight(1f), content = content)
+        }
     }
 }
 

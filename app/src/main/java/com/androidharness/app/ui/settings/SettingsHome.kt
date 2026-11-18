@@ -62,7 +62,7 @@ internal fun SettingsHome(
     val results = remember(query, index) { index.search(query) }
     val sections = remember(query, customSections) { customSections.filter { it.name.contains(query.trim(), ignoreCase = true) } }
     val groups = remember(results, query) {
-        settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).entries.toList()
+        settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }).entries.toList()
     }
     LazyColumn(
         modifier.motionBlur(state),
@@ -137,12 +137,7 @@ private fun SettingsHomeGroup(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        if (entries.size > 1) Text(
-            stringResource(group),
-            style = MaterialTheme.typography.labelLargeEmphasized,
-            color = MaterialTheme.colorScheme.primary,
-            modifier = Modifier.padding(start = 16.dp, bottom = 2.dp).semantics { heading() },
-        )
+        if (entries.size > 1) SettingsSectionLabel(stringResource(group), top = 0.dp)
         val titles = entries.map { stringResource(it.title) }
         val descriptions = entries.map { entry -> entry.description?.let { stringResource(it) } }
         val paths = entries.map { settingsResultPath(it) }
@@ -205,44 +200,27 @@ internal fun DesktopSettingsNavigation(
                     }
                 }
                 items(sections, key = { "custom-section:${it.id}" }) { section ->
-                    val active = section.id == selectedSection
-                    Surface(onClick = { onOpenSection(section.id) },
-                        color = if (active) scheme.secondaryContainer else scheme.surfaceContainerLow,
-                        contentColor = if (active) scheme.onSecondaryContainer else scheme.onSurface,
-                        shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp)) {
-                        Row(Modifier.heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 10.dp),
-                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Icon(customSectionIcon(section.icon), null, Modifier.size(18.dp))
-                            Text(section.name, style = MaterialTheme.typography.labelLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
-                        }
+                    SettingsRailItem(section.id == selectedSection, { onOpenSection(section.id) },
+                        icon = { Icon(customSectionIcon(section.icon), null, Modifier.size(18.dp)) }) {
+                        Text(section.name, style = MaterialTheme.typography.labelLarge, maxLines = 2, overflow = TextOverflow.Ellipsis)
                     }
                 }
                 if (results.isEmpty() && sections.isEmpty()) item { Text(stringResource(R.string.settings_search_empty_title), Modifier.padding(12.dp),
                     style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant) }
-                settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).forEach { (group, entries) ->
-                    if (entries.size > 1) {
-                        item { Text(stringResource(group), Modifier.padding(start = 12.dp, top = 16.dp, bottom = 6.dp),
-                            style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant) }
+                settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }).forEach { (group, entries) ->
+                    if (entries.size > 1) item(key = "group:$group") {
+                        Text(stringResource(group), Modifier.padding(start = 12.dp, top = 16.dp, bottom = 6.dp).semantics { heading() },
+                            style = MaterialTheme.typography.labelMediumEmphasized, color = scheme.primary)
                     }
                     items(entries, key = { "${it.page}:${it.title}:${it.anchor}" }) { entry ->
                         val active = entry.page == selected || entry.page == SettingsPage.CODING && selected in settingsCodingPages
-                        Surface(onClick = { onOpen(entry.page, entry.anchor) },
-                            color = if (active) scheme.secondaryContainer else scheme.surfaceContainerLow,
-                            contentColor = if (active) scheme.onSecondaryContainer else scheme.onSurface,
-                            shape = RoundedCornerShape(20.dp), modifier = Modifier.fillMaxWidth().padding(vertical = 1.dp)) {
-                            Row(Modifier.heightIn(min = 44.dp).padding(horizontal = 16.dp, vertical = 10.dp),
-                                verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                                if (entry.page == SettingsPage.MEMORY)
-                                    Icon(painterResource(R.drawable.ic_brain), null, Modifier.size(18.dp))
-                                else Icon(settingsIcon(entry.page), null, Modifier.size(18.dp))
-                                Column(Modifier.weight(1f)) {
-                                    Text(stringResource(entry.title), style = MaterialTheme.typography.labelLarge, maxLines = 2,
-                                        overflow = TextOverflow.Ellipsis)
-                                    settingsResultPath(entry)?.let { path ->
-                                        Text(path, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                                            color = if (active) scheme.onSecondaryContainer else scheme.onSurfaceVariant)
-                                    }
-                                }
+                        SettingsRailItem(active, { onOpen(entry.page, entry.anchor) },
+                            icon = { SettingsPageIcon(entry.page, LocalContentColor.current, Modifier.size(18.dp)) }) {
+                            Text(stringResource(entry.title), style = MaterialTheme.typography.labelLarge, maxLines = 2,
+                                overflow = TextOverflow.Ellipsis)
+                            settingsResultPath(entry)?.let { path ->
+                                Text(path, style = MaterialTheme.typography.labelSmall, maxLines = 1, overflow = TextOverflow.Ellipsis,
+                                    color = LocalContentColor.current.copy(alpha = 0.72f))
                             }
                         }
                     }

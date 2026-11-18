@@ -144,30 +144,14 @@ private fun SectionBadge(icon: String, size: Dp, modifier: Modifier = Modifier) 
 @Composable
 internal fun CustomSectionsHomeGroup(sections: List<CustomSettingsSection>, onOpen: (String) -> Unit) {
     if (sections.isEmpty()) return
-    val colors = MaterialTheme.colorScheme
     val links = rememberSettingLinks()
+    val counts = sections.map { itemCount(it, links) }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(
-            stringResource(R.string.custom_sections_group),
-            style = MaterialTheme.typography.labelLargeEmphasized,
-            color = colors.primary,
-            modifier = Modifier.padding(start = 16.dp, bottom = 2.dp),
-        )
+        SettingsSectionLabel(stringResource(R.string.custom_sections_group), top = 0.dp)
         SettingsGroup {
-            sections.forEach { section ->
-                item(onClick = { onOpen(section.id) }) {
-                    Row(
-                        modifier = Modifier.heightIn(min = 72.dp).padding(horizontal = 16.dp, vertical = 14.dp),
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(16.dp),
-                    ) {
-                        SectionBadge(section.icon, 44.dp)
-                        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                            Text(section.name, style = MaterialTheme.typography.titleMedium,
-                                maxLines = 2, overflow = TextOverflow.Ellipsis)
-                            Text(itemCount(section, links), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
-                        }
-                    }
+            sections.forEachIndexed { i, section ->
+                navItem(section.id.hashCode(), SettingsTone.TERTIARY, section.name, counts[i], { onOpen(section.id) }) { tint ->
+                    Icon(customSectionIcon(section.icon), null, Modifier.size(22.dp), tint = tint)
                 }
             }
         }
