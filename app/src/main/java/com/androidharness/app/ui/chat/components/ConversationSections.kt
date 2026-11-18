@@ -27,33 +27,27 @@ internal fun ConversationSectionSwitcher(
     enabled: Boolean,
     onSelect: (ConversationKind) -> Unit,
 ) {
-    Surface(color = MaterialTheme.colorScheme.surfaceContainer, shape = RoundedCornerShape(24.dp),
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp)) {
-        BoxWithConstraints {
-            FlowRow(Modifier.padding(3.dp), horizontalArrangement = Arrangement.spacedBy(2.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp),
-                maxItemsInEachRow = if (maxWidth < 180.dp * LocalDensity.current.fontScale) 1 else 2) {
-                ConversationKind.entries.forEach { kind ->
-                    val active = config.kind == kind
-                    Surface(onClick = { if (!active) onSelect(kind) }, enabled = enabled,
-                        color = if (active) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surfaceContainer,
-                        contentColor = if (active) MaterialTheme.colorScheme.onSecondaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
-                        shape = RoundedCornerShape(20.dp),
-                        modifier = Modifier.weight(1f).semantics { role = Role.Tab; selected = active }) {
-                        Row(Modifier.heightIn(min = 44.dp).padding(horizontal = 8.dp, vertical = 6.dp),
-                            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                            Icon(if (kind == ConversationKind.CODE) Icons.Outlined.Code else Icons.Outlined.ChatBubbleOutline,
-                                null, Modifier.size(16.dp))
-                            Spacer(Modifier.width(6.dp))
-                            Text(stringResource(if (kind == ConversationKind.CODE) R.string.conversation_code else R.string.conversation_chat),
-                                style = MaterialTheme.typography.labelLarge, maxLines = 1,
-                                overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                        }
-                    }
-                }
-            }
-        }
+    val kinds = ConversationKind.entries
+    // Move the pill on tap; navigation catches up a frame or two later. If the switch is
+    // refused (a run is saving, say), the pill slides back to the real section.
+    var shown by remember(config.kind) { mutableStateOf(config.kind) }
+    val actual by rememberUpdatedState(config.kind)
+    LaunchedEffect(shown) {
+        if (shown != actual) { kotlinx.coroutines.delay(1500); shown = actual }
     }
+    com.androidharness.app.ui.SlidingSegmentedControl(
+        options = kinds.map { kind ->
+            com.androidharness.app.ui.SegmentOption(
+                stringResource(if (kind == ConversationKind.CODE) R.string.conversation_code else R.string.conversation_chat),
+                if (kind == ConversationKind.CODE) Icons.Outlined.Code else Icons.Outlined.ChatBubbleOutline,
+            )
+        },
+        selectedIndex = kinds.indexOf(shown).coerceAtLeast(0),
+        onSelect = { shown = kinds[it]; onSelect(kinds[it]) },
+        enabled = enabled,
+        height = 52.dp,
+        modifier = Modifier.padding(horizontal = 14.dp, vertical = 8.dp),
+    )
 }
 
 @Composable

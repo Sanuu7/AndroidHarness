@@ -74,25 +74,7 @@ internal fun toolIcon(name: String): ImageVector = when (name) {
 }
 
 @Composable
-internal fun MonoBlock(text: String) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(
-        color = scheme.surfaceContainerLowest,
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Text(
-            text,
-            style = MaterialTheme.typography.bodySmall,
-            fontFamily = HarnessMono,
-            modifier = Modifier
-                .padding(10.dp)
-                .heightIn(max = 260.dp)
-                .verticalScroll(rememberScrollState()),
-        )
-    }
-}
+internal fun MonoBlock(text: String) = CodePanel(text)
 
 /** Shared pretty-print instance, one per call site was allocated before. */
 private val prettyJson = kotlinx.serialization.json.Json { prettyPrint = true }

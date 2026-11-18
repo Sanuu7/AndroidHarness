@@ -112,6 +112,11 @@ fun AppNav(container: AppContainer) {
     val scope = rememberCoroutineScope()
     val focusManager = LocalFocusManager.current
     val sessions by container.sessions.sessions.collectAsStateWithLifecycle(initialValue = emptyList())
+    // Decoding a session's conversation JSON is a full parse; the sidebar, section motion and
+    // filters used to redo it for every session on every recomposition, which made switching lag.
+    val sessionKinds = remember(sessions) {
+        sessions.associate { it.id to com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind }
+    }
     // Nullable gate: the synthetic AppSettings() default (onboardingDone=false)
     // used to pass for one frame as a real emission and flash the setup screen
     // for fully-onboarded users. Null = DataStore hasn't spoken yet.
@@ -362,7 +367,7 @@ fun AppNav(container: AppContainer) {
     }
     fun selectedChatAction(ids: Set<String>, action: SidebarChatAction) {
         if (batchBusy) return
-        val targets = sessions.filter { it.id in ids && com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == activeKind }
+        val targets = sessions.filter { it.id in ids && sessionKinds[it.id] == activeKind }
         if (targets.isEmpty()) { selectedChatIds = emptyList(); return }
         val selectedIds = targets.mapTo(mutableSetOf()) { it.id }
         when (action) {
@@ -420,7 +425,7 @@ fun AppNav(container: AppContainer) {
             com.androidharness.app.data.ConversationKind.CODE ->
                 settings.codeStart == com.androidharness.app.data.CodeStartMode.LAST_CODE
         }
-        val last = sessions.firstOrNull { com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == kind && it.id !in settings.archivedSessions }
+        val last = sessions.firstOrNull { sessionKinds[it.id] == kind && it.id !in settings.archivedSessions }
             ?.takeIf { resume }
         val availablePrevious = previous?.takeIf { route -> sessions.any { "chat/${it.id}" == route && it.id !in settings.archivedSessions } }
         val target = availablePrevious ?: last?.let { "chat/${it.id}" } ?: "chat?kind=${kind.name}"
@@ -432,8 +437,7 @@ fun AppNav(container: AppContainer) {
             if (entry.destination.route?.startsWith("chat") != true) return null
             return entry.arguments?.getString("kind")?.let {
                 runCatching { com.androidharness.app.data.ConversationKind.valueOf(it) }.getOrNull()
-            } ?: sessions.firstOrNull { it.id == entry.arguments?.getString("sessionId") }
-                ?.let { com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind }
+            } ?: entry.arguments?.getString("sessionId")?.let { sessionKinds[it] }
         }
         val origin = kind(from) ?: return 0
         val destination = kind(to) ?: return 0
@@ -446,11 +450,11 @@ fun AppNav(container: AppContainer) {
             currentSessionId?.let(container.sessions::fileChangesFor) ?: kotlinx.coroutines.flow.flowOf(emptyList())
         }.collectAsStateWithLifecycle(initialValue = emptyList())
         ProjectNavigationSidebar(
-            projects = if (activeConversation.isChat) emptyList() else allWorkspaces, sessions = sessions.filter { com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == activeKind }, selectedSession = currentSessionId, selectedProject = currentEntry?.arguments?.getString("workProjectId"),
+            projects = if (activeConversation.isChat) emptyList() else allWorkspaces, sessions = remember(sessions, sessionKinds, activeKind) { sessions.filter { sessionKinds[it.id] == activeKind } }, selectedSession = currentSessionId, selectedProject = currentEntry?.arguments?.getString("workProjectId"),
             workProjects = if (activeConversation.isChat) emptyList() else workProjects,
             onCreateProject = { selectedChatIds = emptyList(); scope.launch { drawerState.close() }; creatingProject = true },
             pinned = settings.pinnedSessions.toSet(), archived = settings.archivedSessions.toSet(), query = searchQuery,
-            onQueryChange = { searchQuery = it }, messageHits = messageHits.filter { hit -> sessions.any { it.id == hit.sessionId && com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).kind == activeKind } }, fuzzy = fuzzySearch, onFuzzyChange = { fuzzySearch = !fuzzySearch },
+            onQueryChange = { searchQuery = it }, messageHits = remember(messageHits, sessionKinds, activeKind) { messageHits.filter { hit -> sessionKinds[hit.sessionId] == activeKind } }, fuzzy = fuzzySearch, onFuzzyChange = { fuzzySearch = !fuzzySearch },
             activity = { session ->
                 if (session.id in runningSessionIds) {
                     val live by remember(session.id) { container.runManager.live(session.id) }.collectAsStateWithLifecycle()
@@ -633,29 +637,27 @@ fun AppNav(container: AppContainer) {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeIn(tween(220, easing = FastOutSlowInEasing)) +
                     slideInVertically(tween(240, easing = FastOutSlowInEasing)) { it / 28 }
-                else fadeIn(com.androidharness.app.ui.theme.expressiveEffectsSpec()) +
-                    androidx.compose.animation.scaleIn(com.androidharness.app.ui.theme.expressiveSpatialSpec(), initialScale = .98f) +
-                    androidx.compose.animation.slideInHorizontally(com.androidharness.app.ui.theme.expressiveSpatialSpec()) { it / 10 * direction }
+                else fadeIn(tween(260, delayMillis = 40, easing = FastOutSlowInEasing)) +
+                    androidx.compose.animation.slideInHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { it / 14 * direction }
             },
             exitTransition = {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeOut(tween(180, easing = FastOutSlowInEasing))
-                else fadeOut(com.androidharness.app.ui.theme.expressiveEffectsSpec()) +
-                    androidx.compose.animation.slideOutHorizontally(com.androidharness.app.ui.theme.expressiveSpatialSpec()) { -it / 20 * direction }
+                else fadeOut(tween(140, easing = FastOutSlowInEasing)) +
+                    androidx.compose.animation.slideOutHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { -it / 24 * direction }
             },
             popEnterTransition = {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeIn(tween(220, easing = FastOutSlowInEasing))
-                else fadeIn(com.androidharness.app.ui.theme.expressiveEffectsSpec()) +
-                    androidx.compose.animation.scaleIn(com.androidharness.app.ui.theme.expressiveSpatialSpec(), initialScale = .98f) +
-                    androidx.compose.animation.slideInHorizontally(com.androidharness.app.ui.theme.expressiveSpatialSpec()) { it / 10 * direction }
+                else fadeIn(tween(260, delayMillis = 40, easing = FastOutSlowInEasing)) +
+                    androidx.compose.animation.slideInHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { it / 14 * direction }
             },
             popExitTransition = {
                 val direction = sectionMotion(initialState, targetState)
                 if (direction == 0) fadeOut(tween(180, easing = FastOutSlowInEasing)) +
                     slideOutVertically(tween(200, easing = FastOutSlowInEasing)) { it / 28 }
-                else fadeOut(com.androidharness.app.ui.theme.expressiveEffectsSpec()) +
-                    androidx.compose.animation.slideOutHorizontally(com.androidharness.app.ui.theme.expressiveSpatialSpec()) { -it / 20 * direction }
+                else fadeOut(tween(140, easing = FastOutSlowInEasing)) +
+                    androidx.compose.animation.slideOutHorizontally(com.androidharness.app.ui.theme.defaultSpatialSpec()) { -it / 24 * direction }
             },
         ) {
             composable("chat?kind={kind}", arguments = listOf(navArgument("kind") { defaultValue = "CODE" })) { entry ->

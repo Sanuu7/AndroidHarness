@@ -21,6 +21,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Inventory2
+import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
@@ -61,10 +62,9 @@ import com.androidharness.app.ui.common.TextButton
 
 /**
  * One shared skeleton for every "agent needs you" card (approvals, plans,
- * environment installs): flat hairline card, quiet title row,
- * content, and a right-aligned action row with a single filled accent button.
- * The old design gave each card its own colors, icons and elevation, the
- *sameness here is what makes the feed readable.
+ * environment installs). A clover badge slowly turns while the agent waits on
+ * you, the card itself lifts to a brighter tonal surface with roomy corners,
+ * and the actions sit as pill buttons on the right.
  */
 @Composable
 private fun ActionCard(
@@ -73,26 +73,19 @@ private fun ActionCard(
     modifier: Modifier = Modifier,
     icon: ImageVector? = null,
     iconTint: Color = MaterialTheme.colorScheme.primary,
+    state: WorkState = WorkState.Waiting,
     content: @Composable ColumnScope.() -> Unit,
 ) {
-    val scheme = MaterialTheme.colorScheme
-    Surface(
-        color = scheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.large,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = modifier.fillMaxWidth(),
-    ) {
-        Column(Modifier.padding(16.dp)) {
+    CodeCard(modifier = modifier, accent = WorkState.Waiting, collapsedRadius = 28.dp) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 16.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (icon != null) {
-                    Icon(icon, contentDescription = null, modifier = Modifier.size(17.dp), tint = iconTint)
-                    Spacer(Modifier.width(8.dp))
-                }
-                Text(title, style = MaterialTheme.typography.titleSmallEmphasized)
+                MorphingStatusBadge(state, icon ?: Icons.Outlined.Shield, size = 40.dp, showOutcome = false)
+                Spacer(Modifier.width(12.dp))
+                Text(title, style = MaterialTheme.typography.titleMediumEmphasized, modifier = Modifier.weight(1f))
             }
-            Spacer(Modifier.height(10.dp))
+            Spacer(Modifier.height(12.dp))
             content()
-            Spacer(Modifier.height(14.dp))
+            Spacer(Modifier.height(16.dp))
             Row(
                 horizontalArrangement = Arrangement.spacedBy(8.dp, Alignment.End),
                 verticalAlignment = Alignment.CenterVertically,
@@ -140,15 +133,14 @@ internal fun ApprovalCard(
     ) {
         if (isPkg) {
             Surface(
-                color = scheme.errorContainer.copy(alpha = 0.25f),
-                shape = MaterialTheme.shapes.small,
-                border = BorderStroke(1.dp, scheme.error.copy(alpha = 0.4f)),
+                color = scheme.errorContainer.copy(alpha = 0.6f),
+                shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 10.dp),
             ) {
                 Row(
-                    modifier = Modifier.padding(horizontal = 10.dp, vertical = 8.dp),
+                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 10.dp),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Icon(
@@ -173,12 +165,13 @@ internal fun ApprovalCard(
         Text(
             describeToolCall(approval.call),
             style = MaterialTheme.typography.bodyMedium,
+            color = scheme.onSurfaceVariant,
         )
         approval.diffPreview?.let { preview ->
             if (preview.isNotBlank()) {
                 Spacer(Modifier.height(10.dp))
                 if (isPkg) {
-                    MonoBlock(preview)
+                    CodePanel(preview)
                 } else {
                     DiffView(preview)
                 }
@@ -186,7 +179,7 @@ internal fun ApprovalCard(
         }
         if (approval.diffPreview == null) {
             Spacer(Modifier.height(10.dp))
-            MonoBlock(prettyArgs(approval.call.argumentsJson))
+            CodePanel(prettyArgs(approval.call.argumentsJson), label = approval.call.name)
         }
     }
 }
@@ -202,6 +195,7 @@ internal fun PlanApprovalCard(
     val longPlan = plan.length > 2_000
     ActionCard(
         title = uiContext.getString(R.string.ui_plan_ready_to_run),
+        icon = Icons.Outlined.Checklist,
         actions = {
             TextButton(onClick = onDiscard) { Text(uiContext.getString(R.string.settings_action_discard)) }
             Button(onClick = onApprove) {
@@ -220,9 +214,11 @@ internal fun PlanApprovalCard(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 8, overflow = TextOverflow.Ellipsis)
         } else {
-            androidx.compose.foundation.text.selection.SelectionContainer {
-                Column(Modifier.heightIn(max = 400.dp).verticalScroll(rememberScrollState())) {
-                    com.androidharness.app.ui.chat.MarkdownText(plan)
+            Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest, shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp)) {
+                androidx.compose.foundation.text.selection.SelectionContainer {
+                    Column(Modifier.fillMaxWidth().heightIn(max = 400.dp).verticalScroll(rememberScrollState()).padding(14.dp)) {
+                        com.androidharness.app.ui.chat.MarkdownText(plan)
+                    }
                 }
             }
         }
@@ -254,6 +250,7 @@ internal fun EnvironmentInstallCard(
             uiContext.getString(R.string.ui_linux_environment_needed)
         },
         icon = Icons.Outlined.Terminal,
+        state = if (envState is EnvState.Failed) WorkState.Failed else if (installing) WorkState.Running else WorkState.Waiting,
         actions = {
             if (!installing) {
                 TextButton(onClick = onSkip) { Text(uiContext.getString(R.string.ui_skip)) }
@@ -318,9 +315,13 @@ internal fun EnvironmentInstallCard(
 
 @Composable
 internal fun DiffView(diff: String) {
-    VisualDiffViewer(
-        diffText = diff,
-        maxHeight = 260.dp,
-        showFileHeader = false,
-    )
+    Surface(color = MaterialTheme.colorScheme.surfaceContainerLowest, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)) {
+        Column(Modifier.padding(6.dp)) {
+            VisualDiffViewer(
+                diffText = diff,
+                maxHeight = 260.dp,
+                showFileHeader = false,
+            )
+        }
+    }
 }

@@ -76,11 +76,11 @@ import kotlinx.serialization.json.jsonPrimitive
 import java.io.File
 
 /**
- * One tool call = one compact, quiet row.
+ * One tool call = one tonal card.
  *
- * Flat hairline card, neutral icon tile, monospace tool name, one-line summary.
- * A Material expressive progress bar indicates active calls. The right-hand status
- * slot shows a check on success or a cross on failure. The whole row toggles details.
+ * The leading badge carries the state: it spins as a cookie while the tool runs
+ * and springs into a circle (done) or squared tile (failed) when it returns.
+ * Tapping opens the input and output as terminal panels.
  */
 @Composable
 internal fun ToolCallCard(
@@ -121,176 +121,116 @@ internal fun ToolCallCard(
         return
     }
     var expanded by rememberSaveable(call.id) { mutableStateOf(false) }
-    val chevronRotation = animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = expressiveSpatialSpec(),
-        label = "tool card chevron",
-    )
     val presentation = remember(call, result) { toolPresentation(call, result) }
     // Prepare large argument/patch payloads away from the animation's UI thread.
     // Keep raw arguments immediately readable while formatting is in flight.
     val details by produceState<ToolCardDetails?>(null, call.name, call.argumentsJson) {
         value = null
         value = withContext(Dispatchers.Default) {
+            val args = runCatching { Json.parseToJsonElement(call.argumentsJson).jsonObject }.getOrNull()
             ToolCardDetails(
                 name = call.name,
                 raw = call.argumentsJson,
                 arguments = prettyArgs(call.argumentsJson),
-                patch = if (call.name == "apply_patch") runCatching {
-                    Json.parseToJsonElement(call.argumentsJson).jsonObject["patch"]?.jsonPrimitive?.content
-                }.getOrNull() else null,
+                patch = if (call.name == "apply_patch") runCatching { args?.get("patch")?.jsonPrimitive?.content }.getOrNull() else null,
+                command = if (call.name in shellTools) runCatching { args?.get("command")?.jsonPrimitive?.content }.getOrNull() else null,
             )
         }
     }
     val currentDetails = details?.takeIf { it.name == call.name && it.raw == call.argumentsJson }
     val pretty = currentDetails?.arguments ?: call.argumentsJson.take(3000)
     val patchDiff = currentDetails?.patch
+    val command = currentDetails?.command
     val active = running && result == null
-    val ok = result?.let { !it.isError }
+    val state = when {
+        awaitingApproval -> WorkState.Waiting
+        active -> WorkState.Running
+        result?.isError == false -> WorkState.Done
+        result?.isError == true -> WorkState.Failed
+        else -> WorkState.Idle
+    }
     val scheme = MaterialTheme.colorScheme
-    val success = LocalStatusColors.current.success
 
-    Surface(
-        onClick = { expanded = !expanded },
-        shape = MaterialTheme.shapes.large,
-        color = scheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column {
+    CodeCard(onClick = { expanded = !expanded }, expanded = expanded,
+        accent = state.takeIf { it == WorkState.Failed || it == WorkState.Waiting }) {
+        CodeCardHeader(
+            badge = { MorphingStatusBadge(state, toolIcon(call.name)) },
+            title = presentation.title,
+            subtitle = presentation.detail,
+            subtitleMono = call.name in shellTools || call.name in pathTools,
+            trailing = {
+                ExpandChevron(expanded, if (expanded) uiContext.getString(R.string.ui_collapse) else uiContext.getString(R.string.ui_expand))
+            },
+        )
+        val receipts = result?.generation?.execution?.distinctBy { it.label }.orEmpty()
+        if (receipts.isNotEmpty()) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
+                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(start = 60.dp, end = 12.dp, bottom = 10.dp),
             ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(scheme.surfaceContainerHigh, RoundedCornerShape(9.dp)),
-                ) {
-                    Icon(
-                        toolIcon(call.name),
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = scheme.onSurfaceVariant,
+                receipts.forEach { receipt ->
+                    StatusPill(
+                        receipt.label + if (receipt.fallbackReason != null) " · fallback" else "",
+                        if (receipt.backend == com.androidharness.app.data.env.DeviceBackend.ROOT) WorkState.Waiting else WorkState.Done,
                     )
                 }
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        presentation.title,
-                        style = MaterialTheme.typography.labelLarge,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis,
-                    )
-                    presentation.detail?.let { detail ->
-                        Text(
-                            detail,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = scheme.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis,
-                        )
-                    }
-                    result?.generation?.execution?.distinctBy { it.label }?.forEach { receipt ->
-                        androidx.compose.material3.Surface(
-                            color = if (receipt.backend == com.androidharness.app.data.env.DeviceBackend.ROOT) scheme.tertiaryContainer else scheme.secondaryContainer,
-                            contentColor = if (receipt.backend == com.androidharness.app.data.env.DeviceBackend.ROOT) scheme.onTertiaryContainer else scheme.onSecondaryContainer,
-                            shape = RoundedCornerShape(50), modifier = Modifier.padding(top = 4.dp),
-                        ) {
-                            Text(receipt.label + if (receipt.fallbackReason != null) " · fallback" else "",
-                                style = MaterialTheme.typography.labelSmall,
-                                modifier = Modifier.padding(horizontal = 7.dp, vertical = 3.dp))
+            }
+        }
+        AnimatedVisibility(
+            active,
+            enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
+            exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
+        ) {
+            ToolCallProgress(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 60.dp, end = 16.dp, bottom = 12.dp),
+            )
+        }
+        result?.images?.takeIf { call.name != "read_image" && it.isNotEmpty() }?.let { imgs ->
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
+            ) {
+                imgs.forEach { ref -> ToolResultImage(ref) }
+            }
+        }
+        AnimatedVisibility(
+            expanded,
+            enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
+            exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
+            ) {
+                when {
+                    patchDiff != null -> Surface(color = scheme.surfaceContainerLowest, shape = RoundedCornerShape(16.dp)) {
+                        Box(Modifier.padding(6.dp)) {
+                            VisualDiffViewer(
+                                diffText = patchDiff,
+                                maxHeight = 280.dp,
+                                showFileHeader = false,
+                                onOpenFile = { path -> onOpenFile(path, null) },
+                            )
                         }
                     }
+                    command != null -> CodePanel(command, label = call.name, prompt = "$")
+                    else -> CodePanel(pretty, label = call.name)
                 }
-                Spacer(Modifier.width(8.dp))
-                val statusKey = when {
-                    active -> 0
-                    ok == true -> 1
-                    ok == false -> 2
-                    else -> 3
-                }
-                Crossfade(
-                    targetState = statusKey,
-                    animationSpec = fastEffectsSpec(),
-                    label = "tool status",
-                ) { key ->
-                    when (key) {
-                        1 -> Icon(
-                            Icons.Filled.CheckCircle,
-                            contentDescription = uiContext.getString(R.string.settings_action_done),
-                            tint = success,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        2 -> Icon(
-                            Icons.Filled.Close,
-                            contentDescription = uiContext.getString(R.string.ui_failed_64),
-                            tint = scheme.error,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        else -> Spacer(Modifier.size(18.dp))
-                    }
-                }
-                Icon(
-                    Icons.Filled.KeyboardArrowDown,
-                    contentDescription = if (expanded) uiContext.getString(R.string.ui_collapse) else uiContext.getString(R.string.ui_expand),
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(start = 2.dp)
-                        .size(20.dp)
-                        .graphicsLayer { rotationZ = chevronRotation.value },
-                )
-            }
-            if (active) {
-                ToolCallProgress(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
-                )
-            }
-            result?.images?.takeIf { call.name != "read_image" && it.isNotEmpty() }?.let { imgs ->
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(6.dp),
-                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
-                ) {
-                    imgs.forEach { ref -> ToolResultImage(ref) }
-                }
-            }
-            AnimatedVisibility(
-                expanded,
-                enter = expandVertically(animationSpec = expressiveSpatialSpec()) + fadeIn(defaultEffectsSpec()),
-                exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(defaultEffectsSpec()),
-            ) {
-                Column(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp)) {
-                    HorizontalDivider(
-                        color = scheme.outlineVariant.copy(alpha = 0.5f),
-                        modifier = Modifier.padding(bottom = 10.dp),
-                    )
-                    Text(
-                        call.name,
-                        style = MaterialTheme.typography.labelSmall,
-                        fontFamily = HarnessMono,
-                        color = scheme.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 6.dp),
-                    )
-                    if (patchDiff != null) {
-                        VisualDiffViewer(
-                            diffText = patchDiff,
-                            maxHeight = 280.dp,
-                            showFileHeader = false,
-                            onOpenFile = { path -> onOpenFile(path, null) },
-                        )
+                result?.let {
+                    if (call.name in listOf("grep", "search_files", "web_search")) {
+                        Surface(color = scheme.surfaceContainerLowest, shape = RoundedCornerShape(16.dp), modifier = Modifier.fillMaxWidth()) {
+                            Box(Modifier.padding(horizontal = 12.dp, vertical = 10.dp)) {
+                                ClickableOutput(it.text.take(4000), onOpenFile)
+                            }
+                        }
                     } else {
-                        MonoBlock(pretty)
-                    }
-                    result?.let {
-                        Spacer(Modifier.height(8.dp))
-                        if (call.name in listOf("grep", "search_files", "web_search")) {
-                            ClickableOutput(it.text.take(4000), onOpenFile)
-                        } else {
-                            MonoBlock(it.text.take(4000))
-                        }
+                        CodePanel(
+                            it.text.take(4000).ifBlank { "∅" },
+                            label = uiContext.getString(if (it.isError) R.string.ui_failed_64 else R.string.ui_output_1407),
+                            tone = if (it.isError) WorkState.Failed else null,
+                        )
                     }
                 }
             }
@@ -298,11 +238,21 @@ internal fun ToolCallCard(
     }
 }
 
+private val shellTools = setOf("shell", "shell_background")
+private val pathTools = setOf("read_file", "file_info", "write_file", "edit_file", "multi_edit", "list_dir", "create_dir", "delete_file", "move_file")
+
+private fun toolState(id: String, results: Map<String, ChatMessage?>, activeIds: Set<String>): WorkState = when {
+    id in activeIds -> WorkState.Running
+    results[id]?.isError == true -> WorkState.Failed
+    results[id] != null -> WorkState.Done
+    else -> WorkState.Idle
+}
+
 /**
- * Collapses a run of consecutive tool calls behind one quiet header row.
- * A batch made entirely of task calls is a subagent spawn: sparkle icon,
- * "Spawned N subagents" wording, and each child renders as its own
- * [SubagentCard] section with live steps instead of a bare tool row.
+ * Collapses a run of consecutive tool calls behind one header with an outcome
+ * strip, one segment per call. A batch made entirely of task calls is a subagent
+ * spawn: sparkle badge, "Spawned N subagents" wording, and each child renders as
+ * its own [SubagentCard] section with live steps instead of a bare tool row.
  */
 @Composable
 internal fun ToolGroupCard(
@@ -318,155 +268,87 @@ internal fun ToolGroupCard(
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     var expanded by rememberSaveable(calls.joinToString(",") { it.id }) { mutableStateOf(false) }
-    val rotation = animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = expressiveSpatialSpec(),
-        label = "tool group chevron",
-    )
     val scheme = MaterialTheme.colorScheme
-    val success = LocalStatusColors.current.success
     val activeIds = activeToolIds(calls, results, runningIds)
     val anyRunning = activeIds.isNotEmpty()
     val failedCount = calls.count { results[it.id]?.isError == true }
     val doneCount = calls.count { results[it.id]?.isError == false }
     val allSubagents = calls.isNotEmpty() && calls.all { it.name == "task" }
+    val groupState = when {
+        anyRunning -> WorkState.Running
+        failedCount > 0 -> WorkState.Failed
+        doneCount > 0 -> WorkState.Done
+        else -> WorkState.Idle
+    }
+    val outcomes = calls.map { toolState(it.id, results, activeIds) }
 
-    Surface(
-        onClick = { expanded = !expanded },
-        shape = MaterialTheme.shapes.large,
-        color = scheme.surfaceContainerLow,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 9.dp),
-            ) {
-                Box(
-                    contentAlignment = Alignment.Center,
-                    modifier = Modifier
-                        .size(30.dp)
-                        .background(scheme.surfaceContainerHigh, RoundedCornerShape(9.dp)),
-                ) {
-                    Icon(
-                        if (allSubagents) Icons.Filled.AutoAwesome else Icons.Outlined.Build,
-                        contentDescription = null,
-                        modifier = Modifier.size(16.dp),
-                        tint = scheme.onSurfaceVariant,
-                    )
-                }
-                Spacer(Modifier.width(10.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(
-                        when {
-                            allSubagents && anyRunning ->
-                                uiContext.getString(R.string.ui_running_of_subagents, (activeIds.size).toString(), (calls.size).toString())
-                            allSubagents -> uiContext.getString(R.string.ui_spawned_subagents, (calls.size).toString())
-                            anyRunning -> uiContext.getString(R.string.ui_running_tools)
-                            else -> uiContext.getString(R.string.ui_ran_tools, (calls.size).toString())
-                        },
-                        style = MaterialTheme.typography.labelLarge,
-                    )
-                    val summary = buildString {
-                        if (doneCount > 0) append("$doneCount done")
-                        if (failedCount > 0) {
-                            if (isNotEmpty()) append(" · ")
-                            append("$failedCount failed")
-                        }
-                        if (anyRunning) {
-                            if (isNotEmpty()) append(" · ")
-                            append("${activeIds.size} running")
-                        }
-                    }
-                    if (summary.isNotEmpty()) {
-                        Text(
-                            summary,
-                            style = MaterialTheme.typography.labelSmall,
-                            color = if (failedCount > 0) scheme.error else scheme.onSurfaceVariant,
-                        )
-                    }
-                }
-                Spacer(Modifier.width(8.dp))
-                Crossfade(
-                    targetState = anyRunning,
-                    animationSpec = fastEffectsSpec(),
-                    label = "tool group status",
-                ) { running ->
-                    when {
-                        running -> Spacer(Modifier.size(18.dp))
-                        failedCount > 0 -> Icon(
-                            Icons.Filled.Close,
-                            contentDescription = uiContext.getString(R.string.ui_failed_64),
-                            tint = scheme.error,
-                            modifier = Modifier.size(18.dp),
-                        )
-                        else -> Icon(
-                            Icons.Filled.CheckCircle,
-                            contentDescription = uiContext.getString(R.string.settings_action_done),
-                            tint = success,
-                            modifier = Modifier.size(18.dp),
-                        )
-                    }
-                }
-                Icon(
-                    Icons.Filled.KeyboardArrowDown,
-                    contentDescription = if (expanded) uiContext.getString(R.string.ui_collapse) else uiContext.getString(R.string.ui_expand),
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .padding(start = 2.dp)
-                        .size(20.dp)
-                        .graphicsLayer { rotationZ = rotation.value },
-                )
+    CodeCard(onClick = { expanded = !expanded }, expanded = expanded,
+        accent = groupState.takeIf { it == WorkState.Failed }) {
+        val summary = buildString {
+            if (doneCount > 0) append("$doneCount done")
+            if (failedCount > 0) {
+                if (isNotEmpty()) append(" · ")
+                append("$failedCount failed")
             }
             if (anyRunning) {
-                ToolCallProgress(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
-                )
+                if (isNotEmpty()) append(" · ")
+                append("${activeIds.size} running")
             }
-            calls.filter { it.name != "read_image" && !com.androidharness.app.browser.BrowserToolActivity.isBrowserTool(it.name) }
-                .flatMap { results[it.id]?.images.orEmpty() }
-                .takeIf { it.isNotEmpty() }?.let { imgs ->
-                    Column(
-                        verticalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 10.dp),
-                    ) {
-                        imgs.forEach { ref -> ToolResultImage(ref) }
-                    }
-                }
-            AnimatedVisibility(
-                expanded,
-                enter = expandVertically(animationSpec = expressiveSpatialSpec()) + fadeIn(defaultEffectsSpec()),
-                exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(defaultEffectsSpec()),
-            ) {
+        }
+        CodeCardHeader(
+            badge = {
+                MorphingStatusBadge(groupState, if (allSubagents) Icons.Filled.AutoAwesome else Icons.Outlined.Build)
+            },
+            title = when {
+                allSubagents && anyRunning ->
+                    uiContext.getString(R.string.ui_running_of_subagents, (activeIds.size).toString(), (calls.size).toString())
+                allSubagents -> uiContext.getString(R.string.ui_spawned_subagents, (calls.size).toString())
+                anyRunning -> uiContext.getString(R.string.ui_running_tools)
+                else -> uiContext.getString(R.string.ui_ran_tools, (calls.size).toString())
+            },
+            subtitle = summary,
+            subtitleColor = if (failedCount > 0) scheme.error else scheme.onSurfaceVariant,
+            trailing = {
+                ExpandChevron(expanded, if (expanded) uiContext.getString(R.string.ui_collapse) else uiContext.getString(R.string.ui_expand))
+            },
+        )
+        OutcomeStrip(outcomes, Modifier.padding(start = 60.dp, end = 16.dp, bottom = 14.dp))
+        calls.filter { it.name != "read_image" && !com.androidharness.app.browser.BrowserToolActivity.isBrowserTool(it.name) }
+            .flatMap { results[it.id]?.images.orEmpty() }
+            .takeIf { it.isNotEmpty() }?.let { imgs ->
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                    verticalArrangement = Arrangement.spacedBy(6.dp),
+                    modifier = Modifier.padding(start = 10.dp, end = 10.dp, bottom = 10.dp),
                 ) {
-                    HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
-                    CardHistory(calls, key = { it.id }) { call ->
-                        if (call.name == "task") {
-                            SubagentCard(
-                                call = call,
-                                steps = subagentSteps[call.id].orEmpty(),
-                                result = results[call.id],
-                                running = call.id in activeIds,
-                                onOpenFile = onOpenFile,
-                            )
-                        } else {
-                            ToolCallCard(
-                                call = call,
-                                result = results[call.id],
-                                running = call.id in activeIds,
-                                onOpenFile = onOpenFile,
-                                showLiveCode = showLiveCode,
-                                onWatchBrowser = onWatchBrowser,
-                                browserTarget = browserTargets[call.id],
-                                packageProgress = packageProgress[call.id],
-                            )
-                        }
+                    imgs.forEach { ref -> ToolResultImage(ref) }
+                }
+            }
+        AnimatedVisibility(
+            expanded,
+            enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
+            exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
+        ) {
+            Box(Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)) {
+                CardHistory(calls, key = { it.id }) { call ->
+                    if (call.name == "task") {
+                        SubagentCard(
+                            call = call,
+                            steps = subagentSteps[call.id].orEmpty(),
+                            result = results[call.id],
+                            running = call.id in activeIds,
+                            onOpenFile = onOpenFile,
+                        )
+                    } else {
+                        ToolCallCard(
+                            call = call,
+                            result = results[call.id],
+                            running = call.id in activeIds,
+                            onOpenFile = onOpenFile,
+                            showLiveCode = showLiveCode,
+                            onWatchBrowser = onWatchBrowser,
+                            browserTarget = browserTargets[call.id],
+                            packageProgress = packageProgress[call.id],
+                        )
                     }
                 }
             }
@@ -474,7 +356,11 @@ internal fun ToolGroupCard(
     }
 }
 
-/** Finished-turn receipt: one compact row by default, full semantic tool history on tap. */
+/**
+ * Finished-turn receipt. Collapsed it is a single summary with an outcome strip
+ * (one segment per tool, colored by result); tapping opens the full history of
+ * reasoning, notes and tool calls for the turn.
+ */
 @Composable
 internal fun TurnActivityCard(
     calls: List<ToolCallData>,
@@ -501,73 +387,48 @@ internal fun TurnActivityCard(
         }
     }
     var expanded by rememberSaveable(calls.joinToString(",") { it.id }) { mutableStateOf(false) }
-    val rotation = animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = fastEffectsSpec(),
-        label = "turn activity chevron",
-    )
     val scheme = MaterialTheme.colorScheme
-    val success = LocalStatusColors.current.success
     val failedCount = calls.count { results[it.id]?.isError == true }
     val completedCount = calls.count { results[it.id] != null }
-    Surface(
-        onClick = { expanded = !expanded },
-        shape = RoundedCornerShape(13.dp),
-        color = scheme.surfaceContainerHigh,
-        modifier = Modifier.fillMaxWidth(),
-    ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 12.dp),
-            ) {
-                Icon(
-                    painterResource(R.drawable.ic_chat_check_check),
-                    contentDescription = null, modifier = Modifier.size(18.dp),
-                    tint = if (failedCount > 0) scheme.error else if (completedCount == calls.size && calls.isNotEmpty()) success else scheme.onSurfaceVariant,
-                )
-                Spacer(Modifier.width(8.dp))
-                Text(
-                    if (failedCount > 0) uiContext.getString(R.string.ui_work_summary_failed, (failedCount).toString()) else uiContext.getString(R.string.ui_work_summary),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = if (failedCount > 0) scheme.error else scheme.onSurface,
-                    modifier = Modifier.weight(1f),
-                )
-                if (calls.isNotEmpty()) Text("$completedCount / ${calls.size}",
-                    style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant)
-                Icon(
-                    painterResource(R.drawable.ic_chat_chevron_right),
-                    contentDescription = if (expanded) uiContext.getString(R.string.ui_collapse_activity) else uiContext.getString(R.string.ui_expand_activity),
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier.padding(start = 8.dp).size(18.dp).graphicsLayer { rotationZ = rotation.value / 2 },
-                )
-            }
-            AnimatedVisibility(
-                expanded,
-                enter = expandVertically(animationSpec = fastSpatialSpec()) + fadeIn(defaultEffectsSpec()),
-                exit = shrinkVertically(animationSpec = fastSpatialSpec()) + fadeOut(defaultEffectsSpec()),
-            ) {
-                Column(
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
-                    modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
-                ) {
-                    if (workedLabel.isNotBlank()) Text(uiContext.getString(R.string.ui_worked_for, (workedLabel).toString()), style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant)
-                    CardHistory(rows, key = { it.key }) { row ->
-                        when (row) {
-                            is ActivityRow.Thinking -> ThinkingBlock(row.message.thinking,
-                                thinkingMs = row.message.thinkingMs, reasoningTokens = row.message.generation.reasoningTokens)
-                            is ActivityRow.Text -> AssistantText(row.text)
-                            is ActivityRow.Tool -> ToolCallCard(
-                                call = row.call,
-                                result = results[row.call.id],
-                                running = false,
-                                onOpenFile = onOpenFile,
-                                showLiveCode = showLiveCode,
-                                onWatchBrowser = onWatchBrowser,
-                                browserTarget = browserTargets[row.call.id],
-                            )
-                        }
+    val state = if (failedCount > 0) WorkState.Failed else WorkState.Done
+    val outcomes = remember(calls, results) { calls.map { toolState(it.id, results, emptySet()) } }
+    CodeCard(onClick = { expanded = !expanded }, expanded = expanded) {
+        CodeCardHeader(
+            badge = {
+                MorphingStatusBadge(state, painterResource(R.drawable.ic_chat_check_check), showOutcome = false)
+            },
+            title = if (failedCount > 0) uiContext.getString(R.string.ui_work_summary_failed, (failedCount).toString())
+                else uiContext.getString(R.string.ui_work_summary),
+            subtitle = workedLabel.takeIf { it.isNotBlank() }?.let { uiContext.getString(R.string.ui_worked_for, it) },
+            trailing = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    if (calls.isNotEmpty()) StatusPill("$completedCount / ${calls.size}", state)
+                    ExpandChevron(expanded,
+                        if (expanded) uiContext.getString(R.string.ui_collapse_activity) else uiContext.getString(R.string.ui_expand_activity))
+                }
+            },
+        )
+        if (outcomes.isNotEmpty()) OutcomeStrip(outcomes, Modifier.padding(start = 60.dp, end = 16.dp, bottom = 14.dp))
+        AnimatedVisibility(
+            expanded,
+            enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
+            exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
+        ) {
+            Box(Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp)) {
+                CardHistory(rows, key = { it.key }) { row ->
+                    when (row) {
+                        is ActivityRow.Thinking -> ThinkingBlock(row.message.thinking,
+                            thinkingMs = row.message.thinkingMs, reasoningTokens = row.message.generation.reasoningTokens)
+                        is ActivityRow.Text -> Box(Modifier.padding(horizontal = 8.dp)) { AssistantText(row.text) }
+                        is ActivityRow.Tool -> ToolCallCard(
+                            call = row.call,
+                            result = results[row.call.id],
+                            running = false,
+                            onOpenFile = onOpenFile,
+                            showLiveCode = showLiveCode,
+                            onWatchBrowser = onWatchBrowser,
+                            browserTarget = browserTargets[row.call.id],
+                        )
                     }
                 }
             }
@@ -631,4 +492,4 @@ private sealed interface ActivityRow {
     data class Tool(override val key: String, val call: ToolCallData) : ActivityRow
 }
 
-private data class ToolCardDetails(val name: String, val raw: String, val arguments: String, val patch: String?)
+private data class ToolCardDetails(val name: String, val raw: String, val arguments: String, val patch: String?, val command: String?)

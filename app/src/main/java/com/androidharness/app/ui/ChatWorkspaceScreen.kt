@@ -102,7 +102,8 @@ fun ChatWorkspaceScreen(
         val desktop = settings.workspaceLayout != WorkspaceLayoutMode.PHONE && (wide || inheritedDesktop)
         val embedded = settings.workspaceLayout != WorkspaceLayoutMode.PHONE && (desktop || toolsUsed)
         val visible = settings.workspaceLayout != WorkspaceLayoutMode.PHONE && if (wide) panelOpen else compactOpen
-        val showChrome = settings.workspaceLayout != WorkspaceLayoutMode.PHONE && (desktop || toolsUsed)
+        // Phones keep only the chat's own header; the workspace strip would stack a second bar on top of it.
+        val showChrome = settings.workspaceLayout != WorkspaceLayoutMode.PHONE && desktop
         LaunchedEffect(desktop) { if (desktop) toolsUsed = true }
         fun showTool(name: String) = guard.navigate {
             focus.clearFocus(force = true)

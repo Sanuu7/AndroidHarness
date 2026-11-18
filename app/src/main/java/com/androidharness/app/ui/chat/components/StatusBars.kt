@@ -30,6 +30,8 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.foundation.border
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
@@ -118,7 +120,12 @@ private fun StatusDot() {
     )
 }
 
-/** Live milestone progress. Completion comes only from explicit agent updates. */
+/**
+ * Live milestone progress. Completion comes only from explicit agent updates.
+ * The header badge spins while work remains, a wavy bar tracks progress, and
+ * each step carries its own small shape: cookie in progress, circle when done.
+ */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun TodoCard(todos: List<TodoItem>) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
@@ -129,89 +136,79 @@ internal fun TodoCard(todos: List<TodoItem>) {
     val next = todos.firstOrNull { it.status == TodoItem.Status.PENDING }
     val scheme = MaterialTheme.colorScheme
     val success = LocalStatusColors.current.success
+    val allDone = done == todos.size
     val listHeight = (LocalConfiguration.current.screenHeightDp * .28f).coerceIn(120f, 240f).dp
-    Surface(
-        color = scheme.surfaceContainerLow,
-        shape = MaterialTheme.shapes.medium,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 12.dp),
-    ) {
-        Column {
-            Row(Modifier.fillMaxWidth().clickable(
-                onClickLabel = if (expanded) uiContext.getString(R.string.ui_collapse_task_list) else uiContext.getString(R.string.ui_expand_task_list),
-                onClick = { expanded = !expanded },
-            ).semantics {
+    val progress by androidx.compose.animation.core.animateFloatAsState(
+        done.toFloat() / todos.size, bouncySpec(), label = "todo progress",
+    )
+    Box(Modifier.padding(horizontal = 12.dp)) {
+        CodeCard(onClick = { expanded = !expanded }, expanded = expanded,
+            modifier = Modifier.semantics {
                 stateDescription = "$done completed, ${todos.count { it.status == TodoItem.Status.IN_PROGRESS }} in progress, ${todos.count { it.status == TodoItem.Status.PENDING }} pending"
-            }.heightIn(min = 48.dp).padding(horizontal = 12.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(
-                    Icons.Outlined.Checklist,
-                    contentDescription = null,
-                    modifier = Modifier.size(20.dp),
-                    tint = if (done == todos.size) success else scheme.primary,
-                )
-                Spacer(Modifier.width(8.dp))
-                Column(Modifier.weight(1f)) {
-                    Text(uiContext.getString(R.string.ui_task_list), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold)
-                    Text(uiContext.getString(R.string.ui_of_completed, (done).toString(), (todos.size).toString()), style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant)
-                }
-                Icon(
-                    if (expanded) Icons.Filled.ExpandLess else Icons.Filled.ExpandMore,
-                    contentDescription = if (expanded) uiContext.getString(R.string.ui_collapse_task_list) else uiContext.getString(R.string.ui_expand_task_list),
-                    modifier = Modifier.size(20.dp),
-                    tint = scheme.onSurfaceVariant,
-                )
-            }
-            LinearProgressIndicator(progress = { done.toFloat() / todos.size },
-                color = if (done == todos.size) success else scheme.primary,
+            }) {
+            CodeCardHeader(
+                badge = {
+                    MorphingStatusBadge(if (allDone) WorkState.Done else WorkState.Running, Icons.Outlined.Checklist,
+                        size = 34.dp, showOutcome = false)
+                },
+                title = uiContext.getString(R.string.ui_task_list),
+                subtitle = if (expanded) uiContext.getString(R.string.ui_of_completed, (done).toString(), (todos.size).toString())
+                    else (active ?: next)?.content ?: uiContext.getString(R.string.ui_all_tasks_completed),
+                trailing = {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        StatusPill("$done / ${todos.size}", if (allDone) WorkState.Done else WorkState.Running)
+                        ExpandChevron(expanded,
+                            if (expanded) uiContext.getString(R.string.ui_collapse_task_list) else uiContext.getString(R.string.ui_expand_task_list))
+                    }
+                },
+            )
+            androidx.compose.material3.LinearWavyProgressIndicator(
+                progress = { progress },
+                color = if (allDone) success else scheme.primary,
                 trackColor = scheme.surfaceContainerHighest,
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp).height(4.dp))
-            if (!expanded) {
-                Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp)) {
-                    Text(when { active != null -> uiContext.getString(R.string.ui_in_progress); next != null -> uiContext.getString(R.string.ui_next); else -> uiContext.getString(R.string.ui_all_tasks_completed) },
-                        style = MaterialTheme.typography.labelSmall, fontWeight = FontWeight.Medium,
-                        color = if (done == todos.size) success else scheme.primary)
-                    (active ?: next)?.let { Text(it.content, style = MaterialTheme.typography.bodySmall,
-                        maxLines = 2, overflow = TextOverflow.Ellipsis) }
-                }
-            }
-            AnimatedVisibility(expanded) {
-                Column(Modifier.padding(horizontal = 12.dp, vertical = 8.dp).heightIn(max = listHeight)
-                    .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    todos.forEach { todo ->
+                amplitude = { if (allDone) 0f else 1f },
+                modifier = Modifier.fillMaxWidth().padding(start = 56.dp, end = 16.dp, bottom = 12.dp),
+            )
+            AnimatedVisibility(expanded,
+                enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(),
+                exit = shrinkVertically(animationSpec = fastSpatialSpec()) + fadeOut()) {
+                Column(Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp).heightIn(max = listHeight)
+                    .verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(3.dp)) {
+                    todos.forEachIndexed { index, todo ->
                         val status = when (todo.status) {
                             TodoItem.Status.COMPLETED -> uiContext.getString(R.string.ui_completed)
                             TodoItem.Status.IN_PROGRESS -> uiContext.getString(R.string.ui_in_progress)
                             TodoItem.Status.PENDING -> uiContext.getString(R.string.ui_pending)
                         }
+                        val first = index == 0
+                        val last = index == todos.lastIndex
                         Row(
-                            verticalAlignment = Alignment.Top,
-                            modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) { stateDescription = status },
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            modifier = Modifier.fillMaxWidth()
+                                .clip(androidx.compose.foundation.shape.RoundedCornerShape(
+                                    topStart = if (first) 20.dp else 6.dp, topEnd = if (first) 20.dp else 6.dp,
+                                    bottomStart = if (last) 20.dp else 6.dp, bottomEnd = if (last) 20.dp else 6.dp))
+                                .background(if (todo.status == TodoItem.Status.IN_PROGRESS) scheme.secondaryContainer else scheme.surfaceContainerLowest)
+                                .padding(horizontal = 12.dp, vertical = 10.dp)
+                                .semantics(mergeDescendants = true) { stateDescription = status },
                         ) {
-                            Icon(
-                                when (todo.status) {
-                                    TodoItem.Status.COMPLETED -> Icons.Filled.CheckCircle
-                                    TodoItem.Status.IN_PROGRESS -> Icons.Outlined.PlayArrow
-                                    TodoItem.Status.PENDING -> Icons.Outlined.RadioButtonUnchecked
-                                },
-                                contentDescription = null,
-                                modifier = Modifier.padding(top = 2.dp).size(18.dp),
-                                tint = when (todo.status) {
-                                    TodoItem.Status.COMPLETED -> success
-                                    TodoItem.Status.IN_PROGRESS -> scheme.primary
-                                    TodoItem.Status.PENDING -> scheme.outline
-                                },
-                            )
-                            Spacer(Modifier.width(8.dp))
-                            Column(Modifier.weight(1f)) {
-                                Text(todo.content, style = MaterialTheme.typography.bodySmall,
-                                    fontWeight = if (todo.status == TodoItem.Status.IN_PROGRESS) FontWeight.Medium else FontWeight.Normal,
-                                    color = if (todo.status == TodoItem.Status.COMPLETED) scheme.onSurfaceVariant else scheme.onSurface)
-                                Text(status, style = MaterialTheme.typography.labelSmall,
-                                    color = if (todo.status == TodoItem.Status.IN_PROGRESS) scheme.primary else scheme.onSurfaceVariant)
+                            when (todo.status) {
+                                TodoItem.Status.COMPLETED -> Box(Modifier.size(22.dp).background(success, CircleShape), contentAlignment = Alignment.Center) {
+                                    Icon(Icons.Filled.Check, null, Modifier.size(14.dp), tint = scheme.surface)
+                                }
+                                TodoItem.Status.IN_PROGRESS -> MorphingStatusBadge(WorkState.Running, Icons.Outlined.PlayArrow, size = 22.dp, showOutcome = false)
+                                TodoItem.Status.PENDING -> Box(Modifier.size(22.dp).border(2.dp, scheme.outlineVariant, CircleShape))
                             }
+                            Text(todo.content, style = MaterialTheme.typography.bodyMedium,
+                                fontWeight = if (todo.status == TodoItem.Status.IN_PROGRESS) FontWeight.Medium else FontWeight.Normal,
+                                textDecoration = if (todo.status == TodoItem.Status.COMPLETED) androidx.compose.ui.text.style.TextDecoration.LineThrough else null,
+                                color = when (todo.status) {
+                                    TodoItem.Status.COMPLETED -> scheme.onSurfaceVariant
+                                    TodoItem.Status.IN_PROGRESS -> scheme.onSecondaryContainer
+                                    TodoItem.Status.PENDING -> scheme.onSurface
+                                },
+                                modifier = Modifier.weight(1f))
                         }
                     }
                 }

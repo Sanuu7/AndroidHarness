@@ -49,6 +49,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -2891,85 +2892,74 @@ private fun FileEditsCard(
         }
     }
     var expanded by remember { mutableStateOf(false) }
-    val chevronRotation by animateFloatAsState(
-        targetValue = if (expanded) 180f else 0f,
-        animationSpec = fastEffectsSpec(),
-        label = "file edits chevron",
-    )
 
-    Surface(
-        shape = RoundedCornerShape(13.dp),
-        color = scheme.surface,
-        border = BorderStroke(1.dp, scheme.outlineVariant),
-        modifier = modifier.fillMaxWidth(),
+    com.androidharness.app.ui.chat.components.CodeCard(
+        onClick = { expanded = !expanded }, expanded = expanded, modifier = modifier,
     ) {
-        Column {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { expanded = !expanded }
-                    .padding(horizontal = 12.dp, vertical = 9.dp),
-            ) {
-                Icon(painterResource(R.drawable.ic_chat_file_code_2), null, Modifier.size(18.dp), tint = scheme.onSurfaceVariant)
-                Text(
-                    if (merged.size == 1) merged.first().first.substringAfterLast('/') else uiContext.getString(R.string.ui_edited_files, (merged.size).toString()),
-                    maxLines = 1, overflow = TextOverflow.Ellipsis,
-                    style = MaterialTheme.typography.labelMedium,
-                    modifier = Modifier.weight(1f),
+        com.androidharness.app.ui.chat.components.CodeCardHeader(
+            badge = {
+                com.androidharness.app.ui.chat.components.MorphingStatusBadge(
+                    com.androidharness.app.ui.chat.components.WorkState.Done,
+                    painterResource(R.drawable.ic_chat_file_code_2), showOutcome = false,
                 )
-                DiffStatText(merged.sumOf { it.second.first }, merged.sumOf { it.second.second })
-                Icon(
-                    Icons.Filled.KeyboardArrowDown,
-                    contentDescription = if (expanded) uiContext.getString(R.string.ui_collapse_edited_files) else uiContext.getString(R.string.ui_expand_edited_files),
-                    tint = scheme.onSurfaceVariant,
-                    modifier = Modifier
-                        .size(20.dp)
-                        .graphicsLayer { rotationZ = chevronRotation },
-                )
-            }
-            AnimatedVisibility(
-                visible = expanded,
-                enter = fadeIn(fastEffectsSpec()) + expandVertically(fastEffectsSpec()),
-                exit = fadeOut(fastEffectsSpec()) + shrinkVertically(fastEffectsSpec()),
+            },
+            title = if (merged.size == 1) merged.first().first.substringAfterLast('/') else uiContext.getString(R.string.ui_edited_files, (merged.size).toString()),
+            subtitle = if (merged.size == 1) merged.first().first.substringBeforeLast('/', "").takeIf { it.isNotBlank() } else null,
+            subtitleMono = true,
+            trailing = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Box(Modifier.background(scheme.surfaceContainerHighest, CircleShape).padding(horizontal = 9.dp, vertical = 3.dp)) {
+                        DiffStatText(merged.sumOf { it.second.first }, merged.sumOf { it.second.second })
+                    }
+                    com.androidharness.app.ui.chat.components.ExpandChevron(expanded,
+                        if (expanded) uiContext.getString(R.string.ui_collapse_edited_files) else uiContext.getString(R.string.ui_expand_edited_files))
+                }
+            },
+        )
+        AnimatedVisibility(
+            visible = expanded,
+            enter = fadeIn(fastEffectsSpec()) + expandVertically(com.androidharness.app.ui.chat.components.bouncySpec()),
+            exit = fadeOut(fastEffectsSpec()) + shrinkVertically(fastEffectsSpec()),
+        ) {
+            Column(
+                verticalArrangement = Arrangement.spacedBy(3.dp),
+                modifier = Modifier.padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
             ) {
-                Column {
-                    merged.forEachIndexed { index, (path, counts) ->
-                        val (added, removed) = counts
-                        if (index > 0) {
-                            HorizontalDivider(color = scheme.outlineVariant.copy(alpha = 0.5f))
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onReviewFile(path) }
-                                .padding(horizontal = 12.dp, vertical = 8.dp),
-                        ) {
-                            Column(Modifier.weight(1f)) {
+                merged.forEachIndexed { index, (path, counts) ->
+                    val (added, removed) = counts
+                    val top = if (index == 0) 18.dp else 6.dp
+                    val bottom = if (index == merged.lastIndex) 18.dp else 6.dp
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom))
+                            .background(scheme.surfaceContainerLowest)
+                            .clickable { onReviewFile(path) }
+                            .padding(start = 14.dp, end = 6.dp, top = 6.dp, bottom = 6.dp),
+                    ) {
+                        Column(Modifier.weight(1f)) {
+                            Text(
+                                path.substringAfterLast('/'),
+                                style = MaterialTheme.typography.labelLarge,
+                                fontFamily = HarnessMono,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis,
+                            )
+                            val parent = path.substringBeforeLast('/')
+                            if (parent != path) {
                                 Text(
-                                    path.substringAfterLast('/'),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    fontFamily = HarnessMono,
+                                    parent,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = scheme.onSurfaceVariant,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
                                 )
-                                val parent = path.substringBeforeLast('/')
-                                if (parent != path) {
-                                    Text(
-                                        parent,
-                                        style = MaterialTheme.typography.labelSmall,
-                                        color = scheme.onSurfaceVariant,
-                                        maxLines = 1,
-                                        overflow = TextOverflow.Ellipsis,
-                                    )
-                                }
                             }
-                            DiffStatText(added, removed)
-                            TextButton(onClick = { onOpenFile(path, null) }) { Text(uiContext.getString(R.string.ui_open)) }
                         }
+                        DiffStatText(added, removed)
+                        TextButton(onClick = { onOpenFile(path, null) }) { Text(uiContext.getString(R.string.ui_open)) }
                     }
                 }
             }

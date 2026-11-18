@@ -1,5 +1,7 @@
 package com.androidharness.app.ui.chat.components
 
+import androidx.compose.foundation.shape.CircleShape
+
 import com.androidharness.app.ui.common.localizedOptionLabel
 import com.androidharness.app.R
 import androidx.compose.animation.AnimatedVisibility
@@ -56,39 +58,43 @@ internal fun LiveCodeCard(draft: LiveCodeDraft, awaitingApproval: Boolean = fals
         draft.tool == "write_file" -> if (draft.stage == CodeDraftStage.SAVED) uiContext.getString(R.string.ui_write) else uiContext.getString(R.string.ui_writing)
         else -> if (draft.stage == CodeDraftStage.SAVED) uiContext.getString(R.string.settings_action_edit) else uiContext.getString(R.string.ui_editing)
     }
-    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+    Column(Modifier.fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         draft.workspaceName?.let { Text(it, style = MaterialTheme.typography.labelSmall,
             color = scheme.primary, modifier = Modifier.padding(horizontal = 2.dp)) }
         draft.files.ifEmpty { listOf(LiveCodeFile(uiContext.getString(R.string.ui_file_name_arriving), 0, 0, emptyList())) }.forEach { file ->
             key(draft.id, file.path) {
                 var expanded by rememberSaveable(draft.id, file.path) { mutableStateOf(false) }
-                Column {
-                    Surface(onClick = { expanded = !expanded }, color = Color.Transparent,
-                        shape = MaterialTheme.shapes.small,
-                        modifier = Modifier.fillMaxWidth().semantics { stateDescription = uiContext.localizedOptionLabel(draft.stage.label) }) {
-                        BoxWithConstraints(Modifier.padding(horizontal = 2.dp, vertical = 6.dp).heightIn(min = 36.dp)) {
-                            val narrow = maxWidth < 360.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale
-                            Column(verticalArrangement = Arrangement.spacedBy(3.dp)) {
-                                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                                    Icon(Icons.Outlined.Edit, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
-                                    Text(action, style = MaterialTheme.typography.bodySmall,
-                                        color = if (draft.stage == CodeDraftStage.FAILED) scheme.error else scheme.onSurfaceVariant,
-                                        maxLines = 2, overflow = TextOverflow.Ellipsis,
-                                        modifier = if (narrow) Modifier.weight(1f) else Modifier)
-                                    if (!narrow) CodeFileName(file.path, Modifier.weight(1f), showFolder = true)
-                                    if (draft.comparisonAvailable || draft.stage != CodeDraftStage.SAVED) {
-                                        if (file.added > 0 || file.removed == 0) AnimatedLineCount(file.added, '+', LocalStatusColors.current.success)
-                                        if (file.removed > 0) AnimatedLineCount(file.removed, '−', scheme.error)
-                                    }
-                                    Icon(Icons.Default.KeyboardArrowDown,
-                                        if (expanded) uiContext.getString(R.string.ui_collapse_code_preview) else uiContext.getString(R.string.ui_expand_code_preview),
-                                        Modifier.size(16.dp).rotate(if (expanded) 180f else 0f), tint = scheme.onSurfaceVariant)
-                                }
-                                if (narrow) CodeFileName(file.path, Modifier.padding(start = 24.dp), showFolder = false)
+                val workState = when {
+                    awaitingApproval -> WorkState.Waiting
+                    draft.stage == CodeDraftStage.FAILED -> WorkState.Failed
+                    draft.stage == CodeDraftStage.SAVED -> WorkState.Done
+                    else -> WorkState.Running
+                }
+                CodeCard(onClick = { expanded = !expanded }, expanded = expanded,
+                    accent = workState.takeIf { it == WorkState.Failed || it == WorkState.Waiting },
+                    modifier = Modifier.semantics { stateDescription = uiContext.localizedOptionLabel(draft.stage.label) }) {
+                    BoxWithConstraints(Modifier.padding(start = 10.dp, end = 12.dp, top = 10.dp, bottom = 10.dp)) {
+                        val narrow = maxWidth < 360.dp * androidx.compose.ui.platform.LocalDensity.current.fontScale
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                            MorphingStatusBadge(workState, Icons.Outlined.Edit)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                                CodeFileName(file.path, Modifier, showFolder = !narrow)
+                                Text(action, style = MaterialTheme.typography.bodySmall,
+                                    color = if (draft.stage == CodeDraftStage.FAILED) scheme.error else scheme.onSurfaceVariant,
+                                    maxLines = 1, overflow = TextOverflow.Ellipsis)
                             }
+                            if (draft.comparisonAvailable || draft.stage != CodeDraftStage.SAVED) {
+                                Row(horizontalArrangement = Arrangement.spacedBy(4.dp),
+                                    modifier = Modifier.background(scheme.surfaceContainerHighest, CircleShape).padding(horizontal = 8.dp, vertical = 3.dp)) {
+                                    if (file.added > 0 || file.removed == 0) AnimatedLineCount(file.added, '+', LocalStatusColors.current.success)
+                                    if (file.removed > 0) AnimatedLineCount(file.removed, '−', scheme.error)
+                                }
+                            }
+                            ExpandChevron(expanded,
+                                if (expanded) uiContext.getString(R.string.ui_collapse_code_preview) else uiContext.getString(R.string.ui_expand_code_preview))
                         }
                     }
-                    AnimatedVisibility(expanded, enter = fadeIn(fastEffectsSpec()) + expandVertically(fastEffectsSpec()),
+                    AnimatedVisibility(expanded, enter = fadeIn(fastEffectsSpec()) + expandVertically(bouncySpec()),
                         exit = fadeOut(fastEffectsSpec()) + shrinkVertically(fastEffectsSpec())) {
                         val vertical = rememberScrollState()
                         val horizontal = rememberScrollState()
@@ -99,10 +105,10 @@ internal fun LiveCodeCard(draft: LiveCodeDraft, awaitingApproval: Boolean = fals
                                 if (following && !vertical.isScrollInProgress && it != Int.MAX_VALUE) vertical.scrollTo(it)
                             }
                         }
-                        Column(Modifier.padding(start = 24.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
+                        Column(Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(5.dp)) {
                             Text("${codeLanguage(file.path)} · ${file.path}", style = MaterialTheme.typography.labelSmall,
                                 color = scheme.onSurfaceVariant)
-                            Surface(color = scheme.surfaceContainerLow, shape = MaterialTheme.shapes.small) {
+                            Surface(color = scheme.surfaceContainerLowest, shape = androidx.compose.foundation.shape.RoundedCornerShape(16.dp)) {
                                 com.androidharness.app.ui.common.LeftToRightContent {
                                     SelectionContainer {
                                         Column(Modifier.fillMaxWidth().heightIn(max = 220.dp).nestedScroll(observer)
@@ -152,7 +158,7 @@ private fun CodeFileName(path: String, modifier: Modifier, showFolder: Boolean) 
         if ('.' in name) Text(name.substringAfterLast('.').uppercase().take(3),
             style = MaterialTheme.typography.labelSmall, fontFamily = HarnessMono, color = scheme.primary)
         Column(Modifier.weight(1f)) {
-            Text(label, style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            Text(label, style = MaterialTheme.typography.titleSmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
             if (!showFolder && folder.isNotBlank()) Text("$folder/", style = MaterialTheme.typography.labelSmall,
                 color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
         }

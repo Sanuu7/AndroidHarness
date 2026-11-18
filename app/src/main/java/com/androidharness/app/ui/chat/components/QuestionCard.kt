@@ -1,7 +1,20 @@
+@file:OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
+
 package com.androidharness.app.ui.chat.components
 
 import com.androidharness.app.R
-import androidx.compose.foundation.BorderStroke
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material.icons.filled.AutoAwesome
+import androidx.compose.material.icons.filled.Check
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.foundation.selection.selectableGroup
@@ -32,10 +45,8 @@ import com.androidharness.app.agent.QuestionAutoContinue
 import com.androidharness.app.agent.QuestionRequest
 import kotlinx.coroutines.delay
 import com.androidharness.app.ui.common.Button
-import com.androidharness.app.ui.common.Checkbox
+import com.androidharness.app.ui.common.FilledTonalButton
 import com.androidharness.app.ui.common.IconButton
-import com.androidharness.app.ui.common.RadioButton
-import com.androidharness.app.ui.common.TextButton
 
 /**
  * A pending question stays in the conversation; selecting an option never submits it.
@@ -51,13 +62,40 @@ internal fun QuestionCard(question: QuestionRequest, onAnswer: (String) -> Unit,
 
 @Composable
 private fun RecommendedBadge() {
-    Surface(shape = RoundedCornerShape(6.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(4.dp),
+        modifier = Modifier
+            .background(MaterialTheme.colorScheme.tertiaryContainer, CircleShape)
+            .padding(start = 6.dp, end = 9.dp, top = 3.dp, bottom = 3.dp),
+    ) {
+        Icon(Icons.Filled.AutoAwesome, null, Modifier.size(12.dp), tint = MaterialTheme.colorScheme.onTertiaryContainer)
         Text(
             stringResource(R.string.question_recommended),
-            Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
             style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSecondaryContainer,
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onTertiaryContainer,
         )
+    }
+}
+
+/** Selection mark: an empty ring that springs into a filled cookie (single) or rounded square (multi) with a check. */
+@Composable
+private fun ChoiceMark(checked: Boolean, multi: Boolean, enabled: Boolean) {
+    val scheme = MaterialTheme.colorScheme
+    val fill by animateFloatAsState(if (checked) 1f else 0f, bouncySpec(), label = "choice fill")
+    val ring = if (enabled) scheme.outline else scheme.outline.copy(alpha = 0.4f)
+    Box(Modifier.size(26.dp), contentAlignment = Alignment.Center) {
+        Box(Modifier.size(22.dp).border(2.dp, ring, if (multi) RoundedCornerShape(7.dp) else CircleShape))
+        Box(
+            Modifier
+                .size(26.dp)
+                .graphicsLayer { scaleX = fill; scaleY = fill; rotationZ = (1f - fill) * -90f }
+                .background(scheme.primary, if (multi) MaterialShapes.Square.toShape() else MaterialShapes.Cookie6Sided.toShape()),
+            contentAlignment = Alignment.Center,
+        ) {
+            Icon(Icons.Filled.Check, null, Modifier.size(16.dp), tint = scheme.onPrimary)
+        }
     }
 }
 
@@ -79,19 +117,14 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
     val answer = (selected.sorted().mapNotNull(question.options::getOrNull) +
         listOf(if (writing) writtenAnswer.trim() else "").filter(String::isNotBlank)).joinToString("; ")
 
-    Surface(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(18.dp),
-        color = scheme.surface,
-        border = BorderStroke(1.dp, scheme.outlineVariant),
-    ) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                Surface(shape = RoundedCornerShape(10.dp), color = scheme.primary.copy(alpha = .08f)) {
-                    Icon(Icons.Outlined.ChatBubbleOutline, null, Modifier.padding(8.dp).size(18.dp), tint = scheme.primary)
-                }
-                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    Text(uiContext.getString(R.string.ui_question_for_you), style = MaterialTheme.typography.labelLarge, color = scheme.onSurface)
+    CodeCard(accent = WorkState.Waiting, collapsedRadius = 28.dp) {
+        Column(Modifier.padding(start = 16.dp, end = 16.dp, top = 14.dp, bottom = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                MorphingStatusBadge(if (submitted) WorkState.Done else WorkState.Waiting,
+                    Icons.Outlined.ChatBubbleOutline, size = 40.dp, showOutcome = false)
+                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                    Text(uiContext.getString(R.string.ui_question_for_you), style = MaterialTheme.typography.labelLarge,
+                        fontWeight = FontWeight.SemiBold, color = scheme.tertiary)
                     Text(
                         when {
                             question.options.isEmpty() -> uiContext.getString(R.string.ui_write_your_answer_below)
@@ -106,15 +139,16 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
             }
 
             SelectionContainer {
-                Text(question.question, style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.Medium,
+                Text(question.question, style = MaterialTheme.typography.titleLargeEmphasized,
                     modifier = Modifier.semantics { heading() })
             }
 
             if (question.options.isNotEmpty()) {
                 Column(
                     Modifier.fillMaxWidth().let { if (question.multiSelect) it else it.selectableGroup() },
-                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(3.dp),
                 ) {
+                    val last = question.options.lastIndex
                     question.options.forEachIndexed { index, option ->
                         val checked = index in selected
                         val choose = {
@@ -122,28 +156,39 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
                             selected = if (!question.multiSelect) listOf(index)
                                 else if (checked) selected - index else selected + index
                         }
-                        Surface(
-                            shape = RoundedCornerShape(12.dp),
-                            color = if (checked) scheme.primary.copy(alpha = .06f) else scheme.surface,
-                            border = BorderStroke(1.dp, if (checked) scheme.primary.copy(alpha = .65f) else scheme.outlineVariant),
+                        // Connected list: outer corners round, inner corners tight. A chosen
+                        // option springs to fully round corners and lifts to the accent tone.
+                        val outer = 22.dp
+                        val inner = 6.dp
+                        val top by animateDpAsState(if (checked || index == 0) outer else inner, bouncySpec(), label = "option top")
+                        val bottom by animateDpAsState(if (checked || index == last) outer else inner, bouncySpec(), label = "option bottom")
+                        val container by animateColorAsState(
+                            if (checked) scheme.secondaryContainer else scheme.surfaceContainerLowest, label = "option color",
+                        )
+                        val interaction = remember { MutableInteractionSource() }
+                        val pressed by interaction.collectIsPressedAsState()
+                        val scale by animateFloatAsState(if (pressed) 0.97f else 1f, bouncySpec(), label = "option press")
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                                .graphicsLayer { scaleX = scale; scaleY = scale }
+                                .clip(RoundedCornerShape(topStart = top, topEnd = top, bottomStart = bottom, bottomEnd = bottom))
+                                .background(container)
+                                .heightIn(min = 56.dp)
+                                .let {
+                                    if (question.multiSelect) it.toggleable(checked, interactionSource = interaction, indication = androidx.compose.material3.ripple(),
+                                        enabled = !submitted, role = Role.Checkbox, onValueChange = { choose() })
+                                    else it.selectable(checked, interactionSource = interaction, indication = androidx.compose.material3.ripple(),
+                                        enabled = !submitted, role = Role.RadioButton, onClick = choose)
+                                }.padding(horizontal = 14.dp, vertical = 12.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth().heightIn(min = 52.dp)
-                                    .let {
-                                        if (question.multiSelect) it.toggleable(checked, enabled = !submitted,
-                                            role = Role.Checkbox, onValueChange = { choose() })
-                                        else it.selectable(checked, enabled = !submitted, role = Role.RadioButton, onClick = choose)
-                                    }.padding(12.dp),
-                                verticalAlignment = Alignment.Top,
-                                horizontalArrangement = Arrangement.spacedBy(10.dp),
-                            ) {
-                                if (question.multiSelect) Checkbox(checked, null, Modifier.size(24.dp), enabled = !submitted)
-                                else RadioButton(checked, null, Modifier.size(24.dp), enabled = !submitted)
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                    Text(option, style = MaterialTheme.typography.bodyMedium,
-                                        color = if (checked) scheme.primary else scheme.onSurface)
-                                    if (index in question.recommended) RecommendedBadge()
-                                }
+                            ChoiceMark(checked, question.multiSelect, !submitted)
+                            Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                                Text(option, style = MaterialTheme.typography.bodyLarge,
+                                    fontWeight = if (checked) FontWeight.Medium else FontWeight.Normal,
+                                    color = if (checked) scheme.onSecondaryContainer else scheme.onSurface)
+                                if (index in question.recommended) RecommendedBadge()
                             }
                         }
                     }
@@ -167,15 +212,15 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
                         modifier = Modifier.fillMaxWidth().semantics { contentDescription = uiContext.getString(R.string.ui_written_answer) },
                         placeholder = { Text(if (selected.isEmpty()) uiContext.getString(R.string.ui_write_your_answer) else uiContext.getString(R.string.ui_add_a_little_more_context)) },
                         textStyle = MaterialTheme.typography.bodyMedium,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = RoundedCornerShape(20.dp),
                         minLines = 1,
                         maxLines = 4,
                         keyboardOptions = KeyboardOptions(capitalization = KeyboardCapitalization.Sentences),
                     )
                 }
             } else {
-                TextButton(onClick = { if (!question.multiSelect) selected = emptyList(); writing = true }, enabled = !submitted,
-                    contentPadding = PaddingValues(horizontal = 4.dp), modifier = Modifier.heightIn(min = 48.dp)) {
+                FilledTonalButton(onClick = { if (!question.multiSelect) selected = emptyList(); writing = true }, enabled = !submitted,
+                    modifier = Modifier.heightIn(min = 44.dp)) {
                     Icon(Icons.Outlined.Edit, null, Modifier.size(17.dp))
                     Spacer(Modifier.width(8.dp))
                     Text(if (question.multiSelect && selected.isNotEmpty()) uiContext.getString(R.string.ui_add_a_note) else uiContext.getString(R.string.ui_write_your_own_answer))
@@ -183,11 +228,12 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
             }
 
             if (autoContinueAt != null && !submitted) {
-                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier.background(scheme.surfaceContainerHighest, CircleShape).padding(horizontal = 12.dp, vertical = 6.dp)) {
                     Icon(Icons.Outlined.Schedule, null, Modifier.size(16.dp), tint = scheme.onSurfaceVariant)
                     Text(
                         stringResource(R.string.question_auto_continue, QuestionAutoContinue.remaining(autoContinueAt, now)),
-                        style = MaterialTheme.typography.bodySmall,
+                        style = MaterialTheme.typography.labelMedium,
                         color = scheme.onSurfaceVariant,
                     )
                 }
@@ -196,13 +242,13 @@ private fun QuestionCardBody(question: QuestionRequest, onAnswer: (String) -> Un
             Button(
                 onClick = { if (answer.isNotBlank() && !submitted) { submitted = true; onAnswer(answer) } },
                 enabled = answer.isNotBlank() && !submitted,
-                modifier = Modifier.fillMaxWidth().heightIn(min = 48.dp),
-                shape = RoundedCornerShape(12.dp),
-                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 12.dp),
+                modifier = Modifier.fillMaxWidth().heightIn(min = 56.dp),
+                contentPadding = PaddingValues(horizontal = 20.dp, vertical = 14.dp),
             ) {
-                Text(if (submitted) uiContext.getString(R.string.ui_answer_sent) else uiContext.getString(R.string.ui_send_answer))
+                Text(if (submitted) uiContext.getString(R.string.ui_answer_sent) else uiContext.getString(R.string.ui_send_answer),
+                    style = MaterialTheme.typography.titleSmall)
                 Spacer(Modifier.width(8.dp))
-                Icon(Icons.AutoMirrored.Filled.ArrowForward, null, Modifier.size(18.dp))
+                Icon(if (submitted) Icons.Filled.Check else Icons.AutoMirrored.Filled.ArrowForward, null, Modifier.size(20.dp))
             }
         }
     }
