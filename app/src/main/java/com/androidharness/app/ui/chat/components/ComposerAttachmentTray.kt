@@ -297,3 +297,15 @@ private fun WideTile(
         RemoveBadge(onRemove, Modifier.align(Alignment.TopEnd))
     }
 }
+
+/** The photos of a message being edited, each removable before the resend. */
+@Composable
+internal fun EditMessagePhotos(images: List<ImageRef>, dir: File, onRemove: (ImageRef) -> Unit) {
+    LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth().height(TileHeight + 8.dp)) {
+        items(images, key = { it.name }) { ref ->
+            Box(Modifier.animateItem()) {
+                PhotoTile(File(dir, ref.name), blocked = false, onOpen = {}, onRemove = { onRemove(ref) })
+            }
+        }
+    }
+}

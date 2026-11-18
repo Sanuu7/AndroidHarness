@@ -20,6 +20,21 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.pager.HorizontalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.material.icons.outlined.BrokenImage
+import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.animate
+import androidx.compose.animation.core.spring
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.gestures.Orientation
+import androidx.compose.foundation.gestures.draggable
+import androidx.compose.foundation.gestures.rememberDraggableState
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.ui.input.pointer.positionChanged
@@ -165,12 +180,35 @@ private fun GalleryTile(
     }
     val missing = remember(ref.name, dir) { !File(dir, ref.name).exists() }
     bitmap?.let { LaunchedEffect(it) { onLoaded(it) } }
+    val actions = rememberSentImageActions(dir)
+    val haptics = androidx.compose.ui.platform.LocalHapticFeedback.current
+    var menuOpen by remember { mutableStateOf(false) }
     Box(
         modifier
             .background(scheme.surfaceContainerHigh)
-            .combinedClickable(onClick = { onOpen(index) }, onLongClick = onLongPress),
+            .combinedClickable(onClick = { onOpen(index) }, onLongClick = {
+                haptics.performHapticFeedback(androidx.compose.ui.hapticfeedback.HapticFeedbackType.LongPress)
+                menuOpen = true
+            }),
         contentAlignment = Alignment.Center,
     ) {
+        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.chat_image_share)) },
+                leadingIcon = { Icon(Icons.Outlined.Share, null) },
+                onClick = { menuOpen = false; actions.share(ref) },
+            )
+            DropdownMenuItem(
+                text = { Text(stringResource(R.string.chat_image_save_to_gallery)) },
+                leadingIcon = { Icon(Icons.Outlined.Download, null) },
+                onClick = { menuOpen = false; actions.save(ref) },
+            )
+            if (onLongPress != null) DropdownMenuItem(
+                text = { Text(stringResource(R.string.chat_message_options)) },
+                leadingIcon = { Icon(Icons.Outlined.MoreHoriz, null) },
+                onClick = { menuOpen = false; onLongPress() },
+            )
+        }
         val image = bitmap
         when {
             image != null -> Image(
@@ -191,6 +229,24 @@ private fun GalleryTile(
     }
 }
 
+/** Share and save-to-gallery for a sent photo, each confirmed with a short toast. */
+internal class SentImageActions(val share: (ImageRef) -> Unit, val save: (ImageRef) -> Unit)
+
+@Composable
+internal fun rememberSentImageActions(dir: File): SentImageActions {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    return remember(dir, context, scope) {
+        fun toast(id: Int) = android.widget.Toast.makeText(context, id, android.widget.Toast.LENGTH_SHORT).show()
+        SentImageActions(
+            share = { ref -> scope.launch { if (!ChatImageActions.shareLocal(context, dir, ref)) toast(R.string.chat_image_share_failed) } },
+            save = { ref -> scope.launch {
+                toast(if (ChatImageActions.saveLocal(context, dir, ref)) R.string.chat_image_saved else R.string.chat_image_save_failed)
+            } },
+        )
+    }
+}
+
 /** Full-screen viewer for one image (tool output and similar single shots). */
 @Composable
 internal fun ImagePreviewDialog(ref: ImageRef, dir: File, onDismiss: () -> Unit) =
@@ -205,28 +261,71 @@ internal fun ImagePreviewDialog(ref: ImageRef, dir: File, onDismiss: () -> Unit)
 internal fun ImagePreviewDialog(refs: List<ImageRef>, startIndex: Int, dir: File, onDismiss: () -> Unit) {
     if (refs.isEmpty()) return
     val pager = rememberPagerState(initialPage = startIndex.coerceIn(0, refs.lastIndex)) { refs.size }
-    Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
-        Box(Modifier.fillMaxSize().background(Color.Black)) {
-            HorizontalPager(state = pager, modifier = Modifier.fillMaxSize(), key = { refs[it].name }) { page ->
+    val actions = rememberSentImageActions(dir)
+    val scope = rememberCoroutineScope()
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    // 0 = hidden, 1 = shown. The viewer grows in from slightly smaller and fades
+    // the backdrop, then reverses on close so it never just pops away.
+    val appear = remember { Animatable(0f) }
+    var dragY by remember { mutableFloatStateOf(0f) }
+    var closing by remember { mutableStateOf(false) }
+    LaunchedEffect(Unit) { appear.animateTo(1f, spring(dampingRatio = 0.86f, stiffness = Spring.StiffnessMediumLow)) }
+    val close: () -> Unit = {
+        if (!closing) {
+            closing = true
+            scope.launch { appear.animateTo(0f, tween(170)); onDismiss() }
+        }
+    }
+    val dismissPx = with(density) { 140.dp.toPx() }
+    val dragFade = (kotlin.math.abs(dragY) / (dismissPx * 3f)).coerceIn(0f, 1f)
+    Dialog(onDismissRequest = close, properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)) {
+        Box(Modifier.fillMaxSize().background(Color.Black.copy(alpha = appear.value * (1f - dragFade * 0.8f)))) {
+            HorizontalPager(
+                state = pager,
+                key = { refs[it].name },
+                modifier = Modifier.fillMaxSize()
+                    .graphicsLayer {
+                        val grow = (0.9f + 0.1f * appear.value) * (1f - dragFade * 0.2f)
+                        scaleX = grow; scaleY = grow
+                        alpha = appear.value
+                        translationY = dragY
+                    }
+                    // Swipe down (or up) to put the photo away.
+                    .draggable(
+                        state = rememberDraggableState { delta -> dragY += delta },
+                        orientation = Orientation.Vertical,
+                        onDragStopped = { velocity ->
+                            if (kotlin.math.abs(dragY) > dismissPx || kotlin.math.abs(velocity) > 2600f) close()
+                            else animate(dragY, 0f, animationSpec = spring(stiffness = Spring.StiffnessMediumLow)) { v, _ -> dragY = v }
+                        },
+                    ),
+            ) { page ->
                 ZoomableImage(refs[page], dir, active = pager.currentPage == page)
             }
             Row(
                 Modifier.fillMaxWidth().align(Alignment.TopCenter)
+                    .graphicsLayer { alpha = appear.value * (1f - dragFade) }
                     .background(Color.Black.copy(alpha = 0.45f))
                     .statusBarsPadding()
                     .padding(horizontal = 4.dp, vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                IconButton(onClick = onDismiss) {
+                IconButton(onClick = close) {
                     Icon(Icons.Outlined.Close, stringResource(R.string.ui_close_image), tint = Color.White)
                 }
-                Spacer(Modifier.weight(1f))
                 if (refs.size > 1) Text(
                     stringResource(R.string.ui_image_counter, pager.currentPage + 1, refs.size),
                     color = Color.White,
                     style = MaterialTheme.typography.labelLarge,
-                    modifier = Modifier.padding(end = 16.dp),
+                    modifier = Modifier.padding(start = 4.dp),
                 )
+                Spacer(Modifier.weight(1f))
+                IconButton(onClick = { actions.share(refs[pager.currentPage]) }) {
+                    Icon(Icons.Outlined.Share, stringResource(R.string.chat_image_share), tint = Color.White)
+                }
+                IconButton(onClick = { actions.save(refs[pager.currentPage]) }) {
+                    Icon(Icons.Outlined.Download, stringResource(R.string.chat_image_save_to_gallery), tint = Color.White)
+                }
             }
         }
     }
@@ -242,17 +341,25 @@ private fun ZoomableImage(ref: ImageRef, dir: File, active: Boolean) {
     }
     var scale by remember { mutableFloatStateOf(1f) }
     var offset by remember { mutableStateOf(Offset.Zero) }
+    val zoomScope = rememberCoroutineScope()
     // Leaving a page resets its zoom so coming back starts from the full photo.
     LaunchedEffect(active) { if (!active) { scale = 1f; offset = Offset.Zero } }
+    fun zoomTo(targetScale: Float, targetOffset: Offset) {
+        val fromScale = scale
+        val fromOffset = offset
+        zoomScope.launch {
+            animate(0f, 1f, animationSpec = spring(dampingRatio = 0.9f, stiffness = Spring.StiffnessMediumLow)) { t, _ ->
+                scale = fromScale + (targetScale - fromScale) * t
+                offset = fromOffset + (targetOffset - fromOffset) * t
+            }
+        }
+    }
     Box(
         Modifier.fillMaxSize()
             .pointerInput(Unit) {
                 detectTapGestures(onDoubleTap = { tap ->
-                    if (scale > 1.01f) { scale = 1f; offset = Offset.Zero }
-                    else {
-                        scale = 2.5f
-                        offset = (Offset(size.width / 2f, size.height / 2f) - tap) * 1.5f
-                    }
+                    if (scale > 1.01f) zoomTo(1f, Offset.Zero)
+                    else zoomTo(2.5f, (Offset(size.width / 2f, size.height / 2f) - tap) * 1.5f)
                 })
             }
             .pointerInput(Unit) {

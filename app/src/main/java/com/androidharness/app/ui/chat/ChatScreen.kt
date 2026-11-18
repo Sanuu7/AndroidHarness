@@ -1005,21 +1005,30 @@ private fun ChatScreenContent(
     // Prefilled editor for a user message.
     editingMessage?.let { msg ->
         var text by remember(msg) { mutableStateOf(UserMessageContent.visibleText(msg.text)) }
+        // The message's photos ride along with the edit; removing one here drops it from the resend.
+        var keptImages by remember(msg) { mutableStateOf(msg.images) }
         AlertDialog(
             onDismissRequest = { editingMessage = null },
             title = { Text(uiContext.getString(R.string.ui_edit_message)) },
             text = {
-                OutlinedTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    modifier = Modifier.fillMaxWidth(),
-                    minLines = 3,
-                )
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    if (keptImages.isNotEmpty()) com.androidharness.app.ui.chat.components.EditMessagePhotos(
+                        images = keptImages,
+                        dir = viewModel.container.images.imagesDir,
+                        onRemove = { ref -> keptImages = keptImages - ref },
+                    )
+                    OutlinedTextField(
+                        value = text,
+                        onValueChange = { text = it },
+                        modifier = Modifier.fillMaxWidth(),
+                        minLines = 3,
+                    )
+                }
             },
             confirmButton = {
                 Button(onClick = {
                     if (text.isNotBlank()) {
-                        confirmingEdit = msg to UserMessageContent.edit(text, msg.text)
+                        confirmingEdit = msg.copy(images = keptImages) to UserMessageContent.edit(text, msg.text)
                         editingMessage = null
                     }
                 }) { Text(uiContext.getString(R.string.settings_action_continue)) }
@@ -2916,6 +2925,7 @@ private fun ChatScreenContent(
                             slashExpanded = false
                         }
                     } else null,
+                    onPasteImages = { uris -> uris.forEach { viewModel.attachImage(it) } },
                     onAttachImage = { galleryLauncher.launch(androidx.activity.result.PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) },
                     onAttachFile = { fileLauncher.launch("*/*") },
                     onLiveMode = startLive,

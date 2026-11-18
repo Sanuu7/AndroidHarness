@@ -72,6 +72,17 @@ import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
+import androidx.compose.foundation.content.MediaType
+import androidx.compose.foundation.content.consume
+import androidx.compose.foundation.content.contentReceiver
+import androidx.compose.foundation.content.hasMediaType
+import androidx.compose.foundation.text.input.TextFieldDecorator
+import androidx.compose.foundation.text.input.TextFieldLineLimits
+import androidx.compose.foundation.text.input.rememberTextFieldState
+import androidx.compose.runtime.SideEffect
+import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.text.TextRange
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.Icons
@@ -156,7 +167,7 @@ private val LockDistance = 68.dp
  * - Compact waveform capsule and gesture guidance for Groq Whisper
  * - Inbuilt audio fallback
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@OptIn(ExperimentalMaterial3ExpressiveApi::class, androidx.compose.foundation.ExperimentalFoundationApi::class)
 @Composable
 internal fun MessageComposer(
     busy: Boolean,
@@ -204,6 +215,8 @@ internal fun MessageComposer(
     permissionControl: (@Composable () -> Unit)? = null,
     modifier: Modifier = Modifier,
     attachments: @Composable () -> Unit = {},
+    /** Images pasted or inserted from the keyboard; null leaves image paste off. */
+    onPasteImages: ((List<android.net.Uri>) -> Unit)? = null,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val desktop = com.androidharness.app.ui.LocalDesktopLayout.current
@@ -214,6 +227,36 @@ internal fun MessageComposer(
     var focused by remember { mutableStateOf(false) }
     var inputLineCount by remember { mutableIntStateOf(1) }
     val inputAlignment = if (inputLineCount > 1) Alignment.Bottom else Alignment.CenterVertically
+
+    // The field keeps its own TextFieldState (the only kind that can receive pasted
+    // images), mirrored to the caller's TextFieldValue in both directions.
+    val fieldState = rememberTextFieldState(value.text, value.selection)
+    val echo = remember { arrayOf(value) }
+    val latestOnValueChange by rememberUpdatedState(onValueChange)
+    SideEffect {
+        // Only a value the caller set itself (clear after send, voice, slash pick) is
+        // pushed in. Echoes of our own edits are skipped so typing is never rewound.
+        val last = echo[0]
+        if (value.text != last.text || value.selection != last.selection) {
+            echo[0] = value
+            if (fieldState.text.toString() != value.text || fieldState.selection != value.selection) {
+                fieldState.edit {
+                    replace(0, length, value.text)
+                    selection = TextRange(value.selection.start.coerceIn(0, length), value.selection.end.coerceIn(0, length))
+                }
+            }
+        }
+    }
+    LaunchedEffect(fieldState) {
+        snapshotFlow { TextFieldValue(fieldState.text.toString(), fieldState.selection, fieldState.composition) }
+            .collect { next ->
+                val last = echo[0]
+                if (next.text != last.text || next.selection != last.selection) {
+                    echo[0] = next
+                    latestOnValueChange(next)
+                }
+            }
+    }
 
     val isGroq = voiceEngine != AppSettings.VOICE_ENGINE_INBUILT
     val isGroqActive = isGroq && groqRecordState != GroqRecordState.IDLE
@@ -373,14 +416,24 @@ internal fun MessageComposer(
                     val lineHeight = measuredLineHeight ?: with(density) { inputTextStyle.lineHeight.toDp() }
                     val visibleLines = ((heightLimit - inputPadding * 2) / lineHeight).toInt().coerceIn(1, 6)
                     BasicTextField(
-                        value = value,
-                        onValueChange = onValueChange,
+                        state = fieldState,
                         modifier = Modifier
                             .weight(1f)
                             .heightIn(max = lineHeight * visibleLines + inputPadding * 2)
                             .then(inputFocus?.let { Modifier.focusRequester(it) } ?: Modifier)
                             .semantics { contentDescription = uiContext.getString(R.string.ui_message_input) }
                             .onFocusChanged { focused = it.isFocused }
+                            // Images from the keyboard (Gboard clipboard, stickers) or a long-press Paste
+                            // become attachments; any text in the same clip still pastes as text.
+                            .then(if (onPasteImages == null) Modifier else Modifier.contentReceiver { content ->
+                                if (!content.hasMediaType(MediaType.Image)) content
+                                else {
+                                    val uris = mutableListOf<android.net.Uri>()
+                                    val rest = content.consume { item -> item.uri?.also { uris += it } != null }
+                                    if (uris.isNotEmpty()) onPasteImages(uris)
+                                    rest
+                                }
+                            })
                             .onPreviewKeyEvent { event ->
                                 if (desktopInput && !event.isCtrlPressed && event.key == Key.Tab) {
                                     if (event.type == KeyEventType.KeyDown) focusManager.moveFocus(
@@ -392,20 +445,20 @@ internal fun MessageComposer(
                                 } else false
                             },
                         textStyle = inputTextStyle,
-                        onTextLayout = {
-                            inputLineCount = it.lineCount
-                            if (it.lineCount > 0) measuredLineHeight = with(density) {
-                                (it.getLineBottom(0) - it.getLineTop(0)).toDp()
+                        onTextLayout = { getResult ->
+                            getResult()?.let { result ->
+                                inputLineCount = result.lineCount
+                                if (result.lineCount > 0) measuredLineHeight =
+                                    (result.getLineBottom(0) - result.getLineTop(0)).toDp()
                             }
                         },
-                        minLines = 1,
-                        maxLines = visibleLines,
+                        lineLimits = TextFieldLineLimits.MultiLine(minHeightInLines = 1, maxHeightInLines = visibleLines),
                         cursorBrush = SolidColor(MaterialTheme.colorScheme.primary),
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Sentences,
                             imeAction = ImeAction.Default,
                         ),
-                        decorationBox = { innerTextField ->
+                        decorator = TextFieldDecorator { innerTextField ->
                             // Placeholder, glyphs and cursor share one padded viewport.
                             // BasicTextField owns scrolling, selection and IME composition.
                             Box(
@@ -414,7 +467,7 @@ internal fun MessageComposer(
                                     .padding(vertical = inputPadding),
                                 contentAlignment = Alignment.CenterStart,
                             ) {
-                                if (value.text.isEmpty()) Text(
+                                if (fieldState.text.isEmpty()) Text(
                                     text = when {
                                         isInbuiltListening -> uiContext.getString(R.string.ui_listening)
                                         !attachedSkill.isNullOrBlank() -> uiContext.getString(R.string.ui_add_a_note_or_send)
