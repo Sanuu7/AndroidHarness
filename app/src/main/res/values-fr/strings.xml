@@ -1096,4 +1096,8 @@
     <string name="chat_claim_check">"Vérifier cette affirmation"</string>
     <string name="chat_claim_sources">"Les sources divergent ou une seule l\'appuie"</string>
     <string name="chat_draft_checking">"Brouillon. Vérification de quelques sources de plus"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"La prise en charge des images n\'est pas confirmée pour ce modèle."</string>
+    <string name="ui_attachment">"Pièce jointe"</string>
+    <string name="ui_image_counter">"%1$d sur %2$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

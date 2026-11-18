@@ -1093,4 +1093,8 @@
     <string name="chat_claim_check">"මෙම ප්‍රකාශය පරීක්ෂා කරන්න"</string>
     <string name="chat_claim_sources">"මූලාශ්‍ර එකඟ නොවේ නැතහොත් එකක් පමණක් මෙය තහවුරු කරයි"</string>
     <string name="chat_draft_checking">"කෙටුම්පත. තවත් මූලාශ්‍ර කිහිපයක් පරීක්ෂා කරමින්"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"මෙම ආකෘතිය සඳහා රූප සහාය තහවුරු කර නැත."</string>
+    <string name="ui_attachment">"ඇමුණුම"</string>
+    <string name="ui_image_counter">"%2$d න් %1$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

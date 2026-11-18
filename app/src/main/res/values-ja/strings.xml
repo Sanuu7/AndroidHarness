@@ -1090,4 +1090,8 @@
     <string name="chat_claim_check">"この主張を確認"</string>
     <string name="chat_claim_sources">"情報源が食い違っているか、1 件しか裏付けがありません"</string>
     <string name="chat_draft_checking">"下書き。追加の情報源を確認中"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"このモデルの画像対応は未確認です。"</string>
+    <string name="ui_attachment">"添付ファイル"</string>
+    <string name="ui_image_counter">"%1$d / %2$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

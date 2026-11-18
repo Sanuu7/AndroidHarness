@@ -1093,4 +1093,8 @@
     <string name="chat_claim_check">"Suriin ang pahayag na ito"</string>
     <string name="chat_claim_sources">"Magkasalungat ang mga source o isa lang ang sumusuporta dito"</string>
     <string name="chat_draft_checking">"Draft. Sinusuri ang ilang source pa"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"Hindi pa kumpirmado ang suporta sa larawan para sa modelong ito."</string>
+    <string name="ui_attachment">"Attachment"</string>
+    <string name="ui_image_counter">"%1$d ng %2$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

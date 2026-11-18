@@ -1105,4 +1105,8 @@
     <string name="chat_claim_check">"تحقق من هذا الادعاء"</string>
     <string name="chat_claim_sources">"المصادر متعارضة أو مصدر واحد فقط يدعم هذا"</string>
     <string name="chat_draft_checking">"مسودة. أتحقق من مصادر إضافية"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"دعم الصور غير مؤكد لهذا النموذج."</string>
+    <string name="ui_attachment">"مرفق"</string>
+    <string name="ui_image_counter">"%1$d من %2$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

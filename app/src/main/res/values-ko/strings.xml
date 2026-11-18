@@ -1090,4 +1090,8 @@
     <string name="chat_claim_check">"이 주장 확인"</string>
     <string name="chat_claim_sources">"출처가 서로 다르거나 하나만 뒷받침합니다"</string>
     <string name="chat_draft_checking">"초안. 출처 몇 개를 더 확인 중"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"이 모델의 이미지 지원은 확인되지 않았습니다."</string>
+    <string name="ui_attachment">"첨부파일"</string>
+    <string name="ui_image_counter">"%2$d 중 %1$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

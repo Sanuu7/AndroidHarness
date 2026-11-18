@@ -1093,4 +1093,8 @@
     <string name="chat_claim_check">"Verificar esta afirmación"</string>
     <string name="chat_claim_sources">"Las fuentes no coinciden o solo una la respalda"</string>
     <string name="chat_draft_checking">"Borrador. Revisando algunas fuentes más"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"No se ha confirmado la compatibilidad con imágenes de este modelo."</string>
+    <string name="ui_attachment">"Adjunto"</string>
+    <string name="ui_image_counter">"%1$d de %2$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

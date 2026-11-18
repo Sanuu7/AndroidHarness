@@ -1090,4 +1090,8 @@
     <string name="chat_claim_check">"查核這項說法"</string>
     <string name="chat_claim_sources">"來源說法不一，或只有一個來源支持"</string>
     <string name="chat_draft_checking">"草稿。再核對幾個來源"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"此模型是否支援圖片尚未確認。"</string>
+    <string name="ui_attachment">"附件"</string>
+    <string name="ui_image_counter">"第 %1$d 張，共 %2$d 張"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>

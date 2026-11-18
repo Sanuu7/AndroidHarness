@@ -1099,4 +1099,8 @@
     <string name="chat_claim_check">"Проверить утверждение"</string>
     <string name="chat_claim_sources">"Источники расходятся или только один подтверждает"</string>
     <string name="chat_draft_checking">"Черновик. Проверяю ещё несколько источников"</string>
+    <string name="chat_attachment_image_unconfirmed_hint">"Поддержка изображений для этой модели не подтверждена."</string>
+    <string name="ui_attachment">"Вложение"</string>
+    <string name="ui_image_counter">"%1$d из %2$d"</string>
+    <string name="ui_more_images">"+%1$d"</string>
 </resources>
