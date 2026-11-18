@@ -295,40 +295,6 @@ internal fun QueuedMessageChip(
     }
 }
 
-/** Removable image-attachment chips above the composer. */
-@Composable
-internal fun AttachmentChips(
-    attachments: List<String>,
-    onRemove: (Int) -> Unit,
-) {
-    val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        attachments.forEachIndexed { idx, name ->
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = scheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-                onClick = { onRemove(idx) },
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                ) {
-                    Text(name.take(20), style = MaterialTheme.typography.labelSmall)
-                    Spacer(Modifier.width(4.dp))
-                    Icon(Icons.Filled.Close, contentDescription = uiContext.getString(R.string.settings_action_remove), modifier = Modifier.size(13.dp))
-                }
-            }
-        }
-    }
-}
-
 private data class SlashEntry(
     val command: String,
     val title: String,
@@ -594,49 +560,3 @@ internal fun CompactionResultCard(message: String, showRetry: Boolean, busy: Boo
     }
 }
 
-/** Pending file attachments in the composer: name, size, tap to remove. */
-@Composable
-internal fun FileAttachmentChips(
-    files: List<com.androidharness.app.ui.chat.FileAttachment>,
-    onRemove: (Int) -> Unit,
-) {
-    val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val scheme = MaterialTheme.colorScheme
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp),
-    ) {
-        files.forEachIndexed { idx, file ->
-            Surface(
-                shape = MaterialTheme.shapes.small,
-                color = scheme.surfaceContainerLow,
-                border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.5f)),
-                onClick = { onRemove(idx) },
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                ) {
-                    Icon(
-                        Icons.Outlined.Description,
-                        contentDescription = null,
-                        modifier = Modifier.size(13.dp),
-                        tint = scheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Text(file.name.take(20), style = MaterialTheme.typography.labelSmall)
-                    Spacer(Modifier.width(4.dp))
-                    Text(
-                        file.sizeLabel,
-                        style = MaterialTheme.typography.labelSmall,
-                        color = scheme.onSurfaceVariant,
-                    )
-                    Spacer(Modifier.width(4.dp))
-                    Icon(Icons.Filled.Close, contentDescription = uiContext.getString(R.string.settings_action_remove), modifier = Modifier.size(13.dp))
-                }
-            }
-        }
-    }
-}
