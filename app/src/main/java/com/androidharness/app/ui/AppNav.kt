@@ -593,7 +593,9 @@ fun AppNav(container: AppContainer) {
         drawerState = drawerState,
         gesturesEnabled = !desktopNavigation && drawerGesturesEnabled,
         drawerContent = {
+            // Passing the state gives the sheet Material's predictive back: it follows the back swipe and shrinks before closing.
             if (!desktopNavigation) ModalDrawerSheet(
+                drawerState = drawerState,
                 modifier = if (glass) Modifier.onSizeChanged { glassDrawerWidth = it.width }
                     .padding(horizontal = 10.dp).statusBarsPadding().navigationBarsPadding().padding(vertical = 8.dp) else Modifier,
                 drawerShape = if (glass) androidx.compose.foundation.shape.RoundedCornerShape(32.dp) else androidx.compose.material3.DrawerDefaults.shape,
@@ -1010,9 +1012,7 @@ fun AppNav(container: AppContainer) {
     }
     }
 
-    androidx.activity.compose.BackHandler(enabled = !desktopNavigation && drawerState.isOpen) {
-        scope.launch { drawerState.close() }
-    }
+    // The drawer sheet owns back while open (predictive back); a plain handler here would override its animation.
 
     com.androidharness.app.ui.common.ShizukuDisabledWarning(container.shizuku.workspaceWarning)
 
