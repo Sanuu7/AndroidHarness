@@ -2475,6 +2475,15 @@ class ChatViewModel(
         }
     }
 
+    /** A folder added from the start-of-chat picker, without creating an empty chat. */
+    fun addStartFolder(uri: Uri) {
+        viewModelScope.launch {
+            try { chooseStartWorkspace(c.workspace.addPickedFolder(uri, activate = sessionId == null).id) }
+            catch (e: kotlinx.coroutines.CancellationException) { throw e }
+            catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+        }
+    }
+
     suspend fun saveWorkspaces(selection: com.androidharness.app.workspace.ChatWorkspaceSelection) {
         c.runManager.assignWorkspaces(ensureSession(), selection)
     }

@@ -10,7 +10,7 @@ import com.androidharness.app.workspace.WorkspaceDescription
 
 /**
  * Picks the workspace a new Code chat starts in, styled like the Chat section's
- * personalization picker. The caller hides it when only one workspace exists.
+ * personalization picker. The last row opens the usual add-workspace sheet.
  */
 @Composable
 internal fun CodeWorkspaceDropdown(
@@ -19,6 +19,7 @@ internal fun CodeWorkspaceDropdown(
     enabled: Boolean,
     describe: (ProjectEntity) -> WorkspaceDescription,
     onSelect: (String) -> Unit,
+    onAdd: () -> Unit,
     modifier: Modifier = Modifier.fillMaxWidth(),
 ) {
     val selected = workspaces.firstOrNull { it.id == selectedId }
@@ -36,6 +37,10 @@ internal fun CodeWorkspaceDropdown(
                 dismiss()
                 if (workspace.id != selectedId) onSelect(workspace.id)
             }
+        }
+        androidx.compose.material3.HorizontalDivider()
+        ChatStartDropdownItem(stringResource(R.string.wp_add_workspace), stringResource(R.string.wp_add_sheet_sub), false) {
+            dismiss(); onAdd()
         }
     }
 }
