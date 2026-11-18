@@ -13,6 +13,10 @@
          minimizing the app doesn't freeze the terminal mid-run. -->
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <!-- Chat reminders arrive on time when the user allows it; never USE_EXACT_ALARM, which Play limits to alarm apps. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
+    <!-- Chat hands alarms and timers to the phone's Clock app. A normal permission, granted at install. -->
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
     <!-- Let the user exclude the app from battery optimization (Samsung etc.). -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
     <uses-permission android:name="moe.shizuku.manager.permission.API_V23" />
@@ -35,6 +39,9 @@
     <!-- Allow discovering speech recognition service engines and installed
          root managers on Android 11+. Root identification is display-only. -->
     <queries>
+        <!-- Lets Chat check that a Clock app accepts alarms and timers before handing one over. -->
+        <intent><action android:name="android.intent.action.SET_ALARM" /></intent>
+        <intent><action android:name="android.intent.action.SET_TIMER" /></intent>
         <package android:name="moe.shizuku.privileged.api" />
         <package android:name="com.hamondev.shevery" />
         <package android:name="com.rosan.dhizuku" />
@@ -169,6 +176,15 @@
             android:name=".agent.NotificationActionReceiver"
             android:exported="false" />
         <receiver android:name=".automation.AutomationActionReceiver" android:exported="false" />
+        <receiver android:name=".reminders.ReminderReceiver" android:exported="false">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+                <action android:name="android.intent.action.MY_PACKAGE_REPLACED" />
+                <action android:name="android.intent.action.TIME_SET" />
+                <action android:name="android.intent.action.TIMEZONE_CHANGED" />
+                <action android:name="android.app.action.SCHEDULE_EXACT_ALARM_PERMISSION_STATE_CHANGED" />
+            </intent-filter>
+        </receiver>
         <service android:name=".telegram.TelegramService" android:exported="false" android:foregroundServiceType="specialUse">
             <property android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="User-enabled remote control of local coding chats, tool approvals and task progress through a paired Telegram account, with visible pause and stop controls" />

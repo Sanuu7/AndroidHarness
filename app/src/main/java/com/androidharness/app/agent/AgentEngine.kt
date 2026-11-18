@@ -258,6 +258,8 @@ class AgentEngine(
     private val deviceAccess: com.androidharness.app.data.env.DeviceAccessManager? = null,
     private val universalMemory: com.androidharness.app.data.MemoryRepository? = null,
     private val chatOnlyTools: List<com.androidharness.app.tools.Tool> = emptyList(),
+    /** The Chat reminders switch in Settings; off hides the reminder tools. */
+    private val remindersEnabled: suspend () -> Boolean = { true },
     private val resolveConfiguration: suspend (WorkspaceFs) -> com.androidharness.app.config.HarnessConfig = { com.androidharness.app.config.HarnessConfigLoader().load(it) },
     private val pluginHooks: com.androidharness.app.config.PluginHooks? = null,
 ) {
@@ -417,6 +419,7 @@ class AgentEngine(
             .let { if (memoryOn) it else it.without(memoryToolNames) }
             .let { if (conversation.personalizationEnabled) it else it.without(recallToolNames) }
             .let { if (conversation.isChat && !imageCapable) it.without(setOf("view_chat_image", "zoom_chat_image")) else it }
+            .let { if (conversation.isChat && remindersEnabled()) it else it.without(com.androidharness.app.tools.ReminderTools.names) }
         val provider = providerFactory(config)
         // Stable per-session cache routing for providers that support it.
         val requestOptions = options.copy(cacheKey = sessionId)
@@ -1559,6 +1562,23 @@ class AgentEngine(
                     request.response.await()
                 }
             }
+            call.name in com.androidharness.app.tools.ReminderTools.confirmed -> {
+                // Confirmed every time, so nothing read in the chat can plant a reminder, alarm or timer on its own.
+                val preview = when (tool) {
+                    is com.androidharness.app.tools.ReminderSetTool -> tool.approvalPreview(parsedArgs)
+                    is com.androidharness.app.tools.AlarmSetTool -> tool.approvalPreview(parsedArgs)
+                    is com.androidharness.app.tools.TimerSetTool -> tool.approvalPreview(parsedArgs)
+                    else -> call.argumentsJson.take(400)
+                }
+                val label = when (call.name) {
+                    com.androidharness.app.tools.ReminderTools.ALARM -> "Set an alarm"
+                    com.androidharness.app.tools.ReminderTools.TIMER -> "Start a timer"
+                    else -> "Set a reminder"
+                }
+                val request = ApprovalRequest(call, label, preview, "reminder:${call.id}")
+                emitEvent(AgentEvent.ApprovalNeeded(request))
+                request.response.await()
+            }
             tool is com.androidharness.app.tools.AutomationCreateTool -> {
                 // A schedule later runs unattended, so it is confirmed in every mode and never remembered.
                 val request = ApprovalRequest(call, "Schedule a message in this chat", tool.approvalPreview(parsedArgs), "automation:${call.id}")
@@ -2267,6 +2287,7 @@ class AgentEngine(
             .let { if (conversation.isChat && searchDepth == com.androidharness.app.data.SearchDepth.OFF) it.without(setOf("web_search")) else it }
             .let { if (memoryOn) it else it.without(memoryToolNames) }
             .let { if (conversation.personalizationEnabled) it else it.without(recallToolNames) }
+            .let { if (conversation.isChat && remindersEnabled()) it else it.without(com.androidharness.app.tools.ReminderTools.names) }
             .schemas(readOnlyOnly = mode == AgentMode.PLAN, context = ToolContext(workspace, fullAccess, sessionId))
         val environment = runtimeEnvironment(workspace, sessionId, mode,
             if (fullAccess) PermissionMode.FULL_ACCESS else PermissionMode.CONFIRM_RISKY, tools, conversation.isChat)

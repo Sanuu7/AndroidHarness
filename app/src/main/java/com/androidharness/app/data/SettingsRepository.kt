@@ -146,6 +146,8 @@ data class AppSettings(
     /** Chat opens a fresh conversation unless the user asks to continue the latest one. */
     val chatStart: ChatStartMode = ChatStartMode.NEW_CHAT,
     val chatKeepThinkingCollapsed: Boolean = true,
+    /** Lets Chat set reminders that show as notifications. */
+    val chatRemindersEnabled: Boolean = true,
     val chatSearchCodeChats: Boolean = true,
     val codeSearchChatChats: Boolean = true,
     /** AH Rumble: a haptic pulse whenever a Chat turn moves to a new step. */
@@ -384,6 +386,7 @@ class SettingsRepository(private val context: Context) {
         val RESUME_LAST_CHAT = booleanPreferencesKey("resume_last_chat")
         val START_SCREEN = stringPreferencesKey("start_screen")
         val CHAT_KEEP_THINKING_COLLAPSED = booleanPreferencesKey("chat_keep_thinking_collapsed")
+        val CHAT_REMINDERS_ENABLED = booleanPreferencesKey("chat_reminders_enabled")
         val RUMBLE_ENABLED = booleanPreferencesKey("rumble_enabled")
         val RUMBLE_STRENGTH = intPreferencesKey("rumble_strength")
         val RUMBLE_SMOOTHNESS = intPreferencesKey("rumble_smoothness")
@@ -529,6 +532,7 @@ class SettingsRepository(private val context: Context) {
             chatSearchCodeChats = prefs[Keys.CHAT_SEARCH_CODE_CHATS] ?: true,
             codeSearchChatChats = prefs[Keys.CODE_SEARCH_CHAT_CHATS] ?: true,
             chatKeepThinkingCollapsed = prefs[Keys.CHAT_KEEP_THINKING_COLLAPSED] ?: true,
+            chatRemindersEnabled = prefs[Keys.CHAT_REMINDERS_ENABLED] ?: true,
             rumbleEnabled = prefs[Keys.RUMBLE_ENABLED] ?: true,
             rumbleStrength = (prefs[Keys.RUMBLE_STRENGTH] ?: RUMBLE_DEFAULT_STRENGTH).coerceIn(0, 100),
             rumbleSmoothness = (prefs[Keys.RUMBLE_SMOOTHNESS] ?: RUMBLE_DEFAULT_SMOOTHNESS).coerceIn(0, 100),
@@ -639,6 +643,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.CHAT_SEARCH_CODE_CHATS] = s.chatSearchCodeChats
             p[Keys.CODE_SEARCH_CHAT_CHATS] = s.codeSearchChatChats
             p[Keys.CHAT_KEEP_THINKING_COLLAPSED] = s.chatKeepThinkingCollapsed
+            p[Keys.CHAT_REMINDERS_ENABLED] = s.chatRemindersEnabled
             p[Keys.RUMBLE_ENABLED] = s.rumbleEnabled
             p[Keys.RUMBLE_STRENGTH] = s.rumbleStrength.coerceIn(0, 100)
             p[Keys.RUMBLE_SMOOTHNESS] = s.rumbleSmoothness.coerceIn(0, 100)
@@ -1239,6 +1244,10 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setChatKeepThinkingCollapsed(value: Boolean) {
         context.settingsStore.edit { it[Keys.CHAT_KEEP_THINKING_COLLAPSED] = value }
+    }
+
+    suspend fun setChatRemindersEnabled(value: Boolean) {
+        context.settingsStore.edit { it[Keys.CHAT_REMINDERS_ENABLED] = value }
     }
 
     suspend fun setRumbleEnabled(value: Boolean) {

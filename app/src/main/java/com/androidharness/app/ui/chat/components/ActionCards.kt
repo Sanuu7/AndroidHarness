@@ -25,6 +25,7 @@ import androidx.compose.material.icons.outlined.PhoneAndroid
 import com.androidharness.app.agent.isPhoneControl
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Merge
+import androidx.compose.material.icons.outlined.Alarm
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material.icons.outlined.Terminal
@@ -112,7 +113,8 @@ internal fun ApprovalCard(
     val isPkg = approval.call.name == "pkg_install" || approval.call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
     val isPullRequest = approval.call.name == "github_create_pull_request"
     // A schedule is approved one at a time, so there is no "Always" for it.
-    val isSchedule = approval.call.name == com.androidharness.app.tools.AutomationCreateTool.NAME
+    val isReminder = approval.call.name in com.androidharness.app.tools.ReminderTools.confirmed
+    val isSchedule = approval.call.name == com.androidharness.app.tools.AutomationCreateTool.NAME || isReminder
     // Phone control is allowed for the whole chat at once, so it has one Allow button.
     val isPhone = approval.isPhoneControl
     val scheme = MaterialTheme.colorScheme
@@ -120,6 +122,11 @@ internal fun ApprovalCard(
         title = when {
             isPkg -> uiContext.getString(R.string.ui_install_linux_package)
             isPullRequest -> uiContext.getString(R.string.pr_approval_title)
+            isReminder -> uiContext.getString(when (approval.call.name) {
+                com.androidharness.app.tools.ReminderTools.ALARM -> R.string.alarm_approval_title
+                com.androidharness.app.tools.ReminderTools.TIMER -> R.string.timer_approval_title
+                else -> R.string.reminders_approval_title
+            })
             isSchedule -> uiContext.getString(R.string.automation_approval_title)
             isPhone -> uiContext.getString(R.string.phone_control_approval_title)
             else -> uiContext.getString(R.string.ui_approve_this_action)
@@ -127,6 +134,7 @@ internal fun ApprovalCard(
         icon = when {
             isPkg -> Icons.Outlined.Inventory2
             isPullRequest -> Icons.Outlined.Merge
+            isReminder -> Icons.Outlined.Alarm
             isSchedule -> Icons.Outlined.Schedule
             isPhone -> Icons.Outlined.PhoneAndroid
             else -> Icons.Outlined.Shield
@@ -142,7 +150,13 @@ internal fun ApprovalCard(
                 }
             }
             Button(onClick = { onApprove(false) }) {
-                Text(uiContext.getString(if (isPhone) R.string.phone_control_allow else R.string.ui_allow))
+                Text(uiContext.getString(when {
+                    isPhone -> R.string.phone_control_allow
+                    approval.call.name == com.androidharness.app.tools.ReminderTools.ALARM -> R.string.alarm_set
+                    approval.call.name == com.androidharness.app.tools.ReminderTools.TIMER -> R.string.timer_start
+                    isReminder -> R.string.reminders_set
+                    else -> R.string.ui_allow
+                }))
             }
         },
     ) {

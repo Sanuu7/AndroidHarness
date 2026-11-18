@@ -54,6 +54,8 @@ class HarnessApp : Application() {
             }
         }
         memoryScope.launch { container.settings.ensureRumbleCombo() }
+        // A force stop clears every alarm without telling the app, so set them again on each start.
+        memoryScope.launch { runCatching { container.reminders.rescheduleAll() } }
     }
     override fun onTrimMemory(level: Int) {
         super.onTrimMemory(level)
@@ -404,7 +406,10 @@ class AppContainer(val appContext: Context) {
             com.androidharness.app.tools.OfferCodeHandoffTool(),
             com.androidharness.app.tools.GitHubApiTool(fetchClient) { github.accessToken() },
             com.androidharness.app.tools.GitHubSearchTool(fetchClient) { github.accessToken() },
-            com.androidharness.app.tools.GitHubFileTool(fetchClient) { github.accessToken() }),
+            com.androidharness.app.tools.GitHubFileTool(fetchClient) { github.accessToken() }) +
+            // Resolved on each call: the manager is declared below.
+            com.androidharness.app.tools.ReminderTools.all({ reminders }, { clockAlarms }),
+        remindersEnabled = { settings.settings.first().chatRemindersEnabled },
     )
     val runManager = com.androidharness.app.agent.RunManager(
         context = appContext,
@@ -423,6 +428,8 @@ class AppContainer(val appContext: Context) {
     )
     val githubRepositories = com.androidharness.app.github.GitHubWorkspaces(this)
     val automation = com.androidharness.app.automation.AutomationManager(this)
+    val reminders = com.androidharness.app.reminders.ReminderManager(appContext)
+    val clockAlarms = com.androidharness.app.reminders.ClockAlarms(appContext)
     val projectDeletion = com.androidharness.app.workspace.ProjectDeletion(this)
     internal var telegram = com.androidharness.app.telegram.TelegramManager(this)
     val interactiveTerminal = com.androidharness.app.terminal.InteractiveTerminalManager(linuxEnv, runManager)
