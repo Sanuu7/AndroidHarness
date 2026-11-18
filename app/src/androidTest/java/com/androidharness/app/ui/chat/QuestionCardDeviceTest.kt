@@ -41,7 +41,7 @@ class QuestionCardDeviceTest {
         val calls = AtomicInteger()
         val theme = mutableStateOf(ThemeMode.LIGHT)
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
-            scenario.onActivity { host -> host.setContent { Page(theme.value) { QuestionCard(request) { calls.incrementAndGet(); request.response.complete(it) } } } }
+            scenario.onActivity { host -> host.setContent { Page(theme.value) { QuestionCard(request, onAnswer = { calls.incrementAndGet(); request.response.complete(it) }) } } }
             assertFalse(clickTarget(await("Send answer")).isEnabled)
             tap(choices[0]); tap(choices[2])
             assertFalse("Choosing an option must not send it", request.response.isCompleted)
@@ -62,7 +62,7 @@ class QuestionCardDeviceTest {
 
     @Test fun multipleChoicesAndWrittenDetailSurviveActivityRecreation() = runBlocking {
         val request = QuestionRequest("multi", "Which parts should I focus on?", listOf("Layout", "Typography", "Motion"), multiSelect = true)
-        val content: @Composable () -> Unit = { Page { QuestionCard(request) { request.response.complete(it) } } }
+        val content: @Composable () -> Unit = { Page { QuestionCard(request, onAnswer = { request.response.complete(it) }) } }
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { it.setContent(content = content) }
             tap("Typography"); tap("Layout"); tap("Motion"); tap("Motion")
@@ -83,7 +83,7 @@ class QuestionCardDeviceTest {
     @Test fun ownAnswerIsAnAlternativeAndHiddenDraftNeverLeaksIntoSelectedAnswer() = runBlocking {
         val request = QuestionRequest("custom", questionText, choices)
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
-            scenario.onActivity { it.setContent { Page { QuestionCard(request) { request.response.complete(it) } } } }
+            scenario.onActivity { it.setContent { Page { QuestionCard(request, onAnswer = { request.response.complete(it) }) } } }
             tap(choices[0]); tap("Write your own answer")
             assertFalse(chosen(choices[0]))
             write("Start with the question cards.")
@@ -100,7 +100,7 @@ class QuestionCardDeviceTest {
         val first = QuestionRequest("reused", "What would make this easier to use?", emptyList())
         val request = mutableStateOf(first)
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
-            scenario.onActivity { it.setContent { Page { QuestionCard(request.value) { answer -> request.value.response.complete(answer) } } } }
+            scenario.onActivity { it.setContent { Page { QuestionCard(request.value, onAnswer = { answer -> request.value.response.complete(answer) }) } } }
             write("   ")
             assertFalse(clickTarget(await("Send answer")).isEnabled)
             write((1..10).joinToString("\n") { "Detail $it" })
