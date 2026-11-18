@@ -754,7 +754,7 @@
     <string name="chat_sources_library">"Sumber dalam chat ini"</string>
     <string name="chat_sources_library_count">"%1$d sumber"</string>
     <string name="chat_sources_library_empty">"Belum ada sumber web dalam chat ini."</string>
-    <string name="chat_thought_seconds">"Berpikir selama %1$d dtk"</string>
+    <string name="chat_thought_duration">"Berpikir selama %1$s"</string>
     <string name="chat_writing_reply">"Menulis respons"</string>
     <string name="chat_searching">"Mencari di web"</string>
     <string name="chat_searched">"Mencari di web selesai"</string>

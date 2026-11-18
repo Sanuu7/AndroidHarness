@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"சிந்திக்கிறது…"</string>
     <string name="ui_thinking_2">"யோசிக்கிறேன்"</string>
-    <string name="ui_thinking_seconds">"%1$dகள்"</string>
     <string name="ui_thinking_under_one_second">"&lt;1வி"</string>
     <string name="ui_thinking_tokens">"%1$d டோக்கன்கள்"</string>
     <string name="ui_thinking_estimated_tokens">"~%1$d டோக்கன்கள் (மதிப்பீடு)"</string>

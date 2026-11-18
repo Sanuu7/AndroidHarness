@@ -759,7 +759,7 @@
     <string name="chat_sources_library">"مصادر هذه المحادثة"</string>
     <string name="chat_sources_library_count">"%1$d مصدر"</string>
     <string name="chat_sources_library_empty">"لا توجد مصادر ويب في هذه المحادثة بعد."</string>
-    <string name="chat_thought_seconds">"فكّر لمدة %1$d ث"</string>
+    <string name="chat_thought_duration">"فكّر لمدة %1$s"</string>
     <string name="chat_writing_reply">"جارٍ كتابة الرد"</string>
     <string name="chat_searching">"جارٍ البحث في الويب"</string>
     <string name="chat_searched">"بُحث في الويب"</string>

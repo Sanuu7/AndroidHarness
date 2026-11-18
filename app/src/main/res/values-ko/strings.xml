@@ -765,7 +765,7 @@
     <string name="chat_sources_library">"이 채팅의 출처"</string>
     <string name="chat_sources_library_count">"%1$d 소스"</string>
     <string name="chat_sources_library_empty">"이 채팅에는 아직 웹 소스가 없습니다."</string>
-    <string name="chat_thought_seconds">"%1$d에 대한 생각"</string>
+    <string name="chat_thought_duration">"%1$s에 대한 생각"</string>
     <string name="chat_writing_reply">"답글 쓰기"</string>
     <string name="chat_searching">"웹 검색 중"</string>
     <string name="chat_searched">"웹에서 검색함"</string>

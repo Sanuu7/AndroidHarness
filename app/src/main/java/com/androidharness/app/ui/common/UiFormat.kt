@@ -19,12 +19,18 @@ fun formatRelativeTime(epochMillis: Long): String {
     }
 }
 
-/** Compact elapsed time: "43s", "2m 13s", "1h 4m". */
-fun formatDuration(ms: Long): String = when {
-    ms <= 0 -> ""
-    ms < 60_000 -> "${ms / 1000}s"
-    ms < 3_600_000 -> "${ms / 60_000}m ${(ms % 60_000) / 1000}s"
-    else -> "${ms / 3_600_000}h ${(ms % 3_600_000) / 60_000}m"
+/** Compact elapsed time: "43s", "2m", "2m 13s", "1h", "1h 4m", "2d 3h". A zero second part is left off. */
+fun formatDuration(ms: Long): String {
+    if (ms <= 0) return ""
+    val seconds = ms / 1000
+    fun pair(big: Long, bigUnit: String, small: Long, smallUnit: String) =
+        if (small == 0L) "$big$bigUnit" else "$big$bigUnit $small$smallUnit"
+    return when {
+        seconds < 60 -> "${seconds}s"
+        seconds < 3_600 -> pair(seconds / 60, "m", seconds % 60, "s")
+        seconds < 86_400 -> pair(seconds / 3_600, "h", seconds % 3_600 / 60, "m")
+        else -> pair(seconds / 86_400, "d", seconds % 86_400 / 3_600, "h")
+    }
 }
 
 /**

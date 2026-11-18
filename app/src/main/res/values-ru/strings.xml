@@ -757,7 +757,7 @@
     <string name="chat_sources_library">"Источники в этом чате"</string>
     <string name="chat_sources_library_count">"Источники: %1$d"</string>
     <string name="chat_sources_library_empty">"В этом чате пока нет интернет-источников."</string>
-    <string name="chat_thought_seconds">"Размышление: %1$d с"</string>
+    <string name="chat_thought_duration">"Размышление: %1$s"</string>
     <string name="chat_writing_reply">"Подготовка ответа"</string>
     <string name="chat_searching">"Поиск в интернете"</string>
     <string name="chat_searched">"Поиск в интернете завершён"</string>

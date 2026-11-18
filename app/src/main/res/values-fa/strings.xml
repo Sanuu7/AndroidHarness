@@ -766,7 +766,7 @@
     <string name="chat_sources_library">"منابع در این گفتگو"</string>
     <string name="chat_sources_library_count">"منابع %1$d"</string>
     <string name="chat_sources_library_empty">"هنوز هیچ منبع وب در این گفتگوی وجود ندارد."</string>
-    <string name="chat_thought_seconds">"فکر برای %1$ds"</string>
+    <string name="chat_thought_duration">"فکر برای %1$s"</string>
     <string name="chat_writing_reply">"نوشتن پاسخ"</string>
     <string name="chat_searching">"جستجو در وب"</string>
     <string name="chat_searched">"در وب جستجو کرد"</string>

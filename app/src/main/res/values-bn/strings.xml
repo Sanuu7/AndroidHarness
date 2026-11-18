@@ -766,7 +766,7 @@
     <string name="chat_sources_library">"এই চ্যাট সূত্র"</string>
     <string name="chat_sources_library_count">"%1$d সূত্র"</string>
     <string name="chat_sources_library_empty">"এই চ্যাটে এখনো কোনো ওয়েব উৎস নেই।"</string>
-    <string name="chat_thought_seconds">"%1$ds জন্য চিন্তা"</string>
+    <string name="chat_thought_duration">"%1$s জন্য চিন্তা"</string>
     <string name="chat_writing_reply">"উত্তর লেখা"</string>
     <string name="chat_searching">"ওয়েবে অনুসন্ধান করা হচ্ছে"</string>
     <string name="chat_searched">"ওয়েবে সার্চ করেছেন"</string>

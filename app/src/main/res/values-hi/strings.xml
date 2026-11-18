@@ -766,7 +766,7 @@
     <string name="chat_sources_library">"इस चैट में सूत्र"</string>
     <string name="chat_sources_library_count">"%1$d स्रोत"</string>
     <string name="chat_sources_library_empty">"इस चैट में अभी तक कोई वेब स्रोत नहीं है।"</string>
-    <string name="chat_thought_seconds">"%1$ds के लिए सोचा"</string>
+    <string name="chat_thought_duration">"%1$s के लिए सोचा"</string>
     <string name="chat_writing_reply">"उत्तर लिख रहा हूँ"</string>
     <string name="chat_searching">"वेब पर खोज रहा हूँ"</string>
     <string name="chat_searched">"वेब पर खोजा"</string>

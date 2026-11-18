@@ -766,7 +766,7 @@
     <string name="chat_sources_library">"இந்த அரட்டையில் உள்ள ஆதாரங்கள்"</string>
     <string name="chat_sources_library_count">"%1$d ஆதாரங்கள்"</string>
     <string name="chat_sources_library_empty">"இந்த அரட்டையில் இணைய ஆதாரங்கள் எதுவும் இல்லை."</string>
-    <string name="chat_thought_seconds">"%1$dகளுக்கான சிந்தனை"</string>
+    <string name="chat_thought_duration">"%1$sகளுக்கான சிந்தனை"</string>
     <string name="chat_writing_reply">"பதில் எழுதுதல்"</string>
     <string name="chat_searching">"இணையத்தில் தேடுகிறது"</string>
     <string name="chat_searched">"வலையில் தேடினார்"</string>

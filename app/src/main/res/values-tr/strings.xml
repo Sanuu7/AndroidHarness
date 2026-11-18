@@ -766,7 +766,7 @@
     <string name="chat_sources_library">"Bu sohbetteki kaynaklar"</string>
     <string name="chat_sources_library_count">"%1$d kaynakları"</string>
     <string name="chat_sources_library_empty">"Bu sohbette henüz web kaynağı yok."</string>
-    <string name="chat_thought_seconds">"%1$d\'ler için düşünce"</string>
+    <string name="chat_thought_duration">"%1$s\'ler için düşünce"</string>
     <string name="chat_writing_reply">"Yanıt yazma"</string>
     <string name="chat_searching">"Web\'de arama"</string>
     <string name="chat_searched">"Web\'de arama yaptım"</string>

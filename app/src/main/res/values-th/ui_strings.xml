@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"กำลังคิด…"</string>
     <string name="ui_thinking_2">"การคิด"</string>
-    <string name="ui_thinking_seconds">"%1$d วินาที"</string>
     <string name="ui_thinking_under_one_second">"&lt;1 วินาที"</string>
     <string name="ui_thinking_tokens">"%1$d โทเค็น"</string>
     <string name="ui_thinking_estimated_tokens">"~%1$d โทเค็น (โดยประมาณ)"</string>

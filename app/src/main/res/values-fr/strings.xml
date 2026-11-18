@@ -767,7 +767,7 @@
     <string name="chat_sources_library">"Sources dans ce chat"</string>
     <string name="chat_sources_library_count">"Sources %1$d"</string>
     <string name="chat_sources_library_empty">"Aucune source Web dans ce chat pour l\'instant."</string>
-    <string name="chat_thought_seconds">"Pensé pour les %1$d"</string>
+    <string name="chat_thought_duration">"Pensé pour les %1$s"</string>
     <string name="chat_writing_reply">"Rédiger une réponse"</string>
     <string name="chat_searching">"Recherche sur le Web"</string>
     <string name="chat_searched">"J\'ai cherché sur le Web"</string>

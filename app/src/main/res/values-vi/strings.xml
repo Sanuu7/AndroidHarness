@@ -765,7 +765,7 @@
     <string name="chat_sources_library">"Các nguồn trong chat này"</string>
     <string name="chat_sources_library_count">"Nguồn %1$d"</string>
     <string name="chat_sources_library_empty">"Chưa có nguồn web nào trong chat này."</string>
-    <string name="chat_thought_seconds">"Suy nghĩ dành cho %1$d"</string>
+    <string name="chat_thought_duration">"Suy nghĩ dành cho %1$s"</string>
     <string name="chat_writing_reply">"Viết thư trả lời"</string>
     <string name="chat_searching">"Tìm kiếm trên web"</string>
     <string name="chat_searched">"Đã tìm kiếm trên web"</string>

@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"Думает…"</string>
     <string name="ui_thinking_2">"Размышление"</string>
-    <string name="ui_thinking_seconds">"%1$d с"</string>
     <string name="ui_thinking_under_one_second">"&lt;1 с"</string>
     <string name="ui_thinking_tokens">"Токены: %1$d"</string>
     <string name="ui_thinking_estimated_tokens">"Токены: ~%1$d (оценка)"</string>

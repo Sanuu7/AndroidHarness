@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"සිතමින්…"</string>
     <string name="ui_thinking_2">"සිතමින්"</string>
-    <string name="ui_thinking_seconds">"%1$d තත්."</string>
     <string name="ui_thinking_under_one_second">"&lt;1 තත්."</string>
     <string name="ui_thinking_tokens">"%1$d ටොකන්"</string>
     <string name="ui_thinking_estimated_tokens">"~%1$d ටෝකන් (අපේක්ෂිත)"</string>

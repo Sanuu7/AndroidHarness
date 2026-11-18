@@ -765,7 +765,7 @@
     <string name="chat_sources_library">"このチャットのソース"</string>
     <string name="chat_sources_library_count">"%1$d 件のソース"</string>
     <string name="chat_sources_library_empty">"このチャットにはまだウェブソースがありません。"</string>
-    <string name="chat_thought_seconds">"%1$ds 思考しました"</string>
+    <string name="chat_thought_duration">"%1$s 思考しました"</string>
     <string name="chat_writing_reply">"返信を作成中"</string>
     <string name="chat_searching">"ウェブを検索中"</string>
     <string name="chat_searched">"ウェブを検索しました"</string>

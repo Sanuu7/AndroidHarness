@@ -766,7 +766,7 @@
     <string name="chat_sources_library">"මෙම කතාබහේ මූලාශ්‍ර"</string>
     <string name="chat_sources_library_count">"මූලාශ්‍ර %1$d"</string>
     <string name="chat_sources_library_empty">"මෙම කතාබහේ තවම වෙබ් මූලාශ්‍ර නැත."</string>
-    <string name="chat_thought_seconds">"තත්පර %1$dක් සිතුවා"</string>
+    <string name="chat_thought_duration">"තත්පර %1$sක් සිතුවා"</string>
     <string name="chat_writing_reply">"පිළිතුරක් ලියමින්"</string>
     <string name="chat_searching">"වෙබයේ සොයමින්"</string>
     <string name="chat_searched">"වෙබයේ සෙවීය"</string>

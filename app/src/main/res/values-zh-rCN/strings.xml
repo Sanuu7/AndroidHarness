@@ -785,7 +785,7 @@
     <string name="chat_sources_library">此聊天中的来源</string>
     <string name="chat_sources_library_count">%1$d 个来源</string>
     <string name="chat_sources_library_empty">此聊天中还没有网络来源。</string>
-    <string name="chat_thought_seconds">思考了 %1$d 秒</string>
+    <string name="chat_thought_duration">思考了 %1$s</string>
     <string name="chat_writing_reply">正在回复</string>
     <string name="chat_searching">正在搜索网页</string>
     <string name="chat_searched">已搜索网页</string>

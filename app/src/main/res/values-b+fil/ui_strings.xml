@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"Iniisip…"</string>
     <string name="ui_thinking_2">"Nag-iisip"</string>
-    <string name="ui_thinking_seconds">"%1$ds"</string>
     <string name="ui_thinking_under_one_second">"&lt;1s"</string>
     <string name="ui_thinking_tokens">"Mga token ng %1$d"</string>
     <string name="ui_thinking_estimated_tokens">"~%1$d token (tinatantya)"</string>

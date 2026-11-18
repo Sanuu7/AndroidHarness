@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"جارٍ التفكير…"</string>
     <string name="ui_thinking_2">"التفكير"</string>
-    <string name="ui_thinking_seconds">"%1$d ث"</string>
     <string name="ui_thinking_under_one_second">"أقل من ثانية"</string>
     <string name="ui_thinking_tokens">"%1$d رمز"</string>
     <string name="ui_thinking_estimated_tokens">"نحو %1$d رمز (تقديري)"</string>

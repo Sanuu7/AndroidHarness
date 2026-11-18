@@ -2,7 +2,6 @@
 <resources>
     <string name="ui_thinking">"思考中…"</string>
     <string name="ui_thinking_2">"思考"</string>
-    <string name="ui_thinking_seconds">"%1$d秒"</string>
     <string name="ui_thinking_under_one_second">"少於1秒"</string>
     <string name="ui_thinking_tokens">"%1$d 詞元"</string>
     <string name="ui_thinking_estimated_tokens">"~%1$d 詞元（估算）"</string>

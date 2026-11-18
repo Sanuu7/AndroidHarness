@@ -765,7 +765,7 @@
     <string name="chat_sources_library">"ที่มาในแชทนี้"</string>
     <string name="chat_sources_library_count">"แหล่งที่มา %1$d"</string>
     <string name="chat_sources_library_empty">"ยังไม่มีแหล่งที่มาของเว็บในการแชทนี้"</string>
-    <string name="chat_thought_seconds">"คิดถึง %1$ds"</string>
+    <string name="chat_thought_duration">"คิดถึง %1$s"</string>
     <string name="chat_writing_reply">"การเขียนตอบกลับ"</string>
     <string name="chat_searching">"กำลังค้นหาเว็บ"</string>
     <string name="chat_searched">"ค้นหาเว็บแล้ว"</string>

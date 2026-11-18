@@ -38,7 +38,7 @@ internal fun ChatThinkingMetrics(messages: List<ChatMessage>, streamingThinking:
     // summed reasoning spans only cover turns without a running clock.
     val elapsedMs = if (live && turnStartedAt != null) (now - turnStartedAt).coerceAtLeast(0)
         else totals.milliseconds + (timing?.durationMs(now) ?: 0)
-    val duration = stringResource(R.string.ui_thinking_seconds, elapsedMs / 1000)
+    val duration = com.androidharness.app.ui.common.formatDuration(elapsedMs).ifEmpty { "0s" }
     val count = compactThinkingTokenCount(tokensShown)
     val tokens = stringResource(R.string.chat_thinking_tokens_compact, if (totals.estimated) "~$count" else count)
     val description = duration + " · " + stringResource(
