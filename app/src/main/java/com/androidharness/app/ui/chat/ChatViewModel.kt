@@ -1794,7 +1794,12 @@ class ChatViewModel(
         if (_state.value.busy || startingRun || _state.value.conversationSaving) return
         _state.update { it.copy(conversationSaving = true) }
         viewModelScope.launch {
-            try { _navEvents.emit(NavEvent.OpenSession(c.sessions.continueInCode(ensureSession(), projectId))) }
+            try {
+                val codeId = c.sessions.continueInCode(ensureSession(), projectId)
+                // The workspace picked for the handoff is the latest choice for new Code chats too.
+                c.workspace.setActiveProject(projectId)
+                _navEvents.emit(NavEvent.OpenSession(codeId))
+            }
             catch (e: kotlinx.coroutines.CancellationException) { throw e }
             catch (e: Exception) { _state.update { it.copy(error = e.message) } }
             finally { _state.update { it.copy(conversationSaving = false) } }
@@ -2451,6 +2456,21 @@ class ChatViewModel(
     fun setWorkspace(projectId: String) {
         viewModelScope.launch {
             try { c.runManager.assignWorkspace(ensureSession(), projectId) }
+            catch (e: Exception) { _state.update { it.copy(error = e.message) } }
+        }
+    }
+
+    /**
+     * The start-of-chat picker. An unsent chat only moves the default, so no empty
+     * chat row is created; either way the pick becomes the default for new chats.
+     */
+    fun chooseStartWorkspace(projectId: String) {
+        viewModelScope.launch {
+            try {
+                val sid = sessionId
+                if (sid != null) c.runManager.assignWorkspace(sid, projectId)
+                c.workspace.setActiveProject(projectId)
+            } catch (e: kotlinx.coroutines.CancellationException) { throw e }
             catch (e: Exception) { _state.update { it.copy(error = e.message) } }
         }
     }

@@ -252,8 +252,24 @@ private fun ChatScreenContent(
     val savedAnswerIds by remember(state.sessionId) {
         state.sessionId?.let { viewModel.container.sessions.savedAnswerIds(it) } ?: kotlinx.coroutines.flow.flowOf(emptySet())
     }.collectAsStateWithLifecycle(initialValue = emptySet())
-    val showChatStartControls = state.conversation.isChat && state.conversationReady && !state.isLoadingMessages &&
+    val conversationStart = state.conversationReady && !state.isLoadingMessages &&
         state.messages.isEmpty() && !state.busy && state.streamingText == null
+    val showChatStartControls = state.conversation.isChat && conversationStart
+    // Code gets a workspace picker in the same place, only when there is a choice to make.
+    val startWorkspaces by remember(state.conversation.isChat) {
+        if (state.conversation.isChat) kotlinx.coroutines.flow.flowOf(emptyList()) else viewModel.workspaces
+    }.collectAsStateWithLifecycle(initialValue = emptyList())
+    val startProject by remember(state.sessionId, state.conversation.isChat) {
+        if (state.conversation.isChat) kotlinx.coroutines.flow.flowOf(null)
+        else viewModel.container.workspace.workProjectForChat(state.sessionId)
+    }.collectAsStateWithLifecycle(initialValue = null)
+    val startSelection by remember(state.sessionId, state.conversation.isChat) {
+        if (state.conversation.isChat) kotlinx.coroutines.flow.flowOf(null)
+        else viewModel.container.workspace.selectionForChat(state.sessionId)
+    }.collectAsStateWithLifecycle(initialValue = null)
+    // Project chats and multi-folder chats keep their own access, edited from the workspace sheet.
+    val showCodeWorkspacePicker = !state.conversation.isChat && conversationStart && startWorkspaces.size > 1 &&
+        startProject == null && (startSelection?.grants?.size ?: 1) <= 1
     val effectiveImageFrequency = com.androidharness.app.core.ChatExperience
         .effectiveImageFrequency(state.conversation.imageFrequency, globalSettings.chatImageFrequency)
     var showCodeHandoff by remember(state.sessionId) { mutableStateOf(false) }
@@ -1297,6 +1313,32 @@ private fun ChatScreenContent(
             }
     }
 
+    // Resting at the true bottom means following. A tap on a working-log card or a
+    // trip to another app can pause following without moving the list, and Code's
+    // logs grow inside their cards, so nothing else would ever resume it.
+    LaunchedEffect(listState, liveTailPx) {
+        snapshotFlow {
+            !pinnedToBottom && !returnToQuestion && !gestureActive.value && !detailScroll.reading &&
+                !listState.isScrollInProgress && listState.layoutInfo.totalItemsCount > 0 &&
+                isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = 1, tail = liveTailPx)
+        }.distinctUntilChanged().collect { resting -> if (resting) pinnedToBottom = true }
+    }
+    // A drag the system cut off while the app left the screen may never report its end.
+    var pinnedBeforeStop by remember(state.sessionId) { mutableStateOf(false) }
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_STOP) {
+        pinnedBeforeStop = pinnedToBottom
+        gestureActive.value = false
+        mainListDragged = false
+        userReachedBottom = false
+    }
+    androidx.lifecycle.compose.LifecycleEventEffect(androidx.lifecycle.Lifecycle.Event.ON_START) {
+        gestureActive.value = false
+        if (pinnedBeforeStop) {
+            pinnedToBottom = true
+            scope.launch { listState.scrollToEnd(liveTailPx) { pinnedToBottom && !gestureActive.value } }
+        }
+    }
+
     // While pinned, keep the newest content in view with small exact deltas.
     LaunchedEffect(pinnedToBottom, listState, liveTailPx) {
         if (!pinnedToBottom) return@LaunchedEffect
@@ -1582,6 +1624,18 @@ private fun ChatScreenContent(
                     }
                 }
             }
+            if (showCodeWorkspacePicker) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp), horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically) {
+                    com.androidharness.app.ui.chat.components.CodeWorkspaceDropdown(
+                        workspaces = startWorkspaces,
+                        selectedId = currentProject?.id,
+                        enabled = !state.busy && !state.conversationSaving,
+                        describe = viewModel::workspaceDescription,
+                        onSelect = viewModel::chooseStartWorkspace,
+                    )
+                }
+            }
             if (findOpen) {
                 com.androidharness.app.ui.chat.components.FindInChatBar(
                     query = findQuery,
@@ -1662,6 +1716,14 @@ private fun ChatScreenContent(
                         }
                     }
                     map
+                }
+                // Every model that answered in a turn, in order, so a fallback mid-turn shows both.
+                val turnModels = remember(state.messages) {
+                    state.messages.filter { it.turnId != null && it.role == Role.ASSISTANT }
+                        .groupBy { it.turnId!! }
+                        .mapValues { (_, messages) -> messages.mapNotNull { m ->
+                            m.generation.model?.let { com.androidharness.app.core.ChatExperience.modelLabel(it) ?: it }
+                        }.distinct() }
                 }
                 val turnSpeeds = remember(state.messages) {
                     state.messages.filter { it.turnId != null }
@@ -2232,17 +2294,30 @@ private fun ChatScreenContent(
                                                             android.text.format.DateFormat.getTimeFormat(toastContext)
                                                                 .format(java.util.Date(it))
                                                         }
+                                                        val models = turnModels[message.turnId].orEmpty()
                                                         val label = listOfNotNull(
                                                             duration?.let { formatDuration(it.coerceAtLeast(0)) },
                                                             timestamp,
                                                         ).joinToString(" · ")
-                                                        if (label.isNotBlank()) {
+                                                        if (label.isNotBlank() || models.isNotEmpty()) {
                                                             Spacer(Modifier.weight(1f))
-                                                            Text(
-                                                                label,
-                                                                style = MaterialTheme.typography.labelSmall,
-                                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                            )
+                                                            // The model sits on its own quieter line, so a long id never squeezes the time.
+                                                            Column(Modifier.weight(1f, fill = false), horizontalAlignment = Alignment.End) {
+                                                                if (label.isNotBlank()) Text(
+                                                                    label,
+                                                                    style = MaterialTheme.typography.labelSmall,
+                                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                                    maxLines = 1,
+                                                                    overflow = TextOverflow.Ellipsis,
+                                                                )
+                                                                if (models.isNotEmpty()) Text(
+                                                                    models.joinToString(", "),
+                                                                    style = MaterialTheme.typography.labelSmall,
+                                                                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                                                                    maxLines = 1,
+                                                                    overflow = TextOverflow.MiddleEllipsis,
+                                                                )
+                                                            }
                                                         }
                                                     }
                                                 }
@@ -2297,6 +2372,8 @@ private fun ChatScreenContent(
                                                             live = isTurnRunning,
                                                             onOpenFile = onOpenFile,
                                                             awaitingApprovalId = state.pendingApproval?.call?.id.takeIf { isTurnRunning },
+                                                            onWatchBrowser = ::watchBrowser,
+                                                            browserTargets = browserTargets,
                                                         )
                                                     }
                                                 }
