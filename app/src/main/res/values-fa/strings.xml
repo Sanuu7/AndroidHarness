@@ -1088,4 +1088,8 @@
     <string name="settings_group_data_sync">"داده و همگام‌سازی"</string>
     <string name="settings_group_help_about">"راهنما و درباره"</string>
     <string name="settings_page_background_desc">"کار پس‌زمینه، باتری و اعلان‌ها"</string>
+    <string name="chat_dig_deeper">"عمیق‌تر بررسی کن"</string>
+    <string name="chat_answer_outline">"پرش به بخش"</string>
+    <string name="chat_claim_check">"این ادعا را بررسی کن"</string>
+    <string name="chat_claim_sources">"منابع با هم اختلاف دارند یا تنها یکی آن را تأیید می‌کند"</string>
 </resources>

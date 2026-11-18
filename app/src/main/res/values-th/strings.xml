@@ -1085,4 +1085,8 @@
     <string name="settings_group_data_sync">"ข้อมูลและการซิงค์"</string>
     <string name="settings_group_help_about">"ช่วยเหลือและเกี่ยวกับ"</string>
     <string name="settings_page_background_desc">"งานเบื้องหลัง แบตเตอรี่ และการแจ้งเตือน"</string>
+    <string name="chat_dig_deeper">"เจาะลึกเพิ่ม"</string>
+    <string name="chat_answer_outline">"ไปยังหัวข้อ"</string>
+    <string name="chat_claim_check">"ตรวจสอบข้อกล่าวอ้างนี้"</string>
+    <string name="chat_claim_sources">"แหล่งข้อมูลขัดแย้งกันหรือมีเพียงแหล่งเดียวที่สนับสนุน"</string>
 </resources>

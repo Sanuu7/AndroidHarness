@@ -1088,4 +1088,8 @@
     <string name="settings_group_data_sync">"தரவு மற்றும் ஒத்திசைவு"</string>
     <string name="settings_group_help_about">"உதவி மற்றும் பற்றி"</string>
     <string name="settings_page_background_desc">"பின்னணி வேலை, பேட்டரி மற்றும் அறிவிப்புகள்"</string>
+    <string name="chat_dig_deeper">"மேலும் ஆழமாக"</string>
+    <string name="chat_answer_outline">"பகுதிக்குச் செல்"</string>
+    <string name="chat_claim_check">"இந்தக் கூற்றைச் சரிபார்"</string>
+    <string name="chat_claim_sources">"மூலங்கள் முரண்படுகின்றன அல்லது ஒன்று மட்டுமே இதை ஆதரிக்கிறது"</string>
 </resources>

@@ -1085,4 +1085,8 @@
     <string name="settings_group_data_sync">"Dữ liệu và đồng bộ"</string>
     <string name="settings_group_help_about">"Trợ giúp và giới thiệu"</string>
     <string name="settings_page_background_desc">"Hoạt động nền, pin và thông báo"</string>
+    <string name="chat_dig_deeper">"Tìm hiểu sâu hơn"</string>
+    <string name="chat_answer_outline">"Đến mục"</string>
+    <string name="chat_claim_check">"Kiểm tra nhận định này"</string>
+    <string name="chat_claim_sources">"Các nguồn mâu thuẫn hoặc chỉ một nguồn ủng hộ"</string>
 </resources>

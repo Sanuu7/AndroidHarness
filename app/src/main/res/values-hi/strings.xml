@@ -1088,4 +1088,8 @@
     <string name="settings_group_data_sync">"डेटा और सिंक"</string>
     <string name="settings_group_help_about">"सहायता और परिचय"</string>
     <string name="settings_page_background_desc">"पृष्ठभूमि कार्य, बैटरी और सूचनाएँ"</string>
+    <string name="chat_dig_deeper">"और गहराई में जाएँ"</string>
+    <string name="chat_answer_outline">"अनुभाग पर जाएँ"</string>
+    <string name="chat_claim_check">"इस दावे की जाँच करें"</string>
+    <string name="chat_claim_sources">"स्रोत अलग-अलग हैं या केवल एक ही इसका समर्थन करता है"</string>
 </resources>

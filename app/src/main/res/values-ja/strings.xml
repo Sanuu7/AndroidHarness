@@ -1085,4 +1085,8 @@
     <string name="settings_group_data_sync">"データと同期"</string>
     <string name="settings_group_help_about">"ヘルプと情報"</string>
     <string name="settings_page_background_desc">"バックグラウンド動作、バッテリー、通知"</string>
+    <string name="chat_dig_deeper">"さらに深掘り"</string>
+    <string name="chat_answer_outline">"セクションへ移動"</string>
+    <string name="chat_claim_check">"この主張を確認"</string>
+    <string name="chat_claim_sources">"情報源が食い違っているか、1 件しか裏付けがありません"</string>
 </resources>

@@ -1094,4 +1094,8 @@
     <string name="settings_group_data_sync">"Данные и синхронизация"</string>
     <string name="settings_group_help_about">"Помощь и о приложении"</string>
     <string name="settings_page_background_desc">"Фоновая работа, батарея и уведомления"</string>
+    <string name="chat_dig_deeper">"Копнуть глубже"</string>
+    <string name="chat_answer_outline">"Перейти к разделу"</string>
+    <string name="chat_claim_check">"Проверить утверждение"</string>
+    <string name="chat_claim_sources">"Источники расходятся или только один подтверждает"</string>
 </resources>

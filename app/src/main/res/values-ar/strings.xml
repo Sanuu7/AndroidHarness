@@ -1100,4 +1100,8 @@
     <string name="settings_group_data_sync">"البيانات والمزامنة"</string>
     <string name="settings_group_help_about">"المساعدة وحول"</string>
     <string name="settings_page_background_desc">"العمل في الخلفية والبطارية والإشعارات"</string>
+    <string name="chat_dig_deeper">"تعمّق أكثر"</string>
+    <string name="chat_answer_outline">"انتقل إلى قسم"</string>
+    <string name="chat_claim_check">"تحقق من هذا الادعاء"</string>
+    <string name="chat_claim_sources">"المصادر متعارضة أو مصدر واحد فقط يدعم هذا"</string>
 </resources>

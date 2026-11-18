@@ -1116,4 +1116,8 @@
     <string name="settings_group_data_sync">数据与同步</string>
     <string name="settings_group_help_about">帮助与关于</string>
     <string name="settings_page_background_desc">后台工作、电池和通知</string>
+    <string name="chat_dig_deeper">深入探索</string>
+    <string name="chat_answer_outline">跳到章节</string>
+    <string name="chat_claim_check">核查这个说法</string>
+    <string name="chat_claim_sources">来源说法不一，或只有一个来源支持</string>
 </resources>

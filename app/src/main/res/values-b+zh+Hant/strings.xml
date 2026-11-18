@@ -1085,4 +1085,8 @@
     <string name="settings_group_data_sync">"資料與同步"</string>
     <string name="settings_group_help_about">"說明與關於"</string>
     <string name="settings_page_background_desc">"背景工作、電池與通知"</string>
+    <string name="chat_dig_deeper">"深入探索"</string>
+    <string name="chat_answer_outline">"跳到區段"</string>
+    <string name="chat_claim_check">"查核這項說法"</string>
+    <string name="chat_claim_sources">"來源說法不一，或只有一個來源支持"</string>
 </resources>

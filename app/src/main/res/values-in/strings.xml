@@ -1085,4 +1085,8 @@
     <string name="settings_group_data_sync">"Data &amp; sinkronisasi"</string>
     <string name="settings_group_help_about">"Bantuan &amp; tentang"</string>
     <string name="settings_page_background_desc">"Kerja latar belakang, baterai, dan notifikasi"</string>
+    <string name="chat_dig_deeper">"Telusuri lebih dalam"</string>
+    <string name="chat_answer_outline">"Lompat ke bagian"</string>
+    <string name="chat_claim_check">"Periksa klaim ini"</string>
+    <string name="chat_claim_sources">"Sumber berbeda pendapat atau hanya satu yang mendukung"</string>
 </resources>

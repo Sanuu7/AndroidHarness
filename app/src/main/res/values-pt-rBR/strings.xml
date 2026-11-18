@@ -1088,4 +1088,8 @@
     <string name="settings_group_data_sync">"Dados e sincronização"</string>
     <string name="settings_group_help_about">"Ajuda e sobre"</string>
     <string name="settings_page_background_desc">"Trabalho em segundo plano, bateria e notificações"</string>
+    <string name="chat_dig_deeper">"Aprofundar"</string>
+    <string name="chat_answer_outline">"Ir para a seção"</string>
+    <string name="chat_claim_check">"Verificar esta afirmação"</string>
+    <string name="chat_claim_sources">"As fontes divergem ou só uma a sustenta"</string>
 </resources>
