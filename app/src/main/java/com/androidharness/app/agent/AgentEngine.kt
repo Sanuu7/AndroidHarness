@@ -373,7 +373,9 @@ class AgentEngine(
         // Chat gets a run-scoped web_search so the header's research depth
         // limits distinct sources per turn without touching other sessions.
         val scopedSearch = if (conversation.isChat) {
-            (registry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.forDepth(searchDepth)
+            (registry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.forDepth(searchDepth,
+                images = com.androidharness.app.core.ChatExperience.effectiveImageFrequency(conversation.imageFrequency, chatImageFrequency) ==
+                    com.androidharness.app.data.ImageFrequency.ALWAYS)
         } else null
         // Same run budget for page reads: deep research must not only collect
         // snippets, and every read is counted against the same turn.

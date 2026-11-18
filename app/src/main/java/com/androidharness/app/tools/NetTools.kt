@@ -35,6 +35,8 @@ class WebSearchTool(
     private val refreshApi: suspend () -> SearchApiConfig? = { searchApi() },
     /** Reads the top results in parallel so one call returns passages, not just snippets. */
     private val pageReader: SearchPageReader? = null,
+    /** Always-images chats: list pictures from the pages read, so the answer has one without another round. */
+    private val pageImages: Boolean = false,
 ) : Tool {
     override val name = "web_search"
     override val description: String get() = buildString {
@@ -91,13 +93,14 @@ class WebSearchTool(
     }
 
     /** A run-scoped copy that spends from this turn's source and read budgets. */
-    fun forDepth(depth: com.androidharness.app.data.SearchDepth): WebSearchTool =
+    fun forDepth(depth: com.androidharness.app.data.SearchDepth, images: Boolean = false): WebSearchTool =
         WebSearchTool(
             client, searchApi,
             depth.maxSources?.let { SearchSourceBudget(it, researchReadLimit(depth), researchReadMinimum(depth)) },
             depth,
             refreshApi,
             pageReader,
+            images,
         )
 
     internal fun budget(): SearchSourceBudget? = sourceBudget
@@ -128,6 +131,10 @@ class WebSearchTool(
                 if (outcome.unread.isNotEmpty() && outcome.loaded < wanted) {
                     append("\n[Not read in time or blocked: ${outcome.unread.joinToString(", ")}. Use web_fetch if one of them matters.]")
                 }
+            }
+            if (pageImages) {
+                val images = outcome.pages.flatMap { WebResultCache.getPageImages(it.result.url).orEmpty() }
+                if (images.isNotEmpty()) append("\n").append(PageImageText.render(images, 4))
             }
             sourceBudget?.let { budget ->
                 append("\n[pages read this turn: ${budget.pagesRead}")

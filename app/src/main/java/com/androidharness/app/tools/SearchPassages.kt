@@ -1,8 +1,8 @@
 package com.androidharness.app.tools
 
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.withTimeoutOrNull
 import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
@@ -165,7 +165,7 @@ internal object SearchPassages {
 class SearchPageReader internal constructor(
     /** Returns a page's readable text, or null when it could not be read. */
     private val readPage: suspend (String) -> String?,
-    private val deadlineMs: Long = 7_000,
+    private val deadlineMs: Long = 5_000,
 ) {
     internal data class Outcome(val pages: List<PagePassages>, val attempted: Int, val loaded: Int, val unread: List<String>)
 
@@ -182,31 +182,39 @@ class SearchPageReader internal constructor(
             .take(wanted + 2)
         if (candidates.isEmpty() || wanted <= 0) return@coroutineScope Outcome(emptyList(), 0, 0, emptyList())
         val started = System.nanoTime()
-        val jobs = candidates.map { result ->
-            async(Dispatchers.IO) {
+        val arrivals = Channel<Pair<Int, String?>>(candidates.size)
+        val jobs = candidates.mapIndexed { index, result ->
+            launch(Dispatchers.IO) {
                 val pageStart = System.nanoTime()
-                val text = withTimeoutOrNull(deadlineMs) {
-                    try { readPage(result.url) }
+                val text = try { readPage(result.url) }
                     catch (e: kotlinx.coroutines.CancellationException) { throw e }
                     catch (_: Exception) { null }
-                }
                 researchTiming("search page ${result.url.toHttpUrlOrNull()?.host}: " +
-                    "${(System.nanoTime() - pageStart) / 1_000_000}ms ${if (text == null) "dropped" else "${text.length} chars"}")
-                text
+                    "${(System.nanoTime() - pageStart) / 1_000_000}ms ${if (text.isNullOrBlank()) "dropped" else "${text.length} chars"}")
+                arrivals.send(index to text)
             }
         }
-        val texts = jobs.awaitAll()
-        val loaded = candidates.zip(texts).filter { !it.second.isNullOrBlank() }.map { it.first to it.second!! }
-        val kept = ArrayList<Pair<WebSearchResult, String>>()
-        for (pair in loaded) {
-            if (kept.size >= wanted) break
-            if (budget == null || budget.claimRead(pair.first.url)) kept += pair
+        // Stop as soon as enough pages are in: the spares only cover for pages
+        // that fail, and waiting for the slowest one cost every search seconds.
+        val kept = ArrayList<Pair<Int, String>>()
+        var answered = 0
+        withTimeoutOrNull(deadlineMs) {
+            while (kept.size < wanted && answered < candidates.size) {
+                val (index, text) = arrivals.receive()
+                answered++
+                if (text.isNullOrBlank()) continue
+                if (budget == null || budget.claimRead(candidates[index].url)) kept += index to text
+            }
         }
-        val ranked = SearchPassages.rank(query, kept)
-        researchTiming("search read: ${kept.size}/${candidates.size} pages in ${(System.nanoTime() - started) / 1_000_000}ms, " +
+        jobs.forEach { it.cancel() }
+        arrivals.close()
+        // Rank in the search engine's order, not in the order pages happened to load.
+        val pages = kept.sortedBy { it.first }.map { candidates[it.first] to it.second }
+        val ranked = SearchPassages.rank(query, pages)
+        researchTiming("search read: ${pages.size}/${candidates.size} pages in ${(System.nanoTime() - started) / 1_000_000}ms, " +
             "${ranked.sumOf { it.passages.size }} passages")
-        val readUrls = kept.map { canonicalResultUrl(it.first.url) }.toSet()
-        Outcome(ranked, candidates.size, kept.size,
-            candidates.filter { canonicalResultUrl(it.url) !in readUrls }.take(wanted).map { it.url })
+        val readIndexes = kept.map { it.first }.toSet()
+        Outcome(ranked, candidates.size, pages.size,
+            candidates.filterIndexed { index, _ -> index !in readIndexes }.take(wanted).map { it.url })
     }
 }
