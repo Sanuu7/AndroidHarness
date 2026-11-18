@@ -1807,6 +1807,8 @@ private fun ChatScreenContent(
                                         onStep = rumble,
                                         runningCalls = if (running) state.runningCalls else emptyList(),
                                         streamingThinking = if (running && !committed) state.streamingThinking.orEmpty() else "",
+                                        // Text is not the answer until the round ends without more work, so it streams here first.
+                                        streamingCommentary = if (running && !committed && !state.streamingCommitted) state.streamingText.orEmpty() else "",
                                         writing = running && !state.streamingText.isNullOrBlank(),
                                         streamId = state.streamingMessageId ?: "live",
                                         onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true })
@@ -1966,7 +1968,12 @@ private fun ChatScreenContent(
                                     // Progress prose stays in the chronological disclosure; only the answer renders here.
                                     if (message.text.isNotBlank() && message.toolCalls.isEmpty() && (isTurnFinal || message.turnId == null)) indexedItem(key = "chat-$messageKey-answer", contentType = ChatListContentType.AssistantText) {
                                         Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                                            val replyText = remember(message.text) { com.androidharness.app.core.response.ChatRichResponse.normalize(message.text) }
+                                            val revealing = message.id != null && message.id in state.revealAnswerIds
+                                            val shownText = com.androidharness.app.ui.chat.components.rememberAnswerReveal(message.text, revealing) {
+                                                message.id?.let(viewModel::answerRevealed)
+                                            }
+                                            val typing = shownText.length < message.text.length
+                                            val replyText = remember(shownText, typing) { com.androidharness.app.core.response.ChatRichResponse.normalize(shownText, typing) }
                                             com.androidharness.app.ui.chat.components.QuoteReplySelection(onQuote = { selected ->
                                                 attachedConceptJson = null
                                                 attachedResponseJson = ResponseAttachment(uiContext.getString(R.string.chat_quoted_text), selected.take(1500)).encode()
@@ -1980,7 +1987,7 @@ private fun ChatScreenContent(
                                                     com.androidharness.app.ui.chat.components.LocalChatImageOpen provides { url -> viewerImageUrl = url },
                                                     LocalChatImagesEnabled provides (effectiveImageFrequency != com.androidharness.app.data.ImageFrequency.NONE),
                                                 ) {
-                                                    AssistantText(replyText, showPreviewChip = false, chatImages = responseImages,
+                                                    AssistantText(replyText, streaming = typing, showPreviewChip = false, chatImages = responseImages,
                                                         onFollowUp = { action ->
                                                             attachedConceptJson = null
                                                             attachedResponseJson = ResponseAttachment(action.title, action.context).encode()
@@ -2395,9 +2402,9 @@ private fun ChatScreenContent(
                             }
                         }
                         state.streamingText?.let { streaming ->
-                            // In chat the live disclosure above already shows
-                            // progress; a blank dots bubble under it is noise.
-                            if (streaming.isNotBlank() || !state.conversation.isChat) {
+                            // Chat streams unconfirmed text in the live working log above; the
+                            // answer bubble appears only for a committed final answer.
+                            if (!state.conversation.isChat) {
                                 // Preserve the item identity and scroll offset when the same response is saved.
                                 val answerKey = if (state.conversation.isChat) "chat-$streamKey-answer" else "message-$streamKey-text"
                                 indexedItem(key = answerKey, contentType = ChatListContentType.AssistantText) {
