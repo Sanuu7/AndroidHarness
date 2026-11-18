@@ -135,7 +135,9 @@ private fun itemCount(section: CustomSettingsSection, links: SettingLinks): Stri
 @Composable
 private fun SectionBadge(icon: String, size: Dp, modifier: Modifier = Modifier) {
     val scheme = MaterialTheme.colorScheme
-    Box(modifier.size(size).background(scheme.primaryContainer, MaterialShapes.Cookie9Sided.toShape()), contentAlignment = Alignment.Center) {
+    // One soft silhouette per icon, from the same rounded set as the built-in pages.
+    val shape = settingsHeroShape(icon.hashCode())
+    Box(modifier.size(size).background(scheme.primaryContainer, shape), contentAlignment = Alignment.Center) {
         Icon(customSectionIcon(icon), null, tint = scheme.onPrimaryContainer, modifier = Modifier.size(size / 2))
     }
 }

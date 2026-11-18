@@ -355,12 +355,17 @@ internal fun Switch(
     enabled, colors, interactionSource,
 )
 
-/** The soft polygons a page hero cycles through, so neighbouring pages do not share a silhouette. */
+/**
+ * The soft polygons a page hero cycles through, so neighbouring pages do not
+ * share a silhouette. Only rounded silhouettes belong here: the spiky cookies,
+ * bursts and suns read as sharp stars at badge size, which is not the calm
+ * look this screen wants.
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val heroPolygons = listOf(
-    MaterialShapes.Cookie9Sided, MaterialShapes.Clover4Leaf, MaterialShapes.Cookie6Sided, MaterialShapes.Sunny,
-    MaterialShapes.Cookie12Sided, MaterialShapes.Flower, MaterialShapes.Pentagon, MaterialShapes.Clover8Leaf,
-    MaterialShapes.Cookie7Sided, MaterialShapes.SoftBurst, MaterialShapes.Cookie4Sided, MaterialShapes.Gem,
+    MaterialShapes.Clover4Leaf, MaterialShapes.Cookie4Sided, MaterialShapes.Cookie6Sided, MaterialShapes.Flower,
+    MaterialShapes.Puffy, MaterialShapes.PuffyDiamond, MaterialShapes.ClamShell, MaterialShapes.Clover8Leaf,
+    MaterialShapes.Cookie7Sided, MaterialShapes.Bun, MaterialShapes.Ghostish, MaterialShapes.Oval,
 )
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
