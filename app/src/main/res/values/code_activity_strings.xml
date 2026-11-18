@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <plurals name="code_explore_read">
+        <item quantity="one">read %d file</item>
+        <item quantity="other">read %d files</item>
+    </plurals>
+    <plurals name="code_explore_search">
+        <item quantity="one">searched %d time</item>
+        <item quantity="other">searched %d times</item>
+    </plurals>
+    <plurals name="code_explore_list">
+        <item quantity="one">listed %d folder</item>
+        <item quantity="other">listed %d folders</item>
+    </plurals>
+    <plurals name="code_explore_web">
+        <item quantity="one">checked %d web source</item>
+        <item quantity="other">checked %d web sources</item>
+    </plurals>
+    <plurals name="code_explore_memory">
+        <item quantity="one">recalled %d memory</item>
+        <item quantity="other">recalled %d memories</item>
+    </plurals>
+    <plurals name="code_explore_other">
+        <item quantity="one">ran %d check</item>
+        <item quantity="other">ran %d checks</item>
+    </plurals>
+    <plurals name="code_explore_failed">
+        <item quantity="one">%d failed</item>
+        <item quantity="other">%d failed</item>
+    </plurals>
+    <string name="code_explore_exploring">Exploring</string>
+    <string name="code_live_writing_line">Writing line %1$d</string>
+    <string name="code_live_editing_lines">Rewriting %1$d lines</string>
+    <string name="code_live_waiting_for_code">Waiting for code</string>
+    <string name="context_tab_limits">Limits</string>
+    <string name="context_free_tokens">%1$s free</string>
+    <string name="context_used">used</string>
+    <string name="context_cache_hit_rate_short">Cache hit rate</string>
+    <string name="context_requests_short">Requests</string>
+    <string name="context_limit_used">%1$s of %2$s used</string>
+    <string name="code_cache_catalog_price">Some requests use the model\'s catalog list price. Your provider may charge differently.</string>
+</resources>

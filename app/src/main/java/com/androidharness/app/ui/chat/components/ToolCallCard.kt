@@ -376,13 +376,24 @@ internal fun TurnActivityCard(
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     if (activity.isEmpty()) return
     val rows = remember(activity) {
+        val plan = com.androidharness.app.agent.CodeActivityGroups.plan(activity)
         buildList {
             activity.forEachIndexed { index, message ->
                 val messageKey = message.id ?: index.toString()
-                if (message.thinking.isNotBlank() || (message.generation.reasoningTokens ?: 0) > 0)
+                if (message.id !in plan.foldedThinking && (message.thinking.isNotBlank() || (message.generation.reasoningTokens ?: 0) > 0))
                     add(ActivityRow.Thinking("$messageKey-thinking", message))
                 if (message.text.isNotBlank()) add(ActivityRow.Text("$messageKey-text", message.text))
-                message.toolCalls.forEach { add(ActivityRow.Tool("$messageKey-tool-${it.id}", it)) }
+                val slots = message.id?.let { plan.slots[it] }
+                if (slots == null) message.toolCalls.forEach { add(ActivityRow.Tool("$messageKey-tool-${it.id}", it)) }
+                else {
+                    message.toolCalls.filter { it.name == "task" }.forEach { add(ActivityRow.Tool("$messageKey-tool-${it.id}", it)) }
+                    slots.forEach { slot ->
+                        when (slot) {
+                            is com.androidharness.app.agent.CodeActivityGroups.Slot.Explore -> add(ActivityRow.Explore(slot.group.key, slot.group))
+                            is com.androidharness.app.agent.CodeActivityGroups.Slot.Single -> add(ActivityRow.Tool("$messageKey-tool-${slot.call.id}", slot.call))
+                        }
+                    }
+                }
             }
         }
     }
@@ -420,6 +431,7 @@ internal fun TurnActivityCard(
                         is ActivityRow.Thinking -> ThinkingBlock(row.message.thinking,
                             thinkingMs = row.message.thinkingMs, reasoningTokens = row.message.generation.reasoningTokens)
                         is ActivityRow.Text -> Box(Modifier.padding(horizontal = 8.dp)) { AssistantText(row.text) }
+                        is ActivityRow.Explore -> ExploreGroupCard(row.group, results, emptySet(), live = false, onOpenFile = onOpenFile)
                         is ActivityRow.Tool -> ToolCallCard(
                             call = row.call,
                             result = results[row.call.id],
@@ -490,6 +502,7 @@ private sealed interface ActivityRow {
     data class Thinking(override val key: String, val message: ChatMessage) : ActivityRow
     data class Text(override val key: String, val text: String) : ActivityRow
     data class Tool(override val key: String, val call: ToolCallData) : ActivityRow
+    data class Explore(override val key: String, val group: com.androidharness.app.agent.CodeActivityGroups.Group) : ActivityRow
 }
 
 private data class ToolCardDetails(val name: String, val raw: String, val arguments: String, val patch: String?, val command: String?)

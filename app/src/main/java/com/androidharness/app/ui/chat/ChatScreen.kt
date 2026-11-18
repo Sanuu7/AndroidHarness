@@ -1647,6 +1647,11 @@ private fun ChatScreenContent(
                 val turnActivities = remember(state.messages) {
                     completedTurnActivities(state.messages)
                 }
+                // Code feed: runs of read-only steps fold into one explore card while a turn works.
+                val codePlan = remember(state.messages, state.conversation.isChat) {
+                    if (state.conversation.isChat) com.androidharness.app.agent.CodeActivityGroups.Plan.EMPTY
+                    else com.androidharness.app.agent.CodeActivityGroups.plan(state.messages)
+                }
                 val chatTurns = remember(state.messages, state.conversation.isChat) {
                     if (state.conversation.isChat) state.messages.groupBy { it.turnId } else emptyMap()
                 }
@@ -2054,7 +2059,7 @@ private fun ChatScreenContent(
                                 val isSearchTurn = activeFindId != null && message.turnId == searchTurnId
                                 val hasFinishedActivity = !isTurnRunning && !isSearchTurn && activity.isNotEmpty()
                                 if (hasFinishedActivity && !isTurnFinal) continue
-                                if (!hasFinishedActivity && (message.thinking.isNotBlank() || (message.generation.reasoningTokens ?: 0) > 0)) {
+                                if (!hasFinishedActivity && message.id !in codePlan.foldedThinking && (message.thinking.isNotBlank() || (message.generation.reasoningTokens ?: 0) > 0)) {
                                     indexedItem(key = "message-$messageKey-thinking", contentType = ChatListContentType.Thinking) {
                                         Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                             ThinkingBlock(message.thinking, thinkingMs = message.thinkingMs, reasoningTokens = message.generation.reasoningTokens)
@@ -2223,7 +2228,43 @@ private fun ChatScreenContent(
                                             }
                                         }
                                     }
-                                    if (otherCalls.size >= 3 && otherCalls.none { BrowserToolActivity.isBrowserTool(it.name) || it.name == "pkg_install" || it.name == "android_sdk_install" || it.name == "github_create_pull_request" } && !(state.showLiveCode && otherCalls.any {
+                                    val slots = message.id?.let { codePlan.slots[it] }
+                                    if (slots != null) {
+                                        for (slot in slots) when (slot) {
+                                            is com.androidharness.app.agent.CodeActivityGroups.Slot.Explore ->
+                                                indexedItem(key = "message-${slot.group.key}", contentType = ChatListContentType.Tools) {
+                                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                                        com.androidharness.app.ui.chat.components.ExploreGroupCard(
+                                                            group = slot.group,
+                                                            results = toolResults,
+                                                            runningIds = runningIds,
+                                                            live = isTurnRunning,
+                                                            onOpenFile = onOpenFile,
+                                                            awaitingApprovalId = state.pendingApproval?.call?.id.takeIf { isTurnRunning },
+                                                        )
+                                                    }
+                                                }
+                                            is com.androidharness.app.agent.CodeActivityGroups.Slot.Single -> {
+                                                val call = slot.call
+                                                indexedItem(key = "message-$messageKey-tool-${call.id}", contentType = ChatListContentType.Tool) {
+                                                    Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                                        ToolCallCard(
+                                                            call = call,
+                                                            result = toolResults[call.id],
+                                                            running = call.id in runningIds,
+                                                            onOpenFile = onOpenFile,
+                                                            showLiveCode = state.showLiveCode,
+                                                            codeDraft = if (isTurnRunning) state.codeDrafts[call.id] else null,
+                                                            awaitingApproval = isTurnRunning && state.pendingApproval?.call?.id == call.id,
+                                                            onWatchBrowser = ::watchBrowser,
+                                                            browserTarget = browserTargets[call.id],
+                                                            packageProgress = state.packageProgress[call.id],
+                                                        )
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    } else if (otherCalls.size >= 3 && otherCalls.none { BrowserToolActivity.isBrowserTool(it.name) || it.name == "pkg_install" || it.name == "android_sdk_install" || it.name == "github_create_pull_request" } && !(state.showLiveCode && otherCalls.any {
                                             it.name in com.androidharness.app.agent.LiveCodePreview.tools })) {
                                         indexedItem(key = "message-$messageKey-tools", contentType = ChatListContentType.Tools) {
                                             Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
@@ -2580,7 +2621,24 @@ private fun ChatScreenContent(
                     CompactionBanner(note, Modifier.padding(bottom = 6.dp))
                 }
 
-                if (!state.conversation.isChat) AgentStatusBar(action = state.currentAction, busy = state.busy)
+                if (!state.conversation.isChat) {
+                    // The last tool's outline lingers while its "Editing…" line does, instead of snapping back.
+                    var lastToolShape by remember { mutableStateOf<com.androidharness.app.ui.common.LogoShape?>(null) }
+                    val runningCall = state.runningCalls.lastOrNull()
+                    LaunchedEffect(runningCall?.id, state.busy) {
+                        if (runningCall != null) lastToolShape = com.androidharness.app.ui.chat.components.toolLogoShape(runningCall)
+                        else if (!state.busy) lastToolShape = null
+                    }
+                    val statusShape = com.androidharness.app.ui.chat.components.codeLogoShape(
+                        runningCall = runningCall,
+                        waiting = state.pendingApproval != null || state.pendingQuestion != null,
+                        drafting = state.codeDrafts.values.any { it.stage == com.androidharness.app.agent.CodeDraftStage.GENERATING },
+                        thinking = state.streamingThinking != null && state.streamingText.isNullOrEmpty(),
+                        writing = state.streamingText != null,
+                        lastTool = lastToolShape.takeIf { state.currentToolAction != null },
+                    )
+                    AgentStatusBar(action = state.currentAction, busy = state.busy, shape = statusShape)
+                }
                 com.androidharness.app.ui.automation.ScheduledMessageRow(chatSchedules, scheduleConnection, scheduleNow) {
                     if (chatSchedules.size == 1) scheduleDraft = chatSchedules.first() else showScheduledList = true
                 }
