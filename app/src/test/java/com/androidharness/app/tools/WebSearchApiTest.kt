@@ -88,7 +88,7 @@ class WebSearchApiTest {
                 {"title":"A","url":"https://a.test","description":""},
                 {"title":"B","url":"https://b.test","description":""}]}}""")
         }, { SearchApiConfig("brave", "key") })
-        assertSame(tool, tool.forDepth(SearchDepth.AUTO))
+        assertNull(tool.forDepth(SearchDepth.AUTO).budget())
         val result = tool.forDepth(SearchDepth.DEEP_RESEARCH).execute(query("android"), context)
         assertTrue(result.output.contains("[via Brave Search API]"))
         assertTrue(result.output.contains("sources this turn: 2/50, 48 remaining"))

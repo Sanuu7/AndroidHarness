@@ -33,6 +33,8 @@ class WebSearchTool(
     /** Chat's selected research depth; null for Code and Auto. */
     private val depth: com.androidharness.app.data.SearchDepth? = null,
     private val refreshApi: suspend () -> SearchApiConfig? = { searchApi() },
+    /** Reads the top results in parallel so one call returns passages, not just snippets. */
+    private val pageReader: SearchPageReader? = null,
 ) : Tool {
     override val name = "web_search"
     override val description: String get() = buildString {
@@ -49,6 +51,11 @@ class WebSearchTool(
                 "The engine parameter is ignored while it is active. API authentication, quota and rate-limit failures " +
                 "are reported explicitly; do not switch to scraping or repeat unchanged requests.")
         }
+        if (pageReader != null) {
+            append(" It also reads the top result pages at the same time and returns their passages that best match the query " +
+                "(set read to choose how many pages, 0 for snippets only). Those pages count as read; answer from the passages " +
+                "when they cover the question, and use web_fetch only for a page that was not read or when you need more of one.")
+        }
         sourceBudget?.let {
             append(" This turn allows at most ${it.maxSources} distinct sources; the tool stops returning new sources when the budget is used.")
         }
@@ -61,6 +68,8 @@ class WebSearchTool(
             "freshness" to Schema.string("Optional recency filter: day, week, month, year. Omit or use any for no filter."),
             "language" to Schema.string("Optional result language code, for example en or de."),
             "country" to Schema.string("Optional country code, for example US or DE."),
+            "read" to Schema.integer("How many top result pages to read in parallel and return passages from (0-6). " +
+                "Defaults to ${READ_DEFAULT} in Chat; 0 returns snippets only."),
         ),
         required = listOf("query"),
     )
@@ -83,18 +92,53 @@ class WebSearchTool(
 
     /** A run-scoped copy that spends from this turn's source and read budgets. */
     fun forDepth(depth: com.androidharness.app.data.SearchDepth): WebSearchTool =
-        depth.maxSources?.let {
-            WebSearchTool(
-                client, searchApi,
-                SearchSourceBudget(it, researchReadLimit(depth), researchReadMinimum(depth)),
-                depth,
-                refreshApi,
-            )
-        } ?: this
+        WebSearchTool(
+            client, searchApi,
+            depth.maxSources?.let { SearchSourceBudget(it, researchReadLimit(depth), researchReadMinimum(depth)) },
+            depth,
+            refreshApi,
+            pageReader,
+        )
 
     internal fun budget(): SearchSourceBudget? = sourceBudget
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        val started = System.nanoTime()
+        val shown = ArrayList<WebSearchResult>()
+        val result = search(args, shown)
+        val searchMs = (System.nanoTime() - started) / 1_000_000
+        val query = args["query"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
+        val wanted = (args["read"]?.jsonPrimitive?.content?.toIntOrNull()
+            ?: if (depth != null) READ_DEFAULT else 0).coerceIn(0, READ_MAX)
+        val reader = pageReader
+        if (!result.ok || shown.isEmpty() || reader == null || wanted == 0 || depth == com.androidharness.app.data.SearchDepth.OFF) {
+            researchTiming("web_search: ${searchMs}ms, ${shown.size} results, no page reads")
+            return result
+        }
+        val outcome = reader.read(query, shown, wanted, sourceBudget)
+        researchTiming("web_search: search ${searchMs}ms, total ${(System.nanoTime() - started) / 1_000_000}ms")
+        if (outcome.attempted == 0) return result
+        val passages = buildString {
+            append("\n\n")
+            if (outcome.pages.isEmpty()) {
+                append("[Read ${outcome.loaded} of ${outcome.attempted} top pages, but none had passages matching the query. " +
+                    "Use web_fetch on the strongest result if the snippets are not enough.]")
+            } else {
+                append(SearchPassages.render(outcome.pages))
+                if (outcome.unread.isNotEmpty() && outcome.loaded < wanted) {
+                    append("\n[Not read in time or blocked: ${outcome.unread.joinToString(", ")}. Use web_fetch if one of them matters.]")
+                }
+            }
+            sourceBudget?.let { budget ->
+                append("\n[pages read this turn: ${budget.pagesRead}")
+                budget.maxReads?.let { append('/').append(it) }
+                append(']')
+            }
+        }
+        return result.copy(output = result.output + passages, research = sourceBudget?.receipt(backend = result.research?.backend) ?: result.research)
+    }
+
+    private suspend fun search(args: JsonObject, shown: MutableList<WebSearchResult>): ToolResult {
         val rawQuery = args["query"]?.jsonPrimitive?.content
             ?: throw ToolFailure("Missing required argument: query")
         val query = rawQuery.trim()
@@ -128,7 +172,10 @@ class WebSearchTool(
             com.androidharness.app.data.SearchDepth.DEEP_RESEARCH,
             com.androidharness.app.data.SearchDepth.MAX_RESEARCH,
         )
-        val options = SearchOptions(requested, freshness, language, country, deep)
+        val readCount = (args["read"]?.jsonPrimitive?.content?.toIntOrNull()
+            ?: if (depth != null && pageReader != null) READ_DEFAULT else 0).coerceIn(0, READ_MAX)
+            .let { if (pageReader == null || depth == com.androidharness.app.data.SearchDepth.OFF) 0 else it }
+        val options = SearchOptions(requested, freshness, language, country, deep, readPages = readCount > 0)
         val searchClient = client.newBuilder()
             .readTimeout(25, TimeUnit.SECONDS)
             .build()
@@ -140,12 +187,12 @@ class WebSearchTool(
         val apiBackend = searchBackendFor(apiConfig)
         val cacheKey = listOf(
             apiBackend?.label ?: "keyless", query, count, options.engine,
-            options.freshness, options.language, options.country, options.deep,
+            options.freshness, options.language, options.country, options.deep, options.readPages,
             apiConfig?.credentialIdentity(),
         ).joinToString("|")
         WebResultCache.getSearch(cacheKey)?.let { cached ->
             val suffix = (cached.via?.let { "\n[via $it]" } ?: "") + "\n[cached search; no new API request]"
-            return render(cached.results, count, "", suffix)
+            return render(cached.results, count, "", suffix, shown)
         }
         if (apiBackend != null) {
             try {
@@ -160,7 +207,7 @@ class WebSearchTool(
                         }
                         append("\n[via ").append(outcome.via ?: apiBackend.label).append(']')
                     }
-                    return render(outcome.results, count, notes.toString(), suffix)
+                    return render(outcome.results, count, notes.toString(), suffix, shown)
                 }
                 return render(emptyList(), count, "${apiBackend.label} returned no results. Try a different query.\n", "\n[via ${apiBackend.label}]")
             } catch (e: kotlinx.coroutines.CancellationException) {
@@ -186,7 +233,7 @@ class WebSearchTool(
         }
         WebResultCache.putSearch(cacheKey, outcome)
         val suffix = outcome.via?.let { "\n[via $it]" } ?: ""
-        return render(outcome.results, count, notes.toString(), suffix)
+        return render(outcome.results, count, notes.toString(), suffix, shown)
     }
 
     private fun render(
@@ -194,14 +241,17 @@ class WebSearchTool(
         count: Int,
         prefix: String,
         suffix: String,
+        shown: MutableList<WebSearchResult> = ArrayList(),
     ): ToolResult {
         val varied = diversifyResults(results)
         val budget = sourceBudget
         if (budget == null) {
+            shown += varied.take(count)
             return ToolResult(true, prefix + WebSearchText.render(varied, count) + suffix,
                 research = com.androidharness.app.core.ResearchReceipt(backend = suffix.substringAfter("[via ", "").substringBefore(']')))
         }
         val claimed = budget.claim(varied.take(count))
+        shown += claimed
         if (claimed.isEmpty()) {
             val message = if (budget.remaining == 0) exhaustedText()
             else "[No new sources found; ${budget.remaining} of ${budget.maxSources} sources remain this turn. Try a different query angle.]"
@@ -209,7 +259,8 @@ class WebSearchTool(
         }
         val push = when (depth) {
             com.androidharness.app.data.SearchDepth.DEEP ->
-                ". Read the strongest pages with web_fetch before answering."
+                if (pageReader != null) ". Pages read below count; use web_fetch for other strong results before answering."
+                else ". Read the strongest pages with web_fetch before answering."
             com.androidharness.app.data.SearchDepth.DEEP_RESEARCH,
             com.androidharness.app.data.SearchDepth.MAX_RESEARCH ->
                 ". Keep searching different angles and read the strongest pages with web_fetch until the budget is used."
@@ -225,6 +276,11 @@ class WebSearchTool(
         }
         return ToolResult(true, prefix + WebSearchText.render(claimed, claimed.size) + suffix + note,
             research = budget.receipt(backend = suffix.substringAfter("[via ", "").substringBefore(']')))
+    }
+
+    private companion object {
+        const val READ_DEFAULT = 4
+        const val READ_MAX = 6
     }
 
     private fun exhaustedText(): String {

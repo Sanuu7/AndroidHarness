@@ -137,7 +137,10 @@ class ToolRegistry(private val tools: List<Tool>) {
                 MoveFileTool(),
                 WebFetchTool(httpClient, searchApi = searchApi, refreshApi = searchApiRefresh,
                     renderedReader = browserController?.let { browser -> { budget -> BrowserReadTool(browser, budget) } }),
-                WebSearchTool(httpClient, searchApi, refreshApi = searchApiRefresh),
+                WebFetchTool(httpClient, searchApi = searchApi, refreshApi = searchApiRefresh).let { pages ->
+                    WebSearchTool(httpClient, searchApi, refreshApi = searchApiRefresh,
+                        pageReader = SearchPageReader(pages::readText))
+                },
                 HttpRequestTool(httpClient) { linuxEnv.githubToken() },
                 AskUserTool(),
                 StorageAccessTool { shellRouter.isAllFilesAccess() },

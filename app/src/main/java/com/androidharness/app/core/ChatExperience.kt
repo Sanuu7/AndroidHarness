@@ -87,7 +87,7 @@ In Chat, the presentation choice above means the clearest layout for a phone rea
         val base = when (depth) {
             com.androidharness.app.data.SearchDepth.OFF -> return "Web search is Off. The web_search tool is disabled. Do not search the web or use page-reading tools to run searches. You may still read links and use the other available tools. Answer from the conversation, your knowledge, and any pages you read; be clear when current information cannot be verified."
             com.androidharness.app.data.SearchDepth.INSTANT ->
-                "The user chose Instant: run one quick search, use at most 5 distinct sources this turn, and answer as soon as the question is covered. Do not keep researching."
+                "The user chose Instant: run one quick search, use at most 5 distinct sources this turn, and answer from its passages as soon as the question is covered. Do not keep researching."
             com.androidharness.app.data.SearchDepth.DEEP ->
                 "The user chose Deep search: run focused searches, read the strongest result pages with web_fetch, and use up to 20 distinct sources this turn. While budget remains and relevant angles are unexplored, keep searching; stop when the budget is used or new searches return no new sources. Use the reported dates and the freshness filter for time-sensitive questions."
             com.androidharness.app.data.SearchDepth.AUTO ->
@@ -97,8 +97,13 @@ In Chat, the presentation choice above means the clearest layout for a phone rea
             com.androidharness.app.data.SearchDepth.MAX_RESEARCH ->
                 "The user chose Max research: research exhaustively across queries and angles, keep searching until the 100-source budget is used or further searches return no new sources, and read the strongest pages with web_fetch before answering. Do not stop early just because the first results look sufficient, and do not answer from snippets alone."
         }
-        return if (depth.maxSources == null) base
-        else base + " web_search enforces this turn's source budget and reports how many sources remain; when it is used up, answer from the sources already collected instead of searching more."
+        val reading = " web_search reads the top result pages at the same time and returns their passages that best match the query; " +
+            "those pages count as read. Answer from the passages when they cover the question, and do not fetch a page it already read. " +
+            "Use web_fetch for a strong result it did not read, or when a passage is cut short and you need more. " +
+            "When search passages disagree on a fact, number or date, run one targeted search on that point before answering. " +
+            "Run independent searches for different angles in the same message: they run at the same time."
+        return if (depth.maxSources == null) base + reading
+        else base + reading + " web_search enforces this turn's source budget and reports how many sources remain; when it is used up, answer from the sources already collected instead of searching more."
     }
 
     /** Per-chat Default inherits the global Chat Option setting. */

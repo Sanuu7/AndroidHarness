@@ -111,7 +111,7 @@ class SearchSourceBudgetTest {
     @Test fun depthCopiesExposeTheirLimitAndAutoHasNone() {
         val client = okhttp3.OkHttpClient()
         val base = WebSearchTool(client)
-        assertTrue(base.forDepth(com.androidharness.app.data.SearchDepth.AUTO) === base)
+        assertTrue(base.forDepth(com.androidharness.app.data.SearchDepth.AUTO).budget() == null)
         val instant = base.forDepth(com.androidharness.app.data.SearchDepth.INSTANT)
         assertTrue(instant.description.contains("at most 5 distinct sources"))
         val max = base.forDepth(com.androidharness.app.data.SearchDepth.MAX_RESEARCH)

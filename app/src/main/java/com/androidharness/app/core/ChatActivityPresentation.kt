@@ -102,8 +102,11 @@ internal object ChatActivityPresentation {
         for (call in calls(messages)) {
             val result = results[call.id] ?: continue
             when (call.name) {
-                "web_search" -> WebSearchText.parse(result.text.lineSequence().take(400).joinToString("\n"))
-                    .forEach { add(it.title, it.url, false) }
+                "web_search" -> {
+                    WebSearchText.parse(result.text.lineSequence().take(400).joinToString("\n"))
+                        .forEach { add(it.title, it.url, false) }
+                    com.androidharness.app.tools.SearchPassages.readSources(result.text).forEach { add(it.title, it.url, true) }
+                }
                 "web_fetch", "browser_read" -> if (result.generation.research?.pageRead ?: ReadableWebPage.legacyRead(result.text)) {
                     val url = result.generation.research?.pageUrl ?: runCatching { Json.parseToJsonElement(call.argumentsJson).jsonObject["url"]?.jsonPrimitive?.content }.getOrNull()
                     if (url != null) add("", url, true)

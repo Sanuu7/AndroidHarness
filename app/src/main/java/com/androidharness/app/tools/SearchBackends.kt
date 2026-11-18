@@ -5,6 +5,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlinx.serialization.json.Json
@@ -40,6 +41,8 @@ internal data class SearchOptions(
     val language: String? = null,
     val country: String? = null,
     val deep: Boolean = false,
+    /** The caller will read result pages, so a backend that can return page text should. */
+    val readPages: Boolean = false,
 )
 
 /**
@@ -115,6 +118,11 @@ internal class KeylessSearchBackend : SearchBackend {
 
     private val allEngines = listOf("duckduckgo", "bing", "brave", "google")
 
+    private companion object {
+        /** How long other engines may still add results after the first one answers. */
+        const val ENGINE_GRACE_MS = 1_200L
+    }
+
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
     override suspend fun fetch(
         client: OkHttpClient,
@@ -130,19 +138,36 @@ internal class KeylessSearchBackend : SearchBackend {
             "duckduckgo", "bing", "brave", "google" -> listOf(engine.trim().lowercase())
             else -> allEngines
         }
-        // Engines run concurrently. The old chain waited out every engine in
-        // turn, so one blocked engine could hold a research query for its full
-        // read timeout before the next one even started.
+        // Engines run concurrently. Once one engine has results the rest get a
+        // short grace period to add theirs, so a slow or blocked engine no
+        // longer holds every search for its full read timeout.
+        val arrivals = kotlinx.coroutines.channels.Channel<Pair<String, Result<List<WebSearchResult>>>>(chain.size)
         val jobs = chain.map { name ->
-            async(Dispatchers.IO) {
-                name to try { Result.success(fetchEngine(searchClient, name, query, options)) }
+            launch(Dispatchers.IO) {
+                arrivals.send(name to try { Result.success(fetchEngine(searchClient, name, query, options)) }
                     catch (ce: kotlinx.coroutines.CancellationException) { throw ce }
-                    catch (e: Exception) { Result.failure(e) }
+                    catch (e: Exception) { Result.failure(e) })
             }
         }
-        val finished = withTimeoutOrNull(28_000) { jobs.awaitAll() }
-            ?: jobs.filter { it.isCompleted }.mapNotNull { runCatching { it.getCompleted() }.getOrNull() }
-        jobs.filterNot { it.isCompleted }.forEach { it.cancel() }
+        val arrived = ArrayList<Pair<String, Result<List<WebSearchResult>>>>()
+        val started = System.nanoTime()
+        withTimeoutOrNull(28_000) {
+            var graceEndsNs = 0L
+            while (arrived.size < chain.size) {
+                val next = if (graceEndsNs == 0L) arrivals.receive()
+                else withTimeoutOrNull(((graceEndsNs - System.nanoTime()) / 1_000_000).coerceAtLeast(1)) { arrivals.receive() } ?: break
+                arrived += next
+                if (graceEndsNs == 0L && next.second.getOrNull()?.isNotEmpty() == true) {
+                    graceEndsNs = System.nanoTime() + ENGINE_GRACE_MS * 1_000_000
+                }
+            }
+        }
+        jobs.forEach { it.cancel() }
+        arrivals.close()
+        researchTiming("keyless search: ${(System.nanoTime() - started) / 1_000_000}ms, " +
+            "answered: ${arrived.map { "${it.first}=${it.second.getOrNull()?.size ?: "failed"}" }}")
+        // Merge in the chain's priority order, not arrival order.
+        val finished = arrived.sortedBy { chain.indexOf(it.first) }
         val collected = ArrayList<WebSearchResult>()
         val seen = HashSet<String>()
         val used = ArrayList<String>()
@@ -375,7 +400,8 @@ internal class TavilyApiBackend(private val apiKeys: List<String>) : SearchBacke
             put("query", query)
             put("max_results", count)
             put("search_depth", if (options.deep) "advanced" else "basic")
-            put("include_raw_content", options.deep)
+            // Raw page text arrives with the results, so web_search's page reads need no extra requests.
+            put("include_raw_content", options.deep || options.readPages)
             tavilyTimeRange(options.freshness)?.let { put("time_range", it) }
         }
         val body = withKeyFailover(apiKeys) { apiKey ->

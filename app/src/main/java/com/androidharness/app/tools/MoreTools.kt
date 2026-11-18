@@ -243,7 +243,33 @@ class WebFetchTool(
 
     internal fun forBudget(budget: SearchSourceBudget?): WebFetchTool = WebFetchTool(client, budget, searchApi, refreshApi, renderedReader)
 
-    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult = withContext(Dispatchers.IO) {
+    /**
+     * A page's full readable text for web_search's parallel reads, or null when
+     * it is blocked, JavaScript-only, or not text. Never opens the browser: a
+     * search must not wait on rendering, and the model can still ask for it.
+     */
+    internal suspend fun readText(url: String): String? = withContext(Dispatchers.IO) {
+        if (url.toHttpUrlOrNull() == null) return@withContext null
+        val args = kotlinx.serialization.json.buildJsonObject {
+            put("url", kotlinx.serialization.json.JsonPrimitive(url))
+            put("max_chars", kotlinx.serialization.json.JsonPrimitive(1000))
+        }
+        val result = try { ResearchHttp.page(url) { readPage(url, args) } }
+            catch (ce: kotlinx.coroutines.CancellationException) { throw ce }
+            catch (_: Exception) { return@withContext null }
+        if (!result.ok || result.research?.pageRead != true) return@withContext null
+        WebResultCache.getPage(url)?.takeIf { ReadableWebPage.problem(it) == null }
+    }
+
+    override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
+        val started = System.nanoTime()
+        val result = fetch(args, ctx)
+        researchTiming("web_fetch ${args["url"]?.jsonPrimitive?.contentOrNull?.toHttpUrlOrNull()?.host}: " +
+            "${(System.nanoTime() - started) / 1_000_000}ms ok=${result.ok} chars=${result.output.length}")
+        return result
+    }
+
+    private suspend fun fetch(args: JsonObject, ctx: ToolContext): ToolResult = withContext(Dispatchers.IO) {
         val url = args["url"]?.jsonPrimitive?.content ?: throw ToolFailure("Missing required argument: url")
         if (url.toHttpUrlOrNull() == null) throw ToolFailure("Only http(s) URLs are supported.")
         try {
