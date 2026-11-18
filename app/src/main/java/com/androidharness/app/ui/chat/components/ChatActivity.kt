@@ -1,5 +1,7 @@
 package com.androidharness.app.ui.chat.components
 
+import androidx.compose.foundation.relocation.bringIntoViewRequester
+import androidx.compose.ui.layout.onSizeChanged
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.interaction.DragInteraction
@@ -356,7 +358,24 @@ private fun ChatActivityRow(
     val context = androidx.compose.ui.platform.LocalContext.current
     val motion = remember(context) { android.provider.Settings.Global.getFloat(context.contentResolver,
         android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f }
-    Column(Modifier.fillMaxWidth()) {
+    // A card the reader opens scrolls itself into view, through any card it sits in,
+    // once its expand animation settles. Auto-opened live logs leave scrolling alone.
+    val reveal = remember { androidx.compose.foundation.relocation.BringIntoViewRequester() }
+    var revealOnOpen by remember { mutableStateOf(false) }
+    var cardHeight by remember { androidx.compose.runtime.mutableIntStateOf(0) }
+    LaunchedEffect(revealOnOpen) {
+        if (!revealOnOpen) return@LaunchedEffect
+        var last = -1
+        var steady = 0
+        val deadline = System.nanoTime() + 1_200_000_000L
+        while (expanded && steady < 3 && System.nanoTime() < deadline) {
+            withFrameNanos { }
+            if (cardHeight == last) steady++ else { steady = 0; last = cardHeight }
+        }
+        if (expanded) reveal.bringIntoView()
+        revealOnOpen = false
+    }
+    Column(Modifier.fillMaxWidth().bringIntoViewRequester(reveal).onSizeChanged { cardHeight = it.height }) {
         val header: @Composable () -> Unit = {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Row(Modifier.weight(1f), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -373,7 +392,7 @@ private fun ChatActivityRow(
         }
         CompositionLocalProvider(LocalMinimumInteractiveComponentSize provides 40.dp) {
             Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
-            if (expandable) TextButton(onClick = { pauseParent(); detailScroll?.pause(); expanded = !expanded }, modifier = Modifier.weight(1f),
+            if (expandable) TextButton(onClick = { pauseParent(); detailScroll?.pause(); expanded = !expanded; revealOnOpen = expanded }, modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(horizontal = 4.dp)) { header() }
             else Box(Modifier.weight(1f).heightIn(min = 36.dp).padding(horizontal = 4.dp), contentAlignment = Alignment.CenterStart) { header() }
             if (expanded && inlineDetails == null) IconButton(onClick = { pauseParent(); detailScroll?.pause(); following = false; readerOpen = true }) {
