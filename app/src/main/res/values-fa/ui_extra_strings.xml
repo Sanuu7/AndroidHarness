@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"بارگذاری این تصویر ناموفق بود."</string>
     <string name="ui_pages">"%1$s صفحه"</string>
     <string name="ui_could_not_attach_that_file">"پیوست کردن این فایل ناموفق بود: %1$s"</string>
-    <string name="ui_file_is_larger_than">"حجم فایل بیشتر از %1$s است"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"در حال ذخیره انتخاب مدل است. کمی بعد دوباره ارسال کنید."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"ارائه‌دهنده این گفتگو در دسترس نیست. ارائه‌دهنده دیگری را از فهرست مدل‌ها انتخاب کنید."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"مدل محلی انتخاب‌شده حذف شد. آن را دوباره دانلود کنید یا صراحتاً ارائه‌دهنده دیگری را انتخاب کنید."</string>

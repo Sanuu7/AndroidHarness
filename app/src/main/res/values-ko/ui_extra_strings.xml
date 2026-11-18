@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"해당 이미지를 로드할 수 없습니다."</string>
     <string name="ui_pages">"%1$s 페이지"</string>
     <string name="ui_could_not_attach_that_file">"해당 파일을 첨부할 수 없습니다: %1$s"</string>
-    <string name="ui_file_is_larger_than">"파일이 %1$s보다 큽니다."</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"모델 선택을 저장하는 중입니다. 잠시 후 다시 전송해 보세요."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"이 채팅 제공업체를 사용할 수 없습니다. 모델 선택기에서 다른 제공업체를 선택하세요."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"선택한 로컬 모델이 삭제되었습니다. 다시 다운로드하거나 명시적으로 다른 공급자를 선택하세요."</string>

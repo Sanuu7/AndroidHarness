@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"படத்தை ஏற்ற முடியவில்லை."</string>
     <string name="ui_pages">"%1$s பக்கங்கள்"</string>
     <string name="ui_could_not_attach_that_file">"அந்தக் கோப்பை இணைக்க முடியவில்லை: %1$s"</string>
-    <string name="ui_file_is_larger_than">"கோப்பு %1$s ஐ விட பெரியது"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"மாதிரி தேர்வு சேமிக்கப்படுகிறது. சிறிது நேரத்தில் மீண்டும் அனுப்ப முயற்சிக்கவும்."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"இந்த அரட்டையின் வழங்குநர் கிடைக்கவில்லை. மாடல் பிக்கரில் மற்றொரு வழங்குநரைத் தேர்வு செய்யவும்."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"தேர்ந்தெடுக்கப்பட்ட உள்ளூர் மாதிரி அகற்றப்பட்டது. அதை மீண்டும் பதிவிறக்கவும் அல்லது வேறு வழங்குநரைத் தேர்வு செய்யவும்."</string>

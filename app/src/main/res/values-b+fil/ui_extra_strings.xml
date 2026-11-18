@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"Hindi ma-load ang larawang iyon."</string>
     <string name="ui_pages">"%1$s mga pahina"</string>
     <string name="ui_could_not_attach_that_file">"Hindi ma-attach ang file na iyon: %1$s"</string>
-    <string name="ui_file_is_larger_than">"mas malaki ang file kaysa sa %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"Sine-save ang pagpili ng modelo. Subukang magpadala muli sa ilang sandali."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"Hindi available ang provider ng chat na ito. Pumili ng ibang provider sa picker ng modelo."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"Inalis ang napiling lokal na modelo. I-download itong muli o tahasang pumili ng ibang provider."</string>

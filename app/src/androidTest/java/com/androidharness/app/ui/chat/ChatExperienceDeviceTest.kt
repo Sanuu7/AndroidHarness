@@ -854,7 +854,7 @@ class ChatExperienceDeviceTest {
         try {
             val ready = File(root, "ready.txt").apply { writeText("A readable attachment") }
             val binary = File(root, "unsupported.bin").apply { writeBytes(byteArrayOf(0, 1, 2, 3)) }
-            val huge = File(root, "too-large.txt").apply { java.io.RandomAccessFile(this, "rw").use { it.setLength(FileAttachments.COPY_BYTE_LIMIT + 1) } }
+            val huge = File(root, "too-large.png").apply { java.io.RandomAccessFile(this, "rw").use { it.setLength(FileAttachments.IMAGE_BYTE_LIMIT + 1) } }
             ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
                 scenario.onActivity { activity ->
                     vm = ChatViewModel(c, sid); store.put("attachments", vm)

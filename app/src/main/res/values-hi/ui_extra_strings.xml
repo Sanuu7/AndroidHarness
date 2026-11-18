@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"वह छवि लोड नहीं हो सकी."</string>
     <string name="ui_pages">"%1$s पेज"</string>
     <string name="ui_could_not_attach_that_file">"वह फ़ाइल संलग्न नहीं की जा सकी: %1$s"</string>
-    <string name="ui_file_is_larger_than">"फ़ाइल %1$s से बड़ी है"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"मॉडल चयन सहेजा जा रहा है. थोड़ी देर में दोबारा भेजने का प्रयास करें."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"इस चैट का प्रदाता अनुपलब्ध है. मॉडल पिकर में कोई अन्य प्रदाता चुनें।"</string>
     <string name="ui_the_selected_local_model_was_removed_download">"चयनित स्थानीय मॉडल हटा दिया गया था. इसे दोबारा डाउनलोड करें या स्पष्ट रूप से कोई अन्य प्रदाता चुनें।"</string>

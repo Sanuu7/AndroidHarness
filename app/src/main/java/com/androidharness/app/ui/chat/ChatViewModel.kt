@@ -1347,9 +1347,9 @@ class ChatViewModel(
                     ?: mimeHint?.takeUnless { it.contains('*') } ?: "application/octet-stream"
                 _state.update { it.copy(attachmentImports = it.attachmentImports.map { item -> if (item.id == id) item.copy(name = name) else item }) }
                 val size = querySize(resolver, uri)
-                if (size != null && size > FileAttachments.COPY_BYTE_LIMIT) throw AttachmentProblem(
-                    AttachmentImportStatus.TOO_LARGE, c.appContext.getString(R.string.chat_attachment_too_large))
                 if (imageOnly || mime.startsWith("image/")) {
+                    if (size != null && size > FileAttachments.IMAGE_BYTE_LIMIT) throw AttachmentProblem(
+                        AttachmentImportStatus.TOO_LARGE, c.appContext.getString(R.string.chat_attachment_too_large))
                     val keepOriginal = if (snapshot.conversationReady || snapshot.sessionId == null) snapshot.conversation.isChat
                         else c.sessions.session(snapshot.sessionId)?.let {
                             com.androidharness.app.data.ConversationConfig.decode(it.conversationJson).isChat
@@ -1456,10 +1456,6 @@ class ChatViewModel(
         size: Long?,
         importId: String,
     ) {
-        val cap = FileAttachments.COPY_BYTE_LIMIT
-        if (size != null && size > cap) {
-            throw IllegalStateException(c.appContext.getString(R.string.ui_file_is_larger_than, (FileAttachments.humanBytes(cap)).toString()))
-        }
         val fs = chatWorkspace()
         val dir = fs.resolve(".harness/attachments")
         dir.mkdirs()
@@ -1468,22 +1464,21 @@ class ChatViewModel(
         val unique = "$stamp-${importId.take(8)}-$safe"
         val node = dir.createFile(unique)
         try {
-            val bytes = resolver.openInputStream(uri)!!.use { input ->
-                val out = java.io.ByteArrayOutputStream()
-                val chunk = ByteArray(16 * 1024)
-                while (true) {
-                    val count = input.read(chunk)
-                    if (count < 0) break
-                    if (out.size().toLong() + count > cap) throw AttachmentProblem(AttachmentImportStatus.TOO_LARGE,
-                        c.appContext.getString(R.string.chat_attachment_too_large))
-                    out.write(chunk, 0, count)
-                }
-                out.toByteArray()
+            // Stream straight to disk so attachment size is bounded only by free storage, never by heap.
+            var copied = 0L
+            resolver.openInputStream(uri)!!.use { input ->
+                node.writeFrom(object : java.io.FilterInputStream(input) {
+                    override fun read(b: ByteArray, off: Int, len: Int): Int {
+                        // Removing the chip mid-copy stops a large transfer instead of finishing it first.
+                        if (_state.value.attachmentImports.none { it.id == importId }) throw java.io.IOException("Attachment removed")
+                        return super.read(b, off, len).also { if (it > 0) copied += it }
+                    }
+                    override fun read(): Int = super.read().also { if (it >= 0) copied++ }
+                })
             }
-            node.writeBytes(bytes)
             kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.Main.immediate) {
                 if (_state.value.attachmentImports.any { it.id == importId }) {
-                    addFileAttachment(FileAttachment(name, mime, FileAttachments.humanBytes(size ?: bytes.size.toLong()), null, ".harness/attachments/$unique"))
+                    addFileAttachment(FileAttachment(name, mime, FileAttachments.humanBytes(size ?: copied), null, ".harness/attachments/$unique"))
                 } else node.delete()
             }
         } catch (e: Exception) { runCatching { node.delete() }; throw e }

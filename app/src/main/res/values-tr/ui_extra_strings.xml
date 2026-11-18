@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"Bu resim yüklenemedi."</string>
     <string name="ui_pages">"%1$s sayfalar"</string>
     <string name="ui_could_not_attach_that_file">"Bu dosya eklenemedi: %1$s"</string>
-    <string name="ui_file_is_larger_than">"dosya %1$s\'den daha büyük"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"Model seçimi kaydediliyor. Birazdan tekrar göndermeyi deneyin."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"Bu sohbetin sağlayıcısı kullanılamıyor. Model seçicide başka bir sağlayıcı seçin."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"Seçilen yerel model kaldırıldı. Tekrar indirin veya açıkça başka bir sağlayıcı seçin."</string>

@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"Tidak dapat memuat gambar tersebut."</string>
     <string name="ui_pages">"%1$s halaman"</string>
     <string name="ui_could_not_attach_that_file">"Tidak dapat melampirkan berkas tersebut: %1$s"</string>
-    <string name="ui_file_is_larger_than">"berkas lebih besar dari %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"Pilihan model sedang disimpan. Coba kirim lagi sebentar."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"Penyedia chat ini tidak tersedia. Pilih penyedia lain di pemilih model."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"Model lokal yang dipilih telah dihapus. Unduh lagi atau pilih penyedia lain secara eksplisit."</string>

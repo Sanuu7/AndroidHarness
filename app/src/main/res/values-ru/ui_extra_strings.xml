@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"Не удалось загрузить изображение."</string>
     <string name="ui_pages">"Страницы: %1$s"</string>
     <string name="ui_could_not_attach_that_file">"Не удалось прикрепить файл: %1$s"</string>
-    <string name="ui_file_is_larger_than">"размер файла превышает %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"Выбор модели сохраняется. Попробуйте отправить сообщение чуть позже."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"Провайдер этого чата недоступен. Выберите другого в списке моделей."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"Выбранная локальная модель удалена. Загрузите её заново или явно выберите другого провайдера."</string>

@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"ไม่สามารถโหลดภาพนั้นได้"</string>
     <string name="ui_pages">"หน้า %1$s"</string>
     <string name="ui_could_not_attach_that_file">"ไม่สามารถแนบไฟล์นั้นได้: %1$s"</string>
-    <string name="ui_file_is_larger_than">"ไฟล์มีขนาดใหญ่กว่า %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"กำลังบันทึกการเลือกรุ่น โปรดลองส่งอีกครั้งในอีกสักครู่"</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"ผู้ให้บริการแชทนี้ไม่พร้อมใช้งาน เลือกผู้ให้บริการรายอื่นในตัวเลือกโมเดล"</string>
     <string name="ui_the_selected_local_model_was_removed_download">"โมเดลโลคัลที่เลือกถูกลบออกแล้ว ดาวน์โหลดอีกครั้งหรือเลือกผู้ให้บริการรายอื่นอย่างชัดเจน"</string>

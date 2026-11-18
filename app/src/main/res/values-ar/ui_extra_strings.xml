@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"تعذّر تحميل هذه الصورة."</string>
     <string name="ui_pages">"%1$s صفحة"</string>
     <string name="ui_could_not_attach_that_file">"تعذّر إرفاق هذا الملف: %1$s"</string>
-    <string name="ui_file_is_larger_than">"حجم الملف أكبر من %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"جارٍ حفظ اختيار النموذج. حاول الإرسال مجدداً بعد قليل."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"مزوّد هذه المحادثة غير متاح. اختر مزوّداً آخر من قائمة النماذج."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"أُزيل النموذج المحلي المحدد. نزّله مجدداً أو اختر مزوّداً آخر صراحةً."</string>

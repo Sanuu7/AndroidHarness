@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"সেই ছবিটি লোড করা যায়নি।"</string>
     <string name="ui_pages">"%1$s পৃষ্ঠাগুলি"</string>
     <string name="ui_could_not_attach_that_file">"সেই ফাইলটি সংযুক্ত করা যায়নি: %1$s"</string>
-    <string name="ui_file_is_larger_than">"ফাইল %1$s থেকে বড়"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"মডেল নির্বাচন সংরক্ষণ করা হচ্ছে. কিছুক্ষণের মধ্যে আবার পাঠানোর চেষ্টা করুন।"</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"এই চ্যাট প্রদানকারী অনুপলব্ধ. মডেল পিকারে অন্য একটি প্রদানকারী বেছে নিন।"</string>
     <string name="ui_the_selected_local_model_was_removed_download">"নির্বাচিত স্থানীয় মডেল সরানো হয়েছে. এটি আবার ডাউনলোড করুন বা স্পষ্টভাবে অন্য প্রদানকারী বেছে নিন।"</string>

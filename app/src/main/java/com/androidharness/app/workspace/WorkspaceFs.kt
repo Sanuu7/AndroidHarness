@@ -423,10 +423,14 @@ class SafFsNode(
         }
     }
 
-    override fun writeBytes(data: ByteArray) {
+    override fun writeBytes(data: ByteArray) = streamTo { it.write(data) }
+
+    override fun writeFrom(input: java.io.InputStream) = streamTo { input.copyTo(it) }
+
+    private fun streamTo(write: (java.io.OutputStream) -> Unit) {
         val target = resolveWriteTarget()
         context.contentResolver.openOutputStream(target.uri, "wt")?.use { out ->
-            out.write(data)
+            write(out)
             out.flush()
             if (out is java.io.FileOutputStream) {
                 runCatching { out.fd.sync() }

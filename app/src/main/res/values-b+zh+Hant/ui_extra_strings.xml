@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"無法載入該圖片。"</string>
     <string name="ui_pages">"%1$s 頁"</string>
     <string name="ui_could_not_attach_that_file">"無法附加該檔案：%1$s"</string>
-    <string name="ui_file_is_larger_than">"檔案大於 %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"正在儲存模型選擇。請稍後重新傳送。"</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"此聊天的提供商不可用。請在模型選擇器中選擇其他提供商。"</string>
     <string name="ui_the_selected_local_model_was_removed_download">"所選本地模型已被移除。請重新下載，或明確選擇其他提供商。"</string>

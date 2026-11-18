@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"Không thể tải hình ảnh đó."</string>
     <string name="ui_pages">"trang %1$s"</string>
     <string name="ui_could_not_attach_that_file">"Không thể đính kèm tập tin đó: %1$s"</string>
-    <string name="ui_file_is_larger_than">"tệp lớn hơn %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"Lựa chọn mô hình đang được lưu. Hãy thử gửi lại sau giây lát."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"Nhà cung cấp của chat này không có sẵn. Chọn nhà cung cấp khác trong bộ chọn mô hình."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"Mô hình cục bộ đã chọn đã bị xóa. Tải xuống lại hoặc chọn nhà cung cấp khác một cách rõ ràng."</string>

@@ -84,7 +84,8 @@ class SshFs(val connections: SshConnections, val location: SshLocation) : Worksp
         }
         override fun readText() = openInputStream().bufferedReader(Charsets.UTF_8).use { it.readText() }
         override fun writeText(content: String) = writeBytes(content.toByteArray(Charsets.UTF_8))
-        override fun writeBytes(data: ByteArray) {
+        override fun writeBytes(data: ByteArray) = writeFrom(ByteArrayInputStream(data))
+        override fun writeFrom(input: java.io.InputStream) {
             connections.sftp(location.connectionId) { s ->
                 checked(s, path)
                 mkdir(s, path.substringBeforeLast('/').ifEmpty { "/" })
@@ -93,7 +94,7 @@ class SshFs(val connections: SshConnections, val location: SshLocation) : Worksp
                 // Upload first, then replace via server rename; a broken upload never truncates the original.
                 val temp = path + ".harness-upload-" + java.util.UUID.randomUUID()
                 try {
-                    s.put(ByteArrayInputStream(data), temp)
+                    s.put(input, temp)
                     if (previous != null) s.chmod(previous.permissions and 511, temp)
                     s.rename(temp, path)
                     snapshot = null

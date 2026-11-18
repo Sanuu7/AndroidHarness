@@ -12,8 +12,8 @@ object FileAttachments {
     /** Inline text above this many characters falls back to a workspace copy. */
     const val INLINE_CHAR_LIMIT = 32_000
 
-    /** Workspace copy cap: attachments larger than this are refused. */
-    const val COPY_BYTE_LIMIT = 64L * 1024 * 1024
+    /** Images are decoded in memory, so they keep a cap; workspace copies stream and have none. */
+    const val IMAGE_BYTE_LIMIT = 64L * 1024 * 1024
 
     data class Block(val name: String, val mime: String, val sizeLabel: String)
 

@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"画像を読み込めませんでした。"</string>
     <string name="ui_pages">"%1$s ページ"</string>
     <string name="ui_could_not_attach_that_file">"ファイルを添付できませんでした: %1$s"</string>
-    <string name="ui_file_is_larger_than">"ファイルが %1$s を超えています"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"モデル選択を保存中です。少し待ってから再送してください。"</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"このチャットのプロバイダーは利用できません。モデルピッカーで別のプロバイダーを選択してください。"</string>
     <string name="ui_the_selected_local_model_was_removed_download">"選択したローカルモデルが削除されました。再ダウンロードするか、別のプロバイダーを明示的に選択してください。"</string>

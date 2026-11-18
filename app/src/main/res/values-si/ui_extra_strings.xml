@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"ඒ ඡායාරූපය තැබිය නොහැක."</string>
     <string name="ui_pages">"%1$s පිටු"</string>
     <string name="ui_could_not_attach_that_file">"ඒ ගොල්ලන් එකතු කළ නොහැක: %1$s"</string>
-    <string name="ui_file_is_larger_than">"ගොනු වඩා විශාලයි %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"ආකෘතිය තෝරා ගැනීම සුරක්ෂිත වී ඇත. මොහොතකින් නැවත යැවීමට උත්සාහ කරන්න."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"මෙම චැට් සැපයුම්කරු ලබා ගත නොහැක. ආකෘතිය තෝරා ගැනීම සඳහා වෙනත් සැපයුම්කරු තෝරා ගන්න."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"තෝරාගත් දේශීය ආකෘතිය ඉවත් කර ඇත. එය නැවත බාගත කරන්න හෝ පැහැදිලිව වෙනත් සැපයුම්කරුවෙකු තෝරා ගන්න."</string>

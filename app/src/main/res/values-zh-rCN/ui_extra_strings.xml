@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"无法加载该图片。"</string>
     <string name="ui_pages">"%1$s 页"</string>
     <string name="ui_could_not_attach_that_file">"无法附加该文件：%1$s"</string>
-    <string name="ui_file_is_larger_than">"文件大于 %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"正在保存模型选择。请稍后重新发送。"</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"此聊天的提供商不可用。请在模型选择器中选择其他提供商。"</string>
     <string name="ui_the_selected_local_model_was_removed_download">"所选本地模型已被移除。请重新下载，或明确选择其他提供商。"</string>

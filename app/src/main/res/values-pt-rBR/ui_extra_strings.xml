@@ -143,7 +143,6 @@
     <string name="ui_could_not_load_that_image">"Não foi possível carregar essa imagem."</string>
     <string name="ui_pages">"%1$s páginas"</string>
     <string name="ui_could_not_attach_that_file">"Não foi possível anexar esse arquivo: %1$s"</string>
-    <string name="ui_file_is_larger_than">"arquivo é maior que %1$s"</string>
     <string name="ui_model_selection_is_being_saved_try_sending">"A seleção de modelo está sendo salva. Tente enviar novamente em instantes."</string>
     <string name="ui_this_chat_s_provider_is_unavailable_choose">"O provedor deste chat está indisponível. Escolha outro provedor no seletor de modelo."</string>
     <string name="ui_the_selected_local_model_was_removed_download">"O modelo local selecionado foi removido. Baixe-o novamente ou escolha explicitamente outro provedor."</string>
