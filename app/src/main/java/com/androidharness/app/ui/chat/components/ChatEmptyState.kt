@@ -43,7 +43,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.CreateNewFolder
 import androidx.compose.material.icons.outlined.EditNote
@@ -92,6 +91,13 @@ import com.androidharness.app.ui.theme.expressiveSpatialSpec
 import com.androidharness.app.ui.theme.fastEffectsSpec
 import com.androidharness.app.ui.theme.harnessGlass
 import kotlinx.coroutines.delay
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.tween
+import androidx.compose.runtime.rememberCoroutineScope
+import com.androidharness.app.ui.common.HarnessLogoMorph
+import com.androidharness.app.ui.common.LogoMorph
+import kotlinx.coroutines.launch
 
 /** A starter either sends right away (agent prompts are complete) or fills the composer. */
 private data class ChatStarter(val icon: ImageVector, val label: String, val text: String, val send: Boolean)
@@ -158,11 +164,11 @@ internal fun ChatEmptyState(
                 Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
             ) {
-                ChatHeroMark(when {
-                    code -> Icons.Outlined.Code
-                    agent != null -> agentIcon(agent.avatar)
-                    else -> Icons.Outlined.AutoAwesome
-                }, step > 0)
+                ChatHeroMark(
+                    icon = if (!code && agent != null) agentIcon(agent.avatar) else null,
+                    morph = if (code) LogoMorph.Code else LogoMorph.Discover,
+                    visible = step > 0,
+                )
                 Spacer(Modifier.height(20.dp))
                 Text(
                     if (code) stringResource(R.string.ui_what_do_you_want_to_build) else agent?.name ?: stringResource(R.string.chat_empty_title),
@@ -222,32 +228,88 @@ private fun Modifier.enterRise(visible: Boolean, rise: Dp = 12.dp, fromScale: Fl
     }
 }
 
+/**
+ * The cookie hero. Chat and Code show the AH monogram, which morphs into
+ * sparkles (Chat) or "</>" (Code) and back: once after the entrance, then every
+ * [LOGO_LOOP_MS]. A tap turns the cookie and replays the morph right away.
+ * A chat agent keeps its own avatar instead.
+ */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun ChatHeroMark(icon: ImageVector, visible: Boolean) {
+private fun ChatHeroMark(icon: ImageVector?, morph: LogoMorph, visible: Boolean) {
     val scheme = MaterialTheme.colorScheme
+    val haptic = LocalHapticFeedback.current
     val spin by animateFloatAsState(if (visible) 0f else -90f, expressiveDefaultSpatialSpec(), label = "heroSpin")
     val grow by animateFloatAsState(if (visible) 1f else 0.5f, expressiveDefaultSpatialSpec(), label = "heroGrow")
     val alpha by animateFloatAsState(if (visible) 1f else 0f, expressiveEffectsSpec(), label = "heroAlpha")
+    val turn = remember { Animatable(0f) }
+    val progress = remember(morph) { Animatable(0f) }
+    var plays by remember { mutableIntStateOf(0) }
+    val scope = rememberCoroutineScope()
+    val showLogo = icon == null
+    // Each tap bumps [plays], which cancels the running cycle and starts a fresh one
+    // from wherever the glyph is, so rapid taps never stack or jump.
+    LaunchedEffect(morph, plays, visible, showLogo) {
+        if (!visible || !showLogo) {
+            progress.snapTo(0f)
+            return@LaunchedEffect
+        }
+        if (plays == 0) delay(LOGO_FIRST_DELAY_MS)
+        while (true) {
+            progress.animateTo(1f, tween(LOGO_MORPH_MS, easing = FastOutSlowInEasing))
+            delay(LOGO_HOLD_MS)
+            progress.animateTo(0f, tween(LOGO_MORPH_MS, easing = FastOutSlowInEasing))
+            delay(LOGO_LOOP_MS)
+        }
+    }
     val shape = MaterialShapes.Cookie9Sided.toShape()
     Box(
         Modifier
             .size(80.dp)
             .graphicsLayer {
-                rotationZ = spin
+                rotationZ = spin + turn.value
                 scaleX = grow
                 scaleY = grow
                 this.alpha = alpha.coerceIn(0f, 1f)
             }
-            .background(scheme.primaryContainer, shape),
+            .clip(shape)
+            .background(scheme.primaryContainer, shape)
+            .then(
+                if (showLogo) Modifier.clickable(
+                    interactionSource = null,
+                    indication = ripple(),
+                    role = Role.Button,
+                    onClickLabel = stringResource(R.string.chat_logo_replay),
+                ) {
+                    haptic.performHapticFeedback(HapticFeedbackType.ContextClick)
+                    // Nine-sided cookie: any multiple of 40 degrees lands back on the same outline.
+                    scope.launch { turn.animateTo(turn.targetValue + 120f, expressiveDefaultSpatialSpec()) }
+                    plays++
+                } else Modifier
+            ),
         contentAlignment = Alignment.Center,
     ) {
         Crossfade(targetState = icon, animationSpec = expressiveEffectsSpec(), label = "heroIcon") { current ->
-            // Counter-rotate so the glyph stays upright while the cookie turns in.
-            Icon(current, null, Modifier.size(36.dp).graphicsLayer { rotationZ = -spin }, tint = scheme.onPrimaryContainer)
+            // Counter-rotate so the glyph stays upright while the cookie turns.
+            val upright = Modifier.graphicsLayer { rotationZ = -(spin + turn.value) }
+            if (current == null) {
+                HarnessLogoMorph(
+                    morph = morph,
+                    color = scheme.onPrimaryContainer,
+                    progress = { progress.value },
+                    modifier = Modifier.size(40.dp).then(upright),
+                )
+            } else {
+                Icon(current, null, Modifier.size(36.dp).then(upright), tint = scheme.onPrimaryContainer)
+            }
         }
     }
 }
+
+private const val LOGO_FIRST_DELAY_MS = 600L
+private const val LOGO_MORPH_MS = 650
+private const val LOGO_HOLD_MS = 1400L
+private const val LOGO_LOOP_MS = 10_000L
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
