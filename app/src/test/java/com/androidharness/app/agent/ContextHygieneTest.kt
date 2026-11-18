@@ -33,6 +33,21 @@ class ContextHygieneTest {
         assertEquals(2, later.sumOf { it.imageData.size })
     }
 
+    @Test fun everyPhotoInTheNewestUserMessageIsSentWhileOlderPhotosKeepTheBudget() {
+        fun photos(n: Int, tag: String) = (1..n).map { com.androidharness.app.core.ImageData("image/png", "$tag-$it") }
+        val older = ChatMessage(Role.USER, "earlier", imageData = photos(3, "old"))
+        val reply = ChatMessage(Role.ASSISTANT, "seen")
+        val newest = ChatMessage(Role.USER, "describe these", imageData = photos(5, "new"))
+        val prepared = ContextHygiene.shrinkToolResults(listOf(older, reply, newest))
+        assertEquals(5, prepared.last().imageData.size)
+        assertEquals(0, prepared.first().imageData.size)
+        // Tool steps inside the same turn still carry every photo the user sent.
+        val call = com.androidharness.app.core.ToolCallData("t1", "shell", "{}")
+        val midTurn = ContextHygiene.shrinkToolResults(listOf(newest, ChatMessage(Role.ASSISTANT, toolCalls = listOf(call)),
+            ChatMessage(Role.TOOL, "ok", toolCallId = "t1", toolName = "shell")))
+        assertEquals(5, midTurn.first().imageData.size)
+    }
+
     @Test
     fun `recent tool results stay intact`() {
         val history = (1..3).map { i ->

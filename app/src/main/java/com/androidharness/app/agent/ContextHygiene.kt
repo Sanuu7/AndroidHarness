@@ -36,11 +36,19 @@ object ContextHygiene {
         val freshToolIds = history.getOrNull(latestAssistant)
             ?.toolCalls.orEmpty().mapTo(hashSetOf()) { it.id }
 
+        // The photos the user just sent are the point of this request: all of
+        // them go out, however many there are. The budget covers older turns only.
+        val latestUser = history.indexOfLast { it.role == Role.USER }
+
         // Count all images across the conversation from newest to oldest
         var keptImages = 0
-        val withEvictedImages = history.asReversed().map { m ->
+        val withEvictedImages = history.indices.reversed().map { index ->
+            val m = history[index]
             if (m.imageData.isEmpty()) {
                 imageContextState(m, emptyList(), "attachment_unavailable", "No image bytes are included in this request. Saved metadata is listed separately and is not visual evidence.")
+            } else if (index == latestUser) {
+                keptImages += m.imageData.size
+                imageContextState(m, m.imageData, "not_in_current_context", "")
             } else if (m.role == Role.TOOL && m.toolCallId in freshToolIds) {
                 keptImages += m.imageData.size
                 imageContextState(m, m.imageData, "not_in_current_context", "")
