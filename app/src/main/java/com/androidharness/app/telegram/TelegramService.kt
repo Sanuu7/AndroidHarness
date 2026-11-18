@@ -69,7 +69,7 @@ internal class TelegramService : Service() {
     }
     private fun notification(text: String): Notification {
         val open = Intent(this, MainActivity::class.java).putExtra(EXTRA_SETTINGS, "telegram").addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        val builder = Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_launcher_foreground)
+        val builder = Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle("AndroidHarness · Telegram").setContentText(text.take(180))
             .setContentIntent(PendingIntent.getActivity(this, ID, open, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE))
             .setOngoing(true).setOnlyAlertOnce(true).setCategory(Notification.CATEGORY_SERVICE)

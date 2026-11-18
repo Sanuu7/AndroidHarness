@@ -51,7 +51,7 @@ class WirelessAdbService : Service() {
     private fun notification(): Notification {
         val open = PendingIntent.getActivity(this, 0, Intent(this, MainActivity::class.java), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         val disconnect = PendingIntent.getService(this, 1, Intent(this, javaClass).setAction(STOP), PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-        return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_launcher_foreground)
+        return Notification.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle(getString(R.string.wireless_adb_section_title))
             .setContentText(getString(if (manager.isConnected) R.string.wireless_adb_connection_kept else R.string.wireless_adb_auto_reconnecting))
             .setContentIntent(open).setOngoing(true).setOnlyAlertOnce(true)

@@ -19,7 +19,7 @@ class FtpShareService : Service() {
         if (intent?.action == STOP) { manager.stop(); stopSelf(); return START_NOT_STICKY }
         val stop = PendingIntent.getService(this, 0, Intent(this, FtpShareService::class.java).setAction(STOP), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
         val open = PendingIntent.getActivity(this, 0, Intent(this, com.androidharness.app.MainActivity::class.java), PendingIntent.FLAG_IMMUTABLE or PendingIntent.FLAG_UPDATE_CURRENT)
-        startForeground(ID, NotificationCompat.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_launcher_foreground)
+        startForeground(ID, NotificationCompat.Builder(this, CHANNEL).setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle(getString(R.string.ftp_server_title)).setContentText(getString(R.string.ftp_server_notification))
             .setOngoing(true).setContentIntent(open).addAction(0, getString(R.string.ftp_server_stop), stop).build())
         if (!(application as HarnessApp).container.runtimePolicy.state.value.canRun || !manager.open()) { stopForeground(STOP_FOREGROUND_REMOVE); stopSelf() }

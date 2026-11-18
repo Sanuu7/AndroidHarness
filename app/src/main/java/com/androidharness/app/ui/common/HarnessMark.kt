@@ -18,9 +18,10 @@ import androidx.compose.ui.unit.dp
 import com.androidharness.app.ui.theme.LocalHarnessGlass
 
 /**
- * The Harness brand mark: a terminal prompt ("❯_").
+ * The Harness brand mark: an AH monogram. The A's right leg is also the H's left
+ * leg, and one strap crosses both letters.
  *
- * Geometry mirrors `res/drawable/ic_launcher_foreground.xml` (the launcher icon)
+ * Geometry mirrors `res/drawable/ic_launcher_monochrome.xml` (the launcher icon)
  * scaled to a 24dp viewport, so the in-app identity and the home-screen icon match.
  * Filled, not stroked, it stays crisp at 14dp and holds up at 56dp.
  */
@@ -32,27 +33,36 @@ val PromptMark: ImageVector = ImageVector.Builder(
     viewportHeight = 24f,
 ).apply {
     path(fill = SolidColor(Color.Black)) {
-        // chevron "❯"
-        moveTo(7.1f, 7.56f)
-        lineTo(10.67f, 7.56f)
-        lineTo(15.11f, 12f)
-        lineTo(10.67f, 16.44f)
-        lineTo(7.1f, 16.44f)
-        lineTo(11.56f, 12f)
+        // A diagonal and shared stem
+        moveTo(2f, 20.36f)
+        lineTo(5.6f, 20.36f)
+        lineTo(10.69f, 10.99f)
+        lineTo(10.69f, 20.36f)
+        lineTo(13.97f, 20.36f)
+        lineTo(13.97f, 3.64f)
+        lineTo(10.69f, 3.64f)
         close()
     }
     path(fill = SolidColor(Color.Black)) {
-        // underscore "_"
-        moveTo(12.89f, 14.67f)
-        lineTo(18.22f, 14.67f)
-        lineTo(18.22f, 16.44f)
-        lineTo(12.89f, 16.44f)
+        // H right leg
+        moveTo(18.72f, 3.64f)
+        lineTo(22f, 3.64f)
+        lineTo(22f, 20.36f)
+        lineTo(18.72f, 20.36f)
+        close()
+    }
+    path(fill = SolidColor(Color.Black)) {
+        // strap
+        moveTo(4.55f, 15.44f)
+        lineTo(5.92f, 12.82f)
+        lineTo(22f, 12.82f)
+        lineTo(22f, 15.44f)
         close()
     }
 }.build()
 
 /**
- * Brand tile: the prompt mark on a near-black (light theme) / near-white (dark
+ * Brand tile: the AH monogram on a near-black (light theme) / near-white (dark
  * theme) rounded square. Deliberately monochrome, the dynamic accent is reserved
  * for actions, not logos.
  */
@@ -73,7 +83,7 @@ fun HarnessMark(
             Icon(
                 PromptMark,
                 contentDescription = null,
-                modifier = Modifier.size(size * 0.55f),
+                modifier = Modifier.size(size * 0.7f),
             )
         }
     }

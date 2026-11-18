@@ -216,7 +216,7 @@ class AdbPairingService : Service() {
             else PendingIntent.FLAG_UPDATE_CURRENT,
         )
         return Notification.Builder(this, channel)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentIntent(open)
             .setOngoing(ongoing)
             .apply { if (onlyAlertOnce) setOnlyAlertOnce(true) }

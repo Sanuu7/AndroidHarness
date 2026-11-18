@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Single-color AH monogram for themed icons and notifications. Separate paths so overlaps stay filled. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- A diagonal and shared stem -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M32.04,72.36 L39.96,72.36 L51.12,51.79 L51.12,72.36 L58.32,72.36 L58.32,35.64 L51.12,35.64 Z" />
+    <!-- H right leg -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M68.76,35.64 L75.96,35.64 L75.96,72.36 L68.76,72.36 Z" />
+    <!-- strap -->
+    <path
+        android:fillColor="#FFFFFFFF"
+        android:pathData="M37.66,61.56 L40.64,55.8 L75.96,55.8 L75.96,61.56 Z" />
+</vector>

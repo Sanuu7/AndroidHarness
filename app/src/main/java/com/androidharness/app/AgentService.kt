@@ -187,7 +187,7 @@ object RunResultNotifications {
             .setContentText(compactPreview)
             .setSubText(result.title)
             .setStyle(Notification.BigTextStyle().bigText(preview.take(4000)))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .build()
@@ -341,7 +341,7 @@ class AgentService : Service() {
         val builder = NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("AndroidHarness")
             .setContentText(if (alertsEnabled) localizedOptionLabel(text) else getString(R.string.background_service_notice))
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentIntent(appPendingIntent())
             .setOnlyAlertOnce(true)
             .setOngoing(true)
@@ -434,7 +434,7 @@ class AgentService : Service() {
             p.detail?.let { append("\n\n").append(it) }
         }
         val builder = Notification.Builder(this, ALERT_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher_foreground)
+            .setSmallIcon(R.drawable.ic_launcher_monochrome)
             .setContentTitle(
                 when (p.kind) {
                     PendingPrompt.Kind.APPROVAL -> getString(R.string.ui_approval_needed)
