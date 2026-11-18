@@ -1,5 +1,7 @@
 package com.androidharness.app.ui.chat
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.togetherWith
 import com.androidharness.app.core.WorkspaceFileReference
 import com.androidharness.app.ui.chat.rich.LocalResponseFileOpen
 import androidx.compose.ui.text.LinkAnnotation
@@ -226,14 +228,14 @@ private val bulletRegex = Regex("^\\s*([-*+])\\s+(.*)$")
 private val numberedRegex = Regex("^\\s*(\\d+)[.)]\\s+(.*)$")
 private val headingRegex = Regex("^(#{1,6})\\s+(.*)$")
 private val ruleRegex = Regex("^\\s*([-*_])\\s*(?:\\1\\s*){2,}$")
-private val standaloneImageRegex = Regex("^!\\[([^\\]]*)]\\(((?:https?://|harness-image:)[^)\\s]+)\\)\\s*$")
-private val standaloneLinkRegex = Regex("^\\[([^\\]]+)]\\((https?://[^)\\s]+)\\)\\s*$")
+private val standaloneImageRegex = Regex("^!\\[([^\\]]*)]\\(((?:https?://|harness-image:)(?:[^()\\s]|\\([^()\\s]*\\))+)\\)\\s*$")
+private val standaloneLinkRegex = Regex("^\\[([^\\]]+)]\\((https?://(?:[^()\\s]|\\([^()\\s]*\\))+)\\)\\s*$")
 private val bareUrlRegex = Regex("^https?://\\S+$")
 private val bareImageUrlRegex = Regex(
     "^https?://\\S+\\.(?:png|jpe?g|webp|gif)(?:\\?\\S*)?$",
     RegexOption.IGNORE_CASE,
 )
-private val inlineImageRegex = Regex("!\\[([^\\]]*)]\\(((?:https?://|harness-image:)[^)\\s]+)\\)")
+private val inlineImageRegex = Regex("!\\[([^\\]]*)]\\(((?:https?://|harness-image:)(?:[^()\\s]|\\([^()\\s]*\\))+)\\)")
 
 /**
  * Models often separate paragraphs with a single newline. A full sentence line
@@ -789,11 +791,19 @@ private const val CODE_BLOCK_HIGHLIGHT_LIMIT = 400
  * in an answer is coloured like the same file opened in the editor. Returns null
  * when the fence names no language we know, which renders as plain monospace.
  */
+/** Coloured lines by their text; streaming code re-colours only the lines that changed. */
+private class CodeLineCache {
+    val lines = object : LinkedHashMap<String, AnnotatedString>(64, 0.75f, true) {
+        override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, AnnotatedString>?) = size > 800
+    }
+}
+
 private fun highlightedCode(
     code: String,
     language: String,
     dark: Boolean,
     plain: androidx.compose.ui.graphics.Color,
+    cache: CodeLineCache? = null,
 ): AnnotatedString? {
     val lang = CodeTokenizer.langForName(language) ?: return null
     return buildAnnotatedString {
@@ -802,22 +812,32 @@ private fun highlightedCode(
             val newline = code.indexOf('\n', lineStart)
             val lineEnd = if (newline < 0) code.length else newline
             val line = code.substring(lineStart, lineEnd)
-            val tokens = CodeTokenizer.tokenizeLine(lang, line)
-            // Tokens cover only part of a line, so walk them in order and copy the
-            // gaps between them verbatim.
-            var cursor = 0
-            tokens.sortedBy { it.start }.forEach { token ->
-                val start = token.start.coerceIn(0, line.length)
-                val end = token.end.coerceIn(start, line.length)
-                if (start > cursor) append(line.substring(cursor, start))
-                if (end > start) {
-                    withStyle(androidx.compose.ui.text.SpanStyle(CodeTokenColors.of(token.type, dark, plain))) {
-                        append(line.substring(start, end))
-                    }
-                }
-                cursor = maxOf(cursor, end)
+            val cached = cache?.lines?.get(line)
+            if (cached != null) {
+                append(cached)
+                if (newline < 0) lineStart = code.length + 1 else { append('\n'); lineStart = newline + 1 }
+                continue
             }
-            if (cursor < line.length) append(line.substring(cursor))
+            val colored = buildAnnotatedString {
+                val tokens = CodeTokenizer.tokenizeLine(lang, line)
+                // Tokens cover only part of a line, so walk them in order and copy the
+                // gaps between them verbatim.
+                var cursor = 0
+                tokens.sortedBy { it.start }.forEach { token ->
+                    val start = token.start.coerceIn(0, line.length)
+                    val end = token.end.coerceIn(start, line.length)
+                    if (start > cursor) append(line.substring(cursor, start))
+                    if (end > start) {
+                        withStyle(androidx.compose.ui.text.SpanStyle(CodeTokenColors.of(token.type, dark, plain))) {
+                            append(line.substring(start, end))
+                        }
+                    }
+                    cursor = maxOf(cursor, end)
+                }
+                if (cursor < line.length) append(line.substring(cursor))
+            }
+            cache?.lines?.set(line, colored)
+            append(colored)
             if (newline < 0) {
                 lineStart = code.length + 1
             } else {
@@ -849,6 +869,7 @@ private fun CodeBlock(code: String, language: String, copySource: (() -> String)
     // Highlighting runs on the main thread, so it stays off past a few hundred
     // lines: an expanded multi-thousand-line dump renders plain rather than
     // tokenizing every line to draw it once.
+    val lineCache = remember(language, scheme.surface, scheme.onSurface) { CodeLineCache() }
     val highlighted = remember(shown, language, scheme.surface) {
         if (lines.size > CODE_BLOCK_HIGHLIGHT_LIMIT) {
             null
@@ -858,9 +879,13 @@ private fun CodeBlock(code: String, language: String, copySource: (() -> String)
                 language = language,
                 dark = CodeTokenColors.isDarkSurface(scheme.surface),
                 plain = scheme.onSurface,
+                cache = lineCache,
             )
         }
     }
+    // Live code fades in like the prose around it.
+    val fade = rememberStreamFade(shown.length)
+    var codeLayout by remember { mutableStateOf<androidx.compose.ui.text.TextLayoutResult?>(null) }
 
     Surface(
         color = scheme.surfaceContainerLowest,
@@ -883,7 +908,13 @@ private fun CodeBlock(code: String, language: String, copySource: (() -> String)
                     overflow = TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f),
                 )
-                IconButton(
+                androidx.compose.animation.AnimatedVisibility(copied,
+                    enter = androidx.compose.animation.fadeIn(tween(160)) + androidx.compose.animation.expandHorizontally(expandFrom = Alignment.End),
+                    exit = androidx.compose.animation.fadeOut(tween(160)) + androidx.compose.animation.shrinkHorizontally(shrinkTowards = Alignment.End)) {
+                    Text(uiContext.getString(R.string.rich_copied), style = MaterialTheme.typography.labelMedium, color = scheme.primary)
+                }
+                // Expressive icon button: the shape morphs on press and the copy glyph springs into a check.
+                com.androidharness.app.ui.common.IconButton(
                     onClick = {
                         clipboard.setText(AnnotatedString(copySource?.invoke() ?: code))
                         copied = true
@@ -893,12 +924,18 @@ private fun CodeBlock(code: String, language: String, copySource: (() -> String)
                         }
                     },
                 ) {
-                    Icon(
-                        if (copied) Icons.Filled.Check else Icons.Filled.ContentCopy,
-                        contentDescription = uiContext.getString(R.string.settings_telegram_copy_code),
-                        tint = if (copied) scheme.primary else scheme.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp),
-                    )
+                    androidx.compose.animation.AnimatedContent(copied, transitionSpec = {
+                        (androidx.compose.animation.scaleIn(androidx.compose.animation.core.spring(dampingRatio = 0.45f, stiffness = 600f), initialScale = 0.4f) +
+                            androidx.compose.animation.fadeIn(tween(120))) togetherWith
+                            (androidx.compose.animation.scaleOut(tween(120), targetScale = 0.4f) + androidx.compose.animation.fadeOut(tween(100)))
+                    }, label = "Code copy") { done ->
+                        Icon(
+                            if (done) Icons.Filled.Check else Icons.Filled.ContentCopy,
+                            contentDescription = uiContext.getString(R.string.settings_telegram_copy_code),
+                            tint = if (done) scheme.primary else scheme.onSurfaceVariant,
+                            modifier = Modifier.size(16.dp),
+                        )
+                    }
                 }
             }
             com.androidharness.app.ui.common.LeftToRightContent {
@@ -908,10 +945,12 @@ private fun CodeBlock(code: String, language: String, copySource: (() -> String)
                     fontFamily = HarnessMono,
                     style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurface,
+                    onTextLayout = { codeLayout = it },
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(start = 12.dp, end = 12.dp, bottom = 12.dp)
-                        .horizontalScroll(rememberScrollState()),
+                        .horizontalScroll(rememberScrollState())
+                        .streamFade(fade) { codeLayout },
                 )
             }
             if (collapsed) {

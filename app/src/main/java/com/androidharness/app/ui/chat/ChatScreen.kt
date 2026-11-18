@@ -3,6 +3,7 @@ package com.androidharness.app.ui.chat
 import com.androidharness.app.ui.theme.*
 import com.kyant.backdrop.backdrops.rememberCombinedBackdrop
 import androidx.compose.ui.layout.layout
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.heightIn
@@ -604,6 +605,25 @@ private fun ChatScreenContent(
     var findPosition by remember(state.sessionId) { mutableStateOf(0) }
     var findTargetId by remember(state.sessionId) { mutableStateOf<String?>(null) }
     val activeFindId = if (findOpen) findTargetId else searchMessageId
+    // An answer the model pulls back to do more research stays on screen,
+    // dimmed, until the new answer starts streaming over it. Without this the
+    // reply vanished mid-read and the turn looked cut off.
+    var withdrawnDraft by remember(state.sessionId, state.currentTurnId) { mutableStateOf<String?>(null) }
+    val lastLiveText = remember(state.sessionId, state.currentTurnId) { arrayOf("") }
+    val liveChatText = if (state.conversation.isChat && state.busy) state.streamingText.orEmpty() else ""
+    val turnHasFinalAnswer = state.conversation.isChat && state.currentTurnId != null && state.messages.any {
+        it.turnId == state.currentTurnId && it.role == Role.ASSISTANT && it.toolCalls.isEmpty() && it.text.isNotBlank()
+    }
+    SideEffect {
+        if (liveChatText.isNotBlank()) {
+            lastLiveText[0] = liveChatText
+            if (withdrawnDraft != null) withdrawnDraft = null
+        } else if (lastLiveText[0].isNotBlank()) {
+            if (state.busy && !turnHasFinalAnswer && lastLiveText[0].length >= KEEP_DRAFT_MIN_CHARS) withdrawnDraft = lastLiveText[0]
+            lastLiveText[0] = ""
+        }
+        if (withdrawnDraft != null && (!state.busy || turnHasFinalAnswer)) withdrawnDraft = null
+    }
     // A real drag pauses following until the reader returns to the bottom.
     var pinnedToBottom by remember(state.sessionId) { mutableStateOf(false) }
     var returnToQuestion by remember(state.sessionId) { mutableStateOf(true) }
@@ -1965,9 +1985,12 @@ private fun ChatScreenContent(
                                             AnimatedVisibility(state.conversation.isChat && message.turnId == latestUserTurnId && !state.busy,
                                                 enter = fadeIn(fastEffectsSpec()) + scaleIn(initialScale = 0.8f, animationSpec = fastEffectsSpec()),
                                                 exit = fadeOut(fastEffectsSpec())) {
-                                                IconButton(onClick = { editingMessage = message }, modifier = Modifier.size(36.dp)) {
-                                                    Icon(Icons.Outlined.Edit, uiContext.getString(R.string.settings_action_edit),
-                                                        Modifier.size(17.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                                                com.androidharness.app.ui.common.FilledTonalIconButton(onClick = { editingMessage = message },
+                                                    modifier = Modifier.padding(top = 4.dp).size(34.dp),
+                                                    colors = androidx.compose.material3.IconButtonDefaults.filledTonalIconButtonColors(
+                                                        containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                                                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant)) {
+                                                    Icon(Icons.Outlined.Edit, uiContext.getString(R.string.settings_action_edit), Modifier.size(16.dp))
                                                 }
                                             }
                                         }
@@ -2434,16 +2457,36 @@ private fun ChatScreenContent(
                                 // Preserve the item identity and scroll offset when the same response is saved.
                                 val answerKey = if (state.conversation.isChat) "chat-$streamKey-answer" else "message-$streamKey-text"
                                 indexedItem(key = answerKey, contentType = ChatListContentType.AssistantText) {
+                                    Column {
+                                    // Chat paces bursty chunks into a steady flow; Code shows output as it lands.
+                                    val shownText = if (state.conversation.isChat) rememberPacedText(streaming, live = !state.streamingCommitted) else streaming
                                     AssistantText(
                                         chatImages = responseImages,
-                                        text = if (state.conversation.isChat) com.androidharness.app.core.response.ChatRichResponse.normalize(streaming, !state.streamingCommitted) else streaming,
+                                        text = if (state.conversation.isChat) com.androidharness.app.core.response.ChatRichResponse.normalize(shownText, !state.streamingCommitted) else shownText,
                                         streaming = !state.streamingCommitted,
                                         onOpenUrl = { url ->
                                             webPreviewUrl = url
                                             showWebPreview = true
                                         },
                                     )
+                                    // The sites the answer is built from, hopping in one by one under the live text.
+                                    if (state.conversation.isChat && !state.streamingCommitted) {
+                                        val liveSources = remember(liveTurn) { com.androidharness.app.core.ChatActivityPresentation.sources(liveTurn, limit = 12) }
+                                        com.androidharness.app.ui.chat.components.LiveSourceChips(liveSources, state.currentTurnId,
+                                            onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true },
+                                            modifier = Modifier.padding(top = 6.dp))
+                                    }
+                                    }
                                 }
+                            }
+                        }
+                    }
+
+                    withdrawnDraft?.takeIf { state.streamingText.isNullOrBlank() }?.let { draft ->
+                        indexedItem(key = "chat-${state.currentTurnId}-draft", contentType = ChatListContentType.AssistantText) {
+                            Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = fastEffectsSpec())) {
+                                com.androidharness.app.ui.chat.components.WithdrawnDraft(
+                                    remember(draft) { com.androidharness.app.core.response.ChatRichResponse.normalize(draft) })
                             }
                         }
                     }
@@ -3132,6 +3175,9 @@ private suspend fun LazyListState.snapToEndIfDrifted(tail: Int = 0) {
 // content with small scrollBy deltas at most this often (ms between scrolls).
 private const val FOLLOW_MIN_INTERVAL_MS = 16L
 
+/** Shorter pulled-back text is a "let me check" note that already lives in the working log. */
+private const val KEEP_DRAFT_MIN_CHARS = 200
+
 /** Floating jump-to-latest button; pulses when content landed while away. */
 @Composable
 private fun ScrollToBottomFab(
@@ -3190,14 +3236,12 @@ private fun ScrollToBottomFab(
         AnimatedVisibility(newLines > 0, enter = scaleIn(fastEffectsSpec()) + fadeIn(fastEffectsSpec()),
             exit = scaleOut(fastEffectsSpec()) + fadeOut(fastEffectsSpec()),
             modifier = Modifier.offset(x = 30.dp, y = (-6).dp)) {
-            Surface(shape = CircleShape, color = MaterialTheme.colorScheme.primary) {
+            androidx.compose.material3.Badge(containerColor = MaterialTheme.colorScheme.primary, contentColor = MaterialTheme.colorScheme.onPrimary) {
                 androidx.compose.animation.AnimatedContent(newLines.coerceAtMost(99), transitionSpec = {
                     (androidx.compose.animation.slideInVertically(tween(160)) { it / 2 } + fadeIn(tween(160))) togetherWith
                         (androidx.compose.animation.slideOutVertically(tween(120)) { -it / 2 } + fadeOut(tween(120)))
                 }, label = "new lines") { count ->
-                    Text(if (count >= 99) "99+" else "+$count", style = MaterialTheme.typography.labelSmall,
-                        color = MaterialTheme.colorScheme.onPrimary,
-                        modifier = Modifier.padding(horizontal = 6.dp, vertical = 1.dp))
+                    Text(if (count >= 99) "99+" else "+$count", style = MaterialTheme.typography.labelSmall)
                 }
             }
         }

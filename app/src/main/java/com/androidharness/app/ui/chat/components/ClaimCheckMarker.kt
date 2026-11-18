@@ -1,6 +1,13 @@
 package com.androidharness.app.ui.chat.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
+import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material3.toShape
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,7 +19,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -30,6 +36,7 @@ import com.androidharness.app.R
  * Tapping it explains why, in the model's words, and lists the sources so the
  * reader can check them.
  */
+@OptIn(androidx.compose.material3.ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun ClaimCheckMarker(reason: String, sources: List<String>, onOpen: (String) -> Unit) {
     var open by remember { mutableStateOf(false) }
@@ -39,18 +46,25 @@ internal fun ClaimCheckMarker(reason: String, sources: List<String>, onOpen: (St
     }
     if (open) AlertDialog(
         onDismissRequest = { open = false },
-        icon = { Icon(Icons.Outlined.ErrorOutline, null, tint = MaterialTheme.colorScheme.tertiary) },
+        icon = {
+            val cookie = androidx.compose.material3.MaterialShapes.Cookie9Sided.toShape()
+            Box(Modifier.size(48.dp).clip(cookie).background(MaterialTheme.colorScheme.tertiaryContainer), contentAlignment = Alignment.Center) {
+                Icon(Icons.Outlined.ErrorOutline, null, Modifier.size(24.dp), tint = MaterialTheme.colorScheme.onTertiaryContainer)
+            }
+        },
         title = { Text(label) },
         text = {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(reason.ifBlank { stringResource(R.string.chat_claim_sources) }, style = MaterialTheme.typography.bodyMedium)
                 sources.forEach { source ->
-                    TextButton(onClick = { open = false; onOpen(source) }) {
+                    com.androidharness.app.ui.common.OutlinedButton(onClick = { open = false; onOpen(source) }, modifier = Modifier.fillMaxWidth()) {
+                        Icon(Icons.AutoMirrored.Outlined.OpenInNew, null, Modifier.size(16.dp))
+                        Spacer(Modifier.width(8.dp))
                         Text(source.substringAfter("://").removePrefix("www."), maxLines = 1, overflow = TextOverflow.Ellipsis)
                     }
                 }
             }
         },
-        confirmButton = { TextButton(onClick = { open = false }) { Text(stringResource(android.R.string.ok)) } },
+        confirmButton = { com.androidharness.app.ui.common.TextButton(onClick = { open = false }) { Text(stringResource(android.R.string.ok)) } },
     )
 }

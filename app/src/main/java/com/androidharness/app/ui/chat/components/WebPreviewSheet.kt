@@ -191,6 +191,8 @@ fun WebPreviewSheet(
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
     val scheme = MaterialTheme.colorScheme
+    // Opened from a source chip: the page grows out of the chip that was tapped.
+    val revealOrigin = remember { PreviewOrigin.take() }
 
     val effectiveInitial = if (startAtSources) null else initialTarget ?: browserController?.getActiveUrl()
     var stage by remember {
@@ -243,6 +245,7 @@ fun WebPreviewSheet(
     ) {
         Column(
             modifier = Modifier
+                .revealFrom(revealOrigin)
                 .fillMaxWidth()
                 .fillMaxHeight(if (isFullscreen) 1.0f else 0.88f)
                 .navigationBarsPadding()

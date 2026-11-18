@@ -1,8 +1,10 @@
 package com.androidharness.app.ui.chat.components
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.width
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -12,7 +14,6 @@ import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.compositionLocalOf
@@ -21,7 +22,6 @@ import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.layout.LayoutCoordinates
@@ -59,18 +59,24 @@ internal fun AnswerOutlineButton(anchors: HeadingAnchors, onJump: (Float) -> Uni
     if (outline.size < 3) return
     var open by remember { mutableStateOf(false) }
     Box {
-        Surface(onClick = { open = true }, shape = RoundedCornerShape(50), color = MaterialTheme.colorScheme.surfaceContainerLow) {
-            Row(Modifier.padding(horizontal = 10.dp, vertical = 5.dp), verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                Icon(Icons.AutoMirrored.Outlined.List, null, Modifier.size(15.dp), tint = MaterialTheme.colorScheme.primary)
-                Text(stringResource(R.string.chat_answer_outline), style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
+        com.androidharness.app.ui.common.FilledTonalButton(
+            onClick = { open = true },
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 12.dp),
+            colors = androidx.compose.material3.ButtonDefaults.filledTonalButtonColors(
+                containerColor = MaterialTheme.colorScheme.surfaceContainerHigh,
+                contentColor = MaterialTheme.colorScheme.onSurfaceVariant),
+            modifier = Modifier.height(32.dp),
+        ) {
+            Icon(Icons.AutoMirrored.Outlined.List, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.width(6.dp))
+            Text(stringResource(R.string.chat_answer_outline), style = MaterialTheme.typography.labelLarge)
         }
-        DropdownMenu(open, onDismissRequest = { open = false }, shape = RoundedCornerShape(16.dp)) {
+        DropdownMenu(open, onDismissRequest = { open = false }, shape = RoundedCornerShape(20.dp),
+            containerColor = MaterialTheme.colorScheme.surfaceContainerHigh) {
             outline.forEach { (title, y) ->
                 DropdownMenuItem(
-                    text = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis) },
+                    text = { Text(title, maxLines = 2, overflow = TextOverflow.Ellipsis, style = MaterialTheme.typography.bodyLarge) },
+                    modifier = Modifier.padding(horizontal = 4.dp).clip(RoundedCornerShape(12.dp)),
                     onClick = { open = false; onJump(y) },
                 )
             }

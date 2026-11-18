@@ -1,5 +1,9 @@
 package com.androidharness.app.ui.chat.components
 
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.draw.blur
 import android.graphics.Bitmap
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.LinearEasing
@@ -85,7 +89,18 @@ internal fun RemoteImageCard(url: String, alt: String, onOpen: ((String) -> Unit
     val sourceUrl = LocalChatImageSources.current[url]
     val openImage = LocalChatImageOpen.current
     val sourceHost = (sourceUrl ?: url).toHttpUrlOrNull()?.host?.removePrefix("www.")
-    Column(Modifier.fillMaxWidth().animateContentSize()) {
+    // A picture that arrives straight from the cache just shows; one that had to
+    // load fades in out of a soft blur while the frame eases to its real height.
+    val startedAt = remember(url) { android.os.SystemClock.uptimeMillis() }
+    val reveal = remember(url) { androidx.compose.animation.core.Animatable(0f) }
+    LaunchedEffect(state) {
+        if (state !is ImageState.Loaded) return@LaunchedEffect
+        if (android.os.SystemClock.uptimeMillis() - startedAt < 80) reveal.snapTo(1f)
+        else reveal.animateTo(1f, tween(420, easing = androidx.compose.animation.core.FastOutSlowInEasing))
+    }
+    Column(Modifier.fillMaxWidth().animateContentSize(androidx.compose.animation.core.spring(
+        dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy,
+        stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow))) {
         when (val current = state) {
             ImageState.Loading -> Box(
                 Modifier.fillMaxWidth().aspectRatio(16f / 10f)
@@ -110,7 +125,13 @@ internal fun RemoteImageCard(url: String, alt: String, onOpen: ((String) -> Unit
                         contentScale = ContentScale.Fit,
                         modifier = Modifier.fillMaxWidth().height(height)
                             .clip(RoundedCornerShape(14.dp))
-                            .background(MaterialTheme.colorScheme.surfaceContainerLow),
+                            .background(MaterialTheme.colorScheme.surfaceContainerLow)
+                            .blur(((1f - reveal.value) * 16f).dp, androidx.compose.ui.draw.BlurredEdgeTreatment.Rectangle)
+                            .graphicsLayer {
+                                alpha = reveal.value
+                                val scale = 1.03f - 0.03f * reveal.value
+                                scaleX = scale; scaleY = scale
+                            },
                     )
                     if (!sourceHost.isNullOrBlank()) {
                         Text(

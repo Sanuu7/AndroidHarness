@@ -121,10 +121,9 @@ internal fun ChatActivity(
                 android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f))
     }
     Column(Modifier.fillMaxWidth()) {
+    // The intro ends on the same glyph in the same spot, so a short crossfade is all the handoff needs.
     AnimatedContent(introDone || !live, transitionSpec = {
-        (fadeIn(tween(240, delayMillis = 60)) + slideInHorizontally(tween(280)) { -it / 12 }) togetherWith
-            (fadeOut(tween(180)) + scaleOut(tween(220), targetScale = 0.6f,
-                transformOrigin = androidx.compose.ui.graphics.TransformOrigin(0f, 0.5f)))
+        fadeIn(tween(160)) togetherWith fadeOut(tween(120))
     }, label = "Chat turn intro") { showActivity ->
     if (!showActivity) ChatTurnIntro(onFinished = { introDone = true }) else
     ChatActivityRow(title, if (live && showToolPhase) (active ?: lastTool?.call?.takeIf { completedPhase })?.name else null, live, entries.isNotEmpty(), followLatest = live, autoExpand = autoExpand,
@@ -160,9 +159,10 @@ internal fun ChatActivity(
         }
     }
     }
-    if (live && (introDone || !live)) {
+    // While the answer is being written the chips sit under it instead (see ChatScreen).
+    if (live && introDone && !writing) {
         val sources = remember(messages) { ChatActivityPresentation.sources(messages, limit = 12) }
-        LiveSourceChips(sources, onOpenUrl)
+        LiveSourceChips(sources, messages.firstNotNullOfOrNull { it.turnId }, onOpenUrl)
     }
     }
 }
@@ -284,10 +284,13 @@ private fun ChatActivityRow(
             autoOpened = false
         }
     }
-    // Fold the log away while the answer streams and reopen it if the model goes back to work.
+    // Fold the log once, as the first words of the answer land, and leave it
+    // folded for the rest of the turn. Reopening it whenever the model went back
+    // to a tool made the reply below jump up and down; the row title still
+    // names the live step.
+    var foldedForAnswer by remember { mutableStateOf(false) }
     LaunchedEffect(writing) {
-        if (!autoOpened || !live) return@LaunchedEffect
-        if (writing) { kotlinx.coroutines.delay(350); expanded = false } else expanded = true
+        if (writing && live && autoOpened && !foldedForAnswer) { foldedForAnswer = true; expanded = false }
     }
     val scroll = rememberChatListState()
     // Retain the reader's follow preference when this disclosure survives a stream commit.
@@ -461,7 +464,7 @@ internal fun ChatSources(messages: List<ChatMessage>, onOpenUrl: (String) -> Uni
             Text(stringResource(R.string.chat_sources), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.chat_sources_explanation), style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant, modifier = Modifier.padding(top = 6.dp, bottom = 12.dp))
             sources.forEach { source ->
-                TextButton(onClick = { open = false; onOpenUrl(source.url) }, shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(vertical = 10.dp, horizontal = 8.dp), modifier = Modifier.fillMaxWidth()) {
+                TextButton(onClick = { open = false; onOpenUrl(source.url) }, shape = RoundedCornerShape(12.dp), contentPadding = PaddingValues(vertical = 10.dp, horizontal = 8.dp), modifier = Modifier.fillMaxWidth().markPreviewOrigin()) {
                     Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(3.dp)) {
                         Text(source.title, style = MaterialTheme.typography.titleSmall)
                         Text(source.host, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
