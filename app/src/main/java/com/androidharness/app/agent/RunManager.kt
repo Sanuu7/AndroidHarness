@@ -895,6 +895,10 @@ class RunManager(
                 st.copy(codeDrafts = (current + (event.draft.id to event.draft)).entries.toList().takeLast(8).associate { it.toPair() },
                     thinkingTiming = st.thinkingTiming.stop(ThinkingTiming.now()), retryStatus = null)
             }
+            AgentEvent.DraftDiscarded -> {
+                buffer(sessionId)?.let { buf -> synchronized(buf) { buf.text.setLength(0) } }
+                live.update { it.copy(streamingText = null) }
+            }
             AgentEvent.CodeDraftsCleared -> live.update { st -> st.copy(codeDrafts = st.codeDrafts.filterValues {
                 it.stage == CodeDraftStage.SAVED || it.stage == CodeDraftStage.FAILED
             }) }

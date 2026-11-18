@@ -163,6 +163,8 @@ sealed interface AgentEvent {
     data class QuestionNeeded(val request: QuestionRequest) : AgentEvent
     data class EnvironmentNeeded(val request: EnvironmentRequest) : AgentEvent
     data class AssistantCommitted(val message: ChatMessage) : AgentEvent
+    /** The text streamed this round was not final (the app sent the model back to work); drop it from the screen. */
+    data object DraftDiscarded : AgentEvent
     data class ToolMessageCommitted(val message: ChatMessage) : AgentEvent
     /** A message the user sent mid-run, already saved to the chat by the [SteeringInbox]. */
     data class UserMessageInjected(val message: ChatMessage) : AgentEvent
@@ -753,6 +755,14 @@ class AgentEngine(
                 )
             }
 
+            // Where a research turn spends its time: one line per model round.
+            run {
+                val endNs = System.nanoTime()
+                val firstMs = if (firstTokenNs > 0L) (firstTokenNs - requestStartedNs) / 1_000_000 else -1
+                com.androidharness.app.tools.researchTiming("model round: total=${(endNs - requestStartedNs) / 1_000_000}ms " +
+                    "firstOutput=${firstMs}ms contextMessages=${working.size} toolCalls=${calls.map { it.name }} failed=${failure != null}")
+            }
+
             // A turn that produced reasoning but no answer and no tool calls is
             // NOT committed: replaying an empty assistant message would hand
             // Anthropic an empty content array (a 400) and teaches the model
@@ -779,11 +789,16 @@ class AgentEngine(
                 working += ChatMessage(role = Role.USER, text = ANSWER_NUDGE)
             } else if (wantsResearchNudge && researchBudget != null) {
                 researchNudges++
+                // The model sees its draft, so it can extend it instead of writing the whole answer again.
+                working += ChatMessage(role = Role.ASSISTANT, text = text.toString())
+                emit(AgentEvent.DraftDiscarded)
                 working += ChatMessage(role = Role.USER, text =
                     com.androidharness.app.core.ChatExperience.researchReadNudge(
                         searchDepth, researchBudget.pagesRead, researchBudget.minReads))
             } else if (wantsImageNudge) {
                 imageNudges++
+                working += ChatMessage(role = Role.ASSISTANT, text = text.toString())
+                emit(AgentEvent.DraftDiscarded)
                 working += ChatMessage(role = Role.USER, text = com.androidharness.app.core.ChatExperience.IMAGE_NUDGE)
             } else if (!answerless) {
                 val followUps = if (conversation.isChat)
