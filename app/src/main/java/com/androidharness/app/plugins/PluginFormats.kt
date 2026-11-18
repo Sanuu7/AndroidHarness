@@ -19,17 +19,15 @@ object PluginAdapter {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
     private val manifestDirs = listOf(".claude-plugin", ".codex-plugin", ".cursor-plugin", ".agents-plugin")
-    private val claudeKeys = setOf("commands", "agents", "mcpServers", "outputStyles", "lspServers", "keywords", "license", "repository")
-    private val hookEvents = mapOf("SessionStart" to "session.start", "UserPromptSubmit" to "message.received",
-        "PreToolUse" to "tool.before", "PostToolUse" to "tool.after", "Stop" to "session.end", "SubagentStop" to "session.end",
-        "SessionEnd" to "session.end", "BeforeTool" to "tool.before", "AfterTool" to "tool.after", "BeforeAgent" to "message.received")
+    private val claudeKeys = setOf("commands", "agents", "mcpServers", "outputStyles", "lspServers", "keywords", "license", "repository", "userConfig")
+    private val hookEvents = com.androidharness.app.config.HookEvents.external
 
     fun sanitizeName(raw: String, fallback: String = "plugin"): String {
         val cleaned = raw.substringAfterLast('/').lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-').take(64).trim('-')
         return cleaned.ifBlank { fallback }
     }
     private fun read(file: File): JsonObject? = runCatching {
-        if (!file.isFile || file.length() > 1024 * 1024) return null
+        if (!file.isFile || file.length() > com.androidharness.app.config.ConfigDocument.MAX_PLUGIN_BYTES) return null
         json.parseToJsonElement(file.readText()).jsonObject
     }.getOrNull()
     private fun JsonElement?.str(): String? = (this as? JsonPrimitive)?.takeIf { it.isString }?.content
@@ -116,13 +114,17 @@ object PluginAdapter {
         val mcp = linkedMapOf<String, JsonObject>()
         val agents = linkedMapOf<String, JsonObject>()
         val commandHooks = mutableListOf<JsonObject>()
+        val languageServers = linkedMapOf<String, JsonObject>()
+        val bins = linkedSetOf<String>()
+        val settings = linkedMapOf<String, JsonObject>()
         val notes = mutableListOf<String>()
         var hooks: JsonElement? = null
         var entry: String? = null
         val taken = mutableSetOf<String>()
         private val generated get() = root.resolve(".harness").apply { mkdirs() }
 
-        fun empty() = skills.isEmpty() && instructions.isEmpty() && mcp.isEmpty() && agents.isEmpty() && commandHooks.isEmpty() && hooks == null
+        fun empty() = skills.isEmpty() && instructions.isEmpty() && mcp.isEmpty() && agents.isEmpty() && commandHooks.isEmpty() && hooks == null &&
+            languageServers.isEmpty() && bins.isEmpty()
 
         fun meta(manifest: JsonObject) {
             manifest["name"].str()?.takeIf { name.isBlank() }?.let { name = it }
@@ -140,6 +142,9 @@ object PluginAdapter {
             (manifest["agents"] as? JsonObject)?.forEach { (key, value) -> (value as? JsonObject)?.let { agents[key] = it } }
             (manifest["commandHooks"] as? JsonArray)?.forEach { (it as? JsonObject)?.let(commandHooks::add) }
             manifest["hooks"]?.takeIf { it is JsonArray && it.isNotEmpty() }?.let { hooks = it; entry = manifest["entry"].str() }
+            (manifest["lsp"] as? JsonObject)?.forEach { (key, value) -> (value as? JsonObject)?.let { languageServers[key] = it } }
+            bins += manifest["bin"].paths().map(::clean)
+            (manifest["settings"] as? JsonObject)?.forEach { (key, value) -> (value as? JsonObject)?.let { settings[key] = it } }
         }
         private val declared = mutableSetOf<String>()
         fun claude(manifest: JsonObject, label: String, fromEntry: Boolean = false) {
@@ -159,8 +164,22 @@ object PluginAdapter {
                 is JsonPrimitive, is JsonArray -> servers.paths().forEach { declared += "mcp"; read(inside(root, it) ?: return@forEach)?.let(::addServers) }
                 else -> Unit
             }
-            if (manifest["outputStyles"] != null) notes += "Output styles are not used on Android."
-            if (manifest["lspServers"] != null) notes += "Language servers are not used on Android."
+            manifest["outputStyles"].paths().forEach { declared += "outputStyles"; addOutputStyles(it) }
+            when (val servers = manifest["lspServers"]) {
+                is JsonObject -> { declared += "lsp"; addLanguageServers(servers) }
+                is JsonPrimitive, is JsonArray -> servers.paths().forEach { declared += "lsp"; read(inside(root, it) ?: return@forEach)?.let(::addLanguageServers) }
+                else -> Unit
+            }
+            (manifest["userConfig"] as? JsonObject)?.forEach { (key, value) ->
+                val option = value as? JsonObject ?: return@forEach
+                settings[key] = buildJsonObject {
+                    (option["title"] ?: option["description"]).str()?.let { put("title", it) }
+                    option["description"].str()?.let { put("description", it) }
+                    option["default"]?.let { if (it is JsonPrimitive) put("default", it) }
+                    if (option["sensitive"]?.jsonPrimitive?.booleanOrNull == true) put("sensitive", true)
+                    if (option["required"]?.jsonPrimitive?.booleanOrNull == true) put("required", true)
+                }
+            }
         }
         /** Conventional folders apply unless the manifest pointed that component somewhere else. */
         fun claudeDefaults() {
@@ -169,6 +188,9 @@ object PluginAdapter {
             if ("agents" !in declared) root.resolve("agents").takeIf { it.isDirectory }?.let { addAgents("agents") }
             if ("hooks" !in declared) read(root.resolve("hooks/hooks.json"))?.let(::addHooks)
             if ("mcp" !in declared) read(root.resolve(".mcp.json"))?.let(::addServers)
+            if ("outputStyles" !in declared) root.resolve("output-styles").takeIf { it.isDirectory }?.let { addOutputStyles("output-styles") }
+            if ("lsp" !in declared) read(root.resolve(".lsp.json"))?.let(::addLanguageServers)
+            if (root.resolve("bin").isDirectory) bins += "bin"
         }
         fun gemini(manifest: JsonObject) {
             format = "Gemini CLI extension"
@@ -182,8 +204,8 @@ object PluginAdapter {
         /** Skill collections, project-level Claude/OpenCode folders and loose rule files in any repository. */
         fun generic() {
             format = format.ifBlank { "Skill collection" }
-            val found = root.walkTopDown().onEnter { it.name !in PluginArchives.SKIPPED && it.relativeTo(root).invariantSeparatorsPath.count { c -> c == '/' } < 8 }
-                .filter { it.isFile && it.name == "SKILL.md" }.take(1000).map { it.parentFile }
+            val found = root.walkTopDown().onEnter { it.name !in PluginArchives.SKIPPED }
+                .filter { it.isFile && it.name == "SKILL.md" }.map { it.parentFile }
                 .sortedWith(compareBy({ relative(root, it).count { c -> c == '/' } }, { relative(root, it) })).toList()
             found.forEach { dir -> addSkills(relative(root, dir)) }
             listOf(".claude/commands", ".opencode/command", ".opencode/commands", ".gemini/commands").forEach { dir ->
@@ -226,70 +248,90 @@ object PluginAdapter {
             if (dir.resolve("SKILL.md").isFile || accepted.size == folders.size) skills += relative(root, dir)
             else accepted.forEach { skills += relative(root, it) }
         }
-        /** Rewrites a SKILL.md only when its frontmatter would not load; duplicates are switched off. */
+        /** Checks that a SKILL.md loads. The file is never changed: names are fixed and namespaced when the plugin loads. */
         private fun normalizeSkill(folder: File): Boolean {
-            val file = folder.resolve("SKILL.md")
-            if (file.length() > 256 * 1024) { notes += "Skipped ${relative(root, folder)}: SKILL.md is larger than 256 KiB."; return false }
-            val raw = runCatching { file.readText() }.getOrElse { return false }
-            val parsed = runCatching { SkillParser.parse(raw) }.getOrNull()
-            val skillName = if (parsed != null && parsed.name !in taken) parsed.name else {
-                val text = raw.replace("\r\n", "\n").trimStart('\uFEFF')
-                val (front, body) = splitFrontmatter(text)
-                val fields = SkillParser.parseSimpleYaml(front)
-                var candidate = sanitizeName(fields["name"] ?: folder.name, "skill").take(ParsedSkill.MAX_NAME)
-                if (candidate in taken) {
-                    if (parsed != null) { disable(file, "Skipped duplicate skill '${parsed.name}' in ${relative(root, folder)}."); return false }
-                    candidate = sanitizeName("$candidate-${folder.parentFile?.name.orEmpty()}").take(ParsedSkill.MAX_NAME)
-                    if (candidate in taken) { disable(file, "Skipped duplicate skill in ${relative(root, folder)}."); return false }
-                }
-                val describe = (fields["description"] ?: firstParagraph(body)).ifBlank { "Instructions from ${folder.name}." }
-                val content = body.ifBlank { describe }
-                file.writeText(frontmatter(candidate, describe, fields["category"]) + content.trim() + "\n")
-                runCatching { SkillParser.parse(file.readText()) }.getOrElse { disable(file, "Skipped ${relative(root, folder)}: ${it.message}"); return false }
-                candidate
-            }
-            taken += skillName
+            val raw = runCatching { folder.resolve("SKILL.md").readText() }.getOrElse { notes += "Skipped ${relative(root, folder)}: ${it.message}"; return false }
+            val parsed = runCatching { SkillParser.lenient(raw, folder.name) }.getOrElse { notes += "Skipped ${relative(root, folder)}: ${it.message}"; return false }
+            taken += parsed.name
             return true
         }
-        private fun disable(file: File, note: String) { notes += note; file.renameTo(file.resolveSibling("SKILL.disabled.md")) }
 
         fun addCommands(path: String) {
             val dir = inside(root, path) ?: return
-            val files = if (dir.isFile) listOf(dir) else dir.walkTopDown().maxDepth(4).filter { it.isFile && it.extension in setOf("md", "toml") }.sortedBy { it.path }.toList()
-            files.take(200).forEach { file ->
+            val files = if (dir.isFile) listOf(dir) else dir.walkTopDown().onEnter { it.name !in PluginArchives.SKIPPED }
+                .filter { it.isFile && it.extension in setOf("md", "toml") }.sortedBy { it.path }.toList()
+            files.forEach { file ->
+                // Claude Code names nested commands with a colon (frontend:test); skill names use a hyphen.
                 val namespaced = if (dir.isFile) file.nameWithoutExtension else file.relativeTo(dir).invariantSeparatorsPath.substringBeforeLast('.').replace('/', '-')
-                var skill = sanitizeName(namespaced, "command").take(ParsedSkill.MAX_NAME)
-                if (skill in taken) skill = sanitizeName("$skill-command").take(ParsedSkill.MAX_NAME)
-                if (skill in taken) return@forEach
-                val text = runCatching { file.readText() }.getOrNull()?.takeIf { it.length <= 200_000 } ?: return@forEach
+                val text = runCatching { file.readText() }.getOrNull() ?: return@forEach
                 val (fields, body) = if (file.extension == "toml") tomlCommand(text) else splitFrontmatter(text.replace("\r\n", "\n")).let { SkillParser.parseSimpleYaml(it.first) to it.second }
                 if (body.isBlank()) return@forEach
-                val hint = fields["argument-hint"]?.let { " Arguments: $it." }.orEmpty()
-                val describe = (fields["description"] ?: firstParagraph(body)).ifBlank { "The /$skill command." } + hint
+                val base = sanitizeName(namespaced, "command").take(ParsedSkill.MAX_NAME)
+                var skill = base; var n = 2
+                while (skill in taken) skill = sanitizeName("$base-${n++}").take(ParsedSkill.MAX_NAME)
+                val describe = (fields["description"] ?: firstParagraph(body)).ifBlank { "The /$skill command." }
                 val folder = generated.resolve("commands/$skill").apply { mkdirs() }
-                folder.resolve("SKILL.md").writeText(frontmatter(skill, describe, "commands") +
-                    "This skill is the /$skill command. When the user runs it, treat the text after the command as \$ARGUMENTS " +
-                    "(also {{args}}, with \$1, \$2 for single words). Lines starting with ! name shell commands to run first; " +
-                    "@path names a file to read.\n\n" + body.trim() + "\n")
+                val extra = listOf("argument-hint", "allowed-tools", "model", "disable-model-invocation").mapNotNull { key -> fields[key]?.let { key to it } } +
+                    ("command" to "true")
+                folder.resolve("SKILL.md").writeText(frontmatter(skill, describe, "commands", extra) + body.trim() + "\n")
                 taken += skill
             }
             if (generated.resolve("commands").listFiles().orEmpty().isNotEmpty()) skills += relative(root, generated.resolve("commands"))
         }
         fun addAgents(path: String) {
             val dir = inside(root, path) ?: return
-            val files = if (dir.isFile) listOf(dir) else dir.walkTopDown().maxDepth(3).filter { it.isFile && it.extension == "md" }.sortedBy { it.path }.toList()
-            files.take(64).forEach { file ->
+            val files = if (dir.isFile) listOf(dir) else dir.walkTopDown().onEnter { it.name !in PluginArchives.SKIPPED }
+                .filter { it.isFile && it.extension == "md" }.sortedBy { it.path }.toList()
+            files.forEach { file ->
                 val (front, body) = splitFrontmatter(runCatching { file.readText() }.getOrDefault("").replace("\r\n", "\n"))
                 if (body.isBlank()) return@forEach
                 val fields = SkillParser.parseSimpleYaml(front)
-                val agent = (fields["name"] ?: file.nameWithoutExtension).replace(Regex("[^a-zA-Z0-9_-]+"), "-").trim('-').take(48)
-                if (agent.isBlank() || agent in agents) return@forEach
+                val base = (fields["name"] ?: file.nameWithoutExtension).replace(Regex("[^a-zA-Z0-9_-]+"), "-").trim('-').take(64)
+                if (base.isBlank()) return@forEach
+                var agent = base; var n = 2
+                while (agent in agents) agent = "${base.take(60)}-${n++}"
                 val target = generated.resolve("agents/$agent.md").apply { parentFile!!.mkdirs() }
-                target.writeText(body.trim().take(60_000) + "\n")
+                target.writeText(body.trim() + "\n")
+                val listed = fields["tools"]?.split(',')?.map(String::trim)?.filter(String::isNotEmpty) ?: yamlList(front, "tools")
                 agents[agent] = buildJsonObject {
-                    put("description", fields["description"].orEmpty().take(1000))
+                    put("description", fields["description"].orEmpty())
                     put("instructions", buildJsonArray { add(relative(root, target)) })
-                    fields["tools"]?.let { listed -> put("tools", agentTools(listed)) }
+                    if (listed.isNotEmpty()) {
+                        put("tools", agentTools(listed.joinToString(",")))
+                        put("allowedTools", buildJsonArray { listed.forEach { add(it) } })
+                    }
+                    fields["model"]?.takeIf { it.isNotBlank() }?.let { put("model", it) }
+                }
+            }
+        }
+        /** Output styles change how the agent answers. Here each one is a skill the user or the model can load. */
+        fun addOutputStyles(path: String) {
+            val dir = inside(root, path) ?: return
+            val files = if (dir.isFile) listOf(dir) else dir.walkTopDown().filter { it.isFile && it.extension == "md" }.sortedBy { it.path }.toList()
+            files.forEach { file ->
+                val (front, body) = splitFrontmatter(runCatching { file.readText() }.getOrDefault("").replace("\r\n", "\n"))
+                if (body.isBlank()) return@forEach
+                val fields = SkillParser.parseSimpleYaml(front)
+                val base = sanitizeName("style-" + (fields["name"] ?: file.nameWithoutExtension), "style").take(ParsedSkill.MAX_NAME)
+                var skill = base; var n = 2
+                while (skill in taken) skill = sanitizeName("$base-${n++}").take(ParsedSkill.MAX_NAME)
+                val describe = "Output style: " + (fields["description"] ?: firstParagraph(body)).ifBlank { file.nameWithoutExtension } +
+                    ". Load it when the user asks for this style, then answer in it for the rest of the conversation."
+                generated.resolve("styles/$skill").apply { mkdirs() }.resolve("SKILL.md").writeText(frontmatter(skill, describe, "styles") + body.trim() + "\n")
+                taken += skill
+            }
+            if (generated.resolve("styles").listFiles().orEmpty().isNotEmpty()) skills += relative(root, generated.resolve("styles"))
+        }
+        fun addLanguageServers(document: JsonObject) {
+            document.forEach { (key, value) ->
+                val server = value as? JsonObject ?: return@forEach
+                val command = server["command"].str()?.takeIf(String::isNotBlank) ?: run { notes += "Language server $key has no command and was skipped."; return@forEach }
+                languageServers[key] = buildJsonObject {
+                    put("command", PluginMcp.text(command))
+                    (server["args"] as? JsonArray)?.let { args -> put("args", JsonArray(args.mapNotNull { it.str() }.map { JsonPrimitive(PluginMcp.text(it)) })) }
+                    (server["extensionToLanguage"] as? JsonObject ?: server["extensions"] as? JsonObject)?.let { put("extensions", it) }
+                    (server["env"] as? JsonObject)?.let { env -> put("env", JsonObject(env.mapValues { JsonPrimitive(PluginMcp.text(it.value.str().orEmpty())) })) }
+                    server["initializationOptions"]?.let { put("initializationOptions", it) }
                 }
             }
         }
@@ -305,24 +347,27 @@ object PluginAdapter {
         fun addHooks(document: JsonObject) {
             val events = (document["hooks"] as? JsonObject) ?: document
             events.forEach { (event, groups) ->
-                val mapped = hookEvents[event] ?: run { notes += "Hook event $event is not available on Android."; return@forEach }
+                val mapped = hookEvents[event] ?: run { notes += "Hook event $event does not exist in AndroidHarness and was skipped."; return@forEach }
                 (groups as? JsonArray)?.forEach { group ->
                     val matcher = (group as? JsonObject)?.get("matcher").str().orEmpty()
                     (group as? JsonObject)?.get("hooks")?.let { it as? JsonArray }?.forEach hook@{ hook ->
                         val obj = hook as? JsonObject ?: return@hook
-                        val command = obj["command"].str()
-                        if (obj["type"].str().let { it != null && it != "command" } || command.isNullOrBlank()) {
-                            notes += "Only command hooks run on Android; a ${obj["type"].str() ?: "different"} hook for $event was skipped."; return@hook
-                        }
+                        val type = obj["type"].str() ?: "command"
+                        if (type !in PluginManifest.hookTypes) { notes += "A $type hook for $event was skipped."; return@hook }
+                        val body = (if (type == "command") obj["command"] else obj["prompt"] ?: obj["command"]).str()
+                        if (body.isNullOrBlank()) return@hook
                         commandHooks += buildJsonObject {
-                            put("event", mapped); put("source", event); put("command", command)
+                            put("event", mapped); put("source", event); put("type", type)
+                            put(if (type == "command") "command" else "prompt", userOptions(body))
                             if (matcher.isNotBlank()) put("matcher", matcher)
-                            obj["timeout"]?.jsonPrimitive?.intOrNull?.let { put("timeout", it.coerceIn(1, 600)) }
+                            obj["timeout"]?.jsonPrimitive?.intOrNull?.let { put("timeout", it.coerceIn(1, 3600)) }
                         }
                     }
                 }
             }
         }
+        /** Claude Code's ${user_config.KEY} in hook commands, which reach the hook as CLAUDE_PLUGIN_OPTION_KEY. */
+        private fun userOptions(command: String) = Regex("\\$\\{user_config\\.([A-Za-z0-9_]+)\\}").replace(command) { "\${CLAUDE_PLUGIN_OPTION_${it.groupValues[1].uppercase()}}" }
         fun addServers(document: JsonObject) {
             val servers = (document["mcpServers"] as? JsonObject) ?: (document["servers"] as? JsonObject) ?: document
             servers.forEach { (key, value) ->
@@ -349,7 +394,7 @@ object PluginAdapter {
                 }
             } else {
                 val skill = sanitizeName("${name.ifBlank { root.name }}-rules").take(ParsedSkill.MAX_NAME)
-                val body = texts.joinToString("\n\n") { (file, text) -> "## ${relative(root, file)}\n\n${text.trim()}" }.take(250_000)
+                val body = texts.joinToString("\n\n") { (file, text) -> "## ${relative(root, file)}\n\n${text.trim()}" }
                 generated.resolve("rules/$skill").apply { mkdirs() }.resolve("SKILL.md")
                     .writeText(frontmatter(skill, "Project rules and conventions from ${texts.joinToString { it.first.name }}. Load before changing code in this style.", "rules") + body + "\n")
                 taken += skill
@@ -369,9 +414,13 @@ object PluginAdapter {
                 if (ownInstructions.isNotEmpty()) put("instructions", buildJsonArray { ownInstructions.forEach { add(it) } })
                 if (mcp.isNotEmpty()) put("mcp", JsonObject(mcp))
                 if (agents.isNotEmpty()) put("agents", JsonObject(agents))
-                if (commandHooks.isNotEmpty()) put("commandHooks", JsonArray(commandHooks.take(64)))
+                if (commandHooks.isNotEmpty()) put("commandHooks", JsonArray(commandHooks))
                 hooks?.let { put("hooks", it); entry?.let { e -> put("entry", e) } }
-                if (notes.isNotEmpty()) put("notes", buildJsonArray { notes.distinct().take(50).forEach { add(it.take(300)) } })
+                if (languageServers.isNotEmpty()) put("lsp", JsonObject(languageServers))
+                val ownBins = bins.distinct().filter { inside(root, it)?.isDirectory == true }
+                if (ownBins.isNotEmpty()) put("bin", buildJsonArray { ownBins.forEach { add(it) } })
+                if (settings.isNotEmpty()) put("settings", JsonObject(settings))
+                if (notes.isNotEmpty()) put("notes", buildJsonArray { notes.distinct().forEach { add(it.take(300)) } })
             }
             val target = root.resolve("plugin.json")
             if (target.isFile && format != "AndroidHarness") {
@@ -394,9 +443,18 @@ object PluginAdapter {
     private fun firstParagraph(body: String): String = body.lines().map { it.trim() }
         .dropWhile { it.isEmpty() || it.startsWith("#") || it.startsWith("<") }
         .takeWhile { it.isNotEmpty() }.joinToString(" ").take(500)
-    private fun quote(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "'").replace(Regex("\\s+"), " ").trim().take(1024) + "\""
-    private fun frontmatter(name: String, description: String, category: String?) =
-        "---\nname: $name\ndescription: ${quote(description)}\n${category?.let { "category: ${quote(it)}\n" }.orEmpty()}---\n\n"
+    private fun quote(value: String) = "\"" + value.replace("\\", "\\\\").replace("\"", "'").replace(Regex("\\s+"), " ").trim() + "\""
+    private fun frontmatter(name: String, description: String, category: String?, extra: List<Pair<String, String>> = emptyList()) =
+        "---\nname: $name\ndescription: ${quote(description)}\n${category?.let { "category: ${quote(it)}\n" }.orEmpty()}" +
+            extra.joinToString("") { (key, value) -> "$key: ${quote(value)}\n" } + "---\n\n"
+    /** A YAML block list under [key] (tools:\n  - Read\n  - Grep), which the simple frontmatter reader skips. */
+    private fun yamlList(front: String, key: String): List<String> {
+        val lines = front.lines()
+        val start = lines.indexOfFirst { it.trimEnd() == "$key:" }
+        if (start < 0) return emptyList()
+        return lines.drop(start + 1).takeWhile { it.isBlank() || it.first().isWhitespace() }.map { it.trim() }
+            .filter { it.startsWith("-") }.map { it.removePrefix("-").trim().trim('"', '\'') }.filter(String::isNotEmpty)
+    }
     /** Gemini CLI commands: description = "..." and prompt = """...""" (or a single-line string). */
     private fun tomlCommand(text: String): Pair<Map<String, String>, String> {
         fun value(key: String): String? {
@@ -409,11 +467,12 @@ object PluginAdapter {
 
 /** Claude, Gemini, VS Code and registry MCP entries in this app's harness.json shape. */
 object PluginMcp {
-    private val variable = Regex("\\$\\{([A-Za-z_][A-Za-z0-9_]*)(?::-[^}]*)?\\}|\\$([A-Z_][A-Z0-9_]*)")
+    private val variable = Regex("\\$\\{(?:user_config\\.)?([A-Za-z_][A-Za-z0-9_]*)(?::-[^}]*)?\\}|\\$([A-Z_][A-Z0-9_]*)")
     private val rootVariables = setOf("CLAUDE_PLUGIN_ROOT", "extensionPath", "PLUGIN_ROOT", "pluginRoot")
+    private val dataVariables = setOf("CLAUDE_PLUGIN_DATA", "PLUGIN_DATA")
     fun text(value: String): String = variable.replace(value) { match ->
         val name = match.groupValues[1].ifBlank { match.groupValues[2] }
-        if (name in rootVariables) "{plugin:root}" else "{env:$name}"
+        when (name) { in rootVariables -> "{plugin:root}"; in dataVariables -> "{plugin:data}"; else -> "{env:$name}" }
     }
     private fun JsonElement?.str(): String? = (this as? JsonPrimitive)?.contentOrNull
 

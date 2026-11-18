@@ -70,7 +70,34 @@ object InstallCommands {
         }.toString(), name = skills.single()))
         return InstallRequest.Source(PluginOrigin("github", repo, ref, sub))
     }
+    /**
+     * A repository on GitLab, Bitbucket, Codeberg or another Gitea server. Folder links work as on GitHub:
+     * GitLab /-/tree/<ref>/<path>, Bitbucket /src/<ref>/<path>, Gitea /src/branch/<ref>/<path>.
+     */
+    private fun gitHost(value: String, branch: String = ""): InstallRequest {
+        val text = value.trim().removeSuffix("/").let { if (it.startsWith("git@")) "https://" + it.removePrefix("git@").replaceFirst(':', '/') else it }
+        val uri = java.net.URI(text.replaceFirst("http://", "https://"))
+        val host = uri.host ?: error("Not a repository link: $value")
+        val segments = uri.path.orEmpty().split('/').filter(String::isNotEmpty)
+        val marker = segments.indexOfFirst { it in setOf("-", "src", "tree", "blob") }.takeIf { it >= 2 } ?: segments.size
+        val repoPath = segments.take(marker).joinToString("/").removeSuffix(".git")
+        require(repoPath.count { it == '/' } >= 1) { "Enter a repository link such as https://gitlab.com/owner/name." }
+        var rest = segments.drop(marker)
+        if (rest.firstOrNull() == "-") rest = rest.drop(1)
+        if (rest.firstOrNull() in setOf("tree", "blob", "src")) rest = rest.drop(1)
+        if (rest.firstOrNull() in setOf("branch", "commit", "tag")) rest = rest.drop(1)
+        val ref = branch.ifBlank { rest.firstOrNull().orEmpty() }
+        val sub = rest.drop(1).joinToString("/")
+        return InstallRequest.Source(PluginOrigin("git", "https://$host/$repoPath", ref, sub))
+    }
+    private fun isGitHost(value: String): Boolean {
+        val host = runCatching { java.net.URI(value.trim().let { if (it.startsWith("git@")) "https://" + it.removePrefix("git@").replaceFirst(':', '/') else it }).host }.getOrNull() ?: return false
+        return host != "github.com" && host != "www.github.com" && (host in setOf("gitlab.com", "bitbucket.org", "codeberg.org") || host.startsWith("gitlab.") ||
+            host.startsWith("gitea.") || host.startsWith("git.") || value.trim().removeSuffix("/").endsWith(".git"))
+    }
     private fun marketplaceRepo(value: String): MarketplaceSource {
+        if (value.startsWith("https://") && value.substringBefore('?').endsWith(".json")) return MarketplaceSource(value)
+        if (isGitHost(value)) return (gitHost(value) as InstallRequest.Source).origin.let { MarketplaceSource(it.target, it.ref) }
         val request = github(value) as InstallRequest.Source
         return MarketplaceSource(request.origin.target, request.origin.ref)
     }
@@ -134,14 +161,17 @@ object InstallCommands {
             head == "git" && rest.firstOrNull() == "clone" -> {
                 val url = packageArgs(rest.drop(1), setOf("-b", "--branch", "--depth", "--origin")).first ?: error("The command does not name a repository.")
                 val branch = rest.windowed(2).firstOrNull { it[0] == "-b" || it[0] == "--branch" }?.get(1).orEmpty()
-                val parsed = github(url) as InstallRequest.Source
-                InstallRequest.Source(parsed.origin.copy(ref = branch.ifBlank { parsed.origin.ref }))
+                if (isGitHost(url)) gitHost(url, branch) else {
+                    val parsed = github(url) as InstallRequest.Source
+                    InstallRequest.Source(parsed.origin.copy(ref = branch.ifBlank { parsed.origin.ref }))
+                }
             }
             head == "claude" || head == "/plugin" -> claude(if (head == "/plugin") listOf("plugin") + rest else rest)
             head.startsWith("https://github.com/") || head.startsWith("github.com/") || head.startsWith("http://github.com/") -> github(head)
             head.startsWith("https://www.npmjs.com/package/") -> npm(head.removePrefix("https://www.npmjs.com/package/").substringBefore("/v/").trimEnd('/') +
                 head.substringAfter("/v/", "").let { if (it.isBlank()) "" else "@$it" })
             head.startsWith("https://") && Regex("\\.(zip|tgz|tar\\.gz)(\\?.*)?$").containsMatchIn(head) -> InstallRequest.Source(PluginOrigin("url", head))
+            (head.startsWith("https://") || head.startsWith("git@")) && isGitHost(head) -> gitHost(head)
             head.startsWith("https://") || head.startsWith("http://") ->
                 mcp(PluginAdapter.sanitizeName(java.net.URI(head).host?.removePrefix("mcp.")?.substringBefore('.') ?: "server", "server"),
                     buildJsonObject { put("type", if (head.trimEnd('/').endsWith("/sse")) "sse" else "http"); put("url", head) })

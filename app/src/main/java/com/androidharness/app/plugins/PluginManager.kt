@@ -28,6 +28,13 @@ sealed interface PluginRequest {
     data class MarketplaceAdded(val source: MarketplaceSource, val listings: List<PluginListing>) : PluginRequest
 }
 
+/**
+ * A value a plugin reads: a declared setting (Claude Code userConfig) or an {env:NAME} its servers use.
+ * Values are saved as configuration variables, and [sensitive] ones as encrypted secrets.
+ */
+data class PluginSetting(val key: String, val title: String, val description: String = "", val sensitive: Boolean = false,
+    val required: Boolean = false, val default: String? = null)
+
 /** One catalog section of Discover. A failed source reports [error] and leaves the others usable. */
 data class CatalogSection(val title: String, val listings: List<PluginListing>, val error: String? = null, val repo: String = "")
 
@@ -53,6 +60,47 @@ class PluginManager(
         return "project:${HarnessConfig.digest(identity)}"
     }
     fun configurationSources(workspace: WorkspaceFs) = store.configurationSources(workspaceScope(workspace))
+    fun managed(workspace: WorkspaceFs) = store.managed(workspaceScope(workspace))
+
+    /** The settings [record] declares, then any {env:NAME} its MCP or language servers read that is not one of them. */
+    fun settings(record: InstalledPlugin): List<PluginSetting> {
+        val manifest = runCatching { Json.parseToJsonElement(store.directory(record).resolve("plugin.json").readText()).jsonObject }.getOrNull() ?: return emptyList()
+        fun JsonElement?.text() = (this as? JsonPrimitive)?.contentOrNull
+        fun JsonElement?.flag() = (this as? JsonPrimitive)?.booleanOrNull == true
+        val declared = (manifest["settings"] as? JsonObject).orEmpty().map { (key, value) ->
+            val setting = value as? JsonObject ?: JsonObject(emptyMap())
+            PluginSetting(key, setting["title"].text() ?: key, setting["description"].text().orEmpty(), setting["sensitive"].flag(),
+                setting["required"].flag(), setting["default"].text())
+        }
+        val referenced = Regex("\\{env:([A-Za-z_][A-Za-z0-9_]*)\\}").findAll(listOfNotNull(manifest["mcp"], manifest["lsp"]).joinToString()).map { it.groupValues[1] }
+            .distinct().filter { name -> declared.none { it.key == name } }
+            .map { PluginSetting(it, it, sensitive = Regex("(?i)key|token|secret|password|auth").containsMatchIn(it), required = true) }
+        return declared + referenced.toList()
+    }
+
+    /**
+     * Updates every plugin that has automatic updates on and comes from npm or a git host, at most once per [every].
+     * A plugin whose source has not moved is not downloaded again. Returns the names of updated plugins.
+     */
+    suspend fun autoUpdate(every: Long = 6 * 60 * 60 * 1000L): List<String> {
+        val now = System.currentTimeMillis()
+        val due = withContext(Dispatchers.IO) { runCatching { store.list() }.getOrDefault(emptyList()) }
+            .filter { it.autoUpdate && it.enabled && it.origin.kind in setOf("npm", "github", "git") && now - it.checkedAt > every }
+        val updated = mutableListOf<String>()
+        for (record in due) {
+            try {
+                val latest = downloads.resolve(record.origin)
+                if (latest.revision != record.revision) {
+                    val prepared = prepare(record.origin, record)
+                    if (prepared.digest == record.digest) withContext(Dispatchers.IO) { discard(prepared) }
+                    else { install(prepared, record.scope, record.scopeLabel); updated += record.name }
+                }
+                withContext(Dispatchers.IO) { store.touchChecked(record.id) }
+            } catch (e: CancellationException) { throw e }
+            catch (_: Exception) { /* Tried again on the next check; the installed version keeps working. */ }
+        }
+        return updated
+    }
 
     /** Reads a pasted command, package, link or JSON. Only package metadata and marketplace files are fetched. */
     suspend fun request(input: String): PluginRequest = when (val parsed = InstallCommands.parse(input)) {
@@ -102,7 +150,12 @@ class PluginManager(
         catalogCache[key]?.takeIf { !refresh && System.currentTimeMillis() - it.first < 30 * 60 * 1000 }?.let { return it.second }
         val document = downloads.marketplace(source)
         val label = source.name.ifBlank { (document["name"] as? JsonPrimitive)?.contentOrNull ?: source.repo }
-        return PluginMarketplaces.entries(document, PluginOrigin("github", source.repo, source.ref), label).also {
+        val base = when {
+            !source.repo.startsWith("https://") -> PluginOrigin("github", source.repo, source.ref)
+            source.repo.substringBefore('?').endsWith(".json") -> PluginOrigin("url", source.repo, source.ref)
+            else -> PluginOrigin("git", source.repo, source.ref)
+        }
+        return PluginMarketplaces.entries(document, base, label).also {
             catalogCache[key] = System.currentTimeMillis() to it
         }
     }
@@ -128,6 +181,17 @@ class PluginManager(
         }
         val featured = PluginMarketplaces.featured.filter { text.isBlank() || it.matches(text) }
         listOf(CatalogSection("Featured", featured)) + markets.awaitAll() + remote.awaitAll()
+    }
+    /** Sections that can show more results. */
+    val pagedSections = setOf("MCP registry", "GitHub", "npm")
+    /** The next [page] of one searchable section, for Discover's "Load more". */
+    suspend fun more(section: String, query: String, page: Int): List<PluginListing> = withTimeout(20_000) {
+        when (section) {
+            "MCP registry" -> downloads.searchMcpRegistry(query.trim(), page)
+            "GitHub" -> downloads.searchGitHub(query.trim(), page)
+            "npm" -> downloads.searchNpm(query.trim(), page)
+            else -> emptyList()
+        }
     }
     private val repoStats = java.util.concurrent.ConcurrentHashMap<String, Pair<Long, PluginDownloads.RepoStats?>>()
     /**
@@ -168,13 +232,13 @@ class PluginManager(
     suspend fun prepare(origin: PluginOrigin, update: InstalledPlugin? = null, progress: (PluginProgress) -> Unit = {}): PreparedPlugin {
         val temporary = withContext(Dispatchers.IO) { File(previews, UUID.randomUUID().toString()).apply { mkdirs() } }
         try {
-            val resolved = if (origin.kind in setOf("npm", "github", "url")) {
+            val resolved = if (origin.kind in setOf("npm", "github", "url", "git")) {
                 progress(PluginProgress("Resolving source")); downloads.resolve(origin)
             } else null
             val revision = resolved?.revision ?: when (origin.kind) { "mcp" -> origin.ref.ifBlank { "config" }; "installer" -> "installer"; else -> "local" }
             val files = File(temporary, "files")
             val skipped = when (origin.kind) {
-                "npm", "github", "url" -> {
+                "npm", "github", "url", "git" -> {
                     val archive = File(temporary, "download")
                     progress(PluginProgress("Downloading"))
                     downloads.download(requireNotNull(resolved), archive) { n, total -> progress(PluginProgress("Downloading", n, total)) }
@@ -207,7 +271,6 @@ class PluginManager(
                     PluginInstallers.run(env, origin.target, run) { progress(PluginProgress("Running installer", detail = it)) }
                     withContext(Dispatchers.IO) { PluginArchives.copyLocal(run, files).also { run.deleteRecursively() } }
                 }
-                "git" -> error("Only GitHub repositories can be downloaded. Ask the publisher for a GitHub, npm or archive source.")
                 else -> error("Unsupported plugin source.")
             }
             return withContext(Dispatchers.IO) {
@@ -237,7 +300,7 @@ class PluginManager(
         val manifest = bundle.resolve("plugin.json")
         val current = Json.parseToJsonElement(manifest.readText()).jsonObject
         val merged = (current["notes"] as? JsonArray).orEmpty() + notes.map(::JsonPrimitive)
-        manifest.writeText(JsonObject(current + ("notes" to JsonArray(merged.take(50)))).toString())
+        manifest.writeText(JsonObject(current + ("notes" to JsonArray(merged.distinct()))).toString())
     }
     private fun materializeMcp(origin: PluginOrigin, folder: File) {
         val servers = Json.parseToJsonElement(origin.target).jsonObject

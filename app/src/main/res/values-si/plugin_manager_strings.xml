@@ -142,4 +142,15 @@
         <item quantity="one">%1$d යාවත්කාලීනයක් ඇත</item>
         <item quantity="other">%1$d යාවත්කාලීනයක් ඇත</item>
     </plurals>
+    <string name="pm_problem">පූරණය නොවිණි: %1$s</string>
+    <string name="pm_in_project">මෙම ව්‍යාපෘතියේ සක්‍රීයයි</string>
+    <string name="pm_auto_update">ස්වයංක්‍රීයව යාවත්කාලීන කරන්න</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">%1$s සැකසුම්</string>
+    <string name="pm_settings_hint">අගයන් වින්‍යාස විචල්‍ය ලෙස සුරැකේ. සංවේදී අගයන් සංකේතනය වන අතර නැවත නොපෙන්වයි.</string>
+    <string name="pm_setting_saved">සුරකින ලදි. ප්‍රතිස්ථාපනයට ටයිප් කරන්න.</string>
+    <string name="pm_setting_required">අවශ්‍යයි</string>
+    <string name="pm_settings_saved">සැකසුම් සුරකින ලදි. ඊළඟ Code ධාවනයට බලපායි.</string>
+    <string name="pm_auto_updated">%1$s යාවත්කාලීන කරන ලදි.</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

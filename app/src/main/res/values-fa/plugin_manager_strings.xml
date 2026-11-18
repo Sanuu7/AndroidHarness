@@ -142,4 +142,15 @@
         <item quantity="one">%1$d به‌روزرسانی موجود است</item>
         <item quantity="other">%1$d به‌روزرسانی موجود است</item>
     </plurals>
+    <string name="pm_problem">بارگذاری نشد: %1$s</string>
+    <string name="pm_in_project">در این پروژه روشن است</string>
+    <string name="pm_auto_update">به‌روزرسانی خودکار</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">تنظیمات %1$s</string>
+    <string name="pm_settings_hint">مقادیر به‌عنوان متغیرهای پیکربندی ذخیره می‌شوند. مقادیر حساس رمزنگاری می‌شوند و دیگر نمایش داده نمی‌شوند.</string>
+    <string name="pm_setting_saved">ذخیره شد. برای جایگزینی تایپ کنید.</string>
+    <string name="pm_setting_required">مورد نیاز</string>
+    <string name="pm_settings_saved">تنظیمات ذخیره شد. در اجرای بعدی Code اعمال می‌شود.</string>
+    <string name="pm_auto_updated">%1$s به‌روزرسانی شد.</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

@@ -139,4 +139,15 @@
     <plurals name="pm_updates_found">
         <item quantity="other">利用可能な更新 %1$d 件</item>
     </plurals>
+    <string name="pm_problem">読み込めませんでした: %1$s</string>
+    <string name="pm_in_project">このプロジェクトで有効</string>
+    <string name="pm_auto_update">自動的に更新</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">%1$s の設定</string>
+    <string name="pm_settings_hint">値は構成変数として保存されます。機密値は暗号化され、二度と表示されません。</string>
+    <string name="pm_setting_saved">保存済み。入力すると置き換えます。</string>
+    <string name="pm_setting_required">必須</string>
+    <string name="pm_settings_saved">設定を保存しました。次回の Code 実行から適用されます。</string>
+    <string name="pm_auto_updated">%1$s を更新しました。</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

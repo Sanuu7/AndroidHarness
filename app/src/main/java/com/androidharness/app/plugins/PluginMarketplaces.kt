@@ -40,13 +40,13 @@ object PluginMarketplaces {
     fun entries(marketplace: JsonObject, base: PluginOrigin, label: String): List<PluginListing> {
         val pluginRoot = (marketplace["metadata"] as? JsonObject)?.get("pluginRoot").str().orEmpty()
         val owner = (marketplace["owner"] as? JsonObject)?.get("name").str().orEmpty()
-        val repo = if (base.kind == "github") base.target else base.marketplace
+        val repo = if (base.kind in setOf("github", "git", "url")) base.target else base.marketplace
         return (marketplace["plugins"] as? JsonArray).orEmpty().mapNotNull { element ->
             val entry = element as? JsonObject ?: return@mapNotNull null
             val name = entry["name"].str() ?: return@mapNotNull null
-            val entryJson = entry.toString().takeIf { it.length <= 64_000 }.orEmpty()
+            val entryJson = entry.toString()
             val origin = when (val source = entry["source"]) {
-                is JsonPrimitive -> base.copy(subdirectory = join(base.subdirectory, pluginRoot, source.content), entry = entryJson, marketplace = repo, name = name)
+                is JsonPrimitive -> if (base.kind == "url") return@mapNotNull null else base.copy(subdirectory = join(base.subdirectory, pluginRoot, source.content), entry = entryJson, marketplace = repo, name = name)
                 is JsonObject -> when (source["source"].str()) {
                     "github" -> PluginOrigin("github", source["repo"].str() ?: return@mapNotNull null, source["sha"].str() ?: source["ref"].str().orEmpty(),
                         join(source["path"].str().orEmpty()), entryJson, repo, name)
@@ -55,7 +55,8 @@ object PluginMarketplaces {
                     } ?: PluginOrigin("git", source["url"].str() ?: return@mapNotNull null, source["ref"].str().orEmpty(), "", entryJson, repo, name)
                     "git-subdir" -> githubRepo(source["url"].str().orEmpty())?.let {
                         PluginOrigin("github", it, source["sha"].str() ?: source["ref"].str().orEmpty(), join(source["path"].str().orEmpty()), entryJson, repo, name)
-                    } ?: return@mapNotNull null
+                    } ?: PluginOrigin("git", source["url"].str() ?: return@mapNotNull null, source["sha"].str() ?: source["ref"].str().orEmpty(),
+                        join(source["path"].str().orEmpty()), entryJson, repo, name)
                     "npm" -> PluginOrigin("npm", source["package"].str() ?: return@mapNotNull null, source["version"].str() ?: "latest", "", entryJson, repo, name)
                     else -> return@mapNotNull null
                 }
@@ -69,7 +70,7 @@ object PluginMarketplaces {
             PluginListing(name, entry["description"].str().orEmpty().take(2000), entry["version"].str().orEmpty(), origin,
                 (entry["author"] as? JsonObject)?.get("name").str() ?: entry["author"].str() ?: owner, kind = kind,
                 category = entry["category"].str().orEmpty(), source = label, homepage = entry["homepage"].str().orEmpty())
-        }.take(1000)
+        }
     }
 }
 
@@ -84,7 +85,6 @@ class MarketplaceStore(private val file: File) {
     fun add(source: MarketplaceSource) = synchronized(lock) {
         val current = list()
         require(current.none { it.repo.equals(source.repo, true) }) { "This marketplace is already added." }
-        require(current.size < 50) { "At most 50 marketplaces can be added." }
         save(current + source)
     }
     fun remove(repo: String) = synchronized(lock) { save(list().filterNot { it.repo.equals(repo, true) }) }

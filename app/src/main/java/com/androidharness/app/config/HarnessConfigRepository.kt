@@ -49,7 +49,6 @@ class HarnessConfigRepository(private val context: Context, private val keys: Ke
         require(value.toByteArray().size <= if (name == "HARNESS_CONFIG_CONTENT" && !secret) ConfigDocument.MAX_BYTES else 16 * 1024) { "Value exceeds its size limit." }
         val before = bindings()
         if (secret) {
-            require(secretNames().size < 64 || name in secretNames()) { "At most 64 configuration secrets." }
             keys.putLocalSecret("harness_config_$name", value)
             saveBindings(JsonObject(before + ("secrets" to JsonArray((secretNames() + name).distinct().map(::JsonPrimitive)))))
         } else saveBindings(JsonObject(before + ("variables" to JsonObject(before["variables"]?.jsonObject.orEmpty() + (name to JsonPrimitive(value))))))
@@ -78,14 +77,17 @@ class HarnessConfigRepository(private val context: Context, private val keys: Ke
             }
         }
         val primary = if (workspace is ChatWorkspaceFs) workspace.fileAccess(workspace.primary) else workspace
+        val managed = plugins?.managed(workspace)
+        val secrets = secretNames().toSet()
+        fun secret(name: String) = keys.localSecret("harness_config_$name")?.takeIf(String::isNotEmpty)
         val result = HarnessConfigLoader(draft(home, globalDraft), folders().mapValues { ConfigDocumentFs(context, Uri.parse(it.value)) },
-            appHome = FileFs(File(context.filesDir, "config/home")), managedPlugins = plugins?.configurationSources(workspace).orEmpty(), environment = { variables[it] ?: System.getenv(it) }, secret = { keys.localSecret("harness_config_$it")?.takeIf(String::isNotEmpty) })
+            appHome = FileFs(File(context.filesDir, "config/home")), managedPlugins = managed?.sources.orEmpty(),
+            // Plugin settings may be saved as secrets; they are read the same way as plain variables.
+            environment = { variables[it] ?: (if (it in secrets) secret(it) else null) ?: System.getenv(it) }, secret = ::secret,
+            managedProblems = managed?.problems.orEmpty(),
+            pluginData = { name -> File(context.filesDir, "plugins/data/${name.replace(Regex("[^a-z0-9-]"), "-")}").apply { mkdirs() }.absolutePath })
             .load(draft(primary, projectDraft), variables["HARNESS_CONFIG"] ?: System.getenv("HARNESS_CONFIG"),
                 variables["HARNESS_CONFIG_CONTENT"] ?: System.getenv("HARNESS_CONFIG_CONTENT"))
-        if (result.autoLoad.isNotEmpty()) {
-            // Bundled/user skills are checked by the engine and settings preview, which own the skill library.
-            require(result.autoLoad.size <= 32) { "At most 32 auto_load patterns are supported." }
-        }
         return result
     }
     fun document(workspace: WorkspaceFs, global: Boolean): Pair<String, String?> {

@@ -154,4 +154,15 @@
         <item quantity="many">%1$d تحديثًا متاحًا</item>
         <item quantity="other">%1$d تحديث متاح</item>
     </plurals>
+    <string name="pm_problem">لم يتم التحميل: %1$s</string>
+    <string name="pm_in_project">مُفعّل في هذا المشروع</string>
+    <string name="pm_auto_update">التحديث تلقائيًا</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">إعدادات %1$s</string>
+    <string name="pm_settings_hint">تُحفظ القيم كمتغيرات إعداد. تُشفَّر القيم الحساسة ولا تُعرض مرة أخرى.</string>
+    <string name="pm_setting_saved">محفوظ. اكتب للاستبدال.</string>
+    <string name="pm_setting_required">مطلوب</string>
+    <string name="pm_settings_saved">تم حفظ الإعدادات. تُطبَّق على تشغيل Code التالي.</string>
+    <string name="pm_auto_updated">تم تحديث %1$s.</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

@@ -11,12 +11,14 @@ import org.apache.commons.compress.archivers.zip.ZipFile
  * failing the whole bundle; links are kept only when they point at another member of the same bundle.
  */
 object PluginArchives {
-    const val MAX_DOWNLOAD = 200L * 1024 * 1024
-    const val MAX_UNPACKED = 512L * 1024 * 1024
-    const val MAX_FILE = 64L * 1024 * 1024
-    const val MAX_FILES = 20_000
-    private const val MAX_ENTRIES = 200_000
-    private const val MAX_DEPTH = 32
+    // Guards against archive bombs and full storage only. Real plugins never come near them.
+    const val MAX_DOWNLOAD = 8L * 1024 * 1024 * 1024
+    const val MAX_UNPACKED = 32L * 1024 * 1024 * 1024
+    const val MAX_FILE = 8L * 1024 * 1024 * 1024
+    const val MAX_FILES = 5_000_000
+    private const val MAX_ENTRIES = 20_000_000
+    private const val MAX_DEPTH = 256
+    private const val GIB = 1024L * 1024 * 1024
     /** Folders that never carry plugin content and often hold most of a repository's files. */
     val SKIPPED = setOf(".git", "node_modules", "__MACOSX", ".DS_Store", ".hg", ".svn", "__pycache__", ".venv", ".pytest_cache", ".gradle", ".idea")
 
@@ -64,15 +66,15 @@ object PluginArchives {
             return file
         }
         fun write(name: String, size: Long, input: InputStream) {
-            if (size > MAX_FILE) { skip(name, "larger than 64 MiB"); return }
+            if (size > MAX_FILE) { skip(name, "larger than ${MAX_FILE / GIB} GiB"); return }
             val file = target(name, false) ?: return
             val limit = minOf(MAX_FILE, MAX_UNPACKED - total)
             try {
                 file.outputStream().use { out -> total += copyLimited(input, out, limit) }
             } catch (e: IllegalArgumentException) {
                 file.delete()
-                require(limit == MAX_FILE) { "Plugin bundle expands beyond 512 MiB." }
-                skip(name, "larger than 64 MiB")
+                require(limit == MAX_FILE) { "Plugin bundle expands beyond ${MAX_UNPACKED / GIB} GiB." }
+                skip(name, "larger than ${MAX_FILE / GIB} GiB")
             }
         }
         /** [fromRoot] targets (tar hard links) are relative to the archive root rather than to the link. */
@@ -98,7 +100,7 @@ object PluginArchives {
         }
     }
     fun extract(archive: File, destination: File): List<String> {
-        require(archive.length() <= MAX_DOWNLOAD) { "Plugin archive exceeds 200 MiB." }
+        require(archive.length() <= MAX_DOWNLOAD) { "Plugin archive exceeds ${MAX_DOWNLOAD / GIB} GiB." }
         require(destination.mkdirs() || destination.isDirectory)
         require(destination.listFiles().isNullOrEmpty()) { "Extraction directory must be empty." }
         val budget = Budget(destination)

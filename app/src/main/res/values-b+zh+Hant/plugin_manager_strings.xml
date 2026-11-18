@@ -139,4 +139,15 @@
     <plurals name="pm_updates_found">
         <item quantity="other">"有 %1$d 個可用更新"</item>
     </plurals>
+    <string name="pm_problem">"未載入：%1$s"</string>
+    <string name="pm_in_project">"在此專案中開啟"</string>
+    <string name="pm_auto_update">"自動更新"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"%1$s 設定"</string>
+    <string name="pm_settings_hint">"值會儲存為設定變數。敏感值會加密，之後不再顯示。"</string>
+    <string name="pm_setting_saved">"已儲存。輸入即可取代。"</string>
+    <string name="pm_setting_required">"必填"</string>
+    <string name="pm_settings_saved">"設定已儲存。將在下次 Code 執行時生效。"</string>
+    <string name="pm_auto_updated">"已更新 %1$s。"</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

@@ -149,6 +149,8 @@ sealed interface AgentEvent {
     data class ProviderChanged(val config: com.androidharness.app.llm.ProviderConfig, val reason: String, val persistSelection: Boolean = true) : AgentEvent
     /** Includes independently configured subagents so disconnecting stops every affected run. */
     data class ProviderUsed(val providerId: String) : AgentEvent
+    /** A message from a plugin hook, shown in the chat as a system line. */
+    data class Notice(val text: String) : AgentEvent
     data class Text(val delta: String) : AgentEvent
     data class Thinking(val delta: String) : AgentEvent
     data class ThinkingProgress(val timing: ThinkingTiming) : AgentEvent
@@ -313,13 +315,22 @@ class AgentEngine(
         val selectedSkillStore = withContext(kotlinx.coroutines.Dispatchers.IO) {
             skills.forWorkspace(workspace).configured(projectConfig).freeze()
         }
-        val runContext = com.androidharness.app.config.ConfigRunContext(projectConfig, selectedSkillStore, pluginHooks)
+        val runContext = com.androidharness.app.config.ConfigRunContext(projectConfig, selectedSkillStore, pluginHooks,
+            hookRun = hookContext(sessionId, workspace, permissionMode(), mode, projectConfig, config, apiKey, options))
         withContext(runContext) {
+        // Hook messages raised before the event emitter exists are shown once it does.
+        val earlyNotices = mutableListOf<String>()
         suspend fun hook(name: String, event: kotlinx.serialization.json.JsonObject = kotlinx.serialization.json.JsonObject(emptyMap())) =
-            pluginHooks?.invoke(projectConfig.plugins, name, event) ?: com.androidharness.app.config.HookResult()
-        val startNotes = hook("session.start").instructions + hook("message.received", kotlinx.serialization.json.buildJsonObject {
-            put("message", runContext.redact(history.lastOrNull { it.role == Role.USER }?.text.orEmpty()).take(32_000))
-        }).instructions
+            runContext.fire(name, event).also { earlyNotices += it.messages }
+        val hooksActive = projectConfig.plugins.isNotEmpty() && pluginHooks != null
+        val started = if (!hooksActive) com.androidharness.app.config.HookResult() else hook(com.androidharness.app.config.HookEvents.SESSION_START, kotlinx.serialization.json.buildJsonObject {
+            put("source", if (history.any { it.role == Role.ASSISTANT }) "resume" else "startup")
+        })
+        val received = if (!hooksActive) com.androidharness.app.config.HookResult() else hook(com.androidharness.app.config.HookEvents.MESSAGE, kotlinx.serialization.json.buildJsonObject {
+            put("message", runContext.redact(history.lastOrNull { it.role == Role.USER }?.text.orEmpty()))
+        })
+        val startNotes = listOf(started.instructions, received.instructions).filter(String::isNotBlank).joinToString("\n").let { if (it.isBlank()) "" else "\n\n$it" }
+        var stopHookActive = false
         try {
         var config = config
         // Parallel subagents emit from async children, plain flow{} forbids
@@ -330,6 +341,14 @@ class AgentEngine(
             eventMutex.withLock {
                 if (durableEvent != null) durableEvent(event) else send(event)
             }
+        }
+        earlyNotices.forEach { emit(AgentEvent.Notice(it)) }
+        earlyNotices.clear()
+        val blockedPrompt = received.denied ?: runContext.stopRequested.get()
+        if (blockedPrompt != null) {
+            emit(AgentEvent.Notice("Prompt blocked by a plugin hook: $blockedPrompt"))
+            emit(AgentEvent.Finished())
+            return@withContext
         }
         // Rebuilt when Full access toggles, because the path rules the model
         // is told about change with it.
@@ -381,6 +400,7 @@ class AgentEngine(
         var visionAvailable = imageCapable
         val runRegistry = (if (conversation.isChat) registry.withExtra(chatOnlyTools + com.androidharness.app.tools.chatAgentTools(conversation.agent) + listOfNotNull(scopedSearch, scopedFetch, scopedBrowser?.forImageInput { visionAvailable }) +
             if (imageCapable) listOf(com.androidharness.app.tools.ChatImageZoomTool(imageStore) { working.toList() }.forInventory(turnImages::sources), com.androidharness.app.tools.ViewChatImageTool(imageStore) { working.toList() }.forInventory(turnImages::sources)) else emptyList()) else registry.withExtra(chatOnlyTools.filter { it.name in recallToolNames } + extraTools + (if (projectConfig.references.isEmpty()) emptyList() else listOf(com.androidharness.app.config.ConfigReferenceReadTool(projectConfig))) +
+            (if (projectConfig.languageServers.isEmpty()) emptyList() else listOf(com.androidharness.app.tools.LanguageServerTool(projectConfig.languageServers) { linuxEnv.shellProcessBuilder(it) })) +
             if (subagentRuns == null) emptyList() else com.androidharness.app.tools.subagentControlTools(subagentRuns, sessionId)))
             .restrictedTo(conversation.allowedTools)
             .let { if (conversation.isChat && searchDepth == com.androidharness.app.data.SearchDepth.OFF) it.without(setOf("web_search")) else it }
@@ -489,9 +509,19 @@ class AgentEngine(
                 intensity = replySettings.cavemanIntensity,
                 wenyan = replySettings.cavemanWenyan,
             )
-            if (agentContextEnabled) requestSystemPrompt += runContext.drainInstructions() + hook("prompt.before", kotlinx.serialization.json.buildJsonObject {
-                put("agent", runContext.agent); put("iteration", iterations)
-            }).instructions
+            if (agentContextEnabled) {
+                val before = if (hooksActive) hook(com.androidharness.app.config.HookEvents.PROMPT, kotlinx.serialization.json.buildJsonObject {
+                    put("agent", runContext.agent); put("iteration", iterations)
+                }) else com.androidharness.app.config.HookResult()
+                earlyNotices.forEach { emit(AgentEvent.Notice(it)) }; earlyNotices.clear()
+                requestSystemPrompt += runContext.drainInstructions().let { if (it.isBlank()) "" else "\n\n$it" } +
+                    before.instructions.let { if (it.isBlank()) "" else "\n\n$it" }
+            }
+            runContext.stopRequested.get()?.let { reason ->
+                emit(AgentEvent.Notice("A plugin hook stopped the run: $reason"))
+                emit(AgentEvent.Finished())
+                break
+            }
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)
             emit(AgentEvent.EstimatedContext(estimate))
@@ -499,6 +529,11 @@ class AgentEngine(
                 else AutoCompaction.threshold(autoCompactTokens(), contextLimit, requestOptions.maxOutputTokens)
             val needsCompaction = estimate.total >= compactThreshold
             if ((!localChat || agentContextEnabled) && needsCompaction && (conversation.isChat || working.size > 1)) {
+                if (hooksActive) {
+                    hook(com.androidharness.app.config.HookEvents.COMPACT, kotlinx.serialization.json.buildJsonObject { put("trigger", "auto") })
+                        .instructions.takeIf(String::isNotBlank)?.let { runContext.pendingInstructions.add(it) }
+                    earlyNotices.forEach { emit(AgentEvent.Notice(it)) }; earlyNotices.clear()
+                }
                 val compacted = compact(provider, config, apiKey, working, contextLimit, sessionId, conversation.isChat, compactThreshold) {
                     if (it is AgentEvent.ProviderChanged) config = it.config
                     emit(it)
@@ -786,6 +821,18 @@ class AgentEngine(
                 wantsNudge || wantsResearchNudge || wantsImageNudge -> continue
                 // A message sent during the final answer keeps the task going in this turn.
                 calls.isEmpty() && takeSteering() -> continue
+                calls.isEmpty() && hooksActive && runContext.stopRequested.get() == null && run {
+                    // Claude Code's Stop hook: a block keeps the agent working with the hook's reason as feedback.
+                    val stop = hook(com.androidharness.app.config.HookEvents.STOP, kotlinx.serialization.json.buildJsonObject {
+                        put("stop_hook_active", stopHookActive); put("message", text.toString())
+                    })
+                    earlyNotices.forEach { emit(AgentEvent.Notice(it)) }; earlyNotices.clear()
+                    val reason = stop.keepGoing ?: return@run false
+                    stopHookActive = true
+                    emit(AgentEvent.Notice("Continuing because of a plugin hook. $reason"))
+                    working += ChatMessage(role = Role.USER, text = "Stop hook feedback:\n$reason")
+                    true
+                } -> continue
                 calls.isEmpty() -> {
                     emit(AgentEvent.Finished(emptyAnswerReason(text.toString(), thinking.toString(), lastFinishReason, reasoningTokens)))
                     break
@@ -885,7 +932,9 @@ class AgentEngine(
             }
         }
         } finally {
-            withContext(kotlinx.coroutines.NonCancellable) { hook("session.end") }
+            if (hooksActive) withContext(kotlinx.coroutines.NonCancellable) {
+                runCatching { hook(com.androidharness.app.config.HookEvents.SESSION_END, kotlinx.serialization.json.buildJsonObject { put("reason", "other") }) }
+            }
         }
         }
     }
@@ -1132,6 +1181,37 @@ class AgentEngine(
                 ?: runCatching { imageStore.resolve(ref) }.getOrNull()
         })
 
+    /** What plugin hooks are told about this run, and how a prompt or agent hook asks the run's model. */
+    private fun hookContext(
+        sessionId: String, workspace: WorkspaceFs, permission: PermissionMode, mode: AgentMode,
+        configuration: com.androidharness.app.config.HarnessConfig, config: ProviderConfig, apiKey: String, options: RequestOptions,
+    ): com.androidharness.app.config.HookContext {
+        val project = ((workspace as? ChatWorkspaceFs)?.primary?.fs ?: workspace).shellRoot?.absolutePath
+        val claudeMode = when {
+            mode == AgentMode.PLAN -> "plan"
+            permission == PermissionMode.FULL_ACCESS -> "bypassPermissions"
+            permission == PermissionMode.FULL_AUTO -> "acceptEdits"
+            else -> "default"
+        }
+        return com.androidharness.app.config.HookContext(
+            sessionId = sessionId, projectDir = project, permissionMode = claudeMode,
+            serverNames = configuration.serverSources.filterValues { it.plugin != null }.mapValues { it.value.name },
+            evaluate = { system, prompt ->
+                val answer = StringBuilder()
+                fun take(event: com.androidharness.app.llm.StreamEvent) {
+                    when (event) {
+                        is com.androidharness.app.llm.StreamEvent.TextDelta -> answer.append(event.text)
+                        is com.androidharness.app.llm.StreamEvent.Batch -> event.events.forEach(::take)
+                        else -> Unit
+                    }
+                }
+                providerFactory(config).streamChat(config, apiKey, system, listOf(ChatMessage(role = Role.USER, text = prompt)), emptyList(), options)
+                    .collect { take(it) }
+                answer.toString()
+            },
+        )
+    }
+
     /**
      * Executes one tool call with the current permission gating. [emitEvent]
      * is injected rather than taken from a FlowCollector receiver so parallel
@@ -1155,24 +1235,32 @@ class AgentEngine(
     ): ToolResult {
         kotlin.coroutines.coroutineContext[TaskBudget]?.check()
         val runConfig = kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]
-        val before = runConfig?.hooks?.invoke(runConfig.config.plugins, "tool.before", kotlinx.serialization.json.buildJsonObject {
-            put("tool", call.name); put("arguments", runConfig.redact(call.argumentsJson).take(16_000))
-        })
+        val hooked = runConfig?.hooks != null && runConfig.config.plugins.isNotEmpty()
+        fun hookEvent(target: ToolCallData, extra: kotlinx.serialization.json.JsonObjectBuilder.() -> Unit = {}) = kotlinx.serialization.json.buildJsonObject {
+            put("tool", target.name); put("call_id", target.id); put("arguments", runConfig?.redact(target.argumentsJson) ?: target.argumentsJson); extra()
+        }
+        val before = if (hooked) runConfig!!.fire(com.androidharness.app.config.HookEvents.TOOL_BEFORE, hookEvent(call)) else null
+        before?.messages?.forEach { emitEvent(AgentEvent.Notice(it)) }
         before?.instructions?.takeIf(String::isNotBlank)?.let { runConfig?.pendingInstructions?.add(it) }
+        // A PreToolUse hook may rewrite the arguments; the rewritten call is what runs and what later hooks see.
+        val call = before?.updatedInput?.let { call.copy(argumentsJson = it.toString()) } ?: call
         val ledger = kotlin.coroutines.coroutineContext[RecoveryLedger]
         val cached = if (registry.get(call.name)?.isReadOnly == false) ledger?.result(call) else null
-        val result = (if (before?.denied != null) ToolResult(false, "Plugin blocked ${call.name}: ${before.denied}") else cached ?: performWithPermission(
+        val result = (if (before?.denied != null) ToolResult(false, "Plugin hook blocked ${call.name}: ${before.denied}") else cached ?: performWithPermission(
             call, mode, sessionAllowedTools, workspace, sessionId, turnId, agentMode,
             requestOptions, config, apiKey, registry, resolveSubagentModel, emitEvent,
-            subagentRuns = subagentRuns,
+            subagentRuns = subagentRuns, hookAsk = before?.ask, hookAllow = before?.allow == true,
         )).let { result -> result.copy(output = runConfig?.redact(result.output) ?: result.output) }.let { result ->
             // Leading with the tool name keeps this out of the unchanged-retry cache.
             val hint = if (result.ok) null else registry.get(call.name)?.let { emptyArgumentsHint(call.name, call.argumentsJson, it.parametersSchema) }
             if (hint == null) result else result.copy(output = "$hint\n${result.output}")
         }
-        runConfig?.hooks?.invoke(runConfig.config.plugins, "tool.after", kotlinx.serialization.json.buildJsonObject {
-            put("tool", call.name); put("ok", result.ok)
-        })?.instructions?.takeIf(String::isNotBlank)?.let { runConfig.pendingInstructions.add(it) }
+        if (hooked && before?.denied == null) {
+            val after = runConfig!!.fire(if (result.ok) com.androidharness.app.config.HookEvents.TOOL_AFTER else com.androidharness.app.config.HookEvents.TOOL_FAILED,
+                hookEvent(call) { put("ok", result.ok); put("output", result.output) })
+            after.messages.forEach { emitEvent(AgentEvent.Notice(it)) }
+            after.instructions.takeIf(String::isNotBlank)?.let { runConfig.pendingInstructions.add(it) }
+        }
         kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
             emitEvent(AgentEvent.ToolMessageCommitted(ChatMessage(
                 role = Role.TOOL, text = result.output, toolCallId = call.id,
@@ -1207,10 +1295,15 @@ class AgentEngine(
         resolveSubagentModel: (suspend (String) -> SubagentModelResolution)?,
         emitEvent: suspend (AgentEvent) -> Unit,
         subagentRuns: SubagentRuns? = null,
+        /** A PreToolUse hook asked for the user's approval, with its reason. */
+        hookAsk: String? = null,
+        /** A PreToolUse hook approved the call, so the usual approval prompt is skipped. */
+        hookAllow: Boolean = false,
     ): ToolResult {
         val tool = registry.get(call.name)
             ?: return ToolResult(false, "Unknown tool: ${call.name}")
         val runConfig = kotlin.coroutines.coroutineContext[com.androidharness.app.config.ConfigRunContext]
+        val hooked = runConfig?.hooks != null && runConfig.config.plugins.isNotEmpty()
         if (runConfig?.denies(tool) == true) return ToolResult(false, "${call.name} is disabled by this Code agent's tool rules.")
         val configPermission = runConfig?.config?.let { com.androidharness.app.config.ConfigToolPolicy.permission(it, tool, mode) } ?: "allow"
         if (configPermission == "deny") return ToolResult(false, "${call.name} is denied by project configuration.")
@@ -1253,19 +1346,38 @@ class AgentEngine(
             if (background && (subagentRuns == null || !cavemanSettings().backgroundSubagents)) {
                 return ToolResult(false, "Background delegation is disabled. The user can enable Allow background delegation in Sub-Agent settings. Use a foreground task instead.")
             }
+            val childContext = try { args["agent"]?.jsonPrimitive?.contentOrNull?.takeIf(String::isNotBlank)?.let { runConfig?.child(it) } ?: runConfig }
+                catch (e: IllegalArgumentException) { return ToolResult(false, e.message ?: "Unknown agent.") }
             val requestedModel = args["model"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }
+            // A plugin agent's own model (sonnet, opus, a model id) is used when it resolves here; otherwise the usual subagent model runs it.
+            val agentModel = childContext?.config?.agents?.get(childContext.agent)?.model?.takeIf { it.isNotBlank() && it != "inherit" }
             val connection = try {
-                SubagentConfiguration.forTask(config, apiKey, requestedModel, configuredSubagent, resolveSubagentModel)
+                if (requestedModel == null && agentModel != null && resolveSubagentModel != null)
+                    runCatching { SubagentConfiguration.forTask(config, apiKey, agentModel, configuredSubagent, resolveSubagentModel) }
+                        .getOrElse { e -> if (e is CancellationException) throw e; SubagentConfiguration.forTask(config, apiKey, null, configuredSubagent, resolveSubagentModel) }
+                else SubagentConfiguration.forTask(config, apiKey, requestedModel, configuredSubagent, resolveSubagentModel)
             } catch (e: CancellationException) {
                 throw e
             } catch (e: Exception) {
                 return ToolResult(false, e.message ?: "Could not configure the subagent model.")
             }
-            val childContext = args["agent"]?.jsonPrimitive?.contentOrNull?.let { runConfig?.child(it) } ?: runConfig
+            val agentType = childContext?.agent ?: "default"
             val execute: suspend (suspend (AgentEvent) -> Unit) -> ToolResult = { events ->
-                withContext(childContext ?: kotlin.coroutines.EmptyCoroutineContext) { runSubagent(prompt, title, call.id, connection.config, connection.apiKey, workspace, requestOptions, events,
-                    registry, mode, sessionAllowedTools, sessionId, turnId,
-                    actionTools = !background && agentMode == AgentMode.ACT && cavemanSettings().subagentFullAccess) }
+                withContext(childContext ?: kotlin.coroutines.EmptyCoroutineContext) {
+                    val hookEvent = kotlinx.serialization.json.buildJsonObject { put("agent_id", call.id); put("agent_type", agentType); put("prompt", prompt) }
+                    val start = if (hooked) childContext!!.fire(com.androidharness.app.config.HookEvents.SUBAGENT_START, hookEvent) else null
+                    start?.messages?.forEach { events(AgentEvent.Notice(it)) }
+                    val fullPrompt = start?.instructions?.takeIf(String::isNotBlank)?.let { "$prompt\n\n$it" } ?: prompt
+                    val outcome = runSubagent(fullPrompt, title, call.id, connection.config, connection.apiKey, workspace, requestOptions, events,
+                        registry, mode, sessionAllowedTools, sessionId, turnId,
+                        actionTools = !background && agentMode == AgentMode.ACT && cavemanSettings().subagentFullAccess)
+                    if (!hooked) outcome else {
+                        val stop = childContext!!.fire(com.androidharness.app.config.HookEvents.SUBAGENT_STOP, hookEvent)
+                        stop.messages.forEach { events(AgentEvent.Notice(it)) }
+                        val feedback = listOfNotNull(stop.keepGoing, stop.instructions.takeIf(String::isNotBlank)).joinToString("\n")
+                        if (feedback.isBlank()) outcome else outcome.copy(output = outcome.output + "\n\nPlugin hook feedback on this subagent:\n" + feedback)
+                    }
+                }
             }
             val runs = subagentRuns ?: return execute(emitEvent)
             val run = SubagentRun(sessionId, turnId, call, title ?: "Subagent", prompt,
@@ -1365,12 +1477,30 @@ class AgentEngine(
         val grantKey = route.binding?.let { "workspace:${it.id}:$baseGrantKey" } ?: baseGrantKey
         val isSdkInstall = call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
         val isPkgInstall = call.name == "pkg_install" || isSdkInstall
+        // Claude Code's PermissionRequest hook can answer an approval prompt; Notification hooks hear that one is shown.
+        suspend fun askUser(request: ApprovalRequest): Boolean {
+            if (hooked) {
+                val event = kotlinx.serialization.json.buildJsonObject {
+                    put("tool", call.name); put("call_id", call.id); put("arguments", runConfig!!.redact(call.argumentsJson))
+                }
+                val decision = runConfig!!.fire(com.androidharness.app.config.HookEvents.PERMISSION, event)
+                decision.messages.forEach { emitEvent(AgentEvent.Notice(it)) }
+                if (decision.denied != null) return false
+                if (decision.allow) return true
+                runConfig.fire(com.androidharness.app.config.HookEvents.NOTIFICATION, kotlinx.serialization.json.buildJsonObject {
+                    put("message", "AndroidHarness needs your permission to use ${com.androidharness.app.config.claudeTools[call.name] ?: call.name}"); put("notification_type", "permission_prompt")
+                }).messages.forEach { emitEvent(AgentEvent.Notice(it)) }
+            }
+            emitEvent(AgentEvent.ApprovalNeeded(request))
+            return request.response.await()
+        }
         val approved = when {
+            hookAsk != null && !isPkgInstall && tool !is com.androidharness.app.tools.AppSettingsChangeTool -> askUser(ApprovalRequest(call,
+                "Plugin hook asks for approval (${hookAsk.take(300)}) · ${tool.description}", computeDiffPreview(call, workspace) ?: command?.take(400), "hook:${call.id}"))
             configPermission == "ask" -> {
                 val request = ApprovalRequest(call, "Project configuration requires confirmation · ${tool.description}",
                     computeDiffPreview(call, workspace) ?: command?.take(400), "config:${runConfig?.config?.fingerprint}:$grantKey")
-                emitEvent(AgentEvent.ApprovalNeeded(request))
-                request.response.await()
+                askUser(request)
             }
             tool is com.androidharness.app.tools.AppSettingsChangeTool -> {
                 // The tool decides: sensitive settings ask in every mode, the rest follow the user's choice.
@@ -1394,6 +1524,7 @@ class AgentEngine(
                 request.response.await()
             }
             mode == PermissionMode.FULL_ACCESS -> true
+            hookAllow -> true
             (if (route.binding != null) grantKey in sessionAllowedTools else com.androidharness.app.tools.ShellPolicy.isGranted(call.name, command, sessionAllowedTools)) -> true
             mode == PermissionMode.FULL_AUTO -> true
             // Saving a short memory touches only the app's memory table, never
@@ -1404,8 +1535,7 @@ class AgentEngine(
                 val preview = computeDiffPreview(call, workspace)
                     ?: command?.take(400)
                 val request = ApprovalRequest(call, route.label?.let { "$it · ${tool.description}" } ?: tool.description, preview, grantKey)
-                emitEvent(AgentEvent.ApprovalNeeded(request))
-                request.response.await()
+                askUser(request)
             }
         }
         if (!approved) {

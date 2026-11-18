@@ -21,6 +21,8 @@ object SlashCommands {
         /** /btw: the side question, blank when the sheet should open empty. */
         val sideQuestion: String? = null,
         val autoCompactArgument: String? = null,
+        /** Set when a command's !`shell` lines and @file references still have to be filled in before it is sent. */
+        val command: com.androidharness.app.skills.SkillStore.Command? = null,
     ) {
         val startsAgent: Boolean get() = agentText != null
     }
@@ -140,6 +142,7 @@ object SlashCommands {
         input: String,
         skillNames: Set<String>,
         snippetBodies: Map<String, String>,
+        commandFor: (String) -> com.androidharness.app.skills.SkillStore.Command? = { null },
         skillContent: (String) -> String?,
     ): Result {
         val trimmed = input.trim()
@@ -178,6 +181,11 @@ object SlashCommands {
             "/plan" -> Result(Kind.PLAN, agentText = planPrompt(argument, skillContent))
             else -> {
                 val skillName = command.removePrefix("/")
+                if (skillName in skillNames) commandFor(skillName)?.let { found ->
+                    // Commands get their arguments filled in exactly, as Claude Code and Gemini CLI do.
+                    val text = com.androidharness.app.skills.CommandTemplate.arguments(found.body, argument)
+                    return Result(Kind.SKILL, agentText = buildSlashSkillMessage(found.name, text, ""), command = found)
+                }
                 if (skillName in skillNames) {
                     val content = skillContent(skillName)
                     if (content != null) {

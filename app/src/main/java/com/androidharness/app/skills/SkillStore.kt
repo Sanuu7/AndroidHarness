@@ -44,6 +44,8 @@ class SkillStore(
         val files: Map<String, String> = emptyMap(),
         val directory: String? = null,
         val pluginRoot: String? = null,
+        /** The name the skill is listed and loaded by when it differs from its own, such as plugin:skill. */
+        val name: String? = null,
     )
 
     fun list(): List<SkillMeta> {
@@ -56,7 +58,7 @@ class SkillStore(
         projectDir()?.let { dir ->
             scanDir(dir, SkillSource.PROJECT).forEach { byName[it.name] = it }
         }
-        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files, it.directory, pluginRoot = it.pluginRoot)?.meta }
+        configuredSkills.values.mapNotNull { parseLocated(it.content, SkillSource.PROJECT, it.relativeDir, it.files, it.directory, pluginRoot = it.pluginRoot, listedName = it.name)?.meta }
             .forEach { byName[it.name] = it }
         val off = disabled()
         return byName.values
@@ -67,7 +69,7 @@ class SkillStore(
     fun enabled(): List<SkillMeta> = list().filter { it.enabled }
 
     fun catalog(): String {
-        val enabled = enabled()
+        val enabled = enabled().filter { it.modelInvocable }
         if (enabled.isEmpty()) return ""
         val grouped = enabled.groupBy { it.category }
         val index = buildString {
@@ -81,7 +83,12 @@ class SkillStore(
         return buildSkillsPromptBlock(index)
     }
 
-    fun slashNames(): Set<String> = enabled().map { it.name }.toSet()
+    /** Every listed name, plus the plain name of a plugin skill when no other skill uses it. */
+    fun slashNames(): Set<String> {
+        val names = enabled().filter { it.userInvocable }.map { it.name }
+        val plain = names.filter { ':' in it }.groupBy { it.substringAfter(':') }.filter { (short, all) -> all.size == 1 && short !in names }.keys
+        return (names + plain).toSet()
+    }
 
     private var folderMemo: List<File>? = null
 
@@ -101,8 +108,18 @@ class SkillStore(
         return found.toList().also { if (frozen != null) folderMemo = it }
     }
 
+    /**
+     * The listed name for [name]. Plugin skills are listed as plugin:skill; their plain name still works when only one
+     * enabled skill has it, as in Claude Code.
+     */
+    fun resolve(name: String): String {
+        val key = name.trim().removePrefix("/")
+        if (key.isEmpty() || ':' in key || findAll(key).isNotEmpty()) return key
+        return enabled().map { it.name }.filter { it.substringAfter(':') == key && ':' in it }.singleOrNull() ?: key
+    }
+
     fun view(name: String, filePath: String? = null): Result<SkillView> {
-        val key = name.trim()
+        val key = resolve(name)
         if (key.isEmpty()) return Result.failure(SkillParseException("Missing skill name."))
         if (".." in key) return Result.failure(SkillParseException("Path traversal is not allowed."))
 
@@ -155,17 +172,39 @@ class SkillStore(
                 name = winner.meta.name,
                 description = winner.meta.description,
                 category = winner.meta.category,
-                content = header + SkillHostNotes.forBody(winner.content) + expand(winner.content, winner),
+                content = header + commandNote(winner.content) + SkillHostNotes.forBody(winner.content) + expand(winner.content, winner),
                 source = winner.meta.source,
                 linkedFiles = winner.linkedFiles,
             ),
         )
     }
 
+    /** When the model loads a command itself, nobody filled in its placeholders, so it is told what they mean. */
+    private fun commandNote(content: String): String {
+        val parsed = runCatching { SkillParser.parse(content) }.getOrNull() ?: return ""
+        if (!CommandTemplate.applies(parsed.fields, parsed.body)) return ""
+        return "This skill is a slash command. \$ARGUMENTS and {{args}} stand for the input of the task at hand, and \$1, \$2 for its words. " +
+            "A !`command` or !{command} is a shell command whose output belongs in its place: run it first. @path or @{path} names a file to read.\n\n"
+    }
+
+    /** A skill run as a slash command: its frontmatter and its body with plugin and project paths filled in. */
+    data class Command(val name: String, val fields: Map<String, String>, val body: String, val folder: File?)
+
+    /** The skill behind /[name] when it is a command or takes arguments; null for an ordinary skill. */
+    fun command(name: String): Command? {
+        val key = resolve(name)
+        if (key in disabled() || configuration?.skillEnabled(key) == false) return null
+        val winner = pickWinner(findAll(key)) ?: return null
+        val parsed = runCatching { SkillParser.parse(winner.content) }.getOrNull() ?: return null
+        if (!CommandTemplate.applies(parsed.fields, parsed.body)) return null
+        return Command(winner.meta.name, parsed.fields, expand(parsed.body, winner), winner.directory ?: winner.pluginRoot?.let(::File))
+    }
+
     /** The SKILL.md text that wins for [name], enabled or not, for showing and editing; null when missing or ambiguous. */
     fun document(name: String): SkillDocument? {
-        val winner = pickWinner(findAll(name.trim())) ?: return null
-        return SkillDocument(winner.meta.copy(enabled = name !in disabled() && configuration?.skillEnabled(name) != false),
+        val key = resolve(name)
+        val winner = pickWinner(findAll(key)) ?: return null
+        return SkillDocument(winner.meta.copy(enabled = key !in disabled() && configuration?.skillEnabled(key) != false),
             winner.content, winner.linkedFiles, winner.directory?.path)
     }
 
@@ -235,7 +274,7 @@ class SkillStore(
             }
         }
         configuredSkills[name]?.let { b ->
-            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files, b.directory, pluginRoot = b.pluginRoot)?.let { out += it }
+            parseLocated(b.content, SkillSource.PROJECT, b.relativeDir, b.files, b.directory, pluginRoot = b.pluginRoot, listedName = b.name)?.let { out += it }
         }
         return out
     }
@@ -260,16 +299,21 @@ class SkillStore(
         directory: String? = null,
         home: File? = null,
         pluginRoot: String? = null,
+        listedName: String? = null,
     ): Located? {
         val parsed = runCatching { SkillParser.parse(content) }.getOrNull() ?: return null
         val folder = directory?.let(::File)?.takeIf { it.isDirectory }
         val meta = SkillMeta(
-            name = parsed.name,
-            description = parsed.catalogDescription,
+            name = listedName ?: parsed.name,
+            // Plugin skills are chosen by their description, as in Claude Code, so it is listed in full.
+            description = if (pluginRoot != null || listedName != null) parsed.description.replace(Regex("\\s+"), " ").take(MAX_PLUGIN_DESCRIPTION)
+                else parsed.catalogDescription,
             category = parsed.category,
             source = source,
             relativeDir = relativeDir,
             enabled = true,
+            modelInvocable = parsed.fields["disable-model-invocation"]?.trim()?.lowercase() != "true",
+            userInvocable = parsed.fields["user-invocable"]?.trim()?.lowercase() != "false",
         )
         if (folder != null) {
             val listed = folder.walkTopDown().onEnter { it == folder || !it.name.startsWith(".") && it.name !in setOf("node_modules", "__pycache__") }
@@ -362,6 +406,7 @@ class SkillStore(
 
     companion object {
         val SUPPORT_DIRS = setOf("references", "templates", "scripts", "assets")
+        const val MAX_PLUGIN_DESCRIPTION = 1024
         private const val MAX_LISTED = 300
         private const val MAX_SUPPORT_READ = 256 * 1024
 

@@ -142,4 +142,15 @@
         <item quantity="one">%1$d actualización disponible</item>
         <item quantity="other">%1$d actualizaciones disponibles</item>
     </plurals>
+    <string name="pm_problem">No cargado: %1$s</string>
+    <string name="pm_in_project">Activo en este proyecto</string>
+    <string name="pm_auto_update">Actualizar automáticamente</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">Configuración de %1$s</string>
+    <string name="pm_settings_hint">Los valores se guardan como variables de configuración. Los sensibles se cifran y nunca se vuelven a mostrar.</string>
+    <string name="pm_setting_saved">Guardado. Escribe para reemplazarlo.</string>
+    <string name="pm_setting_required">Obligatorio</string>
+    <string name="pm_settings_saved">Configuración guardada. Se aplica en la siguiente ejecución de Code.</string>
+    <string name="pm_auto_updated">%1$s actualizado.</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

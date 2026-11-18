@@ -40,8 +40,46 @@ object SkillParser {
             category = category.ifBlank { "general" },
             body = body,
             raw = text.trimEnd() + "\n",
+            fields = fields,
         )
     }
+
+    /**
+     * Reads a skill written for another harness without touching its file. A missing or invalid name falls back to
+     * [folderName], a missing description to the first paragraph, and the other frontmatter fields are kept.
+     * The returned [ParsedSkill.raw] is the corrected text, held in memory only.
+     */
+    fun lenient(raw: String, folderName: String): ParsedSkill {
+        runCatching { return parse(raw) }
+        val text = raw.replace("\r\n", "\n").trimStart('﻿')
+        var front = ""
+        var body = text
+        if (text.startsWith("---")) {
+            val rest = text.removePrefix("---")
+            val close = rest.indexOf("\n---")
+            if (close >= 0) { front = rest.substring(0, close); body = rest.substring(close + 4).substringAfter('\n', "") }
+        }
+        val fields = parseSimpleYaml(front)
+        val name = safeName(fields["name"]?.takeIf { NAME_SAFE.matches(it) } ?: fields["name"] ?: folderName)
+        val paragraph = body.lines().map { it.trim() }.dropWhile { it.isEmpty() || it.startsWith("#") || it.startsWith("<") }
+            .takeWhile { it.isNotEmpty() }.joinToString(" ").take(1000)
+        val description = (fields["description"] ?: paragraph).trim().ifBlank { "Instructions from $folderName." }
+        val content = body.trim().ifBlank { description }
+        val kept = fields.filterKeys { it !in setOf("name", "description") }
+        val normalized = buildString {
+            append("---\nname: ").append(name).append('\n')
+            append("description: ").append(quoted(description)).append('\n')
+            kept.forEach { (key, value) -> if (Regex("[A-Za-z0-9_-]+").matches(key)) append(key).append(": ").append(quoted(value)).append('\n') }
+            append("---\n\n").append(content).append('\n')
+        }
+        return parse(normalized)
+    }
+
+    private val NAME_SAFE = Regex("[a-z0-9][a-z0-9-]{0,63}")
+    /** Lowercase letters, digits and hyphens, as skill names need. */
+    fun safeName(raw: String): String = raw.substringAfterLast('/').lowercase().replace(Regex("[^a-z0-9]+"), "-").trim('-')
+        .take(ParsedSkill.MAX_NAME).trim('-').ifBlank { "skill" }
+    private fun quoted(value: String) = "\"" + value.replace("\"", "\\\"").replace(Regex("\\s+"), " ").trim() + "\""
 
     fun validateUserContent(raw: String): ParsedSkill {
         if (raw.length > ParsedSkill.MAX_USER_CHARS) {

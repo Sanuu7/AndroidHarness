@@ -142,4 +142,15 @@
         <item quantity="one">"%1$d available na update"</item>
         <item quantity="other">"%1$d available na update"</item>
     </plurals>
+    <string name="pm_problem">"Hindi na-load: %1$s"</string>
+    <string name="pm_in_project">"Naka-on sa proyektong ito"</string>
+    <string name="pm_auto_update">"I-update nang awtomatiko"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"Mga setting ng %1$s"</string>
+    <string name="pm_settings_hint">"Ang mga halaga ay nai-save bilang mga variable ng configuration. Ang mga sensitibo ay naka-encrypt at hindi na muling ipinapakita."</string>
+    <string name="pm_setting_saved">"Nai-save. Mag-type para palitan."</string>
+    <string name="pm_setting_required">"Kinakailangan"</string>
+    <string name="pm_settings_saved">"Nai-save ang mga setting. Nalalapat sa susunod na Code run."</string>
+    <string name="pm_auto_updated">"Na-update ang %1$s."</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

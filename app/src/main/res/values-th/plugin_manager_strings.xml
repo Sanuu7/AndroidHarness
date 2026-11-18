@@ -139,4 +139,15 @@
     <plurals name="pm_updates_found">
         <item quantity="other">"มี %1$d อัปเดต"</item>
     </plurals>
+    <string name="pm_problem">"โหลดไม่สำเร็จ: %1$s"</string>
+    <string name="pm_in_project">"เปิดในโปรเจกต์นี้"</string>
+    <string name="pm_auto_update">"อัปเดตอัตโนมัติ"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"การตั้งค่า %1$s"</string>
+    <string name="pm_settings_hint">"ค่าจะถูกบันทึกเป็นตัวแปรการกำหนดค่า ค่าที่ละเอียดอ่อนจะถูกเข้ารหัสและจะไม่แสดงอีก"</string>
+    <string name="pm_setting_saved">"บันทึกแล้ว พิมพ์เพื่อแทนที่"</string>
+    <string name="pm_setting_required">"จำเป็น"</string>
+    <string name="pm_settings_saved">"บันทึกการตั้งค่าแล้ว จะมีผลกับการรัน Code ครั้งถัดไป"</string>
+    <string name="pm_auto_updated">"อัปเดต %1$s แล้ว"</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

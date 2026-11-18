@@ -109,12 +109,13 @@ class PluginManagerTest {
         assertTrue(PluginArchives.extract(archive, out).isEmpty())
         assertEquals("a,b", out.resolve("gallery/styles.csv").readText())
     }
-    @Test fun `expanded file size is bounded even when zip size metadata is absent`() {
-        val archive = zip("bomb" to ByteArray(PluginArchives.MAX_FILE.toInt() + 1), "keep.txt" to byteArrayOf(1))
-        assertTrue(archive.length() < 200_000)
+    @Test fun `large plugin files extract and the size guards only stop archive bombs`() {
+        assertTrue(PluginArchives.MAX_FILE >= 1L shl 30 && PluginArchives.MAX_DOWNLOAD >= 1L shl 30 && PluginArchives.MAX_FILES >= 1_000_000)
+        val big = ByteArray(40 * 1024 * 1024) { (it % 7).toByte() }
+        val archive = zip("data/model.bin" to big, "keep.txt" to byteArrayOf(1))
         val out = tmp.newFolder()
-        assertEquals(1, PluginArchives.extract(archive, out).size)
-        assertFalse(out.resolve("bomb").exists())
+        assertTrue(PluginArchives.extract(archive, out).isEmpty())
+        assertEquals(big.size.toLong(), out.resolve("data/model.bin").length())
         assertTrue(out.resolve("keep.txt").exists())
     }
     @Test fun `npm integrity prefers SHA512 and rejects altered bytes`() {
@@ -168,7 +169,7 @@ class PluginManagerTest {
         val sources = store.configurationSources("project:fixture")
         val config = HarnessConfigLoader(managedPlugins = sources).load(FileFs(workspace))
         assertTrue(config.prompt().contains("PLUGIN_INSTRUCTIONS_1.0.0"))
-        assertTrue("review" in config.skills)
+        assertTrue(config.skills.keys.any { it.endsWith(":review") })
         assertEquals(1, config.plugins.size)
         store.setEnabled(record.id, false)
         assertTrue(store.configurationSources("project:fixture").isEmpty())
@@ -267,7 +268,10 @@ class PluginManagerTest {
         val storage = tmp.newFolder(); val store = PluginStore(storage)
         val record = store.install(prepared(bundle()), "global", "Global")
         store.directory(record).resolve("instructions.md").writeText("Tampered")
-        fails { store.configurationSources("project:a") }
+        // A changed plugin is left out and reported; the rest of the configuration still loads.
+        val managed = store.managed("project:a")
+        assertTrue(managed.sources.isEmpty())
+        assertTrue(managed.problems.getValue(record.name).contains("changed outside the manager"))
         storage.resolve("installed.json").writeText("invalid")
         val restarted = PluginStore(storage)
         assertTrue(restarted.registryBroken())

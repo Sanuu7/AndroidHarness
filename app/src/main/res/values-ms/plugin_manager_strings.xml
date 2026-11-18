@@ -139,4 +139,15 @@
     <plurals name="pm_updates_found">
         <item quantity="other">"%1$d kemas kini tersedia"</item>
     </plurals>
+    <string name="pm_problem">"Tidak dimuatkan: %1$s"</string>
+    <string name="pm_in_project">"Hidup dalam projek ini"</string>
+    <string name="pm_auto_update">"Kemas kini secara automatik"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"Tetapan %1$s"</string>
+    <string name="pm_settings_hint">"Nilai disimpan sebagai pemboleh ubah konfigurasi. Nilai sensitif disulitkan dan tidak dipaparkan lagi."</string>
+    <string name="pm_setting_saved">"Disimpan. Taip untuk menggantikan."</string>
+    <string name="pm_setting_required">"Diperlukan"</string>
+    <string name="pm_settings_saved">"Tetapan disimpan. Dikenakan pada larian Code seterusnya."</string>
+    <string name="pm_auto_updated">"%1$s dikemas kini."</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

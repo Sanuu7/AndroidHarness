@@ -142,4 +142,15 @@
         <item quantity="one">"%1$d güncelleme mevcut"</item>
         <item quantity="other">"%1$d güncelleme mevcut"</item>
     </plurals>
+    <string name="pm_problem">"Yüklenmedi: %1$s"</string>
+    <string name="pm_in_project">"Bu projede açık"</string>
+    <string name="pm_auto_update">"Otomatik güncelle"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"%1$s ayarları"</string>
+    <string name="pm_settings_hint">"Değerler yapılandırma değişkenleri olarak kaydedilir. Hassas değerler şifrelenir ve bir daha gösterilmez."</string>
+    <string name="pm_setting_saved">"Kaydedildi. Değiştirmek için yazın."</string>
+    <string name="pm_setting_required">"Gerekli"</string>
+    <string name="pm_settings_saved">"Ayarlar kaydedildi. Sonraki Code çalıştırmasında geçerli olur."</string>
+    <string name="pm_auto_updated">"%1$s güncellendi."</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

@@ -76,7 +76,7 @@ class ShellTool(
             }
 
             val res = if (remote != null) remote.run(command, cwd.path, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
-                else router.run(command, cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
+                else router.run(PluginBinPath.prefix(ctx, command), cwd, timeoutSec * 1000, MAX_OUTPUT_CHARS * 2)
 
             val isSymlink = rawCommand.contains("ln ") && (rawCommand.contains("-s") || rawCommand.contains("--symbolic"))
             val hasSymlinkError = isSymlink && (res.exitCode != 0 || res.rawOutput.contains("Permission denied", true) || res.rawStderr.contains("Permission denied", true) || res.rawOutput.contains("Operation not permitted", true) || res.rawStderr.contains("Operation not permitted", true))

@@ -142,4 +142,15 @@
         <item quantity="one">"%1$d अपडेट उपलब्ध"</item>
         <item quantity="other">"%1$d अपडेट उपलब्ध"</item>
     </plurals>
+    <string name="pm_problem">"लोड नहीं हुआ: %1$s"</string>
+    <string name="pm_in_project">"इस प्रोजेक्ट में चालू"</string>
+    <string name="pm_auto_update">"स्वचालित रूप से अपडेट करें"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"%1$s सेटिंग"</string>
+    <string name="pm_settings_hint">"मान कॉन्फ़िगरेशन चर के रूप में सहेजे जाते हैं। संवेदनशील मान एन्क्रिप्ट किए जाते हैं और दोबारा नहीं दिखाए जाते।"</string>
+    <string name="pm_setting_saved">"सहेजा गया। बदलने के लिए टाइप करें।"</string>
+    <string name="pm_setting_required">"आवश्यक"</string>
+    <string name="pm_settings_saved">"सेटिंग सहेजी गई। अगले Code रन पर लागू होंगी।"</string>
+    <string name="pm_auto_updated">"%1$s अपडेट किया गया।"</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

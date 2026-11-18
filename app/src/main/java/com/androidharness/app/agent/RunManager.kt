@@ -1037,6 +1037,11 @@ class RunManager(
 
             is AgentEvent.ProviderUsed -> controls.update(sessionId) { it.copy(usedProviderIds = it.usedProviderIds + event.providerId) }
 
+            is AgentEvent.Notice -> {
+                val noticeId = sessions.addMessage(sessionId, ChatMessage(role = Role.SYSTEM, text = event.text, turnId = turnId))
+                compactionSnapshots[sessionId]?.let { snapshot -> compactionSnapshots[sessionId] = snapshot.copy(messageIds = snapshot.messageIds + noticeId) }
+            }
+
             is AgentEvent.Retrying -> {
                 val seconds = (event.delayMs / 1000.0).let { if (it < 1) "<1" else "%.0f".format(it) }
                 live.update {

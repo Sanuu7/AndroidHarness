@@ -142,4 +142,15 @@
         <item quantity="one">"%1$d புதுப்பிப்பு உள்ளது"</item>
         <item quantity="other">"%1$d புதுப்பிப்பு உள்ளது"</item>
     </plurals>
+    <string name="pm_problem">"ஏற்றப்படவில்லை: %1$s"</string>
+    <string name="pm_in_project">"இந்த திட்டத்தில் இயக்கத்தில்"</string>
+    <string name="pm_auto_update">"தானாக புதுப்பி"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"%1$s அமைப்புகள்"</string>
+    <string name="pm_settings_hint">"மதிப்புகள் கட்டமைப்பு மாறிகளாக சேமிக்கப்படும். நுணுக்கமானவை குறியாக்கம் செய்யப்பட்டு மீண்டும் காட்டப்படாது."</string>
+    <string name="pm_setting_saved">"சேமிக்கப்பட்டது. மாற்ற தட்டச்சு செய்யவும்."</string>
+    <string name="pm_setting_required">"தேவை"</string>
+    <string name="pm_settings_saved">"அமைப்புகள் சேமிக்கப்பட்டன. அடுத்த Code இயக்கத்தில் பொருந்தும்."</string>
+    <string name="pm_auto_updated">"%1$s புதுப்பிக்கப்பட்டது."</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

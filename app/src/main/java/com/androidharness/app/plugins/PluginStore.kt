@@ -10,6 +10,9 @@ import java.nio.file.Files
 import java.nio.file.StandardCopyOption
 import java.util.UUID
 
+/** Plugins that load for one workspace, and the name and reason of each one that could not be read. */
+data class ManagedPlugins(val sources: List<ConfigSource>, val problems: Map<String, String> = emptyMap())
+
 /** An app-owned registry. Shared harness.json files are never rewritten by package operations. */
 class PluginStore(private val root: File, private val onChanged: () -> Unit = {}) {
     private val lock = Any()
@@ -28,14 +31,12 @@ class PluginStore(private val root: File, private val onChanged: () -> Unit = {}
     }
     private fun read(): List<InstalledPlugin> {
         if (!index.exists()) return emptyList()
-        require(index.length() <= 1024 * 1024) { "Plugin registry exceeds 1 MiB." }
         return json.decodeFromString(ListSerializer(InstalledPlugin.serializer()), index.readText()).also { records ->
-            require(records.size <= 128 && records.map { it.id }.distinct().size == records.size) { "Invalid plugin registry." }
+            require(records.map { it.id }.distinct().size == records.size) { "Invalid plugin registry." }
             records.forEach { require(Regex("[a-f0-9-]{36}").matches(it.directory) && Regex("[a-f0-9-]{36}").matches(it.id)) { "Invalid plugin installation identity." } }
         }
     }
     private fun write(records: List<InstalledPlugin>) {
-        require(records.size <= 128) { "At most 128 plugin installations are supported." }
         root.mkdirs()
         val temporary = File(root, ".installed-${UUID.randomUUID()}.tmp")
         try {
@@ -47,7 +48,7 @@ class PluginStore(private val root: File, private val onChanged: () -> Unit = {}
     fun registryBroken(): Boolean = synchronized(lock) { runCatching { read() }.isFailure }
     fun resetBrokenRegistry() = synchronized(lock) {
         check(runCatching { read() }.isFailure) { "The plugin registry is readable; reset was not needed." }
-        if (index.length() <= 1024 * 1024) Files.copy(index.toPath(), File(root, "installed-damaged-${UUID.randomUUID()}.json").toPath())
+        Files.copy(index.toPath(), File(root, "installed-damaged-${UUID.randomUUID()}.json").toPath())
         write(emptyList())
     }
     private fun checkedDirectory(record: InstalledPlugin): File {
@@ -87,7 +88,8 @@ class PluginStore(private val root: File, private val onChanged: () -> Unit = {}
         val destination = packages.resolve(dirName)
         require(prepared.root.renameTo(destination)) { "Cannot store plugin files. Nothing was changed." }
         val record = InstalledPlugin(old?.id ?: UUID.randomUUID().toString(), checked.name, checked.version, checked.description,
-            prepared.origin, prepared.revision, scope, scopeLabel, dirName, prepared.digest, old?.enabled ?: true, format = checked.format)
+            prepared.origin, prepared.revision, scope, scopeLabel, dirName, prepared.digest, old?.enabled ?: true, format = checked.format,
+            projectOverrides = old?.projectOverrides.orEmpty(), autoUpdate = old?.autoUpdate ?: true)
         try { write(records.filterNot { it.id == old?.id } + record) }
         catch (e: Exception) { destination.deleteRecursively(); throw e }
         record
@@ -101,13 +103,39 @@ class PluginStore(private val root: File, private val onChanged: () -> Unit = {}
         write(records.filterNot { it.id == id })
         // Do not delete files captured by an active run or its MCP process. Startup prunes unused revisions.
     }
-    fun configurationSources(scope: String): List<ConfigSource> = synchronized(lock) {
-        val records = read().filter { it.enabled && it.scope in setOf("global", scope) }
+    /** Turns a plugin on or off for one project only. A null [enabled] goes back to the plugin's own switch. */
+    fun setEnabledFor(id: String, projectScope: String, enabled: Boolean?) = synchronized(lock) {
+        val records = read(); require(records.any { it.id == id }) { "Plugin no longer exists." }
+        write(records.map { record ->
+            if (record.id != id) record
+            else record.copy(projectOverrides = if (enabled == null) record.projectOverrides - projectScope else record.projectOverrides + (projectScope to enabled))
+        })
+    }
+    fun configurationSources(scope: String): List<ConfigSource> = managed(scope).sources
+
+    /**
+     * The installed plugins that apply to [scope]. A plugin whose files are missing or were changed outside the
+     * manager is left out and reported in [ManagedPlugins.problems]; the others still load.
+     */
+    fun managed(scope: String): ManagedPlugins = synchronized(lock) {
+        val records = read().filter { it.scope in setOf("global", scope) && it.enabledIn(scope) }
         val winners = records.sortedBy { if (it.scope == "global") 0 else 1 }.associateBy { it.name }.values
-        winners.sortedWith(compareBy({ if (it.scope == "global") 0 else 1 }, { it.name })).map { record ->
-            val folder = checkedDirectory(record)
+        val problems = linkedMapOf<String, String>()
+        val sources = winners.sortedWith(compareBy({ if (it.scope == "global") 0 else 1 }, { it.name })).mapNotNull { record ->
+            val folder = runCatching { checkedDirectory(record) }.getOrElse { problems[record.name] = it.message ?: "The plugin could not be read."; return@mapNotNull null }
             val config = buildJsonObject { put("plugins", buildJsonObject { put("paths", buildJsonArray { add(".") }) }) }
             ConfigSource("Managed/${if (record.scope == "global") "Global" else "Project"}/${record.name}/${record.digest}", config.toString(), FileFs(folder))
         }
+        ManagedPlugins(sources, problems)
+    }
+    fun setAutoUpdate(id: String, enabled: Boolean) = synchronized(lock) {
+        val records = read(); require(records.any { it.id == id }) { "Plugin no longer exists." }
+        write(records.map { if (it.id == id) it.copy(autoUpdate = enabled) else it })
+    }
+    /** Marks a successful update check, so Discover only offers updates that are newer than this one. */
+    fun touchChecked(id: String, at: Long = System.currentTimeMillis()) = synchronized(lock) {
+        val records = read()
+        if (records.none { it.id == id }) return@synchronized
+        write(records.map { if (it.id == id) it.copy(checkedAt = at) else it })
     }
 }

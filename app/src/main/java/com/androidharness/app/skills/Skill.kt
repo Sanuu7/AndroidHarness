@@ -9,6 +9,10 @@ data class SkillMeta(
     val source: SkillSource,
     val relativeDir: String,
     val enabled: Boolean,
+    /** False when the skill says disable-model-invocation: only the user can run it, as /name. */
+    val modelInvocable: Boolean = true,
+    /** False when the skill says user-invocable: false: it is left out of the slash list. */
+    val userInvocable: Boolean = true,
 )
 
 /** One skill's full file as the settings screen shows it; [folder] is set when the skill has a real directory. */
@@ -34,6 +38,8 @@ data class ParsedSkill(
     val category: String,
     val body: String,
     val raw: String,
+    /** Every top-level frontmatter field, such as allowed-tools, model or argument-hint. */
+    val fields: Map<String, String> = emptyMap(),
 ) {
     val catalogDescription: String
         get() = if (description.length <= MAX_CATALOG_DESCRIPTION) description

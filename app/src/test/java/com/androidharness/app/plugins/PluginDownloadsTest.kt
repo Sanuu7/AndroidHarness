@@ -155,7 +155,7 @@ class PluginDownloadsTest {
             try {
                 registry.downloads().download(ResolvedPluginDownload(PluginOrigin("npm", "test-plugin"), "1", registry.url), tmp.newFile())
                 fail("Oversize response must be refused")
-            } catch (e: IllegalArgumentException) { assertTrue(e.message.orEmpty().contains("200 MiB")) }
+            } catch (e: IllegalArgumentException) { assertTrue(e.message.orEmpty().contains("GiB")) }
             try {
                 PluginDownloads(npmRegistry = registry.url).resolve(PluginOrigin("npm", "test-plugin"))
                 fail("HTTP must not be allowed outside explicit test transport")

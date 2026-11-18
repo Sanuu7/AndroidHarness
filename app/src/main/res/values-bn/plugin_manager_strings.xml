@@ -142,4 +142,15 @@
         <item quantity="one">"%1$dটি আপডেট উপলব্ধ"</item>
         <item quantity="other">"%1$dটি আপডেট উপলব্ধ"</item>
     </plurals>
+    <string name="pm_problem">"লোড হয়নি: %1$s"</string>
+    <string name="pm_in_project">"এই প্রকল্পে চালু"</string>
+    <string name="pm_auto_update">"স্বয়ংক্রিয়ভাবে আপডেট করুন"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"%1$s সেটিংস"</string>
+    <string name="pm_settings_hint">"মানগুলি কনফিগারেশন ভেরিয়েবল হিসেবে সংরক্ষিত হয়। সংবেদনশীল মান এনক্রিপ্ট করা হয় এবং আর কখনও দেখানো হয় না।"</string>
+    <string name="pm_setting_saved">"সংরক্ষিত। প্রতিস্থাপন করতে টাইপ করুন।"</string>
+    <string name="pm_setting_required">"আবশ্যক"</string>
+    <string name="pm_settings_saved">"সেটিংস সংরক্ষিত হয়েছে। পরবর্তী Code রানে প্রযোজ্য হবে।"</string>
+    <string name="pm_auto_updated">"%1$s আপডেট করা হয়েছে।"</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

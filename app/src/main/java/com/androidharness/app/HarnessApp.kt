@@ -148,6 +148,13 @@ class AppContainer(val appContext: Context) {
     }
     val configuration = com.androidharness.app.config.HarnessConfigRepository(appContext, keys, pluginManager, configurationRevision)
     val pluginHooks = com.androidharness.app.config.PluginHooks(appContext) { linuxEnv.shellProcessBuilder(it) }
+    init {
+        // Plugins with automatic updates are checked shortly after start, away from the first screen's work.
+        kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            kotlinx.coroutines.delay(30_000)
+            runCatching { pluginManager.autoUpdate() }
+        }
+    }
     internal val runtimePolicy = AppRuntimePolicy(appContext, settings)
     /** Voice providers (speech-to-text and text-to-speech) with per-provider keys. */
     val voiceProviders = com.androidharness.app.data.audio.VoiceProviderRepository(appContext, keys)

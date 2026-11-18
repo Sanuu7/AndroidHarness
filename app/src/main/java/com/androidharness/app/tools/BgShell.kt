@@ -57,7 +57,7 @@ class ShellBackgroundTool(
             val (command, npmNote) = NpmOnSharedStorage.prepare(rawCommand, cwd)
 
             try {
-                val started = store.start(command, cwd, ctx.sessionId)
+                val started = store.start(PluginBinPath.prefix(ctx, command), cwd, ctx.sessionId)
                 val notes = StringBuilder()
                 npmNote?.let { notes.append(it).append('\n') }
                 if (started.entry.source == "ROOT") notes.append("[note: running via direct root; tied to this root service/app session]\n")

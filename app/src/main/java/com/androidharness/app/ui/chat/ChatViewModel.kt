@@ -847,6 +847,7 @@ class ChatViewModel(
                 skillNames = chatSkills().slashNames(),
                 snippetBodies = _state.value.snippets.associate { it.name to it.body },
                 skillContent = { name -> chatSkills().view(name).getOrNull()?.content },
+                commandFor = { name -> chatSkills().command(name) },
             )
         } else {
             SlashCommands.Result(SlashCommands.Kind.PLAIN, agentText = trimmed)
@@ -935,6 +936,75 @@ class ChatViewModel(
         }
 
         val agentText = resolved.agentText ?: return false
+        val command = resolved.command
+        if (command != null && (com.androidharness.app.skills.CommandTemplate.shellCommands(agentText).isNotEmpty() ||
+                com.androidharness.app.skills.CommandTemplate.fileReferences(agentText).isNotEmpty())) {
+            // !`shell` lines and @file references are filled in first, as Claude Code does before the model sees the command.
+            viewModelScope.launch {
+                val expanded = runCatching { expandCommand(agentText, command) }.getOrElse { e ->
+                    if (e is kotlinx.coroutines.CancellationException) throw e
+                    _state.update { it.copy(error = e.message) }; return@launch
+                }
+                dispatchAgentText(expanded)
+            }
+            return true
+        }
+        return dispatchAgentText(agentText)
+    }
+
+    /**
+     * Runs a command's shell lines in the open project and reads the files it names. A shell line runs only when the
+     * command's allowed-tools permit it or Full access is on; otherwise the model is asked to run it, with the usual approvals.
+     */
+    private suspend fun expandCommand(text: String, command: com.androidharness.app.skills.SkillStore.Command): String =
+        kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+            val workspace = workspaceFs.value
+            val primary = (workspace as? com.androidharness.app.workspace.ChatWorkspaceFs)?.primary?.fs ?: workspace
+            val root = primary?.shellRoot
+            val fullAccess = _state.value.permissionMode == PermissionMode.FULL_ACCESS
+            val outputs = com.androidharness.app.skills.CommandTemplate.shellCommands(text).associateWith { line ->
+                if (root == null || !c.linuxEnv.isReady || !(fullAccess || com.androidharness.app.skills.CommandTemplate.shellAllowed(command.fields["allowed-tools"], line)))
+                    "(Run `$line` and use its output.)"
+                else runCommandLine(line, root)
+            }
+            val withOutput = com.androidharness.app.skills.CommandTemplate.withShellOutput(text) { outputs[it] ?: it }
+            val files = com.androidharness.app.skills.CommandTemplate.fileReferences(withOutput).mapNotNull { path ->
+                val node = runCatching { primary?.resolve(path) }.getOrNull() ?: command.folder?.resolve(path)?.takeIf { it.isFile }?.let { file ->
+                    return@mapNotNull path to file.readText()
+                } ?: return@mapNotNull null
+                if (!node.exists || !node.isFile || node.length > COMMAND_FILE_BYTES) return@mapNotNull null
+                path to (runCatching { node.readText() }.getOrNull() ?: return@mapNotNull null)
+            }.toMap()
+            com.androidharness.app.skills.CommandTemplate.withFiles(withOutput, files)
+        }
+
+    private suspend fun runCommandLine(line: String, root: java.io.File): String = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+        val process = runCatching { c.linuxEnv.shellProcessBuilder(line).directory(root).redirectErrorStream(true).start() }
+            .getOrElse { return@withContext "(Could not run `$line`: ${it.message})" }
+        try {
+            process.outputStream.close()
+            val output = java.io.ByteArrayOutputStream()
+            // Read on its own thread so a command that fills the pipe cannot stall the timeout below.
+            val reader = Thread {
+                runCatching {
+                    process.inputStream.use { input ->
+                        val buffer = ByteArray(8192)
+                        while (true) {
+                            val count = input.read(buffer)
+                            if (count < 0) break
+                            synchronized(output) { if (output.size() < COMMAND_FILE_BYTES) output.write(buffer, 0, minOf(count, COMMAND_FILE_BYTES - output.size())) }
+                        }
+                    }
+                }
+            }.apply { isDaemon = true; start() }
+            val done = kotlinx.coroutines.runInterruptible { process.waitFor(COMMAND_TIMEOUT_SECONDS, java.util.concurrent.TimeUnit.SECONDS) }
+            if (!done) { process.destroyForcibly(); return@withContext "(`$line` did not finish within $COMMAND_TIMEOUT_SECONDS seconds.)" }
+            reader.join(2_000)
+            synchronized(output) { output.toString(Charsets.UTF_8.name()) }.trimEnd()
+        } finally { if (process.isAlive) process.destroyForcibly() }
+    }
+
+    private fun dispatchAgentText(agentText: String): Boolean {
         val sid = sessionId
         if (sid != null && c.runManager.isRunning(sid)) {
             if (_state.value.conversation.isChat && (_state.value.attachments.isNotEmpty() || _state.value.fileAttachments.isNotEmpty())) {
@@ -2410,6 +2480,9 @@ class ChatViewModel(
         private const val HOLD_TIMEOUT_MS = 2_000L
         /** Side answers batch their deltas to about 30 redraws a second. */
         private const val SIDE_FLUSH_MS = 32L
+        /** Largest file or shell output a slash command puts into its message. */
+        private const val COMMAND_FILE_BYTES = 4 * 1024 * 1024
+        private const val COMMAND_TIMEOUT_SECONDS = 120L
 
         fun factory(container: AppContainer, sessionId: String?, kind: com.androidharness.app.data.ConversationKind = com.androidharness.app.data.ConversationKind.CODE) = viewModelFactory {
             initializer { ChatViewModel(container, sessionId, kind) }

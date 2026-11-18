@@ -139,4 +139,15 @@
     <plurals name="pm_updates_found">
         <item quantity="other">"%1$d bản cập nhật có sẵn"</item>
     </plurals>
+    <string name="pm_problem">"Chưa tải: %1$s"</string>
+    <string name="pm_in_project">"Bật trong dự án này"</string>
+    <string name="pm_auto_update">"Tự động cập nhật"</string>
+    <string name="pm_settings">@string/settings_page_title</string>
+    <string name="pm_settings_title">"Cài đặt của %1$s"</string>
+    <string name="pm_settings_hint">"Giá trị được lưu dưới dạng biến cấu hình. Giá trị nhạy cảm được mã hóa và không bao giờ hiển thị lại."</string>
+    <string name="pm_setting_saved">"Đã lưu. Nhập để thay thế."</string>
+    <string name="pm_setting_required">"Bắt buộc"</string>
+    <string name="pm_settings_saved">"Đã lưu cài đặt. Chúng áp dụng cho lần chạy Code tiếp theo."</string>
+    <string name="pm_auto_updated">"Đã cập nhật %1$s."</string>
+    <string name="pm_load_more">@string/local_hub_load_more</string>
 </resources>

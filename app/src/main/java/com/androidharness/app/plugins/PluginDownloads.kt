@@ -51,7 +51,7 @@ class PluginDownloads(
             })
         }
     private suspend fun metadata(url: String, headers: Map<String, String> = emptyMap()): JsonObject = request(url, headers) { response ->
-        val bytes = requireNotNull(response.body).byteStream().use { PluginArchives.readLimited(it, 8L * 1024 * 1024) }
+        val bytes = requireNotNull(response.body).byteStream().use { PluginArchives.readLimited(it, 256L * 1024 * 1024) }
         Json.parseToJsonElement(bytes.toString(Charsets.UTF_8)).jsonObject
     }
     suspend fun resolve(origin: PluginOrigin): ResolvedPluginDownload = when (origin.kind) {
@@ -83,8 +83,56 @@ class PluginDownloads(
             ResolvedPluginDownload(PluginOrigin("github", repo, ref, origin.subdirectory), sha, archive.toString(), headers = headers)
         }
         "url" -> ResolvedPluginDownload(origin, origin.target, checked(origin.target).toString())
-        "git" -> error("Only GitHub repositories can be downloaded. Ask the publisher for a GitHub, npm or archive source.")
+        "git" -> resolveGit(origin)
         else -> error("Choose npm, GitHub or a local plugin bundle.")
+    }
+    /**
+     * Git hosts other than GitHub, pinned to one commit and fetched as an archive: GitLab (and self-hosted GitLab),
+     * Bitbucket, Codeberg and other Gitea or Forgejo servers.
+     */
+    private suspend fun resolveGit(origin: PluginOrigin): ResolvedPluginDownload {
+        val url = checked(origin.target.trim().removeSuffix("/").removeSuffix(".git").let { if (it.startsWith("git@")) "https://" + it.removePrefix("git@").replaceFirst(':', '/') else it })
+        val path = url.pathSegments.filter(String::isNotEmpty)
+        require(path.size >= 2) { "Enter a repository link such as https://gitlab.com/owner/name." }
+        val host = url.host
+        val origin = origin.copy(target = url.toString())
+        val pinned = origin.ref.takeIf { Regex("[a-f0-9]{40}").matches(it) }
+        fun base() = HttpUrl.Builder().scheme("https").host(host).apply { if (url.port != 443) port(url.port) }
+        return when {
+            host == "bitbucket.org" -> {
+                val repo = "${path[0]}/${path[1]}"
+                val api = "https://api.bitbucket.org/2.0/repositories/$repo"
+                val ref = origin.ref.ifBlank { (metadata(api)["mainbranch"] as? JsonObject)?.get("name")?.jsonPrimitive?.contentOrNull ?: "HEAD" }
+                val sha = pinned ?: metadata("$api/commit/$ref")["hash"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                require(Regex("[a-f0-9]{40}").matches(sha)) { "Bitbucket did not resolve an immutable commit." }
+                ResolvedPluginDownload(origin.copy(ref = ref), sha, "https://bitbucket.org/$repo/get/$sha.zip")
+            }
+            host == "gitlab.com" || host.startsWith("gitlab.") || runCatching { metadata(base().addPathSegments("api/v4/version").build().toString()) }.isSuccess -> {
+                val project = path.joinToString("/")
+                val api = base().addPathSegments("api/v4/projects").addPathSegment(project).build()
+                val ref = origin.ref.ifBlank { metadata(api.toString())["default_branch"]?.jsonPrimitive?.contentOrNull ?: "HEAD" }
+                val sha = pinned ?: metadata(api.newBuilder().addPathSegments("repository/commits").addPathSegment(ref).build().toString())["id"]?.jsonPrimitive?.contentOrNull.orEmpty()
+                require(Regex("[a-f0-9]{40}").matches(sha)) { "GitLab did not resolve an immutable commit." }
+                ResolvedPluginDownload(origin.copy(ref = ref), sha,
+                    api.newBuilder().addPathSegments("repository/archive.zip").addQueryParameter("sha", sha).build().toString())
+            }
+            else -> {
+                // Gitea and Forgejo, which Codeberg runs.
+                val repo = "${path[0]}/${path[1]}"
+                val api = base().addPathSegments("api/v1/repos").addPathSegments(repo).build()
+                val info = runCatching { metadata(api.toString()) }.getOrElse {
+                    throw IllegalStateException("$host is not a GitHub, GitLab, Bitbucket or Gitea server this app can download from. Use an archive link instead.", it)
+                }
+                val ref = origin.ref.ifBlank { info["default_branch"]?.jsonPrimitive?.contentOrNull ?: "main" }
+                val sha = pinned ?: runCatching {
+                    (metadata(api.newBuilder().addPathSegment("branches").addPathSegment(ref).build().toString())["commit"] as? JsonObject)?.get("id")?.jsonPrimitive?.contentOrNull
+                }.getOrNull() ?: runCatching {
+                    metadata(api.newBuilder().addPathSegments("git/commits").addPathSegment(ref).build().toString())["sha"]?.jsonPrimitive?.contentOrNull
+                }.getOrNull().orEmpty()
+                require(Regex("[a-f0-9]{40}").matches(sha)) { "$host did not resolve an immutable commit." }
+                ResolvedPluginDownload(origin.copy(ref = ref), sha, base().addPathSegments(repo).addPathSegment("archive").addPathSegment("$sha.zip").build().toString())
+            }
+        }
     }
     private suspend fun githubHeaders(raw: Boolean = false): Map<String, String> {
         val token = githubToken()
@@ -99,6 +147,20 @@ class PluginDownloads(
         return metadata(npmRegistry.toHttpUrl().newBuilder().addPathSegment(checkedName).addPathSegment(checkedVersion).build().toString())
     }
     suspend fun marketplace(source: MarketplaceSource): JsonObject {
+        // A marketplace.json served from any HTTPS address, as Claude Code allows.
+        if (source.repo.startsWith("https://") && source.repo.substringBefore('?').endsWith(".json")) return metadata(source.repo)
+        if (source.repo.startsWith("https://")) {
+            val resolved = resolveGit(PluginOrigin("git", source.repo, source.ref))
+            val repo = resolved.origin.target.removeSuffix("/")
+            val sha = resolved.revision
+            val file = ".claude-plugin/marketplace.json"
+            val raw = when {
+                repo.startsWith("https://bitbucket.org/") -> "$repo/raw/$sha/$file"
+                resolved.url.contains("/api/v4/projects/") -> "$repo/-/raw/$sha/$file"
+                else -> "$repo/raw/commit/$sha/$file"
+            }
+            return try { metadata(raw) } catch (e: IllegalStateException) { throw IllegalStateException("${source.repo} has no readable .claude-plugin/marketplace.json.", e) }
+        }
         val repo = githubTarget(source.repo)
         val url = githubApi.toHttpUrl().newBuilder().addPathSegment("repos").addPathSegments(repo)
             .addPathSegments("contents/.claude-plugin/marketplace.json").apply { if (source.ref.isNotBlank()) addQueryParameter("ref", source.ref) }.build()
@@ -109,7 +171,7 @@ class PluginDownloads(
         request(resolved.url, resolved.headers) { response ->
             val body = requireNotNull(response.body)
             val total = body.contentLength().takeIf { it >= 0 }
-            require(total == null || total <= PluginArchives.MAX_DOWNLOAD) { "Plugin download exceeds 200 MiB." }
+            require(total == null || total <= PluginArchives.MAX_DOWNLOAD) { "Plugin download is larger than ${PluginArchives.MAX_DOWNLOAD shr 30} GiB." }
             body.byteStream().use { input -> destination.outputStream().use { out ->
                 PluginArchives.copyLimited(input, out, PluginArchives.MAX_DOWNLOAD) { progress(it, total) }
             } }
@@ -117,11 +179,11 @@ class PluginDownloads(
         resolved.integrity?.let { verifyIntegrity(destination, it) }
     }
     /** Any npm package can be checked; plugin, skill and MCP keywords rank first. */
-    suspend fun searchNpm(query: String): List<PluginListing> {
+    suspend fun searchNpm(query: String, page: Int = 0): List<PluginListing> {
         require(query.length <= 160)
         val text = query.trim().ifBlank { "keywords:claude-code-plugin,claude-skill,agent-skills,mcp-server,androidharness-plugin" }
         val url = npmRegistry.toHttpUrl().newBuilder().addPathSegments("-/v1/search")
-            .addQueryParameter("text", text).addQueryParameter("size", "40").build()
+            .addQueryParameter("text", text).addQueryParameter("size", "40").addQueryParameter("from", (page * 40).toString()).build()
         val data = metadata(url.toString())
         val relevant = setOf("mcp", "mcp-server", "modelcontextprotocol", "claude", "claude-code", "claude-skill", "claude-plugin", "skill", "skills",
             "agent-skills", "androidharness-plugin", "cursor", "ai-agent")
@@ -143,11 +205,16 @@ class PluginDownloads(
         }.sortedByDescending { it.first }.map { it.second }
     }
     /** The official MCP registry. npm and PyPI packages run through npx or uvx; remote servers connect directly. */
-    suspend fun searchMcpRegistry(query: String): List<PluginListing> {
+    /** The registry pages with cursors; the cursor for each page already seen is kept so later pages can be asked for. */
+    private val registryCursors = java.util.concurrent.ConcurrentHashMap<Pair<String, Int>, String>()
+    suspend fun searchMcpRegistry(query: String, page: Int = 0): List<PluginListing> {
         require(query.length <= 160)
+        val cursor = if (page == 0) null else registryCursors[query.trim() to page] ?: return emptyList()
         val url = mcpRegistry.toHttpUrl().newBuilder().addPathSegments("v0/servers").addQueryParameter("limit", "40")
-            .apply { if (query.isNotBlank()) addQueryParameter("search", query.trim()) }.build()
+            .apply { if (query.isNotBlank()) addQueryParameter("search", query.trim()); cursor?.let { addQueryParameter("cursor", it) } }.build()
         val data = metadata(url.toString())
+        ((data["metadata"] as? JsonObject)?.get("nextCursor") as? JsonPrimitive)?.contentOrNull?.takeIf(String::isNotBlank)
+            ?.let { registryCursors[query.trim() to page + 1] = it }
         return data["servers"]?.jsonArray.orEmpty().mapNotNull { item ->
             val server = (item.jsonObject["server"] ?: item).jsonObject
             val id = server["name"]?.jsonPrimitive?.contentOrNull ?: return@mapNotNull null
@@ -163,12 +230,12 @@ class PluginDownloads(
         }.distinctBy { it.origin.target }
     }
     /** GitHub repositories tagged as skills or plugins for coding agents. */
-    suspend fun searchGitHub(query: String): List<PluginListing> {
+    suspend fun searchGitHub(query: String, page: Int = 0): List<PluginListing> {
         require(query.length <= 160)
         val topics = "topic:claude-skills OR topic:agent-skills OR topic:claude-code-plugin OR topic:claude-code-skills OR topic:mcp-server"
         val url = githubApi.toHttpUrl().newBuilder().addPathSegments("search/repositories")
             .addQueryParameter("q", if (query.isBlank()) "$topics stars:>50" else "${query.trim()} in:name,description,topics")
-            .addQueryParameter("sort", "stars").addQueryParameter("per_page", "30").build()
+            .addQueryParameter("sort", "stars").addQueryParameter("per_page", "30").addQueryParameter("page", (page + 1).toString()).build()
         val data = metadata(url.toString(), githubHeaders())
         return data["items"]?.jsonArray.orEmpty().mapNotNull { item ->
             val repo = item.jsonObject
