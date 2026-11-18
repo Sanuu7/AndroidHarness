@@ -190,7 +190,7 @@ internal fun ProjectNavigationSidebar(
                             Text(changesSummary ?: workspaceSummary, style = MaterialTheme.typography.labelSmall,
                                 color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
                         }
-                        Icon(Icons.Outlined.KeyboardArrowUp, null, Modifier.size(20.dp).graphicsLayer { rotationZ = turn },
+                        Icon(Icons.Outlined.KeyboardArrowDown, null, Modifier.size(20.dp).graphicsLayer { rotationZ = turn },
                             tint = scheme.onSurfaceVariant)
                     }
                     androidx.compose.animation.AnimatedVisibility(toolsOpen,
