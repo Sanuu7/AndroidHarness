@@ -1,14 +1,13 @@
 package com.androidharness.app.llm
 
 import com.androidharness.app.agent.RetryPolicy
+import com.androidharness.app.agent.StreamRetrier
 import com.androidharness.app.agent.TaskBudget
 import com.androidharness.app.agent.ThinkingSpecs
 import com.androidharness.app.agent.stallGuard
 import com.androidharness.app.core.ChatMessage
 import kotlinx.coroutines.CancellationException
-import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flow
@@ -115,12 +114,10 @@ class FallbackProvider(
                     options.copy(thinking = ThinkingSpecs.resolvedForModel(current.model, options.thinking, ModelsDev.providerKeyFor(current.baseUrl)).level,
                         debugGroup = debugGroup, debugAttempt = ++debugAttempts))
                     .collect { emit(it) }
-            }.flattenEvents().stallGuard(timeout).catch { e ->
+            }.flattenEvents().stallGuard(timeout, StreamRetrier.firstOutputWindow(timeout, options.thinking)).catch { e ->
                 when (e) {
-                    is TimeoutCancellationException -> {
-                        coroutineContext.ensureActive()
+                    is com.androidharness.app.agent.StreamStalledException ->
                         emit(StreamEvent.Failure("Generation stalled (timed out)"))
-                    }
                     is CancellationException -> throw e
                     is com.androidharness.app.agent.TaskPaused -> throw e
                     else -> {

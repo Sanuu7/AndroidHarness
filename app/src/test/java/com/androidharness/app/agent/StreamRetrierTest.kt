@@ -3,6 +3,8 @@ package com.androidharness.app.agent
 import com.androidharness.app.llm.ApiException
 import com.androidharness.app.llm.StreamEvent
 import kotlinx.coroutines.awaitCancellation
+import kotlinx.coroutines.currentCoroutineContext
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
@@ -291,5 +293,73 @@ class StreamRetrierTest {
         )
         assertEquals("Invalid request", result)
         assertTrue(seen.isEmpty())
+    }
+
+    @Test
+    fun `keep-alive activity holds a quiet stream open past the window`() = runBlocking {
+        val seen = mutableListOf<StreamEvent>()
+        val result = StreamRetrier.run(
+            streamFor = {
+                flow {
+                    val activity = currentCoroutineContext()[StreamActivity]
+                    repeat(8) { delay(50); activity?.touch() }
+                    emit(StreamEvent.TextDelta("late"))
+                }
+            },
+            onAttemptStart = {}, hasOutput = { seen.isNotEmpty() }, handleEvent = { seen += it },
+            retryReason = { it }, emitEvent = { error("keep-alives must not stall: ${it.reason}") },
+            sleep = {}, stallTimeoutMs = 150,
+        )
+        assertEquals(null, result)
+        assertEquals(listOf<StreamEvent>(StreamEvent.TextDelta("late")), seen)
+    }
+
+    @Test
+    fun `nested guards pass keep-alive activity to the outer guard`() = runBlocking {
+        val seen = mutableListOf<StreamEvent>()
+        val inner = flow {
+            val activity = currentCoroutineContext()[StreamActivity]
+            repeat(8) { delay(50); activity?.touch() }
+            emit(StreamEvent.TextDelta("late"))
+        }.stallGuard(150)
+        val result = StreamRetrier.run(
+            streamFor = { inner }, onAttemptStart = {}, hasOutput = { seen.isNotEmpty() }, handleEvent = { seen += it },
+            retryReason = { it }, emitEvent = { error("outer guard must see inner activity: ${it.reason}") },
+            sleep = {}, stallTimeoutMs = 150,
+        )
+        assertEquals(null, result)
+        assertEquals(1, seen.size)
+    }
+
+    @Test
+    fun `the first output window allows a longer silence only before the first event`() = runBlocking {
+        val quietStart = StreamRetrier.run(
+            streamFor = { flow { delay(300); emit(StreamEvent.TextDelta("thought")) } },
+            onAttemptStart = {}, hasOutput = { false }, handleEvent = {},
+            retryReason = { it }, emitEvent = { error("first output window ignored") },
+            sleep = {}, stallTimeoutMs = 150, firstOutputTimeoutMs = 1_000,
+        )
+        assertEquals(null, quietStart)
+
+        val quietMiddle = StreamRetrier.run(
+            streamFor = { flow { emit(StreamEvent.TextDelta("a")); delay(400); emit(StreamEvent.TextDelta("b")) } },
+            onAttemptStart = {}, hasOutput = { true }, handleEvent = {},
+            retryReason = { it }, emitEvent = { error("output already shown, no retry") },
+            sleep = {}, stallTimeoutMs = 150, firstOutputTimeoutMs = 1_000,
+        )
+        assertEquals("Generation stalled - no data received for 0s (timed out)", quietMiddle)
+    }
+
+    @Test
+    fun `thinking gets a longer first output window`() {
+        assertEquals(90_000L, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.OFF))
+        assertEquals(StreamRetrier.REASONING_FIRST_OUTPUT_MS, StreamRetrier.firstOutputWindow(90_000, ThinkingLevel.HIGH))
+        assertEquals(610_000L, StreamRetrier.firstOutputWindow(610_000, ThinkingLevel.HIGH))
+    }
+
+    @Test
+    fun `the default window keeps the stalled message`() {
+        assertEquals(StreamRetrier.STALLED_STREAM_MESSAGE, StreamStalledException(90_000).message)
+        assertTrue(RetryPolicy.isRetryable(null, StreamStalledException(90_000).message!!, null))
     }
 }

@@ -661,6 +661,8 @@ class AgentEngine(
                 retryReason = { f -> f.take(200) },
                 emitEvent = { emit(it) },
                 stallTimeoutMs = if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000,
+                firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
+                    if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000, requestOptions.thinking),
                 allowRetries = !localChat && !managedFallback,
                 onTerminalFailure = { recoverableFailure = it },
             )
@@ -705,6 +707,8 @@ class AgentEngine(
                     retryReason = { f -> f.take(200) },
                     emitEvent = { emit(it) },
                     stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
+                    firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
+                        if (managedFallback) 610_000 else 90_000, requestOptions.thinking),
                     allowRetries = !managedFallback,
                     onTerminalFailure = { recoverableFailure = it },
                 )
@@ -971,6 +975,8 @@ class AgentEngine(
                     retryReason = { it.take(200) },
                     emitEvent = { send(SideEvent.Retrying(it.attempt, it.reason)) },
                     stallTimeoutMs = if (local) 600_000 else 90_000,
+                    firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
+                        if (local) 600_000 else 90_000, context.options.thinking),
                     allowRetries = !local,
                 )
                 if (failure != null) {
@@ -1854,6 +1860,8 @@ class AgentEngine(
                 retryReason = { f -> "subagent: ${f.take(160)}" },
                 emitEvent = { emitEvent(it) },
                 stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
+                firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
+                    if (managedFallback) 610_000 else 90_000, requestOptions.thinking),
                 allowRetries = !managedFallback,
             )
 

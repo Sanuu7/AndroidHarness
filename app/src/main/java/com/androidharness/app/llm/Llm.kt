@@ -243,6 +243,8 @@ object ProviderFactory {
      */
     fun sseJson(request: Request, httpClient: OkHttpClient = client, onDone: () -> Unit = {}): Flow<JsonElement> = callbackFlow {
         val call = httpClient.newCall(request)
+        // Every line counts as proof of life, keep-alive comments included.
+        val activity = coroutineContext[com.androidharness.app.agent.StreamActivity]
         val reader = launch(Dispatchers.IO) {
             try {
                 val response = kotlinx.coroutines.suspendCancellableCoroutine<Response> { continuation ->
@@ -270,6 +272,7 @@ object ProviderFactory {
                     try {
                         while (true) {
                             val line = readSseLine(source) ?: break
+                            activity?.touch()
                             tap?.line(line)
                             if (!line.startsWith("data:")) continue
                             val payload = line.removePrefix("data:").trim()
