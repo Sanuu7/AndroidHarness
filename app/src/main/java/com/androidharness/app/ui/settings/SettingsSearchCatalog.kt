@@ -425,10 +425,9 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
     SettingsSearchEntry(
         R.string.settings_search_battery_title,
         R.string.settings_search_battery_desc,
-        SettingsPage.ENVIRONMENT,
+        SettingsPage.BACKGROUND,
         "background keep alive battery",
         anchor = R.string.settings_search_battery_title,
-        within = listOf(R.string.settings_device_background),
     ),
     SettingsSearchEntry(
         R.string.settings_search_export_title,
@@ -491,10 +490,8 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         "dhizuku device owner admin", within = listOf(R.string.settings_device_advanced)),
     control(SettingsPage.ENVIRONMENT, R.string.wireless_adb_section_title, R.string.wireless_adb_compact_summary,
         "wireless adb wifi debugging pair pairing code port developer options reconnect shell"),
-    control(SettingsPage.ENVIRONMENT, R.string.settings_device_background, R.string.settings_device_background_summary,
-        "battery background keep alive wake lock"),
-    control(SettingsPage.ENVIRONMENT, R.string.settings_env_keep_alive, null,
-        "keep alive wake lock cpu awake background terminal runs", within = listOf(R.string.settings_device_background)),
+    control(SettingsPage.BACKGROUND, R.string.settings_env_keep_alive, null,
+        "keep alive wake lock cpu awake background terminal runs"),
 
     // Personalize
     control(SettingsPage.CHAT_OPTIONS, R.string.chat_search_code_chats, R.string.chat_search_code_chats_desc,

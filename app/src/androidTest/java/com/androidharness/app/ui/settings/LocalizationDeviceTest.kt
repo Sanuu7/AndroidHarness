@@ -134,7 +134,7 @@ class LocalizationDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> show(activity) {
                 SettingsHome(query.value, { query.value = it }, { page, anchor -> selected = page to anchor },
-                    Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
+                    Modifier.fillMaxSize())
             } }
             // The query field contains the same title; click the result's description.
             click(zh.getString(R.string.settings_search_max_context_desc))
@@ -223,7 +223,7 @@ class LocalizationDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> show(activity, locale = "ru") {
                 SettingsHome(ru.getString(R.string.settings_search_max_context_title), {},
-                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
+                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize())
             } }
             click(ru.getString(R.string.settings_search_max_context_desc))
             assertEquals(SettingsPage.AGENT to R.string.settings_anchor_max_context, selected)
@@ -287,7 +287,7 @@ class LocalizationDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> show(activity, locale = "id") {
                 SettingsHome(indo.getString(R.string.settings_search_max_context_title), {},
-                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
+                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize())
             } }
             click(indo.getString(R.string.settings_search_max_context_desc))
             assertEquals(SettingsPage.AGENT to R.string.settings_anchor_max_context, selected)
@@ -351,7 +351,7 @@ class LocalizationDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> show(activity, locale = "ar") {
                 SettingsHome(ar.getString(R.string.settings_search_max_context_title), {},
-                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
+                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize())
             } }
             click(ar.getString(R.string.settings_search_max_context_desc))
             assertEquals(SettingsPage.AGENT to R.string.settings_anchor_max_context, selected)
@@ -523,7 +523,7 @@ class LocalizationDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> show(activity, locale = locale) {
                 SettingsHome(localized.getString(R.string.settings_search_max_context_title), {},
-                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
+                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize())
             } }
             click(localized.getString(R.string.settings_search_max_context_desc))
             assertEquals(SettingsPage.AGENT to R.string.settings_anchor_max_context, selected)
@@ -595,7 +595,7 @@ class LocalizationDeviceTest {
         ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
             scenario.onActivity { activity -> show(activity, locale = "fa") {
                 SettingsHome(fa.getString(R.string.settings_search_max_context_title), {},
-                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize().verticalScroll(rememberScrollState()))
+                    { page, anchor -> selected = page to anchor }, Modifier.fillMaxSize())
             } }
             click(fa.getString(R.string.settings_search_max_context_desc))
             assertEquals(SettingsPage.AGENT to R.string.settings_anchor_max_context, selected)

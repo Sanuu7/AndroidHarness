@@ -32,55 +32,55 @@ internal enum class SettingsPage(
     LANGUAGE(
         R.string.settings_page_language_title,
         R.string.settings_page_language_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_look_feel,
         "language locale translation translate system default english chinese russian русский язык arabic العربية عربي اللغة persian farsi فارسی زبان portuguese português brasil brazil pt-br idioma língua german deutsch sprache übersetzung spanish español espanol idioma traducción japanese nihongo 日本語 にほんご 言語 翻訳 indonesian indonesia bahasa 中文 简体 语言 poeditor contribute",
     ),
     CHAT_OPTIONS(
         R.string.settings_page_chat_options_title,
         R.string.settings_page_chat_options_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_your_assistant,
         "chat option start screen default ui selection code chat last selected launch startup chat start new last resume search past history conversations",
     ),
     MEMORY(
         R.string.settings_page_memory_title,
         R.string.settings_page_memory_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_your_assistant,
         "memory remember saved facts preferences projects decisions forget delete clear recall",
     ),
     CODING(
         R.string.settings_page_coding_title,
         R.string.settings_page_coding_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_your_assistant,
         "coding code agent subagent behavior chat commands skills codegraph caveman connected tools mcp telegram workspaces terminal device troubleshooting search past history conversations",
     ),
     RUMBLE(
         R.string.settings_page_rumble_title,
         R.string.settings_page_rumble_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_look_feel,
         "ah rumble haptics haptic vibration vibrate buzz feedback pulse motor tool calls thinking strength smooth crisp engine pattern",
     ),
     GITHUB(
         R.string.settings_page_github_title,
         R.string.settings_page_github_desc,
-        R.string.settings_group_connections,
+        R.string.settings_group_integrations,
         "oauth login git pat token scopes import commit push preset automation",
     ),
     CONNECTED_ACCOUNTS(
         R.string.settings_page_accounts_title,
         R.string.settings_page_accounts_desc,
-        R.string.settings_group_connections,
+        R.string.settings_group_ai_models,
         "chatgpt codex subscription sign in login account plan oauth",
     ),
     NINE_ROUTER(
         R.string.nine_router_title,
         R.string.nine_router_description,
-        R.string.settings_group_special_providers,
+        R.string.settings_group_ai_models,
         "9router nine router local proxy linux install start stop dashboard",
     ),
     MODELS(
         R.string.settings_page_models_title,
         R.string.settings_page_models_desc,
-        R.string.settings_group_your_assistant,
+        R.string.settings_group_ai_models,
         "api key token provider openai anthropic gemini thinking planning execution fallback retries quota privacy routing",
     ),
     SUBAGENT(
@@ -93,7 +93,7 @@ internal enum class SettingsPage(
     LOCAL_MODELS(
         R.string.settings_page_local_models_title,
         R.string.settings_page_local_models_desc,
-        R.string.settings_group_your_assistant,
+        R.string.settings_group_ai_models,
         "offline hugging face gguf safetensors llama ram memory storage cpu download uninstall context input output vision images threads",
     ),
     PLUGINS(
@@ -158,31 +158,31 @@ internal enum class SettingsPage(
     APPEARANCE(
         R.string.settings_page_appearance_title,
         R.string.settings_page_appearance_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_look_feel,
         "dark light amoled system wallpaper dynamic color landscape desktop tablet layout split panes progress flat squiggly wavy animation",
     ),
     PRIVACY(
         R.string.settings_page_privacy_title,
         R.string.settings_page_privacy_desc,
-        R.string.settings_group_personalize,
+        R.string.settings_group_device_privacy,
         "fingerprint pin authentication screenshots",
     ),
     SEARCH(
         R.string.settings_page_search_title,
         R.string.settings_page_search_desc,
-        R.string.settings_group_connections,
+        R.string.settings_group_integrations,
         "brave tavily keyless internet",
     ),
     MCP(
         R.string.settings_page_mcp_title,
         R.string.settings_page_mcp_desc,
-        R.string.settings_group_connections,
+        R.string.settings_group_integrations,
         "mcp integrations servers transport",
     ),
     TELEGRAM(
         R.string.settings_page_telegram_title,
         R.string.settings_page_telegram_desc,
-        R.string.settings_group_connections,
+        R.string.settings_group_integrations,
         "telegram bot remote control pairing notifications gateway",
     ),
     WORKSPACE(
@@ -194,71 +194,71 @@ internal enum class SettingsPage(
     ),
     BACKGROUND(
         R.string.background_settings_title,
-        R.string.background_settings_description,
-        R.string.settings_group_workspace_device,
-        "background notifications alerts running minimize closed services",
+        R.string.settings_page_background_desc,
+        R.string.settings_group_device_privacy,
+        "background notifications alerts running minimize closed services battery optimization keep alive wake lock",
     ),
     STORAGE(
         R.string.settings_page_storage_title,
         R.string.settings_page_storage_desc,
-        R.string.settings_group_workspace_device,
+        R.string.settings_group_device_privacy,
         "storage cleanup disk space cache packages downloads build outputs",
     ),
     ENVIRONMENT(
         R.string.settings_page_environment_title,
         R.string.settings_page_environment_desc,
         R.string.settings_group_coding,
-        "shizuku shevery dhizuku device owner shell packages environment battery optimization keep alive wireless adb wifi pairing debugging developer options notification",
+        "shizuku shevery dhizuku device owner shell packages environment wireless adb wifi pairing debugging developer options notification",
         onHome = false,
     ),
     PROVIDER_DEBUG(
         R.string.settings_page_provider_debug_title,
         R.string.settings_page_provider_debug_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_help_about,
         "provider debug console log request response http error sse trace stream retry fallback key rotation diagnostics",
     ),
     TROUBLESHOOTING(
         R.string.settings_page_troubleshooting_title,
         R.string.settings_page_troubleshooting_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_help_about,
         "diagnostics help doctor repair errors storage linux shizuku ssh mcp notifications provider report",
     ),
     SYNC(
-        R.string.sync_title, R.string.sync_description, R.string.settings_group_connections,
+        R.string.sync_title, R.string.sync_description, R.string.settings_group_data_sync,
         "sync ftp sftp upload download remote folder transfer",
     ),
     FTP_SERVER(
-        R.string.ftp_server_title, R.string.ftp_server_description, R.string.settings_group_connections,
+        R.string.ftp_server_title, R.string.ftp_server_description, R.string.settings_group_data_sync,
         "ftp server share wifi local network files passive",
     ),
     BACKUP(
         R.string.settings_page_backup_title,
         R.string.settings_page_backup_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_data_sync,
         "restore history archive transfer password providers keys encryption",
     ),
     USAGE(
         R.string.settings_page_usage_title,
         R.string.settings_page_usage_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_data_sync,
         "stats statistics cache tokens",
     ),
     UPDATES(
         R.string.settings_page_updates_title,
         R.string.settings_page_updates_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_help_about,
         "version release download install root shizuku github update",
     ),
     SETUP(
         R.string.settings_page_setup_title,
         R.string.settings_page_setup_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_help_about,
         "onboarding notifications permissions",
     ),
     ABOUT(
         R.string.settings_page_about_title,
         R.string.settings_page_about_desc,
-        R.string.settings_group_app_data,
+        R.string.settings_group_help_about,
         "about license mit copyright credits author sanuu github repository open source thanks",
     ),
 }
@@ -288,28 +288,35 @@ internal data class SettingsSearchEntry(
     val within: List<Int> = emptyList(),
 )
 
+/**
+ * The settings home, top to bottom. Pages sit under the group of their [SettingsPage.group],
+ * and the groups appear in the order their first page does: what you set up first
+ * (models), what you touch daily (assistant, integrations, look), then device,
+ * data and help pages, which most people open rarely.
+ */
 internal val settingsHomePages = listOf(
     SettingsPage.LEARN,
-    SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER,
-    SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.CHAT_OPTIONS,
-    SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.RUMBLE, SettingsPage.PRIVACY,
-    SettingsPage.MODELS, SettingsPage.LOCAL_MODELS, SettingsPage.VOICE, SettingsPage.LIVE_MODE,
-    SettingsPage.GITHUB, SettingsPage.SEARCH, SettingsPage.MCP,
-    SettingsPage.TELEGRAM, SettingsPage.SYNC, SettingsPage.FTP_SERVER,
-    SettingsPage.BACKGROUND, SettingsPage.STORAGE,
-    SettingsPage.BACKUP, SettingsPage.USAGE, SettingsPage.PROVIDER_DEBUG, SettingsPage.TROUBLESHOOTING,
-    SettingsPage.UPDATES, SettingsPage.SETUP, SettingsPage.ABOUT,
+    SettingsPage.MODELS, SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.LOCAL_MODELS, SettingsPage.NINE_ROUTER,
+    SettingsPage.CHAT_OPTIONS, SettingsPage.CODING, SettingsPage.MEMORY, SettingsPage.VOICE, SettingsPage.LIVE_MODE,
+    SettingsPage.SEARCH, SettingsPage.MCP, SettingsPage.GITHUB, SettingsPage.TELEGRAM,
+    SettingsPage.APPEARANCE, SettingsPage.LANGUAGE, SettingsPage.RUMBLE,
+    SettingsPage.PRIVACY, SettingsPage.BACKGROUND, SettingsPage.STORAGE,
+    SettingsPage.BACKUP, SettingsPage.SYNC, SettingsPage.FTP_SERVER, SettingsPage.USAGE,
+    SettingsPage.TROUBLESHOOTING, SettingsPage.PROVIDER_DEBUG, SettingsPage.SETUP, SettingsPage.UPDATES, SettingsPage.ABOUT,
 )
 
-/** Keep the account shortcut at the top without pulling every connection above the other sections. */
-internal fun settingsDisplayGroups(entries: List<SettingsSearchEntry>, query: String) = entries.groupBy {
-    if (query.isBlank() && it.page in setOf(SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER)) R.string.settings_group_special_providers else it.page.group
-}
+/** Results grouped under their page's group, in the order the groups first appear. */
+internal fun settingsDisplayGroups(entries: List<SettingsSearchEntry>, @Suppress("UNUSED_PARAMETER") query: String = "") =
+    entries.groupBy { it.page.group }
 
-internal val settingsCodingPages = listOf(
-    SettingsPage.SUBAGENT, SettingsPage.AGENT, SettingsPage.CONFIGURATION, SettingsPage.PLUGINS, SettingsPage.CHAT, SettingsPage.SKILLS,
-    SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN, SettingsPage.WORKSPACE, SettingsPage.ENVIRONMENT,
+/** The Coding hub, in the order and groups it shows them. */
+internal val settingsCodingGroups = listOf(
+    R.string.settings_coding_workflow to listOf(SettingsPage.AGENT, SettingsPage.SUBAGENT, SettingsPage.CHAT, SettingsPage.CONFIGURATION),
+    R.string.settings_coding_intelligence to listOf(SettingsPage.SKILLS, SettingsPage.PLUGINS, SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN),
+    R.string.settings_coding_execution to listOf(SettingsPage.WORKSPACE, SettingsPage.ENVIRONMENT),
 )
+
+internal val settingsCodingPages = settingsCodingGroups.flatMap { it.second }
 
 private val homeSettingsEntries = settingsHomePages.map { page ->
     SettingsSearchEntry(page.title, page.description, page, page.keywords, primary = true)

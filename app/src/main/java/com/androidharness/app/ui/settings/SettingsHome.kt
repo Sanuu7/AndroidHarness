@@ -9,6 +9,10 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.LazyListState
+import androidx.compose.foundation.lazy.rememberLazyListState
+import com.androidharness.app.ui.theme.motionBlur
+import androidx.compose.ui.semantics.heading
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.shape.CircleShape
@@ -47,6 +51,7 @@ internal fun SettingsHome(
     onQueryChange: (String) -> Unit,
     onOpen: (SettingsPage, Int?) -> Unit,
     modifier: Modifier = Modifier,
+    state: LazyListState = rememberLazyListState(),
     customSections: List<com.androidharness.app.data.CustomSettingsSection> = emptyList(),
     onOpenSection: (String) -> Unit = {},
     onAddSection: () -> Unit = {},
@@ -56,42 +61,53 @@ internal fun SettingsHome(
     val index = remember(context) { settingsSearchIndex(context) }
     val results = remember(query, index) { index.search(query) }
     val sections = remember(query, customSections) { customSections.filter { it.name.contains(query.trim(), ignoreCase = true) } }
-    Column(
-        modifier.padding(horizontal = 16.dp, vertical = 16.dp),
+    val groups = remember(results, query) {
+        settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).entries.toList()
+    }
+    LazyColumn(
+        modifier.motionBlur(state),
+        state = state,
+        contentPadding = PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-        if (query.isBlank()) com.androidharness.app.ui.learn.LearnEntryCard(onClick = { onOpen(SettingsPage.LEARN, null) })
-        OutlinedTextField(
-            value = query,
-            onValueChange = onQueryChange,
-            placeholder = { Text(stringResource(R.string.settings_search_placeholder)) },
-            leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
-            trailingIcon = {
-                if (query.isNotEmpty()) IconButton(onClick = { onQueryChange("") }) {
-                    Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.settings_search_clear))
-                }
-            },
-            singleLine = true,
-            shape = CircleShape,
-            colors = OutlinedTextFieldDefaults.colors(
-                unfocusedContainerColor = colors.surfaceContainerHigh,
-                focusedContainerColor = colors.surfaceContainerHigh,
-                unfocusedBorderColor = Color.Transparent,
-            ),
-            modifier = Modifier.fillMaxWidth(),
-        )
-        // Same footprint as the search field above it, so the two read as a pair.
-        if (query.isBlank()) FilledTonalButton(
-            onClick = onAddSection,
-            colors = ButtonDefaults.filledTonalButtonColors(containerColor = colors.primaryContainer, contentColor = colors.onPrimaryContainer),
-            modifier = Modifier.fillMaxWidth().height(56.dp),
-        ) {
-            Icon(Icons.Rounded.Add, null, Modifier.size(22.dp))
-            Spacer(Modifier.width(8.dp))
-            Text(stringResource(R.string.custom_sections_add), style = MaterialTheme.typography.titleMedium)
+        if (query.isBlank()) item(key = "learn") {
+            com.androidharness.app.ui.learn.LearnEntryCard(onClick = { onOpen(SettingsPage.LEARN, null) }, modifier = Modifier.settingsEntrance(0))
         }
-        CustomSectionsHomeGroup(sections, onOpenSection)
-        if (results.isEmpty() && sections.isEmpty()) {
+        item(key = "search") {
+            OutlinedTextField(
+                value = query,
+                onValueChange = onQueryChange,
+                placeholder = { Text(stringResource(R.string.settings_search_placeholder)) },
+                leadingIcon = { Icon(Icons.Rounded.Search, contentDescription = null) },
+                trailingIcon = {
+                    if (query.isNotEmpty()) IconButton(onClick = { onQueryChange("") }) {
+                        Icon(Icons.Rounded.Close, contentDescription = stringResource(R.string.settings_search_clear))
+                    }
+                },
+                singleLine = true,
+                shape = CircleShape,
+                colors = OutlinedTextFieldDefaults.colors(
+                    unfocusedContainerColor = colors.surfaceContainerHigh,
+                    focusedContainerColor = colors.surfaceContainerHigh,
+                    unfocusedBorderColor = Color.Transparent,
+                ),
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+        // Same footprint as the search field above it, so the two read as a pair.
+        if (query.isBlank()) item(key = "add-section") {
+            FilledTonalButton(
+                onClick = onAddSection,
+                colors = ButtonDefaults.filledTonalButtonColors(containerColor = colors.primaryContainer, contentColor = colors.onPrimaryContainer),
+                modifier = Modifier.fillMaxWidth().height(56.dp),
+            ) {
+                Icon(Icons.Rounded.Add, null, Modifier.size(22.dp))
+                Spacer(Modifier.width(8.dp))
+                Text(stringResource(R.string.custom_sections_add), style = MaterialTheme.typography.titleMedium)
+            }
+        }
+        if (sections.isNotEmpty()) item(key = "custom-sections") { CustomSectionsHomeGroup(sections, onOpenSection) }
+        if (results.isEmpty() && sections.isEmpty()) item(key = "empty") {
             Column(
                 Modifier.fillMaxWidth().padding(vertical = 32.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -102,47 +118,52 @@ internal fun SettingsHome(
                 Text(stringResource(R.string.settings_search_empty_hint), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
             }
         }
-        settingsDisplayGroups(results.filterNot { query.isBlank() && it.page == SettingsPage.LEARN }, query).entries.forEachIndexed { groupIndex, (group, entries) ->
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                val showHeader = entries.size > 1
-                if (showHeader) Text(
-                    stringResource(group),
-                    style = MaterialTheme.typography.labelLargeEmphasized,
-                    color = colors.primary,
-                    modifier = Modifier.padding(start = 16.dp, bottom = 2.dp),
-                )
-                val tone = SettingsTone.entries[groupIndex % 3]
-                SettingsGroup {
-                    entries.forEach { entry ->
-                        item(onClick = { onOpen(entry.page, entry.anchor) }) {
-                            Row(
-                                modifier = Modifier.heightIn(min = 72.dp).padding(horizontal = 16.dp, vertical = 14.dp),
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            ) {
-                                SettingsIconBadge(tone, 44.dp) { tint ->
-                                    if (entry.page == SettingsPage.MEMORY)
-                                        Icon(painterResource(R.drawable.ic_brain), null, tint = tint, modifier = Modifier.size(22.dp))
-                                    else Icon(settingsIcon(entry.page), null, tint = tint, modifier = Modifier.size(22.dp))
-                                }
-                                Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                                    Text(stringResource(entry.title), style = MaterialTheme.typography.titleMedium)
-                                    settingsResultPath(entry)?.let { path ->
-                                        Text(path, style = MaterialTheme.typography.labelMedium, color = colors.primary)
-                                    }
-                                    entry.description?.let {
-                                        Text(stringResource(it), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
-                                    }
-                                    SettingsAvailabilityTag(rememberSettingsAvailability(entry), Modifier.padding(top = 2.dp))
-                                }
-                            }
-                        }
-                    }
-                }
+        groups.forEachIndexed { groupIndex, (group, entries) ->
+            item(key = "group:$group:${entries.first().page}") {
+                SettingsHomeGroup(group, entries, SettingsTone.entries[groupIndex % 3], onOpen, Modifier.settingsEntrance(groupIndex + 1))
             }
         }
-        Spacer(Modifier.height(12.dp))
+        item(key = "end") { Spacer(Modifier.height(12.dp)) }
     }
+}
+
+/** One labelled group of the settings home: a heading over a segmented list of pages. */
+@Composable
+private fun SettingsHomeGroup(
+    @androidx.annotation.StringRes group: Int,
+    entries: List<SettingsSearchEntry>,
+    tone: SettingsTone,
+    onOpen: (SettingsPage, Int?) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier, verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        if (entries.size > 1) Text(
+            stringResource(group),
+            style = MaterialTheme.typography.labelLargeEmphasized,
+            color = MaterialTheme.colorScheme.primary,
+            modifier = Modifier.padding(start = 16.dp, bottom = 2.dp).semantics { heading() },
+        )
+        val titles = entries.map { stringResource(it.title) }
+        val descriptions = entries.map { entry -> entry.description?.let { stringResource(it) } }
+        val paths = entries.map { settingsResultPath(it) }
+        val availability = entries.map { rememberSettingsAvailability(it) }
+        SettingsGroup {
+            entries.forEachIndexed { i, entry ->
+                navItem(
+                    seed = entry.page.ordinal, tone = tone, title = titles[i], subtitle = descriptions[i], path = paths[i],
+                    onClick = { onOpen(entry.page, entry.anchor) },
+                    extra = { SettingsAvailabilityTag(availability[i], Modifier.padding(top = 2.dp)) },
+                ) { tint -> SettingsPageIcon(entry.page, tint, Modifier.size(22.dp)) }
+            }
+        }
+    }
+}
+
+/** The page's icon, including the one page drawn from a resource rather than a vector. */
+@Composable
+internal fun SettingsPageIcon(page: SettingsPage, tint: Color, modifier: Modifier = Modifier) {
+    if (page == SettingsPage.MEMORY) Icon(painterResource(R.drawable.ic_brain), null, modifier, tint = tint)
+    else Icon(settingsIcon(page), null, modifier, tint = tint)
 }
 
 @Composable

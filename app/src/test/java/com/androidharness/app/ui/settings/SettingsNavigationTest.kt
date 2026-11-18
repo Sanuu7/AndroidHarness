@@ -23,7 +23,7 @@ class SettingsNavigationTest {
     @Test
     fun `search finds controls by familiar names and hidden keywords`() {
         assertEquals(listOf(SettingsPage.APPEARANCE), matchingSettingsPages("  DARK  theme ", settingsTestStrings()))
-        assertEquals(SettingsPage.ENVIRONMENT, matchingSettingsPages("battery", settingsTestStrings()).first())
+        assertEquals(SettingsPage.BACKGROUND, matchingSettingsPages("battery", settingsTestStrings()).first())
         assertTrue(SettingsPage.MODELS in matchingSettingsPages("api\tkey", settingsTestStrings()))
         assertEquals(listOf(SettingsPage.CHAT), matchingSettingsPages("repo map", settingsTestStrings()))
         assertEquals(listOf(SettingsPage.PRIVACY), matchingSettingsPages("fingerprint", settingsTestStrings()))
@@ -64,23 +64,31 @@ class SettingsNavigationTest {
     }
 
     @Test
-    fun `learn leads settings and existing account shortcuts retain their order`() {
-        assertEquals(listOf(SettingsPage.LEARN, SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER,
-            SettingsPage.LANGUAGE, SettingsPage.APPEARANCE), matchingSettingsPages("", settingsTestStrings()).take(5))
+    fun `home groups run from setup to help in a fixed order`() {
         val displayGroups = settingsDisplayGroups(matchingSettingsEntries("", settingsTestStrings()), "")
-        assertEquals(listOf(R.string.learn_group, R.string.settings_group_special_providers, R.string.settings_group_personalize), displayGroups.keys.take(3))
-        assertEquals(listOf(SettingsPage.LANGUAGE, SettingsPage.APPEARANCE, SettingsPage.CHAT_OPTIONS,
-            SettingsPage.MEMORY, SettingsPage.CODING, SettingsPage.RUMBLE, SettingsPage.PRIVACY), displayGroups.getValue(R.string.settings_group_personalize).map { it.page })
-        val groups = displayGroups.values.toList()
-        assertEquals(listOf(SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.NINE_ROUTER), displayGroups.getValue(R.string.settings_group_special_providers).map { it.page })
-        assertTrue(groups.drop(1).any { group -> group.any { it.page == SettingsPage.GITHUB } })
+        assertEquals(listOf(R.string.learn_group, R.string.settings_group_ai_models, R.string.settings_group_your_assistant,
+            R.string.settings_group_integrations, R.string.settings_group_look_feel, R.string.settings_group_device_privacy,
+            R.string.settings_group_data_sync, R.string.settings_group_help_about), displayGroups.keys.toList())
+        assertEquals(listOf(SettingsPage.MODELS, SettingsPage.CONNECTED_ACCOUNTS, SettingsPage.LOCAL_MODELS, SettingsPage.NINE_ROUTER),
+            displayGroups.getValue(R.string.settings_group_ai_models).map { it.page })
+        assertEquals(listOf(SettingsPage.CHAT_OPTIONS, SettingsPage.CODING, SettingsPage.MEMORY, SettingsPage.VOICE, SettingsPage.LIVE_MODE),
+            displayGroups.getValue(R.string.settings_group_your_assistant).map { it.page })
+        assertEquals(listOf(SettingsPage.SEARCH, SettingsPage.MCP, SettingsPage.GITHUB, SettingsPage.TELEGRAM),
+            displayGroups.getValue(R.string.settings_group_integrations).map { it.page })
+        assertEquals(listOf(SettingsPage.APPEARANCE, SettingsPage.LANGUAGE, SettingsPage.RUMBLE),
+            displayGroups.getValue(R.string.settings_group_look_feel).map { it.page })
+        assertEquals(listOf(SettingsPage.PRIVACY, SettingsPage.BACKGROUND, SettingsPage.STORAGE),
+            displayGroups.getValue(R.string.settings_group_device_privacy).map { it.page })
+        assertEquals(SettingsPage.ABOUT, displayGroups.getValue(R.string.settings_group_help_about).last().page)
+        // Each group is one contiguous run of the home list, so no group is split in two.
+        assertEquals(settingsHomePages, displayGroups.values.flatten().map { it.page })
         assertEquals(SettingsPage.LANGUAGE, settingsDeepLink("language"))
         assertEquals(SettingsPage.GITHUB, settingsDeepLink("github"))
         assertEquals(listOf(SettingsPage.GITHUB), matchingSettingsPages("commit push", settingsTestStrings()))
     }
 
     @Test
-    fun `coding hub owns agent and device pages and memory belongs to Personalize`() {
+    fun `coding hub owns agent and device pages and memory sits with the assistant`() {
         assertTrue(SettingsPage.CODING.onHome)
         for (page in listOf(SettingsPage.SUBAGENT, SettingsPage.AGENT, SettingsPage.CHAT,
             SettingsPage.SKILLS, SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN,
@@ -90,16 +98,24 @@ class SettingsNavigationTest {
             assertTrue(page in matchingSettingsPages(page.keywords.substringBefore(' '), settingsTestStrings()))
         }
         assertEquals(settingsCodingPages.toSet(), SettingsPage.entries.filter { !it.onHome }.toSet())
-        for (page in listOf(SettingsPage.MCP, SettingsPage.TELEGRAM, SettingsPage.GITHUB, SettingsPage.CONNECTED_ACCOUNTS)) {
+        assertEquals(settingsCodingPages.size, settingsCodingPages.toSet().size)
+        for (page in listOf(SettingsPage.MCP, SettingsPage.TELEGRAM, SettingsPage.GITHUB, SettingsPage.SEARCH)) {
             assertTrue(page.onHome)
-            assertEquals(R.string.settings_group_connections, page.group)
+            assertEquals(R.string.settings_group_integrations, page.group)
         }
         assertTrue(SettingsPage.TROUBLESHOOTING.onHome)
-        assertEquals(R.string.settings_group_app_data, SettingsPage.TROUBLESHOOTING.group)
-        assertEquals(R.string.settings_group_personalize, SettingsPage.MEMORY.group)
+        assertEquals(R.string.settings_group_help_about, SettingsPage.TROUBLESHOOTING.group)
+        assertEquals(R.string.settings_group_your_assistant, SettingsPage.MEMORY.group)
         assertEquals(SettingsPage.CODING, settingsDeepLink("coding"))
         assertTrue(SettingsPage.AGENT in matchingSettingsPages("max context", settingsTestStrings()))
         assertTrue(SettingsPage.CHAT in matchingSettingsPages("repo map", settingsTestStrings()))
+    }
+
+    @Test
+    fun `battery and keep alive live on the background page`() {
+        val keepAlive = matchingSettingsEntries("keep runs alive", settingsTestStrings()).first { it.anchor == R.string.settings_env_keep_alive }
+        assertEquals(SettingsPage.BACKGROUND, keepAlive.page)
+        assertTrue(keepAlive.within.isEmpty())
     }
 
     @Test

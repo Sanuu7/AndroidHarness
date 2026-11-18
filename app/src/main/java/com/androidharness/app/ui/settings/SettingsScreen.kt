@@ -64,7 +64,6 @@ import androidx.compose.material.icons.rounded.RecordVoiceOver
 import androidx.compose.material.icons.rounded.GraphicEq
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
 import androidx.compose.material.icons.automirrored.rounded.OpenInNew
-import androidx.compose.material.icons.rounded.BatteryFull
 import androidx.compose.material.icons.rounded.ExpandMore
 import androidx.compose.material.icons.rounded.Add
 import androidx.compose.material.icons.rounded.Archive
@@ -260,7 +259,7 @@ private fun SettingsScreenContent(
         }
     }
     var query by rememberSaveable { mutableStateOf("") }
-    val homeScroll = rememberScrollState()
+    val homeList = androidx.compose.foundation.lazy.rememberLazyListState()
     // A custom section shows over whatever page is selected. Its path is the
     // ids from a top-level section down to the open sub-section.
     var customPath by rememberSaveable { mutableStateOf(listOf<String>()) }
@@ -424,7 +423,8 @@ private fun SettingsScreenContent(
                 query = query,
                 onQueryChange = { query = it },
                 onOpen = ::openPage,
-                modifier = Modifier.motionBlur(homeScroll).fillMaxSize().verticalScroll(homeScroll),
+                modifier = Modifier.fillMaxSize(),
+                state = homeList,
                 customSections = settings.customSections,
                 onOpenSection = { customReturn = emptyList(); customPath = listOf(it) },
                 onAddSection = ::startNewSection,
@@ -803,9 +803,6 @@ private fun TerminalSection(
         RootAccessSection(container)
         DhizukuCard(container.dhizuku)
     }
-    SettingsDisclosure(Icons.Rounded.BatteryFull, stringResource(R.string.settings_device_background), stringResource(R.string.settings_device_background_summary)) {
-        BatteryCard(container = container)
-    }
 }
 
 // ---------------------------------------------------------------------------
@@ -1084,7 +1081,6 @@ private fun WebSearchSection(container: AppContainer) {
     // The pasted key is only on screen while the entry form is open.
     SecureScreenEffect(container, expanded)
 
-    SettingsHeader(uiContext.getString(R.string.settings_page_search_title))
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_search_web_backend_label)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -2240,16 +2236,17 @@ private fun SetupLine(label: String, value: String) {
 
 @Composable
 internal fun CodingSection(onOpen: (SettingsPage) -> Unit) {
-    val groups = listOf(
-        R.string.settings_coding_workflow to listOf(SettingsPage.AGENT, SettingsPage.CONFIGURATION, SettingsPage.SUBAGENT, SettingsPage.CHAT),
-        R.string.settings_coding_intelligence to listOf(SettingsPage.PLUGINS, SettingsPage.SKILLS, SettingsPage.CODE_INTELLIGENCE, SettingsPage.CAVEMAN),
-        R.string.settings_coding_execution to listOf(SettingsPage.WORKSPACE, SettingsPage.ENVIRONMENT),
-    )
-    groups.forEach { (title, pages) ->
-        SettingsGroupHeading(title)
-        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            pages.forEach { destination ->
-                SettingsFeatureRow(settingsIcon(destination), stringResource(destination.title), stringResource(destination.description), { onOpen(destination) })
+    settingsCodingGroups.forEachIndexed { groupIndex, (title, pages) ->
+        Column(Modifier.settingsEntrance(groupIndex + 1), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            SettingsGroupHeading(title)
+            val titles = pages.map { stringResource(it.title) }
+            val descriptions = pages.map { stringResource(it.description) }
+            SettingsGroup {
+                pages.forEachIndexed { i, destination ->
+                    navItem(destination.ordinal, SettingsTone.entries[groupIndex % 3], titles[i], descriptions[i], { onOpen(destination) }) { tint ->
+                        SettingsPageIcon(destination, tint, Modifier.size(22.dp))
+                    }
+                }
             }
         }
     }
@@ -2384,7 +2381,6 @@ private fun AgentsInstructionsDialog(container: AppContainer, onDismiss: () -> U
 @Composable
 private fun AppearanceSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    SettingsHeader(uiContext.getString(R.string.settings_page_appearance_title))
     WorkspaceLayoutSection(settings.workspaceLayout, extra = {
         SettingsAnchor(R.string.motion_blur_title) { MotionBlurSection(settings, container.settings) }
     }) { scope.launch { container.settings.setWorkspaceLayout(it) } }
@@ -2444,7 +2440,6 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
 @Composable
 private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    SettingsHeader(stringResource(R.string.settings_page_chat_title))
     SettingsGroup {
         item(onClick = { scope.launch { container.settings.setShowLiveCode(!settings.showLiveCode) } }) {
             SettingsItemRow(
@@ -2490,7 +2485,6 @@ private fun ChatBehaviorSection(container: AppContainer, settings: AppSettings, 
 private fun PrivacySection(container: AppContainer, settings: AppSettings, scope: kotlinx.coroutines.CoroutineScope) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val context = LocalContext.current
-    SettingsHeader(uiContext.getString(R.string.ui_privacy))
     val biometricTitle = if (settings.biometricLockEnabled)
         stringResource(R.string.settings_privacy_lock_disable_title)
     else stringResource(R.string.settings_privacy_lock_enable_title)
@@ -2764,7 +2758,7 @@ private fun SlashCommandsSection(container: AppContainer) {
 }
 
 @Composable
-private fun BatteryCard(container: AppContainer) {
+internal fun BatteryCard(container: AppContainer) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val context = androidx.compose.ui.platform.LocalContext.current
     val settings by container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())

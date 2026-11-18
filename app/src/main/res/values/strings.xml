@@ -68,7 +68,7 @@
     <string name="settings_page_storage_title">Storage</string>
     <string name="settings_page_storage_desc">Shared tools, file usage and safe cleanup</string>
     <string name="settings_page_environment_title">Terminal &amp; device</string>
-    <string name="settings_page_environment_desc">Linux tools, storage permissions and background access</string>
+    <string name="settings_page_environment_desc">Linux tools, shell access and storage permissions</string>
     <string name="settings_page_troubleshooting_title">Troubleshooting</string>
     <string name="settings_page_troubleshooting_desc">Check connections, permissions and device tools</string>
     <string name="settings_page_backup_title">Backups</string>
@@ -760,6 +760,7 @@
     <string name="chat_create_code">Create Code conversation</string>
     <string name="chat_from_chat">From Chat</string>
     <string name="chat_empty_title">What is on your mind?</string>
+    <string name="chat_logo_replay">Replay logo animation</string>
     <string name="chat_empty_description">Pick a starter below or just start typing.</string>
     <string name="chat_suggestion_explain">Explain a tricky topic simply</string>
     <string name="chat_suggestion_ideas">Help me brainstorm an idea</string>
@@ -1110,4 +1111,10 @@
     <string name="settings_page_provider_debug_desc">Capture what is sent to your providers, inspect errors and streaming responses.</string>
     <string name="settings_debug_count">%1$d recorded</string>
     <string name="settings_debug_consent">Request and response bodies contain your prompts and the model replies. With this on they are stored on this device and can appear in a log you share.</string>
+    <string name="settings_group_ai_models">AI &amp; models</string>
+    <string name="settings_group_look_feel">Look &amp; feel</string>
+    <string name="settings_group_device_privacy">Device &amp; privacy</string>
+    <string name="settings_group_data_sync">Data &amp; sync</string>
+    <string name="settings_group_help_about">Help &amp; about</string>
+    <string name="settings_page_background_desc">Background work, battery and notifications</string>
 </resources>

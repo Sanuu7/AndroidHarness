@@ -59,6 +59,8 @@ internal fun BackgroundSettingsSection(container: AppContainer, settings: AppSet
             trailing = { Icon(Icons.AutoMirrored.Rounded.KeyboardArrowRight, null) })
     }
     LiveUpdatesSetting(settings) { enabled -> scope.launch { container.settings.setLiveUpdatesEnabled(enabled) } }
+    // Keeping runs alive and the battery exemption decide whether background work survives at all.
+    BatteryCard(container)
 }
 
 @Composable
