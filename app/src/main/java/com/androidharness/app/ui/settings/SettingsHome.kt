@@ -113,7 +113,7 @@ internal fun SettingsHome(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(10.dp),
             ) {
-                SettingsHeroBadge(seed = 3, size = 72.dp) { tint -> Icon(Icons.Rounded.Search, null, tint = tint, modifier = Modifier.size(32.dp)) }
+                SettingsHeroBadge(seed = 3, size = 72.dp, settingsScreen = true) { tint -> Icon(Icons.Rounded.Search, null, tint = tint, modifier = Modifier.size(32.dp)) }
                 Text(stringResource(R.string.settings_search_empty_title), style = MaterialTheme.typography.titleMediumEmphasized)
                 Text(stringResource(R.string.settings_search_empty_hint), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
             }
@@ -249,7 +249,7 @@ internal fun SettingsPageIntro(page: SettingsPage) {
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.spacedBy(18.dp),
     ) {
-        SettingsHeroBadge(seed = page.ordinal) { tint ->
+        SettingsHeroBadge(seed = page.ordinal, settingsScreen = true) { tint ->
             if (page == SettingsPage.MEMORY) Icon(painterResource(R.drawable.ic_brain), null, tint = tint, modifier = Modifier.size(30.dp))
             else Icon(settingsIcon(page), null, tint = tint, modifier = Modifier.size(30.dp))
         }

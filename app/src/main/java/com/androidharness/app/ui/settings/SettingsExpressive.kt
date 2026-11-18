@@ -356,10 +356,9 @@ internal fun Switch(
 )
 
 /**
- * The soft polygons a page hero cycles through, so neighbouring pages do not
- * share a silhouette. Only rounded silhouettes belong here: the spiky cookies,
- * bursts and suns read as sharp stars at badge size, which is not the calm
- * look this screen wants.
+ * The wide palette for hero badges outside settings, where a project card or an
+ * empty state can afford its own silhouette. Only rounded shapes belong here: the
+ * spiky cookies, bursts and suns read as sharp stars at badge size.
  */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 private val heroPolygons = listOf(
@@ -368,24 +367,52 @@ private val heroPolygons = listOf(
     MaterialShapes.Cookie7Sided, MaterialShapes.Bun, MaterialShapes.Ghostish, MaterialShapes.Oval,
 )
 
+/**
+ * The settings screen keeps to six silhouettes, the rounded ones that read best at
+ * badge size. The list still has twelve slots so every page keeps the shape it always
+ * had: setup and language stay on the cookie, about on the six-sided cookie, sync and
+ * FTP on the seven-sided cookie and the bun, updates on the clover, backup on the ghost.
+ */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+private val settingsPolygons = listOf(
+    MaterialShapes.Clover4Leaf, MaterialShapes.Cookie4Sided, MaterialShapes.Cookie6Sided,
+    MaterialShapes.Cookie4Sided, MaterialShapes.Clover4Leaf, MaterialShapes.Cookie6Sided,
+    MaterialShapes.Cookie7Sided, MaterialShapes.Bun, MaterialShapes.Cookie7Sided,
+    MaterialShapes.Bun, MaterialShapes.Ghostish, MaterialShapes.Ghostish,
+)
+
+/** The shared hero silhouette, for badges outside the settings screen. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun settingsHeroShape(seed: Int): Shape = heroPolygons[Math.floorMod(seed, heroPolygons.size)].toShape()
 
+/** The settings screen's shorter silhouette palette. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+internal fun settingsPageShape(seed: Int): Shape =
+    settingsPolygons[Math.floorMod(seed, settingsPolygons.size)].toShape()
+
 /** Hero badge of a page: a Material shape that springs in with a small turn when the page opens. */
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-internal fun SettingsHeroBadge(seed: Int, modifier: Modifier = Modifier, size: Dp = 64.dp, content: @Composable (tint: Color) -> Unit) {
+internal fun SettingsHeroBadge(
+    seed: Int,
+    modifier: Modifier = Modifier,
+    size: Dp = 64.dp,
+    settingsScreen: Boolean = false,
+    content: @Composable (tint: Color) -> Unit,
+) {
     val entrance = remember { Animatable(0f) }
     val spec = MaterialTheme.motionScheme.slowSpatialSpec<Float>()
     LaunchedEffect(Unit) { entrance.animateTo(1f, spec) }
+    val shape = if (settingsScreen) settingsPageShape(seed) else settingsHeroShape(seed)
     Box(
         modifier.size(size).graphicsLayer {
             val p = entrance.value
             scaleX = 0.6f + 0.4f * p
             scaleY = 0.6f + 0.4f * p
             rotationZ = -40f * (1f - p)
-        }.background(MaterialTheme.colorScheme.primaryContainer, settingsHeroShape(seed)),
+        }.background(MaterialTheme.colorScheme.primaryContainer, shape),
         contentAlignment = Alignment.Center,
     ) {
         // The icon stays upright while the shape turns behind it.
@@ -417,7 +444,7 @@ internal fun SettingsMorphBadge(
         SettingsTone.TERTIARY -> scheme.tertiaryContainer to scheme.onTertiaryContainer
         SettingsTone.NEUTRAL -> scheme.surfaceContainerHighest to scheme.onSurfaceVariant
     }
-    val polygon = heroPolygons[Math.floorMod(seed, heroPolygons.size)]
+    val polygon = settingsPolygons[Math.floorMod(seed, settingsPolygons.size)]
     val morph = remember(polygon) { Morph(polygon, MaterialShapes.Circle) }
     val progress = remember { Animatable(0f) }
     val spec = MaterialTheme.motionScheme.fastSpatialSpec<Float>()

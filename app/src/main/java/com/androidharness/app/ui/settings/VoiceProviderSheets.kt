@@ -458,7 +458,7 @@ private fun VoiceProviderRow(provider: VoiceProviderConfig, saved: Boolean, inUs
 private fun VoiceMonogram(provider: VoiceProviderConfig, size: androidx.compose.ui.unit.Dp) {
     val seed = provider.id.hashCode()
     val tone = SettingsTone.entries[Math.floorMod(seed, 3)]
-    SettingsIconBadge(tone, size, settingsHeroShape(seed)) { tint ->
+    SettingsIconBadge(tone, size, settingsPageShape(seed)) { tint ->
         Text(
             provider.name.trim().firstOrNull()?.uppercase() ?: "?",
             color = tint,
