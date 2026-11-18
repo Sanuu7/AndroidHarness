@@ -33,14 +33,17 @@ class ResponseProfileTest {
         assertNull(RichResponse.decode(simple.replace("\"sources\"", "\"not_sources\"")))
     }
 
-    @Test fun imagesAndFactsRequireSourcesAndUnsafeUrlsFailClosed() {
-        assertNull(RichResponse.decode(profile.replace("\"image_source\":\"https://example.com/biography\",", "")))
-        assertNull(RichResponse.decode(profile.replace("\"source\":\"https://example.com/biography\"", "\"source\":\"\"")))
+    @Test fun unsafeOrUnsourcedPartsAreDroppedWithoutLosingTheCard() {
+        fun card(json: String) = RichResponse.decode(json) as RichResponse.Node.Profile
+        // A picture without its page borrows the first source; a fact without a source is dropped.
+        assertEquals("https://example.com/biography", card(profile.replace("\"image_source\":\"https://example.com/biography\",", "")).imageSource)
+        assertTrue(card(profile.replace("\"source\":\"https://example.com/biography\"", "\"source\":\"\"")).facts.isEmpty())
         for (bad in listOf("javascript:alert(1)", "file:///data/private", "https://user:password@example.com/image")) {
-            assertNull(RichResponse.decode(profile.replace("https://example.com/portrait.png", bad)))
+            assertEquals("", card(profile.replace("https://example.com/portrait.png", bad)).image)
+            // With every source unsafe there is nothing to cite, so there is no card.
             assertNull(RichResponse.decode(profile.replace("https://example.com/biography", bad)))
         }
-        assertNull(RichResponse.decode(profile.replace("Example scientist", "x".repeat(121))))
+        assertEquals(120, card(profile.replace("Example scientist", "x".repeat(121))).name.length)
     }
 
     @Test fun profileStreamingNeverShowsRawJsonBeforeTheCompleteFence() {

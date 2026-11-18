@@ -166,6 +166,8 @@ After"""
         )) assertEquals(listOf(RichResponse.Part.Unavailable), parts("callout", body))
         assertEquals(listOf(RichResponse.Part.Unavailable), parts("card", """{"title":"Body title","text":"Body"}""", "{title=\"Header title\"}"))
         assertEquals(listOf(RichResponse.Part.Unavailable), parts("preview", """{"title":"Only a title"}"""))
-        assertEquals(listOf(RichResponse.Part.Unavailable), parts("profile", """{"name":"Name","description":"Body","image":"file:///private/image","image_source":"https://example.com","sources":[{"title":"Source","url":"https://example.com"}]}"""))
+        // An unsafe picture is dropped from the card; the card itself still renders.
+        val profile = parts("profile", """{"name":"Name","description":"Body","image":"file:///private/image","image_source":"https://example.com","sources":[{"title":"Source","url":"https://example.com"}]}""").single()
+        assertEquals("", ((profile as RichResponse.Part.Content).node as RichResponse.Node.Profile).image)
     }
 }

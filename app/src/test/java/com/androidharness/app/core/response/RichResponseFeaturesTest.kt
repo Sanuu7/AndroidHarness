@@ -46,7 +46,9 @@ class RichResponseFeaturesTest {
         val decoded = RichResponse.decode(gallery(urls)) as RichResponse.Node.Gallery
         assertEquals(urls, decoded.images.map { it.url })
         assertNull(RichResponse.decode(gallery(emptyList())))
-        assertNull(RichResponse.decode(gallery(urls + "file:///private/image")))
+        // An unsafe picture is dropped; the safe ones still show.
+        assertEquals(urls, (RichResponse.decode(gallery(urls + "file:///private/image")) as RichResponse.Node.Gallery).images.map { it.url })
+        assertNull(RichResponse.decode(gallery(listOf("file:///private/image"))))
         val oversized = gallery(List(3_000) { urls.first() })
         assertTrue(oversized.length > RichResponse.MAX_JSON_CHARS)
         assertNull(RichResponse.decode(oversized))

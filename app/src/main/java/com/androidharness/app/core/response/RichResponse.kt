@@ -204,22 +204,27 @@ object RichResponse {
                     Tab(tab.str("title", 60, true), tab.array("children", 12).map { child -> node(child.jsonObject, depth + 1) })
                 } })
                 // The overall JSON size bounds galleries; image count is a presentation choice.
-                "gallery" -> Node.Gallery(o.str("title", 100, true), o.array("images").map { it.jsonObject.let { image ->
-                    GalleryImage(image.str("url", 2048, true).also(::requireWebUrl), image.str("caption", 500), image.str("source", 2048).also { url -> if (url.isNotBlank()) requireWebUrl(url) })
-                } })
+                // One broken picture drops that picture, not the whole gallery.
+                "gallery" -> Node.Gallery(o.loose("title", 100, true), o.array("images").mapNotNull { element -> runCatching { element.jsonObject.let { image ->
+                    GalleryImage(image.str("url", 2048, true).also(::requireWebUrl), image.loose("caption", 500),
+                        runCatching { image.str("source", 2048).also { url -> if (url.isNotBlank()) requireWebUrl(url) } }.getOrDefault(""))
+                } }.getOrNull() }.also { require(it.isNotEmpty()) })
                 "profile" -> {
-                    val sources = o.array("sources", 6).map { it.jsonObject.let { source ->
+                    // A profile is one card built from many small parts. One malformed
+                    // fact, source or picture drops that part, not the whole card.
+                    val sources = o.array("sources").mapNotNull { element -> runCatching { element.jsonObject.let { source ->
                         ProfileSource(source.str("title", 100, true), source.str("url", 2048, true).also(::requireWebUrl))
-                    } }
-                    val image = o.str("image", 2048).also { if (it.isNotBlank()) requireWebUrl(it) }
-                    val imageSource = o.str("image_source", 2048).also { if (it.isNotBlank()) requireWebUrl(it) }
-                    require(image.isBlank() || imageSource.isNotBlank())
-                    val facts = o.array("facts", 8, false).map { it.jsonObject.let { fact ->
-                        ProfileFact(fact.str("label", 60, true), fact.str("value", 500, true),
+                    } }.getOrNull() }.take(6)
+                    require(sources.isNotEmpty())
+                    val imageSource = runCatching { o.str("image_source", 2048).also { if (it.isNotBlank()) requireWebUrl(it) } }.getOrDefault("")
+                        .ifBlank { sources.first().url }
+                    val image = runCatching { o.str("image", 2048).also { if (it.isNotBlank()) requireWebUrl(it) } }.getOrDefault("")
+                    val facts = o.array("facts", required = false).mapNotNull { element -> runCatching { element.jsonObject.let { fact ->
+                        ProfileFact(fact.loose("label", 60, true), fact.loose("value", 500, true),
                             fact.str("source", 2048, true).also(::requireWebUrl))
-                    } }
-                    Node.Profile(o.str("name", 120, true), o.str("subtitle", 160), o.str("description", 2000, true),
-                        image, imageSource, facts, sources)
+                    } }.getOrNull() }.take(8)
+                    Node.Profile(o.loose("name", 120, true), o.loose("subtitle", 160), o.loose("description", 2000, true),
+                        image, if (image.isBlank()) "" else imageSource, facts, sources)
                 }
                 "calculator" -> {
                     val inputs = o.array("inputs", 6).map { it.jsonObject.let { input ->
@@ -272,6 +277,14 @@ object RichResponse {
         val value = (element as? JsonPrimitive)?.takeIf { it.isString }?.content ?: error("Expected text")
         require(value.length <= max && (!required || value.isNotBlank()))
         return value
+    }
+    /** Like [str], but text that runs long is clipped instead of rejected. */
+    private fun JsonObject.loose(key: String, max: Int, required: Boolean = false): String {
+        val element = this[key]
+        if (element == null) { require(!required); return "" }
+        val value = (element as? JsonPrimitive)?.takeIf { it.isString }?.content?.trim() ?: error("Expected text")
+        require(!required || value.isNotBlank())
+        return if (value.length <= max) value else value.take(max - 1).trimEnd() + "…"
     }
     private fun JsonObject.array(key: String, max: Int = Int.MAX_VALUE, required: Boolean = true): JsonArray {
         val value = this[key] ?: return JsonArray(emptyList()).also { require(!required) }
