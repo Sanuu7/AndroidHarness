@@ -6,7 +6,7 @@ import com.androidharness.app.core.Role
 
 /** Attach recent pictures actually shown in assistant messages to the next Chat request. */
 internal object ChatImageContext {
-    private val markdownImage = Regex("!\\[([^\\]]*)]\\((https?://[^)\\s]+)\\)")
+    private val markdownImage = Regex("!\\[([^\\]]*)]\\((https?://(?:[^()\\s]|\\([^()\\s]*\\))+)\\)")
 
     suspend fun attach(history: List<ChatMessage>, resolve: (com.androidharness.app.core.ImageRef) -> ImageData? = { null }, load: suspend (String) -> ImageData?): List<ChatMessage> {
         val userIndex = history.indexOfLast { it.role == Role.USER }

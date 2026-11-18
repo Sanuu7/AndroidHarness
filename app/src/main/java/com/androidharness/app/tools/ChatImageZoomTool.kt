@@ -27,7 +27,7 @@ internal sealed interface ChatImageSource {
 }
 
 internal object ChatImageInventory {
-    private val markdownImage = Regex("!\\[([^\\]]*)]\\((https?://[^)\\s]+)\\)")
+    private val markdownImage = Regex("!\\[([^\\]]*)]\\((https?://(?:[^()\\s]|\\([^()\\s]*\\))+)\\)")
     fun id(value: String): String = com.androidharness.app.core.ChatResponseImages.stableId(value)
     fun remoteId(url: String): String = id("url:" + (httpImageUrl(url) ?: url))
     fun from(messages: List<ChatMessage>): List<ChatImageSource> = messages.asReversed().asSequence()
