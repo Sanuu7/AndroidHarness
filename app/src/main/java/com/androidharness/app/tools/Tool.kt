@@ -100,6 +100,7 @@ class ToolRegistry(private val tools: List<Tool>) {
             pullRequests: (() -> com.androidharness.app.github.PullRequestPublisher?)? = null,
             sessionMessages: suspend (String) -> List<com.androidharness.app.core.ChatMessage> = { emptyList() },
             appSettings: com.androidharness.app.data.SettingsRepository? = null,
+            automations: AutomationToolHost? = null,
         ): ToolRegistry {
             val baseTools = mutableListOf<Tool>(
                 ListDirTool(),
@@ -163,6 +164,11 @@ class ToolRegistry(private val tools: List<Tool>) {
                 val read: suspend () -> com.androidharness.app.data.AppSettings = { appSettings.settings.first() }
                 baseTools += AppSettingsFindTool(read)
                 baseTools += AppSettingsChangeTool(appSettings, read)
+            }
+            if (automations != null) {
+                baseTools += AutomationCreateTool(automations)
+                baseTools += AutomationListTool(automations)
+                baseTools += AutomationManageTool(automations)
             }
             if (dhizuku != null && deviceAccess != null) baseTools += DeviceOwnerShellTool(dhizuku, deviceAccess)
             if (pullRequests != null) baseTools += GitHubCreatePullRequestTool(pullRequests, sessionMessages)

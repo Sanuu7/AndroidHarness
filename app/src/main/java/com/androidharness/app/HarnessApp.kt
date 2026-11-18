@@ -329,6 +329,18 @@ class AppContainer(val appContext: Context) {
         pullRequests = { githubRepositories },
         sessionMessages = { sessions.messages(it) },
         appSettings = settings,
+        // Declared below; resolved on each call, after construction.
+        automations = com.androidharness.app.tools.AutomationToolHost(
+            target = { sid ->
+                val session = sessions.session(sid)
+                val project = session?.projectId?.let { db.dao().project(it) }
+                if (project == null) null else {
+                    val provider = runManager.controls.flow(sid).value.provider
+                    com.androidharness.app.tools.AutomationTarget(project.id, project.name, provider?.id, provider?.model)
+                }
+            },
+            manager = { automation },
+        ),
     )
     val mcp = com.androidharness.app.tools.mcp.McpManager(appContext, linuxEnv, keys, codeGraph, configuration)
     val github = com.androidharness.app.github.GitHubAuth(BuildConfig.GITHUB_CLIENT_ID,
