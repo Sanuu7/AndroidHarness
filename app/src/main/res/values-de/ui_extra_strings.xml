@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Authentifizierung fehlgeschlagen"</string>
     <string name="ui_run_results">"Lauf-Ergebnisse"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Benachrichtigt, wenn ein Hintergrund-Agentenlauf endet"</string>
+    <string name="ui_run_errors">"Lauf-Fehler"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Benachrichtigt, wenn ein Hintergrund-Agentenlauf mit einem Fehler stoppt"</string>
     <string name="ui_run_finished">"Lauf beendet"</string>
     <string name="ui_run_needs_attention">"Lauf benötigt Aufmerksamkeit"</string>
     <string name="ui_agent_runs">"Agentenläufe"</string>

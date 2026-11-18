@@ -139,6 +139,15 @@ object RunResultNotifications {
     fun post(context: Context, result: RunResultNotification) {
         if (!AppNotifications.enabled(context)) return
         val manager = context.getSystemService(NotificationManager::class.java) ?: return
+        createChannels(context, manager)
+        AppNotifications.post(context, notificationId(result.subagentCallId?.let { "${result.sessionId}:$it" } ?: result.sessionId), build(context, result))
+    }
+
+    /**
+     * Finished and failed runs use separate channels so people can give each
+     * its own sound in the system notification settings.
+     */
+    fun createChannels(context: Context, manager: NotificationManager) {
         manager.createNotificationChannel(
             NotificationChannel(
                 AgentService.RESULTS_CHANNEL_ID,
@@ -146,8 +155,17 @@ object RunResultNotifications {
                 NotificationManager.IMPORTANCE_DEFAULT,
             ).apply { description = context.getString(R.string.ui_notified_when_a_background_agent_run_finishes) },
         )
-        AppNotifications.post(context, notificationId(result.subagentCallId?.let { "${result.sessionId}:$it" } ?: result.sessionId), build(context, result))
+        manager.createNotificationChannel(
+            NotificationChannel(
+                AgentService.ERRORS_CHANNEL_ID,
+                context.getString(R.string.ui_run_errors),
+                NotificationManager.IMPORTANCE_DEFAULT,
+            ).apply { description = context.getString(R.string.ui_notified_when_a_background_agent_run_fails) },
+        )
     }
+
+    internal fun channelFor(result: RunResultNotification): String =
+        if (result.ok) AgentService.RESULTS_CHANNEL_ID else AgentService.ERRORS_CHANNEL_ID
 
     private fun build(context: Context, result: RunResultNotification): Notification {
         val preview = result.summary.trim().ifBlank { context.getString(R.string.ui_run_finished) }
@@ -162,7 +180,7 @@ object RunResultNotifications {
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
-        return Notification.Builder(context, AgentService.RESULTS_CHANNEL_ID)
+        return Notification.Builder(context, channelFor(result))
             .setContentTitle(
                 result.notificationTitle ?: if (result.ok) context.getString(R.string.ui_run_finished) else context.getString(R.string.ui_run_needs_attention),
             )
@@ -295,13 +313,7 @@ class AgentService : Service() {
                 NotificationManager.IMPORTANCE_LOW,
             ).apply { description = getString(R.string.ui_live_progress_while_the_coding_agent_is) },
         )
-        nm.createNotificationChannel(
-            NotificationChannel(
-                RESULTS_CHANNEL_ID,
-                getString(R.string.ui_run_results),
-                NotificationManager.IMPORTANCE_DEFAULT,
-            ).apply { description = getString(R.string.ui_notified_when_a_background_agent_run_finishes) },
-        )
+        RunResultNotifications.createChannels(this, nm)
         nm.createNotificationChannel(
             NotificationChannel(
                 ALERT_CHANNEL_ID,
@@ -520,6 +532,7 @@ class AgentService : Service() {
     companion object {
         const val CHANNEL_ID = "agent_runs"
         const val RESULTS_CHANNEL_ID = "run_results"
+        const val ERRORS_CHANNEL_ID = "run_errors"
         const val ALERT_CHANNEL_ID = "action_needed"
         const val NOTIFICATION_ID = 9101
         const val RESULT_NOTIFICATION_ID = 9102

@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"प्रमाणीकरण विफल रहा"</string>
     <string name="ui_run_results">"परिणाम चलाएँ"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"बैकग्राउंड एजेंट रन समाप्त होने पर सूचित किया जाता है"</string>
+    <string name="ui_run_errors">"रन त्रुटियाँ"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"बैकग्राउंड एजेंट रन त्रुटि के साथ रुकने पर सूचित किया जाता है"</string>
     <string name="ui_run_finished">"भागो समाप्त"</string>
     <string name="ui_run_needs_attention">"रन पर ध्यान देने की जरूरत है"</string>
     <string name="ui_agent_runs">"एजेंट चलता है"</string>

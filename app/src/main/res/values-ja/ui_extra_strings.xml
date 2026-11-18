@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"認証に失敗しました"</string>
     <string name="ui_run_results">"実行結果"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"バックグラウンドのエージェント実行が完了したときに通知されます"</string>
+    <string name="ui_run_errors">"実行エラー"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"バックグラウンドのエージェント実行がエラーで停止したときに通知されます"</string>
     <string name="ui_run_finished">"実行完了"</string>
     <string name="ui_run_needs_attention">"実行に注意が必要です"</string>
     <string name="ui_agent_runs">"エージェント実行"</string>

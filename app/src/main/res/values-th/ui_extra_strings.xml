@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"การตรวจสอบสิทธิ์ล้มเหลว"</string>
     <string name="ui_run_results">"เรียกใช้ผลลัพธ์"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"แจ้งเตือนเมื่อเอเจนต์เบื้องหลังทำงานเสร็จสิ้น"</string>
+    <string name="ui_run_errors">"ข้อผิดพลาดในการเรียกใช้"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"แจ้งเตือนเมื่อเอเจนต์เบื้องหลังหยุดลงเพราะข้อผิดพลาด"</string>
     <string name="ui_run_finished">"วิ่งเสร็จแล้ว"</string>
     <string name="ui_run_needs_attention">"การวิ่งต้องการความสนใจ"</string>
     <string name="ui_agent_runs">"เอเจนต์ทำงาน"</string>

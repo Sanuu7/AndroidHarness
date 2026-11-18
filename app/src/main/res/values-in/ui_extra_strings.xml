@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Autentikasi gagal"</string>
     <string name="ui_run_results">"Hasil eksekusi"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Notifikasi saat eksekusi agen di latar belakang selesai"</string>
+    <string name="ui_run_errors">"Error eksekusi"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Notifikasi saat eksekusi agen di latar belakang berhenti karena error"</string>
     <string name="ui_run_finished">"Eksekusi selesai"</string>
     <string name="ui_run_needs_attention">"Eksekusi perlu perhatian"</string>
     <string name="ui_agent_runs">"Eksekusi agen"</string>

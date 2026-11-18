@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"인증 실패"</string>
     <string name="ui_run_results">"실행 결과"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"백그라운드 에이전트 실행이 완료되면 알림을 받습니다."</string>
+    <string name="ui_run_errors">"실행 오류"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"백그라운드 에이전트 실행이 오류로 중단되면 알림을 받습니다."</string>
     <string name="ui_run_finished">"실행 완료"</string>
     <string name="ui_run_needs_attention">"달리기에는 주의가 필요합니다"</string>
     <string name="ui_agent_runs">"에이전트 실행"</string>

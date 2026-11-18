@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Pengesahan gagal"</string>
     <string name="ui_run_results">"Jalankan keputusan"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Dimaklumkan apabila ejen latar belakang dijalankan selesai"</string>
+    <string name="ui_run_errors">"Ralat larian"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Dimaklumkan apabila larian ejen latar belakang berhenti dengan ralat"</string>
     <string name="ui_run_finished">"Larian selesai"</string>
     <string name="ui_run_needs_attention">"Larian perlukan perhatian"</string>
     <string name="ui_agent_runs">"Ejen berjalan"</string>

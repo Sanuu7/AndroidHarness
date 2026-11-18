@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"அங்கீகாரம் தோல்வியடைந்தது"</string>
     <string name="ui_run_results">"முடிவுகளை இயக்கவும்"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"பின்னணி ஏஜென்ட் ரன் முடிந்ததும் அறிவிக்கப்படும்"</string>
+    <string name="ui_run_errors">"ரன் பிழைகள்"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"பின்னணி ஏஜென்ட் ரன் பிழையுடன் நிறுத்தப்பட்டால் அறிவிக்கப்படும்"</string>
     <string name="ui_run_finished">"ஓடி முடிந்தது"</string>
     <string name="ui_run_needs_attention">"ரன் கவனம் தேவை"</string>
     <string name="ui_agent_runs">"முகவர் ஓடுகிறார்"</string>

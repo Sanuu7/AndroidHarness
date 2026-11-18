@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"فشلت المصادقة"</string>
     <string name="ui_run_results">"نتائج التشغيل"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"إشعار عند انتهاء تشغيل الوكيل في الخلفية"</string>
+    <string name="ui_run_errors">"أخطاء التشغيل"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"إشعار عند توقف تشغيل الوكيل في الخلفية بسبب خطأ"</string>
     <string name="ui_run_finished">"انتهى التشغيل"</string>
     <string name="ui_run_needs_attention">"التشغيل يحتاج إلى انتباه"</string>
     <string name="ui_agent_runs">"عمليات تشغيل الوكيل"</string>

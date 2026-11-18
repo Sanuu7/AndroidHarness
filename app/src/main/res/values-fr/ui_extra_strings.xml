@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"L\'authentification a échoué"</string>
     <string name="ui_run_results">"Exécuter les résultats"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Notifié lorsqu\'une exécution d\'agent en arrière-plan se termine"</string>
+    <string name="ui_run_errors">"Erreurs d\'exécution"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Notifié lorsqu\'une exécution d\'agent en arrière-plan s\'arrête sur une erreur"</string>
     <string name="ui_run_finished">"Exécution terminée"</string>
     <string name="ui_run_needs_attention">"La course a besoin d\'attention"</string>
     <string name="ui_agent_runs">"L\'agent s\'exécute"</string>

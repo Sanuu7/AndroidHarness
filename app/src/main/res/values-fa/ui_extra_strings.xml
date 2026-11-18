@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"احراز هویت ناموفق بود"</string>
     <string name="ui_run_results">"نتایج اجرا"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"هنگام پایان اجرای عامل در پس‌زمینه اطلاع داده شود"</string>
+    <string name="ui_run_errors">"خطاهای اجرا"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"هنگام توقف اجرای عامل در پس‌زمینه با خطا اطلاع داده شود"</string>
     <string name="ui_run_finished">"اجرا به پایان رسید"</string>
     <string name="ui_run_needs_attention">"اجرا نیاز به توجه دارد"</string>
     <string name="ui_agent_runs">"اجراهای عامل"</string>

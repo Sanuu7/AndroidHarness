@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Не удалось пройти аутентификацию"</string>
     <string name="ui_run_results">"Результаты запусков"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Уведомлять о завершении фоновой работы агента"</string>
+    <string name="ui_run_errors">"Ошибки запусков"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Уведомлять, когда фоновая работа агента останавливается с ошибкой"</string>
     <string name="ui_run_finished">"Запуск завершён"</string>
     <string name="ui_run_needs_attention">"Требуется внимание"</string>
     <string name="ui_agent_runs">"Запуски агента"</string>

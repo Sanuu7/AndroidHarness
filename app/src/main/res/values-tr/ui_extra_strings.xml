@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Kimlik doğrulama başarısız oldu"</string>
     <string name="ui_run_results">"Sonuçları çalıştır"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Bir arka plan aracısı çalıştırması tamamlandığında bildirilir"</string>
+    <string name="ui_run_errors">"Çalıştırma hataları"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Bir arka plan aracısı çalıştırması bir hatayla durduğunda bildirilir"</string>
     <string name="ui_run_finished">"Çalıştırma tamamlandı"</string>
     <string name="ui_run_needs_attention">"Koşunun dikkat edilmesi gerekiyor"</string>
     <string name="ui_agent_runs">"Ajan çalıştırmaları"</string>

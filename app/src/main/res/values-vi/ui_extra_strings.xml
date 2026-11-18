@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Xác thực không thành công"</string>
     <string name="ui_run_results">"Chạy kết quả"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Được thông báo khi quá trình chạy trợ lý trong nền kết thúc"</string>
+    <string name="ui_run_errors">"Lỗi khi chạy"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Được thông báo khi quá trình chạy trợ lý trong nền dừng do lỗi"</string>
     <string name="ui_run_finished">"Chạy xong"</string>
     <string name="ui_run_needs_attention">"Chạy cần chú ý"</string>
     <string name="ui_agent_runs">"Trợ lý chạy"</string>

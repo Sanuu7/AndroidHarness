@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"තහවුරු කිරීම අසාර්ථකයි"</string>
     <string name="ui_run_results">"ධාවන ප්‍රතිඵල"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"පසුබිම නියෝජිතයා ක්‍රියාත්මක වන විට නිවේදනය කිරීම"</string>
+    <string name="ui_run_errors">"ධාවන දෝෂ"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"පසුබිම නියෝජිතයා දෝෂයකින් නතර වූ විට නිවේදනය කිරීම"</string>
     <string name="ui_run_finished">"Run ඉවරයි"</string>
     <string name="ui_run_needs_attention">"ධාවනය අවධානය යොමු කිරීම අවශ්ය"</string>
     <string name="ui_agent_runs">"නියෝජිතයා Run"</string>

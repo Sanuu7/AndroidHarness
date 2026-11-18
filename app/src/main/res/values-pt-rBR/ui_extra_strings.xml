@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"Falha na autenticação"</string>
     <string name="ui_run_results">"Resultados da execução"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"Notificado quando uma execução de agente em segundo plano termina"</string>
+    <string name="ui_run_errors">"Erros de execução"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"Notificado quando uma execução de agente em segundo plano para com um erro"</string>
     <string name="ui_run_finished">"Execução concluída"</string>
     <string name="ui_run_needs_attention">"Execução precisa de atenção"</string>
     <string name="ui_agent_runs">"Execuções do agente"</string>

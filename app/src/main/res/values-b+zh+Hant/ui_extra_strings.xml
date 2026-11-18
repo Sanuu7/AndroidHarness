@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"驗證失敗"</string>
     <string name="ui_run_results">"執行結果"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"後臺智慧體執行完成時通知"</string>
+    <string name="ui_run_errors">"執行錯誤"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"後臺智慧體執行因錯誤而停止時通知"</string>
     <string name="ui_run_finished">"執行已完成"</string>
     <string name="ui_run_needs_attention">"執行需要處理"</string>
     <string name="ui_agent_runs">"智慧體執行"</string>

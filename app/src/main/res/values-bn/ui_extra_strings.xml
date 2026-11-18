@@ -114,6 +114,8 @@
     <string name="ui_authentication_failed">"প্রমাণীকরণ ব্যর্থ হয়েছে৷"</string>
     <string name="ui_run_results">"ফলাফল চালান"</string>
     <string name="ui_notified_when_a_background_agent_run_finishes">"একটি ব্যাকগ্রাউন্ড এজেন্ট রান শেষ হলে বিজ্ঞপ্তি দেওয়া হয়"</string>
+    <string name="ui_run_errors">"রান ত্রুটি"</string>
+    <string name="ui_notified_when_a_background_agent_run_fails">"ব্যাকগ্রাউন্ড এজেন্ট রান ত্রুটির কারণে থামলে বিজ্ঞপ্তি দেওয়া হয়"</string>
     <string name="ui_run_finished">"রান শেষ"</string>
     <string name="ui_run_needs_attention">"রান মনোযোগ প্রয়োজন"</string>
     <string name="ui_agent_runs">"এজেন্ট চালায়"</string>
