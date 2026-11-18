@@ -96,6 +96,8 @@ data class ChatUiState(
     val isLoadingOlderMessages: Boolean = false,
     val streamingText: String? = null,
     val streamingThinking: String? = null,
+    /** Chat answers that were held in the working log while live and now type out once in the answer bubble. */
+    val revealAnswerIds: Set<String> = emptySet(),
     /** Stable id of the streaming message; the committed row reuses it. */
     val streamingMessageId: String? = null,
     /** True while held content stands in for a just-committed row not yet delivered by Room. */
@@ -649,6 +651,11 @@ class ChatViewModel(
         lastInput = lastInputTokens,
     )
 
+    /** The answer finished typing out; later recompositions show it whole. */
+    fun answerRevealed(id: String) {
+        _state.update { it.copy(revealAnswerIds = it.revealAnswerIds - id) }
+    }
+
     /**
      * Mirrors a [RunManager.LiveRunState] into [ChatUiState]. When the stream
      * stops (iteration boundary or run end) but the committed row has not yet
@@ -662,6 +669,7 @@ class ChatViewModel(
             var streamingThinking = live.streamingThinking
             var streamingMessageId = live.liveMessageId
             var committed = false
+            var revealId: String? = null
             if (streamingText == null && streamingThinking == null) {
                 val hold = heldStream ?: run {
                     // Only hold the stream that was actually just committed,
@@ -673,6 +681,7 @@ class ChatViewModel(
                     if (lastId != null && st.streamingMessageId == lastId &&
                         (!prevText.isNullOrBlank() || !prevThinking.isNullOrBlank())
                     ) {
+                        if (st.conversation.isChat && !prevText.isNullOrBlank()) revealId = lastId
                         HeldStream(live.sessionId, lastId, prevText, prevThinking).also { h ->
                             heldStream = h
                             scheduleHoldRelease(h)
@@ -698,6 +707,7 @@ class ChatViewModel(
                 streamingCommitted = committed,
                 currentTurnId = live.turnId,
                 runningCalls = live.runningCalls,
+                revealAnswerIds = revealId?.let { (st.revealAnswerIds + it).toList().takeLast(8).toSet() } ?: st.revealAnswerIds,
                 codeDrafts = live.codeDrafts,
                 packageProgress = live.packageProgress,
                 pendingApproval = live.pendingApproval,
