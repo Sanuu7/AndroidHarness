@@ -181,6 +181,8 @@ import com.androidharness.app.ui.theme.motionBlur
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.conflate
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
 import com.androidharness.app.ui.common.Button
@@ -678,15 +680,18 @@ private fun ChatScreenContent(
     // stays anchored during streaming and after a short answer finishes.
     var chatViewportHeight by remember(state.sessionId) { mutableStateOf(0) }
     val chatItemHeights = remember(state.sessionId, latestUserTurnId) { androidx.compose.runtime.mutableStateMapOf<Any, Int>() }
-    var chatTrailingSpace by remember(state.sessionId, latestUserTurnId) { mutableStateOf(0) }
-    val liveTailPx = if (state.conversation.isChat) chatTrailingSpace else 0
+    // Read only inside effects, layout and snapshot flows. It changes with every
+    // new line of a streaming answer, and reading it here would recompose the
+    // whole screen and restart the scroll effects on each one.
+    val chatTrailingSpace = remember(state.sessionId, latestUserTurnId) { androidx.compose.runtime.mutableIntStateOf(0) }
+    val isChatList = state.conversation.isChat
+    val liveTail = remember(chatTrailingSpace, isChatList) { { if (isChatList) chatTrailingSpace.intValue else 0 } }
     val chatGapPx = with(density) { 12.dp.roundToPx() }
     val chatPaddingPx = with(density) { 48.dp.roundToPx() }
     fun remainingTurnSpace(keys: List<Any>): Int =
         (chatViewportHeight - chatPaddingPx - keys.sumOf { chatItemHeights[it] ?: 0 } - chatGapPx * keys.size).coerceAtLeast(0)
     val previewOffset = with(density) { 64.dp.roundToPx() }
     val hideJumpAt = with(density) { 96.dp.toPx() }
-    val currentTail = androidx.compose.runtime.rememberUpdatedState(liveTailPx)
     val userScrollObserver = remember(state.sessionId) {
         UserScrollObserver { deltaY ->
             if (detailScroll.reading) return@UserScrollObserver
@@ -699,7 +704,7 @@ private fun ChatScreenContent(
         }.apply {
             onUserScrollApplied = {
                 if (!detailScroll.reading && lastDragTowardBottom &&
-                    isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = 1, tail = currentTail.value)) {
+                    isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = 1, tail = liveTail())) {
                     userReachedBottom = true
                 }
             }
@@ -1292,16 +1297,23 @@ private fun ChatScreenContent(
         returnToQuestion = true
         pinnedToBottom = !state.conversation.isChat
         withFrameNanos { }
-        if (pinnedToBottom) listState.scrollToEnd(liveTailPx) { pinnedToBottom && !gestureActive.value }
+        if (pinnedToBottom) listState.scrollToEnd(liveTail()) { pinnedToBottom && !gestureActive.value }
         else if (returnToQuestion && !gestureActive.value) userItemIndexes[turnId]?.let { listState.scrollToItem(it) }
     }
-    // Reapply the question anchor once its measured trailing room is available.
-    LaunchedEffect(liveTailPx, latestUserTurnId) {
-        if (liveTailPx <= 0 || !returnToQuestion) return@LaunchedEffect
+    // Reapply the question anchor once its measured trailing room is available,
+    // and again only if the question actually drifted off the top. Snapping on
+    // every trailing-room change made the list twitch with each streamed line.
+    LaunchedEffect(latestUserTurnId) {
         val turnId = latestUserTurnId ?: return@LaunchedEffect
-        withFrameNanos { }
-        if (returnToQuestion && !gestureActive.value && !detailScroll.reading && latestUserTurnId == turnId) {
-            userItemIndexes[turnId]?.let { listState.scrollToItem(it) }
+        snapshotFlow { liveTail() }.filter { it > 0 }.conflate().collect {
+            if (!returnToQuestion) return@collect
+            withFrameNanos { }
+            val index = userItemIndexes[turnId] ?: return@collect
+            val drifted = listState.firstVisibleItemIndex != index || listState.firstVisibleItemScrollOffset != 0
+            if (drifted && returnToQuestion && !gestureActive.value && !detailScroll.reading &&
+                !listState.isScrollInProgress && latestUserTurnId == turnId) {
+                listState.scrollToItem(index)
+            }
         }
     }
     LaunchedEffect(state.busy, latestUserTurnId) {
@@ -1353,11 +1365,11 @@ private fun ChatScreenContent(
     // Resting at the true bottom means following. A tap on a working-log card or a
     // trip to another app can pause following without moving the list, and Code's
     // logs grow inside their cards, so nothing else would ever resume it.
-    LaunchedEffect(listState, liveTailPx) {
+    LaunchedEffect(listState) {
         snapshotFlow {
             !pinnedToBottom && !returnToQuestion && !gestureActive.value && !detailScroll.reading &&
                 !listState.isScrollInProgress && listState.layoutInfo.totalItemsCount > 0 &&
-                isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = 1, tail = liveTailPx)
+                isAtBottom(listState.layoutInfo, listState.canScrollForward, tolerance = 1, tail = liveTail())
         }.distinctUntilChanged().collect { resting -> if (resting) pinnedToBottom = true }
     }
     // A drag the system cut off while the app left the screen may never report its end.
@@ -1372,12 +1384,12 @@ private fun ChatScreenContent(
         gestureActive.value = false
         if (pinnedBeforeStop) {
             pinnedToBottom = true
-            scope.launch { listState.scrollToEnd(liveTailPx) { pinnedToBottom && !gestureActive.value } }
+            scope.launch { listState.scrollToEnd(liveTail()) { pinnedToBottom && !gestureActive.value } }
         }
     }
 
     // While pinned, keep the newest content in view with small exact deltas.
-    LaunchedEffect(pinnedToBottom, listState, liveTailPx) {
+    LaunchedEffect(pinnedToBottom, listState) {
         if (!pinnedToBottom) return@LaunchedEffect
         var lastFollowAt = 0L
         snapshotFlow {
@@ -1395,19 +1407,19 @@ private fun ChatScreenContent(
             if (total == 0) return@collect
             val last = info.visibleItemsInfo.lastOrNull()
             if (last == null || last.index != total - 1) {
-                listState.scrollToEnd(liveTailPx) { pinnedToBottom && !gestureActive.value && !listState.isScrollInProgress }
+                listState.scrollToEnd(liveTail()) { pinnedToBottom && !gestureActive.value && !listState.isScrollInProgress }
             } else {
-                val delta = last.offset + last.size + info.afterContentPadding - liveTailPx - info.viewportEndOffset
+                val delta = last.offset + last.size + info.afterContentPadding - liveTail() - info.viewportEndOffset
                 if (delta > 0) listState.scrollBy(delta.toFloat())
             }
         }
     }
 
     // The down button always refers to the bottom, regardless of which bubble is visible.
-    LaunchedEffect(listState, liveTailPx) {
+    LaunchedEffect(listState) {
         snapshotFlow {
             !pinnedToBottom && !isAtBottom(listState.layoutInfo, listState.canScrollForward,
-                tolerance = hideJumpAt.toInt(), tail = liveTailPx)
+                tolerance = hideJumpAt.toInt(), tail = liveTail())
         }.distinctUntilChanged().collect { away ->
             showJumpToLatest = away
             if (!away) unreadWhileAway = false
@@ -1929,7 +1941,7 @@ private fun ChatScreenContent(
                                         Box(Modifier.onSizeChanged {
                                             if (measureTurn) {
                                                 chatItemHeights[key] = it.height
-                                                chatTrailingSpace = remainingTurnSpace(latestTurnKeys) + chatGapPx
+                                                chatTrailingSpace.intValue = remainingTurnSpace(latestTurnKeys) + chatGapPx
                                             }
                                         }) { content(itemScope) }
                                     } else content()
@@ -2588,9 +2600,9 @@ private fun ChatScreenContent(
                                 // Preserve the item identity and scroll offset when the same response is saved.
                                 val answerKey = if (state.conversation.isChat) "chat-$streamKey-answer" else "message-$streamKey-text"
                                 indexedItem(key = answerKey, contentType = ChatListContentType.AssistantText) {
-                                    Column {
                                     // Chat paces bursty chunks into a steady flow; Code shows output as it lands.
                                     val shownText = if (state.conversation.isChat) rememberPacedText(streaming, live = !state.streamingCommitted) else streaming
+                                    Column(if (state.conversation.isChat) Modifier.keepLiveHeight(!state.streamingCommitted, shownText.length) else Modifier) {
                                     AssistantText(
                                         chatImages = responseImages,
                                         text = if (state.conversation.isChat) com.androidharness.app.core.response.ChatRichResponse.normalize(shownText, !state.streamingCommitted) else shownText,
@@ -2693,7 +2705,7 @@ private fun ChatScreenContent(
                     if (state.conversation.isChat && latestTurnStarted) {
                         item(key = "chat-turn-space", contentType = ChatListContentType.Empty) {
                             val space = remainingTurnSpace(latestTurnKeys)
-                            androidx.compose.runtime.SideEffect { chatTrailingSpace = space + chatGapPx }
+                            androidx.compose.runtime.SideEffect { chatTrailingSpace.intValue = space + chatGapPx }
                             Spacer(Modifier.fillMaxWidth().height(with(density) { space.toDp() }))
                         }
                     }
@@ -2770,7 +2782,7 @@ private fun ChatScreenContent(
                         returnToQuestion = false
                         pinnedToBottom = true
                         lastAnchoredTurnId = latestUserTurnId
-                        scope.launch { listState.scrollToEnd(liveTailPx) { pinnedToBottom && !gestureActive.value } }
+                        scope.launch { listState.scrollToEnd(liveTail()) { pinnedToBottom && !gestureActive.value } }
                     },
                     modifier = Modifier
                         .align(Alignment.BottomEnd)

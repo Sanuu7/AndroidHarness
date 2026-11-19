@@ -45,3 +45,72 @@ internal class MarkdownStreamTracker {
         return Window(stableEnd, if (closedTail) null else fenceStart, if (closedTail) null else bodyStart, revision)
     }
 }
+
+/**
+ * Hides markdown that is only half typed in the live tail, so text does not
+ * render one way and then reflow into another a moment later. A bare block
+ * marker (`#`, `-`, `1.`, `>`) waits for its text, a table waits for its
+ * delimiter row and shows complete rows only, and an open `**`, `~~` or
+ * backtick is closed early so the words are styled from the first letter.
+ */
+internal fun stabilizeLiveTail(tail: String): String {
+    if (tail.isEmpty()) return tail
+    val lineStart = tail.lastIndexOf('\n') + 1
+    val head = tail.substring(0, lineStart)
+    val line = tail.substring(lineStart)
+    val trimmed = line.trim()
+    // An opening code fence is block syntax, not an inline code span.
+    if (trimmed.startsWith("```") || trimmed.startsWith("~~~")) return tail
+    if (trimmed.isEmpty() || trimmed.startsWith('|')) return withoutHeaderOnlyTable(head)
+    if (BARE_MARKER.matches(trimmed)) return head
+    return head + closeInlineMarkers(line)
+}
+
+private val BARE_MARKER = Regex("""(#{1,6}|[-*+_]{1,2}|\d{1,3}[.)]|>|`{1,2}|~{1,2}|:{1,2}|\$)""")
+
+/** A table header with no delimiter row yet would show as a plain line first. */
+private fun withoutHeaderOnlyTable(head: String): String {
+    val body = head.removeSuffix("\n")
+    val lastStart = body.lastIndexOf('\n') + 1
+    val last = body.substring(lastStart).trim()
+    if (!last.startsWith('|')) return head
+    val previous = body.substring(0, maxOf(0, lastStart - 1)).substringAfterLast('\n').trim()
+    return if (lastStart > 0 && previous.startsWith('|')) head else body.substring(0, lastStart)
+}
+
+private fun closeInlineMarkers(line: String): String {
+    if (line.isBlank()) return line
+    val ticks = line.count { it == '`' }
+    if (ticks % 2 == 1) {
+        val open = line.lastIndexOf('`')
+        return if (line.substring(open + 1).isBlank()) line.substring(0, open) else closeAt(line, "`")
+    }
+    // Code spans hide their contents from the other markers.
+    val outside = Regex("`[^`]*`").replace(line) { " ".repeat(it.value.length) }
+    var out = line
+    for (marker in listOf("**", "~~")) {
+        if (countMarker(outside, marker) % 2 == 0) continue
+        val open = outside.lastIndexOf(marker)
+        val after = out.substring(open + marker.length)
+        out = when {
+            after.isBlank() -> out.substring(0, open)
+            // Half of the closing marker already arrived.
+            after.trimEnd().endsWith(marker[0]) -> closeAt(out.trimEnd().dropLast(1), marker)
+            else -> closeAt(out, marker)
+        }
+    }
+    return out
+}
+
+private fun countMarker(text: String, marker: String): Int {
+    var count = 0
+    var at = text.indexOf(marker)
+    while (at >= 0) { count++; at = text.indexOf(marker, at + marker.length) }
+    return count
+}
+
+/** Closes before trailing spaces so the styled run ends at the last word. */
+private fun closeAt(text: String, marker: String): String {
+    val end = text.trimEnd().length
+    return text.substring(0, end) + marker + text.substring(end)
+}

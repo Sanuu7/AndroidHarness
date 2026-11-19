@@ -63,4 +63,44 @@ class MarkdownStreamingTest {
         assertNull(tracker.update("```kotlin\nval x = 1\n```\n\nNext").openFenceStart)
     }
 
+
+    @Test fun bareBlockMarkersWaitForTheirText() {
+        assertEquals("Intro\n", stabilizeLiveTail("Intro\n#"))
+        assertEquals("Intro\n", stabilizeLiveTail("Intro\n- "))
+        assertEquals("Intro\n", stabilizeLiveTail("Intro\n12."))
+        assertEquals("Intro\n# Ti", stabilizeLiveTail("Intro\n# Ti"))
+    }
+
+    @Test fun tablesAppearOnceTheDelimiterRowArrives() {
+        assertEquals("", stabilizeLiveTail("| a | b |\n"))
+        assertEquals("", stabilizeLiveTail("| a | b |\n|--"))
+        val table = "| a | b |\n|---|---|\n"
+        assertEquals(table, stabilizeLiveTail(table + "| 1 |"))
+        assertEquals(table + "| 1 | 2 |\n", stabilizeLiveTail(table + "| 1 | 2 |\n"))
+        assertEquals("Text\n", stabilizeLiveTail("Text\n| a"))
+    }
+
+    @Test fun openInlineMarkersAreClosedEarly() {
+        assertEquals("Some **bol**", stabilizeLiveTail("Some **bol"))
+        assertEquals("Some **bold**", stabilizeLiveTail("Some **bold*"))
+        assertEquals("Some **bold** ", stabilizeLiveTail("Some **bold "))
+        assertEquals("Some ", stabilizeLiveTail("Some **"))
+        assertEquals("Run `ls`", stabilizeLiveTail("Run `ls"))
+        assertEquals("Run ", stabilizeLiveTail("Run `"))
+        assertEquals("Code `a**b` done", stabilizeLiveTail("Code `a**b` done"))
+        assertEquals("~~old~~", stabilizeLiveTail("~~old"))
+        assertEquals("```kot", stabilizeLiveTail("```kot"))
+        assertEquals("Done **bold** text", stabilizeLiveTail("Done **bold** text"))
+    }
+
+    @Test fun pacingStopsOnWordBoundaries() {
+        val text = "Hello brave world"
+        assertEquals(5, wordEnd(text, 0, 2))
+        assertEquals(11, wordEnd(text, 6, 8))
+        assertEquals(12, wordEnd(text, 6, text.length))
+        assertEquals(text.length + 1, wordEnd(text + " ", 6, text.length + 1))
+        val long = "x".repeat(40)
+        assertEquals(10, wordEnd(long, 0, 10))
+        assertEquals(0, wordEnd("", 0, 3))
+    }
 }

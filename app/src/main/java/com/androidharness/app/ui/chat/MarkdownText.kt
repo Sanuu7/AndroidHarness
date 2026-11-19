@@ -149,7 +149,8 @@ fun MarkdownText(
         if (!streaming) "" else if (cappedFence) {
             // Keep preceding prose and the language header; cap only the live code body.
             cleanText.substring(cut, window.fenceBodyStart!!) + "…\n" + cleanText.takeLast(STREAM_FENCE_CAP)
-        } else cleanText.substring(cut)
+        } else if (window.openFenceStart != null) cleanText.substring(cut)
+        else stabilizeLiveTail(cleanText.substring(cut))
     }
     val tailBlocks = remember(tail) { parseBlocks(tail) }
     Column(Modifier.fillMaxWidth()) {
