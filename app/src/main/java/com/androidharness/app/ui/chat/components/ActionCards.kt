@@ -23,6 +23,7 @@ import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import com.androidharness.app.agent.isPhoneControl
+import com.androidharness.app.agent.isRiskyPhoneControl
 import androidx.compose.material.icons.outlined.Checklist
 import androidx.compose.material.icons.outlined.Merge
 import androidx.compose.material.icons.outlined.Alarm
@@ -102,6 +103,7 @@ private fun ActionCard(
 }
 
 private const val PHONE_FIRST_COMMAND = "First command:"
+private const val PHONE_ONE_COMMAND = "\n\nCommand:"
 
 @Composable
 internal fun ApprovalCard(
@@ -117,6 +119,7 @@ internal fun ApprovalCard(
     val isSchedule = approval.call.name == com.androidharness.app.tools.AutomationCreateTool.NAME || isReminder
     // Phone control is allowed for the whole chat at once, so it has one Allow button.
     val isPhone = approval.isPhoneControl
+    val isRiskyPhone = approval.isRiskyPhoneControl
     val scheme = MaterialTheme.colorScheme
     ActionCard(
         title = when {
@@ -128,6 +131,7 @@ internal fun ApprovalCard(
                 else -> R.string.reminders_approval_title
             })
             isSchedule -> uiContext.getString(R.string.automation_approval_title)
+            isRiskyPhone -> uiContext.getString(R.string.phone_control_risky_title)
             isPhone -> uiContext.getString(R.string.phone_control_approval_title)
             else -> uiContext.getString(R.string.ui_approve_this_action)
         },
@@ -136,10 +140,11 @@ internal fun ApprovalCard(
             isPullRequest -> Icons.Outlined.Merge
             isReminder -> Icons.Outlined.Alarm
             isSchedule -> Icons.Outlined.Schedule
+            isRiskyPhone -> Icons.Outlined.Shield
             isPhone -> Icons.Outlined.PhoneAndroid
             else -> Icons.Outlined.Shield
         },
-        iconTint = if (isPkg) scheme.tertiary else scheme.primary,
+        iconTint = if (isRiskyPhone) scheme.error else if (isPkg) scheme.tertiary else scheme.primary,
         actions = {
             TextButton(onClick = onDeny) { Text(if (isPkg) uiContext.getString(R.string.ui_decline) else uiContext.getString(R.string.ui_deny)) }
             if (!isPkg && !isSchedule && !isPhone) {
@@ -151,6 +156,7 @@ internal fun ApprovalCard(
             }
             Button(onClick = { onApprove(false) }) {
                 Text(uiContext.getString(when {
+                    isRiskyPhone -> R.string.phone_control_allow_once
                     isPhone -> R.string.phone_control_allow
                     approval.call.name == com.androidharness.app.tools.ReminderTools.ALARM -> R.string.alarm_set
                     approval.call.name == com.androidharness.app.tools.ReminderTools.TIMER -> R.string.timer_start
@@ -162,9 +168,10 @@ internal fun ApprovalCard(
     ) {
         if (isPhone) {
             val preview = approval.diffPreview.orEmpty()
-            val command = preview.substringAfter(PHONE_FIRST_COMMAND, "").trim()
+            val marker = if (PHONE_FIRST_COMMAND in preview) PHONE_FIRST_COMMAND else PHONE_ONE_COMMAND
+            val command = preview.substringAfter(marker, "").trim()
             Text(
-                preview.substringBefore(PHONE_FIRST_COMMAND).trim(),
+                preview.substringBefore(marker).trim(),
                 style = MaterialTheme.typography.bodyMedium,
                 color = scheme.onSurfaceVariant,
             )

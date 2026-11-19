@@ -66,6 +66,10 @@ const val PHONE_CONTROL_TITLE = "Control your phone"
 
 val ApprovalRequest.isPhoneControl: Boolean get() = grantKey.startsWith(PHONE_CONTROL_KEY)
 
+/** Marks a phone command that can't easily be undone; its card allows only that one command. */
+const val PHONE_CONTROL_ONCE = "once:"
+val ApprovalRequest.isRiskyPhoneControl: Boolean get() = grantKey.startsWith(PHONE_CONTROL_KEY + PHONE_CONTROL_ONCE)
+
 class QuestionRequest(
     val callId: String,
     val question: String,
@@ -1646,9 +1650,11 @@ class AgentEngine(
         val startedAt = System.currentTimeMillis()
         val linuxWasReady = linuxEnv.isReady
         // Asked at most once per chat, when the user turned on "Ask before controlling the phone".
-        val phoneGate = com.androidharness.app.data.env.PhoneControlGate(sessionId, turnId) { backend, privileged ->
+        val phoneGate = com.androidharness.app.data.env.PhoneControlGate(sessionId, turnId) { backend, privileged, risk ->
             val request = ApprovalRequest(call, PHONE_CONTROL_TITLE,
-                com.androidharness.app.data.env.PhoneControlPreview.describe(backend, privileged), "$PHONE_CONTROL_KEY$sessionId")
+                com.androidharness.app.data.env.PhoneControlPreview.describe(backend, privileged, risk),
+                if (risk == com.androidharness.app.data.env.PhoneCommandRisk.DESTRUCTIVE) "$PHONE_CONTROL_KEY$PHONE_CONTROL_ONCE$sessionId"
+                else "$PHONE_CONTROL_KEY$sessionId")
             emitEvent(AgentEvent.ApprovalNeeded(request))
             request.response.await()
         }

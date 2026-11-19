@@ -61,17 +61,31 @@ class DeviceAccessManager(
         if (backend == DeviceBackend.NORMAL) return null
         val gate = currentCoroutineContext()[PhoneControlGate] ?: return null
         if (currentCoroutineContext()[AccessRequest]?.manual == true) return null
+        val askingOn = store.preferences.first().askPhoneControl
+        if (!askingOn) return null
+        val risk = PhoneCommandRisk.of(command)
+        // Reading device state (battery, properties, installed apps) never needs a card.
+        if (risk == PhoneCommandRisk.READ) return null
+        if (risk == PhoneCommandRisk.DESTRUCTIVE) {
+            // Never covered by an earlier Allow: each one is shown to the user on its own.
+            return phoneLocks.getOrPut(gate.sessionId) { Mutex() }.withLock {
+                if (gate.ask(backend, command, risk)) null
+                else "The user declined this command. It can uninstall apps, erase data or restart the phone, so it was not run. " +
+                    "Do not retry it or reach the same result another way; tell the user what you wanted to do instead."
+            }
+        }
         fun allowed(prefs: AccessPreferences) = !prefs.askPhoneControl || gate.sessionId in prefs.phoneControlChats
         if (allowed(store.preferences.first())) return null
-        val refusal = "The user has not allowed phone control in this chat. Shizuku, root and Device Owner are off for the rest of this run. " +
-            "Do not retry privileged commands; continue with the app shell, or tell the user what needs phone access."
+        val refusal = "The user has not allowed phone control in this chat. Commands that control the phone are off for the rest of this run; " +
+            "read-only device checks (dumpsys, getprop, pm list, settings get) still work. " +
+            "Do not retry other privileged commands; continue with the app shell, or tell the user what needs phone access."
         if (gate.turnId in refusedTurns) return refusal
         // Parallel tool calls wait here, so one card covers them all.
         return phoneLocks.getOrPut(gate.sessionId) { Mutex() }.withLock {
             when {
                 allowed(store.preferences.first()) -> null
                 gate.turnId in refusedTurns -> refusal
-                gate.ask(backend, command) -> { store.allowPhoneControl(gate.sessionId, true); null }
+                gate.ask(backend, command, risk) -> { store.allowPhoneControl(gate.sessionId, true); null }
                 else -> {
                     synchronized(refusedTurns) {
                         refusedTurns += gate.turnId
