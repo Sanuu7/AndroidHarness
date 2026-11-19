@@ -394,6 +394,32 @@ class ChatExperienceDeviceTest {
         }
     }
 
+    @Test fun liveSourcesTickThroughNewSearchesOneAtATime(): Unit = runBlocking {
+        fun site(n: Int, read: Boolean = false) = ChatActivityPresentation.Source("Site $n", "https://site$n.com/page", "site$n.com", read)
+        fun shownSites() = nodes().filter { it.isVisibleToUser && it.text?.toString()?.matches(Regex("site\\d+\\.com")) == true }.map { it.text.toString() }
+        val sources = mutableStateOf((1..6).map { site(it) })
+        ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
+            scenario.onActivity { activity -> activity.setContent { HarnessTheme(dynamicColor = false) {
+                Column(Modifier.fillMaxSize().statusBarsPadding().padding(24.dp)) {
+                    com.androidharness.app.ui.chat.components.LiveSourceChips(sources.value, "live-sources-turn", {})
+                }
+            } } }
+            await("site1.com")
+            // The counter climbs one site at a time instead of jumping to the batch size.
+            await("2 sites"); await("3 sites")
+            await("site6.com"); await("6 sites")
+            assertTrue(shownSites().size <= 2)
+            // A second search keeps the ticker going with the new sites.
+            scenario.onActivity { sources.value = (1..12).map { site(it) } }
+            await("7 sites"); await("site12.com"); await("12 sites")
+            awaitGone("site6.com")
+            screenshot("chat-live-sources-ticker")
+            // A page that gets read comes back once, with a check, and the count stays put.
+            scenario.onActivity { sources.value = (1..12).map { site(it, read = it == 2) } }
+            await("site2.com"); assertNotNull(find("12 sites"))
+        }
+    }
+
     @Test fun thinkingPreferencePersistsAndManualExpansionSurvivesCompletion(): Unit = runBlocking {
         val original = c.settings.settings.first().chatKeepThinkingCollapsed
         val live = mutableStateOf(true)

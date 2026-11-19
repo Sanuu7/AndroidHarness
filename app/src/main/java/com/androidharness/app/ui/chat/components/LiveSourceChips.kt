@@ -1,13 +1,23 @@
 package com.androidharness.app.ui.chat.components
 
-import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.Animatable
-import androidx.compose.animation.core.spring
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.ContentTransform
+import androidx.compose.animation.SizeTransform
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.CubicBezierEasing
+import androidx.compose.animation.core.FiniteAnimationSpec
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -28,44 +38,60 @@ import androidx.compose.material3.toShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.core.ChatActivityPresentation
 import kotlinx.coroutines.delay
 
-/** How long the queue waits between two chips, so a batch lands one at a time. */
-private const val CHIP_GAP_MS = 150L
+/** Time each site stays on screen before the next one takes its place. */
+private const val STEP_MS = 650L
 
-private const val MAX_CHIPS = 8
+/** Fastest the ticker goes when a big batch is waiting, so it never falls far behind. */
+private const val FAST_STEP_MS = 280L
+
+/** Soft ease-out: things glide in and settle, with no bounce. */
+private val Settle = CubicBezierEasing(0.2f, 0f, 0f, 1f)
+
+/** Ease-in for leaving, so the old site drifts off before the new one lands. */
+private val Leave = CubicBezierEasing(0.3f, 0f, 0.8f, 0.15f)
+
+private fun <T> settle(ms: Int, delay: Int = 0): FiniteAnimationSpec<T> = tween(ms, delay, Settle)
+private fun <T> leave(ms: Int): FiniteAnimationSpec<T> = tween(ms, 0, Leave)
 
 /**
- * Sites already shown for a turn. The chips move from under the activity row
- * to under the streaming answer; a site that already jumped in once should
- * not jump again when it moves.
+ * How far a turn's ticker got. The ticker moves from under the activity row
+ * to under the streaming answer; the new spot picks up where the old one
+ * stopped instead of counting from zero again.
  */
-private object ShownSourceChips {
-    private val shown = HashMap<String, MutableSet<String>>()
-    fun has(turn: String?, host: String) = turn != null && shown[turn]?.contains(host) == true
-    fun add(turn: String?, host: String) { if (turn != null) shown.getOrPut(turn) { HashSet() } += host }
+private object ShownSources {
+    class Turn {
+        val counted = LinkedHashSet<String>()
+        val readShown = HashSet<String>()
+        var current: String? = null
+    }
+    private val turns = HashMap<String, Turn>()
+    fun of(turn: String?): Turn = if (turn == null) Turn() else turns.getOrPut(turn) { Turn() }
 }
 
 /**
- * The sites a live research turn has found, as small chips. They keep the
- * order they were found in, and new ones join a queue that lets one chip at a
- * time jump in, so a batch of ten results never lands as a single block. A
- * page that was actually read gets a check.
+ * The sites a live research turn has found, one at a time. A single chip
+ * shows the site the search just found and gently gives way to the next,
+ * while a counter beside it ticks up by one for every new site. When a page
+ * is actually read, its site comes back once with a check.
  */
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 internal fun LiveSourceChips(
     sources: List<ChatActivityPresentation.Source>,
@@ -78,68 +104,109 @@ internal fun LiveSourceChips(
         android.provider.Settings.Global.getFloat(context.contentResolver,
             android.provider.Settings.Global.ANIMATOR_DURATION_SCALE, 1f) > 0f
     }
-    // Arrival order, never re-sorted: a chip that moves after it lands looks like a glitch.
-    val order = remember(turnId) { ArrayList<String>() }
-    val byHost = remember(sources) { sources.associateBy { it.host } }
-    sources.forEach { if (it.host !in order && order.size < MAX_CHIPS) order += it.host }
-    var revealed by remember(turnId) {
-        mutableIntStateOf(order.takeWhile { ShownSourceChips.has(turnId, it) || !motion }.size)
-    }
-    LaunchedEffect(order.size, turnId) {
-        while (revealed < order.size) {
-            if (motion && !ShownSourceChips.has(turnId, order[revealed])) delay(CHIP_GAP_MS)
-            revealed++
+    val memory = remember(turnId) { ShownSources.of(turnId) }
+    var count by remember(turnId) { mutableIntStateOf(memory.counted.size) }
+    var current by remember(turnId) { mutableStateOf(memory.current) }
+    val latest by rememberUpdatedState(sources)
+    LaunchedEffect(turnId, motion) {
+        snapshotFlow { latest }.collect {
+            while (true) {
+                val list = latest
+                // Read while it is on screen: the chip just turns, it does not need to come back later.
+                if (list.any { it.host == memory.current && it.read }) memory.current?.let { memory.readShown += it }
+                val fresh = list.firstOrNull { it.host !in memory.counted }
+                val read = if (fresh != null) null
+                    else list.firstOrNull { it.read && it.host !in memory.readShown && it.host != memory.current }
+                val next = fresh ?: read ?: break
+                if (motion && memory.current != null) {
+                    val waiting = list.count { it.host !in memory.counted }
+                    delay(if (waiting > 4) FAST_STEP_MS else STEP_MS)
+                }
+                if (next.read) memory.readShown += next.host
+                if (fresh != null) memory.counted += next.host
+                memory.current = next.host
+                count = memory.counted.size
+                current = next.host
+            }
         }
     }
-    if (revealed == 0) return
-    FlowRow(
-        modifier.fillMaxWidth().animateContentSize(spring(dampingRatio = 0.8f, stiffness = 500f))
-            .padding(start = 2.dp, top = 4.dp, bottom = 4.dp),
-        horizontalArrangement = Arrangement.spacedBy(6.dp),
-        verticalArrangement = Arrangement.spacedBy(6.dp),
+    val source = current?.let { host -> sources.firstOrNull { it.host == host } } ?: return
+    Row(
+        modifier.fillMaxWidth().padding(start = 2.dp, top = 4.dp, bottom = 4.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
-        order.take(revealed).forEach { host ->
-            val source = byHost[host] ?: return@forEach
-            key(host) {
-                val jump = remember { !ShownSourceChips.has(turnId, host) && motion }
-                SourceChip(source, jump, onOpenUrl)
-                LaunchedEffect(Unit) { ShownSourceChips.add(turnId, host) }
+        AnimatedContent(
+            source,
+            contentKey = { it.host },
+            transitionSpec = { siteSwap() },
+            contentAlignment = Alignment.CenterStart,
+            label = "liveSource",
+        ) { shown -> SourceChip(shown, onOpenUrl) }
+        SiteCounter(count)
+    }
+}
+
+/** The old site drifts up and fades while the new one rises in under it. */
+private fun androidx.compose.animation.AnimatedContentTransitionScope<ChatActivityPresentation.Source>.siteSwap(): ContentTransform =
+    (fadeIn(settle(420, delay = 90)) +
+        slideInVertically(settle(520, delay = 60)) { it / 2 } +
+        scaleIn(settle(520, delay = 60), initialScale = 0.94f)) togetherWith
+        (fadeOut(leave(200)) + slideOutVertically(leave(260)) { -it / 3 }) using
+        SizeTransform(clip = false) { _, _ -> settle(420) }
+
+/** "3 sites", where only the digits that change roll up to the next number. */
+@Composable
+private fun SiteCounter(count: Int) {
+    val scheme = MaterialTheme.colorScheme
+    AnimatedVisibility(count > 1,
+        enter = fadeIn(settle(400)) + expandHorizontally(settle(420), expandFrom = Alignment.Start)) {
+        Row(Modifier.semantics(mergeDescendants = false) { contentDescription = "$count sites" },
+            verticalAlignment = Alignment.CenterVertically) {
+            val digits = count.toString()
+            digits.forEachIndexed { index, digit ->
+                // Keyed by place value, so the ones digit stays the ones digit when a tens digit appears.
+                androidx.compose.runtime.key(digits.length - index) {
+                    AnimatedContent(
+                        digit,
+                        transitionSpec = {
+                            (fadeIn(settle(360, delay = 60)) + slideInVertically(settle(420)) { it }) togetherWith
+                                (fadeOut(leave(180)) + slideOutVertically(leave(240)) { -it }) using SizeTransform(clip = true)
+                        },
+                        label = "siteCountDigit",
+                    ) { d ->
+                        Text(d.toString(), style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
+                    }
+                }
             }
+            Text(" sites", style = MaterialTheme.typography.labelLarge, color = scheme.onSurfaceVariant)
         }
     }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun SourceChip(source: ChatActivityPresentation.Source, jump: Boolean, onOpenUrl: (String) -> Unit) {
+private fun SourceChip(source: ChatActivityPresentation.Source, onOpenUrl: (String) -> Unit) {
     val scheme = MaterialTheme.colorScheme
-    val appear = remember { Animatable(if (jump) 0f else 1f) }
-    if (jump) LaunchedEffect(Unit) {
-        // Low damping so the chip overshoots and settles: a small hop, not a fade.
-        appear.animateTo(1f, spring(dampingRatio = 0.42f, stiffness = 520f))
-    }
     val (dotShape, dotColor) = siteBadge(source.host)
+    val container by animateColorAsState(if (source.read) scheme.secondaryContainer else scheme.surfaceContainerHigh, settle(400), label = "chipColor")
+    val label by animateColorAsState(if (source.read) scheme.onSecondaryContainer else scheme.onSurfaceVariant, settle(400), label = "chipLabel")
     Surface(
         onClick = { onOpenUrl(source.url) },
         shape = CircleShape,
-        color = if (source.read) scheme.secondaryContainer else scheme.surfaceContainerHigh,
-        modifier = Modifier.height(30.dp).markPreviewOrigin().graphicsLayer {
-            val p = appear.value
-            alpha = p.coerceIn(0f, 1f)
-            scaleX = 0.6f + 0.4f * p
-            scaleY = 0.6f + 0.4f * p
-            translationY = (1f - p) * 16.dp.toPx()
-        },
+        color = container,
+        modifier = Modifier.height(30.dp).markPreviewOrigin(),
     ) {
         Row(Modifier.padding(PaddingValues(start = 5.dp, end = 11.dp)), verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(6.dp)) {
             Box(Modifier.size(20.dp).clip(dotShape).background(dotColor), contentAlignment = Alignment.Center) {
-                if (source.read) Icon(Icons.Outlined.Check, null, Modifier.size(12.dp), tint = scheme.onPrimary)
-                else Text(source.host.firstOrNull()?.uppercase() ?: "?", style = MaterialTheme.typography.labelSmall, color = scheme.onPrimary)
+                AnimatedContent(source.read, transitionSpec = { fadeIn(settle(300)) togetherWith fadeOut(leave(150)) }, label = "chipBadge") { read ->
+                    if (read) Icon(Icons.Outlined.Check, null, Modifier.size(12.dp), tint = scheme.onPrimary)
+                    else Text(source.host.firstOrNull()?.uppercase() ?: "?", style = MaterialTheme.typography.labelSmall, color = scheme.onPrimary)
+                }
             }
             Text(source.host, style = MaterialTheme.typography.labelLarge, maxLines = 1, overflow = TextOverflow.Ellipsis,
-                modifier = Modifier.widthIn(max = 160.dp),
-                color = if (source.read) scheme.onSecondaryContainer else scheme.onSurfaceVariant)
+                modifier = Modifier.widthIn(max = 200.dp), color = label)
         }
     }
 }

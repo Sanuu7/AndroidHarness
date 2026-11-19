@@ -2588,7 +2588,7 @@ private fun ChatScreenContent(
                                     )
                                     // The sites the answer is built from, hopping in one by one under the live text.
                                     if (state.conversation.isChat && !state.streamingCommitted) {
-                                        val liveSources = remember(liveTurn) { com.androidharness.app.core.ChatActivityPresentation.sources(liveTurn, limit = 12) }
+                                        val liveSources = remember(liveTurn) { com.androidharness.app.core.ChatActivityPresentation.sources(liveTurn) }
                                         com.androidharness.app.ui.chat.components.LiveSourceChips(liveSources, state.currentTurnId,
                                             onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true },
                                             modifier = Modifier.padding(top = 6.dp))

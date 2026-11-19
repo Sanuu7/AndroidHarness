@@ -168,7 +168,7 @@ internal fun ChatActivity(
     }
     // While the answer is being written the chips sit under it instead (see ChatScreen).
     if (live && introDone && !writing) {
-        val sources = remember(messages) { ChatActivityPresentation.sources(messages, limit = 12) }
+        val sources = remember(messages) { ChatActivityPresentation.sources(messages) }
         LiveSourceChips(sources, messages.firstNotNullOfOrNull { it.turnId }, onOpenUrl)
     }
     }
