@@ -23,15 +23,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -43,6 +39,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.geometry.CornerRadius
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.semantics.Role
@@ -144,10 +143,19 @@ internal fun InlineActivityRow(
             enter = expandVertically(animationSpec = bouncySpec()) + fadeIn(defaultEffectsSpec()),
             exit = shrinkVertically(animationSpec = expressiveSpatialSpec()) + fadeOut(fastEffectsSpec()),
         ) {
-            Row(Modifier.fillMaxWidth().height(IntrinsicSize.Min).padding(start = 14.dp, top = 2.dp, bottom = 6.dp)) {
-                Box(Modifier.width(1.5.dp).fillMaxHeight().background(scheme.outlineVariant.copy(alpha = 0.7f), RoundedCornerShape(1.dp)))
-                Column(Modifier.weight(1f).padding(start = 12.dp), verticalArrangement = Arrangement.spacedBy(6.dp), content = content)
-            }
+            // The guide line is drawn behind the content, not sized from it: asking the content for
+            // its intrinsic height crashes as soon as it holds a lazy list (an expanded activity card).
+            val guide = scheme.outlineVariant.copy(alpha = 0.7f)
+            Column(
+                Modifier.fillMaxWidth().padding(start = 14.dp, top = 2.dp, bottom = 6.dp)
+                    .drawBehind {
+                        val w = 1.5.dp.toPx()
+                        drawRoundRect(guide, size = Size(w, size.height), cornerRadius = CornerRadius(1.dp.toPx()))
+                    }
+                    .padding(start = 13.5.dp),
+                verticalArrangement = Arrangement.spacedBy(6.dp),
+                content = content,
+            )
         }
     }
 }
