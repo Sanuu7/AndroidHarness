@@ -16,6 +16,28 @@ class SharedToolStoreTest {
         val stamp = StorageFiles.snapshot(prefix, file).single().copy(path = "bin/$name")
         return ManagedTool(name, "1", dependencies, listOf(stamp), true)
     }
+    @Test fun `a package whose recorded files vanished is reported missing but docs and untracked packages are not`() = runBlocking {
+        val store = SharedToolStore(metadata, prefix)
+        val jar = File(prefix, "opt/gradle/lib/gradle.jar").apply { parentFile!!.mkdirs(); writeText("jar") }
+        val doc = File(prefix, "share/doc/gradle/README").apply { parentFile!!.mkdirs(); writeText("doc") }
+        val stamps = listOf(jar, doc).map { f -> StorageFiles.snapshot(prefix, f).single().copy(path = f.relativeTo(prefix).invariantSeparatorsPath) }
+        store.put(ManagedTool("gradle", "1", emptyList(), stamps, true))
+        store.put(tool("jq"))
+        assertEquals(emptyList<String>(), store.missingFiles(listOf("gradle", "jq", "legacy")))
+        doc.delete()
+        assertEquals(emptyList<String>(), store.missingFiles(listOf("gradle", "jq")))
+        jar.delete()
+        assertEquals(listOf("gradle"), store.missingFiles(listOf("gradle", "jq", "legacy")))
+    }
+    @Test fun `payload count separates an empty install from docs-only and untracked packages`() = runBlocking {
+        val store = SharedToolStore(metadata, prefix)
+        store.put(ManagedTool("gradle", "1", emptyList(), emptyList(), false))
+        val man = File(prefix, "share/man/man1/ls.1").apply { parentFile!!.mkdirs(); writeText("man") }
+        store.put(ManagedTool("man-pages", "1", emptyList(), listOf(StorageFiles.snapshot(prefix, man).single().copy(path = "share/man/man1/ls.1")), true))
+        assertEquals(0, store.payloadFileCount("gradle"))
+        assertEquals(1, store.payloadFileCount("man-pages"))
+        assertNull(store.payloadFileCount("legacy"))
+    }
     @Test fun `one shared install remains protected until both workspace requirements are released`() = runBlocking {
         val store = SharedToolStore(metadata, prefix)
         store.put(tool("jq")); store.require(listOf("jq"), "Project A"); store.require(listOf("jq"), "Project B")

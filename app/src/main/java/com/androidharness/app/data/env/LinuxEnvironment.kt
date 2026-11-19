@@ -6,6 +6,8 @@ import android.system.Os
 import android.util.Log
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.sync.withPermit
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.sync.Mutex
@@ -414,6 +416,12 @@ class LinuxEnvironmentManager(
             if (AndroidBuildToolchain.repairLaunchers(prefix, installedPackages()) > 0) {
                 invalidateExternalToolDeploy()
             }
+            val empty = emptyPayloadPackages(wanted)
+            if (empty.isNotEmpty()) {
+                // Listed as installed, but the install never left any content.
+                // Un-mark them so installLocked downloads and unpacks them again.
+                marker.writeText(installedPackages().filter { it !in empty }.joinToString("\n"))
+            }
             val broken = brokenInstalledPackages().toSet()
             val result = if (isReady && wanted.all { installedContains(it) && it !in broken }) Result.success(Unit)
                 else installLocked(wanted, onProgress)
@@ -424,6 +432,19 @@ class LinuxEnvironmentManager(
 
     private val installMutex = Mutex()
 
+    /**
+     * Installed packages among [names] whose install record lists no content
+     * at all although the repository says the package has some. The recorded
+     * file check cannot see this case: there is nothing recorded to miss.
+     * Uses the cached package index and skips the check when it is unavailable.
+     */
+    private suspend fun emptyPayloadPackages(names: List<String>): List<String> {
+        val suspects = names.filter { installedContains(it) && toolStore.payloadFileCount(it) == 0 }
+        if (suspects.isEmpty()) return emptyList()
+        val index = runCatching { getPackageIndex() }.getOrNull() ?: return emptyList()
+        return suspects.filter { (index[it]?.installedSize ?: 0L) >= MIN_PAYLOAD_KB }
+    }
+
     private var cachedIndex: Map<String, PkgMeta>? = null
     private val indexMutex = Mutex()
 
@@ -431,7 +452,7 @@ class LinuxEnvironmentManager(
     suspend fun getPackageIndex(forceRefresh: Boolean = false): Map<String, PkgMeta> = withContext(Dispatchers.IO) {
         indexMutex.withLock {
             if (!forceRefresh && cachedIndex != null) return@withLock cachedIndex!!
-            val index = packageIndexLoader?.invoke() ?: PackageIndex.parse(fetchText(indexUrl()))
+            val index = packageIndexLoader?.invoke() ?: PackageIndex.parse(fetchIndex())
             cachedIndex = index
             index
         }
@@ -480,7 +501,7 @@ class LinuxEnvironmentManager(
             !base.endsWith(".deb")
         ) throw IllegalStateException("Unsafe package filename in the index: $fileField")
         dest.parentFile?.mkdirs()
-        downloadVerified("$BASE_URL/$fileField", dest, pkg.sha256)
+        downloadPoolFile(fileField, dest, pkg.sha256)
         true
     }
 
@@ -560,7 +581,11 @@ class LinuxEnvironmentManager(
             // seconds on mobile networks before the first package download.
             _state.value = EnvState.Preparing
             onProgress(progress)
-            val index = getPackageIndex()
+            // Rank the download mirrors while the index downloads, so the probe adds no wait of its own.
+            val index = kotlinx.coroutines.coroutineScope {
+                val warm = async { runCatching { downloadHosts() } }
+                getPackageIndex().also { warm.await() }
+            }
             val already = installedPackages().toSet() - brokenInstalledPackages().toSet()
             val unknown = wanted.filter { it !in index }
             if (unknown.isNotEmpty()) {
@@ -575,37 +600,64 @@ class LinuxEnvironmentManager(
                 return Result.success(Unit)
             }
 
-            closure.forEachIndexed { i, pkg ->
-                _state.value = EnvState.Downloading(i, closure.size, pkg.name, totalBytes = pkg.size.takeIf { it > 0 })
-                publish(PackageInstallPhase.DOWNLOADING, pkg.name, total = pkg.size.takeIf { it > 0 })
-                // The index is parsed from the network response, so its Filename
-                // field is untrusted: keep the download URL inside the repo pool
-                // and the local file inside this temp dir.
+            // The index is parsed from the network response, so its Filename
+            // field is untrusted: keep the download URL inside the repo pool
+            // and the local file inside this temp dir.
+            val debFiles = closure.map { pkg ->
                 val fileField = pkg.filename
                 val debBase = fileField.substringAfterLast('/')
                 if (fileField.startsWith('/') || fileField.contains('\\') ||
                     fileField.split('/').any { it.isEmpty() || it == "." || it == ".." } ||
                     !debBase.endsWith(".deb")
                 ) throw IllegalStateException("Unsafe package filename in the index: $fileField")
-                val debFile = File(tempDir, debBase)
-                downloadVerified("$BASE_URL/$fileField", debFile, pkg.sha256,
-                    onVerifying = { publish(PackageInstallPhase.VERIFYING, pkg.name) },
-                    onProgress = { downloaded, total ->
-                        val size = total ?: pkg.size.takeIf { it > 0 }
-                        _state.value = EnvState.Downloading(i, closure.size, pkg.name, downloaded, size)
-                        publish(PackageInstallPhase.DOWNLOADING, pkg.name, downloaded, size)
-                    })
-                _state.value = EnvState.Installing(i, closure.size, pkg.name)
-                publish(PackageInstallPhase.UNPACKING, pkg.name)
-                prefixChanged = true
-                val installedPaths = extractDeb(debFile)
-                publish(PackageInstallPhase.CONFIGURING, pkg.name)
-                AndroidBuildToolchain.repairLaunchers(prefix, listOf(pkg.name))
-                recordPackageFiles(pkg, installedPaths)
-                debFile.delete()
-                // record progress per package so a killed install resumes
-                markInstalled(listOf(pkg.name))
-                progress = progress.copy(completed = progress.completed + pkg.name)
+                File(tempDir, debBase)
+            }
+            // Downloads run a few at a time ahead of the installer, which still unpacks in dependency order.
+            // Only the package being installed next reports progress, so the card reads one package at a time.
+            val head = java.util.concurrent.atomic.AtomicInteger(0)
+            kotlinx.coroutines.coroutineScope {
+                val gate = kotlinx.coroutines.sync.Semaphore(PARALLEL_DOWNLOADS)
+                val downloads = closure.mapIndexed { i, pkg ->
+                    async {
+                        // Stay a bounded distance ahead so finished files do not pile up in temp storage.
+                        while (i - head.get() > DOWNLOAD_LOOKAHEAD) kotlinx.coroutines.delay(50)
+                        gate.withPermit {
+                            downloadPoolFile(pkg.filename, debFiles[i], pkg.sha256,
+                                onVerifying = { if (head.get() == i) publish(PackageInstallPhase.VERIFYING, pkg.name) },
+                                onProgress = { downloaded, total ->
+                                    if (head.get() == i) {
+                                        val size = total ?: pkg.size.takeIf { it > 0 }
+                                        _state.value = EnvState.Downloading(i, closure.size, pkg.name, downloaded, size)
+                                        publish(PackageInstallPhase.DOWNLOADING, pkg.name, downloaded, size)
+                                    }
+                                })
+                        }
+                    }
+                }
+                closure.forEachIndexed { i, pkg ->
+                    head.set(i)
+                    val debFile = debFiles[i]
+                    if (!downloads[i].isCompleted) {
+                        _state.value = EnvState.Downloading(i, closure.size, pkg.name, totalBytes = pkg.size.takeIf { it > 0 })
+                        publish(PackageInstallPhase.DOWNLOADING, pkg.name, total = pkg.size.takeIf { it > 0 })
+                    }
+                    downloads[i].await()
+                    _state.value = EnvState.Installing(i, closure.size, pkg.name)
+                    publish(PackageInstallPhase.UNPACKING, pkg.name)
+                    prefixChanged = true
+                    val installedPaths = extractDeb(debFile)
+                    publish(PackageInstallPhase.CONFIGURING, pkg.name)
+                    AndroidBuildToolchain.repairLaunchers(prefix, listOf(pkg.name))
+                    recordPackageFiles(pkg, installedPaths)
+                    debFile.delete()
+                    // Never mark a package installed when unpacking it left no content behind.
+                    if (pkg.installedSize >= MIN_PAYLOAD_KB && toolStore.payloadFileCount(pkg.name) == 0) {
+                        throw IllegalStateException("${pkg.name} unpacked no files (the repository lists ${pkg.installedSize} KB). Try the install again.")
+                    }
+                    // record progress per package so a killed install resumes
+                    markInstalled(listOf(pkg.name))
+                    progress = progress.copy(completed = progress.completed + pkg.name)
+                }
             }
 
             File(prefix, "home").mkdirs()
@@ -721,12 +773,24 @@ class LinuxEnvironmentManager(
         install((fullPackages + broken).distinct()).isSuccess && isReady
     }
 
-    /** Packages marked installed whose proof binary is gone from disk. */
-    private fun brokenInstalledPackages(): List<String> {
+    /**
+     * Packages marked installed whose files are gone from disk: a known proof
+     * binary is missing, an Android build tool fails its own check, or any
+     * file recorded at install time has vanished (gradle once kept its marker
+     * entry after opt/gradle was emptied, and nothing noticed).
+     */
+    private fun brokenInstalledPackages(checkRecordedFiles: Boolean = true): List<String> {
         val installed = installedPackages()
+        val recorded = if (checkRecordedFiles) toolStore.missingFiles(installed) else emptyList()
         return (installed.filter { pkg ->
             BINARY_PROOF[pkg]?.let { progs -> progs.none { File(prefix, it).exists() } } ?: false
-        } + AndroidBuildToolchain.brokenPackages(prefix, installed)).distinct()
+        } + AndroidBuildToolchain.brokenPackages(prefix, installed) + recorded).distinct()
+    }
+
+    /** Which of [names] are marked installed but missing files on disk. */
+    fun brokenPackages(names: Collection<String>): List<String> {
+        val wanted = names.toSet()
+        return brokenInstalledPackages().filter { it in wanted }
     }
 
     internal fun androidBuildStatus(executionPrefix: String = prefix.absolutePath): String =
@@ -736,7 +800,7 @@ class LinuxEnvironmentManager(
     private fun incompletePackages(): List<String> {
         val installed = installedPackages().toSet()
         val missing = fullPackages.filter { it !in installed }
-        return (missing + brokenInstalledPackages()).distinct()
+        return (missing + brokenInstalledPackages(checkRecordedFiles = false)).distinct()
     }
 
     // ------------------------------------------------------------------
@@ -857,7 +921,10 @@ class LinuxEnvironmentManager(
             val (purged, shebangsRewritten) = purgeDeadTermuxShims()
             val shellPatched = repairGitShellPaths()
             val buildLaunchers = AndroidBuildToolchain.repairLaunchers(prefix, installedPackages())
-            val broken = brokenInstalledPackages()
+            // Launch repair stays on the known toolchain checks. A package that
+            // only fails the recorded-file check is repaired when someone asks
+            // for it (pkg_install, Update), never by a silent download at start.
+            val broken = brokenInstalledPackages(checkRecordedFiles = false)
             val missing = fullPackages.filter { !installedContains(it) && it !in latePackagesPending() }
             var healNote: String? = null
             if (broken.isNotEmpty() || missing.isNotEmpty()) {
@@ -1446,14 +1513,18 @@ class LinuxEnvironmentManager(
                 }
             }
             val tmp = File(stagingDir, "prefix.tar.gz.tmp")
+            // The content hash is taken from the bytes as they are written, so a
+            // re-stage does not read the whole tarball back a second time.
+            val digest = MessageDigest.getInstance("SHA-256")
             org.apache.commons.compress.archivers.tar.TarArchiveOutputStream(
-                java.util.zip.GZIPOutputStream(tmp.outputStream().buffered()),
+                FastGzipOutputStream(java.security.DigestOutputStream(tmp.outputStream(), digest).buffered(64 * 1024)),
             ).use { tar ->
                 tar.setLongFileMode(org.apache.commons.compress.archivers.tar.TarArchiveOutputStream.LONGFILE_POSIX)
                 writeTarEntries(prefix, "linux", tar)
             }
-            tmp.renameTo(stagingTar)
-            stagingMarker.writeText("$hash\n${fileSha256(stagingTar)}")
+            val contentHash = digest.digest().joinToString("") { b -> "%02x".format(b) }
+            check(tmp.renameTo(stagingTar)) { "Could not replace the staged shell-tier tarball." }
+            stagingMarker.writeText("$hash\n$contentHash")
         } catch (e: Exception) {
             // A silent failure here deploys a STALE tarball on the next
             // ensureTmpPrefix (it only compares hashes, not content). Auth
@@ -1661,7 +1732,52 @@ class LinuxEnvironmentManager(
         else -> "aarch64"
     }
 
-    private fun indexUrl(): String = "$BASE_URL/dists/stable/main/binary-${abiName()}/Packages"
+    private fun indexUrl(base: String = BASE_URL): String = "$base/dists/stable/main/binary-${abiName()}/Packages"
+
+    /** The index carries every checksum, so it only ever comes from Termux's own hosts. */
+    private fun fetchIndex(): String {
+        val hosts = if (packageHttpClient == null) PackageMirrors.official else listOf(BASE_URL)
+        var failure: Exception? = null
+        for (host in hosts) {
+            try { return fetchText(indexUrl(host)) }
+            catch (e: CancellationException) { throw e }
+            catch (e: Exception) { failure = e }
+        }
+        throw failure ?: IllegalStateException("Could not reach the package repository")
+    }
+
+    /** Hosts to try for package files, quickest first. Tests with an injected client stay on one host. */
+    private suspend fun downloadHosts(): List<String> =
+        if (packageHttpClient != null) listOf(BASE_URL) else PackageMirrors.ranked(client)
+
+    /**
+     * Fetches a pool file from the quickest hosts in turn. A mirror's file must match the official
+     * checksum, so a stale or broken mirror only costs a retry. Without a checksum, only Termux's
+     * own hosts are trusted.
+     */
+    private suspend fun downloadPoolFile(
+        fileField: String, dest: File, expectedSha256: String,
+        onVerifying: (suspend () -> Unit)? = null,
+        onProgress: (suspend (Long, Long?) -> Unit)? = null,
+    ) {
+        val hosts = downloadHosts().let { ranked ->
+            if (expectedSha256.isBlank()) ranked.filter { it in PackageMirrors.official || it == BASE_URL } else ranked
+        }.ifEmpty { listOf(BASE_URL) }.take(MAX_DOWNLOAD_HOSTS)
+        var failure: Exception? = null
+        for (host in hosts) {
+            try {
+                downloadVerified("$host/$fileField", dest, expectedSha256, onVerifying, onProgress)
+                return
+            } catch (e: CancellationException) { throw e }
+            catch (e: Exception) {
+                failure = e
+                dest.delete()
+                Log.w(TAG, "Package download from $host failed, trying the next host", e)
+            }
+        }
+        if (packageHttpClient == null) PackageMirrors.reset()
+        throw failure ?: IllegalStateException("Could not download $fileField")
+    }
 
     private fun fetchText(url: String): String =
         client.newCall(Request.Builder().url(url).build()).execute().use { resp ->
@@ -1841,7 +1957,18 @@ class LinuxEnvironmentManager(
         /** How often the deployed shell-tier copy is re-verified against the staging hash. */
         private const val DEPLOY_REVERIFY_INTERVAL_MS = 5 * 60 * 1000L
 
+        /**
+         * Installed-Size (KB) above which a package must leave real files. Real
+         * metapackages ship only a copyright link and list a few KB at most.
+         */
+        private const val MIN_PAYLOAD_KB = 256L
+
         private const val BASE_URL = "https://packages.termux.dev/apt/termux-main"
+        /** Hosts one package tries before the install reports a failure. */
+        private const val MAX_DOWNLOAD_HOSTS = 4
+        /** Packages fetched at once. Many are small, so round trips, not bandwidth, set the pace far from a server. */
+        private const val PARALLEL_DOWNLOADS = 4
+        private const val DOWNLOAD_LOOKAHEAD = 8
 
         /**
          * Where the bundled, Termux-built git looks for its SYSTEM config. The
@@ -1934,4 +2061,14 @@ internal object ShellShims {
             "$name() { $launch ${q(interp)} $target \"\$@\"; }\n"
         }
     }
+}
+
+/**
+ * gzip at the fastest level. Every package install re-stages the whole prefix
+ * (600+ MB with a JDK), and the next privileged shell command waits for it:
+ * measured on a phone, level 1 compresses that tarball in 8.7 s against 22.3 s
+ * at the default level 6, for a file only 7% larger.
+ */
+internal class FastGzipOutputStream(out: java.io.OutputStream) : java.util.zip.GZIPOutputStream(out, 64 * 1024) {
+    init { def.setLevel(java.util.zip.Deflater.BEST_SPEED) }
 }

@@ -13,6 +13,8 @@ class PkgInstallTool(
     private val installPackages: suspend (List<String>) -> Unit,
     private val installForWorkspace: (suspend (List<String>, String) -> Unit)? = null,
     private val installWithProgress: (suspend (List<String>, String, suspend (com.androidharness.app.data.env.PackageInstallStatus) -> Unit) -> Unit)? = null,
+    /** Which of the given packages are marked installed but missing files on disk. */
+    private val brokenPackages: (List<String>) -> List<String> = { emptyList() },
 ) : Tool {
 
     constructor(linuxEnv: LinuxEnvironmentManager) : this(
@@ -23,6 +25,7 @@ class PkgInstallTool(
             linuxEnv.install(packages, workspace, progress).getOrThrow()
             check(linuxEnv.isReady && packages.all(linuxEnv::installedContains)) { "Package installation did not complete. Check the Linux environment status." }
         },
+        brokenPackages = { linuxEnv.brokenPackages(it) },
     )
 
     override val name = "pkg_install"
@@ -71,14 +74,20 @@ class PkgInstallTool(
             }
             val installed = installedPackages().toSet()
             check(pkgs.all { it in installed }) { "Package installation did not complete." }
+            // The marker alone is not proof: a package can stay listed after its files are gone.
+            val broken = brokenPackages(pkgs)
+            if (broken.isNotEmpty()) {
+                return ToolResult(false, "Package installation failed: ${broken.joinToString(", ")} " +
+                    "${if (broken.size == 1) "is" else "are"} marked installed, but files are still missing after the reinstall. " +
+                    "Check the Linux environment in Settings, or report this.")
+            }
             val newlyInstalled = pkgs.filter { it !in previouslyInstalled }
             val reused = pkgs.filter { it in previouslyInstalled }
             ToolResult(
                 ok = true,
                 output = buildList {
                     if (newlyInstalled.isNotEmpty()) add("Successfully installed: ${newlyInstalled.joinToString(", ")}.")
-                    if (reused.isNotEmpty()) add("Already installed: ${reused.joinToString(", ")} (verified/repaired if needed).")
-                    add("Binaries are now ready in the shell PATH.")
+                    if (reused.isNotEmpty()) add("Already installed, files checked on disk: ${reused.joinToString(", ")}.")
                 }.joinToString(" ")
             )
         } catch (e: kotlinx.coroutines.CancellationException) {

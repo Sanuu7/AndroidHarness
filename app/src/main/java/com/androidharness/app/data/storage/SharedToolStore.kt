@@ -80,6 +80,32 @@ internal class SharedToolStore(private val root: File, private val prefix: File)
         return null
     }
 
+    /**
+     * Installed packages whose recorded files are gone from the prefix. The record lists the regular files the
+     * package actually wrote, so this catches any package, not just the few with a known binary to look for.
+     * Documentation is skipped: a missing man page does not make a tool unusable. Untracked packages are
+     * never reported here because there is nothing to compare against.
+     */
+    fun missingFiles(installed: Collection<String>): List<String> {
+        val all = all()
+        return installed.filter { name ->
+            all[name]?.files.orEmpty().any { stamp ->
+                !stamp.directory && !isDocumentation(stamp.path) && !File(prefix, stamp.path).exists()
+            }
+        }
+    }
+
+    /**
+     * How many regular files the install record of [name] lists, docs included (a man-page package is all
+     * docs), or null when the package has no record (installed before file tracking). Zero for a package
+     * with real content means its payload never landed: a metapackage ships only a copyright link.
+     */
+    fun payloadFileCount(name: String): Int? =
+        all()[name]?.files?.count { !it.directory }
+
+    private fun isDocumentation(path: String): Boolean =
+        DOC_DIRS.any { path.startsWith(it) }
+
     fun reason(name: String, installed: Set<String>, required: Set<String>): String? =
         protection(name, installed, required)?.text
 
@@ -143,5 +169,9 @@ internal class SharedToolStore(private val root: File, private val prefix: File)
         }
         check(quarantine.deleteRecursively() || !quarantine.exists())
         check(journal.delete())
+    }
+
+    private companion object {
+        val DOC_DIRS = listOf("share/doc/", "share/man/", "share/info/", "share/locale/", "share/LICENSES/")
     }
 }

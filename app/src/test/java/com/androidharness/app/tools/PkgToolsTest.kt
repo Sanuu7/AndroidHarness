@@ -169,6 +169,24 @@ Description: Fast search tool that respects your gitignore
     }
 
     @Test
+    fun `pkg_install never reports success for a package whose files are still missing`() = runBlocking {
+        val tool = PkgInstallTool(isReady = { true }, installedPackages = { listOf("gradle", "jq") },
+            installPackages = {}, brokenPackages = { names -> names.filter { it == "gradle" } })
+        val args = buildJsonObject { put("packages", buildJsonArray {
+            add(kotlinx.serialization.json.JsonPrimitive("gradle")); add(kotlinx.serialization.json.JsonPrimitive("jq")) }) }
+        val result = tool.execute(args, ToolContext(createMockWorkspace()))
+        assertFalse(result.output, result.ok)
+        assertTrue(result.output.contains("gradle is marked installed, but files are still missing"))
+        assertFalse(result.output.contains("ready in the shell PATH"))
+
+        val healthy = PkgInstallTool(isReady = { true }, installedPackages = { listOf("jq") }, installPackages = {})
+            .execute(buildJsonObject { put("packages", buildJsonArray { add(kotlinx.serialization.json.JsonPrimitive("jq")) }) },
+                ToolContext(createMockWorkspace()))
+        assertTrue(healthy.ok)
+        assertEquals("Already installed, files checked on disk: jq.", healthy.output)
+    }
+
+    @Test
     fun `pkg_search rejects empty query`() = runBlocking {
         val searchTool = PkgSearchTool(
             searcher = { emptyList() },

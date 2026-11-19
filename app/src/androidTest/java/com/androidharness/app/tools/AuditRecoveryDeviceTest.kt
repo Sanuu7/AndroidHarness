@@ -52,7 +52,7 @@ class AuditRecoveryDeviceTest {
                 assertTrue(env.state.value.toString(), env.state.value is EnvState.Ready)
                 val reuse = tool.execute(buildJsonObject { put("packages", buildJsonArray { add(JsonPrimitive("jq")) }) }, ctx)
                 assertTrue(reuse.output, reuse.ok)
-                assertTrue(reuse.output, reuse.output.contains("Already installed: jq"))
+                assertTrue(reuse.output, reuse.output.contains("Already installed, files checked on disk: jq"))
                 assertArrayEquals(before, File(root, "files/linux/.harness-installed").readBytes())
             }
             val offline = LinuxEnvironmentManager(context, packageIndexLoader = { error("index unavailable") })
