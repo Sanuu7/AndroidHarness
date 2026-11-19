@@ -553,4 +553,14 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"மற்ற அரட்டைகள்"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"%1$d துணை முகவர் முடிந்தது"</item>
+        <item quantity="other">"%1$d துணை முகவர்கள் முடிந்தன"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d முடிந்தது, %2$d முடியவில்லை"</string>
+    <string name="subagents_show_result">"முடிவைக் காட்டு"</string>
+    <string name="subagents_hide_result">"முடிவை மறை"</string>
+    <string name="subagents_no_output">"எந்த முடிவும் திரும்பவில்லை."</string>
+    <string name="subagents_took">"%1$s ஆனது"</string>
 </resources>

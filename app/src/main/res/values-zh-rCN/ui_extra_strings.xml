@@ -549,4 +549,13 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">其他聊天</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="other">%1$d 个子智能体已完成</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">%1$d 个已完成，%2$d 个未完成</string>
+    <string name="subagents_show_result">显示结果</string>
+    <string name="subagents_hide_result">隐藏结果</string>
+    <string name="subagents_no_output">没有返回结果。</string>
+    <string name="subagents_took">耗时 %1$s</string>
 </resources>

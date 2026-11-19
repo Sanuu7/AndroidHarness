@@ -561,4 +561,18 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"محادثات أخرى"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="zero">"%1$d وكيل فرعي منتهٍ"</item>
+        <item quantity="one">"%1$d وكيل فرعي منتهٍ"</item>
+        <item quantity="two">"%1$d وكيلان فرعيان منتهيان"</item>
+        <item quantity="few">"%1$d وكلاء فرعيون منتهون"</item>
+        <item quantity="many">"%1$d وكيلًا فرعيًا منتهيًا"</item>
+        <item quantity="other">"%1$d وكيل فرعي منتهٍ"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d انتهى، %2$d لم ينتهِ"</string>
+    <string name="subagents_show_result">"إظهار النتيجة"</string>
+    <string name="subagents_hide_result">"إخفاء النتيجة"</string>
+    <string name="subagents_no_output">"لم تُعَد أي نتيجة."</string>
+    <string name="subagents_took">"استغرق %1$s"</string>
 </resources>

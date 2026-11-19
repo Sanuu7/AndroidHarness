@@ -553,4 +553,14 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"Otros chats"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"%1$d subagente terminado"</item>
+        <item quantity="other">"%1$d subagentes terminados"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d listos, %2$d sin terminar"</string>
+    <string name="subagents_show_result">"Mostrar resultado"</string>
+    <string name="subagents_hide_result">"Ocultar resultado"</string>
+    <string name="subagents_no_output">"No se devolvió ningún resultado."</string>
+    <string name="subagents_took">"Tardó %1$s"</string>
 </resources>

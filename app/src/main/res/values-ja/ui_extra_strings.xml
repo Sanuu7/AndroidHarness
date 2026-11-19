@@ -551,4 +551,13 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"その他のチャット"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="other">"%1$d 個のサブエージェントが完了"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d 件完了、%2$d 件未完了"</string>
+    <string name="subagents_show_result">"結果を表示"</string>
+    <string name="subagents_hide_result">"結果を隠す"</string>
+    <string name="subagents_no_output">"結果は返されませんでした。"</string>
+    <string name="subagents_took">"%1$s かかりました"</string>
 </resources>

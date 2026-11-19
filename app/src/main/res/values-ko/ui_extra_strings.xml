@@ -551,4 +551,13 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"다른 채팅"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="other">"하위 에이전트 %1$d개 완료"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d개 완료, %2$d개 미완료"</string>
+    <string name="subagents_show_result">"결과 보기"</string>
+    <string name="subagents_hide_result">"결과 숨기기"</string>
+    <string name="subagents_no_output">"반환된 결과가 없습니다."</string>
+    <string name="subagents_took">"%1$s 걸림"</string>
 </resources>

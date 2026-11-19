@@ -551,4 +551,13 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"其他對話"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="other">"%1$d 個子代理已完成"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d 個已完成，%2$d 個未完成"</string>
+    <string name="subagents_show_result">"顯示結果"</string>
+    <string name="subagents_hide_result">"隱藏結果"</string>
+    <string name="subagents_no_output">"沒有傳回結果。"</string>
+    <string name="subagents_took">"耗時 %1$s"</string>
 </resources>

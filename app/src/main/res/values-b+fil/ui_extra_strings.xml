@@ -553,4 +553,14 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"Iba pang chat"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"%1$d subagent ang tapos"</item>
+        <item quantity="other">"%1$d subagent ang tapos"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d tapos, %2$d hindi"</string>
+    <string name="subagents_show_result">"Ipakita ang resulta"</string>
+    <string name="subagents_hide_result">"Itago ang resulta"</string>
+    <string name="subagents_no_output">"Walang resultang ibinalik."</string>
+    <string name="subagents_took">"Tumagal ng %1$s"</string>
 </resources>

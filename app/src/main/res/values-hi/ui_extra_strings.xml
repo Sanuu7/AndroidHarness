@@ -553,4 +553,14 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"अन्य चैट"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"%1$d सबएजेंट पूरा"</item>
+        <item quantity="other">"%1$d सबएजेंट पूरे"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d पूरे, %2$d अधूरे"</string>
+    <string name="subagents_show_result">"परिणाम दिखाएँ"</string>
+    <string name="subagents_hide_result">"परिणाम छिपाएँ"</string>
+    <string name="subagents_no_output">"कोई परिणाम नहीं मिला।"</string>
+    <string name="subagents_took">"%1$s लगा"</string>
 </resources>

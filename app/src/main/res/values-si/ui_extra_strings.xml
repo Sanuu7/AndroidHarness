@@ -553,4 +553,14 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"වෙනත් කතාබස්"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"උපනියෝජිතයා %1$dක් අවසන්"</item>
+        <item quantity="other">"උපනියෝජිතයන් %1$dක් අවසන්"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d අවසන්, %2$d අවසන් නැත"</string>
+    <string name="subagents_show_result">"ප්‍රතිඵලය පෙන්වන්න"</string>
+    <string name="subagents_hide_result">"ප්‍රතිඵලය සඟවන්න"</string>
+    <string name="subagents_no_output">"කිසිදු ප්‍රතිඵලයක් ලැබුණේ නැත."</string>
+    <string name="subagents_took">"%1$s ගත විය"</string>
 </resources>

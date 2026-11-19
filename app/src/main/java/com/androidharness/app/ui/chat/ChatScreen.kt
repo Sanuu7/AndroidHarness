@@ -248,6 +248,12 @@ private fun ChatScreenContent(
             .map { list -> list.associate { it.id to (it.status to it.output) } }.distinctUntilChanged() }
             ?: kotlinx.coroutines.flow.flowOf(emptyMap())
     }.collectAsStateWithLifecycle(initialValue = emptyMap())
+    // A turn's subagents settle into one card once every one of them has stopped; the floating popup covers them until then.
+    val finishedSubagentsByTurn by remember(state.sessionId) {
+        state.sessionId?.let { sid -> viewModel.container.runManager.subagents.forSession(sid)
+            .map { list -> list.groupBy { it.turnId }.filterValues { runs -> runs.none { it.status.active } } }.distinctUntilChanged() }
+            ?: kotlinx.coroutines.flow.flowOf(emptyMap())
+    }.collectAsStateWithLifecycle(initialValue = emptyMap())
     val globalSettings by viewModel.container.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings())
     val savedAnswerIds by remember(state.sessionId) {
         state.sessionId?.let { viewModel.container.sessions.savedAnswerIds(it) } ?: kotlinx.coroutines.flow.flowOf(emptySet())
@@ -2398,6 +2404,13 @@ private fun ChatScreenContent(
                                 if (isTurnFinal && !isTurnRunning) message.turnId?.let { turnHistory[it] }?.let { matches ->
                                     indexedItem(key = "message-$messageKey-history", contentType = ChatListContentType.History) {
                                         com.androidharness.app.ui.chat.components.ChatHistoryCards(matches, ::openHistoryMatch)
+                                    }
+                                }
+                                if (isTurnFinal && !isTurnRunning && !state.conversation.isChat) message.turnId?.let { finishedSubagentsByTurn[it] }?.let { runs ->
+                                    indexedItem(key = "message-$messageKey-subagent-tree", contentType = ChatListContentType.Subagents) {
+                                        Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
+                                            com.androidharness.app.ui.chat.components.SubagentTreeCard(runs, onOpenSubagent)
+                                        }
                                     }
                                 }
                                 if (isTurnRunning || isSearchTurn) {

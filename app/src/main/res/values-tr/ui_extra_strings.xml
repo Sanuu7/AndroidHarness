@@ -553,4 +553,14 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"Diğer sohbetler"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"%1$d alt ajan bitti"</item>
+        <item quantity="other">"%1$d alt ajan bitti"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d bitti, %2$d bitmedi"</string>
+    <string name="subagents_show_result">"Sonucu göster"</string>
+    <string name="subagents_hide_result">"Sonucu gizle"</string>
+    <string name="subagents_no_output">"Hiçbir sonuç döndürülmedi."</string>
+    <string name="subagents_took">"%1$s sürdü"</string>
 </resources>

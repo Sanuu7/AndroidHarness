@@ -555,4 +555,15 @@
     <string name="settings_voice_preview_play">Listen to %1$s</string>
     <string name="settings_voice_preview_stop">Stop the sample</string>
     <string name="settings_voice_preview_hint">Tap the speaker to hear a voice before you pick it.</string>
+    <string name="sidebar_workspace_other">"Autres chats"</string>
+    <plurals name="subagents_finished_title">
+        <item quantity="one">"%1$d sous-agent terminé"</item>
+        <item quantity="many">"%1$d de sous-agents terminés"</item>
+        <item quantity="other">"%1$d sous-agents terminés"</item>
+    </plurals>
+    <string name="subagents_finished_with_failures">"%1$d terminés, %2$d non terminés"</string>
+    <string name="subagents_show_result">"Afficher le résultat"</string>
+    <string name="subagents_hide_result">"Masquer le résultat"</string>
+    <string name="subagents_no_output">"Aucun résultat n\'a été renvoyé."</string>
+    <string name="subagents_took">"A pris %1$s"</string>
 </resources>

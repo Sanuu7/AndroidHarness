@@ -122,7 +122,8 @@ internal fun FloatingSubagentDock(
             expiryTick = android.os.SystemClock.uptimeMillis()
         }
     }
-    val visible = lifecycle.visible(maxOf(expiryTick, android.os.SystemClock.uptimeMillis()), expanded || dragging)
+    // Finished work moves into the chat's subagent card, so an open panel no longer holds the popup up.
+    val visible = lifecycle.visible(maxOf(expiryTick, android.os.SystemClock.uptimeMillis()), dragging)
     LaunchedEffect(visible) {
         if (!visible) {
             delay(200)
