@@ -532,8 +532,8 @@ class RunManager(
         }
         if (replacementMessageId != null) {
             check(!resume) { "Cannot replace a message while resuming" }
-            check(!workspaceBusy(runWorkspace, except = sid)) {
-                "Pause other tasks in this workspace before editing or retrying a message"
+            check(!rewindRestoresFiles(sid, replacementMessageId) || !workspaceBusy(runWorkspace, except = sid)) {
+                "Another task is working in this chat's workspace. Pause it before editing or retrying this message, since that undoes file changes."
             }
             if (conversation.isChat) {
                 val rows = sessions.messages(sid)
@@ -1436,6 +1436,15 @@ class RunManager(
      * deletes that message and everything after it. The caller then re-sends
      * the edited text as a fresh run.
      */
+    /** Whether resending from [messageId] would restore saved file versions, not just trim the conversation. */
+    private suspend fun rewindRestoresFiles(sessionId: String, messageId: String): Boolean {
+        val msgs = sessions.messages(sessionId)
+        val index = msgs.indexOfFirst { it.id == messageId }
+        if (index < 0) return false
+        val withFiles = checkpoints.turnsWithCheckpoints(sessionId)
+        return msgs.drop(index).any { it.turnId != null && it.turnId in withFiles }
+    }
+
     suspend fun rewindAndTruncate(sessionId: String, messageId: String) {
         stopAndJoin(sessionId)
         engine.sideContexts.clear(sessionId)
@@ -1446,7 +1455,11 @@ class RunManager(
         // distinct turns from the edited message onward, newest first
         val turnIds = msgs.drop(index).mapNotNull { it.turnId }.distinct().reversed()
         val fs = workspace.forSession(sessionId)
-        check(!workspaceBusy(fs, except = sessionId)) { "Pause other tasks in these workspaces before editing or retrying a message." }
+        // Only a rewind that puts files back can collide with another task in the same folder.
+        val restoresFiles = checkpoints.turnsWithCheckpoints(sessionId).let { saved -> turnIds.any { it in saved } }
+        check(!restoresFiles || !workspaceBusy(fs, except = sessionId)) {
+            "Another task is working in this chat's workspace. Pause it before editing or retrying this message, since that undoes file changes."
+        }
         kotlinx.coroutines.withContext(kotlinx.coroutines.NonCancellable) {
             for (tid in turnIds) {
                 val result = checkpoints.rewind(sessionId, tid, fs)
