@@ -44,11 +44,11 @@
         <item quantity="other">%1$d صفحه باز شد</item>
     </plurals>
     <plurals name="browser_steps_click">
-        <item quantity="one">یک بار کلیک</item>
+        <item quantity="one">%1$d بار کلیک</item>
         <item quantity="other">%1$d بار کلیک</item>
     </plurals>
     <plurals name="browser_steps_type">
-        <item quantity="one">یک بار تایپ</item>
+        <item quantity="one">%1$d بار تایپ</item>
         <item quantity="other">%1$d بار تایپ</item>
     </plurals>
     <plurals name="browser_steps_screenshot">
@@ -56,7 +56,7 @@
         <item quantity="other">%1$d اسکرین‌شات گرفته شد</item>
     </plurals>
     <plurals name="browser_steps_read">
-        <item quantity="one">صفحه یک بار خوانده شد</item>
+        <item quantity="one">صفحه %1$d بار خوانده شد</item>
         <item quantity="other">صفحه %1$d بار خوانده شد</item>
     </plurals>
     <plurals name="browser_steps_other">

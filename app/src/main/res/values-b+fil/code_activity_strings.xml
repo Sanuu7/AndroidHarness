@@ -44,23 +44,23 @@
         <item quantity="other">nagbukas ng %1$d page</item>
     </plurals>
     <plurals name="browser_steps_click">
-        <item quantity="one">isang klik</item>
+        <item quantity="one">%1$d klik</item>
         <item quantity="other">nag-click ng %1$d beses</item>
     </plurals>
     <plurals name="browser_steps_type">
-        <item quantity="one">nag-type nang isang beses</item>
+        <item quantity="one">nag-type ng %1$d beses</item>
         <item quantity="other">nag-type ng %1$d beses</item>
     </plurals>
     <plurals name="browser_steps_screenshot">
-        <item quantity="one">isang screenshot</item>
+        <item quantity="one">%1$d screenshot</item>
         <item quantity="other">%1$d screenshot</item>
     </plurals>
     <plurals name="browser_steps_read">
-        <item quantity="one">binasa ang pahina nang isang beses</item>
+        <item quantity="one">binasa ang pahina ng %1$d beses</item>
         <item quantity="other">binasa ang pahina ng %1$d beses</item>
     </plurals>
     <plurals name="browser_steps_other">
-        <item quantity="one">isang iba pang hakbang</item>
+        <item quantity="one">%1$d iba pang hakbang</item>
         <item quantity="other">%1$d iba pang hakbang</item>
     </plurals>
     <string name="browser_steps_using">Ginagamit ang browser</string>

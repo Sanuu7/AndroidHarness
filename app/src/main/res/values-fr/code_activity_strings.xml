@@ -52,12 +52,12 @@
         <item quantity="other">%1$d pages ouvertes</item>
     </plurals>
     <plurals name="browser_steps_click">
-        <item quantity="one">un clic</item>
+        <item quantity="one">%1$d clic</item>
         <item quantity="many">%1$d clics</item>
         <item quantity="other">%1$d clics</item>
     </plurals>
     <plurals name="browser_steps_type">
-        <item quantity="one">une saisie</item>
+        <item quantity="one">%1$d saisie</item>
         <item quantity="many">%1$d saisies</item>
         <item quantity="other">%1$d saisies</item>
     </plurals>
@@ -67,7 +67,7 @@
         <item quantity="other">%1$d captures d\'écran</item>
     </plurals>
     <plurals name="browser_steps_read">
-        <item quantity="one">page lue une fois</item>
+        <item quantity="one">page lue %1$d fois</item>
         <item quantity="many">page lue %1$d fois</item>
         <item quantity="other">page lue %1$d fois</item>
     </plurals>

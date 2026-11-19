@@ -44,11 +44,11 @@
         <item quantity="other">%1$d sayfa açıldı</item>
     </plurals>
     <plurals name="browser_steps_click">
-        <item quantity="one">bir kez tıklandı</item>
+        <item quantity="one">%1$d kez tıklandı</item>
         <item quantity="other">%1$d kez tıklandı</item>
     </plurals>
     <plurals name="browser_steps_type">
-        <item quantity="one">bir kez yazıldı</item>
+        <item quantity="one">%1$d kez yazıldı</item>
         <item quantity="other">%1$d kez yazıldı</item>
     </plurals>
     <plurals name="browser_steps_screenshot">
@@ -56,7 +56,7 @@
         <item quantity="other">%1$d ekran görüntüsü alındı</item>
     </plurals>
     <plurals name="browser_steps_read">
-        <item quantity="one">sayfa bir kez okundu</item>
+        <item quantity="one">sayfa %1$d kez okundu</item>
         <item quantity="other">sayfa %1$d kez okundu</item>
     </plurals>
     <plurals name="browser_steps_other">

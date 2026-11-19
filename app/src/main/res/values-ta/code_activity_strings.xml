@@ -44,11 +44,11 @@
         <item quantity="other">%1$d பக்கங்கள் திறக்கப்பட்டன</item>
     </plurals>
     <plurals name="browser_steps_click">
-        <item quantity="one">ஒரு முறை கிளிக்</item>
+        <item quantity="one">%1$d முறை கிளிக்</item>
         <item quantity="other">%1$d முறை கிளிக்</item>
     </plurals>
     <plurals name="browser_steps_type">
-        <item quantity="one">ஒரு முறை தட்டச்சு</item>
+        <item quantity="one">%1$d முறை தட்டச்சு</item>
         <item quantity="other">%1$d முறை தட்டச்சு</item>
     </plurals>
     <plurals name="browser_steps_screenshot">
@@ -56,7 +56,7 @@
         <item quantity="other">%1$d திரைப்படங்கள் எடுக்கப்பட்டன</item>
     </plurals>
     <plurals name="browser_steps_read">
-        <item quantity="one">பக்கம் ஒரு முறை படிக்கப்பட்டது</item>
+        <item quantity="one">பக்கம் %1$d முறை படிக்கப்பட்டது</item>
         <item quantity="other">பக்கம் %1$d முறை படிக்கப்பட்டது</item>
     </plurals>
     <plurals name="browser_steps_other">

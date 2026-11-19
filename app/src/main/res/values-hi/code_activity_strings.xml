@@ -44,19 +44,19 @@
         <item quantity="other">%1$d पेज खोले</item>
     </plurals>
     <plurals name="browser_steps_click">
-        <item quantity="one">एक बार क्लिक</item>
+        <item quantity="one">%1$d बार क्लिक</item>
         <item quantity="other">%1$d बार क्लिक</item>
     </plurals>
     <plurals name="browser_steps_type">
-        <item quantity="one">एक बार टाइप</item>
+        <item quantity="one">%1$d बार टाइप</item>
         <item quantity="other">%1$d बार टाइप</item>
     </plurals>
     <plurals name="browser_steps_screenshot">
-        <item quantity="one">एक स्क्रीनशॉट</item>
+        <item quantity="one">%1$d स्क्रीनशॉट</item>
         <item quantity="other">%1$d स्क्रीनशॉट</item>
     </plurals>
     <plurals name="browser_steps_read">
-        <item quantity="one">पेज एक बार पढ़ा</item>
+        <item quantity="one">पेज %1$d बार पढ़ा</item>
         <item quantity="other">पेज %1$d बार पढ़ा</item>
     </plurals>
     <plurals name="browser_steps_other">

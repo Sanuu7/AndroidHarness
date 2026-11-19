@@ -77,40 +77,40 @@
     </plurals>
     <plurals name="browser_steps_click">
         <item quantity="zero">%1$d نقرة</item>
-        <item quantity="one">نقرة واحدة</item>
-        <item quantity="two">نقرتان</item>
+        <item quantity="one">%1$d نقرة</item>
+        <item quantity="two">%1$d نقرتان</item>
         <item quantity="few">%1$d نقرات</item>
         <item quantity="many">%1$d نقرة</item>
         <item quantity="other">%1$d نقرة</item>
     </plurals>
     <plurals name="browser_steps_type">
         <item quantity="zero">%1$d كتابة</item>
-        <item quantity="one">كتابة واحدة</item>
-        <item quantity="two">كتابتان</item>
+        <item quantity="one">%1$d كتابة</item>
+        <item quantity="two">%1$d كتابتان</item>
         <item quantity="few">%1$d كتابات</item>
         <item quantity="many">%1$d كتابة</item>
         <item quantity="other">%1$d كتابة</item>
     </plurals>
     <plurals name="browser_steps_screenshot">
         <item quantity="zero">%1$d لقطة شاشة</item>
-        <item quantity="one">لقطة شاشة واحدة</item>
-        <item quantity="two">لقطتا شاشة</item>
+        <item quantity="one">%1$d لقطة شاشة</item>
+        <item quantity="two">%1$d لقطتان</item>
         <item quantity="few">%1$d لقطات شاشة</item>
         <item quantity="many">%1$d لقطة شاشة</item>
         <item quantity="other">%1$d لقطة شاشة</item>
     </plurals>
     <plurals name="browser_steps_read">
         <item quantity="zero">قراءة الصفحة %1$d مرة</item>
-        <item quantity="one">قراءة الصفحة مرة</item>
-        <item quantity="two">قراءة الصفحة مرتين</item>
+        <item quantity="one">قراءة الصفحة %1$d مرة</item>
+        <item quantity="two">قراءة الصفحة %1$d مرتين</item>
         <item quantity="few">قراءة الصفحة %1$d مرات</item>
         <item quantity="many">قراءة الصفحة %1$d مرة</item>
         <item quantity="other">قراءة الصفحة %1$d مرة</item>
     </plurals>
     <plurals name="browser_steps_other">
         <item quantity="zero">%1$d خطوة أخرى</item>
-        <item quantity="one">خطوة أخرى واحدة</item>
-        <item quantity="two">خطوتان أخريان</item>
+        <item quantity="one">%1$d خطوة أخرى</item>
+        <item quantity="two">%1$d خطوتان أخريان</item>
         <item quantity="few">%1$d خطوات أخرى</item>
         <item quantity="many">%1$d خطوة أخرى</item>
         <item quantity="other">%1$d خطوة أخرى</item>
