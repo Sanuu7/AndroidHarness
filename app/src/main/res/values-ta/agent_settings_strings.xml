@@ -41,4 +41,6 @@
         <item quantity="one">"%1$d உங்களுக்குத் தேவை"</item>
         <item quantity="other">"%1$d உங்களுக்குத் தேவை"</item>
     </plurals>
+    <string name="as_activity_plugins">"செருகுநிரல்களை நிர்வகிக்கிறது"</string>
+    <string name="as_activity_plugins_done">"செருகுநிரல்கள் நிர்வகிக்கப்பட்டன"</string>
 </resources>

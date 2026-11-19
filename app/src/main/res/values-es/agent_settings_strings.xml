@@ -41,4 +41,6 @@
         <item quantity="one">%1$d te necesita</item>
         <item quantity="other">%1$d te necesitan</item>
     </plurals>
+    <string name="as_activity_plugins">"Gestionando complementos"</string>
+    <string name="as_activity_plugins_done">"Complementos gestionados"</string>
 </resources>

@@ -5,6 +5,8 @@
     <string name="as_activity_found">Looked up settings</string>
     <string name="as_activity_changing">Changing settings</string>
     <string name="as_activity_changed">Changed settings</string>
+    <string name="as_activity_plugins">Managing plugins</string>
+    <string name="as_activity_plugins_done">Managed plugins</string>
     <string name="as_undo">Undo</string>
     <string name="as_undo_all">Undo all</string>
     <string name="as_redo">Redo</string>

@@ -345,6 +345,7 @@ class AppContainer(val appContext: Context) {
         pullRequests = { githubRepositories },
         sessionMessages = { sessions.messages(it) },
         appSettings = settings,
+        plugins = pluginManager,
         // Declared below; resolved on each call, after construction.
         automations = com.androidharness.app.tools.AutomationToolHost(
             target = { sid ->

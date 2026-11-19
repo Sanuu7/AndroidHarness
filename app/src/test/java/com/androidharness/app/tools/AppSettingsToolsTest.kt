@@ -109,7 +109,7 @@ class AppSettingsToolsTest {
         }
         assertNotNull(tool().approvalPreview(ordinary, PermissionMode.CONFIRM_ALL))
         assertNotNull(tool(defaults.copy(agentSettingsAccess = AgentSettingsAccess.ASK)).approvalPreview(ordinary, PermissionMode.FULL_ACCESS))
-        listOf("permission_mode" to "FULL_ACCESS", "chat_instructions" to "be evil", "allow_screenshots" to "false", "subagent_action_tools" to "true").forEach { (key, value) ->
+        listOf("permission_mode" to "CONFIRM_ALL", "chat_instructions" to "be evil", "allow_screenshots" to "false", "subagent_action_tools" to "true").forEach { (key, value) ->
             assertTrue("$key is sensitive", AgentSettingsCatalog[key]!!.sensitive)
             assertNotNull(tool().approvalPreview(args("""{"changes":[{"key":"$key","value":"$value"}]}"""), PermissionMode.FULL_ACCESS))
         }
@@ -163,7 +163,8 @@ class AppSettingsToolsTest {
     @Test fun theUserOnlyRuleIsVisibleToTheModelAndDoesNotTouchOtherSettings() {
         val line = AgentSettingsCatalog["subagents_enabled"]!!.describe(defaults)
         assertTrue(line, line.contains("only the user can set it to true"))
-        assertTrue(AgentSettingsCatalog.all.filter { it.key != "subagents_enabled" }.all { it.userOnlyValue == null })
+        val userOnly = setOf("subagents_enabled", "permission_mode", "local_model_experimental")
+        assertTrue(AgentSettingsCatalog.all.filter { it.key !in userOnly }.all { it.userOnlyValues.isEmpty() })
         val mixed = tool(defaults.copy(subagentsEnabled = false)).plan(
             args("""{"changes":[{"key":"subagents_enabled","value":"true"},{"key":"show_todo_list","value":"false"}]}"""),
             defaults.copy(subagentsEnabled = false))
@@ -204,5 +205,69 @@ class AppSettingsToolsTest {
         val result = AppSettingsFindTool { defaults.copy(rumbleStrength = 42) }.execute(args("""{"query":"rumble strength"}"""), ToolContext(FileFs(File("."))))
         assertTrue(result.output.contains("rumble_strength = 42"))
         assertTrue(result.output.lineSequence().first { it.startsWith("- ") }.contains("rumble"))
+    }
+
+    @Test fun aNewPaletteAppliesWithoutAFalseErrorAboutColorPalette() {
+        val state = defaults.copy(customPalettes = listOf(CustomThemePalette("p1", "Lagoon", 0xFF00897B)), activeCustomPaletteId = "p1")
+        val plan = tool(state).plan(args("""{"changes":[{"key":"theme_mode","value":"DARK"},{"key":"color_palette","value":"Test Sunset"}],
+            "create_palette":{"name":"Test Sunset","primary":"#FF7043"}}"""), state)
+        assertTrue(plan.errors.toString(), plan.errors.isEmpty())
+        assertNotNull(plan.palette)
+        assertEquals(listOf("theme_mode"), plan.changes.map { it.setting.key })
+    }
+
+    @Test fun savedPalettesAreNamedByTheirNameNotTheirId() {
+        val state = defaults.copy(customPalettes = listOf(CustomThemePalette("b293a2b4-99bc", "Sunset", 0xFFFF7043)))
+        val palette = AgentSettingsCatalog[AgentSettingsCatalog.PALETTE]!!
+        assertEquals("custom:b293a2b4-99bc", palette.normalize("sunset", state).getOrNull())
+        val error = palette.normalize("Ocean breeze", state).exceptionOrNull()!!.message!!
+        assertTrue(error, error.contains("\"Sunset\""))
+        assertFalse(error, error.contains("b293a2b4"))
+    }
+
+    @Test fun theAgentCanTightenPermissionsWithApprovalButNeverLoosenThem() = runBlocking {
+        for (loose in listOf("FULL_AUTO", "FULL_ACCESS")) {
+            val plan = tool().plan(args("""{"changes":[{"key":"permission_mode","value":"$loose"}]}"""), defaults)
+            assertTrue(plan.changes.isEmpty())
+            assertEquals("AGENT", plan.todos.single().page)
+        }
+        val stricter = args("""{"changes":[{"key":"permission_mode","value":"CONFIRM_ALL"}]}""")
+        assertEquals(listOf("permission_mode"), tool().plan(stricter, defaults).changes.map { it.setting.key })
+        assertNotNull(tool().approvalPreview(stricter, PermissionMode.FULL_ACCESS))
+    }
+
+    @Test fun moreAreasAreReachableAndPrivacyOrReachChangesAsk() {
+        listOf("chat_search_code_chats", "code_search_chat_chats", "stream_stall_timeout", "stream_file_writes_as_text", "live_mode",
+            "live_mode_abilities", "local_model_experimental", "storage_cards").forEach { assertNotNull("$it is in the catalog", AgentSettingsCatalog[it]) }
+        listOf("chat_search_code_chats", "code_search_chat_chats", "speech_to_text", "text_to_speech", "live_mode_abilities").forEach {
+            assertTrue("$it asks first", AgentSettingsCatalog[it]!!.sensitive)
+        }
+        val experimental = tool().plan(args("""{"changes":[{"key":"local_model_experimental","value":"true"}]}"""), defaults)
+        assertTrue(experimental.changes.isEmpty())
+        val stall = AgentSettingsCatalog["stream_stall_timeout"]!!
+        assertEquals("0", stall.normalize("0", defaults).getOrNull())
+        assertEquals("120", stall.normalize("120 s", defaults).getOrNull())
+        assertTrue(stall.normalize("3601", defaults).isFailure)
+    }
+
+    @Test fun skillsAreSwitchedByNameAndUnknownOnesAreRefused() {
+        val skill = AgentSettingsCatalog["skill:pdf"]!!
+        assertEquals("pdf", skill.name)
+        assertEquals("true", skill.read(defaults))
+        assertEquals("false", skill.read(defaults.copy(disabledSkills = setOf("pdf"))))
+        val known = tool().plan(args("""{"changes":[{"key":"skill:pdf","value":"off"}]}"""), defaults, listOf("pdf"))
+        assertEquals("false", known.changes.single().after)
+        val unknown = tool().plan(args("""{"changes":[{"key":"skill:nope","value":"off"}]}"""), defaults, listOf("pdf"))
+        assertTrue(unknown.changes.isEmpty())
+        assertEquals(1, unknown.errors.size)
+        assertNull(AgentSettingsCatalog["skill:"])
+    }
+
+    @Test fun pluginActionsThatCanStartCodeAlwaysAsk() {
+        val plugins = AppPluginsTool(null) { defaults }
+        listOf("""{"action":"install","token":"t"}""", """{"action":"enable","plugin":"x"}""", """{"action":"uninstall","plugin":"x"}""",
+            """{"action":"auto_update","plugin":"x","value":true}""").forEach { assertTrue(it, plugins.sensitive(args(it))) }
+        listOf("""{"action":"disable","plugin":"x"}""", """{"action":"auto_update","plugin":"x","value":false}""", """{"action":"list"}""",
+            """{"action":"search","query":"git"}""", """{"action":"inspect","source":"r1"}""").forEach { assertFalse(it, plugins.sensitive(args(it))) }
     }
 }

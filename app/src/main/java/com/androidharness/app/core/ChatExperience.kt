@@ -12,7 +12,7 @@ object ChatExperience {
         "github_api", "github_search", "github_file",
         "remember", "recall",
         "visual_guide",
-        "app_settings_find", "app_settings_change",
+        "app_settings_find", "app_settings_change", "app_plugins",
         "reminder_set", "reminder_list", "reminder_cancel", "alarm_set", "timer_set",
     )
 

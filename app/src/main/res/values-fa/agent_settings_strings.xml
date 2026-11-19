@@ -41,4 +41,6 @@
         <item quantity="one">%1$d مورد به شما نیاز دارد</item>
         <item quantity="other">%1$d مورد به شما نیاز دارد</item>
     </plurals>
+    <string name="as_activity_plugins">"مدیریت افزونه‌ها"</string>
+    <string name="as_activity_plugins_done">"افزونه‌ها مدیریت شد"</string>
 </resources>

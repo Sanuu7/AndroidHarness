@@ -45,4 +45,6 @@
         <item quantity="many">%1$d ждут вас</item>
         <item quantity="other">%1$d ждут вас</item>
     </plurals>
+    <string name="as_activity_plugins">"Управление плагинами"</string>
+    <string name="as_activity_plugins_done">"Плагины изменены"</string>
 </resources>

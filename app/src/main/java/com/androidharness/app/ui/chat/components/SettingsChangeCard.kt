@@ -199,7 +199,7 @@ private fun ChangeRow(change: SettingChange, setting: AgentSetting?, state: Chan
     ) {
         Column(Modifier.weight(1f)) {
             setting?.let { Text(stringResource(it.page.title), style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis) }
-            Text(setting?.let { stringResource(it.title) } ?: change.key, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
+            Text(setting?.let { it.name ?: stringResource(it.title) } ?: change.key, style = MaterialTheme.typography.bodyMedium, maxLines = 2, overflow = TextOverflow.Ellipsis)
             when (state) {
                 ChangeState.UNDONE -> StateLabel(stringResource(R.string.as_state_undone), scheme.onSurfaceVariant)
                 ChangeState.MOVED_ON -> StateLabel(stringResource(R.string.as_state_moved_on), scheme.tertiary)

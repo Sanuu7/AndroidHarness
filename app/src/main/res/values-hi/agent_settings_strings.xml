@@ -41,4 +41,6 @@
         <item quantity="one">"%1$d को आपकी जरूरत है"</item>
         <item quantity="other">"%1$d को आपकी जरूरत है"</item>
     </plurals>
+    <string name="as_activity_plugins">"प्लगइन प्रबंधित किए जा रहे हैं"</string>
+    <string name="as_activity_plugins_done">"प्लगइन प्रबंधित किए गए"</string>
 </resources>

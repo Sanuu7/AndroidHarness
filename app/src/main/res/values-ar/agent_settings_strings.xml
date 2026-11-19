@@ -49,4 +49,6 @@
         <item quantity="many">%1$d تحتاج إليك</item>
         <item quantity="other">%1$d تحتاج إليك</item>
     </plurals>
+    <string name="as_activity_plugins">"إدارة الإضافات"</string>
+    <string name="as_activity_plugins_done">"تمت إدارة الإضافات"</string>
 </resources>

@@ -196,6 +196,7 @@ fun toolPresentation(call: ToolCallData, result: ChatMessage? = null): ToolPrese
         "memory_read", "memory_search", "recall" -> ToolPresentation("Read memory", "Reading memory…", kind = ToolActivityKind.MEMORY)
         "app_settings_find" -> ToolPresentation("Looked up settings", "Looking up settings…", arg("query"), ToolActivityKind.READ)
         "app_settings_change" -> ToolPresentation("Changed settings", "Changing settings…", kind = ToolActivityKind.OTHER)
+        "app_plugins" -> ToolPresentation("Managed plugins", "Managing plugins…", arg("action"), ToolActivityKind.OTHER)
         "todo_write" -> ToolPresentation("Updated task list", "Updating task list…", kind = ToolActivityKind.OTHER)
         "automation_create" -> ToolPresentation("Scheduled a message", "Scheduling a message…", arg("title"), ToolActivityKind.OTHER)
         "automation_list" -> ToolPresentation("Checked schedules", "Checking schedules…", kind = ToolActivityKind.READ)

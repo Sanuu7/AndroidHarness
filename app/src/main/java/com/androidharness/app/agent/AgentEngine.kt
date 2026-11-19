@@ -1439,8 +1439,9 @@ class AgentEngine(
                 ?: com.androidharness.app.llm.visionCapable(config.model))
 
         // The model sometimes tries to modify files in plan mode, refuse cleanly.
-        // Settings changes touch no files, so Plan mode does not block them.
-        if (agentMode == AgentMode.PLAN && !tool.isReadOnly && tool !is com.androidharness.app.tools.AppSettingsChangeTool) {
+        // Settings and plugin changes touch no project files, so Plan mode does not block them; their own approvals still apply.
+        if (agentMode == AgentMode.PLAN && !tool.isReadOnly && tool !is com.androidharness.app.tools.AppSettingsChangeTool &&
+            tool !is com.androidharness.app.tools.AppPluginsTool) {
             return ToolResult(
                 false,
                 "Plan mode is active: ${call.name} was rejected. Modifying files is not allowed in Plan mode. Finish your turn and present your plan for user approval.",
@@ -1610,7 +1611,8 @@ class AgentEngine(
             return request.response.await()
         }
         val approved = when {
-            hookAsk != null && !isPkgInstall && tool !is com.androidharness.app.tools.AppSettingsChangeTool -> askUser(ApprovalRequest(call,
+            hookAsk != null && !isPkgInstall && tool !is com.androidharness.app.tools.AppSettingsChangeTool &&
+                tool !is com.androidharness.app.tools.AppPluginsTool -> askUser(ApprovalRequest(call,
                 "Plugin hook asks for approval (${hookAsk.take(300)}) · ${tool.description}", computeDiffPreview(call, workspace) ?: command?.take(400), "hook:${call.id}"))
             configPermission == "ask" -> {
                 val request = ApprovalRequest(call, "Project configuration requires confirmation · ${tool.description}",
@@ -1622,6 +1624,15 @@ class AgentEngine(
                 val preview = tool.approvalPreview(parsedArgs, mode)
                 if (preview == null) true else {
                     val request = ApprovalRequest(call, "Change app settings", preview, "app_settings:${call.id}")
+                    emitEvent(AgentEvent.ApprovalNeeded(request))
+                    request.response.await()
+                }
+            }
+            tool is com.androidharness.app.tools.AppPluginsTool -> {
+                // Installing, switching on, auto-updating and uninstalling can start or remove code, so they ask in every mode.
+                val preview = tool.approvalPreview(parsedArgs, mode)
+                if (preview == null) true else {
+                    val request = ApprovalRequest(call, "Manage plugins", preview, "app_plugins:${call.id}")
                     emitEvent(AgentEvent.ApprovalNeeded(request))
                     request.response.await()
                 }

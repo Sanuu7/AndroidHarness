@@ -39,4 +39,6 @@
     <plurals name="as_needs_you_count">
         <item quantity="other">"%1$d 당신이 필요해요"</item>
     </plurals>
+    <string name="as_activity_plugins">"플러그인 관리 중"</string>
+    <string name="as_activity_plugins_done">"플러그인 관리함"</string>
 </resources>

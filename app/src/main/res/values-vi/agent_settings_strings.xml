@@ -39,4 +39,6 @@
     <plurals name="as_needs_you_count">
         <item quantity="other">"%1$d cần bạn"</item>
     </plurals>
+    <string name="as_activity_plugins">"Đang quản lý plugin"</string>
+    <string name="as_activity_plugins_done">"Đã quản lý plugin"</string>
 </resources>

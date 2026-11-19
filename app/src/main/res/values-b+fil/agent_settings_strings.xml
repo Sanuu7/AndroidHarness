@@ -41,4 +41,6 @@
         <item quantity="one">"Kailangan ka ng %1$d"</item>
         <item quantity="other">"Kailangan ka ng %1$d"</item>
     </plurals>
+    <string name="as_activity_plugins">"Namamahala ng mga plugin"</string>
+    <string name="as_activity_plugins_done">"Namahala ng mga plugin"</string>
 </resources>

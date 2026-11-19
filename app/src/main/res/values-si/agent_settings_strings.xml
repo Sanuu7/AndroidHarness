@@ -41,4 +41,6 @@
         <item quantity="one">%1$d කට ඔබ අවශ්‍යයි</item>
         <item quantity="other">%1$d කට ඔබ අවශ්‍යයි</item>
     </plurals>
+    <string name="as_activity_plugins">"ප්ලගීන කළමනාකරණය කරමින්"</string>
+    <string name="as_activity_plugins_done">"ප්ලගීන කළමනාකරණය කළා"</string>
 </resources>

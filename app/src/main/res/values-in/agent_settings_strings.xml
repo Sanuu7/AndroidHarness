@@ -39,4 +39,6 @@
     <plurals name="as_needs_you_count">
         <item quantity="other">%1$d perlu Anda</item>
     </plurals>
+    <string name="as_activity_plugins">"Mengelola plugin"</string>
+    <string name="as_activity_plugins_done">"Plugin dikelola"</string>
 </resources>

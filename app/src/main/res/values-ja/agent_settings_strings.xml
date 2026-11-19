@@ -39,4 +39,6 @@
     <plurals name="as_needs_you_count">
         <item quantity="other">%1$d 件の要対応</item>
     </plurals>
+    <string name="as_activity_plugins">"プラグインを管理中"</string>
+    <string name="as_activity_plugins_done">"プラグインを管理しました"</string>
 </resources>

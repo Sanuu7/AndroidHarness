@@ -665,6 +665,7 @@ private fun activityLabel(name: String, running: Boolean): String = stringResour
     "offer_code_handoff" -> R.string.chat_preparing_code_option
     "app_settings_find" -> if (running) R.string.as_activity_finding else R.string.as_activity_found
     "app_settings_change" -> if (running) R.string.as_activity_changing else R.string.as_activity_changed
+    "app_plugins" -> if (running) R.string.as_activity_plugins else R.string.as_activity_plugins_done
     else -> if (running) R.string.chat_working else R.string.chat_finished_activity
 })
 

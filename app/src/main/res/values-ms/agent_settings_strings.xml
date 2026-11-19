@@ -39,4 +39,6 @@
     <plurals name="as_needs_you_count">
         <item quantity="other">"%1$d memerlukan anda"</item>
     </plurals>
+    <string name="as_activity_plugins">"Mengurus pemalam"</string>
+    <string name="as_activity_plugins_done">"Pemalam diurus"</string>
 </resources>

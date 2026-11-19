@@ -103,6 +103,7 @@ class ToolRegistry(private val tools: List<Tool>) {
             sessionMessages: suspend (String) -> List<com.androidharness.app.core.ChatMessage> = { emptyList() },
             appSettings: com.androidharness.app.data.SettingsRepository? = null,
             automations: AutomationToolHost? = null,
+            plugins: com.androidharness.app.plugins.PluginManager? = null,
         ): ToolRegistry {
             val baseTools = mutableListOf<Tool>(
                 ListDirTool(),
@@ -164,8 +165,10 @@ class ToolRegistry(private val tools: List<Tool>) {
             )
             if (appSettings != null) {
                 val read: suspend () -> com.androidharness.app.data.AppSettings = { appSettings.settings.first() }
-                baseTools += AppSettingsFindTool(read)
-                baseTools += AppSettingsChangeTool(appSettings, read)
+                val skillNames: suspend () -> List<String> = { kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) { skills.list().map { it.name } } }
+                baseTools += AppSettingsFindTool(skillNames, read)
+                baseTools += AppSettingsChangeTool(appSettings, skillNames, read)
+                if (plugins != null) baseTools += AppPluginsTool(plugins, read)
             }
             if (automations != null) {
                 baseTools += AutomationCreateTool(automations)

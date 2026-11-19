@@ -41,4 +41,6 @@
         <item quantity="one">"%1$d\'nin sana ihtiyacı var"</item>
         <item quantity="other">"%1$d\'nin sana ihtiyacı var"</item>
     </plurals>
+    <string name="as_activity_plugins">"Eklentiler yönetiliyor"</string>
+    <string name="as_activity_plugins_done">"Eklentiler yönetildi"</string>
 </resources>
