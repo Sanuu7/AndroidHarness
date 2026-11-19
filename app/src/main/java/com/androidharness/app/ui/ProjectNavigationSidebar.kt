@@ -130,6 +130,8 @@ internal fun ProjectNavigationSidebar(
     val scheme = MaterialTheme.colorScheme
     val glass = LocalHarnessGlass.current.mode != HarnessGlassMode.OFF
     var expandedProjects by rememberSaveable { mutableStateOf(emptyList<String>()) }
+    // Workspace groups start open; only the ones the user folds are remembered.
+    var collapsedWorkspaces by rememberSaveable { mutableStateOf(emptyList<String>()) }
     var showArchived by rememberSaveable { mutableStateOf(false) }
     var showSaved by rememberSaveable { mutableStateOf(false) }
     LaunchedEffect(projectsView, chatOnly) { showArchived = false; showSaved = false }
@@ -419,9 +421,29 @@ internal fun ProjectNavigationSidebar(
                             items(grouped.pinned, key = { "pinned:${it.id}" }) { Chat(it, showProject = true) }
                         }
                         val recent = sessions.filter { it.id !in pinned && it.id !in archived }
-                        if (recent.isNotEmpty()) {
-                            item { SidebarSectionHeader(uiContext.getString(if (chatOnly) R.string.ui_recent_chats else R.string.conversation_recent_code_chats), true, null) }
+                        if (recent.isNotEmpty() && chatOnly) {
+                            item { SidebarSectionHeader(uiContext.getString(R.string.ui_recent_chats), true, null) }
                             items(recent, key = { "chat:${it.id}" }) { Chat(it, showProject = true) }
+                        } else if (recent.isNotEmpty()) {
+                            item { SidebarSectionHeader(uiContext.getString(R.string.conversation_recent_code_chats), true, null) }
+                            // One folding group per workspace, ordered by its newest chat.
+                            val byWorkspace = recent.groupBy { chat -> chat.projectId?.takeIf { id -> projects.any { it.id == id } } ?: "" }
+                            for ((workspaceId, chats) in byWorkspace) {
+                                val workspace = projects.firstOrNull { it.id == workspaceId }
+                                val open = workspaceId !in collapsedWorkspaces
+                                item(key = "workspace:$workspaceId") {
+                                    SidebarWorkspaceHeader(workspace, chats.size, open,
+                                        holdsSelection = !open && chats.any { it.id == selectedSession },
+                                        modifier = Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec())) {
+                                        collapsedWorkspaces = if (open) collapsedWorkspaces + workspaceId else collapsedWorkspaces - workspaceId
+                                    }
+                                }
+                                if (open) items(chats, key = { "chat:${it.id}" }) {
+                                    Box(Modifier.animateItem(fadeInSpec = expressiveEffectsSpec(), placementSpec = expressiveSpatialSpec(), fadeOutSpec = expressiveEffectsSpec())) {
+                                        Chat(it, indented = true)
+                                    }
+                                }
+                            }
                         }
                         if (recent.isEmpty() && grouped.pinned.isEmpty()) item {
                             Text(uiContext.getString(R.string.ui_your_conversations_will_appear_here), Modifier.padding(20.dp),
@@ -515,6 +537,54 @@ private fun SidebarSectionHeader(label: String, expanded: Boolean, onClick: (() 
     }
     if (onClick == null) contents() else Surface(onClick = onClick, color = MaterialTheme.colorScheme.surface,
         modifier = Modifier.semantics { contentDescription = uiContext.getString(R.string.ui_chats_extra87, (label).toString()); stateDescription = if (expanded) uiContext.getString(R.string.ui_expanded) else uiContext.getString(R.string.ui_collapsed) }) { contents() }
+}
+
+/** A workspace's chats fold under this row. A folded group holding the open chat keeps a tint so it stays findable. */
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun SidebarWorkspaceHeader(workspace: ProjectEntity?, count: Int, open: Boolean, holdsSelection: Boolean,
+    modifier: Modifier = Modifier, onToggle: () -> Unit) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val scheme = MaterialTheme.colorScheme
+    val press = remember { MutableInteractionSource() }
+    val name = workspace?.name ?: uiContext.getString(R.string.sidebar_workspace_other)
+    val turn by androidx.compose.animation.core.animateFloatAsState(if (open) 90f else 0f, expressiveSpatialSpec(), label = "workspace chevron")
+    val corner by animateDpAsState(if (open) 14.dp else 22.dp, expressiveSpatialSpec(), label = "workspace row shape")
+    val fill by animateColorAsState(if (holdsSelection) scheme.secondaryContainer else if (open) scheme.surface else scheme.surfaceContainer,
+        expressiveEffectsSpec(), label = "workspace row color")
+    val badgeShape = if (open) MaterialShapes.Cookie6Sided.toShape() else CircleShape
+    val icon = when (workspace?.kind) {
+        "APP" -> Icons.Outlined.PhoneAndroid
+        "SSH" -> Icons.Outlined.Dns
+        "SHELL" -> Icons.Outlined.Terminal
+        null -> Icons.Outlined.ChatBubbleOutline
+        else -> Icons.Outlined.FolderOpen
+    }
+    val shape = RoundedCornerShape(corner)
+    Row(modifier.fillMaxWidth().padding(horizontal = 10.dp, vertical = 2.dp).clip(shape).background(fill, shape)
+        .expressivePressFeedback(press)
+        .clickable(interactionSource = press, indication = ripple(color = scheme.primary), onClick = onToggle)
+        .semantics {
+            contentDescription = "${uiContext.getString(if (open) R.string.ui_collapse else R.string.ui_expand)} $name"
+            stateDescription = uiContext.getString(if (open) R.string.ui_expanded else R.string.ui_collapsed)
+        }
+        .heightIn(min = 44.dp).padding(start = 8.dp, end = 12.dp),
+        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(Icons.AutoMirrored.Outlined.KeyboardArrowRight, null,
+            Modifier.size(16.dp).graphicsLayer { rotationZ = turn }, tint = scheme.onSurfaceVariant)
+        Box(Modifier.size(26.dp).background(scheme.tertiaryContainer, badgeShape), contentAlignment = Alignment.Center) {
+            Icon(icon, null, Modifier.size(14.dp), tint = scheme.onTertiaryContainer)
+        }
+        Text(name, Modifier.weight(1f), style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.SemiBold,
+            color = if (holdsSelection) scheme.onSecondaryContainer else scheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+        androidx.compose.animation.AnimatedContent(count, transitionSpec = {
+            (androidx.compose.animation.slideInVertically(expressiveSpatialSpec()) { it } + androidx.compose.animation.fadeIn(expressiveEffectsSpec())) togetherWith
+                (androidx.compose.animation.slideOutVertically(expressiveSpatialSpec()) { -it } + androidx.compose.animation.fadeOut(expressiveEffectsSpec()))
+        }, label = "workspace count") { shown ->
+            Text(shown.toString(), style = MaterialTheme.typography.labelMedium, color = scheme.onSurfaceVariant,
+                modifier = Modifier.background(scheme.surfaceContainerHighest, CircleShape).padding(horizontal = 8.dp, vertical = 2.dp))
+        }
+    }
 }
 
 @OptIn(ExperimentalFoundationApi::class)
