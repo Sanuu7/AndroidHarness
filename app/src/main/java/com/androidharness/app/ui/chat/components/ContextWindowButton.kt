@@ -51,7 +51,7 @@ private fun contextLimit(state: ChatUiState): Int {
             state.taskControl.provider?.id == provider.id &&
             state.taskControl.provider.model == state.effectiveModel
     } == true
-    return (if (localRun) state.taskControl.maxContext else state.maxContextTokens).coerceAtLeast(1)
+    return (if (localRun) state.taskControl.maxContext else codeContextLimit(state)).coerceAtLeast(1)
 }
 
 @Composable
@@ -183,4 +183,15 @@ internal fun ContextWindowPopover(
             }
         }
     }
+}
+
+/** The window a Code run budgets against for the selected model, as RunManager works it out. */
+internal fun codeContextLimit(state: ChatUiState): Int {
+    val provider = state.activeProvider ?: return state.maxContextTokens
+    val model = state.effectiveModel ?: return state.maxContextTokens
+    return com.androidharness.app.agent.ChatContextPolicy.codeLimit(
+        state.maxContextTokens, null,
+        state.catalogs[provider.id]?.firstOrNull { it.id == model }?.contextTokens,
+        state.learnedContextLimits[com.androidharness.app.agent.TextFileWrites.modelKey(provider.id, model)],
+    )
 }

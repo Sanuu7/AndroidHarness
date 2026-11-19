@@ -129,6 +129,8 @@ data class ChatUiState(
     val fileAttachments: List<FileAttachment> = emptyList(),
     val attachmentImports: List<AttachmentImport> = emptyList(),
     val maxContextTokens: Int = 1_000_000,
+    /** "providerId|model" to the window its server named when it rejected a request as too long. */
+    val learnedContextLimits: Map<String, Int> = emptyMap(),
     val autoCompactTokens: Int = 0,
     /** App-wide resume prompt; blank means the built-in text. A chat's own prompt lives on its task record. */
     val resumePrompt: String = "",
@@ -751,6 +753,7 @@ class ChatViewModel(
             reasoningConfigs = settings.reasoningConfigs,
             customThinkingLevels = selection.customThinkingLevels,
             maxContextTokens = settings.maxContextTokens,
+            learnedContextLimits = settings.learnedContextLimits,
             autoCompactTokens = settings.autoCompactTokens,
             resumePrompt = settings.resumePrompt,
             maxOutputTokens = settings.maxOutputTokens,

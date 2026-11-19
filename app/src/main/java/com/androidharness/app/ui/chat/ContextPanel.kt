@@ -77,10 +77,13 @@ fun ContextUsageContent(state: ChatUiState) {
     val used = state.contextUsed.toLong().coerceAtLeast(0)
     val provider = state.activeProvider
     val local = provider?.let { com.androidharness.app.local.LocalModelCatalog.isLocal(it.id) } == true
-    val modelLimit = provider?.let { p -> state.catalogs[p.id]?.firstOrNull { it.id == state.effectiveModel }?.contextTokens }
+    val learnedLimit = provider?.let { p -> state.effectiveModel?.let { m ->
+        state.learnedContextLimits[com.androidharness.app.agent.TextFileWrites.modelKey(p.id, m)] } }
+    val modelLimit = com.androidharness.app.agent.ChatContextPolicy.modelLimit(
+        provider?.let { p -> state.catalogs[p.id]?.firstOrNull { it.id == state.effectiveModel }?.contextTokens }, learnedLimit)
     val localLimit = if (local && state.taskControl.provider?.id == provider?.id) state.taskControl.maxContext else com.androidharness.app.agent.ChatContextPolicy.LIMIT
     val max = (if (state.conversation.isChat) com.androidharness.app.agent.ChatContextPolicy.limit(localLimit, modelLimit, local)
-        else state.maxContextTokens).toLong().coerceAtLeast(1)
+        else com.androidharness.app.ui.chat.components.codeContextLimit(state)).toLong().coerceAtLeast(1)
     val fraction = (used.toFloat() / max.toFloat()).coerceIn(0f, 1f)
     val estimate = state.estimate
     // Fresh prompt tokens = total input minus cache reads/writes (pi semantics).

@@ -508,10 +508,13 @@ class RunManager(
         val conversation = com.androidharness.app.data.ConversationConfig.decode(sessions.session(sid)?.conversationJson)
         // A llama.cpp server holds only what it was started with, whatever the settings say.
         val serverContext = com.androidharness.app.llm.ServerContext.tokens(runConfig, apiKey)
+        val catalogContext = providers.catalogs.first()[runConfig.id]?.firstOrNull { it.id == runConfig.model }?.contextTokens
+        // A gateway can serve a model with less than its own window; its rejection told us how much.
+        val learnedContext = reasoningPrefs.learnedContextLimits[TextFileWrites.modelKey(runConfig.id, runConfig.model)]
         val contextLimit = if (conversation.isChat) ChatContextPolicy.limit(maxContextTokens,
-            serverContext ?: providers.catalogs.first()[runConfig.id]?.firstOrNull { it.id == runConfig.model }?.contextTokens,
+            serverContext ?: ChatContextPolicy.modelLimit(catalogContext, learnedContext),
             com.androidharness.app.local.LocalModelCatalog.isLocal(runConfig.id))
-            else ChatContextPolicy.cap(maxContextTokens, serverContext)
+            else ChatContextPolicy.codeLimit(maxContextTokens, serverContext, catalogContext, learnedContext)
         val assignedWorkspace = workspace.forSession(sid)
         require(workspaceOverride == null || workspaceOverride.displayPath == assignedWorkspace.displayPath) {
             "This chat's workspace changed while preparing the request. Send the message again."

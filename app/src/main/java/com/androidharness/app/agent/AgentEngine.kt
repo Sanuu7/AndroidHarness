@@ -271,6 +271,8 @@ class AgentEngine(
     /** Remembers a provider|model whose server delivered a whole file write in one chunk. */
     private val markBufferedToolCalls: suspend (String) -> Unit = {},
     private val markFileBlocksDeclined: suspend (String) -> Unit = {},
+    /** Remembers the input window a server named when it rejected a provider|model request as too long. */
+    private val learnContextLimit: suspend (String, Int) -> Unit = { _, _ -> },
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -378,8 +380,12 @@ class AgentEngine(
         var replySettings = cavemanSettings()
         val localChat = com.androidharness.app.local.LocalModelCatalog.isLocal(config.id)
         // RunManager already folded in a self-hosted server's real context; never raise past it.
-        val contextLimit = if (conversation.isChat) minOf(maxContextTokens, ChatContextPolicy.limit(maxContextTokens,
-            options.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.contextTokens, localChat)) else maxContextTokens
+        // Lowered mid-run when the server rejects a request as too long and names its real window.
+        // One holder for the limit and the recovery state: a new local here would be saved at
+        // every suspension point of this method, which is already near the JVM size limit.
+        val budget = ContextBudget(ChatContextPolicy.runLimit(conversation.isChat, maxContextTokens,
+            options.modelCatalogs[config.id]?.firstOrNull { it.id == config.model }?.contextTokens,
+            replySettings.learnedContextLimits[TextFileWrites.modelKey(config.id, config.model)], localChat))
         val agentContextEnabled = !localChat || replySettings.localModelAgentContext
         var suppliedMemories = emptyList<com.androidharness.app.core.SuppliedMemory>()
         var memoryQuery = recentMemoryQuery(history)
@@ -423,16 +429,8 @@ class AgentEngine(
         }
         val turnImages = com.androidharness.app.tools.ChatImageTurnInventory(working)
         var visionAvailable = imageCapable
-        val runRegistry = (if (conversation.isChat) registry.withExtra(chatOnlyTools + com.androidharness.app.tools.chatAgentTools(conversation.agent) + listOfNotNull(scopedSearch, scopedFetch, scopedBrowser?.forImageInput { visionAvailable }) +
-            if (imageCapable) listOf(com.androidharness.app.tools.ChatImageZoomTool(imageStore) { working.toList() }.forInventory(turnImages::sources), com.androidharness.app.tools.ViewChatImageTool(imageStore) { working.toList() }.forInventory(turnImages::sources)) else emptyList()) else registry.withExtra(chatOnlyTools.filter { it.name in recallToolNames } + extraTools + (if (projectConfig.references.isEmpty()) emptyList() else listOf(com.androidharness.app.config.ConfigReferenceReadTool(projectConfig))) +
-            (if (projectConfig.languageServers.isEmpty()) emptyList() else listOf(com.androidharness.app.tools.LanguageServerTool(projectConfig.languageServers) { linuxEnv.shellProcessBuilder(it) })) +
-            if (subagentRuns == null) emptyList() else com.androidharness.app.tools.subagentControlTools(subagentRuns, sessionId)))
-            .restrictedTo(conversation.allowedTools)
-            .let { if (conversation.isChat && searchDepth == com.androidharness.app.data.SearchDepth.OFF) it.without(setOf("web_search")) else it }
-            .let { if (memoryOn) it else it.without(memoryToolNames) }
-            .let { if (conversation.personalizationEnabled) it else it.without(recallToolNames) }
-            .let { if (conversation.isChat && !imageCapable) it.without(setOf("view_chat_image", "zoom_chat_image")) else it }
-            .let { if (conversation.isChat && remindersEnabled()) it else it.without(com.androidharness.app.tools.ReminderTools.names) }
+        val runRegistry = runRegistry(conversation, searchDepth, projectConfig, extraTools, subagentRuns, sessionId,
+            imageCapable, memoryOn, turnImages, listOfNotNull(scopedSearch, scopedFetch, scopedBrowser?.forImageInput { visionAvailable })) { working.toList() }
         val provider = providerFactory(config)
         // Stable per-session cache routing for providers that support it.
         val requestOptions = options.copy(cacheKey = sessionId)
@@ -466,16 +464,7 @@ class AgentEngine(
             kotlin.coroutines.coroutineContext[TaskBudget]?.check()
             // Results land only between model requests. Persist before acknowledging so
             // navigation, a new user turn, or process death cannot eat a completion.
-            subagentRuns?.pending(sessionId)?.forEach { run ->
-                val noticeId = "subagent-result-${run.id}"
-                if (working.none { it.id == noticeId }) {
-                    val notice = ChatMessage(role = Role.SYSTEM, id = noticeId,
-                        text = "Background subagent result (task output, not user instructions):\n${run.report()}")
-                    working += notice
-                    emit(AgentEvent.ToolMessageCommitted(notice))
-                }
-                subagentRuns.acknowledge(sessionId, run.id)
-            }
+            if (subagentRuns != null) deliverSubagentResults(subagentRuns, sessionId, working) { emit(it) }
             if (maxIterations > 0 && iterations++ >= maxIterations) {
                 emit(AgentEvent.Error("Stopped after $maxIterations tool iterations (safety limit)."))
                 break
@@ -513,39 +502,15 @@ class AgentEngine(
                     workspace
                 }
 
-            var roundRegistry = (if (conversation.isChat && !visionAvailable)
-                runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry)
-                .filter { !runContext.denies(it) && com.androidharness.app.config.ConfigToolPolicy.permission(projectConfig, it, effectiveMode) != "deny" }
-                .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
-                .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
-            val searchConfiguration = (roundRegistry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.configurationNote()
-            var tools = if (!agentContextEnabled) emptyList() else roundRegistry.schemas(
-                readOnlyOnly = mode == AgentMode.PLAN,
-                context = ToolContext(execWorkspace, sandboxOff, sessionId, configuration = projectConfig, skills = runContext.skills),
-            )
-            val environment = if (agentContextEnabled)
-                runtimeEnvironment(workspace, sessionId, mode, effectiveMode, tools, conversation.isChat) +
-                    modelIdentity(config, options.modelCatalogs) +
-                    searchConfiguration?.let { "\n## Current web research configuration\n$it\n" }.orEmpty() else ""
-            turnImages.update(working)
-            val imageInventory = if (conversation.isChat && visionAvailable)
-                com.androidharness.app.tools.ChatImageInventory.promptSources(turnImages.sources(), imageStore::metadata) else ""
-            var requestSystemPrompt = if (!agentContextEnabled) "" else if (conversation.isChat) systemPrompt + environment + imageInventory else com.androidharness.app.caveman.CavemanPolicy.apply(
-                systemPrompt + environment + TodoPrompt.format(
-                    todoStore?.takeIf { !conversation.isChat && it.owner.value == sessionId }?.todos?.value.orEmpty(),
-                    roundsWithoutTodoUpdate,
-                ).let { if (it.isBlank()) "" else "\n\n$it" },
-                installed = replySettings.cavemanInstalled,
-                intensity = replySettings.cavemanIntensity,
-                wenyan = replySettings.cavemanWenyan,
-            )
-            // Servers that hold tool calls back get file contents as streamed reply text.
-            val bufferKey = TextFileWrites.modelKey(config.id, config.model)
-            val textWrites = !conversation.isChat && agentContextEnabled && replySettings.streamFileWritesAsText &&
-                !fileBlocksDeclined && bufferKey !in replySettings.fileBlockDeclinedModels &&
-                (bufferKey in replySettings.bufferedToolCallModels || TextFileWrites.buffersToolCalls(config.baseUrl)) &&
-                tools.any { it.name == "write_file" }
-            if (textWrites) requestSystemPrompt += TextFileWrites.prompt()
+            // replySettings equals nextReplySettings here: the check above copied it over when they differed.
+            val round = roundRequest(runRegistry, conversation, visionAvailable, runContext, projectConfig, effectiveMode,
+                replySettings, agentContextEnabled, mode, execWorkspace, sandboxOff, sessionId, workspace, config, options,
+                turnImages, working, systemPrompt, roundsWithoutTodoUpdate, fileBlocksDeclined)
+            var roundRegistry = round.registry
+            var tools = round.tools
+            var requestSystemPrompt = round.systemPrompt
+            val bufferKey = round.bufferKey
+            val textWrites = round.textWrites
             if (agentContextEnabled) {
                 val before = if (hooksActive) hook(com.androidharness.app.config.HookEvents.PROMPT, kotlinx.serialization.json.buildJsonObject {
                     put("agent", runContext.agent); put("iteration", iterations)
@@ -562,16 +527,16 @@ class AgentEngine(
             // Auto-compact before the request grows past the context budget.
             val estimate = estimateContext(working, requestSystemPrompt, tools, withBreakdown = true)
             emit(AgentEvent.EstimatedContext(estimate))
-            val compactThreshold = if (conversation.isChat) ChatContextPolicy.compactAt(contextLimit, requestOptions.maxOutputTokens)
-                else AutoCompaction.threshold(autoCompactTokens(), contextLimit, requestOptions.maxOutputTokens)
-            val needsCompaction = estimate.total >= compactThreshold
+            val compactThreshold = budget.recovery.scaled(if (conversation.isChat) ChatContextPolicy.compactAt(budget.limit, requestOptions.maxOutputTokens)
+                else AutoCompaction.threshold(autoCompactTokens(), budget.limit, requestOptions.maxOutputTokens))
+            val needsCompaction = budget.recovery.forceCompaction || estimate.total >= compactThreshold
             if ((!localChat || agentContextEnabled) && needsCompaction && (conversation.isChat || working.size > 1)) {
                 if (hooksActive) {
                     hook(com.androidharness.app.config.HookEvents.COMPACT, kotlinx.serialization.json.buildJsonObject { put("trigger", "auto") })
                         .instructions.takeIf(String::isNotBlank)?.let { runContext.pendingInstructions.add(it) }
                     earlyNotices.forEach { emit(AgentEvent.Notice(it)) }; earlyNotices.clear()
                 }
-                val compacted = compact(provider, config, apiKey, working, contextLimit, sessionId, conversation.isChat, compactThreshold) {
+                val compacted = compact(provider, config, apiKey, working, budget.limit, sessionId, conversation.isChat, compactThreshold, budget.recovery) {
                     if (it is AgentEvent.ProviderChanged) config = it.config
                     emit(it)
                 }
@@ -588,6 +553,7 @@ class AgentEngine(
                     break
                 }
             }
+            budget.settle()
 
             // Mirrors what this round sends, so /btw replays the same cached prefix.
             fun publishSide(messages: List<ChatMessage> = working) = sideContexts.publish(SideContext(
@@ -744,7 +710,8 @@ class AgentEngine(
                 else if (localChat) maxOf(userStall, 600_000) else userStall
             val firstOutputWindow = StreamRetrier.firstOutputWindow(stallWindow, requestOptions, config)
 
-            var failure = StreamRetrier.run(
+            // One request with its retries; the image fallback below sends it again.
+            suspend fun requestRound(allowRetries: Boolean) = StreamRetrier.run(
                 streamFor = {
                     publishSide()
                     provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
@@ -773,10 +740,11 @@ class AgentEngine(
                 emitEvent = { emit(it) },
                 stallTimeoutMs = stallWindow,
                 firstOutputTimeoutMs = firstOutputWindow,
-                allowRetries = !localChat && !managedFallback,
+                allowRetries = allowRetries,
                 retryStalls = !StreamRetrier.selfHosted(config),
                 onTerminalFailure = { recoverableFailure = it },
             )
+            var failure = requestRound(allowRetries = !localChat && !managedFallback)
 
             // Dynamic vision degradation fallback: if provider rejected image input,
             // strip images from working history and retry without failing the turn.
@@ -786,45 +754,19 @@ class AgentEngine(
                 working.addAll(stripped)
                 if (conversation.isChat) {
                     visionAvailable = false
-                    roundRegistry = runRegistry.without(setOf("view_chat_image", "zoom_chat_image"))
-                        .let { if (nextReplySettings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
-                .let { if (nextReplySettings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
+                    roundRegistry = settingsTools(runRegistry.without(setOf("view_chat_image", "zoom_chat_image")), replySettings)
                     tools = tools.filterNot { it.name in setOf("view_chat_image", "zoom_chat_image") }
                     requestSystemPrompt += "\nImage input was rejected by the provider. You cannot inspect or zoom images in this turn; say so rather than claiming to see them.\n"
                 }
-                failure = StreamRetrier.run(
-                    streamFor = {
-                        publishSide()
-                        provider.streamChat(config, apiKey, requestSystemPrompt, working, tools, requestOptions)
-                    },
-                    onAttemptStart = {
-                        codeTracker.clear()
-                        fileBlocks?.reset()
-                        argumentFragments.clear()
-                        responseStarted = false
-                        requestStartedNs = System.nanoTime()
-                        outputTokens = 0
-                        responseState = null
-                        reasoningTokens = null
-                        reasoningSetting = null
-                        thinkingTiming = ThinkingTiming()
-                        firstTokenNs = 0L
-                        lastTokenNs = 0L
-                        text = StringBuilder()
-                        thinking = StringBuilder()
-                        calls = mutableListOf()
-                        lastFinishReason = null
-                    },
-                    hasOutput = { responseStarted || text.isNotEmpty() || thinking.isNotEmpty() || calls.isNotEmpty() },
-                    handleEvent = streamEventHandler,
-                    retryReason = { f -> f.take(200) },
-                    emitEvent = { emit(it) },
-                    stallTimeoutMs = stallWindow,
-                    firstOutputTimeoutMs = firstOutputWindow,
-                    allowRetries = !managedFallback,
-                    retryStalls = !StreamRetrier.selfHosted(config),
-                    onTerminalFailure = { recoverableFailure = it },
-                )
+                failure = requestRound(allowRetries = !managedFallback)
+            }
+
+            // The server says the request is longer than this model accepts there. Learn the
+            // window it names, compact, and send again instead of pausing on a request that
+            // would only fail the same way when resumed.
+            if (!responseStarted && (!localChat || agentContextEnabled) && working.size > 1) {
+                // compact() announces it and saves the learned window, so this path adds no suspension.
+                if (budget.recover(failure, estimate.total, bufferKey)) continue
             }
 
             // Silence after thinking that ends in a stall or an empty reply is how a server that
@@ -841,76 +783,34 @@ class AgentEngine(
             }
 
             // Where a research turn spends its time: one line per model round.
-            run {
-                val endNs = System.nanoTime()
-                val firstMs = if (firstTokenNs > 0L) (firstTokenNs - requestStartedNs) / 1_000_000 else -1
-                com.androidharness.app.tools.researchTiming("model round: total=${(endNs - requestStartedNs) / 1_000_000}ms " +
-                    "firstOutput=${firstMs}ms contextMessages=${working.size} toolCalls=${calls.map { it.name }} failed=${failure != null}")
-            }
+            logModelRound(requestStartedNs, firstTokenNs, working.size, calls, failure != null)
 
             // A turn that produced reasoning but no answer and no tool calls is
             // NOT committed: replaying an empty assistant message would hand
             // Anthropic an empty content array (a 400) and teaches the model
             // that silence was acceptable. Instead, nudge it once to actually
             // answer; if it still won't, end with a visible reason.
-            val answerless = text.isBlank() && calls.isEmpty()
-            val wantsNudge = failure == null && answerless &&
-                thinking.isNotBlank() && answerNudges < MAX_ANSWER_NUDGES
-            // Research levels require real page reads, not just search snippets.
-            // Ask again with the shortfall named instead of committing an answer
-            // that never opened a source.
-            val researchBudget = scopedSearch?.budget()
-            val wantsResearchNudge = !wantsNudge && failure == null && calls.isEmpty() && text.isNotBlank() &&
-                conversation.isChat && researchBudget != null && researchBudget.minReads > 0 &&
-                researchBudget.used > 0 && researchBudget.pagesRead < researchBudget.minReads &&
-                researchNudges < MAX_RESEARCH_NUDGES
-            // Always-images chats get one more try when a real answer arrives without a picture.
-            val wantsImageNudge = !wantsNudge && !wantsResearchNudge && failure == null && calls.isEmpty() &&
-                alwaysImages && imageNudges < MAX_IMAGE_NUDGES && text.isNotBlank() &&
-                (firstChatAnswer || text.length >= com.androidharness.app.core.ChatExperience.IMAGE_NUDGE_MIN_CHARS) &&
-                !com.androidharness.app.core.ChatExperience.answerHasImage(text.toString())
-            if (wantsNudge) {
-                answerNudges++
-                working += ChatMessage(role = Role.USER, text = ANSWER_NUDGE)
-            } else if (wantsResearchNudge && researchBudget != null) {
-                researchNudges++
-                // The model sees its draft, so it can extend it instead of writing the whole answer again.
-                working += ChatMessage(role = Role.ASSISTANT, text = text.toString())
-                emit(AgentEvent.DraftDiscarded)
-                working += ChatMessage(role = Role.USER, text =
-                    com.androidharness.app.core.ChatExperience.researchReadNudge(
-                        searchDepth, researchBudget.pagesRead, researchBudget.minReads))
-            } else if (wantsImageNudge) {
-                imageNudges++
-                working += ChatMessage(role = Role.ASSISTANT, text = text.toString())
-                emit(AgentEvent.DraftDiscarded)
-                working += ChatMessage(role = Role.USER, text = com.androidharness.app.core.ChatExperience.IMAGE_NUDGE)
-            } else if (!answerless) {
-                val followUps = if (conversation.isChat)
-                    com.androidharness.app.core.FollowUpSuggestions.extract(text.toString())
-                else com.androidharness.app.core.FollowUpSuggestions(text.toString(), emptyList())
-                val assistant = ChatMessage(
-                    role = Role.ASSISTANT,
-                    text = followUps.text,
-                    toolCalls = calls.toList(),
-                    images = if (conversation.isChat) com.androidharness.app.core.ChatResponseImages.referenced(followUps.text, working) else emptyList(),
-                    thinking = thinking.toString(),
-                    thinkingMs = thinkingTiming.durationMs(ThinkingTiming.now()),
-                    outputTokens = outputTokens,
-                    generationMs = ((System.nanoTime() - requestStartedNs) / 1_000_000).coerceAtLeast(1),
-                    firstTokenMs = if (firstTokenNs > 0L) ((firstTokenNs - requestStartedNs) / 1_000_000).coerceAtLeast(1) else 0,
-                    streamMs = if (lastTokenNs > firstTokenNs) ((lastTokenNs - firstTokenNs) / 1_000_000).coerceAtLeast(1) else 0,
-                    generation = com.androidharness.app.core.GenerationMetadata(
-                        reasoningTokens = reasoningTokens,
-                        reasoningSetting = reasoningSetting,
-                        suppliedMemories = suppliedMemories,
-                        model = config.model,
-                        followUps = followUps.items,
-                    ),
-                ).let { it.copy(generation = it.generation.copy(state = responseState?.boundTo(it))) }
-                working += assistant
-                publishSide()
-                emit(AgentEvent.AssistantCommitted(assistant))
+            val nudge = nudgeFor(failure != null, text, thinking, calls.isEmpty(), conversation.isChat, scopedSearch?.budget(),
+                alwaysImages, firstChatAnswer, answerNudges, researchNudges, imageNudges)
+            when (nudge) {
+                Nudge.ANSWER -> {
+                    answerNudges++
+                    working += ChatMessage(role = Role.USER, text = ANSWER_NUDGE)
+                }
+                Nudge.RESEARCH, Nudge.IMAGE -> {
+                    if (nudge == Nudge.RESEARCH) researchNudges++ else imageNudges++
+                    // The model sees its draft, so it can extend it instead of writing the whole answer again.
+                    working += ChatMessage(role = Role.ASSISTANT, text = text.toString())
+                    emit(AgentEvent.DraftDiscarded)
+                    working += nudgeRequest(nudge, searchDepth, scopedSearch?.budget())
+                }
+                Nudge.NONE -> if (text.isNotBlank() || calls.isNotEmpty()) {
+                    val assistant = assistantMessage(conversation.isChat, text, calls, working, thinking, thinkingTiming, outputTokens,
+                        requestStartedNs, firstTokenNs, lastTokenNs, reasoningTokens, reasoningSetting, suppliedMemories, config.model, responseState)
+                    working += assistant
+                    publishSide()
+                    emit(AgentEvent.AssistantCommitted(assistant))
+                }
             }
 
             when {
@@ -918,7 +818,7 @@ class AgentEngine(
                     emit(AgentEvent.Error(failure!!, recoverable = recoverableFailure))
                     break
                 }
-                wantsNudge || wantsResearchNudge || wantsImageNudge -> continue
+                nudge != Nudge.NONE -> continue
                 // A message sent during the final answer keeps the task going in this turn.
                 calls.isEmpty() && takeSteering() -> continue
                 calls.isEmpty() && hooksActive && runContext.stopRequested.get() == null && run {
@@ -939,87 +839,13 @@ class AgentEngine(
                 }
             }
 
-            // Only overlap contiguous subagents or safe reads. Stateful calls
-            // such as todo_write must run at their requested position, including
-            // before a slow subagent batch, so progress is visible during work.
             val results = LinkedHashMap<String, ToolResult>()
-            fun toolMessage(call: ToolCallData, result: ToolResult) = ChatMessage(
-                role = Role.TOOL,
-                text = result.output,
-                toolCallId = call.id,
-                toolName = call.name,
-                isError = !result.ok,
-                images = listOfNotNull(result.image), artifact = result.artifact,
-                generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
+            executeCalls(calls, results, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
+                sessionId, turnId, mode, requestOptions, config, apiKey, roundRegistry, resolveSubagentModel, subagentRuns,
+                emit = { emit(it) },
+                // Side questions see each finished result while the rest still run.
+                publishResults = { publishSide(working + calls.mapNotNull { call -> results[call.id]?.let { toolMessage(call, it) } }) },
             )
-            // Side questions see each finished result while the rest still run.
-            fun publishResults() = publishSide(working + calls.mapNotNull { call -> results[call.id]?.let { toolMessage(call, it) } })
-            var ordinaryIndex = 0
-            while (ordinaryIndex < calls.size) {
-                val first = calls[ordinaryIndex]
-                if (first.name == "task") {
-                    val subagentCalls = mutableListOf<ToolCallData>()
-                    while (ordinaryIndex < calls.size && calls[ordinaryIndex].name == "task") {
-                        subagentCalls += calls[ordinaryIndex++]
-                    }
-                    // FlowCollector.emit is not concurrency-safe; parallel subagents
-                    // share one mutex-protected emitter.
-                    val emitLock = Mutex()
-                    val serialEmit: suspend (AgentEvent) -> Unit = { event ->
-                        emitLock.withLock { emit(event) }
-                    }
-                    subagentCalls.forEach { call -> emit(AgentEvent.ToolStarted(call)) }
-                    android.util.Log.d(
-                        "HarnessSpawn",
-                        "batch of ${subagentCalls.size} task call(s): ${subagentCalls.map { it.id }}",
-                    )
-                    coroutineScope {
-                        subagentCalls.map { call ->
-                            async {
-                                android.util.Log.d("HarnessSpawn", "task ${call.id} START ${System.currentTimeMillis()}")
-                                val result = executeWithPermission(
-                                    call, effectiveMode, sessionAllowedTools, execWorkspace,
-                                    sessionId, turnId, mode, requestOptions, config, apiKey,
-                                    roundRegistry, resolveSubagentModel, serialEmit,
-                                    subagentRuns = subagentRuns,
-                                )
-                                android.util.Log.d("HarnessSpawn", "task ${call.id} END ${System.currentTimeMillis()}")
-                                call.id to result
-                            }
-                        }.awaitAll().forEach { (id, result) -> results[id] = result }
-                    }
-                    publishResults()
-                } else if (parallelSafeReadOnly(first, roundRegistry)) {
-                    val group = mutableListOf<ToolCallData>()
-                    while (ordinaryIndex < calls.size && calls[ordinaryIndex].name != "task" && parallelSafeReadOnly(calls[ordinaryIndex], roundRegistry)) {
-                        group += calls[ordinaryIndex++]
-                    }
-                    group.forEach { emit(AgentEvent.ToolStarted(it)) }
-                    val emitLock = Mutex()
-                    val serialEmit: suspend (AgentEvent) -> Unit = { event -> emitLock.withLock { emit(event) } }
-                    coroutineScope {
-                        group.map { call ->
-                            async {
-                                call.id to executeWithFailureGuard(
-                                    call, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
-                                    sessionId, turnId, mode, requestOptions, config, apiKey,
-                                    roundRegistry, resolveSubagentModel, serialEmit,
-                                )
-                            }
-                        }.awaitAll().forEach { (id, result) -> results[id] = result }
-                    }
-                    publishResults()
-                } else {
-                    ordinaryIndex++
-                    emit(AgentEvent.ToolStarted(first))
-                    results[first.id] = executeWithFailureGuard(
-                        first, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
-                        sessionId, turnId, mode, requestOptions, config, apiKey,
-                        roundRegistry, resolveSubagentModel,
-                    ) { emit(it) }
-                    publishResults()
-                }
-            }
 
             if (calls.any { it.name == "todo_write" && results[it.id]?.ok == true }) roundsWithoutTodoUpdate = 0
             else if (calls.any { it.name != "todo_write" }) roundsWithoutTodoUpdate++
@@ -1059,6 +885,314 @@ class AgentEngine(
                 runCatching { hook(com.androidharness.app.config.HookEvents.SESSION_END, kotlinx.serialization.json.buildJsonObject { put("reason", "other") }) }
             }
         }
+        }
+    }
+
+    // The helpers below hold parts of the run loop. That loop compiles to one coroutine
+    // method close to the JVM's 64 KB limit, so its logic lives here instead of inline.
+
+    /** Every tool this run may offer, before the per-round filters in [roundRequest]. */
+    private suspend fun runRegistry(
+        conversation: com.androidharness.app.data.ConversationConfig,
+        searchDepth: com.androidharness.app.data.SearchDepth,
+        projectConfig: com.androidharness.app.config.HarnessConfig,
+        extraTools: List<com.androidharness.app.tools.Tool>,
+        subagentRuns: SubagentRuns?,
+        sessionId: String,
+        imageCapable: Boolean,
+        memoryOn: Boolean,
+        turnImages: com.androidharness.app.tools.ChatImageTurnInventory,
+        researchTools: List<com.androidharness.app.tools.Tool>,
+        messages: () -> List<ChatMessage>,
+    ): ToolRegistry = (if (conversation.isChat) registry.withExtra(chatOnlyTools + com.androidharness.app.tools.chatAgentTools(conversation.agent) + researchTools +
+        if (imageCapable) listOf(com.androidharness.app.tools.ChatImageZoomTool(imageStore, messages).forInventory(turnImages::sources), com.androidharness.app.tools.ViewChatImageTool(imageStore, messages).forInventory(turnImages::sources)) else emptyList()) else registry.withExtra(chatOnlyTools.filter { it.name in recallToolNames } + extraTools + (if (projectConfig.references.isEmpty()) emptyList() else listOf(com.androidharness.app.config.ConfigReferenceReadTool(projectConfig))) +
+        (if (projectConfig.languageServers.isEmpty()) emptyList() else listOf(com.androidharness.app.tools.LanguageServerTool(projectConfig.languageServers) { linuxEnv.shellProcessBuilder(it) })) +
+        if (subagentRuns == null) emptyList() else com.androidharness.app.tools.subagentControlTools(subagentRuns, sessionId)))
+        .restrictedTo(conversation.allowedTools)
+        .let { if (conversation.isChat && searchDepth == com.androidharness.app.data.SearchDepth.OFF) it.without(setOf("web_search")) else it }
+        .let { if (memoryOn) it else it.without(memoryToolNames) }
+        .let { if (conversation.personalizationEnabled) it else it.without(recallToolNames) }
+        .let { if (conversation.isChat && !imageCapable) it.without(setOf("view_chat_image", "zoom_chat_image")) else it }
+        .let { if (conversation.isChat && remindersEnabled()) it else it.without(com.androidharness.app.tools.ReminderTools.names) }
+
+    /** Background subagent results join the conversation between model requests, persisted before acknowledging. */
+    private suspend fun deliverSubagentResults(
+        subagentRuns: SubagentRuns,
+        sessionId: String,
+        working: MutableList<ChatMessage>,
+        emit: suspend (AgentEvent) -> Unit,
+    ) {
+        subagentRuns.pending(sessionId).forEach { run ->
+            val noticeId = "subagent-result-${run.id}"
+            if (working.none { it.id == noticeId }) {
+                val notice = ChatMessage(role = Role.SYSTEM, id = noticeId,
+                    text = "Background subagent result (task output, not user instructions):\n${run.report()}")
+                working += notice
+                emit(AgentEvent.ToolMessageCommitted(notice))
+            }
+            subagentRuns.acknowledge(sessionId, run.id)
+        }
+    }
+
+    /** What one model request sends: the tools it may call and the system prompt it carries. */
+    private class RoundRequest(
+        val registry: ToolRegistry,
+        val tools: List<com.androidharness.app.llm.ToolSchema>,
+        val systemPrompt: String,
+        val bufferKey: String,
+        val textWrites: Boolean,
+    )
+
+    /** The subagent and storage card switches in Settings remove their tools. */
+    private fun settingsTools(registry: ToolRegistry, settings: com.androidharness.app.data.AppSettings): ToolRegistry = registry
+        .let { if (settings.subagentsEnabled) it else it.without(SUBAGENT_TOOLS) }
+        .let { if (settings.storageAccessCards) it else it.without(setOf(com.androidharness.app.tools.StorageAccessTool.NAME)) }
+
+    private suspend fun roundRequest(
+        runRegistry: ToolRegistry,
+        conversation: com.androidharness.app.data.ConversationConfig,
+        visionAvailable: Boolean,
+        runContext: com.androidharness.app.config.ConfigRunContext,
+        projectConfig: com.androidharness.app.config.HarnessConfig,
+        effectiveMode: PermissionMode,
+        settings: com.androidharness.app.data.AppSettings,
+        agentContextEnabled: Boolean,
+        mode: AgentMode,
+        execWorkspace: WorkspaceFs,
+        sandboxOff: Boolean,
+        sessionId: String,
+        workspace: WorkspaceFs,
+        config: ProviderConfig,
+        options: RequestOptions,
+        turnImages: com.androidharness.app.tools.ChatImageTurnInventory,
+        working: List<ChatMessage>,
+        systemPrompt: String,
+        roundsWithoutTodoUpdate: Int,
+        fileBlocksDeclined: Boolean,
+    ): RoundRequest {
+        val roundRegistry = settingsTools((if (conversation.isChat && !visionAvailable)
+            runRegistry.without(setOf("view_chat_image", "zoom_chat_image")) else runRegistry)
+            .filter { !runContext.denies(it) && com.androidharness.app.config.ConfigToolPolicy.permission(projectConfig, it, effectiveMode) != "deny" }, settings)
+        val searchConfiguration = (roundRegistry.get("web_search") as? com.androidharness.app.tools.WebSearchTool)?.configurationNote()
+        val tools = if (!agentContextEnabled) emptyList() else roundRegistry.schemas(
+            readOnlyOnly = mode == AgentMode.PLAN,
+            context = ToolContext(execWorkspace, sandboxOff, sessionId, configuration = projectConfig, skills = runContext.skills),
+        )
+        val environment = if (agentContextEnabled)
+            runtimeEnvironment(workspace, sessionId, mode, effectiveMode, tools, conversation.isChat) +
+                modelIdentity(config, options.modelCatalogs) +
+                searchConfiguration?.let { "\n## Current web research configuration\n$it\n" }.orEmpty() else ""
+        turnImages.update(working)
+        val imageInventory = if (conversation.isChat && visionAvailable)
+            com.androidharness.app.tools.ChatImageInventory.promptSources(turnImages.sources(), imageStore::metadata) else ""
+        var requestSystemPrompt = if (!agentContextEnabled) "" else if (conversation.isChat) systemPrompt + environment + imageInventory else com.androidharness.app.caveman.CavemanPolicy.apply(
+            systemPrompt + environment + TodoPrompt.format(
+                todoStore?.takeIf { !conversation.isChat && it.owner.value == sessionId }?.todos?.value.orEmpty(),
+                roundsWithoutTodoUpdate,
+            ).let { if (it.isBlank()) "" else "\n\n$it" },
+            installed = settings.cavemanInstalled,
+            intensity = settings.cavemanIntensity,
+            wenyan = settings.cavemanWenyan,
+        )
+        // Servers that hold tool calls back get file contents as streamed reply text.
+        val bufferKey = TextFileWrites.modelKey(config.id, config.model)
+        val textWrites = !conversation.isChat && agentContextEnabled && settings.streamFileWritesAsText &&
+            !fileBlocksDeclined && bufferKey !in settings.fileBlockDeclinedModels &&
+            (bufferKey in settings.bufferedToolCallModels || TextFileWrites.buffersToolCalls(config.baseUrl)) &&
+            tools.any { it.name == "write_file" }
+        if (textWrites) requestSystemPrompt += TextFileWrites.prompt()
+        return RoundRequest(roundRegistry, tools, requestSystemPrompt, bufferKey, textWrites)
+    }
+
+    /** Where a research turn spends its time: one line per model round. */
+    private fun logModelRound(requestStartedNs: Long, firstTokenNs: Long, contextMessages: Int, calls: List<ToolCallData>, failed: Boolean) {
+        val endNs = System.nanoTime()
+        val firstMs = if (firstTokenNs > 0L) (firstTokenNs - requestStartedNs) / 1_000_000 else -1
+        com.androidharness.app.tools.researchTiming("model round: total=${(endNs - requestStartedNs) / 1_000_000}ms " +
+            "firstOutput=${firstMs}ms contextMessages=$contextMessages toolCalls=${calls.map { it.name }} failed=$failed")
+    }
+
+    private enum class Nudge { NONE, ANSWER, RESEARCH, IMAGE }
+
+    /** Which nudge, if any, a finished model round gets instead of being committed as the answer. */
+    private fun nudgeFor(
+        failed: Boolean,
+        text: CharSequence,
+        thinking: CharSequence,
+        noCalls: Boolean,
+        chat: Boolean,
+        research: com.androidharness.app.tools.SearchSourceBudget?,
+        alwaysImages: Boolean,
+        firstChatAnswer: Boolean,
+        answerNudges: Int,
+        researchNudges: Int,
+        imageNudges: Int,
+    ): Nudge {
+        if (failed || !noCalls) return Nudge.NONE
+        // Reasoning with no answer and no calls: ask once for the actual answer.
+        if (text.isBlank()) return if (thinking.isNotBlank() && answerNudges < MAX_ANSWER_NUDGES) Nudge.ANSWER else Nudge.NONE
+        // Research levels require real page reads, not just search snippets.
+        // Ask again with the shortfall named instead of committing an answer
+        // that never opened a source.
+        if (chat && research != null && research.minReads > 0 && research.used > 0 &&
+            research.pagesRead < research.minReads && researchNudges < MAX_RESEARCH_NUDGES) return Nudge.RESEARCH
+        // Always-images chats get one more try when a real answer arrives without a picture.
+        if (alwaysImages && imageNudges < MAX_IMAGE_NUDGES &&
+            (firstChatAnswer || text.length >= com.androidharness.app.core.ChatExperience.IMAGE_NUDGE_MIN_CHARS) &&
+            !com.androidharness.app.core.ChatExperience.answerHasImage(text.toString())) return Nudge.IMAGE
+        return Nudge.NONE
+    }
+
+    /** The user message that asks for more research or a picture after a discarded draft. */
+    private fun nudgeRequest(
+        nudge: Nudge,
+        searchDepth: com.androidharness.app.data.SearchDepth,
+        research: com.androidharness.app.tools.SearchSourceBudget?,
+    ): ChatMessage = ChatMessage(role = Role.USER, text =
+        if (nudge == Nudge.RESEARCH && research != null) com.androidharness.app.core.ChatExperience.researchReadNudge(searchDepth, research.pagesRead, research.minReads)
+        else com.androidharness.app.core.ChatExperience.IMAGE_NUDGE)
+
+    /** The committed assistant message for one model round, with its timing and generation details. */
+    private fun assistantMessage(
+        chat: Boolean,
+        text: CharSequence,
+        calls: List<ToolCallData>,
+        working: List<ChatMessage>,
+        thinking: CharSequence,
+        thinkingTiming: ThinkingTiming,
+        outputTokens: Int,
+        requestStartedNs: Long,
+        firstTokenNs: Long,
+        lastTokenNs: Long,
+        reasoningTokens: Int?,
+        reasoningSetting: String?,
+        suppliedMemories: List<com.androidharness.app.core.SuppliedMemory>,
+        model: String,
+        responseState: com.androidharness.app.core.ProviderMessageState?,
+    ): ChatMessage {
+        val followUps = if (chat)
+            com.androidharness.app.core.FollowUpSuggestions.extract(text.toString())
+        else com.androidharness.app.core.FollowUpSuggestions(text.toString(), emptyList())
+        return ChatMessage(
+            role = Role.ASSISTANT,
+            text = followUps.text,
+            toolCalls = calls.toList(),
+            images = if (chat) com.androidharness.app.core.ChatResponseImages.referenced(followUps.text, working) else emptyList(),
+            thinking = thinking.toString(),
+            thinkingMs = thinkingTiming.durationMs(ThinkingTiming.now()),
+            outputTokens = outputTokens,
+            generationMs = ((System.nanoTime() - requestStartedNs) / 1_000_000).coerceAtLeast(1),
+            firstTokenMs = if (firstTokenNs > 0L) ((firstTokenNs - requestStartedNs) / 1_000_000).coerceAtLeast(1) else 0,
+            streamMs = if (lastTokenNs > firstTokenNs) ((lastTokenNs - firstTokenNs) / 1_000_000).coerceAtLeast(1) else 0,
+            generation = com.androidharness.app.core.GenerationMetadata(
+                reasoningTokens = reasoningTokens,
+                reasoningSetting = reasoningSetting,
+                suppliedMemories = suppliedMemories,
+                model = model,
+                followUps = followUps.items,
+            ),
+        ).let { it.copy(generation = it.generation.copy(state = responseState?.boundTo(it))) }
+    }
+
+    private fun toolMessage(call: ToolCallData, result: ToolResult) = ChatMessage(
+        role = Role.TOOL,
+        text = result.output,
+        toolCallId = call.id,
+        toolName = call.name,
+        isError = !result.ok,
+        images = listOfNotNull(result.image), artifact = result.artifact,
+        generation = com.androidharness.app.core.GenerationMetadata(execution = result.execution, research = result.research, settings = result.settings, chatHistory = result.chatHistory, storageAccess = result.storageAccess),
+    )
+
+    /**
+     * Runs one round's tool calls into [results]. Only contiguous subagents or safe reads
+     * overlap. Stateful calls such as todo_write run at their requested position, including
+     * before a slow subagent batch, so progress is visible during work.
+     */
+    private suspend fun executeCalls(
+        calls: List<ToolCallData>,
+        results: MutableMap<String, ToolResult>,
+        deterministicFailures: MutableMap<String, String>,
+        effectiveMode: PermissionMode,
+        sessionAllowedTools: MutableSet<String>,
+        execWorkspace: WorkspaceFs,
+        sessionId: String,
+        turnId: String,
+        mode: AgentMode,
+        requestOptions: RequestOptions,
+        config: ProviderConfig,
+        apiKey: String,
+        roundRegistry: ToolRegistry,
+        resolveSubagentModel: (suspend (String) -> SubagentModelResolution)?,
+        subagentRuns: SubagentRuns?,
+        emit: suspend (AgentEvent) -> Unit,
+        publishResults: () -> Unit,
+    ) {
+        var ordinaryIndex = 0
+        while (ordinaryIndex < calls.size) {
+            val first = calls[ordinaryIndex]
+            if (first.name == "task") {
+                val subagentCalls = mutableListOf<ToolCallData>()
+                while (ordinaryIndex < calls.size && calls[ordinaryIndex].name == "task") {
+                    subagentCalls += calls[ordinaryIndex++]
+                }
+                // FlowCollector.emit is not concurrency-safe; parallel subagents
+                // share one mutex-protected emitter.
+                val emitLock = Mutex()
+                val serialEmit: suspend (AgentEvent) -> Unit = { event ->
+                    emitLock.withLock { emit(event) }
+                }
+                subagentCalls.forEach { call -> emit(AgentEvent.ToolStarted(call)) }
+                android.util.Log.d(
+                    "HarnessSpawn",
+                    "batch of ${subagentCalls.size} task call(s): ${subagentCalls.map { it.id }}",
+                )
+                coroutineScope {
+                    subagentCalls.map { call ->
+                        async {
+                            android.util.Log.d("HarnessSpawn", "task ${call.id} START ${System.currentTimeMillis()}")
+                            val result = executeWithPermission(
+                                call, effectiveMode, sessionAllowedTools, execWorkspace,
+                                sessionId, turnId, mode, requestOptions, config, apiKey,
+                                roundRegistry, resolveSubagentModel, serialEmit,
+                                subagentRuns = subagentRuns,
+                            )
+                            android.util.Log.d("HarnessSpawn", "task ${call.id} END ${System.currentTimeMillis()}")
+                            call.id to result
+                        }
+                    }.awaitAll().forEach { (id, result) -> results[id] = result }
+                }
+                publishResults()
+            } else if (parallelSafeReadOnly(first, roundRegistry)) {
+                val group = mutableListOf<ToolCallData>()
+                while (ordinaryIndex < calls.size && calls[ordinaryIndex].name != "task" && parallelSafeReadOnly(calls[ordinaryIndex], roundRegistry)) {
+                    group += calls[ordinaryIndex++]
+                }
+                group.forEach { emit(AgentEvent.ToolStarted(it)) }
+                val emitLock = Mutex()
+                val serialEmit: suspend (AgentEvent) -> Unit = { event -> emitLock.withLock { emit(event) } }
+                coroutineScope {
+                    group.map { call ->
+                        async {
+                            call.id to executeWithFailureGuard(
+                                call, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
+                                sessionId, turnId, mode, requestOptions, config, apiKey,
+                                roundRegistry, resolveSubagentModel, serialEmit,
+                            )
+                        }
+                    }.awaitAll().forEach { (id, result) -> results[id] = result }
+                }
+                publishResults()
+            } else {
+                ordinaryIndex++
+                emit(AgentEvent.ToolStarted(first))
+                results[first.id] = executeWithFailureGuard(
+                    first, deterministicFailures, effectiveMode, sessionAllowedTools, execWorkspace,
+                    sessionId, turnId, mode, requestOptions, config, apiKey,
+                    roundRegistry, resolveSubagentModel, emit,
+                )
+                publishResults()
+            }
         }
     }
 
@@ -2261,8 +2395,14 @@ class AgentEngine(
         working: List<ChatMessage>, maxContextTokens: Int, sessionId: String,
         chat: Boolean,
         compactThreshold: Int,
+        overflow: ContextOverflow.Recovery,
         emit: suspend (AgentEvent) -> Unit,
     ): List<ChatMessage>? {
+        if (overflow.forceCompaction) {
+            // Keeps the window a server named, so the next run budgets against it from the start.
+            overflow.learned?.let { runCatching { learnContextLimit(overflow.key, it) } }
+            emit(AgentEvent.Notice(overflow.notice()))
+        }
         var keepCount = minOf(8, working.size)
         // Leave room below the trigger for a summary and continued work, even with few large turns.
         val retainedBudget = (if (chat) maxContextTokens else compactThreshold) / 2

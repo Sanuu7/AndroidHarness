@@ -222,6 +222,8 @@ data class AppSettings(
     val bufferedToolCallModels: Set<String> = emptySet(),
     /** Models that called write_file with the file block marker but never wrote the block. */
     val fileBlockDeclinedModels: Set<String> = emptySet(),
+    /** "providerId|model" to the input window its server named when it rejected a request as too long. */
+    val learnedContextLimits: Map<String, Int> = emptyMap(),
     /** ID of the last active chat session. */
     val lastActiveSessionId: String? = null,
     /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
@@ -444,6 +446,7 @@ class SettingsRepository(private val context: Context) {
         val STREAM_FILE_WRITES_AS_TEXT = booleanPreferencesKey("stream_file_writes_as_text")
         val BUFFERED_TOOL_CALL_MODELS = stringSetPreferencesKey("buffered_tool_call_models")
         val FILE_BLOCK_DECLINED_MODELS = stringSetPreferencesKey("file_block_declined_models")
+        val LEARNED_CONTEXT_LIMITS = stringSetPreferencesKey("learned_context_limits")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
         val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
         val LOCAL_MODEL_AGENT_CONTEXT = booleanPreferencesKey("local_model_agent_context")
@@ -596,6 +599,7 @@ class SettingsRepository(private val context: Context) {
             streamFileWritesAsText = prefs[Keys.STREAM_FILE_WRITES_AS_TEXT] ?: true,
             bufferedToolCallModels = prefs[Keys.BUFFERED_TOOL_CALL_MODELS] ?: emptySet(),
             fileBlockDeclinedModels = prefs[Keys.FILE_BLOCK_DECLINED_MODELS] ?: emptySet(),
+            learnedContextLimits = decodeContextLimits(prefs[Keys.LEARNED_CONTEXT_LIMITS]),
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
             repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
             localModelAgentContext = prefs[Keys.LOCAL_MODEL_AGENT_CONTEXT] ?: false,
@@ -707,6 +711,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.STREAM_FILE_WRITES_AS_TEXT] = s.streamFileWritesAsText
             p[Keys.BUFFERED_TOOL_CALL_MODELS] = s.bufferedToolCallModels
             p[Keys.FILE_BLOCK_DECLINED_MODELS] = s.fileBlockDeclinedModels
+            p[Keys.LEARNED_CONTEXT_LIMITS] = encodeContextLimits(s.learnedContextLimits)
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
             p[Keys.LOCAL_MODEL_AGENT_CONTEXT] = s.localModelAgentContext
             p[Keys.LOCAL_MODEL_EXPERIMENTAL] = s.localModelExperimental
@@ -797,6 +802,14 @@ class SettingsRepository(private val context: Context) {
     }
 
     /** Remembers a model that would not write file blocks, so it goes back to plain write_file calls. */
+    /** Remembers the input window a server named when it rejected a request from this model as too long. */
+    suspend fun learnContextLimit(key: String, tokens: Int) {
+        context.settingsStore.edit {
+            it[Keys.LEARNED_CONTEXT_LIMITS] = encodeContextLimits(
+                decodeContextLimits(it[Keys.LEARNED_CONTEXT_LIMITS]) + (key to tokens))
+        }
+    }
+
     suspend fun markFileBlocksDeclined(key: String) {
         context.settingsStore.edit { it[Keys.FILE_BLOCK_DECLINED_MODELS] = it[Keys.FILE_BLOCK_DECLINED_MODELS].orEmpty() + key }
     }
@@ -1490,3 +1503,14 @@ class SettingsRepository(private val context: Context) {
         }
     }
 }
+
+/** Entries are "providerId|model=tokens"; the key itself may hold "=", so split on the last one. */
+internal fun decodeContextLimits(entries: Set<String>?): Map<String, Int> =
+    entries.orEmpty().mapNotNull { entry ->
+        val at = entry.lastIndexOf('=')
+        if (at <= 0) return@mapNotNull null
+        entry.substring(at + 1).toIntOrNull()?.takeIf { it > 0 }?.let { entry.substring(0, at) to it }
+    }.toMap()
+
+internal fun encodeContextLimits(limits: Map<String, Int>): Set<String> =
+    limits.mapTo(LinkedHashSet()) { (key, tokens) -> "$key=$tokens" }

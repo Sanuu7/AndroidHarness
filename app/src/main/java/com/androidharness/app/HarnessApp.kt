@@ -400,6 +400,7 @@ class AppContainer(val appContext: Context) {
         pluginHooks = pluginHooks,
         markBufferedToolCalls = { settings.markBufferedToolCalls(it) },
         markFileBlocksDeclined = { settings.markFileBlocksDeclined(it) },
+        learnContextLimit = { key, tokens -> settings.learnContextLimit(key, tokens) },
         todoStore = todoStore,
         repoMap = repoMap,
         cavemanSettings = { settings.settings.first().also { cavemanSettings.set(it); disabledSkills.set(it.disabledSkills) } },
