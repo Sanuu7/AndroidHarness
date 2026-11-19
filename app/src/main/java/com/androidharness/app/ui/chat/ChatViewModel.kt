@@ -1,5 +1,6 @@
 package com.androidharness.app.ui.chat
 
+import com.androidharness.app.data.SteeringMode
 import com.androidharness.app.R
 import android.net.Uri
 import androidx.lifecycle.ViewModel
@@ -831,7 +832,8 @@ class ChatViewModel(
     // ------------------------------------------------------------------
 
     /** True when the composer can consume the draft, including local commands and queued messages. */
-    fun send(rawText: String): Boolean {
+    /** [steering] is the pick from holding send while the agent works; null follows Settings. */
+    fun send(rawText: String, steering: SteeringMode? = null): Boolean {
         // Answered aside on the live context; never queued, injected or saved.
         if (SlashCommands.isSideQuestion(rawText)) return askAside(rawText.trim().removeRange(0, SlashCommands.SIDE_COMMAND.length))
         if (compactionJob?.isActive == true) {
@@ -947,11 +949,11 @@ class ChatViewModel(
                     if (e is kotlinx.coroutines.CancellationException) throw e
                     _state.update { it.copy(error = e.message) }; return@launch
                 }
-                dispatchAgentText(expanded)
+                dispatchAgentText(expanded, steering)
             }
             return true
         }
-        return dispatchAgentText(agentText)
+        return dispatchAgentText(agentText, steering)
     }
 
     /**
@@ -1006,7 +1008,7 @@ class ChatViewModel(
         } finally { if (process.isAlive) process.destroyForcibly() }
     }
 
-    private fun dispatchAgentText(agentText: String): Boolean {
+    private fun dispatchAgentText(agentText: String, steering: SteeringMode? = null): Boolean {
         val sid = sessionId
         if (sid != null && c.runManager.isRunning(sid)) {
             if (_state.value.conversation.isChat && (_state.value.attachments.isNotEmpty() || _state.value.fileAttachments.isNotEmpty())) {
@@ -1016,7 +1018,7 @@ class ChatViewModel(
             // Queue the expanded text for this chat's successful Run finished event.
             // Local slash commands never reach here, so /cost /skills /clear keep working mid-run.
             val target = SlashCommands.dispatchTarget(isRunning = true, agentText = agentText)
-            c.runManager.inject(sid, target.text)
+            c.runManager.inject(sid, target.text, steering)
             return true
         }
         return startRun(agentText)

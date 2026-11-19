@@ -14,7 +14,12 @@ import kotlin.coroutines.AbstractCoroutineContextElement
 import kotlin.coroutines.CoroutineContext
 
 @Serializable
-data class QueuedPrompt(val id: String = UUID.randomUUID().toString(), val text: String)
+/** [steering] is the pick from holding send; null follows the Settings steering mode. */
+data class QueuedPrompt(
+    val id: String = UUID.randomUUID().toString(),
+    val text: String,
+    val steering: com.androidharness.app.data.SteeringMode? = null,
+)
 
 @Serializable
 data class TaskLimits(val tokens: Long = 0, val cost: Double = 0.0, val minutes: Long = 0) {

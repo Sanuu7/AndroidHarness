@@ -10,4 +10,9 @@
     <string name="steering_search_desc">"คัดท้ายเอเจนต์ที่รันอยู่ หรือรอให้งานเสร็จสิ้น"</string>
     <string name="steering_queue_next_step">"เอเจนต์จะอ่านสิ่งเหล่านี้หลังจากขั้นตอนปัจจุบัน"</string>
     <string name="steering_queue_badge">"โปรดอ่านขั้นตอนต่อไป"</string>
+    <string name="steering_send_menu_label">"เลือกเวลาที่จะส่ง"</string>
+    <string name="steering_send_steer">"ชี้นำหลังขั้นตอนนี้"</string>
+    <string name="steering_send_steer_desc">"อ่านหลังข้อความหรือการเรียกเครื่องมือปัจจุบัน"</string>
+    <string name="steering_send_after">"ส่งหลังงาน"</string>
+    <string name="steering_send_after_desc">"รอจนงานทั้งหมดเสร็จ"</string>
 </resources>

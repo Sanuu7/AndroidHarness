@@ -10,4 +10,9 @@
     <string name="steering_search_desc">"இயங்கும் முகவரை வழிநடத்தவும் அல்லது பணி முடிவடையும் வரை காத்திருக்கவும்"</string>
     <string name="steering_queue_next_step">"முகவர் அதன் தற்போதைய படிக்குப் பிறகு இவற்றைப் படிக்கிறார்."</string>
     <string name="steering_queue_badge">"அடுத்த கட்டத்தில் படிக்கவும்"</string>
+    <string name="steering_send_menu_label">"எப்போது அனுப்புவது என்பதைத் தேர்ந்தெடு"</string>
+    <string name="steering_send_steer">"இந்தப் படிக்குப் பிறகு வழிநடத்து"</string>
+    <string name="steering_send_steer_desc">"தற்போதைய செய்தி அல்லது கருவி அழைப்புக்குப் பிறகு படிக்கப்படும்"</string>
+    <string name="steering_send_after">"பணிக்குப் பிறகு அனுப்பு"</string>
+    <string name="steering_send_after_desc">"முழுப் பணியும் முடியும் வரை காத்திருக்கும்"</string>
 </resources>

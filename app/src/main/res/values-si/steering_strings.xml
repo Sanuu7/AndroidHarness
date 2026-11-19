@@ -9,5 +9,10 @@
     <string name="steering_picker_detail">නියෝජිතයා වැඩ කරන අතරතුර පණිවිඩයක් යවන විට සිදුවන දේ තෝරන්න. පෝලිමේ ඇති පණිවිඩයක දැන් යවන්න එබීමෙන් සෑම විටම නියෝජිතයා නවතා එය වහාම යවයි.</string>
     <string name="steering_search_desc">ක්‍රියාත්මක නියෝජිතයා මෙහෙයවන්න, නැතහොත් කාර්යය අවසන් වන තුරු රැඳී සිටින්න</string>
     <string name="steering_queue_next_step">නියෝජිතයා වත්මන් පියවරෙන් පසු මේවා කියවයි.</string>
-    <string name="steering_queue_badge">ඊළඟ පියවරේදී කියවේ</string>
+    <string name="steering_queue_badge">"ඊළඟ පියවරේදී කියවේ"</string>
+    <string name="steering_send_menu_label">"යැවීමේ වේලාව තෝරන්න"</string>
+    <string name="steering_send_steer">"මෙම පියවරෙන් පසු මඟ පෙන්වන්න"</string>
+    <string name="steering_send_steer_desc">"වර්තමාන පණිවිඩය හෝ මෙවලම් ඇමතුමෙන් පසු කියවේ"</string>
+    <string name="steering_send_after">"කාර්යයෙන් පසු යවන්න"</string>
+    <string name="steering_send_after_desc">"මුළු කාර්යය අවසන් වන තුරු රැඳී සිටී"</string>
 </resources>

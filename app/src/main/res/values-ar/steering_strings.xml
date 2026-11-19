@@ -10,4 +10,9 @@
     <string name="steering_search_desc">وجّه الوكيل أثناء عمله، أو انتظر حتى تنتهي المهمة</string>
     <string name="steering_queue_next_step">يقرأ الوكيل هذه الرسائل بعد خطوته الحالية.</string>
     <string name="steering_queue_badge">تُقرأ في الخطوة التالية</string>
+    <string name="steering_send_menu_label">"اختر وقت الإرسال"</string>
+    <string name="steering_send_steer">"توجيه بعد هذه الخطوة"</string>
+    <string name="steering_send_steer_desc">"يُقرأ بعد الرسالة أو استدعاء الأداة الحالي"</string>
+    <string name="steering_send_after">"إرسال بعد المهمة"</string>
+    <string name="steering_send_after_desc">"ينتظر حتى تنتهي المهمة كلها"</string>
 </resources>

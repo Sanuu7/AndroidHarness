@@ -1307,11 +1307,13 @@ class RunManager(
      * is saved to the chat before it leaves the queue. If the process dies in
      * between, [dropDeliveredSteering] finds the saved copy, so it is never
      * sent twice. After task leaves the queue alone for the next turn.
+     * A message's own pick from holding send wins over the Settings mode.
      */
     private fun steeringInbox(sessionId: String, turnId: String) = SteeringInbox {
-        if (settings.settings.first().steeringMode != com.androidharness.app.data.SteeringMode.AH_AUTO) return@SteeringInbox emptyList()
+        val fallback = settings.settings.first().steeringMode
         synchronized(lock) { queueWrites[sessionId]?.toList() }.orEmpty().forEach { it.join() }
         val queue = controls.flow(sessionId).value.queue
+            .filter { (it.steering ?: fallback) == com.androidharness.app.data.SteeringMode.AH_AUTO }
         if (queue.isEmpty()) return@SteeringInbox emptyList()
         val saved = sessions.messages(sessionId).mapNotNullTo(HashSet()) { it.id }
         val messages = queue.map { prompt ->
@@ -1332,9 +1334,9 @@ class RunManager(
         controls.update(sessionId) { record -> record.copy(queue = record.queue.filterNot { Steering.messageId(it.id) in saved }) }
     }
 
-    fun inject(sessionId: String, text: String) {
+    fun inject(sessionId: String, text: String, steering: com.androidharness.app.data.SteeringMode? = null) {
         val job = appScope.launch(Dispatchers.IO, start = kotlinx.coroutines.CoroutineStart.LAZY) {
-            controls.update(sessionId) { it.copy(queue = it.queue + QueuedPrompt(text = text)) }
+            controls.update(sessionId) { it.copy(queue = it.queue + QueuedPrompt(text = text, steering = steering)) }
         }
         synchronized(lock) { queueWrites.getOrPut(sessionId) { mutableSetOf() }.add(job) }
         job.invokeOnCompletion { synchronized(lock) {

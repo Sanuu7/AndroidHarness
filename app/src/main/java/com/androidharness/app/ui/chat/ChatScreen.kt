@@ -2834,7 +2834,7 @@ private fun ChatScreenContent(
                     queue = state.taskControl.queue,
                     onEdit = viewModel::editQueued, onMove = viewModel::moveQueued,
                     onSendNow = viewModel::sendQueuedNow,
-                    readAtNextStep = state.busy && globalSettings.steeringMode == SteeringMode.AH_AUTO,
+                    readAtNextStep = state.busy && state.taskControl.queue.any { (it.steering ?: globalSettings.steeringMode) == SteeringMode.AH_AUTO },
                 )
 
                 if (desktopLayout) {
@@ -2868,6 +2868,21 @@ private fun ChatScreenContent(
                 }
                 com.androidharness.app.ui.automation.ScheduledMessageRow(chatSchedules, scheduleConnection, scheduleNow) {
                     if (chatSchedules.size == 1) scheduleDraft = chatSchedules.first() else showScheduledList = true
+                }
+                val sendComposer: (SteeringMode?) -> Unit = { steering ->
+                    val payload = ResponseAttachment.attach(ArtifactAttachment.attach(SlashCommands.composeSend(attachedSkill,
+                        composerText.ifBlank { if (attachedConcept != null) "Revise this concept." else if (attachedResponse != null) "Help me with this response." else "" }), attachedConcept), attachedResponse)
+                    if (payload.isNotBlank() || state.fileAttachments.isNotEmpty() || state.attachments.isNotEmpty()) {
+                        // Keep the draft when a selection is still loading/saving or unavailable.
+                        if (viewModel.send(payload, steering)) {
+                            setComposerText("")
+                            viewModel.saveDraft("", immediate = true)
+                            attachedSkill = null
+                            attachedConceptJson = null
+                            attachedResponseJson = null
+                            slashExpanded = false
+                        }
+                    }
                 }
                 MessageComposer(
                     contextRing = com.androidharness.app.ui.chat.components.rememberContextRing(
@@ -2913,21 +2928,8 @@ private fun ChatScreenContent(
                         slashExpanded = !state.conversation.isChat && attachedSkill == null && input.text.startsWith("/")
                     },
                     onClearSkill = { attachedSkill = null },
-                    onSend = {
-                        val payload = ResponseAttachment.attach(ArtifactAttachment.attach(SlashCommands.composeSend(attachedSkill,
-                            composerText.ifBlank { if (attachedConcept != null) "Revise this concept." else if (attachedResponse != null) "Help me with this response." else "" }), attachedConcept), attachedResponse)
-                        if (payload.isNotBlank() || state.fileAttachments.isNotEmpty() || state.attachments.isNotEmpty()) {
-                            // Keep the draft when a selection is still loading/saving or unavailable.
-                            if (viewModel.send(payload)) {
-                                setComposerText("")
-                                viewModel.saveDraft("", immediate = true)
-                                attachedSkill = null
-                                attachedConceptJson = null
-                                attachedResponseJson = null
-                                slashExpanded = false
-                            }
-                        }
-                    },
+                    onSend = { sendComposer(null) },
+                    onSendSteered = if (state.conversation.isChat) null else { mode -> sendComposer(mode) },
                     onSchedule = if (state.conversation.isChat) null else fun() {
                         currentProject?.let { project ->
                             scheduleDraft = com.androidharness.app.automation.AutomationTask(

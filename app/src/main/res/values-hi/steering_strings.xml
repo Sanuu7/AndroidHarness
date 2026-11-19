@@ -10,4 +10,9 @@
     <string name="steering_search_desc">"चल रहे एजेंट का संचालन करें, या कार्य समाप्त होने तक प्रतीक्षा करें"</string>
     <string name="steering_queue_next_step">"एजेंट अपने वर्तमान चरण के बाद इन्हें पढ़ता है।"</string>
     <string name="steering_queue_badge">"अगले चरण में पढ़ें"</string>
+    <string name="steering_send_menu_label">"भेजने का समय चुनें"</string>
+    <string name="steering_send_steer">"इस चरण के बाद दिशा दें"</string>
+    <string name="steering_send_steer_desc">"मौजूदा संदेश या टूल कॉल के बाद पढ़ा जाएगा"</string>
+    <string name="steering_send_after">"कार्य के बाद भेजें"</string>
+    <string name="steering_send_after_desc">"पूरा कार्य पूरा होने तक प्रतीक्षा करता है"</string>
 </resources>

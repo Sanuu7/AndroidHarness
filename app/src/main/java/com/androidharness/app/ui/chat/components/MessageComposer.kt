@@ -4,6 +4,8 @@ import androidx.compose.runtime.CompositionLocalProvider
 import com.androidharness.app.ui.theme.LocalHarnessGlassBackdrop
 import com.androidharness.app.ui.theme.LocalHarnessGlassChromeBackdrop
 import com.androidharness.app.ui.theme.harnessGlassChrome
+import com.androidharness.app.ui.theme.harnessGlass
+import com.androidharness.app.data.SteeringMode
 import com.androidharness.app.ui.theme.LocalHarnessGlass
 import com.androidharness.app.ui.theme.HarnessGlassMode
 import com.androidharness.app.ui.common.ExpressiveDropdownMenu as DropdownMenu
@@ -86,6 +88,8 @@ import androidx.compose.ui.text.TextRange
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AltRoute
+import androidx.compose.material.icons.rounded.HourglassTop
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.automirrored.outlined.Send
@@ -217,6 +221,8 @@ internal fun MessageComposer(
     attachments: @Composable () -> Unit = {},
     /** Images pasted or inserted from the keyboard; null leaves image paste off. */
     onPasteImages: ((List<android.net.Uri>) -> Unit)? = null,
+    /** Coding-only: holding send while the agent works picks when this one message is read. */
+    onSendSteered: ((SteeringMode) -> Unit)? = null,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val desktop = com.androidharness.app.ui.LocalDesktopLayout.current
@@ -576,6 +582,13 @@ internal fun MessageComposer(
             }
 
             isGroqActive -> voice()
+
+            showQueueSend && onSendSteered != null -> QueueSendButton(
+                size = actionSize,
+                enabled = sendAllowed,
+                onSend = onSend,
+                onSendSteered = onSendSteered,
+            )
 
             showQueueSend -> {
                 ExpressiveIconButton(preserveFill = true,
@@ -1153,6 +1166,115 @@ private fun ContextRingPlusButton(
             Icon(painterResource(R.drawable.ic_chat_plus), null, Modifier.size(18.dp), tint = glyph)
         }
     }
+}
+
+/**
+ * Send while the agent works. Tap queues with the Settings steering mode;
+ * holding opens a menu to steer at the next step or wait for the task to end.
+ */
+@Composable
+private fun QueueSendButton(
+    size: Dp,
+    enabled: Boolean,
+    onSend: () -> Unit,
+    onSendSteered: (SteeringMode) -> Unit,
+) {
+    val uiContext = androidx.compose.ui.platform.LocalContext.current
+    val haptics = LocalHapticFeedback.current
+    val scheme = MaterialTheme.colorScheme
+    var menuOpen by remember { mutableStateOf(false) }
+    val interactions = remember { MutableInteractionSource() }
+    val pressed by interactions.collectIsPressedAsState()
+    val held = pressed || menuOpen
+    val corner by animateDpAsState(if (held) 12.dp else size / 2, expressiveSpatialSpec(), label = "queueSendCorner")
+    val scale by animateFloatAsState(if (pressed) .9f else 1f, expressiveSpatialSpec(), label = "queueSendScale")
+    val glass = LocalHarnessGlass.current.mode != HarnessGlassMode.OFF
+    val face = if (glass) 40.dp else size
+    val shape = RoundedCornerShape(corner.coerceAtMost(face / 2))
+    val fill = if (enabled) scheme.primary else scheme.primary.copy(alpha = .38f)
+    val sendLabel = uiContext.getString(R.string.ui_queue_message)
+    val chooseLabel = uiContext.getString(R.string.steering_send_menu_label)
+    Box {
+        Box(
+            Modifier.size(size)
+                .combinedClickable(
+                    interactionSource = interactions,
+                    indication = null,
+                    enabled = enabled,
+                    role = androidx.compose.ui.semantics.Role.Button,
+                    onClickLabel = sendLabel,
+                    onLongClickLabel = chooseLabel,
+                    onLongClick = { haptics.performHapticFeedback(HapticFeedbackType.LongPress); menuOpen = true },
+                    onClick = { haptics.performHapticFeedback(HapticFeedbackType.Confirm); onSend() },
+                )
+                .semantics { contentDescription = sendLabel }
+                .testTag("composer-queue-send"),
+            contentAlignment = Alignment.Center,
+        ) {
+            Box(
+                Modifier.size(face)
+                    .graphicsLayer { scaleX = scale; scaleY = scale }
+                    .then(if (glass) Modifier.harnessGlass(fill, shape) else Modifier)
+                    .clip(shape)
+                    .background(if (glass) fill.copy(alpha = fill.alpha * .88f) else fill)
+                    .indication(interactions, ripple(color = scheme.onPrimary)),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(painterResource(R.drawable.ic_chat_arrow_up), null, Modifier.size(20.dp), tint = scheme.onPrimary)
+            }
+        }
+        DropdownMenu(expanded = menuOpen, onDismissRequest = { menuOpen = false }) {
+            Text(
+                chooseLabel,
+                style = MaterialTheme.typography.labelLarge,
+                color = scheme.onSurfaceVariant,
+                modifier = Modifier.padding(start = 18.dp, end = 18.dp, top = 8.dp, bottom = 4.dp),
+            )
+            SteerMenuItem(
+                icon = Icons.Rounded.AltRoute,
+                title = uiContext.getString(R.string.steering_send_steer),
+                detail = uiContext.getString(R.string.steering_send_steer_desc),
+                container = scheme.primaryContainer,
+                content = scheme.onPrimaryContainer,
+                tag = "composer-steer-next-step",
+            ) { menuOpen = false; haptics.performHapticFeedback(HapticFeedbackType.Confirm); onSendSteered(SteeringMode.AH_AUTO) }
+            SteerMenuItem(
+                icon = Icons.Rounded.HourglassTop,
+                title = uiContext.getString(R.string.steering_send_after),
+                detail = uiContext.getString(R.string.steering_send_after_desc),
+                container = scheme.tertiaryContainer,
+                content = scheme.onTertiaryContainer,
+                tag = "composer-steer-after-task",
+            ) { menuOpen = false; haptics.performHapticFeedback(HapticFeedbackType.Confirm); onSendSteered(SteeringMode.AFTER_TASK) }
+        }
+    }
+}
+
+@Composable
+private fun SteerMenuItem(
+    icon: androidx.compose.ui.graphics.vector.ImageVector,
+    title: String,
+    detail: String,
+    container: Color,
+    content: Color,
+    tag: String,
+    onClick: () -> Unit,
+) {
+    DropdownMenuItem(
+        text = {
+            Column(Modifier.padding(vertical = 8.dp)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        },
+        leadingIcon = {
+            Box(Modifier.size(36.dp).clip(RoundedCornerShape(12.dp)).background(container), contentAlignment = Alignment.Center) {
+                Icon(icon, null, Modifier.size(20.dp), tint = content)
+            }
+        },
+        onClick = onClick,
+        modifier = Modifier.testTag(tag),
+    )
 }
 
 @Composable

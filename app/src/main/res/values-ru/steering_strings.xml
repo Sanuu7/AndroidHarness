@@ -10,4 +10,9 @@
     <string name="steering_search_desc">Направлять работающего агента или ждать завершения задачи</string>
     <string name="steering_queue_next_step">Агент прочитает их после текущего шага.</string>
     <string name="steering_queue_badge">Будет прочитано на следующем шаге</string>
+    <string name="steering_send_menu_label">"Выберите, когда отправить"</string>
+    <string name="steering_send_steer">"Направить после этого шага"</string>
+    <string name="steering_send_steer_desc">"Прочитается после текущего сообщения или вызова инструмента"</string>
+    <string name="steering_send_after">"Отправить после задачи"</string>
+    <string name="steering_send_after_desc">"Ждёт завершения всей задачи"</string>
 </resources>
