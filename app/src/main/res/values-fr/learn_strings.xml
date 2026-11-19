@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"Explorez le guide"</string>
     <string name="learn_hero_title">"Un peu d’aide.\nBeaucoup de possibilités."</string>
     <string name="learn_hero_body">"Commencez par votre première conversation ou passez directement à ce que vous souhaitez faire. Chaque leçon comprend des étapes, des limites utiles et de l\'aide lorsque vous êtes bloqué."</string>
-    <string name="learn_offline">"Disponible hors connexion · Tutoriels en anglais"</string>
+    <string name="learn_offline">"Disponible hors connexion"</string>
     <string name="learn_progress">"%1$d ou %2$d, leçons apprises"</string>
     <string name="learn_search">"Qu’aimeriez-vous apprendre ?"</string>
     <string name="learn_clear_search">"Effacer la recherche du didacticiel"</string>

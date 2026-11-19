@@ -83,10 +83,9 @@ internal fun LearnSection(
     onOpenSettings: (SettingsPage) -> Unit, onOpenDestination: (LearnDestination) -> Unit,
 ) {
     val context = LocalContext.current
-    val catalogResult by produceState<Result<LearnCatalog>?>(null) {
-        value = withContext(Dispatchers.IO) {
-            runCatching { context.assets.open("learn/guide.json").bufferedReader().use { LearnCatalog.parse(it.readText()) } }
-        }
+    val localeTag = context.resources.configuration.locales[0].toLanguageTag()
+    val catalogResult by produceState<Result<LearnCatalog>?>(null, localeTag) {
+        value = withContext(Dispatchers.IO) { loadLearnGuide(context) }
     }
     val prefs = remember(context) { context.getSharedPreferences("learn_guide", Context.MODE_PRIVATE) }
     var completed by remember(prefs) { mutableStateOf(prefs.getStringSet("completed", emptySet()).orEmpty().toSet()) }

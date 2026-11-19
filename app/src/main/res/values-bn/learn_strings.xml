@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"গাইড অন্বেষণ"</string>
     <string name="learn_hero_title">"একটু দিকনির্দেশনা।\nঅনেক সম্ভাবনা।"</string>
     <string name="learn_hero_body">"আপনার প্রথম চ্যাট দিয়ে শুরু করুন, অথবা আপনি যে জিনিসটি করতে চান তাতে সরাসরি যান৷ প্রতিটি পাঠে পদক্ষেপ, দরকারী সীমা এবং আপনি আটকে গেলে সহায়তা অন্তর্ভুক্ত করে।"</string>
-    <string name="learn_offline">"অফলাইনে উপলব্ধ · টিউটোরিয়াল ইংরেজিতে"</string>
+    <string name="learn_offline">"অফলাইনে উপলব্ধ"</string>
     <string name="learn_progress">"%2$d পাঠের %1$d শিখেছি"</string>
     <string name="learn_search">"আপনি কি শিখতে চান?"</string>
     <string name="learn_clear_search">"টিউটোরিয়াল অনুসন্ধান সাফ করুন"</string>

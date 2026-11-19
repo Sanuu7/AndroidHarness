@@ -7,7 +7,7 @@
     <string name="learn_entry_action">ガイドを見る</string>
     <string name="learn_hero_title">少しのヒントで、\nできることが大きく広がる。</string>
     <string name="learn_hero_body">最初のチャットから始めても、やりたいことへ直接進んでもOK。各レッスンには手順、知っておきたい限界、困ったときの対処が入っています。</string>
-    <string name="learn_offline">オフラインで利用可 · チュートリアルは英語</string>
+    <string name="learn_offline">オフラインで利用可</string>
     <string name="learn_progress">%2$d レッスン中 %1$d を学習済み</string>
     <string name="learn_search">何を学びますか？</string>
     <string name="learn_clear_search">チュートリアル検索をクリア</string>

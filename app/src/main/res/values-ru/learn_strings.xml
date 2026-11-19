@@ -7,7 +7,7 @@
     <string name="learn_entry_action">Открыть руководство</string>
     <string name="learn_hero_title">Немного подсказок —\nморе возможностей.</string>
     <string name="learn_hero_body">Начните с первого чата или сразу перейдите к тому, что хотите сделать. В каждом уроке есть шаги, полезные ограничения и помощь, если что-то не получается.</string>
-    <string name="learn_offline">Доступно офлайн · уроки на английском</string>
+    <string name="learn_offline">Доступно офлайн</string>
     <string name="learn_progress">Изучено уроков: %1$d из %2$d</string>
     <string name="learn_search">Чему вы хотите научиться?</string>
     <string name="learn_clear_search">Очистить поиск по урокам</string>

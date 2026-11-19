@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"가이드 살펴보기"</string>
     <string name="learn_hero_title">"작은 안내.\n무한한 가능성."</string>
     <string name="learn_hero_body">"첫 번째 채팅부터 시작하거나 하고 싶은 일로 바로 이동하세요. 모든 레슨에는 단계, 유용한 제한 사항, 막혔을 때의 도움말이 포함되어 있습니다."</string>
-    <string name="learn_offline">"오프라인 사용 가능 · 튜토리얼은 영어로 제공됩니다"</string>
+    <string name="learn_offline">"오프라인 사용 가능"</string>
     <string name="learn_progress">"%2$d 교훈 중 %1$d 교훈"</string>
     <string name="learn_search">"무엇을 배우고 싶나요?"</string>
     <string name="learn_clear_search">"튜토리얼 검색 지우기"</string>

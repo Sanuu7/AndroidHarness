@@ -7,7 +7,7 @@
     <string name="learn_entry_action">استكشف الدليل</string>
     <string name="learn_hero_title">قليل من التوجيه،\nوإمكانيات كثيرة.</string>
     <string name="learn_hero_body">ابدأ بأول محادثة لك، أو انتقل مباشرة إلى ما تريد فعله. كل درس يتضمن خطوات، وحدودًا مفيدة، ومساعدة إذا تعثّرت.</string>
-    <string name="learn_offline">متاح دون اتصال · الدروس بالإنجليزية</string>
+    <string name="learn_offline">متاح دون اتصال</string>
     <string name="learn_progress">تعلمت %1$d من %2$d دروس</string>
     <string name="learn_search">ماذا تريد أن تتعلم؟</string>
     <string name="learn_clear_search">مسح بحث الدروس</string>

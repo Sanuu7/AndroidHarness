@@ -1,0 +1,6022 @@
+{
+  "categories": [
+    {
+      "id": "start",
+      "title": "从这里开始",
+      "description": "找到你的立足点，选择一个连接，然后尝试你的第一个任务。"
+    },
+    {
+      "id": "providers",
+      "title": "型号 & API 按键",
+      "description": "连接提供商、了解计费并选择助理的想法。"
+    },
+    {
+      "id": "chat",
+      "title": "聊天和研究",
+      "description": "询问、探索、附加文件并进行您自己的对话。"
+    },
+    {
+      "id": "local",
+      "title": "本地型号",
+      "description": "在您自己的设备上下载并运行支持的模型。"
+    },
+    {
+      "id": "code",
+      "title": "代码和项目",
+      "description": "处理文件、命令、更改和项目检查。"
+    },
+    {
+      "id": "github",
+      "title": "GitHub",
+      "description": "连接帐户并将存储库从导入到拉取请求。"
+    },
+    {
+      "id": "extensions",
+      "title": "技能、插件和 MCP",
+      "description": "为 Code 提供您工作所需的说明和工具。"
+    },
+    {
+      "id": "device",
+      "title": "您的 Android 设备",
+      "description": "了解存储、Linux 和可选设备访问。"
+    },
+    {
+      "id": "automation",
+      "title": "日程安排和远程工作",
+      "description": "稍后运行任务，使用 Telegram 并管理后台工作。"
+    },
+    {
+      "id": "personal",
+      "title": "让它成为你的",
+      "description": "调整外观、语言、隐私和反馈。"
+    },
+    {
+      "id": "data",
+      "title": "您的数据和文件",
+      "description": "备份、传输、清理和了解使用情况。"
+    },
+    {
+      "id": "help",
+      "title": "帮助和限制",
+      "description": "从问题中恢复并了解应用程序可以做什么和不能做什么。"
+    }
+  ],
+  "lessons": [
+    {
+      "id": "your-way-around",
+      "category": "start",
+      "title": "见面聊天和代码",
+      "summary": "在开始之前知道要使用哪一侧。",
+      "location": "打开导航菜单，然后选择“聊天”或“代码”。",
+      "before": [
+        "您无需帐户或互联网连接即可阅读本指南。"
+      ],
+      "steps": [
+        {
+          "title": "使用聊天功能进行对话",
+          "body": "提出问题、写作、学习、研究、讨论图像或请求小型交互式视觉效果。聊天可以使用其允许的研究、记忆、历史、GitHub 阅读和应用程序设置工具。"
+        },
+        {
+          "title": "使用代码进行项目工作",
+          "body": "当您希望助手编辑项目文件、运行命令、构建某些内容或使用连接的开发工具时，请选择“代码”。选择一个工作区，以便它知道哪些文件属于该任务。"
+        },
+        {
+          "title": "找到支持的屏幕",
+          "body": "使用项目、对话、文件、终端、自动化和设置的导航菜单。在宽布局上，其中一些显示在对话旁边。"
+        },
+        {
+          "title": "遵循教程，然后尝试一下",
+          "body": "每节课都有一个“去哪里”框和用于打开相关应用程序屏幕的按钮。使用书签保存课程，或将其标记为已学。后退箭头通过导轨返回。"
+        }
+      ],
+      "outcome": "您可以选择“聊天”来获取解释，选择“代码”来更改真实项目。",
+      "limits": [
+        "Chat 无法静默编辑您的工作区或运行 shell 命令。项目工作请求可能会移交给代码。",
+        "您选择的模型会影响质量、工具使用、愿景、成本和速度。安装 AndroidHarness 并不授予对每个 AI 模型的访问权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "我找不到设置",
+          "solution": "打开“设置”并搜索该控件或其英文名称。特定于编码的设置也位于“编码”下。"
+        }
+      ],
+      "related": [
+        "first-chat",
+        "first-code",
+        "honest-limits"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "打开聊天"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码"
+        }
+      ],
+      "sources": [
+        "ui/AppNav.kt",
+        "core/ChatExperience.kt",
+        "ui/settings/SettingsNavigation.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "first-chat",
+      "category": "start",
+      "title": "发送您的第一条消息",
+      "summary": "无需设置编码环境即可进行工作对话。",
+      "location": "导航菜单 → 聊天 → 标题中的型号名称。",
+      "before": [
+        "连接到 Internet 以获取托管模型，或首先安装受支持的本地模型。"
+      ],
+      "steps": [
+        {
+          "title": "选择型号",
+          "body": "点击型号名称。如果内置免费模型可用、您连接的提供商、登录的 ChatGPT 帐户或已安装的本地模型，请选择 Harness。"
+        },
+        {
+          "title": "从一个小请求开始",
+          "body": "输入一个明确的问题并发送。例如，要求用一个简短的例子进行解释。第一条消息较小，可以更轻松地识别连接问题。"
+        },
+        {
+          "title": "阅读响应及其活动",
+          "body": "回复到达时即会显示。当存在时，思维和工具活动可以扩展。搜索引文是可供检查的有用链接，但不能保证答案正确。"
+        },
+        {
+          "title": "继续说",
+          "body": "在同一对话中询问后续人员。当您想要一个单独的主题时，打开一个新的聊天。您的对话将保留在应用程序中，直到您将其删除。"
+        }
+      ],
+      "outcome": "您的对话中会出现回复，您可以询问后续情况。",
+      "limits": [
+        "Harness自由模型的可用性和限制由其上游服务控制；不保证免费访问。",
+        "常规聊天不需要 Linux、GitHub、root 或无线调试。托管回复仍然需要工作连接和提供商访问权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "第一次回复失败",
+          "solution": "检查所选的提供商和型号。如果免费服务繁忙或受限，请等待或选择其他连接。有关密钥和计费错误，请参阅 API 错误课程。"
+        }
+      ],
+      "related": [
+        "add-provider",
+        "chat-research",
+        "chat-personalization"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "尝试聊天"
+        },
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "管理提供商"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ModelPickerSheet.kt",
+        "llm/HarnessProvider.kt",
+        "ui/chat/ChatScreen.kt"
+      ],
+      "keywords": "",
+      "example": "解释 Android 应用程序如何工作，就像我是编程新手一样。举一个小例子。"
+    },
+    {
+      "id": "first-code",
+      "category": "start",
+      "title": "完成一个小的编码任务",
+      "summary": "尝试完整的循环：检查、更改和检查。",
+      "location": "导航菜单 → 代码 → 工作区选择器。",
+      "before": [
+        "选择可以使用工具的型号。",
+        "从一个您可以轻松更改的小项目开始。"
+      ],
+      "steps": [
+        {
+          "title": "选择一个工作空间",
+          "body": "选择一个现有项目或从工作区选择器创建一个。工作空间是代码将检查和更改的文件夹；在发送请求之前检查其名称。"
+        },
+        {
+          "title": "描述结果",
+          "body": "说出应该改变什么以及你如何知道它是有效的。您可以从“计划”开始检查项目，然后再切换到“行动”进行编辑。"
+        },
+        {
+          "title": "审查许可请求",
+          "body": "如果出现批准，请阅读命令、受影响的文件或预览。批准您打算采取的行动，或拒绝它并解释如何继续。"
+        },
+        {
+          "title": "检查结果",
+          "body": "阅读最终响应，检查文件更改并运行项目检查。助手说已完成与通过测试或工作预览不同。"
+        }
+      ],
+      "outcome": "您的项目有可审查的更改，对话中会显示任何测试结果或剩余限制。",
+      "limits": [
+        "可靠的项目工作需要支持工具的模型和可访问的工作空间。",
+        "命令可能需要可选的 Linux 环境或包。该应用程序不能保证每个桌面项目在Android上运行不变。"
+      ],
+      "fixes": [
+        {
+          "problem": "助理只解释了一个变化",
+          "solution": "确认您打开了代码，选择了正确的工作区，并在需要应用更改时选择了“操作”。"
+        }
+      ],
+      "related": [
+        "workspaces",
+        "plan-act",
+        "changes-history",
+        "build-checks",
+        "activity-guide"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码"
+        },
+        {
+          "kind": "screen",
+          "target": "PROJECTS",
+          "label": "打开项目"
+        }
+      ],
+      "sources": [
+        "ui/chat/ChatScreen.kt",
+        "agent/AgentEngine.kt",
+        "workspace/WorkspaceManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "api-billing",
+      "category": "providers",
+      "title": "API 密钥、积分和订阅",
+      "summary": "在连接服务之前了解您所支付的费用。",
+      "location": "提供商的官方开发者控制台，然后设置 → 模型和提供商 → 管理提供商。",
+      "before": [
+        "选择您想要使用其模型的提供商。 API 密钥属于该提供商。"
+      ],
+      "steps": [
+        {
+          "title": "了解关键",
+          "body": "API 密钥是秘密凭证。它允许 AndroidHarness 向您的提供商帐户发送请求。创建密钥本身并不购买模型、为帐户提供资金或使请求不受限制。"
+        },
+        {
+          "title": "检查计费路径",
+          "body": "打开提供商的开发者计费页面。它可能提供免费津贴、预付积分、基于使用情况的计费或计划。请阅读您帐户显示的型号价格和使用限制。"
+        },
+        {
+          "title": "如果需要激活访问权限",
+          "body": "使用提供商自己的结账功能添加付款方式、购买积分或激活合适的计划。确认前检查自动充值和支出控制。 AndroidHarness 不出售提供商 API 订阅。"
+        },
+        {
+          "title": "密切关注使用情况",
+          "body": "在应用程序中进行简短测试后，检查提供商的使用仪表板。长时间的对话、研究、重试、思考和多个代理都可以增加使用率。"
+        }
+      ],
+      "outcome": "您的开发者帐户具有您想要的访问权限，并且您知道在哪里查看其余额、限制和费用。",
+      "limits": [
+        "消费者聊天订阅和 API 计费是不同的访问路径。某些订阅提供必须领取的 API 积分；检查提供商当前的福利。",
+        "应用程序成本估算和任务预算是有用的指南。它们不是提供商保证的计费上限。"
+      ],
+      "fixes": [
+        {
+          "problem": "我付费购买了聊天应用程序，但我的 API 密钥失败",
+          "solution": "检查开发者控制台的 API 访问权限、可用积分以及任何订阅积分链接步骤。或者使用 AndroidHarness 中支持的登录连接。"
+        }
+      ],
+      "related": [
+        "openai-key",
+        "anthropic-key",
+        "gemini-key",
+        "openrouter-key",
+        "chatgpt-account",
+        "usage"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "打开提供者"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "ui/settings/ConnectedAccountsSection.kt",
+        "ui/stats/StatsScreen.kt"
+      ],
+      "keywords": "购买 购买 订阅 付款 计费 API 代币积分 定价",
+      "links": [
+        {
+          "label": "OpenAI API 信用效益",
+          "url": "https://developers.openai.com/api/docs/guides/chatgpt-api-credits"
+        },
+        {
+          "label": "Gemini API 计费",
+          "url": "https://ai.google.dev/gemini-api/docs/billing"
+        }
+      ]
+    },
+    {
+      "id": "add-provider",
+      "category": "providers",
+      "title": "添加并使用 API 密钥",
+      "summary": "通过几个深思熟虑的步骤连接模型提供商。",
+      "location": "设置 → 模型和提供商 → 管理提供商 → 添加提供商。您还可以从模型选择器管理提供程序。",
+      "before": [
+        "拥有来自提供商官方控制台的有效密钥。",
+        "使用与您选择的提供商相同的服务的密钥。"
+      ],
+      "steps": [
+        {
+          "title": "选择提供商",
+          "body": "点击添加提供商并选择其名称。该应用程序填写了精选提供商的常用协议和地址；仅当您需要自己提供这些端点时，才选择自定义端点。"
+        },
+        {
+          "title": "输入密钥",
+          "body": "将秘密粘贴到 API 密钥字段中。如果有多个连接，请为该连接指定一个有用的名称。请勿将密钥粘贴到普通聊天消息中。"
+        },
+        {
+          "title": "选择型号并保存",
+          "body": "继续模型步骤。选择您的帐户提供的型号，然后保存连接。如果目录请求失败，请在手动输入型号 ID 之前阅读错误。"
+        },
+        {
+          "title": "选择它进行对话",
+          "body": "返回“聊天”或“代码”，点击标题的型号名称，然后选择该提供商和型号。在开始长任务之前发送一条小测试消息。"
+        }
+      ],
+      "outcome": "提供程序已保存，对话标题显示您选择的模型。",
+      "limits": [
+        "保存连接并不能保证访问缓存目录中的每个模型。提供商在使用时会检查您的密钥、余额、权限和模型访问权限。",
+        "密钥保存在应用程序的加密凭证存储中。在提供者处撤销密钥是使其在应用程序外部失效的方法。"
+      ],
+      "fixes": [
+        {
+          "problem": "连接已保存，但另一个模型应答",
+          "solution": "重新打开此对话的模型选择器。其选择可能不同于应用程序默认或计划/执行选择。"
+        }
+      ],
+      "related": [
+        "api-billing",
+        "key-controls",
+        "model-picker",
+        "api-errors"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "添加提供商"
+        },
+        {
+          "kind": "settings",
+          "target": "MODELS",
+          "label": "打开模型设置"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "ui/settings/ProvidersScreen.kt",
+        "data/KeyStoreManager.kt",
+        "data/ChatModelSelection.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "openai-key",
+      "category": "providers",
+      "title": "连接 OpenAI API 钥匙",
+      "summary": "设置API接入并选择OpenAI连接类型。",
+      "location": "OpenAI开发者平台→API密钥和计费； AndroidHarness → 管理提供商。",
+      "before": [
+        "使用您打算付款的 OpenAI 账户和 API 组织。"
+      ],
+      "steps": [
+        {
+          "title": "准备API账户",
+          "body": "打开下面的官方开发者快速入门并登录API平台。选择目标组织/项目并检查其计费访问权限和可用积分。"
+        },
+        {
+          "title": "创建密钥",
+          "body": "创建一个项目 API 密钥，为其指定一个可识别的名称，并在显示时复制该密钥。保密。"
+        },
+        {
+          "title": "添加到AndroidHarness",
+          "body": "在管理提供商中，选择 OpenAI 或 OpenAI（响应）。粘贴密钥，继续，选择可用模型，然后保存。"
+        },
+        {
+          "title": "确认连接",
+          "body": "在对话中选择已保存的模型并发送简短的请求。如果提供商报告计费、权限或配额问题，请检查 API 仪表板。"
+        }
+      ],
+      "outcome": "您的对话可以使用所选的 OpenAI API 型号。",
+      "limits": [
+        "两个 OpenAI 预设使用不同的 API 协议。模型支持可能不同；使用所选型号支持的协议。",
+        "通过关联帐户登录是一个单独的途径。符合资格的订阅 API 积分权益可能需要在 API 组织中激活。"
+      ],
+      "fixes": [
+        {
+          "problem": "我看不到我之前创建的密钥",
+          "solution": "在官方平台中创建替换，更新此连接，并在适当的情况下撤销旧密钥。"
+        }
+      ],
+      "related": [
+        "add-provider",
+        "chatgpt-account",
+        "api-billing"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "连接OpenAI"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "llm/ModelCatalog.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "OpenAI API 快速入门",
+          "url": "https://developers.openai.com/api/docs/quickstart"
+        },
+        {
+          "label": "订阅API积分",
+          "url": "https://developers.openai.com/api/docs/guides/chatgpt-api-credits"
+        }
+      ]
+    },
+    {
+      "id": "anthropic-key",
+      "category": "providers",
+      "title": "通过API连接Claude",
+      "summary": "创建 Anthropic 密钥并检查其 API 资金。",
+      "location": "Claude控制台→API按键和计费； AndroidHarness → 管理提供商 → Anthropic。",
+      "before": [
+        "有权访问预期的 Claude API 组织或工作区。"
+      ],
+      "steps": [
+        {
+          "title": "打开官方控制台",
+          "body": "使用下面的官方 API 密钥指南来访问当前的 Claude 控制台。登录或创建帐户。"
+        },
+        {
+          "title": "创建 API 密钥",
+          "body": "打开 API 密钥，创建一个命名密钥，选择其所有者/范围和提供的到期时间，并在显示密钥时复制该密钥。"
+        },
+        {
+          "title": "查看API账单",
+          "body": "打开控制台计费页面。激活您的帐户所需的访问权限或积分。不要假设消费者 Claude 订阅会自动为该 API 密钥提供资金。"
+        },
+        {
+          "title": "保存并测试",
+          "body": "在AndroidHarness中选择Anthropic，粘贴密钥，选择您的帐户可用的型号，然后保存。在聊天或代码中选择它并发送一个简短的请求。"
+        }
+      ],
+      "outcome": "已保存的 Anthropic 连接可以使用您选择的型号进行应答。",
+      "limits": [
+        "模型可用性、思维选项、支出限制和区域访问权限由提供商决定。",
+        "权限或余额不足的 API 密钥即使其格式看起来正确，仍然会失败。"
+      ],
+      "fixes": [
+        {
+          "problem": "提供商报告信用低",
+          "solution": "检查拥有此密钥的组织的计费页面。向 AndroidHarness 添加密钥不会增加资金。"
+        }
+      ],
+      "related": [
+        "api-billing",
+        "model-picker",
+        "api-errors"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "连接Anthropic"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "llm/AnthropicProvider.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "创建 Claude API 密钥",
+          "url": "https://platform.claude.com/docs/en/get-api-key"
+        },
+        {
+          "label": "Anthropic API 使用积分",
+          "url": "https://support.anthropic.com/en/articles/8977456-how-do-i-pay-for-my-api-usage"
+        }
+      ]
+    },
+    {
+      "id": "gemini-key",
+      "category": "providers",
+      "title": "连接 Gemini API 钥匙",
+      "summary": "使用 Google AI Studio 并选择正确的项目。",
+      "location": "Google AI Studio → API 键； AndroidHarness → 管理提供商 → Gemini。",
+      "before": [
+        "使用符合 Gemini API 资格的 Google 帐户和项目。"
+      ],
+      "steps": [
+        {
+          "title": "创建或选择项目",
+          "body": "打开 Google AI Studio 的 API 密钥页面。使用要与此连接关联的项目，然后创建或复制其 API 密钥。"
+        },
+        {
+          "title": "慎重选择计费层级",
+          "body": "符合条件的模特可能有免费津贴。要启用付费访问，请使用设置该项目的计费并按照帐户当前的预付款或计费步骤进行操作。"
+        },
+        {
+          "title": "添加 Gemini 连接",
+          "body": "在AndroidHarness中选择Gemini，粘贴密钥，继续到型号列表，并将提供的型号保存到您的帐户。"
+        },
+        {
+          "title": "尝试发短信",
+          "body": "在聊天或代码中选择模型。如果失败，请检查密钥的项目、启用的 API、计费状态和型号限制是否符合您的请求。"
+        }
+      ],
+      "outcome": "AndroidHarness 可以使用您选择的项目附带的密钥到达 Gemini。",
+      "limits": [
+        "免费和付费套餐有不同的限制和条款。在使用敏感数据或进行购买之前，请检查当前的官方计费页面。",
+        "支持图像的模型并不能使每个提供商功能都可以通过此应用程序使用。仅公开已实现的对话和工具功能。"
+      ],
+      "fixes": [
+        {
+          "problem": "计费已启用，但我仍然达到限制",
+          "solution": "在 AI Studio 中检查确切的项目和模型配额。利率限制和空信用余额需要不同的解决方案。"
+        }
+      ],
+      "related": [
+        "api-billing",
+        "chat-attachments",
+        "api-errors"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "连接Gemini"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "llm/GeminiProvider.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "Google AI Studio API 按键",
+          "url": "https://aistudio.google.com/apikey"
+        },
+        {
+          "label": "Gemini API 计费指南",
+          "url": "https://ai.google.dev/gemini-api/docs/billing"
+        }
+      ]
+    },
+    {
+      "id": "openrouter-key",
+      "category": "providers",
+      "title": "连接OpenRouter",
+      "summary": "使用一种连接即可从 OpenRouter 的型号目录中进行选择。",
+      "location": "OpenRouter → 设置 → 密钥和积分； AndroidHarness → 管理提供商 → OpenRouter。",
+      "before": [
+        "拥有 OpenRouter 帐户。检查每个所选型号的价格和访问要求。"
+      ],
+      "steps": [
+        {
+          "title": "创建密钥",
+          "body": "打开OpenRouter官方网站，登录并在Keys中创建API密钥。使用您需要的任何关键级别信用额度或到期时间。"
+        },
+        {
+          "title": "检查你的学分",
+          "body": "使用官方积分/账单区域来资助付费请求。购买前请查看您帐户显示的费用、充值和免费模式限制。"
+        },
+        {
+          "title": "在应用程序中连接",
+          "body": "选择 OpenRouter，粘贴密钥，然后从其目录中选择一个型号。保留完整的型号 ID，包括其提供商前缀或变体后缀。"
+        },
+        {
+          "title": "检查所选型号",
+          "body": "在聊天或代码中选择它并测试一个小请求。为代码选择一个支持工具的模型，为图像问题选择一个支持图像的模型。"
+        }
+      ],
+      "outcome": "对话使用您选择的 OpenRouter 型号。",
+      "limits": [
+        "OpenRouter 模型可以具有不同的上游提供商、价格、隐私政策和功能。",
+        "免费标记的模型仍然有可用性和费率限制。保存的密钥不会删除它们。"
+      ],
+      "fixes": [
+        {
+          "problem": "模型 ID 被拒绝",
+          "solution": "刷新模型列表并选择可用条目。请勿将 ID 缩短为仅显示名称。"
+        }
+      ],
+      "related": [
+        "model-picker",
+        "key-controls",
+        "api-billing"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "连接OpenRouter"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "llm/ModelCatalog.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "OpenRouter 快速入门",
+          "url": "https://openrouter.ai/docs/quickstart"
+        },
+        {
+          "label": "OpenRouter 定价和计划",
+          "url": "https://openrouter.ai/pricing"
+        }
+      ]
+    },
+    {
+      "id": "other-providers",
+      "category": "providers",
+      "title": "Groq、DeepSeek、Mistral、Together 等",
+      "summary": "使用精选的提供商或搜索更广泛的提供商目录。",
+      "location": "管理提供商 → 添加提供商 → 选择或搜索提供商。",
+      "before": [
+        "拥有您选择的服务的 API 帐户。"
+      ],
+      "steps": [
+        {
+          "title": "选择匹配的服务",
+          "body": "精选的选择包括 Groq、DeepSeek、Together、Mistral 和 A2Agent。更广泛的目录可能会显示其他服务。选择颁发您的密钥的服务。"
+        },
+        {
+          "title": "从其官方控制台获取密钥",
+          "body": "登录该服务自己的网站并打开其 API 密钥区域。为您想要的帐户/工作空间创建密钥。使用下面列出的服务的官方设置链接。"
+        },
+        {
+          "title": "启用您需要的访问权限",
+          "body": "在该控制台中检查账单、积分或计划。有些帐户提供有限的免费套餐；付费模型可能需要积分或付款方式。请遵循此处显示的条款。"
+        },
+        {
+          "title": "保存并选择模型",
+          "body": "将密钥粘贴到匹配的 AndroidHarness 连接中，选择提供的型号，然后保存。在对话标题中选择该模型并进行测试。"
+        }
+      ],
+      "outcome": "您的模型选择器中提供了所选的服务。",
+      "limits": [
+        "该目录描述了潜在的联系；它不保证您的帐户可以使用所有广告模型。",
+        "Groq 语音设置使用单独的语音和语音键字段。添加 Groq 作为聊天提供程序不会自动配置该字段。"
+      ],
+      "fixes": [
+        {
+          "problem": "我的服务缺失",
+          "solution": "刷新/搜索提供者目录。如果它与支持的协议兼容，请使用具有官方基础 URL 和型号 ID 的自定义端点。"
+        }
+      ],
+      "related": [
+        "custom-endpoint",
+        "voice",
+        "api-billing"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "浏览提供商"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "llm/ModelsDev.kt",
+        "ui/settings/SettingsScreen.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "格罗克设置",
+          "url": "https://console.groq.com/docs/quickstart"
+        },
+        {
+          "label": "格罗克计费",
+          "url": "https://console.groq.com/docs/billing-faqs"
+        },
+        {
+          "label": "DeepSeek设置",
+          "url": "https://api-docs.deepseek.com/"
+        },
+        {
+          "label": "Together设置",
+          "url": "https://docs.together.ai/docs/quickstart"
+        },
+        {
+          "label": "Mistral按键设置",
+          "url": "https://docs.mistral.ai/getting-started/quickstarts/studio/activate-and-generate-api-key"
+        },
+        {
+          "label": "A2Agent官方网站",
+          "url": "https://a2agent.me"
+        }
+      ]
+    },
+    {
+      "id": "custom-endpoint",
+      "category": "providers",
+      "title": "自定义端点、Ollama 和 LM Studio",
+      "summary": "连接兼容的 API 服务器，包括另一台计算机上的服务器。",
+      "location": "管理提供程序 → 添加提供程序 → Ollama、LM Studio 或自定义端点。",
+      "before": [
+        "拥有一个正在运行的服务器，该服务器实现了受支持的协议。",
+        "对于远程计算机，了解其可访问的地址及其所需的任何身份验证。"
+      ],
+      "steps": [
+        {
+          "title": "选择协议",
+          "body": "对于自定义连接，请匹配服务器记录的协议：OpenAI 兼容聊天、OpenAI 响应、Anthropic 或 Gemini。这些格式不可互换。"
+        },
+        {
+          "title": "输入服务器地址",
+          "body": "使用 API 基础 URL，而不是网站的聊天页面。 Ollama 和 LM Studio 预设以环回地址开始。在您的手机上，127.0.0.1 表示您的手机。"
+        },
+        {
+          "title": "添加凭据和模型",
+          "body": "对于计算机上的服务器，请将地址替换为其可访问的 LAN 地址或您控制的其他连接。设置任何所需的密钥/标头并使用实际安装的型号 ID。"
+        },
+        {
+          "title": "从电话测试",
+          "body": "确保服务器正在侦听可访问的接口并且网络允许连接。保存提供者并从 AndroidHarness 发送一个小请求。"
+        }
+      ],
+      "outcome": "电话可以与兼容服务器通信并接收模型回复。",
+      "limits": [
+        "桌面模型服务器与应用程序的设备上本地模型功能不同。",
+        "AndroidHarness 不会在您的计算机上启动 Ollama 或 LM Studio 或自动创建网络隧道。"
+      ],
+      "fixes": [
+        {
+          "problem": "连接被拒绝或超时",
+          "solution": "检查服务器进程、监听地址、端口、电话网络、防火墙等。桌面本地主机地址无法作为电话本地主机访问。"
+        }
+      ],
+      "related": [
+        "add-provider",
+        "local-download",
+        "key-controls"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "添加端点"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderSheet.kt",
+        "llm/Llm.kt",
+        "llm/ProviderNetwork.kt"
+      ],
+      "keywords": "本地主机 LAN 远程 Ollama LM Studio 模块"
+    },
+    {
+      "id": "key-controls",
+      "category": "providers",
+      "title": "管理密钥、标头和代理",
+      "summary": "编辑连接而不丢失其其他凭据。",
+      "location": "管理提供程序 → 连接选项 → 连接控制，或编辑提供程序。",
+      "before": [
+        "了解您想要更改哪个已保存的提供商连接。"
+      ],
+      "steps": [
+        {
+          "title": "查看关键列表",
+          "body": "添加单独的命名键，启用或禁用它们，并仅在需要查看值时使用目视控制。至少保留启用该服务所需的凭据。"
+        },
+        {
+          "title": "安全地旋转钥匙",
+          "body": "添加替换密钥并在移除旧密钥之前测试连接。删除或撤销提供商以及应用程序中受损的密钥。"
+        },
+        {
+          "title": "仅在需要时配置高级网络",
+          "body": "连接控制包括代理设置和自定义请求标头。使用服务器记录的标头名称和值；在凭证字段中保守秘密。"
+        },
+        {
+          "title": "审查提供商和模型",
+          "body": "使用提供程序管理来刷新目录、隐藏或显示模型、添加自定义模型 ID 以及组织您使用的选择。重新打开对话选择器以选择结果。"
+        }
+      ],
+      "outcome": "该连接具有预期的活动密钥和网络选项，并且您的型号列表更易于浏览。",
+      "limits": [
+        "密钥轮换可以重试被拒绝的凭证；它不能保证额外的配额或绕过提供商的限制。",
+        "代理地址和自定义标头会影响请求的去向。仅使用您理解和信任的网络设置。"
+      ],
+      "fixes": [
+        {
+          "problem": "网络更改后一切都失败了",
+          "solution": "检查代理主机/端口、凭据、自定义标头和 API 基础 URL。恢复最后一个工作配置并测试一个小请求。"
+        }
+      ],
+      "related": [
+        "api-errors",
+        "model-picker",
+        "settings-backup"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "打开连接控件"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderControlsSheet.kt",
+        "ui/settings/ProviderKeysEditor.kt",
+        "ui/settings/ProviderHeadersEditor.kt",
+        "ui/settings/ModelVisibilitySheet.kt",
+        "llm/RotatingKeyProvider.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "model-picker",
+      "category": "providers",
+      "title": "选择模型和思维水平",
+      "summary": "根据您实际使用的对话进行选择。",
+      "location": "聊天或代码→标题中的模型名称和思维控制。",
+      "before": [
+        "拥有连接的提供商、登录帐户或安装的本地模型。"
+      ],
+      "steps": [
+        {
+          "title": "选择供应商和型号",
+          "body": "打开模型选择器，搜索或浏览提供商，然后选择一个模型。可以通过提供者设置来管理隐藏模型。如果模型发生更改，请在可用时刷新目录。"
+        },
+        {
+          "title": "选择选型范围",
+          "body": "请注意您是否要更改应用程序默认设置或此对话。启用单独计划/执行后，选择相关角色的模型。"
+        },
+        {
+          "title": "在支持下设定思维",
+          "body": "打开思维控制并选择提供的努力、切换或预算。可用的控件取决于型号和 API。自定义推理选择不会添加模型缺乏的功能。"
+        },
+        {
+          "title": "将能力与您的任务相匹配",
+          "body": "使用工具支持代码和图像输入来获取需要视觉的附件。如果模型拒绝某项功能，请选择另一个模型或删除该输入。"
+        }
+      ],
+      "outcome": "标题显示您为当前任务选择的模型和思维选择。",
+      "limits": [
+        "更多的思考可以增加时间和代币的使用。它不保证正确答案。",
+        "提供者元数据可能不完整。列表中出现的模型并不是工具或图像支持的证明。"
+      ],
+      "fixes": [
+        {
+          "problem": "该设置也改变了另一个对话",
+          "solution": "检查选择器的选择范围和应用程序默认值。现有的对话可以保留自己的模型选择。"
+        }
+      ],
+      "related": [
+        "planning-fallback",
+        "local-limits",
+        "usage"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "MODELS",
+          "label": "打开模型默认值"
+        },
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "管理模型列表"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ModelPickerSheet.kt",
+        "ui/chat/components/CustomReasoningSheet.kt",
+        "data/ChatModelSelection.kt",
+        "ui/settings/ProviderManagerSheet.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "planning-fallback",
+      "category": "providers",
+      "title": "规划模型和后备方案",
+      "summary": "选择单独的角色并决定当提供者失败时会发生什么。",
+      "location": "设置 → 模型和提供商。",
+      "before": [
+        "在构建后备列表之前连接您打算使用的提供商。"
+      ],
+      "steps": [
+        {
+          "title": "设置正常选择",
+          "body": "检查页面上显示的当前设置。这是使用应用程序默认值的选择的起点。"
+        },
+        {
+          "title": "如果有用的话，分开计划和行动",
+          "body": "启用计划/执行模型选项并为每个角色选择提供者/模型。计划用于检查和建议的方法； Act 可以执行允许的操作。"
+        },
+        {
+          "title": "审查后备政策",
+          "body": "打开后备控件并选择何时允许切换、可以尝试哪些模型以及任何可用的重试设置。在启用其他服务之前，请阅读隐私/路由通知。"
+        },
+        {
+          "title": "尝试一个简短的任务",
+          "body": "检查对话标题并运行活动，以便您知道哪个提供者/模型实际上正在服务该任务。更改或禁用您不需要的后备。"
+        }
+      ],
+      "outcome": "您的模型角色和允许的后备反映了您希望如何安排工作。",
+      "limits": [
+        "回退可以将对话上下文发送到不同的配置提供商，并可能会产生该提供商的费用。",
+        "后备模型必须支持请求所需的输入和工具。并非每个失败的请求都可以自动恢复。"
+      ],
+      "fixes": [
+        {
+          "problem": "后备不可用",
+          "solution": "刷新连接，检查其密钥和模型访问权限，并删除过时的条目。在不更改访问权限的情况下重试计费失败并不能解决问题。"
+        }
+      ],
+      "related": [
+        "model-picker",
+        "api-errors",
+        "context-limits"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "MODELS",
+          "label": "设置计划和后备"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/settings/FallbackEditorSheet.kt",
+        "llm/FallbackPolicy.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chatgpt-account",
+      "category": "providers",
+      "title": "使用 ChatGPT 登录",
+      "summary": "当您的帐户符合条件时，请使用应用程序的关联帐户路径。",
+      "location": "设置 → 连接帐户。",
+      "before": [
+        "拥有ChatGPT帐号和可以完成登录的浏览器。"
+      ],
+      "steps": [
+        {
+          "title": "开始登录",
+          "body": "选择添加帐户或登录操作。完成官方浏览器授权，返回AndroidHarness。您可以从帐户面板取消待处理的登录。"
+        },
+        {
+          "title": "选择关联的账户",
+          "body": "选择您要使用的帐户。该应用程序显示提供给该帐户的模型，而不是假设每个模型都可用。"
+        },
+        {
+          "title": "选择对话模型",
+          "body": "打开模型选择器并选择已连接的帐户及其模型之一。发送前检查标头。"
+        },
+        {
+          "title": "管理访问权限",
+          "body": "需要时使用刷新、检查模型、重新连接和使用控制。注销您不想再存储在手机上的帐户。"
+        }
+      ],
+      "outcome": "连接的帐户显示为可选择的模型连接。",
+      "limits": [
+        "资格、型号、费率限制和计划使用由 OpenAI 控制。成功的浏览器登录并不意味着可以无限制地访问模型。",
+        "此登录路线与添加 OpenAI API 密钥及其开发人员计费是分开的。"
+      ],
+      "fixes": [
+        {
+          "problem": "该帐户显示没有模型或要求重新连接",
+          "solution": "使用面板的重新连接/刷新控件。在选择可用型号之前，请检查所选帐户在官方服务中的访问权限。"
+        }
+      ],
+      "related": [
+        "openai-key",
+        "model-picker",
+        "api-billing"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CONNECTED_ACCOUNTS",
+          "label": "打开关联帐户"
+        }
+      ],
+      "sources": [
+        "ui/settings/ConnectedAccountsSection.kt",
+        "ui/settings/ChatGptAccountsPanel.kt",
+        "chatgpt/ChatGptAccounts.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "使用 ChatGPT 官方登录概述",
+          "url": "https://developers.openai.com/siwc/quickstart"
+        }
+      ]
+    },
+    {
+      "id": "nine-router",
+      "category": "providers",
+      "title": "使用可选的 9Router 连接",
+      "summary": "在需要时安装并运行本地路由服务。",
+      "location": "设置 → 9Router。",
+      "before": [
+        "工作的 Linux 环境和足够的存储/网络访问用于安装。",
+        "路由服务所需的任何外部帐户。"
+      ],
+      "steps": [
+        {
+          "title": "从9Router页面安装",
+          "body": "阅读页面的描述并运行其安装操作。等待安装状态，然后再继续。"
+        },
+        {
+          "title": "启动本地服务",
+          "body": "使用“启动”并等待服务报告正在运行。仪表板是该设备上的本地页面。"
+        },
+        {
+          "title": "配置其仪表板",
+          "body": "打开仪表板并仅连接您有权使用的服务。请遵循路由器自身的说明来了解其支持的帐户和模型路由。"
+        },
+        {
+          "title": "使用和停止它",
+          "body": "使用应用程序的连接操作（如果可用），然后在选择器中选择其型号。如果您不再需要，请返回此处停止服务或查看日志。"
+        }
+      ],
+      "outcome": "路由器在本地运行，可以选择兼容的路由作为提供者。",
+      "limits": [
+        "路由器不授予付费访问权限、创建积分或保证外部服务支持您的预期用途。",
+        "当请求使用它时，它的服务必须保持可用。这是可选的；普通的提供商连接不需要它。"
+      ],
+      "fixes": [
+        {
+          "problem": "仪表板或模型请求失败",
+          "solution": "检查本地服务状态和日志，然后检查路由器的帐户/路由配置。仅在读取报告的故障后重新启动。"
+        }
+      ],
+      "related": [
+        "linux-packages",
+        "custom-endpoint",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "NINE_ROUTER",
+          "label": "打开9Router"
+        }
+      ],
+      "sources": [
+        "ui/settings/NineRouterSection.kt",
+        "router/NineRouterManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-attachments",
+      "category": "chat",
+      "title": "询问文件和图像",
+      "summary": "附上一些有用的内容并确保在发送前已准备好。",
+      "location": "聊天或代码 → 消息框旁边的附件控件。",
+      "before": [
+        "对于图像问题，选择具有图像输入的模型。",
+        "使用您可以与所选提供商共享的文档。"
+      ],
+      "steps": [
+        {
+          "title": "附上文件",
+          "body": "使用附件选择器并选择图像或支持的文档。发送前等待其准备状态；如果您选择了错误的项目，请删除附件。"
+        },
+        {
+          "title": "告诉助理要寻找什么",
+          "body": "提出一个具体问题，例如比较两个屏幕截图或总结您附加的文本。如果包含多个附件，请命名附件。"
+        },
+        {
+          "title": "检查可读内容",
+          "body": "可以为模型提取文本和可读的 PDF。扫描的 PDF 可能没有可提取的文本。对于视觉细节，请将清晰的图像附加到具有视觉功能的模型上。"
+        },
+        {
+          "title": "检查图片回复",
+          "body": "点击图像可打开查看器并对其进行缩放。在聊天中，当模型支持时，助手还具有图像检查/缩放工具。"
+        }
+      ],
+      "outcome": "附件包含在您的消息中，并且响应指的是其实际内容。",
+      "limits": [
+        "文件大小、文本提取、上下文预算和模型功能可能会限制可读取的内容。",
+        "将文件附加到 Chat 不会使 Chat 成为工作区编辑器。要更改实际项目文件，请使用 Code。"
+      ],
+      "fixes": [
+        {
+          "problem": "助手无法读取PDF",
+          "solution": "检查是否可以在 PDF 中选择文本。当提取不可用时，提供文本版本或清晰的屏幕截图。"
+        }
+      ],
+      "related": [
+        "model-picker",
+        "chat-visuals",
+        "chat-personalization",
+        "share-to-chat"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "尝试附件"
+        }
+      ],
+      "sources": [
+        "ui/chat/FileAttachments.kt",
+        "ui/chat/AttachmentReadiness.kt",
+        "ui/chat/PdfTextExtractor.kt",
+        "ui/chat/components/ImageViewer.kt",
+        "tools/ChatImageZoomTool.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-research",
+      "category": "chat",
+      "title": "通过网络搜索和页面阅读进行研究",
+      "summary": "选择您想要多少研究，然后检查来源。",
+      "location": "聊天→研究深度把控；设置 → Web 搜索用于搜索连接。",
+      "before": [
+        "有效的互联网连接。",
+        "可以调用可用研究工具的模型。"
+      ],
+      "steps": [
+        {
+          "title": "选择深度",
+          "body": "标题提供“关闭”、“即时”、“深度”、“自动”、“深度研究”和“最大研究”。当您想要进行更多调查时，请使用较简单的选项来快速提问，并使用较深入的选项。"
+        },
+        {
+          "title": "如果需要，设置搜索",
+          "body": "无密钥搜索不需要搜索 API 密钥，Marginalia 使用其共享公钥。对于 Brave、Serper、SerpApi、Tavily、Linkup、LangSearch、Jina 或 Firecrawl，请在“设置”→“网络搜索”中选择该提供商，从中获取密钥并将其保存在那里（每个提供商最多 20 个密钥，每个密钥在保存之前都经过测试）。"
+        },
+        {
+          "title": "给出问题边界",
+          "body": "指定主题、日期范围、地点以及重要证据。如果您想要阅读特定页面，请粘贴直接链接。询问对时间敏感的索赔的日期和来源。"
+        },
+        {
+          "title": "遵循证据",
+          "body": "打开源代码链接并检查此聊天库中的源代码。询问后续问题，了解差距、相互冲突的主张或无法阅读的页面。"
+        }
+      ],
+      "outcome": "当研究成功时，答案包括相关来源，您可以自己打开页面。",
+      "limits": [
+        "搜索键与模型提供者键分开。模型密钥不会自动启用任何搜索提供程序。",
+        "付费墙、登录、被阻止的网站、不可用的 Reddit 页面和网络故障都可能阻止阅读。更深入的研究需要更多的时间和模型/工具请求。"
+      ],
+      "fixes": [
+        {
+          "problem": "搜索为空或被阻止",
+          "solution": "尝试其他查询或直接 URL。检查所选的搜索后端和密钥；无密钥搜索也可能受到公共搜索引擎的限制。"
+        }
+      ],
+      "related": [
+        "chat-sources",
+        "api-billing",
+        "browser-preview"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "SEARCH",
+          "label": "配置网络搜索"
+        },
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "开始研究对话"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/MainHeader.kt",
+        "data/SearchDepth.kt",
+        "tools/SearchBackends.kt",
+        "ui/settings/SettingsScreen.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-visuals",
+      "category": "chat",
+      "title": "图表、图表、小部件和模型",
+      "summary": "要求视觉解释或小的互动想法。",
+      "location": "聊天 → 发送图表、图表、计算器、插图或界面模型的请求。",
+      "before": [
+        "选择一个能够很好地遵循视觉响应指令的模型。",
+        "当视觉必须代表事实时提供真实数据。"
+      ],
+      "steps": [
+        {
+          "title": "描述视觉目标",
+          "body": "说出你想了解或比较的内容。对于模型，描述观众、屏幕、内容和预期的交互。"
+        },
+        {
+          "title": "要求内嵌视觉效果",
+          "body": "聊天可以在对话中呈现受支持的丰富组件和独立的 HTML/SVG 响应。例如，要求提供一个能够说明值如何变化的滑块。"
+        },
+        {
+          "title": "探索它",
+          "body": "在交互式响应中使用控件并检查标签/数据。如果结果不清楚，请在后续进行具体调整。"
+        },
+        {
+          "title": "转到代码以进行真正的实施",
+          "body": "对话模型是一个有用的草图。当您想要构建和测试项目文件、依赖项、工作站点/应用程序或保存的工件时，请使用代码切换。"
+        }
+      ],
+      "outcome": "支持的视觉效果出现在回复中；当模型生成有效内容时，交互式控件在该预览中工作。",
+      "limits": [
+        "内联 HTML/SVG 在受限预览中运行，无需本机应用程序桥或网络访问。它无法控制您的手机或充当完整安装的应用程序。",
+        "绘制的插图不同于专用的图像生成服务。渲染和正确性取决于模型生成的内容。"
+      ],
+      "fixes": [
+        {
+          "problem": "我看到损坏的内容或简单的标记",
+          "solution": "要求助手重新生成受支持的独立视觉效果。对于复杂的接口或依赖于包的项目，请继续代码。"
+        }
+      ],
+      "related": [
+        "chat-handoff",
+        "browser-preview",
+        "artifacts"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "尝试模型"
+        }
+      ],
+      "sources": [
+        "core/ChatExperience.kt",
+        "tools/VisualGuideTool.kt",
+        "ui/chat/rich/RichResponseContent.kt",
+        "ui/chat/components/RichRenderView.kt"
+      ],
+      "keywords": "模拟模拟模块样机设计图表图形图表交互式小部件HTML SVG计算器",
+      "example": "向我展示一个交互式学习计时器模型。让我更改会话长度。保持其独立且易于使用。"
+    },
+    {
+      "id": "chat-handoff",
+      "category": "chat",
+      "title": "在代码中继续一个想法",
+      "summary": "在正确的背景下将对话转化为项目工作。",
+      "location": "聊天 → 在提供代码/移交卡时继续。",
+      "before": [
+        "在聊天中有想法或有用的答案。",
+        "选择一个用于代码工作的工作区。"
+      ],
+      "steps": [
+        {
+          "title": "描述应该构建什么",
+          "body": "要求在代码中继续这个想法。当您的请求需要文件更改或命令时，聊天还可以提供切换。"
+        },
+        {
+          "title": "检查交接情况",
+          "body": "阅读建议的任务/上下文并选择应接收工作的工作区。确认切换流程中显示的任何选择。"
+        },
+        {
+          "title": "检查代码对话",
+          "body": "打开后，验证所选的工作区和模型。添加任何缺少的约束，例如要避免的语言、测试或文件。"
+        },
+        {
+          "title": "审查并测试实施情况",
+          "body": "使用代码活动、文件更改和项目检查来检查实际更改的内容。当您想进一步讨论该想法时，请返回原始聊天。"
+        }
+      ],
+      "outcome": "代码端具有处理所选项目所需的任务上下文。",
+      "limits": [
+        "交接并不能证明任务已经执行。代码运行仍需要完成并进行检查。",
+        "在提供切换后，聊天本身不会获得工作区编辑或 shell 工具。"
+      ],
+      "fixes": [
+        {
+          "problem": "选择了错误的文件夹",
+          "solution": "在编辑之前停止，选择正确的工作空间，并重申工作所属的位置。"
+        }
+      ],
+      "related": [
+        "first-code",
+        "workspaces",
+        "chat-visuals"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ChatCodeHandoff.kt",
+        "core/ChatExperience.kt",
+        "ui/chat/ChatViewModel.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "messages-and-retries",
+      "category": "chat",
+      "title": "使用回复和版本",
+      "summary": "引用一段话、重试答案或转移对话。",
+      "location": "对话 → 消息操作或选定的文本。",
+      "before": [
+        "保存至少一个回复的对话。"
+      ],
+      "steps": [
+        {
+          "title": "选择有用的文字",
+          "body": "长按/选择一个段落以复制它或在可以进行选择操作的后续内容中引用它。精确的引用使更正更容易理解。"
+        },
+        {
+          "title": "有目的地重试",
+          "body": "对要重新生成的响应使用重试。如果提供，请选择其他型号。答案版本控制允许您检查或选择可用的替代方案。"
+        },
+        {
+          "title": "处于转折点的叉子",
+          "body": "使用 Fork 从此消息中创建一个单独的对话。给分支一个明确的目的，这样最初的讨论仍然有用。"
+        },
+        {
+          "title": "保存或分享结果",
+          "body": "尽可能使用答案的保存、复制或共享操作。在通过 Android 的共享表发送任何内容之前，请先查看文本和附件。"
+        }
+      ],
+      "outcome": "您有一个有针对性的后续行动、一个替代答复或一个可以返回的单独分支。",
+      "limits": [
+        "重试会再次使用所选的提供商，并可能产生另一笔费用。",
+        "叉子复制对话上下文；它不是项目文件的单独副本。代码分支仍然可以引用同一工作区。"
+      ],
+      "fixes": [
+        {
+          "problem": "新答案更糟糕",
+          "solution": "在可用时使用版本控制返回首选答案，或发送更具体的后续内容，而不是重复重试。"
+        }
+      ],
+      "related": [
+        "chat-collections",
+        "changes-history",
+        "context-limits"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "打开聊天"
+        }
+      ],
+      "sources": [
+        "ui/chat/ChatScreen.kt",
+        "ui/chat/components/ChatRetryDialog.kt",
+        "ui/chat/components/ChatAnswerVersions.kt",
+        "ui/chat/components/QuoteReplySelection.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-collections",
+      "category": "chat",
+      "title": "查找并组织对话",
+      "summary": "让有用的聊天和答案易于返回。",
+      "location": "导航菜单 → 对话列表、搜索和保存的答案。",
+      "before": [
+        "在应用程序中保存一个或多个对话。"
+      ],
+      "steps": [
+        {
+          "title": "搜索你记得的东西",
+          "body": "使用对话搜索从标题或消息中查找单词。在对话中，使用“在聊天中查找”在匹配的段落之间移动。"
+        },
+        {
+          "title": "名称和引脚有用的工作",
+          "body": "使用对话的菜单或列表操作来重命名和固定它。固定可以让重要对话更容易找到。"
+        },
+        {
+          "title": "归档已完成的主题",
+          "body": "当您希望将对话从活动列表中删除但仍然可用时，将其存档。使用存档视图将其恢复。选择操作可以管理多个对话（如果提供）。"
+        },
+        {
+          "title": "保留答案或删除旧工作",
+          "body": "将有用的回复保存到已保存的答案中。删除对话时，请阅读确认信息和所选项目；如果您需要保留历史记录，请先使用聊天备份。"
+        }
+      ],
+      "outcome": "您可以重新打开对话、查找段落或返回保存的答案，而无需重新创建任务。",
+      "limits": [
+        "归档和删除是不同的操作。当您只想整理活动列表时，请勿使用“删除”。",
+        "对话备份与其工作区中的文件备份是分开的。"
+      ],
+      "fixes": [
+        {
+          "problem": "我找不到旧对话",
+          "solution": "搜索其内容，检查聊天与代码以及所选项目，然后查看存档的对话。"
+        }
+      ],
+      "related": [
+        "chat-backup",
+        "messages-and-retries",
+        "memory"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "打开对话"
+        }
+      ],
+      "sources": [
+        "ui/AppNav.kt",
+        "ui/ProjectNavigationSidebar.kt",
+        "ui/SidebarSavedAnswers.kt",
+        "ui/chat/components/FindInChatBar.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-sources",
+      "category": "chat",
+      "title": "使用源库",
+      "summary": "查看对话中出现了哪些网页。",
+      "location": "聊天 → 对话菜单 → 此聊天中的来源。",
+      "before": [
+        "使用网络搜索或页面阅读工具的对话。"
+      ],
+      "steps": [
+        {
+          "title": "开源",
+          "body": "使用对话菜单并打开源库。它收集与此对话相关的网络资源。"
+        },
+        {
+          "title": "区分发现与阅读",
+          "body": "搜索中找到的页面不一定是助手阅读的页面。在依赖其详细信息之前，请先查看来源的状态/标签。"
+        },
+        {
+          "title": "打开原件",
+          "body": "点击链接可检查其日期、作者和上下文。如果需要的话，返回对话请求更正或比较。"
+        }
+      ],
+      "outcome": "您可以将研究的答案追溯到它使用或发现的页面。",
+      "limits": [
+        "来源条目并不是对网站的认可，也不是每个句子都得到支持的证明。",
+        "该库适用于当前对话的网络资源，而不是应用程序中的所有文件和知识。"
+      ],
+      "fixes": [
+        {
+          "problem": "图书馆空无一人",
+          "solution": "使用网络研究提出问题或提供可读链接；普通的离线答案可能没有网络来源。"
+        }
+      ],
+      "related": [
+        "chat-research",
+        "chat-agents"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "打开聊天"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ChatSourceLibrarySheet.kt",
+        "core/GenerationMetadata.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-agents",
+      "category": "chat",
+      "title": "创建个人聊天代理",
+      "summary": "为学习伙伴或写作伙伴提供自己的设置。",
+      "location": "聊天的设置，或设置 → 聊天设置 → 聊天代理。",
+      "before": [
+        "了解代理的目的及其应使用的模型。"
+      ],
+      "steps": [
+        {
+          "title": "创建个人资料",
+          "body": "选择创建代理。设置其名称、图标、描述、说明、语气和可选的对话开头。"
+        },
+        {
+          "title": "选择模型和知识",
+          "body": "使用当前的聊天模型或选择特定的模型。添加文本、Markdown 或可读的 PDF 作为知识。编辑器显示当前文件和字符限制。"
+        },
+        {
+          "title": "选择工具和内存",
+          "body": "回顾网络、图像检查、GitHub、历史、内存范围和基于指令的技能。根据您的目标选择私人代理内存、共享个人内存或关闭。"
+        },
+        {
+          "title": "保存并开始对话",
+          "body": "保存代理，然后从其配置文件开始新对话。稍后当您需要另一个版本时编辑或复制它。"
+        }
+      ],
+      "outcome": "新对话将从所选客服人员保存的身份、说明、模型和允许的聊天工具开始。",
+      "limits": [
+        "个人资料编辑适用于新对话。现有对话保留开始时保存的代理设置。",
+        "在本地搜索知识段落，并且可以将相关文本提供给您选择的模型。扫描的PDF需要文字识别；聊天代理保留在聊天功能内。"
+      ],
+      "fixes": [
+        {
+          "problem": "代理忽略知识文件",
+          "solution": "检查文件是否导入了可读文本，询问有关特定部分的问题，并确认所选模型具有足够的上下文。"
+        }
+      ],
+      "related": [
+        "memory",
+        "chat-personalization",
+        "skills"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CHAT_OPTIONS",
+          "label": "管理聊天代理"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ChatAgentsSheet.kt",
+        "data/ChatAgents.kt",
+        "tools/ChatAgentTools.kt"
+      ],
+      "keywords": "学习写作导师模块知识个人助理"
+    },
+    {
+      "id": "chat-personalization",
+      "category": "chat",
+      "title": "个性化一个聊天或所有聊天",
+      "summary": "设置说明、记忆使用、图片和思维可视性。",
+      "location": "设置→聊天设置； a 聊天 → 聊天设置或个性化控制。",
+      "before": [
+        "决定该首选项是属于每个聊天还是仅属于这个聊天。"
+      ],
+      "steps": [
+        {
+          "title": "设置应用程序范围内的聊天首选项",
+          "body": "在聊天设置中，设置一般说明、添加图片的频率以及思维是否开始崩溃。这些是普通聊天行为的默认值。"
+        },
+        {
+          "title": "覆盖一个对话",
+          "body": "打开聊天设置。保留全局说明或替换此聊天的全局说明。图像频率选择可以遵循应用程序设置或在此处覆盖它。"
+        },
+        {
+          "title": "审核个性化",
+          "body": "当您不希望此聊天使用其保存的指令和内存时，请关闭个性化。保存的说明文本将被保留，以便您稍后可以将其重新打开。"
+        },
+        {
+          "title": "在新请求中查看效果",
+          "body": "保存并发送执行该首选项的后续操作。如果代理配置文件处于活动状态，还请检查其保存的设置和权限。"
+        }
+      ],
+      "outcome": "下一个请求将使用适合此聊天的说明和个性化选项。",
+      "limits": [
+        "这些偏好会影响助理的要求；他们无法强制模型支持不可用的功能或产生正确的答案。",
+        "将图片设置为“无”会抑制响应图像。它不会将纯文本模型转变为支持图像的模型。"
+      ],
+      "fixes": [
+        {
+          "problem": "我的全局指令在这里丢失",
+          "solution": "检查此聊天是否替换了它们，个性化是否已关闭，或者代理配置文件是否提供了自己的说明。"
+        }
+      ],
+      "related": [
+        "chat-agents",
+        "memory",
+        "startup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CHAT_OPTIONS",
+          "label": "打开聊天首选项"
+        }
+      ],
+      "sources": [
+        "ui/settings/ChatOptionsSection.kt",
+        "ui/chat/components/ChatSettingsSheet.kt",
+        "core/ChatExperience.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "memory",
+      "category": "chat",
+      "title": "记住有用的事实并管理它们",
+      "summary": "将偏好和项目背景置于您的控制之下。",
+      "location": "设置→内存；项目特定的内存也可从项目中获得。",
+      "before": [
+        "启用您想要使用的内存功能。切勿将内存用作密码存储。"
+      ],
+      "steps": [
+        {
+          "title": "选择范围",
+          "body": "在内存设置中，查看主开关、聊天和代码内存以及横截面调用。代理配置文件还可以具有私有或共享内存规则。"
+        },
+        {
+          "title": "要求记住或回忆",
+          "body": "告诉助理要记住什么以及是个人的还是当前项目的。当您想要检查存储的上下文时，询问它会记住什么。"
+        },
+        {
+          "title": "审查经理",
+          "body": "搜索和过滤条目。添加、编辑、启用/禁用或固定事实。当您想要查看合并或重叠的记忆时，请使用合并控件。"
+        },
+        {
+          "title": "纠正或删除记忆",
+          "body": "编辑不准确的条目或要求忘记它，然后检查经理。仅在检查范围并确认后才使用“清除”。"
+        }
+      ],
+      "outcome": "管理器会显示您选择保留的事实，并且相关的启用记忆可以在以后的请求中使用。",
+      "limits": [
+        "记忆是选择性的上下文，而不是完整的记录或保证回忆过去的每一次聊天。",
+        "使用时，相关保存的文本将提供给所选模型。禁用内存和删除保存的历史记录是单独的操作。"
+      ],
+      "fixes": [
+        {
+          "problem": "内存未被使用",
+          "solution": "检查主开关、区域开关、项目/代理范围、进入状态以及此聊天的个性化设置。"
+        }
+      ],
+      "related": [
+        "chat-personalization",
+        "project-instructions",
+        "settings-backup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "MEMORY",
+          "label": "打开内存"
+        },
+        {
+          "kind": "screen",
+          "target": "PROJECTS",
+          "label": "打开项目内存"
+        }
+      ],
+      "sources": [
+        "ui/settings/MemorySection.kt",
+        "data/MemoryRepository.kt",
+        "ui/projects/ProjectMemoryScreen.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "voice",
+      "category": "chat",
+      "title": "说出消息并听到回复",
+      "summary": "独立设置语音输入和语音输出。",
+      "location": "设置 → 语音和语音；对话→麦克风和回复语音控制。",
+      "before": [
+        "当 Android 请求时授予麦克风权限。",
+        "Groq 语音需要自己的语音和语音密钥以及互联网连接。"
+      ],
+      "steps": [
+        {
+          "title": "选择语音输入",
+          "body": "选择系统语音选项或提供的 Groq/Whisper。对于 Groq，将密钥粘贴到此页面的密钥字段中，验证/保存它，然后选择可用的转录模型。"
+        },
+        {
+          "title": "刻意记录",
+          "body": "使用消息框旁边的麦克风。按照可见的录音控件停止、锁定、发送或放弃录音。将转录文本放入草稿后，在发送前对其进行检查。"
+        },
+        {
+          "title": "选择语音输出",
+          "body": "选择系统文本转语音引擎或可用的 Groq 语音模型/语音。选择语音和速度，然后使用测试语音。一些云声音要求接受其提供商条款。"
+        },
+        {
+          "title": "大声朗读回复",
+          "body": "使用回复的语音控制，或自动讲话首选项（如果启用）。完成后停止播放。"
+        }
+      ],
+      "outcome": "您的语音变成可用的消息文本，并且所选的输出语音可以朗读回复。",
+      "limits": [
+        "系统语音可用性取决于已安装的 Android 服务和语言数据。不保证离线工作。",
+        "云转录和语音将相关音频/文本发送给提供商，并且可以进行计量。这不能保证连续的实时语音通话。"
+      ],
+      "fixes": [
+        {
+          "problem": "文字转语音失败",
+          "solution": "在“设置”中测试语音，检查所选的引擎/钥匙/型号以及任何术语提示，或选择已安装的系统语音。"
+        }
+      ],
+      "related": [
+        "other-providers",
+        "privacy",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "VOICE",
+          "label": "配置语音和语音"
+        }
+      ],
+      "sources": [
+        "ui/chat/VoiceInput.kt",
+        "ui/chat/components/VoiceRecorderCapsule.kt",
+        "ui/settings/SettingsScreen.kt",
+        "data/audio/TtsController.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "live-mode",
+      "category": "chat",
+      "title": "使用实时模式大声计划",
+      "summary": "免提讨论想法，同时快速模型大声回答。实验性的。",
+      "location": "设置 → 实时模式；对话 → 空消息框上的实时模式按钮，或 + 菜单。",
+      "before": [
+        "在“设置”中打开实时模式。它是实验性的，默认情况下处于关闭状态。",
+        "当 Android 请求时授予麦克风权限。 Groq Whisper 还需要语音和语音中的 Groq 键。"
+      ],
+      "steps": [
+        {
+          "title": "选择一个快速模型",
+          "body": "在“设置”→“实时模式”中，选择用于语音回复的浅色模型，或保留聊天的模型。主代理保留自己的模型，因此正在运行的任务不受影响。"
+        },
+        {
+          "title": "选择它可以做什么",
+          "body": "只说话，不使用任何工具。只读可以看文档来解答。当您说继续时，读取和启动任务还可以将计划交给主要代理，然后代理将使用聊天的常用权限进行工作。"
+        },
+        {
+          "title": "开始说话",
+          "body": "从空消息框或 + 菜单打开实时模式并讲话。没有发送按钮：当您停止说话时，它会大声回答，然后再次聆听。点击球体可以打断回复，或者在需要安静时使用暂停。"
+        },
+        {
+          "title": "稍后使用对话",
+          "body": "每个实时会话都会作为一张可折叠卡片保存到聊天中。代理会在聊天的其余部分中阅读该内容，因此您可以说“构建我们计划的内容”，而无需重复自己。"
+        }
+      ],
+      "outcome": "座席可以在聊天中看到口头计划会话，也可以选择将任务交给主座席。",
+      "limits": [
+        "这是一个早期的实验性功能。嘈杂的房间、长时间的停顿和某些语音引擎可能会打断您的讲话或听错单词。",
+        "当任务正在运行时，保存的对话会等待任务完成，因此它不会在中间步骤中断代理。",
+        "当应用程序转到后台时，实时模式会暂停。"
+      ],
+      "fixes": [
+        {
+          "problem": "在我完成之前它就回答了",
+          "solution": "在“设置”→“实时模式”中回复之前先暂停。"
+        },
+        {
+          "problem": "它从来不听我说话",
+          "solution": "检查语音和语音中的麦克风权限和语音转文本引擎。如果系统识别器丢失，请尝试 Groq Whisper。"
+        }
+      ],
+      "related": [
+        "voice",
+        "privacy",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LIVE_MODE",
+          "label": "设置实时模式"
+        }
+      ],
+      "sources": [
+        "agent/LiveMode.kt",
+        "ui/chat/LiveModeSession.kt",
+        "ui/chat/LiveListener.kt",
+        "ui/settings/LiveModeSection.kt"
+      ],
+      "keywords": "实时模式免提语音对话实时谈话计划"
+    },
+    {
+      "id": "assistant-settings",
+      "category": "chat",
+      "title": "请助手调整应用设置",
+      "summary": "使用通俗易懂的语言并查看变更收据。",
+      "location": "设置→编码→代理行为→应用程序设置访问；然后聊天或编码。",
+      "before": [
+        "在应用程序设置访问控制中选择应用程序设置更改是“关闭”、“先询问”还是“允许”。"
+      ],
+      "steps": [
+        {
+          "title": "设置访问首选项",
+          "body": "打开代理行为并找到应用程序设置访问权限。阅读三个选项并选择您希望助手拥有多少控制权。"
+        },
+        {
+          "title": "要求具体变更",
+          "body": "例如，要求深色模式或更安静的触觉强度。助理可以找到支持的控件并提出或进行允许的更改。"
+        },
+        {
+          "title": "审查任何批准",
+          "body": "敏感的变更仍需要批准。阅读建议的前后值。助手无法输入您的API密钥或为您授予Android权限。"
+        },
+        {
+          "title": "检查收据",
+          "body": "设置更改卡显示更改的内容以及您仍需要执行的任何步骤。打开链接的设置以自行验证或调整。"
+        }
+      ],
+      "outcome": "支持的首选项会随着可见的收据而变化，或者助理会解释所需的手动步骤。",
+      "limits": [
+        "只有公开的设置目录是可编辑的；并非每个应用程序设置都是辅助工具。",
+        "关闭禁用这些更改。批准模式和敏感设置规则在相关时仍然适用。"
+      ],
+      "fixes": [
+        {
+          "problem": "助理让我手动做",
+          "solution": "该控制可能需要秘密、帐户登录、操作系统权限、身份验证或目录未公开的操作。"
+        }
+      ],
+      "related": [
+        "permissions",
+        "appearance",
+        "privacy"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "AGENT",
+          "label": "查看助理设置访问"
+        }
+      ],
+      "sources": [
+        "tools/AppSettingsTools.kt",
+        "ui/settings/AgentSettingsCatalog.kt",
+        "ui/chat/components/SettingsChangeCard.kt",
+        "ui/settings/AgentBehaviorSection.kt"
+      ],
+      "keywords": "",
+      "example": "将应用程序切换到深色模式并显示发生了什么变化。"
+    },
+    {
+      "id": "local-download",
+      "category": "local",
+      "title": "选择并下载本地模型",
+      "summary": "从您的手机有运行空间的型号开始。",
+      "location": "设置→本地模型→探索。",
+      "before": [
+        "支持的设备架构、足够的可用存储空间以及可用的 RAM。",
+        "首次下载需要访问互联网。"
+      ],
+      "steps": [
+        {
+          "title": "检查您的设备",
+          "body": "打开本地型号设备信息并读取内存/存储估计。较小的量化模型比最大的可用下载更容易尝试。"
+        },
+        {
+          "title": "浏览探索",
+          "body": "使用推荐型号或Hugging Face搜索。选择格式并阅读模型详细信息、许可证、估计资源和兼容性声明。"
+        },
+        {
+          "title": "下载并等待",
+          "body": "如果您打算继续，请开始下载并接受资源通知。在我的模型中跟踪它。暂停的传输可以恢复；丢弃它会删除其部分文件。"
+        },
+        {
+          "title": "加载它以进行对话",
+          "body": "安装后，使用模型的选择/加载操作。等待加载完成，然后在对话中选择本地模型并发送短信。"
+        }
+      ],
+      "outcome": "模型出现在我的模型中，加载后可以本地应答。",
+      "limits": [
+        "安装的文件仍然需要加载到内存中。仅下载大小并不能告诉您所需的 RAM。",
+        "本地推理可以在设置后离线工作，但网络搜索、下载、外部提供商和连接的服务仍然需要自己的连接。"
+      ],
+      "fixes": [
+        {
+          "problem": "模型下载但无法加载",
+          "solution": "关闭占用大量内存的应用程序，降低上下文/回复限制，或选择较小的兼容型号。阅读资源警告而不是重复重试。"
+        }
+      ],
+      "related": [
+        "local-link",
+        "local-files",
+        "local-limits",
+        "local-manage"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "探索本地模型"
+        }
+      ],
+      "sources": [
+        "ui/settings/LocalModelsSection.kt",
+        "local/LocalModelCatalog.kt",
+        "local/LocalModelManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "local-link",
+      "category": "local",
+      "title": "从 Hugging Face 链接添加模型",
+      "summary": "导入建议中未包含的兼容模型。",
+      "location": "设置→本地模型→探索→添加模型链接。",
+      "before": [
+        "公共支持的模型/存储库链接及其许可证。",
+        "有足够的空间用于下载和任何转换工作文件。"
+      ],
+      "steps": [
+        {
+          "title": "首先选择格式",
+          "body": "选择 GGUF 以获得兼容的量化 GGUF 模型。仅针对导入器可以使用其配置和分词器文件处理的架构选择 Safetensors。"
+        },
+        {
+          "title": "粘贴链接",
+          "body": "打开链接导入操作并粘贴 Hugging Face 模型页面或支持的直接模型文件链接。让应用程序检查可用的文件。"
+        },
+        {
+          "title": "选择所需的变体",
+          "body": "对于 GGUF，选择您想要的实际模型权重和量化。视觉投影仪是一个伴随文件，而不是主要语言模型。读取资源适合指标。"
+        },
+        {
+          "title": "下载并加载",
+          "body": "确认导入/下载，等待验证和任何转换完成，然后在我的模型中找到模型并加载它。"
+        }
+      ],
+      "outcome": "如果支持其格式和体系结构，则会安装自定义模型条目并可供加载。",
+      "limits": [
+        "包含权重的存储库并不能证明应用程序可以运行该架构。门控/私人下载可能需要导入流程不提供的访问权限。",
+        "Safetensors导入可以涉及转换；它并不承诺对每种模型格式进行本机执行。"
+      ],
+      "fixes": [
+        {
+          "problem": "未找到支持的文件",
+          "solution": "检查链接和格式，选择正确的存储库/文件，或使用受支持的 GGUF 变体。"
+        }
+      ],
+      "related": [
+        "local-files",
+        "local-vision",
+        "local-limits"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "添加模型链接"
+        }
+      ],
+      "sources": [
+        "ui/settings/LocalModelsSection.kt",
+        "local/CustomModelResolver.kt",
+        "local/LocalModelManager.kt"
+      ],
+      "keywords": "模块本地模块权重huggingface模型链接导入"
+    },
+    {
+      "id": "local-files",
+      "category": "local",
+      "title": "从您的文件导入 GGUF 或 Safetensors",
+      "summary": "使用您已经下载的模型文件。",
+      "location": "设置→本地模型→探索→从文件导入。",
+      "before": [
+        "对于 GGUF，完整的主 .gguf 文件。",
+        "对于 Safetensors，模型文件夹包含所有必需的权重、配置和分词器文件。"
+      ],
+      "steps": [
+        {
+          "title": "选择正确的导入操作",
+          "body": "在浏览中选择 GGUF 或 Safetensors 并使用其文件/文件夹导入控件。 Android 打开系统选择器。"
+        },
+        {
+          "title": "授予预期的文件访问权限",
+          "body": "对于 GGUF，选择模型权重文件。对于 Safetensors，选择整个模型文件夹，以便可以检查配置、标记器和每个所需的分片。"
+        },
+        {
+          "title": "等待复印和检查",
+          "body": "该应用程序将所需的内容复制到模型存储中并检查资源。 Safetensors 可能需要转换才能安装。为这项工作保留足够的可用空间。"
+        },
+        {
+          "title": "打开我的模型",
+          "body": "找到导入的条目，查看其设置/详细信息，然后加载它。将原始许可证信息与源文件一起保存。"
+        }
+      ],
+      "outcome": "支持的导入显示为自定义本地模型并且可以加载。",
+      "limits": [
+        "仅选择一个 Safetensors 碎片而不选择模型文件夹的其余部分是不够的。",
+        "ONNX、任意 ZIP 软件包、LoRA 适配器、APK 模块和不相关文件不能与支持的主型号互换。"
+      ],
+      "fixes": [
+        {
+          "problem": "导入报告丢失文件或不受支持的架构",
+          "solution": "提供完整的原始模型文件夹，或选择支持的 GGUF 模型。重命名文件扩展名不会转换模型。"
+        }
+      ],
+      "related": [
+        "local-link",
+        "local-vision",
+        "local-manage"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "导入本地模型文件"
+        }
+      ],
+      "sources": [
+        "ui/settings/LocalModelsSection.kt",
+        "local/LocalModelDocuments.kt",
+        "local/LocalModelManager.kt"
+      ],
+      "keywords": "本地模块模块导入safetensors gguf离线文件"
+    },
+    {
+      "id": "local-limits",
+      "category": "local",
+      "title": "调整本地背景、回复和思维",
+      "summary": "平衡有用的背景与记忆、时间和热量。",
+      "location": "设置→本地模型→我的模型→模型设置。",
+      "before": [
+        "安装了兼容的型号。"
+      ],
+      "steps": [
+        {
+          "title": "设置对话和回复大小",
+          "body": "选择上下文大小和回复长度（以标记为单位）。谦虚地开始；较大的上下文需要更多的内存，并且会使即时处理速度变慢。"
+        },
+        {
+          "title": "选择思维行为",
+          "body": "根据提供的情况使用“自动”、“思考”或“直接”。自动跟随请求；模型/模板必须仍然支持所需的行为。"
+        },
+        {
+          "title": "仅根据需要打开高级设置",
+          "body": "调整输入预算、生成线程和提示线程。更多线程并不总是更快并且会增加热量。"
+        },
+        {
+          "title": "保存并比较",
+          "body": "根据需要保存、加载/重新加载模型，然后尝试相同的简短提示。如果您的更改使行为变得更糟，请使用重置默认值。"
+        }
+      ],
+      "outcome": "该模型在运行时支持的范围内使用您保存的后续加载/请求限制。",
+      "limits": [
+        "思维控制无法可靠地添加或删除模型/模板中缺少的推理能力。",
+        "广告中的模型上下文较大并不意味着您的手机有足够的内存来使用全部内存。"
+      ],
+      "fixes": [
+        {
+          "problem": "回复太短或加载失败",
+          "solution": "检查输出/输入/上下文预算，减少占用大量内存的值，然后重试简单的提示。使用性能页面来衡量而不是猜测。"
+        }
+      ],
+      "related": [
+        "local-performance",
+        "context-limits",
+        "local-manage"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "调整本地模型"
+        }
+      ],
+      "sources": [
+        "ui/settings/LocalModelsSection.kt",
+        "local/LocalModelCatalog.kt",
+        "local/LocalChatCodec.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "local-performance",
+      "category": "local",
+      "title": "CPU、GPU以及真实性能",
+      "summary": "在选择加速度设置之前测量设备。",
+      "location": "设置→本地型号→性能；处理器选择的型号设置。",
+      "before": [
+        "已安装的兼容本地模型。",
+        "如果您需要 GPU 控件，则启用实验性本地模型功能。"
+      ],
+      "steps": [
+        {
+          "title": "阅读实时仪表板",
+          "body": "打开性能以检查可用的设备/RAM、处理器和散热信息。有些设备不会公开每个读数。"
+        },
+        {
+          "title": "有意启用实验控制",
+          "body": "使用实验性本地模型交换机并阅读其通知。如果GPU支持需要可选的运行时，请使用应用程序提供的安装程序并等待验证。"
+        },
+        {
+          "title": "选择 CPU、GPU 或自动",
+          "body": "使用模型的处理器控件。 Auto 更喜欢受支持的 GPU，并且当 GPU 启动不可用时可以回退到 CPU。 GPU 标签并不能证明速度更快。"
+        },
+        {
+          "title": "进行比较",
+          "body": "使用 CPU、GPU 或两者的基准控制（如果可用）。比较提示处理和生成，检查结果，并应用您实际想要的设置。"
+        }
+      ],
+      "outcome": "您已测量所选型号/设备和保存的处理器/线程选择的结果。",
+      "limits": [
+        "Vulkan GPU 支持取决于设备驱动程序、架构、构建和运行时可用性。 GPU 可能比 CPU 慢或不稳定。",
+        "基准测试会产生热量并使用电池。性能随模型大小、环境、温度和其他正在运行的应用程序而变化。"
+      ],
+      "fixes": [
+        {
+          "problem": "GPU不可用或失败",
+          "solution": "阅读报告的原因，检查可选运行时安装，并选择 CPU。如果您可以重现 GPU 故障，请报告设备/版本详细信息。"
+        }
+      ],
+      "related": [
+        "local-limits",
+        "local-download",
+        "troubleshooting"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "打开本地表演"
+        }
+      ],
+      "sources": [
+        "ui/settings/LocalPerformanceSection.kt",
+        "ui/settings/LocalBenchmarkScreen.kt",
+        "ui/settings/LocalAccelerationPanel.kt",
+        "ui/settings/LocalGpuSupportCard.kt",
+        "local/LocalAccelerationPolicy.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "local-vision",
+      "category": "local",
+      "title": "给予兼容本地模型图片支持",
+      "summary": "需要时使用匹配的视觉配套文件。",
+      "location": "设置→本地模型→自定义模型→图像支持。",
+      "before": [
+        "本地运行时支持的具有视觉能力的模型。",
+        "该确切型号的匹配视觉投影仪/mmproj .gguf 文件的受支持下载链接。"
+      ],
+      "steps": [
+        {
+          "title": "检查兼容性",
+          "body": "阅读模型的原始文档。纯文本模型无法仅仅因为存在投影仪文件就理解图像。"
+        },
+        {
+          "title": "打开图像支持",
+          "body": "使用自定义模型的图像支持控件。将匹配投影机的下载链接粘贴到 Vision 文件链接 (.gguf) 中；此对话框会下载配套文件，而不是打开本地文件选择器。"
+        },
+        {
+          "title": "安装伴侣",
+          "body": "选择添加视觉文件并等待下载和检查完成。投影仪增加了存储和内存要求。"
+        },
+        {
+          "title": "测试一个简单的图像",
+          "body": "加载/选择模型，附上一张清晰的小图像，并询问一个有关它的问题。确认应用程序/提供商报告图像支持。"
+        }
+      ],
+      "outcome": "支持的视觉模型可以接收图像输入及其安装的配套文件。",
+      "limits": [
+        "投影仪必须与其基本型号和运行时间相匹配。任意 mmproj 文件不是通用适配器。",
+        "图像处理消耗内存和时间；并非所有本地架构或图像任务都受支持。"
+      ],
+      "fixes": [
+        {
+          "problem": "图片被拒绝或者回复是废话",
+          "solution": "检查模型/投影仪匹配和运行时支持，在适当的情况下减小输入大小，或使用其他支持图像的模型。"
+        }
+      ],
+      "related": [
+        "local-files",
+        "chat-attachments",
+        "local-limits"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "管理图像支持"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProjectorDialog.kt",
+        "local/LocalModelManager.kt",
+        "local/LocalModelProvider.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "local-manage",
+      "category": "local",
+      "title": "停止、卸载、恢复或删除模型",
+      "summary": "了解哪个操作释放内存，哪个操作释放存储。",
+      "location": "设置 → 本地模型 → 我的模型和选项。",
+      "before": [
+        "在更改模型之前等待或停止任何使用该模型的请求。"
+      ],
+      "steps": [
+        {
+          "title": "停车卸货释放RAM",
+          "body": "使用模型的停止/卸载控件并等待其完成。下载的文件仍保持安装状态，以便您稍后可以再次加载。"
+        },
+        {
+          "title": "恢复暂停的下载",
+          "body": "找到暂停的传输并选择恢复。当您不再需要下载时，“放弃”会删除部分内容。"
+        },
+        {
+          "title": "删除至可用存储空间",
+          "body": "对不再需要的型号使用“删除/卸载”并阅读确认信息。您需要再次导入/下载才能稍后使用。"
+        },
+        {
+          "title": "查看存储和选项",
+          "body": "对暂停的文件或剩余文件使用本地模型存储控件。选项还包含系统/工具上下文首选项；启用它会增加上下文，并不能证明小模型可以可靠地使用工具。"
+        }
+      ],
+      "outcome": "您可以使用预期操作回收 RAM、恢复传输或删除模型存储。",
+      "limits": [
+        "停止生成和卸载模型内存与删除已安装的权重不同。",
+        "本地模型二进制文件不包含在设置备份中；单独备份或保留原始源文件。"
+      ],
+      "fixes": [
+        {
+          "problem": "手机仍然感觉内存受限",
+          "solution": "等待卸载，关闭其他占用大量内存的应用程序，然后查看设备内存显示。在下一次加载时选择较小的模型/上下文。"
+        }
+      ],
+      "related": [
+        "local-download",
+        "local-limits",
+        "storage-cleanup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LOCAL_MODELS",
+          "label": "管理已安装的模型"
+        }
+      ],
+      "sources": [
+        "ui/settings/LocalModelsSection.kt",
+        "ui/settings/LocalModelManagementUi.kt",
+        "local/LocalModelManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "workspaces",
+      "category": "code",
+      "title": "选择合适的工作空间",
+      "summary": "为代码提供一个清晰的文件和命令存放处。",
+      "location": "代码 → 工作区选择器，或导航菜单 → 项目 → 添加工作区。",
+      "before": [
+        "了解哪个文件夹或存储库属于该任务。"
+      ],
+      "steps": [
+        {
+          "title": "使用应用程序工作区进行简单的开始",
+          "body": "私有应用程序工作区是进行新实验和基于 shell 的项目的便捷场所。其他应用程序不会自动看到这些文件。"
+        },
+        {
+          "title": "需要时选择现有设备文件夹",
+          "body": "浏览设备文件夹以获取可直接访问的路径，或使用系统选择器授予选定的文件夹，而无需广泛的存储访问权限。检查显示的路径和访问状态。"
+        },
+        {
+          "title": "其他来源使用 GitHub 或 SSH",
+          "body": "将 GitHub 存储库导入工作区，或连接到 SSH 主机。这些是具有各自连接要求的单独选择。"
+        },
+        {
+          "title": "确认活动工作区",
+          "body": "在要求编辑之前选择代码中的工作区。使用其文件屏幕检查是否存在预期的项目文件。"
+        }
+      ],
+      "outcome": "代码正在针对目标文件夹运行，您可以识别其路径和访问类型。",
+      "limits": [
+        "系统选择器文件访问不会自动提供每个构建或命令所需的直接 shell 路径。",
+        "工作区是一个文件夹，而不是自动备份或与使用同一文件夹的所有其他聊天隔离。"
+      ],
+      "fixes": [
+        {
+          "problem": "文件有效但命令无效",
+          "solution": "检查工作空间类型和 shell 路径支持。对于基于命令的项目，使用应用程序/直接路径工作区或正确连接的 SSH 工作区。"
+        }
+      ],
+      "related": [
+        "storage-access",
+        "multi-workspace",
+        "github-import",
+        "ssh-workspace"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROJECTS",
+          "label": "添加或选择工作区"
+        },
+        {
+          "kind": "settings",
+          "target": "WORKSPACE",
+          "label": "查看工作区访问权限"
+        }
+      ],
+      "sources": [
+        "ui/common/AddWorkspaceDialog.kt",
+        "workspace/WorkspaceManager.kt",
+        "workspace/WorkspaceFs.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "projects",
+      "category": "code",
+      "title": "组织和删除项目",
+      "summary": "在一处查看项目的聊天、文件、检查和自动化。",
+      "location": "导航菜单 → 项目 → 选择一个项目。",
+      "before": [
+        "将工作区添加到应用程序中。"
+      ],
+      "steps": [
+        {
+          "title": "打开项目概览",
+          "body": "选择项目并检查其路径、最近的对话、文件快捷方式、检查、内存和自动化控制是否可用。"
+        },
+        {
+          "title": "在正确的环境中开始工作",
+          "body": "从该项目打开或创建代码对话。当您想直接工作时，请使用项目的文件、终端或检查操作。"
+        },
+        {
+          "title": "将说明与项目一起保存",
+          "body": "将项目内存/指令用于属于该项目而不是每个聊天的上下文。"
+        },
+        {
+          "title": "小心删除项目",
+          "body": "仅在阅读其确认和数据选择后才可使用项目删除操作。在选择任何删除重要对话和文件的选项之前，请先备份它们。"
+        }
+      ],
+      "outcome": "您的工作与预期项目相关联，并且其相关工具很容易重新打开。",
+      "limits": [
+        "删除应用程序条目和删除项目数据会产生不同的后果。请遵循确认信息中显示的具体选择。",
+        "正在运行的任务和不可用的存储可能会阻止安全删除；在重试之前解决这些情况。"
+      ],
+      "fixes": [
+        {
+          "problem": "该项目无法删除",
+          "solution": "停止使用它的任务并阅读失败消息。不要手动删除应用程序私有目录来绕过被阻止的删除。"
+        }
+      ],
+      "related": [
+        "workspaces",
+        "project-instructions",
+        "chat-backup"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROJECTS",
+          "label": "打开项目"
+        }
+      ],
+      "sources": [
+        "ui/projects/ProjectsScreen.kt",
+        "ui/projects/ProjectDeletionDialog.kt",
+        "workspace/ProjectDeletion.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "multi-workspace",
+      "category": "code",
+      "title": "跨多个工作区处理一个项目",
+      "summary": "将工作区分组到一个项目中，以便一次聊天可以在所有工作区中工作。",
+      "location": "侧边栏 → 项目 → 加号按钮，或代码 → 工作区选择器 → 新项目。",
+      "before": [
+        "首先将每个文件夹添加为工作区。",
+        "在更改其工作区之前，暂停项目聊天中的活动工作。"
+      ],
+      "steps": [
+        {
+          "title": "创建项目",
+          "body": "点击侧边栏中“项目”旁边的加号按钮，为项目命名并仅选择工作所需的工作区。"
+        },
+        {
+          "title": "为每个设置访问权限",
+          "body": "选择只读或可以按工作区编辑。选择主工作区。它是新文件的默认目的地。"
+        },
+        {
+          "title": "保存并命名任务边界",
+          "body": "保存项目并在其中开始聊天，然后告诉助手每个部分属于哪个工作区。在批准编辑之前检查工作区上下文。"
+        },
+        {
+          "title": "使用补助金内的文件工具",
+          "body": "助理可以读取项目的工作区并编辑被授予编辑权限的工作区。在发生跨多个工作区的更改后，检查每个受影响的工作区。"
+        }
+      ],
+      "outcome": "项目中的每个聊天都具有每个工作区的显式访问权限和明确的主工作区。",
+      "limits": [
+        "命令和集成需要对所有选定工作区的编辑访问权限。",
+        "工作区 MCP 服务器在具有多个工作区的项目聊天中尚不可用。正常的代码聊天使用一个工作区；只有一个项目拥有多个。"
+      ],
+      "fixes": [
+        {
+          "problem": "命令或集成消失",
+          "solution": "在项目编辑器中查看访问警告。使用单个工作区或仅在适当时授予所需的编辑访问权限。"
+        }
+      ],
+      "related": [
+        "workspaces",
+        "permissions",
+        "mcp-local"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "选择代码工作区"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ProjectEditorSheet.kt",
+        "workspace/ChatWorkspaces.kt",
+        "tools/WorkspaceToolRouting.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "ssh-workspace",
+      "category": "code",
+      "title": "在 SSH 主机上工作",
+      "summary": "当项目和命令保留在其服务器上时，使用远程文件夹。",
+      "location": "添加工作区 → 通过 SSH 连接。",
+      "before": [
+        "可访问的 SSH 服务器、其登录详细信息以及您可以访问的文件夹。",
+        "在信任新的主机密钥之前验证服务器身份。"
+      ],
+      "steps": [
+        {
+          "title": "输入连接",
+          "body": "提供对话框提供的主机、端口、用户名和身份验证。选择所需的远程文件夹。"
+        },
+        {
+          "title": "测试验证",
+          "body": "使用连接/探头控件。在保存连接之前检查主机身份/指纹和任何故障。"
+        },
+        {
+          "title": "打开远程工作区",
+          "body": "在“代码”或“文件”中选择它。命令和文件操作使用该远程上下文；在运行任何内容之前检查工作区标签。"
+        },
+        {
+          "title": "计划中断",
+          "body": "保持网络和主机可用。如果连接断开，请在重试可能已启动的命令之前检查运行/作业状态。"
+        }
+      ],
+      "outcome": "远程文件夹显示为工作区，支持的操作在 SSH 主机上运行。",
+      "limits": [
+        "远程服务器的本地主机不是您手机的本地主机。远程 Web 预览需要可通过电话或单独配置的连接访问 URL。",
+        "AndroidHarness 不会为您安装或管理远程 SSH 服务器。"
+      ],
+      "fixes": [
+        {
+          "problem": "身份验证或文件访问失败",
+          "solution": "检查主机/端口、凭据、允许的身份验证、远程文件夹权限和网络。更改的主机密钥需要调查而不是盲目接受。"
+        }
+      ],
+      "related": [
+        "terminal",
+        "browser-preview",
+        "sync-files"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROJECTS",
+          "label": "连接 SSH 工作区"
+        }
+      ],
+      "sources": [
+        "ui/common/SshWorkspaceDialog.kt",
+        "ui/common/SshWorkspaceBar.kt",
+        "workspace/SshFs.kt",
+        "workspace/SshConnections.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "files-editor",
+      "category": "code",
+      "title": "浏览和编辑项目文件",
+      "summary": "进行直接编辑并知道何时保存。",
+      "location": "导航菜单 → 文件，或项目的文件操作。",
+      "before": [
+        "选择一个可读的工作空间。编辑也需要写入权限。"
+      ],
+      "steps": [
+        {
+          "title": "找到文件",
+          "body": "浏览文件夹或使用“快速打开”。文件操作允许您创建、重命名、移动/复制或删除当前工作区支持的项目。查看多文件操作的目标。"
+        },
+        {
+          "title": "打开并编辑",
+          "body": "点击文本文件以打开编辑器。使用其选项卡在打开的文件之间切换。未保存的草稿会被标记，以便您可以将它们与磁盘上保存的内容区分开来。"
+        },
+        {
+          "title": "刻意保存",
+          "body": "使用“保存”或通过键盘按 Ctrl+S。离开脏编辑器时，请使用所示的保存/丢弃决策。如果文件在其他地方发生更改，请在覆盖之前检查冲突。"
+        },
+        {
+          "title": "寻求有关上下文的帮助",
+          "body": "使用选定代码/询问代理操作来解决重点问题或编辑。检查生成的草稿/差异并保存您想要保留的更改。"
+        }
+      ],
+      "outcome": "您的编辑将保存在所选工作区中，并且可以从“文件”中重新打开。",
+      "limits": [
+        "草稿恢复在中断后有所帮助，但不能替代保存和备份重要文件。",
+        "二进制文件、非常大的文件、不受支持的文件或只读文件的预览方式可能会有所不同，或者不可编辑。"
+      ],
+      "fixes": [
+        {
+          "problem": "编辑器显示外部更改冲突",
+          "solution": "将磁盘上的版本与草稿进行比较，决定保留哪些内容，并使用编辑器提供的冲突操作。不要假设其他聊天的编辑已经在您的草稿中。"
+        }
+      ],
+      "related": [
+        "project-search",
+        "smart-editor",
+        "changes-history"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "FILES",
+          "label": "打开文件"
+        }
+      ],
+      "sources": [
+        "ui/files/FilesScreen.kt",
+        "ui/files/FileOps.kt",
+        "ui/files/WorkspaceEditorScreen.kt",
+        "ui/files/CodeEditorScreen.kt",
+        "ui/files/EditorSave.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "project-search",
+      "category": "code",
+      "title": "快速打开并搜索整个项目",
+      "summary": "在应用之前查找文件或文本并查看替换内容。",
+      "location": "文件或编辑器→工作区工具→文件/搜索/命令。",
+      "before": [
+        "具有可读文件的选定工作区。"
+      ],
+      "steps": [
+        {
+          "title": "使用快速打开路径",
+          "body": "在工作区工具中打开文件并键入文件名或路径的一部分。使用键盘，Ctrl+P 打开“快速打开”。"
+        },
+        {
+          "title": "搜索文件内容",
+          "body": "选择“搜索”，输入文本，然后根据需要使用案例、正则表达式、包含或排除过滤器。 Ctrl+Shift+F 打开项目搜索。"
+        },
+        {
+          "title": "查看替代品",
+          "body": "打开替换，输入替换内容，然后查看建议的更改。在应用之前选择您实际想要更新的文件。"
+        },
+        {
+          "title": "使用命令面板",
+          "body": "选择命令或 Ctrl+Shift+P 即可查找编辑器/项目操作，而无需搜索菜单。"
+        }
+      ],
+      "outcome": "您可以跳转到匹配的内容并将审阅的替换应用到目标文件。",
+      "limits": [
+        "搜索会跳过一些二进制、大型、不可读或排除的文件，并限制大型结果集。在替换之前缩小查询范围。",
+        "替换可能会因活跃的代理工作、未保存的草稿或更改的工作区而被阻止。解决所述情况并再次审查。"
+      ],
+      "fixes": [
+        {
+          "problem": "正则表达式失败",
+          "solution": "检查表达式和捕获组。从纯文本开始，逐渐添加过滤器；在应用之前检查每个替换。"
+        }
+      ],
+      "related": [
+        "files-editor",
+        "smart-editor"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "FILES",
+          "label": "搜索项目文件"
+        }
+      ],
+      "sources": [
+        "ui/files/WorkspaceToolsSheet.kt",
+        "ui/files/WorkspaceSearch.kt",
+        "ui/files/WorkspaceEditorScreen.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "smart-editor",
+      "category": "code",
+      "title": "大纲、格式、定义和重命名",
+      "summary": "在文件支持的情况下使用语言感知的编辑器操作。",
+      "location": "编辑器→代码工具或命令面板。",
+      "before": [
+        "在编辑器中打开支持的源文件。",
+        "等待编辑器读完其语言/项目符号。"
+      ],
+      "steps": [
+        {
+          "title": "浏览文档",
+          "body": "使用代码大纲跳转到函数、类或文档符号。查找并转至已知位置的线路帮助。"
+        },
+        {
+          "title": "跟随一个符号",
+          "body": "将光标放在符号上，然后使用“转到定义”或“查找参考”（如果提供）。查看返回的项目位置。"
+        },
+        {
+          "title": "设置草稿格式",
+          "body": "对受支持的语言使用“文档格式”。检查草稿并撤消格式（如果不是您想要的格式）。"
+        },
+        {
+          "title": "重命名并进行审核",
+          "body": "选择重命名符号，输入新名称，然后查看受影响的文件。更改以草稿形式打开；检查后保存每个想要的文件。"
+        }
+      ],
+      "outcome": "您可以使用可见草稿进行导航或进行受支持的语言感知更改以供审阅。",
+      "limits": [
+        "语言操作取决于文件类型和可用的项目信息。它们并不是适用于每种语言的完整桌面 IDE。",
+        "语义重命名不同于纯文本替换；在未审查受影响的文件的情况下，两者均不应被接受。"
+      ],
+      "fixes": [
+        {
+          "problem": "文件在工作表打开时发生更改",
+          "solution": "关闭并重新打开代码工具，以便操作使用当前文档，然后再次查看。"
+        }
+      ],
+      "related": [
+        "project-search",
+        "files-editor",
+        "build-checks"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "FILES",
+          "label": "打开编辑器"
+        }
+      ],
+      "sources": [
+        "ui/files/SmartEditorSheet.kt",
+        "ui/files/SmartEditorEngine.kt",
+        "ui/files/SmartEditorController.kt",
+        "ui/files/WorkspaceEditorScreen.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "changes-history",
+      "category": "code",
+      "title": "查看并撤消文件更改",
+      "summary": "了解 diff、文件历史记录和 Git 之间的区别。",
+      "location": "代码→文件更改/更改卡；对话菜单 → 撤消文件更改。",
+      "before": [
+        "在撤消文件之前暂停活动任务。",
+        "为重要工作保留单独的备份或 Git 提交。"
+      ],
+      "steps": [
+        {
+          "title": "阅读差异",
+          "body": "打开对话的更改文件或更改卡。比较原始内容和更新内容；使用部分来检查大差异的较小部分。"
+        },
+        {
+          "title": "询问变更情况",
+          "body": "使用询问此文件/部分来获取与显示的差异相关的解释。当您需要检查其当前内容时打开实际文件。"
+        },
+        {
+          "title": "撤消预期范围",
+          "body": "使用提供的撤消文件或撤消部分，并阅读其确认信息。会话级撤消/检查点和文件历史记录工具可以在其支持的范围内恢复跟踪的内容。"
+        },
+        {
+          "title": "恢复后验证",
+          "body": "重新打开文件并运行检查。当您需要存储库提交、分支或远程发布时，请单独使用 Git。"
+        }
+      ],
+      "outcome": "您已经检查了实际编辑，并且可以恢复受支持的跟踪更改，而无需删除聊天历史记录。",
+      "limits": [
+        "跟踪可以忽略超大的预更改内容。差异不可用并不意味着文件未更改。",
+        "历史记录/检查点不能保证恢复每个外部命令的副作用、已删除的外部数据、远程发布或不相关的更改。"
+      ],
+      "fixes": [
+        {
+          "problem": "撤消被阻止或失败",
+          "solution": "使用工作区停止任务，检查访问权限并读取错误。在尝试另一次恢复之前检查当前内容。"
+        }
+      ],
+      "related": [
+        "github-publish",
+        "files-editor",
+        "messages-and-retries"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "查看代码更改"
+        }
+      ],
+      "sources": [
+        "ui/files/ChangesScreen.kt",
+        "ui/chat/ChatFileDiffSheet.kt",
+        "data/CheckpointStore.kt",
+        "data/WorkspaceFileHistory.kt",
+        "tools/FileHistoryTools.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "plan-act",
+      "category": "code",
+      "title": "行动前做好计划",
+      "summary": "首先检查，然后明确地进入实施。",
+      "location": "标题中的代码 → 计划/行动控制。",
+      "before": [
+        "选择所需的模型和工作空间。"
+      ],
+      "steps": [
+        {
+          "title": "选择计划",
+          "body": "请助理检查项目，找出相关文件，并提出具体做法。计划模式将运行限制为以检查为导向的工作。"
+        },
+        {
+          "title": "阅读提案",
+          "body": "寻找假设、先决条件以及如何检查结果。在要求实施之前纠正计划。"
+        },
+        {
+          "title": "切换到行动",
+          "body": "当您需要允许的工具进行更改时，请选择“操作”。如果启用了单独的计划/执行模型，请检查新角色的模型。"
+        },
+        {
+          "title": "回顾工作",
+          "body": "遵循批准、变更和测试结果。如果范围发生变化，请切换回计划进行另一次检查。"
+        }
+      ],
+      "outcome": "您已经审查了方法，然后在准备好应用它时运行法案。",
+      "limits": [
+        "计划模式是一种工具策略，不能替代阅读建议的行动或结果。",
+        "Act 只能执行所选模型、工具、工作区访问和权限允许的操作。"
+      ],
+      "fixes": [
+        {
+          "problem": "计划答复后没有更改任何文件",
+          "solution": "选择“行动”并提出实施请求。计划响应不是应用的补丁。"
+        }
+      ],
+      "related": [
+        "planning-fallback",
+        "permissions",
+        "first-code"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "尝试计划并采取行动"
+        }
+      ],
+      "sources": [
+        "agent/AgentEngine.kt",
+        "ui/chat/components/MainHeader.kt",
+        "tools/Tool.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "run-controls",
+      "category": "code",
+      "title": "引导、排队、暂停和恢复任务",
+      "summary": "当助手开始工作时保持控制。",
+      "location": "正在进行的对话 → 作曲家、任务控制、活动以及上下文和限制。",
+      "before": [
+        "在发送新指令之前了解哪个任务正在运行。"
+      ],
+      "steps": [
+        {
+          "title": "在工作正常时发送更正",
+          "body": "输入简短的转向消息。主动转向首选项确定是在下一步读取还是排队直到任务完成。"
+        },
+        {
+          "title": "管理队列",
+          "body": "立即打开“管理队列”以编辑、重新排序、删除或发送排队消息（如果提供）。排队的消息正在等待工作，而不是已完成的指令。"
+        },
+        {
+          "title": "问一个附带问题",
+          "body": "使用附带问题控件或 /btw（在任务旁边提供简短问题）。检查其单独的响应，而不是假设它重写了主要任务。"
+        },
+        {
+          "title": "故意暂停或停止",
+          "body": "使用可见的任务控件。中断后，查看保存的进度并在适当时恢复任务。在重试之前检查任何正在运行的命令。"
+        }
+      ],
+      "outcome": "你的下一个指令在任务中有着明确的位置，你可以有意识地停止或继续工作。",
+      "limits": [
+        "在支持的边界处读取转向；它无法撤消已经发生的操作。",
+        "自动继续具有已保存的重试限制。它不能保证康复或安全地重复每种副作用。"
+      ],
+      "fixes": [
+        {
+          "problem": "后续似乎被忽略",
+          "solution": "检查管理队列和转向模式。它可能正在等待，直到当前任务发送其完成的通知。"
+        }
+      ],
+      "related": [
+        "context-limits",
+        "slash-commands",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "AGENT",
+          "label": "设置转向行为"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开任务控件"
+        }
+      ],
+      "sources": [
+        "ui/chat/TaskControls.kt",
+        "agent/TaskControl.kt",
+        "ui/chat/SideQuestionState.kt",
+        "ui/settings/AgentBehaviorSection.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "context-limits",
+      "category": "code",
+      "title": "背景、预算和恢复",
+      "summary": "控制任务可以消耗和保留的量。",
+      "location": "对话菜单 → 上下文和限制；设置 → 编码 → 默认代理行为。",
+      "before": [
+        "当屏幕要求时，在编辑任务级控件之前暂停任务。"
+      ],
+      "steps": [
+        {
+          "title": "检查上下文和用法",
+          "body": "打开上下文和限制以查看可用的上下文/使用情况显示。上下文是发送到模型的信息，而不是整个可见的对话历史记录。"
+        },
+        {
+          "title": "保留重要指示",
+          "body": "使用固定的说明并查看保存的摘要。删除较旧的上下文会保留支持的最近回合/摘要/图钉，同时保留可见的聊天历史记录。"
+        },
+        {
+          "title": "设置可选任务预算",
+          "body": "如果需要，请输入总代币、估计成本或活动时间限制。将字段留空表示无限制。任务范围内的使用情况包括跟踪的子代理。"
+        },
+        {
+          "title": "设置恢复行为",
+          "body": "选择自动继续及其重试限制。对于一般默认值，请查看代理行为下的最大上下文和工具迭代设置。"
+        }
+      ],
+      "outcome": "该任务具有您选择的上下文、预算和重试设置，并且保存的更改在其控件中可见。",
+      "limits": [
+        "估算取决于可用的提供商定价和使用元数据；它们不是提供商强制执行的支出上限。",
+        "压缩和上下文删除可能会丢失有用的细节。将重要决策保留在图钉或清晰的摘要中。"
+      ],
+      "fixes": [
+        {
+          "problem": "任务到达极限就停止",
+          "solution": "检查其使用情况和保存的状态，然后在恢复之前提高预期限制或缩小任务范围。避免在未检查原因的情况下重复继续。"
+        }
+      ],
+      "related": [
+        "usage",
+        "run-controls",
+        "subagents",
+        "slash-commands"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "AGENT",
+          "label": "设置代理默认值"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码上下文控件"
+        }
+      ],
+      "sources": [
+        "ui/chat/TaskControls.kt",
+        "agent/TaskControl.kt",
+        "ui/chat/ContextPanel.kt",
+        "ui/settings/AgentBehaviorSection.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "permissions",
+      "category": "code",
+      "title": "了解批准和完全访问权限",
+      "summary": "慎重选择监督级别。",
+      "location": "设置→编码→代理行为；代码头→权限控制。",
+      "before": [
+        "在批准工具之前阅读操作预览。",
+        "设备/根访问与代理审批模式是分开的。"
+      ],
+      "steps": [
+        {
+          "title": "选择默认模式",
+          "body": "确认每项符合批准资格的行动都要求。确认风险行为保持有针对性的确认。全自动减少提示，同时保留其正常的策略边界。"
+        },
+        {
+          "title": "了解完全访问权限",
+          "body": "完全访问权限会删除代理的正常批准、shell 拒绝列表和路径包含层。该应用程序在需要时启用敏感访问时要求进行设备身份验证。"
+        },
+        {
+          "title": "阅读您收到的每条提示",
+          "body": "检查命令、差异、目标和范围。当操作是特定的时，使用一次性批准。记住/始终拨款适用于其规定的命令/工具和工作空间范围。"
+        },
+        {
+          "title": "查看记住的权限",
+          "body": "打开工作区访问设置以检查和撤销已保存的授权。当任务不需要广泛的访问时，返回到更受监督的模式。"
+        }
+      ],
+      "outcome": "助手以权限模式运行并保存您实际想要的授权。",
+      "limits": [
+        "完全访问权限无法授予 Android 操作系统权限、root、远程帐户角色或不可用的提供程序功能。",
+        "禁用确认会增加在没有其他提示的情况下可能发生的情况。使用适合该选择的工作空间和备份。"
+      ],
+      "fixes": [
+        {
+          "problem": "操作仍以自动模式询问",
+          "solution": "敏感设置、设备/根决策、工作区信任或操作系统权限可能需要他们自己做出决定。请阅读具体提示，而不是重复更改模式。"
+        }
+      ],
+      "related": [
+        "storage-access",
+        "root-access",
+        "configuration",
+        "assistant-settings"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "AGENT",
+          "label": "审核审批模式"
+        },
+        {
+          "kind": "settings",
+          "target": "WORKSPACE",
+          "label": "管理记住的权限"
+        }
+      ],
+      "sources": [
+        "agent/AgentEngine.kt",
+        "tools/ShellPolicy.kt",
+        "ui/settings/RememberedPermissionsSection.kt",
+        "ui/settings/AgentBehaviorSection.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "build-checks",
+      "category": "code",
+      "title": "构建、测试并要求代理修复故障",
+      "summary": "运行项目的实际检查并检查其输出。",
+      "location": "项目 → 项目检查/构建和测试，或工作区的检查操作。",
+      "before": [
+        "具有可用 shell 路径的工作区。",
+        "该项目所需的运行时、包、SDK 和构建文件。"
+      ],
+      "steps": [
+        {
+          "title": "选择支票",
+          "body": "打开构建和测试。使用建议/保存的命令或添加命令以及该项目的名称和实际测试/构建命令。"
+        },
+        {
+          "title": "运行并检查",
+          "body": "运行检查并观察实时输出。阅读退出代码和错误列表。停止卡住或执行错误工作的命令。"
+        },
+        {
+          "title": "使用修复与代理",
+          "body": "对于失败，选择修复操作。失败的命令和最近的输出被发送到新的代理聊天；在更改文件之前检查其任务和工作区。"
+        },
+        {
+          "title": "再次运行检查",
+          "body": "修复后，重新运行相同的命令并检查结果。当您想要启动受支持的项目服务器或 HTML 预览时，请单独使用运行和预览。"
+        }
+      ],
+      "outcome": "您有一个实际的命令结果，并且可以使用相同的命令检查任何修复。",
+      "limits": [
+        "成功的构建并不能证明所有功能都有效。练习更改的功能。",
+        "不受支持的桌面二进制文件、不可用的 SDK 组件、远程访问或 Android 限制可能会阻止在此处构建项目。"
+      ],
+      "fixes": [
+        {
+          "problem": "没有建议命令",
+          "solution": "从项目的构建/测试设置中添加命令。如果工作区缺少直接 shell 路径，请先将项目移动/复制到合适的工作区。"
+        }
+      ],
+      "related": [
+        "linux-packages",
+        "android-tools",
+        "browser-preview"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "BUILD_TEST",
+          "label": "打开项目检查"
+        }
+      ],
+      "sources": [
+        "ui/buildtest/BuildTestScreen.kt",
+        "data/env/AndroidBuildToolchain.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "terminal",
+      "category": "code",
+      "title": "使用终端",
+      "summary": "在选定的工作区中自行运行命令，包括 nano 和 fzf 等全屏程序。",
+      "location": "导航菜单 → 终端，或项目/编辑器终端操作。",
+      "before": [
+        "了解这是应用程序/设备 shell 还是 SSH 工作区。",
+        "安装所需的命令/包。安装Linux环境以获取bash和软件包。"
+      ],
+      "steps": [
+        {
+          "title": "检查工作空间和模式",
+          "body": "打字前请阅读标题。在本地工作区中，终端以交互模式打开：以应用程序用户身份运行的实时 bash shell，当前文件夹位于标题下。标题旁边的终端按钮切换到命令模式，该模式遵循访问模式（Shizuku、无线ADB或root），并且是SSH工作区的唯一模式。"
+        },
+        {
+          "title": "在 live shell 中输入",
+          "body": "点击终端以调出键盘并像在计算机上一样键入。按键可直接进入正在运行的程序，因此 nano、fzf、Python、top 和交互式提示都可以工作。捏合以更改文本大小，向上滚动以阅读之前的输出，然后长按以粘贴。"
+        },
+        {
+          "title": "使用额外的按键",
+          "body": "键盘上方的两行添加了 Esc、Tab、箭头、Home、End、Page Up 和 Page Down，以及 Ctrl+C 键。点击 Ctrl 或 Alt 一次将其应用到下一个键，或点击两次以保持其打开状态，直到再次点击它。 Fn 显示 F1 至 F12、插入、删除和常用符号。硬件键盘也可以使用，使用 Ctrl+Shift+V 进行粘贴，使用 Ctrl+Shift+C 进行复制。"
+        },
+        {
+          "title": "停止或重新启动",
+          "body": "按Ctrl+C键可以中断正在运行的程序。 ⋮菜单有粘贴、复制输出、重置文本大小和重新启动 shell。当您离开屏幕或旋转手机时，shell 会继续运行。在命令模式下，输入命令并点击“运行”，然后使用“停止”作为活动命令。"
+        },
+        {
+          "title": "使用代码执行辅助任务",
+          "body": "如果您希望助手检查输出、编辑文件或协调多个命令，请返回到代码。包括确切的错误和您的预期。"
+        }
+      ],
+      "outcome": "您可以在预期环境中看到命令的真实输出，并直接使用交互式程序。",
+      "limits": [
+        "终端不会自动授予 root 权限或对受保护文件夹的访问权限。在获得 root 权限的设备上，在交互式终端中运行 su 会提供 root shell。",
+        "交互模式以应用程序用户的身份在本地工作区中运行。 Shizuku、无线ADB、根路由和SSH工作空间使用命令模式。",
+        "当终端宽度改变时，长线不会重新换行；全屏程序会重绘自己。",
+        "在命令开始之前选择回退。中断的命令不会在另一条访问路径上自动重复。"
+      ],
+      "fixes": [
+        {
+          "problem": "未找到命令",
+          "solution": "在运行该命令的环境中安装相关包，或者检查SSH主机的工具。安装电话包不会将其安装在远程主机上。"
+        },
+        {
+          "problem": "仅启动一个基本的 shell",
+          "solution": "由于没有安装Linux环境，因此终端使用Android自带的shell。从设置 → 终端和设备 → Linux 环境中安装它，然后从 ⋮ 菜单中选择重新启动 shell。"
+        },
+        {
+          "problem": "存储清理拒绝运行",
+          "solution": "首先在交互式终端中键入 exit，因为清理不会删除正在运行的 shell 可能正在使用的文件。"
+        }
+      ],
+      "related": [
+        "linux-packages",
+        "device-shell",
+        "ssh-workspace"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "TERMINAL",
+          "label": "打开终端"
+        },
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "检查终端访问"
+        }
+      ],
+      "sources": [
+        "ui/terminal/TerminalScreen.kt",
+        "ui/terminal/InteractiveTerminalPane.kt",
+        "ui/terminal/TerminalCanvasView.kt",
+        "terminal/InteractiveTerminalManager.kt",
+        "terminal/TerminalEmulator.kt",
+        "data/env/LinuxEnvironment.kt"
+      ],
+      "keywords": "pty 交互式 shell bash nano fzf ctrl+c 额外键 tui"
+    },
+    {
+      "id": "browser-preview",
+      "category": "code",
+      "title": "运行并检查网页预览",
+      "summary": "打开本地 HTML、开发服务器或可访问的网页。",
+      "location": "代码→网页预览/浏览器控制；项目检查 → 运行和预览。",
+      "before": [
+        "受支持的 HTML 项目、正在运行的开发服务器或可访问的 URL。"
+      ],
+      "steps": [
+        {
+          "title": "选择来源",
+          "body": "打开网页和 HTML 预览。选择工作区 HTML 文件、检测到的本地服务器、聊天链接或输入地址/端口。启动服务器后重新扫描端口。"
+        },
+        {
+          "title": "如果需要，运行项目",
+          "body": "对检测到的项目脚本使用运行和预览/运行项目，或从终端启动服务器。在打开预览之前等待输出中出现 URL。"
+        },
+        {
+          "title": "检查页面",
+          "body": "使用后退/前进、重新加载、全屏、控制台和可用的开发人员工具。当您需要普通浏览器时从外部打开。"
+        },
+        {
+          "title": "要求有针对性的修复",
+          "body": "使用 Select 元素进行修复或控制台的修复操作，描述所需的更改，并将捕获的页面上下文发送给代理。查看项目编辑结果。"
+        }
+      ],
+      "outcome": "所选页面将呈现，您可以将可见问题与代码任务连接起来。",
+      "limits": [
+        "本地服务器必须保持运行。 HTTPS、身份验证、远程主机 URL、WebView 行为和网络策略可能会影响加载。",
+        "浏览器工具控制仅限于支持的应用内浏览器工具；它不是对手机上每个应用程序的任意控制。"
+      ],
+      "fixes": [
+        {
+          "problem": "预览无法连接",
+          "solution": "检查服务器输出和端口，验证电话可以到达该地址，并确认远程服务器没有被误认为是电话本地主机。"
+        }
+      ],
+      "related": [
+        "build-checks",
+        "chat-visuals",
+        "artifacts"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "BUILD_TEST",
+          "label": "运行并预览项目"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码预览"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/WebPreviewSheet.kt",
+        "ui/buildtest/BuildTestScreen.kt",
+        "tools/BrowserTools.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "artifacts",
+      "category": "code",
+      "title": "在代码中创建并保存视觉概念",
+      "summary": "制作一个可以重新打开的独立交互式 HTML 概念。",
+      "location": "代码→要求一个交互概念；在对话中打开其结果卡。",
+      "before": [
+        "具有可用的相关工件工具的代码模型。"
+      ],
+      "steps": [
+        {
+          "title": "描述概念",
+          "body": "要求提供 UI 模型、图表、图表或小型交互式工具作为独立的 HTML 概念。提供应显示的真实内容或数据。"
+        },
+        {
+          "title": "打开结果卡",
+          "body": "当创作成功后，预览或扩展这个概念。当您想要检查生成的 HTML 时，测试其控件并使用“查看源代码”。"
+        },
+        {
+          "title": "修改或保存",
+          "body": "要求改变这个概念，以便该工具可以使用其现有的标识/修订版。查看新预览，如果您想要导出副本，请使用卡的“保存”操作。"
+        }
+      ],
+      "outcome": "该对话包含一张真实的概念卡，其中包含已保存的 HTML 内容和可用修订。",
+      "limits": [
+        "概念预览没有网络、文件访问、cookie、本机桥、弹出窗口或权限。使用内联 HTML/CSS/JavaScript/SVG 而不是外部库或实时服务调用。",
+        "创建概念不会修改工作区文件或构建已安装的应用程序。常规聊天使用其内联视觉系统；使用代码文件来处理包含包和服务的真实项目。"
+      ],
+      "fixes": [
+        {
+          "problem": "概念失败或需要外部包",
+          "solution": "请求支持的独立 HTML 版本，或者请求 Code 实现实际的项目文件并使用项目预览。"
+        }
+      ],
+      "related": [
+        "chat-visuals",
+        "files-editor",
+        "browser-preview"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "在代码中创建"
+        }
+      ],
+      "sources": [
+        "tools/ArtifactTools.kt",
+        "ui/chat/components/ArtifactCard.kt",
+        "artifacts/ArtifactSandbox.kt"
+      ],
+      "keywords": "工件概念已保存 HTML 样机图交互式修订导出"
+    },
+    {
+      "id": "project-instructions",
+      "category": "code",
+      "title": "项目指令和项目内存",
+      "summary": "为助手提供其应继续使用的上下文。",
+      "location": "设置→编码→代理行为→项目说明；项目→记忆；高级设置的配置。",
+      "before": [
+        "在编辑其说明之前选择所需的项目。"
+      ],
+      "steps": [
+        {
+          "title": "编写实用说明",
+          "body": "使用项目指令编辑器来确定要避免的约定，例如语言、检查和文件。如果有帮助的话，请陈述具体的规则及其理由。"
+        },
+        {
+          "title": "将项目事实保存在项目内存中",
+          "body": "记录属于该项目的决策和背景。当项目发生变化时查看它们，而不是积累陈旧的笔记。"
+        },
+        {
+          "title": "使用配置进行更大的设置",
+          "body": "对于多个指令文件、参考、命名代理和项目工具，请使用“配置”页面并检查有效配置。"
+        },
+        {
+          "title": "检查下一个请求",
+          "body": "开始一项重点任务并确认正在使用所选的工作空间和预期的指令。在要求广泛的工作之前纠正陈旧的指示。"
+        }
+      ],
+      "outcome": "该项目的重复规则和有用的背景有一个明确的归属。",
+      "limits": [
+        "指令是模型上下文，不是合规性的保证或访问控制的替代品。",
+        "全局、项目、每个聊天和代理配置文件指令具有不同的范围。避免矛盾的规则并使用有效的配置来检查组合源。"
+      ],
+      "fixes": [
+        {
+          "problem": "助理遵循旧惯例",
+          "solution": "检查项目内存、指令文件、配置源和每个聊天指令是否存在冲突规则。"
+        }
+      ],
+      "related": [
+        "configuration",
+        "memory",
+        "skills"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "AGENT",
+          "label": "编辑项目说明"
+        },
+        {
+          "kind": "screen",
+          "target": "PROJECTS",
+          "label": "打开项目内存"
+        },
+        {
+          "kind": "settings",
+          "target": "CONFIGURATION",
+          "label": "检查配置"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/projects/ProjectMemoryScreen.kt",
+        "workspace/ProjectMemory.kt",
+        "config/HarnessConfig.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "skills",
+      "category": "extensions",
+      "title": "添加并使用技能",
+      "summary": "为助理提供针对特定类型工作的可重复使用的说明。",
+      "location": "设置→编码→技能；对话→技能选择器。",
+      "before": [
+        "技能是说明和支持材料，而不是模型或 Android 模块。"
+      ],
+      "steps": [
+        {
+          "title": "浏览现有技能",
+          "body": "打开技能并查看捆绑技能、用户技能和工作区技能。启用您希望助手能够发现的内容。"
+        },
+        {
+          "title": "创建用户技能",
+          "body": "选择添加技能并编辑提供的 SKILL.md 样式模板。保持其名称、描述和说明清晰具体。仅当编辑器接受格式时才保存。"
+        },
+        {
+          "title": "在任务中使用技能",
+          "body": "从对话的技能选择器中选择它或按名称询问。在代码中，斜杠/技能命令也可以加载支持的技能。"
+        },
+        {
+          "title": "保持正确的来源",
+          "body": "从管理器中编辑或删除您自己的用户技能。工作区/插件技能在其源头进行管理。当您不希望提供某项技能时，将其禁用。"
+        }
+      ],
+      "outcome": "启用的技能是可发现的，并且可以在您调用它时提供说明。",
+      "limits": [
+        "技能不会安装其所需的软件包、创建 API 访问权限或保证模型遵循每条指令。",
+        "聊天代理接受受支持的基于指令的技能，但有大小限制。需要工作区编辑或命令的技能属于代码。"
+      ],
+      "fixes": [
+        {
+          "problem": "技能没有出现",
+          "solution": "检查其启用状态、有效元数据、来源/范围以及任何特定于聊天的大小或功能限制。"
+        }
+      ],
+      "related": [
+        "plugins",
+        "configuration",
+        "slash-commands"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "SKILLS",
+          "label": "打开技能"
+        }
+      ],
+      "sources": [
+        "ui/settings/SkillsScreen.kt",
+        "skills/SkillParser.kt",
+        "skills/SkillStore.kt",
+        "ui/chat/components/SkillsPickerSheet.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "slash-commands",
+      "category": "extensions",
+      "title": "使用快捷键和自定义命令",
+      "summary": "运行支持的对话快捷方式或重复使用提示。",
+      "location": "代码→类型/；设置 → 编码 → 自定义命令的代码对话和命令。",
+      "before": [
+        "在运行特定于代码的操作之前选择一个工作区。"
+      ],
+      "steps": [
+        {
+          "title": "查看可用命令",
+          "body": "输入 / 并阅读当前屏幕的建议。内置命令包括上下文、成本、环境、医生、初始化、规划、技能和支持的附带问题帮助程序。"
+        },
+        {
+          "title": "使用上下文快捷方式",
+          "body": "使用 /compact 减少旧模型上下文，使用 /cost 获取使用信息，或 /env 获取环境帮助。在假设操作完成之前读取结果。"
+        },
+        {
+          "title": "创建可重复使用的提示",
+          "body": "在“编码聊天/命令”部分中，选择“添加自定义命令”，输入短名称和提示，然后保存。使用 /name 调用它。"
+        },
+        {
+          "title": "将强大的快捷方式视为真正的工作",
+          "body": "/init 和 /doctor 可以启动代理任务。阅读他们的目的，使用适当的工作空间，并查看他们所需的任何工具/批准。"
+        }
+      ],
+      "outcome": "您可以调用支持的快捷方式或插入已保存的提示，而无需重新键入。",
+      "limits": [
+        "有些命令是纯代码或启动模型/工具工作，可能会导致提供程序使用。",
+        "清除/压缩模型上下文、删除历史记录和撤消文件是单独的操作。阅读命令的实际行为。"
+      ],
+      "fixes": [
+        {
+          "problem": "该命令无法识别",
+          "solution": "检查拼写和当前建议。确保使用该名称保存自定义命令并且当前模式支持它。"
+        }
+      ],
+      "related": [
+        "context-limits",
+        "skills",
+        "troubleshooting",
+        "run-controls"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CHAT",
+          "label": "管理自定义命令"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "尝试代码快捷方式"
+        }
+      ],
+      "sources": [
+        "ui/chat/SlashCommands.kt",
+        "ui/settings/SettingsScreen.kt",
+        "data/SnippetRepository.kt"
+      ],
+      "keywords": "斜线 /compact /clear /cost /doctor /init /skills /skill /plan /env /btw"
+    },
+    {
+      "id": "subagents",
+      "category": "extensions",
+      "title": "将子代理用于任务的不同部分",
+      "summary": "委派重点工作并检查每个代理的实际结果。",
+      "location": "设置→编码→子代理设置；代码 → 子代理活动卡。",
+      "before": [
+        "使用具有工具功能的模型和可以明确划分的任务。"
+      ],
+      "steps": [
+        {
+          "title": "选择子代理型号",
+          "body": "打开子代理页面并选择其提供商/模型。检查它是继承默认值还是使用您的显式选择。"
+        },
+        {
+          "title": "选择工具和后台访问",
+          "body": "查看子代理操作工具访问、后台执行和完成通知。后台权限与编辑文件或运行命令的权限不同。"
+        },
+        {
+          "title": "要求集中授权",
+          "body": "给每个子任务一个明确的输出和边界。主助理可以启动代表并使用状态/等待/停止控件（如果可用）。"
+        },
+        {
+          "title": "检查结果",
+          "body": "打开子代理卡或详细信息屏幕以了解真实状态、活动和答案。停止请求并不是完成的结果；检查最终状态。"
+        }
+      ],
+      "outcome": "不同的子任务具有可见的代理活动/结果，可以将其合并到主要任务中。",
+      "limits": [
+        "子代理添加模型使用情况并共享跟踪的任务范围限制。并行工作仍然可能在同一文件中发生冲突。",
+        "子代理只能使用允许的工具和工作空间上下文；委派不会授予额外的帐户或设备权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "代表似乎陷入困境",
+          "solution": "检查其活动和批准，确认后台访问/网络，或停止该委托并缩小任务范围。"
+        }
+      ],
+      "related": [
+        "context-limits",
+        "background",
+        "permissions"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "SUBAGENT",
+          "label": "配置子代理"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码"
+        }
+      ],
+      "sources": [
+        "ui/settings/SubagentModelSection.kt",
+        "ui/settings/SubagentSettingsSection.kt",
+        "ui/subagent/SubagentScreen.kt",
+        "tools/SubagentTools.kt",
+        "tools/SubagentControlTools.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "mcp-remote",
+      "category": "extensions",
+      "title": "连接远程MCP服务器",
+      "summary": "使用其真实端点将服务的工具添加到代码中。",
+      "location": "设置 → 连接工具 (MCP) → 添加服务器。",
+      "before": [
+        "使用服务器运营商可信的 MCP 配置和帐户访问。",
+        "MCP为工具连接；它与模型提供商 API 密钥不同。"
+      ],
+      "steps": [
+        {
+          "title": "粘贴提供的配置",
+          "body": "添加服务器接受支持的 mcpServers JSON、单服务器定义或支持的 claude mcp add 命令。粘贴服务自己的设置并阅读服务器预览。"
+        },
+        {
+          "title": "检查运输和凭证",
+          "body": "对于远程服务器，请使用其 Streamable HTTP 端点或旧版 SSE 传输（如文档所述）。仅添加所需的静态标头或使用其支持的登录流程。"
+        },
+        {
+          "title": "保存并测试",
+          "body": "保存/启用服务器并点击测试。连接状态和工具计数确认了发现。如果要求身份验证，请完成浏览器流程并再次测试。"
+        },
+        {
+          "title": "从代码中使用它",
+          "body": "请求涉及该服务的具体操作。查看所有批准和工具结果。需要时从同一设置页面禁用、编辑或删除服务器。"
+        }
+      ],
+      "outcome": "服务器报告代码可以在应用程序的工具策略中调用的连接工具。",
+      "limits": [
+        "普通网站 URL 或 REST 端点不一定是 MCP 端点。",
+        "远程工具可以使用连接的帐户读取或更改外部数据。 Chat 的内置工具集不会自动包含每个 MCP 工具。"
+      ],
+      "fixes": [
+        {
+          "problem": "已连接但工具不可用",
+          "solution": "检查服务器是否已启用、当前代码/工作区配置、帐户范围以及任何信任/权限限制。对于多工作区聊天，请查看其 MCP 限制。"
+        }
+      ],
+      "related": [
+        "mcp-local",
+        "configuration",
+        "permissions"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "MCP",
+          "label": "添加远程MCP服务器"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "tools/mcp/McpModels.kt",
+        "tools/mcp/McpManager.kt",
+        "tools/mcp/McpOAuth.kt"
+      ],
+      "keywords": "MCP模块模块集成连接器模拟模块服务器http sse oauth"
+    },
+    {
+      "id": "mcp-local",
+      "category": "extensions",
+      "title": "运行本地MCP服务器",
+      "summary": "使用安装了所需运行时的 stdio 工具。",
+      "location": "设置 → 连接工具 (MCP) → 添加服务器 → 粘贴或手动编辑器。",
+      "before": [
+        "在可用的 Android/Linux 环境上运行的可信服务器。",
+        "在命令启动之前安装所需的运行时/包。"
+      ],
+      "steps": [
+        {
+          "title": "读取服务器的设置",
+          "body": "识别其可执行文件、参数、环境变量以及它所需的任何 API 密钥。 Android 上可能不存在复制的桌面路径。"
+        },
+        {
+          "title": "如果需要安装运行时",
+          "body": "当服务器需要时，准备可选的Linux环境和Node或Python等软件包。从应用程序自己的命令环境验证可执行文件。"
+        },
+        {
+          "title": "添加 stdio 配置",
+          "body": "粘贴支持的服务器配置或使用手动编辑。分别设置命令、参数和环境，然后保存并启用。"
+        },
+        {
+          "title": "使用前先测试一下",
+          "body": "点击测试并检查连接/工具计数或启动错误。在代码中，在较大的工作流程之前请求一个小的读取操作。"
+        }
+      ],
+      "outcome": "该可执行文件作为本地 MCP 进程启动并成功通告工具。",
+      "limits": [
+        "本地MCP服务器是可执行软件。 AndroidHarness 不会使任意桌面二进制文件与您的手机兼容。",
+        "项目提供的MCP/插件配置需要其工作区信任审核。工作区 MCP 尚不支持多工作区聊天。"
+      ],
+      "fixes": [
+        {
+          "problem": "找不到可执行文件或立即退出",
+          "solution": "检查运行时安装、命令路径、参数、所需的环境变量和体系结构兼容性。阅读报告的启动错误。"
+        }
+      ],
+      "related": [
+        "linux-packages",
+        "mcp-remote",
+        "configuration"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "MCP",
+          "label": "添加本地MCP服务器"
+        },
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "准备环境"
+        }
+      ],
+      "sources": [
+        "tools/mcp/McpModels.kt",
+        "tools/mcp/McpTransport.kt",
+        "tools/mcp/McpManager.kt",
+        "ui/settings/SettingsScreen.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "plugins",
+      "category": "extensions",
+      "title": "安装和管理应用程序插件",
+      "summary": "在启用其技能、挂钩和工具之前检查捆绑包。",
+      "location": "设置→编码→插件→安装/发现/添加。",
+      "before": [
+        "使用为 AndroidHarness 支持的捆绑格式制作的插件。",
+        "选择其范围是本项目还是全局。"
+      ],
+      "steps": [
+        {
+          "title": "找到捆绑包",
+          "body": "使用“发现”，或从受支持的 npm 包、GitHub 存储库、本地存档或文件夹添加。对于 GitHub，请在需要时提供正确的引用/子文件夹。"
+        },
+        {
+          "title": "检查准备的内容",
+          "body": "让应用程序读取/下载捆绑包，然后在安装之前检查其身份、贡献、挂钩和工具/配置要求。"
+        },
+        {
+          "title": "选择范围并安装",
+          "body": "选择所提供的项目或全球范围。确认经过审查的捆绑包并完成任何单独的项目工具信任决策。"
+        },
+        {
+          "title": "从已安装的管理",
+          "body": "按范围过滤已安装列表。检查详细信息、启用/禁用、更新或卸载捆绑包。检查更新内容，而不是假设它们与旧版本相同。"
+        }
+      ],
+      "outcome": "安装的插件在您选择的范围内贡献其支持的功能。",
+      "limits": [
+        "npm 包或 ZIP 不会自动成为兼容插件。模型、MCP 定义、技能、APK 和插件包是不同的东西。",
+        "可执行挂钩和 MCP 贡献可能需要运行时和权限；安装捆绑包不会授予外部服务访问权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "捆绑包被拒绝",
+          "solution": "检查格式、清单、选定的引用/子文件夹和错误。使用兼容的版本而不是重命名不相关的存档。"
+        }
+      ],
+      "related": [
+        "skills",
+        "mcp-local",
+        "configuration"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "PLUGINS",
+          "label": "打开插件"
+        }
+      ],
+      "sources": [
+        "ui/settings/PluginManagerSection.kt",
+        "plugins/PluginModels.kt",
+        "plugins/PluginManager.kt",
+        "plugins/PluginStore.kt"
+      ],
+      "keywords": "模块 本地模块插件扩展 npm zip 存档 市场挂钩"
+    },
+    {
+      "id": "configuration",
+      "category": "extensions",
+      "title": "项目和全局配置",
+      "summary": "准确检查工作区将使用哪些说明和工具。",
+      "location": "设置→编码→配置。",
+      "before": [
+        "选择一个工作区，即使在检查与全局设置的有效组合时也是如此。"
+      ],
+      "steps": [
+        {
+          "title": "选择项目或全局",
+          "body": "打开相应的选项卡。使用“创建/编辑”来处理受支持的harness.json 或harness.jsonc 文档及其提供的模板。"
+        },
+        {
+          "title": "仅添加您需要的字段",
+          "body": "配置支持其架构内的指令、参考、技能、命名代理、内存选项、MCP 服务器、权限和插件。保留小的有效更改，而不是粘贴不相关的应用程序设置。"
+        },
+        {
+          "title": "安全地管理绑定",
+          "body": "使用页面的文件夹授权、变量和秘密控件来获取需要它们的引用。不要将真正的秘密直接放入您将提交或共享的文件中。"
+        },
+        {
+          "title": "验证、检查和信任",
+          "body": "保存有效的文档，重新加载并检查有效的配置、来源和警告。查看已解决的项目工具并仅批准您打算运行的配置。"
+        }
+      ],
+      "outcome": "有效配置列出了适用于当前工作区的来源和贡献。",
+      "limits": [
+        "格式错误或未知的字段将被拒绝。项目和全局值根据支持的加载器规则进行组合；检查有效结果。",
+        "更改的工具配置可能需要新的信任决策。单独加载文件不会执行其挂钩或连接其服务器。"
+      ],
+      "fixes": [
+        {
+          "problem": "配置需要注意",
+          "solution": "读取精确的验证错误，修复该字段，然后重新加载。删除陈旧的绑定/引用或使用页面的有效起始模板。"
+        }
+      ],
+      "related": [
+        "project-instructions",
+        "plugins",
+        "mcp-local",
+        "permissions"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CONFIGURATION",
+          "label": "打开配置"
+        }
+      ],
+      "sources": [
+        "ui/settings/ConfigurationSection.kt",
+        "config/HarnessConfig.kt",
+        "config/HarnessConfigRepository.kt",
+        "config/ConfigValidation.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "code-intelligence",
+      "category": "extensions",
+      "title": "CodeGraph和存储库图",
+      "summary": "帮助助手使用正确类型的索引导航代码库。",
+      "location": "设置→编码→CodeGraph；编码聊天设置 → 存储库地图。",
+      "before": [
+        "选择具有所需命令环境的受支持的代码工作区。"
+      ],
+      "steps": [
+        {
+          "title": "开放代码情报",
+          "body": "查看当前工作区的索引状态和可用的安装/索引/刷新控件。如果页面需要，请准备可选工具。"
+        },
+        {
+          "title": "刻意索引项目",
+          "body": "运行页面支持的索引操作并等待完成。当报告的索引丢失或过时时重建/刷新。"
+        },
+        {
+          "title": "问一个结构性问题",
+          "body": "使用代码来询问行为在哪里、谁调用了符号或者更改影响了哪些文件。可用的图形工具可以补充直接文件读取。"
+        },
+        {
+          "title": "查看存储库映射首选项",
+          "body": "紧凑存储库地图是编码聊天行为下的一个单独的上下文帮助。当您希望在提示中提供符号概述时启用它。"
+        }
+      ],
+      "outcome": "助理可以在相关时使用可用的项目结构工具和/或紧凑地图。",
+      "limits": [
+        "语言覆盖范围和通话解决率均尽最大努力。索引不是编译器、测试套​​件或当前运行时行为的证明。",
+        "索引生成会消耗存储/时间，并且取决于工作空间和环境。"
+      ],
+      "fixes": [
+        {
+          "problem": "图表丢失或过时",
+          "solution": "检查所选工作区、索引状态、命令环境以及页面的刷新/索引结果。直接文件探索仍然有用。"
+        }
+      ],
+      "related": [
+        "project-search",
+        "project-instructions",
+        "linux-packages"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CODE_INTELLIGENCE",
+          "label": "开放代码智能"
+        },
+        {
+          "kind": "settings",
+          "target": "CHAT",
+          "label": "设置存储库映射行为"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "tools/CodeGraphTools.kt",
+        "repomap/RepoMapGenerator.kt",
+        "data/env/CodeGraphManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "caveman",
+      "category": "extensions",
+      "title": "使用Caveman的较短回复样式",
+      "summary": "安装可选技能包并选择回复的简洁程度。",
+      "location": "设置→编码→Caveman。",
+      "before": [
+        "当较短的响应适合任务时使用此选项；保持指令和错误的准确性。"
+      ],
+      "steps": [
+        {
+          "title": "安装包",
+          "body": "选择安装Caveman。它使用应用程序的现有模型连接，不需要另一个 API 密钥、终端或代理。"
+        },
+        {
+          "title": "选择强度",
+          "body": "选择提供的回复强度。关闭会删除风格指令，同时单独启用的技能仍然可用。古典中式/Wenyan 是一种可选的风格变体。"
+        },
+        {
+          "title": "回顾编码技能",
+          "body": "单独启用或禁用重点提交、审查、调查、修补和验证技能。当可用时，它们也会出现在技能选择器中。"
+        },
+        {
+          "title": "检查结果而不是承诺的节省",
+          "body": "如果有帮助，请使用可选的令牌报告。当简短的措辞使答案难以理解时，请提高清晰度或关闭风格。"
+        }
+      ],
+      "outcome": "新请求使用所选的回复样式和相关的启用技能。",
+      "limits": [
+        "较短的回复并不能保证较低的总成本；样式指令也消耗输入标记。",
+        "这是一个指令包，不是新模型，也不是消除模型推理标记的可靠方法。"
+      ],
+      "fixes": [
+        {
+          "problem": "回复太突然了",
+          "solution": "降低强度或将其设置为关闭。仅保留您仍需要启用的编码技能。"
+        }
+      ],
+      "related": [
+        "skills",
+        "usage"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CAVEMAN",
+          "label": "配置Caveman"
+        }
+      ],
+      "sources": [
+        "ui/settings/CavemanSection.kt",
+        "caveman/CavemanPolicy.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "github-connect",
+      "category": "github",
+      "title": "连接您的 GitHub 帐户",
+      "summary": "登录或使用具有正确权限的个人访问令牌。",
+      "location": "设置 → GitHub。",
+      "before": [
+        "有权访问您要使用的存储库的 GitHub 帐户。"
+      ],
+      "steps": [
+        {
+          "title": "开始浏览器登录",
+          "body": "选择使用 GitHub 登录。当出现设备代码时，使用“复制并打开”，登录 GitHub，输入代码并批准预期访问。"
+        },
+        {
+          "title": "仅在需要时请求工作流访问",
+          "body": "推送工作流程文件更改时，工作流程选项相关。在完成授权之前，请阅读所请求的权限。"
+        },
+        {
+          "title": "如果无法登录，请使用令牌",
+          "body": "选择使用个人访问令牌。在 GitHub 上创建它，选择所需的存储库，并授予您的操作所需的存储库/内容权限。将其粘贴到令牌表单中并验证/连接。"
+        },
+        {
+          "title": "确认关联账户",
+          "body": "面板应显示预期的 GitHub 登录。当您需要另一个帐户时，请使用其断开连接/更改帐户控件。"
+        }
+      ],
+      "outcome": "设置显示预期连接的 GitHub 帐户。",
+      "limits": [
+        "有些版本没有配置浏览器登录；该页面提供令牌路由。",
+        "组织批准、存储库角色、令牌过期和分支保护仍然适用。令牌必须具有每个操作所需的权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "私有存储库或推送失败",
+          "solution": "检查存储库选择、令牌范围/权限、组织授权和到期时间。仅在纠正访问问题后重新连接。"
+        }
+      ],
+      "related": [
+        "github-import",
+        "github-publish",
+        "github-pr",
+        "github-in-chat"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "GITHUB",
+          "label": "连接GitHub"
+        }
+      ],
+      "sources": [
+        "ui/settings/GitHubIntegrationSection.kt",
+        "github/GitHubAuth.kt",
+        "data/KeyStoreManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "github-import",
+      "category": "github",
+      "title": "导入 GitHub 存储库",
+      "summary": "将存储库引入新的应用程序工作区。",
+      "location": "设置 → GitHub → 从 GitHub 导入，或添加工作区 → 从 GitHub 导入。",
+      "before": [
+        "有效的网络连接。",
+        "对于私有存储库，具有存储库访问权限的连接帐户。"
+      ],
+      "steps": [
+        {
+          "title": "选择一个存储库",
+          "body": "登录后，从存储库列表中进行选择，并在必要时加载更多内容。或者使用 URL 导入并粘贴 GitHub HTTPS URL 或所有者/存储库。"
+        },
+        {
+          "title": "检查导入情况",
+          "body": "在对话框中确认存储库标识和目标信息。导入创建一个工作区；它不会覆盖您正在编辑的任意文件夹。"
+        },
+        {
+          "title": "等待准备和克隆",
+          "body": "如果缺少 Git 工具，应用程序可以准备这些工具。保持应用程序/网络可用，并在重试之前读取进度或错误。"
+        },
+        {
+          "title": "打开工作区",
+          "body": "成功后使用打开工作区。检查其文件，然后启动代码任务或打开项目检查。"
+        }
+      ],
+      "outcome": "导入的存储库可作为项目应用程序中的工作区使用。",
+      "limits": [
+        "导入代码不会安装每个依赖项或证明该项目将构建在 Android 上。",
+        "公共导入无需登录即可通过 URL 进行。私人访问仍然取决于您的帐户和存储库的规则。"
+      ],
+      "fixes": [
+        {
+          "problem": "导入失败",
+          "solution": "检查URL/账户、网络、存储和Git-工具准备消息。空列表并不能证明手动指定的可访问存储库无效。"
+        }
+      ],
+      "related": [
+        "github-connect",
+        "workspaces",
+        "build-checks"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "GITHUB",
+          "label": "从GitHub导入"
+        }
+      ],
+      "sources": [
+        "ui/github/GitHubImportPicker.kt",
+        "ui/github/GitHubDialogs.kt",
+        "github/GitHubRepository.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "github-publish",
+      "category": "github",
+      "title": "审查、提交和推送更改",
+      "summary": "将选定的本地更改发布到预期的存储库分支。",
+      "location": "代码 → GitHub 控制，或设置 → GitHub → 提交并推送。",
+      "before": [
+        "使用具有 GitHub HTTPS 原点的存储库根工作区。",
+        "拥有推送权限和关联帐户。"
+      ],
+      "steps": [
+        {
+          "title": "检查存储库和分支",
+          "body": "打开 Commit & Push 并阅读存储库/分支摘要。对于未连接的本地文件夹，请首先使用设置控件连接现有的 GitHub 存储库。"
+        },
+        {
+          "title": "选择文件",
+          "body": "查看更改树、浏览文件夹并仅选择您想要发布的路径。在包含它们之前阅读代码/文件中的实际差异。"
+        },
+        {
+          "title": "编写有用的提交消息",
+          "body": "清楚地描述变化。使用提交和推送来创建选定的提交并将其发送到显示的远程分支。"
+        },
+        {
+          "title": "检查结果",
+          "body": "刷新存储库状态并读取成功/失败。如果提交已存在，则推送现有提交会重试发布，而不会发明其他更改。"
+        }
+      ],
+      "outcome": "所选更改将被提交，并在推送成功后出现在预期的 GitHub 分支上。",
+      "limits": [
+        "本地提交可以成功，但推送失败。重试之前检查当前状态。",
+        "此流程不会强制推送或绕过分支保护。它连接现有的存储库；创建新的 GitHub 存储库并不是一揽子承诺。"
+      ],
+      "fixes": [
+        {
+          "problem": "推送被拒绝",
+          "solution": "检查权限、受保护的分支和远程更改。读取错误并解决分支状态，而不是强制覆盖。"
+        }
+      ],
+      "related": [
+        "changes-history",
+        "github-pr",
+        "github-presets",
+        "git-branches"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "GITHUB",
+          "label": "打开提交并按下"
+        }
+      ],
+      "sources": [
+        "ui/github/GitHubDialogs.kt",
+        "ui/github/GitHubChangePicker.kt",
+        "github/GitHubRepository.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "github-pr",
+      "category": "github",
+      "title": "打开拉取请求",
+      "summary": "将已发布的功能分支转变为可审查的内容。",
+      "location": "提交并推送 → 创建拉取请求。",
+      "before": [
+        "具有所需访问权限的已连接 GitHub 存储库和帐户。",
+        "一个头分支，其中包含针对不同基础分支的提交。"
+      ],
+      "steps": [
+        {
+          "title": "查看分支流程",
+          "body": "打开创建拉取请求并检查 head/source 和 base/target 分支。确认变更将合并到哪个方向。"
+        },
+        {
+          "title": "准备出版物",
+          "body": "查看对话框中显示的任何未推送的提交或工作树要求。在打开 PR 之前，根据需要推送预期的分支。"
+        },
+        {
+          "title": "写下请求",
+          "body": "审查/编辑建议的标题和正文，并在您想要表明该作品尚未准备好进行全面审查时选择草稿。"
+        },
+        {
+          "title": "创建并检查",
+          "body": "提交，然后使用在GitHub上打开或复制链接来检查实际的PR。在 GitHub 上检查其差异、检查、审阅者和权限。"
+        }
+      ],
+      "outcome": "成功的结果显示实际的拉取请求编号/链接，或标识现有请求。",
+      "limits": [
+        "创建拉取请求不会合并它或使测试通过。审查和合并遵循GitHub自己的存储库规则。",
+        "生成的描述需要审查，尤其是任何已执行测试或验证的声明。"
+      ],
+      "fixes": [
+        {
+          "problem": "无法创建 PR",
+          "solution": "检查分支是否不同、提交是否已推送、基础是否存在以及您的帐户是否可以在目标存储库中打开 PR。"
+        }
+      ],
+      "related": [
+        "github-publish",
+        "build-checks",
+        "changes-history"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "GITHUB",
+          "label": "打开GitHub工具"
+        }
+      ],
+      "sources": [
+        "ui/github/PullRequestUi.kt",
+        "tools/GitHubPullRequestTool.kt",
+        "github/GitHubPullRequests.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "github-presets",
+      "category": "github",
+      "title": "保存可重复使用的 GitHub 推送预设",
+      "summary": "手动或按计划重复已知的发布任务。",
+      "location": "提交&推送→保存可重复使用的推送预设；导航菜单 → 自动化。",
+      "before": [
+        "经过审查的存储库、分支和文件选择。",
+        "仅当您打算发送未来的更改而不检查每次发生的情况时，才安排发布。"
+      ],
+      "steps": [
+        {
+          "title": "捕获预期的存储库",
+          "body": "检查存储库和分支后打开预设操作。给它一个可识​​别的名称和有用的提交消息。"
+        },
+        {
+          "title": "选择路径策略",
+          "body": "保留选定的路径，或者在您确实需要时明确选择“包括所有未来的更改”。仔细审查这个选择。"
+        },
+        {
+          "title": "选择其时间表",
+          "body": "使用所提供的“手动”、“每小时”或“每日”，并在需要时设置每日时间。保存预设。"
+        },
+        {
+          "title": "在自动化中管理它",
+          "body": "首先手动运行它，检查历史记录，如果发布范围或计划发生变化，则暂停/编辑/删除它。"
+        }
+      ],
+      "outcome": "自动化具有可重用的推送任务，其中包含您查看的存储库、分支和路径策略。",
+      "limits": [
+        "包括未来的更改可以发布您在计划运行时尚未审阅的文件。",
+        "Android可以延迟时间表。 GitHub 身份验证、分支状态和保护可以阻止运行。"
+      ],
+      "fixes": [
+        {
+          "problem": "预定的推送失败",
+          "solution": "打开其历史记录和链接运行，然后检查存储库状态和凭据。重试之前纠正原因。"
+        }
+      ],
+      "related": [
+        "scheduled-messages",
+        "automation-tasks",
+        "github-publish"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "AUTOMATION",
+          "label": "管理自动化"
+        },
+        {
+          "kind": "settings",
+          "target": "GITHUB",
+          "label": "创建推送预设"
+        }
+      ],
+      "sources": [
+        "ui/github/GitHubDialogs.kt",
+        "automation/AutomationManager.kt",
+        "github/GitHubRepository.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "storage-access",
+      "category": "device",
+      "title": "仅授予您需要的存储访问权限",
+      "summary": "了解私人文件夹、选定文件夹和广泛的文件访问。",
+      "location": "设置→编码→终端和设备→共享存储；添加文件夹授权的工作区。",
+      "before": [
+        "了解项目是否位于应用程序专用存储、共享设备存储或选定的系统选择器文件夹中。"
+      ],
+      "steps": [
+        {
+          "title": "从私人或选定的文件夹开始",
+          "body": "应用程序工作区不需要广泛的存储授权。系统选择器可以为文件工具授予特定文件夹，而无需公开所有共享文件。"
+        },
+        {
+          "title": "必要时授予广泛的访问权限",
+          "body": "要直接访问共享文件夹，请使用共享存储操作和 Android 的所有文件访问屏幕（如果提供）。返回应用程序并刷新/检查状态。"
+        },
+        {
+          "title": "重新检查工作区",
+          "body": "打开文件并确认目标文件夹可以读写。除了选择器授权之外，Shell 命令可能还需要真实的文件系统路径。"
+        },
+        {
+          "title": "单独管理权限",
+          "body": "在工作区访问权限下查看记住的工具授权。当您不再需要 Android 存储访问权限时，可在 Android 设置中撤销 Android 存储访问权限。"
+        }
+      ],
+      "outcome": "该应用程序具有所选工作区所需的存储访问权限，并清楚地报告访问权限。",
+      "limits": [
+        "所有文件访问都不会使其他应用程序受保护的私有数据或每个系统路径可读。",
+        "文件夹选择器授予、代理批准、根访问和设备所有者访问是不同的权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "已授予权限但文件夹仍然失败",
+          "solution": "如果授权已过期，请重新打开文件夹选择器，检查 SD 卡可用性，并验证该路径是否不受 Android 保护。"
+        }
+      ],
+      "related": [
+        "workspaces",
+        "permissions",
+        "device-shell"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "查看共享存储"
+        },
+        {
+          "kind": "settings",
+          "target": "WORKSPACE",
+          "label": "查看工作区权限"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/common/StorageAccessState.kt",
+        "data/env/StorageAccess.kt",
+        "workspace/SafPathResolver.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "linux-packages",
+      "category": "device",
+      "title": "准备Linux并安装包",
+      "summary": "当您的任务确实需要命令环境时添加命令环境。",
+      "location": "设置 → 编码 → 终端和设备 → Linux 环境/包管理器。",
+      "before": [
+        "足够的存储空间和用于环境/包下载的工作连接。"
+      ],
+      "steps": [
+        {
+          "title": "安装或准备环境",
+          "body": "打开 Linux 部分并使用其设置操作。等待下载、安装和准备，直到页面报告准备就绪。"
+        },
+        {
+          "title": "添加该项目的工具",
+          "body": "使用包管理器控件或批准的包安装任务来满足您需要的运行时，例如 Git、Python、Node 或构建工具。"
+        },
+        {
+          "title": "检查实际环境",
+          "body": "在所选本地工作区中打开终端并运行一个小版本/检查命令。应用程序环境与另一个终端应用程序的私有文件分开。"
+        },
+        {
+          "title": "仅修复报告的问题",
+          "body": "如果安装失败，请阅读其消息，检查空间/网络，然后使用提供的重试/修复操作。在删除环境数据之前，请备份重要的工作区文件。"
+        }
+      ],
+      "outcome": "环境已准备就绪，所需的命令可以在兼容的工作区中运行。",
+      "limits": [
+        "对于普通托管聊天，Linux 是可选的。安装它不会授予 Android root 权限或将手机变成不受限制的桌面。",
+        "软件包可用性、CPU 架构、共享存储行为和 Android 限制会影响可以运行的内容。"
+      ],
+      "fixes": [
+        {
+          "problem": "安装成功但命令仍然失败",
+          "solution": "检查它是否安装在任务使用的同一环境中、其体系结构是否受支持以及工作区是否具有直接 shell 路径。"
+        }
+      ],
+      "related": [
+        "terminal",
+        "build-checks",
+        "mcp-local",
+        "storage-cleanup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "准备Linux及包装"
+        },
+        {
+          "kind": "screen",
+          "target": "TERMINAL",
+          "label": "检查环境"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/settings/PackageManagerSheet.kt",
+        "data/env/LinuxEnvironment.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "device-shell",
+      "category": "device",
+      "title": "Shizuku、Shevery 和正常的 shell 访问",
+      "summary": "连接可选的 shell 权限，不要将它们与 root 混淆。",
+      "location": "设置 → 编码 → 终端和设备 → Shizuku / 支持的 shell 提供商。",
+      "before": [
+        "如果您需要该路线，请单独安装并运行兼容的 shell 提供程序。"
+      ],
+      "steps": [
+        {
+          "title": "启动提供者",
+          "body": "遵循提供商应用程序自己的设置，使其服务运行。 AndroidHarness 仅安装后不会激活它。"
+        },
+        {
+          "title": "授予 AndroidHarness 访问权限",
+          "body": "打开 shell-provider 部分并请求权限。批准提供程序中的预期请求，然后刷新连接状态。"
+        },
+        {
+          "title": "等待可用的连接",
+          "body": "授予许可和服务就绪是不同的状态。如果服务报告绑定或兼容性问题，请检查连接/启动详细信息。"
+        },
+        {
+          "title": "选择执行路径",
+          "body": "使用应用程序的访问模式控件来执行命令。当您需要知道哪个路由实际运行了最后一个命令时，请检查诊断。"
+        }
+      ],
+      "outcome": "当提供程序准备就绪并获得授权时，应用程序会报告可调用的 shell 连接。",
+      "limits": [
+        "Shell 提供程序访问不会自动获得 root 权限，并且不会使每个受保护的路径都可访问。",
+        "提供商版本、Android 版本、进程生命周期和设备固件可能会影响连接行为。"
+      ],
+      "fixes": [
+        {
+          "problem": "授予权限但命令失败",
+          "solution": "检查服务就绪/绑定状态和连接详细信息。使用实际错误重新启动或修复提供程序连接，然后测试无害的命令。"
+        }
+      ],
+      "related": [
+        "wireless-adb",
+        "root-access",
+        "terminal"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "连接 shell 提供程序"
+        }
+      ],
+      "sources": [
+        "data/env/ShizukuManager.kt",
+        "ui/settings/SettingsScreen.kt",
+        "ui/settings/ShizukuFailureDetails.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "wireless-adb",
+      "category": "device",
+      "title": "配对无线调试",
+      "summary": "从应用程序连接Android的无线ADB路由。",
+      "location": "Android 开发者选项→无线调试； AndroidHarness → 终端和设备 → 无线 ADB。",
+      "before": [
+        "支持的 Android 版本，可进行无线调试。",
+        "允许 Android 无线调试的网络/设备状态。",
+        "允许通知代码流的配对通知，或在连接选项中使用手动配对。"
+      ],
+      "steps": [
+        {
+          "title": "从AndroidHarness开始配对",
+          "body": "在无线 ADB 中，点击配对按钮。如果 Android 请求，则允许本地网络权限。应用程序开始寻找Android的配对服务。"
+        },
+        {
+          "title": "打开Android的配对码屏幕",
+          "body": "打开开发者选项 → 无线调试，将其打开，然后选择使用配对代码对设备进行配对。保持此屏幕打开，以便配对服务保持可用。"
+        },
+        {
+          "title": "通过通知输入代码",
+          "body": "拉下通知栏，打开 AndroidHarness 的配对通知，使用其输入代码操作，然后提交 Android 当前显示的六位数代码。等待配对/连接结果。"
+        },
+        {
+          "title": "如果需要，请使用手动配对",
+          "body": "如果通知被禁用或发现失败，请打开连接选项 → 手动配对。输入 Android 的当前配对端口和代码。配对端口和连接端口是不同的值。"
+        },
+        {
+          "title": "验证连接状态",
+          "body": "等待已连接并使用可用的连接测试。如果已配对但已断开连接，请使用重新连接。当您不再需要时，从连接选项中断开或忘记配对。"
+        }
+      ],
+      "outcome": "该应用程序报告活动的无线 ADB 连接，该连接可以为支持的 shell/设备操作提供服务。",
+      "limits": [
+        "配对不会对手机进行 Root。 OEM 策略、Wi-Fi 更改、调试状态和 Android 重启都可能会中断访问。",
+        "旧的配对端口/代码不是永久连接地址。"
+      ],
+      "fixes": [
+        {
+          "problem": "配对成功但连接失败",
+          "solution": "检查无线调试是否仍然启用，使用当前连接端口，并刷新发现/重新连接。仅在实际需要配对时生成新的配对代码。"
+        }
+      ],
+      "related": [
+        "device-shell",
+        "android-tools",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "设置无线 ADB"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "data/env/adb/WirelessAdbManager.kt",
+        "data/env/adb/AdbPairingService.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "root-access",
+      "category": "device",
+      "title": "仅在您想要的地方使用 root",
+      "summary": "将 root 连接、项目权限和任务模式分开。",
+      "location": "设置→编码→终端和设备→高级→根访问。",
+      "before": [
+        "已具有工作根管理器的设备。 AndroidHarness 没有root。"
+      ],
+      "steps": [
+        {
+          "title": "通过根管理器连接",
+          "body": "使用授予/检查访问权限并批准实际的根管理员请求。查看检测到的管理器和连接状态。"
+        },
+        {
+          "title": "适当时保留临时限制",
+          "body": "临时 root 模式可以限制对应用程序会话、聊天或操作以及允许的项目的访问。在让代理请求之前，请先检查项目根权限。"
+        },
+        {
+          "title": "选择路线和回退",
+          "body": "查看访问模式和自动回退。显示的首选项/顺序在命令启动之前应用。检查上次实际使用的路线的诊断。"
+        },
+        {
+          "title": "完成后停止或断开连接",
+          "body": "适当使用特权访问控制。将根浏览器视为对重要设备文件的直接访问，并仔细检查路径。"
+        }
+      ],
+      "outcome": "根仅在您明确选择的连接和范围下可用。",
+      "limits": [
+        "完全访问代理模式不会覆盖项目根权限或创建根连接。",
+        "关闭临时模式可以扩大连接时根的可用性。 Root 操作可能会影响项目文件夹之外的设备。"
+      ],
+      "fixes": [
+        {
+          "problem": "Root 意外回退或失败",
+          "solution": "在重复命令之前，请检查管理器授予、活动连接、选定的访问模式、项目权限和诊断。"
+        }
+      ],
+      "related": [
+        "permissions",
+        "device-shell",
+        "storage-access"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "检查 root 访问权限"
+        }
+      ],
+      "sources": [
+        "ui/settings/RootAccessSection.kt",
+        "ui/settings/RootBrowserDialog.kt",
+        "data/env/DeviceAccessPolicy.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "device-owner",
+      "category": "device",
+      "title": "了解 Dhizuku 设备所有者访问",
+      "summary": "使用其自己的功能路线，而不是期望 ADB shell。",
+      "location": "设置→编码→终端和设备→高级→Dhizuku。",
+      "before": [
+        "如果您打算使用 Dhizuku，请以设备所有者身份安装并单独激活。",
+        "设备所有者配置是此应用程序之外的 Android/设备管理决策。"
+      ],
+      "steps": [
+        {
+          "title": "先检查Dhizuku",
+          "body": "打开其自己的应用程序并验证设备所有者激活是否已完成。 AndroidHarness 的卡报告服务是否已安装、活动或正在等待许可。"
+        },
+        {
+          "title": "授予连接",
+          "body": "使用Dhizuku访问请求并在提供者中响应。刷新状态直到显示实际结果。"
+        },
+        {
+          "title": "使用匹配能力",
+          "body": "向 Code 询问受支持的设备所有者操作并查看工具路线/结果。设备所有者命令使用专用路由，而不是伪装成普通的特权 ADB shell。"
+        }
+      ],
+      "outcome": "仅当 Dhizuku 连接处于活动状态并被授予时，应用程序才会报告设备所有者访问权限。",
+      "limits": [
+        "Dhizuku 不是 root，也不是 Shizuku/ADB-shell 后备。其命令执行仍然受到提供商的应用程序身份和 Android 限制。",
+        "不要仅仅为了尝试正常的聊天或编码任务而激活设备所有权；它是可选的高级集成。"
+      ],
+      "fixes": [
+        {
+          "problem": "已连接但 shell 命令缺少权限",
+          "solution": "检查该命令是否需要 ADB shell 或 root，而不是设备所有者应用程序访问权限。使用支持的路线进行实际操作。"
+        }
+      ],
+      "related": [
+        "device-shell",
+        "root-access",
+        "honest-limits"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "查看Dhizuku状态"
+        }
+      ],
+      "sources": [
+        "ui/settings/DhizukuCard.kt",
+        "tools/DeviceOwnerShellTool.kt",
+        "data/env/DhizukuManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "android-tools",
+      "category": "device",
+      "title": "构建 Android 项目并检查设备日志",
+      "summary": "准备工具链并使用正确的设备访问权限。",
+      "location": "代码 → Android 构建任务；用于环境和外壳连接的端子和设备。",
+      "before": [
+        "兼容的 Android 项目和所需的 SDK/JDK/构建工具。",
+        "用于仅设备操作（例如受保护的日志或安装）的工作允许设备路由。"
+      ],
+      "steps": [
+        {
+          "title": "准备项目工具链",
+          "body": "要求 Code 检查项目并安装其实际需要的受支持的 Android 构建包/SDK 组件。阅读包/工具链的进度和失败。"
+        },
+        {
+          "title": "运行构建/检查",
+          "body": "在代码或项目检查中使用项目的构建命令。成功后检查真实的命令输出和生成的 APK 路径。"
+        },
+        {
+          "title": "使用可用路径安装或启动",
+          "body": "使用应用程序支持的安装/启动操作或要求代码执行此操作。当所选路线需要时，遵循 Android 安装人员的许可/确认。"
+        },
+        {
+          "title": "用证据检查故障",
+          "body": "对于相关的包和时间，使用可用的 logcat/device 工具。提供错误并重现步骤，然后重建并重新测试任何修复。"
+        }
+      ],
+      "outcome": "支持的构建具有真实的输出文件和设备检查报告实际结果。",
+      "limits": [
+        "Android SDK 支持是针对 Android 上的可用工具量身定制的；并非所有桌面 Gradle/NDK 项目都受支持。",
+        "成功的 APK 构建不同于成功的安装、启动和功能测试。某些设备日志/操作需要 shell 或 root 访问权限。"
+      ],
+      "fixes": [
+        {
+          "problem": "缺少工具或 SDK 组件",
+          "solution": "使用报告的缺失组件和项目要求来准备它。避免在未解决工具链错误的情况下重复运行构建。"
+        }
+      ],
+      "related": [
+        "build-checks",
+        "linux-packages",
+        "wireless-adb"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "BUILD_TEST",
+          "label": "打开项目检查"
+        },
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "查看Android工具访问"
+        }
+      ],
+      "sources": [
+        "tools/AndroidSdkTools.kt",
+        "data/env/AndroidBuildToolchain.kt",
+        "tools/LogcatTool.kt",
+        "ui/buildtest/BuildTestScreen.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "scheduled-messages",
+      "category": "automation",
+      "title": "安排消息",
+      "summary": "发送任务一次或使用选定的连接和工作区重复发送任务。",
+      "location": "对话 → 计划消息操作，或导航菜单 → 自动化。",
+      "before": [
+        "已保存的工作区和工作模型连接。",
+        "适合时间表的后台操作和网络访问。"
+      ],
+      "steps": [
+        {
+          "title": "写留言",
+          "body": "打开计划消息并描述要发送的工作。选择目标聊天或新聊天及其工作区。"
+        },
+        {
+          "title": "选择型号和时间",
+          "body": "查看提供商/型号并选择提供的重复选项。对于一次性消息，请选择未来的日期/时间；对于每日时间表，请检查显示的时间。"
+        },
+        {
+          "title": "设置连接要求",
+          "body": "选择任意互联网或仅不按流量计费。等待允许的连接的任务不一定会失败。"
+        },
+        {
+          "title": "保存并监控",
+          "body": "保存时间表。打开其行或自动化以编辑、暂停/恢复、取消或检查下一个/最后一个运行和链接的对话。"
+        }
+      ],
+      "outcome": "时间表显示您选择的消息、目标、时间和连接策略。",
+      "limits": [
+        "Android调度不精确到秒。电池限制、离线状态、强制停止和设备重启可能会影响工作运行时间。",
+        "计划任务仍然使用模型积分和正常工具/访问规则。被阻止的批准可能需要您返回到应用程序。"
+      ],
+      "fixes": [
+        {
+          "problem": "预定的时间过去了",
+          "solution": "检查其实际状态：等待网络、排队、暂停、阻塞、运行或失败。在创建副本之前检查背景/电池设置和链接的历史记录。"
+        }
+      ],
+      "related": [
+        "background",
+        "automation-tasks",
+        "github-presets"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "AUTOMATION",
+          "label": "管理日程"
+        },
+        {
+          "kind": "settings",
+          "target": "BACKGROUND",
+          "label": "查看后台访问"
+        }
+      ],
+      "sources": [
+        "ui/automation/ScheduleMessageSheet.kt",
+        "ui/automation/ScheduledMessageRow.kt",
+        "automation/AutomationManager.kt",
+        "automation/AutomationWorker.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "automation-tasks",
+      "category": "automation",
+      "title": "创建和监控自动化",
+      "summary": "将清晰的任务与检查和可审查的运行历史记录配对。",
+      "location": "导航菜单 → 自动化，或项目 → 自动化。",
+      "before": [
+        "工作区、可用的提供程序/模型以及任务所需的命令。"
+      ],
+      "steps": [
+        {
+          "title": "创建任务",
+          "body": "使用可用的创建/帮助程序或高级任务编辑器。为任务指定清晰的名称、提示、目标工作区和预期模型。"
+        },
+        {
+          "title": "有用时添加客观检查",
+          "body": "对于构建/修复工作流程，请在编辑器中设置实际检查命令和最大尝试次数。模糊的提示比具有有用退出结果的命令更难验证。"
+        },
+        {
+          "title": "先手动运行",
+          "body": "在安排自动化之前测试自动化。检查其链接的对话、命令输出和实际结果。如果需要澄清或访问，请调整任务。"
+        },
+        {
+          "title": "管理正在进行的工作",
+          "body": "使用所提供的运行、暂停/恢复、编辑、取消或删除控件。打开历史记录以区分通过、失败、阻止、取消和仍在运行的事件。"
+        }
+      ],
+      "outcome": "该任务具有可见的配置和链接到其实际运行的历史记录条目。",
+      "limits": [
+        "自动化受到Android后台调度和与交互式工作相同的模型/工具权限的限制。",
+        "检查仅证明其测试内容。反复尝试可以使用积分和更改文件；使用合适的项目并查看结果。"
+      ],
+      "fixes": [
+        {
+          "problem": "任务被阻止",
+          "solution": "阅读链接运行以了解其批准情况、缺少依赖性或访问问题。在恢复之前解决该原因，而不是重复任务。"
+        }
+      ],
+      "related": [
+        "scheduled-messages",
+        "build-checks",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "AUTOMATION",
+          "label": "打开自动化"
+        }
+      ],
+      "sources": [
+        "ui/automation/AutomationScreen.kt",
+        "automation/AutomationAiPlanner.kt",
+        "automation/AutomationManager.kt",
+        "automation/AutomationRepository.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "telegram",
+      "category": "automation",
+      "title": "从 Telegram 控制项目",
+      "summary": "配对您自己的帐户并远程使用相同的已保存聊天记录。",
+      "location": "设置 → Telegram。",
+      "before": [
+        "您控制的机器人，通过Telegram的官方BotFather创建。",
+        "启用 AndroidHarness 的 Telegram 服务，让您的手机保持在线。"
+      ],
+      "steps": [
+        {
+          "title": "连接机器人",
+          "body": "如果您需要官方 BotFather 链接，请使用创建机器人。将机器人令牌粘贴到连接机器人并验证。将该令牌保密。"
+        },
+        {
+          "title": "配对您的帐户",
+          "body": "在 AndroidHarness 中开始配对，使用提供的链接/代码打开机器人，并在批准之前在应用程序中检查 Telegram 用户身份。"
+        },
+        {
+          "title": "选择工作环境",
+          "body": "在 Telegram 设置页面或支持的机器人控件中设置项目、聊天、提供商/模型和计划/行动。在远程项目工作之前发送测试消息。"
+        },
+        {
+          "title": "使用机器人控件",
+          "body": "发送普通任务消息，对当前命令使用 /help，并响应批准/问题按钮。 /status 显示进度； /stop 停止工作； /retry 或 /resume 处理保存的中断工作（如果提供）。"
+        }
+      ],
+      "outcome": "您配对的 Telegram 帐户可以将工作发送到所选的应用程序项目/聊天并接收进度/结果。",
+      "limits": [
+        "机器人和您的手机需要网络访问。 Telegram 不代表您托管 AndroidHarness 任务。",
+        "配对、应用程序工具权限、模型计费和后台设置仍然适用。不要运行同一机器人令牌的另一个竞争消费者。"
+      ],
+      "fixes": [
+        {
+          "problem": "回复丢失或请求被中断",
+          "solution": "检查 Telegram 设置中保存的工作。区分重试任务和重发回复，并在重发前检查Telegram以避免混淆。"
+        }
+      ],
+      "related": [
+        "background",
+        "scheduled-messages",
+        "permissions"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "TELEGRAM",
+          "label": "设置Telegram"
+        }
+      ],
+      "sources": [
+        "ui/settings/TelegramSection.kt",
+        "telegram/TelegramSetupRepository.kt",
+        "telegram/TelegramGateway.kt",
+        "telegram/TelegramAgentBridge.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "background",
+      "category": "automation",
+      "title": "保持工作顺利进行并管理通知",
+      "summary": "选择背景行为并了解 Android 的限制。",
+      "location": "设置→背景和通知；终端和设备 → 后台/电池控制。",
+      "before": [
+        "了解您是否希望在离开应用程序时继续执行任务。"
+      ],
+      "steps": [
+        {
+          "title": "选择背景行为",
+          "body": "打开后台运行并设置代理在您离开后是否可以继续。关闭它会在您离开应用程序时停止代理。"
+        },
+        {
+          "title": "选择通知行为",
+          "body": "查看应用程序通知开关和 Android 通知设置。如果您想要支持的警报，请授予 Android 的通知权限。"
+        },
+        {
+          "title": "查看保持活动和电池策略",
+          "body": "对于长时间工作，请检查保持活动和电池豁免控制。一些制造商有额外的电池/自动启动设置，您必须在 Android 中进行调整。"
+        },
+        {
+          "title": "检查真实运行情况",
+          "body": "启动一项小任务，离开应用程序，然后在返回时检查其实际完成情况或中断情况。如果支持，请单独查看子代理完成警报和实时更新。"
+        }
+      ],
+      "outcome": "您的设置表明工作是否应该继续，并且应用程序显示可用的警报/进度状态。",
+      "limits": [
+        "Android 仍然可以停止进程、延迟计划工作或要求服务通知。没有开关保证永久后台执行。",
+        "实时更新演示取决于 Android 版本、通知权限和设备支持。"
+      ],
+      "fixes": [
+        {
+          "problem": "屏幕关闭后工作停止",
+          "solution": "检查后台权限、保持活动状态、Android 电池限制以及中断任务的恢复控制。"
+        }
+      ],
+      "related": [
+        "run-controls",
+        "scheduled-messages",
+        "subagents"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "BACKGROUND",
+          "label": "配置后台工作"
+        },
+        {
+          "kind": "settings",
+          "target": "ENVIRONMENT",
+          "label": "检查电池并保持活动状态"
+        }
+      ],
+      "sources": [
+        "ui/settings/BackgroundSettingsSection.kt",
+        "ui/settings/LiveUpdateSettings.kt",
+        "ui/settings/SettingsScreen.kt",
+        "AgentService.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "appearance",
+      "category": "personal",
+      "title": "让应用程序感觉像您的一样",
+      "summary": "选择您喜欢使用的布局、主题、调色板和背景。",
+      "location": "设置→外观。",
+      "before": [
+        "某些壁纸颜色功能需要受支持的 Android 版本。"
+      ],
+      "steps": [
+        {
+          "title": "选择布局和主题",
+          "body": "使用电话/桌面首选项的工作区布局控件。选择系统、浅色、深色或 AMOLED 主题；宽布局可以在对话旁边显示项目工具。"
+        },
+        {
+          "title": "选择你的颜色",
+          "body": "在支持的情况下使用壁纸衍生的颜色、内置调色板或自定义调色板。在自定义调色板中，保存所需的颜色，选择调色板并查看预览。"
+        },
+        {
+          "title": "添加 Harness Canvas",
+          "body": "添加照片/艺术品，选择是否显示在聊天和代码中，调整图像调暗以提高可读性，并可选择将应用程序颜色与其匹配。更改/删除同一部分的图像。"
+        },
+        {
+          "title": "设置进度样式",
+          "body": "选择平坦或波浪形的进度条。打开对话并检查文本、控件和进度在您选择的设置中是否仍易于阅读。"
+        }
+      ],
+      "outcome": "布局和外观反映了您在支持的屏幕上选择的偏好。",
+      "limits": [
+        "壁纸颜色和硬件/显示行为因 Android 和设备支持而异。",
+        "如果您选择低对比度内容，背景图像和自定义调色板可能会降低可读性。使用调光并检查对话和设置界面。"
+      ],
+      "fixes": [
+        {
+          "problem": "我选择的调色板似乎被覆盖",
+          "solution": "检查当前是否选择了壁纸颜色、活动的自定义调色板或画布颜色匹配。"
+        }
+      ],
+      "related": [
+        "rumble",
+        "language",
+        "startup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "APPEARANCE",
+          "label": "个性化外观"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/settings/WorkspaceLayoutSection.kt",
+        "ui/settings/ThemeColorSection.kt",
+        "ui/settings/CustomPaletteSection.kt",
+        "ui/settings/HarnessCanvasSection.kt",
+        "ui/settings/ProgressBarStyleSection.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "rumble",
+      "category": "personal",
+      "title": "调AH Rumble",
+      "summary": "感受进步，而不是让每件事都分散注意力。",
+      "location": "设置 → AH Rumble。",
+      "before": [
+        "带有振动电机的装置。"
+      ],
+      "steps": [
+        {
+          "title": "选择它运行的位置",
+          "body": "启用 Rumble 并选择它是否应用于聊天、代码或两者。"
+        },
+        {
+          "title": "尝试一下手感和力量",
+          "body": "使用预览控件来测试清脆/光滑的感觉和强度。默认值是一个有用的起点。"
+        },
+        {
+          "title": "选择引擎和事件",
+          "body": "高级控件包括自动/内置/自定义触觉引擎和每个事件的模式/级别，用于思考、工具、写作、完成和需要您的请求。"
+        },
+        {
+          "title": "保持爆发舒适",
+          "body": "调整最小间距、书写流程行为、省电行为以及您需要的任何微调。如果您想恢复默认值，请重置 AH Rumble。"
+        }
+      ],
+      "outcome": "预览和支持的对话事件使用您选择的触觉行为。",
+      "limits": [
+        "电机能力和 Android 触觉支持各不相同。不受支持的内置效果可以回退到自定义脉冲。",
+        "手机的触摸振动设置和省电偏好可以抑制脉冲。"
+      ],
+      "fixes": [
+        {
+          "problem": "没有任何振动",
+          "solution": "检查手机是否有电机，系统触摸振动已启用，当前聊天/代码范围已选择，并且省电模式没有抑制它。"
+        }
+      ],
+      "related": [
+        "appearance",
+        "background"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "RUMBLE",
+          "label": "调音AH Rumble"
+        }
+      ],
+      "sources": [
+        "ui/settings/RumbleSection.kt",
+        "ui/common/Rumble.kt",
+        "ui/chat/RumbleDirector.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "privacy",
+      "category": "personal",
+      "title": "应用程序锁定、屏幕截图和秘密",
+      "summary": "选择应用程序在此手机上的保护方式。",
+      "location": "设置 → 隐私和安全。",
+      "before": [
+        "如果您想要应用程序锁定，则可以使用有效的 Android 设备锁定/身份验证方法。"
+      ],
+      "steps": [
+        {
+          "title": "启用应用程序锁定",
+          "body": "打开应用程序锁定首选项并完成请求的设备身份验证。在依赖解锁行为之前，请先阅读它。"
+        },
+        {
+          "title": "再次锁定时设置",
+          "body": "选择后台自动锁定延迟。当您经常让电话无人看管时，短暂的延迟会很有用。"
+        },
+        {
+          "title": "选择屏幕截图行为",
+          "body": "查看屏幕截图/最近预览首选项。即使允许一般屏幕截图，凭证表单也可以提高自己的安全屏幕保护。"
+        },
+        {
+          "title": "从源头管理凭证",
+          "body": "使用连接设置来替换或删除密钥。在提供商处撤销丢失/泄露的密钥，并查看哪个远程服务接收对话。"
+        }
+      ],
+      "outcome": "该应用程序遵循所选的锁定和一般捕获首选项，具体取决于其使用的安全表面。",
+      "limits": [
+        "应用程序锁控制打开应用程序。它不会加密或撤回已发送给提供商的消息。",
+        "远程模型、MCP 服务、Web 工具、Telegram 或代理可以接收其请求所需的数据。仅本地推理并不会使所有启用的工具离线。"
+      ],
+      "fixes": [
+        {
+          "problem": "关键表单上的屏幕截图被阻止",
+          "solution": "该表单有意保护凭据。在捕获常规应用程序屏幕之前将其关闭。"
+        }
+      ],
+      "related": [
+        "api-billing",
+        "key-controls",
+        "settings-backup",
+        "honest-limits"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "PRIVACY",
+          "label": "查看隐私设置"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/common/BiometricAuth.kt",
+        "ui/common/SecureScreenEffect.kt",
+        "data/ScreenshotPolicy.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "language",
+      "category": "personal",
+      "title": "更改应用程序语言",
+      "summary": "使用翻译的控件，同时保持模型语言是单独的选择。",
+      "location": "设置→应用程序语言。",
+      "before": [
+        "应用程序内选择器显示与此版本捆绑的语言。"
+      ],
+      "steps": [
+        {
+          "title": "打开语言选择器",
+          "body": "选择您想要的语言，或者系统默认遵循Android。允许应用刷新其可见标签。"
+        },
+        {
+          "title": "检查所选屏幕",
+          "body": "返回您正在使用的页面。设置搜索可以匹配翻译标签和英文技术关键词。"
+        },
+        {
+          "title": "询问您首选的回复语言",
+          "body": "告诉助手要使用哪种语言，或设置聊天指令。更改应用程序标签不会强制每个模型响应都使用该语言。"
+        },
+        {
+          "title": "如果您愿意，请贡献",
+          "body": "如果提供语言页面的翻译/贡献链接，请使用它。报告特定的不清楚或缺失的标签及其屏幕上下文。"
+        }
+      ],
+      "outcome": "只要有翻译，应用程序控件就会使用所选的捆绑语言。",
+      "limits": [
+        "这些教程目前是用英语编写的；未翻译的新内容会回退到默认语言。",
+        "模型输出、网站内容、外部登录页面和提供程序错误都有自己的语言行为。"
+      ],
+      "fixes": [
+        {
+          "problem": "我找不到旧的英文设置名称",
+          "solution": "使用翻译标签或独特的英文关键字（例如“API”、“内存”或“通知”）进行设置搜索。"
+        }
+      ],
+      "related": [
+        "chat-personalization",
+        "startup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "LANGUAGE",
+          "label": "选择应用程序语言"
+        }
+      ],
+      "sources": [
+        "ui/settings/LanguageSection.kt",
+        "ui/settings/SettingsNavigation.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "startup",
+      "category": "personal",
+      "title": "选择返回时打开的内容",
+      "summary": "独立设置聊天和代码启动行为。",
+      "location": "设置→聊天设置和设置→编码。",
+      "before": [
+        "决定您是喜欢新的对话还是回到最近的工作。"
+      ],
+      "steps": [
+        {
+          "title": "选择起始部分",
+          "body": "在聊天设置中，将开始屏幕设置为聊天、代码或提供的最后选择的部分。"
+        },
+        {
+          "title": "选择聊天启动",
+          "body": "根据可用选项设置输入聊天是重新开始还是恢复上次聊天。"
+        },
+        {
+          "title": "选择代码启动",
+          "body": "打开编码并选择其新/恢复行为。返回到之前的代码对话时查看当前项目。"
+        },
+        {
+          "title": "尝试下一次启动",
+          "body": "离开并重新打开应用程序以检查所选行为是否适合您的工作流程。现有聊天在导航列表中仍然可用。"
+        }
+      ],
+      "outcome": "应用程序会在应用首选项时打开您选择的部分和对话行为。",
+      "limits": [
+        "这些选择不会删除旧对话或创建备份。",
+        "丢失/删除的对话或工作空间可能需要一个新的选择，而不是恢复旧的。"
+      ],
+      "fixes": [
+        {
+          "problem": "应用程序恢复出乎意料的事情",
+          "solution": "查看部分默认值和该部分的启动选择，然后确认哪个最近的聊天/项目仍然可用。"
+        }
+      ],
+      "related": [
+        "chat-collections",
+        "first-chat",
+        "projects"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CHAT_OPTIONS",
+          "label": "选择聊天启动"
+        },
+        {
+          "kind": "settings",
+          "target": "CODING",
+          "label": "选择代码启动"
+        }
+      ],
+      "sources": [
+        "ui/settings/ChatOptionsSection.kt",
+        "ui/settings/SettingsScreen.kt",
+        "data/ConversationStartup.kt",
+        "ui/AppNav.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "settings-backup",
+      "category": "data",
+      "title": "备份设置和连接",
+      "summary": "导出受保护的配置，然后在恢复之前进行检查。",
+      "location": "设置→备份→设置备份。",
+      "before": [
+        "选择一个可以与导出文件分开保存的密码。",
+        "根据要求在恢复之前停止活动工作。"
+      ],
+      "steps": [
+        {
+          "title": "选择导出",
+          "body": "打开设置备份和导出。输入/确认加密密码。选择是否包含凭证和MCP服务器；将该选项视为敏感选项。"
+        },
+        {
+          "title": "保存加密文件",
+          "body": "在 Android 的文件选择器中选择目的地。密码单独保管；需要解锁备份。"
+        },
+        {
+          "title": "恢复前解锁并审核",
+          "body": "在导入时，选择文件并输入密码。在确认之前检查提供商、服务器、内存和任何敏感设置。"
+        },
+        {
+          "title": "检查恢复的连接",
+          "body": "读取恢复结果，检查导入的端点，手动重新连接排除的帐户会话，并仅测试您要使用的连接。"
+        }
+      ],
+      "outcome": "您有一个加密的设置文件或带有导入的设置/连接的经过审查的恢复结果。",
+      "limits": [
+        "GitHub 代币和 OAuth 会话不包括在内。此备份不包含本地模型二进制文件、项目文件和完整的 Linux 环境。",
+        "仅恢复受信任的文件：导入的提供者端点可以接收未来的消息。部分失败需要在重试之前进行检查。"
+      ],
+      "fixes": [
+        {
+          "problem": "备份无法解锁",
+          "solution": "检查密码和原始文件。不要在未阅读报告结果的情况下重复导入部分恢复的配置。"
+        }
+      ],
+      "related": [
+        "chat-backup",
+        "key-controls",
+        "local-manage"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "BACKUP",
+          "label": "打开设置备份"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsBackupSection.kt",
+        "data/SettingsBackup.kt",
+        "data/BackupEncryption.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "chat-backup",
+      "category": "data",
+      "title": "导出和恢复对话历史记录",
+      "summary": "保留聊天记录及其支持的已保存上下文的便携式副本。",
+      "location": "设置→备份→聊天备份。",
+      "before": [
+        "为包含对话数据的文件选择一个安全的存储位置。"
+      ],
+      "steps": [
+        {
+          "title": "导出聊天文件",
+          "body": "使用聊天备份中的导出并选择目的地。等待显示导出的对话/消息的报告。"
+        },
+        {
+          "title": "导入原始文件",
+          "body": "选择“导入”，选择保存的备份，然后等待验证。重试之前请读取任何文件格式或大小错误。"
+        },
+        {
+          "title": "映射缺失的工作区",
+          "body": "如果恢复要求，请使用恢复对话框将对话映射到现有/新工作区。检查目的地，而不是盲目接受类似名称的文件夹。"
+        },
+        {
+          "title": "查看结果",
+          "body": "读取导入/已存在的计数并打开恢复的对话。在恢复任务之前验证其工作区和当前提供程序。"
+        }
+      ],
+      "outcome": "导出或恢复支持的对话历史记录，并报告重复处理和工作区映射。",
+      "limits": [
+        "聊天导出包含私人对话数据。将其存放在适当的地方，并在需要时单独保护。",
+        "它不包括提供者 API 密钥或复制所有项目文件、模型权重或远程服务器数据。"
+      ],
+      "fixes": [
+        {
+          "problem": "恢复的聊天无法继续工作",
+          "solution": "连接其提供者并映射/重新打开其工作区。历史文件不会重新创建原始外部环境。"
+        }
+      ],
+      "related": [
+        "settings-backup",
+        "workspaces",
+        "chat-collections"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "BACKUP",
+          "label": "备份聊天记录"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/settings/ChatRestoreDialog.kt",
+        "data/ChatBackup.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "sync-files",
+      "category": "data",
+      "title": "使用FTP或SFTP传输文件夹",
+      "summary": "在替换文件之前预览上传或下载。",
+      "location": "设置 → FTP / SFTP 同步。",
+      "before": [
+        "具有直接 shell/文件系统路径的本地工作区。",
+        "您可以访问的远程 FTP/SFTP 服务器帐户和文件夹。"
+      ],
+      "steps": [
+        {
+          "title": "添加连接",
+          "body": "选择工作区并添加连接。输入协议、主机、端口、用户名、远程文件夹以及支持的密码/密钥身份验证。"
+        },
+        {
+          "title": "验证服务器",
+          "body": "使用测试/指纹控件。对于 SFTP，请在信任之前检查主机指纹。保存预期的连接。"
+        },
+        {
+          "title": "预览方向",
+          "body": "选择预览上传以发送本地文件或选择预览下载以获取远程文件。读取新的/替换的/未更改的计数和路径。"
+        },
+        {
+          "title": "应用已审核的更改",
+          "body": "仅当您打算覆盖列出的现有文件时才启用替换，然后应用。读取进度/结果或在需要时取消；中断后回顾部分工作。"
+        }
+      ],
+      "outcome": "预览的文件将按照您选择的方向传输，并且应用程序会报告结果。",
+      "limits": [
+        "FTP 发送数据/凭证时无需传输加密。仅在适当的可信网络上使用它；当 SFTP 的安全连接满足您的需求时，请使用 SFTP。",
+        "这是明确的预览和应用传输，而不是连续双向同步或无冲突合并的承诺。"
+      ],
+      "fixes": [
+        {
+          "problem": "传输被禁用或测试失败",
+          "solution": "检查直接本地路径支持、服务器可访问性、文件夹权限、凭据和 SFTP 指纹。在改变方向之前检查实际故障。"
+        }
+      ],
+      "related": [
+        "ftp-share",
+        "ssh-workspace",
+        "files-editor"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "SYNC",
+          "label": "设置转接"
+        }
+      ],
+      "sources": [
+        "ui/transfer/TransferSettings.kt",
+        "data/transfer/SyncConnections.kt",
+        "data/transfer/SyncManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "ftp-share",
+      "category": "data",
+      "title": "通过FTP服务器共享工作空间",
+      "summary": "在您控制的手机上打开临时文件共享。",
+      "location": "设置 → FTP 服务器。",
+      "before": [
+        "具有直接文件系统路径的本地工作区。",
+        "如果您选择允许 LAN 连接，则为受信任的网络。"
+      ],
+      "steps": [
+        {
+          "title": "选择分享",
+          "body": "选择工作区、有效端口、用户名和密码。除非有意上传/更改，否则请保持只读启用状态。"
+        },
+        {
+          "title": "选择谁可以到达",
+          "body": "为同一设备访问保留仅本地行为，或者在网络上的其他设备应连接时显式启用 LAN 访问。"
+        },
+        {
+          "title": "启动并连接",
+          "body": "点击开始，然后在 FTP 客户端中使用显示的地址、用户名和主动共享密码。检查显示的工作区和客户数量。"
+        },
+        {
+          "title": "完成后停止",
+          "body": "传输后使用停止共享。如果允许写入，请重新检查文件；共享时保持电话和所需服务可用。"
+        }
+      ],
+      "outcome": "该应用程序会显示正在运行的共享及其地址和连接信息，直到您停止它为止。",
+      "limits": [
+        "这是FTP，不是SFTP/HTTPS；它不会加密传输中的凭据或文件内容。",
+        "共享范围仅限于选定的本地工作区。它不会使仅选取器/远程工作区成为托管公共文件服务。"
+      ],
+      "fixes": [
+        {
+          "problem": "另一台设备无法连接",
+          "solution": "检查 LAN 是否已启用，两个设备可以相互访问，显示的地址/端口是当前的，并且网络没有隔离客户端。"
+        }
+      ],
+      "related": [
+        "sync-files",
+        "background",
+        "storage-access"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "FTP_SERVER",
+          "label": "打开FTP分享"
+        }
+      ],
+      "sources": [
+        "ui/transfer/TransferSettings.kt",
+        "data/transfer/FtpShareServer.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "storage-cleanup",
+      "category": "data",
+      "title": "经过审查的清理后的可用空间",
+      "summary": "删除可重新生成的文件，而无需猜测哪些文件夹是安全的。",
+      "location": "设置 → 存储。",
+      "before": [
+        "在删除缓存或构建输出之前暂停相关工作。",
+        "使用局部模型来删除单个模型的权重。"
+      ],
+      "steps": [
+        {
+          "title": "先测量",
+          "body": "打开存储并点击重新扫描。每个类别都会列出其项目的大小和路径，“最大”显示最大的项目。打开未测量以查看扫描无法读取的内容以及原因。"
+        },
+        {
+          "title": "检查候选人",
+          "body": "打开检查清理并检查每个建议的路径/类别。仅选择要删除的缓存、构建输出或已验证的未使用的托管包内容。"
+        },
+        {
+          "title": "检查包裹要求",
+          "body": "在发布需求或删除符合条件的未使用文件之前，打开 Linux 包下的 Linux 包并点击“需求”以查看其记录的需求和依赖项。"
+        },
+        {
+          "title": "确认准确的清理工作",
+          "body": "阅读确认信息并运行它。该应用程序再次检查路径并跳过无法安全删除的已更改/不可用/链接的项目。重新扫描以查看结果。"
+        }
+      ],
+      "outcome": "结果报告删除的文件/空间以及跳过的任何项目。",
+      "limits": [
+        "重新生成的缓存可能会再次下载，并且清理后构建可能需要更长时间。",
+        "源文件夹、模型、历史记录、恢复数据以及所需/未知的包所有权均受此清理策略的保护；它不是一个完整的设备清洁器。"
+      ],
+      "fixes": [
+        {
+          "problem": "没有列出任何安全内容",
+          "solution": "可能没有合格的可再生数据，或者无法验证所有权/要求。不要手动删除受保护的文件夹来模仿清理。"
+        }
+      ],
+      "related": [
+        "local-manage",
+        "linux-packages",
+        "settings-backup"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "STORAGE",
+          "label": "检查存储清理"
+        }
+      ],
+      "sources": [
+        "ui/settings/StorageSection.kt",
+        "data/storage/StorageFiles.kt",
+        "data/storage/SharedToolStore.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "usage",
+      "category": "data",
+      "title": "了解令牌、成本和缓存数据",
+      "summary": "使用统计数据作为证据，并具有明确的会计限制。",
+      "location": "设置→使用；对话 → 背景和限制或/成本（如果支持）。",
+      "before": [
+        "某些值取决于提供商提供的使用/定价元数据。"
+      ],
+      "steps": [
+        {
+          "title": "打开统计",
+          "body": "查看显示的令牌、提供商/模型、时间和成本摘要。使用可用的日期/组/过滤器控件来专注于您关心的工作。"
+        },
+        {
+          "title": "检查特定对话",
+          "body": "使用当前任务的上下文/使用详细信息或支持的成本命令。评估昂贵的任务时包括子代理/重试工作。"
+        },
+        {
+          "title": "仔细阅读缓存的令牌编号",
+          "body": "缓存的输入计数描述了报告时的提供者记帐。它们与删除本地应用程序/下载缓存不同。"
+        },
+        {
+          "title": "向提供商确认费用",
+          "body": "使用提供商的官方使用/计费仪表板了解实际账单、信用余额和账户端支出控制。"
+        }
+      ],
+      "outcome": "您可以将应用程序报告的使用情况与生成它的任务和模型连接起来。",
+      "limits": [
+        "缺少价格、不完整的使用元数据、货币、折扣和提供商计费规则可能会使应用成本估算不完整。",
+        "仅低输出令牌计数并不能描述所有输入、思考、工具、重试或子代理成本。"
+      ],
+      "fixes": [
+        {
+          "problem": "缺少价格或代币数量",
+          "solution": "检查提供商是否报告以及应用程序是否具有定价元数据。使用提供商仪表板获取计费证据。"
+        }
+      ],
+      "related": [
+        "api-billing",
+        "context-limits",
+        "local-performance"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "USAGE",
+          "label": "打开使用情况统计"
+        }
+      ],
+      "sources": [
+        "ui/stats/StatsScreen.kt",
+        "ui/stats/StatsData.kt",
+        "ui/chat/TurnPerformance.kt",
+        "ui/chat/CacheUsage.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "troubleshooting",
+      "category": "help",
+      "title": "从故障排除页面开始",
+      "summary": "在更改不相关的设置之前检查失败的层。",
+      "location": "设置 → 故障排除。",
+      "before": [
+        "记下您尝试过的操作、哪个屏幕出现故障以及确切的可见错误。"
+      ],
+      "steps": [
+        {
+          "title": "首先检查所需的连接",
+          "body": "查看所选的提供商/模型和工作区。相关时使用检查模型或检查文件夹；连接的帐户并不能证明每个模型或写入操作都有效。"
+        },
+        {
+          "title": "单独审查可选组件",
+          "body": "Linux、shell 提供程序、SSH、MCP、通知和实时更新都有自己的状态。当您的任务不使用可选功能时，它们可以保持关闭状态。"
+        },
+        {
+          "title": "打开匹配的修复/设置页面",
+          "body": "将页面的操作用于需要注意的组件。更正其报告的原因后，重试最小的失败操作。"
+        },
+        {
+          "title": "收集有用的报告",
+          "body": "如果您需要支持，请复制/共享故障排除报告。该报告不包括凭据、地址、文件路径和聊天记录；自己添加清晰的描述和编辑的复制步骤。"
+        }
+      ],
+      "outcome": "您知道哪个组件发生了故障，并且有成功的重点重试或有用的诊断报告。",
+      "limits": [
+        "就绪状态比完整功能测试范围更窄：文件夹检查可能是只读的，工具发现不是工具执行，安装的 Linux 不是经过测试的命令。",
+        "/doctor agent 快捷方式执行不同的、更广泛的工具测试，并可以在其工作区中创建临时固定装置。"
+      ],
+      "fixes": [
+        {
+          "problem": "一切看起来都准备好了，但任务仍然失败",
+          "solution": "捕获确切的失败工具/命令/请求及其输出。检查工作流程的实际先决条件，而不是将准备情况视为证据。"
+        }
+      ],
+      "related": [
+        "api-errors",
+        "linux-packages",
+        "device-shell",
+        "slash-commands"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "TROUBLESHOOTING",
+          "label": "打开故障排除"
+        }
+      ],
+      "sources": [
+        "ui/settings/TroubleshootingSection.kt",
+        "ui/settings/DiagnosticReport.kt",
+        "tools/DoctorTool.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "provider-debug",
+      "category": "help",
+      "title": "读取提供商请求日志",
+      "summary": "查看失败的具体呼叫以及提供商的答复。",
+      "location": "设置 → 提供商请求日志。",
+      "before": [
+        "默认情况下，捕获处于关闭状态。打开它后重现问题，否则页面将保持空白。"
+      ],
+      "steps": [
+        {
+          "title": "打开捕捉",
+          "body": "在页面顶部打开捕获功能，然后从任何聊天中发送失败的消息并返回。仅显示捕获打开时记录的流量，因此在您想要查看的尝试之前启用它。"
+        },
+        {
+          "title": "在回复之前先阅读请求",
+          "body": "每个条目都列出端点、方法、状态和计时，将 401、429 或 400 与慢速或截断的流分开。当列表变长时，通过聊天或文本进行过滤。"
+        },
+        {
+          "title": "仅包含您所追求的请求的正文",
+          "body": "提示、回复和原始流事件都是大型且私密的。尝试打开“包含主体”，读取它，然后再次将其关闭。如果没有它，日志将仅保留 URL、标头和状态。"
+        },
+        {
+          "title": "保留或随身携带",
+          "body": "捕获存在于内存中，并在应用程序关闭时被清除。导出或保存到文件会写入可读日志，您可以将其粘贴到错误报告中；在此设备上继续将其加密存储以供下一个会话使用。"
+        }
+      ],
+      "outcome": "您可以指出失败的请求，说明哪一方产生了错误，并保留显示该错误的日志。",
+      "limits": [
+        "该日志仅保存 HTTP 流量。本地模型从不发送请求，因此它们的运行永远不会出现在这里。",
+        "凭证被屏蔽，存储路径成为占位符，但提示和回复是您自己的文本；在共享之前阅读已保存的日志。",
+        "Capture 会为每个请求增加工作量。当你不追求某事时，将其关闭。"
+      ],
+      "fixes": [
+        {
+          "problem": "页面保持空白",
+          "solution": "确认捕获已打开，确认聊天使用云提供商，然后发送新消息。在启用捕获之前发出的请求从未被记录。"
+        }
+      ],
+      "related": [
+        "troubleshooting",
+        "api-errors",
+        "honest-limits"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "PROVIDER_DEBUG",
+          "label": "打开请求日志"
+        }
+      ],
+      "sources": [
+        "ui/settings/ProviderDebugSection.kt",
+        "llm/debug/DebugInterceptor.kt",
+        "llm/debug/DebugTraceStore.kt",
+        "llm/debug/DebugRedact.kt"
+      ],
+      "keywords": "请求日志跟踪http捕获调试"
+    },
+    {
+      "id": "api-errors",
+      "category": "help",
+      "title": "修复模型连接失败的问题",
+      "summary": "在更换密钥或支付更多访问权限之前，请阅读错误类型。",
+      "location": "失败的对话/工具结果；管理提供商 → 受影响的连接。",
+      "before": [
+        "请勿在支持消息中包含完整的 API 密钥或授权标头。"
+      ],
+      "steps": [
+        {
+          "title": "检查身份和访问错误",
+          "body": "对于身份验证/权限错误（例如 401/403），请验证提供程序、密钥、启用密钥状态、项目/组织、过期和模型权限。"
+        },
+        {
+          "title": "区分费率和计费限额",
+          "body": "速率限制错误可能需要等待或更少的请求。计费/信用/使用上限错误需要更正提供商帐户的访问权限或资金。仅重复请求并不能解决问题。"
+        },
+        {
+          "title": "检查型号和输入兼容性",
+          "body": "对于丢失模型或无效输入错误，请刷新目录并检查确切的 ID、协议、上下文大小、图像支持、工具支持和思考选项。"
+        },
+        {
+          "title": "单独检查网络",
+          "body": "对于超时、DNS、TLS 或连接错误，请检查连接、端点、代理和服务可用性。在预期的更正之后测试一个简短的请求。"
+        }
+      ],
+      "outcome": "最小的测试要么成功，要么留下一个特定的错误，您可以在不泄露秘密的情况下进行调查。",
+      "limits": [
+        "单独的 HTTP 代码在不同的提供商之间可能是不明确的；阅读提供商的错误消息和官方指南。",
+        "更改为其他提供商可能会将上下文发送到其他服务并产生使用费用。"
+      ],
+      "fixes": [
+        {
+          "problem": "我无法判断哪个连接失败",
+          "solution": "读取对话的模型/标头和后备活动，然后检查确切保存的提供程序而不是不相关的默认提供程序。"
+        }
+      ],
+      "related": [
+        "add-provider",
+        "key-controls",
+        "planning-fallback",
+        "troubleshooting"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "PROVIDERS",
+          "label": "查看失败的连接"
+        },
+        {
+          "kind": "settings",
+          "target": "TROUBLESHOOTING",
+          "label": "检查连接状态"
+        }
+      ],
+      "sources": [
+        "llm/ModelCatalog.kt",
+        "llm/ProviderNetwork.kt",
+        "ui/settings/ProviderControlsSheet.kt"
+      ],
+      "keywords": "",
+      "links": [
+        {
+          "label": "OpenAI 错误代码",
+          "url": "https://developers.openai.com/api/docs/guides/error-codes"
+        }
+      ]
+    },
+    {
+      "id": "updates-and-about",
+      "category": "help",
+      "title": "更新、设置和应用程序信息",
+      "summary": "查找您的版本、重新连接设置并了解支持选项。",
+      "location": "设置 → 更新、设置指南或关于。",
+      "before": [
+        "用于更新检查和外部支持页面的网络连接。"
+      ],
+      "steps": [
+        {
+          "title": "检查安装的版本",
+          "body": "打开“关于”或“更新”以查看实际安装的版本/内部版本。描述可重现问题时包括该版本。"
+        },
+        {
+          "title": "使用提供的更新路径",
+          "body": "检查更新并阅读发布详细信息。使用为此发行版提供的下载/安装操作，并遵循任何 Android 安装程序步骤。"
+        },
+        {
+          "title": "需要时重新访问设置",
+          "body": "使用“设置”来查看加入选项和所需的权限/连接。检查每个选择，而不是假设需要重新安装。"
+        },
+        {
+          "title": "寻找积分和支持",
+          "body": "关于列出来源/许可证/信用以及可用的支持或捐赠链接。捐款支持该应用程序；它不购买 API 积分或提供商订阅。"
+        }
+      ],
+      "outcome": "您知道已安装的版本、可用的更新/安装路径以及应用程序自身信息的所在位置。",
+      "limits": [
+        "更新交付和安装行为因分发和可用设备权限而异。",
+        "应用程序更新不能保证对外部模型的新访问、修复提供商中断或恢复已删除的文件。"
+      ],
+      "fixes": [
+        {
+          "problem": "更新无法安装",
+          "solution": "检查确切的安装程序/下载错误、可用存储、安装权限以及分发/签名兼容性。在更改安装之前，请备份现有数据。"
+        }
+      ],
+      "related": [
+        "settings-backup",
+        "troubleshooting",
+        "api-billing"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "UPDATES",
+          "label": "Open Updates"
+        },
+        {
+          "kind": "settings",
+          "target": "SETUP",
+          "label": "Review Setup"
+        },
+        {
+          "kind": "settings",
+          "target": "ABOUT",
+          "label": "Open About"
+        }
+      ],
+      "sources": [
+        "ui/settings/SettingsScreen.kt",
+        "ui/update/UpdateDialog.kt",
+        "ui/setup/SetupScreen.kt",
+        "data/update/UpdateManager.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "honest-limits",
+      "category": "help",
+      "title": "AndroidHarness 能做什么和不能做什么",
+      "summary": "将应用程序功能与模型承诺和设备权限分开。",
+      "location": "在选择工作流程之前使用此清单。",
+      "before": [
+        "该应用程序是一个工具：它连接模型、上下文、工具和您授予的访问权限。"
+      ],
+      "steps": [
+        {
+          "title": "选择受支持的工作类型",
+          "body": "聊天可以回答、写作、研究、讨论附件、使用支持的内联视觉效果以及管理允许的对话上下文/设置。代码可以检查/编辑可访问的项目并使用其支持的命令和集成。"
+        },
+        {
+          "title": "检查型号和环境",
+          "body": "所选模型必须支持所需的工具/图像/协议。本地模型需要兼容的权重和足够的设备资源。构建和本地服务需要兼容的运行时。"
+        },
+        {
+          "title": "检查真实的权限边界",
+          "body": "工作区访问、Android 存储、shell 提供程序访问、根、设备所有者、服务帐户和 API 计费是单独的层。一项许可不会默默授予其他许可。"
+        },
+        {
+          "title": "验证结果",
+          "body": "读取工具结果、检查更改的文件、运行检查并测试行为。请助手区分已实际验证的内容和仍需要测试的内容。"
+        }
+      ],
+      "outcome": "您可以判断某项任务是否受支持、是否需要设置或需要其他工具/服务。",
+      "limits": [
+        "该应用程序无法保证正确答案、无限的免费 API、每种模型格式、每种桌面构建、永久后台执行或对其他应用程序的任意控制。",
+        "它无法绕过提供商的支付/访问规则、网站登录/付费墙、Android 的安全模型或存储库保护。模特对于自己的成功可能是错误的。"
+      ],
+      "fixes": [
+        {
+          "problem": "助理承诺一些看不见的事",
+          "solution": "询问实际文件、工具结果、测试输出或链接。如果不存在支持结果，则将工作视为未经验证并缩小请求范围。"
+        }
+      ],
+      "related": [
+        "your-way-around",
+        "permissions",
+        "troubleshooting",
+        "api-billing"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "TROUBLESHOOTING",
+          "label": "检查您的设置"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "打开代码"
+        }
+      ],
+      "sources": [
+        "core/ChatExperience.kt",
+        "tools/Tool.kt",
+        "agent/AgentEngine.kt",
+        "local/LocalModelProvider.kt",
+        "data/env/DeviceAccessPolicy.kt"
+      ],
+      "keywords": ""
+    },
+    {
+      "id": "activity-guide",
+      "category": "code",
+      "title": "读取活动、进度和验证",
+      "summary": "将真实的工具结果与想法或承诺分开。",
+      "location": "正在进行的对话 → 活动/工具卡；设置 → 编码 → 代码对话和命令。",
+      "before": [
+        "Activity 描述当前运行；在假设工作成功之前检查其结果。"
+      ],
+      "steps": [
+        {
+          "title": "打开您需要的活动",
+          "body": "展开工具卡/组以检查其请求、输出和错误状态。思维块和时间/令牌细节描述了模型的响应，而不是独立的验证。"
+        },
+        {
+          "title": "关注任务和打包进度",
+          "body": "使用显示的任务列表、软件包安装进度、浏览器活动和子代理卡来查看实际正在运行或等待您的内容。当有人阻碍进展时回答问题/批准。"
+        },
+        {
+          "title": "仔细检查实时代码",
+          "body": "显示实时代码首选项控制运行过程中代码/编辑活动的预览。实时预览不是保存的最终文件；工具完成后检查已完成的差异和文件。"
+        },
+        {
+          "title": "检查验证收据",
+          "body": "代码工作后展开验证。通过、失败、未确认和需要复检的结果均指记录的命令。读取检查了哪个命令并在进一步更改后重新运行它。"
+        }
+      ],
+      "outcome": "您可以识别活动步骤、检查实际故障并查看已验证或未验证的内容。",
+      "limits": [
+        "完成的工具调用仍然可能包含错误。任务列表复选标记或流畅的最终答案并不能证明构建、测试或可见行为已通过。",
+        "大输出可在卡内缩短；使用可用的输出阅读器或要求相关部分。可选的运行提示是指导，而不是完成的操作。"
+      ],
+      "fixes": [
+        {
+          "problem": "答案显示支票已通过，但收据未经确认",
+          "solution": "询问实际的命令/输出或自己运行检查。如果文件在检查后发生更改，则可能还需要重新运行。"
+        }
+      ],
+      "related": [
+        "build-checks",
+        "run-controls",
+        "subagents"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "CHAT",
+          "label": "设置实时代码行为"
+        },
+        {
+          "kind": "settings",
+          "target": "AGENT",
+          "label": "配置运行提示"
+        },
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "检查代码活动"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ChatActivity.kt",
+        "ui/chat/components/ToolCallCard.kt",
+        "ui/chat/components/ActivityReader.kt",
+        "ui/chat/components/LiveCodeCard.kt",
+        "ui/chat/components/VerificationCard.kt",
+        "ui/chat/components/PackageInstallCard.kt",
+        "ui/chat/RunTips.kt"
+      ]
+    },
+    {
+      "id": "github-in-chat",
+      "category": "github",
+      "title": "在聊天中阅读和研究 GitHub",
+      "summary": "无需导入项目即可询问存储库、文件、问题或拉取请求。",
+      "location": "聊天 → 询问 GitHub URL 或所有者/存储库；设置 → GitHub 用于私人帐户访问。",
+      "before": [
+        "使用连接的帐户来处理私人数据和需要身份验证的请求。无需登录即可公开阅读。"
+      ],
+      "steps": [
+        {
+          "title": "提供精确的存储库或链接",
+          "body": "粘贴存储库、文件、问题、拉取请求或发布链接，然后询问您想了解的内容。当特定版本很重要时，包括分支或提交。"
+        },
+        {
+          "title": "向GitHub索取证据",
+          "body": "Chat 可以使用其只读 GitHub 搜索、文件和 REST 阅读工具来检查可访问的材料。要求它指出支持该解释的文件或讨论。"
+        },
+        {
+          "title": "检查引用的版本",
+          "body": "打开链接并将分支/提交与您的预期进行比较。搜索和 API 访问有其自己的限制和速率限制。"
+        },
+        {
+          "title": "移至代码进行更改",
+          "body": "当您需要编辑、命令、提交、推送或 PR 创建时，在代码中导入/打开存储库。聊天解释不会更改远程存储库。"
+        }
+      ],
+      "outcome": "您将获得基于可访问的 GitHub 内容的答案，无需本地结账即可阅读。",
+      "limits": [
+        "Chat 的 GitHub 阅读工具无法发表评论、创建/​​编辑问题、合并、推送或更改远程数据。",
+        "私人访问仍然需要连接帐户的权限。即使对于公共存储库，代码搜索和某些 API 端点也可能需要身份验证。"
+      ],
+      "fixes": [
+        {
+          "problem": "无法读取公共链接",
+          "solution": "检查URL/版本、API权限和速率限制。当 GitHub API 无法提供该内容时，请使用浏览器/源页面。"
+        }
+      ],
+      "related": [
+        "github-connect",
+        "github-import",
+        "chat-research"
+      ],
+      "actions": [
+        {
+          "kind": "settings",
+          "target": "GITHUB",
+          "label": "查看GitHub访问"
+        },
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "询问GitHub"
+        }
+      ],
+      "sources": [
+        "tools/GitHubTools.kt",
+        "core/ChatExperience.kt"
+      ],
+      "example": "阅读此 GitHub 拉取请求并解释更改、涉及的文件以及仍需要测试的内容。链接到您使用的证据。"
+    },
+    {
+      "id": "git-branches",
+      "category": "github",
+      "title": "与当地Git分支机构合作",
+      "summary": "保持文件编辑、提交和对话分支不同。",
+      "location": "Git 存储库工作区中的代码；用于直接 Git 命令的终端。",
+      "before": [
+        "准备好 Git 工具并选择存储库根工作区。",
+        "在切换分支之前检查未提交的更改。"
+      ],
+      "steps": [
+        {
+          "title": "首先检查存储库",
+          "body": "向 Code 询问 Git 状态、当前/所有分支、差异和最近日志。在更改分支状态之前读取结果。"
+        },
+        {
+          "title": "刻意创建和切换",
+          "body": "如果需要，请求一个命名的功能分支。创建分支并检查它是应用程序 Git 工具中的单独操作；之后确认当前分支。"
+        },
+        {
+          "title": "检查并提交预期路径",
+          "body": "检查差异并仅在提交中包含您想要的更改。本地提交记录了该分支上的工作；它本身并不发布它。"
+        },
+        {
+          "title": "通过审核拉动或推送",
+          "body": "使用支持的 Git 操作或提交和推送。如果远程分支已更改或出现冲突，请在重试发布之前检查并解决它。"
+        }
+      ],
+      "outcome": "您的存储库位于目标分支上，具有可审查的本地历史记录和已知的发布状态。",
+      "limits": [
+        "分叉对话不会创建 Git 分支或项目的单独副本。",
+        "删除分支、强制操作、切换本地更改或解决冲突都会影响工作。阅读行动/批准并保持重要工作可恢复。"
+      ],
+      "fixes": [
+        {
+          "problem": "分支操作被拒绝",
+          "solution": "检查状态和确切的 Git 错误。保存/提交预期的本地工作或解决指定的冲突，而不是丢弃它以进行命令传递。"
+        }
+      ],
+      "related": [
+        "github-publish",
+        "github-pr",
+        "changes-history"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CODE",
+          "label": "在代码中使用Git"
+        },
+        {
+          "kind": "screen",
+          "target": "TERMINAL",
+          "label": "在终端中打开 Git"
+        }
+      ],
+      "sources": [
+        "tools/GitTools.kt",
+        "github/GitHubRepository.kt"
+      ]
+    },
+    {
+      "id": "share-to-chat",
+      "category": "chat",
+      "title": "分享一些东西到AndroidHarness",
+      "summary": "将文本、链接和支持的附件从另一个应用程序引入聊天中。",
+      "location": "另一个Android应用程序→分享→AndroidHarness。",
+      "before": [
+        "源应用程序必须提供内容的 Android 共享。",
+        "发送前查看私人内容和模型目的地。"
+      ],
+      "steps": [
+        {
+          "title": "分享中选择AndroidHarness",
+          "body": "使用源应用程序的 Android 共享表。 AndroidHarness 打开共享文本和支持的附件预览的审阅表。"
+        },
+        {
+          "title": "选择对话",
+          "body": "使用新聊天或选择现有的常规聊天。当您有很多对话时，搜索目的地列表。"
+        },
+        {
+          "title": "添加问题",
+          "body": "输入您想要完成的操作，或使用建议，例如总结、解释、翻译或检查。在使用打开操作之前查看内容。"
+        },
+        {
+          "title": "继续在准备好的聊天中",
+          "body": "检查目的地、附件和所选型号。使用正常的消息控件完成对话中的请求。"
+        }
+      ],
+      "outcome": "共享内容是在您选择的常规聊天中准备的。",
+      "limits": [
+        "共享目的地列表适用于常规聊天会话；它不直接在代码中运行项目编辑任务。",
+        "附件权限、可读格式、大小限制和模型视觉支持仍然适用。共享链接并不能保证该页面可以被阅读。"
+      ],
+      "fixes": [
+        {
+          "problem": "附件无法打开",
+          "solution": "返回源应用程序并再次共享，或保存支持的副本并从聊天选择器附加它。"
+        }
+      ],
+      "related": [
+        "chat-attachments",
+        "chat-handoff",
+        "chat-research"
+      ],
+      "actions": [
+        {
+          "kind": "screen",
+          "target": "CHAT",
+          "label": "打开聊天"
+        }
+      ],
+      "sources": [
+        "ui/chat/components/ShareToChatSheet.kt",
+        "ui/AppNav.kt",
+        "data/PendingShare.kt"
+      ]
+    }
+  ]
+}

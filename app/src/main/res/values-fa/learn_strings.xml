@@ -7,7 +7,7 @@
     <string name="learn_entry_action">کاوش در راهنما</string>
     <string name="learn_hero_title">کمی راهنمایی،\nخیلی امکانات.</string>
     <string name="learn_hero_body">با نخستین گفتگو شروع کنید یا مستقیم بروید سراغ کاری که می‌خواهید. هر درس شامل مراحل، محدودیت‌های کاربردی و کمک هنگام گیر کردن است.</string>
-    <string name="learn_offline">بدون اینترنت هم موجود است · آموزش‌ها به انگلیسی</string>
+    <string name="learn_offline">بدون اینترنت هم موجود است</string>
     <string name="learn_progress">%1$d درس از %2$d درس یاد گرفته شده</string>
     <string name="learn_search">دوست دارید چه چیزی یاد بگیرید؟</string>
     <string name="learn_clear_search">پاک کردن جستجوی آموزش</string>

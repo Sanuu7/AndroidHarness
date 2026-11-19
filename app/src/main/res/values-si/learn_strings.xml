@@ -7,7 +7,7 @@
     <string name="learn_entry_action">මාර්ගෝපදේශය පිරික්සන්න</string>
     <string name="learn_hero_title">ටිකක් මඟ පෙන්වීම.\nවිශාල හැකියාවන්.</string>
     <string name="learn_hero_body">ඔබේ පළමු chat එකෙන් පටන් ගන්න, නැතහොත් කිරීමට අවශ්‍ය දේට කෙලින්ම යන්න. සෑම පාඩමකම පියවර, ප්‍රයෝජනවත් සීමා සහ අමාරු වූ විට උදව් ඇතුළත් වේ.</string>
-    <string name="learn_offline">නොබැඳිව ලද හැක · නිබන්ධන ඉංග්‍රීසි බසින්</string>
+    <string name="learn_offline">නොබැඳිව ලද හැක</string>
     <string name="learn_progress">පාඩම් %2$d න් %1$d ක් ඉගෙන ගත්තා</string>
     <string name="learn_search">ඉගෙන ගැනීමට කැමති දේ?</string>
     <string name="learn_clear_search">නිබන්ධන සෙවීම හිස් කරන්න</string>

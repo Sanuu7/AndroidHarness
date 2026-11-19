@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"Galugarin ang gabay"</string>
     <string name="learn_hero_title">"Kaunting gabay.\nMaraming posibilidad."</string>
     <string name="learn_hero_body">"Magsimula sa iyong unang chat, o dumiretso sa bagay na gusto mong gawin. Kasama sa bawat aralin ang mga hakbang, kapaki-pakinabang na limitasyon, at tulong kapag natigil ka."</string>
-    <string name="learn_offline">"Magagamit offline · Nasa English ang mga tutorial"</string>
+    <string name="learn_offline">"Magagamit offline"</string>
     <string name="learn_progress">"%1$d ng %2$d lessons natutunan"</string>
     <string name="learn_search">"Ano ang gusto mong matutunan?"</string>
     <string name="learn_clear_search">"I-clear ang paghahanap ng tutorial"</string>

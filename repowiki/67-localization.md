@@ -85,20 +85,21 @@ flowchart TD
 - **Add a plural**: declare it in the base resource file with at least `one` and `other`, then add the categories each translation needs. Use `pluralStringResource` or `getQuantityString` with a real count.
 - **Keep technical text LTR**: wrap the composable in `LeftToRightContent`. This is the shared helper for code, diffs, terminals, and inline technical cards.
 - **Offer another translation channel**: the POEditor URL is a single constant in `LanguageSection`. Replace it to point at a different project.
-- **Translate bundled content**: the Learn guide is an asset, not a resource. Supporting translated guides would need locale-specific asset paths and a loader change in `LearnSection`.
+- **Translate bundled content**: the Learn guide is an asset, not a resource. Each supported language ships as `assets/learn/guide-<locale>.json`; `loadLearnGuide` in `LearnGuideAssets.kt` maps the active app locale to that file and falls back to `guide.json` when it is missing or malformed.
 
 ## What Stays English
 
 - **Model and provider names**: catalog model ids, provider names, and model display names come from provider data and are not translated.
 - **Tool descriptions and agent prompts**: tool definitions and the system prompts, including the main `You are AndroidHarness...` prompt, are written in English. `FEATURES.md` documents this explicitly.
 - **Shell output and logs**: terminal output, command results, and logcat lines are shown verbatim.
-- **Learn guide content**: `assets/learn/guide.json` is English only. Lesson chrome such as buttons and section headings is translated through `learn_strings.xml`, but titles, steps, limits, and fixes are English.
+- **Untranslated lesson fallback**: `assets/learn/guide.json` remains the English source. Lessons only appear in English when the app language has no bundled guide variant.
 - **Technical units and identifiers**: `app_name`, `rumble_percent`, `rumble_spacing_ms`, language endonyms for English and Simplified Chinese, package names, file names, URLs, and code snippets.
 - **What's New items**: the `wn_*` strings are translated, but the underlying release summary is curated in English and has no separate localized source.
 
 ## Known gaps
 
-- The Learn guide has no localized variants, so a fully translated interface still opens English lesson bodies.
+- The bundled Learn guide variants are machine-translated from `guide.json`. Add lessons to the English source first and regenerate the variants so the topic ids, actions, and links stay aligned.
+- Guide locale matching uses language plus script/country for Chinese and Portuguese; other regional variants of a supported language share one guide.
 - `LocaleCommand` can look like a localization feature but is only a compatibility stub for the bundled Linux toolchain. It reports a fixed locale set and never installs locale data.
 - There is no automated check that every locale has the same key set. The current 5-key gap is intentional because those keys are non-translatable, but a future untranslated key would fall back silently.
 - The picker has no search or grouping. It is a flat list of 23 rows, and the contribution link is the only path for adding a language.
@@ -125,3 +126,5 @@ Sources: [app/src/main/java/com/androidharness/app/ui/settings/LanguageSection.k
 - `app/src/main/java/com/androidharness/app/ui/AppNav.kt`
 - `app/src/main/java/com/androidharness/app/data/env/LocaleCommand.kt`
 - `app/src/main/assets/learn/guide.json`
+- `app/src/main/assets/learn/guide-*.json`
+- `app/src/main/java/com/androidharness/app/ui/learn/LearnGuideAssets.kt`

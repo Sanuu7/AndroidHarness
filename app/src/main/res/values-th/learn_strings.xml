@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"สำรวจคำแนะนำ"</string>
     <string name="learn_hero_title">"คำแนะนำเพียงเล็กน้อย\nเปิดโอกาสได้อีกมากมาย"</string>
     <string name="learn_hero_body">"เริ่มต้นด้วยการแชทครั้งแรกของคุณหรือกระโดดตรงไปยังสิ่งที่คุณต้องการทำ ทุกบทเรียนประกอบด้วยขั้นตอน ขีดจำกัดที่เป็นประโยชน์ และความช่วยเหลือเมื่อคุณติดขัด"</string>
-    <string name="learn_offline">"ใช้งานออฟไลน์ได้ · บทเรียนเป็นภาษาอังกฤษ"</string>
+    <string name="learn_offline">"ใช้งานออฟไลน์ได้"</string>
     <string name="learn_progress">"เรียนรู้แล้ว %1$d จาก %2$d บทเรียน"</string>
     <string name="learn_search">"คุณต้องการเรียนรู้อะไร?"</string>
     <string name="learn_clear_search">"ล้างการค้นหาบทช่วยสอน"</string>

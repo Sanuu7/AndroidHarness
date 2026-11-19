@@ -7,7 +7,7 @@
     <string name="learn_entry_action">浏览指南</string>
     <string name="learn_hero_title">一点指引，\n无限可能。</string>
     <string name="learn_hero_body">从第一次聊天开始，或直接跳到你想做的事。每节课都包含步骤、实用限制和卡住时的帮助。</string>
-    <string name="learn_offline">可离线使用 · 教程为英文</string>
+    <string name="learn_offline">可离线使用</string>
     <string name="learn_progress">已学习 %2$d 节中的 %1$d 节</string>
     <string name="learn_search">想学点什么？</string>
     <string name="learn_clear_search">清除教程搜索</string>

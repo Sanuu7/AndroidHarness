@@ -7,7 +7,7 @@
     <string name="learn_entry_action">Jelajahi panduan</string>
     <string name="learn_hero_title">Sedikit bimbingan.\nBanyak kemungkinan.</string>
     <string name="learn_hero_body">Mulai dari chat pertama, atau langsung ke hal yang ingin Anda lakukan. Setiap pelajaran berisi langkah, batasan yang berguna, dan bantuan saat buntu.</string>
-    <string name="learn_offline">Tersedia offline · Tutorial dalam bahasa Inggris</string>
+    <string name="learn_offline">Tersedia offline</string>
     <string name="learn_progress">%1$d dari %2$d pelajaran dipelajari</string>
     <string name="learn_search">Ingin belajar apa?</string>
     <string name="learn_clear_search">Bersihkan pencarian tutorial</string>

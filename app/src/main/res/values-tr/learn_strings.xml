@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"Kılavuzu keşfedin"</string>
     <string name="learn_hero_title">"Biraz rehberlik.\nBirçok olasılık."</string>
     <string name="learn_hero_body">"İlk sohbetinizle başlayın veya doğrudan yapmak istediğiniz şeye geçin. Her derste adımlar, kullanışlı sınırlar ve takılıp kaldığınızda yardım bulunur."</string>
-    <string name="learn_offline">"Çevrimdışı kullanılabilir · Dersler İngilizcedir"</string>
+    <string name="learn_offline">"Çevrimdışı kullanılabilir"</string>
     <string name="learn_progress">"%2$d dersin %1$d tanesi öğrenildi"</string>
     <string name="learn_search">"Ne öğrenmek istersin?"</string>
     <string name="learn_clear_search">"Eğitim aramasını temizle"</string>

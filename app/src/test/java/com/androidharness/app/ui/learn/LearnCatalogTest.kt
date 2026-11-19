@@ -9,6 +9,7 @@ import com.androidharness.app.ui.settings.settingsHomePages
 import com.androidharness.app.ui.settings.settingsTestStrings
 import java.io.File
 import java.net.URI
+import java.util.Locale
 import org.junit.Assert.*
 import org.junit.Test
 
@@ -60,6 +61,43 @@ class LearnCatalogTest {
         assertEquals(listOf("github-import"), catalog.search("", category = "github", saved = setOf("github-import", "voice")).map { it.id })
         assertTrue(catalog.search("", saved = emptySet()).isEmpty())
         assertTrue(catalog.search("a-feature-that-does-not-exist").isEmpty())
+    }
+
+    @Test fun localizedGuidesShareTheEnglishStructure() {
+        val guides = File("src/main/assets/learn")
+            .listFiles { file -> file.name.matches(Regex("guide-.+\\.json")) }
+            ?.sortedBy { it.name }
+            .orEmpty()
+        assertEquals(21, guides.size)
+        val lessonIds = catalog.lessons.map { it.id }
+        val categoryIds = catalog.categories.map { it.id }
+        guides.forEach { file ->
+            val localized = LearnCatalog.parse(file.readText())
+            assertEquals(file.name, categoryIds, localized.categories.map { it.id })
+            assertEquals(file.name, lessonIds, localized.lessons.map { it.id })
+            localized.lessons.forEach { lesson ->
+                val where = "${file.name}/${lesson.id}"
+                assertTrue(where, lesson.title.isNotBlank() && lesson.summary.isNotBlank() && lesson.location.isNotBlank())
+                assertTrue(where, lesson.steps.all { it.title.isNotBlank() && it.body.isNotBlank() })
+                assertTrue(where, lesson.actions.all { it.label.isNotBlank() })
+                assertTrue(where, lesson.links.all { it.label.isNotBlank() && it.url.startsWith("https://") })
+            }
+        }
+    }
+
+    @Test fun localeTagsResolveToBundledGuides() {
+        val expected = mapOf(
+            "zh-CN" to "zh-CN", "zh-Hans" to "zh-CN", "zh-TW" to "zh-Hant", "zh-HK" to "zh-Hant",
+            "zh-Hant" to "zh-Hant", "pt-BR" to "pt-BR", "pt-PT" to "pt-BR",
+            "de-AT" to "de", "es-MX" to "es", "id-ID" to "id", "fil-PH" to "fil", "tl-PH" to "fil",
+        )
+        expected.forEach { (tag, guide) ->
+            val asset = learnGuideAsset(Locale.forLanguageTag(tag))
+            assertEquals(tag, "learn/guide-$guide.json", asset)
+            assertTrue(tag, File("src/main/assets/$asset").isFile)
+        }
+        assertNull(learnGuideAsset(Locale.ENGLISH))
+        assertNull(learnGuideAsset(Locale.forLanguageTag("sw-KE")))
     }
 
     @Test fun hiddenGlassIsAbsentFromGuideSettingsSearchAndAssistantControls() {

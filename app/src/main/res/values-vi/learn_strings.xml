@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"Khám phá hướng dẫn"</string>
     <string name="learn_hero_title">"Một chút hướng dẫn.\nThật nhiều khả năng."</string>
     <string name="learn_hero_body">"Bắt đầu với hội thoại đầu tiên hoặc đi thẳng đến điều bạn muốn làm. Mỗi bài học có các bước thực hiện, giới hạn cần biết và cách khắc phục khi gặp khó khăn."</string>
-    <string name="learn_offline">"Dùng được ngoại tuyến · Bài hướng dẫn bằng tiếng Anh"</string>
+    <string name="learn_offline">"Dùng được ngoại tuyến"</string>
     <string name="learn_progress">"Đã học %1$d trên %2$d bài"</string>
     <string name="learn_search">"Bạn muốn tìm hiểu điều gì?"</string>
     <string name="learn_clear_search">"Xóa nội dung tìm kiếm bài học"</string>

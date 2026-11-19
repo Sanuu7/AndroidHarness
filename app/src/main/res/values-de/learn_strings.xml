@@ -7,7 +7,7 @@
     <string name="learn_entry_action">Anleitung erkunden</string>
     <string name="learn_hero_title">Ein bisschen Anleitung.\nUnzählige Möglichkeiten.</string>
     <string name="learn_hero_body">Starte mit deinem ersten Chat oder spring direkt zu dem, was du tun willst. Jede Lektion enthält Schritte, nützliche Grenzen und Hilfe, wenn du nicht weiterkommst.</string>
-    <string name="learn_offline">Offline verfügbar · Anleitungen auf Englisch</string>
+    <string name="learn_offline">Offline verfügbar</string>
     <string name="learn_progress">%1$d von %2$d Lektionen gelernt</string>
     <string name="learn_search">Was möchtest du lernen?</string>
     <string name="learn_clear_search">Anleitungssuche löschen</string>

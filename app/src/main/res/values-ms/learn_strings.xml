@@ -7,7 +7,7 @@
     <string name="learn_entry_action">"Terokai panduan"</string>
     <string name="learn_hero_title">"Sedikit panduan.\nBanyak kemungkinan."</string>
     <string name="learn_hero_body">"Mulakan dengan sembang pertama anda, atau terus ke perkara yang anda mahu lakukan. Setiap pelajaran termasuk langkah, had berguna dan bantuan apabila anda tersekat."</string>
-    <string name="learn_offline">"Tersedia di luar talian · Tutorial dalam bahasa Inggeris"</string>
+    <string name="learn_offline">"Tersedia di luar talian"</string>
     <string name="learn_progress">"%1$d daripada %2$d pelajaran telah dipelajari"</string>
     <string name="learn_search">"Apakah yang anda ingin pelajari?"</string>
     <string name="learn_clear_search">"Kosongkan carian tutorial"</string>
