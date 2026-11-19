@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"இணையத் தேடல் பயன்படுத்தக்கூடியவை"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d வழங்குநர்"</item>
+        <item quantity="other">"%1$d வழங்குநர்"</item>
+    </plurals>
+    <string name="ws_overview_none">"இன்னும் எதுவும் இல்லை"</string>
+    <string name="ws_overview_auto">"முகவர் ஒவ்வொரு தேடலுக்கும் ஏற்ற வழங்குநரைத் தேர்ந்தெடுக்கிறது, ஒன்று தோல்வியடைந்தாலோ முடிவுகள் கிடைக்காவிட்டாலோ அடுத்ததற்குச் செல்கிறது."</string>
+    <string name="ws_overview_off">"எல்லா வழங்குநர்களும் அணைக்கப்பட்டுள்ளன, எனவே இணையத் தேடல் இயங்காது. கீழே ஒன்றை இயக்கவும்."</string>
+    <string name="ws_keyless_name">"பொது இயந்திரங்கள்"</string>
+    <string name="ws_status_free">"இலவசம்"</string>
+    <string name="ws_status_off">"அணைக்கப்பட்டது"</string>
+    <string name="ws_status_no_key">"சாவி தேவை"</string>
+    <string name="ws_status_shared_key">"பகிரப்பட்ட சாவி"</string>
+    <string name="ws_switch_description">"இணையத் தேடலுக்கு %1$s ஐப் பயன்படுத்து"</string>
+    <string name="ws_panel_keyless">"அமைக்க எதுவும் இல்லை. DuckDuckGo, Bing, Brave, Google ஆகியவை ஒன்றாக முயற்சிக்கப்படும்."</string>
+    <string name="ws_panel_shared_key">"நெரிசலான பகிரப்பட்ட சாவியுடன் இப்போது வேலை செய்கிறது. உங்கள் சொந்த இலவச சாவி வேக வரம்புகளைத் தவிர்க்கிறது."</string>
+    <string name="ws_panel_no_key">"சாவியைச் சேர்க்கவும், முகவர் %1$s ஐப் பயன்படுத்தத் தொடங்கும்."</string>
+    <string name="ws_panel_off">"அணைக்கப்பட்டுள்ளது. நீங்கள் மீண்டும் இயக்கும் வரை முகவர் %1$s ஐப் பயன்படுத்தாது."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d சாவி தயார்"</item>
+        <item quantity="other">"%1$d சாவிகள் தயார், ஒவ்வொரு தேடலிலும் மாறி மாறி"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d சாவி தயார்"</item>
+        <item quantity="other">"%1$d சாவிகள் தயார், வரிசையாகப் பயன்படுத்தப்படும்"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d சாவி"</item>
+        <item quantity="other">"%1$d சாவிகள்"</item>
+    </plurals>
+    <string name="ws_group_free">"சாவி தேவையில்லை"</string>
+    <string name="ws_group_engines">"தேடல் இயந்திரங்கள்"</string>
+    <string name="ws_group_ai">"AI முகவர்களுக்காக உருவாக்கப்பட்டது"</string>
+    <string name="ws_get_key">"சாவி பெறு"</string>
+    <string name="ws_add_key">"சாவி சேர்"</string>
+    <string name="ws_add_own_key">"உங்கள் சொந்த சாவியைச் சேர்"</string>
+    <string name="ws_remove_all">"சாவிகளை நீக்கு"</string>
+    <string name="ws_remove_title">"%1$s சாவிகளை நீக்கவா?"</string>
+    <string name="ws_remove_body">"சேமிக்கப்பட்ட எல்லா %1$s சாவிகளும் இந்தச் சாதனத்திலிருந்து நீக்கப்படும். நீங்கள் மீண்டும் சாவி சேர்க்கும் வரை முகவர் %1$s ஐப் பயன்படுத்தாது."</string>
+    <string name="ws_saving">"புதிய சாவிகள் சோதிக்கப்படுகின்றன…"</string>
+    <string name="ws_key_storage">"சாவிகள் சேமிக்கப்படும் முன் %1$s உடன் சோதிக்கப்பட்டு, பயன்பாட்டின் மறையாக்கப்பட்ட சேமிப்பகத்தில் இருக்கும்."</string>
+    <string name="ws_test_hint">"சோதனை ஒரு முடிவை மட்டும் தரும் ஒரு தேடலை இயக்குகிறது, அதனால் ஒரு தேடல் அல்லது கிரெடிட் செலவாகும்."</string>
+    <string name="ws_desc_keyless">"பொது முடிவுப் பக்கங்களைப் படிக்கிறது. எங்கும் வேலை செய்யும், ஆனால் மெதுவாக இருக்கலாம் அல்லது தடுக்கப்படலாம்."</string>
+    <string name="ws_desc_marginalia">"சிறிய வணிகமற்ற தளங்களின் தனிப்பட்ட அட்டவணை. இலவச சாவி நெரிசலான பகிரப்பட்ட சாவியைத் தவிர்க்கிறது."</string>
+    <string name="ws_desc_brave">"Brave இன் சொந்த இணைய அட்டவணை. ஒவ்வொரு மாதமும் $5 இலவச கிரெடிட் உள்ளது."</string>
+    <string name="ws_desc_serper">"வேகமான Google முடிவுகள். தொடக்கத்தில் 2,500 இலவச தேடல்கள்."</string>
+    <string name="ws_desc_serpapi">"தேதிகள் மற்றும் வளமான தரவுடன் Google முடிவுகள். ஒவ்வொரு மாதமும் இலவச தேடல்கள்."</string>
+    <string name="ws_desc_tavily">"முகவர்களுக்காக உருவாக்கப்பட்டது, முழுப் பக்க உரையைத் திருப்பலாம். மாதம் 1,000 இலவச கிரெடிட்."</string>
+    <string name="ws_desc_linkup">"தூய்மையான பக்கப் பகுதிகளுடன் முகவர் தேடல். ஒவ்வொரு மாதமும் இலவச கிரெடிட்."</string>
+    <string name="ws_desc_langsearch">"AI பயன்பாடுகளுக்கான இலவச இணையத் தேடல் API."</string>
+    <string name="ws_desc_jina">"ஒரே அழைப்பில் தேடி பக்கங்களைப் படிக்கிறது. ஒவ்வொரு புதிய சாவிக்கும் 10 மில்லியன் இலவச டோக்கன்கள்."</string>
+    <string name="ws_desc_firecrawl">"Firecrawl ஸ்க்ரேப்பிங் தளத்திலிருந்து தேடல். இலவச தொடக்க கிரெடிட்."</string>
+</resources>

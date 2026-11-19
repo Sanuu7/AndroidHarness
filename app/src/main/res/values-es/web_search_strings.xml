@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"La búsqueda web puede usar"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d proveedor"</item>
+        <item quantity="other">"%1$d proveedores"</item>
+    </plurals>
+    <string name="ws_overview_none">"Nada todavía"</string>
+    <string name="ws_overview_auto">"El agente elige el más adecuado para cada búsqueda y pasa al siguiente si un proveedor falla o no encuentra nada."</string>
+    <string name="ws_overview_off">"Todos los proveedores están desactivados, así que la búsqueda web no puede funcionar. Activa uno abajo."</string>
+    <string name="ws_keyless_name">"Motores públicos"</string>
+    <string name="ws_status_free">"Gratis"</string>
+    <string name="ws_status_off">"Desactivado"</string>
+    <string name="ws_status_no_key">"Falta clave"</string>
+    <string name="ws_status_shared_key">"Clave compartida"</string>
+    <string name="ws_switch_description">"Usar %1$s para la búsqueda web"</string>
+    <string name="ws_panel_keyless">"Nada que configurar. Se prueban DuckDuckGo, Bing, Brave y Google juntos."</string>
+    <string name="ws_panel_shared_key">"Ya funciona con la clave compartida, que está muy solicitada. Tu propia clave gratuita evita sus límites de velocidad."</string>
+    <string name="ws_panel_no_key">"Añade una clave y el agente podrá empezar a usar %1$s."</string>
+    <string name="ws_panel_off">"Desactivado. El agente no usará %1$s hasta que lo vuelvas a activar."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d clave lista"</item>
+        <item quantity="other">"%1$d claves listas, rotando en cada búsqueda"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d clave lista"</item>
+        <item quantity="other">"%1$d claves listas, usadas en orden"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d clave"</item>
+        <item quantity="other">"%1$d claves"</item>
+    </plurals>
+    <string name="ws_group_free">"No hace falta clave"</string>
+    <string name="ws_group_engines">"Motores de búsqueda"</string>
+    <string name="ws_group_ai">"Hecho para agentes de IA"</string>
+    <string name="ws_get_key">"Obtener una clave"</string>
+    <string name="ws_add_key">"Añadir clave"</string>
+    <string name="ws_add_own_key">"Añadir tu propia clave"</string>
+    <string name="ws_remove_all">"Eliminar claves"</string>
+    <string name="ws_remove_title">"¿Eliminar las claves de %1$s?"</string>
+    <string name="ws_remove_body">"Todas las claves de %1$s guardadas se borran de este dispositivo. El agente dejará de usar %1$s hasta que vuelvas a añadir una clave."</string>
+    <string name="ws_saving">"Probando claves nuevas…"</string>
+    <string name="ws_key_storage">"Las claves se prueban con %1$s antes de guardarse y permanecen en el almacenamiento cifrado de la app."</string>
+    <string name="ws_test_hint">"La prueba hace una búsqueda con un solo resultado, lo que consume una búsqueda o un crédito."</string>
+    <string name="ws_desc_keyless">"Lee páginas de resultados públicas. Funciona en cualquier sitio, pero puede ir lento o quedar bloqueado."</string>
+    <string name="ws_desc_marginalia">"Índice independiente de sitios pequeños y no comerciales. Una clave gratuita evita la compartida tan solicitada."</string>
+    <string name="ws_desc_brave">"Índice web propio de Brave. Incluye $5 de crédito gratuito cada mes."</string>
+    <string name="ws_desc_serper">"Resultados de Google rápidos. 2.500 búsquedas gratis para empezar."</string>
+    <string name="ws_desc_serpapi">"Resultados de Google con fechas y datos completos. Búsquedas gratis cada mes."</string>
+    <string name="ws_desc_tavily">"Hecho para agentes y devuelve el texto completo de las páginas. 1.000 créditos gratis al mes."</string>
+    <string name="ws_desc_linkup">"Búsqueda para agentes con extractos limpios de páginas. Crédito gratis cada mes."</string>
+    <string name="ws_desc_langsearch">"API de búsqueda web gratuita para apps de IA."</string>
+    <string name="ws_desc_jina">"Busca y lee páginas en una sola llamada. 10 M de tokens gratis por clave nueva."</string>
+    <string name="ws_desc_firecrawl">"Búsqueda de la plataforma de scraping Firecrawl. Crédito inicial gratis."</string>
+</resources>

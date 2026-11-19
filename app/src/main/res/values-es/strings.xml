@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"Poner alarma"</string>
     <string name="timer_approval_title">"¿Iniciar este temporizador?"</string>
     <string name="timer_start">"Iniciar temporizador"</string>
+    <string name="phone_control_risky_title">"¿Permitir este cambio en tu teléfono?"</string>
+    <string name="phone_control_allow_once">"Permitir una vez"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"Mostrar %1$d más"</item>
+        <item quantity="other">"Mostrar %1$d más"</item>
+    </plurals>
+    <string name="chat_history_show_less">"Mostrar menos"</string>
 </resources>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Tìm kiếm web có thể dùng"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d nhà cung cấp"</item>
+    </plurals>
+    <string name="ws_overview_none">"Chưa có gì"</string>
+    <string name="ws_overview_auto">"Tác nhân chọn nhà cung cấp phù hợp cho từng lần tìm kiếm và chuyển sang nhà cung cấp tiếp theo nếu một bên lỗi hoặc không tìm thấy gì."</string>
+    <string name="ws_overview_off">"Mọi nhà cung cấp đều tắt nên tìm kiếm web không chạy được. Bật một bên dưới."</string>
+    <string name="ws_keyless_name">"Công cụ công khai"</string>
+    <string name="ws_status_free">"Miễn phí"</string>
+    <string name="ws_status_off">"Đã tắt"</string>
+    <string name="ws_status_no_key">"Cần khóa"</string>
+    <string name="ws_status_shared_key">"Khóa dùng chung"</string>
+    <string name="ws_switch_description">"Dùng %1$s để tìm kiếm web"</string>
+    <string name="ws_panel_keyless">"Không cần cấu hình. DuckDuckGo, Bing, Brave và Google được thử cùng nhau."</string>
+    <string name="ws_panel_shared_key">"Dùng được ngay với khóa dùng chung đang quá tải. Khóa miễn phí của riêng bạn tránh được giới hạn tốc độ."</string>
+    <string name="ws_panel_no_key">"Thêm khóa để tác nhân bắt đầu dùng %1$s."</string>
+    <string name="ws_panel_off">"Đã tắt. Tác nhân sẽ không dùng %1$s cho đến khi bạn bật lại."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d khóa sẵn sàng, luân phiên mỗi lần tìm kiếm"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d khóa sẵn sàng, dùng theo thứ tự"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d khóa"</item>
+    </plurals>
+    <string name="ws_group_free">"Không cần khóa"</string>
+    <string name="ws_group_engines">"Công cụ tìm kiếm"</string>
+    <string name="ws_group_ai">"Dành cho tác nhân AI"</string>
+    <string name="ws_get_key">"Lấy khóa"</string>
+    <string name="ws_add_key">"Thêm khóa"</string>
+    <string name="ws_add_own_key">"Thêm khóa của bạn"</string>
+    <string name="ws_remove_all">"Xóa khóa"</string>
+    <string name="ws_remove_title">"Xóa khóa %1$s?"</string>
+    <string name="ws_remove_body">"Mọi khóa %1$s đã lưu sẽ bị xóa khỏi thiết bị này. Tác nhân ngừng dùng %1$s cho đến khi bạn thêm khóa lại."</string>
+    <string name="ws_saving">"Đang thử khóa mới…"</string>
+    <string name="ws_key_storage">"Khóa được thử với %1$s trước khi lưu và nằm trong vùng lưu trữ mã hóa của ứng dụng."</string>
+    <string name="ws_test_hint">"Bài thử chạy một lần tìm kiếm chỉ lấy một kết quả, nên tốn một lượt tìm kiếm hoặc một tín dụng."</string>
+    <string name="ws_desc_keyless">"Đọc các trang kết quả công khai. Chạy được mọi nơi nhưng có thể chậm hoặc bị chặn."</string>
+    <string name="ws_desc_marginalia">"Chỉ mục độc lập của các trang nhỏ, phi thương mại. Khóa miễn phí tránh được khóa dùng chung đang quá tải."</string>
+    <string name="ws_desc_brave">"Chỉ mục web riêng của Brave. Có $5 tín dụng miễn phí mỗi tháng."</string>
+    <string name="ws_desc_serper">"Kết quả Google nhanh. Tặng 2.500 lượt tìm kiếm miễn phí khi bắt đầu."</string>
+    <string name="ws_desc_serpapi">"Kết quả Google kèm ngày và dữ liệu phong phú. Có lượt tìm kiếm miễn phí hằng tháng."</string>
+    <string name="ws_desc_tavily">"Dành cho tác nhân và có thể trả về toàn văn trang. 1.000 tín dụng miễn phí mỗi tháng."</string>
+    <string name="ws_desc_linkup">"Tìm kiếm cho tác nhân với trích đoạn trang gọn gàng. Có tín dụng miễn phí hằng tháng."</string>
+    <string name="ws_desc_langsearch">"API tìm kiếm web miễn phí dành cho ứng dụng AI."</string>
+    <string name="ws_desc_jina">"Tìm kiếm và đọc trang trong một lần gọi. 10 triệu token miễn phí cho mỗi khóa mới."</string>
+    <string name="ws_desc_firecrawl">"Tìm kiếm từ nền tảng thu thập dữ liệu Firecrawl. Có tín dụng khởi đầu miễn phí."</string>
+</resources>

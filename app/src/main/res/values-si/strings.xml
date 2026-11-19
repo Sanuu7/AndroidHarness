@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"අලාම් සකසන්න"</string>
     <string name="timer_approval_title">"මෙම ටයිමරය අරඹන්නද?"</string>
     <string name="timer_start">"ටයිමරය අරඹන්න"</string>
+    <string name="phone_control_risky_title">"ඔබේ දුරකථනයේ මෙම වෙනසට ඉඩ දෙන්නද?"</string>
+    <string name="phone_control_allow_once">"එක් වරක් ඉඩ දෙන්න"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"තව %1$dක් පෙන්වන්න"</item>
+        <item quantity="other">"තව %1$dක් පෙන්වන්න"</item>
+    </plurals>
+    <string name="chat_history_show_less">"අඩුවෙන් පෙන්වන්න"</string>
 </resources>

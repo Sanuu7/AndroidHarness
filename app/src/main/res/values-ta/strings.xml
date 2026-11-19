@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"அலாரத்தை அமை"</string>
     <string name="timer_approval_title">"இந்த டைமரைத் தொடங்கவா?"</string>
     <string name="timer_start">"டைமரைத் தொடங்கு"</string>
+    <string name="phone_control_risky_title">"உங்கள் தொலைபேசியில் இந்த மாற்றத்தை அனுமதிக்கவா?"</string>
+    <string name="phone_control_allow_once">"ஒருமுறை அனுமதி"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"%1$d மேலும் காட்டு"</item>
+        <item quantity="other">"%1$d மேலும் காட்டு"</item>
+    </plurals>
+    <string name="chat_history_show_less">"குறைவாகக் காட்டு"</string>
 </resources>

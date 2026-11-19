@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Websuche kann nutzen"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d Anbieter"</item>
+        <item quantity="other">"%1$d Anbieter"</item>
+    </plurals>
+    <string name="ws_overview_none">"Noch nichts"</string>
+    <string name="ws_overview_auto">"Der Agent wählt für jede Suche den passenden Anbieter und wechselt zum nächsten, wenn einer fehlschlägt oder nichts findet."</string>
+    <string name="ws_overview_off">"Alle Anbieter sind aus, die Websuche kann nicht laufen. Schalte unten einen ein."</string>
+    <string name="ws_keyless_name">"Öffentliche Engines"</string>
+    <string name="ws_status_free">"Kostenlos"</string>
+    <string name="ws_status_off">"Aus"</string>
+    <string name="ws_status_no_key">"Schlüssel nötig"</string>
+    <string name="ws_status_shared_key">"Geteilter Schlüssel"</string>
+    <string name="ws_switch_description">"Nutze %1$s für die Websuche"</string>
+    <string name="ws_panel_keyless">"Nichts einzurichten. DuckDuckGo, Bing, Brave und Google werden zusammen versucht."</string>
+    <string name="ws_panel_shared_key">"Funktioniert jetzt mit dem ausgelasteten geteilten Schlüssel. Ein eigener kostenloser Schlüssel umgeht die Ratenlimits."</string>
+    <string name="ws_panel_no_key">"Füge einen Schlüssel hinzu, dann kann der Agent %1$s nutzen."</string>
+    <string name="ws_panel_off">"Ausgeschaltet. Der Agent nutzt %1$s erst wieder, wenn du es einschaltest."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d Schlüssel bereit"</item>
+        <item quantity="other">"%1$d Schlüssel bereit, bei jeder Suche rotierend"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d Schlüssel bereit"</item>
+        <item quantity="other">"%1$d Schlüssel bereit, der Reihe nach genutzt"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d Schlüssel"</item>
+        <item quantity="other">"%1$d Schlüssel"</item>
+    </plurals>
+    <string name="ws_group_free">"Kein Schlüssel nötig"</string>
+    <string name="ws_group_engines">"Suchmaschinen"</string>
+    <string name="ws_group_ai">"Für KI-Agenten gebaut"</string>
+    <string name="ws_get_key">"Schlüssel holen"</string>
+    <string name="ws_add_key">"Schlüssel hinzufügen"</string>
+    <string name="ws_add_own_key">"Eigenen Schlüssel hinzufügen"</string>
+    <string name="ws_remove_all">"Schlüssel entfernen"</string>
+    <string name="ws_remove_title">"%1$s-Schlüssel entfernen?"</string>
+    <string name="ws_remove_body">"Alle gespeicherten %1$s-Schlüssel werden von diesem Gerät gelöscht. Der Agent nutzt %1$s erst wieder, wenn du einen Schlüssel hinzufügst."</string>
+    <string name="ws_saving">"Neue Schlüssel werden geprüft…"</string>
+    <string name="ws_key_storage">"Schlüssel werden vor dem Speichern mit %1$s geprüft und bleiben im verschlüsselten Speicher der App."</string>
+    <string name="ws_test_hint">"Der Test führt eine Suche mit einem Ergebnis aus und verbraucht damit eine Suche oder ein Guthaben."</string>
+    <string name="ws_desc_keyless">"Liest öffentliche Ergebnisseiten. Funktioniert überall, kann aber langsam sein oder blockiert werden."</string>
+    <string name="ws_desc_marginalia">"Unabhängiger Index kleiner, nicht-kommerzieller Seiten. Ein kostenloser Schlüssel umgeht den ausgelasteten geteilten Schlüssel."</string>
+    <string name="ws_desc_brave">"Braves eigener Webindex. Enthält monatlich $5 Gratisguthaben."</string>
+    <string name="ws_desc_serper">"Schnelle Google-Ergebnisse. 2.500 kostenlose Suchen zum Start."</string>
+    <string name="ws_desc_serpapi">"Google-Ergebnisse mit Datum und vielen Daten. Jeden Monat kostenlose Suchen."</string>
+    <string name="ws_desc_tavily">"Für Agenten gemacht und liefert vollständigen Seitentext. 1.000 Gratisguthaben pro Monat."</string>
+    <string name="ws_desc_linkup">"Agentensuche mit sauberen Seitenauszügen. Jeden Monat Gratisguthaben."</string>
+    <string name="ws_desc_langsearch">"Kostenlose Websuche-API für KI-Apps."</string>
+    <string name="ws_desc_jina">"Sucht und liest Seiten in einem Aufruf. 10 Mio. Gratis-Token pro neuem Schlüssel."</string>
+    <string name="ws_desc_firecrawl">"Suche von der Firecrawl-Scraping-Plattform. Kostenloses Startguthaben."</string>
+</resources>

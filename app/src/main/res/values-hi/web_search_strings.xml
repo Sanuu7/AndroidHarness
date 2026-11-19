@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"वेब खोज इसका उपयोग कर सकती है"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d प्रदाता"</item>
+        <item quantity="other">"%1$d प्रदाता"</item>
+    </plurals>
+    <string name="ws_overview_none">"अभी कुछ नहीं"</string>
+    <string name="ws_overview_auto">"एजेंट हर खोज के लिए उपयुक्त प्रदाता चुनता है और किसी प्रदाता के विफल होने या कुछ न मिलने पर अगले पर चला जाता है।"</string>
+    <string name="ws_overview_off">"सभी प्रदाता बंद हैं, इसलिए वेब खोज नहीं चल सकती। नीचे से एक चालू करें।"</string>
+    <string name="ws_keyless_name">"सार्वजनिक इंजन"</string>
+    <string name="ws_status_free">"मुफ़्त"</string>
+    <string name="ws_status_off">"बंद"</string>
+    <string name="ws_status_no_key">"कुंजी चाहिए"</string>
+    <string name="ws_status_shared_key">"साझा कुंजी"</string>
+    <string name="ws_switch_description">"वेब खोज के लिए %1$s का उपयोग करें"</string>
+    <string name="ws_panel_keyless">"कुछ सेट करने की ज़रूरत नहीं। DuckDuckGo, Bing, Brave और Google एक साथ आज़माए जाते हैं।"</string>
+    <string name="ws_panel_shared_key">"व्यस्त साझा कुंजी के साथ अभी काम करता है। आपकी अपनी मुफ़्त कुंजी दर सीमा से बचाती है।"</string>
+    <string name="ws_panel_no_key">"कुंजी जोड़ें और एजेंट %1$s का उपयोग शुरू कर सकता है।"</string>
+    <string name="ws_panel_off">"बंद है। जब तक आप इसे दोबारा चालू नहीं करते, एजेंट %1$s का उपयोग नहीं करेगा।"</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d कुंजी तैयार"</item>
+        <item quantity="other">"%1$d कुंजियाँ तैयार, हर खोज में बदलती हैं"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d कुंजी तैयार"</item>
+        <item quantity="other">"%1$d कुंजियाँ तैयार, क्रम से उपयोग होती हैं"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d कुंजी"</item>
+        <item quantity="other">"%1$d कुंजियाँ"</item>
+    </plurals>
+    <string name="ws_group_free">"कुंजी की ज़रूरत नहीं"</string>
+    <string name="ws_group_engines">"खोज इंजन"</string>
+    <string name="ws_group_ai">"AI एजेंट के लिए बनाया गया"</string>
+    <string name="ws_get_key">"कुंजी पाएँ"</string>
+    <string name="ws_add_key">"कुंजी जोड़ें"</string>
+    <string name="ws_add_own_key">"अपनी कुंजी जोड़ें"</string>
+    <string name="ws_remove_all">"कुंजियाँ हटाएँ"</string>
+    <string name="ws_remove_title">"%1$s कुंजियाँ हटाएँ?"</string>
+    <string name="ws_remove_body">"इस डिवाइस से सभी सहेजी गई %1$s कुंजियाँ हटा दी जाएँगी। जब तक आप फिर से कुंजी नहीं जोड़ते, एजेंट %1$s का उपयोग बंद कर देगा।"</string>
+    <string name="ws_saving">"नई कुंजियाँ जाँची जा रही हैं…"</string>
+    <string name="ws_key_storage">"कुंजियाँ सहेजने से पहले %1$s से जाँची जाती हैं और ऐप के एन्क्रिप्टेड स्टोरेज में रहती हैं।"</string>
+    <string name="ws_test_hint">"परीक्षण एक परिणाम वाली एक खोज चलाता है, इसलिए एक खोज या क्रेडिट खर्च होता है।"</string>
+    <string name="ws_desc_keyless">"सार्वजनिक परिणाम पेज पढ़ता है। हर जगह काम करता है, लेकिन धीमा हो सकता है या ब्लॉक हो सकता है।"</string>
+    <string name="ws_desc_marginalia">"छोटी गैर-व्यावसायिक साइटों की स्वतंत्र सूची। मुफ़्त कुंजी व्यस्त साझा कुंजी से बचाती है।"</string>
+    <string name="ws_desc_brave">"Brave का अपना वेब इंडेक्स। हर महीने $5 मुफ़्त क्रेडिट शामिल।"</string>
+    <string name="ws_desc_serper">"तेज़ Google परिणाम। शुरुआत में 2,500 मुफ़्त खोजें।"</string>
+    <string name="ws_desc_serpapi">"तारीखों और समृद्ध डेटा के साथ Google परिणाम। हर महीने मुफ़्त खोजें।"</string>
+    <string name="ws_desc_tavily">"एजेंट के लिए बनाया गया और पूरा पेज टेक्स्ट लौटा सकता है। हर महीने 1,000 मुफ़्त क्रेडिट।"</string>
+    <string name="ws_desc_linkup">"साफ़ पेज अंशों वाली एजेंट खोज। हर महीने मुफ़्त क्रेडिट।"</string>
+    <string name="ws_desc_langsearch">"AI ऐप के लिए मुफ़्त वेब खोज API।"</string>
+    <string name="ws_desc_jina">"एक कॉल में खोजता और पेज पढ़ता है। हर नई कुंजी के लिए 1 करोड़ मुफ़्त टोकन।"</string>
+    <string name="ws_desc_firecrawl">"Firecrawl स्क्रेपिंग प्लेटफ़ॉर्म से खोज। मुफ़्त शुरुआती क्रेडिट।"</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Maaaring gamitin ng web search"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d provider"</item>
+        <item quantity="other">"%1$d provider"</item>
+    </plurals>
+    <string name="ws_overview_none">"Wala pa"</string>
+    <string name="ws_overview_auto">"Pinipili ng agent ang bagay sa bawat paghahanap at lumilipat sa susunod kung mabigo ang isang provider o walang mahanap."</string>
+    <string name="ws_overview_off">"Nakaoff lahat ng provider, kaya hindi gumagana ang web search. I-on ang isa sa ibaba."</string>
+    <string name="ws_keyless_name">"Pampublikong engine"</string>
+    <string name="ws_status_free">"Libre"</string>
+    <string name="ws_status_off">"Nakaoff"</string>
+    <string name="ws_status_no_key">"Kailangan ng key"</string>
+    <string name="ws_status_shared_key">"Shared na key"</string>
+    <string name="ws_switch_description">"Gamitin ang %1$s para sa web search"</string>
+    <string name="ws_panel_keyless">"Walang ise-set up. Sinusubukan nang sabay ang DuckDuckGo, Bing, Brave at Google."</string>
+    <string name="ws_panel_shared_key">"Gumagana na sa abalang shared na key. Iniiwasan ng sarili mong libreng key ang mga limitasyon sa bilis."</string>
+    <string name="ws_panel_no_key">"Magdagdag ng key at makakagamit na ang agent ng %1$s."</string>
+    <string name="ws_panel_off">"Nakaoff. Hindi gagamitin ng agent ang %1$s hanggang i-on mo itong muli."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d key handa"</item>
+        <item quantity="other">"%1$d key handa, umiikot sa bawat paghahanap"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d key handa"</item>
+        <item quantity="other">"%1$d key handa, ginagamit ayon sa pagkakasunod-sunod"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d key"</item>
+        <item quantity="other">"%1$d key"</item>
+    </plurals>
+    <string name="ws_group_free">"Hindi kailangan ng key"</string>
+    <string name="ws_group_engines">"Search engine"</string>
+    <string name="ws_group_ai">"Para sa mga AI agent"</string>
+    <string name="ws_get_key">"Kumuha ng key"</string>
+    <string name="ws_add_key">"Magdagdag ng key"</string>
+    <string name="ws_add_own_key">"Magdagdag ng sariling key"</string>
+    <string name="ws_remove_all">"Alisin ang mga key"</string>
+    <string name="ws_remove_title">"Alisin ang mga key ng %1$s?"</string>
+    <string name="ws_remove_body">"Buburahin sa device na ito ang lahat ng naka-save na key ng %1$s. Titigil ang agent sa paggamit ng %1$s hanggang magdagdag ka muli ng key."</string>
+    <string name="ws_saving">"Sinusubukan ang mga bagong key…"</string>
+    <string name="ws_key_storage">"Sinusubukan ang mga key sa %1$s bago i-save at nananatili sa naka-encrypt na storage ng app."</string>
+    <string name="ws_test_hint">"Ang pagsubok ay nagpapatakbo ng isang paghahanap na may isang resulta, kaya gumagamit ito ng isang paghahanap o credit."</string>
+    <string name="ws_desc_keyless">"Binabasa ang mga pampublikong pahina ng resulta. Gumagana kahit saan, pero maaaring mabagal o ma-block."</string>
+    <string name="ws_desc_marginalia">"Malayang index ng maliliit at di-komersyal na site. Iniiwasan ng libreng key ang abalang shared na key."</string>
+    <string name="ws_desc_brave">"Sariling web index ng Brave. May kasamang $5 libreng credit bawat buwan."</string>
+    <string name="ws_desc_serper">"Mabilis na resulta ng Google. 2,500 libreng paghahanap sa simula."</string>
+    <string name="ws_desc_serpapi">"Resulta ng Google na may petsa at mayamang data. May libreng paghahanap bawat buwan."</string>
+    <string name="ws_desc_tavily">"Ginawa para sa mga agent at kayang ibalik ang buong teksto ng pahina. 1,000 libreng credit bawat buwan."</string>
+    <string name="ws_desc_linkup">"Paghahanap para sa agent na may malinis na sipi ng pahina. May libreng credit bawat buwan."</string>
+    <string name="ws_desc_langsearch">"Libreng web search API para sa mga AI app."</string>
+    <string name="ws_desc_jina">"Naghahanap at nagbabasa ng pahina sa isang tawag. 10 milyong libreng token sa bawat bagong key."</string>
+    <string name="ws_desc_firecrawl">"Paghahanap mula sa Firecrawl scraping platform. May libreng starter credit."</string>
+</resources>

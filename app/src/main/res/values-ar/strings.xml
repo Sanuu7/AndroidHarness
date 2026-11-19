@@ -1135,4 +1135,15 @@
     <string name="alarm_set">"ضبط المنبه"</string>
     <string name="timer_approval_title">"هل تريد تشغيل هذا المؤقت؟"</string>
     <string name="timer_start">"تشغيل المؤقت"</string>
+    <string name="phone_control_risky_title">"السماح بهذا التغيير على هاتفك؟"</string>
+    <string name="phone_control_allow_once">"السماح مرة واحدة"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="zero">"إظهار %1$d أخرى"</item>
+        <item quantity="one">"إظهار %1$d أخرى"</item>
+        <item quantity="two">"إظهار %1$d أخرى"</item>
+        <item quantity="few">"إظهار %1$d أخرى"</item>
+        <item quantity="many">"إظهار %1$d أخرى"</item>
+        <item quantity="other">"إظهار %1$d أخرى"</item>
+    </plurals>
+    <string name="chat_history_show_less">"إظهار أقل"</string>
 </resources>

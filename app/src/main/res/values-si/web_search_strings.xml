@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"වෙබ් සෙවුමට භාවිත කළ හැක්කේ"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d සැපයුම්කරු"</item>
+        <item quantity="other">"%1$d සැපයුම්කරු"</item>
+    </plurals>
+    <string name="ws_overview_none">"තවම නැත"</string>
+    <string name="ws_overview_auto">"නියෝජිතයා එක් එක් සෙවුමට ගැළපෙන සැපයුම්කරු තෝරාගනී, එකක් අසාර්ථක වුණොත් හෝ ප්‍රතිඵල නොලැබුණොත් ඊළඟ එකට යයි."</string>
+    <string name="ws_overview_off">"සියලුම සැපයුම්කරුවන් ක්‍රියා විරහිතයි, එබැවින් වෙබ් සෙවුම ක්‍රියා කළ නොහැක. පහතින් එකක් සක්‍රීය කරන්න."</string>
+    <string name="ws_keyless_name">"පොදු එන්ජින්"</string>
+    <string name="ws_status_free">"නොමිලේ"</string>
+    <string name="ws_status_off">"ක්‍රියා විරහිතයි"</string>
+    <string name="ws_status_no_key">"යතුරක් අවශ්‍යයි"</string>
+    <string name="ws_status_shared_key">"හවුල් යතුර"</string>
+    <string name="ws_switch_description">"වෙබ් සෙවුම සඳහා %1$s භාවිත කරන්න"</string>
+    <string name="ws_panel_keyless">"සැකසීමට කිසිවක් නැත. DuckDuckGo, Bing, Brave සහ Google එකට උත්සාහ කෙරේ."</string>
+    <string name="ws_panel_shared_key">"කාර්යබහුල හවුල් යතුර සමඟ දැන් ක්‍රියා කරයි. ඔබේම නොමිලේ යතුරක් වේග සීමා මග හරියි."</string>
+    <string name="ws_panel_no_key">"යතුරක් එක් කරන්න, එවිට නියෝජිතයාට %1$s භාවිත කළ හැක."</string>
+    <string name="ws_panel_off">"ක්‍රියා විරහිතයි. ඔබ නැවත සක්‍රීය කරන තුරු නියෝජිතයා %1$s භාවිත නොකරයි."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d යතුරක් සූදානම්"</item>
+        <item quantity="other">"%1$d යතුරු සූදානම්, සෑම සෙවුමකදී මාරු වේ"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d යතුරක් සූදානම්"</item>
+        <item quantity="other">"%1$d යතුරු සූදානම්, පිළිවෙලින් භාවිත වේ"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d යතුර"</item>
+        <item quantity="other">"%1$d යතුරු"</item>
+    </plurals>
+    <string name="ws_group_free">"යතුරක් අවශ්‍ය නැත"</string>
+    <string name="ws_group_engines">"සෙවුම් එන්ජින්"</string>
+    <string name="ws_group_ai">"AI නියෝජිතයන් සඳහා නිර්මිතයි"</string>
+    <string name="ws_get_key">"යතුරක් ගන්න"</string>
+    <string name="ws_add_key">"යතුර එක් කරන්න"</string>
+    <string name="ws_add_own_key">"ඔබේම යතුරක් එක් කරන්න"</string>
+    <string name="ws_remove_all">"යතුරු ඉවත් කරන්න"</string>
+    <string name="ws_remove_title">"%1$s යතුරු ඉවත් කරන්නද?"</string>
+    <string name="ws_remove_body">"සුරකින ලද සියලුම %1$s යතුරු මෙම උපාංගයෙන් මකා දැමේ. ඔබ නැවත යතුරක් එක් කරන තුරු නියෝජිතයා %1$s භාවිත නොකරයි."</string>
+    <string name="ws_saving">"නව යතුරු පරීක්ෂා කරමින්…"</string>
+    <string name="ws_key_storage">"යතුරු සුරැකීමට පෙර %1$s සමඟ පරීක්ෂා කෙරේ, සහ යෙදුමේ සංකේතිත ගබඩාවේ රැඳේ."</string>
+    <string name="ws_test_hint">"පරීක්ෂණය එක් ප්‍රතිඵලයක් සහිත සෙවුමක් කරයි, එබැවින් සෙවුමක් හෝ ක්‍රෙඩිට් එකක් වැය වේ."</string>
+    <string name="ws_desc_keyless">"පොදු ප්‍රතිඵල පිටු කියවයි. සෑම තැනකම ක්‍රියා කරයි, නමුත් මන්දගාමී හෝ අවහිර විය හැක."</string>
+    <string name="ws_desc_marginalia">"කුඩා වාණිජ නොවන අඩවිවල ස්වාධීන සුචිය. නොමිලේ යතුරක් කාර්යබහුල හවුල් යතුර මග හරියි."</string>
+    <string name="ws_desc_brave">"Brave හිම වෙබ් සුචිය. සෑම මාසයකම $5 නොමිලේ ක්‍රෙඩිට් ඇතුළත්."</string>
+    <string name="ws_desc_serper">"වේගවත් Google ප්‍රතිඵල. ආරම්භයට නොමිලේ සෙවුම් 2,500."</string>
+    <string name="ws_desc_serpapi">"දින සහ සමෘද්ධ දත්ත සහිත Google ප්‍රතිඵල. සෑම මාසයකම නොමිලේ සෙවුම්."</string>
+    <string name="ws_desc_tavily">"නියෝජිතයන් සඳහා නිර්මිතයි, සම්පූර්ණ පිටු පෙළ ලබා දිය හැක. මාසිකව නොමිලේ ක්‍රෙඩිට් 1,000."</string>
+    <string name="ws_desc_linkup">"පිරිසිදු පිටු උපුටා දැක්වීම් සහිත නියෝජිත සෙවුම. සෑම මාසයකම නොමිලේ ක්‍රෙඩිට්."</string>
+    <string name="ws_desc_langsearch">"AI යෙදුම් සඳහා නොමිලේ වෙබ් සෙවුම් API."</string>
+    <string name="ws_desc_jina">"එක් ඇමතුමකින් සොයයි සහ පිටු කියවයි. සෑම නව යතුරකටම නොමිලේ ටෝකන් මිලියන 10."</string>
+    <string name="ws_desc_firecrawl">"Firecrawl ස්ක්‍රැපින් වේදිකාවෙන් සෙවුම. නොමිලේ ආරම්භක ක්‍රෙඩිට්."</string>
+</resources>

@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"网络搜索可使用"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d 个提供商"</item>
+    </plurals>
+    <string name="ws_overview_none">"暂无"</string>
+    <string name="ws_overview_auto">"智能体会为每次搜索挑选合适的提供商，如果某个提供商失败或没有结果，会自动换下一个。"</string>
+    <string name="ws_overview_off">"所有提供商都已关闭，网络搜索无法运行。请在下方开启一个。"</string>
+    <string name="ws_keyless_name">"公共引擎"</string>
+    <string name="ws_status_free">"免费"</string>
+    <string name="ws_status_off">"已关闭"</string>
+    <string name="ws_status_no_key">"需要密钥"</string>
+    <string name="ws_status_shared_key">"共享密钥"</string>
+    <string name="ws_switch_description">"使用 %1$s 进行网络搜索"</string>
+    <string name="ws_panel_keyless">"无需设置。会同时尝试 DuckDuckGo、Bing、Brave 和 Google。"</string>
+    <string name="ws_panel_shared_key">"现在可以使用繁忙的共享密钥。使用自己的免费密钥可避开速率限制。"</string>
+    <string name="ws_panel_no_key">"添加密钥后，智能体就能开始使用 %1$s。"</string>
+    <string name="ws_panel_off">"已关闭。在你重新开启之前，智能体不会使用 %1$s。"</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d 个密钥可用，每次搜索轮换使用"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d 个密钥可用，按顺序使用"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d 个密钥"</item>
+    </plurals>
+    <string name="ws_group_free">"无需密钥"</string>
+    <string name="ws_group_engines">"搜索引擎"</string>
+    <string name="ws_group_ai">"为 AI 智能体打造"</string>
+    <string name="ws_get_key">"获取密钥"</string>
+    <string name="ws_add_key">"添加密钥"</string>
+    <string name="ws_add_own_key">"添加自己的密钥"</string>
+    <string name="ws_remove_all">"删除密钥"</string>
+    <string name="ws_remove_title">"删除 %1$s 密钥？"</string>
+    <string name="ws_remove_body">"所有已保存的 %1$s 密钥都会从此设备删除。在你再次添加密钥之前，智能体将停止使用 %1$s。"</string>
+    <string name="ws_saving">"正在测试新密钥…"</string>
+    <string name="ws_key_storage">"密钥在保存前会通过 %1$s 测试，并保存在应用的加密存储中。"</string>
+    <string name="ws_test_hint">"测试会执行一次只返回一个结果的搜索，消耗一次搜索或积分。"</string>
+    <string name="ws_desc_keyless">"抓取公共搜索结果页。随处可用，但可能较慢或被屏蔽。"</string>
+    <string name="ws_desc_marginalia">"小而独立的非商业网站索引。免费密钥可避开繁忙的共享密钥。"</string>
+    <string name="ws_desc_brave">"Brave 自己的网络索引。每月包含 $5 免费额度。"</string>
+    <string name="ws_desc_serper">"快速的 Google 结果。初始赠送 2,500 次免费搜索。"</string>
+    <string name="ws_desc_serpapi">"带日期和丰富数据的 Google 结果。每月有免费搜索次数。"</string>
+    <string name="ws_desc_tavily">"为智能体打造，可返回完整网页文本。每月 1,000 免费积分。"</string>
+    <string name="ws_desc_linkup">"带干净网页摘录的智能体搜索。每月有免费额度。"</string>
+    <string name="ws_desc_langsearch">"为 AI 应用打造的免费网络搜索 API。"</string>
+    <string name="ws_desc_jina">"一次调用即可搜索并阅读网页。每个新密钥赠送 1000 万免费 token。"</string>
+    <string name="ws_desc_firecrawl">"来自 Firecrawl 抓取平台的搜索。赠送免费入门额度。"</string>
+</resources>

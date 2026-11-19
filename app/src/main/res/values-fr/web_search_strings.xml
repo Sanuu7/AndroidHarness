@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"La recherche web peut utiliser"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d fournisseur"</item>
+        <item quantity="many">"%1$d de fournisseurs"</item>
+        <item quantity="other">"%1$d fournisseurs"</item>
+    </plurals>
+    <string name="ws_overview_none">"Rien pour l'instant"</string>
+    <string name="ws_overview_auto">"L'agent choisit celui qui convient à chaque recherche et passe au suivant si un fournisseur échoue ou ne trouve rien."</string>
+    <string name="ws_overview_off">"Tous les fournisseurs sont désactivés, la recherche web ne peut pas fonctionner. Activez-en un ci-dessous."</string>
+    <string name="ws_keyless_name">"Moteurs publics"</string>
+    <string name="ws_status_free">"Gratuit"</string>
+    <string name="ws_status_off">"Désactivé"</string>
+    <string name="ws_status_no_key">"Clé requise"</string>
+    <string name="ws_status_shared_key">"Clé partagée"</string>
+    <string name="ws_switch_description">"Utiliser %1$s pour la recherche web"</string>
+    <string name="ws_panel_keyless">"Rien à configurer. DuckDuckGo, Bing, Brave et Google sont essayés ensemble."</string>
+    <string name="ws_panel_shared_key">"Fonctionne déjà avec la clé partagée, qui est très sollicitée. Votre propre clé gratuite évite ses limites de débit."</string>
+    <string name="ws_panel_no_key">"Ajoutez une clé et l'agent pourra utiliser %1$s."</string>
+    <string name="ws_panel_off">"Désactivé. L'agent n'utilisera pas %1$s tant que vous ne le réactiverez pas."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d clé prête"</item>
+        <item quantity="many">"%1$d de clés prêtes, en rotation à chaque recherche"</item>
+        <item quantity="other">"%1$d clés prêtes, en rotation à chaque recherche"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d clé prête"</item>
+        <item quantity="many">"%1$d de clés prêtes, utilisées dans l'ordre"</item>
+        <item quantity="other">"%1$d clés prêtes, utilisées dans l'ordre"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d clé"</item>
+        <item quantity="many">"%1$d de clés"</item>
+        <item quantity="other">"%1$d clés"</item>
+    </plurals>
+    <string name="ws_group_free">"Aucune clé requise"</string>
+    <string name="ws_group_engines">"Moteurs de recherche"</string>
+    <string name="ws_group_ai">"Conçu pour les agents IA"</string>
+    <string name="ws_get_key">"Obtenir une clé"</string>
+    <string name="ws_add_key">"Ajouter une clé"</string>
+    <string name="ws_add_own_key">"Ajouter votre propre clé"</string>
+    <string name="ws_remove_all">"Supprimer les clés"</string>
+    <string name="ws_remove_title">"Supprimer les clés %1$s ?"</string>
+    <string name="ws_remove_body">"Toutes les clés %1$s enregistrées sont effacées de cet appareil. L'agent arrête d'utiliser %1$s jusqu'à ce que vous ajoutiez une clé à nouveau."</string>
+    <string name="ws_saving">"Test des nouvelles clés…"</string>
+    <string name="ws_key_storage">"Les clés sont testées avec %1$s avant d'être enregistrées et restent dans le stockage chiffré de l'application."</string>
+    <string name="ws_test_hint">"Le test effectue une recherche avec un seul résultat, ce qui consomme une recherche ou un crédit."</string>
+    <string name="ws_desc_keyless">"Lit les pages de résultats publiques. Fonctionne partout, mais peut être lent ou bloqué."</string>
+    <string name="ws_desc_marginalia">"Index indépendant de petits sites non commerciaux. Une clé gratuite évite la clé partagée très sollicitée."</string>
+    <string name="ws_desc_brave">"Index web propre à Brave. Comprend $5 de crédit gratuit chaque mois."</string>
+    <string name="ws_desc_serper">"Résultats Google rapides. 2 500 recherches gratuites pour commencer."</string>
+    <string name="ws_desc_serpapi">"Résultats Google avec dates et données riches. Recherches gratuites chaque mois."</string>
+    <string name="ws_desc_tavily">"Conçu pour les agents et peut renvoyer le texte complet des pages. 1 000 crédits gratuits par mois."</string>
+    <string name="ws_desc_linkup">"Recherche pour agents avec des extraits de page propres. Crédit gratuit chaque mois."</string>
+    <string name="ws_desc_langsearch">"API de recherche web gratuite pour les applications IA."</string>
+    <string name="ws_desc_jina">"Recherche et lit les pages en un seul appel. 10 M de tokens gratuits par nouvelle clé."</string>
+    <string name="ws_desc_firecrawl">"Recherche depuis la plateforme de scraping Firecrawl. Crédit de départ gratuit."</string>
+</resources>

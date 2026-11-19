@@ -1151,4 +1151,10 @@
     <string name="alarm_set">设置闹钟</string>
     <string name="timer_approval_title">要启动这个计时器吗？</string>
     <string name="timer_start">启动计时器</string>
+    <string name="phone_control_risky_title">允许此更改操作你的手机？</string>
+    <string name="phone_control_allow_once">仅允许一次</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="other">再显示 %1$d 个</item>
+    </plurals>
+    <string name="chat_history_show_less">收起</string>
 </resources>

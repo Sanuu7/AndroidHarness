@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Carian web boleh guna"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d penyedia"</item>
+    </plurals>
+    <string name="ws_overview_none">"Belum ada"</string>
+    <string name="ws_overview_auto">"Ejen memilih penyedia yang sesuai untuk setiap carian dan beralih ke penyedia seterusnya jika satu gagal atau tiada hasil."</string>
+    <string name="ws_overview_off">"Semua penyedia dimatikan, jadi carian web tidak boleh berjalan. Hidupkan satu di bawah."</string>
+    <string name="ws_keyless_name">"Enjin awam"</string>
+    <string name="ws_status_free">"Percuma"</string>
+    <string name="ws_status_off">"Mati"</string>
+    <string name="ws_status_no_key">"Perlu kunci"</string>
+    <string name="ws_status_shared_key">"Kunci dikongsi"</string>
+    <string name="ws_switch_description">"Guna %1$s untuk carian web"</string>
+    <string name="ws_panel_keyless">"Tiada apa untuk disediakan. DuckDuckGo, Bing, Brave dan Google dicuba bersama."</string>
+    <string name="ws_panel_shared_key">"Sudah berfungsi dengan kunci dikongsi yang sibuk. Kunci percuma anda sendiri mengelak had kadar."</string>
+    <string name="ws_panel_no_key">"Tambah kunci dan ejen boleh mula menggunakan %1$s."</string>
+    <string name="ws_panel_off">"Dimatikan. Ejen tidak akan guna %1$s sehingga anda hidupkan semula."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d kunci sedia, bergilir setiap carian"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d kunci sedia, digunakan mengikut urutan"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d kunci"</item>
+    </plurals>
+    <string name="ws_group_free">"Tiada kunci diperlukan"</string>
+    <string name="ws_group_engines">"Enjin carian"</string>
+    <string name="ws_group_ai">"Dibina untuk ejen AI"</string>
+    <string name="ws_get_key">"Dapatkan kunci"</string>
+    <string name="ws_add_key">"Tambah kunci"</string>
+    <string name="ws_add_own_key">"Tambah kunci sendiri"</string>
+    <string name="ws_remove_all">"Buang kunci"</string>
+    <string name="ws_remove_title">"Buang kunci %1$s?"</string>
+    <string name="ws_remove_body">"Semua kunci %1$s yang disimpan dipadam daripada peranti ini. Ejen berhenti menggunakan %1$s sehingga anda menambah kunci semula."</string>
+    <string name="ws_saving">"Menguji kunci baharu…"</string>
+    <string name="ws_key_storage">"Kunci diuji dengan %1$s sebelum disimpan dan kekal dalam storan penyulitan aplikasi."</string>
+    <string name="ws_test_hint">"Ujian menjalankan satu carian dengan satu hasil, jadi menggunakan satu carian atau kredit."</string>
+    <string name="ws_desc_keyless">"Membaca halaman hasil awam. Berfungsi di mana-mana, tetapi boleh lambat atau disekat."</string>
+    <string name="ws_desc_marginalia">"Indeks bebas laman kecil bukan komersial. Kunci percuma mengelak kunci dikongsi yang sibuk."</string>
+    <string name="ws_desc_brave">"Indeks web Brave sendiri. Termasuk $5 kredit percuma setiap bulan."</string>
+    <string name="ws_desc_serper">"Hasil Google pantas. 2,500 carian percuma untuk permulaan."</string>
+    <string name="ws_desc_serpapi">"Hasil Google dengan tarikh dan data kaya. Carian percuma setiap bulan."</string>
+    <string name="ws_desc_tavily">"Dibina untuk ejen dan boleh memulangkan teks penuh halaman. 1,000 kredit percuma sebulan."</string>
+    <string name="ws_desc_linkup">"Carian ejen dengan petikan halaman yang bersih. Kredit percuma setiap bulan."</string>
+    <string name="ws_desc_langsearch">"API carian web percuma untuk aplikasi AI."</string>
+    <string name="ws_desc_jina">"Mencari dan membaca halaman dalam satu panggilan. 10 juta token percuma setiap kunci baharu."</string>
+    <string name="ws_desc_firecrawl">"Carian daripada platform pengikisan Firecrawl. Kredit permulaan percuma."</string>
+</resources>

@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"جستجوی وب می‌تواند استفاده کند از"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d ارائه‌دهنده"</item>
+        <item quantity="other">"%1$d ارائه‌دهنده"</item>
+    </plurals>
+    <string name="ws_overview_none">"هنوز چیزی نیست"</string>
+    <string name="ws_overview_auto">"عامل برای هر جستجو ارائه‌دهنده مناسب را انتخاب می‌کند و اگر یکی شکست بخورد یا چیزی پیدا نکند، سراغ بعدی می‌رود."</string>
+    <string name="ws_overview_off">"همه ارائه‌دهنده‌ها خاموش‌اند، جستجوی وب کار نمی‌کند. یکی را در پایین روشن کنید."</string>
+    <string name="ws_keyless_name">"موتورهای عمومی"</string>
+    <string name="ws_status_free">"رایگان"</string>
+    <string name="ws_status_off">"خاموش"</string>
+    <string name="ws_status_no_key">"کلید لازم است"</string>
+    <string name="ws_status_shared_key">"کلید مشترک"</string>
+    <string name="ws_switch_description">"استفاده از %1$s برای جستجوی وب"</string>
+    <string name="ws_panel_keyless">"چیزی برای تنظیم نیست. DuckDuckGo، Bing، Brave و Google با هم امتحان می‌شوند."</string>
+    <string name="ws_panel_shared_key">"اکنون با کلید مشترک پرمشغله کار می‌کند. کلید رایگان خودتان از محدودیت نرخ جلوگیری می‌کند."</string>
+    <string name="ws_panel_no_key">"کلید اضافه کنید تا عامل بتواند از %1$s استفاده کند."</string>
+    <string name="ws_panel_off">"خاموش است. عامل تا وقتی دوباره روشن نکنید از %1$s استفاده نمی‌کند."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d کلید آماده است"</item>
+        <item quantity="other">"%1$d کلید آماده است و در هر جستجو چرخشی استفاده می‌شوند"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d کلید آماده است"</item>
+        <item quantity="other">"%1$d کلید آماده است و به ترتیب استفاده می‌شوند"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d کلید"</item>
+        <item quantity="other">"%1$d کلید"</item>
+    </plurals>
+    <string name="ws_group_free">"بدون نیاز به کلید"</string>
+    <string name="ws_group_engines">"موتورهای جستجو"</string>
+    <string name="ws_group_ai">"ساخته‌شده برای عامل‌های هوش مصنوعی"</string>
+    <string name="ws_get_key">"دریافت کلید"</string>
+    <string name="ws_add_key">"افزودن کلید"</string>
+    <string name="ws_add_own_key">"افزودن کلید خودتان"</string>
+    <string name="ws_remove_all">"حذف کلیدها"</string>
+    <string name="ws_remove_title">"کلیدهای %1$s حذف شوند؟"</string>
+    <string name="ws_remove_body">"همه کلیدهای ذخیره‌شده %1$s از این دستگاه حذف می‌شوند. عامل تا وقتی دوباره کلید اضافه کنید از %1$s استفاده نمی‌کند."</string>
+    <string name="ws_saving">"در حال آزمایش کلیدهای جدید…"</string>
+    <string name="ws_key_storage">"کلیدها پیش از ذخیره با %1$s آزمایش می‌شوند و در حافظه رمزگذاری‌شده برنامه می‌مانند."</string>
+    <string name="ws_test_hint">"آزمایش یک جستجو با یک نتیجه انجام می‌دهد که یک جستجو یا اعتبار مصرف می‌کند."</string>
+    <string name="ws_desc_keyless">"صفحات نتایج عمومی را می‌خواند. همه‌جا کار می‌کند اما ممکن است کند یا مسدود باشد."</string>
+    <string name="ws_desc_marginalia">"فهرست مستقل سایت‌های کوچک و غیرتجاری. کلید رایگان از کلید مشترک پرمشغله جلوگیری می‌کند."</string>
+    <string name="ws_desc_brave">"فهرست وب اختصاصی Brave. هر ماه $5 اعتبار رایگان دارد."</string>
+    <string name="ws_desc_serper">"نتایج سریع Google. 2,500 جستجوی رایگان برای شروع."</string>
+    <string name="ws_desc_serpapi">"نتایج Google با تاریخ و داده غنی. هر ماه جستجوهای رایگان."</string>
+    <string name="ws_desc_tavily">"برای عامل‌ها ساخته شده و متن کامل صفحه را برمی‌گرداند. ماهانه 1,000 اعتبار رایگان."</string>
+    <string name="ws_desc_linkup">"جستجوی عامل با عصاره‌های تمیز صفحه. هر ماه اعتبار رایگان."</string>
+    <string name="ws_desc_langsearch">"API جستجوی وب رایگان برای برنامه‌های هوش مصنوعی."</string>
+    <string name="ws_desc_jina">"در یک فراخوان جستجو می‌کند و صفحه‌ها را می‌خواند. 10 میلیون توکن رایگان برای هر کلید جدید."</string>
+    <string name="ws_desc_firecrawl">"جستجو از پلتفرم استخراج Firecrawl. اعتبار شروع رایگان."</string>
+</resources>

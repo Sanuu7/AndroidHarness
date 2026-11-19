@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"การค้นหาเว็บสามารถใช้"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d ผู้ให้บริการ"</item>
+    </plurals>
+    <string name="ws_overview_none">"ยังไม่มี"</string>
+    <string name="ws_overview_auto">"เอเจนต์จะเลือกผู้ให้บริการที่เหมาะกับแต่ละการค้นหา และไปยังรายถัดไปหากผู้ให้บริการล้มเหลวหรือไม่พบผลลัพธ์"</string>
+    <string name="ws_overview_off">"ผู้ให้บริการทั้งหมดปิดอยู่ การค้นหาเว็บจึงทำงานไม่ได้ เปิดสักรายด้านล่าง"</string>
+    <string name="ws_keyless_name">"เอนจินสาธารณะ"</string>
+    <string name="ws_status_free">"ฟรี"</string>
+    <string name="ws_status_off">"ปิด"</string>
+    <string name="ws_status_no_key">"ต้องใช้คีย์"</string>
+    <string name="ws_status_shared_key">"คีย์ที่แชร์"</string>
+    <string name="ws_switch_description">"ใช้ %1$s สำหรับการค้นหาเว็บ"</string>
+    <string name="ws_panel_keyless">"ไม่มีอะไรต้องตั้งค่า จะลอง DuckDuckGo, Bing, Brave และ Google พร้อมกัน"</string>
+    <string name="ws_panel_shared_key">"ใช้งานได้แล้วด้วยคีย์ที่แชร์ซึ่งมีคนใช้หนาแน่น คีย์ฟรีของคุณเองจะเลี่ยงการจำกัดอัตรา"</string>
+    <string name="ws_panel_no_key">"เพิ่มคีย์แล้วเอเจนต์จะเริ่มใช้ %1$s ได้"</string>
+    <string name="ws_panel_off">"ปิดอยู่ เอเจนต์จะไม่ใช้ %1$s จนกว่าคุณจะเปิดอีกครั้ง"</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d คีย์พร้อมใช้ สลับในทุกการค้นหา"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d คีย์พร้อมใช้ ใช้ตามลำดับ"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d คีย์"</item>
+    </plurals>
+    <string name="ws_group_free">"ไม่ต้องใช้คีย์"</string>
+    <string name="ws_group_engines">"เครื่องมือค้นหา"</string>
+    <string name="ws_group_ai">"สร้างมาเพื่อเอเจนต์ AI"</string>
+    <string name="ws_get_key">"รับคีย์"</string>
+    <string name="ws_add_key">"เพิ่มคีย์"</string>
+    <string name="ws_add_own_key">"เพิ่มคีย์ของคุณเอง"</string>
+    <string name="ws_remove_all">"ลบคีย์"</string>
+    <string name="ws_remove_title">"ลบคีย์ %1$s หรือไม่?"</string>
+    <string name="ws_remove_body">"คีย์ %1$s ที่บันทึกไว้ทั้งหมดจะถูกลบออกจากอุปกรณ์นี้ เอเจนต์จะหยุดใช้ %1$s จนกว่าคุณจะเพิ่มคีย์อีกครั้ง"</string>
+    <string name="ws_saving">"กำลังทดสอบคีย์ใหม่…"</string>
+    <string name="ws_key_storage">"คีย์จะถูกทดสอบกับ %1$s ก่อนบันทึก และเก็บอยู่ในที่จัดเก็บที่เข้ารหัสของแอป"</string>
+    <string name="ws_test_hint">"การทดสอบจะค้นหาหนึ่งครั้งโดยได้ผลลัพธ์เดียว ซึ่งใช้การค้นหาหรือเครดิตหนึ่งครั้ง"</string>
+    <string name="ws_desc_keyless">"อ่านหน้าผลลัพธ์สาธารณะ ใช้ได้ทุกที่ แต่อาจช้าหรือถูกบล็อก"</string>
+    <string name="ws_desc_marginalia">"ดัชนีอิสระของเว็บไซต์เล็กที่ไม่ใช่เชิงพาณิชย์ คีย์ฟรีช่วยเลี่ยงคีย์ที่แชร์ซึ่งมีคนใช้หนาแน่น"</string>
+    <string name="ws_desc_brave">"ดัชนีเว็บของ Brave เอง มีเครดิตฟรี $5 ทุกเดือน"</string>
+    <string name="ws_desc_serper">"ผลลัพธ์ Google ที่รวดเร็ว ให้สิทธิ์ค้นหาฟรี 2,500 ครั้งตอนเริ่มต้น"</string>
+    <string name="ws_desc_serpapi">"ผลลัพธ์ Google พร้อมวันที่และข้อมูลมากมาย มีสิทธิ์ค้นหาฟรีทุกเดือน"</string>
+    <string name="ws_desc_tavily">"สร้างมาเพื่อเอเจนต์และคืนข้อความเต็มของหน้าได้ เครดิตฟรี 1,000 ต่อเดือน"</string>
+    <string name="ws_desc_linkup">"การค้นหาสำหรับเอเจนต์พร้อมข้อความตัดตอนจากหน้าที่สะอาด มีเครดิตฟรีทุกเดือน"</string>
+    <string name="ws_desc_langsearch">"API ค้นหาเว็บฟรีสำหรับแอป AI"</string>
+    <string name="ws_desc_jina">"ค้นหาและอ่านหน้าในครั้งเดียว ให้โทเค็นฟรี 10 ล้านต่อคีย์ใหม่"</string>
+    <string name="ws_desc_firecrawl">"การค้นหาจากแพลตฟอร์มดึงข้อมูล Firecrawl มีเครดิตเริ่มต้นฟรี"</string>
+</resources>

@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"Wecker stellen"</string>
     <string name="timer_approval_title">"Diesen Timer starten?"</string>
     <string name="timer_start">"Timer starten"</string>
+    <string name="phone_control_risky_title">"Darf diese Änderung an deinem Telefon erlaubt werden?"</string>
+    <string name="phone_control_allow_once">"Einmal erlauben"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"Noch %1$d anzeigen"</item>
+        <item quantity="other">"Noch %1$d anzeigen"</item>
+    </plurals>
+    <string name="chat_history_show_less">"Weniger anzeigen"</string>
 </resources>

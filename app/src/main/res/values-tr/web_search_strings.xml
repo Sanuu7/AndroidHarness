@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Web araması şunları kullanabilir"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d sağlayıcı"</item>
+        <item quantity="other">"%1$d sağlayıcı"</item>
+    </plurals>
+    <string name="ws_overview_none">"Henüz yok"</string>
+    <string name="ws_overview_auto">"Ajan her arama için uygun sağlayıcıyı seçer, biri başarısız olur ya da sonuç bulamazsa bir sonrakine geçer."</string>
+    <string name="ws_overview_off">"Tüm sağlayıcılar kapalı, bu yüzden web araması çalışamaz. Aşağıdan birini aç."</string>
+    <string name="ws_keyless_name">"Genel motorlar"</string>
+    <string name="ws_status_free">"Ücretsiz"</string>
+    <string name="ws_status_off">"Kapalı"</string>
+    <string name="ws_status_no_key">"Anahtar gerekli"</string>
+    <string name="ws_status_shared_key">"Paylaşılan anahtar"</string>
+    <string name="ws_switch_description">"Web aramasında %1$s kullan"</string>
+    <string name="ws_panel_keyless">"Ayarlanacak bir şey yok. DuckDuckGo, Bing, Brave ve Google birlikte denenir."</string>
+    <string name="ws_panel_shared_key">"Yoğun paylaşılan anahtarla hemen çalışır. Kendi ücretsiz anahtarın hız sınırlarını önler."</string>
+    <string name="ws_panel_no_key">"Bir anahtar ekle, ajan %1$s kullanmaya başlasın."</string>
+    <string name="ws_panel_off">"Kapalı. Yeniden açana kadar ajan %1$s kullanmaz."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d anahtar hazır"</item>
+        <item quantity="other">"%1$d anahtar hazır, her aramada sırayla dönüyor"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d anahtar hazır"</item>
+        <item quantity="other">"%1$d anahtar hazır, sırayla kullanılıyor"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d anahtar"</item>
+        <item quantity="other">"%1$d anahtar"</item>
+    </plurals>
+    <string name="ws_group_free">"Anahtar gerekmez"</string>
+    <string name="ws_group_engines">"Arama motorları"</string>
+    <string name="ws_group_ai">"Yapay zekâ ajanları için"</string>
+    <string name="ws_get_key">"Anahtar al"</string>
+    <string name="ws_add_key">"Anahtar ekle"</string>
+    <string name="ws_add_own_key">"Kendi anahtarını ekle"</string>
+    <string name="ws_remove_all">"Anahtarları kaldır"</string>
+    <string name="ws_remove_title">"%1$s anahtarları kaldırılsın mı?"</string>
+    <string name="ws_remove_body">"Kayıtlı tüm %1$s anahtarları bu cihazdan silinir. Yeniden anahtar ekleyene kadar ajan %1$s kullanmaz."</string>
+    <string name="ws_saving">"Yeni anahtarlar deneniyor…"</string>
+    <string name="ws_key_storage">"Anahtarlar kaydedilmeden önce %1$s ile denenir ve uygulamanın şifreli depolamasında kalır."</string>
+    <string name="ws_test_hint">"Deneme, tek sonuç döndüren bir arama yapar; bir arama veya kredi harcar."</string>
+    <string name="ws_desc_keyless">"Genel sonuç sayfalarını okur. Her yerde çalışır ama yavaş olabilir veya engellenebilir."</string>
+    <string name="ws_desc_marginalia">"Küçük ve ticari olmayan sitelerin bağımsız dizini. Ücretsiz anahtar yoğun paylaşılan anahtarı önler."</string>
+    <string name="ws_desc_brave">"Brave'in kendi web dizini. Her ay $5 ücretsiz kredi içerir."</string>
+    <string name="ws_desc_serper">"Hızlı Google sonuçları. Başlangıç için 2.500 ücretsiz arama."</string>
+    <string name="ws_desc_serpapi">"Tarih ve zengin verilerle Google sonuçları. Her ay ücretsiz aramalar."</string>
+    <string name="ws_desc_tavily">"Ajanlar için tasarlandı ve tam sayfa metni döndürebilir. Ayda 1.000 ücretsiz kredi."</string>
+    <string name="ws_desc_linkup">"Temiz sayfa alıntılarıyla ajan araması. Her ay ücretsiz kredi."</string>
+    <string name="ws_desc_langsearch">"Yapay zekâ uygulamaları için ücretsiz web arama API'si."</string>
+    <string name="ws_desc_jina">"Tek çağrıda arar ve sayfaları okur. Her yeni anahtar için 10 milyon ücretsiz token."</string>
+    <string name="ws_desc_firecrawl">"Firecrawl kazıma platformundan arama. Ücretsiz başlangıç kredisi."</string>
+</resources>

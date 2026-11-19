@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"Itakda ang alarma"</string>
     <string name="timer_approval_title">"Simulan ang timer na ito?"</string>
     <string name="timer_start">"Simulan ang timer"</string>
+    <string name="phone_control_risky_title">"Payagan ang pagbabagong ito sa iyong telepono?"</string>
+    <string name="phone_control_allow_once">"Payagan nang isang beses"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"Magpakita ng %1$d pa"</item>
+        <item quantity="other">"Magpakita ng %1$d pa"</item>
+    </plurals>
+    <string name="chat_history_show_less">"Magpakita ng mas kaunti"</string>
 </resources>

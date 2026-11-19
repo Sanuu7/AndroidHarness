@@ -140,7 +140,7 @@
     <string name="settings_search_github_title">GitHub sign in</string>
     <string name="settings_search_github_desc">GitHub · Connect account access for repositories</string>
     <string name="settings_search_web_title">Web search backend</string>
-    <string name="settings_search_web_desc">Web search · Choose Keyless, Brave or Tavily</string>
+    <string name="settings_search_web_desc">Web search · Public engines and nine search APIs, used together</string>
     <string name="settings_search_mcp_title">MCP servers</string>
     <string name="settings_search_mcp_desc">Connected tools · Add and configure MCP integrations</string>
     <string name="settings_search_add_workspace_title">Add workspace</string>
@@ -823,6 +823,8 @@
     <string name="automation_approval_title">Schedule this message?</string>
     <string name="phone_control_approval_title">Let the agent control your phone?</string>
     <string name="phone_control_allow">Allow in this chat</string>
+    <string name="phone_control_risky_title">Allow this change to your phone?</string>
+    <string name="phone_control_allow_once">Allow once</string>
     <string name="settings_ask_phone_control">Ask before controlling the phone</string>
     <string name="settings_ask_phone_control_desc">Agents ask once per chat before they use Shizuku, root or Device Owner. Your own terminal is never asked.</string>
     <string name="chat_message_options">Message options</string>
@@ -1127,6 +1129,11 @@
     <string name="code_search_chat_chats">Let Code search Chat chats</string>
     <string name="code_search_chat_chats_desc">Find and read past Chat conversations when you ask about them. Code history stays searchable when this is off.</string>
     <string name="chat_history_matches">Past conversations</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">Show %1$d more</item>
+        <item quantity="other">Show %1$d more</item>
+    </plurals>
+    <string name="chat_history_show_less">Show less</string>
     <string name="chat_history_kind_chat">Chat</string>
     <string name="chat_history_kind_code">Code</string>
     <string name="chat_history_open_message">Open matching message</string>

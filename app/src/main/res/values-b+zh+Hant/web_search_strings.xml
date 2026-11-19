@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"網路搜尋可使用"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d 個提供者"</item>
+    </plurals>
+    <string name="ws_overview_none">"尚無"</string>
+    <string name="ws_overview_auto">"代理會為每次搜尋挑選合適的提供者，若某個提供者失敗或找不到結果，會自動改用下一個。"</string>
+    <string name="ws_overview_off">"所有提供者都已關閉，網路搜尋無法執行。請在下方開啟一個。"</string>
+    <string name="ws_keyless_name">"公開引擎"</string>
+    <string name="ws_status_free">"免費"</string>
+    <string name="ws_status_off">"已關閉"</string>
+    <string name="ws_status_no_key">"需要金鑰"</string>
+    <string name="ws_status_shared_key">"共用金鑰"</string>
+    <string name="ws_switch_description">"使用 %1$s 進行網路搜尋"</string>
+    <string name="ws_panel_keyless">"無需設定。會同時嘗試 DuckDuckGo、Bing、Brave 和 Google。"</string>
+    <string name="ws_panel_shared_key">"現在可使用繁忙的共用金鑰。使用自己的免費金鑰可避開速率限制。"</string>
+    <string name="ws_panel_no_key">"新增金鑰後，代理就能開始使用 %1$s。"</string>
+    <string name="ws_panel_off">"已關閉。在你重新開啟前，代理不會使用 %1$s。"</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d 把金鑰可用，每次搜尋輪替使用"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d 把金鑰可用，依序使用"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d 把金鑰"</item>
+    </plurals>
+    <string name="ws_group_free">"免金鑰"</string>
+    <string name="ws_group_engines">"搜尋引擎"</string>
+    <string name="ws_group_ai">"為 AI 代理打造"</string>
+    <string name="ws_get_key">"取得金鑰"</string>
+    <string name="ws_add_key">"新增金鑰"</string>
+    <string name="ws_add_own_key">"新增自己的金鑰"</string>
+    <string name="ws_remove_all">"移除金鑰"</string>
+    <string name="ws_remove_title">"要移除 %1$s 金鑰嗎？"</string>
+    <string name="ws_remove_body">"所有已儲存的 %1$s 金鑰都會從此裝置刪除。在你再次新增金鑰前，代理會停止使用 %1$s。"</string>
+    <string name="ws_saving">"正在測試新金鑰…"</string>
+    <string name="ws_key_storage">"金鑰儲存前會先以 %1$s 測試，並留在應用程式的加密儲存空間。"</string>
+    <string name="ws_test_hint">"測試會執行一次只回傳單一結果的搜尋，會用掉一次搜尋或額度。"</string>
+    <string name="ws_desc_keyless">"擷取公開搜尋結果頁。隨處可用，但可能較慢或被封鎖。"</string>
+    <string name="ws_desc_marginalia">"小型獨立非商業網站的索引。免費金鑰可避開繁忙的共用金鑰。"</string>
+    <string name="ws_desc_brave">"Brave 自家的網路索引。每月含 $5 免費額度。"</string>
+    <string name="ws_desc_serper">"快速的 Google 結果。一開始贈送 2,500 次免費搜尋。"</string>
+    <string name="ws_desc_serpapi">"附日期與豐富資料的 Google 結果。每月有免費搜尋額度。"</string>
+    <string name="ws_desc_tavily">"為代理打造，可回傳完整網頁文字。每月 1,000 免費額度。"</string>
+    <string name="ws_desc_linkup">"附乾淨網頁摘要的代理搜尋。每月有免費額度。"</string>
+    <string name="ws_desc_langsearch">"為 AI 應用打造的免費網路搜尋 API。"</string>
+    <string name="ws_desc_jina">"一次呼叫完成搜尋與閱讀網頁。每個新金鑰贈送 1,000 萬免費 token。"</string>
+    <string name="ws_desc_firecrawl">"來自 Firecrawl 擷取平台的搜尋。贈送免費入門額度。"</string>
+</resources>

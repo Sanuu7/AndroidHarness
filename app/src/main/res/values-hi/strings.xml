@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"अलार्म सेट करें"</string>
     <string name="timer_approval_title">"यह टाइमर शुरू करें?"</string>
     <string name="timer_start">"टाइमर शुरू करें"</string>
+    <string name="phone_control_risky_title">"अपने फ़ोन पर इस बदलाव की अनुमति दें?"</string>
+    <string name="phone_control_allow_once">"एक बार अनुमति दें"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"%1$d और दिखाएँ"</item>
+        <item quantity="other">"%1$d और दिखाएँ"</item>
+    </plurals>
+    <string name="chat_history_show_less">"कम दिखाएँ"</string>
 </resources>

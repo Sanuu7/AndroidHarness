@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">Web search can use</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">%1$d provider</item>
+        <item quantity="other">%1$d providers</item>
+    </plurals>
+    <string name="ws_overview_none">Nothing yet</string>
+    <string name="ws_overview_auto">The agent picks the one that suits each search, and moves on to the next if a provider fails or finds nothing.</string>
+    <string name="ws_overview_off">Every provider is off, so web search can\'t run. Turn one on below.</string>
+    <string name="ws_keyless_name">Public engines</string>
+    <string name="ws_status_free">Free</string>
+    <string name="ws_status_off">Off</string>
+    <string name="ws_status_no_key">Needs key</string>
+    <string name="ws_status_shared_key">Shared key</string>
+    <string name="ws_switch_description">Use %1$s for web search</string>
+    <string name="ws_panel_keyless">Nothing to set up. DuckDuckGo, Bing, Brave and Google are tried together.</string>
+    <string name="ws_panel_shared_key">Works now with the busy shared key. Your own free key avoids its rate limits.</string>
+    <string name="ws_panel_no_key">Add a key and the agent can start using %1$s.</string>
+    <string name="ws_panel_off">Turned off. The agent won\'t use %1$s until you turn it back on.</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">%1$d key ready</item>
+        <item quantity="other">%1$d keys ready, rotating on every search</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">%1$d key ready</item>
+        <item quantity="other">%1$d keys ready, used in order</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">%1$d key</item>
+        <item quantity="other">%1$d keys</item>
+    </plurals>
+    <string name="ws_group_free">No key needed</string>
+    <string name="ws_group_engines">Search engines</string>
+    <string name="ws_group_ai">Built for AI agents</string>
+    <string name="ws_get_key">Get a key</string>
+    <string name="ws_add_key">Add key</string>
+    <string name="ws_add_own_key">Add your own key</string>
+    <string name="ws_remove_all">Remove keys</string>
+    <string name="ws_remove_title">Remove %1$s keys?</string>
+    <string name="ws_remove_body">Every saved %1$s key is deleted from this device. The agent stops using %1$s until you add a key again.</string>
+    <string name="ws_saving">Testing new keys…</string>
+    <string name="ws_key_storage">Keys are tested with %1$s before they are saved, and stay in the app\'s encrypted storage.</string>
+    <string name="ws_test_hint">Test runs one search for a single result, which uses one search or credit.</string>
+    <string name="ws_desc_keyless">Scrapes public result pages. Works anywhere, but can be slow or blocked.</string>
+    <string name="ws_desc_marginalia">Independent index of small, non-commercial sites. A free key avoids the busy shared one.</string>
+    <string name="ws_desc_brave">Brave\'s own web index. Includes $5 of free credit every month.</string>
+    <string name="ws_desc_serper">Fast Google results. 2,500 free searches to start.</string>
+    <string name="ws_desc_serpapi">Google results with dates and rich data. Free searches every month.</string>
+    <string name="ws_desc_tavily">Made for agents and can return full page text. 1,000 free credits a month.</string>
+    <string name="ws_desc_linkup">Agent search with clean page extracts. Free credit every month.</string>
+    <string name="ws_desc_langsearch">Free web search API made for AI apps.</string>
+    <string name="ws_desc_jina">Searches and reads pages in one call. 10M free tokens per new key.</string>
+    <string name="ws_desc_firecrawl">Search from the Firecrawl scraping platform. Free starter credits.</string>
+</resources>

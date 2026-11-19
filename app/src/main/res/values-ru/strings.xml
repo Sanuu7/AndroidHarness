@@ -1129,4 +1129,13 @@
     <string name="alarm_set">"Поставить будильник"</string>
     <string name="timer_approval_title">"Запустить этот таймер?"</string>
     <string name="timer_start">"Запустить таймер"</string>
+    <string name="phone_control_risky_title">"Разрешить это изменение на телефоне?"</string>
+    <string name="phone_control_allow_once">"Разрешить один раз"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"Показать ещё %1$d"</item>
+        <item quantity="few">"Показать ещё %1$d"</item>
+        <item quantity="many">"Показать ещё %1$d"</item>
+        <item quantity="other">"Показать ещё %1$d"</item>
+    </plurals>
+    <string name="chat_history_show_less">"Свернуть"</string>
 </resources>

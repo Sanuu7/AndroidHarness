@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"يمكن للبحث في الويب استخدام"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="zero">"%1$d مزوّد"</item>
+        <item quantity="one">"%1$d مزوّد"</item>
+        <item quantity="two">"%1$d مزوّدان"</item>
+        <item quantity="few">"%1$d مزوّدين"</item>
+        <item quantity="many">"%1$d مزوّدًا"</item>
+        <item quantity="other">"%1$d مزوّد"</item>
+    </plurals>
+    <string name="ws_overview_none">"لا شيء بعد"</string>
+    <string name="ws_overview_auto">"يختار الوكيل المزوّد المناسب لكل بحث، وينتقل إلى التالي إذا فشل أحدهم أو لم يجد شيئًا."</string>
+    <string name="ws_overview_off">"جميع المزوّدين متوقفون، لذا لا يمكن تشغيل البحث في الويب. شغّل أحدهم أدناه."</string>
+    <string name="ws_keyless_name">"محركات عامة"</string>
+    <string name="ws_status_free">"مجاني"</string>
+    <string name="ws_status_off">"متوقف"</string>
+    <string name="ws_status_no_key">"يحتاج مفتاحًا"</string>
+    <string name="ws_status_shared_key">"مفتاح مشترك"</string>
+    <string name="ws_switch_description">"استخدام %1$s للبحث في الويب"</string>
+    <string name="ws_panel_keyless">"لا شيء لإعداده. تُجرَّب DuckDuckGo وBing وBrave وGoogle معًا."</string>
+    <string name="ws_panel_shared_key">"يعمل الآن بالمفتاح المشترك المزدحم. مفتاحك المجاني الخاص يتجنب حدود معدل الاستخدام."</string>
+    <string name="ws_panel_no_key">"أضف مفتاحًا ليتمكن الوكيل من استخدام %1$s."</string>
+    <string name="ws_panel_off">"متوقف. لن يستخدم الوكيل %1$s حتى تعيد تشغيله."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="zero">"%1$d مفتاح جاهز"</item>
+        <item quantity="one">"%1$d مفتاح جاهز"</item>
+        <item quantity="two">"%1$d مفتاحان جاهزان"</item>
+        <item quantity="few">"%1$d مفاتيح جاهزة، تتناوب في كل بحث"</item>
+        <item quantity="many">"%1$d مفتاحًا جاهزًا، تتناوب في كل بحث"</item>
+        <item quantity="other">"%1$d مفتاح جاهز، تتناوب في كل بحث"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="zero">"%1$d مفتاح جاهز"</item>
+        <item quantity="one">"%1$d مفتاح جاهز"</item>
+        <item quantity="two">"%1$d مفتاحان جاهزان"</item>
+        <item quantity="few">"%1$d مفاتيح جاهزة، تُستخدم بالترتيب"</item>
+        <item quantity="many">"%1$d مفتاحًا جاهزًا، تُستخدم بالترتيب"</item>
+        <item quantity="other">"%1$d مفتاح جاهز، تُستخدم بالترتيب"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="zero">"%1$d مفتاح"</item>
+        <item quantity="one">"%1$d مفتاح"</item>
+        <item quantity="two">"%1$d مفتاحان"</item>
+        <item quantity="few">"%1$d مفاتيح"</item>
+        <item quantity="many">"%1$d مفتاحًا"</item>
+        <item quantity="other">"%1$d مفتاح"</item>
+    </plurals>
+    <string name="ws_group_free">"لا حاجة لمفتاح"</string>
+    <string name="ws_group_engines">"محركات بحث"</string>
+    <string name="ws_group_ai">"مصمّمة لوكلاء الذكاء الاصطناعي"</string>
+    <string name="ws_get_key">"احصل على مفتاح"</string>
+    <string name="ws_add_key">"إضافة مفتاح"</string>
+    <string name="ws_add_own_key">"إضافة مفتاحك الخاص"</string>
+    <string name="ws_remove_all">"حذف المفاتيح"</string>
+    <string name="ws_remove_title">"حذف مفاتيح %1$s؟"</string>
+    <string name="ws_remove_body">"تُحذف كل مفاتيح %1$s المحفوظة من هذا الجهاز. سيتوقف الوكيل عن استخدام %1$s حتى تضيف مفتاحًا مرة أخرى."</string>
+    <string name="ws_saving">"جارٍ اختبار المفاتيح الجديدة…"</string>
+    <string name="ws_key_storage">"تُختبر المفاتيح مع %1$s قبل حفظها، وتبقى في التخزين المشفّر للتطبيق."</string>
+    <string name="ws_test_hint">"يشغّل الاختبار بحثًا واحدًا بنتيجة واحدة، فيستهلك بحثًا واحدًا أو رصيدًا واحدًا."</string>
+    <string name="ws_desc_keyless">"يجلب صفحات نتائج عامة. يعمل في أي مكان، لكنه قد يكون بطيئًا أو محظورًا."</string>
+    <string name="ws_desc_marginalia">"فهرس مستقل لمواقع صغيرة غير تجارية. المفتاح المجاني يتجنب المفتاح المشترك المزدحم."</string>
+    <string name="ws_desc_brave">"فهرس Brave الخاص بالويب. يتضمن رصيدًا مجانيًا بقيمة $5 كل شهر."</string>
+    <string name="ws_desc_serper">"نتائج Google سريعة. 2,500 بحث مجاني للبداية."</string>
+    <string name="ws_desc_serpapi">"نتائج Google مع التواريخ وبيانات غنية. عمليات بحث مجانية كل شهر."</string>
+    <string name="ws_desc_tavily">"مصمّم للوكلاء ويعيد نص الصفحات كاملًا. 1,000 رصيد مجاني شهريًا."</string>
+    <string name="ws_desc_linkup">"بحث للوكلاء مع مقتطفات صفحات نظيفة. رصيد مجاني كل شهر."</string>
+    <string name="ws_desc_langsearch">"واجهة بحث ويب مجانية مصمّمة لتطبيقات الذكاء الاصطناعي."</string>
+    <string name="ws_desc_jina">"يبحث ويقرأ الصفحات في استدعاء واحد. 10 ملايين رمز مجاني لكل مفتاح جديد."</string>
+    <string name="ws_desc_firecrawl">"بحث من منصة الاستخراج Firecrawl. رصيد بداية مجاني."</string>
+</resources>

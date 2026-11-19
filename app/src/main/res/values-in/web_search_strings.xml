@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Pencarian web dapat memakai"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d penyedia"</item>
+    </plurals>
+    <string name="ws_overview_none">"Belum ada"</string>
+    <string name="ws_overview_auto">"Agen memilih penyedia yang cocok untuk setiap pencarian dan beralih ke berikutnya jika satu penyedia gagal atau tidak menemukan apa pun."</string>
+    <string name="ws_overview_off">"Semua penyedia mati, jadi pencarian web tidak dapat berjalan. Nyalakan satu di bawah."</string>
+    <string name="ws_keyless_name">"Mesin publik"</string>
+    <string name="ws_status_free">"Gratis"</string>
+    <string name="ws_status_off">"Mati"</string>
+    <string name="ws_status_no_key">"Butuh kunci"</string>
+    <string name="ws_status_shared_key">"Kunci bersama"</string>
+    <string name="ws_switch_description">"Gunakan %1$s untuk pencarian web"</string>
+    <string name="ws_panel_keyless">"Tidak ada yang perlu diatur. DuckDuckGo, Bing, Brave, dan Google dicoba bersama."</string>
+    <string name="ws_panel_shared_key">"Sudah berfungsi dengan kunci bersama yang sibuk. Kunci gratis milik Anda sendiri menghindari batas kecepatan."</string>
+    <string name="ws_panel_no_key">"Tambahkan kunci dan agen dapat mulai memakai %1$s."</string>
+    <string name="ws_panel_off">"Dimatikan. Agen tidak akan memakai %1$s sampai Anda menyalakannya lagi."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d kunci siap, bergiliran di setiap pencarian"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d kunci siap, dipakai sesuai urutan"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d kunci"</item>
+    </plurals>
+    <string name="ws_group_free">"Tidak perlu kunci"</string>
+    <string name="ws_group_engines">"Mesin pencari"</string>
+    <string name="ws_group_ai">"Dibuat untuk agen AI"</string>
+    <string name="ws_get_key">"Dapatkan kunci"</string>
+    <string name="ws_add_key">"Tambah kunci"</string>
+    <string name="ws_add_own_key">"Tambah kunci sendiri"</string>
+    <string name="ws_remove_all">"Hapus kunci"</string>
+    <string name="ws_remove_title">"Hapus kunci %1$s?"</string>
+    <string name="ws_remove_body">"Semua kunci %1$s yang tersimpan dihapus dari perangkat ini. Agen berhenti memakai %1$s sampai Anda menambahkan kunci lagi."</string>
+    <string name="ws_saving">"Menguji kunci baru…"</string>
+    <string name="ws_key_storage">"Kunci diuji dengan %1$s sebelum disimpan dan tetap di penyimpanan terenkripsi aplikasi."</string>
+    <string name="ws_test_hint">"Uji coba menjalankan satu pencarian dengan satu hasil, jadi memakai satu pencarian atau kredit."</string>
+    <string name="ws_desc_keyless">"Membaca halaman hasil publik. Berfungsi di mana saja, tetapi bisa lambat atau diblokir."</string>
+    <string name="ws_desc_marginalia">"Indeks independen situs kecil nonkomersial. Kunci gratis menghindari kunci bersama yang sibuk."</string>
+    <string name="ws_desc_brave">"Indeks web milik Brave. Termasuk $5 kredit gratis setiap bulan."</string>
+    <string name="ws_desc_serper">"Hasil Google cepat. 2.500 pencarian gratis untuk awal."</string>
+    <string name="ws_desc_serpapi">"Hasil Google dengan tanggal dan data kaya. Pencarian gratis setiap bulan."</string>
+    <string name="ws_desc_tavily">"Dibuat untuk agen dan dapat mengembalikan teks halaman penuh. 1.000 kredit gratis per bulan."</string>
+    <string name="ws_desc_linkup">"Pencarian agen dengan kutipan halaman yang bersih. Kredit gratis setiap bulan."</string>
+    <string name="ws_desc_langsearch">"API pencarian web gratis untuk aplikasi AI."</string>
+    <string name="ws_desc_jina">"Mencari dan membaca halaman dalam satu panggilan. 10 juta token gratis per kunci baru."</string>
+    <string name="ws_desc_firecrawl">"Pencarian dari platform pengikisan Firecrawl. Kredit awal gratis."</string>
+</resources>

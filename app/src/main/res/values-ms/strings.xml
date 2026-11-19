@@ -1120,4 +1120,10 @@
     <string name="alarm_set">"Tetapkan penggera"</string>
     <string name="timer_approval_title">"Mulakan pemasa ini?"</string>
     <string name="timer_start">"Mulakan pemasa"</string>
+    <string name="phone_control_risky_title">"Benarkan perubahan ini pada telefon anda?"</string>
+    <string name="phone_control_allow_once">"Benarkan sekali"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="other">"Tunjuk %1$d lagi"</item>
+    </plurals>
+    <string name="chat_history_show_less">"Tunjuk kurang"</string>
 </resources>

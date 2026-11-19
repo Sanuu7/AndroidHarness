@@ -1123,4 +1123,11 @@
     <string name="alarm_set">"تنظیم زنگ"</string>
     <string name="timer_approval_title">"این تایمر شروع شود؟"</string>
     <string name="timer_start">"شروع تایمر"</string>
+    <string name="phone_control_risky_title">"اجازه دادن به این تغییر روی گوشی؟"</string>
+    <string name="phone_control_allow_once">"یک بار اجازه بده"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"نمایش %1$d مورد دیگر"</item>
+        <item quantity="other">"نمایش %1$d مورد دیگر"</item>
+    </plurals>
+    <string name="chat_history_show_less">"نمایش کمتر"</string>
 </resources>

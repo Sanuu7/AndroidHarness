@@ -1120,4 +1120,10 @@
     <string name="alarm_set">"알람 설정"</string>
     <string name="timer_approval_title">"이 타이머를 시작할까요?"</string>
     <string name="timer_start">"타이머 시작"</string>
+    <string name="phone_control_risky_title">"휴대폰 변경을 허용할까요?"</string>
+    <string name="phone_control_allow_once">"한 번만 허용"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="other">"%1$d개 더 보기"</item>
+    </plurals>
+    <string name="chat_history_show_less">"접기"</string>
 </resources>

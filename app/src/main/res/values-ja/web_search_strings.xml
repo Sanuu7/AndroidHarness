@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"ウェブ検索で利用できます"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="other">"%1$d プロバイダー"</item>
+    </plurals>
+    <string name="ws_overview_none">"まだありません"</string>
+    <string name="ws_overview_auto">"エージェントは検索ごとに適したプロバイダーを選び、失敗したり結果がなかった場合は次へ進みます。"</string>
+    <string name="ws_overview_off">"すべてのプロバイダーがオフのため、ウェブ検索を実行できません。下で1つオンにしてください。"</string>
+    <string name="ws_keyless_name">"公開エンジン"</string>
+    <string name="ws_status_free">"無料"</string>
+    <string name="ws_status_off">"オフ"</string>
+    <string name="ws_status_no_key">"キーが必要"</string>
+    <string name="ws_status_shared_key">"共有キー"</string>
+    <string name="ws_switch_description">"%1$s をウェブ検索に使う"</string>
+    <string name="ws_panel_keyless">"設定は不要です。DuckDuckGo、Bing、Brave、Google をまとめて試します。"</string>
+    <string name="ws_panel_shared_key">"混雑している共有キーですぐに使えます。自分の無料キーならレート制限を避けられます。"</string>
+    <string name="ws_panel_no_key">"キーを追加すると、エージェントが %1$s を使えるようになります。"</string>
+    <string name="ws_panel_off">"オフです。オンに戻すまで、エージェントは %1$s を使いません。"</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="other">"%1$d 個のキーを準備済み。検索ごとに切り替えて使用"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="other">"%1$d 個のキーを準備済み。順番に使用"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="other">"%1$d 個のキー"</item>
+    </plurals>
+    <string name="ws_group_free">"キー不要"</string>
+    <string name="ws_group_engines">"検索エンジン"</string>
+    <string name="ws_group_ai">"AIエージェント向け"</string>
+    <string name="ws_get_key">"キーを取得"</string>
+    <string name="ws_add_key">"キーを追加"</string>
+    <string name="ws_add_own_key">"自分のキーを追加"</string>
+    <string name="ws_remove_all">"キーを削除"</string>
+    <string name="ws_remove_title">"%1$s のキーを削除しますか？"</string>
+    <string name="ws_remove_body">"保存されている %1$s のキーはすべてこの端末から削除されます。キーを再度追加するまで、エージェントは %1$s を使いません。"</string>
+    <string name="ws_saving">"新しいキーをテスト中…"</string>
+    <string name="ws_key_storage">"キーは保存前に %1$s でテストされ、アプリの暗号化ストレージに保存されます。"</string>
+    <string name="ws_test_hint">"テストでは結果を1件だけ返す検索を1回実行するため、検索1回分またはクレジット1回分を消費します。"</string>
+    <string name="ws_desc_keyless">"公開の検索結果ページを読み取ります。どこでも使えますが、遅い場合やブロックされる場合があります。"</string>
+    <string name="ws_desc_marginalia">"小規模な非営利サイトの独立系インデックス。無料キーなら混雑する共有キーを避けられます。"</string>
+    <string name="ws_desc_brave">"Brave 独自のウェブインデックス。毎月 $5 分の無料クレジット付き。"</string>
+    <string name="ws_desc_serper">"高速な Google 検索結果。開始時に2,500回の無料検索付き。"</string>
+    <string name="ws_desc_serpapi">"日付や豊富なデータ付きの Google 検索結果。毎月無料検索あり。"</string>
+    <string name="ws_desc_tavily">"エージェント向けで、ページ全文を返せます。毎月1,000クレジット無料。"</string>
+    <string name="ws_desc_linkup">"きれいなページ抜粋付きのエージェント検索。毎月無料クレジットあり。"</string>
+    <string name="ws_desc_langsearch">"AIアプリ向けの無料ウェブ検索API。"</string>
+    <string name="ws_desc_jina">"1回の呼び出しで検索とページ読み取りを行います。新しいキーごとに1,000万トークン無料。"</string>
+    <string name="ws_desc_firecrawl">"Firecrawl スクレイピングプラットフォームの検索。無料のスタータークレジット付き。"</string>
+</resources>

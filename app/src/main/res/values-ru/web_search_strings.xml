@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ws_overview_label">"Веб-поиск может использовать"</string>
+    <plurals name="ws_overview_count">
+        <item quantity="one">"%1$d провайдер"</item>
+        <item quantity="few">"%1$d провайдера"</item>
+        <item quantity="many">"%1$d провайдеров"</item>
+        <item quantity="other">"%1$d провайдера"</item>
+    </plurals>
+    <string name="ws_overview_none">"Пока ничего"</string>
+    <string name="ws_overview_auto">"Агент выбирает подходящего провайдера для каждого поиска и переходит к следующему, если один не сработал или ничего не нашёл."</string>
+    <string name="ws_overview_off">"Все провайдеры выключены, веб-поиск не работает. Включите один ниже."</string>
+    <string name="ws_keyless_name">"Публичные движки"</string>
+    <string name="ws_status_free">"Бесплатно"</string>
+    <string name="ws_status_off">"Выкл."</string>
+    <string name="ws_status_no_key">"Нужен ключ"</string>
+    <string name="ws_status_shared_key">"Общий ключ"</string>
+    <string name="ws_switch_description">"Использовать %1$s для веб-поиска"</string>
+    <string name="ws_panel_keyless">"Настраивать нечего. DuckDuckGo, Bing, Brave и Google пробуются вместе."</string>
+    <string name="ws_panel_shared_key">"Уже работает с общим ключом, но он перегружен. Свой бесплатный ключ избавит от ограничений скорости."</string>
+    <string name="ws_panel_no_key">"Добавьте ключ, и агент сможет использовать %1$s."</string>
+    <string name="ws_panel_off">"Выключено. Агент не будет использовать %1$s, пока вы не включите это снова."</string>
+    <plurals name="ws_summary_keys">
+        <item quantity="one">"%1$d ключ готов"</item>
+        <item quantity="few">"%1$d ключа готовы, меняются при каждом поиске"</item>
+        <item quantity="many">"%1$d ключей готовы, меняются при каждом поиске"</item>
+        <item quantity="other">"%1$d ключа готовы, меняются при каждом поиске"</item>
+    </plurals>
+    <plurals name="ws_summary_keys_ordered">
+        <item quantity="one">"%1$d ключ готов"</item>
+        <item quantity="few">"%1$d ключа готовы, используются по порядку"</item>
+        <item quantity="many">"%1$d ключей готовы, используются по порядку"</item>
+        <item quantity="other">"%1$d ключа готовы, используются по порядку"</item>
+    </plurals>
+    <plurals name="ws_row_keys">
+        <item quantity="one">"%1$d ключ"</item>
+        <item quantity="few">"%1$d ключа"</item>
+        <item quantity="many">"%1$d ключей"</item>
+        <item quantity="other">"%1$d ключа"</item>
+    </plurals>
+    <string name="ws_group_free">"Ключ не нужен"</string>
+    <string name="ws_group_engines">"Поисковые системы"</string>
+    <string name="ws_group_ai">"Создано для ИИ-агентов"</string>
+    <string name="ws_get_key">"Получить ключ"</string>
+    <string name="ws_add_key">"Добавить ключ"</string>
+    <string name="ws_add_own_key">"Добавить свой ключ"</string>
+    <string name="ws_remove_all">"Удалить ключи"</string>
+    <string name="ws_remove_title">"Удалить ключи %1$s?"</string>
+    <string name="ws_remove_body">"Все сохранённые ключи %1$s будут удалены с этого устройства. Агент перестанет использовать %1$s, пока вы снова не добавите ключ."</string>
+    <string name="ws_saving">"Проверка новых ключей…"</string>
+    <string name="ws_key_storage">"Ключи проверяются через %1$s перед сохранением и остаются в зашифрованном хранилище приложения."</string>
+    <string name="ws_test_hint">"Проверка выполняет один поиск с одним результатом и тратит один поиск или кредит."</string>
+    <string name="ws_desc_keyless">"Собирает данные с публичных страниц результатов. Работает везде, но может быть медленным или заблокированным."</string>
+    <string name="ws_desc_marginalia">"Независимый индекс небольших некоммерческих сайтов. Бесплатный ключ обходит перегруженный общий."</string>
+    <string name="ws_desc_brave">"Собственный веб-индекс Brave. Каждый месяц включает $5 бесплатного кредита."</string>
+    <string name="ws_desc_serper">"Быстрые результаты Google. 2 500 бесплатных поисков на старте."</string>
+    <string name="ws_desc_serpapi">"Результаты Google с датами и подробными данными. Бесплатные поиски каждый месяц."</string>
+    <string name="ws_desc_tavily">"Создан для агентов, возвращает полный текст страниц. 1 000 бесплатных кредитов в месяц."</string>
+    <string name="ws_desc_linkup">"Поиск для агентов с чистыми выдержками со страниц. Бесплатный кредит каждый месяц."</string>
+    <string name="ws_desc_langsearch">"Бесплатный API веб-поиска для ИИ-приложений."</string>
+    <string name="ws_desc_jina">"Ищет и читает страницы за один вызов. 10 млн бесплатных токенов на каждый новый ключ."</string>
+    <string name="ws_desc_firecrawl">"Поиск от платформы сбора данных Firecrawl. Бесплатный стартовый кредит."</string>
+</resources>

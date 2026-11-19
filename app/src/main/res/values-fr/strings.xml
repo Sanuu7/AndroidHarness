@@ -1126,4 +1126,12 @@
     <string name="alarm_set">"Créer l\'alarme"</string>
     <string name="timer_approval_title">"Démarrer ce minuteur ?"</string>
     <string name="timer_start">"Démarrer le minuteur"</string>
+    <string name="phone_control_risky_title">"Autoriser cette modification sur votre téléphone ?"</string>
+    <string name="phone_control_allow_once">"Autoriser une fois"</string>
+    <plurals name="chat_history_show_more">
+        <item quantity="one">"Afficher %1$d de plus"</item>
+        <item quantity="many">"Afficher %1$d de plus"</item>
+        <item quantity="other">"Afficher %1$d de plus"</item>
+    </plurals>
+    <string name="chat_history_show_less">"Afficher moins"</string>
 </resources>
