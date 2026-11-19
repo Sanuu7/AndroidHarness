@@ -46,7 +46,7 @@ class AskUserTool : Tool {
 class MemoryWriteTool : Tool {
     override val name = "memory_write"
     override val description =
-        "Write to the agent memory. Without topic: the core memory file (.harness/memory.md), " +
+        "Write to this workspace's project notes (not the user's saved memories, which remember handles). Without topic: the core memory file (.harness/memory.md), " +
             "which is automatically loaded at the start of every conversation, so keep it to small, " +
             "always-relevant facts (preferences, conventions, decisions). With topic: a topic file " +
             "under .harness/memory/<topic>.md for longer, task-specific notes; topic files are " +

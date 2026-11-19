@@ -29,7 +29,8 @@ private fun readMemoryNode(workspace: WorkspaceFs, relPath: String): String? {
 class MemoryReadTool : Tool {
     override val name = "memory_read"
     override val description =
-        "Read agent memory without truncation. With no arguments: the core memory plus a " +
+        "Read this workspace's project notes (.harness/memory.md and its topic files) without truncation. " +
+            "These are separate from the user's saved memories, which recall searches. With no arguments: the core notes plus a " +
             "list of available topic files. With topic: that topic file in full. Use " +
             "memory_search first when you are looking for where something was recorded."
     override val parametersSchema = Schema.obj(
@@ -53,7 +54,8 @@ class MemoryReadTool : Tool {
                     ?: return@withContext ToolResult(
                         false,
                         "No memory recorded for topic '$topic' yet. Topics on disk: " +
-                            (listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).joinToString(", ").ifEmpty { "none" }) + ".",
+                            (listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).joinToString(", ").ifEmpty { "none" }) + ". " +
+                        "This only searched the workspace's project notes; use recall for the user's saved memories.",
                     )
                 return@withContext ToolResult(true, content)
             }
@@ -80,8 +82,8 @@ class MemoryReadTool : Tool {
 class MemorySearchTool : Tool {
     override val name = "memory_search"
     override val description =
-        "Search agent memory (core memory and all topic files) for a case-insensitive " +
-            "substring. Returns file:line matches. Use it to recall details that are not in " +
+        "Search this workspace's project notes (.harness/memory.md and its topic files) for a case-insensitive " +
+            "substring. It does not search the user's saved memories; use recall for those. Returns file:line matches. Use it to recall details that are not in " +
             "the always-loaded core memory, and before memory_write to avoid duplicate notes."
     override val parametersSchema = Schema.obj(
         mapOf("query" to Schema.string("Text to search for (case-insensitive).")),
@@ -120,7 +122,8 @@ class MemorySearchTool : Tool {
                 ToolResult(
                     false,
                     "No memory matches '${query.take(80)}'. Topics on disk: " +
-                        (listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).joinToString(", ").ifEmpty { "none" }) + ".",
+                        (listMemoryTopics(ctx.workspace, ctx.configuration?.memory?.topics ?: MemoryTopics.DIR).joinToString(", ").ifEmpty { "none" }) + ". " +
+                        "This only searched the workspace's project notes; use recall for the user's saved memories.",
                 )
             } else {
                 val truncated = if (matches.length >= 8_000) "\n[truncated]" else ""

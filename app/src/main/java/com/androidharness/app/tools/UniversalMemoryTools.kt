@@ -72,7 +72,8 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
 class RecallTool(private val memory: MemoryRepository) : Tool {
     override val name = "recall"
     override val description =
-        "Search saved memories for the current section, including existing shared memories. " +
+        "Search the user's saved memories (written with remember) for the current section, including existing shared memories. " +
+        "Workspace project notes in .harness/memory are separate; memory_search covers those. " +
         "Use section=chat or section=code for an explicit other-section lookup when enabled in Settings. Use it when the user refers to " +
             "something from an earlier conversation or when stored preferences or project facts would help. " +
             "With no query, returns the most recently saved memories."
