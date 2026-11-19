@@ -62,8 +62,8 @@ android {
         applicationId = "com.androidharness.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 38
-        versionName = "3.4"
+        versionCode = 40
+        versionName = "4.0"
         buildConfigField("String", "GITHUB_CLIENT_ID", "\"$githubClientId\"")
         buildConfigField("boolean", "PLAY_DISTRIBUTION", (distributionChannel == "play").toString())
         if (hasNdk) {

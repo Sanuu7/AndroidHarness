@@ -16,7 +16,7 @@ No PC needed. No root needed.
 </p>
 
 [![Debug build](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml/badge.svg)](https://github.com/Sanuu7/AndroidHarness/actions/workflows/nightly.yml)
-[![Version](https://img.shields.io/badge/version-3.4-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
+[![Version](https://img.shields.io/badge/version-4.0-blue)](https://github.com/Sanuu7/AndroidHarness/releases/latest)
 [![Android 8.0+](https://img.shields.io/badge/Android-8.0%2B-3ddc84)](https://developer.android.com/about/versions/oreo)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -57,19 +57,22 @@ You can start for free with the built-in provider, which needs no account, or ru
 - **A real coding agent.** File edits, shell, git, tests, browser control and subagents. Every tool call gets a card you can open to see exactly what happened.
 - **A real shell.** Commands run through Shizuku, Wireless ADB pairing, optional root, a Termux-based Linux toolchain, or a toybox fallback. A shell policy and a secret redactor sit on top.
 - **Free to start.** The built-in keyless provider works without sign-up, and local GGUF models run offline. Cloud API keys and ChatGPT accounts are optional.
+- **Free speech.** Edge speech is built in with no key, more than 300 Microsoft voices and a sample for each. Groq, OpenAI, ElevenLabs, Deepgram, Cartesia and AssemblyAI can listen, speak or both.
 - **Many providers.** Anthropic, Google Gemini, ChatGPT accounts, any OpenAI-compatible endpoint, and fallback chains that switch models when one fails.
-- **Plugins, skills and MCP.** Install plugins from npm, GitHub, Claude marketplaces, archives or a folder on the phone. Connect MCP servers over stdio or HTTP.
+- **Research that reads.** Turn on any of ten search providers; the agent picks one, falls through failures, reads the top pages and returns passages. Shaky statements can be flagged, and a question can be re-run deeper.
+- **Plugins, skills and MCP.** Install plugins from npm, GitHub, Claude marketplaces, archives or a folder on the phone, and the agent can manage them when you ask. Plugin commands, binaries and language servers run like Claude Code, and MCP servers connect over stdio or HTTP.
 - **Built for long runs.** A foreground service, resume cards, a saved message queue and optional auto-continue keep work safe when the screen turns off or the connection drops.
-- **Safe by default.** The agent stays inside the workspace, sensitive actions ask for approval, and every change can be reviewed as a diff and undone.
+- **Safe by default.** The agent stays inside the workspace, sensitive actions ask for approval, phone control is approved once per chat while destructive changes ask every time, and every change can be reviewed as a diff and undone.
 - **21 languages.** Switch the app language at any time without a restart.
 
-## What's new in 3.4
+## What's new in 4.0
 
-- **A real interactive terminal.** The Terminal now runs a full shell on a pseudo-terminal, so nano, fzf, Python and Node REPLs, `top` and prompts such as `git add -p` work, with colors, extra keys and hardware keyboards.
-- **Storage and skills managers.** Settings → Storage inventories every installed component with its size and real location, and Settings → Skills becomes a searchable manager with filters, per-skill switches and bulk actions.
-- **Your own resume prompt.** Pick the text sent when a paused or interrupted task continues, for the whole app or for one chat.
-- **More control over context and changes.** The context dialog breaks the window down by group and suggests how to free space, `/review` reads the pending changes before you ask for fixes, and approvals saved with Always now survive across runs, with unsafe commands kept to the current run.
-- **Discover filters and chat history cards.** Sort and filter the plugin catalog, and open past conversations straight from the agent's search results.
+- **Voice that is free and yours to choose.** Edge speech needs no key and reads Microsoft's live catalogue of more than 300 voices. Groq, OpenAI, ElevenLabs, Deepgram, Cartesia and AssemblyAI can listen, speak or both, every voice has a sample button, and Auto send can be toggled from the + menu.
+- **Phone control you approve.** Agents ask once per chat before using Shizuku, root or Device Owner. Read-only checks run quietly, destructive changes ask every time, and Chat can set reminders, alarms and timers with approval.
+- **Research that reads.** Ten search providers can be switched on together. `web_search` reads the top pages and returns passages, shaky claims get a Check this claim marker, Dig deeper re-runs a question, and past chats can be placed where the answer refers to them.
+- **Photos in chat.** Paste images into the composer, see pending attachments in one tray, send every photo on the newest message, and open sent photos as a swipeable gallery.
+- **A new look.** Expressive settings, the AH monogram that acts out what the agent is doing, a tonal coding feed, a starter grid for new chats, and motion blur on every long list.
+- **More agent control.** The agent can manage plugins and reach more settings and skills, plugin commands, binaries, language servers and hooks work like Claude Code, and you can build your own settings sections.
 
 See [CHANGELOG.md](CHANGELOG.md) for the full release notes.
 
@@ -88,12 +91,14 @@ A short tour of what the app can do. The complete list, with every detail, is in
 
 **Code**
 - Streaming chat with thinking blocks, tool cards, diffs and verification cards that list every build or test that ran.
-- One or several workspaces per chat, each set to editable or read only.
-- Plan mode, dual planning (plan on one model, execute on another), subagents and a persistent message queue.
+- A workspace is one folder, and a project groups workspaces for chats that need several, each editable or read only.
+- Plan mode, dual planning (plan on one model, execute on another), subagents and a persistent message queue that can hold send to choose when a queued message is read.
+- Approve phone control once per chat, set reminders, alarms and timers, and schedule a message from the chat itself.
 - Scheduled automations that run prompts daily, hourly or on demand.
 
 **Chat**
-- Web research with cited sources and adjustable depth.
+- Web research across ten providers, with the top pages read for passages, cited sources, claim checks and adjustable depth.
+- Reminders, alarms and timers, photo paste, a single attachment tray and a full-screen gallery.
 - Personal Chat agents with their own instructions, model, tools and knowledge files.
 - Rich answers with tables, charts, diagrams, images and interactive previews.
 - Shared memory with Code, saved answers and voice input and output.
@@ -106,11 +111,13 @@ A short tour of what the app can do. The complete list, with every detail, is in
 
 **Models**
 - Built-in free provider, ChatGPT accounts, Anthropic, Gemini and any OpenAI-compatible API.
-- Up to 20 rotating API keys per provider, proxies, custom headers and fallback chains.
+- Up to 20 rotating API keys per provider, proxies, custom headers, key testing and fallback chains.
+- Voice providers for listening and speaking, including free Edge speech with more than 300 voices.
 - On-device GGUF models with optional GPU acceleration, plus 9Router as a local model router.
 
 **Personalization**
 - Custom color palettes, a background canvas, experimental glass effects and haptic feedback.
+- Expressive settings in named sections, custom settings sections you build yourself, and motion blur on long lists.
 - Phone and desktop layouts with keyboard shortcuts.
 
 ## Shell access
