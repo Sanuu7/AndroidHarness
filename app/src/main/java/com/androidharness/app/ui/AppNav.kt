@@ -164,6 +164,13 @@ fun AppNav(container: AppContainer) {
     val desktopKeyboard = remember { DesktopKeyboardRouter() }
     androidx.compose.runtime.LaunchedEffect(desktopNavigation) {
         if (desktopNavigation) { drawerState.close(); androidx.compose.runtime.withFrameNanos { }; desktopFocus.requestFocus() }
+        else {
+            // The desktop layout hides the drawer sheet at zero width, so its state can read as open when the
+            // phone sheet comes back after a rotation. Wait for the sheet to measure, then shut it.
+            androidx.compose.runtime.withFrameNanos { }
+            androidx.compose.runtime.withFrameNanos { }
+            drawerState.snapTo(DrawerValue.Closed)
+        }
     }
 
     var searchQuery by remember { mutableStateOf("") }
