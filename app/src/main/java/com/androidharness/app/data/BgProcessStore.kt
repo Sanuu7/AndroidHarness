@@ -33,6 +33,9 @@ data class BgProcessEntry(
     val ownerSessionId: String? = null,
 )
 
+/** Exit status a shell reports for a process ended by SIGKILL (128 + 9). */
+private const val SIGKILL_EXIT = 137
+
 /**
  * Registry of detached background shell processes (dev servers, watchers…),
  * persisted to a JSON file so it survives app restarts.
@@ -330,7 +333,9 @@ class BgProcessStore(
             }
         }
         if (!ok) return false
-        val exitCode = appProcesses[id]?.let { runCatching { it.exitValue() }.getOrNull() }
+        // Shizuku and root jobs have no local Process to ask. Every tier kills
+        // with SIGKILL, so their status is the shell's 128 + 9 rather than unknown.
+        val exitCode = appProcesses[id]?.let { runCatching { it.exitValue() }.getOrNull() } ?: SIGKILL_EXIT
         appProcesses.remove(id)
         entries[id] = e.copy(finishedAt = System.currentTimeMillis(), exitCode = exitCode, termination = "killed")
         persist()
