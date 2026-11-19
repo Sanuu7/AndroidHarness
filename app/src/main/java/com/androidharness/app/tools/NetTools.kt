@@ -305,6 +305,19 @@ class WebSearchTool(
  * githubusercontent.com hosts; explicit false never attaches. The token is
  * NEVER attached for any other host, whatever the arguments say.
  */
+internal val HTTP_TOOL_USER_AGENT: String =
+    "AndroidHarness/${com.androidharness.app.BuildConfig.VERSION_NAME} (+https://github.com/Sanuu7/AndroidHarness)"
+
+internal fun httpReason(code: Int): String? = when (code) {
+    200 -> "OK"; 201 -> "Created"; 202 -> "Accepted"; 204 -> "No Content"
+    301 -> "Moved Permanently"; 302 -> "Found"; 304 -> "Not Modified"; 307 -> "Temporary Redirect"; 308 -> "Permanent Redirect"
+    400 -> "Bad Request"; 401 -> "Unauthorized"; 403 -> "Forbidden"; 404 -> "Not Found"; 405 -> "Method Not Allowed"
+    408 -> "Request Timeout"; 409 -> "Conflict"; 410 -> "Gone"; 413 -> "Content Too Large"; 415 -> "Unsupported Media Type"
+    418 -> "I'm a teapot"; 422 -> "Unprocessable Content"; 429 -> "Too Many Requests"
+    500 -> "Internal Server Error"; 501 -> "Not Implemented"; 502 -> "Bad Gateway"; 503 -> "Service Unavailable"; 504 -> "Gateway Timeout"
+    else -> null
+}
+
 internal object GithubAuthPolicy {
     fun shouldAttach(host: String?, explicit: Boolean?): Boolean {
         val h = host?.lowercase()?.trimEnd('.') ?: return false
@@ -383,7 +396,9 @@ class HttpRequestTool(
             val attachAuth = GithubAuthPolicy.shouldAttach(host, githubAuth)
             val token = if (attachAuth) githubToken() else null
 
-            val builder = Request.Builder().url(url)
+            // OkHttp's bare "okhttp/x" agent is refused by sites that ask clients to identify
+            // themselves (Wikipedia, for one). A headers argument can still replace it.
+            val builder = Request.Builder().url(url).header("User-Agent", HTTP_TOOL_USER_AGENT)
             // Attached first so an explicit user Authorization header wins.
             if (attachAuth && token != null) {
                 builder.header("Authorization", "Bearer $token")
@@ -417,7 +432,10 @@ class HttpRequestTool(
                     .build()
                 reqClient.newCall(request).execute().use { resp ->
                     val sb = StringBuilder()
-                    sb.append("HTTP ").append(resp.code).append(' ').append(resp.message).append('\n')
+                    sb.append("HTTP ").append(resp.code)
+                    // HTTP/2 has no reason phrase; fall back to the standard one instead of a trailing space.
+                    (resp.message.trim().ifEmpty { httpReason(resp.code) })?.let { sb.append(' ').append(it) }
+                    sb.append('\n')
                     val headers = (0 until minOf(resp.headers.size, 12))
                         .map { resp.headers.name(it) to resp.headers.value(it) }
                     headers.forEach { (k, v) -> sb.append(k).append(": ").append(v).append('\n') }
