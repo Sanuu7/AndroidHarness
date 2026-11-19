@@ -144,4 +144,17 @@ class ChatExperienceTest {
         assertTrue(auto.contains("no fixed source limit"))
         assertFalse(auto.contains("enforces this turn's source budget"))
     }
+
+    @Test fun researchPromptPlansAnglesUpFrontAndPrefersPrimarySources() {
+        val auto = ChatExperience.researchDepthPrompt(com.androidharness.app.data.SearchDepth.AUTO)
+        assertTrue(auto.contains("Go as deep as the question needs"))
+        assertTrue(auto.contains("send all of their web_search calls in one message"))
+        assertTrue(auto.contains("Prefer primary sources"))
+        assertTrue(auto.contains("web_fetch with find"))
+        assertTrue(ChatExperience.researchDepthPrompt(com.androidharness.app.data.SearchDepth.DEEP_RESEARCH)
+            .contains("send all of their web_search calls in one message"))
+        // Instant is one quick search, so it is not told to plan several angles.
+        assertFalse(ChatExperience.researchDepthPrompt(com.androidharness.app.data.SearchDepth.INSTANT)
+            .contains("send all of their web_search calls in one message"))
+    }
 }

@@ -92,7 +92,7 @@ In Chat, the presentation choice above means the clearest layout for a phone rea
             com.androidharness.app.data.SearchDepth.DEEP ->
                 "The user chose Deep search: run focused searches, read the strongest result pages with web_fetch, and use up to 20 distinct sources this turn. While budget remains and relevant angles are unexplored, keep searching; stop when the budget is used or new searches return no new sources. Use the reported dates and the freshness filter for time-sensitive questions."
             com.androidharness.app.data.SearchDepth.AUTO ->
-                "Research depth is Auto: no fixed source limit. Decide how much searching the question needs and keep it proportionate."
+                "Research depth is Auto: no fixed source limit. Match the effort to the question. A single fact or current figure usually needs one search answered from its passages; a comparison, recommendation or open-ended question needs several angles. Go as deep as the question needs."
             com.androidharness.app.data.SearchDepth.DEEP_RESEARCH ->
                 "The user chose Deep research: plan queries across different angles, keep searching until the 50-source budget is used or further searches return no new sources, and read the strongest pages with web_fetch before answering. Do not stop early just because the first results look sufficient, and do not answer from snippets alone."
             com.androidharness.app.data.SearchDepth.MAX_RESEARCH ->
@@ -101,12 +101,21 @@ In Chat, the presentation choice above means the clearest layout for a phone rea
         val reading = " web_search reads the top result pages at the same time and returns their passages that best match the query; " +
             "those pages count as read. Answer from the passages when they cover the question, and do not fetch a page it already read. " +
             "Use web_fetch for a strong result it did not read, or when a passage is cut short and you need more. " +
+            "When you need one specific fact from a long page, call web_fetch with find set to its terms instead of reading the whole page. " +
+            "Prefer primary sources: official sites and documentation, the original publisher, papers, filings and dated reports, " +
+            "over aggregators, content farms and unsourced summaries. When the best source you found for a claim is weak or secondhand, say so. " +
             "When search passages disagree on a fact, number or date, run one targeted search on that point before answering. " +
             "If they still disagree, or an important claim rests on a single source, put a check marker right after that sentence: " +
             "[short reason](check:URL1,URL2) with the URLs of the sources involved, comma separated, no spaces. Use it only for claims that matter. " +
             "Run independent searches for different angles in the same message: they run at the same time."
-        return if (depth.maxSources == null) base + reading
-        else base + reading + " web_search enforces this turn's source budget and reports how many sources remain; when it is used up, answer from the sources already collected instead of searching more."
+        val planning = if (depth == com.androidharness.app.data.SearchDepth.INSTANT) "" else
+            " Before the first search, decide which angles the question needs and send all of their web_search calls in one message, " +
+                "so several searches cost about as long as one. After reading the results, search again only for the gaps or " +
+                "disagreements they revealed, and batch those follow-up searches together too. " +
+                "When web_search reports that most results were already returned earlier this turn, that angle is covered: " +
+                "try a genuinely different one or answer."
+        return if (depth.maxSources == null) base + reading + planning
+        else base + reading + planning + " web_search enforces this turn's source budget and reports how many sources remain; when it is used up, answer from the sources already collected instead of searching more."
     }
 
     /** Per-chat Default inherits the global Chat Option setting. */

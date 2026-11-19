@@ -40,6 +40,8 @@ class WebSearchTool(
     /** Every provider that is on and ready, read fresh per call. */
     private val setup: () -> SearchSetup = { SearchSetup.single(searchApi()) },
     private val refreshSetup: suspend () -> SearchSetup = { SearchSetup.single(refreshApi()) },
+    /** Result URLs already returned this turn, for the repeat note when no budget tracks them. */
+    private val seenThisTurn: MutableSet<String>? = null,
 ) : Tool {
     override val name = "web_search"
     override val description: String get() = buildString {
@@ -129,6 +131,7 @@ class WebSearchTool(
             images,
             setup,
             refreshSetup,
+            seenThisTurn = if (depth.maxSources == null) java.util.Collections.synchronizedSet(HashSet()) else null,
         )
 
     internal fun budget(): SearchSourceBudget? = sourceBudget
@@ -136,7 +139,10 @@ class WebSearchTool(
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         val started = System.nanoTime()
         val shown = ArrayList<WebSearchResult>()
-        val result = search(args, shown)
+        val result = search(args, shown).let { found ->
+            val note = repeatNote(shown)
+            if (note.isEmpty()) found else found.copy(output = found.output + note)
+        }
         val searchMs = (System.nanoTime() - started) / 1_000_000
         val query = args["query"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
         val wanted = (args["read"]?.jsonPrimitive?.content?.toIntOrNull()
@@ -307,6 +313,23 @@ class WebSearchTool(
         WebResultCache.putSearch(cacheKey, outcome)
         val suffix = outcome.via?.let { "\n[via $it]" } ?: ""
         return render(outcome.results, count, notes.toString(), suffix, shown)
+    }
+
+    /**
+     * Says how many of these results earlier searches this turn already
+     * returned. Information only: the agent still decides whether to go on.
+     */
+    internal fun repeatNote(shown: List<WebSearchResult>): String {
+        val seen = seenThisTurn ?: return ""
+        if (shown.isEmpty()) return ""
+        val keys = shown.map { canonicalResultUrl(it.url) }.filter { it.isNotEmpty() }.distinct()
+        if (keys.isEmpty()) return ""
+        val repeated = synchronized(seen) { keys.count { !seen.add(it) } }
+        return when {
+            repeated == keys.size -> "\n[All ${keys.size} results were already returned by earlier searches this turn; this query found nothing new.]"
+            repeated * 2 >= keys.size -> "\n[$repeated of ${keys.size} results were already returned by earlier searches this turn.]"
+            else -> ""
+        }
     }
 
     /** Tells the agent which providers were skipped on the way to the one that answered. */
