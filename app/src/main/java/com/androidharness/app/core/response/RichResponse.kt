@@ -80,7 +80,23 @@ object RichResponse {
         data class Evidence(val title: String, val items: List<EvidenceItem>) : Node
         data class Diff(val title: String, val before: String, val after: String, val path: String, val line: Int?, val language: String) : Node
         data class Writing(val title: String, val text: String, val language: String) : Node
+        /** Past conversations the agent found with its chat recall tools, by session ID. The app draws only ones it really found. */
+        data class Chats(val title: String, val ids: List<String>) : Node
         data object Divider : Node
+    }
+
+    /** Session IDs of every chats block in [text], in order; empty when the answer places none. */
+    fun chatIds(text: String): List<String> = if (!text.contains(LANGUAGE)) emptyList() else buildList {
+        fun visit(node: Node) {
+            when (node) {
+                is Node.Chats -> addAll(node.ids)
+                is Node.Card -> node.children.forEach(::visit)
+                is Node.Layout -> node.children.forEach(::visit)
+                is Node.Tabs -> node.tabs.forEach { it.children.forEach(::visit) }
+                else -> Unit
+            }
+        }
+        parse(text).filterIsInstance<Part.Content>().forEach { visit(it.node) }
     }
 
     /** True while the last rich fence of streaming [text] is still open, i.e. a visual is being written. */
@@ -248,6 +264,9 @@ object RichResponse {
                 "diff" -> Node.Diff(o.str("title", 100, true), o.str("before", 24000), o.str("after", 24000), o.str("path", 1024).also(::requireFilePath), o.lineNumber(), o.str("language", 30)).also {
                     require(it.before.lines().size <= 400 && it.after.lines().size <= 400)
                 }
+                "chats" -> Node.Chats(o.loose("title", 100), o.array("ids", 8).map { id ->
+                    (id as? JsonPrimitive)?.takeIf { it.isString }?.content?.trim()?.takeIf { it.isNotEmpty() && it.length <= 100 } ?: error("Expected a session ID")
+                }.distinct())
                 "writing" -> Node.Writing(o.str("title", 100, true), o.str("text", 24000, true), o.str("language", 30))
                 "choices" -> Node.Choices(o.str("title", 100, true), o.array("options", 6).map { it.jsonObject.let { c -> Choice(c.str("label", 100, true), c.str("description", 1000), c.str("prompt", 1000)) } })
                 "steps" -> Node.Steps(o.str("title", 100), o.array("items", 12).map { it.jsonObject.let { s -> Step(s.str("title", 100, true), s.str("text", 1000), (s["done"] as? JsonPrimitive)?.booleanOrNull ?: false) } },
@@ -342,6 +361,7 @@ object RichResponse {
         is Node.Evidence -> node.title + "\n" + node.items.joinToString("\n") { "${it.title} ${it.status}\n${it.text}\n${it.url.ifBlank { it.path + (it.line?.let { line -> ":$line" } ?: "") }}" }
         is Node.Diff -> node.title + "\n" + ResponseDiff.lines(node.before, node.after).joinToString("\n") { "${it.marker}${it.text}" }
         is Node.Writing -> node.title + "\n" + node.text
+        is Node.Chats -> node.title.ifBlank { "Past chats" }
         Node.Divider -> ""
     }.trim()
     fun number(value: Double): String = if (value == value.toLong().toDouble()) value.toLong().toString() else String.format(java.util.Locale.getDefault(), "%.2f", value)

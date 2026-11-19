@@ -1510,7 +1510,12 @@ private fun ChatScreenContent(
         if (LocalHarnessGlass.current.mode == HarnessGlassMode.LIQUID) .26f else 1f)
     val floatingGlass = glassScene != null && !desktopLayout
     var glassComposerHeight by remember { mutableIntStateOf(0) }
+    val historyLinks = remember(state.messages) {
+        com.androidharness.app.ui.chat.components.ChatHistoryLinks(
+            com.androidharness.app.core.ChatHistoryPresentation.found(state.messages), ::openHistoryMatch)
+    }
     CompositionLocalProvider(
+        com.androidharness.app.ui.chat.components.LocalChatHistoryLinks provides historyLinks,
         LocalHarnessGlassChromeBackdrop provides glassChrome,
         LocalChatDetailScroll provides detailScroll,
         com.androidharness.app.ui.chat.rich.LocalResponseFileOpen provides (if (state.conversation.isChat) null else onOpenFile),
@@ -1767,6 +1772,17 @@ private fun ChatScreenContent(
                 val chatTurns = remember(state.messages, state.conversation.isChat) {
                     if (state.conversation.isChat) state.messages.groupBy { it.turnId } else emptyMap()
                 }
+                // The answer places past chat cards itself with a chats block. When it found chats
+                // and placed none, the ones it settled on go under the finished answer, so cards
+                // never pop in while it is still searching.
+                val turnHistory = remember(state.messages) {
+                    state.messages.filter { it.turnId != null }.groupBy { it.turnId!! }
+                        .mapValues { (_, messages) ->
+                            val answer = messages.lastOrNull { it.role == Role.ASSISTANT && it.text.isNotBlank() }?.text.orEmpty()
+                            com.androidharness.app.core.ChatHistoryPresentation.fallback(messages, answer)
+                        }
+                        .filterValues { it.isNotEmpty() }
+                }
                 val turnVerification = remember(state.messages) {
                     state.messages.filter { it.turnId != null }.groupBy { it.turnId }
                         .mapValues { (_, messages) -> com.androidharness.app.agent.VerificationEvidence.collect(messages) }
@@ -1922,10 +1938,6 @@ private fun ChatScreenContent(
                                         writing = running && !state.streamingText.isNullOrBlank(),
                                         streamId = state.streamingMessageId ?: "live",
                                         onOpenUrl = { url -> webPreviewUrl = url; showWebPreview = true })
-                                }
-                                val historyMatches = com.androidharness.app.core.ChatHistoryPresentation.matches(messages)
-                                if (historyMatches.isNotEmpty()) indexedItem(key = "chat-turn-$activityKey-history", contentType = ChatListContentType.History) {
-                                    com.androidharness.app.ui.chat.components.ChatHistoryCards(historyMatches, ::openHistoryMatch)
                                 }
                             }
                             if (state.hasOlderMessages) {
@@ -2194,6 +2206,9 @@ private fun ChatScreenContent(
                                                 if (com.androidharness.app.core.ChatActivityPresentation.savedMemory(conversationTurn)) {
                                                     com.androidharness.app.ui.chat.components.ChatMemoryReceipt(conversationTurn, viewModel.container, state.busy)
                                                 }
+                                                message.turnId?.let { turnHistory[it] }?.let { matches ->
+                                                    com.androidharness.app.ui.chat.components.ChatHistoryCards(matches, ::openHistoryMatch)
+                                                }
                                             }
                                         }
                                     }
@@ -2355,6 +2370,11 @@ private fun ChatScreenContent(
                                         }
                                     }
                                 }
+                                if (isTurnFinal && !isTurnRunning) message.turnId?.let { turnHistory[it] }?.let { matches ->
+                                    indexedItem(key = "message-$messageKey-history", contentType = ChatListContentType.History) {
+                                        com.androidharness.app.ui.chat.components.ChatHistoryCards(matches, ::openHistoryMatch)
+                                    }
+                                }
                                 if (isTurnRunning || isSearchTurn) {
                                     val taskCalls = message.toolCalls.filter { it.name == "task" && (isSearchTurn || it.id !in subagentResults) }
                                     val otherCalls = message.toolCalls.filter { it.name != "task" }
@@ -2468,12 +2488,6 @@ private fun ChatScreenContent(
                                     Box(Modifier.animateItem(fadeInSpec = fastEffectsSpec(), placementSpec = null, fadeOutSpec = null)) {
                                         com.androidharness.app.ui.chat.components.StorageAccessCard(receipt)
                                     }
-                                }
-                            } else if (!state.conversation.isChat && message.generation.chatHistory != null) {
-                                val call = state.messages.firstOrNull { it.role == Role.ASSISTANT && it.toolCalls.any { call -> call.id == message.toolCallId } }
-                                val matches = com.androidharness.app.core.ChatHistoryPresentation.matches(listOfNotNull(call, message))
-                                if (matches.isNotEmpty()) indexedItem(key = "message-$messageKey-history", contentType = ChatListContentType.History) {
-                                    com.androidharness.app.ui.chat.components.ChatHistoryCards(matches, ::openHistoryMatch)
                                 }
                             }
                             Role.SYSTEM -> {

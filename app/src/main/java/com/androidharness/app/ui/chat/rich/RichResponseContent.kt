@@ -221,6 +221,10 @@ internal fun ResponseNode(node: RichResponse.Node, onOpenUrl: ((String) -> Unit)
         is RichResponse.Node.Evidence -> ResponseEvidence(node, onOpenUrl)
         is RichResponse.Node.Diff -> ResponseDiffView(node, onFollowUp)
         is RichResponse.Node.Writing -> ResponseWriting(node)
+        // Only chats the agent's recall tools returned resolve; an ID it made up draws nothing.
+        is RichResponse.Node.Chats -> com.androidharness.app.ui.chat.components.LocalChatHistoryLinks.current?.let { links ->
+            com.androidharness.app.ui.chat.components.ChatHistoryCards(links.resolve(node.ids), links.onOpen, node.title)
+        }
         RichResponse.Node.Divider -> HorizontalDivider(color = colors.outlineVariant)
     }
 }

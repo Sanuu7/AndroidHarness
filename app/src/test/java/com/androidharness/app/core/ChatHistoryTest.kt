@@ -58,4 +58,41 @@ class ChatHistoryTest {
         val recent = ChatMessage(Role.TOOL, toolCallId = "recent", generation = GenerationMetadata(chatHistory = ChatHistoryReceipt(listOf(hit.copy(messageId = null)))))
         assertEquals(listOf(hit), ChatHistoryPresentation.matches(listOf(calls, found, recent)))
     }
+
+    @Test fun onlyTheChatsTheAgentSettledOnAreShown() {
+        fun result(id: String, vararg hits: ChatHistoryMatch) =
+            ChatMessage(Role.TOOL, toolCallId = id, generation = GenerationMetadata(chatHistory = ChatHistoryReceipt(hits.toList())))
+        val browsed = (1..12).map { hit.copy(sessionId = "recent-$it", messageId = null) }
+        val searched = (1..8).map { hit.copy(sessionId = "found-$it") }
+        val calls = ChatMessage(Role.ASSISTANT, toolCalls = listOf(
+            ToolCallData("recent", "recent_chats", "{}"), ToolCallData("find", "search_chats", "{}"), ToolCallData("read", "read_chat_snippet", "{}")))
+        val recent = result("recent", *browsed.toTypedArray())
+        val found = result("find", *searched.toTypedArray())
+        val opened = result("read", hit.copy(sessionId = "found-3", messageId = null))
+
+        // Opening a chat means that is the one it used; the search hit supplies the exact message.
+        assertEquals(listOf(searched[2]), ChatHistoryPresentation.matches(listOf(calls, recent, found, opened)))
+        // Without an opened chat, search hits win over the browsing list.
+        assertEquals(searched, ChatHistoryPresentation.matches(listOf(calls, recent, found)))
+        // A recent list alone is still shown.
+        assertEquals(browsed, ChatHistoryPresentation.matches(listOf(calls, recent)))
+    }
+
+    @Test fun theAnswerPlacesChatCardsAndOnlyFoundChatsResolve() {
+        val calls = ChatMessage(Role.ASSISTANT, toolCalls = listOf(ToolCallData("find", "search_chats", "{}")))
+        val found = ChatMessage(Role.TOOL, toolCallId = "find", generation = GenerationMetadata(chatHistory = ChatHistoryReceipt(listOf(
+            hit.copy(sessionId = "a"), hit.copy(sessionId = "b")))))
+        val turn = listOf(calls, found)
+        val placed = "Here it is.\n\n```harness-ui\n{\"type\":\"chats\",\"title\":\"Earlier\",\"ids\":[\"b\",\"made-up\",\"b\"]}\n```\n\nMore text."
+        val node = com.androidharness.app.core.response.RichResponse.parse(placed)
+            .filterIsInstance<com.androidharness.app.core.response.RichResponse.Part.Content>().single().node
+        assertEquals(com.androidharness.app.core.response.RichResponse.Node.Chats("Earlier", listOf("b", "made-up")), node)
+        // An answer that placed its own cards gets nothing extra underneath.
+        assertTrue(ChatHistoryPresentation.fallback(turn, placed).isEmpty())
+        // One that placed none falls back to the chats the agent settled on.
+        assertEquals(listOf("a", "b"), ChatHistoryPresentation.fallback(turn, "No block here.").map { it.sessionId })
+        // Only IDs the tools returned are known; the invented one has nothing to draw.
+        val known = ChatHistoryPresentation.found(turn).associateBy { it.sessionId }
+        assertEquals(listOf("b"), listOf("b", "made-up").mapNotNull { known[it]?.sessionId })
+    }
 }

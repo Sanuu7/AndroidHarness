@@ -4,8 +4,8 @@ import kotlinx.serialization.json.*
 
 /** Chat-only recovery for providers that omit the native-component fence. Code keeps strict parsing. */
 internal object ChatRichResponse {
-    private val header = Regex("""^\{\s*"type"\s*:\s*"(callout|card|metrics|chart|choices|steps|details|link|preview|table|tabs|gallery|profile|calculator|evidence|diff|writing|column|columns|text|divider)"""")
-    private val componentTypes = setOf("callout", "card", "metrics", "chart", "choices", "steps", "details", "link", "preview", "table", "tabs", "gallery", "profile", "calculator", "evidence", "diff", "writing", "column", "columns", "text", "divider")
+    private val header = Regex("""^\{\s*"type"\s*:\s*"(callout|card|metrics|chart|choices|steps|details|link|preview|table|tabs|gallery|profile|calculator|evidence|diff|writing|chats|column|columns|text|divider)"""")
+    private val componentTypes = setOf("callout", "card", "metrics", "chart", "choices", "steps", "details", "link", "preview", "table", "tabs", "gallery", "profile", "calculator", "evidence", "diff", "writing", "chats", "column", "columns", "text", "divider")
     private fun partialHeader(candidate: String): Boolean {
         val compact = candidate.filterNot(Char::isWhitespace)
         val prefix = "{\"type\":\""
