@@ -84,7 +84,8 @@ class SearchChatsTool(
         if (hits.size > ranked.size) {
             out.append("[More chats matched. Refine the query if these are not the right ones.]\n")
         }
-        out.append("[Excerpts only. Use read_chat_snippet for a small window around one hit; never request a whole chat.]")
+        out.append("[Excerpts only. Use read_chat_snippet for a small window around one hit; never request a whole chat.]\n")
+            .append(CHAT_CARDS_HINT)
         return ToolResult(true, out.toString(), chatHistory = ChatHistoryReceipt(ranked.map { hit ->
             ChatHistoryMatch(hit.sessionId, hit.messageId, hit.sessionTitle.ifBlank { "Untitled chat" }.take(100),
                 ChatSearch.snippet(hit.text, needles, MAX_SNIPPET_CHARS).text, hit.kind, hit.createdAt)
@@ -121,7 +122,8 @@ class RecentChatsTool(
                 .append(" · \"").append(session.title.take(100)).append("\"")
                 .append(" · session: ").append(session.id).append('\n')
         }
-        out.append("[Use read_chat_snippet with a session ID and no message ID to read the latest messages.]")
+        out.append("[Use read_chat_snippet with a session ID and no message ID to read the latest messages.]\n")
+            .append(CHAT_CARDS_HINT)
         return ToolResult(true, out.toString(), chatHistory = ChatHistoryReceipt(list.map { session ->
             ChatHistoryMatch(session.id, title = session.title.take(100),
                 kind = ConversationConfig.decode(session.conversationJson).kind, updatedAt = session.updatedAt)
@@ -191,6 +193,7 @@ class ReadChatSnippetTool(
             out.append(label).append(": ").append(body).append('\n')
             if (body.length < text.length) break
         }
+        out.append("\nsession: ").append(sid).append('\n').append(CHAT_CARDS_HINT)
         val anchor = visible.getOrNull(target) ?: visible.last()
         return ToolResult(true, out.toString().trimEnd(), chatHistory = ChatHistoryReceipt(listOf(
             ChatHistoryMatch(sid, anchor.first.id, title.take(100), anchor.second.take(MAX_SNIPPET_CHARS),
@@ -198,6 +201,13 @@ class ReadChatSnippetTool(
         )))
     }
 }
+
+/** How the agent shows past chats to the user: it places the cards, the app only draws chats it really found. */
+internal const val CHAT_CARDS_HINT =
+    "[To let the user open chats you mention, place a harness-ui block in your answer where the cards fit best, " +
+        "for example ```harness-ui\n{\"type\":\"chats\",\"title\":\"Where we covered this\",\"ids\":[\"<session id>\"]}\n``` " +
+        "with up to 8 session IDs from these results, most relevant first. Only include chats that answer the user's question. " +
+        "If you place none, the chats you settled on show under your answer.]"
 
 private fun day(millis: Long): String =
     java.time.Instant.ofEpochMilli(millis)
