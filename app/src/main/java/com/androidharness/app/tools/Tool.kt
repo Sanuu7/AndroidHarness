@@ -95,6 +95,8 @@ class ToolRegistry(private val tools: List<Tool>) {
             fileHistory: com.androidharness.app.data.WorkspaceFileHistory? = null,
             memory: com.androidharness.app.data.MemoryRepository? = null,
             searchApiRefresh: suspend () -> SearchApiConfig? = { searchApi() },
+            searchSetup: () -> SearchSetup = { SearchSetup.single(searchApi()) },
+            searchSetupRefresh: suspend () -> SearchSetup = { SearchSetup.single(searchApiRefresh()) },
             dhizuku: com.androidharness.app.data.env.DhizukuManager? = null,
             deviceAccess: com.androidharness.app.data.env.DeviceAccessManager? = null,
             pullRequests: (() -> com.androidharness.app.github.PullRequestPublisher?)? = null,
@@ -140,7 +142,7 @@ class ToolRegistry(private val tools: List<Tool>) {
                     renderedReader = browserController?.let { browser -> { budget -> BrowserReadTool(browser, budget) } }),
                 WebFetchTool(httpClient, searchApi = searchApi, refreshApi = searchApiRefresh).let { pages ->
                     WebSearchTool(httpClient, searchApi, refreshApi = searchApiRefresh,
-                        pageReader = SearchPageReader(pages::readText))
+                        pageReader = SearchPageReader(pages::readText), setup = searchSetup, refreshSetup = searchSetupRefresh)
                 },
                 HttpRequestTool(httpClient) { linuxEnv.githubToken() },
                 AskUserTool(),

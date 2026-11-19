@@ -15,7 +15,7 @@ import kotlinx.coroutines.flow.map
 
 val Context.settingsStore by preferencesDataStore(name = "settings")
 
-private val WEB_SEARCH_PROVIDERS = setOf("keyless", "brave", "tavily")
+private val WEB_SEARCH_PROVIDERS = com.androidharness.app.tools.SearchProviders.ids.toSet()
 
 enum class ThemeMode { SYSTEM, LIGHT, DARK, AMOLED }
 
@@ -87,8 +87,13 @@ data class AppSettings(
     val sameModelAcrossChats: Boolean = true,
     /** Skill names hidden from the catalog and slash picker. */
     val disabledSkills: Set<String> = emptySet(),
-    /** web_search backend: "keyless" (default) | "brave" | "tavily". */
+    /**
+     * The search provider picked before several could be on at once. Kept for backups and
+     * older builds; web_search now uses every provider that is not in [disabledSearchProviders].
+     */
     val webSearchProvider: String = "keyless",
+    /** Search providers the user switched off. Everything else that is ready (has keys, or needs none) can be used. */
+    val disabledSearchProviders: Set<String> = emptySet(),
     /**
      * Screenshots are allowed by default outside credential screens. Off blocks
      * them app wide; screens that show keys and tokens always block.
@@ -357,6 +362,7 @@ class SettingsRepository(private val context: Context) {
         val SAME_MODEL_ACROSS_CHATS = booleanPreferencesKey("same_model_across_chats")
         val DISABLED_SKILLS = stringSetPreferencesKey("disabled_skills")
         val WEB_SEARCH_PROVIDER = stringPreferencesKey("web_search_provider")
+        val DISABLED_SEARCH_PROVIDERS = stringSetPreferencesKey("disabled_search_providers")
         val ALLOW_SCREENSHOTS = booleanPreferencesKey("allow_screenshots")
         val PLANNING_MODELS_ENABLED = booleanPreferencesKey("planning_models_enabled")
         val PLANNING_PROVIDER = stringPreferencesKey("planning_provider_id")
@@ -500,6 +506,7 @@ class SettingsRepository(private val context: Context) {
             webSearchProvider = prefs[Keys.WEB_SEARCH_PROVIDER]
                 ?.takeIf { it in WEB_SEARCH_PROVIDERS }
                 ?: "keyless",
+            disabledSearchProviders = prefs[Keys.DISABLED_SEARCH_PROVIDERS].orEmpty().filterTo(HashSet()) { it in WEB_SEARCH_PROVIDERS },
             allowScreenshots = prefs[Keys.ALLOW_SCREENSHOTS] ?: true,
             planningModelsEnabled = prefs[Keys.PLANNING_MODELS_ENABLED] ?: false,
             planningProviderId = prefs[Keys.PLANNING_PROVIDER],
@@ -624,6 +631,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.SUBAGENT_COMPLETION_NOTIFICATIONS] = s.subagentCompletionNotifications
             p[Keys.DISABLED_SKILLS] = s.disabledSkills
             p[Keys.WEB_SEARCH_PROVIDER] = s.webSearchProvider
+            p[Keys.DISABLED_SEARCH_PROVIDERS] = s.disabledSearchProviders.filterTo(HashSet()) { it in WEB_SEARCH_PROVIDERS }
             p[Keys.VOICE_ENGINE] = s.voiceEngine
             p[Keys.GROQ_WHISPER_MODEL] = s.groqWhisperModel
             p[Keys.TTS_ENGINE] = s.ttsEngine
@@ -694,6 +702,15 @@ class SettingsRepository(private val context: Context) {
     suspend fun setWebSearchProvider(provider: String) {
         if (provider !in WEB_SEARCH_PROVIDERS) return
         context.settingsStore.edit { it[Keys.WEB_SEARCH_PROVIDER] = provider }
+    }
+
+    /** Turns one search provider on or off for web_search. */
+    suspend fun setSearchProviderEnabled(provider: String, enabled: Boolean) {
+        if (provider !in WEB_SEARCH_PROVIDERS) return
+        context.settingsStore.edit { prefs ->
+            val disabled = prefs[Keys.DISABLED_SEARCH_PROVIDERS].orEmpty()
+            prefs[Keys.DISABLED_SEARCH_PROVIDERS] = if (enabled) disabled - provider else disabled + provider
+        }
     }
 
     suspend fun setProviderEnabled(id: String, enabled: Boolean) {

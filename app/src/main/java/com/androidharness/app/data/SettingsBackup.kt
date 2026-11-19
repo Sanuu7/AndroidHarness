@@ -148,8 +148,8 @@ object SettingsBackupValidation {
         check(file.providers.map { it.config.id }.distinct().size == file.providers.size, SettingsBackupProblem.PROVIDERS)
         check(file.settings.providerOrder.size <= 100 && file.settings.disabledProviderIds.size <= 100 &&
             (file.settings.providerOrder + file.settings.disabledProviderIds).all { it.length <= 500 }, SettingsBackupProblem.PROVIDERS)
-        check(file.searchKeys.keys.all { it in setOf("brave", "tavily") }, SettingsBackupProblem.SEARCH)
-        check(file.searchKeyPools.all { (name, pool) -> name in setOf("brave", "tavily") && pool.error() == null }, SettingsBackupProblem.SEARCH)
+        check(file.searchKeys.keys.all { it in com.androidharness.app.tools.SearchProviders.apiIds }, SettingsBackupProblem.SEARCH)
+        check(file.searchKeyPools.all { (name, pool) -> name in com.androidharness.app.tools.SearchProviders.apiIds && pool.error() == null }, SettingsBackupProblem.SEARCH)
         val s = file.settings
         check(s.memoryEntryMaxChars > 0, SettingsBackupProblem.MEMORY)
         check(s.customPalettes.size <= 24 && s.customPalettes.all { it.valid() } && s.customPalettes.map { it.id }.distinct().size == s.customPalettes.size &&
@@ -160,7 +160,8 @@ object SettingsBackupValidation {
         check(runCatching { ChatAgentProfile.encodeList(s.chatAgents) }.isSuccess, SettingsBackupProblem.CHAT_AGENTS)
         check((s.autoCompactTokens == 0 || s.autoCompactTokens >= 1_024) && s.maxContextTokens in 8192..2_000_000 && s.maxOutputTokens in 1..1_000_000 && s.maxIterations in 0..10_000, SettingsBackupProblem.MODEL_LIMITS)
         check(s.resumePrompt.length <= com.androidharness.app.agent.RunRecovery.MAX_PROMPT_CHARS, SettingsBackupProblem.MODEL_LIMITS)
-        check(s.webSearchProvider in setOf("keyless", "brave", "tavily"), SettingsBackupProblem.SEARCH)
+        check(s.webSearchProvider in com.androidharness.app.tools.SearchProviders.ids, SettingsBackupProblem.SEARCH)
+        check(s.disabledSearchProviders.all { it in com.androidharness.app.tools.SearchProviders.ids }, SettingsBackupProblem.SEARCH)
         check(s.voiceEngine == "inbuilt" || s.voiceEngine.length in 1..200, SettingsBackupProblem.VOICE)
         check(s.ttsEngine == "system" || s.ttsEngine.length in 1..200, SettingsBackupProblem.VOICE)
         val ids = file.providers.map { it.config.id }.toSet() + HarnessProvider.ID
@@ -233,8 +234,8 @@ class SettingsBackup(private val c: AppContainer) {
             }
             val file = SettingsBackupFile(settings = s, providers = providers,
                 servers = if (includeKeys) c.mcp.servers.value.map { it.copy(enabled = false) } else emptyList(),
-                searchKeys = if (includeKeys) listOf("brave", "tavily").mapNotNull { name -> credential { c.keys.searchApiKey(name) }?.let { name to it } }.toMap() else emptyMap(),
-                searchKeyPools = if (includeKeys) listOf("brave", "tavily").mapNotNull { name ->
+                searchKeys = if (includeKeys) com.androidharness.app.tools.SearchProviders.apiIds.mapNotNull { name -> credential { c.keys.searchApiKey(name) }?.let { name to it } }.toMap() else emptyMap(),
+                searchKeyPools = if (includeKeys) com.androidharness.app.tools.SearchProviders.apiIds.mapNotNull { name ->
                     credential { c.keys.searchKeyPool(name) }?.takeIf { it.keys.isNotEmpty() }?.let { name to it }
                 }.toMap() else emptyMap(),
                 groqKey = if (includeKeys) credential { c.keys.groqApiKey() } else null,

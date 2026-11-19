@@ -384,7 +384,7 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         R.string.settings_search_web_title,
         R.string.settings_search_web_desc,
         SettingsPage.SEARCH,
-        "internet brave tavily api key keyless",
+        "internet brave tavily serper serpapi linkup langsearch jina firecrawl marginalia api key keyless",
         anchor = R.string.settings_search_web_backend_label,
     ),
     SettingsSearchEntry(

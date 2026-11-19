@@ -1169,7 +1169,7 @@
         },
         {
           "title": "Set up search if needed",
-          "body": "Keyless search needs no search API key. For Brave or Tavily, select that backend in Settings → Web search, obtain its own key, and use the app’s verification/save action."
+          "body": "Keyless search needs no search API key, and Marginalia works with its shared public key. For Brave, Serper, SerpApi, Tavily, Linkup, LangSearch, Jina or Firecrawl, select that provider in Settings → Web search, get a key from it, and save it there (up to 20 keys per provider, each tested before it is saved)."
         },
         {
           "title": "Give the question boundaries",
@@ -1182,7 +1182,7 @@
       ],
       "outcome": "The answer includes relevant sources when research succeeds, and you can open the pages yourself.",
       "limits": [
-        "Search keys are separate from model-provider keys. A model key does not automatically enable Brave or Tavily.",
+        "Search keys are separate from model-provider keys. A model key does not automatically enable any search provider.",
         "Paywalls, logins, blocked websites, unavailable Reddit pages, and network failures can prevent reading. Deeper research uses more time and model/tool requests."
       ],
       "fixes": [

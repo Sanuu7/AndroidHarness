@@ -171,7 +171,7 @@ internal enum class SettingsPage(
         R.string.settings_page_search_title,
         R.string.settings_page_search_desc,
         R.string.settings_group_integrations,
-        "brave tavily keyless internet",
+        "brave tavily serper serpapi linkup langsearch jina firecrawl marginalia keyless internet",
     ),
     MCP(
         R.string.settings_page_mcp_title,

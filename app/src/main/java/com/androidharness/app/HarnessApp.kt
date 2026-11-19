@@ -271,18 +271,27 @@ class AppContainer(val appContext: Context) {
     private var projectSkillsDir: java.io.File? = null
     private val disabledSkills = AtomicReference<Set<String>>(emptySet())
     private val webSearchProvider = AtomicReference("keyless")
+    private val disabledSearchProviders = AtomicReference<Set<String>>(emptySet())
     private val searchKeyMigrated = AtomicBoolean(false)
 
     /**
-     * web_search backend config, resolved per call so Settings changes apply
-     * to the very next search without a restart. Null = keyless engines.
+     * Every search provider web_search may use, resolved per call so Settings changes
+     * apply to the very next search without a restart. Tool descriptions read this
+     * without rotating keys so listing the tools does not skip a key's turn.
      */
+    val searchSetup: com.androidharness.app.tools.SearchSetup
+        get() = buildSearchSetup(disabledSearchProviders.get(), rotate = false)
+
+    /** The provider web_fetch borrows page extraction from: Tavily when it is on, else the first ready one. */
     val searchApiConfig: com.androidharness.app.tools.SearchApiConfig?
-        get() {
-            val provider = webSearchProvider.get()
-            if (provider == "keyless") return null
-            return searchApiConfigFor(provider, rotate = false).takeIf { it.keys.isNotEmpty() }
+        get() = searchSetup.let { it.config("tavily") ?: it.apis.firstOrNull() }
+
+    private fun buildSearchSetup(disabled: Set<String>, rotate: Boolean): com.androidharness.app.tools.SearchSetup {
+        val apis = com.androidharness.app.tools.SearchProviders.apis.filter { it.id !in disabled }.mapNotNull { info ->
+            searchApiConfigFor(info.id, rotate).takeIf { it.keys.isNotEmpty() || info.sharedKey != null }
         }
+        return com.androidharness.app.tools.SearchSetup(apis, keyless = com.androidharness.app.tools.SearchProviders.KEYLESS !in disabled)
+    }
 
     /**
      * Enabled keys in this call's order: rotation moves the start key, the rest are
@@ -296,13 +305,16 @@ class AppContainer(val appContext: Context) {
         return com.androidharness.app.tools.SearchApiConfig(provider, ordered.firstOrNull().orEmpty(), ordered.drop(1))
     }
 
-    private suspend fun resolveSearchApiConfig(): com.androidharness.app.tools.SearchApiConfig? {
-        val provider = settings.settings.first().webSearchProvider
-        keys.migrateLegacySearchKey(provider)
-        webSearchProvider.set(provider)
-        if (provider == "keyless") return null
-        return searchApiConfigFor(provider)
+    private suspend fun resolveSearchSetup(): com.androidharness.app.tools.SearchSetup {
+        val current = settings.settings.first()
+        keys.migrateLegacySearchKey(current.webSearchProvider)
+        webSearchProvider.set(current.webSearchProvider)
+        disabledSearchProviders.set(current.disabledSearchProviders)
+        return buildSearchSetup(current.disabledSearchProviders, rotate = true)
     }
+
+    private suspend fun resolveSearchApiConfig(): com.androidharness.app.tools.SearchApiConfig? =
+        resolveSearchSetup().let { it.config("tavily") ?: it.apis.firstOrNull() }
 
     private val cavemanSettings = AtomicReference(com.androidharness.app.data.AppSettings())
     val skills = com.androidharness.app.skills.SkillStore(
@@ -321,6 +333,8 @@ class AppContainer(val appContext: Context) {
         browserController = browser,
         searchApi = { searchApiConfig },
         searchApiRefresh = ::resolveSearchApiConfig,
+        searchSetup = { searchSetup },
+        searchSetupRefresh = ::resolveSearchSetup,
         artifactLoader = sessions::artifacts,
         toolOutputLoader = sessions::toolOutput,
         fileHistory = fileHistory,
@@ -506,6 +520,7 @@ class AppContainer(val appContext: Context) {
                     keys.migrateLegacySearchKey(it.webSearchProvider)
                 }
                 webSearchProvider.set(it.webSearchProvider)
+                disabledSearchProviders.set(it.disabledSearchProviders)
             }
         }
         kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

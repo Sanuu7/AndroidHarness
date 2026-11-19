@@ -48,6 +48,8 @@ internal fun ProviderKeysEditor(
     onChange: (ProviderKeyPool) -> Unit,
     enabled: Boolean = true,
     onTest: (suspend (String) -> ProviderKeyCheck.Result)? = null,
+    /** What a test sends, shown above the keys when [onTest] is set. */
+    testHint: String? = null,
 ) {
     var revealed by remember { mutableStateOf(emptySet<String>()) }
     // Key id to (tested value, result); a null result means the test is running.
@@ -78,7 +80,7 @@ internal fun ProviderKeysEditor(
             }
             Switch(pool.rotate, onCheckedChange = null, enabled = enabled)
         }
-        if (onTest != null) Text(stringResource(R.string.provider_test_key_hint), style = MaterialTheme.typography.bodySmall,
+        if (onTest != null) Text(testHint ?: stringResource(R.string.provider_test_key_hint), style = MaterialTheme.typography.bodySmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant)
         pool.keys.forEachIndexed { index, apiKey -> key(apiKey.id) {
             val visible = apiKey.id in revealed

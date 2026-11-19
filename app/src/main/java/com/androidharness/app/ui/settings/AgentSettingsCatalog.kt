@@ -376,10 +376,18 @@ internal object AgentSettingsCatalog {
             keywords = "local model on device offline instructions tools slow memory",
             sensitive = true, read = { it.localModelAgentContext.toString() }, write = { r, v -> r.setLocalModelAgentContext(bool(v)) }),
         // Web search
-        AgentSetting("web_search_provider", R.string.settings_search_web_title, SettingsPage.SEARCH,
-            SettingKind.Choice({ listOf("keyless", "brave", "tavily") }),
-            "Web search backend; brave and tavily need an API key on the page.", keywords = "search engine brave tavily",
-            read = { it.webSearchProvider }, write = { r, v -> r.setWebSearchProvider(v) }),
+        // Web search: one switch per provider. Every one that is on and has a key (or needs none) takes part.
+        *com.androidharness.app.tools.SearchProviders.ids.map { id ->
+            val name = com.androidharness.app.tools.SearchProviders.name(id) ?: "the keyless public engines"
+            AgentSetting("web_search_$id", R.string.settings_search_web_title, SettingsPage.SEARCH, SettingKind.Toggle,
+                "Lets web_search use $name. On by default; " +
+                    (if (id == com.androidharness.app.tools.SearchProviders.KEYLESS || com.androidharness.app.tools.SearchProviders.info(id)?.sharedKey != null)
+                        "it needs no key." else "it only works once a key is saved on the Web search page.") +
+                    " Every provider that is on and ready can be used, and web_search picks between them.",
+                keywords = "search engine provider $id ${name.lowercase()}",
+                read = { (id !in it.disabledSearchProviders).toString() },
+                write = { r, v -> r.setSearchProviderEnabled(id, bool(v)) })
+        }.toTypedArray(),
         // Background
         AgentSetting("run_in_background", R.string.background_run_title, SettingsPage.BACKGROUND, SettingKind.Toggle,
             "Keep runs going when the app is in the background.", R.string.background_run_title, "background minimize screen off",

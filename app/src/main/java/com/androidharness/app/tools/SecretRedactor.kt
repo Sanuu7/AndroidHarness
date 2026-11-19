@@ -42,6 +42,8 @@ object SecretRedactor {
         Rule(Regex("""\bhf_[A-Za-z0-9]{16,}"""), "[redacted]"),         // Hugging Face
         Rule(Regex("""\btgp_v1_[A-Za-z0-9_\-]{12,}"""), "[redacted]"),  // Together
         Rule(Regex("""\btvly-[A-Za-z0-9_\-]{12,}"""), "[redacted]"),    // Tavily
+        Rule(Regex("""\bfc-[A-Za-z0-9]{24,}"""), "[redacted]"),         // Firecrawl
+        Rule(Regex("""\bjina_[A-Za-z0-9_\-]{24,}"""), "[redacted]"),    // Jina
 
         // Cloud and infra.
         Rule(Regex("""\b(?:AKIA|ASIA)[0-9A-Z]{16}\b"""), "[redacted]"),  // AWS access key id

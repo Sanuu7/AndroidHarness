@@ -46,13 +46,13 @@ internal data class SearchOptions(
 )
 
 /**
- * The user's search API choice: provider id ("brave" | "tavily") plus the key
+ * The user's search API choice: a [SearchProviders] id plus the key
  * from encrypted storage. Null means the keyless HTML engines are used.
  * [fallbackKeys] are the other enabled keys of the pool, tried in order when
  * [apiKey] is rejected or out of quota.
  */
 // Manual toString: the generated one embeds the raw key, and a stray
-// Log.d(config) would leak a live Brave/Tavily key to logcat.
+// Log.d(config) would leak a live search API key to logcat.
 data class SearchApiConfig(val provider: String, val apiKey: String, val fallbackKeys: List<String> = emptyList()) {
     /** Every usable key, the preferred one first. */
     val keys: List<String> get() = (listOf(apiKey) + fallbackKeys).filter { it.isNotBlank() }.distinct()
@@ -86,7 +86,7 @@ internal suspend fun <T> withKeyFailover(keys: List<String>, block: suspend (Str
 
 /**
  * One web-search source. The keyless backend scrapes HTML search endpoints;
- * API backends (Brave, Tavily) use proper JSON APIs and are preferred when
+ * API backends (see [SearchProviders]) use proper JSON APIs and are preferred when
  * the user configures a key. The engine selector only means something to the
  * keyless backend; API backends ignore it.
  */
@@ -103,9 +103,21 @@ internal interface SearchBackend {
 /** Picks the backend for a user configuration; null = keyless scraping. */
 internal fun searchBackendFor(config: SearchApiConfig?): SearchBackend? =
     when (config?.provider?.trim()?.lowercase()) {
-        "brave" -> config.keys.takeIf { it.isNotEmpty() }?.let { BraveApiBackend(it) }
-        "tavily" -> config.keys.takeIf { it.isNotEmpty() }?.let { TavilyApiBackend(it) }
-        else -> null
+        null, SearchProviders.KEYLESS -> null
+        "marginalia" -> MarginaliaApiBackend(config.keys)
+        else -> config.keys.takeIf { it.isNotEmpty() }?.let { keys ->
+            when (config.provider.trim().lowercase()) {
+                "brave" -> BraveApiBackend(keys)
+                "tavily" -> TavilyApiBackend(keys)
+                "serper" -> SerperApiBackend(keys)
+                "serpapi" -> SerpApiBackend(keys)
+                "linkup" -> LinkupApiBackend(keys)
+                "langsearch" -> LangSearchApiBackend(keys)
+                "jina" -> JinaApiBackend(keys)
+                "firecrawl" -> FirecrawlApiBackend(keys)
+                else -> null
+            }
+        }
     }
 
 /**

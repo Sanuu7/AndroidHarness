@@ -128,6 +128,7 @@ internal object ResearchHttp {
     suspend fun <T> read(client: OkHttpClient, request: Request, consume: (Response) -> T): T = withContext(Dispatchers.IO) {
         // Key replacement must not reuse another key's cooldown. No raw key enters logs or caches.
         val credential = request.header("Authorization") ?: request.header("X-Subscription-Token")
+            ?: request.header("X-API-KEY") ?: request.header("API-Key") ?: request.url.queryParameter("api_key")
         val identity = credential?.let(::credentialIdentity).orEmpty()
         for (attempt in 0..1) {
             currentCoroutineContext().ensureActive()
