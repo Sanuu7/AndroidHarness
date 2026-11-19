@@ -774,9 +774,11 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setStreamStallTimeoutSeconds(seconds: Int) {
         context.settingsStore.edit {
-            it[Keys.STREAM_STALL_TIMEOUT_SECONDS] = seconds.coerceIn(
-                com.androidharness.app.agent.StreamRetrier.MIN_STALL_TIMEOUT_SECONDS,
-                com.androidharness.app.agent.StreamRetrier.MAX_STALL_TIMEOUT_SECONDS)
+            it[Keys.STREAM_STALL_TIMEOUT_SECONDS] =
+                if (seconds == com.androidharness.app.agent.StreamRetrier.STALL_TIMEOUT_NEVER) seconds
+                else seconds.coerceIn(
+                    com.androidharness.app.agent.StreamRetrier.MIN_STALL_TIMEOUT_SECONDS,
+                    com.androidharness.app.agent.StreamRetrier.MAX_STALL_TIMEOUT_SECONDS)
         }
     }
 

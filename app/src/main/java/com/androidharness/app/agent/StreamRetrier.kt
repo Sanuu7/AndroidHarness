@@ -105,14 +105,21 @@ internal object StreamRetrier {
     const val STALLED_STREAM_MESSAGE = "Stream stalled - no data received for 90s (timed out)"
 
     /** The stall window when the user has not picked one in Settings. */
-    const val DEFAULT_STALL_TIMEOUT_MS = 300_000L
-    const val DEFAULT_STALL_TIMEOUT_SECONDS = 300
+    const val DEFAULT_STALL_TIMEOUT_MS = 900_000L
+    const val DEFAULT_STALL_TIMEOUT_SECONDS = 900
     const val MIN_STALL_TIMEOUT_SECONDS = 30
     const val MAX_STALL_TIMEOUT_SECONDS = 3_600
 
+    /** Saved value meaning "never pause a silent stream". */
+    const val STALL_TIMEOUT_NEVER = 0
+
+    /** Window used for [STALL_TIMEOUT_NEVER]; small enough that adding to it cannot overflow. */
+    const val NO_STALL_LIMIT_MS = Long.MAX_VALUE / 4
+
     /** The user's stall window in ms, kept inside the range the picker offers. */
     fun stallTimeoutMs(seconds: Int): Long =
-        seconds.coerceIn(MIN_STALL_TIMEOUT_SECONDS, MAX_STALL_TIMEOUT_SECONDS) * 1_000L
+        if (seconds == STALL_TIMEOUT_NEVER) NO_STALL_LIMIT_MS
+        else seconds.coerceIn(MIN_STALL_TIMEOUT_SECONDS, MAX_STALL_TIMEOUT_SECONDS) * 1_000L
 
     /** "90s", "5 min" or "2 min 30s"; the same wording the Settings picker uses. */
     fun formatStall(ms: Long): String {

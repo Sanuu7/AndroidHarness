@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"Dosya yazımlarını metin olarak akıt"</string>
     <string name="stream_writes_desc">"Bazı sunucular, birkaç NVIDIA modeli dahil, dosya yazımını ancak tamamlandığında gönderir. Bu modellerde ajan dosyayı yanıtının içine yazar, böylece yazılışını izleyebilirsin."</string>
     <string name="stream_writes_detected">"Şu ana dek algılanan modeller: %1$d"</string>
+    <string name="stall_timeout_never">"Asla"</string>
 </resources>

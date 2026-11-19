@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"Dateischreibvorgänge als Text streamen"</string>
     <string name="stream_writes_desc">"Manche Server, darunter mehrere NVIDIA-Modelle, senden einen Dateischreibvorgang erst, wenn er fertig ist. Bei diesen Modellen schreibt der Agent die Datei stattdessen in seine Antwort, damit du beim Schreiben zusehen kannst."</string>
     <string name="stream_writes_detected">"Bisher erkannte Modelle: %1$d"</string>
+    <string name="stall_timeout_never">"Nie"</string>
 </resources>

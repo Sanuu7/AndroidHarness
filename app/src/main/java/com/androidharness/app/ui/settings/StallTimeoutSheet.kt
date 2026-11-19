@@ -36,10 +36,13 @@ import com.androidharness.app.ui.common.RadioButton
 import com.androidharness.app.ui.common.TextButton
 
 /** Choices offered before Custom, in seconds. */
-internal val STALL_TIMEOUT_CHOICES = listOf(90, 180, 300, 600, 1_200)
+internal val STALL_TIMEOUT_CHOICES = listOf(90, 180, 300, 600, 900, 1_200, StreamRetrier.STALL_TIMEOUT_NEVER)
 
-/** "5 min" or "90s" for a stall window in seconds. */
-internal fun stallTimeoutLabel(seconds: Int): String = StreamRetrier.formatStall(seconds * 1_000L)
+/** "15 min", "90s" or "Never" for a stall window in seconds. */
+@Composable
+internal fun stallTimeoutLabel(seconds: Int): String =
+    if (seconds == StreamRetrier.STALL_TIMEOUT_NEVER) stringResource(R.string.stall_timeout_never)
+    else StreamRetrier.formatStall(seconds * 1_000L)
 
 /**
  * Picks how long a stream may stay silent before the run pauses. Shared by

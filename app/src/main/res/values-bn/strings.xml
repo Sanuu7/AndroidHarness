@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"ফাইল লেখা টেক্সট হিসেবে স্ট্রিম করুন"</string>
     <string name="stream_writes_desc">"কিছু সার্ভার, যার মধ্যে কয়েকটি NVIDIA মডেল আছে, ফাইল লেখা শেষ হলেই পাঠায়। সেই মডেলগুলোর জন্য এজেন্ট ফাইলটি নিজের উত্তরের ভেতরে লেখে, যাতে আপনি এটি লেখা হতে দেখতে পারেন।"</string>
     <string name="stream_writes_detected">"এখন পর্যন্ত শনাক্ত করা মডেল: %1$d"</string>
+    <string name="stall_timeout_never">"কখনও না"</string>
 </resources>

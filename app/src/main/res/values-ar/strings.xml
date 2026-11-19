@@ -1158,4 +1158,5 @@
     <string name="stream_writes_title">"بث كتابة الملفات كنص"</string>
     <string name="stream_writes_desc">"بعض الخوادم، ومنها عدة نماذج NVIDIA، لا ترسل استدعاء كتابة الملف إلا بعد اكتماله. مع تلك النماذج يكتب الوكيل الملف داخل رده لترى كيف يُكتب."</string>
     <string name="stream_writes_detected">"النماذج المكتشفة حتى الآن: %1$d"</string>
+    <string name="stall_timeout_never">"أبدًا"</string>
 </resources>

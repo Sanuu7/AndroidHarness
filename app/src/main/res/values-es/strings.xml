@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"Transmitir escrituras de archivos como texto"</string>
     <string name="stream_writes_desc">"Algunos servidores, incluidos varios modelos NVIDIA, solo envían una escritura de archivo cuando ya ha terminado. Con esos modelos el agente escribe el archivo dentro de su respuesta para que puedas ver cómo se escribe."</string>
     <string name="stream_writes_detected">"Modelos detectados hasta ahora: %1$d"</string>
+    <string name="stall_timeout_never">"Nunca"</string>
 </resources>

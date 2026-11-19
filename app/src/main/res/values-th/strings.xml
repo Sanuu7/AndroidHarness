@@ -1138,4 +1138,5 @@
     <string name="stream_writes_title">"สตรีมการเขียนไฟล์เป็นข้อความ"</string>
     <string name="stream_writes_desc">"เซิร์ฟเวอร์บางแห่ง รวมถึงโมเดล NVIDIA หลายตัว จะส่งการเขียนไฟล์ก็ต่อเมื่อเสร็จแล้ว สำหรับโมเดลเหล่านั้น เอเจนต์จะเขียนไฟล์ลงในคำตอบ เพื่อให้คุณดูการเขียนได้"</string>
     <string name="stream_writes_detected">"โมเดลที่ตรวจพบจนถึงตอนนี้: %1$d"</string>
+    <string name="stall_timeout_never">"ไม่เลย"</string>
 </resources>

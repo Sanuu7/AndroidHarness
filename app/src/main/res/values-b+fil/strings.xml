@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"I-stream ang pagsulat ng file bilang teksto"</string>
     <string name="stream_writes_desc">"Ang ilang server, kabilang ang ilang NVIDIA na modelo, ay nagpapadala ng pagsulat ng file kapag tapos na ito. Sa mga modelong iyon, isinusulat ng agent ang file sa loob ng sagot nito para makita mo itong isinusulat."</string>
     <string name="stream_writes_detected">"Mga modelong natukoy hanggang ngayon: %1$d"</string>
+    <string name="stall_timeout_never">"Huwag kailanman"</string>
 </resources>

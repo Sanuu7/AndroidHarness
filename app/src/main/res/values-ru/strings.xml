@@ -1150,4 +1150,5 @@
     <string name="stream_writes_title">"Передавать запись файлов как текст"</string>
     <string name="stream_writes_desc">"Некоторые серверы, включая ряд моделей NVIDIA, отправляют вызов записи файла только после его завершения. Для таких моделей агент пишет файл прямо в ответе, чтобы вы видели, как он создаётся."</string>
     <string name="stream_writes_detected">"Обнаружено моделей: %1$d"</string>
+    <string name="stall_timeout_never">"Никогда"</string>
 </resources>

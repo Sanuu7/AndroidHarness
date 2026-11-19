@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"கோப்பு எழுதுதல்களை உரையாக ஸ்ட்ரீம் செய்"</string>
     <string name="stream_writes_desc">"சில சேவையகங்கள், பல NVIDIA மாடல்கள் உட்பட, கோப்பு எழுதுதல் முடிந்த பிறகே அதை அனுப்புகின்றன. அந்த மாடல்களுக்கு முகவர் கோப்பைத் தன் பதிலுக்குள் எழுதும், அதனால் அது எழுதப்படுவதைப் பார்க்கலாம்."</string>
     <string name="stream_writes_detected">"இதுவரை கண்டறியப்பட்ட மாடல்கள்: %1$d"</string>
+    <string name="stall_timeout_never">"ஒருபோதும் இல்லை"</string>
 </resources>

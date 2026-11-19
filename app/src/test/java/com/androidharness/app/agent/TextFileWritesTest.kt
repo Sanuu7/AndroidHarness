@@ -97,6 +97,7 @@ class TextFileWritesTest {
         assertEquals(StreamRetrier.STALLED_STREAM_MESSAGE, StreamStalledException(90_000).message)
         assertTrue(StreamRetrier.isStallFailure(StreamStalledException(300_000).message))
         assertEquals(30_000L, StreamRetrier.stallTimeoutMs(5))
-        assertEquals(300_000L, StreamRetrier.stallTimeoutMs(StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS))
+        assertEquals(900_000L, StreamRetrier.stallTimeoutMs(StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS))
+        assertEquals(StreamRetrier.NO_STALL_LIMIT_MS, StreamRetrier.stallTimeoutMs(StreamRetrier.STALL_TIMEOUT_NEVER))
     }
 }

@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"ගොනු ලිවීම් පෙළ ලෙස ප්‍රවාහ කරන්න"</string>
     <string name="stream_writes_desc">"සමහර සේවාදායක, NVIDIA ආකෘති කිහිපයක් ඇතුළුව, ගොනු ලිවීමක් අවසන් වූ පසුව පමණක් යවයි. එම ආකෘති සඳහා නියෝජිතයා ගොනුව පිළිතුර තුළම ලියයි, එවිට එය ලියැවෙන ආකාරය ඔබට දැකිය හැක."</string>
     <string name="stream_writes_detected">"මේ වනතුරු හඳුනාගත් ආකෘති: %1$d"</string>
+    <string name="stall_timeout_never">"කිසිදා නැත"</string>
 </resources>

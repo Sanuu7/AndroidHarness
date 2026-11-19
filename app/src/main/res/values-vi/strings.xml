@@ -1138,4 +1138,5 @@
     <string name="stream_writes_title">"Truyền ghi tệp dưới dạng văn bản"</string>
     <string name="stream_writes_desc">"Một số máy chủ, gồm vài mô hình NVIDIA, chỉ gửi thao tác ghi tệp khi đã hoàn tất. Với các mô hình đó, tác nhân viết tệp vào câu trả lời để bạn xem nó được viết ra."</string>
     <string name="stream_writes_detected">"Số mô hình đã phát hiện: %1$d"</string>
+    <string name="stall_timeout_never">"Không bao giờ"</string>
 </resources>

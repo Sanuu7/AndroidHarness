@@ -1142,4 +1142,5 @@
     <string name="stream_writes_title">"फ़ाइल लेखन टेक्स्ट के रूप में स्ट्रीम करें"</string>
     <string name="stream_writes_desc">"कुछ सर्वर, जिनमें कई NVIDIA मॉडल शामिल हैं, फ़ाइल लेखन तभी भेजते हैं जब वह पूरा हो जाता है। उन मॉडलों के लिए एजेंट फ़ाइल को अपने उत्तर में लिखता है, जिससे आप उसे लिखते हुए देख सकते हैं।"</string>
     <string name="stream_writes_detected">"अब तक पहचाने गए मॉडल: %1$d"</string>
+    <string name="stall_timeout_never">"कभी नहीं"</string>
 </resources>
