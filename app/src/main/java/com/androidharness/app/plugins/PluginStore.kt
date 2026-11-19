@@ -22,12 +22,19 @@ class PluginStore(private val root: File, private val onChanged: () -> Unit = {}
     private val json = Json { prettyPrint = true; ignoreUnknownKeys = false }
     init {
         // Called before runs resume at process startup. Old snapshots keep immutable files until then.
-        runCatching { synchronized(lock) {
-            val active = read().map { it.directory }.toSet()
-            packages.listFiles().orEmpty().filter { it.name !in active }.forEach { folder ->
-                Files.walk(folder.toPath()).use { paths -> paths.sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) } }
-            }
-        } } // A damaged registry must not crash app startup; list/load report it for repair.
+        runCatching { pruneUnused() } // A damaged registry must not crash app startup; list/load report it for repair.
+    }
+    /**
+     * Deletes package folders no installed plugin points at. Safe at startup, and later only while no run or
+     * MCP process can hold an old revision (Storage cleanup waits for that). Returns the folders removed.
+     */
+    fun pruneUnused(): Int = synchronized(lock) {
+        val active = read().map { it.directory }.toSet()
+        val unused = packages.listFiles().orEmpty().filter { it.name !in active }
+        unused.forEach { folder ->
+            Files.walk(folder.toPath()).use { paths -> paths.sorted(Comparator.reverseOrder()).forEach { Files.deleteIfExists(it) } }
+        }
+        unused.size
     }
     private fun read(): List<InstalledPlugin> {
         if (!index.exists()) return emptyList()

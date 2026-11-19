@@ -506,7 +506,24 @@ class LinuxEnvironmentManager(
         installMutex.withLock { toolStore.release(name, requester) }
     }
     suspend fun packageCleanupCandidates(): List<com.androidharness.app.data.storage.StorageCandidate> =
-        installedPackages().mapNotNull { toolStore.preview(it, installedPackages().toSet(), requiredToolPackages()) }
+        packageCleanup().second
+
+    /**
+     * Each installed package with the reason it stays (null when it can be removed), and a removal preview for
+     * every removable one. A tracked package whose files no longer match its record is kept as changed.
+     * Caller holds the package lock.
+     */
+    suspend fun packageCleanup(): Pair<Map<String, com.androidharness.app.data.storage.PackageProtection?>,
+        List<com.androidharness.app.data.storage.StorageCandidate>> {
+        val installed = installedPackages().toSet()
+        val required = requiredToolPackages()
+        val candidates = mutableListOf<com.androidharness.app.data.storage.StorageCandidate>()
+        val protections = installed.associateWith { name ->
+            toolStore.protection(name, installed, required) ?: toolStore.preview(name, installed, required)?.let { candidates += it; null }
+                ?: com.androidharness.app.data.storage.PackageProtection(com.androidharness.app.data.storage.PackageBlock.CHANGED)
+        }
+        return protections to candidates
+    }
 
     /** Caller holds the package lock and the app's idle gates. */
     suspend fun removeUnusedPackage(candidate: com.androidharness.app.data.storage.StorageCandidate): Long {

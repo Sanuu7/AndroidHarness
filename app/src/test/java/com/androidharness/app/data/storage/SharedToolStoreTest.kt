@@ -33,7 +33,11 @@ class SharedToolStoreTest {
         val lib = tool("lib"); store.put(lib); store.put(tool("tool", listOf("lib")))
         assertNotNull(store.reason("lib", setOf("lib", "tool"), emptySet()))
         assertNotNull(store.reason("lib", setOf("lib"), setOf("lib")))
-        assertNotNull(store.reason("lib", setOf("lib", "legacy"), emptySet()))
+        // A package installed before tracking no longer blocks others; it stays protected itself.
+        assertNull(store.reason("lib", setOf("lib", "legacy"), emptySet()))
+        assertEquals(PackageBlock.UNTRACKED, store.protection("legacy", setOf("lib", "legacy"), emptySet())!!.block)
+        assertEquals(PackageBlock.DEPENDENTS, store.protection("lib", setOf("lib", "tool"), emptySet())!!.block)
+        assertEquals(PackageBlock.REQUIRED, store.protection("lib", setOf("lib"), setOf("lib"))!!.block)
         store.put(ManagedTool("other", "1", emptyList(), lib.files, true))
         assertNotNull(store.reason("lib", setOf("lib", "other"), emptySet()))
         store.put(ManagedTool("incomplete", "1", emptyList()))

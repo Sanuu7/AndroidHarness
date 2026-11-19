@@ -42,18 +42,20 @@ class StorageDeviceTest {
             val workspaces = inventory.report.items.filter { it.role == com.androidharness.app.data.storage.StorageRole.WORKSPACE }
             assertNotNull(workspaces.first { it.key == a.id }.bytes)
             assertNotNull(workspaces.first { it.key == b.id }.bytes)
-            val chosen = inventory.candidates.filter { it.id == "download:${download.name}" || it.id == "build:${output.parentFile!!.parentFile!!.canonicalPath}" }
-            assertEquals(2, chosen.size)
+            val chosen = inventory.plan.entries.filter { it.kind == com.androidharness.app.data.storage.CleanupKind.DOWNLOADS }
+            assertEquals(1, chosen.size)
+            assertTrue(inventory.plan.entries.none { it.item.role == com.androidharness.app.data.storage.StorageRole.ROUTER ||
+                it.item.role == com.androidharness.app.data.storage.StorageRole.WORKSPACE })
             c.runManager.runningSessionIds.value = setOf("storage-test-busy")
-            try { assertTrue(runCatching { c.storage.clean(chosen) }.isFailure) }
+            try { assertTrue(runCatching { c.storage.cleanUp(chosen) }.isFailure) }
             finally { c.runManager.runningSessionIds.value = emptySet() }
             c.terminal.ensureStarted()
-            try { assertTrue(runCatching { c.storage.clean(chosen) }.isFailure) }
+            try { assertTrue(runCatching { c.storage.cleanUp(chosen) }.isFailure) }
             finally { c.terminal.stopTerminal() }
             assertTrue(download.exists()); assertTrue(output.exists())
-            val result = c.storage.clean(chosen)
-            assertEquals(29L, result.removedBytes)
-            assertFalse(download.exists()); assertFalse(output.exists())
+            val result = c.storage.cleanUp(chosen)
+            assertTrue(result.failed.isEmpty())
+            assertFalse(download.exists()); assertTrue(output.exists())
             assertEquals("source kept", source.readText()); assertEquals("second project kept", other.readText())
             assertEquals(packages, c.linuxEnv.installedPackages().toSet())
             val app = c.linuxEnv.processEnv(); val shell = c.linuxEnv.tmpProcessEnv()
@@ -154,12 +156,12 @@ class StorageDeviceTest {
             screenshot("storage-compact-overview.png")
             tap("Caches"); scrollTo("Linux package downloads"); screenshot("storage-compact-caches.png")
             scrollToTop(); tap("Largest"); screenshot("storage-compact-largest.png")
-            tap("Categories"); tap("Review cleanup"); awaitNode(download.name)
+            tap("Categories"); tap("Review cleanup"); scrollTo("Linux package downloads")
             screenshot("storage-compact-cleanup.png")
             // Preview and cancel only: existing user cleanup candidates are never deleted by this UI test.
-            var review = findPrefix("Review ", exclude = "Review cleanup")
+            var review = findPrefix("Clean up ", exclude = "Review cleanup")
             repeat(5) {
-                if (review == null) { scrollForward(); SystemClock.sleep(120); instrumentation.uiAutomation.clearCache(); review = findPrefix("Review ", exclude = "Review cleanup") }
+                if (review == null) { scrollForward(); SystemClock.sleep(120); instrumentation.uiAutomation.clearCache(); review = findPrefix("Clean up ", exclude = "Review cleanup") }
             }
             checkNotNull(review) { "Missing cleanup confirmation button" }
             click(requireNotNull(review)); awaitNode("Cancel"); screenshot("storage-compact-confirm.png"); tap("Cancel")

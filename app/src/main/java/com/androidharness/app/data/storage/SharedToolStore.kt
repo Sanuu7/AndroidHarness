@@ -16,6 +16,23 @@ data class ManagedTool(
     val ownedPaths: List<String> = files.map { it.path },
 )
 
+/** Why a Linux package stays installed. The screen turns each one into its own sentence. */
+enum class PackageBlock { REQUIRED, UNTRACKED, UNVERIFIED, KEPT_FOR, DEPENDENTS, SHARED_FILES, CHANGED }
+
+data class PackageProtection(val block: PackageBlock, val names: List<String> = emptyList()) {
+    /** Plain text for the agent's tool results and logs. */
+    val text: String get() = when (block) {
+        PackageBlock.REQUIRED -> REQUIRED_TEXT
+        PackageBlock.UNTRACKED -> "File ownership is unknown"
+        PackageBlock.UNVERIFIED -> "File ownership could not be verified"
+        PackageBlock.KEPT_FOR -> "Kept for ${names.joinToString()}"
+        PackageBlock.DEPENDENTS -> "Required by ${names.joinToString()}"
+        PackageBlock.SHARED_FILES -> "Shares files with another installed package"
+        PackageBlock.CHANGED -> "Files changed since install"
+    }
+    companion object { const val REQUIRED_TEXT = "Required by the app toolchain" }
+}
+
 /** Private atomic metadata; a missing/corrupt record never authorizes removal. Caller holds installMutex. */
 internal class SharedToolStore(private val root: File, private val prefix: File) {
     private val json = Json { ignoreUnknownKeys = true }
@@ -44,20 +61,27 @@ internal class SharedToolStore(private val root: File, private val prefix: File)
         records[name]?.let { put(it.copy(requirements = it.requirements - owner)) }
     }
 
-    fun reason(name: String, installed: Set<String>, required: Set<String>): String? {
+    /**
+     * Why [name] must stay installed, or null when it can be removed. A package installed before file tracking
+     * no longer blocks every other removal: the agent can reinstall anything, and its own files stay untouched.
+     */
+    fun protection(name: String, installed: Set<String>, required: Set<String>): PackageProtection? {
         val all = all()
-        if (name in required) return "Required by the app toolchain"
-        if (installed.any { all[it] == null }) return "Older packages have unknown dependencies and file ownership"
-        val record = all[name] ?: return "File ownership is unknown"
-        if (!record.complete) return "File ownership could not be verified"
-        if (record.requirements.isNotEmpty()) return "Kept for ${record.requirements.joinToString()}"
+        if (name in required) return PackageProtection(PackageBlock.REQUIRED)
+        val record = all[name] ?: return PackageProtection(PackageBlock.UNTRACKED)
+        if (!record.complete) return PackageProtection(PackageBlock.UNVERIFIED)
+        if (record.requirements.isNotEmpty()) return PackageProtection(PackageBlock.KEPT_FOR, record.requirements.sorted())
         val dependents = installed.filter { it != name && name in all[it]?.depends.orEmpty() }
-        if (dependents.isNotEmpty()) return "Required by ${dependents.joinToString()}"
-        if (all.filterKeys { it in installed && it != name }.values.any { other ->
-                other.ownedPaths.any { path -> record.files.any { it.path == path } }
-            }) return "Shares files with another installed package"
+        if (dependents.isNotEmpty()) return PackageProtection(PackageBlock.DEPENDENTS, dependents.sorted())
+        val sharing = all.filterKeys { it in installed && it != name }.filterValues { other ->
+            other.ownedPaths.any { path -> record.files.any { it.path == path } }
+        }.keys
+        if (sharing.isNotEmpty()) return PackageProtection(PackageBlock.SHARED_FILES, sharing.sorted())
         return null
     }
+
+    fun reason(name: String, installed: Set<String>, required: Set<String>): String? =
+        protection(name, installed, required)?.text
 
     suspend fun preview(name: String, installed: Set<String>, required: Set<String>): StorageCandidate? {
         if (reason(name, installed, required) != null) return null

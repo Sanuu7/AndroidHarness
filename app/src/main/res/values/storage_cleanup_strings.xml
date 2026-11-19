@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Settings > Storage > Review cleanup -->
+    <string name="storage_cleanup_intro">Pick what to remove. Sizes are from the last scan.</string>
+    <string name="storage_cleanup_selected">%1$s selected</string>
+    <plurals name="storage_cleanup_selected_items">
+        <item quantity="one">%1$d item</item>
+        <item quantity="other">%1$d items</item>
+    </plurals>
+    <string name="storage_cleanup_select_all">Select all</string>
+    <string name="storage_cleanup_select_none">Clear</string>
+    <string name="storage_cleanup_button">Clean up %1$s</string>
+    <string name="storage_cleanup_nothing">Nothing can be cleaned right now.</string>
+    <string name="storage_cleanup_cannot_undo">Can\'t be undone</string>
+    <string name="storage_cleanup_kept_title">Always kept</string>
+    <string name="storage_cleanup_kept_note">The app needs these, so cleanup never offers them.</string>
+
+    <!-- What cleaning each kind does, shown under its row -->
+    <string name="storage_cleanup_effect_web">Signs you out of sites opened in the app</string>
+    <string name="storage_cleanup_effect_images">Images in past chats will no longer open</string>
+    <string name="storage_cleanup_effect_downloads">Downloaded again when a package is installed</string>
+    <string name="storage_cleanup_effect_scratch">Temporary files left by shell commands</string>
+    <string name="storage_cleanup_effect_cache">Rebuilt when needed</string>
+    <string name="storage_cleanup_effect_canvas">Removes the canvas background image</string>
+    <string name="storage_cleanup_effect_model">Download it again to use it</string>
+    <string name="storage_cleanup_effect_history">Deletes every chat</string>
+    <string name="storage_cleanup_effect_settings">Resets preferences. Keys and providers stay.</string>
+    <string name="storage_cleanup_effect_plugin">Uninstalls the plugin</string>
+    <string name="storage_cleanup_effect_skill">Deletes the skill</string>
+    <string name="storage_cleanup_effect_package">Uninstalls it. The agent can install it again.</string>
+
+    <!-- Why things are kept -->
+    <string name="storage_keep_router">9router</string>
+    <string name="storage_keep_router_note">The router and its data are never cleaned</string>
+    <string name="storage_keep_linux">Linux environment</string>
+    <string name="storage_keep_linux_note">The shell and the agent\'s tools run on it</string>
+    <string name="storage_keep_secrets">Keys, providers and sign-ins</string>
+    <string name="storage_keep_secrets_note">Resetting settings leaves these in place</string>
+    <string name="storage_keep_app">The app itself</string>
+    <string name="storage_keep_app_note">Android installs and removes the app</string>
+    <string name="storage_keep_projects">Your projects</string>
+    <string name="storage_keep_projects_note">Delete projects from the Projects page</string>
+    <string name="storage_keep_undo">Undo and drafts</string>
+    <string name="storage_keep_undo_note">Needed to undo agent edits and restore unsaved files</string>
+    <string name="storage_keep_runtime">App internals</string>
+    <string name="storage_keep_runtime_note">The app uses these while it runs</string>
+    <string name="storage_keep_packages">Linux packages in use</string>
+    <string name="storage_keep_packages_note">Needed by the app or by other packages</string>
+    <string name="storage_keep_npm_pip">npm and pip packages</string>
+    <string name="storage_keep_npm_pip_note">Uninstall these with npm or pip in the terminal</string>
+
+    <!-- Why one Linux package stays -->
+    <string name="storage_package_required">Needed by the app</string>
+    <string name="storage_package_untracked">Installed before the app tracked package files</string>
+    <string name="storage_package_unverified">Its files could not be checked</string>
+    <string name="storage_package_kept_for">Kept for %1$s</string>
+    <string name="storage_package_dependents">Needed by %1$s</string>
+    <string name="storage_package_shared_files">Shares files with %1$s</string>
+    <string name="storage_package_changed">Files changed since it was installed</string>
+
+    <!-- Confirmation -->
+    <string name="storage_cleanup_confirm_title">Remove %1$s?</string>
+    <string name="storage_cleanup_confirm_list">This removes:</string>
+    <string name="storage_cleanup_confirm_loss">You will lose</string>
+    <string name="storage_cleanup_loss_history">Every chat and its messages</string>
+    <string name="storage_cleanup_loss_settings">Your preferences and configuration files</string>
+    <string name="storage_cleanup_loss_images">Images attached to or made in past chats</string>
+    <string name="storage_cleanup_loss_model">The %1$s model files</string>
+    <string name="storage_cleanup_loss_package">%1$s. Its commands stop working until it is installed again.</string>
+    <string name="storage_cleanup_loss_skill">The %1$s skill</string>
+    <string name="storage_cleanup_confirm">Remove</string>
+    <string name="storage_cleanup_working">Cleaning up</string>
+
+    <!-- Result -->
+    <string name="storage_cleanup_freed">Freed about %1$s</string>
+    <string name="storage_cleanup_failed_title">Some items were not cleaned</string>
+    <string name="storage_cleanup_failed_line">%1$s: %2$s</string>
+</resources>

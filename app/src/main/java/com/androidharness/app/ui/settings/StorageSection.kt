@@ -35,17 +35,17 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.androidharness.app.AppContainer
 import com.androidharness.app.R
-import com.androidharness.app.data.storage.StorageCandidate
+import com.androidharness.app.data.storage.CleanupEntry
+import com.androidharness.app.data.storage.CleanupOutcome
+import com.androidharness.app.data.storage.PackageBlock
 import com.androidharness.app.data.storage.StorageCategory
 import com.androidharness.app.data.storage.StorageGroup
-import com.androidharness.app.data.storage.StorageInventory
 import com.androidharness.app.data.storage.StorageItem
 import com.androidharness.app.data.storage.StorageProgress
 import com.androidharness.app.data.storage.StorageReport
 import com.androidharness.app.data.storage.StorageRole
 import com.androidharness.app.ui.common.AppLinearProgressIndicator
 import com.androidharness.app.ui.common.Button
-import com.androidharness.app.ui.common.Checkbox
 import com.androidharness.app.ui.common.FilledTonalButton
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.TextButton
@@ -78,11 +78,11 @@ internal fun StorageSection(container: AppContainer) {
     var query by rememberSaveable { mutableStateOf("") }
     var reviewing by rememberSaveable { mutableStateOf(false) }
     var selected by remember { mutableStateOf<Set<String>>(emptySet()) }
-    var confirmation by remember { mutableStateOf<List<StorageCandidate>?>(null) }
+    var confirmation by remember { mutableStateOf<List<CleanupEntry>?>(null) }
+    var outcome by remember { mutableStateOf<CleanupOutcome?>(null) }
     var itemDetail by remember { mutableStateOf<String?>(null) }
     var toolDetail by remember { mutableStateOf<String?>(null) }
     var release by remember { mutableStateOf<Pair<String, String>?>(null) }
-    var detail by remember { mutableStateOf<Pair<String, String>?>(null) }
     var report by remember { mutableStateOf<String?>(null) }
     var error by remember { mutableStateOf<String?>(null) }
     val scanning = scanJob?.isActive == true
@@ -94,7 +94,7 @@ internal fun StorageSection(container: AppContainer) {
         scanJob = scope.launch {
             try {
                 val result = container.storage.scan { p -> progress = p }
-                selected = selected.intersect(result.candidates.map { it.id }.toSet())
+                selected = result.plan.keepValid(selected)
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.ui_couldn_t_measure_storage_try_again) }
             finally { progress = null; scanJob = null }
@@ -139,11 +139,12 @@ internal fun StorageSection(container: AppContainer) {
                 OutlinedButton(onClick = ::rescan) { Text(stringResource(R.string.settings_action_try_again)) }
             }
         } else if (reviewing) {
-            CleanupReview(data, selected, busy, onToggle = { id -> selected = if (id in selected) selected - id else selected + id },
-                onInfo = { title, body -> detail = title to body }, onReview = { confirmation = it }, onBack = { reviewing = false })
+            CleanupReview(data.plan, selected, busy, outcome, onToggle = { id -> selected = if (id in selected) selected - id else selected + id },
+                onSelect = { selected = it }, onClean = { confirmation = data.plan.chosen(selected) },
+                onBack = { reviewing = false; outcome = null })
         } else {
             val reportData = data.report
-            StorageSummary(reportData, data.candidates.sumOf { it.bytes })
+            StorageSummary(reportData, data.plan.entries.sumOf { it.bytes })
             ExpressiveSearchField(query, { query = it.take(120) }, stringResource(R.string.storage_search_hint))
             ConnectedChoice(listOf(
                 Triple(StorageView.CATEGORIES, stringResource(R.string.storage_view_categories), null),
@@ -169,7 +170,7 @@ internal fun StorageSection(container: AppContainer) {
                     else ItemPanel(missing, reportData, showCategory = true, open)
                 }
             }
-            Button(onClick = { reviewing = true; selected = data.candidates.filter { it.group == "Downloads" }.map { it.id }.toSet() },
+            Button(onClick = { reviewing = true; outcome = null; selected = data.plan.defaultSelection() },
                 enabled = !busy, modifier = Modifier.fillMaxWidth()) {
                 Icon(Icons.Rounded.CleaningServices, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp))
                 Text(stringResource(R.string.settings_storage_review_cleanup))
@@ -190,7 +191,7 @@ internal fun StorageSection(container: AppContainer) {
         AlertDialog(onDismissRequest = { toolDetail = null }, title = { Text(name) },
             text = {
                 Column(Modifier.heightIn(max = 350.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(protection ?: uiContext.getString(R.string.ui_no_recorded_requirements_or_installed_dependents_eligible))
+                    Text(protection?.let { packageProtectionText(it) } ?: uiContext.getString(R.string.ui_no_recorded_requirements_or_installed_dependents_eligible))
                     Text(stringResource(R.string.settings_storage_requirements_note), style = MaterialTheme.typography.bodySmall)
                     if (tool == null) Text(stringResource(R.string.settings_storage_no_manifest), style = MaterialTheme.typography.bodySmall)
                     else {
@@ -201,7 +202,7 @@ internal fun StorageSection(container: AppContainer) {
                         )
                         tool.requirements.sorted().forEach { owner ->
                             Text(owner, style = MaterialTheme.typography.bodySmall)
-                            if (protection != "Required by the app toolchain") OutlinedButton(onClick = { release = name to owner }, enabled = !busy) { Text(stringResource(R.string.settings_storage_release_confirm)) }
+                            if (protection?.block != PackageBlock.REQUIRED) OutlinedButton(onClick = { release = name to owner }, enabled = !busy) { Text(stringResource(R.string.settings_storage_release_confirm)) }
                         }
                         Text(stringResource(R.string.settings_storage_release_note), style = MaterialTheme.typography.bodySmall)
                     }
@@ -220,46 +221,22 @@ internal fun StorageSection(container: AppContainer) {
             }) { Text(stringResource(R.string.settings_storage_release_confirm)) } },
             dismissButton = { TextButton(onClick = { release = null }) { Text(stringResource(R.string.settings_action_cancel)) } })
     }
-    detail?.let { (title, body) ->
-        AlertDialog(onDismissRequest = { detail = null }, title = { Text(title) }, text = { Text(body) },
-            confirmButton = { TextButton(onClick = { detail = null }) { Text(stringResource(R.string.settings_action_done)) } })
-    }
     confirmation?.let { chosen ->
-        AlertDialog(onDismissRequest = { if (!cleaning) confirmation = null },
-            title = { Text(stringResource(R.string.settings_storage_free_title, storageSize(chosen.sumOf { it.bytes }))) },
-            text = {
-                Column(Modifier.heightIn(max = 320.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    Text(stringResource(R.string.settings_storage_free_note))
-                    chosen.forEach {
-                        Text(
-                            stringResource(R.string.settings_storage_candidate, it.title, storageSize(it.bytes), candidatePath(it)),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                    }
-                    Text(stringResource(R.string.settings_storage_cleanup_skip_note))
-                }
-            },
-            confirmButton = {
-                TextButton(enabled = !cleaning, onClick = {
-                    cleaning = true; error = null
-                    scope.launch {
-                        try {
-                            scanJob?.cancel()
-                            val result = container.storage.clean(chosen)
-                            report = uiContext.getString(R.string.ui_removed_from_files, (storageSize(result.removedBytes)).toString(), (result.removedFiles).toString()) +
-                                if (result.skipped > 0) uiContext.getString(R.string.ui_changed_or_unavailable_items_skipped, (result.skipped).toString()) else ""
-                            confirmation = null; selected = emptySet(); reviewing = false
-                        } catch (e: CancellationException) { throw e }
-                        catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.ui_cleanup_failed_scan_again); confirmation = null }
-                        finally { cleaning = false }
-                        rescan()
-                    }
-                }) { Text(if (cleaning) uiContext.getString(R.string.ui_cleaning) else uiContext.getString(R.string.ui_free, (storageSize(chosen.sumOf { it.bytes })).toString())) }
-            }, dismissButton = { TextButton(enabled = !cleaning, onClick = { confirmation = null }) { Text(stringResource(R.string.settings_action_cancel)) } })
+        CleanupConfirmDialog(chosen, cleaning, onDismiss = { confirmation = null }, onConfirm = {
+            cleaning = true; error = null; report = null
+            scope.launch {
+                try {
+                    scanJob?.cancel()
+                    outcome = container.storage.cleanUp(chosen)
+                    selected = emptySet()
+                } catch (e: CancellationException) { throw e }
+                catch (e: Exception) { error = e.message ?: uiContext.getString(R.string.ui_cleanup_failed_scan_again) }
+                finally { cleaning = false; confirmation = null }
+                rescan()
+            }
+        })
     }
 }
-
-private fun candidatePath(candidate: StorageCandidate): String = candidate.target.absolutePath
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
@@ -537,62 +514,5 @@ private fun DetailLine(icon: ImageVector, label: String, value: String, tint: Co
             Text(label, style = MaterialTheme.typography.labelLarge)
             Text(value, style = MaterialTheme.typography.bodyMedium, color = tint ?: MaterialTheme.colorScheme.onSurface)
         }
-    }
-}
-
-@Composable
-private fun CleanupReview(data: StorageInventory, selected: Set<String>, busy: Boolean, onToggle: (String) -> Unit,
-    onInfo: (String, String) -> Unit, onReview: (List<StorageCandidate>) -> Unit, onBack: () -> Unit) {
-    val uiContext = LocalContext.current
-    Text(stringResource(R.string.settings_storage_cleanup_note), style = MaterialTheme.typography.bodySmall)
-    if (data.candidates.isEmpty()) Text(stringResource(R.string.settings_storage_nothing_to_clean), style = MaterialTheme.typography.bodyMedium)
-    data.candidates.groupBy { it.group }.forEach { (group, items) ->
-        Text(group, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.primary)
-        SettingsPanel(Modifier.fillMaxWidth()) {
-            Column {
-                items.forEachIndexed { index, candidate ->
-                    Row(Modifier.fillMaxWidth().clickable(enabled = !busy, role = Role.Checkbox) { onToggle(candidate.id) }
-                        .padding(horizontal = 10.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Checkbox(candidate.id in selected, onCheckedChange = null)
-                        Column(Modifier.weight(1f).padding(horizontal = 8.dp)) {
-                            Text(candidate.title, style = MaterialTheme.typography.bodyMedium)
-                            Text(candidate.detail, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(candidatePath(candidate), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                        }
-                        Text(storageSize(candidate.bytes), style = MaterialTheme.typography.labelMedium)
-                    }
-                    if (index < items.lastIndex) HorizontalDivider()
-                }
-            }
-        }
-    }
-    SettingsPanel(Modifier.fillMaxWidth()) {
-        StorageRow(Icons.Rounded.Inventory2, uiContext.getString(R.string.ui_unused_managed_packages),
-            uiContext.getString(R.string.ui_unknown_ownership_or_workspace_requirements_stay_protected), uiContext.getString(R.string.ui_details)) {
-            onInfo(uiContext.getString(R.string.ui_managed_packages), uiContext.getString(R.string.ui_new_installs_record_files_dependencies_and_requirements))
-        }
-        HorizontalDivider()
-        StorageRow(Icons.Rounded.Shield, uiContext.getString(R.string.settings_storage_always_kept),
-            uiContext.getString(R.string.ui_source_folders_required_dependencies_models_history_undo), "") {
-            onInfo(uiContext.getString(R.string.settings_storage_always_kept), uiContext.getString(R.string.settings_storage_always_kept_detail))
-        }
-    }
-    val chosen = data.candidates.filter { it.id in selected }
-    Button(onClick = { onReview(chosen) }, enabled = chosen.isNotEmpty() && !busy, modifier = Modifier.fillMaxWidth()) {
-        Text(stringResource(R.string.settings_storage_review_size, storageSize(chosen.sumOf { it.bytes })))
-    }
-    TextButton(onClick = onBack, enabled = !busy) { Text(stringResource(R.string.settings_storage_back)) }
-}
-
-@Composable
-private fun StorageRow(icon: ImageVector, title: String, subtitle: String, value: String, onClick: () -> Unit) {
-    Row(Modifier.fillMaxWidth().clickable(role = Role.Button, onClick = onClick).heightIn(min = 64.dp).padding(12.dp),
-        verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        Icon(icon, null, Modifier.size(20.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium)
-            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        if (value.isNotEmpty()) Text(value, style = MaterialTheme.typography.labelMedium, modifier = Modifier.widthIn(max = 90.dp))
     }
 }

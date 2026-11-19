@@ -19,6 +19,7 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.json.jsonObject
@@ -913,6 +914,20 @@ class SessionRepository(
     }
 
     suspend fun deleteSession(session: SessionEntity) = deleteSessions(listOf(session))
+
+    /** Deletes every chat and its images, then shrinks the database file. Returns how many chats were removed. */
+    suspend fun deleteAllSessions(): Int {
+        val all = db.dao().allSessions()
+        deleteSessions(all)
+        withContext(Dispatchers.IO) {
+            runCatching {
+                val sql = db.openHelper.writableDatabase
+                sql.query("PRAGMA wal_checkpoint(TRUNCATE)").close()
+                sql.execSQL("VACUUM")
+            }
+        }
+        return all.size
+    }
 
     /** Delete the selected histories together, then collect images no remaining chat uses. */
     suspend fun deleteSessions(sessions: List<SessionEntity>) {
