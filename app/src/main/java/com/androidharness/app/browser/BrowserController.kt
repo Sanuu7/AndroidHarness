@@ -319,6 +319,29 @@ class BrowserController(
         controlIdleJob?.cancel()
     }
 
+    private val _previewRequests = kotlinx.coroutines.flow.MutableSharedFlow<Unit>(extraBufferCapacity = 1)
+
+    /** The chat screen opens the browser preview when this emits. */
+    val previewRequests: kotlinx.coroutines.flow.SharedFlow<Unit> = _previewRequests
+
+    private fun previewOnScreen(): Boolean = activeWebViewRef?.get()?.let { view ->
+        view.isAttachedToWindow && view.isShown && view.windowVisibility == View.VISIBLE
+    } == true
+
+    /**
+     * Asks the chat screen to open the browser preview and waits until the page is
+     * on screen. False when no screen picked it up in time, for example while the
+     * app is in the background.
+     */
+    suspend fun showPreview(timeoutMs: Long = 4_000): Boolean = withContext(Dispatchers.Main) {
+        if (previewOnScreen()) return@withContext true
+        _previewRequests.tryEmit(Unit)
+        withTimeoutOrNull(timeoutMs) {
+            while (!previewOnScreen()) delay(100)
+            true
+        } == true
+    }
+
     /**
      * Binds the visible WebPreviewSheet WebView so user can watch agent actions.
      */

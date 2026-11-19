@@ -466,12 +466,17 @@ class BrowserScreenshotTool(
     override val name = "browser_screenshot"
     override val description =
         "Capture a screenshot image of the current page/WebView viewport. The image is shown inline in the " +
-        "chat transcript. Requires an attached visible preview and waits for loaded fonts, images and finite animations; hidden surfaces return an error instead of a blank image."
+        "chat transcript. Opens the browser preview first when it is hidden, then waits for loaded fonts, images and finite animations. " +
+        "If the preview cannot be shown (the app is in the background), it returns an error instead of a blank image."
     override val parametersSchema = Schema.obj(emptyMap())
     override val isReadOnly = true
 
     override suspend fun execute(args: JsonObject, ctx: ToolContext): ToolResult {
         return try {
+            if (!controller.showPreview()) {
+                return ToolResult(false, "Could not open the browser preview, so no screenshot was taken. " +
+                    "Harness needs to be on screen with a chat open; ask the user to bring it to the front, then retry.")
+            }
             val result = controller.screenshot(ctx.workspace)
             if (result != null) {
                 ToolResult(
