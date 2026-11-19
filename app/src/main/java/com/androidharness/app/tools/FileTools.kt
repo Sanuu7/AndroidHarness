@@ -439,9 +439,9 @@ class WriteFileTool : Tool {
             val content = args["content"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: content")
             if (content.trim() == com.androidharness.app.agent.TextFileWrites.MARKER) throw ToolFailure(
-                "No finished file block for '$path' was found in your reply. Write the contents in a " +
-                    "${com.androidharness.app.agent.TextFileWrites.FENCE}file $path block that closes with " +
-                    "${com.androidharness.app.agent.TextFileWrites.FENCE} before calling write_file, or pass the full content.")
+                "Nothing was written: no file block for '$path' was found in your reply. File blocks are now " +
+                    "turned off for this task. Call write_file again for '$path' with the complete file contents " +
+                    "in the content argument.")
             val file = ctx.workspace.resolve(path)
             if (file.exists && file.isDirectory) {
                 throw ToolFailure("Cannot write file '$path': is a directory")

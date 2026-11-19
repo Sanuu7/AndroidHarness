@@ -399,6 +399,7 @@ class AppContainer(val appContext: Context) {
         resolveConfiguration = { configuration.load(it) },
         pluginHooks = pluginHooks,
         markBufferedToolCalls = { settings.markBufferedToolCalls(it) },
+        markFileBlocksDeclined = { settings.markFileBlocksDeclined(it) },
         todoStore = todoStore,
         repoMap = repoMap,
         cavemanSettings = { settings.settings.first().also { cavemanSettings.set(it); disabledSkills.set(it.disabledSkills) } },

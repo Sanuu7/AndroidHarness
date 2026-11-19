@@ -220,6 +220,8 @@ data class AppSettings(
     val streamFileWritesAsText: Boolean = true,
     /** "providerId|model" keys seen delivering a whole write in one chunk. */
     val bufferedToolCallModels: Set<String> = emptySet(),
+    /** Models that called write_file with the file block marker but never wrote the block. */
+    val fileBlockDeclinedModels: Set<String> = emptySet(),
     /** ID of the last active chat session. */
     val lastActiveSessionId: String? = null,
     /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
@@ -441,6 +443,7 @@ class SettingsRepository(private val context: Context) {
         val STREAM_STALL_TIMEOUT_SECONDS = intPreferencesKey("stream_stall_timeout_seconds")
         val STREAM_FILE_WRITES_AS_TEXT = booleanPreferencesKey("stream_file_writes_as_text")
         val BUFFERED_TOOL_CALL_MODELS = stringSetPreferencesKey("buffered_tool_call_models")
+        val FILE_BLOCK_DECLINED_MODELS = stringSetPreferencesKey("file_block_declined_models")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
         val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
         val LOCAL_MODEL_AGENT_CONTEXT = booleanPreferencesKey("local_model_agent_context")
@@ -592,6 +595,7 @@ class SettingsRepository(private val context: Context) {
                 ?: com.androidharness.app.agent.StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS,
             streamFileWritesAsText = prefs[Keys.STREAM_FILE_WRITES_AS_TEXT] ?: true,
             bufferedToolCallModels = prefs[Keys.BUFFERED_TOOL_CALL_MODELS] ?: emptySet(),
+            fileBlockDeclinedModels = prefs[Keys.FILE_BLOCK_DECLINED_MODELS] ?: emptySet(),
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
             repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
             localModelAgentContext = prefs[Keys.LOCAL_MODEL_AGENT_CONTEXT] ?: false,
@@ -702,6 +706,7 @@ class SettingsRepository(private val context: Context) {
             p[Keys.STREAM_STALL_TIMEOUT_SECONDS] = s.streamStallTimeoutSeconds
             p[Keys.STREAM_FILE_WRITES_AS_TEXT] = s.streamFileWritesAsText
             p[Keys.BUFFERED_TOOL_CALL_MODELS] = s.bufferedToolCallModels
+            p[Keys.FILE_BLOCK_DECLINED_MODELS] = s.fileBlockDeclinedModels
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
             p[Keys.LOCAL_MODEL_AGENT_CONTEXT] = s.localModelAgentContext
             p[Keys.LOCAL_MODEL_EXPERIMENTAL] = s.localModelExperimental
@@ -789,6 +794,11 @@ class SettingsRepository(private val context: Context) {
     /** Remembers a model whose server delivered a whole file write in one chunk. */
     suspend fun markBufferedToolCalls(key: String) {
         context.settingsStore.edit { it[Keys.BUFFERED_TOOL_CALL_MODELS] = it[Keys.BUFFERED_TOOL_CALL_MODELS].orEmpty() + key }
+    }
+
+    /** Remembers a model that would not write file blocks, so it goes back to plain write_file calls. */
+    suspend fun markFileBlocksDeclined(key: String) {
+        context.settingsStore.edit { it[Keys.FILE_BLOCK_DECLINED_MODELS] = it[Keys.FILE_BLOCK_DECLINED_MODELS].orEmpty() + key }
     }
 
     suspend fun setSubagentsEnabled(enabled: Boolean) {

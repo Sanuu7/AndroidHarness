@@ -59,6 +59,13 @@ Then call write_file with that same path and content set to exactly "$MARKER". T
         return call.copy(argumentsJson = filled.toString()) to block
     }
 
+    /** A write_file call whose content is only [MARKER]. */
+    fun isMarkerCall(call: ToolCallData): Boolean {
+        if (call.name != "write_file") return false
+        val args = runCatching { kotlinx.serialization.json.Json.parseToJsonElement(call.argumentsJson).jsonObject }.getOrNull() ?: return false
+        return args["content"]?.jsonPrimitive?.contentOrNull?.trim() == MARKER
+    }
+
     /** Arguments a live preview can read while the block is still arriving. */
     fun previewArguments(block: FileBlockStream.Block): String {
         val content = JsonPrimitive(block.body.toString()).toString()

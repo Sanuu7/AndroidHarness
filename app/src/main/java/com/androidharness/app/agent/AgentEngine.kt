@@ -270,6 +270,7 @@ class AgentEngine(
     private val pluginHooks: com.androidharness.app.config.PluginHooks? = null,
     /** Remembers a provider|model whose server delivered a whole file write in one chunk. */
     private val markBufferedToolCalls: suspend (String) -> Unit = {},
+    private val markFileBlocksDeclined: suspend (String) -> Unit = {},
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -459,6 +460,8 @@ class AgentEngine(
             return messages.isNotEmpty()
         }
 
+        // Set once the model sends the file block marker without the block; later rounds use plain writes.
+        var fileBlocksDeclined = false
         while (true) {
             kotlin.coroutines.coroutineContext[TaskBudget]?.check()
             // Results land only between model requests. Persist before acknowledging so
@@ -539,6 +542,7 @@ class AgentEngine(
             // Servers that hold tool calls back get file contents as streamed reply text.
             val bufferKey = TextFileWrites.modelKey(config.id, config.model)
             val textWrites = !conversation.isChat && agentContextEnabled && replySettings.streamFileWritesAsText &&
+                !fileBlocksDeclined && bufferKey !in replySettings.fileBlockDeclinedModels &&
                 (bufferKey in replySettings.bufferedToolCallModels || TextFileWrites.buffersToolCalls(config.baseUrl)) &&
                 tools.any { it.name == "write_file" }
             if (textWrites) requestSystemPrompt += TextFileWrites.prompt()
@@ -616,9 +620,13 @@ class AgentEngine(
                     runCatching { markBufferedToolCalls(bufferKey) }
                 }
                 fileBlocks?.let { blocks ->
-                    TextFileWrites.fill(call, blocks)?.let { (filled, block) ->
-                        call = filled
-                        emit(AgentEvent.CodeDraftRemoved(block.draftId))
+                    val filled = TextFileWrites.fill(call, blocks)
+                    if (filled != null) {
+                        call = filled.first
+                        emit(AgentEvent.CodeDraftRemoved(filled.second.draftId))
+                    } else if (TextFileWrites.isMarkerCall(call) && !fileBlocksDeclined) {
+                        fileBlocksDeclined = true
+                        runCatching { markFileBlocksDeclined(bufferKey) }
                     }
                 }
                 val labeled = if (conversation.isChat) call else workspaceCall(call, execWorkspace)
