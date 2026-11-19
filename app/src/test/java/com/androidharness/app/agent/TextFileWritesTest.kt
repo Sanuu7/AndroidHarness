@@ -72,6 +72,12 @@ class TextFileWritesTest {
         assertFalse(stream.blocks.single().closed)
     }
 
+    @Test fun markerCallsAreRecognised() {
+        assertTrue(TextFileWrites.isMarkerCall(ToolCallData("c", "write_file", """{"path":"a","content":" @file-block "}""")))
+        assertFalse(TextFileWrites.isMarkerCall(ToolCallData("c", "write_file", """{"path":"a","content":"real"}""")))
+        assertFalse(TextFileWrites.isMarkerCall(ToolCallData("c", "edit_file", """{"path":"a","content":"@file-block"}""")))
+    }
+
     @Test fun nvidiaHostsUseFileBlocksFromTheStart() {
         assertTrue(TextFileWrites.buffersToolCalls("https://integrate.api.nvidia.com/v1"))
         assertTrue(TextFileWrites.buffersToolCalls("https://nvidia.com/v1"))
