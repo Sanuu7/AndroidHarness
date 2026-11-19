@@ -99,7 +99,10 @@ class ShellTool(
             if (hasSymlinkError) {
                 sb.append("[note: symlink creation failed: symlink not supported/allowed on this filesystem]\n")
             }
-            if (res.tier == ExecutionTier.TOYBOX && linuxEnv.bashExecutable() != null) {
+            // Access refusals come back as an unstarted toybox result (exit -1, nothing on stdout);
+            // they are policy, not a broken bash, so they get no fallback note.
+            val refused = res.exitCode == -1 && res.rawOutput.isEmpty() && !res.timedOut
+            if (res.tier == ExecutionTier.TOYBOX && !refused && linuxEnv.bashExecutable() != null) {
                 sb.append("[note: fell back to toybox sh, launching the Linux bash failed on this device]\n")
             }
             if (res.tier == ExecutionTier.PRIVILEGED) {

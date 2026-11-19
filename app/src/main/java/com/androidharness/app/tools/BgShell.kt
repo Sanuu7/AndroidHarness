@@ -101,11 +101,17 @@ class BgListTool(
             val scope = args["scope"]?.jsonPrimitive?.content ?: "chat"
             require(scope in setOf("chat", "workspace", "all")) { "scope must be chat, workspace or all" }
             val all = store.listForDisplay()
-            val entries = all.filter { (entry, _) -> backgroundJobMatches(entry, scope, ctx) }
-            val hidden = all.size - entries.size
-            if (entries.isEmpty() && hidden == 0) return@withContext ToolResult(true, "No tracked background jobs.")
+            val inScope = all.filter { (entry, _) -> backgroundJobMatches(entry, scope, ctx) }
+            // Jobs that finished before this app session started can't hold a port or be killed;
+            // listing each with its log only crowds the answer. scope=all still shows them.
+            val (stale, entries) = inScope.partition { (e, alive) ->
+                scope != "all" && !alive && e.termination != "unverified" && e.startedAt < store.bootAt
+            }
+            val hidden = all.size - inScope.size
+            if (entries.isEmpty() && hidden == 0 && stale.isEmpty()) return@withContext ToolResult(true, "No tracked background jobs.")
             val sb = StringBuilder()
-            if (entries.isEmpty()) sb.append("No jobs in this scope.\n")
+            if (entries.isEmpty()) sb.append("No running or current jobs in this scope.\n")
+            if (stale.isNotEmpty()) sb.append("${stale.size} job(s) that finished in earlier app sessions are not shown; use scope=all to list them.\n")
             if (hidden > 0) sb.append("$hidden job(s) outside this scope; use scope=workspace or scope=all to inspect possible port conflicts.\n")
             entries.forEach { (e, alive) ->
                 val uptime = ((e.finishedAt ?: System.currentTimeMillis()) - e.startedAt) / 1000

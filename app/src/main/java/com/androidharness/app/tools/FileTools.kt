@@ -59,6 +59,7 @@ internal fun caseCollisionWarning(workspace: WorkspaceFs, target: FsNode): Strin
 }
 
 private const val MAX_LIST_ENTRIES = 500
+private const val LIST_PAGE = 200
 private const val MAX_READ_CHARS = 100_000
 private const val MAX_READ_LINE_CHARS = 10_000
 private const val MAX_SEARCH_RESULTS = 300
@@ -67,9 +68,14 @@ private const val MAX_GREP_MATCHES = 200
 class ListDirTool : Tool {
     override val name = "list_dir"
     override val description =
-        "List the contents of a directory in the workspace. Directories are marked with a trailing /."
+        "List the contents of a directory in the workspace, directories first. Directories are marked with a trailing /. " +
+            "Large directories are paged: use offset and limit to see the rest."
     override val parametersSchema = Schema.obj(
-        mapOf("path" to Schema.string("Directory path relative to the workspace root. Use \".\" for the root.")),
+        mapOf(
+            "path" to Schema.string("Directory path relative to the workspace root. Use \".\" for the root."),
+            "offset" to Schema.integer("1-based entry to start at. Default 1."),
+            "limit" to Schema.integer("Entries per page (1..$MAX_LIST_ENTRIES). Default $LIST_PAGE."),
+        ),
         required = listOf("path"),
     )
     override val isReadOnly = true
@@ -82,17 +88,26 @@ class ListDirTool : Tool {
             if (!dir.isDirectory) throw ToolFailure("Not a directory: $path")
 
             val entries = dir.list()
-                .sortedWith(compareBy({ !it.isDirectory }, { it.name.lowercase() }))
+                .sortedWith(compareBy({ runCatching { !it.isDirectory }.getOrDefault(true) }, { it.name.lowercase() }))
             if (entries.isEmpty()) return@withContext ToolResult(true, "(empty directory)")
 
+            val offset = (args["offset"]?.jsonPrimitive?.content?.toIntOrNull() ?: 1).coerceAtLeast(1)
+            val limit = (args["limit"]?.jsonPrimitive?.content?.toIntOrNull() ?: LIST_PAGE).coerceIn(1, MAX_LIST_ENTRIES)
+            if (offset > entries.size) {
+                return@withContext ToolResult(true, "[offset $offset is beyond the end: $path has ${entries.size} entries]")
+            }
+            val page = entries.drop(offset - 1).take(limit)
             val sb = StringBuilder()
-            entries.take(MAX_LIST_ENTRIES).forEach { node ->
+            page.forEach { node ->
                 sb.append(node.name)
-                if (node.isDirectory) sb.append('/')
+                if (runCatching { node.isDirectory }.getOrDefault(false)) sb.append('/')
                 sb.append('\n')
             }
-            if (entries.size > MAX_LIST_ENTRIES) {
-                sb.append("... and ${entries.size - MAX_LIST_ENTRIES} more entries\n")
+            val last = offset - 1 + page.size
+            if (offset > 1 || last < entries.size) {
+                sb.append("[entries $offset-$last of ${entries.size}")
+                if (last < entries.size) sb.append("; next offset=${last + 1}")
+                sb.append("]\n")
             }
             ToolResult(true, sb.toString().trimEnd())
         }
@@ -436,7 +451,10 @@ class WriteFileTool : Tool {
             ToolResult(
                 true,
                 buildString {
-                    append("${if (existed) "Overwrote" else "Created"} $path (${written.length} chars$note)")
+                    // Characters as a person counts them (an emoji is one), plus the exact size on disk.
+                    val characters = written.codePointCount(0, written.length)
+                    val bytes = written.toByteArray(Charsets.UTF_8).size
+                    append("${if (existed) "Overwrote" else "Created"} $path ($characters characters, $bytes bytes$note)")
                     if (warn != null) append('\n').append(warn)
                 },
             )
@@ -542,7 +560,7 @@ class SearchFilesTool : Tool {
                 if (root.isDirectory) root.list().asSequence() else sequenceOf(root)
             }
             nodes.forEach { node ->
-                if (!node.isFile) return@forEach
+                if (runCatching { !node.isFile }.getOrDefault(true)) return@forEach
                 val nameMatch = runCatching {
                     nameMatcher.matches(java.nio.file.Paths.get(node.name))
                 }.getOrDefault(false)
@@ -787,6 +805,9 @@ class GrepTool(
         withContext(Dispatchers.IO) {
             val pattern = args["pattern"]?.jsonPrimitive?.content
                 ?: throw ToolFailure("Missing required argument: pattern")
+            if (pattern.isEmpty()) {
+                throw ToolFailure("pattern must not be empty: it would match every line. Search for specific text, or use read_file to see a whole file.")
+            }
 
             val danger = RegexSafety.checkReDos(pattern)
             if (danger != null) {
@@ -829,7 +850,7 @@ class GrepTool(
                 val budget = RegexStepBudget(regexStepBudget, regexTimeoutMs)
                 for (node in ctx.workspace.walk(path).sortedBy { it.relPath }) {
                     if (matches.size > limit) break
-                    if (!node.isFile) continue
+                    if (runCatching { !node.isFile }.getOrDefault(true)) continue
                     // The include filter runs BEFORE the size/binary/skip
                     // bookkeeping. A file the caller excluded is not part of
                     // this search, so naming it in "[Skipped: …]" only made the
@@ -838,11 +859,11 @@ class GrepTool(
                     if (includeMatcher != null &&
                         !includeMatcher.matches(java.nio.file.Paths.get(node.name))
                     ) continue
-                    if (node.length > 2_000_000) {
+                    if (runCatching { node.length }.getOrDefault(Long.MAX_VALUE) > 2_000_000) {
                         skipped += "${node.relPath} (>2MB)"
                         continue
                     }
-                    if (node.isBinary()) {
+                    if (runCatching { node.isBinary() }.getOrDefault(false)) {
                         skipped += "${node.relPath} (binary)"
                         continue
                     }

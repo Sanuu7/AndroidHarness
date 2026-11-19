@@ -111,7 +111,9 @@ class WorkspaceFileHistory(private val directory: File) {
         lock.withLock {
             require(versionId.matches(Regex("[a-zA-Z0-9-]+"))) { "Invalid version id" }
             val (workspace, relative) = location(fs, path)
-            val version = json.decodeFromString<FileVersion>(File(directory, "$versionId.json").readText())
+            val record = File(directory, "$versionId.json")
+            check(record.isFile) { "Unknown version '$versionId'. Call file_history for this path to list the saved versions." }
+            val version = json.decodeFromString<FileVersion>(record.readText())
             check(version.sessionId == sessionId && version.workspace == workspace && version.path == relative) {
                 "This version belongs to a different chat, workspace or path"
             }
@@ -122,7 +124,16 @@ class WorkspaceFileHistory(private val directory: File) {
                 check(node.isFile && node.length <= MAX_BYTES) { "Current target cannot be safely replaced" }
                 requireNotNull(node.openInputStream()).use { hash(readLimited(it)) }
             } else "missing"
-            check(current == expectedHash) { "File changed or already exists. Inspect it and supply its current SHA-256 before restoring." }
+            check(current.equals(expectedHash.trim(), ignoreCase = true)) {
+                when {
+                    expectedHash.trim() == "missing" ->
+                        "$path already exists, so restoring would overwrite it. Inspect it, then pass its current SHA-256 as expected_sha256."
+                    current == "missing" ->
+                        "$path no longer exists, so expected_sha256 does not match. Omit expected_sha256 to restore the missing file."
+                    else -> "expected_sha256 does not match $path: you passed ${expectedHash.trim().take(12)}…, the file now hashes to ${current.take(12)}…. " +
+                        "It changed since you inspected it, or the hash was copied wrong. Inspect it again before overwriting it."
+                }
+            }
             val data = GZIPInputStream(File(directory, "$versionId.gz").inputStream()).use { readLimited(it, version.bytes) }
             check(data.size == version.bytes && hash(data) == version.sha256) { "Saved version failed its integrity check" }
             recordLocked(sessionId, fs, path, "before restore")

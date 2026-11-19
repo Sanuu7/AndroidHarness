@@ -116,7 +116,9 @@ class FileFs(private val root: File) : WorkspaceFs {
             .onEnter { dir -> !WorkspaceIgnore.shouldSkipEnter(path, dir.name) }
             .asSequence()
             .map { FileFsNode(it, rootPath) }
-            .filter { n -> !n.isFile || !WorkspaceIgnore.shouldSkip(n.relPath, path) }
+            // An entry the app cannot even stat (system folders in Full access) is left out
+            // instead of aborting the whole search.
+            .filter { n -> runCatching { !n.isFile || !WorkspaceIgnore.shouldSkip(n.relPath, path) }.getOrDefault(false) }
     }
 }
 
@@ -299,7 +301,9 @@ class UnboundedFileFs(root: File) : WorkspaceFs {
             .onEnter { dir -> !WorkspaceIgnore.shouldSkipEnter(path, dir.name) }
             .asSequence()
             .map { f -> FileFsNode(f, rootPath) }
-            .filter { n -> !n.isFile || !WorkspaceIgnore.shouldSkip(n.relPath, path) }
+            // An entry the app cannot even stat (system folders in Full access) is left out
+            // instead of aborting the whole search.
+            .filter { n -> runCatching { !n.isFile || !WorkspaceIgnore.shouldSkip(n.relPath, path) }.getOrDefault(false) }
     }
 }
 

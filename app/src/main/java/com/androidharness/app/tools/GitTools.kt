@@ -251,6 +251,9 @@ internal fun buildGitResult(
                 append("--- stderr ---\n").append(err)
             }
             if (text.isEmpty() && err.isEmpty()) append("(no output)")
+            // Same shape as the shell tool, so a failed git call never reads like a success.
+            if (res.timedOut) append("\nexit code: killed (timeout)")
+            else if (res.exitCode != 0) append("\nexit code: ").append(res.exitCode)
         }.trimEnd(),
     )
 }
