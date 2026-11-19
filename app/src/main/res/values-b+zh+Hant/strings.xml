@@ -1126,4 +1126,16 @@
         <item quantity="other">"再顯示 %1$d 個"</item>
     </plurals>
     <string name="chat_history_show_less">"收起"</string>
+    <string name="stall_timeout_title">"串流停頓逾時"</string>
+    <string name="stall_timeout_subtitle">"模型在這段時間內沒有傳送任何內容時，工作會暫停。"</string>
+    <string name="stall_timeout_detail">"回覆在不傳送任何資料的情況下可以持續多久，超過後工作暫停。較慢的模型在寫入大型檔案時可能沉默數分鐘，請給它們更多時間。"</string>
+    <string name="stall_timeout_default">"預設"</string>
+    <string name="stall_timeout_custom">"自訂"</string>
+    <string name="stall_timeout_minutes">"分鐘"</string>
+    <string name="stall_timeout_range">"介於 0.5 到 60 分鐘"</string>
+    <string name="stall_timeout_wait_longer">"再等一下"</string>
+    <string name="stall_timeout_save_resume">"儲存並繼續"</string>
+    <string name="stream_writes_title">"將檔案寫入以文字串流顯示"</string>
+    <string name="stream_writes_desc">"有些伺服器（包括多個 NVIDIA 模型）只會在整個檔案寫入完成後才傳送。對這些模型，代理會把檔案寫進回覆裡，讓你能看到它逐步寫出。"</string>
+    <string name="stream_writes_detected">"目前已偵測到的模型：%1$d 個"</string>
 </resources>

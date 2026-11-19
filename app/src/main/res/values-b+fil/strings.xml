@@ -1130,4 +1130,16 @@
         <item quantity="other">"Magpakita ng %1$d pa"</item>
     </plurals>
     <string name="chat_history_show_less">"Magpakita ng mas kaunti"</string>
+    <string name="stall_timeout_title">"Timeout ng paghinto ng stream"</string>
+    <string name="stall_timeout_subtitle">"Ipinapahinto ang gawain kapag walang ipinadala ang modelo sa ganoong tagal."</string>
+    <string name="stall_timeout_detail">"Gaano katagal maaaring walang data ang isang sagot bago huminto ang gawain. Maaaring manahimik nang ilang minuto ang mabagal na modelo habang nagsusulat ng malaking file, kaya bigyan sila ng mas mahabang oras."</string>
+    <string name="stall_timeout_default">"default"</string>
+    <string name="stall_timeout_custom">"Custom"</string>
+    <string name="stall_timeout_minutes">"Minuto"</string>
+    <string name="stall_timeout_range">"Sa pagitan ng 0.5 at 60 minuto"</string>
+    <string name="stall_timeout_wait_longer">"Maghintay pa"</string>
+    <string name="stall_timeout_save_resume">"I-save at ituloy"</string>
+    <string name="stream_writes_title">"I-stream ang pagsulat ng file bilang teksto"</string>
+    <string name="stream_writes_desc">"Ang ilang server, kabilang ang ilang NVIDIA na modelo, ay nagpapadala ng pagsulat ng file kapag tapos na ito. Sa mga modelong iyon, isinusulat ng agent ang file sa loob ng sagot nito para makita mo itong isinusulat."</string>
+    <string name="stream_writes_detected">"Mga modelong natukoy hanggang ngayon: %1$d"</string>
 </resources>

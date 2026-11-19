@@ -1130,4 +1130,16 @@
         <item quantity="other">"%1$d மேலும் காட்டு"</item>
     </plurals>
     <string name="chat_history_show_less">"குறைவாகக் காட்டு"</string>
+    <string name="stall_timeout_title">"ஸ்ட்ரீம் நிற்கும் நேர வரம்பு"</string>
+    <string name="stall_timeout_subtitle">"மாடல் இவ்வளவு நேரம் எதையும் அனுப்பாத போது பணியை இடைநிறுத்துகிறது."</string>
+    <string name="stall_timeout_detail">"பணி இடைநிறுத்தப்படும் முன் ஒரு பதில் தரவை அனுப்பாமல் எவ்வளவு நேரம் இருக்கலாம். மெதுவான மாடல்கள் பெரிய கோப்பை எழுதும்போது பல நிமிடங்கள் அமைதியாக இருக்கலாம், எனவே அவற்றுக்கு அதிக நேரம் கொடுங்கள்."</string>
+    <string name="stall_timeout_default">"இயல்பு"</string>
+    <string name="stall_timeout_custom">"தனிப்பயன்"</string>
+    <string name="stall_timeout_minutes">"நிமிடங்கள்"</string>
+    <string name="stall_timeout_range">"0.5 முதல் 60 நிமிடங்கள்"</string>
+    <string name="stall_timeout_wait_longer">"மேலும் காத்திரு"</string>
+    <string name="stall_timeout_save_resume">"சேமித்து தொடர்"</string>
+    <string name="stream_writes_title">"கோப்பு எழுதுதல்களை உரையாக ஸ்ட்ரீம் செய்"</string>
+    <string name="stream_writes_desc">"சில சேவையகங்கள், பல NVIDIA மாடல்கள் உட்பட, கோப்பு எழுதுதல் முடிந்த பிறகே அதை அனுப்புகின்றன. அந்த மாடல்களுக்கு முகவர் கோப்பைத் தன் பதிலுக்குள் எழுதும், அதனால் அது எழுதப்படுவதைப் பார்க்கலாம்."</string>
+    <string name="stream_writes_detected">"இதுவரை கண்டறியப்பட்ட மாடல்கள்: %1$d"</string>
 </resources>

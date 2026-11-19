@@ -1126,4 +1126,16 @@
         <item quantity="other">"Tampilkan %1$d lagi"</item>
     </plurals>
     <string name="chat_history_show_less">"Tampilkan lebih sedikit"</string>
+    <string name="stall_timeout_title">"Batas waktu macet stream"</string>
+    <string name="stall_timeout_subtitle">"Menjeda tugas saat model tidak mengirim apa pun selama waktu ini."</string>
+    <string name="stall_timeout_detail">"Berapa lama balasan boleh berjalan tanpa mengirim data sebelum tugas dijeda. Model lambat bisa diam beberapa menit saat menulis file besar, jadi beri mereka waktu lebih."</string>
+    <string name="stall_timeout_default">"bawaan"</string>
+    <string name="stall_timeout_custom">"Kustom"</string>
+    <string name="stall_timeout_minutes">"Menit"</string>
+    <string name="stall_timeout_range">"Antara 0,5 dan 60 menit"</string>
+    <string name="stall_timeout_wait_longer">"Tunggu lebih lama"</string>
+    <string name="stall_timeout_save_resume">"Simpan lalu lanjutkan"</string>
+    <string name="stream_writes_title">"Streaming penulisan file sebagai teks"</string>
+    <string name="stream_writes_desc">"Beberapa server, termasuk beberapa model NVIDIA, hanya mengirim penulisan file setelah selesai. Untuk model tersebut, agen menulis file ke dalam balasannya agar Anda bisa melihatnya ditulis."</string>
+    <string name="stream_writes_detected">"Model yang terdeteksi sejauh ini: %1$d"</string>
 </resources>

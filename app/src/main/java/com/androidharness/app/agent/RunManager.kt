@@ -919,6 +919,7 @@ class RunManager(
                 buffer(sessionId)?.let { buf -> synchronized(buf) { buf.text.setLength(0) } }
                 live.update { it.copy(streamingText = null) }
             }
+            is AgentEvent.CodeDraftRemoved -> live.update { st -> st.copy(codeDrafts = st.codeDrafts - event.id) }
             AgentEvent.CodeDraftsCleared -> live.update { st -> st.copy(codeDrafts = st.codeDrafts.filterValues {
                 it.stage == CodeDraftStage.SAVED || it.stage == CodeDraftStage.FAILED
             }) }

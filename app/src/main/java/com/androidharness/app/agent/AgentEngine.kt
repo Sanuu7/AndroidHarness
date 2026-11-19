@@ -166,6 +166,8 @@ sealed interface AgentEvent {
     data class ThinkingProgress(val timing: ThinkingTiming) : AgentEvent
     data class CodeDraft(val draft: LiveCodeDraft) : AgentEvent
     data object CodeDraftsCleared : AgentEvent
+    /** A live preview that turned out not to be a separate call (a streamed file block now filled into one). */
+    data class CodeDraftRemoved(val id: String) : AgentEvent
     data class ToolStarted(val call: ToolCallData) : AgentEvent
     data class PackageProgress(val callId: String, val status: com.androidharness.app.data.env.PackageInstallStatus) : AgentEvent
     data class ToolFinished(val callId: String, val result: ToolResult) : AgentEvent
@@ -266,6 +268,8 @@ class AgentEngine(
     private val remindersEnabled: suspend () -> Boolean = { true },
     private val resolveConfiguration: suspend (WorkspaceFs) -> com.androidharness.app.config.HarnessConfig = { com.androidharness.app.config.HarnessConfigLoader().load(it) },
     private val pluginHooks: com.androidharness.app.config.PluginHooks? = null,
+    /** Remembers a provider|model whose server delivered a whole file write in one chunk. */
+    private val markBufferedToolCalls: suspend (String) -> Unit = {},
 ) {
     private val json = Json { ignoreUnknownKeys = true }
 
@@ -279,6 +283,10 @@ class AgentEngine(
     private val recallToolNames = setOf("search_chats", "recent_chats", "read_chat_snippet")
     private val memoryToolNames = com.androidharness.app.data.MemoryRepository.toolNames +
         setOf("memory_write", "memory_read", "memory_search")
+
+    /** The stall window picked in Settings, read fresh for each request. */
+    private suspend fun stallSettingMs(): Long =
+        StreamRetrier.stallTimeoutMs(cavemanSettings().streamStallTimeoutSeconds)
 
     suspend fun configuration(workspace: WorkspaceFs) = withContext(kotlinx.coroutines.Dispatchers.IO) { resolveConfiguration(workspace) }
 
@@ -528,6 +536,12 @@ class AgentEngine(
                 intensity = replySettings.cavemanIntensity,
                 wenyan = replySettings.cavemanWenyan,
             )
+            // Servers that hold tool calls back get file contents as streamed reply text.
+            val bufferKey = TextFileWrites.modelKey(config.id, config.model)
+            val textWrites = !conversation.isChat && agentContextEnabled && replySettings.streamFileWritesAsText &&
+                (bufferKey in replySettings.bufferedToolCallModels || TextFileWrites.buffersToolCalls(config.baseUrl)) &&
+                tools.any { it.name == "write_file" }
+            if (textWrites) requestSystemPrompt += TextFileWrites.prompt()
             if (agentContextEnabled) {
                 val before = if (hooksActive) hook(com.androidharness.app.config.HookEvents.PROMPT, kotlinx.serialization.json.buildJsonObject {
                     put("agent", runContext.agent); put("iteration", iterations)
@@ -590,8 +604,23 @@ class AgentEngine(
             var lastTokenNs = 0L
             val codeTracker = LiveCodeTracker()
             emit(AgentEvent.CodeDraftsCleared)
+            val fileBlocks = if (textWrites) FileBlockStream("text-file-$turnId-$iterations") else null
+            // Argument fragments seen per call; one fragment for a whole write means the server buffered it.
+            val argumentFragments = HashMap<String, Int>()
 
-            suspend fun codeReady(call: ToolCallData) {
+            suspend fun codeReady(original: ToolCallData) {
+                var call = original
+                if (!conversation.isChat && call.name in LiveCodePreview.tools &&
+                    call.argumentsJson.length >= TextFileWrites.BUFFERED_MIN_CHARS &&
+                    (argumentFragments[call.id] ?: 0) <= 1 && bufferKey !in replySettings.bufferedToolCallModels) {
+                    runCatching { markBufferedToolCalls(bufferKey) }
+                }
+                fileBlocks?.let { blocks ->
+                    TextFileWrites.fill(call, blocks)?.let { (filled, block) ->
+                        call = filled
+                        emit(AgentEvent.CodeDraftRemoved(block.draftId))
+                    }
+                }
                 val labeled = if (conversation.isChat) call else workspaceCall(call, execWorkspace)
                 calls += labeled
                 if (!conversation.isChat) codeTracker.ready(labeled, execWorkspace)?.let { emit(AgentEvent.CodeDraft(it)) }
@@ -602,8 +631,34 @@ class AgentEngine(
                     val now = System.nanoTime()
                     if (firstTokenNs == 0L) firstTokenNs = now
                     lastTokenNs = now
+                    argumentFragments[event.id] = (argumentFragments[event.id] ?: 0) + 1
                 }
                 if (!conversation.isChat) codeTracker.delta(event, execWorkspace)?.let { emit(AgentEvent.CodeDraft(it)) }
+            }
+
+            /** Live previews for file blocks in the reply, throttled like tool argument previews. */
+            suspend fun blockPreviews(blocks: FileBlockStream) {
+                val now = System.nanoTime()
+                for (block in blocks.touched.toList()) {
+                    if (block.consumed) continue
+                    if (!block.closed && block.previewAt != 0L && now - block.previewAt < 80_000_000L) continue
+                    block.previewAt = now
+                    codeTracker.delta(StreamEvent.ToolCallDelta(block.draftId, "write_file",
+                        TextFileWrites.previewArguments(block), replace = true), execWorkspace, force = true)
+                        ?.let { emit(AgentEvent.CodeDraft(it)) }
+                }
+            }
+
+            suspend fun answerText(delta: String) {
+                if (delta.isNotEmpty()) {
+                    val now = System.nanoTime()
+                    if (firstTokenNs == 0L) firstTokenNs = now
+                    lastTokenNs = now
+                }
+                val visible = fileBlocks?.feed(delta) ?: delta
+                text.append(visible)
+                if (visible.isNotEmpty() || fileBlocks == null) emit(AgentEvent.Text(visible))
+                fileBlocks?.let { blockPreviews(it) }
             }
 
             val streamEventHandler: suspend (StreamEvent) -> Unit = { event ->
@@ -616,15 +671,7 @@ class AgentEngine(
                         emit(AgentEvent.ProviderChanged(event.config, event.reason, event.persistSelection))
                     }
                     is StreamEvent.Retrying -> emit(AgentEvent.Retrying(event.attempt, event.delayMs, event.reason))
-                    is StreamEvent.TextDelta -> {
-                        if (event.text.isNotEmpty()) {
-                            val now = System.nanoTime()
-                            if (firstTokenNs == 0L) firstTokenNs = now
-                            lastTokenNs = now
-                        }
-                        text.append(event.text)
-                        emit(AgentEvent.Text(event.text))
-                    }
+                    is StreamEvent.TextDelta -> answerText(event.text)
                     is StreamEvent.ResponseState -> responseState = event.state
                     is StreamEvent.ThinkingConfigured -> reasoningSetting = event.label
                     is StreamEvent.ThinkingDelta -> {
@@ -641,15 +688,7 @@ class AgentEngine(
                     is StreamEvent.ToolCallBatch -> event.calls.forEach { codeReady(it) }
                     is StreamEvent.Batch -> event.events.forEach { nested ->
                         when (nested) {
-                            is StreamEvent.TextDelta -> {
-                                if (nested.text.isNotEmpty()) {
-                                    val now = System.nanoTime()
-                                    if (firstTokenNs == 0L) firstTokenNs = now
-                                    lastTokenNs = now
-                                }
-                                text.append(nested.text)
-                                emit(AgentEvent.Text(nested.text))
-                            }
+                            is StreamEvent.TextDelta -> answerText(nested.text)
                             is StreamEvent.ThinkingDelta -> {
                                 if (nested.text.isNotEmpty()) {
                                     val now = System.nanoTime()
@@ -690,7 +729,11 @@ class AgentEngine(
             // re-emitting deltas the UI already showed would duplicate output.
             var recoverableFailure = false
             val managedFallback = kotlin.coroutines.coroutineContext[com.androidharness.app.llm.FallbackRun]?.policy()?.enabled == true
-            val stallWindow: Long = if (managedFallback) 610_000 else if (localChat) 600_000 else 90_000
+            // The router guards each attempt with the user's window (10 min for local
+            // models), so the outer guard waits a little longer than either.
+            val userStall = StreamRetrier.stallTimeoutMs(replySettings.streamStallTimeoutSeconds)
+            val stallWindow: Long = if (managedFallback) maxOf(userStall, 600_000) + 10_000
+                else if (localChat) maxOf(userStall, 600_000) else userStall
             val firstOutputWindow = StreamRetrier.firstOutputWindow(stallWindow, requestOptions, config)
 
             var failure = StreamRetrier.run(
@@ -700,6 +743,8 @@ class AgentEngine(
                 },
                 onAttemptStart = {
                     codeTracker.clear()
+                    fileBlocks?.reset()
+                    argumentFragments.clear()
                     responseStarted = false
                     requestStartedNs = System.nanoTime()
                     outputTokens = 0
@@ -746,6 +791,8 @@ class AgentEngine(
                     },
                     onAttemptStart = {
                         codeTracker.clear()
+                        fileBlocks?.reset()
+                        argumentFragments.clear()
                         responseStarted = false
                         requestStartedNs = System.nanoTime()
                         outputTokens = 0
@@ -770,6 +817,19 @@ class AgentEngine(
                     retryStalls = !StreamRetrier.selfHosted(config),
                     onTerminalFailure = { recoverableFailure = it },
                 )
+            }
+
+            // Silence after thinking that ends in a stall or an empty reply is how a server that
+            // holds tool calls back looks while the model writes a large file. Later runs on this
+            // model write files as reply blocks so the writing shows up live.
+            if (!conversation.isChat && !textWrites && calls.isEmpty() && bufferKey !in replySettings.bufferedToolCallModels)
+                markSilentWrite(bufferKey, text, thinking, failure, tools)
+
+            // Held text comes back to the reader; a file block no call used stays visible
+            // as a plain block, so nothing the model wrote is lost.
+            fileBlocks?.drainInto(text)?.let { (removed, shown) ->
+                removed.forEach { emit(AgentEvent.CodeDraftRemoved(it)) }
+                if (shown.isNotEmpty()) emit(AgentEvent.Text(shown))
             }
 
             // Where a research turn spends its time: one line per model round.
@@ -1082,9 +1142,9 @@ class AgentEngine(
                     },
                     retryReason = { it.take(200) },
                     emitEvent = { send(SideEvent.Retrying(it.attempt, it.reason)) },
-                    stallTimeoutMs = if (local) 600_000 else 90_000,
+                    stallTimeoutMs = if (local) 600_000 else stallSettingMs(),
                     firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                        if (local) 600_000 else 90_000, context.options, config),
+                        if (local) 600_000 else stallSettingMs(), context.options, config),
                     allowRetries = !local,
                     retryStalls = !StreamRetrier.selfHosted(config),
                 )
@@ -2086,9 +2146,9 @@ class AgentEngine(
                 },
                 retryReason = { f -> "subagent: ${f.take(160)}" },
                 emitEvent = { emitEvent(it) },
-                stallTimeoutMs = if (managedFallback) 610_000 else 90_000,
+                stallTimeoutMs = if (managedFallback) maxOf(stallSettingMs(), 600_000) + 10_000 else stallSettingMs(),
                 firstOutputTimeoutMs = StreamRetrier.firstOutputWindow(
-                    if (managedFallback) 610_000 else 90_000, requestOptions, config),
+                    if (managedFallback) maxOf(stallSettingMs(), 600_000) + 10_000 else stallSettingMs(), requestOptions, config),
                 allowRetries = !managedFallback,
                 retryStalls = !StreamRetrier.selfHosted(config),
             )
@@ -2199,6 +2259,7 @@ class AgentEngine(
         emit(AgentEvent.Compacting("Summarizing earlier messages…"))
         return try {
             val summary = HistoryCompactor.summarize(provider, config, apiKey, older, maxContextTokens, sessionId,
+                stallTimeoutMs = stallSettingMs(),
                 progress = { emit(AgentEvent.Compacting(it)) },
                 event = { event, cfg -> when (event) {
                     is StreamEvent.ProviderChanged -> emit(AgentEvent.ProviderChanged(event.config, event.reason, event.persistSelection))
@@ -2217,6 +2278,13 @@ class AgentEngine(
                 else "Compaction failed: ${e.message}. History was kept. Retry /compact or choose another model."))
             null
         }
+    }
+
+    /** Marks [key] as a buffered model when a round went silent after thinking, as a held-back write does. */
+    private suspend fun markSilentWrite(key: String, text: CharSequence, thinking: CharSequence, failure: String?, tools: List<com.androidharness.app.llm.ToolSchema>) {
+        if (text.isNotBlank() || thinking.isBlank() || tools.none { it.name == "write_file" }) return
+        if (failure != null && !StreamRetrier.isStallFailure(failure)) return
+        runCatching { markBufferedToolCalls(key) }
     }
 
     /**

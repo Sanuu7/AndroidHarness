@@ -1126,4 +1126,16 @@
         <item quantity="other">"Tunjuk %1$d lagi"</item>
     </plurals>
     <string name="chat_history_show_less">"Tunjuk kurang"</string>
+    <string name="stall_timeout_title">"Tamat masa genangan strim"</string>
+    <string name="stall_timeout_subtitle">"Menjeda tugas apabila model tidak menghantar apa-apa selama ini."</string>
+    <string name="stall_timeout_detail">"Berapa lama balasan boleh dibiarkan tanpa menghantar data sebelum tugas dijeda. Model perlahan boleh senyap berdurasi minit semasa menulis fail besar, jadi beri mereka lebih masa."</string>
+    <string name="stall_timeout_default">"lalai"</string>
+    <string name="stall_timeout_custom">"Tersuai"</string>
+    <string name="stall_timeout_minutes">"Minit"</string>
+    <string name="stall_timeout_range">"Antara 0.5 dan 60 minit"</string>
+    <string name="stall_timeout_wait_longer">"Tunggu lebih lama"</string>
+    <string name="stall_timeout_save_resume">"Simpan dan sambung"</string>
+    <string name="stream_writes_title">"Strim tulisan fail sebagai teks"</string>
+    <string name="stream_writes_desc">"Sesetengah pelayan, termasuk beberapa model NVIDIA, hanya menghantar tulisan fail selepas ia siap. Untuk model itu, ejen menulis fail ke dalam balasan supaya anda boleh melihatnya ditulis."</string>
+    <string name="stream_writes_detected">"Model dikesan setakat ini: %1$d"</string>
 </resources>

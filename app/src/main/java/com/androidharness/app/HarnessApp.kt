@@ -382,6 +382,9 @@ class AppContainer(val appContext: Context) {
                         com.androidharness.app.llm.HarnessProvider.pool[config.model]?.baseUrl ?: config.baseUrl
                     else config.baseUrl
                 },
+                currentStallTimeoutMs = {
+                    com.androidharness.app.agent.StreamRetrier.stallTimeoutMs(settings.settings.first().streamStallTimeoutSeconds)
+                },
         )
 
     val engine: AgentEngine = AgentEngine(
@@ -394,6 +397,7 @@ class AppContainer(val appContext: Context) {
         skills = skills,
         resolveConfiguration = { configuration.load(it) },
         pluginHooks = pluginHooks,
+        markBufferedToolCalls = { settings.markBufferedToolCalls(it) },
         todoStore = todoStore,
         repoMap = repoMap,
         cavemanSettings = { settings.settings.first().also { cavemanSettings.set(it); disabledSkills.set(it.disabledSkills) } },

@@ -1130,4 +1130,16 @@
         <item quantity="other">"Mostrar mais %1$d"</item>
     </plurals>
     <string name="chat_history_show_less">"Mostrar menos"</string>
+    <string name="stall_timeout_title">"Tempo limite de travamento do stream"</string>
+    <string name="stall_timeout_subtitle">"Pausa a tarefa quando o modelo não envia nada por esse tempo."</string>
+    <string name="stall_timeout_detail">"Quanto tempo uma resposta pode ficar sem enviar dados antes de a tarefa pausar. Modelos lentos podem ficar em silêncio por minutos enquanto escrevem um arquivo grande, então dê mais tempo a eles."</string>
+    <string name="stall_timeout_default">"padrão"</string>
+    <string name="stall_timeout_custom">"Personalizado"</string>
+    <string name="stall_timeout_minutes">"Minutos"</string>
+    <string name="stall_timeout_range">"Entre 0,5 e 60 minutos"</string>
+    <string name="stall_timeout_wait_longer">"Esperar mais"</string>
+    <string name="stall_timeout_save_resume">"Salvar e retomar"</string>
+    <string name="stream_writes_title">"Transmitir gravações de arquivo como texto"</string>
+    <string name="stream_writes_desc">"Alguns servidores, incluindo vários modelos NVIDIA, só enviam uma gravação de arquivo quando ela termina. Nesses modelos o agente escreve o arquivo dentro da resposta para você ver enquanto é escrito."</string>
+    <string name="stream_writes_detected">"Modelos detectados até agora: %1$d"</string>
 </resources>

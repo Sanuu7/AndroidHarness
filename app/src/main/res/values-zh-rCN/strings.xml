@@ -1157,4 +1157,16 @@
         <item quantity="other">再显示 %1$d 个</item>
     </plurals>
     <string name="chat_history_show_less">收起</string>
+    <string name="stall_timeout_title">流式停顿超时</string>
+    <string name="stall_timeout_subtitle">模型在这段时间内没有发送任何内容时，任务会暂停。</string>
+    <string name="stall_timeout_detail">回复在不发送任何数据的情况下可以持续多久，超过后任务暂停。较慢的模型在写入大文件时可能沉默数分钟，请给它们更多时间。</string>
+    <string name="stall_timeout_default">默认</string>
+    <string name="stall_timeout_custom">自定义</string>
+    <string name="stall_timeout_minutes">分钟</string>
+    <string name="stall_timeout_range">0.5 到 60 分钟之间</string>
+    <string name="stall_timeout_wait_longer">再等等</string>
+    <string name="stall_timeout_save_resume">保存并恢复</string>
+    <string name="stream_writes_title">将文件写入以文本流式显示</string>
+    <string name="stream_writes_desc">有些服务器（包括多个 NVIDIA 模型）只在整个文件写入完成后才发送。对这些模型，智能体会把文件写进回复里，这样你可以看到它逐步写出。</string>
+    <string name="stream_writes_detected">目前已检测到的模型：%1$d 个</string>
 </resources>

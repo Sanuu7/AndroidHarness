@@ -1130,4 +1130,16 @@
         <item quantity="other">"%1$d और दिखाएँ"</item>
     </plurals>
     <string name="chat_history_show_less">"कम दिखाएँ"</string>
+    <string name="stall_timeout_title">"स्ट्रीम स्टॉल टाइमआउट"</string>
+    <string name="stall_timeout_subtitle">"जब मॉडल इतनी देर तक कुछ न भेजे तो कार्य रोक देता है।"</string>
+    <string name="stall_timeout_detail">"उत्तर डेटा भेजे बिना कितनी देर रह सकता है, उसके बाद कार्य रुकता है। धीमे मॉडल बड़ी फ़ाइल लिखते समय कई मिनट चुप रह सकते हैं, इसलिए उन्हें अधिक समय दें।"</string>
+    <string name="stall_timeout_default">"डिफ़ॉल्ट"</string>
+    <string name="stall_timeout_custom">"कस्टम"</string>
+    <string name="stall_timeout_minutes">"मिनट"</string>
+    <string name="stall_timeout_range">"0.5 से 60 मिनट के बीच"</string>
+    <string name="stall_timeout_wait_longer">"और प्रतीक्षा करें"</string>
+    <string name="stall_timeout_save_resume">"सहेजें और फिर शुरू करें"</string>
+    <string name="stream_writes_title">"फ़ाइल लेखन टेक्स्ट के रूप में स्ट्रीम करें"</string>
+    <string name="stream_writes_desc">"कुछ सर्वर, जिनमें कई NVIDIA मॉडल शामिल हैं, फ़ाइल लेखन तभी भेजते हैं जब वह पूरा हो जाता है। उन मॉडलों के लिए एजेंट फ़ाइल को अपने उत्तर में लिखता है, जिससे आप उसे लिखते हुए देख सकते हैं।"</string>
+    <string name="stream_writes_detected">"अब तक पहचाने गए मॉडल: %1$d"</string>
 </resources>

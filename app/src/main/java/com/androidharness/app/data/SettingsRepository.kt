@@ -211,6 +211,15 @@ data class AppSettings(
     val subagentsEnabled: Boolean = true,
     /** Lets the agent show a card with buttons to Android's storage access pages. Never grants anything itself. */
     val storageAccessCards: Boolean = true,
+    /** Seconds a stream may stay silent before the run pauses with a stall error. */
+    val streamStallTimeoutSeconds: Int = com.androidharness.app.agent.StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS,
+    /**
+     * For models whose server holds a tool call back until it is finished, ask
+     * for file contents as streamed reply text so the write shows live.
+     */
+    val streamFileWritesAsText: Boolean = true,
+    /** "providerId|model" keys seen delivering a whole write in one chunk. */
+    val bufferedToolCallModels: Set<String> = emptySet(),
     /** ID of the last active chat session. */
     val lastActiveSessionId: String? = null,
     /** Generate and inject compact codebase symbol index (Repo map) into agent context. */
@@ -429,6 +438,9 @@ class SettingsRepository(private val context: Context) {
         val SHOW_TODO_LIST = booleanPreferencesKey("show_todo_list")
         val SUBAGENTS_ENABLED = booleanPreferencesKey("subagents_enabled")
         val STORAGE_ACCESS_CARDS = booleanPreferencesKey("storage_access_cards")
+        val STREAM_STALL_TIMEOUT_SECONDS = intPreferencesKey("stream_stall_timeout_seconds")
+        val STREAM_FILE_WRITES_AS_TEXT = booleanPreferencesKey("stream_file_writes_as_text")
+        val BUFFERED_TOOL_CALL_MODELS = stringSetPreferencesKey("buffered_tool_call_models")
         val LAST_ACTIVE_SESSION = stringPreferencesKey("last_active_session_id")
         val REPO_MAP_ENABLED = booleanPreferencesKey("repo_map_enabled")
         val LOCAL_MODEL_AGENT_CONTEXT = booleanPreferencesKey("local_model_agent_context")
@@ -576,6 +588,10 @@ class SettingsRepository(private val context: Context) {
             showTodoList = prefs[Keys.SHOW_TODO_LIST] ?: true,
             subagentsEnabled = prefs[Keys.SUBAGENTS_ENABLED] ?: true,
             storageAccessCards = prefs[Keys.STORAGE_ACCESS_CARDS] ?: true,
+            streamStallTimeoutSeconds = prefs[Keys.STREAM_STALL_TIMEOUT_SECONDS]
+                ?: com.androidharness.app.agent.StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS,
+            streamFileWritesAsText = prefs[Keys.STREAM_FILE_WRITES_AS_TEXT] ?: true,
+            bufferedToolCallModels = prefs[Keys.BUFFERED_TOOL_CALL_MODELS] ?: emptySet(),
             lastActiveSessionId = prefs[Keys.LAST_ACTIVE_SESSION],
             repoMapEnabled = prefs[Keys.REPO_MAP_ENABLED] ?: true,
             localModelAgentContext = prefs[Keys.LOCAL_MODEL_AGENT_CONTEXT] ?: false,
@@ -683,6 +699,9 @@ class SettingsRepository(private val context: Context) {
             p[Keys.SHOW_TODO_LIST] = s.showTodoList
             p[Keys.SUBAGENTS_ENABLED] = s.subagentsEnabled
             p[Keys.STORAGE_ACCESS_CARDS] = s.storageAccessCards
+            p[Keys.STREAM_STALL_TIMEOUT_SECONDS] = s.streamStallTimeoutSeconds
+            p[Keys.STREAM_FILE_WRITES_AS_TEXT] = s.streamFileWritesAsText
+            p[Keys.BUFFERED_TOOL_CALL_MODELS] = s.bufferedToolCallModels
             p[Keys.REPO_MAP_ENABLED] = s.repoMapEnabled
             p[Keys.LOCAL_MODEL_AGENT_CONTEXT] = s.localModelAgentContext
             p[Keys.LOCAL_MODEL_EXPERIMENTAL] = s.localModelExperimental
@@ -751,6 +770,23 @@ class SettingsRepository(private val context: Context) {
 
     suspend fun setStorageAccessCards(enabled: Boolean) {
         context.settingsStore.edit { it[Keys.STORAGE_ACCESS_CARDS] = enabled }
+    }
+
+    suspend fun setStreamStallTimeoutSeconds(seconds: Int) {
+        context.settingsStore.edit {
+            it[Keys.STREAM_STALL_TIMEOUT_SECONDS] = seconds.coerceIn(
+                com.androidharness.app.agent.StreamRetrier.MIN_STALL_TIMEOUT_SECONDS,
+                com.androidharness.app.agent.StreamRetrier.MAX_STALL_TIMEOUT_SECONDS)
+        }
+    }
+
+    suspend fun setStreamFileWritesAsText(enabled: Boolean) {
+        context.settingsStore.edit { it[Keys.STREAM_FILE_WRITES_AS_TEXT] = enabled }
+    }
+
+    /** Remembers a model whose server delivered a whole file write in one chunk. */
+    suspend fun markBufferedToolCalls(key: String) {
+        context.settingsStore.edit { it[Keys.BUFFERED_TOOL_CALL_MODELS] = it[Keys.BUFFERED_TOOL_CALL_MODELS].orEmpty() + key }
     }
 
     suspend fun setSubagentsEnabled(enabled: Boolean) {

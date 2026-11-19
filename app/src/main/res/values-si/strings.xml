@@ -1130,4 +1130,16 @@
         <item quantity="other">"තව %1$dක් පෙන්වන්න"</item>
     </plurals>
     <string name="chat_history_show_less">"අඩුවෙන් පෙන්වන්න"</string>
+    <string name="stall_timeout_title">"ප්‍රවාහය නතර වීමේ කාල සීමාව"</string>
+    <string name="stall_timeout_subtitle">"මෙතරම් වේලාවක් ආකෘතිය කිසිවක් නොයැවූ විට කාර්යය විරාම කරයි."</string>
+    <string name="stall_timeout_detail">"කාර්යය විරාම වීමට පෙර පිළිතුරක් දත්ත නොයවා සිටිය හැකි කාලය. මන්දගාමී ආකෘති විශාල ගොනුවක් ලියන විට විනාඩි ගණනක් නිහඬව සිටිය හැක, එබැවින් ඒවාට වැඩි කාලයක් දෙන්න."</string>
+    <string name="stall_timeout_default">"පෙරනිමි"</string>
+    <string name="stall_timeout_custom">"අභිරුචි"</string>
+    <string name="stall_timeout_minutes">"විනාඩි"</string>
+    <string name="stall_timeout_range">"විනාඩි 0.5 සිට 60 දක්වා"</string>
+    <string name="stall_timeout_wait_longer">"තව වේලාවක් ඉන්න"</string>
+    <string name="stall_timeout_save_resume">"සුරකින්න සහ කරගෙන යන්න"</string>
+    <string name="stream_writes_title">"ගොනු ලිවීම් පෙළ ලෙස ප්‍රවාහ කරන්න"</string>
+    <string name="stream_writes_desc">"සමහර සේවාදායක, NVIDIA ආකෘති කිහිපයක් ඇතුළුව, ගොනු ලිවීමක් අවසන් වූ පසුව පමණක් යවයි. එම ආකෘති සඳහා නියෝජිතයා ගොනුව පිළිතුර තුළම ලියයි, එවිට එය ලියැවෙන ආකාරය ඔබට දැකිය හැක."</string>
+    <string name="stream_writes_detected">"මේ වනතුරු හඳුනාගත් ආකෘති: %1$d"</string>
 </resources>

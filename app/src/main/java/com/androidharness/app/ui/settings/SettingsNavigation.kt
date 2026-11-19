@@ -112,7 +112,7 @@ internal enum class SettingsPage(
         R.string.settings_page_agent_title,
         R.string.settings_page_agent_desc,
         R.string.settings_group_coding,
-        "approval full access iterations tools agents.md memory",
+        "approval full access iterations tools agents.md memory stall stalled timeout stream no data received slow nvidia live file writes",
         onHome = false,
     ),
     CHAT(

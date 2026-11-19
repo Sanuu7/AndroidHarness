@@ -1126,4 +1126,16 @@
         <item quantity="other">"Hiện thêm %1$d"</item>
     </plurals>
     <string name="chat_history_show_less">"Thu gọn"</string>
+    <string name="stall_timeout_title">"Thời gian chờ tạm dừng luồng"</string>
+    <string name="stall_timeout_subtitle">"Tạm dừng tác vụ khi mô hình không gửi gì trong thời gian này."</string>
+    <string name="stall_timeout_detail">"Một câu trả lời có thể im lặng bao lâu trước khi tác vụ tạm dừng. Các mô hình chậm có thể im lặng vài phút khi ghi tệp lớn, nên hãy cho chúng nhiều thời gian hơn."</string>
+    <string name="stall_timeout_default">"mặc định"</string>
+    <string name="stall_timeout_custom">"Tùy chỉnh"</string>
+    <string name="stall_timeout_minutes">"Phút"</string>
+    <string name="stall_timeout_range">"Từ 0,5 đến 60 phút"</string>
+    <string name="stall_timeout_wait_longer">"Chờ lâu hơn"</string>
+    <string name="stall_timeout_save_resume">"Lưu và tiếp tục"</string>
+    <string name="stream_writes_title">"Truyền ghi tệp dưới dạng văn bản"</string>
+    <string name="stream_writes_desc">"Một số máy chủ, gồm vài mô hình NVIDIA, chỉ gửi thao tác ghi tệp khi đã hoàn tất. Với các mô hình đó, tác nhân viết tệp vào câu trả lời để bạn xem nó được viết ra."</string>
+    <string name="stream_writes_detected">"Số mô hình đã phát hiện: %1$d"</string>
 </resources>

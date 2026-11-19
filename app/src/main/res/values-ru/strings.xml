@@ -1138,4 +1138,16 @@
         <item quantity="other">"Показать ещё %1$d"</item>
     </plurals>
     <string name="chat_history_show_less">"Свернуть"</string>
+    <string name="stall_timeout_title">"Тайм-аут молчания потока"</string>
+    <string name="stall_timeout_subtitle">"Приостанавливает задачу, если модель так долго ничего не присылает."</string>
+    <string name="stall_timeout_detail">"Сколько ответ может не отправлять данных до приостановки задачи. Медленные модели могут молчать минутами, записывая большой файл, поэтому дайте им больше времени."</string>
+    <string name="stall_timeout_default">"по умолчанию"</string>
+    <string name="stall_timeout_custom">"Другое"</string>
+    <string name="stall_timeout_minutes">"Минуты"</string>
+    <string name="stall_timeout_range">"От 0,5 до 60 минут"</string>
+    <string name="stall_timeout_wait_longer">"Ждать дольше"</string>
+    <string name="stall_timeout_save_resume">"Сохранить и продолжить"</string>
+    <string name="stream_writes_title">"Передавать запись файлов как текст"</string>
+    <string name="stream_writes_desc">"Некоторые серверы, включая ряд моделей NVIDIA, отправляют вызов записи файла только после его завершения. Для таких моделей агент пишет файл прямо в ответе, чтобы вы видели, как он создаётся."</string>
+    <string name="stream_writes_detected">"Обнаружено моделей: %1$d"</string>
 </resources>

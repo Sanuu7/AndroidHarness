@@ -102,6 +102,8 @@ internal fun AgentBehaviorSection(
     /** Blank restores the built-in resume prompt. */
     onResumePrompt: (String) -> Unit = {},
     onAgentSettingsAccess: (AgentSettingsAccess) -> Unit = {},
+    onStallTimeout: (Int) -> Unit = {},
+    onStreamFileWrites: (Boolean) -> Unit = {},
     /**
      * Test/preview override for the device-owner check guarding full access.
      * Production callers leave this null so the real biometric/PIN prompt runs.
@@ -112,6 +114,7 @@ internal fun AgentBehaviorSection(
     var autoCompactText by rememberSaveable { mutableStateOf("") }
     var autoCompactError by rememberSaveable { mutableStateOf(false) }
     var editResumePrompt by rememberSaveable { mutableStateOf(false) }
+    var editStallTimeout by rememberSaveable { mutableStateOf(false) }
     var pickerName by rememberSaveable { mutableStateOf<String?>(null) }
     val picker = pickerName?.let(BehaviorPicker::valueOf)
     val context = LocalContext.current
@@ -167,6 +170,33 @@ internal fun AgentBehaviorSection(
                     description = stringResource(R.string.settings_agent_tool_rounds_subtitle),
                     onClick = { pickerName = BehaviorPicker.ITERATIONS.name },
                 )
+            }
+            BehaviorDivider()
+            SettingsAnchor(R.string.stall_timeout_title) {
+                BehaviorValueRow(
+                    title = stringResource(R.string.stall_timeout_title),
+                    value = stallTimeoutLabel(settings.streamStallTimeoutSeconds),
+                    description = stringResource(R.string.stall_timeout_subtitle),
+                    onClick = { editStallTimeout = true },
+                )
+            }
+            BehaviorDivider()
+            SettingsAnchor(R.string.stream_writes_title) {
+                Row(
+                    Modifier.fillMaxWidth().clickable(role = Role.Switch) { onStreamFileWrites(!settings.streamFileWritesAsText) }.padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.stream_writes_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.stream_writes_desc), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (settings.bufferedToolCallModels.isNotEmpty()) Text(
+                            stringResource(R.string.stream_writes_detected, settings.bufferedToolCallModels.size),
+                            style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.primary)
+                    }
+                    Switch(checked = settings.streamFileWritesAsText, onCheckedChange = null)
+                }
             }
         }
         BehaviorGroup(stringResource(R.string.resume_prompt_group), Icons.Rounded.Replay) {
@@ -251,6 +281,14 @@ internal fun AgentBehaviorSection(
             resetLabel = stringResource(R.string.resume_prompt_reset_app),
             onSave = { onResumePrompt(it.orEmpty()) },
             onDismiss = { editResumePrompt = false },
+        )
+    }
+
+    if (editStallTimeout) {
+        StallTimeoutSheet(
+            currentSeconds = settings.streamStallTimeoutSeconds,
+            onPick = { onStallTimeout(it); editStallTimeout = false },
+            onDismiss = { editStallTimeout = false },
         )
     }
 

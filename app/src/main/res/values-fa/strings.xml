@@ -1130,4 +1130,16 @@
         <item quantity="other">"نمایش %1$d مورد دیگر"</item>
     </plurals>
     <string name="chat_history_show_less">"نمایش کمتر"</string>
+    <string name="stall_timeout_title">"مهلت توقف جریان"</string>
+    <string name="stall_timeout_subtitle">"اگر مدل این مدت چیزی نفرستد، کار متوقف می‌شود."</string>
+    <string name="stall_timeout_detail">"پاسخ چه مدت می‌تواند بدون ارسال داده ادامه یابد تا کار متوقف شود. مدل‌های کند هنگام نوشتن فایل بزرگ ممکن است دقیقه‌ها ساکت بمانند، پس وقت بیشتری بدهید."</string>
+    <string name="stall_timeout_default">"پیش‌فرض"</string>
+    <string name="stall_timeout_custom">"سفارشی"</string>
+    <string name="stall_timeout_minutes">"دقیقه"</string>
+    <string name="stall_timeout_range">"بین 0.5 تا 60 دقیقه"</string>
+    <string name="stall_timeout_wait_longer">"بیشتر صبر کن"</string>
+    <string name="stall_timeout_save_resume">"ذخیره و ادامه"</string>
+    <string name="stream_writes_title">"نوشتن فایل را به‌صورت متن جریان بده"</string>
+    <string name="stream_writes_desc">"برخی سرورها، از جمله چند مدل NVIDIA، فراخوان نوشتن فایل را فقط پس از پایان آن می‌فرستند. برای این مدل‌ها عامل فایل را داخل پاسخ می‌نویسد تا نوشته شدنش را ببینید."</string>
+    <string name="stream_writes_detected">"مدل‌های شناسایی‌شده تاکنون: %1$d"</string>
 </resources>

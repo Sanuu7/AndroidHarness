@@ -1130,4 +1130,16 @@
         <item quantity="other">"%1$d আরও দেখান"</item>
     </plurals>
     <string name="chat_history_show_less">"কম দেখান"</string>
+    <string name="stall_timeout_title">"স্ট্রিম স্টল টাইমআউট"</string>
+    <string name="stall_timeout_subtitle">"মডেল এতক্ষণ কিছু না পাঠালে কাজটি বিরতি দেয়।"</string>
+    <string name="stall_timeout_detail">"কাজ বিরতি দেওয়ার আগে একটি উত্তর কতক্ষণ ডেটা না পাঠিয়ে থাকতে পারে। ধীর মডেলগুলো বড় ফাইল লেখার সময় কয়েক মিনিট চুপ থাকতে পারে, তাই তাদের বেশি সময় দিন।"</string>
+    <string name="stall_timeout_default">"ডিফল্ট"</string>
+    <string name="stall_timeout_custom">"কাস্টম"</string>
+    <string name="stall_timeout_minutes">"মিনিট"</string>
+    <string name="stall_timeout_range">"0.5 থেকে 60 মিনিটের মধ্যে"</string>
+    <string name="stall_timeout_wait_longer">"আরও অপেক্ষা করুন"</string>
+    <string name="stall_timeout_save_resume">"সংরক্ষণ করে চালু করুন"</string>
+    <string name="stream_writes_title">"ফাইল লেখা টেক্সট হিসেবে স্ট্রিম করুন"</string>
+    <string name="stream_writes_desc">"কিছু সার্ভার, যার মধ্যে কয়েকটি NVIDIA মডেল আছে, ফাইল লেখা শেষ হলেই পাঠায়। সেই মডেলগুলোর জন্য এজেন্ট ফাইলটি নিজের উত্তরের ভেতরে লেখে, যাতে আপনি এটি লেখা হতে দেখতে পারেন।"</string>
+    <string name="stream_writes_detected">"এখন পর্যন্ত শনাক্ত করা মডেল: %1$d"</string>
 </resources>

@@ -1126,4 +1126,16 @@
         <item quantity="other">"%1$d개 더 보기"</item>
     </plurals>
     <string name="chat_history_show_less">"접기"</string>
+    <string name="stall_timeout_title">"스트림 정지 시간 제한"</string>
+    <string name="stall_timeout_subtitle">"모델이 이 시간 동안 아무것도 보내지 않으면 작업을 일시 중지합니다."</string>
+    <string name="stall_timeout_detail">"응답이 데이터를 보내지 않고 버틸 수 있는 시간입니다. 느린 모델은 큰 파일을 쓰는 동안 몇 분씩 조용할 수 있으니 더 긴 시간을 주세요."</string>
+    <string name="stall_timeout_default">"기본값"</string>
+    <string name="stall_timeout_custom">"사용자 지정"</string>
+    <string name="stall_timeout_minutes">"분"</string>
+    <string name="stall_timeout_range">"0.5~60분"</string>
+    <string name="stall_timeout_wait_longer">"더 기다리기"</string>
+    <string name="stall_timeout_save_resume">"저장하고 재개"</string>
+    <string name="stream_writes_title">"파일 쓰기를 텍스트로 스트리밍"</string>
+    <string name="stream_writes_desc">"일부 서버(여러 NVIDIA 모델 포함)는 파일 쓰기가 끝난 뒤에야 전송합니다. 그런 모델에서는 에이전트가 파일을 응답 안에 작성하므로 작성되는 모습을 볼 수 있습니다."</string>
+    <string name="stream_writes_detected">"지금까지 감지된 모델: %1$d개"</string>
 </resources>

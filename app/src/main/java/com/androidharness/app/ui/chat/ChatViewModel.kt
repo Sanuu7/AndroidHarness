@@ -104,6 +104,7 @@ data class ChatUiState(
     val currentTurnId: String? = null,
     val runningCalls: List<ToolCallData> = emptyList(),
     val codeDrafts: Map<String, com.androidharness.app.agent.LiveCodeDraft> = emptyMap(),
+    val streamStallTimeoutSeconds: Int = com.androidharness.app.agent.StreamRetrier.DEFAULT_STALL_TIMEOUT_SECONDS,
     val packageProgress: Map<String, com.androidharness.app.data.env.PackageInstallStatus> = emptyMap(),
     val showLiveCode: Boolean = true,
     val showTodoList: Boolean = true,
@@ -469,7 +470,8 @@ class ChatViewModel(
         }
         viewModelScope.launch {
             c.settings.settings.collect {
-                _state.update { st -> st.copy(showLiveCode = it.showLiveCode, showTodoList = it.showTodoList) }
+                _state.update { st -> st.copy(showLiveCode = it.showLiveCode, showTodoList = it.showTodoList,
+                    streamStallTimeoutSeconds = it.streamStallTimeoutSeconds) }
             }
         }
         viewModelScope.launch {
@@ -1086,6 +1088,15 @@ class ChatViewModel(
         check(key.isNotBlank()) { c.appContext.getString(R.string.ui_add_the_saved_provider_s_api_key) }
         _state.update { it.copy(error = null) }
         c.runManager.resumeTask(sid, key)
+    }
+
+    /** Saves a longer stall window from the paused card, then resumes with it. */
+    fun waitLongerAndResume(seconds: Int) {
+        viewModelScope.launch {
+            c.settings.setStreamStallTimeoutSeconds(seconds)
+            _state.update { it.copy(streamStallTimeoutSeconds = seconds) }
+            resumeInterruptedTask()
+        }
     }
 
     fun resumeInterruptedTask() {

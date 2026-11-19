@@ -2039,6 +2039,8 @@ private fun AgentSection(
         onRunTips = { scope.launch { container.settings.setRunTipsEnabled(it) } },
         onAutoContinueQuestions = { scope.launch { container.settings.setAutoContinueQuestions(it) } },
         onAgentSettingsAccess = { scope.launch { container.settings.setAgentSettingsAccess(it) } },
+        onStallTimeout = { scope.launch { container.settings.setStreamStallTimeoutSeconds(it) } },
+        onStreamFileWrites = { scope.launch { container.settings.setStreamFileWritesAsText(it) } },
     )
     if (showAgentsDialog) {
         AgentsInstructionsDialog(container, onDismiss = { showAgentsDialog = false })

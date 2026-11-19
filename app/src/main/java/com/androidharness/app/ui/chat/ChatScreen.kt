@@ -318,6 +318,7 @@ private fun ChatScreenContent(
     val snackbar = remember { SnackbarHostState() }
     var showContext by remember { mutableStateOf(false) }
     var showResumePrompt by rememberSaveable { mutableStateOf(false) }
+    var showStallTimeout by rememberSaveable { mutableStateOf(false) }
 
     githubProject?.let { (id, name) ->
         GitHubWorkspaceDialog(viewModel.container, id, name,
@@ -805,6 +806,14 @@ private fun ChatScreenContent(
         TaskSettingsSheet(state = state, onDismiss = { showContext = false },
             onSave = viewModel::saveTaskControls, onRecoveryChange = viewModel::saveRecoverySettings,
             onResumePrompt = viewModel::saveResumePrompt)
+    }
+    if (showStallTimeout) {
+        com.androidharness.app.ui.settings.StallTimeoutSheet(
+            currentSeconds = state.streamStallTimeoutSeconds,
+            onPick = { showStallTimeout = false; viewModel.waitLongerAndResume(it) },
+            onDismiss = { showStallTimeout = false },
+            confirmLabel = androidx.compose.ui.res.stringResource(R.string.stall_timeout_save_resume),
+        )
     }
     if (showResumePrompt) {
         val chatPrompt = state.taskControl.resumePrompt
@@ -2545,6 +2554,7 @@ private fun ChatScreenContent(
                                 onResetPrompt = state.taskControl.resumePrompt?.let { { viewModel.saveResumePrompt(null) } },
                                 customPrompt = state.taskControl.resumePrompt != null || state.resumePrompt.isNotBlank(),
                                 onDismiss = viewModel::dismissPausedTask,
+                                onWaitLonger = { showStallTimeout = true },
                             )
                         }
                     }

@@ -22,7 +22,7 @@ internal object HistoryCompactor {
         sessionId: String,
         progress: suspend (String) -> Unit = {},
         event: suspend (StreamEvent, ProviderConfig) -> Unit = { _, _ -> },
-        stallTimeoutMs: Long = 90_000,
+        stallTimeoutMs: Long = StreamRetrier.DEFAULT_STALL_TIMEOUT_MS,
     ): String = withContext(Dispatchers.IO) {
         val outputTokens = minOf(1_500, maxContextTokens / 8)
         // Conservative allowance for non-English text, prompt and completion.
@@ -38,7 +38,7 @@ internal object HistoryCompactor {
             var failureCode: Int? = null
             val managedFallback = coroutineContext[FallbackRun]?.policy()?.enabled == true
             val options = RequestOptions(maxOutputTokens = outputTokens, thinking = ThinkingLevel.OFF, cacheKey = sessionId)
-            val stallWindow = if (managedFallback) maxOf(stallTimeoutMs, 610_000) else stallTimeoutMs
+            val stallWindow = if (managedFallback) maxOf(stallTimeoutMs, 600_000) + 10_000 else stallTimeoutMs
             val failure = StreamRetrier.run(
                 streamFor = {
                     provider.streamChat(cfg, apiKey, PROMPT,

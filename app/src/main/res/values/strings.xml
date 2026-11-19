@@ -1159,4 +1159,16 @@
     <string name="settings_group_data_sync">Data &amp; sync</string>
     <string name="settings_group_help_about">Help &amp; about</string>
     <string name="settings_page_background_desc">Background work, battery and notifications</string>
+    <string name="stall_timeout_title">Stream stall timeout</string>
+    <string name="stall_timeout_subtitle">Pauses the task when the model sends nothing for this long.</string>
+    <string name="stall_timeout_detail">How long a reply may go without sending any data before the task pauses. Slow models can stay silent for minutes while they write a large file, so give them more time.</string>
+    <string name="stall_timeout_default">default</string>
+    <string name="stall_timeout_custom">Custom</string>
+    <string name="stall_timeout_minutes">Minutes</string>
+    <string name="stall_timeout_range">Between 0.5 and 60 minutes</string>
+    <string name="stall_timeout_wait_longer">Wait longer</string>
+    <string name="stall_timeout_save_resume">Save and resume</string>
+    <string name="stream_writes_title">Stream file writes as text</string>
+    <string name="stream_writes_desc">Some servers, including several NVIDIA models, only send a file write once it is finished. For those models the agent writes the file into its reply instead, so you can watch it being written.</string>
+    <string name="stream_writes_detected">Models detected so far: %1$d</string>
 </resources>

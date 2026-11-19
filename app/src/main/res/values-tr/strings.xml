@@ -1130,4 +1130,16 @@
         <item quantity="other">"%1$d tane daha göster"</item>
     </plurals>
     <string name="chat_history_show_less">"Daha az göster"</string>
+    <string name="stall_timeout_title">"Akış takılma zaman aşımı"</string>
+    <string name="stall_timeout_subtitle">"Model bu süre boyunca hiçbir şey göndermezse görevi duraklatır."</string>
+    <string name="stall_timeout_detail">"Bir yanıtın veri göndermeden ne kadar bekleyebileceği. Yavaş modeller büyük bir dosyayı yazarken dakikalarca sessiz kalabilir, onlara daha fazla süre verin."</string>
+    <string name="stall_timeout_default">"varsayılan"</string>
+    <string name="stall_timeout_custom">"Özel"</string>
+    <string name="stall_timeout_minutes">"Dakika"</string>
+    <string name="stall_timeout_range">"0,5 ile 60 dakika arası"</string>
+    <string name="stall_timeout_wait_longer">"Daha uzun bekle"</string>
+    <string name="stall_timeout_save_resume">"Kaydet ve devam et"</string>
+    <string name="stream_writes_title">"Dosya yazımlarını metin olarak akıt"</string>
+    <string name="stream_writes_desc">"Bazı sunucular, birkaç NVIDIA modeli dahil, dosya yazımını ancak tamamlandığında gönderir. Bu modellerde ajan dosyayı yanıtının içine yazar, böylece yazılışını izleyebilirsin."</string>
+    <string name="stream_writes_detected">"Şu ana dek algılanan modeller: %1$d"</string>
 </resources>

@@ -1130,4 +1130,16 @@
         <item quantity="other">"Noch %1$d anzeigen"</item>
     </plurals>
     <string name="chat_history_show_less">"Weniger anzeigen"</string>
+    <string name="stall_timeout_title">"Zeitlimit für Stream-Stillstand"</string>
+    <string name="stall_timeout_subtitle">"Pausiert die Aufgabe, wenn das Modell so lange nichts sendet."</string>
+    <string name="stall_timeout_detail">"Wie lange eine Antwort ohne Daten bleiben darf, bevor die Aufgabe pausiert. Langsame Modelle können beim Schreiben einer großen Datei minutenlang still sein, gib ihnen mehr Zeit."</string>
+    <string name="stall_timeout_default">"Standard"</string>
+    <string name="stall_timeout_custom">"Benutzerdefiniert"</string>
+    <string name="stall_timeout_minutes">"Minuten"</string>
+    <string name="stall_timeout_range">"Zwischen 0,5 und 60 Minuten"</string>
+    <string name="stall_timeout_wait_longer">"Länger warten"</string>
+    <string name="stall_timeout_save_resume">"Speichern und fortsetzen"</string>
+    <string name="stream_writes_title">"Dateischreibvorgänge als Text streamen"</string>
+    <string name="stream_writes_desc">"Manche Server, darunter mehrere NVIDIA-Modelle, senden einen Dateischreibvorgang erst, wenn er fertig ist. Bei diesen Modellen schreibt der Agent die Datei stattdessen in seine Antwort, damit du beim Schreiben zusehen kannst."</string>
+    <string name="stream_writes_detected">"Bisher erkannte Modelle: %1$d"</string>
 </resources>

@@ -1130,4 +1130,16 @@
         <item quantity="other">"Mostrar %1$d más"</item>
     </plurals>
     <string name="chat_history_show_less">"Mostrar menos"</string>
+    <string name="stall_timeout_title">"Tiempo de espera de bloqueo del flujo"</string>
+    <string name="stall_timeout_subtitle">"Pausa la tarea cuando el modelo no envía nada durante este tiempo."</string>
+    <string name="stall_timeout_detail">"Cuánto puede estar una respuesta sin enviar datos antes de que la tarea se pause. Los modelos lentos pueden quedarse en silencio durante minutos mientras escriben un archivo grande, así que dales más tiempo."</string>
+    <string name="stall_timeout_default">"predeterminado"</string>
+    <string name="stall_timeout_custom">"Personalizado"</string>
+    <string name="stall_timeout_minutes">"Minutos"</string>
+    <string name="stall_timeout_range">"Entre 0,5 y 60 minutos"</string>
+    <string name="stall_timeout_wait_longer">"Esperar más"</string>
+    <string name="stall_timeout_save_resume">"Guardar y reanudar"</string>
+    <string name="stream_writes_title">"Transmitir escrituras de archivos como texto"</string>
+    <string name="stream_writes_desc">"Algunos servidores, incluidos varios modelos NVIDIA, solo envían una escritura de archivo cuando ya ha terminado. Con esos modelos el agente escribe el archivo dentro de su respuesta para que puedas ver cómo se escribe."</string>
+    <string name="stream_writes_detected">"Modelos detectados hasta ahora: %1$d"</string>
 </resources>

@@ -1146,4 +1146,16 @@
         <item quantity="other">"إظهار %1$d أخرى"</item>
     </plurals>
     <string name="chat_history_show_less">"إظهار أقل"</string>
+    <string name="stall_timeout_title">"مهلة توقف البث"</string>
+    <string name="stall_timeout_subtitle">"يوقف المهمة عندما لا يرسل النموذج شيئًا لهذه المدة."</string>
+    <string name="stall_timeout_detail">"كم يمكن أن يستمر الرد دون إرسال أي بيانات قبل أن تتوقف المهمة. قد تصمت النماذج البطيئة دقائق أثناء كتابة ملف كبير، فأعطها وقتًا أطول."</string>
+    <string name="stall_timeout_default">"افتراضي"</string>
+    <string name="stall_timeout_custom">"مخصص"</string>
+    <string name="stall_timeout_minutes">"دقائق"</string>
+    <string name="stall_timeout_range">"بين 0.5 و60 دقيقة"</string>
+    <string name="stall_timeout_wait_longer">"انتظر أكثر"</string>
+    <string name="stall_timeout_save_resume">"احفظ واستأنف"</string>
+    <string name="stream_writes_title">"بث كتابة الملفات كنص"</string>
+    <string name="stream_writes_desc">"بعض الخوادم، ومنها عدة نماذج NVIDIA، لا ترسل استدعاء كتابة الملف إلا بعد اكتماله. مع تلك النماذج يكتب الوكيل الملف داخل رده لترى كيف يُكتب."</string>
+    <string name="stream_writes_detected">"النماذج المكتشفة حتى الآن: %1$d"</string>
 </resources>

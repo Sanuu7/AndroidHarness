@@ -1126,4 +1126,16 @@
         <item quantity="other">"แสดงเพิ่มอีก %1$d รายการ"</item>
     </plurals>
     <string name="chat_history_show_less">"แสดงน้อยลง"</string>
+    <string name="stall_timeout_title">"เวลาหมดสำหรับการหยุดชะงักของสตรีม"</string>
+    <string name="stall_timeout_subtitle">"หยุดงานชั่วคราวเมื่อโมเดลไม่ส่งข้อมูลเป็นเวลานานเท่านี้"</string>
+    <string name="stall_timeout_detail">"คำตอบจะเงียบได้นานแค่ไหนก่อนงานจะหยุดชั่วคราว โมเดลที่ช้าอาจเงียบหลายนาทีขณะเขียนไฟล์ขนาดใหญ่ จึงควรให้เวลาเพิ่ม"</string>
+    <string name="stall_timeout_default">"ค่าเริ่มต้น"</string>
+    <string name="stall_timeout_custom">"กำหนดเอง"</string>
+    <string name="stall_timeout_minutes">"นาที"</string>
+    <string name="stall_timeout_range">"ระหว่าง 0.5 ถึง 60 นาที"</string>
+    <string name="stall_timeout_wait_longer">"รอนานขึ้น"</string>
+    <string name="stall_timeout_save_resume">"บันทึกและทำต่อ"</string>
+    <string name="stream_writes_title">"สตรีมการเขียนไฟล์เป็นข้อความ"</string>
+    <string name="stream_writes_desc">"เซิร์ฟเวอร์บางแห่ง รวมถึงโมเดล NVIDIA หลายตัว จะส่งการเขียนไฟล์ก็ต่อเมื่อเสร็จแล้ว สำหรับโมเดลเหล่านั้น เอเจนต์จะเขียนไฟล์ลงในคำตอบ เพื่อให้คุณดูการเขียนได้"</string>
+    <string name="stream_writes_detected">"โมเดลที่ตรวจพบจนถึงตอนนี้: %1$d"</string>
 </resources>

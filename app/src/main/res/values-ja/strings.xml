@@ -1126,4 +1126,16 @@
         <item quantity="other">"さらに %1$d 件表示"</item>
     </plurals>
     <string name="chat_history_show_less">"折りたたむ"</string>
+    <string name="stall_timeout_title">"ストリーム停止のタイムアウト"</string>
+    <string name="stall_timeout_subtitle">"モデルがこの時間何も送らないとタスクを一時停止します。"</string>
+    <string name="stall_timeout_detail">"応答がデータを送らずにいられる時間です。遅いモデルは大きなファイルの書き込み中に数分間沈黙することがあるので、長めに設定してください。"</string>
+    <string name="stall_timeout_default">"デフォルト"</string>
+    <string name="stall_timeout_custom">"カスタム"</string>
+    <string name="stall_timeout_minutes">"分"</string>
+    <string name="stall_timeout_range">"0.5〜60分"</string>
+    <string name="stall_timeout_wait_longer">"もっと待つ"</string>
+    <string name="stall_timeout_save_resume">"保存して再開"</string>
+    <string name="stream_writes_title">"ファイル書き込みをテキストとして流す"</string>
+    <string name="stream_writes_desc">"一部のサーバー（複数の NVIDIA モデルを含む）は、ファイル書き込みが完了してからでないと送信しません。そのようなモデルでは、エージェントが応答内にファイルを書くので、書かれていく様子を見られます。"</string>
+    <string name="stream_writes_detected">"これまでに検出されたモデル: %1$d"</string>
 </resources>

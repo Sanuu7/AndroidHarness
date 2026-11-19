@@ -192,7 +192,7 @@ internal class LiveCodeTracker(private val now: () -> Long = System::nanoTime) {
     private val baselines = mutableMapOf<String, String?>()
     fun clear() { pending.clear(); baselines.clear() }
 
-    suspend fun delta(event: StreamEvent.ToolCallDelta, workspace: WorkspaceFs): LiveCodeDraft? {
+    suspend fun delta(event: StreamEvent.ToolCallDelta, workspace: WorkspaceFs, force: Boolean = false): LiveCodeDraft? {
         if (LiveCodePreview.tools.none { it.startsWith(event.name) }) return null
         val p = pending.getOrPut(event.id) { Pending() }
         if (event.replace) { p.text.setLength(0); p.chars = 0 }
@@ -200,7 +200,7 @@ internal class LiveCodeTracker(private val now: () -> Long = System::nanoTime) {
         p.text.append(event.arguments.take((1_000_000 - p.text.length).coerceAtLeast(0)))
         if (event.name !in LiveCodePreview.tools) return null
         val time = now()
-        if (p.last != 0L && time - p.last < 80_000_000L) return null
+        if (!force && p.last != 0L && time - p.last < 80_000_000L) return null
         p.last = time
         return preview(event.id, event.name, p.text, false, p.chars, workspace)
     }

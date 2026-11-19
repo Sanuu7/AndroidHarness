@@ -59,6 +59,8 @@ fun TaskProgressCard(
     customPrompt: Boolean = false,
     /** Leaves the paused state without retrying; null hides the button. */
     onDismiss: (() -> Unit)? = null,
+    /** Opens the stall timeout picker; shown only when the stream stalled. */
+    onWaitLonger: (() -> Unit)? = null,
 ) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     if (!shouldShowTaskProgress(record, busy)) return
@@ -102,7 +104,9 @@ fun TaskProgressCard(
                     onDismiss?.let { dismiss ->
                         TextButton(onClick = dismiss) { Text(uiContext.getString(R.string.settings_action_close)) }
                     }
-                    TextButton(onClick = onSettings) { Text(uiContext.getString(R.string.ui_context_limits)) }
+                    if (onWaitLonger != null && StreamRetrier.isStallFailure(record.reason))
+                        TextButton(onClick = onWaitLonger) { Text(uiContext.getString(R.string.stall_timeout_wait_longer)) }
+                    else TextButton(onClick = onSettings) { Text(uiContext.getString(R.string.ui_context_limits)) }
                     ResumeSplitButton(uiContext.getString(R.string.ui_resume_task), onResume,
                         onEditPrompt = onEditPrompt, onResetPrompt = onResetPrompt)
                 }

@@ -276,7 +276,7 @@ class StreamRetrierTest {
         )
         assertEquals(null, result)
         assertEquals(1, retries.size)
-        assertEquals("Generation stalled - no data received for 0s (timed out)", retries[0].reason)
+        assertEquals("Stream stalled - no data received for 0s (timed out)", retries[0].reason)
     }
 
     @Test
@@ -350,7 +350,7 @@ class StreamRetrierTest {
             retryReason = { it }, emitEvent = { error("output already shown, no retry") },
             sleep = {}, stallTimeoutMs = 150, firstOutputTimeoutMs = 1_000,
         )
-        assertEquals("Generation stalled - no data received for 0s (timed out)", quietMiddle)
+        assertEquals("Stream stalled - no data received for 0s (timed out)", quietMiddle)
     }
 
     @Test
@@ -412,7 +412,7 @@ class StreamRetrierTest {
             emitEvent = { error("A resend would restart the server's prompt processing") },
             sleep = {}, stallTimeoutMs = 150, retryStalls = false,
         )
-        assertEquals("Generation stalled - no data received for 0s (timed out)", result)
+        assertEquals("Stream stalled - no data received for 0s (timed out)", result)
         assertEquals(1, builds)
     }
 

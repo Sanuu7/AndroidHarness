@@ -40,8 +40,7 @@ internal class StreamActivity(private val parent: StreamActivity?) :
 internal class StreamStalledException(val silentMs: Long) : IOException(stalledMessage(silentMs))
 
 internal fun stalledMessage(silentMs: Long): String =
-    if (silentMs == 90_000L) StreamRetrier.STALLED_STREAM_MESSAGE
-    else "Generation stalled - no data received for ${silentMs / 1000}s (timed out)"
+    "Stream stalled - no data received for ${StreamRetrier.formatStall(silentMs)} (timed out)"
 
 /**
  * Fails a silent stream instead of hanging forever: the SSE client's read
@@ -58,7 +57,7 @@ internal fun stalledMessage(silentMs: Long): String =
  * those as output used to drop every reasoning request back to the plain
  * window at t=0.
  */
-internal fun <T> Flow<T>.stallGuard(timeoutMs: Long = 90_000, firstOutputTimeoutMs: Long = timeoutMs): Flow<T> {
+internal fun <T> Flow<T>.stallGuard(timeoutMs: Long = StreamRetrier.DEFAULT_STALL_TIMEOUT_MS, firstOutputTimeoutMs: Long = timeoutMs): Flow<T> {
     val upstream = this
     return channelFlow {
         val activity = StreamActivity(currentCoroutineContext()[StreamActivity])
@@ -104,6 +103,33 @@ internal object StreamRetrier {
 
     /** Error text used when the stream stalled and [stallGuard] cut it off. */
     const val STALLED_STREAM_MESSAGE = "Stream stalled - no data received for 90s (timed out)"
+
+    /** The stall window when the user has not picked one in Settings. */
+    const val DEFAULT_STALL_TIMEOUT_MS = 300_000L
+    const val DEFAULT_STALL_TIMEOUT_SECONDS = 300
+    const val MIN_STALL_TIMEOUT_SECONDS = 30
+    const val MAX_STALL_TIMEOUT_SECONDS = 3_600
+
+    /** The user's stall window in ms, kept inside the range the picker offers. */
+    fun stallTimeoutMs(seconds: Int): Long =
+        seconds.coerceIn(MIN_STALL_TIMEOUT_SECONDS, MAX_STALL_TIMEOUT_SECONDS) * 1_000L
+
+    /** "90s", "5 min" or "2 min 30s"; the same wording the Settings picker uses. */
+    fun formatStall(ms: Long): String {
+        val seconds = ms / 1_000
+        val minutes = seconds / 60
+        val rest = seconds % 60
+        return when {
+            seconds < 120 && rest != 0L || seconds < 60 -> "${seconds}s"
+            rest == 0L -> "$minutes min"
+            else -> "$minutes min ${rest}s"
+        }
+    }
+
+    /** True for a pause caused by [stallGuard], so the paused card can offer a longer wait. */
+    fun isStallFailure(reason: String?): Boolean =
+        reason != null && (reason.contains("stalled - no data received", ignoreCase = true) ||
+            reason.contains("Generation stalled", ignoreCase = true))
 
     /** How long a reasoning model may stay fully silent before its first event. */
     const val REASONING_FIRST_OUTPUT_MS = 300_000L
@@ -185,7 +211,7 @@ internal object StreamRetrier {
         retryReason: (String) -> String,
         emitEvent: suspend (AgentEvent.Retrying) -> Unit,
         sleep: suspend (Long) -> Unit = { delay(it) },
-        stallTimeoutMs: Long = 90_000,
+        stallTimeoutMs: Long = DEFAULT_STALL_TIMEOUT_MS,
         firstOutputTimeoutMs: Long = stallTimeoutMs,
         allowRetries: Boolean = true,
         retryStalls: Boolean = true,
