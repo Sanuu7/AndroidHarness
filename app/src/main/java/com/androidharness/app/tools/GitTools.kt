@@ -89,6 +89,12 @@ internal fun gitLogResult(result: ToolResult, path: String?): ToolResult {
     return result.copy(output = result.output.removeSuffix("(no output)") + message)
 }
 
+/** Replaces a bare "(no output)" success with what the command actually did. */
+internal fun gitQuietSuccess(result: ToolResult, message: String): ToolResult {
+    if (!result.ok || !result.output.endsWith("(no output)")) return result
+    return result.copy(output = result.output.removeSuffix("(no output)") + message)
+}
+
 internal fun gitShowCmd(hash: String, noPatch: Boolean): String =
     gitCmd(
         buildString {
@@ -478,7 +484,9 @@ class GitBranchManageTool(
                 "delete" -> gitCmd("branch ${if (force) "-D" else "-d"} ${name.shellQuote()}")
                 else -> throw ToolFailure("Unknown action '$action' (use create or delete)")
             }
-            runGitWithRetry(router, linuxEnv, ctx, command)
+            val result = runGitWithRetry(router, linuxEnv, ctx, command)
+            if (action == "create") gitQuietSuccess(result, "Created branch '$name' at HEAD. It is not checked out; use git_checkout to switch to it.")
+            else result
         }
 }
 
@@ -515,7 +523,13 @@ class GitCheckoutTool(
             if (branch.isNullOrBlank() && paths.isEmpty()) {
                 throw ToolFailure("checkout needs a branch, paths, or both")
             }
-            runGitWithRetry(router, linuxEnv, ctx, gitCheckoutCmd(branch, create, paths))
+            val result = runGitWithRetry(router, linuxEnv, ctx, gitCheckoutCmd(branch, create, paths))
+            val cleanPaths = paths.map { it.trim() }.filter { it.isNotEmpty() }
+            val restored = branch?.trim()?.takeIf { it.isNotEmpty() }
+                ?.let { "Restored ${cleanPaths.size} path(s) from '$it'" }
+                ?: "Discarded unstaged changes in ${cleanPaths.size} path(s)"
+            if (cleanPaths.isEmpty()) result
+            else gitQuietSuccess(result, "$restored: ${cleanPaths.joinToString(", ")}.")
         }
 }
 

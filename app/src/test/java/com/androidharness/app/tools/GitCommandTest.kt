@@ -150,6 +150,19 @@ class GitCommandTest {
     }
 
     @Test
+    fun `quiet git successes say what happened and failures stay untouched`() {
+        val quiet = buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+            0, false, "", "", com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+        ))
+        assertEquals("(no output)", quiet.output)
+        assertEquals("Created branch 'x' at HEAD.", gitQuietSuccess(quiet, "Created branch 'x' at HEAD.").output)
+        val failed = buildGitResult(com.androidharness.app.data.env.ShellRunResult(
+            128, false, "", "", com.androidharness.app.data.env.ExecutionTier.TOYBOX, null,
+        ))
+        assertEquals(failed, gitQuietSuccess(failed, "Created branch 'x' at HEAD."))
+    }
+
+    @Test
     fun `non repository errors are actionable`() {
         for (command in listOf(gitCmd("status"), gitLogCmd(20, null, false), gitCmd("diff"))) {
             val (code, output) = shell(command)
