@@ -247,11 +247,25 @@ class AppContainer(val appContext: Context) {
         projectForSession = { sessions.session(it)?.projectId }, dhizuku = dhizuku)
     val shellRouter = com.androidharness.app.data.env.ShellTierRouter(appContext, shizuku, linuxEnv, deviceAccess)
     val codeGraph = com.androidharness.app.data.env.CodeGraphManager(linuxEnv, shellRouter)
+    private val deployScope = kotlinx.coroutines.CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     init {
         // Package-set changes must invalidate the deployed-copy cache, or the
         // privileged tier keeps serving the old toolchain until a restart.
-        linuxEnv.deployStateListener = { shizuku.invalidateDeployState() }
+        // The new package set is also re-staged and deployed right away, in the
+        // background, so the work overlaps the model's next turn instead of
+        // stalling the first privileged shell command after an install.
+        linuxEnv.deployStateListener = {
+            shizuku.invalidateDeployState()
+            if (shizuku.state.value == com.androidharness.app.data.env.ShizukuState.GRANTED &&
+                shizuku.serviceState.value.isReady
+            ) {
+                deployScope.launch {
+                    runCatching { linuxEnv.ensureShellDeploy(shizuku) }
+                        .onFailure { android.util.Log.e("HarnessApp", "background shell-tier deploy failed", it) }
+                }
+            }
+        }
     }
 
     val updates = com.androidharness.app.data.update.UpdateManager(appContext, deviceAccess)
