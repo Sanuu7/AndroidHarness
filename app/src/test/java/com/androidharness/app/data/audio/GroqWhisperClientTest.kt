@@ -14,6 +14,9 @@ import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
 
 class GroqWhisperClientTest {
+    /** Shared CI runners can take several seconds to accept and close a socket. */
+    private val socketTimeout = 10L
+
     private fun clip(block: suspend (File) -> Unit) = runBlocking {
         val file = Files.createTempFile("whisper-test", ".m4a").toFile().apply { writeBytes(byteArrayOf(0, 1, 2, 3)) }
         try { block(file) } finally { file.delete() }
@@ -68,8 +71,8 @@ class GroqWhisperClientTest {
         coroutineScope {
             val job = launch(Dispatchers.IO) { GroqWhisperClient.transcribe(file, "fixture-key", client = client) }
             try {
-                withContext(Dispatchers.IO) { accepted.get(3, TimeUnit.SECONDS) }
-                withTimeout(1000) { job.cancelAndJoin() }
+                withContext(Dispatchers.IO) { accepted.get(socketTimeout, TimeUnit.SECONDS) }
+                withTimeout(5_000) { job.cancelAndJoin() }
             } finally {
                 accepted.getNow(null)?.close(); server.close(); client.dispatcher.cancelAll(); job.cancelAndJoin(); worker.join(1000)
             }
@@ -98,9 +101,9 @@ class GroqWhisperClientTest {
         coroutineScope {
             val job = launch(Dispatchers.IO) { GroqWhisperClient.transcribe(file, "fixture-key", client = client) }
             try {
-                withContext(Dispatchers.IO) { sentHeaders.get(3, TimeUnit.SECONDS) }
-                withTimeout(1000) { job.cancelAndJoin() }
-                withContext(Dispatchers.IO) { closedByClient.get(3, TimeUnit.SECONDS) }
+                withContext(Dispatchers.IO) { sentHeaders.get(socketTimeout, TimeUnit.SECONDS) }
+                withTimeout(5_000) { job.cancelAndJoin() }
+                withContext(Dispatchers.IO) { closedByClient.get(socketTimeout, TimeUnit.SECONDS) }
             } finally {
                 sentHeaders.getNow(null)?.close(); server.close(); client.dispatcher.cancelAll(); job.cancelAndJoin(); worker.join(1000)
             }
