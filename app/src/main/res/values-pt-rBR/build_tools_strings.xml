@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Ferramentas de build do Android"</string>
+    <string name="build_tools_card_body">"Para compilar um APK neste celular, o agente precisa primeiro de algumas ferramentas do Android. É uma configuração única."</string>
+    <string name="build_tools_not_now">"Agora não"</string>
+    <string name="build_tools_install">"Instalar"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Compila códigos-fonte Java e Kotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Transforma classes compiladas em código dex do Android"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Empacota os recursos e o manifesto"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"Assina o APK para que ele possa ser instalado"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Executa projetos Gradle. Grande e lento em um celular"</string>
+    <string name="build_tools_platform">"Plataforma Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, baixado do Google"</string>
+    <string name="build_tools_download_note">"É um download grande, então o Wi-Fi ajuda. O arquivo da plataforma SDK vem do Google sob a licença do Android SDK."</string>
+    <string name="build_tools_settings_summary_ready">"Instalado"</string>
+    <string name="build_tools_settings_summary_missing">"Não instalado"</string>
+    <string name="build_tools_settings_summary_partial">"%1$d de %2$d instalados"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Requer o ambiente Linux"</string>
+    <string name="build_tools_settings_needs_linux">"Configure o ambiente Linux primeiro."</string>
+    <string name="build_tools_settings_body">"Tudo o que o agente precisa para compilar APKs neste dispositivo. Ele também pode pedir para instalar quando um build precisar."</string>
+    <string name="build_tools_settings_include_gradle">"Incluir Gradle"</string>
+    <string name="build_tools_settings_installing">"Instalando…"</string>
+    <string name="build_tools_settings_reinstall">"Instalar o que falta"</string>
+    <string name="build_tools_settings_done">"As ferramentas de build do Android estão prontas."</string>
+    <string name="build_tools_settings_failed">"Falha na instalação: %1$s"</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">Android build tools</string>
+    <string name="build_tools_card_body">To build an APK on this phone, the agent needs a few Android tools first. This is a one-time setup.</string>
+    <string name="build_tools_not_now">Not now</string>
+    <string name="build_tools_install">Install</string>
+    <string name="build_tools_java">Java 21</string>
+    <string name="build_tools_java_desc">Compiles Java and Kotlin sources</string>
+    <string name="build_tools_d8">D8</string>
+    <string name="build_tools_d8_desc">Turns compiled classes into Android dex code</string>
+    <string name="build_tools_aapt2">aapt2</string>
+    <string name="build_tools_aapt2_desc">Packages resources and the manifest</string>
+    <string name="build_tools_apksigner">apksigner</string>
+    <string name="build_tools_apksigner_desc">Signs the APK so it can be installed</string>
+    <string name="build_tools_gradle">Gradle</string>
+    <string name="build_tools_gradle_desc">Runs Gradle projects. Large and slow on a phone</string>
+    <string name="build_tools_platform">Android SDK platform %1$d</string>
+    <string name="build_tools_platform_desc">android.jar, downloaded from Google</string>
+    <string name="build_tools_download_note">This is a large download, so Wi-Fi helps. The SDK platform file comes from Google under the Android SDK license.</string>
+    <string name="build_tools_settings_summary_ready">Installed</string>
+    <string name="build_tools_settings_summary_missing">Not installed</string>
+    <string name="build_tools_settings_summary_partial">%1$d of %2$d installed</string>
+    <string name="build_tools_settings_summary_needs_linux">Needs the Linux environment</string>
+    <string name="build_tools_settings_needs_linux">Set up the Linux environment first.</string>
+    <string name="build_tools_settings_body">Everything the agent needs to build APKs on this device. It can also ask to install these when a build needs them.</string>
+    <string name="build_tools_settings_include_gradle">Include Gradle</string>
+    <string name="build_tools_settings_installing">Installing…</string>
+    <string name="build_tools_settings_reinstall">Install missing</string>
+    <string name="build_tools_settings_done">Android build tools are ready.</string>
+    <string name="build_tools_settings_failed">Install failed: %1$s</string>
+</resources>

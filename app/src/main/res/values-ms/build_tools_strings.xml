@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Alat bina Android"</string>
+    <string name="build_tools_card_body">"Untuk membina APK pada telefon ini, ejen memerlukan beberapa alat Android dahulu. Ini persediaan sekali sahaja."</string>
+    <string name="build_tools_not_now">"Bukan sekarang"</string>
+    <string name="build_tools_install">"Pasang"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Mengkompil sumber Java dan Kotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Menukar kelas yang dikompil kepada kod dex Android"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Membungkus sumber dan manifes"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"Menandatangani APK supaya boleh dipasang"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Menjalankan projek Gradle. Besar dan perlahan pada telefon"</string>
+    <string name="build_tools_platform">"Platform Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, dimuat turun daripada Google"</string>
+    <string name="build_tools_download_note">"Ini muat turun besar, jadi Wi-Fi membantu. Fail platform SDK datang daripada Google di bawah lesen Android SDK."</string>
+    <string name="build_tools_settings_summary_ready">"Dipasang"</string>
+    <string name="build_tools_settings_summary_missing">"Tidak dipasang"</string>
+    <string name="build_tools_settings_summary_partial">"%1$d daripada %2$d dipasang"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Memerlukan persekitaran Linux"</string>
+    <string name="build_tools_settings_needs_linux">"Sediakan persekitaran Linux dahulu."</string>
+    <string name="build_tools_settings_body">"Semua yang ejen perlukan untuk membina APK pada peranti ini. Ia juga boleh meminta untuk memasangnya apabila binaan memerlukannya."</string>
+    <string name="build_tools_settings_include_gradle">"Sertakan Gradle"</string>
+    <string name="build_tools_settings_installing">"Memasang…"</string>
+    <string name="build_tools_settings_reinstall">"Pasang yang tiada"</string>
+    <string name="build_tools_settings_done">"Alat bina Android sudah sedia."</string>
+    <string name="build_tools_settings_failed">"Pemasangan gagal: %1$s"</string>
+</resources>

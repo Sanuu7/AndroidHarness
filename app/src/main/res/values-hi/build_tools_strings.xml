@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android बिल्ड टूल्स"</string>
+    <string name="build_tools_card_body">"इस फ़ोन पर APK बनाने के लिए एजेंट को पहले कुछ Android टूल्स चाहिए। यह एक बार की सेटिंग है।"</string>
+    <string name="build_tools_not_now">"अभी नहीं"</string>
+    <string name="build_tools_install">"इंस्टॉल करें"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java और Kotlin स्रोत कंपाइल करता है"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"कंपाइल किए गए क्लास को Android dex कोड में बदलता है"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"संसाधनों और मैनिफ़ेस्ट को पैकेज करता है"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK पर हस्ताक्षर करता है ताकि इसे इंस्टॉल किया जा सके"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle प्रोजेक्ट चलाता है। फ़ोन पर बड़ा और धीमा"</string>
+    <string name="build_tools_platform">"Android SDK प्लेटफ़ॉर्म %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, Google से डाउनलोड किया गया"</string>
+    <string name="build_tools_download_note">"यह बड़ा डाउनलोड है, इसलिए Wi-Fi मदद करता है। SDK प्लेटफ़ॉर्म फ़ाइल Google से Android SDK लाइसेंस के अंतर्गत आती है।"</string>
+    <string name="build_tools_settings_summary_ready">"इंस्टॉल है"</string>
+    <string name="build_tools_settings_summary_missing">"इंस्टॉल नहीं है"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d में से %1$d इंस्टॉल"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux वातावरण चाहिए"</string>
+    <string name="build_tools_settings_needs_linux">"पहले Linux वातावरण सेट करें।"</string>
+    <string name="build_tools_settings_body">"इस डिवाइस पर APK बनाने के लिए एजेंट को जो चाहिए। बिल्ड को ज़रूरत होने पर यह इन्हें इंस्टॉल करने की माँग भी कर सकता है।"</string>
+    <string name="build_tools_settings_include_gradle">"Gradle शामिल करें"</string>
+    <string name="build_tools_settings_installing">"इंस्टॉल हो रहा है…"</string>
+    <string name="build_tools_settings_reinstall">"बाकी इंस्टॉल करें"</string>
+    <string name="build_tools_settings_done">"Android बिल्ड टूल्स तैयार हैं।"</string>
+    <string name="build_tools_settings_failed">"इंस्टॉल विफल: %1$s"</string>
+</resources>

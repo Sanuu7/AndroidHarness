@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android ගොඩනැගීම් මෙවලම්"</string>
+    <string name="build_tools_card_body">"මෙම දුරකථනයේ APK එකක් ගොඩනැගීමට ඒජන්තයට මුලින් Android මෙවලම් කිහිපයක් අවශ්‍යයි. මෙය එක් වරක් කරන සැකසුමකි."</string>
+    <string name="build_tools_not_now">"දැන් නැත"</string>
+    <string name="build_tools_install">"ස්ථාපනය"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java සහ Kotlin මූලාශ්‍ර සම්පාදනය කරයි"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"සම්පාදිත පන්ති Android dex කේත බවට පරිවර්තනය කරයි"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"සම්පත් සහ මැනිෆෙස්ටය ඇසුරුම් කරයි"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK එක ස්ථාපනය කළ හැකි වන පරිදි අත්සන් කරයි"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle ව්‍යාපෘති ධාවනය කරයි. දුරකථනයේ විශාල හා මන්දගාමීය"</string>
+    <string name="build_tools_platform">"Android SDK වේදිකාව %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, Google වෙතින් බාගන්නා ලදී"</string>
+    <string name="build_tools_download_note">"මෙය විශාල බාගැනීමකි, එබැවින් Wi-Fi උපකාරී වේ. SDK වේදිකා ගොනුව Android SDK බලපත්‍රය යටතේ Google වෙතින් ලැබේ."</string>
+    <string name="build_tools_settings_summary_ready">"ස්ථාපිතයි"</string>
+    <string name="build_tools_settings_summary_missing">"ස්ථාපිත නැත"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d න් %1$d ස්ථාපිතයි"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux පරිසරය අවශ්‍යයි"</string>
+    <string name="build_tools_settings_needs_linux">"මුලින් Linux පරිසරය සකසන්න."</string>
+    <string name="build_tools_settings_body">"මෙම උපාංගයේ APK ගොඩනැගීමට ඒජන්තයට අවශ්‍ය සියල්ල. ගොඩනැගීමට අවශ්‍ය විට ඒවා ස්ථාපනය කරන ලෙසද ඉල්ලා සිටිය හැක."</string>
+    <string name="build_tools_settings_include_gradle">"Gradle ඇතුළත් කරන්න"</string>
+    <string name="build_tools_settings_installing">"ස්ථාපනය වෙමින්…"</string>
+    <string name="build_tools_settings_reinstall">"නොමැති දේ ස්ථාපනය"</string>
+    <string name="build_tools_settings_done">"Android ගොඩනැගීම් මෙවලම් සූදානම්."</string>
+    <string name="build_tools_settings_failed">"ස්ථාපනය අසාර්ථකයි: %1$s"</string>
+</resources>

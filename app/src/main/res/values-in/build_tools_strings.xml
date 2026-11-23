@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Alat build Android"</string>
+    <string name="build_tools_card_body">"Untuk mem-build APK di ponsel ini, agen memerlukan beberapa alat Android terlebih dahulu. Ini penyiapan satu kali."</string>
+    <string name="build_tools_not_now">"Nanti saja"</string>
+    <string name="build_tools_install">"Instal"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Mengompilasi sumber Java dan Kotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Mengubah kelas hasil kompilasi menjadi kode dex Android"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Mengemas resource dan manifes"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"Menandatangani APK agar bisa diinstal"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Menjalankan proyek Gradle. Besar dan lambat di ponsel"</string>
+    <string name="build_tools_platform">"Platform Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, diunduh dari Google"</string>
+    <string name="build_tools_download_note">"Ini unduhan besar, jadi Wi-Fi membantu. Berkas platform SDK berasal dari Google di bawah lisensi Android SDK."</string>
+    <string name="build_tools_settings_summary_ready">"Terinstal"</string>
+    <string name="build_tools_settings_summary_missing">"Belum terinstal"</string>
+    <string name="build_tools_settings_summary_partial">"%1$d dari %2$d terinstal"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Memerlukan lingkungan Linux"</string>
+    <string name="build_tools_settings_needs_linux">"Siapkan lingkungan Linux terlebih dahulu."</string>
+    <string name="build_tools_settings_body">"Semua yang agen butuhkan untuk mem-build APK di perangkat ini. Agen juga dapat meminta pemasangannya saat build membutuhkannya."</string>
+    <string name="build_tools_settings_include_gradle">"Sertakan Gradle"</string>
+    <string name="build_tools_settings_installing">"Menginstal…"</string>
+    <string name="build_tools_settings_reinstall">"Instal yang kurang"</string>
+    <string name="build_tools_settings_done">"Alat build Android sudah siap."</string>
+    <string name="build_tools_settings_failed">"Instalasi gagal: %1$s"</string>
+</resources>

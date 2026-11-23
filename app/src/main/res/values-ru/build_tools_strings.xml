@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Инструменты сборки Android"</string>
+    <string name="build_tools_card_body">"Чтобы собрать APK на этом телефоне, агенту сначала нужны инструменты Android. Это разовая настройка."</string>
+    <string name="build_tools_not_now">"Не сейчас"</string>
+    <string name="build_tools_install">"Установить"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Компилирует исходники Java и Kotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Превращает скомпилированные классы в dex-код Android"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Упаковывает ресурсы и манифест"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"Подписывает APK, чтобы его можно было установить"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Запускает проекты Gradle. Большой и медленный на телефоне"</string>
+    <string name="build_tools_platform">"Платформа Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, загруженный с Google"</string>
+    <string name="build_tools_download_note">"Это большая загрузка, поможет Wi-Fi. Файл платформы SDK поставляется Google по лицензии Android SDK."</string>
+    <string name="build_tools_settings_summary_ready">"Установлено"</string>
+    <string name="build_tools_settings_summary_missing">"Не установлено"</string>
+    <string name="build_tools_settings_summary_partial">"Установлено %1$d из %2$d"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Требуется среда Linux"</string>
+    <string name="build_tools_settings_needs_linux">"Сначала настройте среду Linux."</string>
+    <string name="build_tools_settings_body">"Всё, что нужно агенту для сборки APK на этом устройстве. Он также может запросить установку, когда она понадобится для сборки."</string>
+    <string name="build_tools_settings_include_gradle">"Включить Gradle"</string>
+    <string name="build_tools_settings_installing">"Установка…"</string>
+    <string name="build_tools_settings_reinstall">"Установить недостающее"</string>
+    <string name="build_tools_settings_done">"Инструменты сборки Android готовы."</string>
+    <string name="build_tools_settings_failed">"Ошибка установки: %1$s"</string>
+</resources>

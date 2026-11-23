@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android derleme araçları"</string>
+    <string name="build_tools_card_body">"Bu telefonda APK derlemek için ajanın önce birkaç Android aracına ihtiyacı var. Bu tek seferlik bir kurulum."</string>
+    <string name="build_tools_not_now">"Şimdi değil"</string>
+    <string name="build_tools_install">"Yükle"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java ve Kotlin kaynaklarını derler"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Derlenmiş sınıfları Android dex koduna dönüştürür"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Kaynakları ve manifesti paketler"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK\'yı yüklenebilmesi için imzalar"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle projelerini çalıştırır. Telefonda büyük ve yavaş"</string>
+    <string name="build_tools_platform">"Android SDK platformu %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, Google\'dan indirilir"</string>
+    <string name="build_tools_download_note">"Bu büyük bir indirme, bu yüzden Wi-Fi yardımcı olur. SDK platform dosyası Google\'dan Android SDK lisansı kapsamında gelir."</string>
+    <string name="build_tools_settings_summary_ready">"Yüklü"</string>
+    <string name="build_tools_settings_summary_missing">"Yüklü değil"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d öğeden %1$d tanesi yüklü"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux ortamı gerekir"</string>
+    <string name="build_tools_settings_needs_linux">"Önce Linux ortamını kurun."</string>
+    <string name="build_tools_settings_body">"Ajanın bu cihazda APK derlemek için ihtiyaç duyduğu her şey. Derleme gerektiğinde bunları yüklemeyi de isteyebilir."</string>
+    <string name="build_tools_settings_include_gradle">"Gradle dahil et"</string>
+    <string name="build_tools_settings_installing">"Yükleniyor…"</string>
+    <string name="build_tools_settings_reinstall">"Eksikleri yükle"</string>
+    <string name="build_tools_settings_done">"Android derleme araçları hazır."</string>
+    <string name="build_tools_settings_failed">"Yükleme başarısız: %1$s"</string>
+</resources>

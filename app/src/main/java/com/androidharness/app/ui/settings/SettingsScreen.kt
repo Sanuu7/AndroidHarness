@@ -115,6 +115,9 @@ import androidx.compose.runtime.produceState
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.flow.map
 import androidx.compose.material3.Switch
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.Button
+import androidx.compose.material.icons.rounded.Build
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -802,6 +805,7 @@ private fun TerminalSection(
         LinuxEnvironmentCard(container = container, envState = envState)
     }
     }
+    SettingsAnchor(R.string.build_tools_card_title) { AndroidBuildToolsRow(container, appShellOk) }
     SettingsDisclosure(Icons.Rounded.Shield, stringResource(R.string.settings_device_advanced), stringResource(R.string.settings_device_advanced_summary),
         anchors = setOf(R.string.settings_root_title)) {
         RootAccessSection(container)
@@ -3009,6 +3013,70 @@ private fun ChatsBackupSection(container: AppContainer) {
                 OutlinedButton(onClick = { openBackup.launch(arrayOf("*/*")) }) {
                     Text(stringResource(R.string.backup_action_restore))
                 }
+            }
+        }
+    }
+}
+
+/** One-tap setup for on-device APK builds; the same install the agent's android_sdk_install card runs. */
+@Composable
+private fun AndroidBuildToolsRow(container: AppContainer, linuxReady: Boolean) {
+    val setup = remember(container) { com.androidharness.app.data.env.AndroidBuildToolsSetup(container.linuxEnv) }
+    val run by com.androidharness.app.data.env.AndroidBuildToolsSetup.run.collectAsStateWithLifecycle()
+    var gradle by rememberSaveable { mutableStateOf(false) }
+    // Re-read what's on disk whenever an install finishes or Linux changes state.
+    val status = remember(linuxReady, run, gradle) { setup.status(gradle = gradle || setup.gradleInstalled()) }
+    val includeGradle = gradle || setup.gradleInstalled()
+    val total = setup.packages(includeGradle).size + 1
+    val have = total - status.missing.size - (if (status.platform) 0 else 1)
+    val working = run is com.androidharness.app.data.env.AndroidBuildToolsSetup.Run.Working
+    val summary = when {
+        working -> stringResource(R.string.build_tools_settings_installing)
+        !linuxReady -> stringResource(R.string.build_tools_settings_summary_needs_linux)
+        status.ready -> stringResource(R.string.build_tools_settings_summary_ready)
+        have == 0 -> stringResource(R.string.build_tools_settings_summary_missing)
+        else -> stringResource(R.string.build_tools_settings_summary_partial, have, total)
+    }
+    SettingsDisclosure(Icons.Rounded.Build, stringResource(R.string.build_tools_card_title), summary,
+        anchors = setOf(R.string.build_tools_card_title), forceExpanded = working) {
+        SettingsPanel(Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Text(stringResource(R.string.build_tools_settings_body), style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+                val installed = status.missing.toSet()
+                com.androidharness.app.ui.chat.components.AndroidBuildToolsComponents(includeGradle,
+                    com.androidharness.app.data.env.AndroidSdkRepository.DEFAULT_API) { pkg ->
+                    if (pkg == "platform") status.platform else linuxReady && pkg !in installed
+                }
+                if (linuxReady && !setup.gradleInstalled()) {
+                    Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+                        Text(stringResource(R.string.build_tools_settings_include_gradle), Modifier.weight(1f), style = MaterialTheme.typography.bodyMedium)
+                        Switch(checked = gradle, onCheckedChange = { gradle = it }, enabled = !working)
+                    }
+                }
+                when (val r = run) {
+                    is com.androidharness.app.data.env.AndroidBuildToolsSetup.Run.Working -> {
+                        val fraction = r.totalBytes?.takeIf { it > 0 }?.let { (r.doneBytes.toFloat() / it).coerceIn(0f, 1f) }
+                        if (fraction != null) LinearProgressIndicator(progress = { fraction }, Modifier.fillMaxWidth())
+                        else LinearProgressIndicator(Modifier.fillMaxWidth())
+                        if (r.label.isNotBlank()) Text(r.label, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    is com.androidharness.app.data.env.AndroidBuildToolsSetup.Run.Failed ->
+                        Text(stringResource(R.string.build_tools_settings_failed, r.message), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.error)
+                    else -> Unit
+                }
+                when {
+                    !linuxReady -> Text(stringResource(R.string.build_tools_settings_needs_linux), style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    status.ready && !gradle -> StatusText(stringResource(R.string.build_tools_settings_done), ok = true)
+                    else -> Button(onClick = { com.androidharness.app.data.env.AndroidBuildToolsSetup.startFromSettings(container.linuxEnv, includeGradle) },
+                        enabled = !working, modifier = Modifier.fillMaxWidth()) {
+                        Text(stringResource(if (have == 0) R.string.build_tools_install else R.string.build_tools_settings_reinstall))
+                    }
+                }
+                if (!status.ready || gradle) Text(stringResource(R.string.build_tools_download_note), style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
     }

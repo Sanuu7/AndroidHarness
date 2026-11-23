@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"ابزارهای ساخت Android"</string>
+    <string name="build_tools_card_body">"برای ساخت APK روی این گوشی، عامل ابتدا به چند ابزار Android نیاز دارد. این یک تنظیم یک‌باره است."</string>
+    <string name="build_tools_not_now">"الآن نه"</string>
+    <string name="build_tools_install">"نصب"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"منابع Java و Kotlin را کامپایل می‌کند"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"کلاس‌های کامپایل‌شده را به کد dex اندروید تبدیل می‌کند"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"منابع و مانیفست را بسته‌بندی می‌کند"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK را امضا می‌کند تا قابل نصب باشد"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"پروژه‌های Gradle را اجرا می‌کند. روی گوشی بزرگ و کند است"</string>
+    <string name="build_tools_platform">"پلتفرم Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar، دانلودشده از Google"</string>
+    <string name="build_tools_download_note">"این یک دانلود بزرگ است، پس Wi-Fi کمک می‌کند. فایل پلتفرم SDK از Google تحت مجوز Android SDK می‌آید."</string>
+    <string name="build_tools_settings_summary_ready">"نصب شده"</string>
+    <string name="build_tools_settings_summary_missing">"نصب نشده"</string>
+    <string name="build_tools_settings_summary_partial">"%1$d از %2$d نصب شده"</string>
+    <string name="build_tools_settings_summary_needs_linux">"به محیط Linux نیاز دارد"</string>
+    <string name="build_tools_settings_needs_linux">"ابتدا محیط Linux را راه‌اندازی کنید."</string>
+    <string name="build_tools_settings_body">"همه چیزهایی که عامل برای ساخت APK روی این دستگاه لازم دارد. همچنین می‌تواند وقتی ساخت به آن‌ها نیاز دارد درخواست نصب کند."</string>
+    <string name="build_tools_settings_include_gradle">"شامل Gradle"</string>
+    <string name="build_tools_settings_installing">"در حال نصب…"</string>
+    <string name="build_tools_settings_reinstall">"نصب موارد کم"</string>
+    <string name="build_tools_settings_done">"ابزارهای ساخت Android آماده‌اند."</string>
+    <string name="build_tools_settings_failed">"نصب ناموفق بود: %1$s"</string>
+</resources>

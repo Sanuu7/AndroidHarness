@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android 빌드 도구"</string>
+    <string name="build_tools_card_body">"이 휴대폰에서 APK를 빌드하려면 에이전트에 Android 도구가 먼저 필요합니다. 한 번만 설정하면 됩니다."</string>
+    <string name="build_tools_not_now">"나중에"</string>
+    <string name="build_tools_install">"설치"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java 및 Kotlin 소스를 컴파일합니다"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"컴파일된 클래스를 Android dex 코드로 변환합니다"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"리소스와 매니페스트를 패키징합니다"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK에 서명하여 설치할 수 있게 합니다"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle 프로젝트를 실행합니다. 휴대폰에서는 크고 느립니다"</string>
+    <string name="build_tools_platform">"Android SDK 플랫폼 %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, Google에서 다운로드"</string>
+    <string name="build_tools_download_note">"다운로드가 크므로 Wi-Fi를 권장합니다. SDK 플랫폼 파일은 Android SDK 라이선스에 따라 Google에서 제공됩니다."</string>
+    <string name="build_tools_settings_summary_ready">"설치됨"</string>
+    <string name="build_tools_settings_summary_missing">"설치되지 않음"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d개 중 %1$d개 설치됨"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux 환경 필요"</string>
+    <string name="build_tools_settings_needs_linux">"먼저 Linux 환경을 설정하세요."</string>
+    <string name="build_tools_settings_body">"이 기기에서 APK를 빌드하는 데 에이전트가 필요한 모든 것입니다. 빌드에 필요할 때 설치를 요청할 수도 있습니다."</string>
+    <string name="build_tools_settings_include_gradle">"Gradle 포함"</string>
+    <string name="build_tools_settings_installing">"설치 중…"</string>
+    <string name="build_tools_settings_reinstall">"누락 항목 설치"</string>
+    <string name="build_tools_settings_done">"Android 빌드 도구가 준비되었습니다."</string>
+    <string name="build_tools_settings_failed">"설치 실패: %1$s"</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Mga tool sa build ng Android"</string>
+    <string name="build_tools_card_body">"Para makabuo ng APK sa teleponong ito, kailangan muna ng agent ng ilang tool sa Android. Isang beses lang ang setup na ito."</string>
+    <string name="build_tools_not_now">"Mamaya na"</string>
+    <string name="build_tools_install">"I-install"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Nagko-compile ng Java at Kotlin sources"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Ginagawang Android dex code ang mga na-compile na class"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Nagpa-package ng resources at manifest"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"Pumipirma sa APK para ma-install ito"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Nagpapatakbo ng Gradle projects. Malaki at mabagal sa telepono"</string>
+    <string name="build_tools_platform">"Android SDK platform %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, na-download mula sa Google"</string>
+    <string name="build_tools_download_note">"Malaking download ito, kaya nakakatulong ang Wi-Fi. Galing sa Google ang SDK platform file sa ilalim ng Android SDK license."</string>
+    <string name="build_tools_settings_summary_ready">"Naka-install"</string>
+    <string name="build_tools_settings_summary_missing">"Hindi naka-install"</string>
+    <string name="build_tools_settings_summary_partial">"%1$d sa %2$d ang naka-install"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Kailangan ang Linux environment"</string>
+    <string name="build_tools_settings_needs_linux">"I-set up muna ang Linux environment."</string>
+    <string name="build_tools_settings_body">"Lahat ng kailangan ng agent para makabuo ng APK sa device na ito. Maaari rin itong humiling na i-install ang mga ito kapag kailangan ng build."</string>
+    <string name="build_tools_settings_include_gradle">"Isama ang Gradle"</string>
+    <string name="build_tools_settings_installing">"Nag-i-install…"</string>
+    <string name="build_tools_settings_reinstall">"I-install ang kulang"</string>
+    <string name="build_tools_settings_done">"Handa na ang mga tool sa build ng Android."</string>
+    <string name="build_tools_settings_failed">"Nabigo ang pag-install: %1$s"</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android ビルドツール"</string>
+    <string name="build_tools_card_body">"このスマートフォンで APK をビルドするには、エージェントに Android ツールがいくつか必要です。これは 1 回だけの設定です。"</string>
+    <string name="build_tools_not_now">"後で"</string>
+    <string name="build_tools_install">"インストール"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java と Kotlin のソースをコンパイルします"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"コンパイル済みクラスを Android dex コードに変換します"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"リソースとマニフェストをパッケージ化します"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK に署名してインストールできるようにします"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle プロジェクトを実行します。スマートフォンでは大きくて遅いです"</string>
+    <string name="build_tools_platform">"Android SDK プラットフォーム %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar（Google からダウンロード）"</string>
+    <string name="build_tools_download_note">"大きなダウンロードのため、Wi-Fi の使用をおすすめします。SDK プラットフォームのファイルは Android SDK ライセンスに基づき Google から提供されます。"</string>
+    <string name="build_tools_settings_summary_ready">"インストール済み"</string>
+    <string name="build_tools_settings_summary_missing">"未インストール"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d 個中 %1$d 個インストール済み"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux 環境が必要です"</string>
+    <string name="build_tools_settings_needs_linux">"先に Linux 環境を設定してください。"</string>
+    <string name="build_tools_settings_body">"このデバイスで APK をビルドするためにエージェントが必要とするものです。ビルドで必要になったときにインストールを求めることもあります。"</string>
+    <string name="build_tools_settings_include_gradle">"Gradle を含める"</string>
+    <string name="build_tools_settings_installing">"インストール中…"</string>
+    <string name="build_tools_settings_reinstall">"不足分をインストール"</string>
+    <string name="build_tools_settings_done">"Android ビルドツールの準備ができました。"</string>
+    <string name="build_tools_settings_failed">"インストールに失敗しました: %1$s"</string>
+</resources>

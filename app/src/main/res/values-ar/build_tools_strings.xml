@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"أدوات بناء Android"</string>
+    <string name="build_tools_card_body">"لبناء APK على هذا الهاتف، يحتاج الوكيل أولاً إلى بعض أدوات Android. هذا إعداد لمرة واحدة."</string>
+    <string name="build_tools_not_now">"ليس الآن"</string>
+    <string name="build_tools_install">"تثبيت"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"يترجم مصادر Java وKotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"يحوّل الفئات المترجمة إلى شفرة dex لأندرويد"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"يحزم الموارد وملف البيان"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"يوقّع APK حتى يمكن تثبيته"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"يشغّل مشاريع Gradle. كبير وبطيء على الهاتف"</string>
+    <string name="build_tools_platform">"منصة Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar، تم تنزيله من Google"</string>
+    <string name="build_tools_download_note">"هذا تنزيل كبير، لذا يساعد Wi-Fi. يأتي ملف منصة SDK من Google بموجب ترخيص Android SDK."</string>
+    <string name="build_tools_settings_summary_ready">"مثبّت"</string>
+    <string name="build_tools_settings_summary_missing">"غير مثبّت"</string>
+    <string name="build_tools_settings_summary_partial">"تم تثبيت %1$d من %2$d"</string>
+    <string name="build_tools_settings_summary_needs_linux">"يتطلب بيئة Linux"</string>
+    <string name="build_tools_settings_needs_linux">"أعدّ بيئة Linux أولاً."</string>
+    <string name="build_tools_settings_body">"كل ما يحتاجه الوكيل لبناء APK على هذا الجهاز. يمكنه أيضاً طلب تثبيتها عندما يحتاجها البناء."</string>
+    <string name="build_tools_settings_include_gradle">"تضمين Gradle"</string>
+    <string name="build_tools_settings_installing">"جارٍ التثبيت…"</string>
+    <string name="build_tools_settings_reinstall">"تثبيت الناقص"</string>
+    <string name="build_tools_settings_done">"أدوات بناء Android جاهزة."</string>
+    <string name="build_tools_settings_failed">"فشل التثبيت: %1$s"</string>
+</resources>

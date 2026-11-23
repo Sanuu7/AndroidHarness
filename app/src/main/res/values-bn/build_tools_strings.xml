@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android বিল্ড টুলস"</string>
+    <string name="build_tools_card_body">"এই ফোনে APK তৈরি করতে এজেন্টের আগে কিছু Android টুল দরকার। এটি একবারের সেটআপ।"</string>
+    <string name="build_tools_not_now">"এখন নয়"</string>
+    <string name="build_tools_install">"ইনস্টল"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java ও Kotlin সোর্স কম্পাইল করে"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"কম্পাইল হওয়া ক্লাসকে Android dex কোডে রূপান্তর করে"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"রিসোর্স ও ম্যানিফেস্ট প্যাকেজ করে"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK সাইন করে যাতে ইনস্টল করা যায়"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle প্রকল্প চালায়। ফোনে বড় ও ধীর"</string>
+    <string name="build_tools_platform">"Android SDK প্ল্যাটফর্ম %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, Google থেকে ডাউনলোড করা"</string>
+    <string name="build_tools_download_note">"এটি বড় ডাউনলোড, তাই Wi-Fi সাহায্য করে। SDK প্ল্যাটফর্ম ফাইলটি Android SDK লাইসেন্সের অধীনে Google থেকে আসে।"</string>
+    <string name="build_tools_settings_summary_ready">"ইনস্টল হয়েছে"</string>
+    <string name="build_tools_settings_summary_missing">"ইনস্টল হয়নি"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d এর মধ্যে %1$d ইনস্টল"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux পরিবেশ দরকার"</string>
+    <string name="build_tools_settings_needs_linux">"আগে Linux পরিবেশ সেট আপ করুন।"</string>
+    <string name="build_tools_settings_body">"এই ডিভাইসে APK তৈরি করতে এজেন্টের যা দরকার। বিল্ডের প্রয়োজন হলে এটি ইনস্টল করার অনুরোধও করতে পারে।"</string>
+    <string name="build_tools_settings_include_gradle">"Gradle অন্তর্ভুক্ত করুন"</string>
+    <string name="build_tools_settings_installing">"ইনস্টল হচ্ছে…"</string>
+    <string name="build_tools_settings_reinstall">"অনুপস্থিত ইনস্টল করুন"</string>
+    <string name="build_tools_settings_done">"Android বিল্ড টুলস প্রস্তুত।"</string>
+    <string name="build_tools_settings_failed">"ইনস্টল ব্যর্থ: %1$s"</string>
+</resources>

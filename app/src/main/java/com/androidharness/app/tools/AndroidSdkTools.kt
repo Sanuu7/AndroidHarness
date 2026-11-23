@@ -1,5 +1,6 @@
 package com.androidharness.app.tools
 
+import com.androidharness.app.data.env.AndroidBuildToolsSetup
 import com.androidharness.app.data.env.AndroidSdkInstaller
 import com.androidharness.app.data.env.AndroidSdkRepository
 import com.androidharness.app.data.env.LinuxEnvironmentManager
@@ -30,7 +31,9 @@ class AndroidSdkInstallTool(
     private val afterInstall: () -> Unit = {},
 ) : Tool {
 
-    constructor(linuxEnv: LinuxEnvironmentManager) : this(
+    constructor(linuxEnv: LinuxEnvironmentManager) : this(AndroidBuildToolsSetup(linuxEnv), linuxEnv)
+
+    private constructor(setup: AndroidBuildToolsSetup, linuxEnv: LinuxEnvironmentManager) : this(
         isReady = { linuxEnv.isReady },
         installedPackages = { linuxEnv.installedPackages() },
         installPackages = { packages, owner, progress ->
@@ -38,10 +41,10 @@ class AndroidSdkInstallTool(
             check(linuxEnv.isReady && packages.all(linuxEnv::installedContains)) { "Package installation did not complete. Check the Linux environment status." }
         },
         installPlatform = { api, progress ->
-            val installer = AndroidSdkInstaller(File(linuxEnv.prefix, SDK_DIR), File(linuxEnv.prefix, "tmp/android-sdk"))
+            val installer = AndroidSdkInstaller(setup.sdkRoot, File(linuxEnv.prefix, "tmp/android-sdk"))
             runInterruptible(Dispatchers.IO) { installer.installPlatform(api, progress) }
         },
-        platformInstalled = { api -> AndroidSdkRepository.androidJar(File(linuxEnv.prefix, SDK_DIR), api).let { it.isFile && it.length() > 1_000_000L } },
+        platformInstalled = setup::platformInstalled,
         afterInstall = { linuxEnv.invalidateExternalToolDeploy() },
     )
 
@@ -108,7 +111,7 @@ class AndroidSdkInstallTool(
         const val NAME = "android_sdk_install"
         private const val SDK_DIR_IN_HOME = "android-sdk"
         private const val SDK_DIR = "home/$SDK_DIR_IN_HOME"
-        private val BASE_PACKAGES = listOf("openjdk-21", "d8", "apksigner", "aapt2")
+        private val BASE_PACKAGES = AndroidBuildToolsSetup.BASE_PACKAGES
 
         internal fun plan(args: JsonObject): Plan {
             val api = (args["platform"] as? JsonPrimitive)?.let { it.intOrNull ?: it.contentOrNull?.toIntOrNull() }
@@ -117,7 +120,7 @@ class AndroidSdkInstallTool(
                 "Android platform $api is not supported. Use ${AndroidSdkRepository.SUPPORTED_API.first}-${AndroidSdkRepository.SUPPORTED_API.last}."
             }
             val gradle = (args["gradle"] as? JsonPrimitive)?.let { it.booleanOrNull ?: (it.contentOrNull == "true") } ?: false
-            return Plan(api, gradle, if (gradle) BASE_PACKAGES + "gradle" else BASE_PACKAGES)
+            return Plan(api, gradle, if (gradle) BASE_PACKAGES + AndroidBuildToolsSetup.GRADLE else BASE_PACKAGES)
         }
 
         /** Shown on the approval card. Mentions the SDK license because the download is Google's. */

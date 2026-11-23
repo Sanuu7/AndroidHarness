@@ -423,6 +423,13 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         anchor = R.string.settings_anchor_system_paths,
     ),
     SettingsSearchEntry(
+        R.string.build_tools_card_title,
+        R.string.build_tools_settings_body,
+        SettingsPage.ENVIRONMENT,
+        "android build tools apk sdk gradle java jdk openjdk d8 aapt2 apksigner compile",
+        anchor = R.string.build_tools_card_title,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_linux_title,
         R.string.settings_search_linux_desc,
         SettingsPage.ENVIRONMENT,

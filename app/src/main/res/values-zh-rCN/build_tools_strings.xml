@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android 构建工具"</string>
+    <string name="build_tools_card_body">"要在此手机上构建 APK，智能体需要先安装一些 Android 工具。这是一次性设置。"</string>
+    <string name="build_tools_not_now">"暂不"</string>
+    <string name="build_tools_install">"安装"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"编译 Java 和 Kotlin 源代码"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"将编译后的类转换为 Android dex 代码"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"打包资源和清单文件"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"为 APK 签名以便安装"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"运行 Gradle 项目。在手机上体积大且速度慢"</string>
+    <string name="build_tools_platform">"Android SDK 平台 %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar，从 Google 下载"</string>
+    <string name="build_tools_download_note">"下载量较大，建议使用 Wi-Fi。SDK 平台文件由 Google 依 Android SDK 许可提供。"</string>
+    <string name="build_tools_settings_summary_ready">"已安装"</string>
+    <string name="build_tools_settings_summary_missing">"未安装"</string>
+    <string name="build_tools_settings_summary_partial">"已安装 %1$d/%2$d"</string>
+    <string name="build_tools_settings_summary_needs_linux">"需要 Linux 环境"</string>
+    <string name="build_tools_settings_needs_linux">"请先设置 Linux 环境。"</string>
+    <string name="build_tools_settings_body">"智能体在此设备上构建 APK 所需的一切。构建需要时它也可以请求安装这些。"</string>
+    <string name="build_tools_settings_include_gradle">"包含 Gradle"</string>
+    <string name="build_tools_settings_installing">"正在安装…"</string>
+    <string name="build_tools_settings_reinstall">"安装缺失项"</string>
+    <string name="build_tools_settings_done">"Android 构建工具已就绪。"</string>
+    <string name="build_tools_settings_failed">"安装失败：%1$s"</string>
+</resources>

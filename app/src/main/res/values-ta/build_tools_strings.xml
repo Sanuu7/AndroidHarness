@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android கட்டுமானக் கருவிகள்"</string>
+    <string name="build_tools_card_body">"இந்த ஃபோனில் APK உருவாக்க, முகவருக்கு முதலில் சில Android கருவிகள் தேவை. இது ஒரு முறை அமைப்பு."</string>
+    <string name="build_tools_not_now">"இப்போது வேண்டாம்"</string>
+    <string name="build_tools_install">"நிறுவு"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Java மற்றும் Kotlin மூலங்களைத் தொகுக்கிறது"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"தொகுக்கப்பட்ட வகுப்புகளை Android dex குறியீடாக மாற்றுகிறது"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"வளங்களையும் மேனிஃபெஸ்டையும் தொகுத்து வழங்குகிறது"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"APK-ஐ நிறுவக்கூடியவாறு கையொப்பமிடுகிறது"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Gradle திட்டங்களை இயக்குகிறது. ஃபோனில் பெரியது மற்றும் மெதுவானது"</string>
+    <string name="build_tools_platform">"Android SDK தளம் %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, Google-இலிருந்து பதிவிறக்கம்"</string>
+    <string name="build_tools_download_note">"இது பெரிய பதிவிறக்கம், எனவே Wi-Fi உதவும். SDK தளக் கோப்பு Android SDK உரிமத்தின் கீழ் Google-இலிருந்து வருகிறது."</string>
+    <string name="build_tools_settings_summary_ready">"நிறுவப்பட்டது"</string>
+    <string name="build_tools_settings_summary_missing">"நிறுவப்படவில்லை"</string>
+    <string name="build_tools_settings_summary_partial">"%2$d-இல் %1$d நிறுவப்பட்டது"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Linux சூழல் தேவை"</string>
+    <string name="build_tools_settings_needs_linux">"முதலில் Linux சூழலை அமைக்கவும்."</string>
+    <string name="build_tools_settings_body">"இந்த சாதனத்தில் APK உருவாக்க முகவருக்குத் தேவையான அனைத்தும். கட்டுமானத்திற்குத் தேவைப்படும்போது இவற்றை நிறுவவும் கேட்கலாம்."</string>
+    <string name="build_tools_settings_include_gradle">"Gradle சேர்க்கவும்"</string>
+    <string name="build_tools_settings_installing">"நிறுவுகிறது…"</string>
+    <string name="build_tools_settings_reinstall">"இல்லாததை நிறுவு"</string>
+    <string name="build_tools_settings_done">"Android கட்டுமானக் கருவிகள் தயார்."</string>
+    <string name="build_tools_settings_failed">"நிறுவல் தோல்வி: %1$s"</string>
+</resources>

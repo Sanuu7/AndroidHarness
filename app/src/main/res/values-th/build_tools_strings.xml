@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"เครื่องมือสร้าง Android"</string>
+    <string name="build_tools_card_body">"การสร้าง APK บนโทรศัพท์นี้ เอเจนต์ต้องมีเครื่องมือ Android ก่อน เป็นการตั้งค่าครั้งเดียว"</string>
+    <string name="build_tools_not_now">"ไว้ทีหลัง"</string>
+    <string name="build_tools_install">"ติดตั้ง"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"คอมไพล์ซอร์ส Java และ Kotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"แปลงคลาสที่คอมไพล์แล้วเป็นโค้ด dex ของ Android"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"แพ็กเกจรีซอร์สและแมนิเฟสต์"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"ลงนาม APK เพื่อให้ติดตั้งได้"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"รันโปรเจกต์ Gradle ใหญ่และช้าบนโทรศัพท์"</string>
+    <string name="build_tools_platform">"แพลตฟอร์ม Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar ดาวน์โหลดจาก Google"</string>
+    <string name="build_tools_download_note">"เป็นการดาวน์โหลดขนาดใหญ่ จึงควรใช้ Wi-Fi ไฟล์แพลตฟอร์ม SDK มาจาก Google ภายใต้สัญญาอนุญาต Android SDK"</string>
+    <string name="build_tools_settings_summary_ready">"ติดตั้งแล้ว"</string>
+    <string name="build_tools_settings_summary_missing">"ยังไม่ได้ติดตั้ง"</string>
+    <string name="build_tools_settings_summary_partial">"ติดตั้ง %1$d จาก %2$d"</string>
+    <string name="build_tools_settings_summary_needs_linux">"ต้องมีสภาพแวดล้อม Linux"</string>
+    <string name="build_tools_settings_needs_linux">"ตั้งค่าสภาพแวดล้อม Linux ก่อน"</string>
+    <string name="build_tools_settings_body">"ทุกอย่างที่เอเจนต์ต้องใช้ในการสร้าง APK บนอุปกรณ์นี้ เอเจนต์ยังขอติดตั้งได้เมื่อการบิลด์ต้องการ"</string>
+    <string name="build_tools_settings_include_gradle">"รวม Gradle"</string>
+    <string name="build_tools_settings_installing">"กำลังติดตั้ง…"</string>
+    <string name="build_tools_settings_reinstall">"ติดตั้งส่วนที่ขาด"</string>
+    <string name="build_tools_settings_done">"เครื่องมือสร้าง Android พร้อมแล้ว"</string>
+    <string name="build_tools_settings_failed">"ติดตั้งล้มเหลว: %1$s"</string>
+</resources>

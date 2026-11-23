@@ -22,6 +22,8 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.outlined.Inventory2
 import androidx.compose.material.icons.outlined.PhoneAndroid
+import androidx.compose.material.icons.outlined.Android
+import androidx.compose.material.icons.outlined.CheckCircle
 import com.androidharness.app.agent.isPhoneControl
 import com.androidharness.app.agent.isRiskyPhoneControl
 import androidx.compose.material.icons.outlined.Checklist
@@ -111,6 +113,10 @@ internal fun ApprovalCard(
     onApprove: (Boolean) -> Unit,
     onDeny: () -> Unit,
 ) {
+    if (approval.call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME) {
+        AndroidBuildToolsApprovalCard(approval, onApprove = { onApprove(false) }, onDeny = onDeny)
+        return
+    }
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val isPkg = approval.call.name == "pkg_install" || approval.call.name == com.androidharness.app.tools.AndroidSdkInstallTool.NAME
     val isPullRequest = approval.call.name == "github_create_pull_request"
@@ -374,4 +380,74 @@ internal fun DiffView(diff: String) {
             )
         }
     }
+}
+
+/**
+ * The agent asking to set up on-device Android builds. Shows what lands on the phone in plain
+ * terms instead of a raw package list, plus where the SDK file comes from and its license.
+ */
+@Composable
+private fun AndroidBuildToolsApprovalCard(approval: ApprovalRequest, onApprove: () -> Unit, onDeny: () -> Unit) {
+    val scheme = MaterialTheme.colorScheme
+    val args = remember(approval.call.argumentsJson) {
+        runCatching { kotlinx.serialization.json.Json.parseToJsonElement(approval.call.argumentsJson) as kotlinx.serialization.json.JsonObject }.getOrNull()
+    }
+    val plan = remember(args) { args?.let { runCatching { com.androidharness.app.tools.AndroidSdkInstallTool.plan(it) }.getOrNull() } }
+    val reason = (args?.get("reason") as? kotlinx.serialization.json.JsonPrimitive)?.content?.takeIf { it.isNotBlank() }
+    ActionCard(
+        title = androidx.compose.ui.res.stringResource(R.string.build_tools_card_title),
+        icon = Icons.Outlined.Android,
+        iconTint = scheme.tertiary,
+        actions = {
+            TextButton(onClick = onDeny) { Text(androidx.compose.ui.res.stringResource(R.string.build_tools_not_now)) }
+            Button(onClick = onApprove) { Text(androidx.compose.ui.res.stringResource(R.string.build_tools_install)) }
+        },
+    ) {
+        Text(reason ?: androidx.compose.ui.res.stringResource(R.string.build_tools_card_body),
+            style = MaterialTheme.typography.bodyMedium, color = scheme.onSurfaceVariant)
+        Spacer(Modifier.height(12.dp))
+        if (plan == null) {
+            CodePanel(prettyArgs(approval.call.argumentsJson), label = approval.call.name)
+            return@ActionCard
+        }
+        androidx.compose.material3.Surface(color = scheme.surfaceContainerHighest.copy(alpha = .6f),
+            shape = androidx.compose.foundation.shape.RoundedCornerShape(18.dp), modifier = Modifier.fillMaxWidth()) {
+            Column(Modifier.padding(horizontal = 14.dp, vertical = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                AndroidBuildToolsComponents(plan.gradle, plan.api)
+            }
+        }
+        Spacer(Modifier.height(10.dp))
+        Text(androidx.compose.ui.res.stringResource(R.string.build_tools_download_note),
+            style = MaterialTheme.typography.labelSmall, color = scheme.onSurfaceVariant)
+    }
+}
+
+/** One row per thing the setup installs; reused by the Terminal settings panel. */
+@Composable
+internal fun AndroidBuildToolsComponents(gradle: Boolean, api: Int, installed: (String) -> Boolean? = { null }) {
+    val rows = buildList {
+        add(Triple("openjdk-21", R.string.build_tools_java, R.string.build_tools_java_desc))
+        add(Triple("d8", R.string.build_tools_d8, R.string.build_tools_d8_desc))
+        add(Triple("aapt2", R.string.build_tools_aapt2, R.string.build_tools_aapt2_desc))
+        add(Triple("apksigner", R.string.build_tools_apksigner, R.string.build_tools_apksigner_desc))
+        if (gradle) add(Triple("gradle", R.string.build_tools_gradle, R.string.build_tools_gradle_desc))
+    }
+    val scheme = MaterialTheme.colorScheme
+    val success = LocalStatusColors.current.success
+    @Composable fun Line(title: String, desc: String, done: Boolean?) {
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(if (done == true) Icons.Outlined.CheckCircle else Icons.Outlined.Inventory2, null, Modifier.size(18.dp),
+                tint = if (done == true) success else scheme.onSurfaceVariant)
+            Spacer(Modifier.width(10.dp))
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall)
+                Text(desc, style = MaterialTheme.typography.bodySmall, color = scheme.onSurfaceVariant)
+            }
+        }
+    }
+    rows.forEach { (pkg, title, desc) ->
+        Line(androidx.compose.ui.res.stringResource(title), androidx.compose.ui.res.stringResource(desc), installed(pkg))
+    }
+    Line(androidx.compose.ui.res.stringResource(R.string.build_tools_platform, api),
+        androidx.compose.ui.res.stringResource(R.string.build_tools_platform_desc), installed("platform"))
 }

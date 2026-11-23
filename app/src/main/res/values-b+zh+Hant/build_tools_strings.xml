@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Android 建置工具"</string>
+    <string name="build_tools_card_body">"要在此手機上建置 APK，代理程式需要先安裝一些 Android 工具。這是一次性設定。"</string>
+    <string name="build_tools_not_now">"暫不"</string>
+    <string name="build_tools_install">"安裝"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"編譯 Java 與 Kotlin 原始碼"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"將編譯後的類別轉為 Android dex 程式碼"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"封裝資源與資訊清單"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"為 APK 簽署以便安裝"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"執行 Gradle 專案。在手機上體積大且速度慢"</string>
+    <string name="build_tools_platform">"Android SDK 平台 %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar，從 Google 下載"</string>
+    <string name="build_tools_download_note">"下載量很大，建議使用 Wi-Fi。SDK 平台檔案由 Google 依 Android SDK 授權提供。"</string>
+    <string name="build_tools_settings_summary_ready">"已安裝"</string>
+    <string name="build_tools_settings_summary_missing">"未安裝"</string>
+    <string name="build_tools_settings_summary_partial">"已安裝 %1$d/%2$d"</string>
+    <string name="build_tools_settings_summary_needs_linux">"需要 Linux 環境"</string>
+    <string name="build_tools_settings_needs_linux">"請先設定 Linux 環境。"</string>
+    <string name="build_tools_settings_body">"代理程式在此裝置上建置 APK 所需的一切。建置需要時它也可以要求安裝。"</string>
+    <string name="build_tools_settings_include_gradle">"包含 Gradle"</string>
+    <string name="build_tools_settings_installing">"正在安裝…"</string>
+    <string name="build_tools_settings_reinstall">"安裝缺少項目"</string>
+    <string name="build_tools_settings_done">"Android 建置工具已就緒。"</string>
+    <string name="build_tools_settings_failed">"安裝失敗：%1$s"</string>
+</resources>

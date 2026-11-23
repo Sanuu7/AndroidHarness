@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="build_tools_card_title">"Công cụ build Android"</string>
+    <string name="build_tools_card_body">"Để build APK trên điện thoại này, tác nhân cần vài công cụ Android trước. Đây là thiết lập một lần."</string>
+    <string name="build_tools_not_now">"Để sau"</string>
+    <string name="build_tools_install">"Cài đặt"</string>
+    <string name="build_tools_java">"Java 21"</string>
+    <string name="build_tools_java_desc">"Biên dịch mã nguồn Java và Kotlin"</string>
+    <string name="build_tools_d8">"D8"</string>
+    <string name="build_tools_d8_desc">"Chuyển các lớp đã biên dịch thành mã dex của Android"</string>
+    <string name="build_tools_aapt2">"aapt2"</string>
+    <string name="build_tools_aapt2_desc">"Đóng gói tài nguyên và tệp kê khai"</string>
+    <string name="build_tools_apksigner">"apksigner"</string>
+    <string name="build_tools_apksigner_desc">"Ký APK để có thể cài đặt"</string>
+    <string name="build_tools_gradle">"Gradle"</string>
+    <string name="build_tools_gradle_desc">"Chạy các dự án Gradle. Lớn và chậm trên điện thoại"</string>
+    <string name="build_tools_platform">"Nền tảng Android SDK %1$d"</string>
+    <string name="build_tools_platform_desc">"android.jar, tải xuống từ Google"</string>
+    <string name="build_tools_download_note">"Đây là bản tải lớn, nên dùng Wi-Fi. Tệp nền tảng SDK do Google cung cấp theo giấy phép Android SDK."</string>
+    <string name="build_tools_settings_summary_ready">"Đã cài đặt"</string>
+    <string name="build_tools_settings_summary_missing">"Chưa cài đặt"</string>
+    <string name="build_tools_settings_summary_partial">"Đã cài %1$d trên %2$d"</string>
+    <string name="build_tools_settings_summary_needs_linux">"Cần môi trường Linux"</string>
+    <string name="build_tools_settings_needs_linux">"Hãy thiết lập môi trường Linux trước."</string>
+    <string name="build_tools_settings_body">"Mọi thứ tác nhân cần để build APK trên thiết bị này. Tác nhân cũng có thể yêu cầu cài khi bản build cần."</string>
+    <string name="build_tools_settings_include_gradle">"Bao gồm Gradle"</string>
+    <string name="build_tools_settings_installing">"Đang cài đặt…"</string>
+    <string name="build_tools_settings_reinstall">"Cài phần còn thiếu"</string>
+    <string name="build_tools_settings_done">"Công cụ build Android đã sẵn sàng."</string>
+    <string name="build_tools_settings_failed">"Cài đặt thất bại: %1$s"</string>
+</resources>
