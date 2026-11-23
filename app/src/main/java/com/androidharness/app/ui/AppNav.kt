@@ -795,13 +795,13 @@ fun AppNav(container: AppContainer) {
                     container = container,
                     sessionId = entry.arguments?.getString("sessionId").orEmpty(),
                     toolCallId = entry.arguments?.getString("toolCallId").orEmpty(),
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                 )
             }
             composable("terminal?session={session}&project={project}", arguments = listOf(
                 navArgument("session") { defaultValue = "" }, navArgument("project") { defaultValue = "" })) { entry ->
                 TerminalScreen(container = container, sessionId = entry.arguments?.getString("session")?.takeIf { it.isNotBlank() },
-                    projectId = entry.arguments?.getString("project")?.takeIf { it.isNotBlank() }, onBack = { nav.popBackStack() })
+                    projectId = entry.arguments?.getString("project")?.takeIf { it.isNotBlank() }, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() })
             }
             composable("files?session={session}&project={project}", arguments = listOf(
                 navArgument("session") { defaultValue = "" }, navArgument("project") { defaultValue = "" })) { entry ->
@@ -811,7 +811,7 @@ fun AppNav(container: AppContainer) {
                     container = container,
                     sessionId = filesSessionId,
                     projectId = filesProjectId,
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenFile = { path ->
                         nav.navigate("viewer/${encode(path)}?line=0&session=${encode(filesSessionId.orEmpty())}&project=${encode(filesProjectId.orEmpty())}")
                     },
@@ -829,7 +829,7 @@ fun AppNav(container: AppContainer) {
                 ChangesScreen(
                     container = container,
                     sessionId = sid,
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onAskAgent = { prompt ->
                         container.pendingAgentPrompt.value = prompt
                         nav.navigateToConversation("chat/${encode(sid)}")
@@ -859,7 +859,7 @@ fun AppNav(container: AppContainer) {
                     initialLine = line,
                     sessionId = sessionArg.takeIf { it.isNotBlank() },
                     projectId = entry.arguments?.getString("project")?.takeIf { it.isNotBlank() },
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onAskAgent = { sourceId, prompt ->
                         scope.launch {
                             try {
@@ -877,16 +877,16 @@ fun AppNav(container: AppContainer) {
             }
             composable("automation") {
                 com.androidharness.app.ui.automation.AutomationScreen(container,
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenSession = { openChat(it) })
             }
             composable("work-projects") {
-                com.androidharness.app.ui.projects.WorkProjectsScreen(container, onBack = { nav.popBackStack() },
+                com.androidharness.app.ui.projects.WorkProjectsScreen(container, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenProject = { nav.navigate("work-project/${encode(it)}") }, onCreate = { creatingProject = true })
             }
             composable("work-project/{workProjectId}", arguments = listOf(navArgument("workProjectId") { type = NavType.StringType })) { entry ->
                 val id = requireNotNull(entry.arguments?.getString("workProjectId"))
-                com.androidharness.app.ui.projects.WorkProjectScreen(container, id, onBack = { nav.popBackStack() },
+                com.androidharness.app.ui.projects.WorkProjectScreen(container, id, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenChat = { openChat(it) },
                     onNewChat = { customTitle ->
                         if (!creatingProjectChat) {
@@ -902,7 +902,7 @@ fun AppNav(container: AppContainer) {
                     onDelete = { deletingProject = it })
             }
             composable("projects") {
-                ProjectsScreen(container, onBack = { nav.popBackStack() },
+                ProjectsScreen(container, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenProject = { nav.navigate("project/${encode(it)}") },
                     onProjectDeleted = {
                         draftSessionId = null
@@ -924,7 +924,7 @@ fun AppNav(container: AppContainer) {
                         finally { creatingProjectChat = false }
                     }
                 }
-                ProjectScreen(container, id, onBack = { nav.popBackStack() },
+                ProjectScreen(container, id, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenChat = { openChat(it) },
                     onNewChat = { openProjectChat(it) }, creatingChat = creatingProjectChat,
                     onMemory = { nav.navigate("project/${encode(id)}/memory") },
@@ -941,7 +941,7 @@ fun AppNav(container: AppContainer) {
                     })
             }
             composable("project/{projectId}/memory", arguments = listOf(navArgument("projectId") { type = NavType.StringType })) { entry ->
-                ProjectMemoryScreen(container, requireNotNull(entry.arguments?.getString("projectId")), onBack = { nav.popBackStack() })
+                ProjectMemoryScreen(container, requireNotNull(entry.arguments?.getString("projectId")), onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() })
             }
             composable("project/{projectId}/automation?taskId={taskId}&create={create}", arguments = listOf(
                 navArgument("projectId") { type = NavType.StringType },
@@ -949,7 +949,7 @@ fun AppNav(container: AppContainer) {
                 navArgument("create") { type = NavType.BoolType; defaultValue = false },
             )) { entry ->
                 com.androidharness.app.ui.automation.AutomationScreen(container,
-                    onBack = { nav.popBackStack() }, onOpenSession = { openChat(it) },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() }, onOpenSession = { openChat(it) },
                     projectId = entry.arguments?.getString("projectId"),
                     initialTaskId = entry.arguments?.getString("taskId")?.takeIf { it.isNotBlank() },
                     createOnOpen = entry.arguments?.getBoolean("create") == true)
@@ -962,7 +962,7 @@ fun AppNav(container: AppContainer) {
                     container = container,
                     sessionId = buildSessionId,
                     projectId = buildProjectId,
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenFile = { path, line ->
                         nav.navigate("viewer/${encode(path)}?line=$line&session=${encode(buildSessionId.orEmpty())}&project=${encode(buildProjectId.orEmpty())}")
                     },
@@ -991,7 +991,7 @@ fun AppNav(container: AppContainer) {
             composable("settings") {
                 SettingsScreen(
                     container = container,
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                     onOpenStats = { nav.navigate("stats") },
                     onRunSetup = { nav.navigate("setup") },
                     onOpenSkills = { nav.navigate("skills") },
@@ -1011,16 +1011,16 @@ fun AppNav(container: AppContainer) {
                 )
             }
             composable("skills") {
-                com.androidharness.app.ui.settings.SettingsExpressiveTheme { SkillsScreen(container = container, onBack = { nav.popBackStack() }) }
+                com.androidharness.app.ui.settings.SettingsExpressiveTheme { SkillsScreen(container = container, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() }) }
             }
             composable("stats") {
                 com.androidharness.app.ui.stats.StatsScreen(
                     container = container,
-                    onBack = { nav.popBackStack() },
+                    onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() },
                 )
             }
             composable("providers") {
-                com.androidharness.app.ui.settings.SettingsExpressiveTheme { ProvidersScreen(container = container, onBack = { nav.popBackStack() }) }
+                com.androidharness.app.ui.settings.SettingsExpressiveTheme { ProvidersScreen(container = container, onBack = androidx.lifecycle.compose.dropUnlessResumed { nav.popBackStack() }) }
             }
             composable("setup") {
                 com.androidharness.app.ui.setup.SetupScreen(
