@@ -595,6 +595,21 @@ interface HarnessDao {
     @Query("SELECT sessionId, COUNT(*) AS count FROM messages GROUP BY sessionId")
     suspend fun messageCounts(): List<SessionMessageCount>
 
+    @Query("SELECT * FROM usage_events WHERE sessionId = :sessionId ORDER BY rowId")
+    suspend fun usageEvents(sessionId: String): List<UsageEventEntity>
+
+    @Query("SELECT * FROM chat_answer_versions WHERE sessionId = :sessionId ORDER BY createdAt, id")
+    suspend fun answerVersionsFor(sessionId: String): List<ChatAnswerVersionEntity>
+
+    @Query("SELECT * FROM saved_answers WHERE sessionId = :sessionId ORDER BY savedAt")
+    suspend fun savedAnswersFor(sessionId: String): List<SavedAnswerEntity>
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertImportedAnswerVersions(versions: List<ChatAnswerVersionEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertImportedSavedAnswers(answers: List<SavedAnswerEntity>)
+
     /** Batch insert for restored chats; IGNORE keeps a partial collision from aborting the import. */
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertImportedMessages(messages: List<MessageEntity>)

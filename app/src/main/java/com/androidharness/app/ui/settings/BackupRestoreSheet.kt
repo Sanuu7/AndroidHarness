@@ -144,6 +144,8 @@ private fun ExportFlow(container: AppContainer, onWorking: (Boolean) -> Unit, on
     var chats by remember { mutableStateOf(emptyList<BackupChatInfo>()) }
     var selected by remember { mutableStateOf(emptySet<String>()) }
     var query by remember { mutableStateOf("") }
+    var images by remember { mutableStateOf(true) }
+    var usage by remember { mutableStateOf(true) }
     var memories by remember { mutableStateOf(true) }
     var snippets by remember { mutableStateOf(true) }
     var progress by remember { mutableStateOf(BackupProgress(0, 0)) }
@@ -167,7 +169,7 @@ private fun ExportFlow(container: AppContainer, onWorking: (Boolean) -> Unit, on
     }
     val createFile = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
         if (uri == null) return@rememberLauncherForActivityResult
-        val options = ChatBackupManager.ExportOptions(selected, memories, snippets)
+        val options = ChatBackupManager.ExportOptions(selected, memories, snippets, images, usage)
         progress = BackupProgress(0, selected.size)
         notice = null
         phase = Phase.WORKING
@@ -196,6 +198,8 @@ private fun ExportFlow(container: AppContainer, onWorking: (Boolean) -> Unit, on
             Phase.PICK -> Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 SheetHeader(Icons.Rounded.Archive, stringResource(R.string.backup_pick_title), stringResource(R.string.backup_pick_subtitle))
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                    OptionChip(stringResource(R.string.backup_option_images), images) { images = it }
+                    OptionChip(stringResource(R.string.backup_option_usage), usage) { usage = it }
                     OptionChip(stringResource(R.string.backup_option_memories), memories) { memories = it }
                     OptionChip(stringResource(R.string.backup_option_snippets), snippets) { snippets = it }
                 }
@@ -249,6 +253,7 @@ private fun ExportFlow(container: AppContainer, onWorking: (Boolean) -> Unit, on
                         if (r != null) {
                             add(ResultChip(pluralStringResource(R.plurals.backup_chip_chats, r.sessions, r.sessions)))
                             add(ResultChip(pluralStringResource(R.plurals.backup_chip_messages, r.messages, r.messages)))
+                            if (r.images > 0) add(ResultChip(pluralStringResource(R.plurals.backup_chip_images, r.images, r.images)))
                             if (r.memories > 0) add(ResultChip(pluralStringResource(R.plurals.backup_chip_memories, r.memories, r.memories)))
                             if (r.snippets > 0) add(ResultChip(pluralStringResource(R.plurals.backup_chip_snippets, r.snippets, r.snippets)))
                         }
@@ -419,6 +424,7 @@ private fun RestoreFlow(container: AppContainer, uri: Uri, onWorking: (Boolean) 
                         if (r != null) {
                             add(ResultChip(pluralStringResource(R.plurals.backup_chip_chats, r.sessions, r.sessions)))
                             add(ResultChip(pluralStringResource(R.plurals.backup_chip_messages, r.messages, r.messages)))
+                            if (r.images > 0) add(ResultChip(pluralStringResource(R.plurals.backup_chip_images, r.images, r.images)))
                             if (r.memories > 0) add(ResultChip(pluralStringResource(R.plurals.backup_chip_memories, r.memories, r.memories)))
                             if (r.snippets > 0) add(ResultChip(pluralStringResource(R.plurals.backup_chip_snippets, r.snippets, r.snippets)))
                             if (r.copies > 0) add(ResultChip(pluralStringResource(R.plurals.restore_chip_copies, r.copies, r.copies)))

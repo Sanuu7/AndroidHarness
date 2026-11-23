@@ -5,14 +5,18 @@ import android.net.Uri
 import android.provider.DocumentsContract
 import androidx.room.withTransaction
 import com.androidharness.app.data.db.AppDatabase
+import com.androidharness.app.data.db.ChatAnswerVersionEntity
 import com.androidharness.app.data.db.MessageEntity
+import com.androidharness.app.data.db.SavedAnswerEntity
 import com.androidharness.app.data.db.SessionEntity
+import com.androidharness.app.data.db.UsageEventEntity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.ensureActive
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.io.InputStream
 import java.util.UUID
 import kotlin.coroutines.coroutineContext
@@ -32,18 +36,22 @@ class ChatBackupManager(
         val chatIds: Set<String>? = null,
         val memories: Boolean = true,
         val snippets: Boolean = true,
+        val images: Boolean = true,
+        val usage: Boolean = true,
     )
-    data class ExportResult(val sessions: Int, val messages: Int, val memories: Int = 0, val snippets: Int = 0)
+    data class ExportResult(val sessions: Int, val messages: Int, val memories: Int = 0, val snippets: Int = 0, val images: Int = 0)
     data class ImportResult(
         val sessions: Int,
         val messages: Int,
         val skipped: Int,
         val memories: Int = 0,
         val snippets: Int = 0,
+        val images: Int = 0,
         val copies: Int = 0,
     )
 
     private val dao get() = db.dao()
+    private val imagesDir get() = File(appContext.filesDir, "images")
 
     /** Every chat, newest first, with message totals for the picker. */
     suspend fun chatsForExport(): List<BackupChatInfo> = withContext(Dispatchers.IO) {
@@ -83,25 +91,43 @@ class ChatBackupManager(
             snippets = snippets.size,
             memoryProjects = memories.filter { it.scope == MemoryScope.PROJECT.name }
                 .mapNotNull { it.projectId?.takeIf(String::isNotBlank) }.distinct(),
+            workProjects = sessions.mapNotNull { it.workProjectId }.distinct().mapNotNull { dao.workProject(it) }
+                .map { BackupWorkProject(it.id, it.name, it.selectionJson, it.createdAt, it.chatNamePattern) },
         )
         val resolver = appContext.contentResolver
         val out = runCatching { resolver.openOutputStream(uri, "wt") }.getOrNull() ?: resolver.openOutputStream(uri)
             ?: throw ChatBackupException("Could not open the file for writing")
         var messages = 0
+        var images = 0
         ChatBackupArchive.Writer(out).use { archive ->
             archive.manifest(manifest)
+            val wanted = LinkedHashSet<String>()
             sessions.forEachIndexed { index, session ->
                 coroutineContext.ensureActive()
                 onProgress(BackupProgress(index, sessions.size, session.title))
                 val rows = dao.messages(session.id)
                 messages += rows.size
-                archive.chat(session.toBackup(rows))
+                if (options.images) rows.forEach { wanted += ChatBackupArchive.imageNames(it.imagesJson) }
+                archive.chat(session.toBackup(
+                    rows,
+                    usage = if (options.usage) dao.usageEvents(session.id) else emptyList(),
+                    versions = dao.answerVersionsFor(session.id),
+                    saved = dao.savedAnswersFor(session.id),
+                ))
             }
             onProgress(BackupProgress(sessions.size, sessions.size))
             if (memories.isNotEmpty()) archive.memories(memories)
             if (snippets.isNotEmpty()) archive.snippets(snippets)
+            for (name in wanted) {
+                coroutineContext.ensureActive()
+                val file = File(imagesDir, name).takeIf { it.isFile } ?: continue
+                file.inputStream().use { archive.image(name, original = false, it) }
+                images++
+                File(File(imagesDir, "originals"), name).takeIf { it.isFile }
+                    ?.inputStream()?.use { archive.image(name, original = true, it) }
+            }
         }
-        return ExportResult(sessions.size, messages, memories.size, snippets.size)
+        return ExportResult(sessions.size, messages, memories.size, snippets.size, images)
     }
 
     suspend fun prepareImport(uri: Uri): ChatImportPreview = withContext(Dispatchers.IO) {
@@ -109,7 +135,7 @@ class ChatBackupManager(
         if (isArchive(uri)) {
             val manifest = open(uri).use { ChatBackupArchive.readManifest(it) }
             ChatImportPreview(uri, manifest.chats.map { ImportChat(it, it.id in existing) }, manifest.workspaces,
-                manifest.exportedAt, manifest.memories, manifest.snippets, manifest.memoryProjects)
+                manifest.exportedAt, manifest.memories, manifest.snippets, manifest.memoryProjects, workProjects = manifest.workProjects)
         } else {
             val file = open(uri).use { ChatBackupCodec.decode(it) }
             ChatImportPreview(
@@ -163,9 +189,25 @@ class ChatBackupManager(
         var messages = 0
         var skipped = 0
         var copies = 0
+        var images = 0
         var memories = emptyList<BackupMemory>()
         var snippets = emptyList<BackupSnippet>()
+        val wanted = HashSet<String>()
         val available = dao.projectsFlow().first().map { it.id }.toSet()
+        val backupProjects = preview.workProjects.associateBy { it.id }
+
+        /** The project a restored chat is filed under: the one already here, or rebuilt from the backup, or none. */
+        suspend fun workProject(id: String): String? {
+            if (dao.workProject(id) != null) return id
+            val saved = backupProjects[id] ?: return null
+            return runCatching {
+                val selection = ChatRestoreMapping.remapSelection(saved.selectionJson, workspaceMapping)
+                workspace.validateSelection(com.androidharness.app.workspace.ChatWorkspaceSelection.decode(selection))
+                dao.insertWorkProject(com.androidharness.app.data.db.WorkProjectEntity(saved.id, saved.name.take(100), selection,
+                    saved.createdAt, com.androidharness.app.core.ChatSeries.normalize(saved.chatNamePattern)))
+                id
+            }.getOrNull()
+        }
 
         suspend fun restoreChat(incoming: BackupSession) {
             job?.ensureActive()
@@ -173,7 +215,8 @@ class ChatBackupManager(
             onProgress(BackupProgress(done, total, incoming.title))
             val exists = dao.session(incoming.id) != null
             if (exists && policy == DuplicatePolicy.SKIP) { skipped++; done++; return }
-            val session = ChatRestoreMapping.remap(if (exists) incoming.asCopy() else incoming, workspaceMapping)
+            val remapped = ChatRestoreMapping.remap(if (exists) incoming.asCopy() else incoming, workspaceMapping)
+            val session = remapped.copy(workProjectId = remapped.workProjectId?.let { workProject(it) })
             require(ChatRestoreMapping.referenced(session).all { it in available }) {
                 "A chosen workspace is no longer available. Review the restored projects again."
             }
@@ -184,7 +227,13 @@ class ChatBackupManager(
                 dao.insertSession(session.toEntity())
                 session.messages.map { it.toEntity(session.id) }.takeIf { it.isNotEmpty() }
                     ?.chunked(500)?.forEach { dao.insertImportedMessages(it) }
+                session.usage.map { it.toEntity(session.id) }.takeIf { it.isNotEmpty() }?.let { dao.insertUsageEvents(it) }
+                session.answerVersions.map { ChatAnswerVersionEntity(it.id, session.id, it.groupKey, it.messagesJson, it.createdAt) }
+                    .takeIf { it.isNotEmpty() }?.let { dao.insertImportedAnswerVersions(it) }
+                session.savedAnswers.map { SavedAnswerEntity(it.messageId, session.id, it.text, it.answeredAt, it.savedAt) }
+                    .takeIf { it.isNotEmpty() }?.let { dao.insertImportedSavedAnswers(it) }
             }
+            session.messages.forEach { wanted += ChatBackupArchive.imageNames(it.imagesJson) }
             sessions++
             messages += session.messages.size
             if (exists) copies++
@@ -202,6 +251,19 @@ class ChatBackupManager(
                 override suspend fun chat(session: BackupSession) = restoreChat(session)
                 override suspend fun memories(found: List<BackupMemory>) { memories = found }
                 override suspend fun snippets(found: List<BackupSnippet>) { snippets = found }
+                override suspend fun image(name: String, original: Boolean, input: InputStream) {
+                    job?.ensureActive()
+                    if (name !in wanted) return
+                    val target = if (original) File(File(imagesDir, "originals"), name) else File(imagesDir, name)
+                    if (target.exists()) return
+                    target.parentFile?.mkdirs()
+                    val temp = File(target.parentFile, ".restore-${UUID.randomUUID()}")
+                    try {
+                        temp.outputStream().use { input.copyTo(it, 64 * 1024) }
+                        if (!temp.renameTo(target)) error("Could not save a restored image")
+                        if (!original) images++
+                    } finally { temp.delete() }
+                }
             })
         }
         onProgress(BackupProgress(total, total))
@@ -217,7 +279,7 @@ class ChatBackupManager(
             snippetPlan.forEach { dao.insertSnippet(SnippetBackupMerge.entity(it)) }
             restoredSnippets = snippetPlan.size
         }
-        ImportResult(sessions, messages, skipped, restoredMemories, restoredSnippets, copies)
+        ImportResult(sessions, messages, skipped, restoredMemories, restoredSnippets, images, copies)
     }
 
     private fun open(uri: Uri): InputStream =
@@ -242,10 +304,18 @@ internal fun BackupSession.asCopy(): BackupSession {
         id = UUID.randomUUID().toString(),
         title = "$title (copy)",
         messages = messages.map { it.copy(id = ids.getValue(it.id)) },
+        // Versions embed whole message rows with the original ids, so a copy starts without them.
+        answerVersions = emptyList(),
+        savedAnswers = savedAnswers.mapNotNull { saved -> ids[saved.messageId]?.let { saved.copy(messageId = it) } },
     )
 }
 
-private fun SessionEntity.toBackup(rows: List<MessageEntity>) = BackupSession(
+private fun SessionEntity.toBackup(
+    rows: List<MessageEntity>,
+    usage: List<UsageEventEntity>,
+    versions: List<ChatAnswerVersionEntity>,
+    saved: List<SavedAnswerEntity>,
+) = BackupSession(
     id = id,
     title = title,
     createdAt = createdAt,
@@ -262,6 +332,7 @@ private fun SessionEntity.toBackup(rows: List<MessageEntity>) = BackupSession(
     modelSelectionJson = modelSelectionJson,
     workspaceSelectionJson = workspaceSelectionJson,
     conversationJson = conversationJson,
+    workProjectId = workProjectId,
     messages = rows.map { m ->
         BackupMessage(
             id = m.id,
@@ -284,6 +355,12 @@ private fun SessionEntity.toBackup(rows: List<MessageEntity>) = BackupSession(
             createdAt = m.createdAt,
         )
     },
+    usage = usage.map {
+        BackupUsage(it.providerName, it.model, it.inputTokens, it.outputTokens, it.cachedTokens, it.cacheWriteTokens,
+            it.createdAt, it.turnId, it.cacheReported, it.inputPrice, it.cacheReadPrice, it.cacheWritePrice)
+    },
+    answerVersions = versions.map { BackupAnswerVersion(it.id, it.groupKey, it.messagesJson, it.createdAt) },
+    savedAnswers = saved.map { BackupSavedAnswer(it.messageId, it.text, it.answeredAt, it.savedAt) },
 )
 
 private fun BackupSession.toEntity() = SessionEntity(
@@ -303,6 +380,7 @@ private fun BackupSession.toEntity() = SessionEntity(
     modelSelectionJson = modelSelectionJson,
     workspaceSelectionJson = workspaceSelectionJson,
     conversationJson = conversationJson,
+    workProjectId = workProjectId,
 )
 
 private fun BackupMessage.toEntity(sessionId: String) = MessageEntity(
@@ -325,4 +403,20 @@ private fun BackupMessage.toEntity(sessionId: String) = MessageEntity(
     artifactJson = artifactJson,
     turnId = turnId,
     createdAt = createdAt,
+)
+
+private fun BackupUsage.toEntity(sessionId: String) = UsageEventEntity(
+    sessionId = sessionId,
+    providerName = providerName,
+    model = model,
+    inputTokens = inputTokens,
+    outputTokens = outputTokens,
+    cachedTokens = cachedTokens,
+    cacheWriteTokens = cacheWriteTokens,
+    createdAt = createdAt,
+    turnId = turnId,
+    cacheReported = cacheReported,
+    inputPrice = inputPrice,
+    cacheReadPrice = cacheReadPrice,
+    cacheWritePrice = cacheWritePrice,
 )

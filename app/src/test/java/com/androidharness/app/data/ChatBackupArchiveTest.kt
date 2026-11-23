@@ -19,6 +19,9 @@ class ChatBackupArchiveTest {
 
     private fun chat(id: String, vararg messages: BackupMessage) = BackupSession(
         id = id, title = "Chat $id", createdAt = 1, updatedAt = 2, messages = messages.toList(),
+        usage = listOf(BackupUsage("OpenRouter", "model-a", 120, 40, createdAt = 3, inputPrice = 0.5)),
+        answerVersions = listOf(BackupAnswerVersion("v1", "group", "[]", 4)),
+        savedAnswers = listOf(BackupSavedAnswer(messages.first().id, "kept", 5, 6)),
     )
 
     private class Collected : ChatBackupArchive.Visitor {
@@ -59,6 +62,7 @@ class ChatBackupArchiveTest {
         assertEquals("Prefers Kotlin", seen.memories.single().text)
         assertEquals("review", seen.snippets.single().name)
         assertEquals(mapOf("pic.jpg" to "preview", "originals/pic.jpg" to "original"), seen.images)
+        assertEquals(120L, seen.chats.first().usage.single().inputTokens)
     }
 
     @Test fun `manifest is read without touching the chats`() = runBlocking {
@@ -97,13 +101,15 @@ class ChatBackupArchiveTest {
         assertFalse(ChatBackupArchive.safeName("sub/dir.png"))
     }
 
-    @Test fun `a kept copy gets fresh ids`() {
+    @Test fun `a kept copy gets fresh ids and keeps saved answers on the new messages`() {
         val original = chat("a", message("m1"), message("m2"))
         val copy = original.asCopy()
         assertNotEquals(original.id, copy.id)
         assertEquals("Chat a (copy)", copy.title)
         assertTrue(copy.messages.map { it.id }.none { it in setOf("m1", "m2") })
         assertEquals(original.messages.map { it.text }, copy.messages.map { it.text })
+        assertEquals(copy.messages.first().id, copy.savedAnswers.single().messageId)
+        assertTrue(copy.answerVersions.isEmpty())
     }
 
     @Test fun `older single-file backups still stream-decode`() {

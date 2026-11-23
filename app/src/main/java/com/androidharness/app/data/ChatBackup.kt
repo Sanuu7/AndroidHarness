@@ -49,6 +49,7 @@ data class ChatImportPreview(
     val snippets: Int,
     val memoryProjects: List<String> = emptyList(),
     val legacy: Boolean = false,
+    val workProjects: List<BackupWorkProject> = emptyList(),
 )
 
 enum class DuplicatePolicy { SKIP, KEEP_BOTH }
@@ -66,6 +67,13 @@ internal object ChatRestoreMapping {
             require(selection.primaryId == projectId) { "A restored chat has inconsistent workspace access." }
             addAll(selection.grants.map { it.projectId })
         }
+    }
+    /** Re-points a stored workspace selection at the workspaces chosen on this phone. */
+    fun remapSelection(raw: String, mapping: Map<String, String>): String {
+        val saved = com.androidharness.app.workspace.ChatWorkspaceSelection.decode(raw)
+        val grants = saved.grants.map { grant -> grant.copy(projectId = mapping[grant.projectId] ?: grant.projectId) }
+        return com.androidharness.app.workspace.ChatWorkspaceSelection.encode(
+            saved.copy(primaryId = mapping[saved.primaryId] ?: saved.primaryId, grants = grants).validated())
     }
     fun remap(session: BackupSession, mapping: Map<String, String>): BackupSession {
         val primary = session.projectId ?: UNASSIGNED
@@ -98,7 +106,35 @@ data class BackupSession(
     val modelSelectionJson: String? = null,
     val workspaceSelectionJson: String? = null,
     val conversationJson: String? = null,
+    val workProjectId: String? = null,
+    /** Per-request token records behind the Stats screen. */
+    val usage: List<BackupUsage> = emptyList(),
+    /** Earlier versions of regenerated answers, stored exactly as the database keeps them. */
+    val answerVersions: List<BackupAnswerVersion> = emptyList(),
+    val savedAnswers: List<BackupSavedAnswer> = emptyList(),
 )
+
+@Serializable
+data class BackupUsage(
+    val providerName: String,
+    val model: String,
+    val inputTokens: Long,
+    val outputTokens: Long,
+    val cachedTokens: Long = 0,
+    val cacheWriteTokens: Long = 0,
+    val createdAt: Long,
+    val turnId: String? = null,
+    val cacheReported: Boolean = false,
+    val inputPrice: Double? = null,
+    val cacheReadPrice: Double? = null,
+    val cacheWritePrice: Double? = null,
+)
+
+@Serializable
+data class BackupAnswerVersion(val id: String, val groupKey: String, val messagesJson: String, val createdAt: Long)
+
+@Serializable
+data class BackupSavedAnswer(val messageId: String, val text: String, val answeredAt: Long, val savedAt: Long)
 
 @Serializable
 data class BackupMessage(

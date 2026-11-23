@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="backup_title">Backup &amp; restore</string>
-    <string name="backup_card_body">Save your chats with their memories and snippets to one file. API keys and settings never go in it.</string>
+    <string name="backup_card_body">Save your chats with their images, usage stats, memories and snippets to one file. API keys and settings never go in it.</string>
     <string name="backup_action_back_up">Back up</string>
     <string name="backup_action_restore">Restore</string>
 
@@ -10,6 +10,8 @@
     <string name="backup_search_hint">Search chats</string>
     <string name="backup_select_all">Select all</string>
     <string name="backup_select_none">Clear</string>
+    <string name="backup_option_images">Images</string>
+    <string name="backup_option_usage">Usage stats</string>
     <string name="backup_option_memories">Memories</string>
     <string name="backup_option_snippets">Snippets</string>
     <string name="backup_no_chats">No chats yet. Memories and snippets can still be backed up.</string>
@@ -17,7 +19,7 @@
     <string name="backup_extras_only">Back up extras</string>
     <string name="backup_loading_chats">Gathering your chats</string>
     <string name="backup_packing">Packing chats</string>
-    <string name="backup_packing_extras">Adding memories and snippets</string>
+    <string name="backup_packing_extras">Adding images and memories</string>
     <string name="backup_progress_count">%1$d of %2$d</string>
     <string name="backup_keep_open">Keep the app open until this finishes.</string>
     <string name="backup_cancel">Cancel</string>
@@ -36,7 +38,7 @@
     <string name="restore_reading">Reading backup</string>
     <string name="restore_review_title">Restore chats</string>
     <string name="restore_from">Backed up %1$s</string>
-    <string name="restore_legacy_note">This is an older backup file.</string>
+    <string name="restore_legacy_note">This is an older backup file, so it has no images or usage stats.</string>
     <string name="restore_on_phone">On this phone</string>
     <string name="restore_duplicates_label">Chats already on this phone</string>
     <string name="restore_skip">Skip</string>
@@ -44,7 +46,7 @@
     <string name="restore_extras">Also restore memories and snippets</string>
     <string name="restore_extras_only">Restore extras</string>
     <string name="restore_working">Restoring chats</string>
-    <string name="restore_working_extras">Restoring memories and snippets</string>
+    <string name="restore_working_extras">Restoring images and memories</string>
     <string name="restore_cancel_note">Chats restored before you cancel stay on this phone.</string>
     <string name="restore_cancelled">Restore stopped. Chats restored so far were kept.</string>
     <string name="restore_done_title">Chats restored</string>
@@ -67,6 +69,10 @@
     <plurals name="backup_chip_messages">
         <item quantity="one">%d message</item>
         <item quantity="other">%d messages</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">%d image</item>
+        <item quantity="other">%d images</item>
     </plurals>
     <plurals name="backup_chip_memories">
         <item quantity="one">%d memory</item>

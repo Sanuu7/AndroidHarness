@@ -41,6 +41,17 @@ data class BackupManifest(
     val memories: Int = 0,
     val snippets: Int = 0,
     val memoryProjects: List<String> = emptyList(),
+    /** The user-made projects the chats are filed under. */
+    val workProjects: List<BackupWorkProject> = emptyList(),
+)
+
+@Serializable
+data class BackupWorkProject(
+    val id: String,
+    val name: String,
+    val selectionJson: String,
+    val createdAt: Long,
+    val chatNamePattern: String? = null,
 )
 
 /**
