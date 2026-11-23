@@ -35,6 +35,35 @@ class ModelCatalogTest {
         assertEquals(entry, restored)
     }
 
+    @Test fun openRouterReasoningObjectEffortsNormalizeAndEnableLocalLanProvider() {
+        val body = """{"data":[{
+            "id":"gemini-4-neon",
+            "context_length":1048576,
+            "supported_parameters":["tools","reasoning","reasoning_effort"],
+            "architecture":{"input_modalities":["text","image"]},
+            "reasoning":{"mandatory":true,"default_enabled":true,"default_effort":"high","supported_efforts":["xhigh","high","medium","low"]}
+        }]}"""
+        val entry = ModelCatalog.parseCatalog(ProviderType.OPENAI_COMPAT, body).single()
+        assertEquals(listOf("low", "medium", "high", "xhigh"), entry.reasoningEfforts)
+        assertEquals("high", entry.defaultReasoningEffort)
+        assertEquals(true, entry.reasoning)
+        assertEquals(true, entry.reasoningReported)
+        assertEquals(true, entry.tools)
+        assertEquals(true, entry.imageInput)
+        assertEquals(1048576L, entry.contextTokens)
+        val lanConfig = ProviderConfig("lan", "Local Gateway", ProviderType.OPENAI_COMPAT, "http://192.168.1.50:8080/v1", "gemini-4-neon")
+        val spec = com.androidharness.app.agent.ThinkingSpecs.forProvider(lanConfig, entry)
+        assertEquals(com.androidharness.app.agent.ThinkingSpecs.Style.EFFORT, spec.style)
+        assertEquals(listOf(
+            com.androidharness.app.agent.ThinkingLevel.LOW,
+            com.androidharness.app.agent.ThinkingLevel.MEDIUM,
+            com.androidharness.app.agent.ThinkingLevel.HIGH,
+            com.androidharness.app.agent.ThinkingLevel.XHIGH,
+        ), spec.levels)
+        assertEquals(com.androidharness.app.agent.ThinkingLevel.HIGH, spec.defaultLevel)
+        assertEquals(listOf("Low", "Medium", "High", "X-High"), spec.reportedLevels)
+    }
+
     @Test fun malformedEffortListsStayUnknownAndUnavailableDefaultsAreDiscarded() {
         val models = ModelCatalog.parseCatalog(ProviderType.OPENAI_COMPAT, """{"data":[
             {"id":"malformed","effort":{"supported_levels":["high",null]}},
