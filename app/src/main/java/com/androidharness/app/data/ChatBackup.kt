@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
 
 class ChatBackupException(message: String) : Exception(message)
 
@@ -35,21 +36,34 @@ data class ChatBackupFile(
 @Serializable
 data class BackupWorkspace(val id: String, val name: String)
 
+/** A chat found in a backup file, with whether a chat with the same id is already on this phone. */
+data class ImportChat(val info: BackupChatInfo, val exists: Boolean)
+
+/** What a restore would bring in, read from the manifest (or a legacy JSON file) before any write. */
 data class ChatImportPreview(
-    val sessions: List<BackupSession>,
-    val missingWorkspaces: List<BackupWorkspace>,
-    val skipped: Int,
-    val memories: List<BackupMemory> = emptyList(),
-    val snippets: List<BackupSnippet> = emptyList(),
+    val uri: Uri,
+    val chats: List<ImportChat>,
+    val workspaces: List<BackupWorkspace>,
+    val exportedAt: Long,
+    val memories: Int,
+    val snippets: Int,
+    val memoryProjects: List<String> = emptyList(),
+    val legacy: Boolean = false,
 )
+
+enum class DuplicatePolicy { SKIP, KEEP_BOTH }
+
+/** Where a backup or restore is up to; [title] is the chat being packed or unpacked. */
+data class BackupProgress(val done: Int, val total: Int, val title: String = "")
 
 internal object ChatRestoreMapping {
     const val UNASSIGNED = "legacy-unassigned-workspace"
-    fun referenced(session: BackupSession): Set<String> = buildSet {
-        add(session.projectId ?: UNASSIGNED)
-        session.workspaceSelectionJson?.let { raw ->
+    fun referenced(session: BackupSession): Set<String> = referenced(session.projectId, session.workspaceSelectionJson)
+    fun referenced(projectId: String?, workspaceSelectionJson: String?): Set<String> = buildSet {
+        add(projectId ?: UNASSIGNED)
+        workspaceSelectionJson?.let { raw ->
             val selection = com.androidharness.app.workspace.ChatWorkspaceSelection.decode(raw)
-            require(selection.primaryId == session.projectId) { "A restored chat has inconsistent workspace access." }
+            require(selection.primaryId == projectId) { "A restored chat has inconsistent workspace access." }
             addAll(selection.grants.map { it.projectId })
         }
     }
@@ -131,6 +145,21 @@ object ChatBackupCodec {
         }
         return file
     }
+
+    /** Streams a legacy single-file backup straight into objects, without a second full-text copy. */
+    @OptIn(kotlinx.serialization.ExperimentalSerializationApi::class)
+    fun decode(input: java.io.InputStream): ChatBackupFile {
+        val file = try {
+            json.decodeFromStream(ChatBackupFile.serializer(), input)
+        } catch (e: OutOfMemoryError) {
+            throw ChatBackupException("This backup is too large for this phone's memory")
+        } catch (e: Exception) {
+            throw ChatBackupException("Not a chat backup file")
+        }
+        if (file.format != FORMAT) throw ChatBackupException("Not a chat backup file")
+        if (file.version > VERSION) throw ChatBackupException("This backup was written by a newer version of the app")
+        return file
+    }
 }
 
 /**
@@ -146,174 +175,3 @@ object ChatBackupMerge {
     }
 }
 
-/**
- * Exports and imports chats through SAF uris. Export writes every session
- * with its full message list; import merges, skipping sessions whose id
- * already exists. All work runs on Dispatchers.IO; callers surface errors.
- */
-class ChatBackupManager(
-    private val db: AppDatabase,
-    private val appContext: Context,
-    private val workspace: com.androidharness.app.workspace.WorkspaceManager = com.androidharness.app.workspace.WorkspaceManager(appContext, db.dao()),
-) {
-    data class ExportResult(val sessions: Int, val messages: Int, val memories: Int = 0, val snippets: Int = 0)
-    data class ImportResult(val sessions: Int, val messages: Int, val skipped: Int, val memories: Int = 0, val snippets: Int = 0)
-
-    suspend fun exportTo(uri: Uri): ExportResult = withContext(Dispatchers.IO) {
-        val sessions = db.dao().allSessions()
-        val bySession = db.dao().allMessages().groupBy { it.sessionId }
-        val file = ChatBackupFile(
-            exportedAt = System.currentTimeMillis(),
-            workspaces = db.dao().projectsFlow().first().map { BackupWorkspace(it.id, it.name) },
-            memories = db.dao().allMemories().map { it.toBackupMemory() },
-            snippets = db.dao().allSnippets().map { it.toBackupSnippet() },
-            sessions = sessions.map { s ->
-                BackupSession(
-                    id = s.id,
-                    title = s.title,
-                    createdAt = s.createdAt,
-                    updatedAt = s.updatedAt,
-                    totalInputTokens = s.totalInputTokens,
-                    totalOutputTokens = s.totalOutputTokens,
-                    totalCachedTokens = s.totalCachedTokens,
-                    totalCacheWriteTokens = s.totalCacheWriteTokens,
-                    requestCount = s.requestCount,
-                    lastInputTokens = s.lastInputTokens,
-                    projectId = s.projectId,
-                    compactionSummary = s.compactionSummary,
-                    compactionBefore = s.compactionBefore,
-                    modelSelectionJson = s.modelSelectionJson,
-                    workspaceSelectionJson = s.workspaceSelectionJson,
-                    conversationJson = s.conversationJson,
-                    messages = bySession[s.id].orEmpty().map { m ->
-                        BackupMessage(
-                            id = m.id,
-                            role = m.role,
-                            text = m.text,
-                            toolCallsJson = m.toolCallsJson,
-                            toolCallId = m.toolCallId,
-                            toolName = m.toolName,
-                            isError = m.isError,
-                            thinking = m.thinking,
-                            thinkingMs = m.thinkingMs,
-                            outputTokens = m.outputTokens,
-                            generationMs = m.generationMs,
-                            firstTokenMs = m.firstTokenMs,
-                            streamMs = m.streamMs,
-                            generationJson = m.generationJson,
-                            imagesJson = m.imagesJson,
-                            artifactJson = m.artifactJson,
-                            turnId = m.turnId,
-                            createdAt = m.createdAt,
-                        )
-                    },
-                )
-            },
-        )
-        val out = appContext.contentResolver.openOutputStream(uri)
-            ?: throw ChatBackupException("Could not open the file for writing")
-        out.use { stream ->
-            stream.buffered().writer(Charsets.UTF_8).use { it.write(ChatBackupCodec.encode(file)) }
-        }
-        ExportResult(file.sessions.size, file.sessions.sumOf { it.messages.size }, file.memories.size, file.snippets.size)
-    }
-
-    suspend fun prepareImport(uri: Uri): ChatImportPreview = withContext(Dispatchers.IO) {
-        val text = appContext.contentResolver.openInputStream(uri)?.use {
-            it.bufferedReader(Charsets.UTF_8).readText()
-        } ?: throw ChatBackupException("Could not open the file")
-        val file = ChatBackupCodec.decode(text)
-        val plan = ChatBackupMerge.plan(db.dao().allSessionIds().toSet(), file.sessions)
-        val available = db.dao().projectsFlow().first().map { it.id }.toSet()
-        val memoryProjects = file.memories.filter { it.scope == MemoryScope.PROJECT.name }
-            .mapNotNull { it.projectId?.takeIf(String::isNotBlank) }
-        val missing = (plan.toImport.flatMap { ChatRestoreMapping.referenced(it) } + memoryProjects).distinct().filterNot { it in available }
-            .map { id -> BackupWorkspace(id, file.workspaces.firstOrNull { it.id == id }?.name
-                ?: if (id == ChatRestoreMapping.UNASSIGNED) "Chats without a workspace" else
-                    plan.toImport.firstOrNull { it.projectId == id }?.title?.let { "Workspace for $it" } ?: "Restored workspace") }
-        ChatImportPreview(plan.toImport, missing, plan.skipped, file.memories, file.snippets)
-    }
-
-    suspend fun importFrom(uri: Uri): ImportResult = importPrepared(prepareImport(uri), emptyMap())
-
-    suspend fun importPrepared(preview: ChatImportPreview, workspaceMapping: Map<String, String>): ImportResult = withContext(Dispatchers.IO) {
-        require(preview.missingWorkspaces.all { !workspaceMapping[it.id].isNullOrBlank() }) {
-            "Choose a workspace for each restored project before importing."
-        }
-        var imported = emptyList<BackupSession>()
-        var importedMemories = 0
-        var importedSnippets = 0
-        db.withTransaction {
-            val available = db.dao().projectsFlow().first().map { it.id }.toSet()
-            val fresh = ChatBackupMerge.plan(db.dao().allSessionIds().toSet(), preview.sessions)
-            imported = fresh.toImport.map { session ->
-                val remapped = ChatRestoreMapping.remap(session, workspaceMapping)
-                require(ChatRestoreMapping.referenced(remapped).all { it in available }) {
-                    "A chosen workspace is no longer available. Review the restored projects again."
-                }
-                remapped.workspaceSelectionJson?.let { workspace.validateSelection(com.androidharness.app.workspace.ChatWorkspaceSelection.decode(it)) }
-                remapped
-            }
-            val plan = ChatBackupMerge.Plan(imported, fresh.skipped)
-            if (plan.toImport.isNotEmpty()) {
-                for (s in plan.toImport) {
-                    db.dao().insertSession(
-                        SessionEntity(
-                            id = s.id,
-                            title = s.title,
-                            createdAt = s.createdAt,
-                            updatedAt = s.updatedAt,
-                            totalInputTokens = s.totalInputTokens,
-                            totalOutputTokens = s.totalOutputTokens,
-                            totalCachedTokens = s.totalCachedTokens,
-                            totalCacheWriteTokens = s.totalCacheWriteTokens,
-                            requestCount = s.requestCount,
-                            lastInputTokens = s.lastInputTokens,
-                            projectId = s.projectId,
-                            compactionSummary = s.compactionSummary,
-                            compactionBefore = s.compactionBefore,
-                            modelSelectionJson = s.modelSelectionJson,
-                            workspaceSelectionJson = s.workspaceSelectionJson,
-                            conversationJson = s.conversationJson,
-                        )
-                    )
-                    val messages = s.messages.map { m ->
-                        MessageEntity(
-                            id = m.id,
-                            sessionId = s.id,
-                            role = m.role,
-                            text = m.text,
-                            toolCallsJson = m.toolCallsJson,
-                            toolCallId = m.toolCallId,
-                            toolName = m.toolName,
-                            isError = m.isError,
-                            thinking = m.thinking,
-                            thinkingMs = m.thinkingMs,
-                            outputTokens = m.outputTokens,
-                            generationMs = m.generationMs,
-                            firstTokenMs = m.firstTokenMs,
-                            streamMs = m.streamMs,
-                            generationJson = m.generationJson,
-                            imagesJson = m.imagesJson,
-                            artifactJson = m.artifactJson,
-                            turnId = m.turnId,
-                            createdAt = m.createdAt,
-                        )
-                    }
-                    if (messages.isNotEmpty()) db.dao().insertImportedMessages(messages)
-                }
-            }
-            val memoryPlan = MemoryBackupMerge.plan(db.dao().allMemories(), preview.memories) { id ->
-                id?.let { workspaceMapping[it] ?: it }
-            }
-            val now = System.currentTimeMillis()
-            memoryPlan.forEach { db.dao().upsertMemory(MemoryBackupMerge.entity(it, now)) }
-            importedMemories = memoryPlan.size
-            val snippetPlan = SnippetBackupMerge.plan(db.dao().allSnippets(), preview.snippets)
-            snippetPlan.forEach { db.dao().insertSnippet(SnippetBackupMerge.entity(it)) }
-            importedSnippets = snippetPlan.size
-        }
-        ImportResult(imported.size, imported.sumOf { it.messages.size }, preview.skipped + preview.sessions.size - imported.size,
-            importedMemories, importedSnippets)
-    }
-}

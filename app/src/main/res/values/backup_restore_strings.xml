@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">Backup &amp; restore</string>
+    <string name="backup_card_body">Save your chats with their memories and snippets to one file. API keys and settings never go in it.</string>
+    <string name="backup_action_back_up">Back up</string>
+    <string name="backup_action_restore">Restore</string>
+
+    <string name="backup_pick_title">Back up chats</string>
+    <string name="backup_pick_subtitle">Pick the chats and extras that go into the file.</string>
+    <string name="backup_search_hint">Search chats</string>
+    <string name="backup_select_all">Select all</string>
+    <string name="backup_select_none">Clear</string>
+    <string name="backup_option_memories">Memories</string>
+    <string name="backup_option_snippets">Snippets</string>
+    <string name="backup_no_chats">No chats yet. Memories and snippets can still be backed up.</string>
+    <string name="backup_no_matches">No chats match your search.</string>
+    <string name="backup_extras_only">Back up extras</string>
+    <string name="backup_loading_chats">Gathering your chats</string>
+    <string name="backup_packing">Packing chats</string>
+    <string name="backup_packing_extras">Adding memories and snippets</string>
+    <string name="backup_progress_count">%1$d of %2$d</string>
+    <string name="backup_keep_open">Keep the app open until this finishes.</string>
+    <string name="backup_cancel">Cancel</string>
+    <string name="backup_cancelled">Backup cancelled. No file was left behind.</string>
+    <string name="backup_done_title">Backup saved</string>
+    <string name="backup_done_body">Keep this file somewhere safe, like your cloud storage.</string>
+    <string name="backup_share">Share</string>
+    <string name="backup_share_chooser">Share backup</string>
+    <string name="backup_done">Done</string>
+    <string name="backup_failed_title">Backup failed</string>
+    <string name="backup_try_again">Try again</string>
+    <string name="backup_close">Close</string>
+    <string name="backup_unknown_error">Something went wrong.</string>
+    <string name="backup_untitled_chat">Untitled chat</string>
+
+    <string name="restore_reading">Reading backup</string>
+    <string name="restore_review_title">Restore chats</string>
+    <string name="restore_from">Backed up %1$s</string>
+    <string name="restore_legacy_note">This is an older backup file.</string>
+    <string name="restore_on_phone">On this phone</string>
+    <string name="restore_duplicates_label">Chats already on this phone</string>
+    <string name="restore_skip">Skip</string>
+    <string name="restore_keep_both">Keep both</string>
+    <string name="restore_extras">Also restore memories and snippets</string>
+    <string name="restore_extras_only">Restore extras</string>
+    <string name="restore_working">Restoring chats</string>
+    <string name="restore_working_extras">Restoring memories and snippets</string>
+    <string name="restore_cancel_note">Chats restored before you cancel stay on this phone.</string>
+    <string name="restore_cancelled">Restore stopped. Chats restored so far were kept.</string>
+    <string name="restore_done_title">Chats restored</string>
+    <string name="restore_done_body">Find them in your chat list.</string>
+    <string name="restore_failed_title">Restore failed</string>
+    <string name="restore_empty">This backup has no chats, memories or snippets.</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">Back up %d chat</item>
+        <item quantity="other">Back up %d chats</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">Restore %d chat</item>
+        <item quantity="other">Restore %d chats</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">%d chat</item>
+        <item quantity="other">%d chats</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">%d message</item>
+        <item quantity="other">%d messages</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">%d memory</item>
+        <item quantity="other">%d memories</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">%d snippet</item>
+        <item quantity="other">%d snippets</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">%d already here</item>
+        <item quantity="other">%d already here</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">%d kept as a copy</item>
+        <item quantity="other">%d kept as copies</item>
+    </plurals>
+</resources>

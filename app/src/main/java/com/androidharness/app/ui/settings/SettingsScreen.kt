@@ -2974,79 +2974,13 @@ private fun ExternalLinkIcon() {
 
 @Composable
 private fun ChatsBackupSection(container: AppContainer) {
-    val uiContext = androidx.compose.ui.platform.LocalContext.current
-    val scope = rememberCoroutineScope()
-    var busy by remember { mutableStateOf(false) }
-    var statusText by remember { mutableStateOf<String?>(null) }
-    var statusIsError by remember { mutableStateOf(false) }
-    var restorePreview by remember { mutableStateOf<com.androidharness.app.data.ChatImportPreview?>(null) }
-
-    val suggestedName = remember {
-        "androidharness-chats-" +
-            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.US).format(java.util.Date()) +
-            ".json"
+    var sheet by remember { mutableStateOf<BackupSheetMode?>(null) }
+    val openBackup = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        if (uri != null) sheet = BackupSheetMode.Restore(uri)
     }
-
-    fun report(text: String, error: Boolean = false) {
-        statusText = text
-        statusIsError = error
-    }
-
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json"),
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch {
-            busy = true
-            statusText = null
-            try {
-                val r = container.chatBackup.exportTo(uri)
-                report(uiContext.getString(R.string.ui_exported_chats_messages, (r.sessions).toString(), (r.messages).toString(), (r.memories).toString()))
-            } catch (e: ChatBackupException) {
-                report(e.message ?: uiContext.getString(R.string.ui_export_failed), error = true)
-            } catch (e: Exception) {
-                report(uiContext.getString(R.string.ui_export_failed_1230, (e.message ?: "unknown error").toString()), error = true)
-            } finally {
-                busy = false
-            }
-        }
-    }
-
-    val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument(),
-    ) { uri ->
-        if (uri == null) return@rememberLauncherForActivityResult
-        scope.launch {
-            busy = true
-            statusText = null
-            try {
-                val preview = container.chatBackup.prepareImport(uri)
-                if (preview.missingWorkspaces.isNotEmpty()) {
-                    restorePreview = preview
-                    return@launch
-                }
-                val r = container.chatBackup.importPrepared(preview, emptyMap())
-                report(
-                    uiContext.getString(R.string.ui_imported_chats_messages, (r.sessions).toString(), (r.messages).toString(), (r.memories).toString()) +
-                        if (r.skipped > 0) uiContext.getString(R.string.ui_already_present, (r.skipped).toString()) else ".",
-                )
-            } catch (e: ChatBackupException) {
-                report(e.message ?: uiContext.getString(R.string.ui_import_failed), error = true)
-            } catch (e: Exception) {
-                report(uiContext.getString(R.string.ui_import_failed_1234, (e.message ?: "unknown error").toString()), error = true)
-            } finally {
-                busy = false
-            }
-        }
-    }
-
-    restorePreview?.let { preview -> ChatRestoreDialog(container, preview,
-        onDismiss = { restorePreview = null }, onImported = { result ->
-            restorePreview = null
-            report(uiContext.getString(R.string.ui_imported_chats_messages_already_present, (result.sessions).toString(), (result.messages).toString(), (result.memories).toString(), (result.skipped).toString()))
-        }) }
+    sheet?.let { mode -> BackupRestoreSheet(container, mode, onDismiss = { sheet = null }) }
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_backup_chat_backup)) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Icon(
                     Icons.Rounded.Archive,
@@ -3056,36 +2990,21 @@ private fun ChatsBackupSection(container: AppContainer) {
                 )
                 Spacer(Modifier.width(10.dp))
                 Column(Modifier.weight(1f)) {
-                    Text(stringResource(R.string.settings_backup_chat_backup), style = MaterialTheme.typography.titleSmall)
+                    Text(stringResource(R.string.backup_title), style = MaterialTheme.typography.titleSmall)
                     Text(
-                        uiContext.getString(R.string.ui_save_all_chats_to_a_file_or) +
-                            uiContext.getString(R.string.ui_chats_and_messages_only_no_api_keys),
+                        stringResource(R.string.backup_card_body),
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                 }
             }
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Button(onClick = { exportLauncher.launch(suggestedName) }, enabled = !busy) {
-                    Text(stringResource(R.string.settings_action_export))
+                Button(onClick = { sheet = BackupSheetMode.Export }) {
+                    Text(stringResource(R.string.backup_action_back_up))
                 }
-                OutlinedButton(
-                    onClick = {
-                        importLauncher.launch(arrayOf("application/json", "application/octet-stream", "text/*"))
-                    },
-                    enabled = !busy,
-                ) {
-                    Text(stringResource(R.string.settings_action_import))
+                OutlinedButton(onClick = { openBackup.launch(arrayOf("*/*")) }) {
+                    Text(stringResource(R.string.backup_action_restore))
                 }
-            }
-            if (busy) ThinLinearProgress(Modifier.fillMaxWidth())
-            statusText?.let {
-                Text(
-                    it,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = if (statusIsError) MaterialTheme.colorScheme.error
-                    else MaterialTheme.colorScheme.onSurfaceVariant,
-                )
             }
         }
     }

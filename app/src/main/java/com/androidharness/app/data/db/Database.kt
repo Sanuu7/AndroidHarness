@@ -95,6 +95,9 @@ data class SavedAnswerRow(
     val savedAt: Long,
 )
 
+/** Per-chat message total for backup previews. No schema change. */
+data class SessionMessageCount(val sessionId: String, val count: Int)
+
 /** Stable ordering even when several messages share a millisecond. No schema change. */
 data class MessagePosition(val createdAt: Long, val rowId: Long, val turnId: String?)
 
@@ -588,6 +591,9 @@ interface HarnessDao {
 
     @Query("SELECT * FROM messages ORDER BY sessionId, createdAt ASC, rowid ASC")
     suspend fun allMessages(): List<MessageEntity>
+
+    @Query("SELECT sessionId, COUNT(*) AS count FROM messages GROUP BY sessionId")
+    suspend fun messageCounts(): List<SessionMessageCount>
 
     /** Batch insert for restored chats; IGNORE keeps a partial collision from aborting the import. */
     @Insert(onConflict = OnConflictStrategy.IGNORE)

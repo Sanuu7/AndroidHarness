@@ -385,7 +385,8 @@ class ReasoningDeviceTest {
                 val manager = ChatBackupManager(imported, context)
                 val target = com.androidharness.app.workspace.WorkspaceManager(context, imported.dao()).currentProjectOnce()
                 val preview = manager.prepareImport(Uri.fromFile(backup))
-                manager.importPrepared(preview, preview.missingWorkspaces.associate { it.id to target.id })
+                val all = preview.chats.map { it.info.id }.toSet()
+                manager.importPrepared(preview, manager.missingWorkspaces(preview, all, com.androidharness.app.data.DuplicatePolicy.SKIP, true).associate { it.id to target.id })
             }
             assertEquals(restored.generation, SessionRepository(imported).messages(sid).last().generation)
             assertEquals(2, SessionRepository(imported).messages(sid).size)

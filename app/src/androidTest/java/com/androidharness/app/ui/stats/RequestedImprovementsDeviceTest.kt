@@ -96,18 +96,22 @@ class RequestedImprovementsDeviceTest {
             source.dao().setChatWorkspaces(sid, a.id, ChatWorkspaceSelection.encode(ChatWorkspaceSelection(a.id,
                 listOf(ChatWorkspaceGrant(a.id, true), ChatWorkspaceGrant(b.id, false)))))
             repo.addMessage(sid, ChatMessage(role = Role.USER, text = "Restored history stays intact"))
-            val backup = File(root, "chats.json")
+            val backup = File(root, "chats.harnessbackup")
             ChatBackupManager(source, context).exportTo(Uri.fromFile(backup))
             val preview = c.chatBackup.prepareImport(Uri.fromFile(backup))
-            assertEquals(2, preview.missingWorkspaces.size)
+            val everything = preview.chats.map { it.info.id }.toSet()
+            val missing = c.chatBackup.missingWorkspaces(preview, everything, com.androidharness.app.data.DuplicatePolicy.SKIP, true)
+            assertEquals(2, missing.size)
             assertTrue(runCatching { c.chatBackup.importPrepared(preview, emptyMap()) }.isFailure)
             assertNull(c.sessions.session(sid))
             ActivityScenario.launch(ChatListTestActivity::class.java).use { scenario ->
                 var done = false
-                scenario.onActivity { it.setContent { HarnessTheme { ChatRestoreDialog(c, preview, {}, { done = true }) } } }
+                var chosen = emptyMap<String, String>()
+                scenario.onActivity { it.setContent { HarnessTheme { ChatRestoreDialog(c, missing, preview.chats.size, {}, { chosen = it; done = true }) } } }
                 tap("Choose workspace"); scrollTo(targetA.name); tap(targetA.name)
                 tap("Choose workspace"); scrollTo(targetB.name); tap(targetB.name)
                 screenshot("restore-mapping"); tap("Restore chats"); eventually { done }
+                c.chatBackup.importPrepared(preview, chosen)
             }
             val restored = requireNotNull(c.sessions.session(sid))
             assertEquals(targetA.id, restored.projectId)
@@ -115,7 +119,7 @@ class RequestedImprovementsDeviceTest {
             assertFalse(selection.grants.single { it.projectId == targetB.id }.canEdit)
             assertEquals("Restored history stays intact", c.sessions.messages(sid).single().text)
             assertTrue(c.workspace.forSession(sid) is ChatWorkspaceFs)
-            assertEquals(0, c.chatBackup.prepareImport(Uri.fromFile(backup)).sessions.size)
+            assertEquals(0, c.chatBackup.prepareImport(Uri.fromFile(backup)).chats.count { !it.exists })
         } finally {
             sid?.let { c.sessions.session(it)?.let { chat -> c.sessions.deleteSession(chat) } }
             c.workspace.deleteProject(targetA); c.workspace.deleteProject(targetB); c.workspace.setActiveProject(previous.id)
