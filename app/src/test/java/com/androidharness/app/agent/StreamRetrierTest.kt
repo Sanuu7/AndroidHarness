@@ -429,4 +429,15 @@ class StreamRetrierTest {
         assertTrue(StreamRetrier.selfHosted(llama))
         assertEquals(false, StreamRetrier.selfHosted(cloud))
     }
+
+    @Test
+    fun `stall wording names whose reply went quiet`() {
+        val main = stalledMessage(90_000)
+        assertTrue(StreamRetrier.describeStall(main).startsWith("The model sent nothing for 90s mid-reply"))
+        assertTrue(StreamRetrier.describeStall("subagent: $main", forStatusLine = true)
+            .startsWith("The subagent's model sent nothing for 90s."))
+        assertTrue(StreamRetrier.describeStall("OpenRouter: $main").startsWith("OpenRouter sent nothing for 90s"))
+        assertEquals("HTTP 500 boom", StreamRetrier.describeStall("HTTP 500 boom"))
+        assertTrue(com.androidharness.app.ui.chat.PausedReason.summary(main)!!.contains("never counts"))
+    }
 }

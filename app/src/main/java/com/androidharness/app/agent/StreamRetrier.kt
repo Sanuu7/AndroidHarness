@@ -133,6 +133,27 @@ internal object StreamRetrier {
         }
     }
 
+    private val stallPhrase = Regex("Stream stalled - no data received for (.+?) \\(timed out\\)", RegexOption.IGNORE_CASE)
+
+    /**
+     * Plain wording for a stall, for people who read the raw text as the agent "waiting" and
+     * the app giving up on it. Says whose reply went quiet (the main model, a subagent's, or a
+     * named provider in a fallback chain) and that tool time never counts. Other text is kept.
+     */
+    fun describeStall(reason: String, forStatusLine: Boolean = false): String {
+        val match = stallPhrase.find(reason) ?: return reason
+        val lead = reason.substring(0, match.range.first).trim().removeSuffix(":").trim()
+        val who = when {
+            lead.equals("subagent", ignoreCase = true) -> "The subagent's model"
+            lead.isNotEmpty() -> lead
+            else -> "The model"
+        }
+        val silent = match.groupValues[1]
+        return if (forStatusLine) "$who sent nothing for $silent. Slow model? Raise the stall timeout in Settings."
+        else "$who sent nothing for $silent mid-reply, so the connection looked dead. " +
+            "Running tools, commands and subagents never counts toward this."
+    }
+
     /** True for a pause caused by [stallGuard], so the paused card can offer a longer wait. */
     fun isStallFailure(reason: String?): Boolean =
         reason != null && (reason.contains("stalled - no data received", ignoreCase = true) ||

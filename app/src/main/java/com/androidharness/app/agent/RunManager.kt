@@ -1073,7 +1073,7 @@ class RunManager(
             is AgentEvent.Retrying -> {
                 val seconds = (event.delayMs / 1000.0).let { if (it < 1) "<1" else "%.0f".format(it) }
                 live.update {
-                    it.copy(retryStatus = "Retrying in ${seconds}s (attempt ${event.attempt}): ${event.reason}", codeDrafts = emptyMap())
+                    it.copy(retryStatus = "Retrying in ${seconds}s (attempt ${event.attempt}): ${StreamRetrier.describeStall(event.reason, forStatusLine = true)}", codeDrafts = emptyMap())
                 }
             }
 

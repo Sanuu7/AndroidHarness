@@ -1162,7 +1162,7 @@
     <string name="settings_page_background_desc">Background work, battery and notifications</string>
     <string name="stall_timeout_title">Stream stall timeout</string>
     <string name="stall_timeout_subtitle">Pauses the task when the model sends nothing for this long.</string>
-    <string name="stall_timeout_detail">How long a reply may go without sending any data before the task pauses. Slow models can stay silent for minutes while they write a large file, so give them more time.</string>
+    <string name="stall_timeout_detail">How long a reply may go without sending any data before the task pauses. Slow models can stay silent for minutes while they write a large file, so give them more time. Time spent running tools, commands or subagents never counts.</string>
     <string name="stall_timeout_default">default</string>
     <string name="stall_timeout_never">Never</string>
     <string name="stall_timeout_custom">Custom</string>

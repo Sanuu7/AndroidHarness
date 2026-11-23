@@ -18,6 +18,9 @@ internal object PausedReason {
     fun summary(reason: String?): String? {
         val text = reason?.trim().orEmpty()
         if (text.isEmpty()) return null
+        if (com.androidharness.app.agent.StreamRetrier.isStallFailure(text)) {
+            com.androidharness.app.agent.StreamRetrier.describeStall(text).takeIf { it != text }?.let { return it }
+        }
         val status = httpLead.find(text)?.groupValues?.get(1)
         val body = text.replaceFirst(httpLead, "")
         val lead = jsonMessage.find(body)?.groupValues?.get(1)?.let(::unescape)
