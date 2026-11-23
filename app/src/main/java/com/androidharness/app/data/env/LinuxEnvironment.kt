@@ -311,7 +311,8 @@ class LinuxEnvironmentManager(
     val tmpPrefix: String = "$tmpBase/linux"
 
     private val marker = File(prefix, ".harness-installed")
-    private val tempDir = File(context.cacheDir, "deb-download").apply { mkdirs() }
+    /** Recreated on every use: Android or the storage cleaner can wipe the cache after startup (#129). */
+    private val tempDir: File get() = File(context.cacheDir, "deb-download").apply { mkdirs() }
 
     /** Outside the deployed toolchain: caches must not inflate its staging archive. */
     val sharedCacheRoot: File = File(context.filesDir, "package-cache")
@@ -1766,6 +1767,7 @@ class LinuxEnvironmentManager(
         var failure: Exception? = null
         for (host in hosts) {
             try {
+                dest.parentFile?.mkdirs()
                 downloadVerified("$host/$fileField", dest, expectedSha256, onVerifying, onProgress)
                 return
             } catch (e: CancellationException) { throw e }
