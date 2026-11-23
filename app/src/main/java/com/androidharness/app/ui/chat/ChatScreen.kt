@@ -3222,7 +3222,7 @@ private fun FileEditsCard(
             path to Pair(group.sumOf { it.added }, group.sumOf { it.removed })
         }
     }
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
 
     com.androidharness.app.ui.chat.components.CodeCard(
         onClick = { expanded = !expanded }, expanded = expanded, modifier = modifier,

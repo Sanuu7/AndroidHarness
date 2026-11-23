@@ -531,7 +531,7 @@ internal fun CompactionNoticeLine(modifier: Modifier = Modifier) {
 @Composable
 internal fun CompactionResultCard(message: String, showRetry: Boolean, busy: Boolean, onRetry: () -> Unit) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     val stopped = message.startsWith("Compaction stopped.")
     val saved = message.startsWith("Chat compacted, but")
     val scheme = MaterialTheme.colorScheme

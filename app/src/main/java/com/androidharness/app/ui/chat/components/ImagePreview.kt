@@ -126,9 +126,13 @@ internal fun UserImageGallery(
         1 -> {
             val ref = images[0]
             val known = ref.width?.takeIf { it > 0 }?.let { w -> ref.height?.takeIf { it > 0 }?.let { h -> w.toFloat() / h } }
-            var aspect by remember(ref.name) { mutableFloatStateOf(known ?: 1f) }
+            // A photo seen before keeps its shape when it scrolls back in, instead of starting square.
+            var aspect by remember(ref.name) { mutableFloatStateOf(known ?: ToolImageMemory.ratio(ref.name)?.let { 1f / it } ?: 1f) }
             GalleryTile(ref, dir, 0, onOpen, onLongPress,
-                onLoaded = { if (known == null) aspect = it.width.toFloat() / it.height.coerceAtLeast(1) },
+                onLoaded = {
+                    ToolImageMemory.rememberSize(ref.name, it.width, it.height)
+                    if (known == null) aspect = it.width.toFloat() / it.height.coerceAtLeast(1)
+                },
                 modifier = Modifier.clip(shape)
                     .width(maxWidth)
                     .heightIn(max = 340.dp)

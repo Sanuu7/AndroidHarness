@@ -127,7 +127,7 @@ internal fun CacheUsageFooter(rows: List<UsageEventEntity>, running: Boolean = f
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     val speedLabel = turnPerformanceLabel(null, speed?.copy(firstTokenMs = null))
     if (rows.isEmpty() && speedLabel.isBlank()) return
-    var expanded by remember { mutableStateOf(false) }
+    var expanded by androidx.compose.runtime.saveable.rememberSaveable { mutableStateOf(false) }
     val summary = remember(rows) { cacheUsageSummary(rows) }
     val indicator = remember(rows, running) { cacheIndicatorSummary(rows, running) }
     val prices = remember(rows) { rows.map(::cachePricesFor) }

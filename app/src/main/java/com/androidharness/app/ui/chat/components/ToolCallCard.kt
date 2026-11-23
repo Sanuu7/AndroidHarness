@@ -431,20 +431,39 @@ internal fun ToolResultImage(ref: ImageRef, previewHeight: androidx.compose.ui.u
         val fullDir = File(dir, "originals").takeIf { File(it, ref.name).isFile } ?: dir
         ImagePreviewDialog(ref, fullDir) { fullScreen = false }
     }
-    val bitmap by produceState<Bitmap?>(initialValue = null, ref.name) {
+    // Starts from memory when this image was decoded before, so an item scrolling back into
+    // view draws at full height on its first frame instead of growing under a fast fling.
+    val bitmap by produceState(initialValue = ToolImageMemory.bitmap(ref.name), ref.name) {
+        if (value != null) return@produceState
         value = withContext(Dispatchers.IO) {
             runCatching {
                 val file = File(context.filesDir, "images/${ref.name}")
                 if (!file.exists()) return@runCatching null
                 val bounds = BitmapFactory.Options().apply { inJustDecodeBounds = true }
                 BitmapFactory.decodeFile(file.absolutePath, bounds)
+                if (bounds.outWidth > 0 && bounds.outHeight > 0) ToolImageMemory.rememberSize(ref.name, bounds.outWidth, bounds.outHeight)
                 var sample = 1
                 while (maxOf(bounds.outWidth, bounds.outHeight) / sample > 1024) sample *= 2
                 BitmapFactory.decodeFile(
                     file.absolutePath,
                     BitmapFactory.Options().apply { inSampleSize = sample },
-                )
+                )?.also { ToolImageMemory.put(ref.name, it) }
             }.getOrNull()
+        }
+    }
+    // Same height the decoded image will take, held while it loads so nothing below jumps.
+    val ratio = ToolImageMemory.ratio(ref.name)
+        ?: ref.width?.takeIf { it > 0 }?.let { w -> ref.height?.takeIf { it > 0 }?.let { h -> h.toFloat() / w } }
+    if (bitmap == null && ratio != null) {
+        androidx.compose.foundation.layout.BoxWithConstraints(Modifier.fillMaxWidth()) {
+            val natural = maxWidth * ratio
+            val height = when {
+                fillPreviewWidth -> natural.coerceIn(120.dp, previewHeight ?: 420.dp)
+                previewHeight != null -> minOf(natural, previewHeight)
+                else -> natural
+            }
+            androidx.compose.foundation.layout.Box(Modifier.fillMaxWidth().height(height).clip(RoundedCornerShape(10.dp))
+                .background(scheme.surfaceContainerHigh))
         }
     }
     bitmap?.let { bmp ->
@@ -474,3 +493,24 @@ private sealed interface ActivityRow {
 }
 
 private data class ToolCardDetails(val name: String, val raw: String, val arguments: String, val patch: String?, val command: String?)
+
+/**
+ * Decoded transcript screenshots and their pixel sizes, kept across item recycling.
+ * Bounded by bytes so a long browsing session cannot hold every screenshot.
+ */
+internal object ToolImageMemory {
+    private val bitmaps = object : android.util.LruCache<String, Bitmap>(24 * 1024 * 1024) {
+        override fun sizeOf(key: String, value: Bitmap) = value.byteCount
+    }
+    private val ratios = java.util.concurrent.ConcurrentHashMap<String, Float>()
+
+    fun bitmap(name: String): Bitmap? = bitmaps.get(name)
+    fun put(name: String, bitmap: Bitmap) {
+        bitmaps.put(name, bitmap)
+        rememberSize(name, bitmap.width, bitmap.height)
+    }
+    fun rememberSize(name: String, width: Int, height: Int) {
+        if (width > 0 && height > 0) ratios[name] = height.toFloat() / width
+    }
+    fun ratio(name: String): Float? = ratios[name]
+}
