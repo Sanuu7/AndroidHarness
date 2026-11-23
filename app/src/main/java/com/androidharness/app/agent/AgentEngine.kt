@@ -2501,7 +2501,8 @@ class AgentEngine(
         searchDepth: com.androidharness.app.data.SearchDepth = com.androidharness.app.data.SearchDepth.AUTO,
         chatImageFrequency: com.androidharness.app.data.ImageFrequency = com.androidharness.app.data.ImageFrequency.DEFAULT,
         chatInstructions: String = "",
-    ): ContextEstimate {
+    ): ContextEstimate = withContext(Dispatchers.IO) {
+        // Callers include viewModelScope; SSH and SAF workspace reads block, so never build on Main.
         val caveman = cavemanSettings()
         val memoryOn = universalMemory?.isEnabled(sessionId) == true && conversation.personalizationEnabled
         val scopedSearch = if (conversation.isChat) {
@@ -2524,7 +2525,7 @@ class AgentEngine(
             .schemas(readOnlyOnly = mode == AgentMode.PLAN, context = ToolContext(workspace, fullAccess, sessionId))
         val environment = runtimeEnvironment(workspace, sessionId, mode,
             if (fullAccess) PermissionMode.FULL_ACCESS else PermissionMode.CONFIRM_RISKY, tools, conversation.isChat)
-        return estimateContext(
+        estimateContext(
             history,
             if (conversation.isChat) chatSystemPrompt(sessionId, searchDepth, conversation, chatImageFrequency, chatInstructions, recentMemoryQuery(history)) + environment else com.androidharness.app.caveman.CavemanPolicy.apply(
                 systemPrompt(workspace, mode, fullAccess, repoMapEnabled, sessionId = sessionId, memoryQuery = recentMemoryQuery(history), memoryAllowed = conversation.personalizationEnabled) + environment,
@@ -2725,10 +2726,12 @@ ${if (appSettings.subagentsEnabled) "- For broad exploration whose raw output wo
             sb.append("\nLong-term memory topic files on disk (retrieve with memory_read, search with memory_search): ")
                 .append(memoryTopics.joinToString(", ")).append('\n')
         }
-        if (repoMapEnabled && (fullAccess || projectConfig?.permissions?.values?.none { it in setOf("ask", "deny") } != false)) {
-            val map = runCatching {
-                kotlinx.coroutines.runBlocking { repoMap?.getMap(workspace, maxChars = 10_000) }
-            }.getOrNull()
+        // An SSH tree walk costs several SFTP round trips per folder and file, which stalls every turn.
+        if (repoMapEnabled && workspace !is com.androidharness.app.workspace.SshFs &&
+            (fullAccess || projectConfig?.permissions?.values?.none { it in setOf("ask", "deny") } != false)) {
+            val map = try {
+                repoMap?.getMap(workspace, maxChars = 10_000)
+            } catch (e: CancellationException) { throw e } catch (_: Exception) { null }
             if (!map.isNullOrBlank()) {
                 sb.append("\n# Repository Map (codebase index)\n").append(map).append('\n')
             }
