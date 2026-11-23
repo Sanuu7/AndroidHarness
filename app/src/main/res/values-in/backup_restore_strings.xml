@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Cadangkan &amp; pulihkan"</string>
+    <string name="backup_card_body">"Simpan chat beserta gambar, statistik penggunaan, memori, dan cuplikan dalam satu berkas. Kunci API dan setelan tidak pernah disertakan."</string>
+    <string name="backup_action_back_up">"Cadangkan"</string>
+    <string name="backup_action_restore">"Pulihkan"</string>
+
+    <string name="backup_pick_title">"Cadangkan chat"</string>
+    <string name="backup_pick_subtitle">"Pilih chat dan tambahan yang masuk ke berkas."</string>
+    <string name="backup_search_hint">"Cari chat"</string>
+    <string name="backup_select_all">"Pilih semua"</string>
+    <string name="backup_select_none">"Kosongkan"</string>
+    <string name="backup_option_images">"Gambar"</string>
+    <string name="backup_option_usage">"Statistik penggunaan"</string>
+    <string name="backup_option_memories">"Memori"</string>
+    <string name="backup_option_snippets">"Cuplikan"</string>
+    <string name="backup_no_chats">"Belum ada chat. Memori dan cuplikan tetap bisa dicadangkan."</string>
+    <string name="backup_no_matches">"Tidak ada chat yang cocok dengan pencarian."</string>
+    <string name="backup_extras_only">"Cadangkan tambahan"</string>
+    <string name="backup_loading_chats">"Mengumpulkan chat Anda"</string>
+    <string name="backup_packing">"Mengemas chat"</string>
+    <string name="backup_packing_extras">"Menambahkan gambar dan memori"</string>
+    <string name="backup_progress_count">"%1$d dari %2$d"</string>
+    <string name="backup_keep_open">"Biarkan aplikasi terbuka sampai selesai."</string>
+    <string name="backup_cancel">"Batal"</string>
+    <string name="backup_cancelled">"Pencadangan dibatalkan. Tidak ada berkas yang tertinggal."</string>
+    <string name="backup_done_title">"Cadangan tersimpan"</string>
+    <string name="backup_done_body">"Simpan berkas ini di tempat aman, seperti penyimpanan cloud."</string>
+    <string name="backup_share">"Bagikan"</string>
+    <string name="backup_share_chooser">"Bagikan cadangan"</string>
+    <string name="backup_done">"Selesai"</string>
+    <string name="backup_failed_title">"Pencadangan gagal"</string>
+    <string name="backup_try_again">"Coba lagi"</string>
+    <string name="backup_close">"Tutup"</string>
+    <string name="backup_unknown_error">"Terjadi kesalahan."</string>
+    <string name="backup_untitled_chat">"Chat tanpa judul"</string>
+
+    <string name="restore_reading">"Membaca cadangan"</string>
+    <string name="restore_review_title">"Pulihkan chat"</string>
+    <string name="restore_from">"Dicadangkan %1$s"</string>
+    <string name="restore_legacy_note">"Ini berkas cadangan lama; tidak ada gambar atau statistik penggunaan."</string>
+    <string name="restore_on_phone">"Ada di ponsel ini"</string>
+    <string name="restore_duplicates_label">"Chat yang sudah ada di ponsel ini"</string>
+    <string name="restore_skip">"Lewati"</string>
+    <string name="restore_keep_both">"Simpan keduanya"</string>
+    <string name="restore_extras">"Pulihkan juga memori dan cuplikan"</string>
+    <string name="restore_extras_only">"Pulihkan tambahan"</string>
+    <string name="restore_working">"Memulihkan chat"</string>
+    <string name="restore_working_extras">"Memulihkan gambar dan memori"</string>
+    <string name="restore_cancel_note">"Chat yang dipulihkan sebelum dibatalkan tetap ada di ponsel ini."</string>
+    <string name="restore_cancelled">"Pemulihan dihentikan. Chat yang sudah dipulihkan disimpan."</string>
+    <string name="restore_done_title">"Chat dipulihkan"</string>
+    <string name="restore_done_body">"Temukan di daftar chat Anda."</string>
+    <string name="restore_failed_title">"Pemulihan gagal"</string>
+    <string name="restore_empty">"Cadangan ini tidak berisi chat, memori, atau cuplikan."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"Cadangkan %1$d chat"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"Pulihkan %1$d chat"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"%1$d chat"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"%1$d pesan"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"%1$d gambar"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"%1$d memori"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"%1$d cuplikan"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d sudah ada"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d disimpan sebagai salinan"</item>
+    </plurals>
+</resources>

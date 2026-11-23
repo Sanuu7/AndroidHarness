@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"උපස්ථ සහ ප්‍රතිසාධනය"</string>
+    <string name="backup_card_body">"ඔබේ චැට්, පින්තූර, භාවිත සංඛ්‍යා, මතක සහ snippet සමඟ එක් ගොනුවක සුරකින්න. API යතුරු සහ සැකසුම් කිසි විටෙක එහි ඇතුළත් නොවේ."</string>
+    <string name="backup_action_back_up">"උපස්ථ කරන්න"</string>
+    <string name="backup_action_restore">"ප්‍රතිසාධනය කරන්න"</string>
+
+    <string name="backup_pick_title">"චැට් උපස්ථ කරන්න"</string>
+    <string name="backup_pick_subtitle">"ගොනුවට යන චැට් සහ අමතර දේ තෝරන්න."</string>
+    <string name="backup_search_hint">"චැට් සොයන්න"</string>
+    <string name="backup_select_all">"සියල්ල තෝරන්න"</string>
+    <string name="backup_select_none">"හිස් කරන්න"</string>
+    <string name="backup_option_images">"පින්තූර"</string>
+    <string name="backup_option_usage">"භාවිත සංඛ්‍යා"</string>
+    <string name="backup_option_memories">"මතක"</string>
+    <string name="backup_option_snippets">"Snippet"</string>
+    <string name="backup_no_chats">"තවම චැට් නැත. මතක සහ snippet තවමත් උපස්ථ කළ හැක."</string>
+    <string name="backup_no_matches">"ඔබේ සෙවුමට ගැළපෙන චැට් නැත."</string>
+    <string name="backup_extras_only">"අමතර දේ උපස්ථ කරන්න"</string>
+    <string name="backup_loading_chats">"ඔබේ චැට් එකතු කරමින්"</string>
+    <string name="backup_packing">"චැට් ඇසුරුම් කරමින්"</string>
+    <string name="backup_packing_extras">"පින්තූර සහ මතක එකතු කරමින්"</string>
+    <string name="backup_progress_count">"%2$d න් %1$d"</string>
+    <string name="backup_keep_open">"අවසන් වන තෙක් යෙදුම විවෘතව තබන්න."</string>
+    <string name="backup_cancel">"අවලංගු කරන්න"</string>
+    <string name="backup_cancelled">"උපස්ථය අවලංගු කරන ලදී. ගොනුවක් ඉතිරි නොවීය."</string>
+    <string name="backup_done_title">"උපස්ථය සුරකින ලදී"</string>
+    <string name="backup_done_body">"මෙම ගොනුව cloud ගබඩාව වැනි ආරක්ෂිත තැනක තබන්න."</string>
+    <string name="backup_share">"බෙදාගන්න"</string>
+    <string name="backup_share_chooser">"උපස්ථය බෙදාගන්න"</string>
+    <string name="backup_done">"අවසන්"</string>
+    <string name="backup_failed_title">"උපස්ථය අසාර්ථකයි"</string>
+    <string name="backup_try_again">"නැවත උත්සාහ කරන්න"</string>
+    <string name="backup_close">"වසන්න"</string>
+    <string name="backup_unknown_error">"යම් දෝෂයක් සිදුවිය."</string>
+    <string name="backup_untitled_chat">"මාතෘකාවක් නැති චැට්"</string>
+
+    <string name="restore_reading">"උපස්ථය කියවමින්"</string>
+    <string name="restore_review_title">"චැට් ප්‍රතිසාධනය කරන්න"</string>
+    <string name="restore_from">"%1$s ට උපස්ථ කරන ලදී"</string>
+    <string name="restore_legacy_note">"මෙය පැරණි උපස්ථ ගොනුවකි; පින්තූර හෝ භාවිත සංඛ්‍යා නොමැත."</string>
+    <string name="restore_on_phone">"මෙම දුරකථනයේ ඇත"</string>
+    <string name="restore_duplicates_label">"මෙම දුරකථනයේ දැනටමත් ඇති චැට්"</string>
+    <string name="restore_skip">"මඟ හරින්න"</string>
+    <string name="restore_keep_both">"දෙකම තබන්න"</string>
+    <string name="restore_extras">"මතක සහ snippet ද ප්‍රතිසාධනය කරන්න"</string>
+    <string name="restore_extras_only">"අමතර දේ ප්‍රතිසාධනය කරන්න"</string>
+    <string name="restore_working">"චැට් ප්‍රතිසාධනය කරමින්"</string>
+    <string name="restore_working_extras">"පින්තූර සහ මතක ප්‍රතිසාධනය කරමින්"</string>
+    <string name="restore_cancel_note">"අවලංගු කිරීමට පෙර ප්‍රතිසාධනය කළ චැට් මෙම දුරකථනයේ රැඳේ."</string>
+    <string name="restore_cancelled">"ප්‍රතිසාධනය නැවතුණි. මෙතෙක් ප්‍රතිසාධනය කළ චැට් තබා ගන්නා ලදී."</string>
+    <string name="restore_done_title">"චැට් ප්‍රතිසාධනය කරන ලදී"</string>
+    <string name="restore_done_body">"ඒවා ඔබේ චැට් ලැයිස්තුවේ සොයාගන්න."</string>
+    <string name="restore_failed_title">"ප්‍රතිසාධනය අසාර්ථකයි"</string>
+    <string name="restore_empty">"මෙම උපස්ථයේ චැට්, මතක හෝ snippet නොමැත."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"චැට් %1$d උපස්ථ කරන්න"</item>
+        <item quantity="other">"චැට් %1$d උපස්ථ කරන්න"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"චැට් %1$d ප්‍රතිසාධනය කරන්න"</item>
+        <item quantity="other">"චැට් %1$d ප්‍රතිසාධනය කරන්න"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"චැට් %1$d"</item>
+        <item quantity="other">"චැට් %1$d"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"පණිවිඩ %1$d"</item>
+        <item quantity="other">"පණිවිඩ %1$d"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"පින්තූර %1$d"</item>
+        <item quantity="other">"පින්තූර %1$d"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"මතක %1$d"</item>
+        <item quantity="other">"මතක %1$d"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"snippet %1$d"</item>
+        <item quantity="other">"snippet %1$d"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d දැනටමත් ඇත"</item>
+        <item quantity="other">"%1$d දැනටමත් ඇත"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d පිටපතක් ලෙස තබා ඇත"</item>
+        <item quantity="other">"%1$d පිටපත් ලෙස තබා ඇත"</item>
+    </plurals>
+</resources>

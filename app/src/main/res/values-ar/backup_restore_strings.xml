@@ -1,0 +1,129 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"النسخ الاحتياطي والاستعادة"</string>
+    <string name="backup_card_body">"احفظ محادثاتك مع صورها وإحصاءات استخدامها وذكرياتها ومقتطفاتها في ملف واحد. لا تُدرج مفاتيح API أو الإعدادات فيه أبداً."</string>
+    <string name="backup_action_back_up">"نسخ احتياطي"</string>
+    <string name="backup_action_restore">"استعادة"</string>
+
+    <string name="backup_pick_title">"نسخ المحادثات احتياطياً"</string>
+    <string name="backup_pick_subtitle">"اختر المحادثات والإضافات التي ستُدرج في الملف."</string>
+    <string name="backup_search_hint">"البحث في المحادثات"</string>
+    <string name="backup_select_all">"تحديد الكل"</string>
+    <string name="backup_select_none">"مسح"</string>
+    <string name="backup_option_images">"الصور"</string>
+    <string name="backup_option_usage">"إحصاءات الاستخدام"</string>
+    <string name="backup_option_memories">"الذكريات"</string>
+    <string name="backup_option_snippets">"المقتطفات"</string>
+    <string name="backup_no_chats">"لا توجد محادثات بعد. ما زال بإمكانك نسخ الذكريات والمقتطفات."</string>
+    <string name="backup_no_matches">"لا توجد محادثات تطابق بحثك."</string>
+    <string name="backup_extras_only">"نسخ الإضافات"</string>
+    <string name="backup_loading_chats">"جمع محادثاتك"</string>
+    <string name="backup_packing">"حزم المحادثات"</string>
+    <string name="backup_packing_extras">"إضافة الصور والذكريات"</string>
+    <string name="backup_progress_count">"%1$d من %2$d"</string>
+    <string name="backup_keep_open">"أبقِ التطبيق مفتوحاً حتى ينتهي هذا."</string>
+    <string name="backup_cancel">"إلغاء"</string>
+    <string name="backup_cancelled">"أُلغي النسخ الاحتياطي. لم يبقَ أي ملف."</string>
+    <string name="backup_done_title">"تم حفظ النسخة الاحتياطية"</string>
+    <string name="backup_done_body">"احفظ هذا الملف في مكان آمن، مثل التخزين السحابي."</string>
+    <string name="backup_share">"مشاركة"</string>
+    <string name="backup_share_chooser">"مشاركة النسخة الاحتياطية"</string>
+    <string name="backup_done">"تم"</string>
+    <string name="backup_failed_title">"فشل النسخ الاحتياطي"</string>
+    <string name="backup_try_again">"إعادة المحاولة"</string>
+    <string name="backup_close">"إغلاق"</string>
+    <string name="backup_unknown_error">"حدث خطأ ما."</string>
+    <string name="backup_untitled_chat">"محادثة بلا عنوان"</string>
+
+    <string name="restore_reading">"قراءة النسخة الاحتياطية"</string>
+    <string name="restore_review_title">"استعادة المحادثات"</string>
+    <string name="restore_from">"نُسخت في %1$s"</string>
+    <string name="restore_legacy_note">"هذا ملف نسخ احتياطي أقدم؛ لا يتضمن صوراً أو إحصاءات استخدام."</string>
+    <string name="restore_on_phone">"على هذا الهاتف"</string>
+    <string name="restore_duplicates_label">"المحادثات الموجودة بالفعل على هذا الهاتف"</string>
+    <string name="restore_skip">"تخطي"</string>
+    <string name="restore_keep_both">"الاحتفاظ بكليهما"</string>
+    <string name="restore_extras">"استعادة الذكريات والمقتطفات أيضاً"</string>
+    <string name="restore_extras_only">"استعادة الإضافات"</string>
+    <string name="restore_working">"استعادة المحادثات"</string>
+    <string name="restore_working_extras">"استعادة الصور والذكريات"</string>
+    <string name="restore_cancel_note">"تبقى المحادثات المستعادة قبل الإلغاء على هذا الهاتف."</string>
+    <string name="restore_cancelled">"توقفت الاستعادة. أُبقيت المحادثات المستعادة حتى الآن."</string>
+    <string name="restore_done_title">"تمت استعادة المحادثات"</string>
+    <string name="restore_done_body">"ستجدها في قائمة محادثاتك."</string>
+    <string name="restore_failed_title">"فشلت الاستعادة"</string>
+    <string name="restore_empty">"لا تحتوي هذه النسخة الاحتياطية على محادثات أو ذكريات أو مقتطفات."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="zero">"نسخ %1$d محادثة احتياطياً"</item>
+        <item quantity="one">"نسخ محادثة واحدة احتياطياً (%1$d)"</item>
+        <item quantity="two">"نسخ محادثتين احتياطياً (%1$d)"</item>
+        <item quantity="few">"نسخ %1$d محادثات احتياطياً"</item>
+        <item quantity="many">"نسخ %1$d محادثة احتياطياً"</item>
+        <item quantity="other">"نسخ %1$d محادثة احتياطياً"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="zero">"استعادة %1$d محادثة"</item>
+        <item quantity="one">"استعادة محادثة واحدة (%1$d)"</item>
+        <item quantity="two">"استعادة محادثتين (%1$d)"</item>
+        <item quantity="few">"استعادة %1$d محادثات"</item>
+        <item quantity="many">"استعادة %1$d محادثة"</item>
+        <item quantity="other">"استعادة %1$d محادثة"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="zero">"%1$d محادثة"</item>
+        <item quantity="one">"محادثة واحدة (%1$d)"</item>
+        <item quantity="two">"محادثتان (%1$d)"</item>
+        <item quantity="few">"%1$d محادثات"</item>
+        <item quantity="many">"%1$d محادثة"</item>
+        <item quantity="other">"%1$d محادثة"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="zero">"%1$d رسالة"</item>
+        <item quantity="one">"رسالة واحدة (%1$d)"</item>
+        <item quantity="two">"رسالتان (%1$d)"</item>
+        <item quantity="few">"%1$d رسائل"</item>
+        <item quantity="many">"%1$d رسالة"</item>
+        <item quantity="other">"%1$d رسالة"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="zero">"%1$d صورة"</item>
+        <item quantity="one">"صورة واحدة (%1$d)"</item>
+        <item quantity="two">"صورتان (%1$d)"</item>
+        <item quantity="few">"%1$d صور"</item>
+        <item quantity="many">"%1$d صورة"</item>
+        <item quantity="other">"%1$d صورة"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="zero">"%1$d ذكرى"</item>
+        <item quantity="one">"ذكرى واحدة (%1$d)"</item>
+        <item quantity="two">"ذكرتان (%1$d)"</item>
+        <item quantity="few">"%1$d ذكريات"</item>
+        <item quantity="many">"%1$d ذكرى"</item>
+        <item quantity="other">"%1$d ذكرى"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="zero">"%1$d مقتطف"</item>
+        <item quantity="one">"مقتطف واحد (%1$d)"</item>
+        <item quantity="two">"مقتطفان (%1$d)"</item>
+        <item quantity="few">"%1$d مقتطفات"</item>
+        <item quantity="many">"%1$d مقتطف"</item>
+        <item quantity="other">"%1$d مقتطف"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="zero">"%1$d موجودة مسبقاً"</item>
+        <item quantity="one">"%1$d موجودة مسبقاً"</item>
+        <item quantity="two">"%1$d موجودتان مسبقاً"</item>
+        <item quantity="few">"%1$d موجودة مسبقاً"</item>
+        <item quantity="many">"%1$d موجودة مسبقاً"</item>
+        <item quantity="other">"%1$d موجودة مسبقاً"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="zero">"%1$d محفوظة كنسخة"</item>
+        <item quantity="one">"%1$d محفوظة كنسخة"</item>
+        <item quantity="two">"%1$d محفوظتان كنسختين"</item>
+        <item quantity="few">"%1$d محفوظة كنسخ"</item>
+        <item quantity="many">"%1$d محفوظة كنسخة"</item>
+        <item quantity="other">"%1$d محفوظة كنسخة"</item>
+    </plurals>
+</resources>

@@ -55,39 +55,39 @@
     <string name="restore_empty">This backup has no chats, memories or snippets.</string>
 
     <plurals name="backup_start_export">
-        <item quantity="one">Back up %d chat</item>
-        <item quantity="other">Back up %d chats</item>
+        <item quantity="one">Back up %1$d chat</item>
+        <item quantity="other">Back up %1$d chats</item>
     </plurals>
     <plurals name="restore_start">
-        <item quantity="one">Restore %d chat</item>
-        <item quantity="other">Restore %d chats</item>
+        <item quantity="one">Restore %1$d chat</item>
+        <item quantity="other">Restore %1$d chats</item>
     </plurals>
     <plurals name="backup_chip_chats">
-        <item quantity="one">%d chat</item>
-        <item quantity="other">%d chats</item>
+        <item quantity="one">%1$d chat</item>
+        <item quantity="other">%1$d chats</item>
     </plurals>
     <plurals name="backup_chip_messages">
-        <item quantity="one">%d message</item>
-        <item quantity="other">%d messages</item>
+        <item quantity="one">%1$d message</item>
+        <item quantity="other">%1$d messages</item>
     </plurals>
     <plurals name="backup_chip_images">
-        <item quantity="one">%d image</item>
-        <item quantity="other">%d images</item>
+        <item quantity="one">%1$d image</item>
+        <item quantity="other">%1$d images</item>
     </plurals>
     <plurals name="backup_chip_memories">
-        <item quantity="one">%d memory</item>
-        <item quantity="other">%d memories</item>
+        <item quantity="one">%1$d memory</item>
+        <item quantity="other">%1$d memories</item>
     </plurals>
     <plurals name="backup_chip_snippets">
-        <item quantity="one">%d snippet</item>
-        <item quantity="other">%d snippets</item>
+        <item quantity="one">%1$d snippet</item>
+        <item quantity="other">%1$d snippets</item>
     </plurals>
     <plurals name="restore_chip_skipped">
-        <item quantity="one">%d already here</item>
-        <item quantity="other">%d already here</item>
+        <item quantity="one">%1$d already here</item>
+        <item quantity="other">%1$d already here</item>
     </plurals>
     <plurals name="restore_chip_copies">
-        <item quantity="one">%d kept as a copy</item>
-        <item quantity="other">%d kept as copies</item>
+        <item quantity="one">%1$d kept as a copy</item>
+        <item quantity="other">%1$d kept as copies</item>
     </plurals>
 </resources>

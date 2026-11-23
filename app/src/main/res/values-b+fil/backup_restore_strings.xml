@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Backup at pag-restore"</string>
+    <string name="backup_card_body">"I-save ang mga chat kasama ang mga larawan, stats ng paggamit, alaala at snippet sa isang file. Walang API key o setting na kasama."</string>
+    <string name="backup_action_back_up">"Mag-backup"</string>
+    <string name="backup_action_restore">"I-restore"</string>
+
+    <string name="backup_pick_title">"I-backup ang mga chat"</string>
+    <string name="backup_pick_subtitle">"Piliin ang mga chat at extras na isasama sa file."</string>
+    <string name="backup_search_hint">"Maghanap ng chat"</string>
+    <string name="backup_select_all">"Piliin lahat"</string>
+    <string name="backup_select_none">"I-clear"</string>
+    <string name="backup_option_images">"Mga larawan"</string>
+    <string name="backup_option_usage">"Stats ng paggamit"</string>
+    <string name="backup_option_memories">"Mga alaala"</string>
+    <string name="backup_option_snippets">"Mga snippet"</string>
+    <string name="backup_no_chats">"Wala pang chat. Maaari pa ring i-backup ang mga alaala at snippet."</string>
+    <string name="backup_no_matches">"Walang chat na tumutugma sa paghahanap."</string>
+    <string name="backup_extras_only">"I-backup ang extras"</string>
+    <string name="backup_loading_chats">"Kinokolekta ang mga chat"</string>
+    <string name="backup_packing">"Ipinapack ang mga chat"</string>
+    <string name="backup_packing_extras">"Idinadagdag ang mga larawan at alaala"</string>
+    <string name="backup_progress_count">"%1$d ng %2$d"</string>
+    <string name="backup_keep_open">"Panatilihing bukas ang app hanggang matapos."</string>
+    <string name="backup_cancel">"Kanselahin"</string>
+    <string name="backup_cancelled">"Kinansela ang backup. Walang file na naiwan."</string>
+    <string name="backup_done_title">"Na-save ang backup"</string>
+    <string name="backup_done_body">"Itago ang file na ito sa ligtas na lugar, tulad ng cloud storage."</string>
+    <string name="backup_share">"Ibahagi"</string>
+    <string name="backup_share_chooser">"Ibahagi ang backup"</string>
+    <string name="backup_done">"Tapos"</string>
+    <string name="backup_failed_title">"Nabigo ang backup"</string>
+    <string name="backup_try_again">"Subukan muli"</string>
+    <string name="backup_close">"Isara"</string>
+    <string name="backup_unknown_error">"May naganap na error."</string>
+    <string name="backup_untitled_chat">"Chat na walang pamagat"</string>
+
+    <string name="restore_reading">"Binabasa ang backup"</string>
+    <string name="restore_review_title">"I-restore ang mga chat"</string>
+    <string name="restore_from">"Na-backup noong %1$s"</string>
+    <string name="restore_legacy_note">"Mas lumang backup file ito; walang mga larawan o stats ng paggamit."</string>
+    <string name="restore_on_phone">"Nasa teleponong ito"</string>
+    <string name="restore_duplicates_label">"Mga chat na nasa teleponong ito na"</string>
+    <string name="restore_skip">"Laktawan"</string>
+    <string name="restore_keep_both">"Itago pareho"</string>
+    <string name="restore_extras">"I-restore din ang mga alaala at snippet"</string>
+    <string name="restore_extras_only">"I-restore ang extras"</string>
+    <string name="restore_working">"Nagre-restore ng mga chat"</string>
+    <string name="restore_working_extras">"Nagre-restore ng mga larawan at alaala"</string>
+    <string name="restore_cancel_note">"Ang mga na-restore bago kanselahin ay mananatili sa teleponong ito."</string>
+    <string name="restore_cancelled">"Huminto ang pag-restore. Itinago ang mga na-restore na."</string>
+    <string name="restore_done_title">"Na-restore ang mga chat"</string>
+    <string name="restore_done_body">"Hanapin ang mga ito sa listahan ng chat."</string>
+    <string name="restore_failed_title">"Nabigo ang pag-restore"</string>
+    <string name="restore_empty">"Walang chat, alaala o snippet ang backup na ito."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"I-backup ang %1$d chat"</item>
+        <item quantity="other">"I-backup ang %1$d chat"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"I-restore ang %1$d chat"</item>
+        <item quantity="other">"I-restore ang %1$d chat"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d chat"</item>
+        <item quantity="other">"%1$d chat"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d mensahe"</item>
+        <item quantity="other">"%1$d mensahe"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d larawan"</item>
+        <item quantity="other">"%1$d larawan"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d alaala"</item>
+        <item quantity="other">"%1$d alaala"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d snippet"</item>
+        <item quantity="other">"%1$d snippet"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d naroroon na"</item>
+        <item quantity="other">"%1$d naroroon na"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d itinago bilang kopya"</item>
+        <item quantity="other">"%1$d itinago bilang mga kopya"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"備份與還原"</string>
+    <string name="backup_card_body">"將聊天連同圖片、使用統計、記憶和片段存成單一檔案。API 金鑰和設定絕不會包含在內。"</string>
+    <string name="backup_action_back_up">"備份"</string>
+    <string name="backup_action_restore">"還原"</string>
+
+    <string name="backup_pick_title">"備份聊天"</string>
+    <string name="backup_pick_subtitle">"選擇要放入檔案的聊天和附加內容。"</string>
+    <string name="backup_search_hint">"搜尋聊天"</string>
+    <string name="backup_select_all">"全選"</string>
+    <string name="backup_select_none">"清除"</string>
+    <string name="backup_option_images">"圖片"</string>
+    <string name="backup_option_usage">"使用統計"</string>
+    <string name="backup_option_memories">"記憶"</string>
+    <string name="backup_option_snippets">"片段"</string>
+    <string name="backup_no_chats">"尚無聊天。記憶和片段仍可備份。"</string>
+    <string name="backup_no_matches">"沒有符合搜尋的聊天。"</string>
+    <string name="backup_extras_only">"備份附加內容"</string>
+    <string name="backup_loading_chats">"正在收集聊天"</string>
+    <string name="backup_packing">"正在打包聊天"</string>
+    <string name="backup_packing_extras">"正在加入圖片和記憶"</string>
+    <string name="backup_progress_count">"第 %1$d 個，共 %2$d 個"</string>
+    <string name="backup_keep_open">"完成前請保持應用程式開啟。"</string>
+    <string name="backup_cancel">"取消"</string>
+    <string name="backup_cancelled">"已取消備份。沒有留下任何檔案。"</string>
+    <string name="backup_done_title">"已儲存備份"</string>
+    <string name="backup_done_body">"請將此檔案保存在安全的位置，例如雲端儲存空間。"</string>
+    <string name="backup_share">"分享"</string>
+    <string name="backup_share_chooser">"分享備份"</string>
+    <string name="backup_done">"完成"</string>
+    <string name="backup_failed_title">"備份失敗"</string>
+    <string name="backup_try_again">"再試一次"</string>
+    <string name="backup_close">"關閉"</string>
+    <string name="backup_unknown_error">"發生錯誤。"</string>
+    <string name="backup_untitled_chat">"未命名聊天"</string>
+
+    <string name="restore_reading">"正在讀取備份"</string>
+    <string name="restore_review_title">"還原聊天"</string>
+    <string name="restore_from">"備份於 %1$s"</string>
+    <string name="restore_legacy_note">"這是較舊的備份檔案，沒有圖片或使用統計。"</string>
+    <string name="restore_on_phone">"已在此手機"</string>
+    <string name="restore_duplicates_label">"已在此手機上的聊天"</string>
+    <string name="restore_skip">"略過"</string>
+    <string name="restore_keep_both">"兩者都保留"</string>
+    <string name="restore_extras">"同時還原記憶和片段"</string>
+    <string name="restore_extras_only">"還原附加內容"</string>
+    <string name="restore_working">"正在還原聊天"</string>
+    <string name="restore_working_extras">"正在還原圖片和記憶"</string>
+    <string name="restore_cancel_note">"取消前已還原的聊天會留在這支手機上。"</string>
+    <string name="restore_cancelled">"已停止還原。已還原的聊天都會保留。"</string>
+    <string name="restore_done_title">"已還原聊天"</string>
+    <string name="restore_done_body">"可在聊天列表中找到。"</string>
+    <string name="restore_failed_title">"還原失敗"</string>
+    <string name="restore_empty">"此備份沒有聊天、記憶或片段。"</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"備份 %1$d 個聊天"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"還原 %1$d 個聊天"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"%1$d 個聊天"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"%1$d 則訊息"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"%1$d 張圖片"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"%1$d 條記憶"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"%1$d 個片段"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d 個已存在"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d 個保留為副本"</item>
+    </plurals>
+</resources>

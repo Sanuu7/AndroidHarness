@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Copia de seguridad y restauración"</string>
+    <string name="backup_card_body">"Guarda tus chats con sus imágenes, estadísticas de uso, recuerdos y fragmentos en un solo archivo. Las claves API y los ajustes nunca se incluyen."</string>
+    <string name="backup_action_back_up">"Hacer copia"</string>
+    <string name="backup_action_restore">"Restaurar"</string>
+
+    <string name="backup_pick_title">"Copiar chats"</string>
+    <string name="backup_pick_subtitle">"Elige los chats y extras que irán al archivo."</string>
+    <string name="backup_search_hint">"Buscar chats"</string>
+    <string name="backup_select_all">"Seleccionar todo"</string>
+    <string name="backup_select_none">"Vaciar"</string>
+    <string name="backup_option_images">"Imágenes"</string>
+    <string name="backup_option_usage">"Estadísticas de uso"</string>
+    <string name="backup_option_memories">"Recuerdos"</string>
+    <string name="backup_option_snippets">"Fragmentos"</string>
+    <string name="backup_no_chats">"Aún no hay chats. Los recuerdos y fragmentos se pueden copiar igualmente."</string>
+    <string name="backup_no_matches">"Ningún chat coincide con la búsqueda."</string>
+    <string name="backup_extras_only">"Copiar extras"</string>
+    <string name="backup_loading_chats">"Reuniendo tus chats"</string>
+    <string name="backup_packing">"Empaquetando chats"</string>
+    <string name="backup_packing_extras">"Añadiendo imágenes y recuerdos"</string>
+    <string name="backup_progress_count">"%1$d de %2$d"</string>
+    <string name="backup_keep_open">"Mantén la app abierta hasta que termine."</string>
+    <string name="backup_cancel">"Cancelar"</string>
+    <string name="backup_cancelled">"Copia cancelada. No se dejó ningún archivo."</string>
+    <string name="backup_done_title">"Copia guardada"</string>
+    <string name="backup_done_body">"Guarda este archivo en un lugar seguro, como tu almacenamiento en la nube."</string>
+    <string name="backup_share">"Compartir"</string>
+    <string name="backup_share_chooser">"Compartir copia"</string>
+    <string name="backup_done">"Listo"</string>
+    <string name="backup_failed_title">"Error al copiar"</string>
+    <string name="backup_try_again">"Reintentar"</string>
+    <string name="backup_close">"Cerrar"</string>
+    <string name="backup_unknown_error">"Algo salió mal."</string>
+    <string name="backup_untitled_chat">"Chat sin título"</string>
+
+    <string name="restore_reading">"Leyendo la copia"</string>
+    <string name="restore_review_title">"Restaurar chats"</string>
+    <string name="restore_from">"Copia del %1$s"</string>
+    <string name="restore_legacy_note">"Este es un archivo de copia antiguo; no incluye imágenes ni estadísticas de uso."</string>
+    <string name="restore_on_phone">"En este teléfono"</string>
+    <string name="restore_duplicates_label">"Chats que ya están en este teléfono"</string>
+    <string name="restore_skip">"Omitir"</string>
+    <string name="restore_keep_both">"Conservar ambos"</string>
+    <string name="restore_extras">"Restaurar también recuerdos y fragmentos"</string>
+    <string name="restore_extras_only">"Restaurar extras"</string>
+    <string name="restore_working">"Restaurando chats"</string>
+    <string name="restore_working_extras">"Restaurando imágenes y recuerdos"</string>
+    <string name="restore_cancel_note">"Los chats restaurados antes de cancelar se quedan en este teléfono."</string>
+    <string name="restore_cancelled">"Restauración detenida. Se conservaron los chats ya restaurados."</string>
+    <string name="restore_done_title">"Chats restaurados"</string>
+    <string name="restore_done_body">"Los encontrarás en tu lista de chats."</string>
+    <string name="restore_failed_title">"Error al restaurar"</string>
+    <string name="restore_empty">"Esta copia no tiene chats, recuerdos ni fragmentos."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"Copiar %1$d chat"</item>
+        <item quantity="other">"Copiar %1$d chats"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"Restaurar %1$d chat"</item>
+        <item quantity="other">"Restaurar %1$d chats"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d chat"</item>
+        <item quantity="other">"%1$d chats"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d mensaje"</item>
+        <item quantity="other">"%1$d mensajes"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d imagen"</item>
+        <item quantity="other">"%1$d imágenes"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d recuerdo"</item>
+        <item quantity="other">"%1$d recuerdos"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d fragmento"</item>
+        <item quantity="other">"%1$d fragmentos"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d ya presente"</item>
+        <item quantity="other">"%1$d ya presentes"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d guardado como copia"</item>
+        <item quantity="other">"%1$d guardados como copias"</item>
+    </plurals>
+</resources>

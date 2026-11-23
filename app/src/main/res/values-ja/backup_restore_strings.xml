@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"バックアップと復元"</string>
+    <string name="backup_card_body">"チャットを画像、使用状況、メモリ、スニペットとともに 1 つのファイルに保存します。API キーと設定は含まれません。"</string>
+    <string name="backup_action_back_up">"バックアップ"</string>
+    <string name="backup_action_restore">"復元"</string>
+
+    <string name="backup_pick_title">"チャットをバックアップ"</string>
+    <string name="backup_pick_subtitle">"ファイルに含めるチャットと追加項目を選択してください。"</string>
+    <string name="backup_search_hint">"チャットを検索"</string>
+    <string name="backup_select_all">"すべて選択"</string>
+    <string name="backup_select_none">"クリア"</string>
+    <string name="backup_option_images">"画像"</string>
+    <string name="backup_option_usage">"使用状況"</string>
+    <string name="backup_option_memories">"メモリ"</string>
+    <string name="backup_option_snippets">"スニペット"</string>
+    <string name="backup_no_chats">"チャットはまだありません。メモリとスニペットはバックアップできます。"</string>
+    <string name="backup_no_matches">"検索に一致するチャットはありません。"</string>
+    <string name="backup_extras_only">"追加項目をバックアップ"</string>
+    <string name="backup_loading_chats">"チャットを集めています"</string>
+    <string name="backup_packing">"チャットをまとめています"</string>
+    <string name="backup_packing_extras">"画像とメモリを追加しています"</string>
+    <string name="backup_progress_count">"%2$d 件中 %1$d 件"</string>
+    <string name="backup_keep_open">"完了するまでアプリを開いたままにしてください。"</string>
+    <string name="backup_cancel">"キャンセル"</string>
+    <string name="backup_cancelled">"バックアップをキャンセルしました。ファイルは残っていません。"</string>
+    <string name="backup_done_title">"バックアップを保存しました"</string>
+    <string name="backup_done_body">"このファイルはクラウドストレージなど安全な場所に保管してください。"</string>
+    <string name="backup_share">"共有"</string>
+    <string name="backup_share_chooser">"バックアップを共有"</string>
+    <string name="backup_done">"完了"</string>
+    <string name="backup_failed_title">"バックアップに失敗しました"</string>
+    <string name="backup_try_again">"再試行"</string>
+    <string name="backup_close">"閉じる"</string>
+    <string name="backup_unknown_error">"問題が発生しました。"</string>
+    <string name="backup_untitled_chat">"無題のチャット"</string>
+
+    <string name="restore_reading">"バックアップを読み込んでいます"</string>
+    <string name="restore_review_title">"チャットを復元"</string>
+    <string name="restore_from">"%1$s にバックアップ"</string>
+    <string name="restore_legacy_note">"これは古いバックアップファイルです。画像や使用状況は含まれていません。"</string>
+    <string name="restore_on_phone">"この端末にあり"</string>
+    <string name="restore_duplicates_label">"この端末に既にあるチャット"</string>
+    <string name="restore_skip">"スキップ"</string>
+    <string name="restore_keep_both">"両方保持"</string>
+    <string name="restore_extras">"メモリとスニペットも復元"</string>
+    <string name="restore_extras_only">"追加項目を復元"</string>
+    <string name="restore_working">"チャットを復元しています"</string>
+    <string name="restore_working_extras">"画像とメモリを復元しています"</string>
+    <string name="restore_cancel_note">"キャンセル前に復元したチャットはこの端末に残ります。"</string>
+    <string name="restore_cancelled">"復元を停止しました。復元済みのチャットは保持されています。"</string>
+    <string name="restore_done_title">"チャットを復元しました"</string>
+    <string name="restore_done_body">"チャット一覧で確認できます。"</string>
+    <string name="restore_failed_title">"復元に失敗しました"</string>
+    <string name="restore_empty">"このバックアップにはチャット、メモリ、スニペットがありません。"</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"%1$d 件のチャットをバックアップ"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"%1$d 件のチャットを復元"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"%1$d 件のチャット"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"%1$d 件のメッセージ"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"%1$d 枚の画像"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"%1$d 件のメモリ"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"%1$d 件のスニペット"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d 件は既にあり"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d 件をコピーとして保持"</item>
+    </plurals>
+</resources>

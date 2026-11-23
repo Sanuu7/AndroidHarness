@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"پشتیبان‌گیری و بازیابی"</string>
+    <string name="backup_card_body">"گفتگوها را همراه تصاویر، آمار استفاده، حافظه‌ها و قطعه‌ها در یک فایل ذخیره کنید. کلیدهای API و تنظیمات هرگز در آن قرار نمی‌گیرند."</string>
+    <string name="backup_action_back_up">"پشتیبان‌گیری"</string>
+    <string name="backup_action_restore">"بازیابی"</string>
+
+    <string name="backup_pick_title">"پشتیبان‌گیری از گفتگوها"</string>
+    <string name="backup_pick_subtitle">"گفتگوها و موارد اضافه‌ای را که در فایل قرار می‌گیرند انتخاب کنید."</string>
+    <string name="backup_search_hint">"جستجوی گفتگوها"</string>
+    <string name="backup_select_all">"انتخاب همه"</string>
+    <string name="backup_select_none">"پاک کردن"</string>
+    <string name="backup_option_images">"تصاویر"</string>
+    <string name="backup_option_usage">"آمار استفاده"</string>
+    <string name="backup_option_memories">"حافظه‌ها"</string>
+    <string name="backup_option_snippets">"قطعه‌ها"</string>
+    <string name="backup_no_chats">"هنوز گفتگویی نیست. حافظه‌ها و قطعه‌ها همچنان قابل پشتیبان‌گیری‌اند."</string>
+    <string name="backup_no_matches">"هیچ گفتگویی با جستجوی شما مطابقت ندارد."</string>
+    <string name="backup_extras_only">"پشتیبان‌گیری از موارد اضافه"</string>
+    <string name="backup_loading_chats">"در حال جمع‌آوری گفتگوها"</string>
+    <string name="backup_packing">"در حال بسته‌بندی گفتگوها"</string>
+    <string name="backup_packing_extras">"در حال افزودن تصاویر و حافظه‌ها"</string>
+    <string name="backup_progress_count">"%1$d از %2$d"</string>
+    <string name="backup_keep_open">"تا پایان کار برنامه را باز نگه دارید."</string>
+    <string name="backup_cancel">"لغو"</string>
+    <string name="backup_cancelled">"پشتیبان‌گیری لغو شد. فایلی باقی نماند."</string>
+    <string name="backup_done_title">"نسخه پشتیبان ذخیره شد"</string>
+    <string name="backup_done_body">"این فایل را در جای امنی مانند فضای ابری نگه دارید."</string>
+    <string name="backup_share">"اشتراک‌گذاری"</string>
+    <string name="backup_share_chooser">"اشتراک نسخه پشتیبان"</string>
+    <string name="backup_done">"تمام"</string>
+    <string name="backup_failed_title">"پشتیبان‌گیری ناموفق بود"</string>
+    <string name="backup_try_again">"دوباره تلاش کنید"</string>
+    <string name="backup_close">"بستن"</string>
+    <string name="backup_unknown_error">"مشکلی پیش آمد."</string>
+    <string name="backup_untitled_chat">"گفتگوی بدون عنوان"</string>
+
+    <string name="restore_reading">"در حال خواندن نسخه پشتیبان"</string>
+    <string name="restore_review_title">"بازیابی گفتگوها"</string>
+    <string name="restore_from">"پشتیبان‌گیری در %1$s"</string>
+    <string name="restore_legacy_note">"این فایل پشتیبان قدیمی است و تصویر یا آمار استفاده ندارد."</string>
+    <string name="restore_on_phone">"روی این تلفن"</string>
+    <string name="restore_duplicates_label">"گفتگوهایی که از قبل روی این تلفن هستند"</string>
+    <string name="restore_skip">"رد کردن"</string>
+    <string name="restore_keep_both">"نگه داشتن هر دو"</string>
+    <string name="restore_extras">"حافظه‌ها و قطعه‌ها هم بازیابی شوند"</string>
+    <string name="restore_extras_only">"بازیابی موارد اضافه"</string>
+    <string name="restore_working">"در حال بازیابی گفتگوها"</string>
+    <string name="restore_working_extras">"در حال بازیابی تصاویر و حافظه‌ها"</string>
+    <string name="restore_cancel_note">"گفتگوهایی که پیش از لغو بازیابی شده‌اند روی این تلفن می‌مانند."</string>
+    <string name="restore_cancelled">"بازیابی متوقف شد. گفتگوهای بازیابی‌شده نگه داشته شدند."</string>
+    <string name="restore_done_title">"گفتگوها بازیابی شدند"</string>
+    <string name="restore_done_body">"آن‌ها را در فهرست گفتگوها پیدا کنید."</string>
+    <string name="restore_failed_title">"بازیابی ناموفق بود"</string>
+    <string name="restore_empty">"این نسخه پشتیبان گفتگو، حافظه یا قطعه‌ای ندارد."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"پشتیبان‌گیری از %1$d گفتگو"</item>
+        <item quantity="other">"پشتیبان‌گیری از %1$d گفتگو"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"بازیابی %1$d گفتگو"</item>
+        <item quantity="other">"بازیابی %1$d گفتگو"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d گفتگو"</item>
+        <item quantity="other">"%1$d گفتگو"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d پیام"</item>
+        <item quantity="other">"%1$d پیام"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d تصویر"</item>
+        <item quantity="other">"%1$d تصویر"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d حافظه"</item>
+        <item quantity="other">"%1$d حافظه"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d قطعه"</item>
+        <item quantity="other">"%1$d قطعه"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d از قبل موجود است"</item>
+        <item quantity="other">"%1$d از قبل موجود است"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d به‌عنوان نسخه نگه داشته شد"</item>
+        <item quantity="other">"%1$d به‌عنوان نسخه نگه داشته شد"</item>
+    </plurals>
+</resources>

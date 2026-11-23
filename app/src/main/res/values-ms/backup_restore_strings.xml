@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Sandaran &amp; pulihkan"</string>
+    <string name="backup_card_body">"Simpan sembang bersama imej, statistik penggunaan, kenangan dan coretan dalam satu fail. Kunci API dan tetapan tidak pernah disertakan."</string>
+    <string name="backup_action_back_up">"Sandarkan"</string>
+    <string name="backup_action_restore">"Pulihkan"</string>
+
+    <string name="backup_pick_title">"Sandarkan sembang"</string>
+    <string name="backup_pick_subtitle">"Pilih sembang dan tambahan yang masuk ke dalam fail."</string>
+    <string name="backup_search_hint">"Cari sembang"</string>
+    <string name="backup_select_all">"Pilih semua"</string>
+    <string name="backup_select_none">"Kosongkan"</string>
+    <string name="backup_option_images">"Imej"</string>
+    <string name="backup_option_usage">"Statistik penggunaan"</string>
+    <string name="backup_option_memories">"Kenangan"</string>
+    <string name="backup_option_snippets">"Coretan"</string>
+    <string name="backup_no_chats">"Belum ada sembang. Kenangan dan coretan masih boleh disandarkan."</string>
+    <string name="backup_no_matches">"Tiada sembang sepadan dengan carian anda."</string>
+    <string name="backup_extras_only">"Sandarkan tambahan"</string>
+    <string name="backup_loading_chats">"Mengumpul sembang anda"</string>
+    <string name="backup_packing">"Membungkus sembang"</string>
+    <string name="backup_packing_extras">"Menambah imej dan kenangan"</string>
+    <string name="backup_progress_count">"%1$d daripada %2$d"</string>
+    <string name="backup_keep_open">"Biarkan aplikasi terbuka sehingga selesai."</string>
+    <string name="backup_cancel">"Batal"</string>
+    <string name="backup_cancelled">"Sandaran dibatalkan. Tiada fail ditinggalkan."</string>
+    <string name="backup_done_title">"Sandaran disimpan"</string>
+    <string name="backup_done_body">"Simpan fail ini di tempat selamat, seperti storan awan."</string>
+    <string name="backup_share">"Kongsi"</string>
+    <string name="backup_share_chooser">"Kongsi sandaran"</string>
+    <string name="backup_done">"Selesai"</string>
+    <string name="backup_failed_title">"Sandaran gagal"</string>
+    <string name="backup_try_again">"Cuba lagi"</string>
+    <string name="backup_close">"Tutup"</string>
+    <string name="backup_unknown_error">"Ada masalah berlaku."</string>
+    <string name="backup_untitled_chat">"Sembang tanpa tajuk"</string>
+
+    <string name="restore_reading">"Membaca sandaran"</string>
+    <string name="restore_review_title">"Pulihkan sembang"</string>
+    <string name="restore_from">"Disandarkan %1$s"</string>
+    <string name="restore_legacy_note">"Ini fail sandaran lama; tiada imej atau statistik penggunaan."</string>
+    <string name="restore_on_phone">"Ada pada telefon ini"</string>
+    <string name="restore_duplicates_label">"Sembang yang sudah ada pada telefon ini"</string>
+    <string name="restore_skip">"Langkau"</string>
+    <string name="restore_keep_both">"Simpan kedua-duanya"</string>
+    <string name="restore_extras">"Pulihkan juga kenangan dan coretan"</string>
+    <string name="restore_extras_only">"Pulihkan tambahan"</string>
+    <string name="restore_working">"Memulihkan sembang"</string>
+    <string name="restore_working_extras">"Memulihkan imej dan kenangan"</string>
+    <string name="restore_cancel_note">"Sembang yang dipulihkan sebelum dibatalkan kekal pada telefon ini."</string>
+    <string name="restore_cancelled">"Pemulihan dihentikan. Sembang yang sudah dipulihkan disimpan."</string>
+    <string name="restore_done_title">"Sembang dipulihkan"</string>
+    <string name="restore_done_body">"Cari dalam senarai sembang anda."</string>
+    <string name="restore_failed_title">"Pemulihan gagal"</string>
+    <string name="restore_empty">"Sandaran ini tiada sembang, kenangan atau coretan."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"Sandarkan %1$d sembang"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"Pulihkan %1$d sembang"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"%1$d sembang"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"%1$d mesej"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"%1$d imej"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"%1$d kenangan"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"%1$d coretan"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d sudah ada"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d disimpan sebagai salinan"</item>
+    </plurals>
+</resources>

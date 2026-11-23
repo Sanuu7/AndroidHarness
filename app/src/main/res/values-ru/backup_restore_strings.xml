@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Резервная копия и восстановление"</string>
+    <string name="backup_card_body">"Сохраните чаты вместе с изображениями, статистикой использования, памятью и фрагментами в одном файле. Ключи API и настройки в него не попадают."</string>
+    <string name="backup_action_back_up">"Создать копию"</string>
+    <string name="backup_action_restore">"Восстановить"</string>
+
+    <string name="backup_pick_title">"Копировать чаты"</string>
+    <string name="backup_pick_subtitle">"Выберите чаты и дополнения для файла."</string>
+    <string name="backup_search_hint">"Поиск чатов"</string>
+    <string name="backup_select_all">"Выбрать все"</string>
+    <string name="backup_select_none">"Очистить"</string>
+    <string name="backup_option_images">"Изображения"</string>
+    <string name="backup_option_usage">"Статистика использования"</string>
+    <string name="backup_option_memories">"Память"</string>
+    <string name="backup_option_snippets">"Фрагменты"</string>
+    <string name="backup_no_chats">"Чатов пока нет. Память и фрагменты всё равно можно сохранить."</string>
+    <string name="backup_no_matches">"Ни один чат не подходит под запрос."</string>
+    <string name="backup_extras_only">"Сохранить дополнения"</string>
+    <string name="backup_loading_chats">"Сбор чатов"</string>
+    <string name="backup_packing">"Упаковка чатов"</string>
+    <string name="backup_packing_extras">"Добавление изображений и памяти"</string>
+    <string name="backup_progress_count">"%1$d из %2$d"</string>
+    <string name="backup_keep_open">"Не закрывайте приложение до завершения."</string>
+    <string name="backup_cancel">"Отмена"</string>
+    <string name="backup_cancelled">"Копирование отменено. Файл не остался."</string>
+    <string name="backup_done_title">"Копия сохранена"</string>
+    <string name="backup_done_body">"Храните файл в надёжном месте, например в облаке."</string>
+    <string name="backup_share">"Поделиться"</string>
+    <string name="backup_share_chooser">"Поделиться копией"</string>
+    <string name="backup_done">"Готово"</string>
+    <string name="backup_failed_title">"Не удалось создать копию"</string>
+    <string name="backup_try_again">"Повторить"</string>
+    <string name="backup_close">"Закрыть"</string>
+    <string name="backup_unknown_error">"Что-то пошло не так."</string>
+    <string name="backup_untitled_chat">"Чат без названия"</string>
+
+    <string name="restore_reading">"Чтение копии"</string>
+    <string name="restore_review_title">"Восстановить чаты"</string>
+    <string name="restore_from">"Копия от %1$s"</string>
+    <string name="restore_legacy_note">"Это старый файл копии: изображений и статистики использования в нём нет."</string>
+    <string name="restore_on_phone">"Уже на этом телефоне"</string>
+    <string name="restore_duplicates_label">"Чаты, которые уже есть на этом телефоне"</string>
+    <string name="restore_skip">"Пропустить"</string>
+    <string name="restore_keep_both">"Сохранить оба"</string>
+    <string name="restore_extras">"Также восстановить память и фрагменты"</string>
+    <string name="restore_extras_only">"Восстановить дополнения"</string>
+    <string name="restore_working">"Восстановление чатов"</string>
+    <string name="restore_working_extras">"Восстановление изображений и памяти"</string>
+    <string name="restore_cancel_note">"Чаты, восстановленные до отмены, останутся на телефоне."</string>
+    <string name="restore_cancelled">"Восстановление остановлено. Уже восстановленные чаты сохранены."</string>
+    <string name="restore_done_title">"Чаты восстановлены"</string>
+    <string name="restore_done_body">"Ищите их в списке чатов."</string>
+    <string name="restore_failed_title">"Не удалось восстановить"</string>
+    <string name="restore_empty">"В этой копии нет чатов, памяти или фрагментов."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"Скопировать %1$d чат"</item>
+        <item quantity="few">"Скопировать %1$d чата"</item>
+        <item quantity="many">"Скопировать %1$d чатов"</item>
+        <item quantity="other">"Скопировать %1$d чата"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"Восстановить %1$d чат"</item>
+        <item quantity="few">"Восстановить %1$d чата"</item>
+        <item quantity="many">"Восстановить %1$d чатов"</item>
+        <item quantity="other">"Восстановить %1$d чата"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d чат"</item>
+        <item quantity="few">"%1$d чата"</item>
+        <item quantity="many">"%1$d чатов"</item>
+        <item quantity="other">"%1$d чата"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d сообщение"</item>
+        <item quantity="few">"%1$d сообщения"</item>
+        <item quantity="many">"%1$d сообщений"</item>
+        <item quantity="other">"%1$d сообщения"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d изображение"</item>
+        <item quantity="few">"%1$d изображения"</item>
+        <item quantity="many">"%1$d изображений"</item>
+        <item quantity="other">"%1$d изображения"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d запись памяти"</item>
+        <item quantity="few">"%1$d записи памяти"</item>
+        <item quantity="many">"%1$d записей памяти"</item>
+        <item quantity="other">"%1$d записи памяти"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d фрагмент"</item>
+        <item quantity="few">"%1$d фрагмента"</item>
+        <item quantity="many">"%1$d фрагментов"</item>
+        <item quantity="other">"%1$d фрагмента"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d уже здесь"</item>
+        <item quantity="few">"%1$d уже здесь"</item>
+        <item quantity="many">"%1$d уже здесь"</item>
+        <item quantity="other">"%1$d уже здесь"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d сохранён как копия"</item>
+        <item quantity="few">"%1$d сохранены как копии"</item>
+        <item quantity="many">"%1$d сохранены как копии"</item>
+        <item quantity="other">"%1$d сохранены как копии"</item>
+    </plurals>
+</resources>

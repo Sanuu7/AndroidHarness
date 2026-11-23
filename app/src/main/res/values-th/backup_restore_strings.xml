@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"สำรองและกู้คืน"</string>
+    <string name="backup_card_body">"บันทึกแชทพร้อมรูปภาพ สถิติการใช้งาน ความทรงจำ และตัวอย่าง ไว้ในไฟล์เดียว คีย์ API และการตั้งค่าจะไม่ถูกใส่ไว้ในไฟล์"</string>
+    <string name="backup_action_back_up">"สำรองข้อมูล"</string>
+    <string name="backup_action_restore">"กู้คืน"</string>
+
+    <string name="backup_pick_title">"สำรองแชท"</string>
+    <string name="backup_pick_subtitle">"เลือกแชทและส่วนเสริมที่จะใส่ในไฟล์"</string>
+    <string name="backup_search_hint">"ค้นหาแชท"</string>
+    <string name="backup_select_all">"เลือกทั้งหมด"</string>
+    <string name="backup_select_none">"ล้าง"</string>
+    <string name="backup_option_images">"รูปภาพ"</string>
+    <string name="backup_option_usage">"สถิติการใช้งาน"</string>
+    <string name="backup_option_memories">"ความทรงจำ"</string>
+    <string name="backup_option_snippets">"ตัวอย่าง"</string>
+    <string name="backup_no_chats">"ยังไม่มีแชท แต่ยังสำรองความทรงจำและตัวอย่างได้"</string>
+    <string name="backup_no_matches">"ไม่มีแชทตรงกับการค้นหา"</string>
+    <string name="backup_extras_only">"สำรองส่วนเสริม"</string>
+    <string name="backup_loading_chats">"กำลังรวบรวมแชทของคุณ"</string>
+    <string name="backup_packing">"กำลังแพ็กแชท"</string>
+    <string name="backup_packing_extras">"กำลังเพิ่มรูปภาพและความทรงจำ"</string>
+    <string name="backup_progress_count">"%1$d จาก %2$d"</string>
+    <string name="backup_keep_open">"เปิดแอปไว้จนกว่าจะเสร็จ"</string>
+    <string name="backup_cancel">"ยกเลิก"</string>
+    <string name="backup_cancelled">"ยกเลิกการสำรองแล้ว ไม่มีไฟล์เหลืออยู่"</string>
+    <string name="backup_done_title">"บันทึกข้อมูลสำรองแล้ว"</string>
+    <string name="backup_done_body">"เก็บไฟล์นี้ไว้ในที่ปลอดภัย เช่น พื้นที่จัดเก็บบนคลาวด์"</string>
+    <string name="backup_share">"แชร์"</string>
+    <string name="backup_share_chooser">"แชร์ข้อมูลสำรอง"</string>
+    <string name="backup_done">"เสร็จสิ้น"</string>
+    <string name="backup_failed_title">"การสำรองล้มเหลว"</string>
+    <string name="backup_try_again">"ลองอีกครั้ง"</string>
+    <string name="backup_close">"ปิด"</string>
+    <string name="backup_unknown_error">"เกิดข้อผิดพลาด"</string>
+    <string name="backup_untitled_chat">"แชทไม่มีชื่อ"</string>
+
+    <string name="restore_reading">"กำลังอ่านข้อมูลสำรอง"</string>
+    <string name="restore_review_title">"กู้คืนแชท"</string>
+    <string name="restore_from">"สำรองเมื่อ %1$s"</string>
+    <string name="restore_legacy_note">"นี่คือไฟล์สำรองรุ่นเก่า จึงไม่มีรูปภาพหรือสถิติการใช้งาน"</string>
+    <string name="restore_on_phone">"อยู่ในโทรศัพท์นี้"</string>
+    <string name="restore_duplicates_label">"แชทที่มีอยู่ในโทรศัพท์นี้แล้ว"</string>
+    <string name="restore_skip">"ข้าม"</string>
+    <string name="restore_keep_both">"เก็บทั้งสอง"</string>
+    <string name="restore_extras">"กู้คืนความทรงจำและตัวอย่างด้วย"</string>
+    <string name="restore_extras_only">"กู้คืนส่วนเสริม"</string>
+    <string name="restore_working">"กำลังกู้คืนแชท"</string>
+    <string name="restore_working_extras">"กำลังกู้คืนรูปภาพและความทรงจำ"</string>
+    <string name="restore_cancel_note">"แชทที่กู้คืนก่อนยกเลิกจะอยู่ในโทรศัพท์นี้ต่อ"</string>
+    <string name="restore_cancelled">"หยุดการกู้คืนแล้ว แชทที่กู้คืนไปแล้วจะถูกเก็บไว้"</string>
+    <string name="restore_done_title">"กู้คืนแชทแล้ว"</string>
+    <string name="restore_done_body">"ค้นหาได้ในรายการแชทของคุณ"</string>
+    <string name="restore_failed_title">"การกู้คืนล้มเหลว"</string>
+    <string name="restore_empty">"ข้อมูลสำรองนี้ไม่มีแชท ความทรงจำ หรือตัวอย่าง"</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"สำรอง %1$d แชท"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"กู้คืน %1$d แชท"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"%1$d แชท"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"%1$d ข้อความ"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"%1$d รูปภาพ"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"%1$d ความทรงจำ"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"%1$d ตัวอย่าง"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d มีอยู่แล้ว"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d เก็บเป็นสำเนา"</item>
+    </plurals>
+</resources>

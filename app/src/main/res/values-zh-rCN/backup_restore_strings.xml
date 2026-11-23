@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"备份与恢复"</string>
+    <string name="backup_card_body">"将聊天连同图片、使用统计、记忆和片段保存为一个文件。API 密钥和设置绝不会包含在内。"</string>
+    <string name="backup_action_back_up">"备份"</string>
+    <string name="backup_action_restore">"恢复"</string>
+
+    <string name="backup_pick_title">"备份聊天"</string>
+    <string name="backup_pick_subtitle">"选择要放入文件的聊天和附加内容。"</string>
+    <string name="backup_search_hint">"搜索聊天"</string>
+    <string name="backup_select_all">"全选"</string>
+    <string name="backup_select_none">"清除"</string>
+    <string name="backup_option_images">"图片"</string>
+    <string name="backup_option_usage">"使用统计"</string>
+    <string name="backup_option_memories">"记忆"</string>
+    <string name="backup_option_snippets">"片段"</string>
+    <string name="backup_no_chats">"还没有聊天。记忆和片段仍可备份。"</string>
+    <string name="backup_no_matches">"没有符合搜索的聊天。"</string>
+    <string name="backup_extras_only">"备份附加内容"</string>
+    <string name="backup_loading_chats">"正在收集聊天"</string>
+    <string name="backup_packing">"正在打包聊天"</string>
+    <string name="backup_packing_extras">"正在添加图片和记忆"</string>
+    <string name="backup_progress_count">"第 %1$d 个，共 %2$d 个"</string>
+    <string name="backup_keep_open">"完成前请保持应用开启。"</string>
+    <string name="backup_cancel">"取消"</string>
+    <string name="backup_cancelled">"已取消备份，没有留下文件。"</string>
+    <string name="backup_done_title">"已保存备份"</string>
+    <string name="backup_done_body">"请将此文件保存在安全的位置，例如云存储。"</string>
+    <string name="backup_share">"分享"</string>
+    <string name="backup_share_chooser">"分享备份"</string>
+    <string name="backup_done">"完成"</string>
+    <string name="backup_failed_title">"备份失败"</string>
+    <string name="backup_try_again">"重试"</string>
+    <string name="backup_close">"关闭"</string>
+    <string name="backup_unknown_error">"出了点问题。"</string>
+    <string name="backup_untitled_chat">"未命名聊天"</string>
+
+    <string name="restore_reading">"正在读取备份"</string>
+    <string name="restore_review_title">"恢复聊天"</string>
+    <string name="restore_from">"备份于 %1$s"</string>
+    <string name="restore_legacy_note">"这是较旧的备份文件，没有图片或使用统计。"</string>
+    <string name="restore_on_phone">"已在此手机"</string>
+    <string name="restore_duplicates_label">"已在此手机上的聊天"</string>
+    <string name="restore_skip">"跳过"</string>
+    <string name="restore_keep_both">"两者都保留"</string>
+    <string name="restore_extras">"同时恢复记忆和片段"</string>
+    <string name="restore_extras_only">"恢复附加内容"</string>
+    <string name="restore_working">"正在恢复聊天"</string>
+    <string name="restore_working_extras">"正在恢复图片和记忆"</string>
+    <string name="restore_cancel_note">"取消前已恢复的聊天会留在这台手机上。"</string>
+    <string name="restore_cancelled">"已停止恢复。已恢复的聊天都会保留。"</string>
+    <string name="restore_done_title">"已恢复聊天"</string>
+    <string name="restore_done_body">"可在聊天列表中找到。"</string>
+    <string name="restore_failed_title">"恢复失败"</string>
+    <string name="restore_empty">"此备份没有聊天、记忆或片段。"</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"备份 %1$d 个聊天"</item>
+        <item quantity="other">"备份 %1$d 个聊天"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"恢复 %1$d 个聊天"</item>
+        <item quantity="other">"恢复 %1$d 个聊天"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d 个聊天"</item>
+        <item quantity="other">"%1$d 个聊天"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d 条消息"</item>
+        <item quantity="other">"%1$d 条消息"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d 张图片"</item>
+        <item quantity="other">"%1$d 张图片"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d 条记忆"</item>
+        <item quantity="other">"%1$d 条记忆"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d 个片段"</item>
+        <item quantity="other">"%1$d 个片段"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d 个已存在"</item>
+        <item quantity="other">"%1$d 个已存在"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d 个保留为副本"</item>
+        <item quantity="other">"%1$d 个保留为副本"</item>
+    </plurals>
+</resources>

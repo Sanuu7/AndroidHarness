@@ -1,0 +1,102 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Sauvegarde et restauration"</string>
+    <string name="backup_card_body">"Enregistrez vos discussions avec leurs images, statistiques d\'utilisation, souvenirs et extraits dans un seul fichier. Les clés API et les réglages n\'y figurent jamais."</string>
+    <string name="backup_action_back_up">"Sauvegarder"</string>
+    <string name="backup_action_restore">"Restaurer"</string>
+
+    <string name="backup_pick_title">"Sauvegarder des discussions"</string>
+    <string name="backup_pick_subtitle">"Choisissez les discussions et extras à inclure dans le fichier."</string>
+    <string name="backup_search_hint">"Rechercher des discussions"</string>
+    <string name="backup_select_all">"Tout sélectionner"</string>
+    <string name="backup_select_none">"Vider"</string>
+    <string name="backup_option_images">"Images"</string>
+    <string name="backup_option_usage">"Statistiques d\'utilisation"</string>
+    <string name="backup_option_memories">"Souvenirs"</string>
+    <string name="backup_option_snippets">"Extraits"</string>
+    <string name="backup_no_chats">"Aucune discussion pour l\'instant. Les souvenirs et extraits peuvent quand même être sauvegardés."</string>
+    <string name="backup_no_matches">"Aucune discussion ne correspond à la recherche."</string>
+    <string name="backup_extras_only">"Sauvegarder les extras"</string>
+    <string name="backup_loading_chats">"Collecte de vos discussions"</string>
+    <string name="backup_packing">"Empaquetage des discussions"</string>
+    <string name="backup_packing_extras">"Ajout des images et des souvenirs"</string>
+    <string name="backup_progress_count">"%1$d sur %2$d"</string>
+    <string name="backup_keep_open">"Gardez l\'app ouverte jusqu\'à la fin."</string>
+    <string name="backup_cancel">"Annuler"</string>
+    <string name="backup_cancelled">"Sauvegarde annulée. Aucun fichier n\'a été laissé."</string>
+    <string name="backup_done_title">"Sauvegarde enregistrée"</string>
+    <string name="backup_done_body">"Conservez ce fichier en lieu sûr, par exemple dans votre stockage cloud."</string>
+    <string name="backup_share">"Partager"</string>
+    <string name="backup_share_chooser">"Partager la sauvegarde"</string>
+    <string name="backup_done">"Terminé"</string>
+    <string name="backup_failed_title">"Échec de la sauvegarde"</string>
+    <string name="backup_try_again">"Réessayer"</string>
+    <string name="backup_close">"Fermer"</string>
+    <string name="backup_unknown_error">"Un problème est survenu."</string>
+    <string name="backup_untitled_chat">"Discussion sans titre"</string>
+
+    <string name="restore_reading">"Lecture de la sauvegarde"</string>
+    <string name="restore_review_title">"Restaurer des discussions"</string>
+    <string name="restore_from">"Sauvegardé le %1$s"</string>
+    <string name="restore_legacy_note">"Ce fichier de sauvegarde est ancien ; il ne contient pas d\'images ni de statistiques d\'utilisation."</string>
+    <string name="restore_on_phone">"Sur ce téléphone"</string>
+    <string name="restore_duplicates_label">"Discussions déjà sur ce téléphone"</string>
+    <string name="restore_skip">"Ignorer"</string>
+    <string name="restore_keep_both">"Conserver les deux"</string>
+    <string name="restore_extras">"Restaurer aussi les souvenirs et extraits"</string>
+    <string name="restore_extras_only">"Restaurer les extras"</string>
+    <string name="restore_working">"Restauration des discussions"</string>
+    <string name="restore_working_extras">"Restauration des images et des souvenirs"</string>
+    <string name="restore_cancel_note">"Les discussions restaurées avant l\'annulation restent sur ce téléphone."</string>
+    <string name="restore_cancelled">"Restauration arrêtée. Les discussions déjà restaurées ont été conservées."</string>
+    <string name="restore_done_title">"Discussions restaurées"</string>
+    <string name="restore_done_body">"Retrouvez-les dans votre liste de discussions."</string>
+    <string name="restore_failed_title">"Échec de la restauration"</string>
+    <string name="restore_empty">"Cette sauvegarde ne contient ni discussion, ni souvenir, ni extrait."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"Sauvegarder %1$d discussion"</item>
+        <item quantity="many">"Sauvegarder %1$d discussions"</item>
+        <item quantity="other">"Sauvegarder %1$d discussions"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"Restaurer %1$d discussion"</item>
+        <item quantity="many">"Restaurer %1$d discussions"</item>
+        <item quantity="other">"Restaurer %1$d discussions"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d discussion"</item>
+        <item quantity="many">"%1$d discussions"</item>
+        <item quantity="other">"%1$d discussions"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d message"</item>
+        <item quantity="many">"%1$d messages"</item>
+        <item quantity="other">"%1$d messages"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d image"</item>
+        <item quantity="many">"%1$d images"</item>
+        <item quantity="other">"%1$d images"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d souvenir"</item>
+        <item quantity="many">"%1$d souvenirs"</item>
+        <item quantity="other">"%1$d souvenirs"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d extrait"</item>
+        <item quantity="many">"%1$d extraits"</item>
+        <item quantity="other">"%1$d extraits"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d déjà là"</item>
+        <item quantity="many">"%1$d déjà là"</item>
+        <item quantity="other">"%1$d déjà là"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d gardée comme copie"</item>
+        <item quantity="many">"%1$d gardées comme copies"</item>
+        <item quantity="other">"%1$d gardées comme copies"</item>
+    </plurals>
+</resources>

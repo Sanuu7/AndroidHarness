@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Sicherung &amp; Wiederherstellung"</string>
+    <string name="backup_card_body">"Speichere deine Chats mit Bildern, Nutzungsstatistiken, Erinnerungen und Snippets in einer Datei. API-Schlüssel und Einstellungen landen nie darin."</string>
+    <string name="backup_action_back_up">"Sichern"</string>
+    <string name="backup_action_restore">"Wiederherstellen"</string>
+
+    <string name="backup_pick_title">"Chats sichern"</string>
+    <string name="backup_pick_subtitle">"Wähle die Chats und Extras, die in die Datei kommen."</string>
+    <string name="backup_search_hint">"Chats durchsuchen"</string>
+    <string name="backup_select_all">"Alle auswählen"</string>
+    <string name="backup_select_none">"Leeren"</string>
+    <string name="backup_option_images">"Bilder"</string>
+    <string name="backup_option_usage">"Nutzungsstatistiken"</string>
+    <string name="backup_option_memories">"Erinnerungen"</string>
+    <string name="backup_option_snippets">"Snippets"</string>
+    <string name="backup_no_chats">"Noch keine Chats. Erinnerungen und Snippets lassen sich trotzdem sichern."</string>
+    <string name="backup_no_matches">"Keine Chats passen zur Suche."</string>
+    <string name="backup_extras_only">"Extras sichern"</string>
+    <string name="backup_loading_chats">"Chats werden gesammelt"</string>
+    <string name="backup_packing">"Chats werden gepackt"</string>
+    <string name="backup_packing_extras">"Bilder und Erinnerungen werden hinzugefügt"</string>
+    <string name="backup_progress_count">"%1$d von %2$d"</string>
+    <string name="backup_keep_open">"Lass die App offen, bis dies fertig ist."</string>
+    <string name="backup_cancel">"Abbrechen"</string>
+    <string name="backup_cancelled">"Sicherung abgebrochen. Es blieb keine Datei zurück."</string>
+    <string name="backup_done_title">"Sicherung gespeichert"</string>
+    <string name="backup_done_body">"Bewahre diese Datei an einem sicheren Ort auf, etwa in deinem Cloud-Speicher."</string>
+    <string name="backup_share">"Teilen"</string>
+    <string name="backup_share_chooser">"Sicherung teilen"</string>
+    <string name="backup_done">"Fertig"</string>
+    <string name="backup_failed_title">"Sicherung fehlgeschlagen"</string>
+    <string name="backup_try_again">"Erneut versuchen"</string>
+    <string name="backup_close">"Schließen"</string>
+    <string name="backup_unknown_error">"Etwas ist schiefgelaufen."</string>
+    <string name="backup_untitled_chat">"Unbenannter Chat"</string>
+
+    <string name="restore_reading">"Sicherung wird gelesen"</string>
+    <string name="restore_review_title">"Chats wiederherstellen"</string>
+    <string name="restore_from">"Gesichert am %1$s"</string>
+    <string name="restore_legacy_note">"Dies ist eine ältere Sicherungsdatei; sie enthält keine Bilder oder Nutzungsstatistiken."</string>
+    <string name="restore_on_phone">"Auf diesem Telefon"</string>
+    <string name="restore_duplicates_label">"Chats, die bereits auf diesem Telefon sind"</string>
+    <string name="restore_skip">"Überspringen"</string>
+    <string name="restore_keep_both">"Beide behalten"</string>
+    <string name="restore_extras">"Auch Erinnerungen und Snippets wiederherstellen"</string>
+    <string name="restore_extras_only">"Extras wiederherstellen"</string>
+    <string name="restore_working">"Chats werden wiederhergestellt"</string>
+    <string name="restore_working_extras">"Bilder und Erinnerungen werden wiederhergestellt"</string>
+    <string name="restore_cancel_note">"Bereits wiederhergestellte Chats bleiben auf diesem Telefon."</string>
+    <string name="restore_cancelled">"Wiederherstellung gestoppt. Bisher wiederhergestellte Chats wurden behalten."</string>
+    <string name="restore_done_title">"Chats wiederhergestellt"</string>
+    <string name="restore_done_body">"Du findest sie in deiner Chat-Liste."</string>
+    <string name="restore_failed_title">"Wiederherstellung fehlgeschlagen"</string>
+    <string name="restore_empty">"Diese Sicherung enthält keine Chats, Erinnerungen oder Snippets."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"%1$d Chat sichern"</item>
+        <item quantity="other">"%1$d Chats sichern"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"%1$d Chat wiederherstellen"</item>
+        <item quantity="other">"%1$d Chats wiederherstellen"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d Chat"</item>
+        <item quantity="other">"%1$d Chats"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d Nachricht"</item>
+        <item quantity="other">"%1$d Nachrichten"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d Bild"</item>
+        <item quantity="other">"%1$d Bilder"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d Erinnerung"</item>
+        <item quantity="other">"%1$d Erinnerungen"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d Snippet"</item>
+        <item quantity="other">"%1$d Snippets"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d bereits hier"</item>
+        <item quantity="other">"%1$d bereits hier"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d als Kopie behalten"</item>
+        <item quantity="other">"%1$d als Kopien behalten"</item>
+    </plurals>
+</resources>

@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Sao lưu và khôi phục"</string>
+    <string name="backup_card_body">"Lưu cuộc trò chuyện cùng hình ảnh, thống kê sử dụng, bộ nhớ và đoạn nhắc vào một tệp. Khóa API và cài đặt không bao giờ có trong tệp."</string>
+    <string name="backup_action_back_up">"Sao lưu"</string>
+    <string name="backup_action_restore">"Khôi phục"</string>
+
+    <string name="backup_pick_title">"Sao lưu cuộc trò chuyện"</string>
+    <string name="backup_pick_subtitle">"Chọn các cuộc trò chuyện và mục bổ sung sẽ đưa vào tệp."</string>
+    <string name="backup_search_hint">"Tìm cuộc trò chuyện"</string>
+    <string name="backup_select_all">"Chọn tất cả"</string>
+    <string name="backup_select_none">"Xóa chọn"</string>
+    <string name="backup_option_images">"Hình ảnh"</string>
+    <string name="backup_option_usage">"Thống kê sử dụng"</string>
+    <string name="backup_option_memories">"Bộ nhớ"</string>
+    <string name="backup_option_snippets">"Đoạn nhắc"</string>
+    <string name="backup_no_chats">"Chưa có cuộc trò chuyện. Bộ nhớ và đoạn nhắc vẫn có thể được sao lưu."</string>
+    <string name="backup_no_matches">"Không có cuộc trò chuyện nào khớp với tìm kiếm."</string>
+    <string name="backup_extras_only">"Sao lưu mục bổ sung"</string>
+    <string name="backup_loading_chats">"Đang thu thập cuộc trò chuyện"</string>
+    <string name="backup_packing">"Đang đóng gói cuộc trò chuyện"</string>
+    <string name="backup_packing_extras">"Đang thêm hình ảnh và bộ nhớ"</string>
+    <string name="backup_progress_count">"%1$d trên %2$d"</string>
+    <string name="backup_keep_open">"Giữ ứng dụng mở cho đến khi hoàn tất."</string>
+    <string name="backup_cancel">"Hủy"</string>
+    <string name="backup_cancelled">"Đã hủy sao lưu. Không còn tệp nào."</string>
+    <string name="backup_done_title">"Đã lưu bản sao lưu"</string>
+    <string name="backup_done_body">"Giữ tệp này ở nơi an toàn, chẳng hạn như lưu trữ đám mây."</string>
+    <string name="backup_share">"Chia sẻ"</string>
+    <string name="backup_share_chooser">"Chia sẻ bản sao lưu"</string>
+    <string name="backup_done">"Xong"</string>
+    <string name="backup_failed_title">"Sao lưu thất bại"</string>
+    <string name="backup_try_again">"Thử lại"</string>
+    <string name="backup_close">"Đóng"</string>
+    <string name="backup_unknown_error">"Đã xảy ra lỗi."</string>
+    <string name="backup_untitled_chat">"Cuộc trò chuyện không có tiêu đề"</string>
+
+    <string name="restore_reading">"Đang đọc bản sao lưu"</string>
+    <string name="restore_review_title">"Khôi phục cuộc trò chuyện"</string>
+    <string name="restore_from">"Sao lưu ngày %1$s"</string>
+    <string name="restore_legacy_note">"Đây là tệp sao lưu cũ; không có hình ảnh hay thống kê sử dụng."</string>
+    <string name="restore_on_phone">"Có trên điện thoại này"</string>
+    <string name="restore_duplicates_label">"Cuộc trò chuyện đã có trên điện thoại này"</string>
+    <string name="restore_skip">"Bỏ qua"</string>
+    <string name="restore_keep_both">"Giữ cả hai"</string>
+    <string name="restore_extras">"Khôi phục cả bộ nhớ và đoạn nhắc"</string>
+    <string name="restore_extras_only">"Khôi phục mục bổ sung"</string>
+    <string name="restore_working">"Đang khôi phục cuộc trò chuyện"</string>
+    <string name="restore_working_extras">"Đang khôi phục hình ảnh và bộ nhớ"</string>
+    <string name="restore_cancel_note">"Các cuộc trò chuyện đã khôi phục trước khi hủy vẫn ở trên điện thoại này."</string>
+    <string name="restore_cancelled">"Đã dừng khôi phục. Các cuộc trò chuyện đã khôi phục được giữ lại."</string>
+    <string name="restore_done_title">"Đã khôi phục cuộc trò chuyện"</string>
+    <string name="restore_done_body">"Tìm chúng trong danh sách trò chuyện."</string>
+    <string name="restore_failed_title">"Khôi phục thất bại"</string>
+    <string name="restore_empty">"Bản sao lưu này không có cuộc trò chuyện, bộ nhớ hay đoạn nhắc."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"Sao lưu %1$d cuộc trò chuyện"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"Khôi phục %1$d cuộc trò chuyện"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"%1$d cuộc trò chuyện"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"%1$d tin nhắn"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"%1$d hình ảnh"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"%1$d bộ nhớ"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"%1$d đoạn nhắc"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d đã có mặt"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d được giữ làm bản sao"</item>
+    </plurals>
+</resources>

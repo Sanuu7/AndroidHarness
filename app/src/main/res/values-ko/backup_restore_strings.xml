@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"백업 및 복원"</string>
+    <string name="backup_card_body">"채팅을 이미지, 사용 통계, 메모리, 스니펫과 함께 하나의 파일로 저장합니다. API 키와 설정은 포함되지 않습니다."</string>
+    <string name="backup_action_back_up">"백업"</string>
+    <string name="backup_action_restore">"복원"</string>
+
+    <string name="backup_pick_title">"채팅 백업"</string>
+    <string name="backup_pick_subtitle">"파일에 포함할 채팅과 추가 항목을 선택하세요."</string>
+    <string name="backup_search_hint">"채팅 검색"</string>
+    <string name="backup_select_all">"모두 선택"</string>
+    <string name="backup_select_none">"지우기"</string>
+    <string name="backup_option_images">"이미지"</string>
+    <string name="backup_option_usage">"사용 통계"</string>
+    <string name="backup_option_memories">"메모리"</string>
+    <string name="backup_option_snippets">"스니펫"</string>
+    <string name="backup_no_chats">"아직 채팅이 없습니다. 메모리와 스니펫은 백업할 수 있습니다."</string>
+    <string name="backup_no_matches">"검색과 일치하는 채팅이 없습니다."</string>
+    <string name="backup_extras_only">"추가 항목 백업"</string>
+    <string name="backup_loading_chats">"채팅을 모으는 중"</string>
+    <string name="backup_packing">"채팅을 묶는 중"</string>
+    <string name="backup_packing_extras">"이미지와 메모리를 추가하는 중"</string>
+    <string name="backup_progress_count">"%2$d개 중 %1$d개"</string>
+    <string name="backup_keep_open">"끝날 때까지 앱을 열어 두세요."</string>
+    <string name="backup_cancel">"취소"</string>
+    <string name="backup_cancelled">"백업을 취소했습니다. 남은 파일이 없습니다."</string>
+    <string name="backup_done_title">"백업을 저장했습니다"</string>
+    <string name="backup_done_body">"이 파일을 클라우드 저장소처럼 안전한 곳에 보관하세요."</string>
+    <string name="backup_share">"공유"</string>
+    <string name="backup_share_chooser">"백업 공유"</string>
+    <string name="backup_done">"완료"</string>
+    <string name="backup_failed_title">"백업 실패"</string>
+    <string name="backup_try_again">"다시 시도"</string>
+    <string name="backup_close">"닫기"</string>
+    <string name="backup_unknown_error">"문제가 발생했습니다."</string>
+    <string name="backup_untitled_chat">"제목 없는 채팅"</string>
+
+    <string name="restore_reading">"백업을 읽는 중"</string>
+    <string name="restore_review_title">"채팅 복원"</string>
+    <string name="restore_from">"%1$s에 백업됨"</string>
+    <string name="restore_legacy_note">"오래된 백업 파일이라 이미지나 사용 통계가 없습니다."</string>
+    <string name="restore_on_phone">"이 기기에 있음"</string>
+    <string name="restore_duplicates_label">"이미 이 기기에 있는 채팅"</string>
+    <string name="restore_skip">"건너뛰기"</string>
+    <string name="restore_keep_both">"둘 다 유지"</string>
+    <string name="restore_extras">"메모리와 스니펫도 복원"</string>
+    <string name="restore_extras_only">"추가 항목 복원"</string>
+    <string name="restore_working">"채팅을 복원하는 중"</string>
+    <string name="restore_working_extras">"이미지와 메모리를 복원하는 중"</string>
+    <string name="restore_cancel_note">"취소 전에 복원된 채팅은 이 기기에 남습니다."</string>
+    <string name="restore_cancelled">"복원을 중지했습니다. 지금까지 복원된 채팅은 유지됩니다."</string>
+    <string name="restore_done_title">"채팅을 복원했습니다"</string>
+    <string name="restore_done_body">"채팅 목록에서 찾을 수 있습니다."</string>
+    <string name="restore_failed_title">"복원 실패"</string>
+    <string name="restore_empty">"이 백업에는 채팅, 메모리, 스니펫이 없습니다."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="other">"채팅 %1$d개 백업"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="other">"채팅 %1$d개 복원"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="other">"채팅 %1$d개"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="other">"메시지 %1$d개"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="other">"이미지 %1$d개"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="other">"메모리 %1$d개"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="other">"스니펫 %1$d개"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="other">"%1$d개는 이미 있음"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="other">"%1$d개를 사본으로 유지"</item>
+    </plurals>
+</resources>

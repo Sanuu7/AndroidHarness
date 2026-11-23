@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"Yedekleme ve geri yükleme"</string>
+    <string name="backup_card_body">"Sohbetlerinizi görseller, kullanım istatistikleri, anılar ve parçacıklarla birlikte tek bir dosyaya kaydedin. API anahtarları ve ayarlar asla dosyaya girmez."</string>
+    <string name="backup_action_back_up">"Yedekle"</string>
+    <string name="backup_action_restore">"Geri yükle"</string>
+
+    <string name="backup_pick_title">"Sohbetleri yedekle"</string>
+    <string name="backup_pick_subtitle">"Dosyaya girecek sohbetleri ve ekleri seçin."</string>
+    <string name="backup_search_hint">"Sohbetlerde ara"</string>
+    <string name="backup_select_all">"Tümünü seç"</string>
+    <string name="backup_select_none">"Temizle"</string>
+    <string name="backup_option_images">"Görseller"</string>
+    <string name="backup_option_usage">"Kullanım istatistikleri"</string>
+    <string name="backup_option_memories">"Anılar"</string>
+    <string name="backup_option_snippets">"Parçacıklar"</string>
+    <string name="backup_no_chats">"Henüz sohbet yok. Anılar ve parçacıklar yine de yedeklenebilir."</string>
+    <string name="backup_no_matches">"Aramanızla eşleşen sohbet yok."</string>
+    <string name="backup_extras_only">"Ekleri yedekle"</string>
+    <string name="backup_loading_chats">"Sohbetleriniz toplanıyor"</string>
+    <string name="backup_packing">"Sohbetler paketleniyor"</string>
+    <string name="backup_packing_extras">"Görseller ve anılar ekleniyor"</string>
+    <string name="backup_progress_count">"%1$d / %2$d"</string>
+    <string name="backup_keep_open">"Bu iş bitene kadar uygulamayı açık tutun."</string>
+    <string name="backup_cancel">"İptal"</string>
+    <string name="backup_cancelled">"Yedekleme iptal edildi. Geride dosya kalmadı."</string>
+    <string name="backup_done_title">"Yedek kaydedildi"</string>
+    <string name="backup_done_body">"Bu dosyayı bulut depolama gibi güvenli bir yerde saklayın."</string>
+    <string name="backup_share">"Paylaş"</string>
+    <string name="backup_share_chooser">"Yedeği paylaş"</string>
+    <string name="backup_done">"Bitti"</string>
+    <string name="backup_failed_title">"Yedekleme başarısız"</string>
+    <string name="backup_try_again">"Yeniden dene"</string>
+    <string name="backup_close">"Kapat"</string>
+    <string name="backup_unknown_error">"Bir şeyler ters gitti."</string>
+    <string name="backup_untitled_chat">"Başlıksız sohbet"</string>
+
+    <string name="restore_reading">"Yedek okunuyor"</string>
+    <string name="restore_review_title">"Sohbetleri geri yükle"</string>
+    <string name="restore_from">"%1$s tarihinde yedeklendi"</string>
+    <string name="restore_legacy_note">"Bu eski bir yedek dosyası; görsel veya kullanım istatistiği içermiyor."</string>
+    <string name="restore_on_phone">"Bu telefonda"</string>
+    <string name="restore_duplicates_label">"Bu telefonda zaten olan sohbetler"</string>
+    <string name="restore_skip">"Atla"</string>
+    <string name="restore_keep_both">"İkisini de tut"</string>
+    <string name="restore_extras">"Anıları ve parçacıkları da geri yükle"</string>
+    <string name="restore_extras_only">"Ekleri geri yükle"</string>
+    <string name="restore_working">"Sohbetler geri yükleniyor"</string>
+    <string name="restore_working_extras">"Görseller ve anılar geri yükleniyor"</string>
+    <string name="restore_cancel_note">"İptalden önce geri yüklenen sohbetler bu telefonda kalır."</string>
+    <string name="restore_cancelled">"Geri yükleme durduruldu. Şimdiye kadar geri yüklenen sohbetler tutuldu."</string>
+    <string name="restore_done_title">"Sohbetler geri yüklendi"</string>
+    <string name="restore_done_body">"Onları sohbet listenizde bulun."</string>
+    <string name="restore_failed_title">"Geri yükleme başarısız"</string>
+    <string name="restore_empty">"Bu yedekte sohbet, anı veya parçacık yok."</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"%1$d sohbeti yedekle"</item>
+        <item quantity="other">"%1$d sohbeti yedekle"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"%1$d sohbeti geri yükle"</item>
+        <item quantity="other">"%1$d sohbeti geri yükle"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d sohbet"</item>
+        <item quantity="other">"%1$d sohbet"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d mesaj"</item>
+        <item quantity="other">"%1$d mesaj"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d görsel"</item>
+        <item quantity="other">"%1$d görsel"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d anı"</item>
+        <item quantity="other">"%1$d anı"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d parçacık"</item>
+        <item quantity="other">"%1$d parçacık"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d zaten burada"</item>
+        <item quantity="other">"%1$d zaten burada"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d kopya olarak tutuldu"</item>
+        <item quantity="other">"%1$d kopya olarak tutuldu"</item>
+    </plurals>
+</resources>

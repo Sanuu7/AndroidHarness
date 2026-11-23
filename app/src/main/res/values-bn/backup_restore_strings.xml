@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_title">"ব্যাকআপ ও পুনরুদ্ধার"</string>
+    <string name="backup_card_body">"আপনার চ্যাট, ছবি, ব্যবহারের পরিসংখ্যান, স্মৃতি ও স্নিপেট এক ফাইলে সংরক্ষণ করুন। API কী ও সেটিংস কখনো এতে যায় না।"</string>
+    <string name="backup_action_back_up">"ব্যাকআপ করুন"</string>
+    <string name="backup_action_restore">"পুনরুদ্ধার করুন"</string>
+
+    <string name="backup_pick_title">"চ্যাট ব্যাকআপ করুন"</string>
+    <string name="backup_pick_subtitle">"ফাইলে যেসব চ্যাট ও অতিরিক্ত জিনিস যাবে সেগুলো বেছে নিন।"</string>
+    <string name="backup_search_hint">"চ্যাট খুঁজুন"</string>
+    <string name="backup_select_all">"সব বাছাই করুন"</string>
+    <string name="backup_select_none">"মুছুন"</string>
+    <string name="backup_option_images">"ছবি"</string>
+    <string name="backup_option_usage">"ব্যবহারের পরিসংখ্যান"</string>
+    <string name="backup_option_memories">"স্মৃতি"</string>
+    <string name="backup_option_snippets">"স্নিপেট"</string>
+    <string name="backup_no_chats">"এখনো কোনো চ্যাট নেই। স্মৃতি ও স্নিপেট তবুও ব্যাকআপ করা যাবে।"</string>
+    <string name="backup_no_matches">"আপনার খোঁজের সঙ্গে কোনো চ্যাট মেলেনি।"</string>
+    <string name="backup_extras_only">"অতিরিক্ত জিনিস ব্যাকআপ করুন"</string>
+    <string name="backup_loading_chats">"আপনার চ্যাট সংগ্রহ করা হচ্ছে"</string>
+    <string name="backup_packing">"চ্যাট প্যাক করা হচ্ছে"</string>
+    <string name="backup_packing_extras">"ছবি ও স্মৃতি যোগ করা হচ্ছে"</string>
+    <string name="backup_progress_count">"%2$d-এর মধ্যে %1$d"</string>
+    <string name="backup_keep_open">"কাজ শেষ না হওয়া পর্যন্ত অ্যাপ খুলে রাখুন।"</string>
+    <string name="backup_cancel">"বাতিল"</string>
+    <string name="backup_cancelled">"ব্যাকআপ বাতিল হয়েছে। কোনো ফাইল রয়ে যায়নি।"</string>
+    <string name="backup_done_title">"ব্যাকআপ সংরক্ষিত"</string>
+    <string name="backup_done_body">"এই ফাইলটি নিরাপদ জায়গায় রাখুন, যেমন আপনার ক্লাউড স্টোরেজে।"</string>
+    <string name="backup_share">"শেয়ার"</string>
+    <string name="backup_share_chooser">"ব্যাকআপ শেয়ার করুন"</string>
+    <string name="backup_done">"সম্পন্ন"</string>
+    <string name="backup_failed_title">"ব্যাকআপ ব্যর্থ"</string>
+    <string name="backup_try_again">"আবার চেষ্টা করুন"</string>
+    <string name="backup_close">"বন্ধ"</string>
+    <string name="backup_unknown_error">"কিছু একটা ভুল হয়েছে।"</string>
+    <string name="backup_untitled_chat">"শিরোনামহীন চ্যাট"</string>
+
+    <string name="restore_reading">"ব্যাকআপ পড়া হচ্ছে"</string>
+    <string name="restore_review_title">"চ্যাট পুনরুদ্ধার করুন"</string>
+    <string name="restore_from">"%1$s তারিখে ব্যাকআপ করা"</string>
+    <string name="restore_legacy_note">"এটি পুরোনো ব্যাকআপ ফাইল; এতে ছবি বা ব্যবহারের পরিসংখ্যান নেই।"</string>
+    <string name="restore_on_phone">"এই ফোনে আছে"</string>
+    <string name="restore_duplicates_label">"এই ফোনে ইতিমধ্যে থাকা চ্যাট"</string>
+    <string name="restore_skip">"এড়িয়ে যান"</string>
+    <string name="restore_keep_both">"দুটোই রাখুন"</string>
+    <string name="restore_extras">"স্মৃতি ও স্নিপেটও পুনরুদ্ধার করুন"</string>
+    <string name="restore_extras_only">"অতিরিক্ত জিনিস পুনরুদ্ধার করুন"</string>
+    <string name="restore_working">"চ্যাট পুনরুদ্ধার হচ্ছে"</string>
+    <string name="restore_working_extras">"ছবি ও স্মৃতি পুনরুদ্ধার হচ্ছে"</string>
+    <string name="restore_cancel_note">"বাতিলের আগে পুনরুদ্ধার করা চ্যাট এই ফোনে থেকে যাবে।"</string>
+    <string name="restore_cancelled">"পুনরুদ্ধার থেমে গেছে। এতক্ষণে পুনরুদ্ধার করা চ্যাট রাখা হয়েছে।"</string>
+    <string name="restore_done_title">"চ্যাট পুনরুদ্ধার হয়েছে"</string>
+    <string name="restore_done_body">"আপনার চ্যাট তালিকায় সেগুলো পাবেন।"</string>
+    <string name="restore_failed_title">"পুনরুদ্ধার ব্যর্থ"</string>
+    <string name="restore_empty">"এই ব্যাকআপে কোনো চ্যাট, স্মৃতি বা স্নিপেট নেই।"</string>
+
+    <plurals name="backup_start_export">
+        <item quantity="one">"%1$d চ্যাট ব্যাকআপ করুন"</item>
+        <item quantity="other">"%1$d চ্যাট ব্যাকআপ করুন"</item>
+    </plurals>
+    <plurals name="restore_start">
+        <item quantity="one">"%1$d চ্যাট পুনরুদ্ধার করুন"</item>
+        <item quantity="other">"%1$d চ্যাট পুনরুদ্ধার করুন"</item>
+    </plurals>
+    <plurals name="backup_chip_chats">
+        <item quantity="one">"%1$d চ্যাট"</item>
+        <item quantity="other">"%1$d চ্যাট"</item>
+    </plurals>
+    <plurals name="backup_chip_messages">
+        <item quantity="one">"%1$d বার্তা"</item>
+        <item quantity="other">"%1$d বার্তা"</item>
+    </plurals>
+    <plurals name="backup_chip_images">
+        <item quantity="one">"%1$d ছবি"</item>
+        <item quantity="other">"%1$d ছবি"</item>
+    </plurals>
+    <plurals name="backup_chip_memories">
+        <item quantity="one">"%1$d স্মৃতি"</item>
+        <item quantity="other">"%1$d স্মৃতি"</item>
+    </plurals>
+    <plurals name="backup_chip_snippets">
+        <item quantity="one">"%1$d স্নিপেট"</item>
+        <item quantity="other">"%1$d স্নিপেট"</item>
+    </plurals>
+    <plurals name="restore_chip_skipped">
+        <item quantity="one">"%1$d ইতিমধ্যে আছে"</item>
+        <item quantity="other">"%1$d ইতিমধ্যে আছে"</item>
+    </plurals>
+    <plurals name="restore_chip_copies">
+        <item quantity="one">"%1$d কপি হিসেবে রাখা হয়েছে"</item>
+        <item quantity="other">"%1$d কপি হিসেবে রাখা হয়েছে"</item>
+    </plurals>
+</resources>
