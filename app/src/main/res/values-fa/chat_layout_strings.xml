@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"چیدمان گفتگو"</string>
+    <string name="chat_layout_search_desc">"فاصله، فاصله خطوط و حاشیه‌های کناری در گفتگوها"</string>
+    <string name="chat_layout_hint">"فاصله و متن گفتگوها را تنظیم کنید. پیش‌نمایش همراه با تنظیم به‌روز می‌شود."</string>
+    <string name="chat_layout_density">"فاصله"</string>
+    <string name="chat_density_compact">"فشرده"</string>
+    <string name="chat_density_default">"پیش‌فرض"</string>
+    <string name="chat_density_comfortable">"راحت"</string>
+    <string name="chat_layout_line_spacing">"فاصله خطوط"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"حاشیه‌های کناری"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"بازنشانی"</string>
+    <string name="chat_layout_preview_question">"چگونه یک گفتگوی طولانی را خوانا نگه دارم؟"</string>
+    <string name="chat_layout_preview_answer">"فاصله‌ای را انتخاب کنید که با صفحه شما هماهنگ باشد. فاصله کمتر باعث می‌شود روی گوشی کوچک بیشتر جا شود و فاصله خطوط بیشتر برای پاسخ‌های طولانی چشم را آزار نمی‌دهد."</string>
+    <string name="chat_layout_preview_composer">"پیام…"</string>
+</resources>

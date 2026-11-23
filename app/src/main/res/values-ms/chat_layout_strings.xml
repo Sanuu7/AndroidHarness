@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Susun atur sembang"</string>
+    <string name="chat_layout_search_desc">"Jarak, jarak baris dan margin sisi dalam perbualan"</string>
+    <string name="chat_layout_hint">"Laraskan jarak dan teks dalam perbualan. Pratonton dikemas kini semasa anda melaraskan."</string>
+    <string name="chat_layout_density">"Jarak"</string>
+    <string name="chat_density_compact">"Padat"</string>
+    <string name="chat_density_default">"Lalai"</string>
+    <string name="chat_density_comfortable">"Selesa"</string>
+    <string name="chat_layout_line_spacing">"Jarak baris"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Margin sisi"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Tetapkan semula"</string>
+    <string name="chat_layout_preview_question">"Bagaimana saya mengekalkan sembang panjang mudah dibaca?"</string>
+    <string name="chat_layout_preview_answer">"Pilih jarak yang sesuai dengan skrin anda. Jarak lebih rapat memuatkan lebih banyak pada telefon kecil, manakala jarak baris lebih lebar lebih selesa pada mata untuk jawapan panjang."</string>
+    <string name="chat_layout_preview_composer">"Mesej…"</string>
+</resources>

@@ -18,6 +18,9 @@ import com.androidharness.app.data.ThemePalette
 
 val LocalProgressBarStyle = staticCompositionLocalOf { ProgressBarStyle.FLAT }
 
+/** Chat density, line spacing and side margin from Appearance settings. */
+val LocalChatLayout = androidx.compose.runtime.compositionLocalOf { com.androidharness.app.data.ChatLayoutStyle() }
+
 /**
  * App theme: Material You dynamic color on Android 12+, with a Google-blue–seeded
  * palette as the fallback, selectable tonal palettes and Google Sans Flex typography.
@@ -41,6 +44,7 @@ fun HarnessTheme(
     glassTransparency: Float = .5f,
     motionBlurEnabled: Boolean = false,
     motionBlurIntensity: Float = .5f,
+    chatLayout: com.androidharness.app.data.ChatLayoutStyle = com.androidharness.app.data.ChatLayoutStyle(),
     content: @Composable () -> Unit,
 ) {
     val dark = when (themeMode) {
@@ -72,6 +76,7 @@ fun HarnessTheme(
     CompositionLocalProvider(
         LocalStatusColors provides (if (dark) StatusDark else StatusLight),
         LocalProgressBarStyle provides progressBarStyle,
+        LocalChatLayout provides chatLayout,
         LocalMotionBlur provides MotionBlurStyle(motionBlurEnabled, motionBlurIntensity),
     ) {
         MaterialTheme(

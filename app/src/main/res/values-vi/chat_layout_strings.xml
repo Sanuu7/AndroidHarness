@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Bố cục trò chuyện"</string>
+    <string name="chat_layout_search_desc">"Khoảng cách, giãn dòng và lề hai bên trong cuộc trò chuyện"</string>
+    <string name="chat_layout_hint">"Điều chỉnh khoảng cách và chữ trong cuộc trò chuyện. Bản xem trước cập nhật khi bạn chỉnh."</string>
+    <string name="chat_layout_density">"Khoảng cách"</string>
+    <string name="chat_density_compact">"Gọn"</string>
+    <string name="chat_density_default">"Mặc định"</string>
+    <string name="chat_density_comfortable">"Thoáng"</string>
+    <string name="chat_layout_line_spacing">"Giãn dòng"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Lề hai bên"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Đặt lại"</string>
+    <string name="chat_layout_preview_question">"Làm sao để giữ cuộc trò chuyện dài dễ đọc?"</string>
+    <string name="chat_layout_preview_answer">"Chọn khoảng cách phù hợp với màn hình của bạn. Khoảng cách chặt giúp hiển thị nhiều hơn trên điện thoại nhỏ, còn giãn dòng rộng dễ chịu cho mắt khi đọc câu trả lời dài."</string>
+    <string name="chat_layout_preview_composer">"Tin nhắn…"</string>
+</resources>

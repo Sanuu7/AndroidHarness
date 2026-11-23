@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Layout ng chat"</string>
+    <string name="chat_layout_search_desc">"Espasyo, agwat ng linya, at gilid sa mga usapan"</string>
+    <string name="chat_layout_hint">"Ayusin ang espasyo at teksto sa mga usapan. Nag-a-update ang preview habang nag-aayos ka."</string>
+    <string name="chat_layout_density">"Espasyo"</string>
+    <string name="chat_density_compact">"Siksik"</string>
+    <string name="chat_density_default">"Default"</string>
+    <string name="chat_density_comfortable">"Komportable"</string>
+    <string name="chat_layout_line_spacing">"Agwat ng linya"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Gilid"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"I-reset"</string>
+    <string name="chat_layout_preview_question">"Paano ko pananatilihing madaling basahin ang mahabang chat?"</string>
+    <string name="chat_layout_preview_answer">"Piliin ang espasyong bagay sa iyong screen. Mas marami ang kasya sa maliit na telepono kapag masikip ang espasyo, habang mas magaan sa mata ang mas malawak na agwat ng linya para sa mahabang sagot."</string>
+    <string name="chat_layout_preview_composer">"Mensahe…"</string>
+</resources>

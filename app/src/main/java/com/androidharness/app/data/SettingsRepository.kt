@@ -45,6 +45,7 @@ data class AppSettings(
     val motionBlurEnabled: Boolean = false,
     val motionBlurIntensity: Float = 0.5f,
     val progressBarStyle: ProgressBarStyle = ProgressBarStyle.FLAT,
+    val chatLayout: ChatLayoutStyle = ChatLayoutStyle(),
     val workspaceLayout: WorkspaceLayoutMode = WorkspaceLayoutMode.AUTO,
     val editorWordWrap: Boolean = false,
     val editorMatchCase: Boolean = false,
@@ -345,6 +346,9 @@ class SettingsRepository(private val context: Context) {
         val MOTION_BLUR_ENABLED = booleanPreferencesKey("motion_blur_enabled")
         val MOTION_BLUR_INTENSITY = floatPreferencesKey("motion_blur_intensity")
         val PROGRESS_BAR_STYLE = stringPreferencesKey("progress_bar_style")
+        val CHAT_DENSITY = stringPreferencesKey("chat_density")
+        val CHAT_LINE_SPACING = floatPreferencesKey("chat_line_spacing")
+        val CHAT_SIDE_MARGIN = intPreferencesKey("chat_side_margin")
         val WORKSPACE_LAYOUT = stringPreferencesKey("workspace_layout")
         val EDITOR_WORD_WRAP = booleanPreferencesKey("editor_word_wrap")
         val EDITOR_MATCH_CASE = booleanPreferencesKey("editor_match_case")
@@ -489,6 +493,11 @@ class SettingsRepository(private val context: Context) {
             motionBlurIntensity = (prefs[Keys.MOTION_BLUR_INTENSITY] ?: .5f).let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f },
             progressBarStyle = ProgressBarStyle.entries.firstOrNull { it.name == prefs[Keys.PROGRESS_BAR_STYLE] }
                 ?: ProgressBarStyle.FLAT,
+            chatLayout = ChatLayoutStyle(
+                density = ChatDensity.entries.firstOrNull { it.name == prefs[Keys.CHAT_DENSITY] } ?: ChatDensity.DEFAULT,
+                lineSpacing = ChatLayoutStyle.clampLineSpacing(prefs[Keys.CHAT_LINE_SPACING]),
+                sideMargin = ChatLayoutStyle.clampSideMargin(prefs[Keys.CHAT_SIDE_MARGIN]),
+            ),
             workspaceLayout = WorkspaceLayoutMode.fromStored(prefs[Keys.WORKSPACE_LAYOUT])
                 ?: WorkspaceLayoutMode.AUTO,
             editorWordWrap = prefs[Keys.EDITOR_WORD_WRAP] ?: false,
@@ -631,6 +640,9 @@ class SettingsRepository(private val context: Context) {
             p[Keys.MOTION_BLUR_ENABLED] = s.motionBlurEnabled
             p[Keys.MOTION_BLUR_INTENSITY] = s.motionBlurIntensity.let { if (it.isFinite()) it.coerceIn(0f, 1f) else .5f }
             p[Keys.PROGRESS_BAR_STYLE] = s.progressBarStyle.name
+            p[Keys.CHAT_DENSITY] = s.chatLayout.density.name
+            p[Keys.CHAT_LINE_SPACING] = ChatLayoutStyle.clampLineSpacing(s.chatLayout.lineSpacing)
+            p[Keys.CHAT_SIDE_MARGIN] = ChatLayoutStyle.clampSideMargin(s.chatLayout.sideMargin)
             p[Keys.WORKSPACE_LAYOUT] = s.workspaceLayout.name
             p[Keys.EDITOR_WORD_WRAP] = s.editorWordWrap
             p[Keys.EDITOR_MATCH_CASE] = s.editorMatchCase
@@ -931,6 +943,14 @@ class SettingsRepository(private val context: Context) {
             if (canvas.adaptColors) {
                 prefs[Keys.DYNAMIC_COLOR] = false
             }
+        }
+    }
+
+    suspend fun setChatLayout(style: ChatLayoutStyle) {
+        context.settingsStore.edit {
+            it[Keys.CHAT_DENSITY] = style.density.name
+            it[Keys.CHAT_LINE_SPACING] = ChatLayoutStyle.clampLineSpacing(style.lineSpacing)
+            it[Keys.CHAT_SIDE_MARGIN] = ChatLayoutStyle.clampSideMargin(style.sideMargin)
         }
     }
 

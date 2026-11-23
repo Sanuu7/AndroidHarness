@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Sohbet düzeni"</string>
+    <string name="chat_layout_search_desc">"Sohbetlerde boşluk, satır aralığı ve yan kenar boşlukları"</string>
+    <string name="chat_layout_hint">"Sohbetlerde boşluğu ve metni ayarlayın. Önizleme, siz ayarladıkça güncellenir."</string>
+    <string name="chat_layout_density">"Boşluk"</string>
+    <string name="chat_density_compact">"Sıkı"</string>
+    <string name="chat_density_default">"Varsayılan"</string>
+    <string name="chat_density_comfortable">"Geniş"</string>
+    <string name="chat_layout_line_spacing">"Satır aralığı"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Yan kenar boşlukları"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Sıfırla"</string>
+    <string name="chat_layout_preview_question">"Uzun bir sohbeti nasıl okunaklı tutarım?"</string>
+    <string name="chat_layout_preview_answer">"Ekranınıza uyan boşluğu seçin. Dar boşluk küçük bir telefonda daha fazlasını gösterir, geniş satır aralığı ise uzun yanıtları okurken gözleri yormaz."</string>
+    <string name="chat_layout_preview_composer">"Mesaj…"</string>
+</resources>

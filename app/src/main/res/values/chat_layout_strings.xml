@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">Chat layout</string>
+    <string name="chat_layout_search_desc">Spacing, line spacing and side margins in conversations</string>
+    <string name="chat_layout_hint">Tune spacing and text in conversations. The preview updates as you adjust.</string>
+    <string name="chat_layout_density">Spacing</string>
+    <string name="chat_density_compact">Compact</string>
+    <string name="chat_density_default">Default</string>
+    <string name="chat_density_comfortable">Comfortable</string>
+    <string name="chat_layout_line_spacing">Line spacing</string>
+    <string name="chat_layout_line_spacing_value">%1$.1fx</string>
+    <string name="chat_layout_side_margin">Side margins</string>
+    <string name="chat_layout_side_margin_value">%1$d dp</string>
+    <string name="chat_layout_reset">Reset</string>
+    <string name="chat_layout_preview_question">How do I keep a long chat easy to read?</string>
+    <string name="chat_layout_preview_answer">Pick the spacing that suits your screen. Tighter spacing fits more on a small phone, while wider line spacing is easier on the eyes for long answers.</string>
+    <string name="chat_layout_preview_composer">Message…</string>
+</resources>

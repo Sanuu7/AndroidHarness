@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"চ্যাট লেআউট"</string>
+    <string name="chat_layout_search_desc">"কথোপকথনে স্পেসিং, লাইন স্পেসিং এবং পাশের মার্জিন"</string>
+    <string name="chat_layout_hint">"কথোপকথনের স্পেসিং ও লেখা সমন্বয় করুন। সামঞ্জস্য করার সাথে সাথে প্রিভিউ আপডেট হয়।"</string>
+    <string name="chat_layout_density">"স্পেসিং"</string>
+    <string name="chat_density_compact">"কমপ্যাক্ট"</string>
+    <string name="chat_density_default">"ডিফল্ট"</string>
+    <string name="chat_density_comfortable">"আরামদায়ক"</string>
+    <string name="chat_layout_line_spacing">"লাইন স্পেসিং"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"পাশের মার্জিন"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"রিসেট"</string>
+    <string name="chat_layout_preview_question">"দীর্ঘ চ্যাট পড়তে সহজ রাখব কীভাবে?"</string>
+    <string name="chat_layout_preview_answer">"আপনার স্ক্রিনের উপযোগী স্পেসিং বেছে নিন। কম স্পেসিং ছোট ফোনে বেশি দেখায়, আর বেশি লাইন স্পেসিং দীর্ঘ উত্তরে চোখের জন্য আরামদায়ক।"</string>
+    <string name="chat_layout_preview_composer">"বার্তা…"</string>
+</resources>

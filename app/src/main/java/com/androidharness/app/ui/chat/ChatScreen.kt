@@ -63,6 +63,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.ui.layout.onGloballyPositioned
@@ -1730,9 +1731,12 @@ private fun ChatScreenContent(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(if (floatingGlass) PaddingValues(bottom = padding.calculateBottomPadding()) else padding)
+                // The keyboard height already covers the navigation bar, so imePadding below must not add it again (#127).
+                .consumeWindowInsets(padding)
                 .background(if (com.androidharness.app.ui.theme.LocalHarnessCanvasVisible.current) androidx.compose.ui.graphics.Color.Transparent else MaterialTheme.colorScheme.surface),
             contentAlignment = Alignment.TopCenter,
         ) {
+            val chatLayout = com.androidharness.app.ui.theme.LocalChatLayout.current
             Column(
                 modifier = Modifier
                     .then(if (desktopLayout) Modifier.widthIn(max = 880.dp) else Modifier)
@@ -1916,12 +1920,13 @@ private fun ChatScreenContent(
                                 .motionBlur(listState)
                                 .nestedScroll(userScrollObserver),
                             contentPadding = PaddingValues(
-                                start = 18.dp, top = 24.dp + (if (floatingGlass) padding.calculateTopPadding() else 0.dp), end = 18.dp,
-                                bottom = 24.dp + (if (floatingGlass) with(density) { glassComposerHeight.toDp() } else 0.dp),
+                                start = chatLayout.sideMargin.dp, top = 24.dp * chatLayout.density.scale + (if (floatingGlass) padding.calculateTopPadding() else 0.dp),
+                                end = chatLayout.sideMargin.dp,
+                                bottom = 24.dp * chatLayout.density.scale + (if (floatingGlass) with(density) { glassComposerHeight.toDp() } else 0.dp),
                             ),
                             // Top-anchored: a sent question stays put while the
                             // answer grows below; short chats no longer sit at the bottom.
-                            verticalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(12.dp * chatLayout.density.scale),
                             // A new conversation has nothing to scroll; its empty state scrolls itself if it must.
                             userScrollEnabled = !(state.messages.isEmpty() && state.streamingText == null && !state.isLoadingOlderMessages),
                         ) {

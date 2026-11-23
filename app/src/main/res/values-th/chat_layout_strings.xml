@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"เลย์เอาต์แชท"</string>
+    <string name="chat_layout_search_desc">"ระยะห่าง ระยะบรรทัด และขอบด้านข้างในการสนทนา"</string>
+    <string name="chat_layout_hint">"ปรับระยะห่างและข้อความในการสนทนา ตัวอย่างจะอัปเดตขณะคุณปรับ"</string>
+    <string name="chat_layout_density">"ระยะห่าง"</string>
+    <string name="chat_density_compact">"กะทัดรัด"</string>
+    <string name="chat_density_default">"ค่าเริ่มต้น"</string>
+    <string name="chat_density_comfortable">"สบายตา"</string>
+    <string name="chat_layout_line_spacing">"ระยะบรรทัด"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"ขอบด้านข้าง"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"รีเซ็ต"</string>
+    <string name="chat_layout_preview_question">"จะทำให้แชทยาวอ่านง่ายได้อย่างไร?"</string>
+    <string name="chat_layout_preview_answer">"เลือกระยะห่างที่เหมาะกับหน้าจอของคุณ ระยะห่างที่แน่นขึ้นจะแสดงได้มากขึ้นบนมือถือจอเล็ก ส่วนระยะบรรทัดที่กว้างขึ้นจะถนอมสายตาเมื่ออ่านคำตอบยาว ๆ"</string>
+    <string name="chat_layout_preview_composer">"ข้อความ…"</string>
+</resources>

@@ -728,8 +728,8 @@ private fun TableBlock(
 }
 
 @Composable
-private fun answerBodyStyle(): TextStyle = MaterialTheme.typography.bodyLarge.let {
-    it.copy(lineHeight = it.fontSize * 1.6f)
+internal fun answerBodyStyle(): TextStyle = MaterialTheme.typography.bodyLarge.let {
+    it.copy(lineHeight = it.fontSize * com.androidharness.app.ui.theme.LocalChatLayout.current.lineSpacing)
 }
 
 /** Paragraph text with tap-to-open links (annotations set by [styledText]). */

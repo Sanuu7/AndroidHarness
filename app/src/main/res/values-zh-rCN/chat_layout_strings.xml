@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"聊天布局"</string>
+    <string name="chat_layout_search_desc">"对话中的间距、行距和侧边距"</string>
+    <string name="chat_layout_hint">"调整对话中的间距和文字。预览会随调整实时更新。"</string>
+    <string name="chat_layout_density">"间距"</string>
+    <string name="chat_density_compact">"紧凑"</string>
+    <string name="chat_density_default">"默认"</string>
+    <string name="chat_density_comfortable">"宽松"</string>
+    <string name="chat_layout_line_spacing">"行距"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"侧边距"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"重置"</string>
+    <string name="chat_layout_preview_question">"如何让长对话更易读？"</string>
+    <string name="chat_layout_preview_answer">"选择适合屏幕的间距。紧凑间距能在小屏手机上显示更多内容，而较大的行距在阅读长回答时更护眼。"</string>
+    <string name="chat_layout_preview_composer">"消息…"</string>
+</resources>

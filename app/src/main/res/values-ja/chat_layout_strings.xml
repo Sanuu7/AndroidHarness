@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"チャットのレイアウト"</string>
+    <string name="chat_layout_search_desc">"会話の余白、行間、左右のマージン"</string>
+    <string name="chat_layout_hint">"会話の余白とテキストを調整します。プレビューは調整に合わせて更新されます。"</string>
+    <string name="chat_layout_density">"余白"</string>
+    <string name="chat_density_compact">"コンパクト"</string>
+    <string name="chat_density_default">"標準"</string>
+    <string name="chat_density_comfortable">"ゆったり"</string>
+    <string name="chat_layout_line_spacing">"行間"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"左右のマージン"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"リセット"</string>
+    <string name="chat_layout_preview_question">"長いチャットを読みやすくするには？"</string>
+    <string name="chat_layout_preview_answer">"画面に合った余白を選んでください。狭い余白なら小さいスマートフォンでも多く表示でき、広い行間は長い回答でも目にやさしくなります。"</string>
+    <string name="chat_layout_preview_composer">"メッセージ…"</string>
+</resources>

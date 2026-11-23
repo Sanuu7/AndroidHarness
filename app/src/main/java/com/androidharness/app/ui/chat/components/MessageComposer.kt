@@ -708,7 +708,7 @@ internal fun MessageComposer(
             expanded -> scheme.primary.copy(alpha = .55f)
             else -> scheme.outlineVariant.copy(alpha = .55f)
         }, expressiveEffectsSpec(), label = "composerOutline")
-        Column(modifier.fillMaxWidth().padding(horizontal = inset, vertical = 8.dp)
+        Column(modifier.fillMaxWidth().padding(horizontal = inset, vertical = 8.dp * com.androidharness.app.ui.theme.LocalChatLayout.current.density.scale)
             .testTag("message-composer")
             .shadow(elevation, RoundedCornerShape(pillCorner), clip = false)
             .harnessGlassChrome(if (glass) Color.Transparent else if (isGroqActive) scheme.surfaceContainer else scheme.surfaceContainerHigh,

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"அரட்டை அமைப்பு"</string>
+    <string name="chat_layout_search_desc">"உரையாடல்களில் இடைவெளி, வரி இடைவெளி மற்றும் பக்க விளிம்புகள்"</string>
+    <string name="chat_layout_hint">"உரையாடல்களில் இடைவெளியையும் உரையையும் சரிசெய்யுங்கள். சரிசெய்யும்போது முன்னோட்டம் புதுப்பிக்கப்படும்."</string>
+    <string name="chat_layout_density">"இடைவெளி"</string>
+    <string name="chat_density_compact">"கச்சிதம்"</string>
+    <string name="chat_density_default">"இயல்பு"</string>
+    <string name="chat_density_comfortable">"வசதியானது"</string>
+    <string name="chat_layout_line_spacing">"வரி இடைவெளி"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"பக்க விளிம்புகள்"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"மீட்டமை"</string>
+    <string name="chat_layout_preview_question">"நீண்ட அரட்டையை எளிதாகப் படிக்க எப்படி வைத்திருப்பது?"</string>
+    <string name="chat_layout_preview_answer">"உங்கள் திரைக்கு ஏற்ற இடைவெளியைத் தேர்ந்தெடுக்கவும். குறுகிய இடைவெளி சிறிய ஃபோனில் அதிகம் காட்டும், அதிக வரி இடைவெளி நீண்ட பதில்களைப் படிக்க கண்களுக்கு வசதியாக இருக்கும்."</string>
+    <string name="chat_layout_preview_composer">"செய்தி…"</string>
+</resources>

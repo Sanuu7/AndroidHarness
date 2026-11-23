@@ -99,6 +99,13 @@ internal val settingsControlEntries: List<SettingsSearchEntry> = listOfNotNull(
         anchor = R.string.settings_anchor_progress_bar_style,
     ),
     SettingsSearchEntry(
+        R.string.chat_layout_title,
+        R.string.chat_layout_search_desc,
+        SettingsPage.APPEARANCE,
+        "chat layout density spacing padding compact comfortable line spacing height margin margins text",
+        anchor = R.string.chat_layout_title,
+    ),
+    SettingsSearchEntry(
         R.string.settings_search_fallbacks_title,
         R.string.settings_search_fallbacks_desc,
         SettingsPage.MODELS,

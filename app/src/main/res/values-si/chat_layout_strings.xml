@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"කතාබස් පිරිසැලසුම"</string>
+    <string name="chat_layout_search_desc">"සංවාදවල පරතරය, පේළි පරතරය සහ පැති මායිම්"</string>
+    <string name="chat_layout_hint">"සංවාදවල පරතරය සහ පෙළ සකසන්න. සකසන විට පෙරදසුන යාවත්කාලීන වේ."</string>
+    <string name="chat_layout_density">"පරතරය"</string>
+    <string name="chat_density_compact">"සම්පිණ්ඩිත"</string>
+    <string name="chat_density_default">"සාමාන්‍ය"</string>
+    <string name="chat_density_comfortable">"පහසු"</string>
+    <string name="chat_layout_line_spacing">"පේළි පරතරය"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"පැති මායිම්"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"යළි සකසන්න"</string>
+    <string name="chat_layout_preview_question">"දිගු කතාබසක් පහසුවෙන් කියවීමට කරන්නේ කෙසේද?"</string>
+    <string name="chat_layout_preview_answer">"ඔබේ තිරයට ගැලපෙන පරතරය තෝරන්න. අඩු පරතරය කුඩා දුරකථනයක වැඩි දෙයක් පෙන්වයි, වැඩි පේළි පරතරය දිගු පිළිතුරු කියවීමේදී ඇස්වලට පහසුය."</string>
+    <string name="chat_layout_preview_composer">"පණිවිඩය…"</string>
+</resources>

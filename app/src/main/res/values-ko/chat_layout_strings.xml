@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"채팅 레이아웃"</string>
+    <string name="chat_layout_search_desc">"대화의 간격, 줄 간격, 측면 여백"</string>
+    <string name="chat_layout_hint">"대화의 간격과 텍스트를 조정하세요. 조정하는 동안 미리보기가 업데이트됩니다."</string>
+    <string name="chat_layout_density">"간격"</string>
+    <string name="chat_density_compact">"좁게"</string>
+    <string name="chat_density_default">"기본"</string>
+    <string name="chat_density_comfortable">"넓게"</string>
+    <string name="chat_layout_line_spacing">"줄 간격"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"측면 여백"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"초기화"</string>
+    <string name="chat_layout_preview_question">"긴 대화를 읽기 쉽게 하려면?"</string>
+    <string name="chat_layout_preview_answer">"화면에 맞는 간격을 선택하세요. 간격을 좁히면 작은 휴대폰에서 더 많이 볼 수 있고, 줄 간격을 넓히면 긴 답변을 읽을 때 눈이 편안합니다."</string>
+    <string name="chat_layout_preview_composer">"메시지…"</string>
+</resources>

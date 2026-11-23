@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Chat-Layout"</string>
+    <string name="chat_layout_search_desc">"Abstand, Zeilenabstand und Seitenränder in Unterhaltungen"</string>
+    <string name="chat_layout_hint">"Passe Abstände und Text in Unterhaltungen an. Die Vorschau aktualisiert sich beim Ändern."</string>
+    <string name="chat_layout_density">"Abstand"</string>
+    <string name="chat_density_compact">"Kompakt"</string>
+    <string name="chat_density_default">"Standard"</string>
+    <string name="chat_density_comfortable">"Komfortabel"</string>
+    <string name="chat_layout_line_spacing">"Zeilenabstand"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Seitenränder"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Zurücksetzen"</string>
+    <string name="chat_layout_preview_question">"Wie halte ich einen langen Chat gut lesbar?"</string>
+    <string name="chat_layout_preview_answer">"Wähle den Abstand, der zu deinem Bildschirm passt. Engere Abstände lassen mehr auf ein kleines Telefon passen, weitere Zeilenabstände sind bei langen Antworten augenschonender."</string>
+    <string name="chat_layout_preview_composer">"Nachricht…"</string>
+</resources>

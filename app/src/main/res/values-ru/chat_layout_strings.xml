@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Оформление чата"</string>
+    <string name="chat_layout_search_desc">"Отступы, межстрочный интервал и поля в беседах"</string>
+    <string name="chat_layout_hint">"Настройте отступы и текст в беседах. Предпросмотр обновляется по мере изменений."</string>
+    <string name="chat_layout_density">"Отступы"</string>
+    <string name="chat_density_compact">"Компактно"</string>
+    <string name="chat_density_default">"По умолчанию"</string>
+    <string name="chat_density_comfortable">"Просторно"</string>
+    <string name="chat_layout_line_spacing">"Межстрочный интервал"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Боковые поля"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Сбросить"</string>
+    <string name="chat_layout_preview_question">"Как сделать длинный чат удобным для чтения?"</string>
+    <string name="chat_layout_preview_answer">"Выберите отступы под свой экран. Плотнее — на маленьком телефоне помещается больше, а широкий межстрочный интервал легче для глаз при чтении длинных ответов."</string>
+    <string name="chat_layout_preview_composer">"Сообщение…"</string>
+</resources>

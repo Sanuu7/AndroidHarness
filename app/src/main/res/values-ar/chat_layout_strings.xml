@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"تخطيط الدردشة"</string>
+    <string name="chat_layout_search_desc">"التباعد وتباعد الأسطر والهوامش الجانبية في المحادثات"</string>
+    <string name="chat_layout_hint">"اضبط التباعد والنص في المحادثات. تتحدث المعاينة أثناء الضبط."</string>
+    <string name="chat_layout_density">"التباعد"</string>
+    <string name="chat_density_compact">"مضغوط"</string>
+    <string name="chat_density_default">"افتراضي"</string>
+    <string name="chat_density_comfortable">"مريح"</string>
+    <string name="chat_layout_line_spacing">"تباعد الأسطر"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"الهوامش الجانبية"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"إعادة تعيين"</string>
+    <string name="chat_layout_preview_question">"كيف أجعل الدردشة الطويلة سهلة القراءة؟"</string>
+    <string name="chat_layout_preview_answer">"اختر التباعد المناسب لشاشتك. التباعد الأضيق يعرض أكثر على الهاتف الصغير، بينما تباعد الأسطر الأوسع أريح للعين في الإجابات الطويلة."</string>
+    <string name="chat_layout_preview_composer">"رسالة…"</string>
+</resources>

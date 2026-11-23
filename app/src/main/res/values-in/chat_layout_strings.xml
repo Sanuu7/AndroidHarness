@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Tata letak obrolan"</string>
+    <string name="chat_layout_search_desc">"Jarak, spasi baris, dan margin samping dalam percakapan"</string>
+    <string name="chat_layout_hint">"Sesuaikan jarak dan teks dalam percakapan. Pratinjau diperbarui saat Anda menyesuaikan."</string>
+    <string name="chat_layout_density">"Jarak"</string>
+    <string name="chat_density_compact">"Rapat"</string>
+    <string name="chat_density_default">"Default"</string>
+    <string name="chat_density_comfortable">"Nyaman"</string>
+    <string name="chat_layout_line_spacing">"Spasi baris"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Margin samping"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Atur ulang"</string>
+    <string name="chat_layout_preview_question">"Bagaimana cara menjaga obrolan panjang tetap mudah dibaca?"</string>
+    <string name="chat_layout_preview_answer">"Pilih jarak yang sesuai dengan layar Anda. Jarak lebih rapat menampilkan lebih banyak di ponsel kecil, sedangkan spasi baris lebih lebar lebih nyaman di mata untuk jawaban panjang."</string>
+    <string name="chat_layout_preview_composer">"Pesan…"</string>
+</resources>

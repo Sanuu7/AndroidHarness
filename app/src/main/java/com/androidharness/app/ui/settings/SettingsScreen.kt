@@ -2193,6 +2193,10 @@ private fun AppearanceSection(container: AppContainer, settings: AppSettings, sc
                     scope.launch { container.settings.setProgressBarStyle(it) }
                 }
             }
+            HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.4f))
+            SettingsAnchor(R.string.chat_layout_title) {
+                ChatLayoutSection(settings.chatLayout, container.settings)
+            }
         }
     }
     SettingsAnchor(R.string.theme_canvas_title) {

@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"चैट लेआउट"</string>
+    <string name="chat_layout_search_desc">"बातचीत में स्पेसिंग, पंक्ति अंतराल और किनारे के मार्जिन"</string>
+    <string name="chat_layout_hint">"बातचीत में स्पेसिंग और टेक्स्ट समायोजित करें। समायोजन के साथ पूर्वावलोकन अपडेट होता है।"</string>
+    <string name="chat_layout_density">"स्पेसिंग"</string>
+    <string name="chat_density_compact">"कॉम्पैक्ट"</string>
+    <string name="chat_density_default">"डिफ़ॉल्ट"</string>
+    <string name="chat_density_comfortable">"आरामदायक"</string>
+    <string name="chat_layout_line_spacing">"पंक्ति अंतराल"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"किनारे के मार्जिन"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"रीसेट करें"</string>
+    <string name="chat_layout_preview_question">"लंबी चैट को पढ़ने में आसान कैसे रखें?"</string>
+    <string name="chat_layout_preview_answer">"अपनी स्क्रीन के अनुकूल स्पेसिंग चुनें। कम स्पेसिंग से छोटे फ़ोन पर अधिक दिखता है, जबकि अधिक पंक्ति अंतराल लंबे जवाबों में आँखों के लिए आरामदायक होता है।"</string>
+    <string name="chat_layout_preview_composer">"संदेश…"</string>
+</resources>

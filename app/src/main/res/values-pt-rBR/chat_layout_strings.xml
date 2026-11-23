@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="chat_layout_title">"Layout do chat"</string>
+    <string name="chat_layout_search_desc">"Espaçamento, entrelinha e margens laterais nas conversas"</string>
+    <string name="chat_layout_hint">"Ajuste o espaçamento e o texto das conversas. A prévia muda enquanto você ajusta."</string>
+    <string name="chat_layout_density">"Espaçamento"</string>
+    <string name="chat_density_compact">"Compacto"</string>
+    <string name="chat_density_default">"Padrão"</string>
+    <string name="chat_density_comfortable">"Confortável"</string>
+    <string name="chat_layout_line_spacing">"Entrelinha"</string>
+    <string name="chat_layout_line_spacing_value">"%1$.1fx"</string>
+    <string name="chat_layout_side_margin">"Margens laterais"</string>
+    <string name="chat_layout_side_margin_value">"%1$d dp"</string>
+    <string name="chat_layout_reset">"Restaurar"</string>
+    <string name="chat_layout_preview_question">"Como mantenho uma conversa longa fácil de ler?"</string>
+    <string name="chat_layout_preview_answer">"Escolha o espaçamento que combina com sua tela. Um espaçamento mais apertado mostra mais em um celular pequeno, enquanto linhas mais espaçadas são mais confortáveis para os olhos em respostas longas."</string>
+    <string name="chat_layout_preview_composer">"Mensagem…"</string>
+</resources>
