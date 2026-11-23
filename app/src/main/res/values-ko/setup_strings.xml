@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"AndroidHarness에 오신 것을 환영합니다"</string>
+    <string name="setup_welcome_body">"코딩 에이전트를 바로 당신의 휴대폰에. 설정을 시작하겠습니다."</string>
+    <string name="setup_start_fresh">"새로 시작"</string>
+    <string name="setup_start_fresh_body">"완전히 새로운 AndroidHarness 설정"</string>
+    <string name="setup_restore">"AndroidHarness 복원"</string>
+    <string name="setup_restore_body">"백업 파일에서 채팅과 설정을 되살립니다"</string>
+
+    <string name="setup_storage_title">"파일 접근 허용"</string>
+    <string name="setup_storage_body">"AndroidHarness는 선택한 프로젝트 폴더를 읽고 수정합니다. 이 단계만은 건너뛸 수 없습니다."</string>
+    <string name="setup_storage_granted">"파일 접근이 켜져 있습니다"</string>
+    <string name="setup_allow_access">"접근 허용"</string>
+
+    <string name="setup_restore_title">"데이터 복원"</string>
+    <string name="setup_restore_subtitle">"이전 휴대폰의 백업 파일을 선택하세요. 하나, 둘 다, 또는 아무것도 복원하지 않아도 됩니다."</string>
+    <string name="setup_restore_chats">"채팅"</string>
+    <string name="setup_restore_chats_body">"채팅, 이미지, 사용 통계, 메모리, 스니펫이 담긴 .harnessbackup 파일"</string>
+    <string name="setup_restore_settings">"설정 및 공급자"</string>
+    <string name="setup_restore_settings_body">"공급자, API 키, 환경설정이 담긴 비밀번호로 보호된 .hbackup 파일"</string>
+    <string name="setup_restore_choose">"파일 선택"</string>
+    <string name="setup_restore_another">"하나 더 복원"</string>
+    <string name="setup_restore_settings_done">"설정이 돌아왔습니다"</string>
+
+    <string name="setup_powerups_title">"추가 기능"</string>
+    <string name="setup_powerups_subtitle">"모두 선택 사항입니다. 나중에 설정에서 아무거나 켤 수 있습니다."</string>
+
+    <string name="setup_ready_title">"모두 준비되었습니다"</string>
+    <string name="setup_ready_body">"사용할 준비가 된 항목입니다."</string>
+    <string name="setup_ready_storage">"파일 접근"</string>
+    <string name="setup_ready_notifications">"알림"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux 도구"</string>
+    <string name="setup_ready_battery">"백그라운드 실행"</string>
+    <string name="setup_ready_settings">"설정 복원됨"</string>
+
+    <string name="setup_continue">"계속"</string>
+    <string name="setup_skip">"건너뛰기"</string>
+    <string name="setup_back">"뒤로"</string>
+    <string name="setup_step_count">"단계 %1$d / %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="other">"채팅 %1$d개 복원됨"</item>
+    </plurals>
+</resources>

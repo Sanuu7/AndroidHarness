@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"Добро пожаловать в AndroidHarness"</string>
+    <string name="setup_welcome_body">"Ваш агент для написания кода прямо в телефоне. Давайте всё настроим."</string>
+    <string name="setup_start_fresh">"Начать с нуля"</string>
+    <string name="setup_start_fresh_body">"Настроить совершенно новый AndroidHarness"</string>
+    <string name="setup_restore">"Восстановить AndroidHarness"</string>
+    <string name="setup_restore_body">"Верните чаты и настройки из файла резервной копии"</string>
+
+    <string name="setup_storage_title">"Разрешить доступ к файлам"</string>
+    <string name="setup_storage_body">"AndroidHarness читает и изменяет выбранные вами папки проектов. Этот шаг нельзя пропустить."</string>
+    <string name="setup_storage_granted">"Доступ к файлам включён"</string>
+    <string name="setup_allow_access">"Разрешить доступ"</string>
+
+    <string name="setup_restore_title">"Восстановите свои данные"</string>
+    <string name="setup_restore_subtitle">"Выберите файлы резервной копии со старого телефона. Восстановите один, оба или ни одного."</string>
+    <string name="setup_restore_chats">"Чаты"</string>
+    <string name="setup_restore_chats_body">"Файл .harnessbackup с чатами, изображениями, статистикой использования, памятью и фрагментами"</string>
+    <string name="setup_restore_settings">"Настройки и провайдеры"</string>
+    <string name="setup_restore_settings_body">"Защищённый паролем файл .hbackup с провайдерами, ключами API и настройками"</string>
+    <string name="setup_restore_choose">"Выбрать файл"</string>
+    <string name="setup_restore_another">"Восстановить ещё"</string>
+    <string name="setup_restore_settings_done">"Ваши настройки восстановлены"</string>
+
+    <string name="setup_powerups_title">"Дополнения"</string>
+    <string name="setup_powerups_subtitle">"Всё необязательно. Любое из этого можно включить позже в настройках."</string>
+
+    <string name="setup_ready_title">"Всё готово"</string>
+    <string name="setup_ready_body">"Вот что готово к работе."</string>
+    <string name="setup_ready_storage">"Доступ к файлам"</string>
+    <string name="setup_ready_notifications">"Уведомления"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Инструменты Linux"</string>
+    <string name="setup_ready_battery">"Фоновые запуски"</string>
+    <string name="setup_ready_settings">"Настройки восстановлены"</string>
+
+    <string name="setup_continue">"Продолжить"</string>
+    <string name="setup_skip">"Пропустить"</string>
+    <string name="setup_back">"Назад"</string>
+    <string name="setup_step_count">"Шаг %1$d из %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d чат восстановлен"</item>
+        <item quantity="few">"%1$d чата восстановлено"</item>
+        <item quantity="many">"%1$d чатов восстановлено"</item>
+        <item quantity="other">"%1$d чата восстановлено"</item>
+    </plurals>
+</resources>

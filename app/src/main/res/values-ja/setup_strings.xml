@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"AndroidHarness へようこそ"</string>
+    <string name="setup_welcome_body">"コーディングエージェントを、あなたのスマートフォンに。セットアップを始めましょう。"</string>
+    <string name="setup_start_fresh">"新しく始める"</string>
+    <string name="setup_start_fresh_body">"まっさらな AndroidHarness をセットアップ"</string>
+    <string name="setup_restore">"AndroidHarness を復元"</string>
+    <string name="setup_restore_body">"バックアップファイルからチャットと設定を戻します"</string>
+
+    <string name="setup_storage_title">"ファイルアクセスを許可"</string>
+    <string name="setup_storage_body">"AndroidHarness は選択したプロジェクトフォルダを読み取り、編集します。この手順だけは省略できません。"</string>
+    <string name="setup_storage_granted">"ファイルアクセスは有効です"</string>
+    <string name="setup_allow_access">"アクセスを許可"</string>
+
+    <string name="setup_restore_title">"データを復元"</string>
+    <string name="setup_restore_subtitle">"以前の端末からバックアップファイルを選択してください。1 つ、両方、またはどちらも復元しないこともできます。"</string>
+    <string name="setup_restore_chats">"チャット"</string>
+    <string name="setup_restore_chats_body">"チャット、画像、使用状況、メモリ、スニペットを含む .harnessbackup ファイル"</string>
+    <string name="setup_restore_settings">"設定とプロバイダー"</string>
+    <string name="setup_restore_settings_body">"プロバイダー、API キー、環境設定を含むパスワード保護された .hbackup ファイル"</string>
+    <string name="setup_restore_choose">"ファイルを選択"</string>
+    <string name="setup_restore_another">"別のものを復元"</string>
+    <string name="setup_restore_settings_done">"設定が戻りました"</string>
+
+    <string name="setup_powerups_title">"追加機能"</string>
+    <string name="setup_powerups_subtitle">"すべて任意です。どれも後から設定で有効にできます。"</string>
+
+    <string name="setup_ready_title">"準備が整いました"</string>
+    <string name="setup_ready_body">"使用できるようになった項目です。"</string>
+    <string name="setup_ready_storage">"ファイルアクセス"</string>
+    <string name="setup_ready_notifications">"通知"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux ツール"</string>
+    <string name="setup_ready_battery">"バックグラウンド実行"</string>
+    <string name="setup_ready_settings">"設定を復元済み"</string>
+
+    <string name="setup_continue">"続行"</string>
+    <string name="setup_skip">"スキップ"</string>
+    <string name="setup_back">"戻る"</string>
+    <string name="setup_step_count">"ステップ %1$d / %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="other">"%1$d 件のチャットを復元しました"</item>
+    </plurals>
+</resources>

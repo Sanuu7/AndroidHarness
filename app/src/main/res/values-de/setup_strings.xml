@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"Willkommen bei AndroidHarness"</string>
+    <string name="setup_welcome_body">"Dein Coding-Agent, direkt auf deinem Smartphone. Richten wir dich ein."</string>
+    <string name="setup_start_fresh">"Neu beginnen"</string>
+    <string name="setup_start_fresh_body">"Ein brandneues AndroidHarness einrichten"</string>
+    <string name="setup_restore">"AndroidHarness wiederherstellen"</string>
+    <string name="setup_restore_body">"Chats und Einstellungen aus einer Sicherungsdatei zurückholen"</string>
+
+    <string name="setup_storage_title">"Dateizugriff erlauben"</string>
+    <string name="setup_storage_body">"AndroidHarness liest und bearbeitet die Projektordner, die du auswählst. Diesen Schritt kannst du nicht überspringen."</string>
+    <string name="setup_storage_granted">"Dateizugriff ist aktiv"</string>
+    <string name="setup_allow_access">"Zugriff erlauben"</string>
+
+    <string name="setup_restore_title">"Deine Daten wiederherstellen"</string>
+    <string name="setup_restore_subtitle">"Wähle die Sicherungsdateien von deinem alten Telefon. Stelle eine, beide oder keine wieder her."</string>
+    <string name="setup_restore_chats">"Chats"</string>
+    <string name="setup_restore_chats_body">"Eine .harnessbackup-Datei mit Chats, Bildern, Nutzungsstatistiken, Erinnerungen und Snippets"</string>
+    <string name="setup_restore_settings">"Einstellungen &amp; Anbieter"</string>
+    <string name="setup_restore_settings_body">"Eine passwortgeschützte .hbackup-Datei mit Anbietern, API-Schlüsseln und Einstellungen"</string>
+    <string name="setup_restore_choose">"Datei wählen"</string>
+    <string name="setup_restore_another">"Weitere wiederherstellen"</string>
+    <string name="setup_restore_settings_done">"Deine Einstellungen sind zurück"</string>
+
+    <string name="setup_powerups_title">"Extras"</string>
+    <string name="setup_powerups_subtitle">"Alles optional. Du kannst alles später in den Einstellungen aktivieren."</string>
+
+    <string name="setup_ready_title">"Alles bereit"</string>
+    <string name="setup_ready_body">"Das ist bereit für den Start."</string>
+    <string name="setup_ready_storage">"Dateizugriff"</string>
+    <string name="setup_ready_notifications">"Benachrichtigungen"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux-Werkzeuge"</string>
+    <string name="setup_ready_battery">"Hintergrundabläufe"</string>
+    <string name="setup_ready_settings">"Einstellungen wiederhergestellt"</string>
+
+    <string name="setup_continue">"Weiter"</string>
+    <string name="setup_skip">"Überspringen"</string>
+    <string name="setup_back">"Zurück"</string>
+    <string name="setup_step_count">"Schritt %1$d von %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d Chat wiederhergestellt"</item>
+        <item quantity="other">"%1$d Chats wiederhergestellt"</item>
+    </plurals>
+</resources>

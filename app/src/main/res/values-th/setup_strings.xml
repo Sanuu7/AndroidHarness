@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"ยินดีต้อนรับสู่ AndroidHarness"</string>
+    <string name="setup_welcome_body">"เอเจนต์เขียนโค้ดของคุณ บนโทรศัพท์ของคุณเอง มาตั้งค่ากัน"</string>
+    <string name="setup_start_fresh">"เริ่มใหม่"</string>
+    <string name="setup_start_fresh_body">"ตั้งค่า AndroidHarness ใหม่ทั้งหมด"</string>
+    <string name="setup_restore">"กู้คืน AndroidHarness"</string>
+    <string name="setup_restore_body">"นำแชทและการตั้งค่ากลับมาจากไฟล์สำรอง"</string>
+
+    <string name="setup_storage_title">"อนุญาตการเข้าถึงไฟล์"</string>
+    <string name="setup_storage_body">"AndroidHarness อ่านและแก้ไขโฟลเดอร์โปรเจกต์ที่คุณเลือก นี่เป็นขั้นตอนเดียวที่ข้ามไม่ได้"</string>
+    <string name="setup_storage_granted">"เปิดการเข้าถึงไฟล์แล้ว"</string>
+    <string name="setup_allow_access">"อนุญาตการเข้าถึง"</string>
+
+    <string name="setup_restore_title">"กู้คืนข้อมูลของคุณ"</string>
+    <string name="setup_restore_subtitle">"เลือกไฟล์สำรองจากโทรศัพท์เครื่องเก่า กู้คืนหนึ่งไฟล์ ทั้งสอง หรือไม่เลย"</string>
+    <string name="setup_restore_chats">"แชท"</string>
+    <string name="setup_restore_chats_body">"ไฟล์ .harnessbackup ที่มีแชท รูปภาพ สถิติการใช้งาน ความทรงจำ และตัวอย่าง"</string>
+    <string name="setup_restore_settings">"การตั้งค่าและผู้ให้บริการ"</string>
+    <string name="setup_restore_settings_body">"ไฟล์ .hbackup ที่ป้องกันด้วยรหัสผ่าน ซึ่งมีผู้ให้บริการ คีย์ API และการกำหนดค่า"</string>
+    <string name="setup_restore_choose">"เลือกไฟล์"</string>
+    <string name="setup_restore_another">"กู้คืนอีกไฟล์"</string>
+    <string name="setup_restore_settings_done">"การตั้งค่าของคุณกลับมาแล้ว"</string>
+
+    <string name="setup_powerups_title">"ฟีเจอร์เสริม"</string>
+    <string name="setup_powerups_subtitle">"ทั้งหมดไม่บังคับ คุณเปิดใช้ภายหลังได้ในการตั้งค่า"</string>
+
+    <string name="setup_ready_title">"พร้อมแล้ว"</string>
+    <string name="setup_ready_body">"นี่คือสิ่งที่พร้อมใช้งาน"</string>
+    <string name="setup_ready_storage">"การเข้าถึงไฟล์"</string>
+    <string name="setup_ready_notifications">"การแจ้งเตือน"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"เครื่องมือ Linux"</string>
+    <string name="setup_ready_battery">"การทำงานเบื้องหลัง"</string>
+    <string name="setup_ready_settings">"กู้คืนการตั้งค่าแล้ว"</string>
+
+    <string name="setup_continue">"ดำเนินการต่อ"</string>
+    <string name="setup_skip">"ข้าม"</string>
+    <string name="setup_back">"ย้อนกลับ"</string>
+    <string name="setup_step_count">"ขั้นตอน %1$d จาก %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="other">"กู้คืน %1$d แชท"</item>
+    </plurals>
+</resources>

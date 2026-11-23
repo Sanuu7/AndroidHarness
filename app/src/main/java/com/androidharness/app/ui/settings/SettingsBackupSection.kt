@@ -54,7 +54,6 @@ internal fun SettingsBackupSection(container: AppContainer) {
     var busy by remember { mutableStateOf(false) }
     var message by remember { mutableStateOf<String?>(null) }
     var failed by remember { mutableStateOf(false) }
-    var preview by remember { mutableStateOf<SettingsBackupFile?>(null) }
     val exportPicker = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) {
         destination = it
     }
@@ -66,10 +65,9 @@ internal fun SettingsBackupSection(container: AppContainer) {
         showConfirmation = false
         source = null
         destination = null
-        preview = null
         includeKeys = false
     }
-    SecureScreenEffect(container, source != null || destination != null || preview != null || busy)
+    SecureScreenEffect(container, destination != null || busy)
     SettingsPanel(Modifier.fillMaxWidth().settingsAnchor(R.string.settings_backup_title)) {
         Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.settings_backup_title), style = MaterialTheme.typography.titleSmall)
@@ -84,8 +82,8 @@ internal fun SettingsBackupSection(container: AppContainer) {
                 color = if (failed) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant) }
         }
     }
-    if ((destination != null || source != null) && preview == null) {
-        val exporting = destination != null
+    if (destination != null) {
+        val exporting = true
         AlertDialog(
             onDismissRequest = { if (!busy) clear() },
             title = { Text(if (exporting) stringResource(R.string.settings_backup_encrypt_title) else stringResource(R.string.settings_backup_unlock_title)) },
@@ -134,7 +132,6 @@ internal fun SettingsBackupSection(container: AppContainer) {
                     showPassword = false
                     showConfirmation = false
                     val target = destination
-                    val input = source
                     busy = true
                     failed = false
                     scope.launch {
@@ -143,9 +140,6 @@ internal fun SettingsBackupSection(container: AppContainer) {
                                 backup.exportTo(target, chars, includeKeys)
                                 clear()
                                 message = context.getString(R.string.settings_backup_exported)
-                            } else if (input != null) {
-                                preview = backup.read(input, chars)
-                                source = null
                             }
                         } catch (e: CancellationException) { throw e }
                         catch (e: Exception) {
@@ -158,9 +152,73 @@ internal fun SettingsBackupSection(container: AppContainer) {
             dismissButton = { TextButton(onClick = { clear() }, enabled = !busy) { Text(stringResource(R.string.settings_action_cancel)) } },
         )
     }
-    preview?.let { file ->
+    source?.let { file ->
+        SettingsRestoreDialogs(container, file) { ok, text ->
+            clear()
+            if (ok != null) { failed = !ok; message = text }
+        }
+    }
+}
+
+/**
+ * Unlock, preview and restore an encrypted settings backup. [onResult] gets true or false with a
+ * message once a restore was attempted, or null when the person backed out. Shared by Settings
+ * and first-run setup, so both keep the password and full-access checks.
+ */
+@Composable
+internal fun SettingsRestoreDialogs(container: AppContainer, source: Uri, onResult: (Boolean?, String?) -> Unit) {
+    val context = LocalContext.current
+    val backup = remember(container) { SettingsBackup(container) }
+    val scope = rememberCoroutineScope()
+    var password by remember { mutableStateOf("") }
+    var showPassword by remember { mutableStateOf(false) }
+    var busy by remember { mutableStateOf(false) }
+    var error by remember { mutableStateOf<String?>(null) }
+    var preview by remember(source) { mutableStateOf<SettingsBackupFile?>(null) }
+    SecureScreenEffect(container, true)
+    val file = preview
+    if (file == null) {
         AlertDialog(
-            onDismissRequest = { if (!busy) clear() },
+            onDismissRequest = { if (!busy) onResult(null, null) },
+            title = { Text(stringResource(R.string.settings_backup_unlock_title)) },
+            text = {
+                SecureDialogEffect()
+                Column(Modifier.verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    Text(stringResource(R.string.settings_backup_import_note))
+                    OutlinedTextField(password, { if (it.length <= BackupEncryption.MAX_PASSWORD_LENGTH) password = it }, label = { Text(stringResource(R.string.settings_backup_password)) },
+                        singleLine = true, enabled = !busy, visualTransformation = if (showPassword) VisualTransformation.None else PasswordVisualTransformation(),
+                        trailingIcon = {
+                            IconButton(onClick = { showPassword = !showPassword }, enabled = !busy) {
+                                Icon(if (showPassword) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
+                                    contentDescription = if (showPassword) stringResource(R.string.settings_backup_hide_password)
+                                    else stringResource(R.string.settings_backup_show_password))
+                            }
+                        },
+                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password), modifier = Modifier.fillMaxWidth())
+                    if (busy) ThinLinearProgress(Modifier.fillMaxWidth())
+                    error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+                }
+            },
+            confirmButton = {
+                TextButton(enabled = !busy && password.length >= BackupEncryption.MIN_PASSWORD_LENGTH, onClick = {
+                    val chars = password.toCharArray()
+                    password = ""
+                    showPassword = false
+                    busy = true
+                    error = null
+                    scope.launch {
+                        try { preview = backup.read(source, chars) }
+                        catch (e: CancellationException) { throw e }
+                        catch (e: Exception) { error = context.getString(R.string.ui_could_not_unlock_backup_check_the_password) }
+                        finally { chars.fill('\u0000'); busy = false }
+                    }
+                }) { Text(context.getString(R.string.ui_unlock)) }
+            },
+            dismissButton = { TextButton(onClick = { onResult(null, null) }, enabled = !busy) { Text(stringResource(R.string.settings_action_cancel)) } },
+        )
+    } else {
+        AlertDialog(
+            onDismissRequest = { if (!busy) onResult(null, null) },
             title = { Text(stringResource(R.string.settings_backup_restore_title)) },
             text = {
                 SecureDialogEffect()
@@ -191,13 +249,11 @@ internal fun SettingsBackupSection(container: AppContainer) {
                     scope.launch {
                         try {
                             backup.restore(file)
-                            failed = false
-                            message = context.getString(R.string.settings_backup_restored)
+                            onResult(true, context.getString(R.string.settings_backup_restored))
                         } catch (e: CancellationException) { throw e }
                         catch (_: Exception) {
-                            failed = true
-                            message = context.getString(R.string.settings_backup_restore_failed)
-                        } finally { clear(); busy = false }
+                            onResult(false, context.getString(R.string.settings_backup_restore_failed))
+                        } finally { busy = false }
                     }
                 }
                 // A portable settings file must not be a way to skip the
@@ -213,7 +269,7 @@ internal fun SettingsBackupSection(container: AppContainer) {
                     restore()
                 }
             }) { Text(stringResource(R.string.settings_action_restore)) } },
-            dismissButton = { TextButton(onClick = { clear() }, enabled = !busy) { Text(stringResource(R.string.settings_action_cancel)) } },
+            dismissButton = { TextButton(onClick = { onResult(null, null) }, enabled = !busy) { Text(stringResource(R.string.settings_action_cancel)) } },
         )
     }
 }

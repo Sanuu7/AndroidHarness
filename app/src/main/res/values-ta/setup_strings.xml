@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"AndroidHarness க்கு வரவேற்கிறோம்"</string>
+    <string name="setup_welcome_body">"உங்கள் கோடிங் முகவர், உங்கள் மொபைலிலேயே. அமைப்போம்."</string>
+    <string name="setup_start_fresh">"புதிதாகத் தொடங்கு"</string>
+    <string name="setup_start_fresh_body">"முற்றிலும் புதிய AndroidHarness அமைக்கவும்"</string>
+    <string name="setup_restore">"AndroidHarness மீட்டமை"</string>
+    <string name="setup_restore_body">"காப்புப்பிரதிக் கோப்பிலிருந்து உங்கள் அரட்டைகளையும் அமைப்புகளையும் திரும்பக் கொண்டு வாருங்கள்"</string>
+
+    <string name="setup_storage_title">"கோப்பு அணுகலை அனுமதிக்கவும்"</string>
+    <string name="setup_storage_body">"AndroidHarness நீங்கள் தேர்ந்தெடுக்கும் திட்டக் கோப்புறைகளைப் படித்து திருத்துகிறது. தவிர்க்க முடியாத ஒரே படி இதுவே."</string>
+    <string name="setup_storage_granted">"கோப்பு அணுகல் இயக்கத்தில் உள்ளது"</string>
+    <string name="setup_allow_access">"அணுகலை அனுமதிக்கவும்"</string>
+
+    <string name="setup_restore_title">"உங்கள் தரவை மீட்டெடுக்கவும்"</string>
+    <string name="setup_restore_subtitle">"உங்கள் பழைய மொபைலிலிருந்து காப்புப்பிரதிக் கோப்புகளைத் தேர்ந்தெடுக்கவும். ஒன்றை, இரண்டையும் அல்லது எதையும் மீட்டெடுக்கவும்."</string>
+    <string name="setup_restore_chats">"அரட்டைகள்"</string>
+    <string name="setup_restore_chats_body">"உங்கள் அரட்டைகள், படங்கள், பயன்பாட்டு புள்ளிவிவரங்கள், நினைவுகள், துணுக்குகள் கொண்ட .harnessbackup கோப்பு"</string>
+    <string name="setup_restore_settings">"அமைப்புகள் மற்றும் வழங்குநர்கள்"</string>
+    <string name="setup_restore_settings_body">"உங்கள் வழங்குநர்கள், API விசைகள், விருப்பங்கள் கொண்ட கடவுச்சொல் பாதுகாக்கப்பட்ட .hbackup கோப்பு"</string>
+    <string name="setup_restore_choose">"கோப்பைத் தேர்ந்தெடு"</string>
+    <string name="setup_restore_another">"மற்றொன்றை மீட்டெடு"</string>
+    <string name="setup_restore_settings_done">"உங்கள் அமைப்புகள் திரும்பி வந்தன"</string>
+
+    <string name="setup_powerups_title">"கூடுதல் வசதிகள்"</string>
+    <string name="setup_powerups_subtitle">"அனைத்தும் விருப்பமானவை. எதையும் பின்னர் அமைப்புகளில் இயக்கலாம்."</string>
+
+    <string name="setup_ready_title">"எல்லாம் தயார்"</string>
+    <string name="setup_ready_body">"பயன்பாட்டுக்குத் தயாராக உள்ளவை இவை."</string>
+    <string name="setup_ready_storage">"கோப்பு அணுகல்"</string>
+    <string name="setup_ready_notifications">"அறிவிப்புகள்"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux கருவிகள்"</string>
+    <string name="setup_ready_battery">"பின்னணி இயக்கங்கள்"</string>
+    <string name="setup_ready_settings">"அமைப்புகள் மீட்டெடுக்கப்பட்டன"</string>
+
+    <string name="setup_continue">"தொடர்"</string>
+    <string name="setup_skip">"தவிர்க்கவும்"</string>
+    <string name="setup_back">"பின்"</string>
+    <string name="setup_step_count">"படி %1$d / %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d அரட்டை மீட்டெடுக்கப்பட்டது"</item>
+        <item quantity="other">"%1$d அரட்டைகள் மீட்டெடுக்கப்பட்டன"</item>
+    </plurals>
+</resources>

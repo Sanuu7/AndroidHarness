@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"Maligayang pagdating sa AndroidHarness"</string>
+    <string name="setup_welcome_body">"Ang coding agent mo, nasa telepono mo na. I-set up natin."</string>
+    <string name="setup_start_fresh">"Magsimula bago"</string>
+    <string name="setup_start_fresh_body">"I-set up ang bagong AndroidHarness"</string>
+    <string name="setup_restore">"I-restore ang AndroidHarness"</string>
+    <string name="setup_restore_body">"Ibalik ang mga chat at setting mo mula sa backup file"</string>
+
+    <string name="setup_storage_title">"Payagan ang access sa file"</string>
+    <string name="setup_storage_body">"Binabasa at ina-edit ng AndroidHarness ang mga project folder na pipiliin mo. Ito ang tanging hakbang na hindi maaaring laktawan."</string>
+    <string name="setup_storage_granted">"Naka-on ang access sa file"</string>
+    <string name="setup_allow_access">"Payagan ang access"</string>
+
+    <string name="setup_restore_title">"Ibalik ang iyong mga data"</string>
+    <string name="setup_restore_subtitle">"Piliin ang mga backup file mula sa dati mong telepono. I-restore ang isa, pareho o wala."</string>
+    <string name="setup_restore_chats">"Mga chat"</string>
+    <string name="setup_restore_chats_body">"Isang .harnessbackup na file na may chat, larawan, stats ng paggamit, alaala at snippet"</string>
+    <string name="setup_restore_settings">"Mga setting at tagapagbigay"</string>
+    <string name="setup_restore_settings_body">"Isang .hbackup na file na protektado ng password na may tagapagbigay, API key at mga kagustuhan"</string>
+    <string name="setup_restore_choose">"Pumili ng file"</string>
+    <string name="setup_restore_another">"Mag-restore ng iba"</string>
+    <string name="setup_restore_settings_done">"Nabalik na ang mga setting mo"</string>
+
+    <string name="setup_powerups_title">"Mga extra"</string>
+    <string name="setup_powerups_subtitle">"Lahat opsyonal. Maaari mong i-on ang alinman sa mga ito mamaya sa Mga setting."</string>
+
+    <string name="setup_ready_title">"Handa na ang lahat"</string>
+    <string name="setup_ready_body">"Ito ang mga handa nang gamitin."</string>
+    <string name="setup_ready_storage">"Access sa file"</string>
+    <string name="setup_ready_notifications">"Mga abiso"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Mga tool sa Linux"</string>
+    <string name="setup_ready_battery">"Mga pagtakbo sa background"</string>
+    <string name="setup_ready_settings">"Naibalik ang mga setting"</string>
+
+    <string name="setup_continue">"Magpatuloy"</string>
+    <string name="setup_skip">"Laktawan"</string>
+    <string name="setup_back">"Bumalik"</string>
+    <string name="setup_step_count">"Hakbang %1$d ng %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d chat na naibalik"</item>
+        <item quantity="other">"%1$d chat na naibalik"</item>
+    </plurals>
+</resources>

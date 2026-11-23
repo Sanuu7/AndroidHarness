@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"欢迎使用 AndroidHarness"</string>
+    <string name="setup_welcome_body">"你的编程代理，就在手机上。让我们完成设置。"</string>
+    <string name="setup_start_fresh">"全新开始"</string>
+    <string name="setup_start_fresh_body">"设置一个全新的 AndroidHarness"</string>
+    <string name="setup_restore">"恢复 AndroidHarness"</string>
+    <string name="setup_restore_body">"从备份文件取回你的聊天和设置"</string>
+
+    <string name="setup_storage_title">"允许文件访问"</string>
+    <string name="setup_storage_body">"AndroidHarness 会读取并编辑你选择的项目文件夹。这是唯一不能跳过的步骤。"</string>
+    <string name="setup_storage_granted">"文件访问已开启"</string>
+    <string name="setup_allow_access">"允许访问"</string>
+
+    <string name="setup_restore_title">"恢复你的数据"</string>
+    <string name="setup_restore_subtitle">"选择旧手机上的备份文件。可恢复一个、两个或都不恢复。"</string>
+    <string name="setup_restore_chats">"聊天"</string>
+    <string name="setup_restore_chats_body">"包含聊天、图片、使用统计、记忆和片段的 .harnessbackup 文件"</string>
+    <string name="setup_restore_settings">"设置和提供商"</string>
+    <string name="setup_restore_settings_body">"包含提供商、API 密钥和偏好的受密码保护 .hbackup 文件"</string>
+    <string name="setup_restore_choose">"选择文件"</string>
+    <string name="setup_restore_another">"再恢复一个"</string>
+    <string name="setup_restore_settings_done">"你的设置回来了"</string>
+
+    <string name="setup_powerups_title">"额外功能"</string>
+    <string name="setup_powerups_subtitle">"全部可选。之后可在设置中开启任何一项。"</string>
+
+    <string name="setup_ready_title">"一切就绪"</string>
+    <string name="setup_ready_body">"以下是已准备好使用的项目。"</string>
+    <string name="setup_ready_storage">"文件访问"</string>
+    <string name="setup_ready_notifications">"通知"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux 工具"</string>
+    <string name="setup_ready_battery">"后台运行"</string>
+    <string name="setup_ready_settings">"设置已恢复"</string>
+
+    <string name="setup_continue">"继续"</string>
+    <string name="setup_skip">"跳过"</string>
+    <string name="setup_back">"返回"</string>
+    <string name="setup_step_count">"第 %1$d 步，共 %2$d 步"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"已恢复 %1$d 个聊天"</item>
+        <item quantity="other">"已恢复 %1$d 个聊天"</item>
+    </plurals>
+</resources>

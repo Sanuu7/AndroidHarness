@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"Chào mừng đến với AndroidHarness"</string>
+    <string name="setup_welcome_body">"Trợ lý lập trình của bạn, ngay trên điện thoại. Hãy cùng thiết lập."</string>
+    <string name="setup_start_fresh">"Bắt đầu mới"</string>
+    <string name="setup_start_fresh_body">"Thiết lập một AndroidHarness hoàn toàn mới"</string>
+    <string name="setup_restore">"Khôi phục AndroidHarness"</string>
+    <string name="setup_restore_body">"Lấy lại cuộc trò chuyện và cài đặt từ tệp sao lưu"</string>
+
+    <string name="setup_storage_title">"Cho phép truy cập tệp"</string>
+    <string name="setup_storage_body">"AndroidHarness đọc và sửa các thư mục dự án bạn chọn. Đây là bước duy nhất bạn không thể bỏ qua."</string>
+    <string name="setup_storage_granted">"Đã bật quyền truy cập tệp"</string>
+    <string name="setup_allow_access">"Cho phép truy cập"</string>
+
+    <string name="setup_restore_title">"Khôi phục dữ liệu của bạn"</string>
+    <string name="setup_restore_subtitle">"Chọn các tệp sao lưu từ điện thoại cũ. Khôi phục một, cả hai hoặc không tệp nào."</string>
+    <string name="setup_restore_chats">"Cuộc trò chuyện"</string>
+    <string name="setup_restore_chats_body">"Tệp .harnessbackup chứa cuộc trò chuyện, hình ảnh, thống kê sử dụng, bộ nhớ và đoạn nhắc"</string>
+    <string name="setup_restore_settings">"Cài đặt và nhà cung cấp"</string>
+    <string name="setup_restore_settings_body">"Tệp .hbackup được bảo vệ bằng mật khẩu chứa nhà cung cấp, khóa API và tùy chọn của bạn"</string>
+    <string name="setup_restore_choose">"Chọn tệp"</string>
+    <string name="setup_restore_another">"Khôi phục tệp khác"</string>
+    <string name="setup_restore_settings_done">"Cài đặt của bạn đã trở lại"</string>
+
+    <string name="setup_powerups_title">"Tiện ích bổ sung"</string>
+    <string name="setup_powerups_subtitle">"Tất cả đều tùy chọn. Bạn có thể bật bất kỳ mục nào sau đó trong Cài đặt."</string>
+
+    <string name="setup_ready_title">"Mọi thứ đã sẵn sàng"</string>
+    <string name="setup_ready_body">"Đây là những gì sẵn sàng để dùng."</string>
+    <string name="setup_ready_storage">"Quyền truy cập tệp"</string>
+    <string name="setup_ready_notifications">"Thông báo"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Công cụ Linux"</string>
+    <string name="setup_ready_battery">"Chạy nền"</string>
+    <string name="setup_ready_settings">"Đã khôi phục cài đặt"</string>
+
+    <string name="setup_continue">"Tiếp tục"</string>
+    <string name="setup_skip">"Bỏ qua"</string>
+    <string name="setup_back">"Quay lại"</string>
+    <string name="setup_step_count">"Bước %1$d trên %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="other">"%1$d cuộc trò chuyện đã khôi phục"</item>
+    </plurals>
+</resources>

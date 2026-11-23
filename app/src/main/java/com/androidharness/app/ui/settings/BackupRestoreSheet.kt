@@ -114,7 +114,12 @@ private enum class Phase { LOADING, PICK, WORKING, DONE, FAILED }
 private data class ResultChip(val text: String, val icon: ImageVector? = null)
 
 @Composable
-internal fun BackupRestoreSheet(container: AppContainer, mode: BackupSheetMode, onDismiss: () -> Unit) {
+internal fun BackupRestoreSheet(
+    container: AppContainer,
+    mode: BackupSheetMode,
+    onDismiss: () -> Unit,
+    onRestored: (ChatBackupManager.ImportResult) -> Unit = {},
+) {
     var working by remember { mutableStateOf(false) }
     val workingNow by rememberUpdatedState(working)
     val sheetState = rememberModalBottomSheetState(
@@ -129,7 +134,7 @@ internal fun BackupRestoreSheet(container: AppContainer, mode: BackupSheetMode, 
             ) {
                 when (mode) {
                     BackupSheetMode.Export -> ExportFlow(container, onWorking = { working = it }, onDismiss = onDismiss)
-                    is BackupSheetMode.Restore -> RestoreFlow(container, mode.uri, onWorking = { working = it }, onDismiss = onDismiss)
+                    is BackupSheetMode.Restore -> RestoreFlow(container, mode.uri, onWorking = { working = it }, onDismiss = onDismiss, onRestored = onRestored)
                 }
             }
         }
@@ -280,7 +285,13 @@ private fun ExportFlow(container: AppContainer, onWorking: (Boolean) -> Unit, on
 }
 
 @Composable
-private fun RestoreFlow(container: AppContainer, uri: Uri, onWorking: (Boolean) -> Unit, onDismiss: () -> Unit) {
+private fun RestoreFlow(
+    container: AppContainer,
+    uri: Uri,
+    onWorking: (Boolean) -> Unit,
+    onDismiss: () -> Unit,
+    onRestored: (ChatBackupManager.ImportResult) -> Unit,
+) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var phase by remember { mutableStateOf(Phase.LOADING) }
@@ -314,7 +325,9 @@ private fun RestoreFlow(container: AppContainer, uri: Uri, onWorking: (Boolean) 
         onWorking(true)
         job = scope.launch {
             try {
-                result = container.chatBackup.importPrepared(source, mapping, selected, policy, extras) { progress = it }
+                val done = container.chatBackup.importPrepared(source, mapping, selected, policy, extras) { progress = it }
+                result = done
+                onRestored(done)
                 phase = Phase.DONE
             } catch (e: CancellationException) {
                 notice = context.getString(R.string.restore_cancelled)

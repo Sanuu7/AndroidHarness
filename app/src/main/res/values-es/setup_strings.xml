@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"Bienvenido a AndroidHarness"</string>
+    <string name="setup_welcome_body">"Tu agente de programación, directo en tu teléfono. Vamos a configurarlo."</string>
+    <string name="setup_start_fresh">"Empezar de cero"</string>
+    <string name="setup_start_fresh_body">"Configurar un AndroidHarness totalmente nuevo"</string>
+    <string name="setup_restore">"Restaurar AndroidHarness"</string>
+    <string name="setup_restore_body">"Recupera tus chats y ajustes desde un archivo de copia"</string>
+
+    <string name="setup_storage_title">"Permitir acceso a archivos"</string>
+    <string name="setup_storage_body">"AndroidHarness lee y edita las carpetas de proyecto que elijas. Este es el único paso que no puedes omitir."</string>
+    <string name="setup_storage_granted">"El acceso a archivos está activo"</string>
+    <string name="setup_allow_access">"Permitir acceso"</string>
+
+    <string name="setup_restore_title">"Restaura tus datos"</string>
+    <string name="setup_restore_subtitle">"Elige los archivos de copia de tu teléfono anterior. Restaura uno, ambos o ninguno."</string>
+    <string name="setup_restore_chats">"Chats"</string>
+    <string name="setup_restore_chats_body">"Un archivo .harnessbackup con tus chats, imágenes, estadísticas de uso, recuerdos y fragmentos"</string>
+    <string name="setup_restore_settings">"Ajustes y proveedores"</string>
+    <string name="setup_restore_settings_body">"Un archivo .hbackup protegido con contraseña con tus proveedores, claves API y preferencias"</string>
+    <string name="setup_restore_choose">"Elegir archivo"</string>
+    <string name="setup_restore_another">"Restaurar otro"</string>
+    <string name="setup_restore_settings_done">"Tus ajustes están de vuelta"</string>
+
+    <string name="setup_powerups_title">"Mejoras"</string>
+    <string name="setup_powerups_subtitle">"Todo opcional. Puedes activar cualquiera de ellas más tarde en Ajustes."</string>
+
+    <string name="setup_ready_title">"Todo listo"</string>
+    <string name="setup_ready_body">"Esto es lo que está listo para usar."</string>
+    <string name="setup_ready_storage">"Acceso a archivos"</string>
+    <string name="setup_ready_notifications">"Notificaciones"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Herramientas de Linux"</string>
+    <string name="setup_ready_battery">"Ejecuciones en segundo plano"</string>
+    <string name="setup_ready_settings">"Ajustes restaurados"</string>
+
+    <string name="setup_continue">"Continuar"</string>
+    <string name="setup_skip">"Omitir"</string>
+    <string name="setup_back">"Atrás"</string>
+    <string name="setup_step_count">"Paso %1$d de %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d chat restaurado"</item>
+        <item quantity="other">"%1$d chats restaurados"</item>
+    </plurals>
+</resources>

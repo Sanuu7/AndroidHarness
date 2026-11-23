@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"AndroidHarness\'ye hoş geldiniz"</string>
+    <string name="setup_welcome_body">"Kodlama ajanınız, doğrudan telefonunuzda. Hadi kuralım."</string>
+    <string name="setup_start_fresh">"Sıfırdan başla"</string>
+    <string name="setup_start_fresh_body">"Yepyeni bir AndroidHarness kur"</string>
+    <string name="setup_restore">"AndroidHarness\'i geri yükle"</string>
+    <string name="setup_restore_body">"Sohbetlerini ve ayarlarını bir yedek dosyasından geri getir"</string>
+
+    <string name="setup_storage_title">"Dosya erişimine izin ver"</string>
+    <string name="setup_storage_body">"AndroidHarness seçtiğin proje klasörlerini okur ve düzenler. Atlayamayacağın tek adım budur."</string>
+    <string name="setup_storage_granted">"Dosya erişimi açık"</string>
+    <string name="setup_allow_access">"Erişime izin ver"</string>
+
+    <string name="setup_restore_title">"Verilerini geri yükle"</string>
+    <string name="setup_restore_subtitle">"Eski telefonundan yedek dosyalarını seç. Birini, ikisini ya da hiçbirini geri yükle."</string>
+    <string name="setup_restore_chats">"Sohbetler"</string>
+    <string name="setup_restore_chats_body">"Sohbetlerin, görsellerin, kullanım istatistiklerin, anıların ve parçacıkların olduğu bir .harnessbackup dosyası"</string>
+    <string name="setup_restore_settings">"Ayarlar ve sağlayıcılar"</string>
+    <string name="setup_restore_settings_body">"Sağlayıcıların, API anahtarların ve tercihlerin olan parola korumalı bir .hbackup dosyası"</string>
+    <string name="setup_restore_choose">"Dosya seç"</string>
+    <string name="setup_restore_another">"Bir tane daha geri yükle"</string>
+    <string name="setup_restore_settings_done">"Ayarların geri geldi"</string>
+
+    <string name="setup_powerups_title">"Ekstralar"</string>
+    <string name="setup_powerups_subtitle">"Hepsi isteğe bağlı. İstediğini daha sonra Ayarlar\'dan açabilirsin."</string>
+
+    <string name="setup_ready_title">"Her şey hazır"</string>
+    <string name="setup_ready_body">"Kullanıma hazır olanlar bunlar."</string>
+    <string name="setup_ready_storage">"Dosya erişimi"</string>
+    <string name="setup_ready_notifications">"Bildirimler"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux araçları"</string>
+    <string name="setup_ready_battery">"Arka plan çalışmaları"</string>
+    <string name="setup_ready_settings">"Ayarlar geri yüklendi"</string>
+
+    <string name="setup_continue">"Devam et"</string>
+    <string name="setup_skip">"Atla"</string>
+    <string name="setup_back">"Geri"</string>
+    <string name="setup_step_count">"Adım %1$d / %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d sohbet geri yüklendi"</item>
+        <item quantity="other">"%1$d sohbet geri yüklendi"</item>
+    </plurals>
+</resources>

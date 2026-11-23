@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"مرحباً بك في AndroidHarness"</string>
+    <string name="setup_welcome_body">"وكيل البرمجة الخاص بك، مباشرة على هاتفك. لنقم بإعداده."</string>
+    <string name="setup_start_fresh">"البدء من جديد"</string>
+    <string name="setup_start_fresh_body">"إعداد AndroidHarness جديد تماماً"</string>
+    <string name="setup_restore">"استعادة AndroidHarness"</string>
+    <string name="setup_restore_body">"أعد محادثاتك وإعداداتك من ملف نسخة احتياطية"</string>
+
+    <string name="setup_storage_title">"السماح بالوصول إلى الملفات"</string>
+    <string name="setup_storage_body">"يقرأ AndroidHarness مجلدات المشاريع التي تختارها ويعدّلها. هذه الخطوة الوحيدة التي لا يمكنك تخطيها."</string>
+    <string name="setup_storage_granted">"الوصول إلى الملفات مفعّل"</string>
+    <string name="setup_allow_access">"السماح بالوصول"</string>
+
+    <string name="setup_restore_title">"استعد بياناتك"</string>
+    <string name="setup_restore_subtitle">"اختر ملفات النسخ الاحتياطي من هاتفك القديم. استعد واحداً أو كليهما أو لا شيء."</string>
+    <string name="setup_restore_chats">"المحادثات"</string>
+    <string name="setup_restore_chats_body">"ملف .harnessbackup يحتوي على محادثاتك وصورها وإحصاءات استخدامها وذكرياتها ومقتطفاتها"</string>
+    <string name="setup_restore_settings">"الإعدادات والمزوّدون"</string>
+    <string name="setup_restore_settings_body">"ملف .hbackup محمي بكلمة مرور يحتوي على مزوّديك ومفاتيح API وتفضيلاتك"</string>
+    <string name="setup_restore_choose">"اختيار ملف"</string>
+    <string name="setup_restore_another">"استعادة ملف آخر"</string>
+    <string name="setup_restore_settings_done">"عادت إعداداتك"</string>
+
+    <string name="setup_powerups_title">"إضافات"</string>
+    <string name="setup_powerups_subtitle">"كلها اختيارية. يمكنك تفعيل أي منها لاحقاً من الإعدادات."</string>
+
+    <string name="setup_ready_title">"كل شيء جاهز"</string>
+    <string name="setup_ready_body">"هذا ما أصبح جاهزاً للاستخدام."</string>
+    <string name="setup_ready_storage">"الوصول إلى الملفات"</string>
+    <string name="setup_ready_notifications">"الإشعارات"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"أدوات Linux"</string>
+    <string name="setup_ready_battery">"التشغيل في الخلفية"</string>
+    <string name="setup_ready_settings">"الإعدادات مستعادة"</string>
+
+    <string name="setup_continue">"متابعة"</string>
+    <string name="setup_skip">"تخطّي"</string>
+    <string name="setup_back">"رجوع"</string>
+    <string name="setup_step_count">"الخطوة %1$d من %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="zero">"تمت استعادة %1$d محادثة"</item>
+        <item quantity="one">"تمت استعادة محادثة واحدة (%1$d)"</item>
+        <item quantity="two">"تمت استعادة محادثتين (%1$d)"</item>
+        <item quantity="few">"تمت استعادة %1$d محادثات"</item>
+        <item quantity="many">"تمت استعادة %1$d محادثة"</item>
+        <item quantity="other">"تمت استعادة %1$d محادثة"</item>
+    </plurals>
+</resources>

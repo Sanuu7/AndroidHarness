@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"සාදරයෙන් පිළිගනිමු AndroidHarness"</string>
+    <string name="setup_welcome_body">"ඔබේ කේතන නියෝජිතයා, ඔබේ දුරකථනයේම. අපි එය සකසමු."</string>
+    <string name="setup_start_fresh">"අලුතින් අරඹන්න"</string>
+    <string name="setup_start_fresh_body">"සම්පූර්ණ නව AndroidHarness එකක් සකසන්න"</string>
+    <string name="setup_restore">"AndroidHarness ප්‍රතිසාධනය කරන්න"</string>
+    <string name="setup_restore_body">"උපස්ථ ගොනුවකින් ඔබේ චැට් සහ සැකසුම් නැවත ගෙන එන්න"</string>
+
+    <string name="setup_storage_title">"ගොනු ප්‍රවේශයට අවසර දෙන්න"</string>
+    <string name="setup_storage_body">"AndroidHarness ඔබ තෝරන ව්‍යාපෘති ෆෝල්ඩර කියවා සංස්කරණය කරයි. මඟ හැරිය නොහැකි එකම පියවර මෙයයි."</string>
+    <string name="setup_storage_granted">"ගොනු ප්‍රවේශය සක්‍රීයයි"</string>
+    <string name="setup_allow_access">"ප්‍රවේශයට අවසර දෙන්න"</string>
+
+    <string name="setup_restore_title">"ඔබේ දත්ත ප්‍රතිසාධනය කරන්න"</string>
+    <string name="setup_restore_subtitle">"ඔබේ පැරණි දුරකථනයේ උපස්ථ ගොනු තෝරන්න. එකක්, දෙකම හෝ කිසිවක් ප්‍රතිසාධනය කරන්න."</string>
+    <string name="setup_restore_chats">"චැට්"</string>
+    <string name="setup_restore_chats_body">"ඔබේ චැට්, පින්තූර, භාවිත සංඛ්‍යා, මතක සහ snippet සහිත .harnessbackup ගොනුවක්"</string>
+    <string name="setup_restore_settings">"සැකසුම් සහ සැපයුම්කරුවන්"</string>
+    <string name="setup_restore_settings_body">"ඔබේ සැපයුම්කරුවන්, API යතුරු සහ මනාප සහිත මුරපදයෙන් ආරක්ෂිත .hbackup ගොනුවක්"</string>
+    <string name="setup_restore_choose">"ගොනුව තෝරන්න"</string>
+    <string name="setup_restore_another">"තවත් එකක් ප්‍රතිසාධනය කරන්න"</string>
+    <string name="setup_restore_settings_done">"ඔබේ සැකසුම් නැවත ආවා"</string>
+
+    <string name="setup_powerups_title">"අමතර පහසුකම්"</string>
+    <string name="setup_powerups_subtitle">"සියල්ල විකල්පයි. ඕනෑම එකක් පසුව සැකසුම්වලින් සක්‍රීය කළ හැක."</string>
+
+    <string name="setup_ready_title">"සියල්ල සූදානම්"</string>
+    <string name="setup_ready_body">"භාවිතයට සූදානම් දේ මෙයයි."</string>
+    <string name="setup_ready_storage">"ගොනු ප්‍රවේශය"</string>
+    <string name="setup_ready_notifications">"නිවේදන"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"Linux මෙවලම්"</string>
+    <string name="setup_ready_battery">"පසුබිම් ධාවන"</string>
+    <string name="setup_ready_settings">"සැකසුම් ප්‍රතිසාධනය කර ඇත"</string>
+
+    <string name="setup_continue">"ඉදිරියට යන්න"</string>
+    <string name="setup_skip">"මඟ හරින්න"</string>
+    <string name="setup_back">"ආපසු"</string>
+    <string name="setup_step_count">"පියවර %1$d / %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"චැට් %1$d ප්‍රතිසාධනය කර ඇත"</item>
+        <item quantity="other">"චැට් %1$d ප්‍රතිසාධනය කර ඇත"</item>
+    </plurals>
+</resources>

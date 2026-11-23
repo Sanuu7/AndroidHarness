@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="setup_welcome_title">"به AndroidHarness خوش آمدید"</string>
+    <string name="setup_welcome_body">"عامل برنامه‌نویسی شما، درست روی گوشی‌تان. بیایید آن را راه‌اندازی کنیم."</string>
+    <string name="setup_start_fresh">"شروع از نو"</string>
+    <string name="setup_start_fresh_body">"راه‌اندازی یک AndroidHarness کاملاً جدید"</string>
+    <string name="setup_restore">"بازیابی AndroidHarness"</string>
+    <string name="setup_restore_body">"گفتگوها و تنظیمات خود را از یک فایل پشتیبان برگردانید"</string>
+
+    <string name="setup_storage_title">"اجازه دسترسی به فایل‌ها"</string>
+    <string name="setup_storage_body">"AndroidHarness پوشه‌های پروژه‌ای را که انتخاب می‌کنید می‌خواند و ویرایش می‌کند. این تنها مرحله‌ای است که نمی‌توانید از آن بگذرید."</string>
+    <string name="setup_storage_granted">"دسترسی به فایل‌ها فعال است"</string>
+    <string name="setup_allow_access">"اجازه دسترسی"</string>
+
+    <string name="setup_restore_title">"داده‌هایتان را بازیابی کنید"</string>
+    <string name="setup_restore_subtitle">"فایل‌های پشتیبان گوشی قدیمی خود را انتخاب کنید. یکی، هر دو یا هیچ‌کدام را بازیابی کنید."</string>
+    <string name="setup_restore_chats">"گفتگوها"</string>
+    <string name="setup_restore_chats_body">"یک فایل .harnessbackup با گفتگوها، تصاویر، آمار استفاده، حافظه‌ها و قطعه‌های شما"</string>
+    <string name="setup_restore_settings">"تنظیمات و ارائه‌دهندگان"</string>
+    <string name="setup_restore_settings_body">"یک فایل .hbackup محافظت‌شده با رمز عبور شامل ارائه‌دهندگان، کلیدهای API و ترجیحات شما"</string>
+    <string name="setup_restore_choose">"انتخاب فایل"</string>
+    <string name="setup_restore_another">"بازیابی یکی دیگر"</string>
+    <string name="setup_restore_settings_done">"تنظیمات شما برگشت"</string>
+
+    <string name="setup_powerups_title">"افزودنی‌ها"</string>
+    <string name="setup_powerups_subtitle">"همه اختیاری‌اند. هر کدام را می‌توانید بعداً در تنظیمات فعال کنید."</string>
+
+    <string name="setup_ready_title">"همه چیز آماده است"</string>
+    <string name="setup_ready_body">"این‌ها آماده استفاده‌اند."</string>
+    <string name="setup_ready_storage">"دسترسی به فایل‌ها"</string>
+    <string name="setup_ready_notifications">"اطلاعیه‌ها"</string>
+    <string name="setup_ready_shizuku">"Shizuku"</string>
+    <string name="setup_ready_linux">"ابزارهای Linux"</string>
+    <string name="setup_ready_battery">"اجراهای پس‌زمینه"</string>
+    <string name="setup_ready_settings">"تنظیمات بازیابی شد"</string>
+
+    <string name="setup_continue">"ادامه دهید"</string>
+    <string name="setup_skip">"پرش کنید"</string>
+    <string name="setup_back">"بازگشت"</string>
+    <string name="setup_step_count">"مرحله %1$d از %2$d"</string>
+
+    <plurals name="setup_restored_chats">
+        <item quantity="one">"%1$d گفتگو بازیابی شد"</item>
+        <item quantity="other">"%1$d گفتگو بازیابی شد"</item>
+    </plurals>
+</resources>
