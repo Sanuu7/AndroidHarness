@@ -1,5 +1,6 @@
 package com.androidharness.app.llm
 
+import com.androidharness.app.agent.CustomReasoning
 import com.androidharness.app.llm.jsonArrayOrAbsent
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -205,12 +206,10 @@ object ModelCatalog {
             if (name.isBlank() || name.length > 32 || name.any(Char::isISOControl)) return null
             name.lowercase(java.util.Locale.ROOT)
         }.distinct()
-        // OpenRouter lists supported_efforts from highest to lowest; normalize recognized
-        // presets into lowest-to-highest order when every item is a known ThinkingLevel.
-        val ranks = names.map { com.androidharness.app.agent.CustomReasoning.native(it)?.rank }
-        return if (ranks.size > 1 && ranks.all { it != null } && ranks.zipWithNext().all { (a, b) -> a!! > b!! }) {
-            names.asReversed()
-        } else names
+        // OpenRouter lists supported_efforts from highest to lowest. When every name is a
+        // known level, order them lowest to highest; custom names keep the provider's order.
+        val levels = names.map { CustomReasoning.native(it) ?: return names }
+        return names.indices.sortedBy { levels[it].rank }.map(names::get)
     }
 
     internal fun reportedTools(obj: JsonObject): Boolean? {

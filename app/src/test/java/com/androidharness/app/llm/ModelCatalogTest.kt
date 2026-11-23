@@ -1,5 +1,8 @@
 package com.androidharness.app.llm
 
+import com.androidharness.app.agent.CustomReasoning
+import com.androidharness.app.agent.ThinkingLevel
+import com.androidharness.app.agent.ThinkingSpecs
 import kotlinx.coroutines.runBlocking
 import kotlinx.serialization.json.*
 import okhttp3.MediaType.Companion.toMediaType
@@ -22,12 +25,12 @@ class ModelCatalogTest {
         assertEquals(listOf("low", "high", "max"), entry.reasoningEfforts)
         assertEquals("high", entry.defaultReasoningEffort)
         assertEquals(true, entry.reasoning)
-        val options = RequestOptions(thinking = com.androidharness.app.agent.ThinkingLevel.MAX,
+        val options = RequestOptions(thinking = ThinkingLevel.MAX,
             modelCatalogs = mapOf(config.id to listOf(entry)))
         val resolved = options.resolveThinking(config)
         assertEquals("Max", resolved.label)
         assertEquals("max", resolved.effort)
-        assertEquals(listOf("Low", "High", "Max"), com.androidharness.app.agent.CustomReasoning.defaultLevels(resolved.spec))
+        assertEquals(listOf("Low", "High", "Max"), CustomReasoning.defaultLevels(resolved.spec))
         val body = OpenAiCompatProvider(client, ProviderFactory.json).buildRequestBody(config, "fixture", emptyList(), emptyList(), options)
         assertEquals("max", body["reasoning_effort"]!!.jsonPrimitive.content)
         assertEquals("enabled", body["thinking"]!!.jsonObject["type"]!!.jsonPrimitive.content)
@@ -52,16 +55,25 @@ class ModelCatalogTest {
         assertEquals(true, entry.imageInput)
         assertEquals(1048576L, entry.contextTokens)
         val lanConfig = ProviderConfig("lan", "Local Gateway", ProviderType.OPENAI_COMPAT, "http://192.168.1.50:8080/v1", "gemini-4-neon")
-        val spec = com.androidharness.app.agent.ThinkingSpecs.forProvider(lanConfig, entry)
-        assertEquals(com.androidharness.app.agent.ThinkingSpecs.Style.EFFORT, spec.style)
+        val spec = ThinkingSpecs.forProvider(lanConfig, entry)
+        assertEquals(ThinkingSpecs.Style.EFFORT, spec.style)
         assertEquals(listOf(
-            com.androidharness.app.agent.ThinkingLevel.LOW,
-            com.androidharness.app.agent.ThinkingLevel.MEDIUM,
-            com.androidharness.app.agent.ThinkingLevel.HIGH,
-            com.androidharness.app.agent.ThinkingLevel.XHIGH,
+            ThinkingLevel.LOW,
+            ThinkingLevel.MEDIUM,
+            ThinkingLevel.HIGH,
+            ThinkingLevel.XHIGH,
         ), spec.levels)
-        assertEquals(com.androidharness.app.agent.ThinkingLevel.HIGH, spec.defaultLevel)
+        assertEquals(ThinkingLevel.HIGH, spec.defaultLevel)
         assertEquals(listOf("Low", "Medium", "High", "X-High"), spec.reportedLevels)
+    }
+
+    @Test fun knownEffortsAreOrderedLowToHighButCustomNamesKeepTheirOrder() {
+        val models = ModelCatalog.parseCatalog(ProviderType.OPENAI_COMPAT, """{"data":[
+            {"id":"jumbled","reasoning":{"supported_efforts":["high","none","max","low","medium"]}},
+            {"id":"custom","reasoning":{"supported_efforts":["turbo","high","low"]}}
+        ]}""").associateBy { it.id }
+        assertEquals(listOf("none", "low", "medium", "high", "max"), models.getValue("jumbled").reasoningEfforts)
+        assertEquals(listOf("turbo", "high", "low"), models.getValue("custom").reasoningEfforts)
     }
 
     @Test fun malformedEffortListsStayUnknownAndUnavailableDefaultsAreDiscarded() {
