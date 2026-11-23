@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Kembalikan chat dan setelan Anda dari berkas cadangan"</string>
 
     <string name="setup_storage_title">"Izinkan akses berkas"</string>
-    <string name="setup_storage_body">"AndroidHarness membaca dan mengedit folder proyek yang Anda pilih. Ini satu-satunya langkah yang tidak bisa dilewati."</string>
+    <string name="setup_storage_body">"Opsional. Tanpanya, AndroidHarness bekerja di folder sendiri dan bertanya saat tugas membutuhkan berkas Anda."</string>
+    <string name="setup_storage_all_files">"Akses semua berkas"</string>
+    <string name="setup_storage_all_files_body">"Baca dan edit folder mana pun seperti yang diharapkan terminal dan alat berkas. Terbaik untuk coding."</string>
+    <string name="setup_storage_legacy">"Izin penyimpanan"</string>
+    <string name="setup_storage_legacy_body">"Baca dan edit berkas dan folder di ponsel Anda."</string>
+    <string name="setup_storage_media">"Foto dan media"</string>
+    <string name="setup_storage_read">"Baca penyimpanan"</string>
+    <string name="setup_storage_media_body">"Baca foto, video, dan musik Anda."</string>
+    <string name="setup_storage_read_body">"Baca foto, video, musik, dan berkas bersama lainnya."</string>
+    <string name="setup_storage_unavailable">"Ponsel ini tidak memiliki setelan akses semua berkas, jadi proyek berada di folder aplikasi sendiri."</string>
+    <string name="setup_storage_skip">"Lewati untuk sekarang"</string>
     <string name="setup_storage_granted">"Akses berkas aktif"</string>
     <string name="setup_allow_access">"Izinkan akses"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Alat Linux"</string>
     <string name="setup_ready_battery">"Proses latar belakang"</string>
+    <string name="setup_ready_media">"Foto dan media"</string>
     <string name="setup_ready_settings">"Setelan dipulihkan"</string>
 
     <string name="setup_continue">"Lanjutkan"</string>

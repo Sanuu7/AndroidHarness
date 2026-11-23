@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Bawa balik sembang dan tetapan anda daripada fail sandaran"</string>
 
     <string name="setup_storage_title">"Benarkan akses fail"</string>
-    <string name="setup_storage_body">"AndroidHarness membaca dan mengedit folder projek yang anda pilih. Ini satu-satunya langkah yang tidak boleh dilangkau."</string>
+    <string name="setup_storage_body">"Pilihan. Tanpanya, AndroidHarness berfungsi dalam foldernya sendiri dan bertanya apabila tugas memerlukan fail anda."</string>
+    <string name="setup_storage_all_files">"Akses semua fail"</string>
+    <string name="setup_storage_all_files_body">"Baca dan edit mana-mana folder seperti yang dijangka terminal dan alat fail. Terbaik untuk pengekodan."</string>
+    <string name="setup_storage_legacy">"Kebenaran storan"</string>
+    <string name="setup_storage_legacy_body">"Baca dan edit fail dan folder pada telefon anda."</string>
+    <string name="setup_storage_media">"Foto dan media"</string>
+    <string name="setup_storage_read">"Baca storan"</string>
+    <string name="setup_storage_media_body">"Baca foto, video dan muzik anda."</string>
+    <string name="setup_storage_read_body">"Baca foto, video, muzik dan fail dikongsi lain."</string>
+    <string name="setup_storage_unavailable">"Telefon ini tiada tetapan akses semua fail, jadi projek kekal dalam folder aplikasi sendiri."</string>
+    <string name="setup_storage_skip">"Langkau buat masa ini"</string>
     <string name="setup_storage_granted">"Akses fail dihidupkan"</string>
     <string name="setup_allow_access">"Benarkan akses"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Alat Linux"</string>
     <string name="setup_ready_battery">"Proses latar belakang"</string>
+    <string name="setup_ready_media">"Foto dan media"</string>
     <string name="setup_ready_settings">"Tetapan dipulihkan"</string>
 
     <string name="setup_continue">"Teruskan"</string>

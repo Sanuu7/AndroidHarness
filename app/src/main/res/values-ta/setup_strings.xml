@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"காப்புப்பிரதிக் கோப்பிலிருந்து உங்கள் அரட்டைகளையும் அமைப்புகளையும் திரும்பக் கொண்டு வாருங்கள்"</string>
 
     <string name="setup_storage_title">"கோப்பு அணுகலை அனுமதிக்கவும்"</string>
-    <string name="setup_storage_body">"AndroidHarness நீங்கள் தேர்ந்தெடுக்கும் திட்டக் கோப்புறைகளைப் படித்து திருத்துகிறது. தவிர்க்க முடியாத ஒரே படி இதுவே."</string>
+    <string name="setup_storage_body">"விருப்பமானது. இது இல்லாமல் AndroidHarness அதன் சொந்த கோப்புறையில் வேலை செய்து, ஒரு பணிக்கு உங்கள் கோப்புகள் தேவைப்படும்போது கேட்கும்."</string>
+    <string name="setup_storage_all_files">"அனைத்து கோப்புகளுக்கும் அணுகல்"</string>
+    <string name="setup_storage_all_files_body">"டெர்மினலும் கோப்பு கருவிகளும் எதிர்பார்ப்பது போல எந்தக் கோப்புறையையும் படித்து திருத்துங்கள். கோடிங்கிற்கு சிறந்தது."</string>
+    <string name="setup_storage_legacy">"சேமிப்பக அனுமதி"</string>
+    <string name="setup_storage_legacy_body">"உங்கள் மொபைலின் கோப்புகளையும் கோப்புறைகளையும் படித்து திருத்துங்கள்."</string>
+    <string name="setup_storage_media">"படங்கள் மற்றும் மீடியா"</string>
+    <string name="setup_storage_read">"சேமிப்பகத்தைப் படி"</string>
+    <string name="setup_storage_media_body">"உங்கள் படங்கள், வீடியோக்கள், இசையைப் படியுங்கள்."</string>
+    <string name="setup_storage_read_body">"படங்கள், வீடியோக்கள், இசை மற்றும் பிற பகிரப்பட்ட கோப்புகளைப் படியுங்கள்."</string>
+    <string name="setup_storage_unavailable">"இந்த மொபைலில் அனைத்து கோப்புகளுக்கும் அணுகல் அமைப்பு இல்லை, எனவே திட்டங்கள் செயலியின் சொந்த கோப்புறையில் இருக்கும்."</string>
+    <string name="setup_storage_skip">"இப்போது தவிர்"</string>
     <string name="setup_storage_granted">"கோப்பு அணுகல் இயக்கத்தில் உள்ளது"</string>
     <string name="setup_allow_access">"அணுகலை அனுமதிக்கவும்"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux கருவிகள்"</string>
     <string name="setup_ready_battery">"பின்னணி இயக்கங்கள்"</string>
+    <string name="setup_ready_media">"படங்கள் மற்றும் மீடியா"</string>
     <string name="setup_ready_settings">"அமைப்புகள் மீட்டெடுக்கப்பட்டன"</string>
 
     <string name="setup_continue">"தொடர்"</string>

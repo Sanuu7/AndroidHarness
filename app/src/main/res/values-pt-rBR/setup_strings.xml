@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Traga de volta seus chats e configurações de um arquivo de backup"</string>
 
     <string name="setup_storage_title">"Permitir acesso a arquivos"</string>
-    <string name="setup_storage_body">"O AndroidHarness lê e edita as pastas de projeto que você escolher. Este é o único passo que você não pode pular."</string>
+    <string name="setup_storage_body">"Opcional. Sem isso, o AndroidHarness trabalha na própria pasta e pergunta quando uma tarefa precisa dos seus arquivos."</string>
+    <string name="setup_storage_all_files">"Acesso a todos os arquivos"</string>
+    <string name="setup_storage_all_files_body">"Leia e edite qualquer pasta, como o terminal e as ferramentas de arquivos esperam. Melhor para programar."</string>
+    <string name="setup_storage_legacy">"Permissão de armazenamento"</string>
+    <string name="setup_storage_legacy_body">"Leia e edite os arquivos e pastas do seu telefone."</string>
+    <string name="setup_storage_media">"Fotos e mídia"</string>
+    <string name="setup_storage_read">"Ler armazenamento"</string>
+    <string name="setup_storage_media_body">"Leia suas fotos, vídeos e músicas."</string>
+    <string name="setup_storage_read_body">"Leia fotos, vídeos, músicas e outros arquivos compartilhados."</string>
+    <string name="setup_storage_unavailable">"Este telefone não tem a opção de acesso a todos os arquivos, então os projetos ficam na pasta do próprio app."</string>
+    <string name="setup_storage_skip">"Pular por enquanto"</string>
     <string name="setup_storage_granted">"O acesso a arquivos está ativo"</string>
     <string name="setup_allow_access">"Permitir acesso"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Ferramentas Linux"</string>
     <string name="setup_ready_battery">"Execuções em segundo plano"</string>
+    <string name="setup_ready_media">"Fotos e mídia"</string>
     <string name="setup_ready_settings">"Configurações restauradas"</string>
 
     <string name="setup_continue">"Continuar"</string>

@@ -73,3 +73,37 @@ private tailrec fun Context.storageActivity(): Activity? = when (this) {
     is ContextWrapper -> baseContext.storageActivity()
     else -> null
 }
+
+/**
+ * The everyday storage dialog from [StorageAccess.mediaPermissions]. Once Android stops showing
+ * the dialog (denied twice), the request opens the app's permission page instead.
+ */
+@Composable
+fun rememberMediaAccess(): StorageAccessState {
+    val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    var granted by remember(context) { mutableStateOf(StorageAccess.isMediaGranted(context)) }
+    var requested by rememberSaveable { mutableStateOf(false) }
+    val refresh = { granted = StorageAccess.isMediaGranted(context) }
+    val launcher = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { refresh() }
+
+    DisposableEffect(context, lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) refresh() }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
+
+    return StorageAccessState(granted, request = {
+        val activity = context.storageActivity()
+        val permissions = StorageAccess.mediaPermissions()
+        val blocked = requested && activity != null && permissions.none {
+            ActivityCompat.shouldShowRequestPermissionRationale(activity, it)
+        } && !StorageAccess.isMediaGranted(context)
+        if (blocked) {
+            SystemGrants.openAppDetails(context)
+        } else {
+            requested = true
+            launcher.launch(permissions)
+        }
+    }, refresh = refresh)
+}

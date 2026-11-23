@@ -54,6 +54,19 @@ object SystemGrants {
     }
 
     /**
+     * Whether this phone has an "All files access" page at all. It does not exist before
+     * Android 11, and some Android 11+ builds (low-memory, TV and some custom ROMs) leave it out.
+     */
+    fun isAllFilesAccessAvailable(context: Context): Boolean {
+        if (Build.VERSION.SDK_INT < 30) return false
+        val pkg = context.packageName
+        return listOf(
+            Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION, Uri.parse("package:$pkg")),
+            Intent(Settings.ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION),
+        ).any { runCatching { it.resolveActivity(context.packageManager) != null }.getOrDefault(false) }
+    }
+
+    /**
      * Opens the OS "All files access" page for this app. Samsung/OEM builds often
      * ignore the plain ACTION_MANAGE_ALL_FILES_ACCESS_PERMISSION + package URI, so
      * we walk a few known intents and fall back to the app details screen.

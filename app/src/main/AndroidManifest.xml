@@ -53,6 +53,14 @@
         <intent>
             <action android:name="android.speech.RecognitionService" />
         </intent>
+        <!-- Lets setup tell whether this phone has an "All files access" page before offering it. -->
+        <intent>
+            <action android:name="android.settings.MANAGE_APP_ALL_FILES_ACCESS_PERMISSION" />
+            <data android:scheme="package" />
+        </intent>
+        <intent>
+            <action android:name="android.settings.MANAGE_ALL_FILES_ACCESS_PERMISSION" />
+        </intent>
         <!-- Android 11+ package visibility: discover installed TTS engines/voices. -->
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE" />
@@ -69,6 +77,11 @@
     <uses-permission
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
+    <!-- Android 13+ replaced the read permission above with these. Optional at setup. -->
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
 
     <application
         android:name=".HarnessApp"

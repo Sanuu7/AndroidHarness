@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"バックアップファイルからチャットと設定を戻します"</string>
 
     <string name="setup_storage_title">"ファイルアクセスを許可"</string>
-    <string name="setup_storage_body">"AndroidHarness は選択したプロジェクトフォルダを読み取り、編集します。この手順だけは省略できません。"</string>
+    <string name="setup_storage_body">"任意です。許可しない場合、AndroidHarness は専用フォルダで動作し、タスクがファイルを必要とするときに確認します。"</string>
+    <string name="setup_storage_all_files">"すべてのファイルへのアクセス"</string>
+    <string name="setup_storage_all_files_body">"ターミナルやファイルツールが期待する通りに、任意のフォルダを読み取り・編集できます。コーディングに最適です。"</string>
+    <string name="setup_storage_legacy">"ストレージの権限"</string>
+    <string name="setup_storage_legacy_body">"スマートフォン内のファイルとフォルダを読み取り・編集します。"</string>
+    <string name="setup_storage_media">"写真とメディア"</string>
+    <string name="setup_storage_read">"ストレージを読み取る"</string>
+    <string name="setup_storage_media_body">"写真、動画、音楽を読み取ります。"</string>
+    <string name="setup_storage_read_body">"写真、動画、音楽、その他の共有ファイルを読み取ります。"</string>
+    <string name="setup_storage_unavailable">"この端末には「すべてのファイルへのアクセス」設定がないため、プロジェクトはアプリ専用フォルダに保存されます。"</string>
+    <string name="setup_storage_skip">"今はスキップ"</string>
     <string name="setup_storage_granted">"ファイルアクセスは有効です"</string>
     <string name="setup_allow_access">"アクセスを許可"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux ツール"</string>
     <string name="setup_ready_battery">"バックグラウンド実行"</string>
+    <string name="setup_ready_media">"写真とメディア"</string>
     <string name="setup_ready_settings">"設定を復元済み"</string>
 
     <string name="setup_continue">"続行"</string>

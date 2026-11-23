@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"ব্যাকআপ ফাইল থেকে আপনার চ্যাট ও সেটিংস ফিরিয়ে আনুন"</string>
 
     <string name="setup_storage_title">"ফাইল অ্যাক্সেসের অনুমতি দিন"</string>
-    <string name="setup_storage_body">"AndroidHarness আপনার বেছে নেওয়া প্রজেক্ট ফোল্ডার পড়ে ও সম্পাদনা করে। এটিই একমাত্র ধাপ যা এড়ানো যাবে না।"</string>
+    <string name="setup_storage_body">"ঐচ্ছিক। এটি ছাড়া AndroidHarness নিজের ফোল্ডারে কাজ করে এবং কোনো কাজে আপনার ফাইল দরকার হলে জিজ্ঞাসা করে।"</string>
+    <string name="setup_storage_all_files">"সব ফাইলে অ্যাক্সেস"</string>
+    <string name="setup_storage_all_files_body">"টার্মিনাল ও ফাইল টুল যেভাবে আশা করে, যেকোনো ফোল্ডার পড়ুন ও সম্পাদনা করুন। কোডিংয়ের জন্য সেরা।"</string>
+    <string name="setup_storage_legacy">"স্টোরেজ অনুমতি"</string>
+    <string name="setup_storage_legacy_body">"আপনার ফোনের ফাইল ও ফোল্ডার পড়ুন ও সম্পাদনা করুন।"</string>
+    <string name="setup_storage_media">"ছবি ও মিডিয়া"</string>
+    <string name="setup_storage_read">"স্টোরেজ পড়ুন"</string>
+    <string name="setup_storage_media_body">"আপনার ছবি, ভিডিও ও সংগীত পড়ুন।"</string>
+    <string name="setup_storage_read_body">"ছবি, ভিডিও, সংগীত ও অন্যান্য শেয়ার করা ফাইল পড়ুন।"</string>
+    <string name="setup_storage_unavailable">"এই ফোনে সব ফাইলে অ্যাক্সেসের সেটিং নেই, তাই প্রজেক্টগুলো অ্যাপের নিজের ফোল্ডারে থাকে।"</string>
+    <string name="setup_storage_skip">"এখন এড়িয়ে যান"</string>
     <string name="setup_storage_granted">"ফাইল অ্যাক্সেস চালু আছে"</string>
     <string name="setup_allow_access">"অ্যাক্সেসের অনুমতি দিন"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux সরঞ্জাম"</string>
     <string name="setup_ready_battery">"ব্যাকগ্রাউন্ডে চলা"</string>
+    <string name="setup_ready_media">"ছবি ও মিডিয়া"</string>
     <string name="setup_ready_settings">"সেটিংস পুনরুদ্ধার হয়েছে"</string>
 
     <string name="setup_continue">"চালিয়ে যান"</string>

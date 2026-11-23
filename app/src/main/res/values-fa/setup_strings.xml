@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"گفتگوها و تنظیمات خود را از یک فایل پشتیبان برگردانید"</string>
 
     <string name="setup_storage_title">"اجازه دسترسی به فایل‌ها"</string>
-    <string name="setup_storage_body">"AndroidHarness پوشه‌های پروژه‌ای را که انتخاب می‌کنید می‌خواند و ویرایش می‌کند. این تنها مرحله‌ای است که نمی‌توانید از آن بگذرید."</string>
+    <string name="setup_storage_body">"اختیاری. بدون آن AndroidHarness در پوشه خودش کار می‌کند و وقتی کاری به فایل‌های شما نیاز دارد می‌پرسد."</string>
+    <string name="setup_storage_all_files">"دسترسی به همه فایل‌ها"</string>
+    <string name="setup_storage_all_files_body">"هر پوشه‌ای را همان‌طور که ترمینال و ابزارهای فایل انتظار دارند بخوانید و ویرایش کنید. بهترین برای برنامه‌نویسی."</string>
+    <string name="setup_storage_legacy">"مجوز ذخیره‌سازی"</string>
+    <string name="setup_storage_legacy_body">"فایل‌ها و پوشه‌های گوشی خود را بخوانید و ویرایش کنید."</string>
+    <string name="setup_storage_media">"عکس‌ها و رسانه"</string>
+    <string name="setup_storage_read">"خواندن حافظه"</string>
+    <string name="setup_storage_media_body">"عکس‌ها، ویدیوها و موسیقی خود را بخوانید."</string>
+    <string name="setup_storage_read_body">"عکس‌ها، ویدیوها، موسیقی و دیگر فایل‌های مشترک را بخوانید."</string>
+    <string name="setup_storage_unavailable">"این گوشی تنظیم دسترسی به همه فایل‌ها را ندارد، بنابراین پروژه‌ها در پوشه خود برنامه می‌مانند."</string>
+    <string name="setup_storage_skip">"فعلاً رد کنید"</string>
     <string name="setup_storage_granted">"دسترسی به فایل‌ها فعال است"</string>
     <string name="setup_allow_access">"اجازه دسترسی"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"ابزارهای Linux"</string>
     <string name="setup_ready_battery">"اجراهای پس‌زمینه"</string>
+    <string name="setup_ready_media">"عکس‌ها و رسانه"</string>
     <string name="setup_ready_settings">"تنظیمات بازیابی شد"</string>
 
     <string name="setup_continue">"ادامه دهید"</string>

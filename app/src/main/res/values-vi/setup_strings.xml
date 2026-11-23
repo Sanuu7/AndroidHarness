@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Lấy lại cuộc trò chuyện và cài đặt từ tệp sao lưu"</string>
 
     <string name="setup_storage_title">"Cho phép truy cập tệp"</string>
-    <string name="setup_storage_body">"AndroidHarness đọc và sửa các thư mục dự án bạn chọn. Đây là bước duy nhất bạn không thể bỏ qua."</string>
+    <string name="setup_storage_body">"Tùy chọn. Không có quyền này, AndroidHarness làm việc trong thư mục riêng và hỏi khi một tác vụ cần tệp của bạn."</string>
+    <string name="setup_storage_all_files">"Quyền truy cập tất cả tệp"</string>
+    <string name="setup_storage_all_files_body">"Đọc và sửa mọi thư mục như terminal và công cụ tệp mong đợi. Tốt nhất cho lập trình."</string>
+    <string name="setup_storage_legacy">"Quyền lưu trữ"</string>
+    <string name="setup_storage_legacy_body">"Đọc và sửa tệp và thư mục trên điện thoại của bạn."</string>
+    <string name="setup_storage_media">"Ảnh và phương tiện"</string>
+    <string name="setup_storage_read">"Đọc bộ nhớ"</string>
+    <string name="setup_storage_media_body">"Đọc ảnh, video và nhạc của bạn."</string>
+    <string name="setup_storage_read_body">"Đọc ảnh, video, nhạc và các tệp chia sẻ khác."</string>
+    <string name="setup_storage_unavailable">"Điện thoại này không có cài đặt truy cập tất cả tệp, nên dự án nằm trong thư mục riêng của ứng dụng."</string>
+    <string name="setup_storage_skip">"Bỏ qua lúc này"</string>
     <string name="setup_storage_granted">"Đã bật quyền truy cập tệp"</string>
     <string name="setup_allow_access">"Cho phép truy cập"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Công cụ Linux"</string>
     <string name="setup_ready_battery">"Chạy nền"</string>
+    <string name="setup_ready_media">"Ảnh và phương tiện"</string>
     <string name="setup_ready_settings">"Đã khôi phục cài đặt"</string>
 
     <string name="setup_continue">"Tiếp tục"</string>

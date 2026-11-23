@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"උපස්ථ ගොනුවකින් ඔබේ චැට් සහ සැකසුම් නැවත ගෙන එන්න"</string>
 
     <string name="setup_storage_title">"ගොනු ප්‍රවේශයට අවසර දෙන්න"</string>
-    <string name="setup_storage_body">"AndroidHarness ඔබ තෝරන ව්‍යාපෘති ෆෝල්ඩර කියවා සංස්කරණය කරයි. මඟ හැරිය නොහැකි එකම පියවර මෙයයි."</string>
+    <string name="setup_storage_body">"විකල්පයි. එය නොමැතිව AndroidHarness තමන්ගේම ෆෝල්ඩරයේ ක්‍රියා කරන අතර කාර්යයකට ඔබේ ගොනු අවශ්‍ය වූ විට අසයි."</string>
+    <string name="setup_storage_all_files">"සියලු ගොනු ප්‍රවේශය"</string>
+    <string name="setup_storage_all_files_body">"ටර්මිනලය සහ ගොනු මෙවලම් අපේක්ෂා කරන පරිදි ඕනෑම ෆෝල්ඩරයක් කියවා සංස්කරණය කරන්න. කේතනයට හොඳම."</string>
+    <string name="setup_storage_legacy">"ගබඩා අවසරය"</string>
+    <string name="setup_storage_legacy_body">"ඔබේ දුරකථනයේ ගොනු සහ ෆෝල්ඩර කියවා සංස්කරණය කරන්න."</string>
+    <string name="setup_storage_media">"පින්තූර සහ මාධ්‍ය"</string>
+    <string name="setup_storage_read">"ගබඩාව කියවන්න"</string>
+    <string name="setup_storage_media_body">"ඔබේ පින්තූර, වීඩියෝ සහ සංගීතය කියවන්න."</string>
+    <string name="setup_storage_read_body">"පින්තූර, වීඩියෝ, සංගීත සහ අනෙකුත් හවුල් ගොනු කියවන්න."</string>
+    <string name="setup_storage_unavailable">"මෙම දුරකථනයට සියලු ගොනු ප්‍රවේශ සැකසුමක් නැත, එබැවින් ව්‍යාපෘති යෙදුමේම ෆෝල්ඩරයේ රැඳේ."</string>
+    <string name="setup_storage_skip">"දැන් මඟ හරින්න"</string>
     <string name="setup_storage_granted">"ගොනු ප්‍රවේශය සක්‍රීයයි"</string>
     <string name="setup_allow_access">"ප්‍රවේශයට අවසර දෙන්න"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux මෙවලම්"</string>
     <string name="setup_ready_battery">"පසුබිම් ධාවන"</string>
+    <string name="setup_ready_media">"පින්තූර සහ මාධ්‍ය"</string>
     <string name="setup_ready_settings">"සැකසුම් ප්‍රතිසාධනය කර ඇත"</string>
 
     <string name="setup_continue">"ඉදිරියට යන්න"</string>

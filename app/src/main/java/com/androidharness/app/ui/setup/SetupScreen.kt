@@ -58,8 +58,11 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowForward
 import androidx.compose.material.icons.rounded.BatteryChargingFull
 import androidx.compose.material.icons.rounded.Check
+import androidx.compose.material.icons.rounded.Folder
 import androidx.compose.material.icons.rounded.Forum
+import androidx.compose.material.icons.rounded.Info
 import androidx.compose.material.icons.rounded.Notifications
+import androidx.compose.material.icons.rounded.PhotoLibrary
 import androidx.compose.material.icons.rounded.RocketLaunch
 import androidx.compose.material.icons.rounded.SdStorage
 import androidx.compose.material.icons.rounded.SettingsBackupRestore
@@ -120,6 +123,7 @@ import com.androidharness.app.ui.common.HarnessMark
 import com.androidharness.app.ui.common.OutlinedButton
 import com.androidharness.app.ui.common.SystemGrants
 import com.androidharness.app.ui.common.TextButton
+import com.androidharness.app.ui.common.rememberMediaAccess
 import com.androidharness.app.ui.common.rememberStorageAccess
 import com.androidharness.app.ui.settings.BackupRestoreSheet
 import com.androidharness.app.ui.settings.BackupSheetMode
@@ -127,7 +131,7 @@ import com.androidharness.app.ui.settings.SettingsRestoreDialogs
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-/** First-run setup, one idea per page. Storage is the only required step. */
+/** First-run setup, one idea per page. Every step can be skipped and done later in Settings. */
 private enum class Step { WELCOME, STORAGE, RESTORE, POWERUPS, READY }
 
 @Composable
@@ -146,6 +150,10 @@ fun SetupScreen(
 
     val storageAccess = rememberStorageAccess()
     val storageGranted = storageAccess.granted
+    val mediaAccess = rememberMediaAccess()
+    // Before Android 11 the everyday dialog already is full access, so it only shows once.
+    val legacyStorage = android.os.Build.VERSION.SDK_INT < 30
+    val allFilesAvailable = remember(context) { legacyStorage || SystemGrants.isAllFilesAccessAvailable(context) }
     var notifGranted by remember { mutableStateOf(SystemGrants.isPostNotificationsGranted(context)) }
     val notifLauncher = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { notifGranted = it }
     var batteryExempt by remember { mutableStateOf(SystemGrants.isIgnoringBatteryOptimizations(context)) }
@@ -184,7 +192,6 @@ fun SetupScreen(
     fun back() { steps.getOrNull(index - 1)?.let(::goTo) }
 
     fun finish() {
-        if (!storageGranted) return
         scope.launch {
             container.settings.setOnboardingDone(true)
             onFinish()
@@ -241,7 +248,14 @@ fun SetupScreen(
                                     onFresh = { restoring = false; forward = true; stepName = Step.STORAGE.name },
                                     onRestore = { restoring = true; forward = true; stepName = Step.STORAGE.name },
                                 )
-                                Step.STORAGE -> StoragePage(storageGranted)
+                                Step.STORAGE -> StoragePage(
+                                    allFiles = storageGranted,
+                                    media = mediaAccess.granted,
+                                    legacy = legacyStorage,
+                                    allFilesAvailable = allFilesAvailable,
+                                    onAllFiles = { storageRequested = true; storageAccess.request() },
+                                    onMedia = mediaAccess.request,
+                                )
                                 Step.RESTORE -> RestorePage(
                                     chatsDone = chatsDone,
                                     chatsRestored = chatsRestored,
@@ -271,6 +285,7 @@ fun SetupScreen(
                                 )
                                 Step.READY -> ReadyPage(buildList {
                                     if (storageGranted) add(stringResource(R.string.setup_ready_storage))
+                                    else if (mediaAccess.granted) add(stringResource(R.string.setup_ready_media))
                                     if (chatsRestored > 0) add(pluralStringResource(R.plurals.setup_restored_chats, chatsRestored, chatsRestored))
                                     if (settingsDone) add(stringResource(R.string.setup_ready_settings))
                                     if (notifGranted) add(stringResource(R.string.setup_ready_notifications))
@@ -289,11 +304,12 @@ fun SetupScreen(
                             TextButton(onClick = { back() }) { Text(stringResource(R.string.setup_back)) }
                             Spacer(Modifier.weight(1f))
                             val (label, action, enabled) = when (step) {
-                                Step.STORAGE -> if (storageGranted) Triple(stringResource(R.string.setup_continue), { next() }, true)
-                                    else Triple(stringResource(R.string.setup_allow_access), { storageRequested = true; storageAccess.request() }, true)
+                                Step.STORAGE -> Triple(
+                                    stringResource(if (storageGranted || mediaAccess.granted) R.string.setup_continue else R.string.setup_storage_skip),
+                                    { next() }, true)
                                 Step.RESTORE -> Triple(
                                     stringResource(if (chatsDone || settingsDone) R.string.setup_continue else R.string.setup_skip), { next() }, true)
-                                Step.READY -> Triple(stringResource(R.string.ui_start_harness), { haptics.performHapticFeedback(HapticFeedbackType.Confirm); finish() }, storageGranted)
+                                Step.READY -> Triple(stringResource(R.string.ui_start_harness), { haptics.performHapticFeedback(HapticFeedbackType.Confirm); finish() }, true)
                                 else -> Triple(stringResource(R.string.setup_continue), { next() }, true)
                             }
                             Button(onClick = action, enabled = enabled, modifier = Modifier.heightIn(min = 56.dp)) {
@@ -357,19 +373,69 @@ private fun WelcomePage(onFresh: () -> Unit, onRestore: () -> Unit) {
 }
 
 @Composable
-private fun StoragePage(granted: Boolean) {
-    Spacer(Modifier.height(32.dp))
+private fun StoragePage(
+    allFiles: Boolean,
+    media: Boolean,
+    legacy: Boolean,
+    allFilesAvailable: Boolean,
+    onAllFiles: () -> Unit,
+    onMedia: () -> Unit,
+) {
+    val sdk = android.os.Build.VERSION.SDK_INT
+    Spacer(Modifier.height(16.dp))
     Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-        MorphBadge(done = granted, icon = Icons.Rounded.SdStorage, size = 148.dp, seed = MaterialShapes.Cookie9Sided)
+        MorphBadge(done = allFiles || media, icon = Icons.Rounded.SdStorage, size = 132.dp, seed = MaterialShapes.Cookie9Sided)
     }
-    Spacer(Modifier.height(8.dp))
-    AnimatedContent(granted, transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) }, label = "storage title") { on ->
+    AnimatedContent(allFiles, transitionSpec = { fadeIn(tween(220)) togetherWith fadeOut(tween(120)) }, label = "storage title") { on ->
         Text(stringResource(if (on) R.string.setup_storage_granted else R.string.setup_storage_title),
             style = MaterialTheme.typography.headlineMedium, fontWeight = FontWeight.SemiBold,
             textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
     }
     Text(stringResource(R.string.setup_storage_body), style = MaterialTheme.typography.bodyLarge,
         color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
+    Spacer(Modifier.height(4.dp))
+    when {
+        // Android 8 to 10: one runtime dialog covers everything.
+        legacy -> Rise(1) {
+            PowerCard(
+                icon = Icons.Rounded.Folder, title = stringResource(R.string.setup_storage_legacy),
+                status = stringResource(R.string.setup_storage_legacy_body),
+                done = allFiles, seed = MaterialShapes.Clover4Leaf,
+            ) { Button(onClick = onAllFiles) { Text(stringResource(R.string.ui_allow)) } }
+        }
+        allFilesAvailable -> Rise(1) {
+            PowerCard(
+                icon = Icons.Rounded.Folder, title = stringResource(R.string.setup_storage_all_files),
+                status = stringResource(R.string.setup_storage_all_files_body),
+                done = allFiles, seed = MaterialShapes.Clover4Leaf,
+            ) { Button(onClick = onAllFiles) { Text(stringResource(R.string.ui_allow)) } }
+        }
+        else -> Rise(1) {
+            Surface(shape = RoundedCornerShape(24.dp), color = MaterialTheme.colorScheme.surfaceContainer, modifier = Modifier.fillMaxWidth()) {
+                Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Rounded.Info, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Spacer(Modifier.width(12.dp))
+                    Text(stringResource(R.string.setup_storage_unavailable), style = MaterialTheme.typography.bodyMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            }
+        }
+    }
+    // Full access already reads everything the media dialog would.
+    if (!legacy && !allFiles) {
+        Rise(2) {
+            val modern = sdk >= 33
+            PowerCard(
+                icon = Icons.Rounded.PhotoLibrary,
+                title = stringResource(if (modern) R.string.setup_storage_media else R.string.setup_storage_read),
+                status = stringResource(if (modern) R.string.setup_storage_media_body else R.string.setup_storage_read_body),
+                done = media, seed = MaterialShapes.Flower,
+            ) {
+                if (allFilesAvailable) OutlinedButton(onClick = onMedia) { Text(stringResource(R.string.ui_allow)) }
+                else Button(onClick = onMedia) { Text(stringResource(R.string.ui_allow)) }
+            }
+        }
+    }
 }
 
 @Composable

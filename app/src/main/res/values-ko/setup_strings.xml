@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"백업 파일에서 채팅과 설정을 되살립니다"</string>
 
     <string name="setup_storage_title">"파일 접근 허용"</string>
-    <string name="setup_storage_body">"AndroidHarness는 선택한 프로젝트 폴더를 읽고 수정합니다. 이 단계만은 건너뛸 수 없습니다."</string>
+    <string name="setup_storage_body">"선택 사항입니다. 허용하지 않으면 AndroidHarness는 자체 폴더에서 작동하고 작업에 파일이 필요할 때 물어봅니다."</string>
+    <string name="setup_storage_all_files">"모든 파일 접근"</string>
+    <string name="setup_storage_all_files_body">"터미널과 파일 도구가 기대하는 대로 모든 폴더를 읽고 편집합니다. 코딩에 가장 적합합니다."</string>
+    <string name="setup_storage_legacy">"저장소 권한"</string>
+    <string name="setup_storage_legacy_body">"휴대폰의 파일과 폴더를 읽고 편집합니다."</string>
+    <string name="setup_storage_media">"사진 및 미디어"</string>
+    <string name="setup_storage_read">"저장소 읽기"</string>
+    <string name="setup_storage_media_body">"사진, 동영상, 음악을 읽습니다."</string>
+    <string name="setup_storage_read_body">"사진, 동영상, 음악 및 기타 공유 파일을 읽습니다."</string>
+    <string name="setup_storage_unavailable">"이 휴대폰에는 모든 파일 접근 설정이 없어 프로젝트가 앱 전용 폴더에 저장됩니다."</string>
+    <string name="setup_storage_skip">"나중에 건너뛰기"</string>
     <string name="setup_storage_granted">"파일 접근이 켜져 있습니다"</string>
     <string name="setup_allow_access">"접근 허용"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux 도구"</string>
     <string name="setup_ready_battery">"백그라운드 실행"</string>
+    <string name="setup_ready_media">"사진 및 미디어"</string>
     <string name="setup_ready_settings">"설정 복원됨"</string>
 
     <string name="setup_continue">"계속"</string>

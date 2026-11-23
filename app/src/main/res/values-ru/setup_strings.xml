@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Верните чаты и настройки из файла резервной копии"</string>
 
     <string name="setup_storage_title">"Разрешить доступ к файлам"</string>
-    <string name="setup_storage_body">"AndroidHarness читает и изменяет выбранные вами папки проектов. Этот шаг нельзя пропустить."</string>
+    <string name="setup_storage_body">"Необязательно. Без этого AndroidHarness работает в собственной папке и спрашивает, когда задаче нужны ваши файлы."</string>
+    <string name="setup_storage_all_files">"Доступ ко всем файлам"</string>
+    <string name="setup_storage_all_files_body">"Читайте и изменяйте любые папки так, как ожидают терминал и файловые инструменты. Лучше всего для программирования."</string>
+    <string name="setup_storage_legacy">"Разрешение на хранилище"</string>
+    <string name="setup_storage_legacy_body">"Читать и изменять файлы и папки на телефоне."</string>
+    <string name="setup_storage_media">"Фото и медиа"</string>
+    <string name="setup_storage_read">"Чтение хранилища"</string>
+    <string name="setup_storage_media_body">"Читать ваши фото, видео и музыку."</string>
+    <string name="setup_storage_read_body">"Читать фото, видео, музыку и другие общие файлы."</string>
+    <string name="setup_storage_unavailable">"На этом телефоне нет настройки доступа ко всем файлам, поэтому проекты хранятся в собственной папке приложения."</string>
+    <string name="setup_storage_skip">"Пропустить пока"</string>
     <string name="setup_storage_granted">"Доступ к файлам включён"</string>
     <string name="setup_allow_access">"Разрешить доступ"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Инструменты Linux"</string>
     <string name="setup_ready_battery">"Фоновые запуски"</string>
+    <string name="setup_ready_media">"Фото и медиа"</string>
     <string name="setup_ready_settings">"Настройки восстановлены"</string>
 
     <string name="setup_continue">"Продолжить"</string>

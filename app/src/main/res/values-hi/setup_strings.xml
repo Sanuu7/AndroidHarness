@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"बैकअप फ़ाइल से अपनी चैट और सेटिंग्स वापस लाएँ"</string>
 
     <string name="setup_storage_title">"फ़ाइल पहुँच की अनुमति दें"</string>
-    <string name="setup_storage_body">"AndroidHarness आपके चुने हुए प्रोजेक्ट फ़ोल्डर पढ़ता और संपादित करता है। यह एकमात्र चरण है जिसे आप छोड़ नहीं सकते।"</string>
+    <string name="setup_storage_body">"वैकल्पिक। इसके बिना AndroidHarness अपने ही फ़ोल्डर में काम करता है और जब किसी काम को आपकी फ़ाइलें चाहिए हों तब पूछता है।"</string>
+    <string name="setup_storage_all_files">"सभी फ़ाइलों तक पहुँच"</string>
+    <string name="setup_storage_all_files_body">"किसी भी फ़ोल्डर को पढ़ें और संपादित करें, जैसा टर्मिनल और फ़ाइल टूल उम्मीद करते हैं। कोडिंग के लिए सबसे अच्छा।"</string>
+    <string name="setup_storage_legacy">"भंडारण अनुमति"</string>
+    <string name="setup_storage_legacy_body">"अपने फ़ोन की फ़ाइलें और फ़ोल्डर पढ़ें और संपादित करें।"</string>
+    <string name="setup_storage_media">"फ़ोटो और मीडिया"</string>
+    <string name="setup_storage_read">"भंडारण पढ़ें"</string>
+    <string name="setup_storage_media_body">"अपनी फ़ोटो, वीडियो और संगीत पढ़ें।"</string>
+    <string name="setup_storage_read_body">"फ़ोटो, वीडियो, संगीत और अन्य साझा फ़ाइलें पढ़ें।"</string>
+    <string name="setup_storage_unavailable">"इस फ़ोन में सभी फ़ाइलों तक पहुँच की सेटिंग नहीं है, इसलिए प्रोजेक्ट ऐप के अपने फ़ोल्डर में रहते हैं।"</string>
+    <string name="setup_storage_skip">"अभी छोड़ें"</string>
     <string name="setup_storage_granted">"फ़ाइल पहुँच चालू है"</string>
     <string name="setup_allow_access">"पहुँच की अनुमति दें"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux टूल"</string>
     <string name="setup_ready_battery">"पृष्ठभूमि में चलना"</string>
+    <string name="setup_ready_media">"फ़ोटो और मीडिया"</string>
     <string name="setup_ready_settings">"सेटिंग्स पुनर्स्थापित"</string>
 
     <string name="setup_continue">"जारी रखें"</string>

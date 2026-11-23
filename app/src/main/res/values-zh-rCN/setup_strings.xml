@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"从备份文件取回你的聊天和设置"</string>
 
     <string name="setup_storage_title">"允许文件访问"</string>
-    <string name="setup_storage_body">"AndroidHarness 会读取并编辑你选择的项目文件夹。这是唯一不能跳过的步骤。"</string>
+    <string name="setup_storage_body">"可选。如果不允许，AndroidHarness 会在自己的文件夹中运行，并在任务需要你的文件时询问。"</string>
+    <string name="setup_storage_all_files">"所有文件访问权限"</string>
+    <string name="setup_storage_all_files_body">"像终端和文件工具预期的那样读取和编辑任何文件夹。最适合编程。"</string>
+    <string name="setup_storage_legacy">"存储权限"</string>
+    <string name="setup_storage_legacy_body">"读取和编辑手机上的文件和文件夹。"</string>
+    <string name="setup_storage_media">"照片和媒体"</string>
+    <string name="setup_storage_read">"读取存储"</string>
+    <string name="setup_storage_media_body">"读取你的照片、视频和音乐。"</string>
+    <string name="setup_storage_read_body">"读取照片、视频、音乐和其他共享文件。"</string>
+    <string name="setup_storage_unavailable">"这台手机没有“所有文件访问权限”设置，因此项目会放在应用自己的文件夹中。"</string>
+    <string name="setup_storage_skip">"暂时跳过"</string>
     <string name="setup_storage_granted">"文件访问已开启"</string>
     <string name="setup_allow_access">"允许访问"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux 工具"</string>
     <string name="setup_ready_battery">"后台运行"</string>
+    <string name="setup_ready_media">"照片和媒体"</string>
     <string name="setup_ready_settings">"设置已恢复"</string>
 
     <string name="setup_continue">"继续"</string>

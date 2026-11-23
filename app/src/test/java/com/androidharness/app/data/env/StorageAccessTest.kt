@@ -77,4 +77,26 @@ class StorageAccessTest {
             assertTrue(StorageAccess.runtimePermissions(sdk).isEmpty())
         }
     }
+
+    @Test
+    fun `the everyday storage dialog asks for what each Android version understands`() {
+        for (sdk in 26..29) assertArrayEquals(arrayOf(read, write), StorageAccess.mediaPermissions(sdk))
+        for (sdk in 30..32) assertArrayEquals(arrayOf(read), StorageAccess.mediaPermissions(sdk))
+        val media = arrayOf(StorageAccess.MEDIA_IMAGES, StorageAccess.MEDIA_VIDEO, StorageAccess.MEDIA_AUDIO)
+        assertArrayEquals(media, StorageAccess.mediaPermissions(33))
+        for (sdk in listOf(34, 36, 37)) {
+            assertArrayEquals(media + StorageAccess.MEDIA_USER_SELECTED, StorageAccess.mediaPermissions(sdk))
+        }
+    }
+
+    @Test
+    fun `media access needs both old permissions but any part of the new grant`() {
+        assertFalse(StorageAccess.isMediaGranted(28, setOf(read)::contains))
+        assertTrue(StorageAccess.isMediaGranted(28, setOf(read, write)::contains))
+        assertTrue(StorageAccess.isMediaGranted(31, setOf(read)::contains))
+        assertFalse(StorageAccess.isMediaGranted(33, setOf(read)::contains))
+        assertTrue(StorageAccess.isMediaGranted(33, setOf(StorageAccess.MEDIA_AUDIO)::contains))
+        assertTrue(StorageAccess.isMediaGranted(34, setOf(StorageAccess.MEDIA_USER_SELECTED)::contains))
+        assertFalse(StorageAccess.isMediaGranted(36, emptySet<String>()::contains))
+    }
 }

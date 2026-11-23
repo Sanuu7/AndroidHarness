@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"從備份檔案取回你的聊天與設定"</string>
 
     <string name="setup_storage_title">"允許檔案存取"</string>
-    <string name="setup_storage_body">"AndroidHarness 會讀取並編輯你選擇的專案資料夾。這是唯一不能略過的步驟。"</string>
+    <string name="setup_storage_body">"選用。若不允許，AndroidHarness 會在自己的資料夾中運作，並在工作需要你的檔案時詢問。"</string>
+    <string name="setup_storage_all_files">"所有檔案存取權"</string>
+    <string name="setup_storage_all_files_body">"像終端機和檔案工具所預期的那樣讀取與編輯任何資料夾。最適合程式設計。"</string>
+    <string name="setup_storage_legacy">"儲存權限"</string>
+    <string name="setup_storage_legacy_body">"讀取並編輯手機上的檔案與資料夾。"</string>
+    <string name="setup_storage_media">"照片與媒體"</string>
+    <string name="setup_storage_read">"讀取儲存空間"</string>
+    <string name="setup_storage_media_body">"讀取你的照片、影片和音樂。"</string>
+    <string name="setup_storage_read_body">"讀取照片、影片、音樂和其他共用檔案。"</string>
+    <string name="setup_storage_unavailable">"這支手機沒有「所有檔案存取權」設定，因此專案會放在應用程式專屬資料夾中。"</string>
+    <string name="setup_storage_skip">"暫時跳過"</string>
     <string name="setup_storage_granted">"檔案存取已開啟"</string>
     <string name="setup_allow_access">"允許存取"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Linux 工具"</string>
     <string name="setup_ready_battery">"背景執行"</string>
+    <string name="setup_ready_media">"照片與媒體"</string>
     <string name="setup_ready_settings">"設定已還原"</string>
 
     <string name="setup_continue">"繼續"</string>

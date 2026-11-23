@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Ibalik ang mga chat at setting mo mula sa backup file"</string>
 
     <string name="setup_storage_title">"Payagan ang access sa file"</string>
-    <string name="setup_storage_body">"Binabasa at ina-edit ng AndroidHarness ang mga project folder na pipiliin mo. Ito ang tanging hakbang na hindi maaaring laktawan."</string>
+    <string name="setup_storage_body">"Opsyonal. Kung wala ito, gumagana ang AndroidHarness sa sarili nitong folder at nagtatanong kapag kailangan ng gawain ang mga file mo."</string>
+    <string name="setup_storage_all_files">"Access sa lahat ng file"</string>
+    <string name="setup_storage_all_files_body">"Basahin at i-edit ang anumang folder, gaya ng inaasahan ng terminal at mga tool sa file. Pinakamainam para sa coding."</string>
+    <string name="setup_storage_legacy">"Pahintulot sa storage"</string>
+    <string name="setup_storage_legacy_body">"Basahin at i-edit ang mga file at folder sa telepono mo."</string>
+    <string name="setup_storage_media">"Mga larawan at media"</string>
+    <string name="setup_storage_read">"Basahin ang storage"</string>
+    <string name="setup_storage_media_body">"Basahin ang iyong mga larawan, video at musika."</string>
+    <string name="setup_storage_read_body">"Basahin ang mga larawan, video, musika at iba pang shared na file."</string>
+    <string name="setup_storage_unavailable">"Walang setting ang teleponong ito para sa access sa lahat ng file, kaya nasa sariling folder ng app ang mga proyekto."</string>
+    <string name="setup_storage_skip">"Laktawan muna"</string>
     <string name="setup_storage_granted">"Naka-on ang access sa file"</string>
     <string name="setup_allow_access">"Payagan ang access"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Mga tool sa Linux"</string>
     <string name="setup_ready_battery">"Mga pagtakbo sa background"</string>
+    <string name="setup_ready_media">"Mga larawan at media"</string>
     <string name="setup_ready_settings">"Naibalik ang mga setting"</string>
 
     <string name="setup_continue">"Magpatuloy"</string>

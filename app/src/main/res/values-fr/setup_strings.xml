@@ -8,7 +8,17 @@
     <string name="setup_restore_body">"Récupérez vos discussions et réglages depuis un fichier de sauvegarde"</string>
 
     <string name="setup_storage_title">"Autoriser l\'accès aux fichiers"</string>
-    <string name="setup_storage_body">"AndroidHarness lit et modifie les dossiers de projet que vous choisissez. C\'est la seule étape que vous ne pouvez pas ignorer."</string>
+    <string name="setup_storage_body">"Facultatif. Sans cela, AndroidHarness travaille dans son propre dossier et demande quand une tâche a besoin de vos fichiers."</string>
+    <string name="setup_storage_all_files">"Accès à tous les fichiers"</string>
+    <string name="setup_storage_all_files_body">"Lire et modifier n\'importe quel dossier, comme le terminal et les outils de fichiers l\'attendent. Idéal pour programmer."</string>
+    <string name="setup_storage_legacy">"Autorisation de stockage"</string>
+    <string name="setup_storage_legacy_body">"Lire et modifier les fichiers et dossiers de votre téléphone."</string>
+    <string name="setup_storage_media">"Photos et médias"</string>
+    <string name="setup_storage_read">"Lire le stockage"</string>
+    <string name="setup_storage_media_body">"Lire vos photos, vidéos et musique."</string>
+    <string name="setup_storage_read_body">"Lire les photos, vidéos, musique et autres fichiers partagés."</string>
+    <string name="setup_storage_unavailable">"Ce téléphone n\'a pas de réglage « Accès à tous les fichiers », les projets vivent donc dans le dossier propre à l\'app."</string>
+    <string name="setup_storage_skip">"Ignorer pour l\'instant"</string>
     <string name="setup_storage_granted">"L\'accès aux fichiers est actif"</string>
     <string name="setup_allow_access">"Autoriser l\'accès"</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">"Shizuku"</string>
     <string name="setup_ready_linux">"Outils Linux"</string>
     <string name="setup_ready_battery">"Exécutions en arrière-plan"</string>
+    <string name="setup_ready_media">"Photos et médias"</string>
     <string name="setup_ready_settings">"Réglages restaurés"</string>
 
     <string name="setup_continue">"Continuer"</string>

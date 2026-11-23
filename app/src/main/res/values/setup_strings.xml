@@ -8,7 +8,17 @@
     <string name="setup_restore_body">Bring back your chats and settings from a backup file</string>
 
     <string name="setup_storage_title">Allow file access</string>
-    <string name="setup_storage_body">AndroidHarness reads and edits the project folders you choose. This is the only step you can\'t skip.</string>
+    <string name="setup_storage_body">Optional. Without it, AndroidHarness works in its own folder and asks when a task needs your files.</string>
+    <string name="setup_storage_all_files">All files access</string>
+    <string name="setup_storage_all_files_body">Read and edit any folder, the way the terminal and file tools expect. Best for coding.</string>
+    <string name="setup_storage_legacy">Storage permission</string>
+    <string name="setup_storage_legacy_body">Read and edit the files and folders on your phone.</string>
+    <string name="setup_storage_media">Photos &amp; media</string>
+    <string name="setup_storage_read">Read storage</string>
+    <string name="setup_storage_media_body">Read your photos, videos and music.</string>
+    <string name="setup_storage_read_body">Read photos, videos, music and other shared files.</string>
+    <string name="setup_storage_unavailable">This phone has no All files access setting, so projects live in the app\'s own folder.</string>
+    <string name="setup_storage_skip">Skip for now</string>
     <string name="setup_storage_granted">File access is on</string>
     <string name="setup_allow_access">Allow access</string>
 
@@ -32,6 +42,7 @@
     <string name="setup_ready_shizuku">Shizuku</string>
     <string name="setup_ready_linux">Linux tools</string>
     <string name="setup_ready_battery">Background runs</string>
+    <string name="setup_ready_media">Photos &amp; media</string>
     <string name="setup_ready_settings">Settings restored</string>
 
     <string name="setup_continue">Continue</string>
