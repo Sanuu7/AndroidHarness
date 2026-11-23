@@ -705,6 +705,7 @@
     <string name="chat_from_chat">"Từ Chat"</string>
     <string name="chat_empty_title">"Bạn đang nghĩ gì vậy?"</string>
     <string name="chat_empty_description">"Chọn một gợi ý bên dưới hoặc bắt đầu gõ."</string>
+    <string name="chat_empty_description_side">"Chọn một gợi ý hoặc bắt đầu gõ."</string>
     <string name="chat_suggestion_explain">"Giải thích một chủ đề phức tạp một cách đơn giản"</string>
     <string name="chat_suggestion_ideas">"Giúp tôi nghĩ ra một ý tưởng"</string>
     <string name="chat_suggestion_draft">"Giúp tôi viết một thông điệp rõ ràng"</string>

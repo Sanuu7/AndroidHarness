@@ -710,6 +710,7 @@
     <string name="chat_from_chat">"من المحادثة"</string>
     <string name="chat_empty_title">"بمَ تفكّر؟"</string>
     <string name="chat_empty_description">"اختر بداية من الأسفل أو ابدأ الكتابة مباشرة."</string>
+    <string name="chat_empty_description_side">"اختر بداية أو ابدأ الكتابة مباشرة."</string>
     <string name="chat_suggestion_explain">"اشرح موضوعاً صعباً ببساطة"</string>
     <string name="chat_suggestion_ideas">"ساعدني على توليد أفكار"</string>
     <string name="chat_suggestion_draft">"ساعدني على كتابة رسالة واضحة"</string>

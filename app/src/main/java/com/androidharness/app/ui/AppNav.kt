@@ -649,7 +649,7 @@ fun AppNav(container: AppContainer) {
             }
         }.then(if (desktopNavigation) Modifier.focusable() else Modifier).then(if (desktopNavigation) Modifier.statusBarsPadding().navigationBarsPadding() else Modifier)) {
             RetainedWorkspaceContent(desktopNavigation && sidebarVisible,
-                Modifier.width(if (desktopNavigation && sidebarVisible) 232.dp else 0.dp)) {
+                Modifier.width(if (desktopNavigation && sidebarVisible) 280.dp else 0.dp)) {
                 Sidebar(desktopNavigation && sidebarVisible) { sidebarVisible = false }
             }
             Column(Modifier.weight(1f).fillMaxHeight()) {

@@ -706,6 +706,7 @@
     <string name="chat_from_chat">"Chat\'den"</string>
     <string name="chat_empty_title">"Aklında ne var?"</string>
     <string name="chat_empty_description">"Aşağıdan bir başlangıç seçin ya da doğrudan yazmaya başlayın."</string>
+    <string name="chat_empty_description_side">"Bir başlangıç seçin ya da doğrudan yazmaya başlayın."</string>
     <string name="chat_suggestion_explain">"Zor bir konuyu basitçe açıklayın"</string>
     <string name="chat_suggestion_ideas">"Bir fikir için beyin fırtınası yapmama yardım et"</string>
     <string name="chat_suggestion_draft">"Açık bir mesaj yazmama yardım et"</string>

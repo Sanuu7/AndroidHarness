@@ -708,6 +708,7 @@
     <string name="chat_from_chat">"Из чата"</string>
     <string name="chat_empty_title">"Что у вас на уме?"</string>
     <string name="chat_empty_description">"Выберите заготовку ниже или просто начните печатать."</string>
+    <string name="chat_empty_description_side">"Выберите заготовку или просто начните печатать."</string>
     <string name="chat_suggestion_explain">"Объясни сложную тему простыми словами"</string>
     <string name="chat_suggestion_ideas">"Помоги придумать идею"</string>
     <string name="chat_suggestion_draft">"Помоги написать понятное сообщение"</string>

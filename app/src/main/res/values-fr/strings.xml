@@ -707,6 +707,7 @@
     <string name="chat_from_chat">"De Chat"</string>
     <string name="chat_empty_title">"Qu\'avez-vous en tête ?"</string>
     <string name="chat_empty_description">"Choisissez une amorce ci-dessous ou commencez à écrire."</string>
+    <string name="chat_empty_description_side">"Choisissez une amorce ou commencez à écrire."</string>
     <string name="chat_suggestion_explain">"Expliquez simplement un sujet délicat"</string>
     <string name="chat_suggestion_ideas">"Aide-moi à réfléchir à une idée"</string>
     <string name="chat_suggestion_draft">"Aide-moi à écrire un message clair"</string>

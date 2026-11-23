@@ -706,6 +706,7 @@
     <string name="chat_from_chat">"Mula sa Chat"</string>
     <string name="chat_empty_title">"Ano ang nasa isip mo?"</string>
     <string name="chat_empty_description">"Pumili ng simula sa ibaba o magsimulang mag-type."</string>
+    <string name="chat_empty_description_side">"Pumili ng simula o magsimulang mag-type."</string>
     <string name="chat_suggestion_explain">"Ipaliwanag nang simple ang isang nakakalito na paksa"</string>
     <string name="chat_suggestion_ideas">"Tulungan akong mag-brainstorm ng ideya"</string>
     <string name="chat_suggestion_draft">"Tulungan akong magsulat ng malinaw na mensahe"</string>

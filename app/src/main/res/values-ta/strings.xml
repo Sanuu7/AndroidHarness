@@ -706,6 +706,7 @@
     <string name="chat_from_chat">"Chat இலிருந்து"</string>
     <string name="chat_empty_title">"உங்கள் மனதில் என்ன இருக்கிறது?"</string>
     <string name="chat_empty_description">"கீழே ஒரு தொடக்கத்தைத் தேர்ந்தெடுக்கவும் அல்லது நேரடியாகத் தட்டச்சு செய்யவும்."</string>
+    <string name="chat_empty_description_side">"ஒரு தொடக்கத்தைத் தேர்ந்தெடுக்கவும் அல்லது நேரடியாகத் தட்டச்சு செய்யவும்."</string>
     <string name="chat_suggestion_explain">"ஒரு தந்திரமான தலைப்பை எளிமையாக விளக்குங்கள்"</string>
     <string name="chat_suggestion_ideas">"ஒரு யோசனையை உருவாக்க எனக்கு உதவுங்கள்"</string>
     <string name="chat_suggestion_draft">"தெளிவான செய்தியை எழுத எனக்கு உதவுங்கள்"</string>

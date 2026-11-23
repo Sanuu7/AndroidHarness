@@ -415,10 +415,11 @@ private fun DesktopConversationHeader(
     var menu by remember { mutableStateOf(false) }
     var thinkingMenu by remember { mutableStateOf(false) }
     val chatOnly = conversation.isChat
+    val workspaceTools = com.androidharness.app.ui.LocalWorkspaceHeaderTools.current
     Column {
-        Row(Modifier.fillMaxWidth().heightIn(min = 48.dp).padding(horizontal = 12.dp),
-            verticalAlignment = Alignment.CenterVertically) {
-            if (chatOnly) ExpressiveIconButton(glassChrome = true, onClick = onOpenDrawer, modifier = Modifier.size(36.dp)) {
+        Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 12.dp),
+            verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            ExpressiveIconButton(glassChrome = true, onClick = onOpenDrawer, modifier = Modifier.size(36.dp)) {
                 Icon(painterResource(R.drawable.ic_chat_menu), uiContext.getString(R.string.ui_open_navigation), Modifier.size(18.dp))
             }
             Column(Modifier.weight(1f)) {
@@ -435,6 +436,11 @@ private fun DesktopConversationHeader(
             }
             if (!chatOnly) ExpressiveIconButton(glassChrome = true, onClick = onGitHub, enabled = canGitHub, modifier = Modifier.size(36.dp)) {
                 Icon(painterResource(R.drawable.ic_github), uiContext.getString(R.string.ui_open_github), Modifier.size(18.dp))
+            }
+            if (!chatOnly && workspaceTools != null) {
+                androidx.compose.material3.VerticalDivider(Modifier.size(width = 1.dp, height = 24.dp).padding(horizontal = 4.dp),
+                    color = scheme.outlineVariant.copy(alpha = .6f))
+                workspaceTools()
             }
             if (!chatOnly && showPreviewShortcut) ExpressiveIconButton(glassChrome = true, onClick = onPreview, modifier = Modifier.size(36.dp)) {
                 Icon(Icons.Outlined.Language, uiContext.getString(R.string.ui_open_web_browser), Modifier.size(18.dp))

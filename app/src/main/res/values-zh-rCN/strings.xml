@@ -736,6 +736,7 @@
     <string name="chat_from_chat">来自聊天</string>
     <string name="chat_empty_title">你想聊些什么？</string>
     <string name="chat_empty_description">从下方选一个开始，或直接输入。</string>
+    <string name="chat_empty_description_side">选一个开始，或直接输入。</string>
     <string name="chat_suggestion_explain">简单解释一个复杂话题</string>
     <string name="chat_suggestion_ideas">帮我构思想法</string>
     <string name="chat_suggestion_draft">帮我写一条清晰的消息</string>

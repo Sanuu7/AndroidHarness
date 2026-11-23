@@ -5,6 +5,12 @@ import com.androidharness.app.ui.files.EditorNavigationGuard
 
 /** Shared desktop chrome for the conversation, navigation, and embedded workspace tools. */
 internal val LocalDesktopLayout = staticCompositionLocalOf { false }
+
+/**
+ * Workspace tools (Files, GitHub, Changes, Terminal, access) that a desktop Code screen hands to the
+ * conversation header, so the desktop window has one toolbar instead of two stacked bars (#130).
+ */
+internal val LocalWorkspaceHeaderTools = androidx.compose.runtime.compositionLocalOf<(@androidx.compose.runtime.Composable () -> Unit)?> { null }
 internal val LocalDesktopNavigationGuard = staticCompositionLocalOf<EditorNavigationGuard?> { null }
 
 /** The richer composer is opt-in with Desktop mode. Auto and Phone retain their input UI. */

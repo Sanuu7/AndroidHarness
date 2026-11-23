@@ -716,6 +716,7 @@
     <string name="chat_from_chat">"Do Chat"</string>
     <string name="chat_empty_title">"O que está em sua mente?"</string>
     <string name="chat_empty_description">"Escolha um início abaixo ou comece a digitar."</string>
+    <string name="chat_empty_description_side">"Escolha um início ou comece a digitar."</string>
     <string name="chat_suggestion_explain">"Explique um tema difícil de forma simples"</string>
     <string name="chat_suggestion_ideas">"Me ajude a ter ideias"</string>
     <string name="chat_suggestion_draft">"Me ajude a escrever uma mensagem clara"</string>

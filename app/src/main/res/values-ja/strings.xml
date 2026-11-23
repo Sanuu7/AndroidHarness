@@ -705,6 +705,7 @@
     <string name="chat_from_chat">"Chatから"</string>
     <string name="chat_empty_title">"何を考えていますか？"</string>
     <string name="chat_empty_description">"下からスターターを選ぶか、そのまま入力してください。"</string>
+    <string name="chat_empty_description_side">"スターターを選ぶか、そのまま入力してください。"</string>
     <string name="chat_suggestion_explain">"難しいトピックを簡単に説明"</string>
     <string name="chat_suggestion_ideas">"アイデアのブレインストーミングを手伝って"</string>
     <string name="chat_suggestion_draft">"分かりやすいメッセージを書くのを手伝って"</string>

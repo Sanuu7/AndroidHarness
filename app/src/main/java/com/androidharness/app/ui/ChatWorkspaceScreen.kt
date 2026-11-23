@@ -150,19 +150,6 @@ fun ChatWorkspaceScreen(
         }
         SideEffect { keyboardRouter?.register(keyboardOwner, ::handleKey) }
         DisposableEffect(keyboardRouter) { onDispose { keyboardRouter?.unregister(keyboardOwner) } }
-        val controls: @Composable () -> Unit = {
-            WorkspaceToolButton(uiContext.getString(R.string.ui_files), Icons.Outlined.Folder, visible && tool == "Files", desktop) { showTool("Files") }
-            if (desktop) {
-                FilterChip(selected = githubProject != null, onClick = ::openGitHub, enabled = project != null,
-                    label = { Text("GitHub", style = MaterialTheme.typography.labelMedium) },
-                    leadingIcon = { Icon(painterResource(R.drawable.ic_github), null, Modifier.size(16.dp)) },
-                    modifier = Modifier.padding(start = 6.dp).pointerHoverIcon(PointerIcon.Hand))
-            }
-            WorkspaceToolButton(uiContext.getString(R.string.ui_changes), Icons.Outlined.Difference, visible && tool == "Changes", desktop,
-                enabled = chatState.sessionId != null) { showTool("Changes") }
-            WorkspaceToolButton(uiContext.getString(R.string.ui_terminal), Icons.Outlined.Terminal, visible && tool == "Terminal", desktop) { showTool("Terminal") }
-            if (desktop) WorkspaceAccessMode(chatState.permissionMode, viewModel::setPermissionMode)
-        }
         workspaceTools?.let { mode ->
             WorkspaceToolsSheet(container, chatState.sessionId, null, mode, onDismiss = { workspaceTools = null },
                 onOpenFile = { path, atLine ->
@@ -178,31 +165,22 @@ fun ChatWorkspaceScreen(
                     WorkspaceCommand(uiContext.getString(R.string.ui_open_settings), uiContext.getString(R.string.ui_app_preferences_and_connections), Icons.Outlined.Settings) { workspaceTools = null; guard.navigate(onOpenSettings) },
                 ))
         }
+        // Labels only while the chat column still has room for the model and title beside them.
+        val toolLabels = windowWidth >= 1280f * fontScale
+        val headerTools: @Composable () -> Unit = {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                WorkspaceToolButton(uiContext.getString(R.string.ui_files), Icons.Outlined.Folder, visible && tool == "Files", toolLabels) { showTool("Files") }
+                WorkspaceToolButton(uiContext.getString(R.string.ui_changes), Icons.Outlined.Difference, visible && tool == "Changes", toolLabels,
+                    enabled = chatState.sessionId != null) { showTool("Changes") }
+                WorkspaceToolButton(uiContext.getString(R.string.ui_terminal), Icons.Outlined.Terminal, visible && tool == "Terminal", toolLabels) { showTool("Terminal") }
+                WorkspaceAccessMode(chatState.permissionMode, viewModel::setPermissionMode, showLabel = toolLabels)
+            }
+        }
         CompositionLocalProvider(LocalWorkspaceToolLauncher provides { workspaceTools = it }, LocalDesktopLayout provides desktop, LocalDesktopInput provides desktopInput,
+            LocalWorkspaceHeaderTools provides (if (showChrome) headerTools else null),
             LocalComposerFocus provides inputFocus, LocalContentColor provides MaterialTheme.colorScheme.onSurface) {
             Column(Modifier.fillMaxSize().then(if (showChrome) Modifier.statusBarsPadding() else Modifier)
                 .onPreviewKeyEvent { event -> if (!desktop || keyboardRouter == null) handleKey(event) else false }) {
-                if (showChrome) {
-                    Surface(color = MaterialTheme.colorScheme.surfaceContainer, contentColor = MaterialTheme.colorScheme.onSurface) {
-                        Column {
-                            val inline = windowWidth >= 1000f * fontScale
-                            Row(Modifier.fillMaxWidth().heightIn(min = 56.dp).padding(horizontal = 8.dp),
-                                verticalAlignment = Alignment.CenterVertically) {
-                                IconButton(onClick = onOpenDrawer,
-                                    modifier = Modifier.size(40.dp).pointerHoverIcon(PointerIcon.Hand)) {
-                                    Icon(Icons.Outlined.Menu, uiContext.getString(R.string.ui_toggle_sidebar), Modifier.size(18.dp))
-                                }
-                                Icon(Icons.Outlined.Folder, null, Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                                Text(project?.name ?: uiContext.getString(R.string.ui_workspace), Modifier.weight(1f).padding(start = 8.dp),
-                                    style = MaterialTheme.typography.bodySmall, maxLines = 1, overflow = TextOverflow.Ellipsis)
-                                if (inline) controls()
-                            }
-                            if (!inline) FlowRow(Modifier.fillMaxWidth().padding(start = 8.dp, end = 8.dp, bottom = 8.dp),
-                                horizontalArrangement = Arrangement.End) { controls() }
-                        }
-                    }
-                    HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.5f))
-                }
                 Box(Modifier.weight(1f)) {
                     WorkspaceSplitLayout(wide, visible, fraction, { fraction = it }, chat = {
                         ChatScreen(viewModel, onOpenDrawer = onOpenDrawer,
@@ -260,12 +238,12 @@ fun ChatWorkspaceScreen(
 }
 
 @Composable
-private fun WorkspaceAccessMode(permission: PermissionMode, onSelect: (PermissionMode) -> Unit) {
+private fun WorkspaceAccessMode(permission: PermissionMode, onSelect: (PermissionMode) -> Unit, showLabel: Boolean = true) {
     val uiContext = androidx.compose.ui.platform.LocalContext.current
     var expanded by remember { mutableStateOf(false) }
     Box {
         FilterChip(selected = expanded, onClick = { expanded = true },
-            label = { Text(localizedOption(permission.label), style = MaterialTheme.typography.labelMedium) },
+            label = { if (showLabel) Text(localizedOption(permission.label), style = MaterialTheme.typography.labelMedium) },
             leadingIcon = { Icon(Icons.Outlined.Shield, null, Modifier.size(16.dp)) },
             trailingIcon = { Icon(Icons.Outlined.KeyboardArrowDown, null, Modifier.size(16.dp)) },
             modifier = Modifier.padding(start = 6.dp).pointerHoverIcon(PointerIcon.Hand)

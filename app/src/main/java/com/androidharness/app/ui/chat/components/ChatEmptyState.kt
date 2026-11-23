@@ -149,17 +149,10 @@ internal fun ChatEmptyState(
 
     BoxWithConstraints(modifier.fillMaxWidth().fillMaxHeight(), contentAlignment = Alignment.TopCenter) {
         val viewport = maxHeight
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .verticalScroll(rememberScrollState())
-                .heightIn(min = viewport)
-                .widthIn(max = 560.dp)
-                .padding(horizontal = 8.dp, vertical = 16.dp),
-            // The whole block centers in the visible area; extra room splits evenly above and below.
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally,
-        ) {
+        // Wide and short (tablet or desktop landscape): identity and starters sit side by side,
+        // because stacked they are taller than the pane and the second card row gets clipped (#130).
+        val sideBySide = maxWidth >= 720.dp && maxWidth > maxHeight * 1.15f
+        val identity: @Composable () -> Unit = {
             Column(
                 Modifier.fillMaxWidth(),
                 horizontalAlignment = Alignment.CenterHorizontally,
@@ -179,7 +172,8 @@ internal fun ChatEmptyState(
                 Spacer(Modifier.height(8.dp))
                 Text(
                     if (code) stringResource(R.string.ui_start_with_an_idea_or_create_a)
-                    else agent?.description?.takeIf { it.isNotBlank() } ?: stringResource(R.string.chat_empty_description),
+                    else agent?.description?.takeIf { it.isNotBlank() }
+                        ?: stringResource(if (sideBySide) R.string.chat_empty_description_side else R.string.chat_empty_description),
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     textAlign = TextAlign.Center,
@@ -194,11 +188,13 @@ internal fun ChatEmptyState(
                     ChatSupportLinks()
                 }
             }
+        }
+        val startersBlock: @Composable (Modifier) -> Unit = { blockModifier ->
             AnimatedVisibility(
                 visible = startersVisible,
                 enter = fadeIn(expressiveEffectsSpec()) + scaleIn(expressiveSpatialSpec(), initialScale = 0.94f),
                 exit = fadeOut(fastEffectsSpec()) + scaleOut(fastEffectsSpec(), targetScale = 0.96f),
-                modifier = Modifier.padding(top = 32.dp),
+                modifier = blockModifier,
             ) {
                 AnimatedContent(
                     targetState = imeVisible,
@@ -209,6 +205,33 @@ internal fun ChatEmptyState(
                     else StarterGrid(starters, step, firstStep = 4, onTap = tap)
                 }
             }
+        }
+        if (sideBySide) Row(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = viewport)
+                // Cap first, then fill: a fill before the cap would pin the width to the whole pane.
+                .widthIn(max = 1080.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 32.dp, vertical = 24.dp),
+            horizontalArrangement = Arrangement.spacedBy(48.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Box(Modifier.weight(0.9f)) { identity() }
+            startersBlock(Modifier.weight(1.1f))
+        } else Column(
+            Modifier
+                .verticalScroll(rememberScrollState())
+                .heightIn(min = viewport)
+                .widthIn(max = 560.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 8.dp, vertical = 16.dp),
+            // The whole block centers in the visible area; extra room splits evenly above and below.
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            identity()
+            startersBlock(Modifier.padding(top = 32.dp))
         }
     }
 }

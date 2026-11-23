@@ -705,6 +705,7 @@
     <string name="chat_from_chat">"Daripada Chat"</string>
     <string name="chat_empty_title">"Apa yang ada dalam fikiran anda?"</string>
     <string name="chat_empty_description">"Pilih pemula di bawah atau terus taip."</string>
+    <string name="chat_empty_description_side">"Pilih pemula atau terus taip."</string>
     <string name="chat_suggestion_explain">"Terangkan topik yang rumit dengan mudah"</string>
     <string name="chat_suggestion_ideas">"Bantu saya brainstorming idea"</string>
     <string name="chat_suggestion_draft">"Bantu saya menulis mesej yang jelas"</string>

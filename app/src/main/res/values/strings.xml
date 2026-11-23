@@ -762,6 +762,7 @@
     <string name="chat_empty_title">What is on your mind?</string>
     <string name="chat_logo_replay">Replay logo animation</string>
     <string name="chat_empty_description">Pick a starter below or just start typing.</string>
+    <string name="chat_empty_description_side">Pick a starter or just start typing.</string>
     <string name="chat_suggestion_explain">Explain a tricky topic simply</string>
     <string name="chat_suggestion_ideas">Help me brainstorm an idea</string>
     <string name="chat_suggestion_draft">Help me write a clear message</string>

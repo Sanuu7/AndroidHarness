@@ -705,6 +705,7 @@
     <string name="chat_from_chat">"จาก Chat"</string>
     <string name="chat_empty_title">"อะไรอยู่ในใจของคุณ?"</string>
     <string name="chat_empty_description">"เลือกจุดเริ่มต้นด้านล่างหรือพิมพ์ได้เลย"</string>
+    <string name="chat_empty_description_side">"เลือกจุดเริ่มต้นหรือพิมพ์ได้เลย"</string>
     <string name="chat_suggestion_explain">"อธิบายหัวข้อที่ยุ่งยากง่ายๆ"</string>
     <string name="chat_suggestion_ideas">"ช่วยระดมความคิดหน่อยค่ะ"</string>
     <string name="chat_suggestion_draft">"ช่วยฉันเขียนข้อความที่ชัดเจน"</string>

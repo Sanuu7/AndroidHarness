@@ -705,6 +705,7 @@
     <string name="chat_from_chat">"Chat에서"</string>
     <string name="chat_empty_title">"당신의 마음에는 무엇이 있습니까?"</string>
     <string name="chat_empty_description">"아래에서 시작 문구를 고르거나 바로 입력하세요."</string>
+    <string name="chat_empty_description_side">"시작 문구를 고르거나 바로 입력하세요."</string>
     <string name="chat_suggestion_explain">"까다로운 주제를 간단하게 설명하세요."</string>
     <string name="chat_suggestion_ideas">"아이디어를 브레인스토밍하는 데 도움을 주세요."</string>
     <string name="chat_suggestion_draft">"명확한 메시지를 작성하도록 도와주세요"</string>

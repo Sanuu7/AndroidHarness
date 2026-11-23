@@ -705,6 +705,7 @@
     <string name="chat_from_chat">"來自聊天"</string>
     <string name="chat_empty_title">"你想聊些什麼？"</string>
     <string name="chat_empty_description">"從下方選一個開始，或直接輸入。"</string>
+    <string name="chat_empty_description_side">"選一個開始，或直接輸入。"</string>
     <string name="chat_suggestion_explain">"簡單解釋一個複雜話題"</string>
     <string name="chat_suggestion_ideas">"幫我構思想法"</string>
     <string name="chat_suggestion_draft">"幫我寫一條清晰的訊息"</string>

@@ -706,6 +706,7 @@
     <string name="chat_from_chat">"Aus Chat"</string>
     <string name="chat_empty_title">"Was beschäftigt dich?"</string>
     <string name="chat_empty_description">"Wähle unten einen Einstieg oder leg einfach los."</string>
+    <string name="chat_empty_description_side">"Wähle einen Einstieg oder leg einfach los."</string>
     <string name="chat_suggestion_explain">"Ein schwieriges Thema einfach erklären"</string>
     <string name="chat_suggestion_ideas">"Hilf mir, eine Idee zu brainstormen"</string>
     <string name="chat_suggestion_draft">"Hilf mir, eine klare Nachricht zu schreiben"</string>

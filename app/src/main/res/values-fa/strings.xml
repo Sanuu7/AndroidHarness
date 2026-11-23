@@ -706,6 +706,7 @@
     <string name="chat_from_chat">"از گفتگو"</string>
     <string name="chat_empty_title">"چه چیزی در ذهن شماست؟"</string>
     <string name="chat_empty_description">"یک شروع‌کننده از پایین انتخاب کنید یا مستقیم تایپ کنید."</string>
+    <string name="chat_empty_description_side">"یک شروع‌کننده انتخاب کنید یا مستقیم تایپ کنید."</string>
     <string name="chat_suggestion_explain">"یک موضوع پیچیده را به سادگی توضیح دهید"</string>
     <string name="chat_suggestion_ideas">"به من کمک کن تا ایده ای را در ذهن خود بسازم"</string>
     <string name="chat_suggestion_draft">"به من کمک کنید تا یک پیام واضح بنویسم"</string>
