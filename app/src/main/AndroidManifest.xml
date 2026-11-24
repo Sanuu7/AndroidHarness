@@ -163,6 +163,20 @@
             android:exported="true"
             android:multiprocess="false" />
 
+        <!-- Lists the app workspace in the system file picker and file managers.
+             MANAGE_DOCUMENTS is held only by the system, so other apps reach it
+             only through a folder or file the user picks. -->
+        <provider
+            android:name=".workspace.WorkspaceDocumentsProvider"
+            android:authorities="${applicationId}.workspace.documents"
+            android:exported="true"
+            android:grantUriPermissions="true"
+            android:permission="android.permission.MANAGE_DOCUMENTS">
+            <intent-filter>
+                <action android:name="android.content.action.DOCUMENTS_PROVIDER" />
+            </intent-filter>
+        </provider>
+
         <!-- Shares staged update APKs with the system package installer. -->
         <provider
             android:name="androidx.core.content.FileProvider"

@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"Thư mục chia sẻ"</string>
+    <string name="wp_add_shared_sub">"Vẫn còn sau khi gỡ cài đặt. Bản ổn định và bản nightly đều thấy nó"</string>
+    <string name="wp_add_shared_failed">"Không tạo được %1$s. Kiểm tra quyền truy cập mọi tệp đã bật rồi thử lại."</string>
+    <string name="wp_documents_root_summary">"Không gian làm việc của ứng dụng"</string>
 </resources>

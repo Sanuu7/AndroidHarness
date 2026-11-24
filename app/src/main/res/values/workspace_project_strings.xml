@@ -73,6 +73,10 @@
     <string name="wp_add_device_sub">Browse folders on this device. Full shell, needs storage access or Shizuku</string>
     <string name="wp_add_picker">System picker</string>
     <string name="wp_add_picker_sub">Pick one folder without granting broad storage access</string>
+    <string name="wp_add_shared">Shared folder</string>
+    <string name="wp_add_shared_sub">Survives uninstall. Stable and nightly builds both see it</string>
+    <string name="wp_add_shared_failed">Could not create %1$s. Check that all files access is on, then try again.</string>
+    <string name="wp_documents_root_summary">App workspace</string>
     <string name="wp_add_github">Import from GitHub</string>
     <string name="wp_add_github_sub">Clone a repository into a new workspace</string>
     <string name="wp_add_ssh">Connect through SSH</string>

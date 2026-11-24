@@ -13,11 +13,13 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.FolderOpen
 import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.CloudDownload
+import androidx.compose.material.icons.outlined.FolderShared
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -37,9 +39,11 @@ import kotlinx.coroutines.launch
  * The ways to add a workspace, shared by every place that offers it:
  * 1. App workspace. Private folder, shell always works.
  * 2. Device folder. Browsed in-app, no typing. Full shell.
- * 3. System picker (SAF). Works without broad storage access. Directly writable
+ * 3. Shared folder. A fixed device folder in shared storage that survives an
+ *    uninstall and that stable and nightly builds both reach at the same path.
+ * 4. System picker (SAF). Works without broad storage access. Directly writable
  *    device folders are upgraded to full shell; other picks use file tools.
- * 4. GitHub import and SSH, which open their own dialogs.
+ * 5. GitHub import and SSH, which open their own dialogs.
  *
  * Adding a workspace never creates a project.
  */
@@ -84,6 +88,24 @@ fun AddWorkspaceDialog(
         }
     }
 
+    val storageAccess = rememberStorageAccess()
+    // Set when the shared folder was tapped before all files access was on; the
+    // folder is added as soon as the grant arrives (the screen refreshes on resume).
+    var sharedPending by remember { mutableStateOf(false) }
+
+    fun addSharedFolder() {
+        val folder = container.workspace.sharedFolder
+        if (folder.isDirectory || folder.mkdirs()) addBrowsedFolder(folder.absolutePath)
+        else error = uiContext.getString(R.string.wp_add_shared_failed, folder.absolutePath)
+    }
+
+    LaunchedEffect(sharedPending, storageAccess.granted) {
+        if (sharedPending && storageAccess.granted) {
+            sharedPending = false
+            addSharedFolder()
+        }
+    }
+
     if (destination == "browse") {
         FolderPickerDialog(
             container = container,
@@ -99,12 +121,18 @@ fun AddWorkspaceDialog(
                 ExpressiveSheetHeader(uiContext.getString(R.string.wp_add_sheet_title), uiContext.getString(R.string.wp_add_sheet_sub),
                     uiContext.getString(R.string.settings_action_close), onDismiss)
                 Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                    ExpressiveListRow(0, 3, uiContext.getString(R.string.wp_add_device), subtitle = uiContext.getString(R.string.wp_add_device_sub),
+                    ExpressiveListRow(0, 4, uiContext.getString(R.string.wp_add_device), subtitle = uiContext.getString(R.string.wp_add_device_sub),
                         onClick = { destination = "browse" },
                         leading = { ExpressiveIconBadge(Icons.Outlined.Folder, container = scheme.primaryContainer, tint = scheme.onPrimaryContainer) })
-                    ExpressiveListRow(1, 3, uiContext.getString(R.string.wp_add_picker), subtitle = uiContext.getString(R.string.wp_add_picker_sub),
+                    ExpressiveListRow(1, 4, uiContext.getString(R.string.wp_add_shared), subtitle = uiContext.getString(R.string.wp_add_shared_sub),
+                        onClick = {
+                            error = null
+                            if (storageAccess.granted) addSharedFolder()
+                            else { sharedPending = true; storageAccess.request() }
+                        }, leading = { ExpressiveIconBadge(Icons.Outlined.FolderShared) })
+                    ExpressiveListRow(2, 4, uiContext.getString(R.string.wp_add_picker), subtitle = uiContext.getString(R.string.wp_add_picker_sub),
                         onClick = onPickSaf, leading = { ExpressiveIconBadge(Icons.Outlined.FolderOpen) })
-                    ExpressiveListRow(2, 3, uiContext.getString(R.string.wp_add_app), subtitle = uiContext.getString(R.string.wp_add_app_sub),
+                    ExpressiveListRow(3, 4, uiContext.getString(R.string.wp_add_app), subtitle = uiContext.getString(R.string.wp_add_app_sub),
                         onClick = {
                             if (appProject != null) scope.launch {
                                 if (activateWorkspace) container.workspace.setActiveProject(appProject.id)

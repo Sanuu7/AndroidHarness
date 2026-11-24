@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"Paylaşılan klasör"</string>
+    <string name="wp_add_shared_sub">"Kaldırmadan sonra da kalır. Kararlı ve nightly sürümler ikisi de görür"</string>
+    <string name="wp_add_shared_failed">"%1$s oluşturulamadı. Tüm dosyalara erişimin açık olduğunu kontrol edip tekrar deneyin."</string>
+    <string name="wp_documents_root_summary">"Uygulama çalışma alanı"</string>
 </resources>

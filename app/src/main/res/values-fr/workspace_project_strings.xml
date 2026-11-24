@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"Dossier partagé"</string>
+    <string name="wp_add_shared_sub">"Survit à la désinstallation. Les versions stable et nightly le voient toutes les deux"</string>
+    <string name="wp_add_shared_failed">"Impossible de créer %1$s. Vérifiez que l\'accès à tous les fichiers est activé, puis réessayez."</string>
+    <string name="wp_documents_root_summary">"Espace de travail de l\'app"</string>
 </resources>

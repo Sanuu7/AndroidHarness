@@ -49,6 +49,12 @@ class WorkspaceManager(
             .resolve("workspace")
             .apply { mkdirs() }
 
+    /**
+     * A folder in shared storage that outlives the app and that every build on the
+     * phone (stable, nightly) reaches at the same path. Needs all files access.
+     */
+    val sharedFolder: File get() = File(android.os.Environment.getExternalStorageDirectory(), SHARED_FOLDER_NAME)
+
     val projects: Flow<List<ProjectEntity>> = dao.projectsFlow()
 
     /** Projects the user created. Adding a workspace never adds one. */
@@ -480,6 +486,7 @@ class WorkspaceManager(
         const val KIND_SAF = "SAF"
         const val KIND_SHELL = "SHELL"
         const val KIND_SSH = "SSH"
+        const val SHARED_FOLDER_NAME = "AndroidHarness"
 
         /**
          * A mapped path alone does not grant permission to read or write it. Without the

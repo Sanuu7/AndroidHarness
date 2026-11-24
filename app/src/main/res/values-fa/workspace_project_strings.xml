@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"پوشه مشترک"</string>
+    <string name="wp_add_shared_sub">"پس از حذف برنامه باقی می‌ماند. نسخه stable و nightly هر دو آن را می‌بینند"</string>
+    <string name="wp_add_shared_failed">"%1$s ساخته نشد. بررسی کنید دسترسی به همه فایل‌ها روشن باشد و دوباره تلاش کنید."</string>
+    <string name="wp_documents_root_summary">"فضای کاری برنامه"</string>
 </resources>

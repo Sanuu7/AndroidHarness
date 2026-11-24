@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"โฟลเดอร์ที่แชร์"</string>
+    <string name="wp_add_shared_sub">"ยังอยู่หลังถอนการติดตั้ง ทั้งเวอร์ชันเสถียรและ nightly เห็นโฟลเดอร์นี้"</string>
+    <string name="wp_add_shared_failed">"สร้าง %1$s ไม่ได้ ตรวจสอบว่าเปิดการเข้าถึงไฟล์ทั้งหมดแล้วหรือยัง แล้วลองอีกครั้ง"</string>
+    <string name="wp_documents_root_summary">"พื้นที่ทำงานของแอป"</string>
 </resources>

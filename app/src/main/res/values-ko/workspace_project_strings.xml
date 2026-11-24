@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"공유 폴더"</string>
+    <string name="wp_add_shared_sub">"앱을 삭제해도 유지됩니다. 안정판과 나이틀리 빌드 모두 볼 수 있습니다"</string>
+    <string name="wp_add_shared_failed">"%1$s을(를) 만들지 못했습니다. 모든 파일 접근이 켜져 있는지 확인한 뒤 다시 시도하세요."</string>
+    <string name="wp_documents_root_summary">"앱 작업 공간"</string>
 </resources>

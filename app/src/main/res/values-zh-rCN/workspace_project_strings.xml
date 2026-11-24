@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"共享文件夹"</string>
+    <string name="wp_add_shared_sub">"卸载后仍保留。稳定版和每夜版都能看到它"</string>
+    <string name="wp_add_shared_failed">"无法创建 %1$s。请确认已开启所有文件访问权限后重试。"</string>
+    <string name="wp_documents_root_summary">"应用工作区"</string>
 </resources>

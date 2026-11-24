@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"শেয়ার করা ফোল্ডার"</string>
+    <string name="wp_add_shared_sub">"আনইনস্টলের পরেও থাকে। স্থির ও নাইটলি বিল্ড দুটোই এটি দেখে"</string>
+    <string name="wp_add_shared_failed">"%1$s তৈরি করা যায়নি। সব ফাইলে অ্যাক্সেস চালু আছে কি না দেখে আবার চেষ্টা করুন।"</string>
+    <string name="wp_documents_root_summary">"অ্যাপ ওয়ার্কস্পেস"</string>
 </resources>

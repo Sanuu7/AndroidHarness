@@ -105,4 +105,8 @@
     <string name="wp_project_name_chat_title">New chat</string>
     <string name="wp_project_chat_name">Chat name</string>
     <string name="ui_replay_intro">Replay intro</string>
+    <string name="wp_add_shared">"Shared na folder"</string>
+    <string name="wp_add_shared_sub">"Nananatili pagkatapos ng uninstall. Nakikita ito ng stable at nightly build"</string>
+    <string name="wp_add_shared_failed">"Hindi magawa ang %1$s. Tingnan kung naka-on ang access sa lahat ng file, pagkatapos subukan ulit."</string>
+    <string name="wp_documents_root_summary">"Workspace ng app"</string>
 </resources>
