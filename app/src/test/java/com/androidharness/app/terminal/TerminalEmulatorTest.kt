@@ -313,13 +313,84 @@ class TerminalEmulatorTest {
         assertEquals("xxxxx", emu.line(0))
     }
 
-    @Test fun resizeNarrowerTruncatesAndKeepsTheCursorInside() {
+    @Test fun resizeNarrowerRewrapsTheLineAndKeepsTheCursorAfterIt() {
         val (emu, _) = emulator(rows = 3, cols = 10)
         emu.append("0123456789")
         emu.resize(3, 4)
-        assertEquals("0123", emu.line(0))
-        assertEquals(3, emu.cursorCol)
+        assertEquals(listOf("0123", "4567", "89"), (0..2).map { emu.line(it) })
         assertEquals(4, emu.cols)
+        assertEquals(2, emu.cursorRow)
+        assertEquals(2, emu.cursorCol)
+        emu.append("X")
+        assertEquals("89X", emu.line(2))
+    }
+
+    @Test fun resizeWiderJoinsTextThatWrappedAtTheOldWidth() {
+        val (emu, _) = emulator(rows = 4, cols = 4)
+        emu.append("/data/user\r\n$ ")
+        assertEquals(listOf("/dat", "a/us", "er", "$"), (0..3).map { emu.line(it) })
+        emu.resize(4, 12)
+        assertEquals(listOf("/data/user", "$", "", ""), (0..3).map { emu.line(it) })
+        assertEquals(1, emu.cursorRow)
+        assertEquals(2, emu.cursorCol)
+        emu.append("ls")
+        assertEquals("$ ls", emu.line(1))
+    }
+
+    @Test fun reflowKeepsHardLineBreaks() {
+        val (emu, _) = emulator(rows = 4, cols = 10)
+        emu.append("ab\r\ncd\r\n")
+        emu.resize(4, 1)
+        emu.resize(4, 10)
+        assertEquals(listOf("ab", "cd", ""), (0..2).map { emu.line(it) })
+        assertEquals(2, emu.cursorRow)
+        assertEquals(0, emu.cursorCol)
+    }
+
+    @Test fun narrowingAndWideningAgainRestoresScrollback() {
+        val (emu, _) = emulator(rows = 3, cols = 10)
+        emu.append("abcdefghij\r\nklm\r\n$ ")
+        emu.resize(3, 5)
+        assertEquals(listOf("fghij", "klm", "$"), (0..2).map { emu.line(it) })
+        assertEquals(1, emu.historySize)
+        assertEquals("abcde", emu.lineAt(-1)!!.text())
+        emu.resize(3, 10)
+        assertEquals(listOf("abcdefghij", "klm", "$"), (0..2).map { emu.line(it) })
+        assertEquals(0, emu.historySize)
+        assertEquals(2, emu.cursorRow)
+        assertEquals(2, emu.cursorCol)
+        assertEquals("abcdefghij\nklm\n$", emu.transcriptText())
+    }
+
+    @Test fun reflowMovesAWideCharacterThatNoLongerFitsToTheNextRow() {
+        val (emu, _) = emulator(rows = 3, cols = 6)
+        emu.append("ab\u4e2d\u6587")
+        emu.resize(3, 3)
+        assertEquals(listOf("ab", "\u4e2d", "\u6587"), (0..2).map { emu.line(it) })
+        assertTrue(emu.lineAt(0)!!.wrapped)
+        emu.resize(3, 6)
+        assertEquals("ab\u4e2d\u6587", emu.line(0))
+        assertFalse(emu.lineAt(0)!!.wrapped)
+    }
+
+    @Test fun clearedScreenStaysClearedWhenTheWidthChanges() {
+        val (emu, _) = emulator(rows = 3, cols = 10)
+        emu.append("a\r\nb\r\nc\r\nd")
+        emu.append("$esc[H$esc[2J$ ")
+        emu.resize(3, 8)
+        assertEquals(0, emu.cursorRow)
+        assertEquals("$", emu.line(0))
+    }
+
+    @Test fun reflowOnTheAlternateScreenRewrapsTheMainScreenUnderneath() {
+        val (emu, _) = emulator(rows = 4, cols = 4)
+        emu.append("abcdef\r\n$ ")
+        emu.append("$esc[?1049h")
+        emu.resize(4, 10)
+        emu.append("$esc[?1049l")
+        assertEquals(listOf("abcdef", "$"), (0..1).map { emu.line(it) })
+        assertEquals(1, emu.cursorRow)
+        assertEquals(2, emu.cursorCol)
     }
 
     @Test fun resizeShorterMovesRowsToHistoryAndBack() {

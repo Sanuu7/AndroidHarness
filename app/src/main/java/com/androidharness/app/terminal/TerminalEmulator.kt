@@ -847,24 +847,165 @@ class TerminalEmulator(
     /**
      * Changes the grid size. Rows that no longer fit move into scrollback
      * (blank rows under the cursor go first), and growing pulls them back, so
-     * rotating there and back keeps the shell's output in place.
+     * rotating there and back keeps the shell's output in place. A width
+     * change also re-wraps the main screen and scrollback (see [reflowMain]);
+     * the alternate screen belongs to full-screen programs, which redraw
+     * themselves on SIGWINCH, so it is only cut or padded.
      */
     fun resize(newRows: Int, newCols: Int) {
         val r = newRows.coerceAtLeast(1)
         val c = newCols.coerceAtLeast(1)
         if (r == rows && c == cols) return
+        val oldRows = rows
+        val oldCols = cols
         rows = r
         cols = c
-        cursorRow = fitScreen(screen, cursorRow)
-        val other = if (screen === main) alt else main
-        val otherCursor = fitScreen(other, other.saved?.row ?: lastUsedRow(other))
-        other.saved?.let { s -> other.saved = Saved(otherCursor, s.col.coerceAtMost(c - 1), s.style, false, s.originMode, s.autoWrap, s.charsets, s.gl) }
-        cursorCol = cursorCol.coerceIn(0, c - 1)
-        pendingWrap = false
+        val onMain = screen === main
+        if (c != oldCols) {
+            reflowMain(oldRows, oldCols)
+        } else if (onMain) {
+            cursorRow = fitScreen(main, cursorRow)
+        } else {
+            val mainCursor = fitScreen(main, main.saved?.row ?: lastUsedRow(main))
+            main.saved?.let { s -> main.saved = Saved(mainCursor, s.col.coerceAtMost(c - 1), s.style, false, s.originMode, s.autoWrap, s.charsets, s.gl) }
+        }
+        if (onMain) {
+            val altCursor = fitScreen(alt, alt.saved?.row ?: lastUsedRow(alt))
+            alt.saved?.let { s -> alt.saved = Saved(altCursor, s.col.coerceAtMost(c - 1), s.style, false, s.originMode, s.autoWrap, s.charsets, s.gl) }
+        } else {
+            cursorRow = fitScreen(alt, cursorRow)
+        }
+        if (!onMain || c == oldCols) {
+            cursorCol = cursorCol.coerceIn(0, c - 1)
+            pendingWrap = false
+        }
         top = 0
         bottom = r - 1
         tabStops = defaultTabs(c)
         revision++
+    }
+
+    /**
+     * Re-wraps the main screen and its scrollback at the new [cols]. Rows the
+     * text soft-wrapped across are joined back into their logical lines and
+     * split again, so output printed before a pinch zoom or rotation reads
+     * the same at the new width. The live cursor (or the one saved while the
+     * alternate screen is up) stays on the same character and, where there
+     * is room, on the same screen row; the saved cursor is carried along too.
+     */
+    private fun reflowMain(oldRows: Int, oldCols: Int) {
+        val live = screen === main
+        val saved = main.saved
+        // Each mark is (screen row, cell offset); an offset of oldCols means a pending wrap.
+        val marks = ArrayList<IntArray>(2)
+        if (live) marks.add(intArrayOf(cursorRow, cursorCol + if (pendingWrap && cursorCol == oldCols - 1) 1 else 0))
+        if (saved != null) marks.add(intArrayOf(saved.row.coerceIn(0, main.lines.size - 1), saved.col + if (saved.pendingWrap && saved.col == oldCols - 1) 1 else 0))
+        if (marks.isEmpty()) marks.add(intArrayOf(lastUsedRow(main), 0))
+        // Not a cursor: tracks where the old top of the screen goes.
+        val screenTop = marks.size
+        marks.add(intArrayOf(0, 0))
+
+        // Blank rows under the last text and every cursor carry nothing worth re-wrapping.
+        val keep = maxOf(lastUsedRow(main), marks.maxOf { it[0] }) + 1
+        val source = ArrayList<TerminalRow>(history.size + keep)
+        source.addAll(history)
+        for (i in 0 until keep) source.add(main.lines[i])
+        val marksAt = HashMap<Int, MutableList<Int>>()
+        marks.forEachIndexed { m, mark -> marksAt.getOrPut(history.size + mark[0]) { ArrayList(1) }.add(m) }
+
+        val erase = CellStyle.NORMAL
+        val out = ArrayList<TerminalRow>(source.size)
+        var row = TerminalRow(cols, erase)
+        var col = 0
+        // Where each mark lands: (absolute output row, column, pending wrap).
+        val placed = Array(marks.size) { IntArray(3) }
+
+        fun breakRow(wrapped: Boolean) {
+            row.wrapped = wrapped
+            out.add(row)
+            row = TerminalRow(cols, erase)
+            col = 0
+        }
+        fun put(cp: Int, style: Long, wide: Boolean) {
+            val w = if (wide && cols >= 2) 2 else 1
+            if (col + w > cols) breakRow(true)
+            row.codes[col] = if (wide && w == 1) 0 else cp
+            row.styles[col] = style
+            if (w == 2) {
+                row.codes[col + 1] = WIDE_TAIL
+                row.styles[col + 1] = style
+            }
+            col += w
+        }
+        // [next] is the width of the character the mark sits on, or 0 past the end of the line.
+        fun place(m: Int, next: Int) {
+            val p = placed[m]
+            when {
+                next > 0 && col + next > cols -> { p[0] = out.size + 1; p[1] = 0; p[2] = 0 }
+                col >= cols -> { p[0] = out.size; p[1] = cols - 1; p[2] = 1 }
+                else -> { p[0] = out.size; p[1] = col; p[2] = 0 }
+            }
+        }
+
+        for (j in source.indices) {
+            val src = source[j]
+            val codes = src.codes
+            val styles = src.styles
+            var len = codes.size
+            if (src.wrapped && j < source.lastIndex) {
+                // A wide character that did not fit leaves an unwritten cell before the wrap.
+                while (len > 0 && codes[len - 1] == 0) len--
+            } else {
+                while (len > 0 && (codes[len - 1] == 0 || codes[len - 1] == ' '.code) &&
+                    CellStyle.bg(styles[len - 1]) == CellStyle.DEFAULT_BG) len--
+            }
+            val here = marksAt[j]
+            var k = 0
+            while (k < len) {
+                // Real tails are skipped with their lead, so one seen here is orphaned: keep it as a blank.
+                val cp = codes[k].let { if (it == WIDE_TAIL) 0 else it }
+                val wide = k + 1 < len && codes[k + 1] == WIDE_TAIL
+                here?.forEach { m ->
+                    val at = marks[m][1]
+                    if (at == k || (wide && at == k + 1)) place(m, if (wide && cols >= 2) 2 else 1)
+                }
+                put(cp, styles[k], wide)
+                k += if (wide) 2 else 1
+            }
+            if (here != null) {
+                // Cursors past the last character keep their distance from it.
+                for (m in here.sortedBy { marks[it][1] }) {
+                    val target = marks[m][1]
+                    while (k < target) { put(0, erase, false); k++ }
+                    if (target >= len) place(m, 0)
+                }
+            }
+            if (!(src.wrapped && j < source.lastIndex)) breakRow(false)
+        }
+
+        val anchor = placed[0][0]
+        // The cursor keeps its screen row (a taller screen pulls scrollback down),
+        // but moves down when the screen text above it now needs more rows.
+        val above = anchor - placed[screenTop][0]
+        val desired = maxOf(marks[0][0] + (rows - oldRows).coerceAtLeast(0), above).coerceIn(0, rows - 1)
+        val start = (anchor - desired).coerceIn(0, out.size)
+        history.clear()
+        if (maxHistory > 0) for (i in (start - maxHistory).coerceAtLeast(0) until start) history.addLast(out[i])
+        main.lines.clear()
+        for (i in start until minOf(out.size, start + rows)) main.lines.add(out[i])
+        while (main.lines.size < rows) main.lines.add(TerminalRow(cols, erase))
+
+        var m = 0
+        if (live) {
+            val p = placed[m++]
+            cursorRow = (p[0] - start).coerceIn(0, rows - 1)
+            cursorCol = p[1]
+            pendingWrap = p[2] == 1 && autoWrap
+        }
+        if (saved != null) {
+            val p = placed[m]
+            main.saved = Saved((p[0] - start).coerceIn(0, rows - 1), p[1], saved.style, p[2] == 1, saved.originMode, saved.autoWrap, saved.charsets, saved.gl)
+        }
     }
 
     private fun lastUsedRow(target: Screen): Int {
