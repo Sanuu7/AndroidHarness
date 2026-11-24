@@ -1173,4 +1173,16 @@
     <string name="edit_message_add_photo">"Tambah foto"</string>
     <string name="edit_message_add_file">"Tambah fail"</string>
     <string name="edit_message_resend">"Hantar semula"</string>
+    <string name="memory_trigger_only_row">"Hanya apabila: %1$s"</string>
+    <string name="memory_trigger_only">"Hanya apabila dicetuskan"</string>
+    <string name="memory_trigger_only_desc">"Tinggalkan memori ini melainkan salah satu kata pencetusnya muncul."</string>
+    <string name="memory_dates">"Dicipta %1$s · Disunting %2$s"</string>
+    <string name="memory_folder_agents">"Ejen"</string>
+    <string name="memory_folder_agents_title">"Siapa boleh melihat \"%1$s\"?"</string>
+    <string name="memory_folder_agents_everyone">"Semua orang"</string>
+    <string name="memory_folder_agents_only">"Hanya ejen ini"</string>
+    <string name="memory_folder_agents_note">"Sembang tanpa ejen dan Code tidak boleh melihat folder terhad kepada ejen."</string>
+    <string name="memory_folder_agents_none">"Anda belum mempunyai ejen sembang."</string>
+    <string name="memory_folder_agents_pick">"Pilih sekurang-kurangnya satu ejen."</string>
+    <string name="memory_folder_agents_row">"Hanya %1$s boleh melihat folder ini."</string>
 </resources>

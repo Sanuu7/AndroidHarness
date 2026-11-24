@@ -81,7 +81,7 @@ class ChatBackupManager(
     private suspend fun write(uri: Uri, options: ExportOptions, onProgress: (BackupProgress) -> Unit): ExportResult {
         val counts = dao.messageCounts().associate { it.sessionId to it.count }
         val sessions = dao.allSessions().filter { options.chatIds == null || it.id in options.chatIds }
-        val memories = if (options.memories) dao.allMemories().map { it.toBackupMemory() } else emptyList()
+        val memories = if (options.memories) dao.allMemories().toBackupMemories(dao.memoryFolders()) else emptyList()
         val snippets = if (options.snippets) dao.allSnippets().map { it.toBackupSnippet() } else emptyList()
         val manifest = BackupManifest(
             exportedAt = System.currentTimeMillis(),
@@ -273,6 +273,8 @@ class ChatBackupManager(
         if (extras && (memories.isNotEmpty() || snippets.isNotEmpty())) db.withTransaction {
             val memoryPlan = MemoryBackupMerge.plan(dao.allMemories(), memories) { id -> id?.let { workspaceMapping[it] ?: it } }
             val now = System.currentTimeMillis()
+            val known = dao.memoryFolders().map { it.name } + dao.allMemories().mapNotNull { it.folder }
+            MemoryBackupMerge.newFolders(memoryPlan, known, now).forEach { dao.insertMemoryFolder(it) }
             memoryPlan.forEach { dao.upsertMemory(MemoryBackupMerge.entity(it, now)) }
             restoredMemories = memoryPlan.size
             val snippetPlan = SnippetBackupMerge.plan(dao.allSnippets(), snippets)

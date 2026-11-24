@@ -1173,4 +1173,16 @@
     <string name="edit_message_add_photo">"新增照片"</string>
     <string name="edit_message_add_file">"新增檔案"</string>
     <string name="edit_message_resend">"重新傳送"</string>
+    <string name="memory_trigger_only_row">"僅在：%1$s"</string>
+    <string name="memory_trigger_only">"僅觸發時"</string>
+    <string name="memory_trigger_only_desc">"除非出現其觸發詞，否則不包含此記憶。"</string>
+    <string name="memory_dates">"建立於 %1$s · 編輯於 %2$s"</string>
+    <string name="memory_folder_agents">"代理程式"</string>
+    <string name="memory_folder_agents_title">"誰能看到「%1$s」？"</string>
+    <string name="memory_folder_agents_everyone">"所有人"</string>
+    <string name="memory_folder_agents_only">"僅這些代理程式"</string>
+    <string name="memory_folder_agents_note">"沒有代理程式的聊天和 Code 看不到僅限代理程式的資料夾。"</string>
+    <string name="memory_folder_agents_none">"你還沒有聊天代理程式。"</string>
+    <string name="memory_folder_agents_pick">"至少選一個代理程式。"</string>
+    <string name="memory_folder_agents_row">"只有 %1$s 能看到此資料夾。"</string>
 </resources>

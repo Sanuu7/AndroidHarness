@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"افزودن عکس"</string>
     <string name="edit_message_add_file">"افزودن فایل"</string>
     <string name="edit_message_resend">"ارسال دوباره"</string>
+    <string name="memory_trigger_only_row">"فقط وقتی: %1$s"</string>
+    <string name="memory_trigger_only">"فقط هنگام فعال شدن"</string>
+    <string name="memory_trigger_only_desc">"این حافظه را کنار بگذار مگر یکی از واژه‌های محرکش بیاید."</string>
+    <string name="memory_dates">"ساخته‌شده %1$s · ویرایش‌شده %2$s"</string>
+    <string name="memory_folder_agents">"عامل‌ها"</string>
+    <string name="memory_folder_agents_title">"چه کسی «%1$s» را می‌بیند؟"</string>
+    <string name="memory_folder_agents_everyone">"همه"</string>
+    <string name="memory_folder_agents_only">"فقط این عامل‌ها"</string>
+    <string name="memory_folder_agents_note">"چت‌های بدون عامل و Code پوشه محدود به عامل‌ها را نمی‌بینند."</string>
+    <string name="memory_folder_agents_none">"هنوز عامل چتی ندارید."</string>
+    <string name="memory_folder_agents_pick">"حداقل یک عامل انتخاب کنید."</string>
+    <string name="memory_folder_agents_row">"فقط %1$s می‌توانند این پوشه را ببینند."</string>
 </resources>

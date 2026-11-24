@@ -87,7 +87,7 @@ internal fun ChatMemoryReceipt(messages: List<ChatMessage>, container: AppContai
                 if (!saving && !busy) { saving = true; scope.launch {
                     try {
                         container.memory.update(memory, draft.text, draft.folder.category, draft.scope, draft.projectId, draft.section,
-                            folder = draft.folder.folder, keywords = draft.keywords)
+                            folder = draft.folder.folder, keywords = draft.keywords, triggerOnly = draft.triggerOnly)
                         editing = null
                     }
                     catch (e: kotlinx.coroutines.CancellationException) { throw e }

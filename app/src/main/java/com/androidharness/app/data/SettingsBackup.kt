@@ -201,7 +201,7 @@ object SettingsBackupValidation {
             check((memory.projectId?.length ?: 0) <= 500 && (memory.sourceSessionId?.length ?: 0) <= 200, SettingsBackupProblem.MEMORY)
             check(memory.agentId == null || memory.agentId.length in 1..100 && memory.section == "CHAT", SettingsBackupProblem.MEMORY)
             check(memory.useCount >= 0, SettingsBackupProblem.MEMORY)
-            check((memory.folder?.length ?: 0) <= 200 && memory.keywords.length <= 2_000, SettingsBackupProblem.MEMORY)
+            check((memory.folder?.length ?: 0) <= 200 && memory.keywords.length <= 2_000 && memory.folderAgents.length <= 5_000, SettingsBackupProblem.MEMORY)
         }
     }
 }
@@ -243,7 +243,7 @@ class SettingsBackup(private val c: AppContainer) {
                     credential { c.keys.searchKeyPool(name) }?.takeIf { it.keys.isNotEmpty() }?.let { name to it }
                 }.toMap() else emptyMap(),
                 groqKey = if (includeKeys) credential { c.keys.groqApiKey() } else null,
-                memories = c.memory.memories.first().map { it.toBackupMemory() },
+                memories = c.memory.backup(),
                 providerProxy = c.keys.providerProxy(null).let { if (includeKeys) it else it.withoutCredentials() })
             SettingsBackupValidation.validate(file)
             val plain = json.encodeToString(SettingsBackupFile.serializer(), file).toByteArray(Charsets.UTF_8)

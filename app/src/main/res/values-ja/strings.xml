@@ -1173,4 +1173,16 @@
     <string name="edit_message_add_photo">"写真を追加"</string>
     <string name="edit_message_add_file">"ファイルを追加"</string>
     <string name="edit_message_resend">"再送信"</string>
+    <string name="memory_trigger_only_row">"条件: %1$s"</string>
+    <string name="memory_trigger_only">"トリガー時のみ"</string>
+    <string name="memory_trigger_only_desc">"トリガーワードが出てこない限り、この記憶を含めません。"</string>
+    <string name="memory_dates">"作成 %1$s · 編集 %2$s"</string>
+    <string name="memory_folder_agents">"エージェント"</string>
+    <string name="memory_folder_agents_title">"「%1$s」を見られるのは？"</string>
+    <string name="memory_folder_agents_everyone">"全員"</string>
+    <string name="memory_folder_agents_only">"これらのエージェントのみ"</string>
+    <string name="memory_folder_agents_note">"エージェントなしのチャットと Code は、エージェント限定のフォルダーを見られません。"</string>
+    <string name="memory_folder_agents_none">"チャットエージェントがまだありません。"</string>
+    <string name="memory_folder_agents_pick">"エージェントを1つ以上選んでください。"</string>
+    <string name="memory_folder_agents_row">"%1$s だけがこのフォルダーを見られます。"</string>
 </resources>

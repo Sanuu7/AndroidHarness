@@ -1191,4 +1191,16 @@
     <string name="edit_message_add_photo">"Добавить фото"</string>
     <string name="edit_message_add_file">"Добавить файл"</string>
     <string name="edit_message_resend">"Отправить снова"</string>
+    <string name="memory_trigger_only_row">"Только при: %1$s"</string>
+    <string name="memory_trigger_only">"Только по триггеру"</string>
+    <string name="memory_trigger_only_desc">"Не включать это воспоминание, если не появилось одно из его слов-триггеров."</string>
+    <string name="memory_dates">"Создано %1$s · Изменено %2$s"</string>
+    <string name="memory_folder_agents">"Агенты"</string>
+    <string name="memory_folder_agents_title">"Кто видит «%1$s»?"</string>
+    <string name="memory_folder_agents_everyone">"Все"</string>
+    <string name="memory_folder_agents_only">"Только эти агенты"</string>
+    <string name="memory_folder_agents_note">"Чаты без агента и Code не видят папку, ограниченную агентами."</string>
+    <string name="memory_folder_agents_none">"У вас ещё нет чат-агентов."</string>
+    <string name="memory_folder_agents_pick">"Выберите хотя бы одного агента."</string>
+    <string name="memory_folder_agents_row">"Эту папку видят только %1$s."</string>
 </resources>

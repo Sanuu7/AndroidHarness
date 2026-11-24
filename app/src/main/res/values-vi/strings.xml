@@ -1173,4 +1173,16 @@
     <string name="edit_message_add_photo">"Thêm ảnh"</string>
     <string name="edit_message_add_file">"Thêm tệp"</string>
     <string name="edit_message_resend">"Gửi lại"</string>
+    <string name="memory_trigger_only_row">"Chỉ khi: %1$s"</string>
+    <string name="memory_trigger_only">"Chỉ khi được kích hoạt"</string>
+    <string name="memory_trigger_only_desc">"Bỏ qua ký ức này trừ khi một từ kích hoạt của nó xuất hiện."</string>
+    <string name="memory_dates">"Tạo %1$s · Sửa %2$s"</string>
+    <string name="memory_folder_agents">"Tác nhân"</string>
+    <string name="memory_folder_agents_title">"Ai có thể thấy \"%1$s\"?"</string>
+    <string name="memory_folder_agents_everyone">"Mọi người"</string>
+    <string name="memory_folder_agents_only">"Chỉ các tác nhân này"</string>
+    <string name="memory_folder_agents_note">"Các cuộc trò chuyện không có tác nhân và Code không thấy thư mục giới hạn cho tác nhân."</string>
+    <string name="memory_folder_agents_none">"Bạn chưa có tác nhân trò chuyện nào."</string>
+    <string name="memory_folder_agents_pick">"Chọn ít nhất một tác nhân."</string>
+    <string name="memory_folder_agents_row">"Chỉ %1$s mới thấy thư mục này."</string>
 </resources>

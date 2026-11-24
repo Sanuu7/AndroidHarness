@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"Magdagdag ng larawan"</string>
     <string name="edit_message_add_file">"Magdagdag ng file"</string>
     <string name="edit_message_resend">"Ipadala muli"</string>
+    <string name="memory_trigger_only_row">"Kapag lamang: %1$s"</string>
+    <string name="memory_trigger_only">"Kapag na-trigger lamang"</string>
+    <string name="memory_trigger_only_desc">"Iwanan ang memoryang ito maliban kung may lumitaw sa mga trigger word nito."</string>
+    <string name="memory_dates">"Ginawa %1$s · Inedit %2$s"</string>
+    <string name="memory_folder_agents">"Mga agent"</string>
+    <string name="memory_folder_agents_title">"Sino ang makakakita ng \"%1$s\"?"</string>
+    <string name="memory_folder_agents_everyone">"Lahat"</string>
+    <string name="memory_folder_agents_only">"Ang mga agent na ito lamang"</string>
+    <string name="memory_folder_agents_note">"Ang mga chat na walang agent at ang Code ay hindi makakakita ng folder na limitado sa mga agent."</string>
+    <string name="memory_folder_agents_none">"Wala ka pang chat agent."</string>
+    <string name="memory_folder_agents_pick">"Pumili ng kahit isang agent."</string>
+    <string name="memory_folder_agents_row">"Ang %1$s lang ang makakakita ng folder na ito."</string>
 </resources>

@@ -31,6 +31,7 @@ import com.androidharness.app.data.MemoryPrompt
 import com.androidharness.app.data.MemorySection
 import com.androidharness.app.data.MemoryConsolidation
 import com.androidharness.app.data.MemoryFolderTarget
+import com.androidharness.app.data.MemoryFolderAgents
 import com.androidharness.app.data.MemoryRepository
 import com.androidharness.app.data.MemoryScope
 import com.androidharness.app.data.MemoryText
@@ -180,6 +181,9 @@ internal fun MemoryManagerSection(container: AppContainer) {
     var folderFilter by rememberSaveable { mutableStateOf<String?>(null) }
     var naming by remember { mutableStateOf<String?>(null) } // "" creates, a name renames
     var removingFolder by remember { mutableStateOf<String?>(null) }
+    var limitingFolder by remember { mutableStateOf<String?>(null) }
+    val folderRows by container.memory.folders.collectAsStateWithLifecycle(initialValue = emptyList())
+    val folderLimits = remember(folderRows) { MemoryFolderAgents.of(folderRows) }
     var undo by remember { mutableStateOf<Pair<MemoryRepository.FolderDeletion, String>?>(null) }
     val builtInLabels = MemoryCategory.entries.associateWith { stringResource(categoryLabel(it.name)) }
     val entries = memories.filter { it.consolidatedInto == null }
@@ -247,8 +251,14 @@ internal fun MemoryManagerSection(container: AppContainer) {
                     leadingIcon = { Icon(Icons.Rounded.Add, contentDescription = null, Modifier.size(AssistChipDefaults.IconSize)) })
             }
             folderFilter?.takeIf { it.startsWith("f:") }?.removePrefix("f:")?.let { name ->
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                MemoryFolderAgents.allowed(name, folderLimits)?.let { ids ->
+                    val names = ids.map { id -> agentSettings.chatAgents.firstOrNull { it.id == id }?.name?.takeIf { it.isNotBlank() } ?: id.take(8) }.sorted()
+                    Text(stringResource(R.string.memory_folder_agents_row, names.joinToString(", ")),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedButton(enabled = !saving, onClick = { naming = name; error = null }) { Text(stringResource(R.string.memory_folder_rename)) }
+                    OutlinedButton(enabled = !saving, onClick = { limitingFolder = name; error = null }) { Text(stringResource(R.string.memory_folder_agents)) }
                     OutlinedButton(enabled = !saving, onClick = { removingFolder = name; error = null }) {
                         Text(stringResource(R.string.memory_folder_delete), color = MaterialTheme.colorScheme.error)
                     }
@@ -271,7 +281,7 @@ internal fun MemoryManagerSection(container: AppContainer) {
     }
 
     // Folder dialogs show their own error; showing it here too would repeat it behind the dialog.
-    if (naming == null && removingFolder == null) error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp)) }
+    if (naming == null && removingFolder == null && limitingFolder == null) error?.let { Text(it, color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(horizontal = 16.dp)) }
     undo?.let { (deletion, message) ->
         SettingsPanel(Modifier.fillMaxWidth()) {
             Row(Modifier.padding(start = 16.dp, end = 8.dp, top = 8.dp, bottom = 8.dp), verticalAlignment = Alignment.CenterVertically) {
@@ -359,9 +369,9 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 val target = editing
                 mutate({
                     if (target == null) container.memory.add(draft.text, draft.folder.category, draft.scope, draft.projectId, draft.section,
-                        folder = draft.folder.folder, keywords = draft.keywords)
+                        folder = draft.folder.folder, keywords = draft.keywords, triggerOnly = draft.triggerOnly)
                     else container.memory.update(target, draft.text, draft.folder.category, draft.scope, draft.projectId, draft.section,
-                        folder = draft.folder.folder, keywords = draft.keywords)
+                        folder = draft.folder.folder, keywords = draft.keywords, triggerOnly = draft.triggerOnly)
                 }) { adding = false; editing = null }
             },
             onDelete = {
@@ -397,6 +407,13 @@ internal fun MemoryManagerSection(container: AppContainer) {
                 }
                 folderFilter = null
             }) { removingFolder = null }
+        }
+    }
+
+    limitingFolder?.let { name ->
+        MemoryFolderAgentsDialog(name, MemoryFolderAgents.allowed(name, folderLimits).orEmpty(), agentSettings.chatAgents, saving, error,
+            onDismiss = { if (!saving) { limitingFolder = null; error = null } }) { ids ->
+            mutate({ container.memory.setFolderAgents(name, ids) }) { limitingFolder = null }
         }
     }
 
@@ -472,7 +489,7 @@ private fun MemoryRow(
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             if (memory.keywords.isNotBlank()) Text(
-                stringResource(R.string.memory_triggers_row, memory.keywords),
+                stringResource(if (memory.triggerOnly) R.string.memory_trigger_only_row else R.string.memory_triggers_row, memory.keywords),
                 style = MaterialTheme.typography.bodySmall,
                 color = MaterialTheme.colorScheme.primary,
                 maxLines = 2,
@@ -514,6 +531,8 @@ internal fun MemoryEditDialog(
     var text by remember(initial?.id) { mutableStateOf(initial?.text.orEmpty()) }
     var folder by remember(initial?.id) { mutableStateOf(initial?.let { MemoryFolderTarget.of(it) } ?: initialFolder ?: MemoryFolderTarget(MemoryCategory.FACT, null)) }
     var keywords by remember(initial?.id) { mutableStateOf(initial?.keywords.orEmpty()) }
+    var triggerOnly by remember(initial?.id) { mutableStateOf(initial?.triggerOnly == true) }
+    val hasTriggers = keywords.split(',', '\n', ';').any { it.isNotBlank() }
     var scope by remember(initial?.id) { mutableStateOf(MemoryScope.fromStored(initial?.scope)) }
     var projectId by remember(initial?.id, projects) {
         mutableStateOf(initial?.projectId ?: projects.firstOrNull()?.id)
@@ -540,6 +559,11 @@ internal fun MemoryEditDialog(
                     maxLines = 5,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                initial?.let { memory ->
+                    val format = remember { java.text.DateFormat.getDateInstance(java.text.DateFormat.MEDIUM) }
+                    Text(stringResource(R.string.memory_dates, format.format(java.util.Date(memory.createdAt)), format.format(java.util.Date(memory.updatedAt))),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
                 error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
                 Text(stringResource(R.string.memory_section_label), style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
@@ -575,6 +599,19 @@ internal fun MemoryEditDialog(
                     singleLine = true,
                     modifier = Modifier.fillMaxWidth(),
                 )
+                Row(
+                    Modifier.fillMaxWidth().toggleable(triggerOnly && hasTriggers, enabled = enabled && hasTriggers, role = Role.Switch,
+                        onValueChange = { triggerOnly = it }),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                ) {
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(stringResource(R.string.memory_trigger_only), style = MaterialTheme.typography.bodyLarge)
+                        Text(stringResource(R.string.memory_trigger_only_desc), style = MaterialTheme.typography.bodySmall,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                    Switch(checked = triggerOnly && hasTriggers, enabled = enabled && hasTriggers, onCheckedChange = null)
+                }
                 Text(stringResource(R.string.settings_memory_scope_label), style = MaterialTheme.typography.labelLarge)
                 FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     FilterChip(
@@ -597,7 +634,7 @@ internal fun MemoryEditDialog(
         confirmButton = {
             TextButton(
                 enabled = enabled && text.isNotBlank() && (maxChars == null || text.length <= maxChars),
-                onClick = { onSave(MemoryDraft(text, folder, scope, if (scope == MemoryScope.PROJECT) projectId else null, owner, keywords)) },
+                onClick = { onSave(MemoryDraft(text, folder, scope, if (scope == MemoryScope.PROJECT) projectId else null, owner, keywords, triggerOnly && hasTriggers)) },
             ) { Text(stringResource(R.string.settings_memory_save)) }
         },
         dismissButton = {
@@ -621,6 +658,7 @@ internal data class MemoryDraft(
     val projectId: String?,
     val section: MemorySection,
     val keywords: String,
+    val triggerOnly: Boolean = false,
 )
 
 /** Folders the user or agent created, plus any a restored memory names, in creation order. */
@@ -657,6 +695,65 @@ private fun MemoryFolderNameDialog(current: String, saving: Boolean, error: Stri
         confirmButton = {
             TextButton(enabled = !saving && name.isNotBlank() && name.trim() != current, onClick = { onSave(name) }) {
                 Text(stringResource(if (current.isEmpty()) R.string.memory_folder_create else R.string.settings_memory_save))
+            }
+        },
+        dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } },
+    )
+}
+
+/** Picks which chat agents may see a folder. An empty choice opens it to everyone. */
+@Composable
+private fun MemoryFolderAgentsDialog(
+    name: String,
+    current: Set<String>,
+    agents: List<com.androidharness.app.data.ChatAgentProfile>,
+    saving: Boolean,
+    error: String?,
+    onDismiss: () -> Unit,
+    onSave: (Set<String>) -> Unit,
+) {
+    var limited by remember(name) { mutableStateOf(current.isNotEmpty()) }
+    // Agents deleted since the limit was set stay selected, so saving never widens the folder by surprise.
+    var chosen by remember(name) { mutableStateOf(current) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.memory_folder_agents_title, name)) },
+        text = {
+            Column(Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                listOf(false, true).forEach { option ->
+                    Row(
+                        Modifier.fillMaxWidth().clickable(enabled = !saving) { limited = option }.padding(vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        RadioButton(selected = limited == option, onClick = null, enabled = !saving)
+                        Text(stringResource(if (option) R.string.memory_folder_agents_only else R.string.memory_folder_agents_everyone),
+                            Modifier.padding(start = 8.dp))
+                    }
+                }
+                if (limited) {
+                    if (agents.isEmpty()) Text(stringResource(R.string.memory_folder_agents_none), Modifier.padding(start = 40.dp),
+                        style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    agents.forEach { agent ->
+                        Row(
+                            Modifier.fillMaxWidth().toggleable(agent.id in chosen, enabled = !saving, role = Role.Checkbox,
+                                onValueChange = { on -> chosen = if (on) chosen + agent.id else chosen - agent.id })
+                                .padding(start = 32.dp, top = 2.dp, bottom = 2.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Checkbox(checked = agent.id in chosen, onCheckedChange = null, enabled = !saving)
+                            Text(agent.name.ifBlank { agent.id.take(8) }, Modifier.padding(start = 8.dp), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                    Text(stringResource(if (chosen.isEmpty() && agents.isNotEmpty()) R.string.memory_folder_agents_pick else R.string.memory_folder_agents_note),
+                        Modifier.padding(top = 8.dp), style = MaterialTheme.typography.bodySmall,
+                        color = if (chosen.isEmpty() && agents.isNotEmpty()) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                error?.let { Text(it, color = MaterialTheme.colorScheme.error) }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = !saving && (!limited || chosen.isNotEmpty()), onClick = { onSave(if (limited) chosen else emptySet()) }) {
+                Text(stringResource(R.string.settings_memory_save))
             }
         },
         dismissButton = { TextButton(enabled = !saving, onClick = onDismiss) { Text(stringResource(R.string.settings_action_cancel)) } },

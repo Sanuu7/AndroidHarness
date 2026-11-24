@@ -1203,4 +1203,16 @@
     <string name="edit_message_add_photo">"إضافة صورة"</string>
     <string name="edit_message_add_file">"إضافة ملف"</string>
     <string name="edit_message_resend">"إعادة الإرسال"</string>
+    <string name="memory_trigger_only_row">"فقط عند: %1$s"</string>
+    <string name="memory_trigger_only">"فقط عند التشغيل"</string>
+    <string name="memory_trigger_only_desc">"استبعد هذه الذكرى إلا إذا ظهرت إحدى كلمات التشغيل."</string>
+    <string name="memory_dates">"أُنشئت %1$s · عُدّلت %2$s"</string>
+    <string name="memory_folder_agents">"الوكلاء"</string>
+    <string name="memory_folder_agents_title">"من يمكنه رؤية \"%1$s\"؟"</string>
+    <string name="memory_folder_agents_everyone">"الجميع"</string>
+    <string name="memory_folder_agents_only">"هؤلاء الوكلاء فقط"</string>
+    <string name="memory_folder_agents_note">"الدردشات بلا وكيل وCode لا ترى مجلداً مقتصراً على الوكلاء."</string>
+    <string name="memory_folder_agents_none">"ليس لديك وكلاء دردشة بعد."</string>
+    <string name="memory_folder_agents_pick">"اختر وكيلاً واحداً على الأقل."</string>
+    <string name="memory_folder_agents_row">"لا يرى هذا المجلد إلا %1$s."</string>
 </resources>

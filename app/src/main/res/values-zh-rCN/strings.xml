@@ -1204,4 +1204,16 @@
     <string name="edit_message_add_photo">"添加照片"</string>
     <string name="edit_message_add_file">"添加文件"</string>
     <string name="edit_message_resend">"重新发送"</string>
+    <string name="memory_trigger_only_row">"仅在：%1$s"</string>
+    <string name="memory_trigger_only">"仅触发时"</string>
+    <string name="memory_trigger_only_desc">"除非出现其触发词，否则不包含此记忆。"</string>
+    <string name="memory_dates">"创建于 %1$s · 编辑于 %2$s"</string>
+    <string name="memory_folder_agents">"智能体"</string>
+    <string name="memory_folder_agents_title">"谁能看到“%1$s”？"</string>
+    <string name="memory_folder_agents_everyone">"所有人"</string>
+    <string name="memory_folder_agents_only">"仅这些智能体"</string>
+    <string name="memory_folder_agents_note">"没有智能体的聊天和 Code 看不到仅限智能体的文件夹。"</string>
+    <string name="memory_folder_agents_none">"你还没有聊天智能体。"</string>
+    <string name="memory_folder_agents_pick">"至少选择一个智能体。"</string>
+    <string name="memory_folder_agents_row">"只有 %1$s 能看到此文件夹。"</string>
 </resources>

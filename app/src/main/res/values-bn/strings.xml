@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"ছবি যোগ করুন"</string>
     <string name="edit_message_add_file">"ফাইল যোগ করুন"</string>
     <string name="edit_message_resend">"আবার পাঠান"</string>
+    <string name="memory_trigger_only_row">"শুধু যখন: %1$s"</string>
+    <string name="memory_trigger_only">"শুধু ট্রিগার হলে"</string>
+    <string name="memory_trigger_only_desc">"এর কোনো ট্রিগার শব্দ না এলে এই মেমরি বাদ দিন।"</string>
+    <string name="memory_dates">"তৈরি %1$s · সম্পাদিত %2$s"</string>
+    <string name="memory_folder_agents">"এজেন্ট"</string>
+    <string name="memory_folder_agents_title">"\"%1$s\" কে দেখতে পারে?"</string>
+    <string name="memory_folder_agents_everyone">"সবাই"</string>
+    <string name="memory_folder_agents_only">"শুধু এই এজেন্টরা"</string>
+    <string name="memory_folder_agents_note">"এজেন্ট ছাড়া চ্যাট ও Code এজেন্ট-সীমিত ফোল্ডার দেখতে পায় না।"</string>
+    <string name="memory_folder_agents_none">"আপনার এখনো কোনো চ্যাট এজেন্ট নেই।"</string>
+    <string name="memory_folder_agents_pick">"অন্তত একটি এজেন্ট বাছুন।"</string>
+    <string name="memory_folder_agents_row">"শুধু %1$s এই ফোল্ডার দেখতে পারে।"</string>
 </resources>

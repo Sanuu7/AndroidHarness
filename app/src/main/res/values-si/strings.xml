@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"ඡායාරූපය එකතු කරන්න"</string>
     <string name="edit_message_add_file">"ගොනුවක් එකතු කරන්න"</string>
     <string name="edit_message_resend">"නැවත යවන්න"</string>
+    <string name="memory_trigger_only_row">"පමණක් විට: %1$s"</string>
+    <string name="memory_trigger_only">"මුලික වූ විට පමණි"</string>
+    <string name="memory_trigger_only_desc">"එහි මුලික වචනයක් නොපැමිණි නම් මෙම මතකය ඇතුළත් නොකරන්න."</string>
+    <string name="memory_dates">"සාදන ලදී %1$s · සංස්කරණය %2$s"</string>
+    <string name="memory_folder_agents">"නියෝජිතයින්"</string>
+    <string name="memory_folder_agents_title">"\"%1$s\" කවුරුන්ට දැකිය හැකිද?"</string>
+    <string name="memory_folder_agents_everyone">"සැමට"</string>
+    <string name="memory_folder_agents_only">"මෙම නියෝජිතයින් පමණි"</string>
+    <string name="memory_folder_agents_note">"නියෝජිතයෙකු නොමැති චැට් සහ Code නියෝජිතයින්ට සීමා වූ ෆෝල්ඩරයක් දැකිය නොහැක."</string>
+    <string name="memory_folder_agents_none">"ඔබට තවම චැට් නියෝජිතයින් නැත."</string>
+    <string name="memory_folder_agents_pick">"අවම වශයෙන් එක් නියෝජිතයෙකු තෝරන්න."</string>
+    <string name="memory_folder_agents_row">"%1$s පමණක් මෙම ෆෝල්ඩරය දැකිය හැක."</string>
 </resources>

@@ -105,7 +105,8 @@ internal object MemoryPrompt {
             .thenBy { it.id }
 
     fun build(memories: List<MemoryEntity>, maxChars: Int = MAX_CHARS, query: String = "", now: Long = System.currentTimeMillis()): Block {
-        val sorted = memories.filter { it.enabled && it.consolidatedInto == null }.sortedWith(ranking(query, now))
+        val sorted = memories.filter { it.enabled && it.consolidatedInto == null && (!it.triggerOnly || MemoryKeywords.hit(it.keywords, query)) }
+            .sortedWith(ranking(query, now))
         val text = StringBuilder()
         val used = mutableListOf<String>()
         val supplied = mutableListOf<MemoryEntity>()
@@ -154,6 +155,9 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
     /** Folders the user or agent created. Folders only named by a memory (from a backup) are added by the UI. */
     val folders: Flow<List<MemoryFolderEntity>> get() = dao.memoryFoldersFlow()
 
+    /** Every memory in backup form, each carrying its folder's agent limit. */
+    suspend fun backup(): List<BackupMemory> = dao.allMemories().toBackupMemories(dao.memoryFolders())
+
     suspend fun sectionForSession(sessionId: String?): MemorySection =
         if (sessionId != null && ConversationConfig.decode(dao.session(sessionId)?.conversationJson).isChat) MemorySection.CHAT else MemorySection.CODE
 
@@ -162,6 +166,20 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
     }
 
     private suspend fun agentOwner(sessionId: String?): String? = agentForSession(sessionId)?.takeIf { it.memory == AgentMemory.PRIVATE }?.id
+
+    /** Who is looking at memory in a conversation: the section, a private-memory owner, the chat agent and the folder limits. */
+    private inner class Viewer(val section: MemorySection, val owner: String?, val agent: String?, val limits: Map<String, Set<String>>) {
+        fun sees(memory: MemoryEntity, target: MemorySection = section) = MemoryAccess.belongsTo(memory, target, owner, agent, limits)
+
+        /** Refuses a write into a folder this conversation cannot see. */
+        fun checkFolder(folder: String?) {
+            val allowed = MemoryFolderAgents.allowed(folder, limits) ?: return
+            check(agent != null && agent in allowed) { "The folder \"$folder\" is limited to other agents. Choose another folder." }
+        }
+    }
+
+    private suspend fun viewer(sessionId: String?): Viewer = Viewer(
+        sectionForSession(sessionId), agentOwner(sessionId), agentForSession(sessionId)?.id, MemoryFolderAgents.of(dao.memoryFolders()))
 
     suspend fun isEnabled(sessionId: String? = null): Boolean =
         agentForSession(sessionId)?.memory != AgentMemory.OFF &&
@@ -180,9 +198,8 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
     ): String? {
         onUsed(emptyList())
         if (!isEnabled(sessionId)) return null
-        val section = sectionForSession(sessionId)
-        val owner = agentOwner(sessionId)
-        val available = dao.activeMemories(projectIdForSession(sessionId)).filter { MemoryAccess.belongsTo(it, section, owner) }
+        val viewer = viewer(sessionId)
+        val available = dao.activeMemories(projectIdForSession(sessionId)).filter { viewer.sees(it) }
         val block = MemoryPrompt.build(available, maxChars = maxChars, query = query)
         if (block.text.isBlank()) return null
         onUsed(block.supplied)
@@ -207,7 +224,7 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         check(folderNames().none { MemoryFolders.same(it, name) && !MemoryFolders.same(it, old) }) { "A folder named \"$name\" already exists." }
         val row = dao.memoryFolders().firstOrNull { it.name == old }
         dao.deleteMemoryFolder(old)
-        dao.insertMemoryFolder(MemoryFolderEntity(name, row?.createdAt ?: System.currentTimeMillis()))
+        dao.insertMemoryFolder(MemoryFolderEntity(name, row?.createdAt ?: System.currentTimeMillis(), row?.agentIds.orEmpty()))
         dao.renameMemoryFolder(old, name, System.currentTimeMillis())
         name
     }
@@ -241,6 +258,13 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         deletion.before.forEach { dao.upsertMemory(it) }
     }
 
+    /** Limits a folder to [agentIds]; an empty set opens it to everyone again. */
+    suspend fun setFolderAgents(name: String, agentIds: Set<String>) = db.withTransaction {
+        check(folderNames().any { it == name }) { "This folder was deleted." }
+        dao.insertMemoryFolder(MemoryFolderEntity(name, System.currentTimeMillis()))
+        dao.setMemoryFolderAgents(name, MemoryFolderAgents.encode(agentIds))
+    }
+
     private suspend fun folderNames(): List<String> =
         (dao.memoryFolders().map { it.name } + dao.allMemories().mapNotNull { it.folder }).distinctBy { MemoryMatch.key(it) }
 
@@ -260,14 +284,15 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
     suspend fun rememberResult(
         text: String, category: MemoryCategory?, requestedScope: MemoryScope, sessionId: String?,
         memoryId: String? = null, previousText: String? = null, allowSimilar: Boolean = false,
-        folder: String? = null, keywords: String? = null,
+        folder: String? = null, keywords: String? = null, triggerOnly: Boolean? = null,
     ): WriteResult {
         check(isEnabled(sessionId)) { "Memory is off for this section." }
-        val section = sectionForSession(sessionId)
-        val owner = agentOwner(sessionId)
+        val viewer = viewer(sessionId)
+        val section = viewer.section
+        val owner = viewer.owner
         val project = projectIdForSession(sessionId)
         return db.withTransaction {
-            val available = dao.allMemories().filter { it.consolidatedInto == null && MemoryAccess.belongsTo(it, section, owner) &&
+            val available = dao.allMemories().filter { it.consolidatedInto == null && viewer.sees(it) &&
                 (it.scope == MemoryScope.GLOBAL.name || it.projectId == project && project != null) }
             if (memoryId != null) {
                 val current = available.firstOrNull { it.id == memoryId } ?: error("Memory is not available in this section/project. Recall it first.")
@@ -279,10 +304,13 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
                 check(conflict == null) { "The replacement already exists as memory ${conflict?.id}." }
                 val (target, created) = if (folder != null) ensure(MemoryFolders.target(folder, category ?: MemoryCategory.fromStored(current.category)))
                     else MemoryFolderTarget(category ?: MemoryCategory.fromStored(current.category), current.folder.takeIf { category == null }) to null
+                if (!MemoryFolders.same(target.folder, current.folder)) viewer.checkFolder(target.folder)
                 val words = keywords?.let { MemoryKeywords.checked(it) } ?: current.keywords
-                if (current.text == clean && current.category == target.category.name && current.folder == target.folder && current.keywords == words)
-                    return@withTransaction WriteResult(current, Action.UNCHANGED)
-                val updated = current.copy(text = clean, category = target.category.name, folder = target.folder, keywords = words, updatedAt = System.currentTimeMillis())
+                val gated = checkedTriggerOnly(triggerOnly ?: current.triggerOnly, words)
+                if (current.text == clean && current.category == target.category.name && current.folder == target.folder && current.keywords == words &&
+                    current.triggerOnly == gated) return@withTransaction WriteResult(current, Action.UNCHANGED)
+                val updated = current.copy(text = clean, category = target.category.name, folder = target.folder, keywords = words, triggerOnly = gated,
+                    updatedAt = System.currentTimeMillis())
                 dao.upsertMemory(updated)
                 WriteResult(updated, Action.UPDATED, created)
             } else {
@@ -300,24 +328,27 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
                     check(near == null) { "Similar memory [id:${near?.id}]: ${near?.text}. Recall it and update by memory_id, or set allow_similar only if these are distinct facts." }
                 }
                 val words = MemoryKeywords.checked(keywords)
+                val gated = checkedTriggerOnly(triggerOnly == true, words)
+                viewer.checkFolder(MemoryFolders.target(folder, category ?: MemoryCategory.FACT).folder)
                 val (target, created) = ensure(MemoryFolders.target(folder, category ?: MemoryCategory.FACT))
-                save(clean, target, scope, projectId, sessionId, section, owner, words).copy(createdFolder = created)
+                save(clean, target, scope, projectId, sessionId, section, owner, words, gated).copy(createdFolder = created)
             }
         }
     }
 
     suspend fun add(
         text: String, category: MemoryCategory, requestedScope: MemoryScope, projectId: String?, section: MemorySection = MemorySection.SHARED,
-        folder: String? = null, keywords: String = "",
+        folder: String? = null, keywords: String = "", triggerOnly: Boolean = false,
     ): MemoryEntity? =
         if (text.isBlank()) null else db.withTransaction {
             val words = MemoryKeywords.checked(keywords)
-            save(checkedText(text), ensure(MemoryFolderTarget(category, folder)).first, requestedScope, projectId, null, section, keywords = words).memory
+            save(checkedText(text), ensure(MemoryFolderTarget(category, folder)).first, requestedScope, projectId, null, section, keywords = words,
+                triggerOnly = checkedTriggerOnly(triggerOnly, words)).memory
         }
 
     private suspend fun save(
         text: String, target: MemoryFolderTarget, requestedScope: MemoryScope, projectId: String?, sessionId: String?, section: MemorySection,
-        owner: String? = null, keywords: String = "",
+        owner: String? = null, keywords: String = "", triggerOnly: Boolean = false,
     ): WriteResult {
         val scope = if (requestedScope == MemoryScope.PROJECT && projectId != null) MemoryScope.PROJECT else MemoryScope.GLOBAL
         val actualProject = projectId.takeIf { scope == MemoryScope.PROJECT }
@@ -329,7 +360,7 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         }
         val now = System.currentTimeMillis()
         val memory = MemoryEntity(UUID.randomUUID().toString(), text, target.category.name, scope.name, actualProject,
-            sessionId, createdAt = now, updatedAt = now, section = section.name, agentId = owner, folder = target.folder, keywords = keywords)
+            sessionId, createdAt = now, updatedAt = now, section = section.name, agentId = owner, folder = target.folder, keywords = keywords, triggerOnly = triggerOnly)
         dao.upsertMemory(memory)
         trim()
         return WriteResult(memory, Action.SAVED)
@@ -338,9 +369,16 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
     private suspend fun checkedText(raw: String, summary: Boolean = false): String =
         MemoryText.checked(raw, settings.settings.first(), summary)
 
+    /** A trigger-only memory with no trigger words could never be supplied. */
+    private fun checkedTriggerOnly(triggerOnly: Boolean, keywords: String): Boolean {
+        require(!triggerOnly || keywords.isNotBlank()) { "Add at least one trigger word, or turn off \"Only when triggered\"." }
+        return triggerOnly
+    }
+
     suspend fun update(
         memory: MemoryEntity, text: String, category: MemoryCategory, scope: MemoryScope, projectId: String?,
         section: MemorySection = MemorySection.fromStored(memory.section), folder: String? = memory.folder, keywords: String = memory.keywords,
+        triggerOnly: Boolean = memory.triggerOnly,
     ) = db.withTransaction {
         val current = dao.memory(memory.id) ?: error("This memory was deleted.")
         check(current.updatedAt == memory.updatedAt && current.text == memory.text && current.consolidatedInto == null) { "This memory changed. Reopen it before saving." }
@@ -350,9 +388,10 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         check(dao.allMemories().none { it.id != memory.id && it.consolidatedInto == null && it.section == section.name && it.agentId == current.agentId &&
             it.scope == scope.name && it.projectId == actualProject && MemoryMatch.key(it.text) == MemoryMatch.key(clean) }) { "This memory already exists." }
         val words = MemoryKeywords.checked(keywords)
+        val gated = checkedTriggerOnly(triggerOnly, words)
         val target = ensure(MemoryFolderTarget(category, folder)).first
         dao.upsertMemory(current.copy(text = clean, category = target.category.name, scope = if (actualProject != null) "PROJECT" else "GLOBAL",
-            projectId = actualProject, section = section.name, folder = target.folder, keywords = words, updatedAt = System.currentTimeMillis()))
+            projectId = actualProject, section = section.name, folder = target.folder, keywords = words, triggerOnly = gated, updatedAt = System.currentTimeMillis()))
     }
 
     suspend fun consolidate(plan: MemoryConsolidation, reviewedText: String): MemoryEntity = db.withTransaction {
@@ -368,7 +407,8 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         val place = current.map { MemoryFolderTarget.of(it) }.distinct().singleOrNull() ?: MemoryFolderTarget(MemoryCategory.FACT, null)
         val summary = MemoryEntity(UUID.randomUUID().toString(), text, category = place.category.name, scope = plan.scope.name, projectId = plan.projectId,
             createdAt = now, updatedAt = now, pinned = current.any { it.pinned }, section = plan.section.name, isSummary = true, agentId = plan.agentId,
-            folder = place.folder, keywords = MemoryKeywords.parse(current.joinToString(",") { it.keywords }).take(MemoryKeywords.MAX_KEYWORDS).joinToString(", "))
+            folder = place.folder, keywords = MemoryKeywords.parse(current.joinToString(",") { it.keywords }).take(MemoryKeywords.MAX_KEYWORDS).joinToString(", "),
+            triggerOnly = current.all { it.triggerOnly && it.keywords.isNotBlank() })
         dao.upsertMemory(summary)
         dao.consolidateMemories(current.map { it.id }, summary.id)
         summary
@@ -418,14 +458,10 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
         val now = System.currentTimeMillis()
         db.withTransaction {
             // Reuse an existing folder's spelling so "termux" never sits beside "Termux".
-            val known = folderNames().toMutableList()
+            val known = folderNames()
+            MemoryBackupMerge.newFolders(plan, known, now).forEach { dao.insertMemoryFolder(it) }
             plan.forEach { entry ->
-                val folder = entry.folder?.let { name ->
-                    known.firstOrNull { MemoryFolders.same(it, name) } ?: name.also {
-                        known += it
-                        dao.insertMemoryFolder(MemoryFolderEntity(it, now))
-                    }
-                }
+                val folder = entry.folder?.let { name -> known.firstOrNull { MemoryFolders.same(it, name) } ?: name }
                 dao.upsertMemory(MemoryBackupMerge.entity(entry.copy(folder = folder), now))
             }
         }
@@ -434,12 +470,12 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
 
     suspend fun recallById(id: String, sessionId: String?, requestedSection: MemorySection? = null): MemoryEntity {
         check(isEnabled(sessionId)) { "Memory is off for this conversation." }
-        val owner = agentOwner(sessionId)
-        val from = sectionForSession(sessionId)
+        val viewer = viewer(sessionId)
+        val from = viewer.section
         val target = requestedSection ?: from
-        check(owner == null || target == MemorySection.CHAT) { "This agent only has access to its own memory." }
+        check(viewer.owner == null || target == MemorySection.CHAT) { "This agent only has access to its own memory." }
         check(MemoryAccess.canRecall(settings.settings.first(), from, target)) { "Memory lookup for that section is off in Settings > Memory." }
-        val entry = dao.activeMemories(projectIdForSession(sessionId)).firstOrNull { it.id == id && MemoryAccess.belongsTo(it, target, owner) }
+        val entry = dao.activeMemories(projectIdForSession(sessionId)).firstOrNull { it.id == id && viewer.sees(it, target) }
             ?: error("This memory is not available in this section/project. Recall current memories first.")
         dao.markMemoriesUsed(listOf(entry.id), System.currentTimeMillis())
         return entry
@@ -448,13 +484,13 @@ class MemoryRepository(private val db: AppDatabase, private val settings: Settin
     /** Explicit cross-section lookup is possible only when its switch is enabled. */
     suspend fun search(query: String, sessionId: String?, requestedSection: MemorySection? = null, folder: String? = null): List<MemoryEntity> {
         check(isEnabled(sessionId)) { "Memory is off for this conversation." }
-        val owner = agentOwner(sessionId)
-        val from = sectionForSession(sessionId)
+        val viewer = viewer(sessionId)
+        val from = viewer.section
         val target = requestedSection ?: from
-        check(owner == null || target == MemorySection.CHAT) { "This agent only has access to its own memory." }
+        check(viewer.owner == null || target == MemorySection.CHAT) { "This agent only has access to its own memory." }
         val prefs = settings.settings.first()
         check(MemoryAccess.canRecall(prefs, from, target)) { "Memory lookup for that section is off in Settings > Memory." }
-        val active = dao.activeMemories(projectIdForSession(sessionId)).filter { MemoryAccess.belongsTo(it, target, owner) }
+        val active = dao.activeMemories(projectIdForSession(sessionId)).filter { viewer.sees(it, target) }
         val inFolder = folder?.takeIf { it.isNotBlank() }?.let { name ->
             val builtIn = MemoryFolders.builtIn(name)
             active.filter { if (builtIn != null) it.folder == null && it.category == builtIn.name else MemoryFolders.same(it.folder, name) }

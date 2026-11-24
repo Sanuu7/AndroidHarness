@@ -1173,4 +1173,16 @@
     <string name="edit_message_add_photo">"사진 추가"</string>
     <string name="edit_message_add_file">"파일 추가"</string>
     <string name="edit_message_resend">"다시 보내기"</string>
+    <string name="memory_trigger_only_row">"조건: %1$s"</string>
+    <string name="memory_trigger_only">"트리거될 때만"</string>
+    <string name="memory_trigger_only_desc">"트리거 단어가 나오지 않으면 이 기억을 포함하지 않습니다."</string>
+    <string name="memory_dates">"생성 %1$s · 편집 %2$s"</string>
+    <string name="memory_folder_agents">"에이전트"</string>
+    <string name="memory_folder_agents_title">"'%1$s'을(를) 볼 수 있는 사람은?"</string>
+    <string name="memory_folder_agents_everyone">"모두"</string>
+    <string name="memory_folder_agents_only">"이 에이전트만"</string>
+    <string name="memory_folder_agents_note">"에이전트가 없는 채팅과 Code는 에이전트 전용 폴더를 볼 수 없습니다."</string>
+    <string name="memory_folder_agents_none">"아직 채팅 에이전트가 없습니다."</string>
+    <string name="memory_folder_agents_pick">"에이전트를 하나 이상 선택하세요."</string>
+    <string name="memory_folder_agents_row">"%1$s만 이 폴더를 볼 수 있습니다."</string>
 </resources>

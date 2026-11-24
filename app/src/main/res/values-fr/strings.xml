@@ -1185,4 +1185,16 @@
     <string name="edit_message_add_photo">"Ajouter une photo"</string>
     <string name="edit_message_add_file">"Ajouter un fichier"</string>
     <string name="edit_message_resend">"Renvoyer"</string>
+    <string name="memory_trigger_only_row">"Seulement si : %1$s"</string>
+    <string name="memory_trigger_only">"Seulement si déclenché"</string>
+    <string name="memory_trigger_only_desc">"Omettre ce souvenir sauf si l\'un de ses mots déclencheurs apparaît."</string>
+    <string name="memory_dates">"Créé %1$s · Modifié %2$s"</string>
+    <string name="memory_folder_agents">"Agents"</string>
+    <string name="memory_folder_agents_title">"Qui peut voir « %1$s » ?"</string>
+    <string name="memory_folder_agents_everyone">"Tout le monde"</string>
+    <string name="memory_folder_agents_only">"Seulement ces agents"</string>
+    <string name="memory_folder_agents_note">"Les chats sans agent et Code ne voient pas un dossier limité aux agents."</string>
+    <string name="memory_folder_agents_none">"Vous n\'avez pas encore d\'agents de chat."</string>
+    <string name="memory_folder_agents_pick">"Choisissez au moins un agent."</string>
+    <string name="memory_folder_agents_row">"Seuls %1$s peuvent voir ce dossier."</string>
 </resources>

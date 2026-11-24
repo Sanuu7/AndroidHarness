@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"Foto hinzufügen"</string>
     <string name="edit_message_add_file">"Datei hinzufügen"</string>
     <string name="edit_message_resend">"Erneut senden"</string>
+    <string name="memory_trigger_only_row">"Nur wenn: %1$s"</string>
+    <string name="memory_trigger_only">"Nur bei Auslösung"</string>
+    <string name="memory_trigger_only_desc">"Diese Erinnerung nur einbeziehen, wenn eines ihrer Auslösewörter vorkommt."</string>
+    <string name="memory_dates">"Erstellt %1$s · Bearbeitet %2$s"</string>
+    <string name="memory_folder_agents">"Agenten"</string>
+    <string name="memory_folder_agents_title">"Wer kann „%1$s“ sehen?"</string>
+    <string name="memory_folder_agents_everyone">"Alle"</string>
+    <string name="memory_folder_agents_only">"Nur diese Agenten"</string>
+    <string name="memory_folder_agents_note">"Chats ohne Agent und Code sehen keinen Ordner, der auf Agenten beschränkt ist."</string>
+    <string name="memory_folder_agents_none">"Du hast noch keine Chat-Agenten."</string>
+    <string name="memory_folder_agents_pick">"Wähle mindestens einen Agenten."</string>
+    <string name="memory_folder_agents_row">"Nur %1$s können diesen Ordner sehen."</string>
 </resources>

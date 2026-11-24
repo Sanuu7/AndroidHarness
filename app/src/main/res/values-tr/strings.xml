@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"Fotoğraf ekle"</string>
     <string name="edit_message_add_file">"Dosya ekle"</string>
     <string name="edit_message_resend">"Yeniden gönder"</string>
+    <string name="memory_trigger_only_row">"Yalnızca şu durumda: %1$s"</string>
+    <string name="memory_trigger_only">"Yalnızca tetiklendiğinde"</string>
+    <string name="memory_trigger_only_desc">"Tetikleyici kelimelerinden biri geçmedikçe bu anıyı dahil etme."</string>
+    <string name="memory_dates">"Oluşturuldu %1$s · Düzenlendi %2$s"</string>
+    <string name="memory_folder_agents">"Ajanlar"</string>
+    <string name="memory_folder_agents_title">"\"%1$s\" kimler görebilir?"</string>
+    <string name="memory_folder_agents_everyone">"Herkes"</string>
+    <string name="memory_folder_agents_only">"Yalnızca bu ajanlar"</string>
+    <string name="memory_folder_agents_note">"Ajanı olmayan sohbetler ve Code, ajanlarla sınırlı bir klasörü göremez."</string>
+    <string name="memory_folder_agents_none">"Henüz sohbet ajanınız yok."</string>
+    <string name="memory_folder_agents_pick">"En az bir ajan seçin."</string>
+    <string name="memory_folder_agents_row">"Bu klasörü yalnızca %1$s görebilir."</string>
 </resources>

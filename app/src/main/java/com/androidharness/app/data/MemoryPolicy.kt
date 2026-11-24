@@ -26,8 +26,21 @@ internal object MemoryAccess {
             MemorySection.SHARED -> false
         })
 
-    fun belongsTo(memory: MemoryEntity, section: MemorySection, agentId: String? = null): Boolean =
-        memory.agentId == agentId && (memory.section == section.name || memory.section == MemorySection.SHARED.name)
+    /**
+     * [owner] is the agent whose private memory is in use, [agent] the chat
+     * agent in the conversation whatever its memory mode. A folder limited to
+     * some agents ([folderAgents]) shows its shared memories only to them,
+     * even to an agent that otherwise keeps a private memory.
+     */
+    fun belongsTo(
+        memory: MemoryEntity, section: MemorySection, owner: String? = null,
+        agent: String? = owner, folderAgents: Map<String, Set<String>> = emptyMap(),
+    ): Boolean {
+        if (memory.section != section.name && memory.section != MemorySection.SHARED.name) return false
+        if (memory.agentId != null) return memory.agentId == owner
+        val allowed = MemoryFolderAgents.allowed(memory.folder, folderAgents) ?: return owner == null
+        return agent != null && agent in allowed
+    }
 }
 
 internal object MemoryMatch {

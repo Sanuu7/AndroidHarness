@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"புகைப்படம் சேர்"</string>
     <string name="edit_message_add_file">"கோப்பைச் சேர்"</string>
     <string name="edit_message_resend">"மீண்டும் அனுப்பு"</string>
+    <string name="memory_trigger_only_row">"எப்போது: %1$s"</string>
+    <string name="memory_trigger_only">"தூண்டப்படும்போது மட்டும்"</string>
+    <string name="memory_trigger_only_desc">"இதன் தூண்டல் சொற்களில் ஒன்று வராத வரை இந்த நினைவை சேர்க்க வேண்டாம்."</string>
+    <string name="memory_dates">"உருவாக்கம் %1$s · திருத்தம் %2$s"</string>
+    <string name="memory_folder_agents">"முகவர்கள்"</string>
+    <string name="memory_folder_agents_title">"\"%1$s\" யார் பார்க்கலாம்?"</string>
+    <string name="memory_folder_agents_everyone">"அனைவரும்"</string>
+    <string name="memory_folder_agents_only">"இந்த முகவர்கள் மட்டும்"</string>
+    <string name="memory_folder_agents_note">"முகவர் இல்லாத அரட்டைகளும் Code-உம் முகவர்களுக்கு மட்டும் என்ற கோப்புறையைப் பார்க்க முடியாது."</string>
+    <string name="memory_folder_agents_none">"உங்களிடம் இன்னும் அரட்டை முகவர்கள் இல்லை."</string>
+    <string name="memory_folder_agents_pick">"குறைந்தது ஒரு முகவரைத் தேர்ந்தெடுக்கவும்."</string>
+    <string name="memory_folder_agents_row">"%1$s மட்டுமே இந்தக் கோப்புறையைப் பார்க்கலாம்."</string>
 </resources>

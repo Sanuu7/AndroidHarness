@@ -22,7 +22,8 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
             "or long code. Use recall first when you may be repeating or correcting an existing memory. " +
             "Memories live in folders: the built-in profile, preference, project, decision and fact folders, or a folder you name. " +
             "Name a new folder only when a topic keeps coming up (for example \"Lease 2027\"); it is created and the user can rename or delete it. " +
-            "Add keywords when a fact matters only around certain words, so it is supplied whenever they come up."
+            "Add keywords when a fact matters only around certain words, so it is supplied whenever they come up. " +
+            "Set trigger_only as well when the fact is useless otherwise, such as background lore, so it stays out of the prompt until a keyword comes up."
     override val parametersSchema = Schema.obj(
         mapOf(
             "memory_id" to Schema.string("Existing memory ID to update. Omit only for a new fact."),
@@ -43,6 +44,10 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
             "keywords" to Schema.string(
                 "Optional comma-separated trigger words or short phrases (at most 12). When one appears in the recent messages, " +
                     "this memory is supplied ahead of others. When updating, the list replaces the old one; pass an empty string to clear it.",
+            ),
+            "trigger_only" to Schema.boolean(
+                "When true, the memory is supplied only when one of its keywords appears in the recent messages. Needs keywords. " +
+                    "recall still finds it. Omit when updating to keep the current setting.",
             ),
         ),
         required = listOf("text"),
@@ -70,7 +75,8 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
                 previousText = args["previous_text"]?.jsonPrimitive?.content,
                 allowSimilar = args["allow_similar"]?.jsonPrimitive?.content?.toBooleanStrictOrNull() == true,
                 folder = folder,
-                keywords = args["keywords"]?.jsonPrimitive?.content)
+                keywords = args["keywords"]?.jsonPrimitive?.content,
+                triggerOnly = args["trigger_only"]?.jsonPrimitive?.content?.toBooleanStrictOrNull())
         } catch (e: IllegalArgumentException) { throw ToolFailure(e.message ?: "Could not save memory.") }
           catch (e: IllegalStateException) { throw ToolFailure(e.message ?: "Could not save memory.") }
         val action = result.action.name.lowercase()
@@ -81,6 +87,7 @@ class RememberTool(private val memory: MemoryRepository) : Tool {
         } + (result.createdFolder?.let { "\nCreated folder \"$it\". Tell the user, since it shows in Settings > Memory." } ?: "") +
             "\n[memory_id:${result.memory.id}]\n[folder:${com.androidharness.app.data.MemoryFolders.label(result.memory)}]" +
             (if (result.memory.keywords.isNotBlank()) "\n[keywords:${result.memory.keywords}]" else "") +
+            (if (result.memory.triggerOnly) "\n[trigger_only:true]" else "") +
             "\n[memory_action:$action]")
 
     }
@@ -136,7 +143,7 @@ class RecallTool(private val memory: MemoryRepository) : Tool {
                 .take(12).joinToString("\n").take(4_000)
                 else com.androidharness.app.data.MemoryText.excerpt(entry.text, 4_000, query)
             val partial = entry.isSummary || text != entry.text
-            val triggers = if (entry.keywords.isNotBlank()) "; keywords: ${entry.keywords}" else ""
+            val triggers = if (entry.keywords.isBlank()) "" else if (entry.triggerOnly) "; only when: ${entry.keywords}" else "; keywords: ${entry.keywords}"
             val line = "- [id:${entry.id} ${entry.section.lowercase()}/$scope/${com.androidharness.app.data.MemoryFolders.label(entry)}${if (entry.isSummary) "/digest" else ""}$triggers${if (partial) "; recall(memory_id) for full text" else ""}] $text\n"
             if (output.length + line.length > 10_000) {
                 output.append("More matches are available; refine your query.\n")

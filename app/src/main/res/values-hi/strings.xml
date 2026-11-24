@@ -1179,4 +1179,16 @@
     <string name="edit_message_add_photo">"फ़ोटो जोड़ें"</string>
     <string name="edit_message_add_file">"फ़ाइल जोड़ें"</string>
     <string name="edit_message_resend">"दोबारा भेजें"</string>
+    <string name="memory_trigger_only_row">"केवल जब: %1$s"</string>
+    <string name="memory_trigger_only">"केवल ट्रिगर होने पर"</string>
+    <string name="memory_trigger_only_desc">"इस मेमोरी को शामिल न करें जब तक इसका कोई ट्रिगर शब्द न आए।"</string>
+    <string name="memory_dates">"बनाया %1$s · संपादित %2$s"</string>
+    <string name="memory_folder_agents">"एजेंट"</string>
+    <string name="memory_folder_agents_title">"\"%1$s\" कौन देख सकता है?"</string>
+    <string name="memory_folder_agents_everyone">"सभी"</string>
+    <string name="memory_folder_agents_only">"केवल ये एजेंट"</string>
+    <string name="memory_folder_agents_note">"बिना एजेंट वाली चैट और Code एजेंट-सीमित फ़ोल्डर नहीं देख सकते।"</string>
+    <string name="memory_folder_agents_none">"आपके पास अभी कोई चैट एजेंट नहीं है।"</string>
+    <string name="memory_folder_agents_pick">"कम से कम एक एजेंट चुनें।"</string>
+    <string name="memory_folder_agents_row">"इस फ़ोल्डर को केवल %1$s देख सकते हैं।"</string>
 </resources>

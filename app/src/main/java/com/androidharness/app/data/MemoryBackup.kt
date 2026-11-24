@@ -1,6 +1,7 @@
 package com.androidharness.app.data
 
 import com.androidharness.app.data.db.MemoryEntity
+import com.androidharness.app.data.db.MemoryFolderEntity
 import com.androidharness.app.data.db.SnippetEntity
 import kotlinx.serialization.Serializable
 
@@ -25,13 +26,22 @@ data class BackupMemory(
     val agentId: String? = null,
     val folder: String? = null,
     val keywords: String = "",
+    val triggerOnly: Boolean = false,
+    /** The chat agents allowed into [folder] when the backup was made; empty means everyone. */
+    val folderAgents: String = "",
 )
 
 /** A saved prompt snippet, the chat's custom slash commands. */
 @Serializable
 data class BackupSnippet(val id: String, val name: String, val body: String)
 
-internal fun MemoryEntity.toBackupMemory(): BackupMemory = BackupMemory(
+/** Backup form of every memory, each carrying its folder's agent limit. */
+internal fun List<MemoryEntity>.toBackupMemories(folders: List<MemoryFolderEntity>): List<BackupMemory> {
+    val limits = MemoryFolderAgents.of(folders)
+    return map { it.toBackupMemory(MemoryFolderAgents.allowed(it.folder, limits)?.let(MemoryFolderAgents::encode).orEmpty()) }
+}
+
+internal fun MemoryEntity.toBackupMemory(folderAgents: String = ""): BackupMemory = BackupMemory(
     id = id,
     text = text,
     category = category,
@@ -50,6 +60,8 @@ internal fun MemoryEntity.toBackupMemory(): BackupMemory = BackupMemory(
     agentId = agentId,
     folder = folder,
     keywords = keywords,
+    triggerOnly = triggerOnly,
+    folderAgents = folderAgents,
 )
 
 internal fun SnippetEntity.toBackupSnippet(): BackupSnippet = BackupSnippet(id, name, body)
@@ -91,6 +103,8 @@ internal object MemoryBackupMerge {
         // A folder name that is invalid here, or that names a built-in folder, falls back to the category.
         val place = runCatching { MemoryFolders.target(entry.folder, MemoryCategory.fromStored(entry.category)) }
             .getOrDefault(MemoryFolderTarget(MemoryCategory.fromStored(entry.category), null))
+        val keywords = MemoryKeywords.parse(entry.keywords).filter { it.length <= MemoryKeywords.MAX_KEYWORD }
+            .take(MemoryKeywords.MAX_KEYWORDS).joinToString(", ")
         val scope = if (entry.scope == MemoryScope.PROJECT.name && projectId != null) {
             MemoryScope.PROJECT.name
         } else MemoryScope.GLOBAL.name
@@ -98,8 +112,10 @@ internal object MemoryBackupMerge {
             text = text,
             category = place.category.name,
             folder = place.folder,
-            keywords = MemoryKeywords.parse(entry.keywords).filter { it.length <= MemoryKeywords.MAX_KEYWORD }
-                .take(MemoryKeywords.MAX_KEYWORDS).joinToString(", "),
+            keywords = keywords,
+            // Without trigger words a trigger-only memory could never be supplied.
+            triggerOnly = entry.triggerOnly && keywords.isNotEmpty(),
+            folderAgents = MemoryFolderAgents.encode(MemoryFolderAgents.parse(entry.folderAgents).filter { it.length <= 100 }).takeIf { place.folder != null }.orEmpty(),
             scope = scope,
             projectId = projectId.takeIf { scope == MemoryScope.PROJECT.name },
             section = MemorySection.fromStored(entry.section).name,
@@ -127,7 +143,21 @@ internal object MemoryBackupMerge {
         agentId = entry.agentId,
         folder = entry.folder,
         keywords = entry.keywords,
+        triggerOnly = entry.triggerOnly,
     )
+
+    /**
+     * Folder rows for the folders a restore brings in that this device does
+     * not have yet, keeping the agent limit each had. Folders already here
+     * keep their own setting.
+     */
+    fun newFolders(plan: List<BackupMemory>, known: Collection<String>, now: Long = System.currentTimeMillis()): List<MemoryFolderEntity> {
+        val seen = known.mapTo(mutableSetOf()) { MemoryMatch.key(it) }
+        return plan.filter { it.folder != null }.mapNotNull { entry ->
+            val name = entry.folder ?: return@mapNotNull null
+            if (!seen.add(MemoryMatch.key(name))) null else MemoryFolderEntity(name, now, entry.folderAgents)
+        }
+    }
 
     private fun key(text: String, scope: String, projectId: String?, section: String, parent: String?, summary: Boolean, agentId: String?): String =
         MemoryMatch.key(text) + "\u0000" + scope + "\u0000" + projectId.orEmpty() + "\u0000" + section + "\u0000" + parent.orEmpty() + "\u0000" + summary + "\u0000" + agentId.orEmpty()

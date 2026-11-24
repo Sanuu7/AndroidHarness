@@ -1173,4 +1173,16 @@
     <string name="edit_message_add_photo">"Tambah foto"</string>
     <string name="edit_message_add_file">"Tambah file"</string>
     <string name="edit_message_resend">"Kirim ulang"</string>
+    <string name="memory_trigger_only_row">"Hanya saat: %1$s"</string>
+    <string name="memory_trigger_only">"Hanya saat dipicu"</string>
+    <string name="memory_trigger_only_desc">"Lewatkan memori ini kecuali salah satu kata pemicunya muncul."</string>
+    <string name="memory_dates">"Dibuat %1$s · Diedit %2$s"</string>
+    <string name="memory_folder_agents">"Agen"</string>
+    <string name="memory_folder_agents_title">"Siapa yang bisa melihat \"%1$s\"?"</string>
+    <string name="memory_folder_agents_everyone">"Semua orang"</string>
+    <string name="memory_folder_agents_only">"Hanya agen ini"</string>
+    <string name="memory_folder_agents_note">"Obrolan tanpa agen dan Code tidak bisa melihat folder yang dibatasi untuk agen."</string>
+    <string name="memory_folder_agents_none">"Anda belum memiliki agen obrolan."</string>
+    <string name="memory_folder_agents_pick">"Pilih setidaknya satu agen."</string>
+    <string name="memory_folder_agents_row">"Hanya %1$s yang bisa melihat folder ini."</string>
 </resources>

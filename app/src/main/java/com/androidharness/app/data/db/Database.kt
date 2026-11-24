@@ -159,6 +159,8 @@ data class MemoryEntity(
     val folder: String? = null,
     /** Comma-separated trigger words; a hit in the recent messages ranks this memory first after pinned ones. */
     @ColumnInfo(defaultValue = "''") val keywords: String = "",
+    /** When true the memory enters the prompt only if one of its [keywords] comes up. Recall still finds it. */
+    @ColumnInfo(defaultValue = "0") val triggerOnly: Boolean = false,
 )
 
 /** Folders exist on their own so an empty one survives until the user deletes it. */
@@ -166,6 +168,8 @@ data class MemoryEntity(
 data class MemoryFolderEntity(
     @PrimaryKey val name: String,
     val createdAt: Long,
+    /** Comma-separated chat agent ids allowed to see this folder; empty means everyone. */
+    @ColumnInfo(defaultValue = "''") val agentIds: String = "",
 )
 
 @Entity(tableName = "checkpoints", indices = [Index("sessionId")])
@@ -856,6 +860,9 @@ interface HarnessDao {
     @Query("DELETE FROM memory_folders WHERE name = :name")
     suspend fun deleteMemoryFolder(name: String)
 
+    @Query("UPDATE memory_folders SET agentIds = :agentIds WHERE name = :name")
+    suspend fun setMemoryFolderAgents(name: String, agentIds: String)
+
     @Query("UPDATE memories SET folder = :folder, updatedAt = :now WHERE folder = :old")
     suspend fun renameMemoryFolder(old: String, folder: String, now: Long)
 
@@ -894,13 +901,19 @@ interface HarnessDao {
         ChatAnswerVersionEntity::class,
         SavedAnswerEntity::class,
     ],
-    version = 28,
+    version = 29,
     exportSchema = false,
 )
 abstract class AppDatabase : RoomDatabase() {
     abstract fun dao(): HarnessDao
 
     companion object {
+        val MIGRATION_28_29 = object : androidx.room.migration.Migration(28, 29) {
+            override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
+                db.execSQL("ALTER TABLE memories ADD COLUMN triggerOnly INTEGER NOT NULL DEFAULT 0")
+                db.execSQL("ALTER TABLE memory_folders ADD COLUMN agentIds TEXT NOT NULL DEFAULT ''")
+            }
+        }
         val MIGRATION_27_28 = object : androidx.room.migration.Migration(27, 28) {
             override fun migrate(db: androidx.sqlite.db.SupportSQLiteDatabase) {
                 db.execSQL("ALTER TABLE memories ADD COLUMN folder TEXT")

@@ -1,6 +1,7 @@
 package com.androidharness.app.data
 
 import com.androidharness.app.data.db.MemoryEntity
+import com.androidharness.app.data.db.MemoryFolderEntity
 import kotlin.math.ln
 import kotlin.math.pow
 
@@ -52,6 +53,20 @@ internal object MemoryFolders {
 
     /** The folder name the agent sees in prompts and recall results. */
     fun label(memory: MemoryEntity): String = memory.folder ?: memory.category.lowercase()
+}
+
+/** Which chat agents may see a folder. No entry means everyone. */
+internal object MemoryFolderAgents {
+    fun parse(raw: String?): Set<String> = raw.orEmpty().split(',').map { it.trim() }.filter { it.isNotEmpty() }.toSet()
+
+    fun encode(ids: Collection<String>): String = ids.map { it.trim() }.filter { it.isNotEmpty() }.distinct().sorted().joinToString(",")
+
+    /** Limited folders by case-insensitive name. */
+    fun of(rows: List<MemoryFolderEntity>): Map<String, Set<String>> =
+        rows.mapNotNull { row -> parse(row.agentIds).takeIf { it.isNotEmpty() }?.let { MemoryMatch.key(row.name) to it } }.toMap()
+
+    /** The agents allowed into [folder], or null when the folder is open to everyone. */
+    fun allowed(folder: String?, limits: Map<String, Set<String>>): Set<String>? = folder?.let { limits[MemoryMatch.key(it)] }
 }
 
 internal object MemoryKeywords {
