@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"مدیریت استفاده"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"نشانه‌های استدلال و تفکر به عنوان خروجی صورت‌حساب می‌شوند و مجدداً به عنوان ورودی ارسال نمی‌شوند."</string>
     <string name="ui_scheduled_messages">"پیام های برنامه ریزی شده"</string>
-    <string name="ui_allow_workspace_mcp_servers">"به سرورهای MCP فضای کاری اجازه داده می شود؟"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"این فضای کاری یک .harness/mcp.json ارسال می کند که می خواهد به آن متصل شود: %1$s."</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"سرورهای آن می توانند دستورات محلی را اجرا کنند و به شبکه دسترسی پیدا کنند."</string>
-    <string name="ui_only_approve_configs_you_trust">"فقط تنظیماتی را که به آنها اعتماد دارید تأیید کنید."</string>
     <string name="ui_approve">"تأیید کنید"</string>
-    <string name="ui_run_without_them">"بدون آنها بدوید"</string>
     <string name="ui_two_models_one_for_planning_one_for">"دو مدل، یکی برای برنامه ریزی، یکی برای انجام"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"اکنون می توانید دو مدل را جداگانه پیکربندی کنید: یکی برای حالت برنامه ریزی،"</string>
     <string name="ui_and_one_that_takes_over_once_you">"و یکی که پس از تأیید طرح و شروع اجرا، مسئولیت را بر عهده می گیرد."</string>

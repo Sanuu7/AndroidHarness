@@ -491,12 +491,7 @@
     <string name="ui_manage_usage">"Управление использованием"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Токены размышления оплачиваются как выходные и не отправляются повторно на вход."</string>
     <string name="ui_scheduled_messages">"Запланированные сообщения"</string>
-    <string name="ui_allow_workspace_mcp_servers">"Разрешить MCP-серверы рабочей области?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"Рабочая область содержит .harness/mcp.json с запросом подключения: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Его серверы могут выполнять локальные команды и обращаться к сети. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Разрешайте только доверенные конфигурации."</string>
     <string name="ui_approve">"Разрешить"</string>
-    <string name="ui_run_without_them">"Запустить без них"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Две модели: одна планирует, другая выполняет"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"Теперь можно настроить две модели: одну для планирования "</string>
     <string name="ui_and_one_that_takes_over_once_you">"и другую для работы после одобрения плана и начала выполнения."</string>

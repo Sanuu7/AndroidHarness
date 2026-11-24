@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"ابزارهای این فضای کاری مجاز باشند؟"</string>
+    <string name="trust_dialog_body">"این فضای کاری سرورها و افزونه‌هایی دارد که می‌توانند روی دستگاه شما فرمان اجرا کنند و به شبکه دسترسی داشته باشند. فقط موارد مورد اعتماد را مجاز کنید."</string>
+    <string name="trust_dialog_unticked">"موارد تیک‌نخورده اجرا نمی‌شوند و تا وقتی تغییر نکنند دوباره نمی‌پرسند. همه این‌ها را می‌توانید در تنظیمات پیکربندی تغییر دهید."</string>
+    <string name="trust_dialog_trust_all">"اعتماد به همه چیز در این فضای کاری"</string>
+    <string name="trust_dialog_trust_all_hint">"هر چیزی که بعداً اضافه شود، مثلاً پس از git pull، بدون پرسش اجرا می‌شود. برای کارهای زمان‌بندی‌شده در پروژه خودتان مناسب است."</string>
+    <string name="trust_continue">"ادامه"</string>
+    <string name="trust_not_now">"الآن نه"</string>
+    <string name="trust_kind_server">"سرور MCP"</string>
+    <string name="trust_kind_plugin">"افزونه"</string>
+    <string name="trust_kind_language_server">"سرور زبان"</string>
+    <string name="trust_kind_bin">"پوشه فرمان‌های افزونه"</string>
+    <string name="trust_state_new">"جدید"</string>
+    <string name="trust_state_changed">"از آخرین پاسخ شما تغییر کرده"</string>
+    <string name="trust_state_approved">"مجاز"</string>
+    <string name="trust_state_declined">"غیرمجاز"</string>
+    <string name="trust_state_blocked">"با تنظیم این فضای کاری مسدود شده"</string>
+    <string name="trust_panel_title">"ابزارهای پروژه"</string>
+    <string name="trust_panel_hint">"سرورها و افزونه‌ها می‌توانند فرمان اجرا کنند و با سرویس‌ها تماس بگیرند. ویرایش دستورها یا مستندات دیگر نمی‌پرسد، فقط تغییرات چیزی که واقعاً اجرا می‌شود."</string>
+    <string name="trust_mode_title">"زمان اجرای مجاز"</string>
+    <string name="trust_mode_ask_changes">"پرسیدن درباره ابزارهای جدید و تغییرکرده"</string>
+    <string name="trust_mode_ask_changes_hint">"امن‌ترین. ویرایش سرور یا افزونه مجاز دوباره می‌پرسد."</string>
+    <string name="trust_mode_ask_new">"فقط درباره ابزارهای جدید بپرس"</string>
+    <string name="trust_mode_ask_new_hint">"ابزارهای مجاز پس از تغییر هم اجرا می‌شوند. مناسب پروژه‌هایی که خودتان ویرایش می‌کنید."</string>
+    <string name="trust_mode_trust_all">"اعتماد به همه"</string>
+    <string name="trust_mode_trust_all_hint">"هیچ چیزی نمی‌پرسد. هر چیزی که این فضای کاری اضافه کند فوراً اجرا می‌شود، حتی پس از git pull."</string>
+    <string name="trust_mode_block_all">"هرگز اجرا نشوند"</string>
+    <string name="trust_mode_block_all_hint">"سرورها و افزونه‌های این فضای کاری هرگز اجرا نمی‌شوند و چیزی نمی‌پرسد. سرورهای سراسری شما همچنان کار می‌کنند."</string>
+    <string name="trust_items_title">"سرورها و افزونه‌ها"</string>
+    <string name="trust_items_hint">"یکی را روشن کنید تا اجازه اجرا بگیرد. خاموش کردن پاسخ شما را به یاد می‌آورد، پس تا تغییر نکند دوباره نمی‌پرسد."</string>
+    <string name="trust_items_mode_note">"تنظیم شما در بالا الان برای همه موارد تصمیم می‌گیرد. پاسخ‌های اینجا با بازگشت به حالت پرسیدن دوباره اعمال می‌شوند."</string>
+    <string name="trust_allow_all">"اجازه به همه"</string>
+    <string name="trust_forget">"فراموش کردن پاسخ‌های من"</string>
+    <string name="trust_changed_reload">"پیکربندی تغییر کرد. پیش از اجازه دادن دوباره بررسی کنید."</string>
+    <string name="trust_needs_approval">"ابزارهای پروژه به تأیید نیاز دارند: %1$s. این گفتگو را باز کنید تا مجاز شوند، یا در تنظیمات پیکربندی نحوه اعتماد این فضای کاری به ابزارهایش را انتخاب کنید."</string>
+</resources>

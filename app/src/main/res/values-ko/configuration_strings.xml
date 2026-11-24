@@ -27,10 +27,6 @@
     <string name="config_sources">"구성 소스"</string>
     <string name="config_default">"기본값"</string>
     <string name="config_warnings">"공지사항"</string>
-    <string name="config_project_tools">"프로젝트 도구 및 플러그인"</string>
-    <string name="config_trust_hint">"승인하기 전에 이 구성을 검토하세요. MCP 서버는 명령을 실행하거나 서비스에 접속할 수 있습니다. 플러그인 후크는 격리된 JavaScript 프로세스에서 실행됩니다. 변경하려면 새로운 승인이 필요합니다."</string>
-    <string name="config_approved">"이 작업공간에 대해 승인됨"</string>
-    <string name="config_approve">"이 구성을 승인하세요."</string>
     <string name="config_folders">"연결된 폴더"</string>
     <string name="config_folders_hint">"@name/path.를 사용하여 지침, 참조 또는 기술을 읽으려면 추가 폴더를 연결하십시오. 이는 에이전트 도구에 추가 파일 액세스 권한을 부여하지 않습니다."</string>
     <string name="config_add_folder">"폴더 연결"</string>

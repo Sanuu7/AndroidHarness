@@ -27,10 +27,6 @@
     <string name="config_sources">構成の読み込み元</string>
     <string name="config_default">既定</string>
     <string name="config_warnings">通知</string>
-    <string name="config_project_tools">プロジェクトのツールとプラグイン</string>
-    <string name="config_trust_hint">承認する前に構成を確認してください。MCP サーバーはコマンドを実行したりサービスに接続したりできます。プラグインのフックは分離された JavaScript プロセスで動きます。変更後は再承認が必要です。</string>
-    <string name="config_approved">このワークスペースで承認済み</string>
-    <string name="config_approve">この構成を承認</string>
     <string name="config_folders">接続済みフォルダー</string>
     <string name="config_folders_hint">追加フォルダーを接続し、@name/path で指示、参考資料、スキルを読み込みます。エージェントツールのファイルアクセス権は拡張されません。</string>
     <string name="config_add_folder">フォルダーを接続</string>

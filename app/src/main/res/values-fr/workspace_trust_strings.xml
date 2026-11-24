@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"Autoriser les outils de cet espace de travail ?"</string>
+    <string name="trust_dialog_body">"Cet espace de travail contient des serveurs et plugins qui peuvent exécuter des commandes sur votre appareil et accéder au réseau. N\'autorisez que ceux en lesquels vous avez confiance."</string>
+    <string name="trust_dialog_unticked">"Les éléments non cochés ne s\'exécuteront pas et ne redemanderont rien tant qu\'ils ne changent pas. Tout cela se règle dans les paramètres de Configuration."</string>
+    <string name="trust_dialog_trust_all">"Faire confiance à tout dans cet espace de travail"</string>
+    <string name="trust_dialog_trust_all_hint">"Tout ce qu\'il ajoute ensuite, par exemple après un git pull, s\'exécute sans demander. Pratique pour les tâches planifiées d\'un projet qui vous appartient."</string>
+    <string name="trust_continue">"Continuer"</string>
+    <string name="trust_not_now">"Pas maintenant"</string>
+    <string name="trust_kind_server">"Serveur MCP"</string>
+    <string name="trust_kind_plugin">"Plugin"</string>
+    <string name="trust_kind_language_server">"Serveur de langage"</string>
+    <string name="trust_kind_bin">"Dossier de commandes du plugin"</string>
+    <string name="trust_state_new">"Nouveau"</string>
+    <string name="trust_state_changed">"Modifié depuis votre dernière réponse"</string>
+    <string name="trust_state_approved">"Autorisé"</string>
+    <string name="trust_state_declined">"Non autorisé"</string>
+    <string name="trust_state_blocked">"Bloqué par le réglage de cet espace de travail"</string>
+    <string name="trust_panel_title">"Outils du projet"</string>
+    <string name="trust_panel_hint">"Les serveurs et plugins peuvent exécuter des commandes et contacter des services. Modifier les instructions ou la documentation ne redemande jamais, seuls les changements de ce qui s\'exécute le font."</string>
+    <string name="trust_mode_title">"Quand ils peuvent s\'exécuter"</string>
+    <string name="trust_mode_ask_changes">"Demander pour les outils nouveaux et modifiés"</string>
+    <string name="trust_mode_ask_changes_hint">"Le plus sûr. Modifier un serveur ou plugin autorisé redemande."</string>
+    <string name="trust_mode_ask_new">"Demander uniquement pour les nouveaux outils"</string>
+    <string name="trust_mode_ask_new_hint">"Les outils autorisés continuent de s\'exécuter après modification. Bien pour les projets que vous modifiez vous-même."</string>
+    <string name="trust_mode_trust_all">"Tout faire confiance"</string>
+    <string name="trust_mode_trust_all_hint">"Rien ne demande. Tout ce que cet espace de travail ajoute s\'exécute aussitôt, même après un git pull."</string>
+    <string name="trust_mode_block_all">"Ne jamais les exécuter"</string>
+    <string name="trust_mode_block_all_hint">"Les serveurs et plugins de cet espace de travail ne s\'exécutent jamais et rien ne demande. Vos serveurs globaux fonctionnent toujours."</string>
+    <string name="trust_items_title">"Serveurs et plugins"</string>
+    <string name="trust_items_hint">"Activez-en un pour le laisser s\'exécuter. Le désactiver retient votre réponse, il ne redemandera qu\'après un changement."</string>
+    <string name="trust_items_mode_note">"Votre réglage ci-dessus décide de tout pour l\'instant. Vos réponses reviennent si vous revenez au mode qui demande."</string>
+    <string name="trust_allow_all">"Tout autoriser"</string>
+    <string name="trust_forget">"Oublier mes réponses"</string>
+    <string name="trust_changed_reload">"La configuration a changé. Vérifiez-la à nouveau avant d\'autoriser quoi que ce soit."</string>
+    <string name="trust_needs_approval">"Les outils du projet doivent être approuvés : %1$s. Ouvrez ce chat pour les autoriser, ou choisissez comment cet espace de travail fait confiance à ses outils dans les paramètres de Configuration."</string>
+</resources>

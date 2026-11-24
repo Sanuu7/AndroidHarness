@@ -27,10 +27,6 @@
     <string name="config_sources">"Yapılandırma kaynakları"</string>
     <string name="config_default">"varsayılan"</string>
     <string name="config_warnings">"Bildirimler"</string>
-    <string name="config_project_tools">"Proje araçları ve eklentileri"</string>
-    <string name="config_trust_hint">"Onaylamadan önce bu yapılandırmayı inceleyin. MCP sunucuları komutları çalıştırabilir veya hizmetlerle iletişim kurabilir. Eklenti kancaları yalıtılmış bir JavaScript işleminde çalışır. Değişiklikler yeni bir onay gerektirir."</string>
-    <string name="config_approved">"Bu çalışma alanı için onaylandı"</string>
-    <string name="config_approve">"Bu yapılandırmayı onayla"</string>
     <string name="config_folders">"Bağlı klasörler"</string>
     <string name="config_folders_hint">"@name/path. kullanarak talimatları, referansları veya becerileri okumak için fazladan bir klasör bağlayın. Bu, ajan araçlarına ek dosya erişimi vermez."</string>
     <string name="config_add_folder">"Bir klasörü bağlama"</string>

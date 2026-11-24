@@ -672,9 +672,12 @@ class RunManager(
                     }
                 }
                 val repoMapOn = runCatching { settings.settings.first().repoMapEnabled }.getOrDefault(true)
-                val projectConfiguration = if (conversation.isChat) com.androidharness.app.config.HarnessConfig() else
+                val loadedConfiguration = if (conversation.isChat) com.androidharness.app.config.HarnessConfig() else
                     kotlinx.coroutines.withContext(Dispatchers.IO) { mcp?.configuration(runWorkspace) ?: engine.configuration(runWorkspace) }
-                val projectToolsApproved = conversation.isChat || mcp?.isWorkspaceApproved(runWorkspace, projectConfiguration) == true
+                // Only the plugins and plugin tools this workspace trusts reach the run; activeTools checks servers itself.
+                val projectConfiguration = if (conversation.isChat || mcp == null) loadedConfiguration else
+                    kotlinx.coroutines.withContext(Dispatchers.IO) { mcp.approvedConfiguration(runWorkspace, loadedConfiguration) }
+                val projectToolsApproved = conversation.isChat || mcp != null
                 engine.run(
                     sessionId = sid,
                     turnId = turnId,
@@ -703,7 +706,7 @@ class RunManager(
                     maxIterations = maxIterations,
                     // Connected MCP servers ride into this run; a failing
                     // server must never block the run itself.
-                    extraTools = if (conversation.isChat || runWorkspace is ChatWorkspaceFs) emptyList() else mcp?.activeTools(runWorkspace, projectConfiguration, settings.settings.first().permissionMode, "$sid:$turnId").orEmpty(),
+                    extraTools = if (conversation.isChat || runWorkspace is ChatWorkspaceFs) emptyList() else mcp?.activeTools(runWorkspace, loadedConfiguration, settings.settings.first().permissionMode, "$sid:$turnId").orEmpty(),
                     projectConfiguration = projectConfiguration,
                     pluginsApproved = projectToolsApproved,
                     resolveSubagentModel = modelResolver::resolve,

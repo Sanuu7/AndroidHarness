@@ -27,10 +27,6 @@
     <string name="config_sources">منابع پیکربندی</string>
     <string name="config_default">پیش‌فرض</string>
     <string name="config_warnings">اعلان‌ها</string>
-    <string name="config_project_tools">ابزارها و افزونه‌های پروژه</string>
-    <string name="config_trust_hint">پیش از تأیید، پیکربندی را بررسی کنید. سرورهای MCP می‌توانند فرمان اجرا کنند یا به سرویس‌ها وصل شوند. هوک‌های افزونه در فرایند جداشده JavaScript اجرا می‌شوند. تغییرات به تأیید دوباره نیاز دارند.</string>
-    <string name="config_approved">برای این فضای کاری تأیید شده</string>
-    <string name="config_approve">تأیید این پیکربندی</string>
     <string name="config_folders">پوشه‌های متصل</string>
     <string name="config_folders_hint">پوشه‌ای دیگر را برای خواندن دستورالعمل، منابع یا مهارت‌ها با @name/path وصل کنید. این کار دسترسی فایل ابزارهای عامل را گسترش نمی‌دهد.</string>
     <string name="config_add_folder">اتصال پوشه</string>

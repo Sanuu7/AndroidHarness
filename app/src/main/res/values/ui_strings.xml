@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"Manage usage"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Reasoning and thinking tokens are billed as output and are not re-sent as input."</string>
     <string name="ui_scheduled_messages">"Scheduled messages"</string>
-    <string name="ui_allow_workspace_mcp_servers">"Allow workspace MCP servers?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"This workspace ships a .harness/mcp.json that wants to connect: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Its servers can run local commands and reach the network. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Only approve configs you trust."</string>
     <string name="ui_approve">"Approve"</string>
-    <string name="ui_run_without_them">"Run without them"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Two models, one for planning, one for doing"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"You can now configure two models separately: one for planning mode, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"and one that takes over once you approve the plan and execution starts."</string>

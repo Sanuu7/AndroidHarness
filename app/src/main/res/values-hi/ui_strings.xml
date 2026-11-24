@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"उपयोग प्रबंधित करें"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"तर्क और सोच के टोकन को आउटपुट के रूप में बिल किया जाता है और इनपुट के रूप में दोबारा नहीं भेजा जाता है।"</string>
     <string name="ui_scheduled_messages">"अनुसूचित संदेश"</string>
-    <string name="ui_allow_workspace_mcp_servers">"कार्यस्थान MCP सर्वर की अनुमति दें?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"यह कार्यक्षेत्र एक .harness/mcp.json शिप करता है जो कनेक्ट करना चाहता है: %1$s। "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"इसके सर्वर स्थानीय कमांड चला सकते हैं और नेटवर्क तक पहुंच सकते हैं। "</string>
-    <string name="ui_only_approve_configs_you_trust">"केवल उन्हीं कॉन्फ़िगरेशन को स्वीकृत करें जिन पर आपको भरोसा है।"</string>
     <string name="ui_approve">"स्वीकृत करें"</string>
-    <string name="ui_run_without_them">"उनके बिना भागो"</string>
     <string name="ui_two_models_one_for_planning_one_for">"दो मॉडल, एक योजना बनाने के लिए, एक करने के लिए"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"अब आप दो मॉडलों को अलग-अलग कॉन्फ़िगर कर सकते हैं: एक योजना मोड के लिए, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"और वह जो आपके द्वारा योजना को मंजूरी मिलने और कार्यान्वयन शुरू होने के बाद कार्यभार संभाल लेता है।"</string>

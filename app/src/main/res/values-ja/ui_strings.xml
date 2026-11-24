@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"使用量を管理"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"推論・思考トークンは出力として課金され、入力として再送されません。"</string>
     <string name="ui_scheduled_messages">"予定メッセージ"</string>
-    <string name="ui_allow_workspace_mcp_servers">"ワークスペースMCPサーバーを許可しますか？"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"このワークスペースには接続を要求する .harness/mcp.json が含まれています: %1$s。 "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"そのサーバーはローカルコマンドを実行し、ネットワークにアクセスできます。 "</string>
-    <string name="ui_only_approve_configs_you_trust">"信頼できる設定のみ承認してください。"</string>
     <string name="ui_approve">"承認"</string>
-    <string name="ui_run_without_them">"それらなしで実行"</string>
     <string name="ui_two_models_one_for_planning_one_for">"2つのモデル: 1つは計画用、1つは実行用"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"2つのモデルを個別に設定できます: 1つは計画モード用、"</string>
     <string name="ui_and_one_that_takes_over_once_you">"もう1つは計画を承認して実行が開始すると引き継ぎます。"</string>

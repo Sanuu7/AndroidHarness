@@ -252,21 +252,32 @@ class McpManager(
     fun workspaceConnectionName(workspace: WorkspaceFs, config: McpServerConfig): String =
         config.name + "_ws_" + sha256(workspace.displayPath + config.deviceLocal + json.encodeToString(McpServerConfig.serializer(), config)).take(12)
 
-    // --- Workspace config approval (security-battery D1) -------------------------
+    // --- Workspace trust (security-battery D1) ----------------------------------
 
+    /** Approvals from before per-item trust: workspace path plus a hash of all its config text. */
     private val approvalsFile = File(context.filesDir, "mcp-approvals.json")
-    private var workspaceApprovals: Map<String, Long> =
+    private val workspaceApprovals: Map<String, Long> =
         runCatching {
             json.decodeFromString<Map<String, Long>>(approvalsFile.readText())
         }.getOrDefault(emptyMap())
 
-    private fun sha256(text: String): String =
-        java.security.MessageDigest.getInstance("SHA-256").digest(text.toByteArray())
-            .joinToString("") { "%02x".format(it) }
+    private val trustFile = File(context.filesDir, "mcp-trust.json")
+    private val trustLock = Any()
+    private var trustRecords: Map<String, WorkspaceTrustRecord> =
+        runCatching {
+            json.decodeFromString<Map<String, WorkspaceTrustRecord>>(trustFile.readText())
+        }.getOrDefault(emptyMap())
+    private val _trustRevision = MutableStateFlow(0)
+    /** Bumps whenever any workspace's trust mode or approvals change. */
+    val trustRevision: StateFlow<Int> = _trustRevision
+
+    private fun sha256(text: String): String = WorkspaceTrust.sha256(text)
 
     /** Stable key for a workspace's current config content: path plus content hash. */
     private fun approvalKey(workspace: WorkspaceFs, configText: String): String =
-        "${workspace.shellRoot?.absolutePath ?: workspace.displayPath}:${sha256(configText)}"
+        "${trustKey(workspace)}:${sha256(configText)}"
+
+    private fun trustKey(workspace: WorkspaceFs): String = workspace.shellRoot?.absolutePath ?: workspace.displayPath
 
     private fun workspaceConfigText(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig): String? {
         val node = workspace.resolve(McpNames.WORKSPACE_CONFIG)
@@ -277,33 +288,77 @@ class McpManager(
         return legacy.orEmpty() + "\nHarness configuration\n" + snapshot.trustPayload + "\n" + sha256(transports)
     }
 
-    /** True when this exact workspace config was approved by the user. */
-    fun isWorkspaceApproved(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): Boolean {
-        val text = workspaceConfigText(workspace, snapshot) ?: return true
-        return workspaceApprovals.containsKey(approvalKey(workspace, text))
-    }
-
-    /** Workspace servers that would auto-run but have not been approved yet. */
-    fun unapprovedWorkspaceServers(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): List<McpServerConfig> {
-        if (isWorkspaceApproved(workspace, snapshot)) return emptyList()
-        return workspaceConfigs(workspace, snapshot).filter { it.enabled } +
-            snapshot.plugins.map { McpServerConfig(name = "Plugin: ${it.name}") }
-    }
-
-    /** Records user approval for this exact workspace config content. */
-    fun approvalFingerprint(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): String =
-        sha256(workspaceConfigText(workspace, snapshot).orEmpty())
-
-    fun approveWorkspace(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)) {
-        val text = workspaceConfigText(workspace, snapshot) ?: return
-        workspaceApprovals = workspaceApprovals +
-            (approvalKey(workspace, text) to System.currentTimeMillis())
-        runCatching {
-            approvalsFile.writeText(json.encodeToString(
-                MapSerializer(String.serializer(), Long.serializer()),
-                workspaceApprovals,
-            ))
+    private fun saveTrust(workspace: WorkspaceFs, record: WorkspaceTrustRecord) {
+        synchronized(trustLock) {
+            trustRecords = trustRecords + (trustKey(workspace) to record)
+            runCatching {
+                val tmp = File(trustFile.parentFile, trustFile.name + ".tmp")
+                tmp.writeText(json.encodeToString(MapSerializer(String.serializer(), WorkspaceTrustRecord.serializer()), trustRecords))
+                tmp.renameTo(trustFile)
+            }
         }
+        _trustRevision.update { it + 1 }
+    }
+
+    /** Everything this workspace can run: its servers, plugins, language servers and bin folders. */
+    fun trustItems(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): List<TrustItem> =
+        WorkspaceTrust.items(workspaceConfigs(workspace, snapshot), snapshot)
+
+    /** The trust mode and approvals saved for this workspace. */
+    fun trustRecord(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): WorkspaceTrustRecord {
+        synchronized(trustLock) { trustRecords[trustKey(workspace)] }?.let { return it }
+        // An approval from before per-item trust still covers today's exact config, so updating never asks again.
+        val legacy = workspaceConfigText(workspace, snapshot)?.let { workspaceApprovals.containsKey(approvalKey(workspace, it)) } == true
+        if (!legacy) return WorkspaceTrustRecord()
+        return WorkspaceTrust.approve(WorkspaceTrustRecord(), trustItems(workspace, snapshot), System.currentTimeMillis())
+            .also { saveTrust(workspace, it) }
+    }
+
+    /** Servers and plugins that are new or changed and wait for the user's answer. */
+    fun pendingTrustItems(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): List<TrustItem> =
+        WorkspaceTrust.pending(trustItems(workspace, snapshot), trustRecord(workspace, snapshot))
+
+    /** True when nothing in this workspace waits for approval. */
+    fun isWorkspaceApproved(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): Boolean =
+        pendingTrustItems(workspace, snapshot).isEmpty()
+
+    /** The configuration a run may use: only the servers, plugins, language servers and bin folders the user trusts. */
+    fun approvedConfiguration(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): com.androidharness.app.config.HarnessConfig {
+        val record = trustRecord(workspace, snapshot)
+        val keys = trustItems(workspace, snapshot).filter { WorkspaceTrust.approved(it, record) }.map { it.key }.toSet()
+        return WorkspaceTrust.restrict(snapshot, keys)
+    }
+
+    /** Changes whenever anything runnable in the workspace changes, so a stale dialog cannot approve newer code. */
+    fun approvalFingerprint(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): String =
+        WorkspaceTrust.fingerprint(trustItems(workspace, snapshot))
+
+    /** Approves the items named by [keys] at their current content, or every item when [keys] is null. */
+    fun approveWorkspace(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace), keys: Set<String>? = null) {
+        val items = trustItems(workspace, snapshot).filter { keys == null || it.key in keys }
+        saveTrust(workspace, WorkspaceTrust.approve(trustRecord(workspace, snapshot), items, System.currentTimeMillis()))
+    }
+
+    /** Remembers the items named by [keys] as not allowed, so they stop asking until they change. */
+    fun declineWorkspace(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace), keys: Set<String>) {
+        val items = trustItems(workspace, snapshot).filter { it.key in keys }
+        if (items.isNotEmpty()) saveTrust(workspace, WorkspaceTrust.decline(trustRecord(workspace, snapshot), items, System.currentTimeMillis()))
+    }
+
+    /** Forgets every answer for this workspace, so each server and plugin asks again. The trust mode stays. */
+    fun forgetWorkspaceAnswers(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)) {
+        val record = trustRecord(workspace, snapshot)
+        saveTrust(workspace, WorkspaceTrust.forget(record, record.items.keys + record.declined.keys, System.currentTimeMillis()))
+    }
+
+    /** Pending items with whether each one is new or changed. */
+    fun trustPrompts(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)): List<TrustPrompt> {
+        val record = trustRecord(workspace, snapshot)
+        return WorkspaceTrust.pending(trustItems(workspace, snapshot), record).map { TrustPrompt(it, WorkspaceTrust.state(it, record)) }
+    }
+
+    fun setTrustMode(workspace: WorkspaceFs, mode: WorkspaceTrustMode, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace)) {
+        saveTrust(workspace, trustRecord(workspace, snapshot).copy(mode = mode, updatedAt = System.currentTimeMillis()))
     }
 
     /**
@@ -318,22 +373,23 @@ class McpManager(
      */
     suspend fun activeTools(workspace: WorkspaceFs, snapshot: com.androidharness.app.config.HarnessConfig = configuration(workspace), permissionMode: com.androidharness.app.agent.PermissionMode = com.androidharness.app.agent.PermissionMode.FULL_AUTO, leaseId: String? = null): List<Tool> {
         val global = _servers.value.filter { it.enabled }
-        val approved = isWorkspaceApproved(workspace, snapshot)
-        val ws = workspaceConfigs(workspace, snapshot).filter { it.enabled }
+        val record = trustRecord(workspace, snapshot)
+        val items = trustItems(workspace, snapshot).associateBy { it.key }
+        val (ws, held) = workspaceConfigs(workspace, snapshot).filter { it.enabled }
             .filter { ws -> global.none { it.name.equals(ws.name, ignoreCase = true) } }
-        if (!approved) {
-            // Record why the workspace tools are absent so Settings/health
-            // surfaces the reason instead of a silent skip.
-            ws.forEach { ws ->
-                _statuses.update {
-                    it + (ws.name to McpServerStatus(
-                        "blocked",
-                        error = "Project tools need approval in chat or Configuration settings before they can run.",
-                    ))
-                }
+            .partition { server -> items["server:${server.name}"]?.let { WorkspaceTrust.approved(it, record) } == true }
+        // Record why a workspace tool is absent so Settings/health
+        // surfaces the reason instead of a silent skip.
+        held.forEach { server ->
+            _statuses.update {
+                it + (server.name to McpServerStatus(
+                    "blocked",
+                    error = if (record.mode == WorkspaceTrustMode.BLOCK_ALL) "This workspace is set to never run its own tools. Change it in Configuration settings."
+                        else "Project tools need approval in chat or Configuration settings before they can run.",
+                ))
             }
         }
-        val configs = (global + if (approved) ws else emptyList()).filter { server ->
+        val configs = (global + ws).filter { server ->
             val startup = object : Tool {
                 override val name = if (server.isRemote) "http_request" else "shell"
                 override val description = "MCP startup"

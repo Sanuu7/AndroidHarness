@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"Uruskan penggunaan"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Token penaakulan dan pemikiran dibilkan sebagai output dan tidak dihantar semula sebagai input."</string>
     <string name="ui_scheduled_messages">"Mesej yang dijadualkan"</string>
-    <string name="ui_allow_workspace_mcp_servers">"Benarkan pelayan MCP ruang kerja?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"Ruang kerja ini menghantar .harness/mcp.json yang ingin menyambung: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Pelayannya boleh menjalankan arahan tempatan dan mencapai rangkaian. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Hanya luluskan konfigurasi yang anda percayai."</string>
     <string name="ui_approve">"Luluskan"</string>
-    <string name="ui_run_without_them">"Berlari tanpa mereka"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Dua model, satu untuk perancangan, satu untuk melakukan"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"Anda kini boleh mengkonfigurasi dua model secara berasingan: satu untuk mod perancangan, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"dan satu yang mengambil alih sebaik sahaja anda meluluskan pelan dan pelaksanaan bermula."</string>

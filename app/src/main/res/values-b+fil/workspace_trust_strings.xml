@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"Payagan ang mga tool ng workspace na ito?"</string>
+    <string name="trust_dialog_body">"May mga server at plugin ang workspace na ito na maaaring magpatakbo ng mga command sa device mo at makarating sa network. Payagan lang ang pinagkakatiwalaan mo."</string>
+    <string name="trust_dialog_unticked">"Ang hindi naka-tick ay hindi tatakbo at hindi na magtatanong hanggang magbago ito. Mababago mo ang lahat ng ito sa mga setting ng Configuration."</string>
+    <string name="trust_dialog_trust_all">"Pagkatiwalaan ang lahat sa workspace na ito"</string>
+    <string name="trust_dialog_trust_all_hint">"Anumang idagdag nito mamaya, tulad ng pagkatapos ng git pull, ay tatakbo nang hindi nagtatanong. Kapaki-pakinabang para sa naka-iskedyul na gawain sa sarili mong proyekto."</string>
+    <string name="trust_continue">"Magpatuloy"</string>
+    <string name="trust_not_now">"Mamaya na"</string>
+    <string name="trust_kind_server">"MCP server"</string>
+    <string name="trust_kind_plugin">"Plugin"</string>
+    <string name="trust_kind_language_server">"Language server"</string>
+    <string name="trust_kind_bin">"Folder ng mga command ng plugin"</string>
+    <string name="trust_state_new">"Bago"</string>
+    <string name="trust_state_changed">"Nagbago mula sa huling sagot mo"</string>
+    <string name="trust_state_approved">"Pinayagan"</string>
+    <string name="trust_state_declined">"Hindi pinayagan"</string>
+    <string name="trust_state_blocked">"Hinarang ng setting ng workspace na ito"</string>
+    <string name="trust_panel_title">"Mga tool ng proyekto"</string>
+    <string name="trust_panel_hint">"Maaaring magpatakbo ng mga command at makipag-ugnayan sa mga serbisyo ang mga server at plugin. Ang pag-edit ng mga tagubilin o dokumento ay hindi na magtatanong, mga pagbabago lang sa aktwal na tumatakbo ang tatanungin."</string>
+    <string name="trust_mode_title">"Kailan sila puwedeng tumakbo"</string>
+    <string name="trust_mode_ask_changes">"Magtanong tungkol sa bago at binagong tool"</string>
+    <string name="trust_mode_ask_changes_hint">"Pinakaligtas. Ang pag-edit ng pinayagang server o plugin ay magtatanong muli."</string>
+    <string name="trust_mode_ask_new">"Magtanong lang tungkol sa mga bagong tool"</string>
+    <string name="trust_mode_ask_new_hint">"Patuloy na tumatakbo ang mga pinayagang tool pagkatapos magbago. Mainam para sa proyektong ikaw mismo ang nag-e-edit."</string>
+    <string name="trust_mode_trust_all">"Pagkatiwalaan ang lahat"</string>
+    <string name="trust_mode_trust_all_hint">"Walang nagtatanong. Anumang idagdag ng workspace na ito ay agad na tatakbo, kahit pagkatapos ng git pull."</string>
+    <string name="trust_mode_block_all">"Huwag kailanman patakbuhin"</string>
+    <string name="trust_mode_block_all_hint">"Hindi kailanman tumatakbo ang mga server at plugin ng workspace na ito at walang nagtatanong. Gumagana pa rin ang mga global server mo."</string>
+    <string name="trust_items_title">"Mga server at plugin"</string>
+    <string name="trust_items_hint">"I-on ang isa para payagan itong tumakbo. Ang pag-off ay nagtatanda ng sagot mo, kaya hindi na ito magtatanong hanggang magbago."</string>
+    <string name="trust_items_mode_note">"Ang setting mo sa itaas ang nagpapasya para sa lahat ng item ngayon. Babalik ang mga sagot mo rito kung lilipat ka sa mode na nagtatanong."</string>
+    <string name="trust_allow_all">"Payagan lahat"</string>
+    <string name="trust_forget">"Kalimutan ang mga sagot ko"</string>
+    <string name="trust_changed_reload">"Nagbago ang configuration. Suriin muli bago payagan ang anuman."</string>
+    <string name="trust_needs_approval">"Kailangan ng pag-apruba ang mga tool ng proyekto: %1$s. Buksan ang chat na ito para payagan ang mga ito, o piliin kung paano pinagkakatiwalaan ng workspace na ito ang mga tool nito sa mga setting ng Configuration."</string>
+</resources>

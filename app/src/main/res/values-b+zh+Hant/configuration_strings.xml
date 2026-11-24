@@ -27,10 +27,6 @@
     <string name="config_sources">"配置來源"</string>
     <string name="config_default">"預設"</string>
     <string name="config_warnings">"提示"</string>
-    <string name="config_project_tools">"專案工具和外掛"</string>
-    <string name="config_trust_hint">"批准前請檢查配置。MCP 伺服器可執行命令或連線服務。外掛鉤子在隔離的 JavaScript 程序中執行。更改後需要重新批准。"</string>
-    <string name="config_approved">"已對此工作區批准"</string>
-    <string name="config_approve">"批准此配置"</string>
     <string name="config_folders">"已連線的資料夾"</string>
     <string name="config_folders_hint">"連線額外資料夾，透過 @name/path 讀取指令、參考資料或技能。此操作不會擴大智慧體工具的檔案訪問許可權。"</string>
     <string name="config_add_folder">"連線資料夾"</string>

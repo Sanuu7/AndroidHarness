@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"Quản lý việc sử dụng"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Lý trí và suy nghĩ token được tính là đầu ra và không được gửi lại dưới dạng đầu vào."</string>
     <string name="ui_scheduled_messages">"Tin nhắn đã lên lịch"</string>
-    <string name="ui_allow_workspace_mcp_servers">"Cho phép máy chủ không gian làm việc MCP?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"Không gian làm việc này gửi một .harness/mcp.json muốn kết nối: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Máy chủ của nó có thể chạy các lệnh cục bộ và truy cập mạng. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Chỉ phê duyệt các cấu hình mà bạn tin tưởng."</string>
     <string name="ui_approve">"Phê duyệt"</string>
-    <string name="ui_run_without_them">"Chạy mà không có họ"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Hai mô hình, một để lập kế hoạch, một để thực hiện"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"Bây giờ bạn có thể định cấu hình hai mô hình riêng biệt: một cho chế độ lập kế hoạch, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"và một cái sẽ tiếp quản sau khi bạn phê duyệt kế hoạch và quá trình thực thi bắt đầu."</string>

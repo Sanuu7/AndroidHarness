@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"क्या इस वर्कस्पेस के टूल्स की अनुमति दें?"</string>
+    <string name="trust_dialog_body">"इस वर्कस्पेस में ऐसे सर्वर और प्लगइन हैं जो आपके डिवाइस पर कमांड चला सकते हैं और नेटवर्क तक पहुँच सकते हैं। केवल उन्हीं को अनुमति दें जिन पर भरोसा है।"</string>
+    <string name="trust_dialog_unticked">"बिना टिक वाले नहीं चलेंगे और बदलने तक फिर नहीं पूछेंगे। यह सब कॉन्फ़िगरेशन सेटिंग्स में बदला जा सकता है।"</string>
+    <string name="trust_dialog_trust_all">"इस वर्कस्पेस की हर चीज़ पर भरोसा करें"</string>
+    <string name="trust_dialog_trust_all_hint">"यह बाद में जो जोड़ेगा, जैसे git pull के बाद, वह बिना पूछे चलेगा। अपने प्रोजेक्ट में निर्धारित कार्यों के लिए उपयोगी।"</string>
+    <string name="trust_continue">"जारी रखें"</string>
+    <string name="trust_not_now">"अभी नहीं"</string>
+    <string name="trust_kind_server">"MCP सर्वर"</string>
+    <string name="trust_kind_plugin">"प्लगइन"</string>
+    <string name="trust_kind_language_server">"भाषा सर्वर"</string>
+    <string name="trust_kind_bin">"प्लगइन कमांड फ़ोल्डर"</string>
+    <string name="trust_state_new">"नया"</string>
+    <string name="trust_state_changed">"आपके पिछले उत्तर के बाद बदला"</string>
+    <string name="trust_state_approved">"अनुमत"</string>
+    <string name="trust_state_declined">"अनुमत नहीं"</string>
+    <string name="trust_state_blocked">"इस वर्कस्पेस की सेटिंग से अवरुद्ध"</string>
+    <string name="trust_panel_title">"प्रोजेक्ट टूल्स"</string>
+    <string name="trust_panel_hint">"सर्वर और प्लगइन कमांड चला सकते हैं और सेवाओं से संपर्क कर सकते हैं। निर्देश या दस्तावेज़ संपादित करने पर फिर नहीं पूछा जाता, केवल जो वास्तव में चलता है उसमें बदलाव पर।"</string>
+    <string name="trust_mode_title">"ये कब चल सकते हैं"</string>
+    <string name="trust_mode_ask_changes">"नए और बदले टूल्स के बारे में पूछें"</string>
+    <string name="trust_mode_ask_changes_hint">"सबसे सुरक्षित। अनुमत सर्वर या प्लगइन संपादित करने पर फिर पूछा जाएगा।"</string>
+    <string name="trust_mode_ask_new">"केवल नए टूल्स के बारे में पूछें"</string>
+    <string name="trust_mode_ask_new_hint">"अनुमत टूल्स बदलने के बाद भी चलते रहते हैं। उन प्रोजेक्ट के लिए अच्छा जिन्हें आप स्वयं संपादित करते हैं।"</string>
+    <string name="trust_mode_trust_all">"सब पर भरोसा करें"</string>
+    <string name="trust_mode_trust_all_hint">"कुछ नहीं पूछा जाएगा। यह वर्कस्पेस जो भी जोड़ेगा वह तुरंत चलेगा, git pull के बाद भी।"</string>
+    <string name="trust_mode_block_all">"इन्हें कभी न चलाएं"</string>
+    <string name="trust_mode_block_all_hint">"इस वर्कस्पेस के सर्वर और प्लगइन कभी नहीं चलते और कुछ नहीं पूछता। आपके वैश्विक सर्वर अभी भी काम करते हैं।"</string>
+    <string name="trust_items_title">"सर्वर और प्लगइन"</string>
+    <string name="trust_items_hint">"किसी एक को चालू करें ताकि वह चल सके। बंद करने पर आपका उत्तर याद रहता है, इसलिए बदलने तक फिर नहीं पूछेगा।"</string>
+    <string name="trust_items_mode_note">"ऊपर की सेटिंग अभी सभी आइटम के लिए तय करती है। पूछने के मोड में लौटने पर यहाँ के उत्तर फिर लागू होंगे।"</string>
+    <string name="trust_allow_all">"सभी को अनुमति दें"</string>
+    <string name="trust_forget">"मेरे उत्तर भूल जाएं"</string>
+    <string name="trust_changed_reload">"कॉन्फ़िगरेशन बदला। कुछ भी अनुमति देने से पहले इसे फिर देखें।"</string>
+    <string name="trust_needs_approval">"प्रोजेक्ट टूल्स को स्वीकृति चाहिए: %1$s। इस चैट को खोलकर उन्हें अनुमति दें, या कॉन्फ़िगरेशन सेटिंग्स में चुनें कि यह वर्कस्पेस अपने टूल्स पर कैसे भरोसा करता है।"</string>
+</resources>

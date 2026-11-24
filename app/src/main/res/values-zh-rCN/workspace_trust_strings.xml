@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"允许此工作区的工具？"</string>
+    <string name="trust_dialog_body">"此工作区包含可在你的设备上执行命令并访问网络的服务和插件。只允许你信任的内容。"</string>
+    <string name="trust_dialog_unticked">"未勾选的内容不会运行，且在更改前不会再次询问。你可以在配置设置中更改这些。"</string>
+    <string name="trust_dialog_trust_all">"信任此工作区中的所有内容"</string>
+    <string name="trust_dialog_trust_all_hint">"它以后添加的内容（例如 git pull 后）会直接运行，不再询问。适合你自己项目中的定时任务。"</string>
+    <string name="trust_continue">"继续"</string>
+    <string name="trust_not_now">"暂不"</string>
+    <string name="trust_kind_server">"MCP 服务器"</string>
+    <string name="trust_kind_plugin">"插件"</string>
+    <string name="trust_kind_language_server">"语言服务器"</string>
+    <string name="trust_kind_bin">"插件命令文件夹"</string>
+    <string name="trust_state_new">"新增"</string>
+    <string name="trust_state_changed">"自上次回答后已更改"</string>
+    <string name="trust_state_approved">"已允许"</string>
+    <string name="trust_state_declined">"不允许"</string>
+    <string name="trust_state_blocked">"被此工作区的设置阻止"</string>
+    <string name="trust_panel_title">"项目工具"</string>
+    <string name="trust_panel_hint">"服务器和插件可以执行命令并联系服务。编辑说明或文档不会再询问，只有实际运行内容的变化才会。"</string>
+    <string name="trust_mode_title">"何时可以运行"</string>
+    <string name="trust_mode_ask_changes">"询问新增和更改的工具"</string>
+    <string name="trust_mode_ask_changes_hint">"最安全。编辑已允许的服务器或插件会再次询问。"</string>
+    <string name="trust_mode_ask_new">"仅询问新工具"</string>
+    <string name="trust_mode_ask_new_hint">"已允许的工具在更改后继续运行。适合你自己编辑的项目。"</string>
+    <string name="trust_mode_trust_all">"信任所有"</string>
+    <string name="trust_mode_trust_all_hint">"不会询问。此工作区添加的任何内容都会立即运行，包括 git pull 之后。"</string>
+    <string name="trust_mode_block_all">"从不运行它们"</string>
+    <string name="trust_mode_block_all_hint">"此工作区的服务器和插件永不运行，也不会询问。全局服务器仍然有效。"</string>
+    <string name="trust_items_title">"服务器和插件"</string>
+    <string name="trust_items_hint">"打开一个即可允许其运行。关闭会记住你的回答，因此在它更改前不会再次询问。"</string>
+    <string name="trust_items_mode_note">"你上方的设置现在决定所有项目。切回询问模式后，这里的回答会恢复生效。"</string>
+    <string name="trust_allow_all">"全部允许"</string>
+    <string name="trust_forget">"忘记我的回答"</string>
+    <string name="trust_changed_reload">"配置已更改。请重新查看后再允许任何内容。"</string>
+    <string name="trust_needs_approval">"项目工具需要批准：%1$s。打开此聊天以允许它们，或在配置设置中选择此工作区如何信任其工具。"</string>
+</resources>

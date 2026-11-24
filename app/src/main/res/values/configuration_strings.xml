@@ -27,10 +27,6 @@
     <string name="config_sources">Configuration sources</string>
     <string name="config_default">default</string>
     <string name="config_warnings">Notices</string>
-    <string name="config_project_tools">Project tools and plugins</string>
-    <string name="config_trust_hint">Review this configuration before approving it. MCP servers can run commands or contact services. Plugin hooks run in an isolated JavaScript process. Changes require a new approval.</string>
-    <string name="config_approved">Approved for this workspace</string>
-    <string name="config_approve">Approve this configuration</string>
     <string name="config_folders">Connected folders</string>
     <string name="config_folders_hint">Connect an extra folder to read instructions, references or skills using @name/path. This does not grant agent tools additional file access.</string>
     <string name="config_add_folder">Connect a folder</string>

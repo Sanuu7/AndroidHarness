@@ -491,12 +491,7 @@
     <string name="ui_manage_usage">"管理用量"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"推理和思考 Token 按輸出計費，不會作為輸入再次傳送。"</string>
     <string name="ui_scheduled_messages">"定時訊息"</string>
-    <string name="ui_allow_workspace_mcp_servers">"允許工作區 MCP 伺服器？"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"此工作區包含 .harness/mcp.json，希望連線：%1$s。"</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"這些伺服器可執行本地命令並訪問網路。"</string>
-    <string name="ui_only_approve_configs_you_trust">"請僅批准你信任的配置。"</string>
     <string name="ui_approve">"批准"</string>
-    <string name="ui_run_without_them">"不使用它們執行"</string>
     <string name="ui_two_models_one_for_planning_one_for">"兩個模型，分別負責規劃和執行"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"現在可以分別配置兩個模型：一個用於計劃模式，"</string>
     <string name="ui_and_one_that_takes_over_once_you">"另一個在你批准計劃並開始執行後接管。"</string>

@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"사용량 관리"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"추론 및 사고 토큰은 출력으로 청구되며 입력으로 다시 전송되지 않습니다."</string>
     <string name="ui_scheduled_messages">"예약된 메시지"</string>
-    <string name="ui_allow_workspace_mcp_servers">"작업 공간 MCP 서버를 허용하시겠습니까?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"이 작업공간은 연결하려는 .harness/mcp.json: %1$s를 제공합니다. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"해당 서버는 로컬 명령을 실행하고 네트워크에 연결할 수 있습니다. "</string>
-    <string name="ui_only_approve_configs_you_trust">"신뢰할 수 있는 구성만 승인하세요."</string>
     <string name="ui_approve">"승인하다"</string>
-    <string name="ui_run_without_them">"그들 없이 달리다"</string>
     <string name="ui_two_models_one_for_planning_one_for">"두 가지 모델, 하나는 계획용, 하나는 실행용"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"이제 두 가지 모델을 별도로 구성할 수 있습니다. 하나는 계획 모드용이고, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"계획을 승인하고 실행이 시작되면 인계받는 사람입니다."</string>

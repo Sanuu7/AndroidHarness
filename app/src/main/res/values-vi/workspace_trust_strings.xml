@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"Cho phép công cụ của không gian làm việc này?"</string>
+    <string name="trust_dialog_body">"Không gian làm việc này có máy chủ và plugin có thể chạy lệnh trên thiết bị của bạn và truy cập mạng. Chỉ cho phép những gì bạn tin tưởng."</string>
+    <string name="trust_dialog_unticked">"Mục không được chọn sẽ không chạy và không hỏi lại cho đến khi thay đổi. Bạn có thể đổi tất cả trong cài đặt Cấu hình."</string>
+    <string name="trust_dialog_trust_all">"Tin tưởng mọi thứ trong không gian làm việc này"</string>
+    <string name="trust_dialog_trust_all_hint">"Những gì nó thêm sau này, như sau git pull, sẽ chạy mà không hỏi. Tiện cho tác vụ theo lịch trong dự án của bạn."</string>
+    <string name="trust_continue">"Tiếp tục"</string>
+    <string name="trust_not_now">"Để sau"</string>
+    <string name="trust_kind_server">"Máy chủ MCP"</string>
+    <string name="trust_kind_plugin">"Plugin"</string>
+    <string name="trust_kind_language_server">"Máy chủ ngôn ngữ"</string>
+    <string name="trust_kind_bin">"Thư mục lệnh của plugin"</string>
+    <string name="trust_state_new">"Mới"</string>
+    <string name="trust_state_changed">"Đã thay đổi từ câu trả lời trước của bạn"</string>
+    <string name="trust_state_approved">"Đã cho phép"</string>
+    <string name="trust_state_declined">"Không cho phép"</string>
+    <string name="trust_state_blocked">"Bị chặn bởi cài đặt của không gian làm việc này"</string>
+    <string name="trust_panel_title">"Công cụ dự án"</string>
+    <string name="trust_panel_hint">"Máy chủ và plugin có thể chạy lệnh và liên hệ dịch vụ. Sửa hướng dẫn hoặc tài liệu không hỏi lại, chỉ thay đổi nội dung thực sự chạy."</string>
+    <string name="trust_mode_title">"Khi nào chúng được chạy"</string>
+    <string name="trust_mode_ask_changes">"Hỏi về công cụ mới và đã thay đổi"</string>
+    <string name="trust_mode_ask_changes_hint">"An toàn nhất. Sửa máy chủ hoặc plugin đã cho phép sẽ hỏi lại."</string>
+    <string name="trust_mode_ask_new">"Chỉ hỏi về công cụ mới"</string>
+    <string name="trust_mode_ask_new_hint">"Công cụ đã cho phép tiếp tục chạy sau khi thay đổi. Tốt cho dự án bạn tự sửa."</string>
+    <string name="trust_mode_trust_all">"Tin tưởng tất cả"</string>
+    <string name="trust_mode_trust_all_hint">"Không hỏi gì. Mọi thứ không gian làm việc này thêm sẽ chạy ngay, kể cả sau git pull."</string>
+    <string name="trust_mode_block_all">"Không bao giờ chạy chúng"</string>
+    <string name="trust_mode_block_all_hint">"Máy chủ và plugin của không gian làm việc này không bao giờ chạy và không hỏi gì. Máy chủ toàn cục của bạn vẫn hoạt động."</string>
+    <string name="trust_items_title">"Máy chủ và plugin"</string>
+    <string name="trust_items_hint">"Bật một mục để cho phép chạy. Tắt sẽ ghi nhớ câu trả lời, nên nó không hỏi lại cho đến khi thay đổi."</string>
+    <string name="trust_items_mode_note">"Cài đặt ở trên đang quyết định cho mọi mục. Câu trả lời ở đây sẽ có hiệu lực lại nếu bạn quay lại chế độ hỏi."</string>
+    <string name="trust_allow_all">"Cho phép tất cả"</string>
+    <string name="trust_forget">"Quên câu trả lời của tôi"</string>
+    <string name="trust_changed_reload">"Cấu hình đã thay đổi. Xem lại trước khi cho phép bất cứ điều gì."</string>
+    <string name="trust_needs_approval">"Công cụ dự án cần phê duyệt: %1$s. Mở cuộc trò chuyện này để cho phép, hoặc chọn cách không gian làm việc này tin tưởng công cụ của nó trong cài đặt Cấu hình."</string>
+</resources>

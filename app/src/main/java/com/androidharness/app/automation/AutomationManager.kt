@@ -225,7 +225,9 @@ class AutomationManager(private val c: AppContainer) {
                 finished = true
                 return@withLock AutomationOutcome.DONE
             }
-            check(c.mcp.unapprovedWorkspaceServers(fs).isEmpty()) { "Workspace tools need approval. Open this chat to approve them." }
+            c.mcp.pendingTrustItems(fs).takeIf { it.isNotEmpty() }?.let { pending ->
+                error(c.appContext.getString(com.androidharness.app.R.string.trust_needs_approval, pending.joinToString(", ") { it.name }))
+            }
             val settings = c.settings.settings.first()
             val provider = c.providers.providers.first().firstOrNull { it.id == task.providerId }
                 ?: error("The saved provider is unavailable. Choose another model.")

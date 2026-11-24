@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"Nutzung verwalten"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Reasoning- und Thinking-Tokens werden als Ausgabe abgerechnet und nicht erneut als Eingabe gesendet."</string>
     <string name="ui_scheduled_messages">"Geplante Nachrichten"</string>
-    <string name="ui_allow_workspace_mcp_servers">"MCP-Server des Arbeitsbereichs erlauben?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"Dieser Arbeitsbereich enthält eine .harness/mcp.json, die verbinden möchte: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Seine Server können lokale Befehle ausführen und das Netzwerk erreichen. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Genehmige nur Konfigurationen, denen du vertraust."</string>
     <string name="ui_approve">"Genehmigen"</string>
-    <string name="ui_run_without_them">"Ohne sie ausführen"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Zwei Modelle: eines für Planung, eines für Ausführung"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"Du kannst jetzt zwei Modelle separat konfigurieren: eines für den Planungsmodus, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"und eines, das übernimmt, sobald du den Plan genehmigst und die Ausführung startet."</string>

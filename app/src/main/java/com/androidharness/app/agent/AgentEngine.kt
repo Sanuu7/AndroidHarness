@@ -343,7 +343,8 @@ class AgentEngine(
     ): Flow<AgentEvent> = channelFlow {
         val loadedConfig = if (conversation.isChat) com.androidharness.app.config.HarnessConfig()
             else projectConfiguration ?: configuration(workspace)
-        val projectConfig = if (pluginsApproved) loadedConfig else loadedConfig.copy(plugins = emptyList())
+        val projectConfig = if (pluginsApproved) loadedConfig
+            else loadedConfig.copy(plugins = emptyList(), languageServers = emptyList(), pluginBins = emptyList())
         val selectedSkillStore = withContext(kotlinx.coroutines.Dispatchers.IO) {
             skills.forWorkspace(workspace).configured(projectConfig).freeze()
         }

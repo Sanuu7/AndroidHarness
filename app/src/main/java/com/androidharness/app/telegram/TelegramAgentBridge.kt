@@ -91,7 +91,9 @@ internal class AndroidTelegramAgentBridge(private val c: AppContainer, private v
         val chat = c.sessions.session(sid) ?: error("This chat was removed. Your request was kept.")
         check(chat.projectId == request.projectId) { "This chat's project changed. Your request was kept for review." }
         val fs = c.workspace.forSession(sid)
-        check(c.mcp.unapprovedWorkspaceServers(fs).isEmpty()) { "Workspace tools need approval. Open this chat in AndroidHarness to approve them." }
+        c.mcp.pendingTrustItems(fs).takeIf { it.isNotEmpty() }?.let { pending ->
+            error(c.appContext.getString(com.androidharness.app.R.string.trust_needs_approval, pending.joinToString(", ") { it.name }))
+        }
         val provider = c.providers.providers.first().firstOrNull { it.id == request.providerId }
             ?: error("The saved provider is unavailable. Choose another model and retry.")
         val config = provider.copy(model = requireNotNull(request.model))

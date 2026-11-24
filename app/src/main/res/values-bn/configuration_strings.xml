@@ -27,10 +27,6 @@
     <string name="config_sources">"কনফিগারেশন সূত্র"</string>
     <string name="config_default">"ডিফল্ট"</string>
     <string name="config_warnings">"নোটিশ"</string>
-    <string name="config_project_tools">"প্রকল্প সরঞ্জাম এবং প্লাগইন"</string>
-    <string name="config_trust_hint">"এটি অনুমোদন করার আগে এই কনফিগারেশন পর্যালোচনা করুন. MCP সার্ভার কমান্ড বা যোগাযোগ পরিষেবা চালাতে পারে। প্লাগইন হুক একটি বিচ্ছিন্ন JavaScript প্রক্রিয়ায় চলে। পরিবর্তন একটি নতুন অনুমোদন প্রয়োজন."</string>
-    <string name="config_approved">"এই কর্মক্ষেত্রের জন্য অনুমোদিত"</string>
-    <string name="config_approve">"এই কনফিগারেশন অনুমোদন করুন"</string>
     <string name="config_folders">"সংযুক্ত ফোল্ডার"</string>
     <string name="config_folders_hint">"@name/path. ব্যবহার করে নির্দেশাবলী, রেফারেন্স বা দক্ষতা পড়ার জন্য একটি অতিরিক্ত ফোল্ডার সংযুক্ত করুন এটি এজেন্ট টুলকে অতিরিক্ত ফাইল অ্যাক্সেস দেয় না।"</string>
     <string name="config_add_folder">"একটি ফোল্ডার সংযুক্ত করুন"</string>

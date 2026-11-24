@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">Allow this workspace\'s tools?</string>
+    <string name="trust_dialog_body">This workspace has servers and plugins that can run commands on your device and reach the network. Only allow the ones you trust.</string>
+    <string name="trust_dialog_unticked">Unticked ones won\'t run, and won\'t ask again until they change. You can change any of this in Configuration settings.</string>
+    <string name="trust_dialog_trust_all">Trust everything in this workspace</string>
+    <string name="trust_dialog_trust_all_hint">Anything it adds later, like after a git pull, runs without asking. Handy for scheduled tasks in a project you own.</string>
+    <string name="trust_continue">Continue</string>
+    <string name="trust_not_now">Not now</string>
+
+    <string name="trust_kind_server">MCP server</string>
+    <string name="trust_kind_plugin">Plugin</string>
+    <string name="trust_kind_language_server">Language server</string>
+    <string name="trust_kind_bin">Plugin commands folder</string>
+    <string name="trust_state_new">New</string>
+    <string name="trust_state_changed">Changed since your last answer</string>
+    <string name="trust_state_approved">Allowed</string>
+    <string name="trust_state_declined">Not allowed</string>
+    <string name="trust_state_blocked">Blocked by this workspace\'s setting</string>
+
+    <string name="trust_panel_title">Project tools</string>
+    <string name="trust_panel_hint">Servers and plugins can run commands and contact services. Editing instructions or docs never asks again, only changes to what actually runs.</string>
+    <string name="trust_mode_title">When they may run</string>
+    <string name="trust_mode_ask_changes">Ask about new and changed tools</string>
+    <string name="trust_mode_ask_changes_hint">Safest. Editing an allowed server or plugin asks again.</string>
+    <string name="trust_mode_ask_new">Ask about new tools only</string>
+    <string name="trust_mode_ask_new_hint">Tools you allowed keep running after they change. Good for projects you edit yourself.</string>
+    <string name="trust_mode_trust_all">Trust everything</string>
+    <string name="trust_mode_trust_all_hint">Nothing asks. Anything this workspace adds runs right away, including after a git pull.</string>
+    <string name="trust_mode_block_all">Never run them</string>
+    <string name="trust_mode_block_all_hint">This workspace\'s servers and plugins never run and nothing asks. Your global servers still work.</string>
+    <string name="trust_items_title">Servers and plugins</string>
+    <string name="trust_items_hint">Switch one on to let it run. Switching it off remembers your answer, so it won\'t ask again until it changes.</string>
+    <string name="trust_items_mode_note">Your setting above decides for every item right now. Your answers here come back if you switch to asking.</string>
+    <string name="trust_allow_all">Allow all</string>
+    <string name="trust_forget">Forget my answers</string>
+    <string name="trust_changed_reload">Configuration changed. Review it again before allowing anything.</string>
+    <string name="trust_needs_approval">Project tools need approval: %1$s. Open this chat to allow them, or choose how this workspace trusts its tools in Configuration settings.</string>
+</resources>

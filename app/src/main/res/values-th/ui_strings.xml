@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"จัดการการใช้งาน"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"โทเค็นการใช้เหตุผลและการคิดจะถูกเรียกเก็บเงินเป็นเอาต์พุตและจะไม่ส่งซ้ำเป็นอินพุต"</string>
     <string name="ui_scheduled_messages">"ข้อความที่กำหนดเวลาไว้"</string>
-    <string name="ui_allow_workspace_mcp_servers">"อนุญาตเซิร์ฟเวอร์พื้นที่ทำงาน MCP หรือไม่"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"เวิร์กสเปซนี้จัดส่ง .harness/mcp.json ที่ต้องการเชื่อมต่อ: %1$s "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"เซิร์ฟเวอร์สามารถรันคำสั่งในเครื่องและเข้าถึงเครือข่ายได้ "</string>
-    <string name="ui_only_approve_configs_you_trust">"อนุมัติเฉพาะการกำหนดค่าที่คุณเชื่อถือเท่านั้น"</string>
     <string name="ui_approve">"อนุมัติ"</string>
-    <string name="ui_run_without_them">"วิ่งโดยไม่มีพวกเขา"</string>
     <string name="ui_two_models_one_for_planning_one_for">"สองแบบ แบบหนึ่งสำหรับการวางแผน อีกแบบสำหรับทำ"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"ตอนนี้คุณสามารถกำหนดค่าสองรุ่นแยกกัน: หนึ่งรุ่นสำหรับโหมดการวางแผน "</string>
     <string name="ui_and_one_that_takes_over_once_you">"และอีกรายการหนึ่งที่จะเข้าควบคุมเมื่อคุณอนุมัติแผนและการดำเนินการเริ่มต้นแล้ว"</string>

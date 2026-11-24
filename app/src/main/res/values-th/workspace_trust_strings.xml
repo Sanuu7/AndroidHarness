@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"อนุญาตเครื่องมือของพื้นที่ทำงานนี้หรือไม่?"</string>
+    <string name="trust_dialog_body">"พื้นที่ทำงานนี้มีเซิร์ฟเวอร์และปลั๊กอินที่รันคำสั่งบนอุปกรณ์ของคุณและเข้าถึงเครือข่ายได้ อนุญาตเฉพาะสิ่งที่คุณไว้ใจ"</string>
+    <string name="trust_dialog_unticked">"รายการที่ไม่ได้เลือกจะไม่ทำงานและจะไม่ถามอีกจนกว่าจะเปลี่ยน คุณเปลี่ยนทั้งหมดนี้ได้ในการตั้งค่าการกำหนดค่า"</string>
+    <string name="trust_dialog_trust_all">"ไว้ใจทุกอย่างในพื้นที่ทำงานนี้"</string>
+    <string name="trust_dialog_trust_all_hint">"สิ่งที่เพิ่มในภายหลัง เช่นหลัง git pull จะทำงานโดยไม่ถาม เหมาะกับงานตามกำหนดในโปรเจกต์ของคุณเอง"</string>
+    <string name="trust_continue">"ดำเนินการต่อ"</string>
+    <string name="trust_not_now">"ไว้ทีหลัง"</string>
+    <string name="trust_kind_server">"เซิร์ฟเวอร์ MCP"</string>
+    <string name="trust_kind_plugin">"ปลั๊กอิน"</string>
+    <string name="trust_kind_language_server">"เซิร์ฟเวอร์ภาษา"</string>
+    <string name="trust_kind_bin">"โฟลเดอร์คำสั่งของปลั๊กอิน"</string>
+    <string name="trust_state_new">"ใหม่"</string>
+    <string name="trust_state_changed">"เปลี่ยนตั้งแต่คำตอบครั้งล่าสุดของคุณ"</string>
+    <string name="trust_state_approved">"อนุญาตแล้ว"</string>
+    <string name="trust_state_declined">"ไม่อนุญาต"</string>
+    <string name="trust_state_blocked">"ถูกบล็อกโดยการตั้งค่าของพื้นที่ทำงานนี้"</string>
+    <string name="trust_panel_title">"เครื่องมือโปรเจกต์"</string>
+    <string name="trust_panel_hint">"เซิร์ฟเวอร์และปลั๊กอินสามารถรันคำสั่งและติดต่อบริการได้ การแก้คำแนะนำหรือเอกสารจะไม่ถามอีก เปลี่ยนเฉพาะสิ่งที่ทำงานจริงเท่านั้น"</string>
+    <string name="trust_mode_title">"เมื่อใดจึงจะทำงานได้"</string>
+    <string name="trust_mode_ask_changes">"ถามเกี่ยวกับเครื่องมือใหม่และที่เปลี่ยน"</string>
+    <string name="trust_mode_ask_changes_hint">"ปลอดภัยที่สุด การแก้เซิร์ฟเวอร์หรือปลั๊กอินที่อนุญาตจะถามอีก"</string>
+    <string name="trust_mode_ask_new">"ถามเฉพาะเครื่องมือใหม่"</string>
+    <string name="trust_mode_ask_new_hint">"เครื่องมือที่อนุญาตยังทำงานต่อหลังเปลี่ยน เหมาะกับโปรเจกต์ที่คุณแก้เอง"</string>
+    <string name="trust_mode_trust_all">"ไว้ใจทั้งหมด"</string>
+    <string name="trust_mode_trust_all_hint">"ไม่มีอะไรถาม ทุกอย่างที่พื้นที่ทำงานนี้เพิ่มจะทำงานทันที รวมถึงหลัง git pull"</string>
+    <string name="trust_mode_block_all">"ไม่ต้องรันเลย"</string>
+    <string name="trust_mode_block_all_hint">"เซิร์ฟเวอร์และปลั๊กอินของพื้นที่ทำงานนี้จะไม่ทำงานและไม่มีอะไรถาม เซิร์ฟเวอร์ส่วนกลางของคุณยังใช้ได้"</string>
+    <string name="trust_items_title">"เซิร์ฟเวอร์และปลั๊กอิน"</string>
+    <string name="trust_items_hint">"เปิดหนึ่งรายการเพื่อให้ทำงานได้ การปิดจะจำคำตอบของคุณ จึงไม่ถามอีกจนกว่าจะเปลี่ยน"</string>
+    <string name="trust_items_mode_note">"การตั้งค่าด้านบนตัดสินให้ทุกรายการตอนนี้ คำตอบของคุณที่นี่จะกลับมามีผลเมื่อคุณเปลี่ยนไปโหมดถาม"</string>
+    <string name="trust_allow_all">"อนุญาตทั้งหมด"</string>
+    <string name="trust_forget">"ลืมคำตอบของฉัน"</string>
+    <string name="trust_changed_reload">"การกำหนดค่าเปลี่ยน โปรดตรวจสอบอีกครั้งก่อนอนุญาตสิ่งใด"</string>
+    <string name="trust_needs_approval">"เครื่องมือโปรเจกต์ต้องได้รับการอนุมัติ: %1$s เปิดแชทนี้เพื่ออนุญาต หรือเลือกวิธีที่พื้นที่ทำงานนี้ไว้วางใจเครื่องมือในการตั้งค่าการกำหนดค่า"</string>
+</resources>

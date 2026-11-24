@@ -27,10 +27,6 @@
     <string name="config_sources">Источники конфигурации</string>
     <string name="config_default">по умолчанию</string>
     <string name="config_warnings">Примечания</string>
-    <string name="config_project_tools">Инструменты и плагины проекта</string>
-    <string name="config_trust_hint">Проверьте конфигурацию перед одобрением. Серверы MCP могут запускать команды и подключаться к сервисам. Хуки плагинов работают в изолированном процессе JavaScript. Изменения требуют нового одобрения.</string>
-    <string name="config_approved">Одобрено для этой рабочей области</string>
-    <string name="config_approve">Одобрить конфигурацию</string>
     <string name="config_folders">Подключённые папки</string>
     <string name="config_folders_hint">Подключите папку для чтения инструкций, справочников и навыков через @name/path. Доступ файловых инструментов агента не расширяется.</string>
     <string name="config_add_folder">Подключить папку</string>

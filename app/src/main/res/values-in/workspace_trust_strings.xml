@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"Izinkan alat ruang kerja ini?"</string>
+    <string name="trust_dialog_body">"Ruang kerja ini memiliki server dan plugin yang dapat menjalankan perintah di perangkat Anda dan mengakses jaringan. Izinkan hanya yang Anda percaya."</string>
+    <string name="trust_dialog_unticked">"Yang tidak dicentang tidak akan berjalan dan tidak akan bertanya lagi sampai berubah. Semua ini dapat diubah di pengaturan Konfigurasi."</string>
+    <string name="trust_dialog_trust_all">"Percayai semua yang ada di ruang kerja ini"</string>
+    <string name="trust_dialog_trust_all_hint">"Apa pun yang ditambahkan nanti, seperti setelah git pull, berjalan tanpa bertanya. Berguna untuk tugas terjadwal di proyek Anda sendiri."</string>
+    <string name="trust_continue">"Lanjutkan"</string>
+    <string name="trust_not_now">"Nanti saja"</string>
+    <string name="trust_kind_server">"Server MCP"</string>
+    <string name="trust_kind_plugin">"Plugin"</string>
+    <string name="trust_kind_language_server">"Server bahasa"</string>
+    <string name="trust_kind_bin">"Folder perintah plugin"</string>
+    <string name="trust_state_new">"Baru"</string>
+    <string name="trust_state_changed">"Berubah sejak jawaban terakhir Anda"</string>
+    <string name="trust_state_approved">"Diizinkan"</string>
+    <string name="trust_state_declined">"Tidak diizinkan"</string>
+    <string name="trust_state_blocked">"Diblokir oleh pengaturan ruang kerja ini"</string>
+    <string name="trust_panel_title">"Alat proyek"</string>
+    <string name="trust_panel_hint">"Server dan plugin dapat menjalankan perintah dan menghubungi layanan. Menyunting instruksi atau dokumen tidak bertanya lagi, hanya perubahan pada apa yang benar-benar berjalan."</string>
+    <string name="trust_mode_title">"Kapan boleh berjalan"</string>
+    <string name="trust_mode_ask_changes">"Tanyakan tentang alat baru dan yang berubah"</string>
+    <string name="trust_mode_ask_changes_hint">"Paling aman. Menyunting server atau plugin yang diizinkan akan bertanya lagi."</string>
+    <string name="trust_mode_ask_new">"Tanyakan hanya tentang alat baru"</string>
+    <string name="trust_mode_ask_new_hint">"Alat yang diizinkan tetap berjalan setelah berubah. Cocok untuk proyek yang Anda sunting sendiri."</string>
+    <string name="trust_mode_trust_all">"Percayai semua"</string>
+    <string name="trust_mode_trust_all_hint">"Tidak ada yang bertanya. Apa pun yang ditambahkan ruang kerja ini langsung berjalan, termasuk setelah git pull."</string>
+    <string name="trust_mode_block_all">"Jangan pernah menjalankannya"</string>
+    <string name="trust_mode_block_all_hint">"Server dan plugin ruang kerja ini tidak pernah berjalan dan tidak ada yang bertanya. Server global Anda tetap berfungsi."</string>
+    <string name="trust_items_title">"Server dan plugin"</string>
+    <string name="trust_items_hint">"Nyalakan satu untuk mengizinkannya berjalan. Mematikannya mengingat jawaban Anda, jadi tidak bertanya lagi sampai berubah."</string>
+    <string name="trust_items_mode_note">"Pengaturan Anda di atas menentukan untuk semua item sekarang. Jawaban Anda di sini berlaku lagi jika Anda beralih ke mode bertanya."</string>
+    <string name="trust_allow_all">"Izinkan semua"</string>
+    <string name="trust_forget">"Lupakan jawaban saya"</string>
+    <string name="trust_changed_reload">"Konfigurasi berubah. Tinjau lagi sebelum mengizinkan apa pun."</string>
+    <string name="trust_needs_approval">"Alat proyek memerlukan persetujuan: %1$s. Buka obrolan ini untuk mengizinkannya, atau pilih cara ruang kerja ini memercayai alatnya di pengaturan Konfigurasi."</string>
+</resources>

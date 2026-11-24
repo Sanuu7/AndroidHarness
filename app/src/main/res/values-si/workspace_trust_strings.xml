@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"මෙම වැඩබිමේ මෙවලම්වලට ඉඩ දෙන්නද?"</string>
+    <string name="trust_dialog_body">"මෙම වැඩබිමේ ඔබේ උපාංගයේ විධාන ධාවනය කර ජාලයට ප්‍රවේශ විය හැකි සර්වර් සහ ප්ලගීන ඇත. ඔබ විශ්වාස කරන දේට පමණක් ඉඩ දෙන්න."</string>
+    <string name="trust_dialog_unticked">"ටික් නොකළ දේ ධාවනය නොවේ, වෙනස් වන තුරු නැවත නොඅසයි. මේ සියල්ල වින්‍යාස සැකසුම්වල වෙනස් කළ හැක."</string>
+    <string name="trust_dialog_trust_all">"මෙම වැඩබිමේ සියල්ල විශ්වාස කරන්න"</string>
+    <string name="trust_dialog_trust_all_hint">"පසුව එකතු කරන දේ, උදා: git pull පසුව, නොඅසා ධාවනය වේ. ඔබේම ව්‍යාපෘතියේ නියමිත කාර්යයන්ට ප්‍රයෝජනවත්."</string>
+    <string name="trust_continue">"ඉදිරියට"</string>
+    <string name="trust_not_now">"දැන් නැත"</string>
+    <string name="trust_kind_server">"MCP සර්වරය"</string>
+    <string name="trust_kind_plugin">"ප්ලගීනය"</string>
+    <string name="trust_kind_language_server">"භාෂා සර්වරය"</string>
+    <string name="trust_kind_bin">"ප්ලගීන විධාන ෆෝල්ඩරය"</string>
+    <string name="trust_state_new">"නව"</string>
+    <string name="trust_state_changed">"ඔබේ අවසන් පිළිතුරෙන් පසු වෙනස් විය"</string>
+    <string name="trust_state_approved">"අනුමතයි"</string>
+    <string name="trust_state_declined">"අනුමත නැත"</string>
+    <string name="trust_state_blocked">"මෙම වැඩබිමේ සැකසුම මගින් අවහිරයි"</string>
+    <string name="trust_panel_title">"ව්‍යාපෘති මෙවලම්"</string>
+    <string name="trust_panel_hint">"සර්වර් සහ ප්ලගීන විධාන ධාවනය කළ හැකි අතර සේවා සමඟ සම්බන්ධ විය හැක. උපදෙස් හෝ ලේඛන සංස්කරණය නැවත නොඅසයි, සැබවින්ම ධාවනය වන දේ වෙනස් වීම පමණි."</string>
+    <string name="trust_mode_title">"ධාවනයට ඉඩ ඇති විට"</string>
+    <string name="trust_mode_ask_changes">"නව සහ වෙනස් වූ මෙවලම් ගැන අසන්න"</string>
+    <string name="trust_mode_ask_changes_hint">"වඩාත් ආරක්ෂිත. අනුමත සර්වරයක් හෝ ප්ලගීනයක් සංස්කරණය කිරීම නැවත අසයි."</string>
+    <string name="trust_mode_ask_new">"නව මෙවලම් ගැන පමණක් අසන්න"</string>
+    <string name="trust_mode_ask_new_hint">"අනුමත මෙවලම් වෙනස් වූ පසුවත් ධාවනය වේ. ඔබම සංස්කරණය කරන ව්‍යාපෘතිවලට හොඳයි."</string>
+    <string name="trust_mode_trust_all">"සියල්ල විශ්වාස කරන්න"</string>
+    <string name="trust_mode_trust_all_hint">"කිසිවක් නොඅසයි. මෙම වැඩබිම එකතු කරන සියල්ල වහාම ධාවනය වේ, git pull පසුවත්."</string>
+    <string name="trust_mode_block_all">"කිසිවිටෙක ධාවනය නොකරන්න"</string>
+    <string name="trust_mode_block_all_hint">"මෙම වැඩබිමේ සර්වර් සහ ප්ලගීන කිසිවිටෙක ධාවනය නොවේ, කිසිවක් නොඅසයි. ඔබේ ගෝලීය සර්වර් තවමත් ක්‍රියා කරයි."</string>
+    <string name="trust_items_title">"සර්වර් සහ ප්ලගීන"</string>
+    <string name="trust_items_hint">"එකක් සක්‍රීය කළ විට එයට ධාවනයට ඉඩ ලැබේ. අක්‍රීය කිරීම ඔබේ පිළිතුර මතක තබා ගනී, එබැවින් වෙනස් වන තුරු නැවත නොඅසයි."</string>
+    <string name="trust_items_mode_note">"ඉහත සැකසුම දැන් සියලු අයිතම සඳහා තීරණය කරයි. අසන ප්‍රකාරයට නැවත ගිය විට මෙහි පිළිතුරු නැවත බලපායි."</string>
+    <string name="trust_allow_all">"සියල්ලට ඉඩ දෙන්න"</string>
+    <string name="trust_forget">"මගේ පිළිතුරු අමතක කරන්න"</string>
+    <string name="trust_changed_reload">"වින්‍යාසය වෙනස් විය. කිසිවකට ඉඩ දීමට පෙර නැවත සමාලෝචනය කරන්න."</string>
+    <string name="trust_needs_approval">"ව්‍යාපෘති මෙවලම්වලට අනුමැතිය අවශ්‍යයි: %1$s. ඒවාට ඉඩ දීමට මෙම කතාබස විවෘත කරන්න, නැතහොත් වින්‍යාස සැකසුම්වල මෙම වැඩබිම තම මෙවලම් විශ්වාස කරන ආකාරය තෝරන්න."</string>
+</resources>

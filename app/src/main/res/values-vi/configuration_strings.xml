@@ -27,10 +27,6 @@
     <string name="config_sources">"Nguồn cấu hình"</string>
     <string name="config_default">"mặc định"</string>
     <string name="config_warnings">"Thông báo"</string>
-    <string name="config_project_tools">"Các công cụ và plugin dự án"</string>
-    <string name="config_trust_hint">"Xem lại cấu hình này trước khi phê duyệt nó. Máy chủ MCP có thể chạy lệnh hoặc dịch vụ liên hệ. Móc plugin chạy trong quy trình JavaScript bị cô lập. Những thay đổi cần có sự phê duyệt mới."</string>
-    <string name="config_approved">"Đã phê duyệt cho không gian làm việc này"</string>
-    <string name="config_approve">"Phê duyệt cấu hình này"</string>
     <string name="config_folders">"Thư mục được kết nối"</string>
     <string name="config_folders_hint">"Kết nối một thư mục bổ sung để đọc hướng dẫn, tài liệu tham khảo hoặc kỹ năng bằng @name/path.. Điều này không cấp cho công cụ trợ lý quyền truy cập tệp bổ sung."</string>
     <string name="config_add_folder">"Kết nối một thư mục"</string>

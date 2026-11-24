@@ -27,10 +27,6 @@
     <string name="config_sources">"Sumber konfigurasi"</string>
     <string name="config_default">"lalai"</string>
     <string name="config_warnings">"Notis"</string>
-    <string name="config_project_tools">"Alat projek dan pemalam"</string>
-    <string name="config_trust_hint">"Semak konfigurasi ini sebelum meluluskannya. Pelayan MCP boleh menjalankan arahan atau perkhidmatan hubungan. Cangkuk pemalam dijalankan dalam proses JavaScript terpencil. Perubahan memerlukan kelulusan baharu."</string>
-    <string name="config_approved">"Diluluskan untuk ruang kerja ini"</string>
-    <string name="config_approve">"Luluskan konfigurasi ini"</string>
     <string name="config_folders">"Folder bersambung"</string>
     <string name="config_folders_hint">"Sambungkan folder tambahan untuk membaca arahan, rujukan atau kemahiran menggunakan @name/path. Ini tidak memberikan alat ejen akses fail tambahan."</string>
     <string name="config_add_folder">"Sambungkan folder"</string>

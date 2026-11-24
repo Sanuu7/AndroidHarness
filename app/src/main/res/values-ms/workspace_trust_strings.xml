@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"Benarkan alat ruang kerja ini?"</string>
+    <string name="trust_dialog_body">"Ruang kerja ini mempunyai pelayan dan pemalam yang boleh menjalankan arahan pada peranti anda dan mencapai rangkaian. Benarkan hanya yang anda percayai."</string>
+    <string name="trust_dialog_unticked">"Yang tidak ditanda tidak akan berjalan dan tidak akan bertanya lagi sehingga ia berubah. Semua ini boleh diubah dalam tetapan Konfigurasi."</string>
+    <string name="trust_dialog_trust_all">"Percayai segala-galanya dalam ruang kerja ini"</string>
+    <string name="trust_dialog_trust_all_hint">"Apa sahaja yang ditambah kemudian, seperti selepas git pull, berjalan tanpa bertanya. Berguna untuk tugas berjadual dalam projek anda sendiri."</string>
+    <string name="trust_continue">"Teruskan"</string>
+    <string name="trust_not_now">"Bukan sekarang"</string>
+    <string name="trust_kind_server">"Pelayan MCP"</string>
+    <string name="trust_kind_plugin">"Pemalam"</string>
+    <string name="trust_kind_language_server">"Pelayan bahasa"</string>
+    <string name="trust_kind_bin">"Folder arahan pemalam"</string>
+    <string name="trust_state_new">"Baharu"</string>
+    <string name="trust_state_changed">"Berubah sejak jawapan terakhir anda"</string>
+    <string name="trust_state_approved">"Dibenarkan"</string>
+    <string name="trust_state_declined">"Tidak dibenarkan"</string>
+    <string name="trust_state_blocked">"Disekat oleh tetapan ruang kerja ini"</string>
+    <string name="trust_panel_title">"Alat projek"</string>
+    <string name="trust_panel_hint">"Pelayan dan pemalam boleh menjalankan arahan dan menghubungi perkhidmatan. Menyunting arahan atau dokumen tidak bertanya lagi, hanya perubahan pada apa yang benar-benar berjalan."</string>
+    <string name="trust_mode_title">"Bila ia boleh berjalan"</string>
+    <string name="trust_mode_ask_changes">"Tanya tentang alat baharu dan berubah"</string>
+    <string name="trust_mode_ask_changes_hint">"Paling selamat. Menyunting pelayan atau pemalam yang dibenarkan akan bertanya lagi."</string>
+    <string name="trust_mode_ask_new">"Tanya tentang alat baharu sahaja"</string>
+    <string name="trust_mode_ask_new_hint">"Alat yang dibenarkan terus berjalan selepas berubah. Bagus untuk projek yang anda sunting sendiri."</string>
+    <string name="trust_mode_trust_all">"Percayai semua"</string>
+    <string name="trust_mode_trust_all_hint">"Tiada apa yang bertanya. Apa sahaja yang ditambah ruang kerja ini berjalan serta-merta, termasuk selepas git pull."</string>
+    <string name="trust_mode_block_all">"Jangan sekali-kali jalankannya"</string>
+    <string name="trust_mode_block_all_hint">"Pelayan dan pemalam ruang kerja ini tidak pernah berjalan dan tiada apa yang bertanya. Pelayan global anda masih berfungsi."</string>
+    <string name="trust_items_title">"Pelayan dan pemalam"</string>
+    <string name="trust_items_hint">"Hidupkan satu untuk membenarkannya berjalan. Mematikannya mengingati jawapan anda, jadi ia tidak bertanya lagi sehingga berubah."</string>
+    <string name="trust_items_mode_note">"Tetapan anda di atas menentukan untuk semua item sekarang. Jawapan anda di sini kembali jika anda beralih kepada mod bertanya."</string>
+    <string name="trust_allow_all">"Benarkan semua"</string>
+    <string name="trust_forget">"Lupakan jawapan saya"</string>
+    <string name="trust_changed_reload">"Konfigurasi berubah. Semak semula sebelum membenarkan apa-apa."</string>
+    <string name="trust_needs_approval">"Alat projek memerlukan kelulusan: %1$s. Buka sembang ini untuk membenarkannya, atau pilih cara ruang kerja ini mempercayai alatnya dalam tetapan Konfigurasi."</string>
+</resources>

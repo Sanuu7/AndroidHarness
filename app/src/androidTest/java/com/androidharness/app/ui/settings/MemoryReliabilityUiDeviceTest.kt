@@ -80,7 +80,7 @@ class MemoryReliabilityUiDeviceTest {
                     HarnessTheme(themeMode = ThemeMode.DARK, dynamicColor = false) {
                         val prefs by c.settings.settings.collectAsStateWithLifecycle(initialValue = AppSettings(memoryEntryUnlimited = true))
                         MemoryEditDialog(null, emptyList(), onDismiss = {}, onDelete = {}, settings = prefs,
-                            onSave = { text, _, _, _, _ -> savedText = text })
+                            onSave = { draft -> savedText = draft.text })
                     }
                 } }
                 val long = "x".repeat(25_000)

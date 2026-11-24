@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"භාවිතය කළමනාකරණය"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"ප්රතිඵල සහ හිතන ටෝකන් ප්රතිඵලයක් ලෙස බදු කරනු ලැබේ, ප්රතිඵල ලෙස නැවත යැවිය නොහැක."</string>
     <string name="ui_scheduled_messages">"සැලසුම් කර ඇති පණිවිඩ"</string>
-    <string name="ui_allow_workspace_mcp_servers">"වැඩපිළිවෙළට ඉඩ දෙන්න MCP සේවාදායකයන් ?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"මෙම වැඩපිළිවෙළේ නැව් A.harness/mcp.json එය සම්බන්ධ කිරීමට අවශ්ය වේ: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"එහි සේවාදායකයන් දේශීය නියෝග ක්‍රියාත්මක කිරීම සහ ජාලය වෙත ළඟා වීමට හැකිය. "</string>
-    <string name="ui_only_approve_configs_you_trust">"ඔබ විශ්වාස කරන Configs පමණක් අනුමත කරන්න."</string>
     <string name="ui_approve">"අනුමත කිරීම"</string>
-    <string name="ui_run_without_them">"ඔවුන් නැතිව ධාවනය"</string>
     <string name="ui_two_models_one_for_planning_one_for">"2 Models, එකක් සැලසුම් කිරීම සඳහා, එකක් කරන්න"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"දැන් ඔබට වෙන්ව ආකෘති දෙකක් සැකසුම් කළ හැකිය: සැලසුම් ක්රමය සඳහා එක, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"ඔබ සැලැස්ම අනුමත කරන විට සහ ක්‍රියාත්මක කිරීම ආරම්භ කළ යුතු ය."</string>

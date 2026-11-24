@@ -27,10 +27,6 @@
     <string name="config_sources">"Mga mapagkukunan ng configuration"</string>
     <string name="config_default">"default"</string>
     <string name="config_warnings">"Mga paunawa"</string>
-    <string name="config_project_tools">"Mga tool at plugin ng proyekto"</string>
-    <string name="config_trust_hint">"Suriin ang configuration na ito bago ito aprubahan. Ang mga server ng MCP ay maaaring magpatakbo ng mga command o mga serbisyo sa pakikipag-ugnayan. Ang mga plugin hook ay tumatakbo sa isang nakahiwalay na proseso ng JavaScript. Ang mga pagbabago ay nangangailangan ng bagong pag-apruba."</string>
-    <string name="config_approved">"Naaprubahan para sa workspace na ito"</string>
-    <string name="config_approve">"Aprubahan ang configuration na ito"</string>
     <string name="config_folders">"Mga nakakonektang folder"</string>
     <string name="config_folders_hint">"Magkonekta ng dagdag na folder para magbasa ng mga tagubilin, sanggunian o kasanayan gamit ang @name/path. Hindi ito nagbibigay ng mga tool ng ahente ng karagdagang access sa file."</string>
     <string name="config_add_folder">"Ikonekta ang isang folder"</string>

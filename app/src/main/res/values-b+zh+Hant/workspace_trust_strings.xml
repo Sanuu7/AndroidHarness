@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"允許此工作區的工具？"</string>
+    <string name="trust_dialog_body">"此工作區包含可在你的裝置上執行命令並存取網路伺服器與外掛。只允許你信任的內容。"</string>
+    <string name="trust_dialog_unticked">"未勾選的內容不會執行，且在變更前不會再次詢問。你可以在設定中變更這些。"</string>
+    <string name="trust_dialog_trust_all">"信任此工作區中的所有內容"</string>
+    <string name="trust_dialog_trust_all_hint">"它之後新增的內容（例如 git pull 後）會直接執行，不再詢問。適合你自己專案中的排程工作。"</string>
+    <string name="trust_continue">"繼續"</string>
+    <string name="trust_not_now">"暫不"</string>
+    <string name="trust_kind_server">"MCP 伺服器"</string>
+    <string name="trust_kind_plugin">"外掛"</string>
+    <string name="trust_kind_language_server">"語言伺服器"</string>
+    <string name="trust_kind_bin">"外掛命令資料夾"</string>
+    <string name="trust_state_new">"新增"</string>
+    <string name="trust_state_changed">"自上次回答後已變更"</string>
+    <string name="trust_state_approved">"已允許"</string>
+    <string name="trust_state_declined">"不允許"</string>
+    <string name="trust_state_blocked">"被此工作區的設定阻止"</string>
+    <string name="trust_panel_title">"專案工具"</string>
+    <string name="trust_panel_hint">"伺服器與外掛可以執行命令並聯絡服務。編輯說明或文件不會再詢問，只有實際執行內容的變更才會。"</string>
+    <string name="trust_mode_title">"何時可以執行"</string>
+    <string name="trust_mode_ask_changes">"詢問新增與變更的工具"</string>
+    <string name="trust_mode_ask_changes_hint">"最安全。編輯已允許的伺服器或外掛會再次詢問。"</string>
+    <string name="trust_mode_ask_new">"僅詢問新工具"</string>
+    <string name="trust_mode_ask_new_hint">"已允許的工具在變更後繼續執行。適合你自己編輯的專案。"</string>
+    <string name="trust_mode_trust_all">"信任所有"</string>
+    <string name="trust_mode_trust_all_hint">"不會詢問。此工作區新增的任何內容都會立即執行，包括 git pull 之後。"</string>
+    <string name="trust_mode_block_all">"永不執行它們"</string>
+    <string name="trust_mode_block_all_hint">"此工作區的伺服器與外掛永不執行，也不會詢問。全域伺服器仍然有效。"</string>
+    <string name="trust_items_title">"伺服器與外掛"</string>
+    <string name="trust_items_hint">"開啟一個即可允許其執行。關閉會記住你的回答，因此在它變更前不會再次詢問。"</string>
+    <string name="trust_items_mode_note">"你上方的設定現在決定所有項目。切回詢問模式後，這裡的回答會恢復生效。"</string>
+    <string name="trust_allow_all">"全部允許"</string>
+    <string name="trust_forget">"忘記我的回答"</string>
+    <string name="trust_changed_reload">"設定已變更。請重新查看後再允許任何內容。"</string>
+    <string name="trust_needs_approval">"專案工具需要批准：%1$s。開啟此聊天以允許它們，或在設定中選擇此工作區如何信任其工具。"</string>
+</resources>

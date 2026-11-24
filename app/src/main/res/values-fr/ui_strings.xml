@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"Gérer l\'utilisation"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Les jetons de raisonnement et de réflexion sont facturés en sortie et ne sont pas renvoyés en entrée."</string>
     <string name="ui_scheduled_messages">"Messages programmés"</string>
-    <string name="ui_allow_workspace_mcp_servers">"Autoriser les serveurs MCP de l\'espace de travail ?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"Cet espace de travail contient un .harness/mcp.json qui souhaite se connecter : %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Ses serveurs peuvent exécuter des commandes locales et accéder au réseau. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Approuvez uniquement les configurations auxquelles vous faites confiance."</string>
     <string name="ui_approve">"Approuver"</string>
-    <string name="ui_run_without_them">"Courir sans eux"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Deux modèles, un pour planifier, un pour faire"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"Vous pouvez désormais configurer deux modèles séparément : un pour le mode planification, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"et celui qui prend le relais une fois que vous avez approuvé le plan et que l\'exécution commence."</string>

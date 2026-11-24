@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"பயன்பாட்டை நிர்வகிக்கவும்"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"பகுத்தறிவு மற்றும் சிந்தனை டோக்கன்கள் வெளியீட்டாகக் கட்டணம் விதிக்கப்படுகின்றன மற்றும் உள்ளீடாக மீண்டும் அனுப்பப்படாது."</string>
     <string name="ui_scheduled_messages">"திட்டமிடப்பட்ட செய்திகள்"</string>
-    <string name="ui_allow_workspace_mcp_servers">"பணியிட MCP சேவையகங்களை அனுமதிக்கவா?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"இந்த பணியிடம் இணைக்க விரும்பும் .harness/mcp.json ஐ அனுப்புகிறது: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"அதன் சேவையகங்கள் உள்ளூர் கட்டளைகளை இயக்கலாம் மற்றும் பிணையத்தை அடையலாம். "</string>
-    <string name="ui_only_approve_configs_you_trust">"நீங்கள் நம்பும் கட்டமைப்புகளை மட்டும் அங்கீகரிக்கவும்."</string>
     <string name="ui_approve">"ஒப்புதல்"</string>
-    <string name="ui_run_without_them">"அவர்கள் இல்லாமல் ஓடுங்கள்"</string>
     <string name="ui_two_models_one_for_planning_one_for">"இரண்டு மாதிரிகள், ஒன்று திட்டமிடுவதற்கு, ஒன்று செய்வதற்கு"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"நீங்கள் இப்போது இரண்டு மாதிரிகளை தனித்தனியாக உள்ளமைக்கலாம்: ஒன்று திட்டமிடல் பயன்முறைக்கு, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"நீங்கள் திட்டத்திற்கு ஒப்புதல் அளித்து, செயல்படுத்தல் தொடங்கும் போது அதை எடுத்துக் கொள்ளும் ஒன்று."</string>

@@ -27,10 +27,6 @@
     <string name="config_sources">Fontes de configuração</string>
     <string name="config_default">padrão</string>
     <string name="config_warnings">Avisos</string>
-    <string name="config_project_tools">Ferramentas e plugins do projeto</string>
-    <string name="config_trust_hint">Revise antes de aprovar. Servidores MCP podem executar comandos ou contatar serviços. Hooks de plugins rodam em um processo JavaScript isolado. Alterações exigem nova aprovação.</string>
-    <string name="config_approved">Aprovada para este espaço</string>
-    <string name="config_approve">Aprovar esta configuração</string>
     <string name="config_folders">Pastas conectadas</string>
     <string name="config_folders_hint">Conecte outra pasta para ler instruções, referências ou habilidades usando @name/path. Isso não amplia o acesso a arquivos das ferramentas do agente.</string>
     <string name="config_add_folder">Conectar pasta</string>

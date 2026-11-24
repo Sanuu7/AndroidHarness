@@ -27,10 +27,6 @@
     <string name="config_sources">配置来源</string>
     <string name="config_default">默认</string>
     <string name="config_warnings">提示</string>
-    <string name="config_project_tools">项目工具和插件</string>
-    <string name="config_trust_hint">批准前请检查配置。MCP 服务器可运行命令或连接服务。插件钩子在隔离的 JavaScript 进程中运行。更改后需要重新批准。</string>
-    <string name="config_approved">已对此工作区批准</string>
-    <string name="config_approve">批准此配置</string>
     <string name="config_folders">已连接的文件夹</string>
     <string name="config_folders_hint">连接额外文件夹，通过 @name/path 读取指令、参考资料或技能。此操作不会扩大智能体工具的文件访问权限。</string>
     <string name="config_add_folder">连接文件夹</string>

@@ -484,24 +484,11 @@ private fun ChatScreenContent(
         }
     }
 
-    if (state.pendingWorkspaceMcp != null) {
-        AlertDialog(
-            onDismissRequest = { viewModel.denyWorkspaceMcp() },
-            title = { Text(uiContext.getString(R.string.ui_allow_workspace_mcp_servers)) },
-            text = {
-                val names = state.pendingWorkspaceMcp?.joinToString(", ").orEmpty()
-                Text(
-                    uiContext.getString(R.string.ui_this_workspace_ships_a_harness_mcp_json, (names).toString()) +
-                        uiContext.getString(R.string.ui_its_servers_can_run_local_commands_and) +
-                        uiContext.getString(R.string.ui_only_approve_configs_you_trust),
-                )
-            },
-            confirmButton = {
-                Button(onClick = { viewModel.approveWorkspaceMcp() }) { Text(uiContext.getString(R.string.ui_approve)) }
-            },
-            dismissButton = {
-                TextButton(onClick = { viewModel.denyWorkspaceMcp() }) { Text(uiContext.getString(R.string.ui_run_without_them)) }
-            },
+    state.pendingWorkspaceMcp?.let { prompts ->
+        WorkspaceTrustDialog(
+            prompts = prompts,
+            onContinue = { allowed, trustAll -> viewModel.approveWorkspaceMcp(allowed, trustAll) },
+            onNotNow = { viewModel.denyWorkspaceMcp() },
         )
     }
 

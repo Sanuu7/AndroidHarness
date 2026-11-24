@@ -211,7 +211,7 @@ data class ChatUiState(
     /** One-shot toast text for mode switches ("Planning mode: …"); consumed by the screen. */
     val modeToast: String? = null,
     /** Workspace .harness/mcp.json server names awaiting user approval before a run. */
-    val pendingWorkspaceMcp: List<String>? = null,
+    val pendingWorkspaceMcp: List<com.androidharness.app.tools.mcp.TrustPrompt>? = null,
     /** Fetched model catalogs per provider id. */
     val catalogs: Map<String, List<com.androidharness.app.llm.ModelEntry>> = emptyMap(),
     /** Precomputed human-readable activity line (computed in the ViewModel, never in composition). */
@@ -352,8 +352,13 @@ class ChatViewModel(
     private var pendingConfigFingerprint: String? = null
     private var startingRun = false
 
-    /** User approved the workspace .harness/mcp.json: remember it and run. */
-    fun approveWorkspaceMcp() {
+    /**
+     * User answered the workspace tools dialog: ticked items are allowed, the rest
+     * are remembered as declined until they change, or [trustAll] trusts the whole
+     * workspace from now on. Then the run starts.
+     */
+    fun approveWorkspaceMcp(allowed: Set<String>, trustAll: Boolean) {
+        val asked = _state.value.pendingWorkspaceMcp.orEmpty().map { it.item.key }.toSet()
         val text = pendingRunText
         val replacement = pendingReplacement
         pendingReplacement = null
@@ -368,7 +373,11 @@ class ChatViewModel(
                     check(c.mcp.approvalFingerprint(workspace, snapshot) == pendingConfigFingerprint) {
                         "Project tools changed while approval was open. Send your message again to review them."
                     }
-                    c.mcp.approveWorkspace(workspace, snapshot)
+                    if (trustAll) c.mcp.setTrustMode(workspace, com.androidharness.app.tools.mcp.WorkspaceTrustMode.TRUST_ALL, snapshot)
+                    else {
+                        if (allowed.isNotEmpty()) c.mcp.approveWorkspace(workspace, snapshot, allowed)
+                        (asked - allowed).takeIf { it.isNotEmpty() }?.let { c.mcp.declineWorkspace(workspace, snapshot, it) }
+                    }
                 }
             }
             pendingMcpWorkspace = null
@@ -377,7 +386,7 @@ class ChatViewModel(
         }
     }
 
-    /** User declined: run without the workspace servers (they stay blocked). */
+    /** "Not now": run without the workspace tools this once; they ask again next time. */
     fun denyWorkspaceMcp() {
         val text = pendingRunText
         val replacement = pendingReplacement
@@ -1701,20 +1710,21 @@ class ChatViewModel(
                             com.androidharness.app.llm.HarnessProvider.pins + (roleModel to learned.name)
                     }
                 }
-                // Security gate (battery D1): a workspace .harness/mcp.json never
-                // spawns commands until this exact file content was approved. The
-                // dialog offers approve (and continue) or run without those servers.
+                // Security gate (battery D1): a workspace server or plugin never runs
+                // until the user allowed it at its current content, unless the
+                // workspace's trust mode says otherwise. The dialog lists only what is
+                // new or changed.
                 if (workspaceMcpGate && !s0.conversation.isChat) {
                     val unapproved = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
                         val snapshot = c.configuration.load(runWorkspace)
                         pendingConfigFingerprint = c.mcp.approvalFingerprint(runWorkspace, snapshot)
-                        c.mcp.unapprovedWorkspaceServers(runWorkspace, snapshot)
+                        c.mcp.trustPrompts(runWorkspace, snapshot)
                     }
                     if (unapproved.isNotEmpty()) {
                         pendingRunText = payload
                         pendingReplacement = replacement
                         pendingMcpWorkspace = runWorkspace
-                        _state.update { it.copy(pendingWorkspaceMcp = unapproved.map { s -> s.name }) }
+                        _state.update { it.copy(pendingWorkspaceMcp = unapproved) }
                         return@launch
                     }
                 }

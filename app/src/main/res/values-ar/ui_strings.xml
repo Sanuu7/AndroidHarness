@@ -491,12 +491,7 @@
     <string name="ui_manage_usage">"إدارة الاستخدام"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"تُحاسب رموز الاستدلال والتفكير كإخراج ولا تُعاد كإدخال."</string>
     <string name="ui_scheduled_messages">"الرسائل المجدولة"</string>
-    <string name="ui_allow_workspace_mcp_servers">"السماح بخوادم MCP لمساحة العمل؟"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"تتضمن مساحة العمل ملف .harness/mcp.json يطلب الاتصال بـ: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"يمكن لخوادمه تشغيل أوامر محلية والوصول إلى الشبكة. "</string>
-    <string name="ui_only_approve_configs_you_trust">"وافق فقط على الإعدادات التي تثق بها."</string>
     <string name="ui_approve">"موافقة"</string>
-    <string name="ui_run_without_them">"التشغيل دونها"</string>
     <string name="ui_two_models_one_for_planning_one_for">"نموذجان: أحدهما للتخطيط والآخر للتنفيذ"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"يمكنك الآن ضبط نموذجين منفصلين: أحدهما لوضع التخطيط، "</string>
     <string name="ui_and_one_that_takes_over_once_you">"والآخر يتولى العمل بعد موافقتك على الخطة وبدء التنفيذ."</string>

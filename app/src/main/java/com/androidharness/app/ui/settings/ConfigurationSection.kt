@@ -49,8 +49,10 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
     var error by remember { mutableStateOf<String?>(null) }
     var snapshot by remember { mutableStateOf<HarnessConfig?>(null) }
     var document by remember { mutableStateOf<Pair<String, String?>?>(null) }
-    var approved by remember { mutableStateOf(false) }
     var approvalFingerprint by remember { mutableStateOf("") }
+    var trustMode by remember { mutableStateOf(com.androidharness.app.tools.mcp.WorkspaceTrustMode.ASK_CHANGES) }
+    var trustItems by remember { mutableStateOf<List<com.androidharness.app.tools.mcp.TrustPrompt>>(emptyList()) }
+    var trustBusy by remember { mutableStateOf(false) }
     var editor by rememberSaveable { mutableStateOf(false) }
     var editWorkspacePath by rememberSaveable { mutableStateOf("") }
     var editorWorkspace by remember { mutableStateOf<WorkspaceFs?>(null) }
@@ -69,8 +71,16 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
         }
     }
     val configRevision by container.configuration.revision.collectAsStateWithLifecycle()
+    fun loadTrust(target: WorkspaceFs, resolved: HarnessConfig) {
+        val record = container.mcp.trustRecord(target, resolved)
+        trustMode = record.mode
+        trustItems = container.mcp.trustItems(target, resolved).map {
+            com.androidharness.app.tools.mcp.TrustPrompt(it, com.androidharness.app.tools.mcp.WorkspaceTrust.state(it, record))
+        }
+        approvalFingerprint = container.mcp.approvalFingerprint(target, resolved)
+    }
     LaunchedEffect(fs?.displayPath, global, refresh, configRevision) {
-        loading = true; error = null; snapshot = null; document = null; approved = false
+        loading = true; error = null; snapshot = null; document = null; trustItems = emptyList()
         if (fs != null) {
             try {
                 document = withContext(Dispatchers.IO) { container.configuration.document(fs, global) }
@@ -79,8 +89,7 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
                 secrets = withContext(Dispatchers.IO) { container.configuration.secretNames() }
                 val resolved = withContext(Dispatchers.IO) { container.configuration.load(fs).also { validateAutoSkills(container, fs, it) } }
                 snapshot = resolved
-                approved = withContext(Dispatchers.IO) { container.mcp.isWorkspaceApproved(fs, resolved) }
-                approvalFingerprint = withContext(Dispatchers.IO) { container.mcp.approvalFingerprint(fs, resolved) }
+                withContext(Dispatchers.IO) { loadTrust(fs, resolved) }
             } catch (e: CancellationException) { throw e }
             catch (e: Exception) { error = e.message ?: "Configuration could not be read." }
         }
@@ -157,40 +166,46 @@ internal fun ConfigurationSection(container: AppContainer, workspaceOverride: Wo
                 if (config.permissions.isNotEmpty()) item { ConfigDetails(stringResource(R.string.config_permissions), config.permissions.map { "${it.key}: ${it.value}" }) }
                 if (config.agents.isNotEmpty()) item { ConfigDetails(stringResource(R.string.config_agents), config.agents.values.map { "${it.name}${if (it.name == config.defaultAgent) " · ${container.appContext.getString(R.string.config_default)}" else ""}\n${it.description}" }) }
                 if (config.warnings.isNotEmpty()) item { ConfigDetails(stringResource(R.string.config_warnings), config.warnings, initiallyExpanded = true) }
-                if (config.servers.any { it.enabled } || config.plugins.isNotEmpty()) item {
-                    SettingsPanel(Modifier.fillMaxWidth()) {
-                        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
-                            Text(stringResource(R.string.config_project_tools), style = MaterialTheme.typography.titleMedium)
-                            Text(stringResource(R.string.config_trust_hint), style = MaterialTheme.typography.bodyMedium)
-                            config.servers.filter { it.enabled }.forEach { server ->
-                                Text(server.name, style = MaterialTheme.typography.titleSmall)
-                                Text(if (server.isRemote) config.redact(server.url.orEmpty())
-                                    else config.redact((listOf(server.command) + server.args).joinToString(" ")),
-                                    style = MaterialTheme.typography.bodySmall)
-                                if (server.env.isNotEmpty() || server.headers.isNotEmpty()) Text(
-                                    (server.env.keys + server.headers.keys).joinToString(", "), style = MaterialTheme.typography.labelSmall)
+            }
+            if (!global && trustItems.isNotEmpty()) item {
+                val config = snapshot
+                fun answer(allows: Boolean = false, action: (WorkspaceFs, HarnessConfig) -> Unit) { scope.launch {
+                    trustBusy = true
+                    try {
+                        withContext(Dispatchers.IO) {
+                            val target = requireNotNull(fs)
+                            val current = container.configuration.load(target)
+                            // Allowing must match what the screen showed; declining or changing the mode never needs to.
+                            if (allows) check(container.mcp.approvalFingerprint(target, current) == approvalFingerprint) {
+                                container.appContext.getString(R.string.trust_changed_reload)
                             }
-                            config.plugins.forEach { plugin ->
-                                Text(plugin.name, style = MaterialTheme.typography.titleSmall)
-                                Text(plugin.hooks.joinToString(", "), style = MaterialTheme.typography.bodySmall)
-                                ConfigDetails(stringResource(R.string.config_plugin_code, plugin.name), listOf(plugin.script))
-                            }
-                            OutlinedButton(onClick = { scope.launch {
-                                try {
-                                    withContext(Dispatchers.IO) {
-                                        val current = container.configuration.load(requireNotNull(fs))
-                                        check(current.fingerprint == config.fingerprint && container.mcp.approvalFingerprint(fs, current) == approvalFingerprint) { "Configuration changed. Reload and review it before approving." }
-                                        container.mcp.approveWorkspace(fs, config)
-                                    }
-                                    refresh++
-                                } catch (e: CancellationException) { throw e }
-                                catch (e: Exception) { error = e.message }
-                            } }, enabled = !approved && !loading, modifier = Modifier.fillMaxWidth()) {
-                                Text(stringResource(if (approved) R.string.config_approved else R.string.config_approve))
-                            }
+                            action(target, current)
+                            // Only the trust part reloads, so the list doesn't flash on every switch.
+                            loadTrust(target, current)
                         }
-                    }
-                }
+                    } catch (e: CancellationException) { throw e }
+                    catch (e: Exception) { error = e.message }
+                    finally { trustBusy = false }
+                } }
+                WorkspaceTrustPanel(
+                    mode = trustMode,
+                    items = trustItems,
+                    enabled = !loading && !trustBusy,
+                    onMode = { mode -> answer { target, current ->
+                        container.mcp.setTrustMode(target, mode, current)
+                    } },
+                    onItem = { key, allow -> answer(allows = allow) { target, current ->
+                        if (allow) container.mcp.approveWorkspace(target, current, setOf(key))
+                        else container.mcp.declineWorkspace(target, current, setOf(key))
+                    } },
+                    onAllowAll = { answer(allows = true) { target, current -> container.mcp.approveWorkspace(target, current) } },
+                    onForget = { answer { target, current -> container.mcp.forgetWorkspaceAnswers(target, current) } },
+                    itemExtra = { prompt ->
+                        config?.plugins?.firstOrNull { "plugin:${it.name}" == prompt.item.key && it.script.isNotBlank() }?.let { plugin ->
+                            ConfigDetails(stringResource(R.string.config_plugin_code, plugin.name), listOf(plugin.script))
+                        }
+                    },
+                )
             }
             if (global) {
                 item {

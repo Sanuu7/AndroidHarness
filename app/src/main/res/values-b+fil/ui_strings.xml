@@ -493,12 +493,7 @@
     <string name="ui_manage_usage">"Pamahalaan ang paggamit"</string>
     <string name="ui_reasoning_and_thinking_tokens_are_billed_as">"Ang mga token ng pangangatuwiran at pag-iisip ay sinisingil bilang output at hindi muling ipinadala bilang input."</string>
     <string name="ui_scheduled_messages">"Mga naka-iskedyul na mensahe"</string>
-    <string name="ui_allow_workspace_mcp_servers">"Payagan ang mga server ng MCP sa workspace?"</string>
-    <string name="ui_this_workspace_ships_a_harness_mcp_json">"Nagpapadala ang workspace na ito ng .harness/mcp.json na gustong kumonekta: %1$s. "</string>
-    <string name="ui_its_servers_can_run_local_commands_and">"Ang mga server nito ay maaaring magpatakbo ng mga lokal na utos at maabot ang network. "</string>
-    <string name="ui_only_approve_configs_you_trust">"Aprubahan lang ang mga config na pinagkakatiwalaan mo."</string>
     <string name="ui_approve">"Aprubahan"</string>
-    <string name="ui_run_without_them">"Tumakbo nang wala sila"</string>
     <string name="ui_two_models_one_for_planning_one_for">"Dalawang modelo, isa para sa pagpaplano, isa para sa paggawa"</string>
     <string name="ui_you_can_now_configure_two_models_separately">"Maaari mo na ngayong i-configure ang dalawang modelo nang hiwalay: isa para sa planning mode, "</string>
     <string name="ui_and_one_that_takes_over_once_you">"at isa na pumapalit kapag naaprubahan mo ang plano at nagsimula ang pagpapatupad."</string>

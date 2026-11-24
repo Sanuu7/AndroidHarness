@@ -27,10 +27,6 @@
     <string name="config_sources">"कॉन्फ़िगरेशन स्रोत"</string>
     <string name="config_default">"डिफ़ॉल्ट"</string>
     <string name="config_warnings">"नोटिस"</string>
-    <string name="config_project_tools">"प्रोजेक्ट उपकरण और प्लगइन्स"</string>
-    <string name="config_trust_hint">"इस कॉन्फ़िगरेशन को अनुमोदित करने से पहले उसकी समीक्षा करें. MCP सर्वर कमांड चला सकते हैं या सेवाओं से संपर्क कर सकते हैं। प्लगइन हुक एक पृथक JavaScript प्रक्रिया में चलते हैं। परिवर्तनों के लिए नई स्वीकृति की आवश्यकता होती है."</string>
-    <string name="config_approved">"इस कार्यक्षेत्र के लिए स्वीकृत"</string>
-    <string name="config_approve">"इस कॉन्फ़िगरेशन को स्वीकृत करें"</string>
     <string name="config_folders">"जुड़े हुए फ़ोल्डर"</string>
     <string name="config_folders_hint">"@name/path. का उपयोग करके निर्देश, संदर्भ या कौशल पढ़ने के लिए एक अतिरिक्त फ़ोल्डर कनेक्ट करें यह एजेंट टूल को अतिरिक्त फ़ाइल एक्सेस प्रदान नहीं करता है।"</string>
     <string name="config_add_folder">"एक फ़ोल्डर कनेक्ट करें"</string>

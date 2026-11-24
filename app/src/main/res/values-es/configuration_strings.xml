@@ -27,10 +27,6 @@
     <string name="config_sources">Fuentes de configuración</string>
     <string name="config_default">predeterminado</string>
     <string name="config_warnings">Avisos</string>
-    <string name="config_project_tools">Herramientas y plugins del proyecto</string>
-    <string name="config_trust_hint">Revisa la configuración antes de aprobarla. Los servidores MCP pueden ejecutar comandos o contactar servicios. Los hooks se ejecutan en un proceso JavaScript aislado. Los cambios requieren otra aprobación.</string>
-    <string name="config_approved">Aprobada para este espacio</string>
-    <string name="config_approve">Aprobar esta configuración</string>
     <string name="config_folders">Carpetas conectadas</string>
     <string name="config_folders_hint">Conecta otra carpeta para leer instrucciones, referencias o habilidades con @name/path. Esto no amplía el acceso a archivos de las herramientas del agente.</string>
     <string name="config_add_folder">Conectar carpeta</string>

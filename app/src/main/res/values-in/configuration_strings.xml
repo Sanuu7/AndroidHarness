@@ -27,10 +27,6 @@
     <string name="config_sources">Sumber konfigurasi</string>
     <string name="config_default">bawaan</string>
     <string name="config_warnings">Pemberitahuan</string>
-    <string name="config_project_tools">Alat dan plugin proyek</string>
-    <string name="config_trust_hint">Tinjau konfigurasi sebelum menyetujui. Server MCP dapat menjalankan perintah atau menghubungi layanan. Hook plugin berjalan dalam proses JavaScript terisolasi. Perubahan memerlukan persetujuan baru.</string>
-    <string name="config_approved">Disetujui untuk ruang kerja ini</string>
-    <string name="config_approve">Setujui konfigurasi ini</string>
     <string name="config_folders">Folder terhubung</string>
     <string name="config_folders_hint">Hubungkan folder tambahan untuk membaca instruksi, referensi, atau keahlian melalui @name/path. Ini tidak memperluas akses berkas alat agen.</string>
     <string name="config_add_folder">Hubungkan folder</string>

@@ -27,10 +27,6 @@
     <string name="config_sources">"Sources de configuration"</string>
     <string name="config_default">"par défaut"</string>
     <string name="config_warnings">"Avis"</string>
-    <string name="config_project_tools">"Outils et plugins de projet"</string>
-    <string name="config_trust_hint">"Vérifiez cette configuration avant de l’approuver. Les serveurs MCP peuvent exécuter des commandes ou contacter des services. Les hooks de plugin s\'exécutent dans un processus JavaScript isolé. Les modifications nécessitent une nouvelle approbation."</string>
-    <string name="config_approved">"Approuvé pour cet espace de travail"</string>
-    <string name="config_approve">"Approuver cette configuration"</string>
     <string name="config_folders">"Dossiers connectés"</string>
     <string name="config_folders_hint">"Connectez un dossier supplémentaire pour lire des instructions, des références ou des compétences à l\'aide de @name/path.. Cela n\'accorde pas aux outils d\'agent un accès supplémentaire aux fichiers."</string>
     <string name="config_add_folder">"Connecter un dossier"</string>

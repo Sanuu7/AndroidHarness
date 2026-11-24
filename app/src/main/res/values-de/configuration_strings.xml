@@ -27,10 +27,6 @@
     <string name="config_sources">Konfigurationsquellen</string>
     <string name="config_default">Standard</string>
     <string name="config_warnings">Hinweise</string>
-    <string name="config_project_tools">Projektwerkzeuge und Plugins</string>
-    <string name="config_trust_hint">Prüfen Sie die Konfiguration vor der Freigabe. MCP-Server können Befehle ausführen oder Dienste kontaktieren. Plugin-Hooks laufen in einem isolierten JavaScript-Prozess. Änderungen erfordern eine neue Freigabe.</string>
-    <string name="config_approved">Für diesen Arbeitsbereich freigegeben</string>
-    <string name="config_approve">Konfiguration freigeben</string>
     <string name="config_folders">Verbundene Ordner</string>
     <string name="config_folders_hint">Verbinden Sie einen zusätzlichen Ordner für Anweisungen, Referenzen oder Skills über @name/path. Die Dateizugriffe der Agentenwerkzeuge werden dadurch nicht erweitert.</string>
     <string name="config_add_folder">Ordner verbinden</string>

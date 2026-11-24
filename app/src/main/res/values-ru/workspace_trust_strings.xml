@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="trust_dialog_title">"Разрешить инструменты этого рабочего пространства?"</string>
+    <string name="trust_dialog_body">"В этом рабочем пространстве есть серверы и плагины, которые могут выполнять команды на устройстве и обращаться к сети. Разрешайте только те, которым доверяете."</string>
+    <string name="trust_dialog_unticked">"Неотмеченные не запустятся и не спросят снова, пока не изменятся. Всё это можно поменять в настройках конфигурации."</string>
+    <string name="trust_dialog_trust_all">"Доверять всему в этом рабочем пространстве"</string>
+    <string name="trust_dialog_trust_all_hint">"Всё, что оно добавит позже, например после git pull, запускается без вопросов. Удобно для запланированных задач в своём проекте."</string>
+    <string name="trust_continue">"Продолжить"</string>
+    <string name="trust_not_now">"Не сейчас"</string>
+    <string name="trust_kind_server">"Сервер MCP"</string>
+    <string name="trust_kind_plugin">"Плагин"</string>
+    <string name="trust_kind_language_server">"Языковой сервер"</string>
+    <string name="trust_kind_bin">"Папка команд плагина"</string>
+    <string name="trust_state_new">"Новый"</string>
+    <string name="trust_state_changed">"Изменено с вашего последнего ответа"</string>
+    <string name="trust_state_approved">"Разрешено"</string>
+    <string name="trust_state_declined">"Не разрешено"</string>
+    <string name="trust_state_blocked">"Заблокировано настройкой этого рабочего пространства"</string>
+    <string name="trust_panel_title">"Инструменты проекта"</string>
+    <string name="trust_panel_hint">"Серверы и плагины могут выполнять команды и обращаться к сервисам. Правка инструкций и документации больше не запрашивает подтверждение, только изменения того, что действительно запускается."</string>
+    <string name="trust_mode_title">"Когда они могут запускаться"</string>
+    <string name="trust_mode_ask_changes">"Спрашивать о новых и изменённых инструментах"</string>
+    <string name="trust_mode_ask_changes_hint">"Самый безопасный. Правка разрешённого сервера или плагина снова запросит подтверждение."</string>
+    <string name="trust_mode_ask_new">"Спрашивать только о новых инструментах"</string>
+    <string name="trust_mode_ask_new_hint">"Разрешённые инструменты продолжают работать после изменений. Подходит для проектов, которые вы правите сами."</string>
+    <string name="trust_mode_trust_all">"Доверять всему"</string>
+    <string name="trust_mode_trust_all_hint">"Ничего не спрашивает. Всё, что добавит это рабочее пространство, запустится сразу, в том числе после git pull."</string>
+    <string name="trust_mode_block_all">"Никогда их не запускать"</string>
+    <string name="trust_mode_block_all_hint">"Серверы и плагины этого рабочего пространства никогда не запускаются и ничего не спрашивает. Глобальные серверы продолжают работать."</string>
+    <string name="trust_items_title">"Серверы и плагины"</string>
+    <string name="trust_items_hint">"Включите один, чтобы разрешить запуск. Выключение запоминает ответ, поэтому оно не спросит снова, пока элемент не изменится."</string>
+    <string name="trust_items_mode_note">"Настройка выше сейчас решает за все элементы. Ваши ответы здесь вернутся, если снова включить вопросы."</string>
+    <string name="trust_allow_all">"Разрешить всё"</string>
+    <string name="trust_forget">"Забыть мои ответы"</string>
+    <string name="trust_changed_reload">"Конфигурация изменилась. Проверьте её снова, прежде чем что-то разрешать."</string>
+    <string name="trust_needs_approval">"Инструменты проекта требуют подтверждения: %1$s. Откройте этот чат, чтобы разрешить их, или выберите в настройках конфигурации, как это рабочее пространство доверяет своим инструментам."</string>
+</resources>

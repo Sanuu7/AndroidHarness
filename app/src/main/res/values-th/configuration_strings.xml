@@ -27,10 +27,6 @@
     <string name="config_sources">"แหล่งที่มาของการกำหนดค่า"</string>
     <string name="config_default">"ค่าเริ่มต้น"</string>
     <string name="config_warnings">"ประกาศ"</string>
-    <string name="config_project_tools">"เครื่องมือโครงการและปลั๊กอิน"</string>
-    <string name="config_trust_hint">"ตรวจสอบการกำหนดค่านี้ก่อนที่จะอนุมัติ เซิร์ฟเวอร์ MCP สามารถรันคำสั่งหรือบริการติดต่อได้ Plugin hooks ทำงานในกระบวนการ JavaScript ที่แยกออกมา การเปลี่ยนแปลงต้องได้รับอนุมัติใหม่"</string>
-    <string name="config_approved">"ได้รับการอนุมัติสำหรับพื้นที่ทำงานนี้"</string>
-    <string name="config_approve">"อนุมัติการกำหนดค่านี้"</string>
     <string name="config_folders">"โฟลเดอร์ที่เชื่อมต่อ"</string>
     <string name="config_folders_hint">"เชื่อมต่อโฟลเดอร์เพิ่มเติมเพื่ออ่านคำแนะนำ ข้อมูลอ้างอิง หรือทักษะโดยใช้ @name/path. ซึ่งไม่ได้ให้สิทธิ์การเข้าถึงไฟล์เพิ่มเติมแก่เครื่องมือเอเจนต์"</string>
     <string name="config_add_folder">"เชื่อมต่อโฟลเดอร์"</string>

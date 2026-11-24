@@ -27,10 +27,6 @@
     <string name="config_sources">مصادر الإعدادات</string>
     <string name="config_default">افتراضي</string>
     <string name="config_warnings">ملاحظات</string>
-    <string name="config_project_tools">أدوات المشروع وإضافاته</string>
-    <string name="config_trust_hint">راجع الإعدادات قبل الموافقة. يمكن لخوادم MCP تشغيل أوامر أو الاتصال بخدمات. تعمل خطافات الإضافات في عملية JavaScript معزولة. تتطلب التغييرات موافقة جديدة.</string>
-    <string name="config_approved">تمت الموافقة لمساحة العمل هذه</string>
-    <string name="config_approve">الموافقة على هذه الإعدادات</string>
     <string name="config_folders">المجلدات المتصلة</string>
     <string name="config_folders_hint">اربط مجلدًا إضافيًا لقراءة التعليمات أو المراجع أو المهارات عبر @name/path. لا يوسّع ذلك صلاحية أدوات الوكيل للوصول إلى الملفات.</string>
     <string name="config_add_folder">ربط مجلد</string>

@@ -27,10 +27,6 @@
     <string name="config_sources">"கட்டமைப்பு ஆதாரங்கள்"</string>
     <string name="config_default">"இயல்புநிலை"</string>
     <string name="config_warnings">"அறிவிப்புகள்"</string>
-    <string name="config_project_tools">"திட்ட கருவிகள் மற்றும் செருகுநிரல்கள்"</string>
-    <string name="config_trust_hint">"இந்த கட்டமைப்பை அங்கீகரிக்கும் முன் மதிப்பாய்வு செய்யவும். MCP சேவையகங்கள் கட்டளைகளை அல்லது தொடர்பு சேவைகளை இயக்க முடியும். செருகுநிரல் கொக்கிகள் தனிமைப்படுத்தப்பட்ட JavaScript செயல்பாட்டில் இயங்கும். மாற்றங்களுக்கு புதிய அனுமதி தேவை."</string>
-    <string name="config_approved">"இந்த பணியிடத்திற்கு அங்கீகரிக்கப்பட்டது"</string>
-    <string name="config_approve">"இந்த கட்டமைப்பை அங்கீகரிக்கவும்"</string>
     <string name="config_folders">"இணைக்கப்பட்ட கோப்புறைகள்"</string>
     <string name="config_folders_hint">"@name/path. ஐப் பயன்படுத்தி வழிமுறைகள், குறிப்புகள் அல்லது திறன்களைப் படிக்க கூடுதல் கோப்புறையை இணைக்கவும் இது முகவர் கருவிகளுக்கு கூடுதல் கோப்பு அணுகலை வழங்காது."</string>
     <string name="config_add_folder">"ஒரு கோப்புறையை இணைக்கவும்"</string>

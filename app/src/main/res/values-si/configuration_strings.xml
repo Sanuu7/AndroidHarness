@@ -27,10 +27,6 @@
     <string name="config_sources">වින්‍යාස මූලාශ්‍ර</string>
     <string name="config_default">පෙරනිමි</string>
     <string name="config_warnings">දැනුම්දීම්</string>
-    <string name="config_project_tools">ව්‍යාපෘති මෙවලම් සහ ප්ලගින</string>
-    <string name="config_trust_hint">අනුමත කිරීමට පෙර වින්‍යාසය පරීක්ෂා කරන්න. MCP සේවාදායකවලට විධාන ධාවනය හෝ සේවාවලට සම්බන්ධ විය හැක. ප්ලගින හුක් වෙනම හුදකලා JavaScript ක්‍රියාවලියක ධාවනය වේ. වෙනස්කම් සඳහා නැවත අනුමැතිය අවශ්‍යයි.</string>
-    <string name="config_approved">මෙම වැඩ අවකාශයට අනුමතයි</string>
-    <string name="config_approve">මෙම වින්‍යාසය අනුමත කරන්න</string>
     <string name="config_folders">සම්බන්ධිත ෆෝල්ඩර</string>
     <string name="config_folders_hint">@name/path හරහා උපදෙස්, යොමු හෝ කුසලතා කියවීමට තවත් ෆෝල්ඩරයක් සම්බන්ධ කරන්න. මෙයින් නියෝජිත මෙවලම්වල ගොනු ප්‍රවේශය පුළුල් නොවේ.</string>
     <string name="config_add_folder">ෆෝල්ඩරයක් සම්බන්ධ කරන්න</string>
