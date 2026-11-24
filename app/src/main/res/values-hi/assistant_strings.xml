@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"छवियों में टेक्स्ट पढ़ें"</string>
     <string name="settings_read_image_text_desc">"जो मॉडल छवियां नहीं देख सकते, उनके लिए आपकी तस्वीरों और स्क्रीनशॉट का टेक्स्ट इस फ़ोन पर पढ़कर भेजा जाता है। ऑफ़लाइन भी काम करता है।"</string>
     <string name="chat_attachment_read_as_text">"यह मॉडल छवियां नहीं देख सकता, इसलिए केवल उनका टेक्स्ट भेजा जाता है।"</string>
+    <string name="assistant_check_unsupported">"यह फ़ोन अन्य ऐप्स को डिजिटल सहायक बनने नहीं देता। यह फ़ोन की सीमा है, AndroidHarness की नहीं। आप ऐप खोलकर अभी भी स्क्रीन के बारे में पूछ सकते हैं।"</string>
+    <string name="assistant_check_profile">"AndroidHarness किसी कार्य प्रोफ़ाइल, Secure Folder, निजी स्थान या दूसरे स्थान में इंस्टॉल है। केवल मुख्य प्रोफ़ाइल के ऐप सहायक बन सकते हैं, इसलिए इसे वहाँ इंस्टॉल करें।"</string>
+    <string name="assistant_check_samsung">"Samsung पर: सेटिंग्स, फिर ऐप्स, फिर डिफ़ॉल्ट ऐप्स चुनें, फिर डिजिटल सहायक ऐप।"</string>
+    <string name="assistant_check_generic">"नहीं मिला? सेटिंग्स खोलें और डिजिटल सहायक या असिस्ट खोजें। यह वॉइस इनपुट से अलग सूची है।"</string>
+    <string name="assistant_check_copy">"विवरण कॉपी करें"</string>
+    <string name="assistant_check_copy_label">"सहायक जाँच"</string>
+    <string name="assistant_check_copied">"विवरण कॉपी हो गए। उन्हें अपनी रिपोर्ट में चिपकाएं।"</string>
 </resources>

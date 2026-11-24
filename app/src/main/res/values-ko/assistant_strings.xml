@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"이미지 속 텍스트 읽기"</string>
     <string name="settings_read_image_text_desc">"이미지를 볼 수 없는 모델에는 사진과 스크린샷 속 텍스트를 이 휴대폰에서 읽어 대신 보냅니다. 오프라인에서도 작동합니다."</string>
     <string name="chat_attachment_read_as_text">"이 모델은 이미지를 볼 수 없어 그 안의 텍스트만 전송됩니다."</string>
+    <string name="assistant_check_unsupported">"이 휴대폰은 다른 앱이 디지털 어시스턴트가 되는 것을 허용하지 않습니다. 이는 휴대폰의 제한이며 AndroidHarness의 문제가 아닙니다. 앱을 열어 화면에 대해 물어볼 수는 있습니다."</string>
+    <string name="assistant_check_profile">"AndroidHarness가 직장 프로필, 보안 폴더, 비공개 공간 또는 보조 공간에 설치되어 있습니다. 기본 프로필의 앱만 어시스턴트가 될 수 있으므로 거기에 설치하세요."</string>
+    <string name="assistant_check_samsung">"삼성: 설정 → 앱 → 기본 앱 선택 → 디지털 어시스턴트 앱."</string>
+    <string name="assistant_check_generic">"찾을 수 없나요? 설정을 열고 디지털 어시스턴트 또는 어시스트를 검색하세요. 음성 입력과는 다른 목록입니다."</string>
+    <string name="assistant_check_copy">"세부 정보 복사"</string>
+    <string name="assistant_check_copy_label">"어시스턴트 검사"</string>
+    <string name="assistant_check_copied">"세부 정보를 복사했습니다. 보고서에 붙여넣으세요."</string>
 </resources>

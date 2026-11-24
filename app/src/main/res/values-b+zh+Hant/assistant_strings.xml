@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"讀取圖片中的文字"</string>
     <string name="settings_read_image_text_desc">"對於無法看到圖片的模型，會在此手機上讀取圖片和截圖中的文字並改為傳送文字。可離線使用。"</string>
     <string name="chat_attachment_read_as_text">"此模型無法看到圖片，因此只傳送其中的文字。"</string>
+    <string name="assistant_check_unsupported">"此手機不允許其他應用程式充當數位助理。這是手機的限制，不是 AndroidHarness 的問題。你仍可開啟應用程式詢問畫面內容。"</string>
+    <string name="assistant_check_profile">"AndroidHarness 安裝在工作資料、安全資料夾、私密空間或第二空間中。只有主資料中的應用程式才能充當助理，請安裝到主資料。"</string>
+    <string name="assistant_check_samsung">"在三星上：設定，然後應用程式，然後選擇預設應用程式，然後數位助理應用程式。"</string>
+    <string name="assistant_check_generic">"找不到？開啟設定並搜尋數位助理或輔助。它與語音輸入是不同的清單。"</string>
+    <string name="assistant_check_copy">"複製詳情"</string>
+    <string name="assistant_check_copy_label">"助理檢查"</string>
+    <string name="assistant_check_copied">"詳情已複製。請貼到你的回報中。"</string>
 </resources>

@@ -3,6 +3,8 @@ package com.androidharness.app.ui.settings
 import com.androidharness.app.agent.ThinkingLevel
 import android.app.role.RoleManager
 import android.content.ActivityNotFoundException
+import android.content.ClipData
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.os.Build
@@ -45,7 +47,11 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.ui.semantics.Role
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.androidharness.app.R
+import com.androidharness.app.assistant.AssistantAvailability
+import com.androidharness.app.assistant.AssistantCheck
+import com.androidharness.app.assistant.AssistantFacts
 import com.androidharness.app.ui.common.FilledTonalButton
+import com.androidharness.app.ui.common.TextButton
 
 /** Whether Android currently uses AndroidHarness as the digital assistant app. */
 internal fun isHarnessAssistant(context: Context): Boolean =
@@ -55,6 +61,16 @@ internal fun isHarnessAssistant(context: Context): Boolean =
         Settings.Secure.getString(context.contentResolver, "voice_interaction_service")
             ?.startsWith(context.packageName + "/") == true
     }.getOrDefault(false)
+
+/** Puts the assistant check on the clipboard for a bug report. */
+private fun copyAssistantReport(context: Context, facts: AssistantFacts) {
+    val report = AssistantCheck.report(facts, com.androidharness.app.BuildConfig.VERSION_NAME)
+    context.getSystemService(ClipboardManager::class.java)
+        ?.setPrimaryClip(ClipData.newPlainText(context.getString(R.string.assistant_check_copy_label), report))
+    // Android 13 and later confirm copies on their own.
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU)
+        Toast.makeText(context, R.string.assistant_check_copied, Toast.LENGTH_SHORT).show()
+}
 
 /** Opens the system screen where the assistant app is picked. */
 internal fun openAssistantPicker(context: Context) {
@@ -80,10 +96,14 @@ internal fun AssistantSetupSection(
 ) {
     val context = LocalContext.current
     val owner = LocalLifecycleOwner.current
-    var active by remember { mutableStateOf(isHarnessAssistant(context)) }
+    var facts by remember { mutableStateOf(AssistantCheck.facts(context, isHarnessAssistant(context))) }
+    val active = facts.active
+    val availability = AssistantCheck.availability(facts)
     // The choice is made in Android settings, so look again whenever the page comes back.
     DisposableEffect(owner) {
-        val observer = LifecycleEventObserver { _, event -> if (event == Lifecycle.Event.ON_RESUME) active = isHarnessAssistant(context) }
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME) facts = AssistantCheck.facts(context, isHarnessAssistant(context))
+        }
         owner.lifecycle.addObserver(observer)
         onDispose { owner.lifecycle.removeObserver(observer) }
     }
@@ -105,14 +125,30 @@ internal fun AssistantSetupSection(
                     }
                 }
                 Text(stringResource(R.string.assistant_settings_desc), style = MaterialTheme.typography.bodyMedium)
-                Text(stringResource(R.string.assistant_settings_steps), style = MaterialTheme.typography.bodySmall,
+                val canPick = availability == AssistantAvailability.ACTIVE || availability == AssistantAvailability.PICK ||
+                    availability == AssistantAvailability.PICK_SAMSUNG
+                if (canPick) Text(stringResource(R.string.assistant_settings_steps), style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant)
+                when (availability) {
+                    AssistantAvailability.ACTIVE -> null
+                    AssistantAvailability.UNSUPPORTED -> R.string.assistant_check_unsupported
+                    AssistantAvailability.OTHER_PROFILE -> R.string.assistant_check_profile
+                    AssistantAvailability.PICK_SAMSUNG -> R.string.assistant_check_samsung
+                    AssistantAvailability.PICK -> R.string.assistant_check_generic
+                }?.let { hint ->
+                    Text(stringResource(hint), style = MaterialTheme.typography.bodySmall,
+                        color = if (canPick) scheme.onSurfaceVariant else scheme.error)
+                }
                 Text(stringResource(R.string.assistant_settings_privacy), style = MaterialTheme.typography.bodySmall,
                     color = scheme.onSurfaceVariant)
-                SettingsAnchor(R.string.assistant_settings_open) {
+                // The anchor fills the row, so the copy button sits on its own line below it.
+                if (canPick) SettingsAnchor(R.string.assistant_settings_open) {
                     FilledTonalButton(onClick = { openAssistantPicker(context) }) {
                         Text(stringResource(R.string.assistant_settings_open))
                     }
+                }
+                if (!active) TextButton(onClick = { copyAssistantReport(context, facts) }) {
+                    Text(stringResource(R.string.assistant_check_copy))
                 }
             }
         }

@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"قراءة النص في الصور"</string>
     <string name="settings_read_image_text_desc">"مع النماذج التي لا ترى الصور، يُقرأ النص من صورك ولقطات الشاشة على هذا الهاتف ويُرسل بدلاً منها. يعمل دون اتصال."</string>
     <string name="chat_attachment_read_as_text">"هذا النموذج لا يرى الصور، لذا يُرسل النص الموجود فيها فقط."</string>
+    <string name="assistant_check_unsupported">"هذا الهاتف لا يسمح لتطبيقات أخرى بأن تكون المساعد الرقمي. هذا حد من الهاتف وليس من AndroidHarness. ما زال بإمكانك السؤال عن شاشتك بفتح التطبيق."</string>
+    <string name="assistant_check_profile">"AndroidHarness مثبت في ملف تعريف عمل أو Secure Folder أو مساحة خاصة أو مساحة ثانية. فقط تطبيقات ملفك الرئيسي يمكنها أن تكون المساعد، لذا ثبّته هناك."</string>
+    <string name="assistant_check_samsung">"على Samsung: الإعدادات، ثم التطبيقات، ثم اختيار التطبيقات الافتراضية، ثم تطبيق المساعد الرقمي."</string>
+    <string name="assistant_check_generic">"لم تجده؟ افتح الإعدادات وابحث عن المساعد الرقمي أو المساعدة. إنها قائمة مختلفة عن الإدخال الصوتي."</string>
+    <string name="assistant_check_copy">"نسخ التفاصيل"</string>
+    <string name="assistant_check_copy_label">"فحص المساعد"</string>
+    <string name="assistant_check_copied">"تم نسخ التفاصيل. الصقها في تقريرك."</string>
 </resources>

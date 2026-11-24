@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"อ่านข้อความในรูปภาพ"</string>
     <string name="settings_read_image_text_desc">"สำหรับโมเดลที่มองไม่เห็นรูปภาพ ข้อความในรูปและภาพหน้าจอจะถูกอ่านบนโทรศัพท์นี้แล้วส่งแทน ใช้งานได้แบบออฟไลน์"</string>
     <string name="chat_attachment_read_as_text">"โมเดลนี้มองไม่เห็นรูปภาพ จึงส่งเฉพาะข้อความในภาพ"</string>
+    <string name="assistant_check_unsupported">"โทรศัพท์นี้ไม่อนุญาตให้แอปอื่นเป็นผู้ช่วยดิจิทัล นี่คือข้อจำกัดของโทรศัพท์ ไม่ใช่ของ AndroidHarness คุณยังถามเกี่ยวกับหน้าจอได้โดยเปิดแอป"</string>
+    <string name="assistant_check_profile">"AndroidHarness ติดตั้งในโปรไฟล์งาน, Secure Folder, พื้นที่ส่วนตัว หรือพื้นที่ที่สอง เฉพาะแอปในโปรไฟล์หลักเท่านั้นที่เป็นผู้ช่วยได้ โปรดติดตั้งที่นั่น"</string>
+    <string name="assistant_check_samsung">"บน Samsung: การตั้งค่า → แอป → เลือกแอปเริ่มต้น → แอปผู้ช่วยดิจิทัล"</string>
+    <string name="assistant_check_generic">"หาไม่เจอ? เปิดการตั้งค่าแล้วค้นหาผู้ช่วยดิจิทัลหรือ assist เป็นรายการที่ต่างจากอินพุตเสียง"</string>
+    <string name="assistant_check_copy">"คัดลอกรายละเอียด"</string>
+    <string name="assistant_check_copy_label">"การตรวจผู้ช่วย"</string>
+    <string name="assistant_check_copied">"คัดลอกรายละเอียดแล้ว วางในรายงานของคุณ"</string>
 </resources>

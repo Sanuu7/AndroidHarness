@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"Читать текст на изображениях"</string>
     <string name="settings_read_image_text_desc">"Для моделей, которые не видят изображения, текст с ваших фото и снимков читается на телефоне и отправляется вместо них. Работает без интернета."</string>
     <string name="chat_attachment_read_as_text">"Эта модель не видит изображения, поэтому отправляется только текст с них."</string>
+    <string name="assistant_check_unsupported">"Этот телефон не разрешает другим приложениям быть цифровым ассистентом. Это ограничение телефона, а не AndroidHarness. Вы всё равно можете спрашивать об экране, открыв приложение."</string>
+    <string name="assistant_check_profile">"AndroidHarness установлен в рабочем профиле, Secure Folder, приватном пространстве или втором пространстве. Быть ассистентом могут только приложения основного профиля, установите его там."</string>
+    <string name="assistant_check_samsung">"На Samsung: Настройки, затем Приложения, затем Выбор приложений по умолчанию, затем Приложение цифрового ассистента."</string>
+    <string name="assistant_check_generic">"Не нашли? Откройте Настройки и найдите цифровой ассистент или помощь. Это другой список, не «Голосовой ввод»."</string>
+    <string name="assistant_check_copy">"Скопировать данные"</string>
+    <string name="assistant_check_copy_label">"Проверка ассистента"</string>
+    <string name="assistant_check_copied">"Данные скопированы. Вставьте их в свой отчёт."</string>
 </resources>

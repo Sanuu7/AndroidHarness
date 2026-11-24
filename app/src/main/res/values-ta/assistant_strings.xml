@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"படங்களில் உள்ள உரையைப் படி"</string>
     <string name="settings_read_image_text_desc">"படங்களைப் பார்க்க முடியாத மாதிரிகளுக்கு, உங்கள் புகைப்படங்கள் மற்றும் ஸ்கிரீன்ஷாட்களில் உள்ள உரை இந்த ஃபோனில் படிக்கப்பட்டு அதற்குப் பதிலாக அனுப்பப்படும். இணையம் இல்லாமலும் வேலை செய்யும்."</string>
     <string name="chat_attachment_read_as_text">"இந்த மாதிரி படங்களைப் பார்க்க முடியாது, எனவே அவற்றின் உரை மட்டும் அனுப்பப்படும்."</string>
+    <string name="assistant_check_unsupported">"இந்த ஃபோன் பிற ஆப்களை டிஜிட்டல் உதவியாளராக அனுமதிக்காது. இது ஃபோனின் வரம்பு, AndroidHarness-இன் அல்ல. ஆப்பைத் திறந்து திரையைப் பற்றி இன்னும் கேட்கலாம்."</string>
+    <string name="assistant_check_profile">"AndroidHarness வேலைச் சுயவிவரம், Secure Folder, தனிப்பட்ட இடம் அல்லது இரண்டாவது இடத்தில் நிறுவப்பட்டுள்ளது. பிரதான சுயவிவரத்தின் ஆப்கள் மட்டுமே உதவியாளராக முடியும், எனவே அங்கே நிறுவுங்கள்."</string>
+    <string name="assistant_check_samsung">"Samsung-இல்: அமைப்புகள், பின்னர் ஆப்கள், பின்னர் இயல்புநிலை ஆப்களைத் தேர்ந்தெடு, பின்னர் டிஜிட்டல் உதவியாளர் ஆப்."</string>
+    <string name="assistant_check_generic">"கண்டுபிடிக்கவில்லையா? அமைப்புகளைத் திறந்து டிஜிட்டல் உதவியாளர் அல்லது assist எனத் தேடுங்கள். இது குரல் உள்ளீட்டிலிருந்து வேறு பட்டியல்."</string>
+    <string name="assistant_check_copy">"விவரங்களை நகலெடு"</string>
+    <string name="assistant_check_copy_label">"உதவியாளர் சரிபார்ப்பு"</string>
+    <string name="assistant_check_copied">"விவரங்கள் நகலெடுக்கப்பட்டன. உங்கள் அறிக்கையில் ஒட்டவும்."</string>
 </resources>

@@ -398,6 +398,7 @@ private fun AssistantPanel(
         HarnessHalo(
             showKey,
             engaged = (engaged || state.hasConversation) && !voice.listening,
+            listening = voice.listening,
             working = state.busy,
             reduceMotion = reduceMotion,
             level = voice::level,

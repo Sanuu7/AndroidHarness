@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"ছবির লেখা পড়ুন"</string>
     <string name="settings_read_image_text_desc">"যে মডেল ছবি দেখতে পায় না, তাদের জন্য আপনার ছবি ও স্ক্রিনশটের লেখা এই ফোনে পড়া হয় এবং পাঠানো হয়। অফলাইনেও কাজ করে।"</string>
     <string name="chat_attachment_read_as_text">"এই মডেল ছবি দেখতে পায় না, তাই শুধু লেখা পাঠানো হয়।"</string>
+    <string name="assistant_check_unsupported">"এই ফোন অন্য অ্যাপকে ডিজিটাল সহায়ক হতে দেয় না। এটি ফোনের সীমা, AndroidHarness-এর নয়। অ্যাপ খুলে আপনি এখনো স্ক্রিন সম্পর্কে জিজ্ঞাসা করতে পারেন।"</string>
+    <string name="assistant_check_profile">"AndroidHarness একটি কাজের প্রোফাইল, Secure Folder, ব্যক্তিগত স্থান বা দ্বিতীয় স্থানে ইনস্টল করা আছে। শুধু প্রধান প্রোফাইলের অ্যাপ সহায়ক হতে পারে, তাই এটি সেখানে ইনস্টল করুন।"</string>
+    <string name="assistant_check_samsung">"Samsung-এ: সেটিংস, তারপর অ্যাপ, তারপর ডিফল্ট অ্যাপ বাছুন, তারপর ডিজিটাল সহায়ক অ্যাপ।"</string>
+    <string name="assistant_check_generic">"পাচ্ছেন না? সেটিংস খুলে ডিজিটাল সহায়ক বা assist খুঁজুন। এটি ভয়েস ইনপুট থেকে আলাদা তালিকা।"</string>
+    <string name="assistant_check_copy">"বিস্তারিত কপি করুন"</string>
+    <string name="assistant_check_copy_label">"সহায়ক পরীক্ষা"</string>
+    <string name="assistant_check_copied">"বিস্তারিত কপি হয়েছে। আপনার রিপোর্টে পেস্ট করুন।"</string>
 </resources>

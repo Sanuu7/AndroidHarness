@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"Baca teks di gambar"</string>
     <string name="settings_read_image_text_desc">"Untuk model yang tidak dapat melihat gambar, teks di foto dan tangkapan layar dibaca di ponsel ini lalu dikirim sebagai gantinya. Berfungsi offline."</string>
     <string name="chat_attachment_read_as_text">"Model ini tidak dapat melihat gambar, jadi hanya teks di dalamnya yang dikirim."</string>
+    <string name="assistant_check_unsupported">"Ponsel ini tidak mengizinkan aplikasi lain menjadi asisten digital. Ini batasan ponsel, bukan AndroidHarness. Anda tetap bisa bertanya tentang layar dengan membuka aplikasi."</string>
+    <string name="assistant_check_profile">"AndroidHarness terpasang di profil kerja, Secure Folder, ruang pribadi, atau ruang kedua. Hanya aplikasi di profil utama yang bisa menjadi asisten, jadi pasang di sana."</string>
+    <string name="assistant_check_samsung">"Di Samsung: Pengaturan, lalu Aplikasi, lalu Pilih aplikasi default, lalu Aplikasi asisten digital."</string>
+    <string name="assistant_check_generic">"Tidak menemukannya? Buka Pengaturan dan cari asisten digital atau assist. Ini daftar yang berbeda dari Input suara."</string>
+    <string name="assistant_check_copy">"Salin detail"</string>
+    <string name="assistant_check_copy_label">"Pemeriksaan asisten"</string>
+    <string name="assistant_check_copied">"Detail disalin. Tempelkan ke laporan Anda."</string>
 </resources>

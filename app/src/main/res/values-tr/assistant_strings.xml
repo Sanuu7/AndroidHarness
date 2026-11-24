@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"Görsellerdeki metni oku"</string>
     <string name="settings_read_image_text_desc">"Görselleri göremeyen modeller için fotoğraf ve ekran görüntülerindeki metin bu telefonda okunur ve onların yerine gönderilir. Çevrimdışı çalışır."</string>
     <string name="chat_attachment_read_as_text">"Bu model görselleri göremez, bu yüzden yalnızca içlerindeki metin gönderilir."</string>
+    <string name="assistant_check_unsupported">"Bu telefon diğer uygulamaların dijital asistan olmasına izin vermiyor. Bu telefonun sınırı, AndroidHarness\'ın değil. Uygulamayı açıp ekranınız hakkında yine de sorabilirsiniz."</string>
+    <string name="assistant_check_profile">"AndroidHarness bir iş profilinde, Secure Folder\'da, özel alanda veya ikinci alanda yüklü. Yalnızca ana profildeki uygulamalar asistan olabilir, bu yüzden oraya yükleyin."</string>
+    <string name="assistant_check_samsung">"Samsung\'da: Ayarlar, ardından Uygulamalar, ardından Varsayılan uygulamaları seç, ardından Dijital asistan uygulaması."</string>
+    <string name="assistant_check_generic">"Bulamadınız mı? Ayarlar\'ı açın ve dijital asistan veya assist arayın. Sesli girişten farklı bir listedir."</string>
+    <string name="assistant_check_copy">"Ayrıntıları kopyala"</string>
+    <string name="assistant_check_copy_label">"Asistan denetimi"</string>
+    <string name="assistant_check_copied">"Ayrıntılar kopyalandı. Raporunuza yapıştırın."</string>
 </resources>

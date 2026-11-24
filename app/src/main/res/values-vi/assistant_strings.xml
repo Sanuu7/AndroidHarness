@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"Đọc văn bản trong ảnh"</string>
     <string name="settings_read_image_text_desc">"Với mô hình không nhìn thấy ảnh, văn bản trong ảnh và ảnh chụp màn hình được đọc trên điện thoại này và gửi thay thế. Hoạt động ngoại tuyến."</string>
     <string name="chat_attachment_read_as_text">"Mô hình này không nhìn thấy ảnh nên chỉ văn bản trong ảnh được gửi."</string>
+    <string name="assistant_check_unsupported">"Điện thoại này không cho phép ứng dụng khác làm trợ lý số. Đó là giới hạn của điện thoại, không phải AndroidHarness. Bạn vẫn có thể hỏi về màn hình bằng cách mở ứng dụng."</string>
+    <string name="assistant_check_profile">"AndroidHarness được cài trong hồ sơ công việc, Secure Folder, không gian riêng tư hoặc không gian thứ hai. Chỉ ứng dụng trong hồ sơ chính mới có thể làm trợ lý, hãy cài ở đó."</string>
+    <string name="assistant_check_samsung">"Trên Samsung: Cài đặt, rồi Ứng dụng, rồi Chọn ứng dụng mặc định, rồi Ứng dụng trợ lý số."</string>
+    <string name="assistant_check_generic">"Không tìm thấy? Mở Cài đặt và tìm trợ lý số hoặc assist. Đây là danh sách khác với Nhập giọng nói."</string>
+    <string name="assistant_check_copy">"Sao chép chi tiết"</string>
+    <string name="assistant_check_copy_label">"Kiểm tra trợ lý"</string>
+    <string name="assistant_check_copied">"Đã sao chép chi tiết. Dán vào báo cáo của bạn."</string>
 </resources>

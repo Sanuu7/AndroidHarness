@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"Text in Bildern lesen"</string>
     <string name="settings_read_image_text_desc">"Bei Modellen, die keine Bilder sehen können, wird der Text in deinen Bildern und Screenshots auf diesem Telefon gelesen und stattdessen gesendet. Funktioniert offline."</string>
     <string name="chat_attachment_read_as_text">"Dieses Modell kann keine Bilder sehen, daher wird nur der Text daraus gesendet."</string>
+    <string name="assistant_check_unsupported">"Dieses Telefon erlaubt anderen Apps nicht, die digitale Assistenz zu sein. Das ist eine Grenze des Telefons, nicht von AndroidHarness. Du kannst trotzdem über die App nach deinem Bildschirm fragen."</string>
+    <string name="assistant_check_profile">"AndroidHarness ist in einem Arbeitsprofil, Secure Folder, privaten Bereich oder zweiten Bereich installiert. Nur Apps im Hauptprofil können Assistenz sein, installiere es also dort."</string>
+    <string name="assistant_check_samsung">"Auf Samsung: Einstellungen, dann Apps, dann Standard-Apps wählen, dann Digitale Assistenz-App."</string>
+    <string name="assistant_check_generic">"Nicht gefunden? Öffne die Einstellungen und suche nach digitale Assistenz oder Assist. Es ist eine andere Liste als Spracheingabe."</string>
+    <string name="assistant_check_copy">"Details kopieren"</string>
+    <string name="assistant_check_copy_label">"Assistenz-Prüfung"</string>
+    <string name="assistant_check_copied">"Details kopiert. Füge sie in deinen Bericht ein."</string>
 </resources>

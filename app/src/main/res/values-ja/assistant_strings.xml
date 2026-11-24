@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"画像内のテキストを読み取る"</string>
     <string name="settings_read_image_text_desc">"画像を見られないモデルには、写真やスクリーンショット内のテキストをこの端末で読み取って代わりに送信します。オフラインでも動作します。"</string>
     <string name="chat_attachment_read_as_text">"このモデルは画像を見られないため、中のテキストだけが送信されます。"</string>
+    <string name="assistant_check_unsupported">"このスマートフォンは他のアプリがデジタルアシスタントになることを許可していません。これは端末の制限であり、AndroidHarness の問題ではありません。アプリを開けば画面について質問できます。"</string>
+    <string name="assistant_check_profile">"AndroidHarness は仕事用プロファイル、Secure Folder、プライベートスペース、セカンドスペースにインストールされています。アシスタントになれるのはメインプロファイルのアプリだけです。そこにインストールしてください。"</string>
+    <string name="assistant_check_samsung">"Samsung の場合: 設定 → アプリ → デフォルトのアプリを選択 → デジタルアシスタントアプリ。"</string>
+    <string name="assistant_check_generic">"見つからない場合は、設定を開いて「デジタルアシスタント」または「アシスト」を検索してください。音声入力とは別の一覧です。"</string>
+    <string name="assistant_check_copy">"詳細をコピー"</string>
+    <string name="assistant_check_copy_label">"アシスタントチェック"</string>
+    <string name="assistant_check_copied">"詳細をコピーしました。レポートに貼り付けてください。"</string>
 </resources>

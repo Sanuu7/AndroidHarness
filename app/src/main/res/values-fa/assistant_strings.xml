@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"خواندن متن تصاویر"</string>
     <string name="settings_read_image_text_desc">"برای مدل‌هایی که تصویر نمی‌بینند، متن عکس‌ها و تصاویر صفحه روی این گوشی خوانده و به‌جای آن‌ها فرستاده می‌شود. آفلاین کار می‌کند."</string>
     <string name="chat_attachment_read_as_text">"این مدل تصاویر را نمی‌بیند، بنابراین فقط متن آن‌ها فرستاده می‌شود."</string>
+    <string name="assistant_check_unsupported">"این گوشی اجازه نمی‌دهد برنامه‌های دیگر دستیار دیجیتال باشند. این محدودیت گوشی است، نه AndroidHarness. هنوز می‌توانید با باز کردن برنامه درباره صفحه بپرسید."</string>
+    <string name="assistant_check_profile">"AndroidHarness در نمایه کاری، Secure Folder، فضای خصوصی یا فضای دوم نصب شده است. فقط برنامه‌های نمایه اصلی می‌توانند دستیار باشند، پس آنجا نصبش کنید."</string>
+    <string name="assistant_check_samsung">"در سامسونگ: تنظیمات، سپس برنامه‌ها، سپس انتخاب برنامه‌های پیش‌فرض، سپس برنامه دستیار دیجیتال."</string>
+    <string name="assistant_check_generic">"پیدا نمی‌کنید؟ تنظیمات را باز کنید و دستیار دیجیتال یا assist را جستجو کنید. این فهرستی جدا از ورودی صوتی است."</string>
+    <string name="assistant_check_copy">"کپی جزئیات"</string>
+    <string name="assistant_check_copy_label">"بررسی دستیار"</string>
+    <string name="assistant_check_copied">"جزئیات کپی شد. آن را در گزارش خود بچسبانید."</string>
 </resources>

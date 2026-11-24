@@ -42,6 +42,13 @@
     <string name="assistant_settings_open">Choose assistant app</string>
     <string name="assistant_settings_steps">In Android settings, open Digital assistant app and pick AndroidHarness. Turn on Use text from screen and Use screenshot so it can see what you see.</string>
     <string name="assistant_settings_privacy">The screen is captured only when you call the assistant, and it is sent to the model only when your question is about it. Apps that block screenshots stay hidden.</string>
+    <string name="assistant_check_unsupported">This phone does not let other apps be the digital assistant. That is a limit of the phone, not AndroidHarness. You can still ask about your screen by opening the app.</string>
+    <string name="assistant_check_profile">AndroidHarness is installed in a work profile, Secure Folder, Private Space or a second space. Only apps in your main profile can be the assistant, so install it there to use this.</string>
+    <string name="assistant_check_samsung">On Samsung: Settings, then Apps, then Choose default apps, then Digital assistant app.</string>
+    <string name="assistant_check_generic">Cannot find it? Open Settings and search for digital assistant or assist. It is a different list from Voice input.</string>
+    <string name="assistant_check_copy">Copy details</string>
+    <string name="assistant_check_copy_label">Assistant check</string>
+    <string name="assistant_check_copied">Details copied. Paste them into your report.</string>
     <string name="assistant_settings_voice_first">Start with voice</string>
     <string name="assistant_settings_voice_first_desc">Listen as soon as the assistant opens. You can still switch to the keyboard.</string>
     <string name="assistant_settings_model">Model</string>

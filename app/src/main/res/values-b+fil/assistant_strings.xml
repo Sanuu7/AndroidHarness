@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"Basahin ang text sa mga larawan"</string>
     <string name="settings_read_image_text_desc">"Para sa mga model na hindi nakakakita ng larawan, binabasa sa teleponong ito ang text sa mga litrato at screenshot mo at ipinapadala iyon sa halip. Gumagana offline."</string>
     <string name="chat_attachment_read_as_text">"Hindi nakakakita ng larawan ang model na ito, kaya text lang sa mga ito ang ipinapadala."</string>
+    <string name="assistant_check_unsupported">"Hindi pinapayagan ng teleponong ito ang ibang app na maging digital assistant. Limitasyon ito ng telepono, hindi ng AndroidHarness. Maaari ka pa ring magtanong tungkol sa screen mo sa pamamagitan ng pagbukas ng app."</string>
+    <string name="assistant_check_profile">"Naka-install ang AndroidHarness sa work profile, Secure Folder, private space o second space. Ang mga app lang sa main profile mo ang puwedeng maging assistant, kaya i-install doon."</string>
+    <string name="assistant_check_samsung">"Sa Samsung: Mga setting, pagkatapos Apps, pagkatapos Pumili ng default apps, pagkatapos Digital assistant app."</string>
+    <string name="assistant_check_generic">"Hindi mahanap? Buksan ang Mga setting at hanapin ang digital assistant o assist. Ibang listahan ito kaysa sa voice input."</string>
+    <string name="assistant_check_copy">"Kopyahin ang detalye"</string>
+    <string name="assistant_check_copy_label">"Pagsusuri ng assistant"</string>
+    <string name="assistant_check_copied">"Nakopya ang detalye. I-paste ito sa iyong ulat."</string>
 </resources>

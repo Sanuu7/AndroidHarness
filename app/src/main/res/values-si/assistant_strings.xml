@@ -54,4 +54,11 @@
     <string name="settings_read_image_text">"පින්තූරවල පෙළ කියවන්න"</string>
     <string name="settings_read_image_text_desc">"පින්තූර දැකිය නොහැකි ආකෘති සඳහා, ඔබේ ඡායාරූප හා තිර රූවල පෙළ මෙම දුරකථනයේ කියවා ඒ වෙනුවට යවයි. අන්තර්ජාලය නොමැතිව ද ක්‍රියා කරයි."</string>
     <string name="chat_attachment_read_as_text">"මෙම ආකෘතියට පින්තූර දැකිය නොහැකි බැවින් ඒවායේ පෙළ පමණක් යවයි."</string>
+    <string name="assistant_check_unsupported">"මෙම දුරකථනය වෙනත් යෙදුම් ඩිජිටල් සහායක වීමට ඉඩ නොදේ. එය දුරකථනයේ සීමාවකි, AndroidHarness හි නොවේ. යෙදුම විවෘත කර තිරය ගැන තවමත් අසන්නට හැක."</string>
+    <string name="assistant_check_profile">"AndroidHarness වැඩ පැතිකඩක, Secure Folder, පෞද්ගලික අවකාශයක හෝ දෙවන අවකාශයක ස්ථාපිතයි. ප්‍රධාන පැතිකඩේ යෙදුම්වලට පමණක් සහායක විය හැක, එබැවින් එහි ස්ථාපනය කරන්න."</string>
+    <string name="assistant_check_samsung">"Samsung හි: සැකසුම්, පසුව යෙදුම්, පසුව පෙරනිමි යෙදුම් තෝරන්න, පසුව ඩිජිටල් සහායක යෙදුම."</string>
+    <string name="assistant_check_generic">"හමු නොවුණාද? සැකසුම් විවෘත කර ඩිජිටල් සහායක හෝ assist සොයන්න. එය හඬ ආදානයට වඩා වෙනස් ලැයිස්තුවකි."</string>
+    <string name="assistant_check_copy">"විස්තර පිටපත් කරන්න"</string>
+    <string name="assistant_check_copy_label">"සහායක පරීක්ෂාව"</string>
+    <string name="assistant_check_copied">"විස්තර පිටපත් විය. ඔබේ වාර්තාවට අලවන්න."</string>
 </resources>
